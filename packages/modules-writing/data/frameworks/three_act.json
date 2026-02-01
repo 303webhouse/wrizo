@@ -1,0 +1,71 @@
+{
+  "id": "three_act",
+  "name": "Three-Act Structure",
+  "description": "The classic beginning-middle-end structure used in most storytelling.",
+  "tags": ["classic", "universal", "beginner-friendly"],
+  "beats": [
+    {
+      "id": "setup",
+      "name": "Setup",
+      "act": 1,
+      "order": 1,
+      "prompt": "Introduce your protagonist, their world, and their normal life. What do they want? What's missing?"
+    },
+    {
+      "id": "inciting_incident",
+      "name": "Inciting Incident",
+      "act": 1,
+      "order": 2,
+      "prompt": "What event disrupts your protagonist's normal world and sets the story in motion?"
+    },
+    {
+      "id": "first_plot_point",
+      "name": "First Plot Point",
+      "act": 1,
+      "order": 3,
+      "prompt": "What decision or event pushes your protagonist into the main conflict? There's no going back."
+    },
+    {
+      "id": "rising_action",
+      "name": "Rising Action",
+      "act": 2,
+      "order": 4,
+      "prompt": "Your protagonist pursues their goal. What obstacles do they face? How do they grow or change?"
+    },
+    {
+      "id": "midpoint",
+      "name": "Midpoint",
+      "act": 2,
+      "order": 5,
+      "prompt": "A major revelation or shift. The stakes get higher. What changes everything?"
+    },
+    {
+      "id": "complications",
+      "name": "Complications",
+      "act": 2,
+      "order": 6,
+      "prompt": "Things get worse. Allies may fail, plans fall apart. What pushes your protagonist to their lowest point?"
+    },
+    {
+      "id": "crisis",
+      "name": "Crisis / Dark Night",
+      "act": 2,
+      "order": 7,
+      "prompt": "The lowest point. All seems lost. What internal or external forces threaten to defeat your protagonist?"
+    },
+    {
+      "id": "climax",
+      "name": "Climax",
+      "act": 3,
+      "order": 8,
+      "prompt": "The final confrontation. Your protagonist faces their greatest challenge. How do they fight?"
+    },
+    {
+      "id": "resolution",
+      "name": "Resolution",
+      "act": 3,
+      "order": 9,
+      "prompt": "The aftermath. How has your protagonist changed? What's their new normal?"
+    }
+  ]
+}

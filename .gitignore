@@ -3,3 +3,10 @@ dist/
 out/
 *.log
 .DS_Store
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+.claude/
+nul

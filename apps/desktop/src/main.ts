@@ -1,11 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-let mainWindow: any;
+let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -18,8 +14,9 @@ function createWindow() {
   });
 
   const isDev = process.env.NODE_ENV === 'development';
+  const devPort = process.env.VITE_DEV_PORT || '5173';
   const url = isDev
-    ? 'http://localhost:5173'
+    ? `http://localhost:${devPort}`
     : `file://${path.join(__dirname, '../renderer/index.html')}`;
 
   mainWindow.loadURL(url);

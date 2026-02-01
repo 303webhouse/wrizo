@@ -1,7 +1,22 @@
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import { SessionLauncher } from './pages/SessionLauncher';
+import { CreateProject } from './pages/CreateProject';
+import { ProjectHome } from './pages/ProjectHome';
+import { StructureWizard } from './pages/StructureWizard';
+import { BeatWizard } from './pages/BeatWizard';
+import { StructureBoard } from './pages/StructureBoard';
+
 export function App() {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <h1>Writer Studio (M0)</h1>
-    </div>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<SessionLauncher />} />
+        <Route path="/project/new" element={<CreateProject />} />
+        <Route path="/project/:id" element={<ProjectHome />} />
+        <Route path="/project/:id/wizard" element={<StructureWizard />} />
+        <Route path="/project/:id/beat" element={<BeatWizard />} />
+        <Route path="/project/:id/board" element={<StructureBoard />} />
+      </Routes>
+    </HashRouter>
   );
 }

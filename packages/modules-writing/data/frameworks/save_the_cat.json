@@ -1,0 +1,98 @@
+{
+  "id": "save_the_cat",
+  "name": "Save the Cat",
+  "description": "Blake Snyder's 15-beat structure for compelling screenplays and novels.",
+  "tags": ["screenwriting", "detailed", "commercial"],
+  "beats": [
+    {
+      "id": "opening_image",
+      "name": "Opening Image",
+      "order": 1,
+      "prompt": "A visual that sets the tone, mood, and stakes. What image captures your protagonist's 'before' state?"
+    },
+    {
+      "id": "theme_stated",
+      "name": "Theme Stated",
+      "order": 2,
+      "prompt": "Someone states the theme or lesson—usually to the protagonist. What's the central question or moral?"
+    },
+    {
+      "id": "setup",
+      "name": "Setup",
+      "order": 3,
+      "prompt": "Introduce the protagonist's world, flaws, and what's missing. Plant seeds for later payoffs."
+    },
+    {
+      "id": "catalyst",
+      "name": "Catalyst",
+      "order": 4,
+      "prompt": "The event that sets the story in motion. Life will never be the same after this moment."
+    },
+    {
+      "id": "debate",
+      "name": "Debate",
+      "order": 5,
+      "prompt": "The protagonist hesitates. Should they accept the challenge? What doubts or fears hold them back?"
+    },
+    {
+      "id": "break_into_two",
+      "name": "Break into Two",
+      "order": 6,
+      "prompt": "The protagonist makes a choice and enters the new world of Act Two. There's no turning back."
+    },
+    {
+      "id": "b_story",
+      "name": "B Story",
+      "order": 7,
+      "prompt": "Introduce the secondary story—often a love interest or mentor who helps explore the theme."
+    },
+    {
+      "id": "fun_and_games",
+      "name": "Fun and Games",
+      "order": 8,
+      "prompt": "The promise of the premise! Deliver what the audience came to see. What makes this story unique?"
+    },
+    {
+      "id": "midpoint",
+      "name": "Midpoint",
+      "order": 9,
+      "prompt": "A false victory or false defeat. Stakes are raised. The protagonist commits fully."
+    },
+    {
+      "id": "bad_guys_close_in",
+      "name": "Bad Guys Close In",
+      "order": 10,
+      "prompt": "External pressures tighten. Internal doubts grow. The team may splinter. Things fall apart."
+    },
+    {
+      "id": "all_is_lost",
+      "name": "All Is Lost",
+      "order": 11,
+      "prompt": "The lowest point. Often includes a 'whiff of death'—literal or symbolic. What's lost forever?"
+    },
+    {
+      "id": "dark_night_of_the_soul",
+      "name": "Dark Night of the Soul",
+      "order": 12,
+      "prompt": "The protagonist wallows in hopelessness. They must find strength to continue. What do they realize?"
+    },
+    {
+      "id": "break_into_three",
+      "name": "Break into Three",
+      "order": 13,
+      "prompt": "A fresh idea or revelation! The protagonist synthesizes everything and knows what to do."
+    },
+    {
+      "id": "finale",
+      "name": "Finale",
+      "order": 14,
+      "prompt": "The final battle. Old world vs. new world. The protagonist executes the plan and proves they've changed."
+    },
+    {
+      "id": "final_image",
+      "name": "Final Image",
+      "order": 15,
+      "prompt": "The opposite of the opening image. Visual proof of the transformation. What's the 'after' state?"
+    }
+  ]
+}

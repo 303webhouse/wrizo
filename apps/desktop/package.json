@@ -1,15 +1,15 @@
 {
   "name": "@writer-studio/desktop",
   "version": "0.0.1",
-  "type": "module",
   "main": "./dist/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"node scripts/wait-and-electron.mjs\"",
-    "build": "vite build && tsc src/main.ts --outDir dist --declaration false --module esnext --target es2020 --skipLibCheck true --esModuleInterop true"
+    "build": "vite build && tsc src/main.ts src/preload.ts --outDir dist --declaration false --module commonjs --target es2020 --skipLibCheck --esModuleInterop --moduleResolution node"
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
@@ -17,7 +17,7 @@
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
     "concurrently": "^8.2.0",
-    "electron": "^31.0.0",
+    "electron": "31.0.0",
     "typescript": "^5.3.0",
     "vite": "^5.0.0"
   }

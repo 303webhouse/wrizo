@@ -1,0 +1,56 @@
+{
+  "id": "story_circle",
+  "name": "Story Circle",
+  "description": "Dan Harmon's simplified Hero's Journey. Eight steps that form a circle of change.",
+  "tags": ["character-driven", "transformation", "cyclic"],
+  "beats": [
+    {
+      "id": "you",
+      "name": "You (Comfort Zone)",
+      "order": 1,
+      "prompt": "Establish your protagonist in their comfort zone. Who are they? What's their ordinary world?"
+    },
+    {
+      "id": "need",
+      "name": "Need (Desire)",
+      "order": 2,
+      "prompt": "What does your protagonist want or need? This desire will drive them forward."
+    },
+    {
+      "id": "go",
+      "name": "Go (Unfamiliar Situation)",
+      "order": 3,
+      "prompt": "Your protagonist enters an unfamiliar situation. They cross a threshold into a new world."
+    },
+    {
+      "id": "search",
+      "name": "Search (Adapt)",
+      "order": 4,
+      "prompt": "They adapt to the new situation, facing challenges and learning. What struggles do they face?"
+    },
+    {
+      "id": "find",
+      "name": "Find (Get What They Wanted)",
+      "order": 5,
+      "prompt": "They get what they wanted—but at what cost? This is often a hollow victory."
+    },
+    {
+      "id": "take",
+      "name": "Take (Pay the Price)",
+      "order": 6,
+      "prompt": "They pay a heavy price for what they got. What do they lose or sacrifice?"
+    },
+    {
+      "id": "return",
+      "name": "Return (Go Back)",
+      "order": 7,
+      "prompt": "They return to their familiar situation, but they're not the same person."
+    },
+    {
+      "id": "change",
+      "name": "Change (Having Changed)",
+      "order": 8,
+      "prompt": "They've changed. How are they different? How does this affect their world?"
+    }
+  ]
+}
