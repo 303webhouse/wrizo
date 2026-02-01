@@ -227,10 +227,22 @@ export function StructureWizard() {
             <div className="card-title" style={{ marginBottom: '1rem' }}>{selectedFramework.name}</div>
             <div className="card-description" style={{ marginBottom: '1rem' }}>{selectedFramework.description}</div>
 
-            <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Beats in this framework:</h3>
+            <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>Beats in this framework:</h3>
+            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+              Preview only — you’ll choose beats in the Structure Board.
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {selectedFramework.beats.map((beat, index) => (
-                <div key={beat.id} style={{ padding: '0.5rem', backgroundColor: 'var(--color-bg)', borderRadius: '4px' }}>
+                <div
+                  key={beat.id}
+                  style={{
+                    padding: '0.5rem',
+                    backgroundColor: 'var(--color-bg)',
+                    borderRadius: '4px',
+                    border: '1px solid var(--color-border)',
+                    cursor: 'default',
+                  }}
+                >
                   <span style={{ color: 'var(--color-text-muted)', marginRight: '0.5rem' }}>{index + 1}.</span>
                   {beat.name}
                 </div>
