@@ -15,6 +15,10 @@ export function SessionLauncher() {
           Create New Project
         </Link>
 
+        <Link to="/sprint" className="btn btn-secondary" style={{ padding: '1.25rem 2rem', fontSize: '1.1rem' }}>
+          Start Writing (Quick Sprint)
+        </Link>
+
         <button className="btn btn-secondary" style={{ padding: '1.25rem 2rem', fontSize: '1.1rem' }} disabled>
           Open Existing Project (Coming Soon)
         </button>

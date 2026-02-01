@@ -13,6 +13,7 @@ export function ProjectHome() {
   }
 
   const hasStoryPlan = !!storyPlan;
+  const hasSprintText = !!project.sprintText?.trim();
   const beatNotes = storyPlan?.beatNotes || [];
   const completedBeats = beatNotes.filter(bn => bn.status === 'started').length;
   const totalBeats = beatNotes.length;
@@ -49,11 +50,25 @@ export function ProjectHome() {
         <div className="card">
           <div className="card-title">Get Started</div>
           <div className="card-description" style={{ marginBottom: '1rem' }}>
-            Choose a story structure to organize your writing.
+            Choose a structure now or start writing and organize later.
           </div>
-          <Link to={`/project/${id}/wizard`} className="btn btn-primary">
-            Start Structure Wizard
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link to={`/project/${id}/wizard`} className="btn btn-primary">
+              Start Structure Wizard
+            </Link>
+            <Link to={`/project/${id}/sprint`} className="btn btn-primary">
+              Start Writing (Organize Later)
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {hasSprintText && (
+        <div className="card" style={{ marginTop: '1.5rem' }}>
+          <div className="card-title">Quick Sprint Draft</div>
+          <div className="card-description" style={{ whiteSpace: 'pre-wrap' }}>
+            {project.sprintText}
+          </div>
         </div>
       )}
     </div>

@@ -35,6 +35,7 @@ export interface Project {
   title: string;
   type: 'creative' | 'academic';
   storyPlanId: string | null;
+  sprintText?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -13,11 +13,7 @@ export function CreateProject() {
 
     const project = createProject(title.trim(), projectType);
 
-    if (projectType === 'creative') {
-      navigate(`/project/${project.id}/wizard`);
-    } else {
-      navigate(`/project/${project.id}`);
-    }
+    navigate(`/project/${project.id}`);
   };
 
   return (

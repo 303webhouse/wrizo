@@ -42,6 +42,39 @@ export function createProject(title: string, type: 'creative' | 'academic'): Pro
   return project;
 }
 
+function formatDefaultSprintTitle(now: Date): string {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `Untitled ${year}-${month}-${day} ${hours}${minutes}`;
+}
+
+export function createQuickSprintProject(sprintText: string, title?: string): Project {
+  const now = new Date();
+  const project: Project = {
+    id: generateId(),
+    title: title?.trim() || formatDefaultSprintTitle(now),
+    type: 'creative',
+    storyPlanId: null,
+    sprintText,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+  };
+  saveProject(project);
+  return project;
+}
+
+export function setProjectSprintText(projectId: string, sprintText: string): void {
+  const project = getProject(projectId);
+  if (!project) return;
+
+  project.sprintText = sprintText;
+  project.updatedAt = new Date().toISOString();
+  saveProject(project);
+}
+
 // Story Plans
 export function getStoryPlans(): StoryPlan[] {
   const data = localStorage.getItem(STORY_PLANS_KEY);
