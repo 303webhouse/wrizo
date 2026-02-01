@@ -42,6 +42,7 @@ export function BeatWizard() {
   const [notesText, setNotesText] = useState('');
   const [sentenceWarnings, setSentenceWarnings] = useState<string[]>([]);
   const [hasAcknowledgedWarning, setHasAcknowledgedWarning] = useState(false);
+  const [savedUntil, setSavedUntil] = useState<number | null>(null);
 
   const currentBeatId = storyPlan?.currentBeatId;
   const currentBeat = framework?.beats.find(b => b.id === currentBeatId);
@@ -66,11 +67,22 @@ export function BeatWizard() {
     }
   }, [notesText]);
 
+  useEffect(() => {
+    if (!savedUntil) return;
+    const remaining = savedUntil - Date.now();
+    if (remaining <= 0) {
+      setSavedUntil(null);
+      return;
+    }
+    const timeout = setTimeout(() => setSavedUntil(null), remaining);
+    return () => clearTimeout(timeout);
+  }, [savedUntil]);
+
   if (!project || !storyPlan || !framework) {
     return <Navigate to="/" replace />;
   }
 
-  const handleSave = () => {
+  const handleSave = (showFeedback = false) => {
     if (!storyPlan || !currentBeatId) return;
 
     const notes = notesText.split('\n').map(line => line.trim()).filter(line => line);
@@ -79,6 +91,10 @@ export function BeatWizard() {
     // Refresh story plan from storage
     const refreshedPlan = getStoryPlanByProjectId(id!);
     setStoryPlan(refreshedPlan);
+
+    if (showFeedback) {
+      setSavedUntil(Date.now() + 12000);
+    }
   };
 
   const handleNext = () => {
@@ -110,6 +126,7 @@ export function BeatWizard() {
 
   const canSave = sentenceWarnings.length === 0 || hasAcknowledgedWarning;
   const isLastBeat = currentBeatIndex === framework.beats.length - 1;
+  const showSaved = savedUntil !== null;
 
   return (
     <div className="page">
@@ -187,11 +204,16 @@ export function BeatWizard() {
 
             <button
               className="btn btn-primary"
-              onClick={handleSave}
+              onClick={() => handleSave(true)}
               disabled={!canSave}
             >
-              Save Notes
+              {showSaved ? 'Saved' : 'Save Notes'}
             </button>
+            {showSaved && (
+              <span style={{ marginLeft: '0.75rem', color: 'var(--color-success)', fontSize: '0.875rem' }}>
+                Saved
+              </span>
+            )}
 
             {!isLastBeat ? (
               <button
