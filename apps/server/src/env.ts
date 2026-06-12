@@ -1,6 +1,11 @@
 import dotenv from 'dotenv';
+import { resolve } from 'path';
 
-dotenv.config();
+// Load apps/server/.env by explicit path so it works no matter the cwd
+// (Railway runs `node apps/server/dist/index.js` from the repo root). On
+// Railway there is no .env file and real env vars are injected — this is a
+// harmless no-op there.
+dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
 function required(name: string): string {
   const value = process.env[name];
