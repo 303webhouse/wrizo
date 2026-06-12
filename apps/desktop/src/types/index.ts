@@ -38,6 +38,21 @@ export interface Project {
   sprintText?: string;
   createdAt: string;
   updatedAt: string;
+  // Soft delete — rows that must sync are never hard-deleted (see storage adapter / sync).
+  deletedAt?: string;
+}
+
+// Writing-session instrumentation (A9). The collection is wired through the
+// storage adapter now so sync (W2) has it; recording logic lands with A9.
+export interface SessionLog {
+  id: string;
+  projectId: string | null;
+  startedAt: string;
+  firstKeystrokeAt: string | null;
+  endedAt: string | null;
+  words: number;
+  durationSec: number;
+  updatedAt: string;
 }
 
 export interface WizardAnswers {
