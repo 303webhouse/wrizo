@@ -146,11 +146,13 @@ h1, h2, h3 {
 }
 
 .card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  background-color: var(--ink-900);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   margin-bottom: 1rem;
+  /* light from above — the lamp */
+  box-shadow: inset 0 1px 0 rgba(237, 230, 218, 0.04);
 }
 
 .card-title {
@@ -251,4 +253,198 @@ h1, h2, h3 {
 
 .status-complete {
   color: var(--color-success);
+}
+
+/* ============================================================
+   Component layer (D2) — "The Lamplit Desk"
+   Implements ui-redesign-spec §8. Apply per-screen in D3–D7;
+   legacy classes above are unaffected.
+   ============================================================ */
+
+/* Buttons — exactly one .btn-brass per screen. */
+.btn-brass,
+.btn-ghost,
+.btn-quiet,
+.btn-brick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.btn-brass {
+  background: var(--brass);
+  color: var(--on-brass);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  transition: background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.btn-brass:hover { background: var(--brass-hover); }
+.btn-brass:active { background: var(--brass-press); transform: translateY(1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-hi);
+  border: 1px solid var(--ink-border);
+  padding: var(--space-3) var(--space-6);
+  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+.btn-ghost:hover { border-color: var(--ink-border-strong); background: var(--ink-900); }
+
+.btn-quiet {
+  background: none;
+  color: var(--text-mid);
+  border: none;
+  font-weight: 500;
+  padding: var(--space-2) var(--space-3);
+  transition: color var(--t-fast) var(--ease);
+}
+.btn-quiet:hover { color: var(--text-hi); text-decoration: underline; }
+
+/* Discard only — the single brick control in the whole app. */
+.btn-brick {
+  background: transparent;
+  color: var(--brick);
+  border: 1px solid var(--brick);
+  padding: var(--space-3) var(--space-6);
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.btn-brick:hover { background: var(--brick); color: var(--text-hi); }
+
+.btn-brass:disabled,
+.btn-ghost:disabled,
+.btn-quiet:disabled,
+.btn-brick:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Caps label. */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-low);
+}
+
+/* The lit page — prose surfaces only. */
+.paper-page {
+  background: var(--paper);
+  color: var(--ink-on-paper);
+  border-radius: var(--radius-md);
+  box-shadow: var(--paper-glow);
+  padding: var(--space-8);
+  font-family: var(--font-prose);
+  font-size: 17px;
+  line-height: 1.7;
+}
+.paper-page ::placeholder { color: var(--ink-on-paper-low); }
+
+/* Glanceable progress — 10px ink-fill dot, always paired with a text label. */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.status-dot--empty { border: 1.5px solid var(--ink-border-strong); }
+.status-dot--started {
+  border: 1.5px solid var(--ink-border-strong);
+  background: linear-gradient(to top, var(--brass) 50%, transparent 50%);
+}
+.status-dot--done { background: var(--sage); }
+
+/* Brass progress line that draws itself (Beat rail, Project Home). */
+.ink-line {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: var(--ink-border);
+  border-radius: 999px;
+}
+.ink-line__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--brass);
+  border-radius: 999px;
+  transition: width var(--t-state) var(--ease);
+}
+
+/* Timer hairline — drains right-to-left, the one continuous element. */
+.hairline-timer {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: var(--ink-border);
+  overflow: hidden;
+}
+.hairline-timer__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--brass);
+  transition: width 1s linear;
+}
+
+/* Quiet saved confirmation (toggled by JS; fades out after ~2s). */
+.saved-stamp {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--sage);
+  opacity: 1;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.saved-stamp--hidden { opacity: 0; }
+
+/* Nudge result, tucked under the page's top edge. Appears on user action. */
+.nudge-slip {
+  background: var(--ink-800);
+  border: 1px solid var(--clay);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-hi);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  animation: nudge-slip-in var(--t-state) var(--ease);
+}
+@keyframes nudge-slip-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Focus: 2px brass ring on keyboard focus, never removed without replacement.
+   Placed last so it wins over legacy .form-*:focus { outline: none }. */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+.btn-brass:focus-visible,
+.btn-ghost:focus-visible,
+.btn-quiet:focus-visible,
+.btn-brick:focus-visible,
+.form-input:focus-visible,
+.form-textarea:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+/* Motion only on user action or completion. Reduce collapses to instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
