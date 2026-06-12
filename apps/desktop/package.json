@@ -8,6 +8,9 @@
     "build:web": "vite build --outDir dist-web --emptyOutDir"
   },
   "dependencies": {
+    "@fontsource-variable/figtree": "^5.2.10",
+    "@fontsource-variable/newsreader": "^5.2.10",
+    "@fontsource/courier-prime": "^5.2.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.0"

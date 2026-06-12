@@ -5,32 +5,84 @@
 }
 
 :root {
-  --color-bg: #1a1a2e;
-  --color-surface: #16213e;
-  --color-primary: #e94560;
-  --color-primary-hover: #ff6b6b;
-  --color-secondary: #0f3460;
-  --color-text: #eaeaea;
-  --color-text-muted: #a0a0a0;
-  --color-border: #2a2a4a;
-  --color-success: #4ade80;
-  --color-warning: #fbbf24;
-  --radius: 8px;
+  /* Ink — chrome and structure (warm, never blue) */
+  --ink-950: #161210;   /* app background */
+  --ink-900: #1F1A16;   /* cards, surfaces */
+  --ink-800: #2A241E;   /* raised surfaces, hover, notes textarea */
+  --ink-border: #332C25;
+  --ink-border-strong: #453B31;
+
+  /* Text on dark */
+  --text-hi: #EDE6DA;
+  --text-mid: #B5A998;
+  --text-low: #80766A;
+
+  /* Paper — the lit page (prose surfaces only) */
+  --paper: #F3EDE1;
+  --paper-dim: #E9E1D2;
+  --ink-on-paper: #2B2014;
+  --ink-on-paper-low: #8A7C68;
+  --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
+
+  /* Brass — lamplight, primary action (exactly one per screen) */
+  --brass: #D4A24E;
+  --brass-hover: #E2B468;
+  --brass-press: #C2913F;
+  --on-brass: #1C1610;
+
+  /* Semantics */
+  --sage: #93B08C;      /* success, saved, complete */
+  --clay: #C97B5A;      /* warnings, sentence nudge */
+  --brick: #B5543F;     /* destructive — Discard only */
+
+  /* Type */
+  --font-display: 'Newsreader Variable', Georgia, serif;
+  --font-prose:   'Newsreader Variable', Georgia, serif;
+  --font-ui:      'Figtree Variable', system-ui, sans-serif;
+  --font-mono:    'Courier Prime', 'Courier New', monospace;
+
+  /* Spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 only. */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+
+  --radius-sm: 6px;   /* inputs, pills */
+  --radius-md: 10px;  /* cards, page */
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 150ms; --t-state: 220ms; --t-moment: 420ms;
+
+  /* Legacy aliases — keep untouched screens working during migration.
+     Removed in D8 once every screen uses the new tokens directly. */
+  --color-bg: var(--ink-950);
+  --color-surface: var(--ink-900);
+  --color-primary: var(--brass);
+  --color-primary-hover: var(--brass-hover);
+  --color-secondary: var(--ink-800);
+  --color-text: var(--text-hi);
+  --color-text-muted: var(--text-mid);
+  --color-border: var(--ink-border);
+  --color-success: var(--sage);
+  --color-warning: var(--clay);
+  --radius: var(--radius-md);
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-bg);
-  color: var(--color-text);
+  background-color: var(--ink-950);
+  color: var(--text-hi);
   min-height: 100vh;
 }
 
 #root {
   min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .page {
@@ -40,14 +92,17 @@ body {
 }
 
 .page-title {
-  font-size: 2rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.75rem;
+  letter-spacing: -0.01em;
   margin-bottom: 1.5rem;
-  color: var(--color-text);
+  color: var(--text-hi);
 }
 
 .page-subtitle {
   font-size: 1rem;
-  color: var(--color-text-muted);
+  color: var(--text-mid);
   margin-bottom: 2rem;
 }
 
@@ -55,32 +110,34 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-ui);
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
   text-decoration: none;
 }
 
 .btn-primary {
-  background-color: var(--color-primary);
-  color: white;
+  background-color: var(--brass);
+  color: var(--on-brass);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-primary-hover);
+  background-color: var(--brass-hover);
 }
 
 .btn-secondary {
-  background-color: var(--color-secondary);
-  color: var(--color-text);
+  background-color: var(--ink-800);
+  color: var(--text-hi);
+  border: 1px solid var(--ink-border);
 }
 
 .btn-secondary:hover {
-  background-color: #1a4a7a;
+  background-color: var(--ink-border);
 }
 
 .btn:disabled {
@@ -97,8 +154,11 @@ body {
 }
 
 .card-title {
+  font-family: var(--font-ui);
+  font-weight: 600;
   font-size: 1.25rem;
   margin-bottom: 0.5rem;
+  color: var(--text-hi);
 }
 
 .card-description {
