@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft } from '../types';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -20,6 +20,7 @@ const KEYS = {
   projects: 'writer-studio-projects',
   storyPlans: 'writer-studio-story-plans',
   sessions: 'writer-studio-sessions',
+  drafts: 'writer-studio-drafts',
 } as const;
 
 type CollectionName = keyof typeof KEYS;
@@ -28,6 +29,7 @@ interface Cache {
   projects: Project[];
   storyPlans: StoryPlan[];
   sessions: SessionLog[];
+  drafts: Draft[];
 }
 
 function hydrate<T>(key: string): T[] {
@@ -44,6 +46,7 @@ const cache: Cache = {
   projects: hydrate<Project>(KEYS.projects),
   storyPlans: hydrate<StoryPlan>(KEYS.storyPlans),
   sessions: hydrate<SessionLog>(KEYS.sessions),
+  drafts: hydrate<Draft>(KEYS.drafts),
 };
 
 // Records returned to callers are cloned so the cache is never mutated by
@@ -65,12 +68,14 @@ const dirty: Record<CollectionName, Set<string>> = {
   projects: new Set(),
   storyPlans: new Set(),
   sessions: new Set(),
+  drafts: new Set(),
 };
 
 export interface DirtyRecords {
   projects: Project[];
   storyPlans: StoryPlan[];
   sessions: SessionLog[];
+  drafts: Draft[];
 }
 
 export function getDirtyRecords(): DirtyRecords {
@@ -78,6 +83,7 @@ export function getDirtyRecords(): DirtyRecords {
     projects: cache.projects.filter(r => dirty.projects.has(r.id)).map(clone),
     storyPlans: cache.storyPlans.filter(r => dirty.storyPlans.has(r.id)).map(clone),
     sessions: cache.sessions.filter(r => dirty.sessions.has(r.id)).map(clone),
+    drafts: cache.drafts.filter(r => dirty.drafts.has(r.id)).map(clone),
   };
 }
 
@@ -86,6 +92,7 @@ export function markClean(ids: string[]): void {
     dirty.projects.delete(id);
     dirty.storyPlans.delete(id);
     dirty.sessions.delete(id);
+    dirty.drafts.delete(id);
   }
 }
 
@@ -123,6 +130,7 @@ const flushTimers: Record<CollectionName, ReturnType<typeof setTimeout> | null> 
   projects: null,
   storyPlans: null,
   sessions: null,
+  drafts: null,
 };
 
 function flush(name: CollectionName): void {
@@ -139,6 +147,20 @@ function scheduleFlush(name: CollectionName): void {
     flushTimers[name] = null;
     flush(name);
   }, FLUSH_DELAY);
+}
+
+// Force every pending debounced write to localStorage synchronously. Call this
+// when the page is about to be torn down (tab hide, route change) — a scheduled
+// 300ms write would otherwise be lost if the page dies first. localStorage
+// writes are synchronous, so the data is durable before the handler returns.
+export function flushNow(): void {
+  (Object.keys(KEYS) as CollectionName[]).forEach(name => {
+    if (flushTimers[name] !== null) {
+      clearTimeout(flushTimers[name]!);
+      flushTimers[name] = null;
+    }
+    flush(name);
+  });
 }
 
 // Generic upsert: stamp updatedAt, replace-or-insert in the cache, mark dirty,
@@ -287,4 +309,25 @@ export function setCurrentBeat(planId: string, beatId: string): void {
 
   plan.currentBeatId = beatId;
   saveStoryPlan(plan);
+}
+
+// --- Drafts ---------------------------------------------------------------
+// Autosaved writing buffers (A1), keyed by `projectId ?? 'scratch'`.
+
+export function getDraft(id: string): Draft | null {
+  const draft = cache.drafts.find(d => d.id === id);
+  return draft ? clone(draft) : null;
+}
+
+export function saveDraft(id: string, text: string): void {
+  upsert('drafts', cache.drafts, { id, text, updatedAt: '' });
+}
+
+export function clearDraft(id: string): void {
+  const index = cache.drafts.findIndex(d => d.id === id);
+  if (index < 0) return;
+  cache.drafts.splice(index, 1);
+  dirty.drafts.delete(id);
+  scheduleFlush('drafts');
+  notify();
 }
