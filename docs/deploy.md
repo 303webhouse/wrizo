@@ -22,7 +22,9 @@ renderer and the `/auth` + `/api` endpoints, backed by a Railway Postgres.
 - **Builder:** NIXPACKS (auto-detects pnpm from `pnpm-lock.yaml`; pnpm pinned via
   the root `packageManager` field).
 - **Build command:**
-  `pnpm install && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build`
+  `pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build`
+  (`--prod=false` forces devDependencies — vite/typescript — to install even though
+  `NODE_ENV=production` is set for runtime.)
   - `build:web` emits `apps/desktop/dist-web` (Electron's `dist/` is untouched).
   - the server build emits `apps/server/dist`.
 - **Start command:** `node apps/server/dist/index.js`
