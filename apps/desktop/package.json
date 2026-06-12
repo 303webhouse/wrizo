@@ -4,7 +4,8 @@
   "main": "./dist/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"node scripts/wait-and-electron.mjs\"",
-    "build": "vite build && tsc src/main.ts src/preload.ts --outDir dist --declaration false --module commonjs --target es2020 --skipLibCheck --esModuleInterop --moduleResolution node"
+    "build": "vite build && tsc src/main.ts src/preload.ts --outDir dist --declaration false --module commonjs --target es2020 --skipLibCheck --esModuleInterop --moduleResolution node",
+    "build:web": "vite build --outDir dist-web --emptyOutDir"
   },
   "dependencies": {
     "react": "^18.2.0",
