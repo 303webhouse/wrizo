@@ -38,6 +38,9 @@ export interface Project {
   sprintText?: string;
   createdAt: string;
   updatedAt: string;
+  // Resume data (A3) — stamped by the adapter on sprint/beat writes.
+  lastActivityAt?: string;
+  lastActivityType?: 'sprint' | 'beat';
   // Soft delete — rows that must sync are never hard-deleted (see storage adapter / sync).
   deletedAt?: string;
 }

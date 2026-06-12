@@ -229,6 +229,8 @@ export function createQuickSprintProject(sprintText: string, title?: string): Pr
     type: 'creative',
     storyPlanId: null,
     sprintText,
+    lastActivityAt: iso,
+    lastActivityType: 'sprint',
     createdAt: iso,
     updatedAt: iso,
   };
@@ -241,6 +243,17 @@ export function setProjectSprintText(projectId: string, sprintText: string): voi
   if (!project) return;
 
   project.sprintText = sprintText;
+  project.lastActivityAt = new Date().toISOString();
+  project.lastActivityType = 'sprint';
+  saveProject(project);
+}
+
+// Stamp a project's resume pointer (A3). Called when its beat notes change.
+function stampBeatActivity(projectId: string): void {
+  const project = getProject(projectId);
+  if (!project) return;
+  project.lastActivityAt = new Date().toISOString();
+  project.lastActivityType = 'beat';
   saveProject(project);
 }
 
@@ -300,6 +313,7 @@ export function updateBeatNotes(planId: string, beatId: string, notes: string[])
     beatNote.notes = notes;
     beatNote.status = notes.length > 0 ? 'started' : 'empty';
     saveStoryPlan(plan);
+    stampBeatActivity(plan.projectId);
   }
 }
 
