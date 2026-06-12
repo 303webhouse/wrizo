@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
-import { getProject, getStoryPlanByProjectId, updateBeatNotes, setCurrentBeat } from '../store/persistence';
+import { getProject, getStoryPlanByProjectId, updateBeatNotes, setCurrentBeat, flushNow } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import type { Beat } from '../types';
+
+const AUTOSAVE_MS = 2000;
+const SAVED_STAMP_MS = 2000;
 
 function isLikelySentence(line: string): boolean {
   const trimmed = line.trim();
@@ -49,12 +52,20 @@ export function BeatWizard() {
   const currentBeatIndex = framework?.beats.findIndex(b => b.id === currentBeatId) ?? -1;
   const currentBeatNote = storyPlan?.beatNotes.find(bn => bn.beatId === currentBeatId);
 
+  // Autosave bookkeeping. Refs hold the latest values so the blur / route-change
+  // / tab-hide flush can persist without re-subscribing listeners on each edit.
+  const notesTextRef = useRef('');
+  notesTextRef.current = notesText;
+  const storyPlanIdRef = useRef(storyPlan?.id);
+  storyPlanIdRef.current = storyPlan?.id;
+  const currentBeatIdRef = useRef(currentBeatId);
+  currentBeatIdRef.current = currentBeatId;
+  const lastSavedNotesRef = useRef('');
+
   useEffect(() => {
-    if (currentBeatNote) {
-      setNotesText(currentBeatNote.notes.join('\n'));
-    } else {
-      setNotesText('');
-    }
+    const joined = currentBeatNote ? currentBeatNote.notes.join('\n') : '';
+    setNotesText(joined);
+    lastSavedNotesRef.current = joined;
     setHasAcknowledgedWarning(false);
     setSentenceWarnings([]);
   }, [currentBeatId]);
@@ -78,6 +89,49 @@ export function BeatWizard() {
     return () => clearTimeout(timeout);
   }, [savedUntil]);
 
+  // Persist the current notes immediately if changed since the last save.
+  // Bypasses the sentence-warning gate — autosave never loses words.
+  // Used by blur, route change (unmount) and visibilitychange → hidden.
+  const flushNotes = () => {
+    const text = notesTextRef.current;
+    const planId = storyPlanIdRef.current;
+    const beatId = currentBeatIdRef.current;
+    if (planId && beatId && text !== lastSavedNotesRef.current) {
+      const notes = text.split('\n').map(line => line.trim()).filter(line => line);
+      updateBeatNotes(planId, beatId, notes);
+      lastSavedNotesRef.current = text;
+    }
+    flushNow();
+  };
+
+  // Debounced autosave: 2s after the last keystroke, persist through the adapter.
+  useEffect(() => {
+    if (!currentBeatId || notesText === lastSavedNotesRef.current) return;
+    const planId = storyPlan?.id;
+    if (!planId) return;
+    const handle = setTimeout(() => {
+      const notes = notesText.split('\n').map(line => line.trim()).filter(line => line);
+      updateBeatNotes(planId, currentBeatId, notes);
+      lastSavedNotesRef.current = notesText;
+      setSavedUntil(Date.now() + SAVED_STAMP_MS);
+    }, AUTOSAVE_MS);
+    return () => clearTimeout(handle);
+  }, [notesText, currentBeatId, storyPlan]);
+
+  // Flush on tab hide (mobile kills background pages) and on route change/unmount.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushNotes();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      flushNotes();
+    };
+    // flushNotes reads refs, so this listener is registered once for the mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!project || !storyPlan || !framework) {
     return <Navigate to="/" replace />;
   }
@@ -87,13 +141,14 @@ export function BeatWizard() {
 
     const notes = notesText.split('\n').map(line => line.trim()).filter(line => line);
     updateBeatNotes(storyPlan.id, currentBeatId, notes);
+    lastSavedNotesRef.current = notesText;
 
     // Refresh story plan from storage
     const refreshedPlan = getStoryPlanByProjectId(id!);
     setStoryPlan(refreshedPlan);
 
     if (showFeedback) {
-      setSavedUntil(Date.now() + 12000);
+      setSavedUntil(Date.now() + SAVED_STAMP_MS);
     }
   };
 
@@ -166,6 +221,7 @@ export function BeatWizard() {
               className="form-textarea"
               value={notesText}
               onChange={(e) => setNotesText(e.target.value)}
+              onBlur={flushNotes}
               placeholder="- First idea or fragment&#10;- Another thought&#10;- Key moment or detail"
               style={{ minHeight: '200px' }}
             />

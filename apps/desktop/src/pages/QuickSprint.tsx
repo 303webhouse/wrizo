@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { createQuickSprintProject, getProject, setProjectSprintText } from '../store/persistence';
+import { clearDraft, createQuickSprintProject, flushNow, getDraft, getProject, saveDraft, setProjectSprintText } from '../store/persistence';
 
+// Legacy per-key draft storage (pre-A1). Read once as a fallback so words saved
+// before the adapter draft collection existed are not lost on upgrade.
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
+const AUTOSAVE_MS = 2000;
+const SAVED_STAMP_MS = 2000;
 const PRESETS = [5, 10, 20];
 
 const NUDGES = [
@@ -27,7 +31,7 @@ export function QuickSprint() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const project = id ? getProject(id) : null;
-  const draftKey = getDraftKey(id);
+  const draftId = id ?? 'scratch';
   const [presetMinutes, setPresetMinutes] = useState(10);
   const [customMinutes, setCustomMinutes] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
@@ -35,13 +39,40 @@ export function QuickSprint() {
   const [isFinishing, setIsFinishing] = useState(false);
   const [endedByTimer, setEndedByTimer] = useState(false);
   const [draftText, setDraftText] = useState(() => {
+    const draft = getDraft(draftId);
+    if (draft) return draft.text;
     if (project?.sprintText) return project.sprintText;
-    return localStorage.getItem(draftKey) || '';
+    return localStorage.getItem(getDraftKey(id)) || '';
   });
   const [savedUntil, setSavedUntil] = useState<number | null>(null);
   const [currentNudge, setCurrentNudge] = useState('');
   const [nudgesUsed, setNudgesUsed] = useState(0);
   const [showIdleHint, setShowIdleHint] = useState(false);
+
+  // Autosave bookkeeping. Refs hold the latest values so the blur / route-change
+  // / tab-hide flush can persist without re-subscribing listeners on each edit.
+  const draftTextRef = useRef(draftText);
+  draftTextRef.current = draftText;
+  const draftIdRef = useRef(draftId);
+  draftIdRef.current = draftId;
+  const lastSavedRef = useRef(draftText);
+  const suppressFlushRef = useRef(false);
+
+  const markSaved = () => setSavedUntil(Date.now() + SAVED_STAMP_MS);
+
+  // Persist the current buffer immediately if it differs from the last save,
+  // then force any pending debounced write to disk synchronously.
+  // Used by blur, route change (unmount) and visibilitychange → hidden.
+  const flushDraft = () => {
+    if (!suppressFlushRef.current) {
+      const text = draftTextRef.current;
+      if (text !== lastSavedRef.current) {
+        saveDraft(draftIdRef.current, text);
+        lastSavedRef.current = text;
+      }
+    }
+    flushNow();
+  };
 
   useEffect(() => {
     if (!isRunning || isFinishing || remainingSeconds === null) return;
@@ -73,13 +104,42 @@ export function QuickSprint() {
     return () => clearTimeout(timeout);
   }, [savedUntil]);
 
+  // Load the right buffer when the surface changes: the autosaved draft wins
+  // (it is the freshest unsaved work), then the project's committed sprint text,
+  // then any legacy pre-A1 draft.
   useEffect(() => {
-    if (project?.sprintText) {
-      setDraftText(project.sprintText);
-      return;
-    }
-    setDraftText(localStorage.getItem(draftKey) || '');
-  }, [project?.sprintText, draftKey]);
+    const draft = getDraft(draftId);
+    const proj = id ? getProject(id) : null;
+    const loaded = draft ? draft.text : (proj?.sprintText || localStorage.getItem(getDraftKey(id)) || '');
+    setDraftText(loaded);
+    lastSavedRef.current = loaded;
+    suppressFlushRef.current = false;
+  }, [id, draftId]);
+
+  // Debounced autosave: 2s after the last keystroke, persist through the adapter.
+  useEffect(() => {
+    if (draftText === lastSavedRef.current) return;
+    const handle = setTimeout(() => {
+      saveDraft(draftId, draftText);
+      lastSavedRef.current = draftText;
+      markSaved();
+    }, AUTOSAVE_MS);
+    return () => clearTimeout(handle);
+  }, [draftText, draftId]);
+
+  // Flush on tab hide (mobile kills background pages) and on route change/unmount.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushDraft();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      flushDraft();
+    };
+    // flushDraft reads refs, so this listener is registered once for the mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setShowIdleHint(false);
@@ -108,11 +168,12 @@ export function QuickSprint() {
   };
 
   const handleSaveDraft = () => {
-    localStorage.setItem(draftKey, draftText);
+    saveDraft(draftId, draftText);
+    lastSavedRef.current = draftText;
     if (id) {
       setProjectSprintText(id, draftText);
     }
-    setSavedUntil(Date.now() + 12000);
+    markSaved();
   };
 
   const handleGetNudge = () => {
@@ -127,19 +188,24 @@ export function QuickSprint() {
   };
 
   const handleDiscard = () => {
-    localStorage.removeItem(draftKey);
+    suppressFlushRef.current = true;
+    clearDraft(draftId);
+    localStorage.removeItem(getDraftKey(id));
     navigate(id ? `/project/${id}` : '/');
   };
 
   const handleSaveAsProject = () => {
+    suppressFlushRef.current = true;
     if (id) {
       setProjectSprintText(id, draftText);
-      localStorage.removeItem(draftKey);
+      clearDraft(draftId);
+      localStorage.removeItem(getDraftKey(id));
       navigate(`/project/${id}`);
       return;
     }
     const project = createQuickSprintProject(draftText);
-    localStorage.removeItem(draftKey);
+    clearDraft(draftId);
+    localStorage.removeItem(getDraftKey(id));
     navigate(`/project/${project.id}`);
   };
 
@@ -221,6 +287,7 @@ export function QuickSprint() {
         className="form-textarea"
         value={draftText}
         onChange={(e) => setDraftText(e.target.value)}
+        onBlur={flushDraft}
         placeholder="Write without stopping..."
         style={{ minHeight: '320px' }}
       />

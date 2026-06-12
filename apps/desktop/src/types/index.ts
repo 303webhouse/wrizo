@@ -42,6 +42,16 @@ export interface Project {
   deletedAt?: string;
 }
 
+// Autosaved writing buffer (A1). One record per writing surface, keyed by
+// `projectId ?? 'scratch'`. The committed text still lives on Project.sprintText
+// / BeatNote.notes; a draft is the unsaved work-in-progress that must survive a
+// crash or tab close.
+export interface Draft {
+  id: string; // projectId or 'scratch'
+  text: string;
+  updatedAt: string;
+}
+
 // Writing-session instrumentation (A9). The collection is wired through the
 // storage adapter now so sync (W2) has it; recording logic lands with A9.
 export interface SessionLog {
