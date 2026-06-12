@@ -331,3 +331,66 @@ export function clearDraft(id: string): void {
   scheduleFlush('drafts');
   notify();
 }
+
+// --- Sync integration -----------------------------------------------------
+// Apply records pulled from the server into the cache (W2). Locally-dirty
+// records are skipped — unsynced on-device edits always win — and applied
+// records are NOT marked dirty (they came from the server).
+
+export interface RemoteRecords {
+  projects?: Project[];
+  storyPlans?: StoryPlan[];
+  sessions?: SessionLog[];
+  drafts?: Draft[];
+}
+
+function applyCollection<T extends { id: string; updatedAt: string }>(
+  name: CollectionName,
+  collection: T[],
+  remote: T[] | undefined,
+): boolean {
+  if (!remote || remote.length === 0) return false;
+  let changed = false;
+  for (const rec of remote) {
+    if (!rec || !rec.id) continue;
+    if (dirty[name].has(rec.id)) continue; // local unsynced edit wins
+    const index = collection.findIndex(r => r.id === rec.id);
+    if (index < 0) {
+      collection.push(clone(rec));
+      changed = true;
+    } else if (!collection[index].updatedAt || rec.updatedAt > collection[index].updatedAt) {
+      collection[index] = clone(rec);
+      changed = true;
+    }
+  }
+  if (changed) scheduleFlush(name);
+  return changed;
+}
+
+export function applyRemoteRecords(remote: RemoteRecords): void {
+  let changed = false;
+  changed = applyCollection('projects', cache.projects, remote.projects) || changed;
+  changed = applyCollection('storyPlans', cache.storyPlans, remote.storyPlans) || changed;
+  changed = applyCollection('sessions', cache.sessions, remote.sessions) || changed;
+  changed = applyCollection('drafts', cache.drafts, remote.drafts) || changed;
+  if (changed) notify();
+}
+
+// Wipe all local data (cache + dirty + localStorage). Used on logout so the
+// next account starts from a clean slate and never sees another user's cache.
+export function resetLocalData(): void {
+  (Object.keys(KEYS) as CollectionName[]).forEach(name => {
+    (cache[name] as unknown[]).length = 0;
+    dirty[name].clear();
+    if (flushTimers[name] !== null) {
+      clearTimeout(flushTimers[name]!);
+      flushTimers[name] = null;
+    }
+    try {
+      localStorage.removeItem(KEYS[name]);
+    } catch {
+      // ignore
+    }
+  });
+  notify();
+}

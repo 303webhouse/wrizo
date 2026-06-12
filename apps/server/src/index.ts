@@ -4,6 +4,7 @@ import { env } from './env';
 import { runMigrations } from './migrate';
 import { sessionMiddleware } from './session';
 import { authRouter } from './auth';
+import { syncRouter } from './sync';
 
 const distWeb = resolve(__dirname, '../../desktop/dist-web');
 
@@ -25,7 +26,7 @@ app.use(sessionMiddleware);
 
 app.use('/auth', authRouter);
 
-// W2 mounts /api/sync here.
+app.use('/api', syncRouter);
 
 // Static app + SPA fallback. API/auth paths never fall through to index.html.
 // (Express 5 rejects the bare '*' route pattern, so use a path-less middleware.)
