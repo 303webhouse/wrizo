@@ -5,12 +5,18 @@ out/
 .DS_Store
 node_modules/
 dist/
+dist-web/
 out/
 *.log
 .DS_Store
 .claude/
 nul
 
-# Stray files from other projects — must never re-enter this repo
+# Secrets â€” never commit. Server reads apps/server/.env locally.
+.env
+.env.*
+!.env.example
+
+# Stray files from other projects ï¿½ must never re-enter this repo
 backend/
 PROJECT_RULES.md
