@@ -10,3 +10,7 @@ out/
 .DS_Store
 .claude/
 nul
+
+# Stray files from other projects — must never re-enter this repo
+backend/
+PROJECT_RULES.md
