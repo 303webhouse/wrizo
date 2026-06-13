@@ -1,0 +1,13 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ember">
+  <defs>
+    <radialGradient id="emberglow" cx="0.46" cy="0.62" r="0.62">
+      <stop offset="0%" stop-color="#FFE6B8"/>
+      <stop offset="38%" stop-color="#F4983F"/>
+      <stop offset="72%" stop-color="#E06E27"/>
+      <stop offset="100%" stop-color="#93340F"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(-12.95,-12.95) scale(0.8727)">
+    <path d="M47 75 C38 62 44 46 56 38 C65 33 63 24 55 25 C60 29 57 40 54 49 C51 58 58 68 55 76 C53 79 49 78 47 75 Z" fill="url(#emberglow)"/>
+  </g>
+</svg>
