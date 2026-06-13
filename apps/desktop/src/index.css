@@ -54,6 +54,12 @@
   /* Atmosphere (branding §5) — the warm pool of lamplight. */
   --lamp-glow: radial-gradient(135% 95% at 50% -8%, #36240F 0%, #251810 38%, #170F0A 70%, #100B07 100%);
 
+  /* Ember accent (branding §4) — the "alive / glowing" signal, NOT an action
+     color. Brass stays the one thing you click; ember only marks live/finish. */
+  --ember:        #E0712C;
+  --ember-bright: #F4983F;
+  --ember-deep:   #93340F;
+
   /* Legacy aliases — keep untouched screens working during migration.
      Removed in D8 once every screen uses the new tokens directly. */
   --color-bg: var(--ink-950);

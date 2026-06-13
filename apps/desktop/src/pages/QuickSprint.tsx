@@ -396,7 +396,8 @@ export function QuickSprint() {
       {/* Timer hairline drains while running */}
       {remainingSeconds !== null && (
         <div className="hairline-timer" style={{ marginBottom: 16 }}>
-          <div className="hairline-timer__fill" style={{ width: `${fillPct}%` }} />
+          {/* idle = brass; warms to ember once the sprint is live (branding §4) */}
+          <div className="hairline-timer__fill" style={{ width: `${fillPct}%`, background: isRunning ? 'var(--ember)' : undefined }} />
         </div>
       )}
       {remainingSeconds === null && <div style={{ height: 16 }} />}
@@ -490,11 +491,15 @@ export function QuickSprint() {
           style={{ marginTop: 16, animation: reducedMotion() ? undefined : 'finish-rise var(--t-moment) var(--ease)' }}
         >
           <div className="card-title">
-            {finishStats.byTimer ? 'Time.' : `${displayWords} words down.`}
+            {finishStats.byTimer ? (
+              'Time.'
+            ) : (
+              <><span style={{ color: 'var(--ember)' }}>{displayWords}</span> words down.</>
+            )}
           </div>
           {finishStats.byTimer && (
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-mid)', marginTop: 4 }}>
-              {displayWords} words in {finishStats.minutes} minutes
+              <span style={{ color: 'var(--ember)' }}>{displayWords}</span> words in {finishStats.minutes} minutes
             </div>
           )}
 
