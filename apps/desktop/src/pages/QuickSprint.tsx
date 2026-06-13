@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
-  clearDraft, createQuickSprintProject, flushNow, getDraft, getProject,
-  getStoryPlanByProjectId, saveDraft, setBeatStatus, setCurrentBeat, setProjectSprintText,
+  clearDraft, createQuickSprintProject, flushNow, generateId, getDraft, getProject,
+  getStoryPlanByProjectId, saveDraft, saveSession, setBeatStatus, setCurrentBeat, setProjectSprintText,
 } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 
@@ -99,6 +99,9 @@ export function QuickSprint() {
   const lastKeystrokeMsRef = useRef(0);
   const lockoutCharBaselineRef = useRef(0);
   const accumTypingSecRef = useRef(0);
+  // Session instrumentation (A9).
+  const sessionStartedAtRef = useRef(new Date().toISOString());
+  const firstKeystrokeAtRef = useRef<string | null>(null);
 
   const markSaved = () => setSavedUntil(Date.now() + SAVED_STAMP_MS);
 
@@ -260,8 +263,25 @@ export function QuickSprint() {
 
   const handleChange = (value: string) => {
     hasTypedRef.current = true;
+    if (firstKeystrokeAtRef.current === null) firstKeystrokeAtRef.current = new Date().toISOString();
     lastKeystrokeMsRef.current = Date.now();
     setDraftText(value);
+  };
+
+  // Record a writing-session row on sprint save (A9).
+  const recordSession = (projectId: string) => {
+    const now = new Date();
+    const startedMs = new Date(sessionStartedAtRef.current).getTime();
+    saveSession({
+      id: generateId(),
+      projectId,
+      startedAt: sessionStartedAtRef.current,
+      firstKeystrokeAt: firstKeystrokeAtRef.current,
+      endedAt: now.toISOString(),
+      words: Math.max(0, wordCount(draftTextRef.current) - sessionStartWordsRef.current),
+      durationSec: Math.max(0, Math.round((now.getTime() - startedMs) / 1000)),
+      updatedAt: now.toISOString(),
+    });
   };
 
   const handleSaveDraft = () => {
@@ -307,17 +327,12 @@ export function QuickSprint() {
   const handleSaveToProject = () => {
     suppressFlushRef.current = true;
     advanceBeatIfMarked();
-    if (id) {
-      setProjectSprintText(id, draftText);
-      clearDraft(draftId);
-      localStorage.removeItem(getDraftKey(id));
-      navigate(`/project/${id}`);
-      return;
-    }
-    const created = createQuickSprintProject(draftText);
+    const projectId = id ?? createQuickSprintProject(draftText).id;
+    if (id) setProjectSprintText(id, draftText);
+    recordSession(projectId);
     clearDraft(draftId);
     localStorage.removeItem(getDraftKey(id));
-    navigate(`/project/${created.id}`);
+    navigate(`/project/${projectId}`);
   };
 
   if (id && !project) {
