@@ -106,40 +106,54 @@ export function StructureWizard() {
 
   return (
     <div className="page">
-      <Link to={`/project/${id}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Back to Project
+      <Link to={`/project/${id}`} className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
+        &larr; Back to project
       </Link>
 
-      <h1 className="page-title">Structure Wizard</h1>
-      <p className="page-subtitle">
-        {step === 'questions' && `Question ${currentQuestion + 1} of ${questions.length}`}
-        {step === 'recommendation' && 'Our Recommendation'}
-        {step === 'selection' && 'Confirm Your Choice'}
-      </p>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>Structure wizard</div>
+      <h1 className="page-title" style={{ marginBottom: '0.5rem' }}>
+        {step === 'questions' && 'A few quick questions'}
+        {step === 'recommendation' && "The librarian's pick"}
+        {step === 'selection' && 'Confirm your choice'}
+      </h1>
 
       {step === 'questions' && (
         <div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>{question.question}</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {question.options.map(option => (
-              <button
-                key={option.value}
-                className="card"
-                onClick={() => handleAnswer(question.id, option.value)}
-                style={{
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  borderColor: answers[question.id] === option.value ? 'var(--color-primary)' : 'var(--color-border)',
-                }}
-              >
-                <div className="card-title">{option.label}</div>
-                <div className="card-description">{option.description}</div>
-              </button>
+          <div style={{ display: 'flex', gap: 8, marginBottom: '1.5rem' }}>
+            {questions.map((q, i) => (
+              <span
+                key={q.id}
+                className={`status-dot ${i < currentQuestion ? 'status-dot--done' : i === currentQuestion ? 'status-dot--started' : 'status-dot--empty'}`}
+                aria-label={`question ${i + 1} of ${questions.length}`}
+              />
             ))}
           </div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: '1.4rem', marginBottom: '1.5rem' }}>
+            {question.question}
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {question.options.map(option => {
+              const selected = answers[question.id] === option.value;
+              return (
+                <button
+                  key={option.value}
+                  className="card"
+                  onClick={() => handleAnswer(question.id, option.value)}
+                  style={{
+                    cursor: 'pointer', textAlign: 'left', width: '100%', marginBottom: 0,
+                    borderColor: selected ? 'var(--brass)' : 'var(--ink-border)',
+                    borderLeft: selected ? '3px solid var(--brass)' : '1px solid var(--ink-border)',
+                  }}
+                >
+                  <div className="card-title">{option.label}</div>
+                  <div className="card-description">{option.description}</div>
+                </button>
+              );
+            })}
+          </div>
           {currentQuestion > 0 && (
-            <button className="btn btn-secondary" onClick={handleBack} style={{ marginTop: '1.5rem' }}>
-              Previous Question
+            <button className="btn-quiet" onClick={handleBack} style={{ marginTop: '1.5rem' }}>
+              &larr; Previous question
             </button>
           )}
         </div>
@@ -147,10 +161,10 @@ export function StructureWizard() {
 
       {step === 'recommendation' && recommendation && (
         <div>
-          <div className="card" style={{ borderColor: 'var(--color-primary)', marginBottom: '1rem' }}>
+          <div className="card" style={{ borderLeft: '3px solid var(--brass)', marginBottom: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
               <div>
-                <span className="tag" style={{ backgroundColor: 'var(--color-primary)', marginBottom: '0.5rem' }}>Recommended</span>
+                <span className="eyebrow">The librarian&rsquo;s pick</span>
                 <div className="card-title" style={{ marginTop: '0.5rem' }}>{recommendation.primary.name}</div>
                 <div className="card-description">{recommendation.primary.description}</div>
                 <div style={{ marginTop: '0.5rem' }}>
@@ -164,7 +178,7 @@ export function StructureWizard() {
               </div>
             </div>
             <button
-              className="btn btn-primary"
+              className="btn-brass"
               onClick={() => handleSelectFramework(recommendation.primary)}
               style={{ marginTop: '1rem' }}
             >
@@ -189,7 +203,7 @@ export function StructureWizard() {
               </div>
             </div>
             <button
-              className="btn btn-secondary"
+              className="btn-ghost"
               onClick={() => handleSelectFramework(recommendation.alternate)}
               style={{ marginTop: '1rem' }}
             >
@@ -198,16 +212,15 @@ export function StructureWizard() {
           </div>
 
           <div style={{ marginTop: '2rem' }}>
-            <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>Or choose another framework:</h3>
+            <div className="eyebrow" style={{ marginBottom: '0.75rem' }}>See all frameworks</div>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {allFrameworks
                 .filter(f => f.id !== recommendation.primary.id && f.id !== recommendation.alternate.id)
                 .map(framework => (
                   <button
                     key={framework.id}
-                    className="btn btn-secondary"
+                    className="btn-quiet"
                     onClick={() => handleSelectFramework(framework)}
-                    style={{ fontSize: '0.875rem' }}
                   >
                     {framework.name}
                   </button>
@@ -215,8 +228,8 @@ export function StructureWizard() {
             </div>
           </div>
 
-          <button className="btn btn-secondary" onClick={handleBack} style={{ marginTop: '2rem' }}>
-            Back to Questions
+          <button className="btn-quiet" onClick={handleBack} style={{ marginTop: '2rem', paddingLeft: 0 }}>
+            &larr; Back to questions
           </button>
         </div>
       )}
@@ -227,23 +240,11 @@ export function StructureWizard() {
             <div className="card-title" style={{ marginBottom: '1rem' }}>{selectedFramework.name}</div>
             <div className="card-description" style={{ marginBottom: '1rem' }}>{selectedFramework.description}</div>
 
-            <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>Beats in this framework:</h3>
-            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-              Preview only — you’ll choose beats in the Structure Board.
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="eyebrow" style={{ marginBottom: '0.75rem' }}>Preview — you&rsquo;ll fill these in next</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--ink-800)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
               {selectedFramework.beats.map((beat, index) => (
-                <div
-                  key={beat.id}
-                  style={{
-                    padding: '0.5rem',
-                    backgroundColor: 'var(--color-bg)',
-                    borderRadius: '4px',
-                    border: '1px solid var(--color-border)',
-                    cursor: 'default',
-                  }}
-                >
-                  <span style={{ color: 'var(--color-text-muted)', marginRight: '0.5rem' }}>{index + 1}.</span>
+                <div key={beat.id} style={{ fontSize: '0.9rem', color: 'var(--text-mid)' }}>
+                  <span style={{ color: 'var(--text-low)', marginRight: '0.5rem', fontFamily: 'var(--font-mono)' }}>{index + 1}.</span>
                   {beat.name}
                 </div>
               ))}
@@ -251,11 +252,11 @@ export function StructureWizard() {
           </div>
 
           <div className="button-group">
-            <button className="btn btn-primary" onClick={handleConfirm}>
-              Start Writing with {selectedFramework.name}
+            <button className="btn-brass" onClick={handleConfirm}>
+              Start writing with {selectedFramework.name}
             </button>
-            <button className="btn btn-secondary" onClick={handleBack}>
-              Choose Different Framework
+            <button className="btn-quiet" onClick={handleBack}>
+              Choose a different framework
             </button>
           </div>
         </div>

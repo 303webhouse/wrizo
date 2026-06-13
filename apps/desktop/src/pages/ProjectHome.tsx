@@ -12,64 +12,78 @@ export function ProjectHome() {
     return <Navigate to="/" replace />;
   }
 
-  const hasStoryPlan = !!storyPlan;
-  const hasSprintText = !!project.sprintText?.trim();
   const beatNotes = storyPlan?.beatNotes || [];
   const touchedBeats = beatNotes.filter(bn => bn.status === 'started' || bn.status === 'complete').length;
   const doneBeats = beatNotes.filter(bn => bn.status === 'complete').length;
   const totalBeats = beatNotes.length;
+  const hasSprint = !!project.sprintText?.trim();
+  const currentBeat = framework?.beats.find(b => b.id === storyPlan?.currentBeatId);
+
+  // One brass action, computed from state.
+  const primary = storyPlan && currentBeat
+    ? { label: `Next beat: ${currentBeat.name}`, to: `/project/${id}/beat` }
+    : hasSprint
+      ? { label: 'Resume sprint', to: `/project/${id}/sprint` }
+      : { label: 'Choose a structure', to: `/project/${id}/wizard` };
+
+  const fillPct = totalBeats > 0 ? (touchedBeats / totalBeats) * 100 : 0;
 
   return (
-    <div className="page">
-      <Link to="/" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Back to Launcher
+    <div className="page" style={{ maxWidth: 720 }}>
+      <Link to="/" className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
+        &larr; Back to launcher
       </Link>
 
-      <h1 className="page-title">{project.title}</h1>
-      <p className="page-subtitle">
-        {project.type === 'creative' ? 'Creative Project' : 'Academic Project'}
-      </p>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>
+        {project.type === 'creative' ? 'Creative project' : 'Academic project'}
+      </div>
+      <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>{project.title}</h1>
 
-      {hasStoryPlan && framework && (
-        <div className="card" style={{ marginBottom: '2rem' }}>
-          <div className="card-title">Story Structure</div>
-          <div className="card-description" style={{ marginBottom: '1rem' }}>
-            Using {framework.name} — {touchedBeats} of {totalBeats} beats touched · {doneBeats} done
-          </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <Link to={`/project/${id}/beat`} className="btn btn-primary">
-              Continue Writing
-            </Link>
-            <Link to={`/project/${id}/board`} className="btn btn-secondary">
-              View Structure Board
-            </Link>
-          </div>
-        </div>
-      )}
+      <div style={{ marginBottom: '2rem' }}>
+        <Link to={primary.to} className="btn-brass">{primary.label}</Link>
+      </div>
 
-      {!hasStoryPlan && (
+      {storyPlan && framework && (
         <div className="card">
-          <div className="card-title">Get Started</div>
-          <div className="card-description" style={{ marginBottom: '1rem' }}>
-            Choose a structure now or start writing and organize later.
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+            <div className="card-title" style={{ fontSize: '1rem' }}>{framework.name}</div>
+            <Link to={`/project/${id}/board`} className="btn-quiet">View board</Link>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link to={`/project/${id}/wizard`} className="btn btn-primary">
-              Start Structure Wizard
-            </Link>
-            <Link to={`/project/${id}/sprint`} className="btn btn-primary">
-              Start Writing (Organize Later)
-            </Link>
+          <div style={{ color: 'var(--text-mid)', fontSize: 13, margin: '4px 0 12px' }}>
+            {touchedBeats} of {totalBeats} beats touched · {doneBeats} done
+          </div>
+          <div className="ink-line">
+            <div className="ink-line__fill" style={{ width: `${fillPct}%` }} />
           </div>
         </div>
       )}
 
-      {hasSprintText && (
-        <div className="card" style={{ marginTop: '1.5rem' }}>
-          <div className="card-title">Quick Sprint Draft</div>
-          <div className="card-description" style={{ whiteSpace: 'pre-wrap' }}>
-            {project.sprintText}
+      {!storyPlan && (
+        <div className="card">
+          <div className="card-title">Get started</div>
+          <div className="card-description" style={{ marginBottom: '1rem' }}>
+            Choose a structure now, or just start writing and organize later.
           </div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Link to={`/project/${id}/wizard`} className="btn-ghost">Choose a structure</Link>
+            <Link to={`/project/${id}/sprint`} className="btn-ghost">Start writing</Link>
+          </div>
+        </div>
+      )}
+
+      {hasSprint && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Sprint draft</div>
+          <div className="paper-page" style={{ position: 'relative', maxHeight: '11rem', overflow: 'hidden' }}>
+            <div style={{ whiteSpace: 'pre-wrap' }}>{project.sprintText}</div>
+            <div style={{
+              position: 'absolute', left: 0, right: 0, bottom: 0, height: '4rem',
+              background: 'linear-gradient(to bottom, transparent, var(--paper))',
+            }} />
+          </div>
+          <Link to={`/project/${id}/sprint`} className="btn-quiet" style={{ display: 'inline-block', marginTop: 8, paddingLeft: 0 }}>
+            Open sprint
+          </Link>
         </div>
       )}
     </div>
