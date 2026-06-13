@@ -427,6 +427,34 @@ h1, h2, h3 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Board (D6): secondary card actions reveal on hover/focus, always shown on touch. */
+.board-card__reveal {
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.board-card:hover .board-card__reveal,
+.board-card:focus-within .board-card__reveal {
+  opacity: 1;
+}
+@media (hover: none) {
+  .board-card__reveal { opacity: 1; }
+}
+
+/* NEXT bookmark tab breaking the card's top edge. */
+.next-bookmark {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  background: var(--brass);
+  color: var(--on-brass);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
 /* Focus: 2px brass ring on keyboard focus, never removed without replacement.
    Placed last so it wins over legacy .form-*:focus { outline: none }. */
 button:focus-visible,

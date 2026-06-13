@@ -15,7 +15,8 @@ export function ProjectHome() {
   const hasStoryPlan = !!storyPlan;
   const hasSprintText = !!project.sprintText?.trim();
   const beatNotes = storyPlan?.beatNotes || [];
-  const completedBeats = beatNotes.filter(bn => bn.status === 'started').length;
+  const touchedBeats = beatNotes.filter(bn => bn.status === 'started' || bn.status === 'complete').length;
+  const doneBeats = beatNotes.filter(bn => bn.status === 'complete').length;
   const totalBeats = beatNotes.length;
 
   return (
@@ -33,7 +34,7 @@ export function ProjectHome() {
         <div className="card" style={{ marginBottom: '2rem' }}>
           <div className="card-title">Story Structure</div>
           <div className="card-description" style={{ marginBottom: '1rem' }}>
-            Using {framework.name} ({completedBeats}/{totalBeats} beats with notes)
+            Using {framework.name} — {touchedBeats} of {totalBeats} beats touched · {doneBeats} done
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <Link to={`/project/${id}/beat`} className="btn btn-primary">
