@@ -13,6 +13,9 @@ importers:
       '@fontsource-variable/figtree':
         specifier: ^5.2.10
         version: 5.2.10
+      '@fontsource-variable/mulish':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource-variable/newsreader':
         specifier: ^5.2.10
         version: 5.2.10
@@ -333,6 +336,9 @@ packages:
 
   '@fontsource-variable/figtree@5.2.10':
     resolution: {integrity: sha512-a5Gumbpy3mdd+Yg31g6Qb7CmjYbrfyutJa3bWfP5q8A4GclIOwX7mI+ZuSHsJnw/mHvW6r9oh1AHJcJTIxK4JA==}
+
+  '@fontsource-variable/mulish@5.2.8':
+    resolution: {integrity: sha512-WK2SG2nQhQD+9dPOEw6V6tFgs8b5SodnUB5fuPOLj+2HIR2uPlwj+sUHMfMDGkz57us6xhEiJDaxRy8omad/DA==}
 
   '@fontsource-variable/newsreader@5.2.10':
     resolution: {integrity: sha512-MdI2iRwrqWpMOU/2aV2BgfZ4dJNlj/XlYaY8Zb7t87mWqHskYW0XiUANkt1cyOCiEfW2VQ0bQ5vZgGPp6B2B4w==}
@@ -1716,6 +1722,8 @@ snapshots:
     optional: true
 
   '@fontsource-variable/figtree@5.2.10': {}
+
+  '@fontsource-variable/mulish@5.2.8': {}
 
   '@fontsource-variable/newsreader@5.2.10': {}
 
