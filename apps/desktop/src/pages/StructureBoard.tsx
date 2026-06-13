@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
-import { getProject, getStoryPlanByProjectId, setCurrentBeat } from '../store/persistence';
+import { getProject, getStoryPlanByProjectId, setCurrentBeat, setBeatStatus } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 
 export function StructureBoard() {
@@ -14,216 +14,118 @@ export function StructureBoard() {
     return <Navigate to="/" replace />;
   }
 
-  const handleSetAsNextBeat = (beatId: string) => {
+  const refresh = () => setStoryPlan(getStoryPlanByProjectId(id!));
+
+  const handleSetAsNext = (beatId: string) => {
     setCurrentBeat(storyPlan.id, beatId);
-    const refreshedPlan = getStoryPlanByProjectId(id!);
-    setStoryPlan(refreshedPlan);
+    refresh();
   };
 
-  const handleGoToBeat = (beatId: string) => {
+  const handleOpen = (beatId: string) => {
     setCurrentBeat(storyPlan.id, beatId);
     navigate(`/project/${id}/beat`);
   };
 
-  // Group beats by act if available
+  const handleToggleDone = (beatId: string, isDone: boolean, hasNotes: boolean) => {
+    setBeatStatus(storyPlan.id, beatId, isDone ? (hasNotes ? 'started' : 'empty') : 'complete');
+    refresh();
+  };
+
+  const currentBeat = framework.beats.find(b => b.id === storyPlan.currentBeatId);
+
   const beatsByAct = framework.beats.reduce((acc, beat) => {
     const act = beat.act || 0;
     if (!acc[act]) acc[act] = [];
     acc[act].push(beat);
     return acc;
   }, {} as Record<number, typeof framework.beats>);
-
   const acts = Object.keys(beatsByAct).map(Number).sort((a, b) => a - b);
   const hasActs = acts.some(a => a !== 0);
 
+  const renderCard = (beat: typeof framework.beats[number]) => {
+    const beatNote = storyPlan.beatNotes.find(bn => bn.beatId === beat.id);
+    const status = beatNote?.status || 'empty';
+    const notes = beatNote?.notes || [];
+    const isCurrent = beat.id === storyPlan.currentBeatId;
+    const isDone = status === 'complete';
+    const dotClass = isDone ? 'status-dot--done' : status === 'started' ? 'status-dot--started' : 'status-dot--empty';
+
+    return (
+      <div key={beat.id} className="card board-card" style={{ position: 'relative', marginBottom: 0 }}>
+        {isCurrent && <div className="next-bookmark">NEXT</div>}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8, marginBottom: '0.5rem' }}>
+          <div className="card-title" style={{ fontSize: '1rem' }}>{beat.name}</div>
+          <span className={`status-dot ${dotClass}`} title={status} aria-label={status} style={{ marginTop: 6, flexShrink: 0 }} />
+        </div>
+
+        {notes.length > 0 ? (
+          <ul style={{ paddingLeft: '1.25rem', margin: '0 0 1rem', fontSize: '0.875rem', color: 'var(--text-mid)' }}>
+            {notes.slice(0, 3).map((note, i) => (
+              <li key={i} style={{ marginBottom: '0.25rem' }}>
+                {note.length > 60 ? note.substring(0, 60) + '…' : note}
+              </li>
+            ))}
+            {notes.length > 3 && (
+              <li style={{ color: 'var(--text-low)', fontStyle: 'italic' }}>+{notes.length - 3} more</li>
+            )}
+          </ul>
+        ) : (
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-low)', fontStyle: 'italic', marginBottom: '1rem' }}>
+            No notes yet — one bullet is enough.
+          </div>
+        )}
+
+        <button type="button" className="btn-ghost" style={{ width: '100%' }} onClick={() => handleOpen(beat.id)}>
+          Open
+        </button>
+
+        <div className="board-card__reveal" style={{ display: 'flex', gap: 12, marginTop: 8, justifyContent: 'space-between' }}>
+          {!isCurrent ? (
+            <button type="button" className="btn-quiet" onClick={() => handleSetAsNext(beat.id)}>Set as next</button>
+          ) : <span />}
+          <button type="button" className="btn-quiet" onClick={() => handleToggleDone(beat.id, isDone, notes.length > 0)}>
+            {isDone ? 'Reopen' : 'Mark done'}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const grid = (beats: typeof framework.beats) => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+      {beats.map(renderCard)}
+    </div>
+  );
+
   return (
-    <div className="page" style={{ maxWidth: '1000px' }}>
-      <Link to={`/project/${id}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Back to Project
+    <div className="page" style={{ maxWidth: 1000 }}>
+      <Link to={`/project/${id}`} className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
+        &larr; Back to project
       </Link>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <h1 className="page-title" style={{ marginBottom: 0 }}>Structure Board</h1>
-        <Link to={`/project/${id}/beat`} className="btn btn-primary">
-          Continue Writing
-        </Link>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+        <h1 className="page-title" style={{ marginBottom: 0 }}>{project.title}</h1>
+        {currentBeat && (
+          <Link to={`/project/${id}/beat`} className="btn-brass">Next beat: {currentBeat.name}</Link>
+        )}
       </div>
-
-      <p className="page-subtitle">{framework.name} &middot; {project.title}</p>
+      <p className="page-subtitle" style={{ marginBottom: '2rem' }}>{framework.name}</p>
 
       {hasActs ? (
-        // Display by acts
         acts.map(act => (
-          <div key={act} style={{ marginBottom: '2rem' }}>
+          <div key={act} style={{ marginBottom: '2.5rem' }}>
             {act > 0 && (
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>
-                Act {act}
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
+                <span className="eyebrow">Act {act}</span>
+                <span style={{ flex: 1, height: 1, background: 'var(--ink-border)' }} />
+              </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-              {beatsByAct[act].map(beat => {
-                const beatNote = storyPlan.beatNotes.find(bn => bn.beatId === beat.id);
-                const status = beatNote?.status || 'empty';
-                const isCurrentBeat = beat.id === storyPlan.currentBeatId;
-
-                return (
-                  <div
-                    key={beat.id}
-                    className="card"
-                    style={{
-                      borderColor: isCurrentBeat ? 'var(--color-primary)' : 'var(--color-border)',
-                      position: 'relative',
-                    }}
-                  >
-                    {isCurrentBeat && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '-0.5rem',
-                        right: '0.75rem',
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'white',
-                        fontSize: '0.7rem',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: '4px',
-                      }}>
-                        NEXT
-                      </div>
-                    )}
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                      <div className="card-title" style={{ fontSize: '1rem' }}>{beat.name}</div>
-                      <span className={`status-${status}`} style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                        {status}
-                      </span>
-                    </div>
-
-                    {beatNote && beatNote.notes.length > 0 ? (
-                      <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-                        <ul style={{ paddingLeft: '1.25rem', margin: 0 }}>
-                          {beatNote.notes.slice(0, 3).map((note, i) => (
-                            <li key={i} style={{ marginBottom: '0.25rem' }}>
-                              {note.length > 60 ? note.substring(0, 60) + '...' : note}
-                            </li>
-                          ))}
-                          {beatNote.notes.length > 3 && (
-                            <li style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
-                              +{beatNote.notes.length - 3} more
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', fontStyle: 'italic', marginBottom: '1rem' }}>
-                        No notes yet
-                      </div>
-                    )}
-
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        className="btn btn-primary"
-                        style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
-                        onClick={() => handleGoToBeat(beat.id)}
-                      >
-                        Edit
-                      </button>
-                      {!isCurrentBeat && (
-                        <button
-                          className="btn btn-secondary"
-                          style={{ padding: '0.5rem', fontSize: '0.8rem' }}
-                          onClick={() => handleSetAsNextBeat(beat.id)}
-                        >
-                          Set as Next
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {grid(beatsByAct[act])}
           </div>
         ))
       ) : (
-        // Display flat list
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-          {framework.beats.map(beat => {
-            const beatNote = storyPlan.beatNotes.find(bn => bn.beatId === beat.id);
-            const status = beatNote?.status || 'empty';
-            const isCurrentBeat = beat.id === storyPlan.currentBeatId;
-
-            return (
-              <div
-                key={beat.id}
-                className="card"
-                style={{
-                  borderColor: isCurrentBeat ? 'var(--color-primary)' : 'var(--color-border)',
-                  position: 'relative',
-                }}
-              >
-                {isCurrentBeat && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '-0.5rem',
-                    right: '0.75rem',
-                    backgroundColor: 'var(--color-primary)',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '4px',
-                  }}>
-                    NEXT
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                  <div className="card-title" style={{ fontSize: '1rem' }}>{beat.name}</div>
-                  <span className={`status-${status}`} style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                    {status}
-                  </span>
-                </div>
-
-                {beatNote && beatNote.notes.length > 0 ? (
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-                    <ul style={{ paddingLeft: '1.25rem', margin: 0 }}>
-                      {beatNote.notes.slice(0, 3).map((note, i) => (
-                        <li key={i} style={{ marginBottom: '0.25rem' }}>
-                          {note.length > 60 ? note.substring(0, 60) + '...' : note}
-                        </li>
-                      ))}
-                      {beatNote.notes.length > 3 && (
-                        <li style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
-                          +{beatNote.notes.length - 3} more
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', fontStyle: 'italic', marginBottom: '1rem' }}>
-                    No notes yet
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    className="btn btn-primary"
-                    style={{ flex: 1, padding: '0.5rem', fontSize: '0.8rem' }}
-                    onClick={() => handleGoToBeat(beat.id)}
-                  >
-                    Edit
-                  </button>
-                  {!isCurrentBeat && (
-                    <button
-                      className="btn btn-secondary"
-                      style={{ padding: '0.5rem', fontSize: '0.8rem' }}
-                      onClick={() => handleSetAsNextBeat(beat.id)}
-                    >
-                      Set as Next
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        grid(framework.beats)
       )}
     </div>
   );

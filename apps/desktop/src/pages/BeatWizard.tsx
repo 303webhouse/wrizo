@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { getProject, getStoryPlanByProjectId, updateBeatNotes, setCurrentBeat, flushNow } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
-import type { Beat } from '../types';
 
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
@@ -10,23 +9,12 @@ const SAVED_STAMP_MS = 2000;
 function isLikelySentence(line: string): boolean {
   const trimmed = line.trim();
   if (!trimmed) return false;
-
-  // Check if line ends with sentence-ending punctuation
   const endsWithPunctuation = /[.!?]$/.test(trimmed);
-
-  // Check if line starts with capital and has multiple words
   const startsWithCapital = /^[A-Z]/.test(trimmed);
   const wordCount = trimmed.split(/\s+/).length;
-
-  // Check for common sentence patterns
   const hasSubjectVerb = /^(The|A|An|I|We|They|He|She|It|You|My|Your|His|Her|Their|This|That)\s+\w+/i.test(trimmed);
-
-  // A line is likely a sentence if:
-  // - It ends with punctuation AND has 5+ words
-  // - OR it starts with capital, has subject-verb pattern, and has 4+ words
   if (endsWithPunctuation && wordCount >= 5) return true;
   if (startsWithCapital && hasSubjectVerb && wordCount >= 4 && endsWithPunctuation) return true;
-
   return false;
 }
 
@@ -52,8 +40,7 @@ export function BeatWizard() {
   const currentBeatIndex = framework?.beats.findIndex(b => b.id === currentBeatId) ?? -1;
   const currentBeatNote = storyPlan?.beatNotes.find(bn => bn.beatId === currentBeatId);
 
-  // Autosave bookkeeping. Refs hold the latest values so the blur / route-change
-  // / tab-hide flush can persist without re-subscribing listeners on each edit.
+  // Autosave bookkeeping (A1).
   const notesTextRef = useRef('');
   notesTextRef.current = notesText;
   const storyPlanIdRef = useRef(storyPlan?.id);
@@ -73,9 +60,7 @@ export function BeatWizard() {
   useEffect(() => {
     const warnings = checkForSentences(notesText);
     setSentenceWarnings(warnings);
-    if (warnings.length === 0) {
-      setHasAcknowledgedWarning(false);
-    }
+    if (warnings.length === 0) setHasAcknowledgedWarning(false);
   }, [notesText]);
 
   useEffect(() => {
@@ -89,9 +74,7 @@ export function BeatWizard() {
     return () => clearTimeout(timeout);
   }, [savedUntil]);
 
-  // Persist the current notes immediately if changed since the last save.
-  // Bypasses the sentence-warning gate — autosave never loses words.
-  // Used by blur, route change (unmount) and visibilitychange → hidden.
+  // Persist notes if changed, then force pending writes to disk (A1).
   const flushNotes = () => {
     const text = notesTextRef.current;
     const planId = storyPlanIdRef.current;
@@ -104,7 +87,6 @@ export function BeatWizard() {
     flushNow();
   };
 
-  // Debounced autosave: 2s after the last keystroke, persist through the adapter.
   useEffect(() => {
     if (!currentBeatId || notesText === lastSavedNotesRef.current) return;
     const planId = storyPlan?.id;
@@ -118,7 +100,6 @@ export function BeatWizard() {
     return () => clearTimeout(handle);
   }, [notesText, currentBeatId, storyPlan]);
 
-  // Flush on tab hide (mobile kills background pages) and on route change/unmount.
   useEffect(() => {
     const onVisibility = () => {
       if (document.visibilityState === 'hidden') flushNotes();
@@ -128,7 +109,6 @@ export function BeatWizard() {
       document.removeEventListener('visibilitychange', onVisibility);
       flushNotes();
     };
-    // flushNotes reads refs, so this listener is registered once for the mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -138,39 +118,30 @@ export function BeatWizard() {
 
   const handleSave = (showFeedback = false) => {
     if (!storyPlan || !currentBeatId) return;
-
     const notes = notesText.split('\n').map(line => line.trim()).filter(line => line);
     updateBeatNotes(storyPlan.id, currentBeatId, notes);
     lastSavedNotesRef.current = notesText;
+    setStoryPlan(getStoryPlanByProjectId(id!));
+    if (showFeedback) setSavedUntil(Date.now() + SAVED_STAMP_MS);
+  };
 
-    // Refresh story plan from storage
-    const refreshedPlan = getStoryPlanByProjectId(id!);
-    setStoryPlan(refreshedPlan);
-
-    if (showFeedback) {
-      setSavedUntil(Date.now() + SAVED_STAMP_MS);
-    }
+  const jumpToBeat = (beatId: string) => {
+    handleSave();
+    setCurrentBeat(storyPlan.id, beatId);
+    setStoryPlan(getStoryPlanByProjectId(id!));
   };
 
   const handleNext = () => {
     handleSave();
-
     if (currentBeatIndex < framework.beats.length - 1) {
-      const nextBeat = framework.beats[currentBeatIndex + 1];
-      setCurrentBeat(storyPlan.id, nextBeat.id);
-      const refreshedPlan = getStoryPlanByProjectId(id!);
-      setStoryPlan(refreshedPlan);
+      jumpToBeat(framework.beats[currentBeatIndex + 1].id);
     }
   };
 
   const handlePrevious = () => {
     handleSave();
-
     if (currentBeatIndex > 0) {
-      const prevBeat = framework.beats[currentBeatIndex - 1];
-      setCurrentBeat(storyPlan.id, prevBeat.id);
-      const refreshedPlan = getStoryPlanByProjectId(id!);
-      setStoryPlan(refreshedPlan);
+      jumpToBeat(framework.beats[currentBeatIndex - 1].id);
     }
   };
 
@@ -179,150 +150,118 @@ export function BeatWizard() {
     navigate(`/project/${id}/board`);
   };
 
-  const canSave = sentenceWarnings.length === 0 || hasAcknowledgedWarning;
   const isLastBeat = currentBeatIndex === framework.beats.length - 1;
   const showSaved = savedUntil !== null;
+  const showWarning = sentenceWarnings.length > 0 && !hasAcknowledgedWarning;
+
+  // Brass rail fill reaches the furthest started/complete beat.
+  const furthest = framework.beats.reduce((acc, beat, i) => {
+    const st = storyPlan.beatNotes.find(b => b.beatId === beat.id)?.status;
+    return st === 'started' || st === 'complete' ? i : acc;
+  }, 0);
+  const fillPct = framework.beats.length > 1 ? (furthest / (framework.beats.length - 1)) * 100 : 0;
 
   return (
     <div className="page">
-      <Link to={`/project/${id}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Back to Project
+      <Link to={`/project/${id}`} className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
+        &larr; Back to project
       </Link>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <h1 className="page-title" style={{ marginBottom: 0 }}>Beat Wizard</h1>
-        <button className="btn btn-secondary" onClick={handleGoToBoard} style={{ fontSize: '0.875rem' }}>
-          Go to Structure Board
-        </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <div className="eyebrow">
+          Beat {currentBeatIndex + 1} of {framework.beats.length}
+          {currentBeat?.act ? ` · Act ${currentBeat.act}` : ''} · {framework.name}
+        </div>
+        <button type="button" className="btn-quiet" onClick={handleGoToBoard}>Go to board</button>
       </div>
 
-      <p className="page-subtitle">
-        Beat {currentBeatIndex + 1} of {framework.beats.length} &middot; {framework.name}
-      </p>
-
       {currentBeat && (
-        <div>
-          <div className="card" style={{ marginBottom: '1.5rem' }}>
-            <div className="card-title" style={{ marginBottom: '0.5rem' }}>
-              {currentBeat.name}
-              {currentBeat.act && <span style={{ color: 'var(--color-text-muted)', fontWeight: 'normal', marginLeft: '0.5rem' }}>Act {currentBeat.act}</span>}
-            </div>
-            <div className="card-description">{currentBeat.prompt}</div>
-          </div>
+        <>
+          <h1 className="page-title" style={{ marginBottom: '0.5rem' }}>{currentBeat.name}</h1>
+          <p style={{ color: 'var(--text-mid)', fontSize: 15, lineHeight: 1.6, marginBottom: '1.5rem' }}>
+            {currentBeat.prompt}
+          </p>
 
           <div className="form-group">
             <label className="form-label">
-              Your Notes
-              <span style={{ fontWeight: 'normal', color: 'var(--color-text-muted)', marginLeft: '0.5rem' }}>
-                (bullets and fragments only)
+              Your notes
+              <span style={{ fontWeight: 'normal', color: 'var(--text-mid)', marginLeft: '0.5rem', fontSize: 13 }}>
+                Bullets and fragments — sentences are for the page.
               </span>
             </label>
             <textarea
               className="form-textarea"
               value={notesText}
-              onChange={(e) => setNotesText(e.target.value)}
+              onChange={e => setNotesText(e.target.value)}
               onBlur={flushNotes}
               placeholder="- First idea or fragment&#10;- Another thought&#10;- Key moment or detail"
-              style={{ minHeight: '200px' }}
+              style={{ minHeight: 200, background: 'var(--ink-800)', fontFamily: 'var(--font-ui)', fontSize: 15 }}
             />
-
-            {sentenceWarnings.length > 0 && (
-              <div style={{ marginTop: '0.75rem' }}>
-                <div className="warning-text" style={{ marginBottom: '0.5rem' }}>
-                  These lines look like full sentences. Beat notes should be bullets or fragments:
+            {showWarning && (
+              <div className="nudge-slip" style={{ marginTop: 12 }}>
+                <div style={{ marginBottom: 8 }}>
+                  These read like finished sentences. Save them for the draft, or keep them here:
                 </div>
-                <div style={{ fontSize: '0.875rem', backgroundColor: 'rgba(251, 191, 36, 0.1)', padding: '0.75rem', borderRadius: '4px' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-mid)' }}>
                   {sentenceWarnings.map((line, i) => (
-                    <div key={i} style={{ marginBottom: '0.25rem' }}>&ldquo;{line}&rdquo;</div>
+                    <div key={i}>&ldquo;{line}&rdquo;</div>
                   ))}
                 </div>
-                {!hasAcknowledgedWarning && (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setHasAcknowledgedWarning(true)}
-                    style={{ marginTop: '0.75rem', fontSize: '0.875rem' }}
-                  >
-                    Keep anyway
-                  </button>
-                )}
+                <button type="button" className="btn-quiet" style={{ marginTop: 8 }} onClick={() => setHasAcknowledgedWarning(true)}>
+                  Keep anyway
+                </button>
               </div>
             )}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem' }}>
-            <button
-              className="btn btn-secondary"
-              onClick={handlePrevious}
-              disabled={currentBeatIndex === 0}
-            >
-              &larr; Previous Beat
+            <button type="button" className="btn-ghost" onClick={handlePrevious} disabled={currentBeatIndex === 0}>
+              &larr; Previous
             </button>
-
-            <button
-              className="btn btn-primary"
-              onClick={() => handleSave(true)}
-              disabled={!canSave}
-            >
-              {showSaved ? 'Saved' : 'Save Notes'}
-            </button>
-            {showSaved && (
-              <span style={{ marginLeft: '0.75rem', color: 'var(--color-success)', fontSize: '0.875rem' }}>
-                Saved
-              </span>
-            )}
-
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span className={`saved-stamp${showSaved ? '' : ' saved-stamp--hidden'}`}>Saved</span>
+              <button type="button" className="btn-brass" onClick={() => handleSave(true)}>Save notes</button>
+            </div>
             {!isLastBeat ? (
-              <button
-                className="btn btn-secondary"
-                onClick={handleNext}
-                disabled={!canSave}
-              >
-                Next Beat &rarr;
-              </button>
+              <button type="button" className="btn-ghost" onClick={handleNext}>Next beat &rarr;</button>
             ) : (
-              <button
-                className="btn btn-primary"
-                onClick={handleGoToBoard}
-                disabled={!canSave}
-              >
-                Finish &rarr;
-              </button>
+              <button type="button" className="btn-ghost" onClick={handleGoToBoard}>Finish &rarr; Board</button>
             )}
           </div>
-        </div>
+        </>
       )}
 
-      <div style={{ marginTop: '3rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
-        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>All Beats</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {framework.beats.map((beat, index) => {
-            const beatNote = storyPlan.beatNotes.find(bn => bn.beatId === beat.id);
-            const isActive = beat.id === currentBeatId;
-            const hasNotes = beatNote && beatNote.notes.length > 0;
-
-            return (
-              <button
-                key={beat.id}
-                onClick={() => {
-                  handleSave();
-                  setCurrentBeat(storyPlan.id, beat.id);
-                  const refreshedPlan = getStoryPlanByProjectId(id!);
-                  setStoryPlan(refreshedPlan);
-                }}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  fontSize: '0.875rem',
-                  backgroundColor: isActive ? 'var(--color-primary)' : 'var(--color-surface)',
-                  color: isActive ? 'white' : hasNotes ? 'var(--color-success)' : 'var(--color-text-muted)',
-                  border: `1px solid ${isActive ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                {index + 1}. {beat.name}
-              </button>
-            );
-          })}
+      {/* Beat rail — ink-line with one status dot per beat. */}
+      <div style={{ marginTop: '3rem' }}>
+        <div style={{ position: 'relative', padding: '0 6px' }}>
+          <div className="ink-line" style={{ position: 'absolute', top: 4, left: 6, right: 6 }}>
+            <div className="ink-line__fill" style={{ width: `${fillPct}%` }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+            {framework.beats.map(beat => {
+              const status = storyPlan.beatNotes.find(b => b.beatId === beat.id)?.status || 'empty';
+              const isCurrent = beat.id === currentBeatId;
+              const dotClass = status === 'complete' ? 'status-dot--done' : status === 'started' ? 'status-dot--started' : 'status-dot--empty';
+              return (
+                <button
+                  key={beat.id}
+                  type="button"
+                  title={beat.name}
+                  aria-label={`${beat.name} — ${status}`}
+                  onClick={() => jumpToBeat(beat.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+                >
+                  <span
+                    className={`status-dot ${dotClass}`}
+                    style={isCurrent ? { boxShadow: '0 0 0 2px var(--brass)' } : undefined}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 8, color: 'var(--text-mid)', fontSize: 13 }}>
+            {currentBeat?.name}
+          </div>
         </div>
       </div>
     </div>
