@@ -366,15 +366,16 @@ h1, h2, h3 {
    at the 40px reference = 0.375em). */
 .wordmark {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 0.2em;
+  align-items: center;
+  gap: 0.28em;
   line-height: 1;
 }
 .wordmark__mark {
-  width: 0.92em;
-  height: 0.82em;
-  margin-bottom: var(--lockup-lift, 0.04em);
+  height: 1.5em;
+  width: auto;
   flex-shrink: 0;
+  /* soft ember glow — follows the mark's shape, threshold surfaces only */
+  filter: drop-shadow(0 0 10px rgba(224, 113, 44, 0.55)) drop-shadow(0 0 22px rgba(224, 113, 44, 0.25));
 }
 .wordmark__text {
   font-family: var(--font-display);
