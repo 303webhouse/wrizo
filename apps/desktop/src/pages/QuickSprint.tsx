@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
-  clearDraft, createQuickSprintProject, flushNow, generateId, getDraft, getProject,
-  getStoryPlanByProjectId, saveDraft, saveSession, setBeatStatus, setCurrentBeat, setProjectSprintText,
+  clearDraft, createQuickSprintProject, flushNow, generateId, getDraft, getJournalEntry, getProject,
+  getStoryPlanByProjectId, saveDraft, saveJournalEntry, saveSession, setBeatStatus, setCurrentBeat,
+  setProjectSprintText,
 } from '../store/persistence';
+import type { JournalEntry } from '../types';
 import { getFramework } from '../store/frameworks';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
@@ -102,6 +104,10 @@ export function QuickSprint() {
   // Session instrumentation (A9).
   const sessionStartedAtRef = useRef(new Date().toISOString());
   const firstKeystrokeAtRef = useRef<string | null>(null);
+  // Journal entry committed for this sprint (J1). One entry per sprint: created
+  // on the first completion, reused (text refreshed) if the sprint is extended
+  // via "Keep going" and finished again — so a continuous sprint stays one entry.
+  const journalEntryIdRef = useRef<string | null>(null);
 
   const markSaved = () => setSavedUntil(Date.now() + SAVED_STAMP_MS);
 
@@ -117,9 +123,40 @@ export function QuickSprint() {
     flushNow();
   };
 
+  // Commit the current draft buffer to a permanent Journal entry (J1). Fired on
+  // sprint completion, before any Save/Discard choice — so the words are kept
+  // regardless of where the working copy goes (the Journal is the complete
+  // record of every sprint). The volatile drafts buffer (A1) is left untouched;
+  // this is an additive write. Empty text never produces an entry.
+  const commitJournalEntry = () => {
+    const text = draftTextRef.current;
+    if (!text.trim()) return;
+    const existingId = journalEntryIdRef.current;
+    if (existingId) {
+      const existing = getJournalEntry(existingId);
+      if (existing) {
+        saveJournalEntry({ ...existing, text }); // same createdAt; updatedAt restamped
+        return;
+      }
+    }
+    const now = new Date().toISOString();
+    const entry: JournalEntry = {
+      id: generateId(),
+      text,
+      projectId: id ?? null, // provenance at completion; never rewritten on save
+      createdAt: now,
+      updatedAt: now,
+    };
+    journalEntryIdRef.current = entry.id;
+    saveJournalEntry(entry);
+  };
+
   // Enter the finish moment. The textarea stays editable + focused behind the
   // card (A7) — never blurred or disabled, so no keystroke is lost at 0:00.
+  // Both terminal paths (timer expiry and manual Finish) reach here, so this is
+  // the single point that commits the sprint to the Journal (J1).
   const enterFinish = (byTimer: boolean) => {
+    commitJournalEntry();
     const words = Math.max(0, wordCount(draftTextRef.current) - sessionStartWordsRef.current);
     const minutes = sprintStartMsRef.current
       ? Math.max(1, Math.round((Date.now() - sprintStartMsRef.current) / 60000))
@@ -268,12 +305,14 @@ export function QuickSprint() {
     setDraftText(value);
   };
 
-  // Record a writing-session row on sprint save (A9).
-  const recordSession = (projectId: string) => {
+  // Record a writing-session row on sprint save (A9). Returns the new id so the
+  // Journal entry (J1) can be linked to its session.
+  const recordSession = (projectId: string): string => {
     const now = new Date();
     const startedMs = new Date(sessionStartedAtRef.current).getTime();
+    const sessionId = generateId();
     saveSession({
-      id: generateId(),
+      id: sessionId,
       projectId,
       startedAt: sessionStartedAtRef.current,
       firstKeystrokeAt: firstKeystrokeAtRef.current,
@@ -282,6 +321,16 @@ export function QuickSprint() {
       durationSec: Math.max(0, Math.round((now.getTime() - startedMs) / 1000)),
       updatedAt: now.toISOString(),
     });
+    return sessionId;
+  };
+
+  // Back-link the Journal entry committed at finish (J1) to its session row,
+  // when the sprint was saved. Provenance (projectId) is left as committed.
+  const linkJournalSession = (sessionId: string) => {
+    const entryId = journalEntryIdRef.current;
+    if (!entryId) return;
+    const entry = getJournalEntry(entryId);
+    if (entry) saveJournalEntry({ ...entry, sessionId });
   };
 
   const handleSaveDraft = () => {
@@ -329,7 +378,7 @@ export function QuickSprint() {
     advanceBeatIfMarked();
     const projectId = id ?? createQuickSprintProject(draftText).id;
     if (id) setProjectSprintText(id, draftText);
-    recordSession(projectId);
+    linkJournalSession(recordSession(projectId));
     clearDraft(draftId);
     localStorage.removeItem(getDraftKey(id));
     navigate(`/project/${projectId}`);

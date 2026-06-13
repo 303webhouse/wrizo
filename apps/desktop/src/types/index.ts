@@ -55,6 +55,24 @@ export interface Draft {
   updatedAt: string;
 }
 
+// Journal entry (J1) — a permanent, timestamped record of a completed sprint's
+// text. Unlike a Draft (the volatile in-flight buffer, overwritten by the next
+// sprint), a Journal entry is never cleared: it is the complete chronological
+// substrate from which projects are later cultivated (J2). `projectId` records
+// the sprint's context at completion — null for a scratch sprint — and is never
+// rewritten afterward (the project gets its own working copy; the entry stays
+// whole). `sessionId` links the A9 session row when the sprint was also saved.
+// Soft-deleted and sync-eligible by inheriting the adapter machinery exactly.
+export interface JournalEntry {
+  id: string;
+  text: string; // same serialization Quick Sprint writes to the drafts buffer
+  projectId: string | null;
+  sessionId?: string;
+  createdAt: string; // set once on commit, never mutated
+  updatedAt: string;
+  deletedAt?: string;
+}
+
 // Writing-session instrumentation (A9). The collection is wired through the
 // storage adapter now so sync (W2) has it; recording logic lands with A9.
 export interface SessionLog {
