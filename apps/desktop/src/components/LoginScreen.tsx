@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { apiLogin, apiRegister, type AuthUser } from '../store/api';
+import { Wordmark } from './Wordmark';
 
 // Minimal login/register gate (W2). Functional-plain now; styled in the
 // D-stream as an honorary D-ticket (one centered card on --ink-950).
@@ -39,8 +40,8 @@ export function LoginScreen({ onAuthed }: LoginScreenProps) {
       style={{ maxWidth: '420px', paddingTop: '5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
     >
       <div className="card" style={{ width: '100%' }}>
-        <div style={{ textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '0.7rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
-          Writer Studio
+        <div style={{ marginBottom: '1rem' }}>
+          <Wordmark size={26} />
         </div>
         <h1 className="page-title" style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>
           The page is ready when you are.

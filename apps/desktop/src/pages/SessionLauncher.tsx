@@ -2,14 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getProjects } from '../store/persistence';
 import { getResumeTarget, relativeDays } from '../store/resume';
+import { Wordmark } from '../components/Wordmark';
 import type { Project } from '../types';
 
-// Greeting eyebrow, computed once on mount by local hour (static — never live).
-function greetingEyebrow(): string {
+// Time-of-day greeting, computed once on mount (static — never live). Empty
+// string means no greeting; the Ember lockup is always the brand element.
+function timeGreeting(): string {
   const h = new Date().getHours();
   if (h >= 21) return 'THE LATE SHIFT';
   if (h < 7) return 'FIRST LIGHT';
-  return 'WRITER STUDIO';
+  return '';
 }
 
 function activityMs(p: Project): number {
@@ -26,7 +28,7 @@ const displayLine: React.CSSProperties = {
 
 export function SessionLauncher() {
   const navigate = useNavigate();
-  const [greeting] = useState(greetingEyebrow);
+  const [greeting] = useState(timeGreeting);
   const resume = getResumeTarget();
   const projects = getProjects();
   const startRef = useRef<HTMLAnchorElement>(null);
@@ -42,7 +44,10 @@ export function SessionLauncher() {
   if (!resume) {
     return (
       <div className="page" style={{ maxWidth: 480, paddingTop: '5rem', textAlign: 'center' }}>
-        <div className="eyebrow" style={{ marginBottom: 12 }}>{greeting}</div>
+        <div style={{ marginBottom: 20 }}>
+          {greeting && <div className="eyebrow" style={{ marginBottom: 8 }}>{greeting}</div>}
+          <Wordmark size={28} />
+        </div>
         <h1 style={{ ...displayLine, marginBottom: 12 }}>The page is ready when you are.</h1>
         <p style={{ color: 'var(--text-mid)', marginBottom: 32 }}>
           Start a sprint now, or shape a project first.
@@ -63,7 +68,10 @@ export function SessionLauncher() {
 
   return (
     <div className="page" style={{ maxWidth: 480, paddingTop: '4rem' }}>
-      <div className="eyebrow" style={{ marginBottom: 12, textAlign: 'center' }}>{greeting}</div>
+      <div style={{ marginBottom: 20, textAlign: 'center' }}>
+        {greeting && <div className="eyebrow" style={{ marginBottom: 8 }}>{greeting}</div>}
+        <Wordmark size={28} />
+      </div>
       <h1 style={{ ...displayLine, textAlign: 'center', marginBottom: 32 }}>The page is ready when you are.</h1>
 
       <div className="card" style={{ marginBottom: 24 }}>
