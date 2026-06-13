@@ -51,6 +51,9 @@
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --t-fast: 150ms; --t-state: 220ms; --t-moment: 420ms;
 
+  /* Atmosphere (branding §5) — the warm pool of lamplight. */
+  --lamp-glow: radial-gradient(135% 95% at 50% -8%, #36240F 0%, #251810 38%, #170F0A 70%, #100B07 100%);
+
   /* Legacy aliases — keep untouched screens working during migration.
      Removed in D8 once every screen uses the new tokens directly. */
   --color-bg: var(--ink-950);
@@ -66,16 +69,45 @@
   --radius: var(--radius-md);
 }
 
+html {
+  background-color: #100B07;
+}
+
 body {
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--ink-950);
+  /* The lamp: a fixed warm pool of light, brightest above the focal point. */
+  background: var(--lamp-glow) fixed;
   color: var(--text-hi);
   min-height: 100vh;
 }
 
+/* Atmosphere overlays — fixed, non-interactive, fully static (B3 §5).
+   Grain gives the surface material; the vignette pulls the eye inward. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: inset 0 0 170px 55px rgba(0, 0, 0, 0.55);
+}
+
 #root {
+  position: relative;
   min-height: 100vh;
 }
 
@@ -151,8 +183,8 @@ h1, h2, h3 {
   border-radius: var(--radius-md);
   padding: 1.5rem;
   margin-bottom: 1rem;
-  /* light from above — the lamp */
-  box-shadow: inset 0 1px 0 rgba(237, 230, 218, 0.04);
+  /* glint — light hitting the lip (branding §5.4) */
+  box-shadow: inset 0 1px 0 rgba(255, 228, 190, 0.07);
 }
 
 .card-title {
@@ -282,6 +314,8 @@ h1, h2, h3 {
   color: var(--on-brass);
   border: none;
   padding: var(--space-3) var(--space-6);
+  /* catches lamplight (branding §5.4) — ambient bloom, not an orange recolor */
+  box-shadow: 0 0 22px rgba(232, 116, 46, 0.22);
   transition: background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .btn-brass:hover { background: var(--brass-hover); }
