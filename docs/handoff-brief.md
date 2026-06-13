@@ -269,13 +269,68 @@ Fully specified in `docs/ui-redesign-spec.md` (tokens, type, components, per-scr
 
 **DoD:** Complete a sprint, write a sentence, end it → relaunch → the entry persists with a correct `createdAt`, retrievable via `getJournalEntries()` in devtools. Killing the tab mid-sprint still recovers the in-flight draft (A1 unbroken). An empty sprint produces no entry. No new dependencies; no refactors outside scope; the app behaves identically everywhere else.
 
+### J1a — Honor Discard (closes out J1)
+
+**Problem:** J1 commits the Journal entry at `enterFinish`, before the Save/Discard choice, so a discarded sprint leaves a live entry — the brick "Discard" doesn't fully discard. That overrides the writer's explicit intent and undermines trust in the Journal as a safe place for vents and false starts (and it's inconsistent with §8's "Brick = Discard only"). Capture-by-default is the rule; an explicit Discard is the writer's override of it and must be honored.
+
+**Spec:** In `handleDiscard` (`apps/desktop/src/pages/QuickSprint.tsx`), soft-delete the committed entry (if any) before clearing the draft:
+
+```ts
+const handleDiscard = () => {
+  suppressFlushRef.current = true;
+  const entryId = journalEntryIdRef.current;
+  if (entryId) {
+    const entry = getJournalEntry(entryId);
+    if (entry) saveJournalEntry({ ...entry, deletedAt: new Date().toISOString() });
+  }
+  clearDraft(draftId);
+  localStorage.removeItem(getDraftKey(id));
+  navigate(id ? `/project/${id}` : '/');
+};
+```
+
+Rides the existing soft-delete model — `getJournalEntries()` already excludes soft-deleted. No persistence/types changes, no new dependency, no signature changes. Leave Save and Keep-going untouched.
+
+**Files:** `apps/desktop/src/pages/QuickSprint.tsx` only. **Out of scope:** everything else; the entry shape and adapter wiring stay as J1 built them.
+
+**DoD (this session also discharges J1's deferred runtime verification — do both the typecheck and the click-through):**
+- Typecheck passes (`tsc --noEmit` / the repo's typecheck script) — the esbuild web build does not catch type errors.
+- In a running app (dev shell + devtools):
+  - Sprint with text → Finish → **Discard** → `getJournalEntries()` does **not** include it.
+  - Sprint with text → Finish → **Save** → entry present, `createdAt` stable, `sessionId` linked.
+  - Finish → **Keep going** → finish again → still **one** entry (same id), text refreshed.
+  - **Empty/whitespace** sprint → no entry.
+  - **Relaunch** after a saved sprint → entry persists with its `createdAt`.
+- No new deps; no out-of-scope changes; `build:web` compiles.
+
+**Branch:** `j1a-honor-discard` off `m1-creative-flow`; merge when DoD met.
+
 ### J2 — Pull-based routing (scrap → project)  *(depends on J1)*
 
 A quiet, **invoked** action — summoned by the writer, never a persistent on-screen control and never a post-sprint "where does this go?" prompt — to send a Journal entry into a project. Respects §8's one-brass-action-per-screen rule (adds no competing primary action to the sprint or journal surface). Default semantics: **branch-copy** (the project gets an independent scene record; the Journal entry stays whole — don't tear pages out), the safe choice under record-level last-write-wins. Include a "promote to a new project" path. Full spec after J1 settles the record shape.
 
-### J3 — Homepage testament  *(independent of J1; low-risk; good early deploy)*
+### J3 — Homepage testament  *(independent of J1; reads `sessions` only)*
 
-A read-model over `sessions` surfacing testament-style victories ("words that didn't exist before this week," "tended this 4 times this week," return/consistency wins) that double as the warm re-entry into a sprint. Testament, never targets — no number-to-beat. The foregrounded victory **varies between visits** (selected per page load), but it is **not** an auto-rotating carousel and nothing animates on its own — honoring §8 ("nothing auto-rotates"; "nothing animates without user action"). Must stay readable on a quiet week: surface a consistency/return win rather than rebuking a low word count. Reads existing data only; can be pulled ahead of J1.
+**Problem:** The home/landing page doesn't reflect the writer's accumulating work. A returning writer should be met with evidence of what they've built — testament that lowers the activation energy of starting again — not a blank slate or a target to hit.
+
+**Investigate first:** Locate the existing home/landing route component (the one navigated to as `/`) and the sessions read API. `SessionLog` rows are written only on sprint *save* (`recordSession` in QuickSprint), so `sessions` already excludes discarded sprints — the homepage will never credit thrown-away work. Fields per row: `words` (net words added that session, ≥0), `startedAt`, `firstKeystrokeAt`, `endedAt`, `durationSec`, `projectId`, `updatedAt` (soft-delete via `deletedAt`). Use the existing sessions getter; add a minimal one only if absent, and it must exclude soft-deleted (mirroring `getJournalEntries`).
+
+**Spec:**
+- Add a pure aggregation helper (e.g., `computeTestament(sessions, now)`) — no writes, no new collection, no new dependency — deriving: lifetime net words (sum `words`); net words in the last 7 days (sum `words` where `endedAt` within 7 days); sprint count total and last-7-days; and a consistency signal (distinct calendar days with ≥1 session in the last 30; current run of consecutive active days).
+- Render **one** quiet testament line on the home page, drawn from a pool of framings whose underlying value is currently meaningful, e.g.: "{n} words that didn't exist before this week" (last-7-days words > 0); "{n} words since you started" (lifetime words > 0); "You've tended Ember {n} times this week" (last-7-days sprints > 0); "{n} days at the page this month" / a return-run framing (consistency).
+- **Selection: pick one valid framing at mount and render it statically.** It MAY vary between visits (e.g., random among the currently-valid framings on load), but it is **not** an auto-rotating carousel and **nothing animates on its own** — honoring §8 ("nothing auto-rotates"; "nothing animates without user action").
+- **Quiet-week / fresh-start resilience (required):** if there are no sessions in the last 7 days, fall back to a lifetime or consistency framing — never render "0 words this week" or any low-number rebuke. If there are no sessions at all (fresh install), show a gentle first-run invitation with no numbers. Testament, never targets: no goal bar, no number-to-beat.
+- The page's primary action stays the warm re-entry into a sprint and remains the **one brass action** on the screen (the testament line is quiet text, not a competing CTA). Match the lamplit aesthetic and existing tokens (`--ink-*`, `--brass`, `--ember`, `--font-prose`/`--font-ui`/`--font-mono`).
+
+**Files:** the home/landing route component and a small helper module (e.g., `store/testament.ts`); a minimal sessions getter only if one doesn't already exist. **Out of scope:** J1/J2/J4/J5; any write path; any change to how sessions are recorded; the Journal browse surface (J4).
+
+**DoD:**
+- Home page shows a testament line computed from real `sessions`; reloading can surface a different valid framing; no animation and no auto-rotation (verify against §8).
+- No sessions in the last 7 days → a lifetime/consistency framing appears, never "0 words this week."
+- Fresh install (no sessions) → gentle invitation, no numbers, no rebuke.
+- Reads only; no new dependency; no out-of-scope changes; typecheck + `build:web` pass; the single brass action (start a sprint) is preserved.
+
+**Branch:** `j3-homepage-testament` off `m1-creative-flow`.
 
 ### J4 — Journal browse + retrieval  *(depends on J1; aligns with the D-stream redesign)*
 
