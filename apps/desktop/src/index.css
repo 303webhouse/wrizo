@@ -546,3 +546,54 @@ a:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+/* Beat rail layout (in CSS, not inline, so W5 can override it on mobile). */
+.beat-rail-dots {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* W5 — responsive pass. Breakpoint 720px; usable one-handed at 390px. */
+@media (max-width: 720px) {
+  .page {
+    padding: var(--space-4);
+  }
+
+  /* iOS never zooms on focus when inputs are >= 16px. */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px;
+  }
+
+  /* Comfortable one-handed tap targets. */
+  .btn-brass,
+  .btn-ghost,
+  .btn-brick {
+    min-height: 44px;
+  }
+
+  /* Sprint Save/Finish bar stays reachable above the mobile keyboard. */
+  .sprint-bottombar {
+    position: sticky;
+    bottom: 0;
+    background: var(--ink-950);
+    padding-block: var(--space-2);
+    z-index: 3;
+  }
+
+  /* Beat rail scrolls horizontally with an edge fade when beats overflow. */
+  .beat-rail-dots {
+    justify-content: flex-start;
+    gap: var(--space-4);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  }
+  .beat-rail-dots::-webkit-scrollbar {
+    display: none;
+  }
+}

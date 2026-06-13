@@ -471,6 +471,7 @@ export function QuickSprint() {
       {!isFinishing && (
         <div
           {...chromeHoverProps}
+          className="sprint-bottombar"
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             marginTop: 16, opacity: dimmed ? 0.7 : 1, transition: 'opacity var(--t-state) var(--ease)',
@@ -510,7 +511,7 @@ export function QuickSprint() {
             </label>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button type="button" className="btn-brass" onClick={handleKeepGoing}>Keep going (+5 min)</button>
             <button type="button" className="btn-ghost" onClick={handleSaveToProject}>
               {id ? 'Save to project' : 'Save as project'}
