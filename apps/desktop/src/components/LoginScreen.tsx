@@ -91,15 +91,15 @@ export function LoginScreen({ onAuthed }: LoginScreenProps) {
             <div className="warning-text" style={{ marginBottom: '0.75rem' }}>{error}</div>
           )}
 
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: '100%' }}>
+          <button className="btn-brass" type="submit" disabled={busy} style={{ width: '100%' }}>
             {busy ? 'One moment…' : mode === 'login' ? 'Sign in' : 'Create account'}
           </button>
         </form>
 
         <button
           type="button"
-          className="btn"
-          style={{ marginTop: '1rem', background: 'none', color: 'var(--color-text-muted)', padding: '0.25rem', width: '100%' }}
+          className="btn-quiet"
+          style={{ marginTop: '1rem', width: '100%' }}
           onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}
         >
           {mode === 'login' ? 'Have an invite code? Create an account' : 'Already have an account? Sign in'}

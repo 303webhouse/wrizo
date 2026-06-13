@@ -18,11 +18,12 @@ export function CreateProject() {
 
   return (
     <div className="page">
-      <Link to="/" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Back to Launcher
+      <Link to="/" className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
+        &larr; Back to launcher
       </Link>
 
-      <h1 className="page-title">Create New Project</h1>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>New project</div>
+      <h1 className="page-title">What are you writing?</h1>
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -48,7 +49,8 @@ export function CreateProject() {
               style={{
                 flex: 1,
                 cursor: 'pointer',
-                borderColor: projectType === 'creative' ? 'var(--color-primary)' : 'var(--color-border)',
+                borderColor: projectType === 'creative' ? 'var(--brass)' : 'var(--ink-border)',
+                borderLeft: projectType === 'creative' ? '3px solid var(--brass)' : '1px solid var(--ink-border)',
               }}
             >
               <input
@@ -65,12 +67,7 @@ export function CreateProject() {
 
             <label
               className="card"
-              style={{
-                flex: 1,
-                cursor: 'not-allowed',
-                opacity: 0.5,
-                borderColor: projectType === 'academic' ? 'var(--color-primary)' : 'var(--color-border)',
-              }}
+              style={{ flex: 1, cursor: 'not-allowed', opacity: 0.6 }}
             >
               <input
                 type="radio"
@@ -81,16 +78,16 @@ export function CreateProject() {
                 style={{ display: 'none' }}
               />
               <div className="card-title">Academic</div>
-              <div className="card-description">Coming soon</div>
+              <div className="card-description">Arriving in Stage 2</div>
             </label>
           </div>
         </div>
 
         <div className="button-group">
-          <button type="submit" className="btn btn-primary" disabled={!title.trim()}>
+          <button type="submit" className="btn-brass" disabled={!title.trim()}>
             Continue
           </button>
-          <Link to="/" className="btn btn-secondary">
+          <Link to="/" className="btn-quiet">
             Cancel
           </Link>
         </div>
