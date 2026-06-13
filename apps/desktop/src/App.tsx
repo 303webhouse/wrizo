@@ -21,6 +21,63 @@ function SyncIndicator() {
   return <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{label}</span>;
 }
 
+// Full-screen toggle (Fullscreen API). Works on desktop + Android and goes
+// truly immersive in the installed PWA. iOS Safari doesn't support element
+// fullscreen, so the button hides itself there (the iOS path is Add to Home
+// Screen → standalone display).
+function FullscreenToggle() {
+  const [supported] = useState(() => {
+    if (typeof document === 'undefined') return false;
+    const el = document.documentElement as any;
+    return !!(el.requestFullscreen || el.webkitRequestFullscreen);
+  });
+  const [isFs, setIsFs] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => {
+      const doc = document as any;
+      setIsFs(!!(document.fullscreenElement || doc.webkitFullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange as EventListener);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange', onChange as EventListener);
+    };
+  }, []);
+
+  if (!supported) return null;
+
+  const toggle = () => {
+    const doc = document as any;
+    const el = document.documentElement as any;
+    const current = document.fullscreenElement || doc.webkitFullscreenElement;
+    try {
+      if (current) {
+        const exit = document.exitFullscreen || doc.webkitExitFullscreen;
+        if (exit) exit.call(document);
+      } else {
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        const p = req && req.call(el);
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      }
+    } catch {
+      // ignore — fullscreen can be denied; never block the app
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={isFs ? 'Exit full screen' : 'Enter full screen'}
+      style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+    >
+      {isFs ? 'Exit full screen' : 'Full screen'}
+    </button>
+  );
+}
+
 export function App() {
   const [authState, setAuthState] = useState<AuthState>('loading');
   // Re-render the routed tree when the adapter cache changes (e.g. a sync pull).
@@ -76,6 +133,7 @@ export function App() {
           padding: '0.5rem 0.75rem',
         }}
       >
+        <FullscreenToggle />
         <SyncIndicator />
         <button
           type="button"
