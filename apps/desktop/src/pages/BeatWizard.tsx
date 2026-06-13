@@ -195,7 +195,7 @@ export function BeatWizard() {
               onChange={e => setNotesText(e.target.value)}
               onBlur={flushNotes}
               placeholder="- First idea or fragment&#10;- Another thought&#10;- Key moment or detail"
-              style={{ minHeight: 200, background: 'var(--ink-800)', fontFamily: 'var(--font-ui)', fontSize: 15 }}
+              style={{ minHeight: 200, background: 'var(--ink-800)', fontFamily: 'var(--font-ui)', fontSize: 16 }}
             />
             {showWarning && (
               <div className="nudge-slip" style={{ marginTop: 12 }}>
@@ -237,7 +237,7 @@ export function BeatWizard() {
           <div className="ink-line" style={{ position: 'absolute', top: 4, left: 6, right: 6 }}>
             <div className="ink-line__fill" style={{ width: `${fillPct}%` }} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+          <div className="beat-rail-dots">
             {framework.beats.map(beat => {
               const status = storyPlan.beatNotes.find(b => b.beatId === beat.id)?.status || 'empty';
               const isCurrent = beat.id === currentBeatId;
