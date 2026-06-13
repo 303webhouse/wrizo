@@ -371,9 +371,9 @@ h1, h2, h3 {
   line-height: 1;
 }
 .wordmark__mark {
-  width: 0.475em;
-  height: 0.95em;
-  margin-bottom: var(--lockup-lift, 0.375em);
+  width: 0.92em;
+  height: 0.82em;
+  margin-bottom: var(--lockup-lift, 0.04em);
   flex-shrink: 0;
 }
 .wordmark__text {
