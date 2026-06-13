@@ -360,6 +360,18 @@ export function clearDraft(id: string): void {
   notify();
 }
 
+// --- Sessions (A9) --------------------------------------------------------
+// Writing-session instrumentation, recorded on sprint finish/save. Surfaces
+// nowhere in the UI except the sprint finish stats; syncs like any record.
+
+export function saveSession(session: SessionLog): void {
+  upsert('sessions', cache.sessions, clone(session));
+}
+
+export function getSessions(): SessionLog[] {
+  return cache.sessions.map(clone);
+}
+
 // --- Sync integration -----------------------------------------------------
 // Apply records pulled from the server into the cache (W2). Locally-dirty
 // records are skipped — unsynced on-device edits always win — and applied
