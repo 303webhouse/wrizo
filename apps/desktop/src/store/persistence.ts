@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry } from '../types';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -21,6 +21,7 @@ const KEYS = {
   storyPlans: 'writer-studio-story-plans',
   sessions: 'writer-studio-sessions',
   drafts: 'writer-studio-drafts',
+  journalEntries: 'writer-studio-journal-entries',
 } as const;
 
 type CollectionName = keyof typeof KEYS;
@@ -30,6 +31,7 @@ interface Cache {
   storyPlans: StoryPlan[];
   sessions: SessionLog[];
   drafts: Draft[];
+  journalEntries: JournalEntry[];
 }
 
 function hydrate<T>(key: string): T[] {
@@ -47,6 +49,7 @@ const cache: Cache = {
   storyPlans: hydrate<StoryPlan>(KEYS.storyPlans),
   sessions: hydrate<SessionLog>(KEYS.sessions),
   drafts: hydrate<Draft>(KEYS.drafts),
+  journalEntries: hydrate<JournalEntry>(KEYS.journalEntries),
 };
 
 // Records returned to callers are cloned so the cache is never mutated by
@@ -69,6 +72,7 @@ const dirty: Record<CollectionName, Set<string>> = {
   storyPlans: new Set(),
   sessions: new Set(),
   drafts: new Set(),
+  journalEntries: new Set(),
 };
 
 export interface DirtyRecords {
@@ -76,6 +80,7 @@ export interface DirtyRecords {
   storyPlans: StoryPlan[];
   sessions: SessionLog[];
   drafts: Draft[];
+  journalEntries: JournalEntry[];
 }
 
 export function getDirtyRecords(): DirtyRecords {
@@ -84,6 +89,7 @@ export function getDirtyRecords(): DirtyRecords {
     storyPlans: cache.storyPlans.filter(r => dirty.storyPlans.has(r.id)).map(clone),
     sessions: cache.sessions.filter(r => dirty.sessions.has(r.id)).map(clone),
     drafts: cache.drafts.filter(r => dirty.drafts.has(r.id)).map(clone),
+    journalEntries: cache.journalEntries.filter(r => dirty.journalEntries.has(r.id)).map(clone),
   };
 }
 
@@ -93,6 +99,7 @@ export function markClean(ids: string[]): void {
     dirty.storyPlans.delete(id);
     dirty.sessions.delete(id);
     dirty.drafts.delete(id);
+    dirty.journalEntries.delete(id);
   }
 }
 
@@ -131,6 +138,7 @@ const flushTimers: Record<CollectionName, ReturnType<typeof setTimeout> | null> 
   storyPlans: null,
   sessions: null,
   drafts: null,
+  journalEntries: null,
 };
 
 function flush(name: CollectionName): void {
@@ -372,6 +380,30 @@ export function getSessions(): SessionLog[] {
   return cache.sessions.map(clone);
 }
 
+// --- Journal (J1) ---------------------------------------------------------
+// A completed sprint commits its text to a permanent Journal entry. This is an
+// ADDITIONAL, permanent write — not a replacement for the volatile drafts buffer
+// (A1, in-flight crash protection) nor for project/scene save behavior. The
+// resulting working-copy-plus-record double-storage is intentional: it protects
+// the words. Entries are the substrate later tickets cultivate into projects
+// (J2) and browse (J4); commit logic lives in the Quick Sprint completion path.
+
+export function saveJournalEntry(entry: JournalEntry): void {
+  upsert('journalEntries', cache.journalEntries, clone(entry));
+}
+
+export function getJournalEntries(): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt)
+    .map(clone)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // newest first
+}
+
+export function getJournalEntry(id: string): JournalEntry | null {
+  const entry = cache.journalEntries.find(e => e.id === id);
+  return entry && !entry.deletedAt ? clone(entry) : null;
+}
+
 // --- Sync integration -----------------------------------------------------
 // Apply records pulled from the server into the cache (W2). Locally-dirty
 // records are skipped — unsynced on-device edits always win — and applied
@@ -382,6 +414,7 @@ export interface RemoteRecords {
   storyPlans?: StoryPlan[];
   sessions?: SessionLog[];
   drafts?: Draft[];
+  journalEntries?: JournalEntry[];
 }
 
 function applyCollection<T extends { id: string; updatedAt: string }>(
@@ -413,6 +446,7 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   changed = applyCollection('storyPlans', cache.storyPlans, remote.storyPlans) || changed;
   changed = applyCollection('sessions', cache.sessions, remote.sessions) || changed;
   changed = applyCollection('drafts', cache.drafts, remote.drafts) || changed;
+  changed = applyCollection('journalEntries', cache.journalEntries, remote.journalEntries) || changed;
   if (changed) notify();
 }
 
