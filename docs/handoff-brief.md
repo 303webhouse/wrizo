@@ -245,4 +245,44 @@ Fully specified in `docs/ui-redesign-spec.md` (tokens, type, components, per-scr
 5. Run `docs/demo-script.md` on the owner first; A9 should answer "time to first words" automatically.
 6. Then add new checks learned here to `docs/release-checklist.md` and hand the URL + invite code to testers.
 
+## 10. Stream J — Journal substrate & sprint rewards
+
+*Added as a new arc; not yet placed in the §7 sequencing — slot it among the existing 14 at your discretion. Builds on **A2** (storage adapter) and **A1** (drafts under `projectId ?? 'scratch'`); inherits the in-memory cache, dirty-queue, soft-delete, and the never-block-on-network rule for free. Order within the arc: **J1 → (J2, J4)**; **J3** is independent and low-risk; **J5** is last and owner-gated. Protect the words, protect the momentum.*
+
+### J1 — Journal collection + commit-on-sprint (DO THIS FIRST; foundation for the arc)
+
+**Problem:** Quick Sprint autosaves drafts through the adapter under `drafts[projectId ?? 'scratch']`, but that buffer is volatile in-flight protection — a finished sprint's text is never preserved as a permanent, timestamped, retrievable record. Ember needs a Journal: every completed sprint becomes a durable entry that belongs to no project by default — the substrate from which projects are later cultivated.
+
+**Investigate first (decides the implementation):** Before writing code, read `types/index.ts` and `store/persistence.ts` and determine what the `sessions` collection currently stores — (a) does a session persist the sprint's full *text* or only metadata; (b) can a session be project-less or is it always project-bound; (c) does it carry a stable creation timestamp set once and never mutated.
+- If `sessions` already holds the text **and** cleanly supports permanent, project-optional, timestamped records → implement the Journal as a *read-model/view over `sessions`*; do **not** create a duplicate collection.
+- Otherwise → add a new `journalEntries` collection to the adapter, linked to its session via `sessionId`.
+- If genuinely ambiguous, pause and ask the owner. State the chosen path and why in the commit summary.
+
+**Spec:**
+- Record shape (new collection or augmented session): stable client `id`; `text` in **the same serialization Quick Sprint already writes to the drafts buffer** (no lossy conversion); `createdAt` (ISO, set once, never mutated); `updatedAt`; `projectId` (nullable, default `null`); optional `sessionId`; `deletedAt` for soft-delete. Inherit the existing adapter machinery exactly — in-memory cache, dirty-queue, debounced localStorage write, `subscribe()`, sync eligibility. No bespoke persistence path; no new dependency.
+- Commit moment: on **sprint completion**, commit the current draft buffer to a permanent Journal entry. Wire to every terminal path a sprint can end through (timer expiry *and* manual stop). No text → no entry (never commit an empty record).
+- The live `drafts[projectId ?? 'scratch']` buffer stays exactly as A1 built it (in-flight crash protection). The Journal commit is an **additional, permanent** write, not a replacement. Document whether the volatile draft clears on commit or is left for the next sprint to overwrite.
+- Provenance: set `projectId` to the sprint's project context, or `null` for a scratch sprint. A project-context sprint still produces a Journal entry — the Journal is the complete chronological record of all sprints. **Do not modify existing project/scene save behavior**; the entry is additive, and the resulting working-copy-plus-record double-storage is intended (protects the words).
+- Read APIs for later tickets, cache-synchronous per A2: `getJournalEntries()` (newest-first, excluding soft-deleted) and `getJournalEntry(id)`.
+
+**Files:** `store/persistence.ts`, `types/index.ts`, and the Quick Sprint component/store where sprint completion is handled. **Out of scope:** Journal browse UI (J4); routing into projects (J2); homepage/victory changes (J3); ambient feedback (J5); any W-stream sync-engine change (the entry must be sync-*eligible* by inheriting the adapter pattern, but don't touch sync code).
+
+**DoD:** Complete a sprint, write a sentence, end it → relaunch → the entry persists with a correct `createdAt`, retrievable via `getJournalEntries()` in devtools. Killing the tab mid-sprint still recovers the in-flight draft (A1 unbroken). An empty sprint produces no entry. No new dependencies; no refactors outside scope; the app behaves identically everywhere else.
+
+### J2 — Pull-based routing (scrap → project)  *(depends on J1)*
+
+A quiet, **invoked** action — summoned by the writer, never a persistent on-screen control and never a post-sprint "where does this go?" prompt — to send a Journal entry into a project. Respects §8's one-brass-action-per-screen rule (adds no competing primary action to the sprint or journal surface). Default semantics: **branch-copy** (the project gets an independent scene record; the Journal entry stays whole — don't tear pages out), the safe choice under record-level last-write-wins. Include a "promote to a new project" path. Full spec after J1 settles the record shape.
+
+### J3 — Homepage testament  *(independent of J1; low-risk; good early deploy)*
+
+A read-model over `sessions` surfacing testament-style victories ("words that didn't exist before this week," "tended this 4 times this week," return/consistency wins) that double as the warm re-entry into a sprint. Testament, never targets — no number-to-beat. The foregrounded victory **varies between visits** (selected per page load), but it is **not** an auto-rotating carousel and nothing animates on its own — honoring §8 ("nothing auto-rotates"; "nothing animates without user action"). Must stay readable on a quiet week: surface a consistency/return win rather than rebuking a low word count. Reads existing data only; can be pulled ahead of J1.
+
+### J4 — Journal browse + retrieval  *(depends on J1; aligns with the D-stream redesign)*
+
+The notebook surface: chronological spine, first-line-derived labels, snippets, optional retroactive star/tag, and resurfacing ("flip to a page"). Primary retrieval is **local full-text + chronological browse** — instant, offline, no new dependency (substring/token match over the in-memory cache), honoring the never-block rule. Optional **semantic search is retrieval-only** (not prose generation — consistent with §8's no-AI-drafting rule) and an **online-only graceful enhancement** that disappears offline, never the primary path. Presented as a notebook to flip, not an inbox to clear: no unread counters, no backlog meter.
+
+### J5 — Ambient sprint feedback  *(last; owner-gated)*
+
+Slow ambient drift during the sprint only — color-temperature and/or a faint sound bed — with **no discrete events** (the eye is drawn pre-attentively to discrete change and motion; slow continuous drift reads as a felt state, not a noticed event). Any "juice" is deferred to the one finish moment. **This requests an explicit owner exception to §8's "nothing animates without user action (except the timer hairline and the one finish moment)"** — the drift is driven by typing, but it is continuous, so it is a deliberate third carve-out, not an oversight; do not build it without that sign-off. Must respect reduced-motion (per D8). Expose calibration as CSS variables (the `--lockup-lift` pattern) so felt-vs-diverting is dialed live. Aligns with the lamplit-desk atmosphere.
+
 *End of brief. When in doubt: protect the words, protect the momentum, keep the lamp warm.*
