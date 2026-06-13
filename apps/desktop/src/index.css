@@ -421,6 +421,12 @@ h1, h2, h3 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* The single permitted celebration — the sprint finish card rises 12px once. */
+@keyframes finish-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Focus: 2px brass ring on keyboard focus, never removed without replacement.
    Placed last so it wins over legacy .form-*:focus { outline: none }. */
 button:focus-visible,

@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote } from '../types';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -311,10 +311,24 @@ export function updateBeatNotes(planId: string, beatId: string, notes: string[])
   const beatNote = plan.beatNotes.find(bn => bn.beatId === beatId);
   if (beatNote) {
     beatNote.notes = notes;
-    beatNote.status = notes.length > 0 ? 'started' : 'empty';
+    // A5: never downgrade a completed beat when its notes change.
+    if (beatNote.status !== 'complete') {
+      beatNote.status = notes.length > 0 ? 'started' : 'empty';
+    }
     saveStoryPlan(plan);
     stampBeatActivity(plan.projectId);
   }
+}
+
+// Set a beat's status directly (A4 finish checkbox, A5 Board toggle).
+export function setBeatStatus(planId: string, beatId: string, status: BeatNote['status']): void {
+  const plan = getStoryPlan(planId);
+  if (!plan) return;
+  const beatNote = plan.beatNotes.find(bn => bn.beatId === beatId);
+  if (!beatNote) return;
+  beatNote.status = status;
+  saveStoryPlan(plan);
+  stampBeatActivity(plan.projectId);
 }
 
 export function setCurrentBeat(planId: string, beatId: string): void {
