@@ -1,11 +1,10 @@
-// Ember wordmark lockup (branding §3R). The flat ember "e" mark beside the
-// title-case "Ember" in Newsreader 500. Mark/gap/lift scale with `size`; the
-// lift is one CSS variable (--lockup-lift) for trivial fine-tuning.
+// Ember wordmark lockup (branding §3R). The ornate script-"e" hero mark beside
+// the title-case "Ember" in Newsreader 500. Mark height + gap scale with `size`.
 //
-// NOTE: per Revision 2 §2R-rule the glowing hero mark is threshold-only and is
-// a separate raster asset; this flat ember "e" is the in-app + interim
-// threshold mark. The launcher/login glow swaps in once the transparent hero
-// PNG export lands — a one-line change here.
+// The lockup appears only at thresholds (launcher, login) — never in the
+// working chrome (sprint/beat/board), per §2R-rule — so the soft ember glow on
+// the mark (a shape-following drop-shadow, applied in .wordmark__mark) is
+// allowed here.
 
 interface WordmarkProps {
   size?: number; // wordmark font-size in px
@@ -15,16 +14,7 @@ interface WordmarkProps {
 export function Wordmark({ size = 40, className }: WordmarkProps) {
   return (
     <span className={`wordmark${className ? ` ${className}` : ''}`} style={{ fontSize: size }} aria-label="Ember">
-      <svg className="wordmark__mark" viewBox="6 12 88 78" aria-hidden="true" focusable="false">
-        <path
-          d="M 24 54 C 40 50 60 49 76 53 C 84 41 70 22 48 22 C 28 22 18 40 21 56 C 23 73 40 83 60 80 C 70 78 76 72 80 64"
-          fill="none"
-          stroke="#E0712C"
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <img className="wordmark__mark" src="/brand/ember-hero.png" alt="" aria-hidden="true" />
       <span className="wordmark__text">Ember</span>
     </span>
   );
