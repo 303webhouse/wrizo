@@ -400,8 +400,76 @@ Rides the existing soft-delete model — `getJournalEntries()` already excludes 
 
 **Branch:** `j3-homepage-testament` off `m1-creative-flow`.
 
-### J5 — Ambient sprint feedback  *(last; owner-gated)*
+### J5 — Ambient sprint feedback (the felt layer)  *(owner has authorized the §8 exception — build it, don't re-ask)*
 
-Slow ambient drift during the sprint only — color-temperature and/or a faint sound bed — with **no discrete events** (the eye is drawn pre-attentively to discrete change and motion; slow continuous drift reads as a felt state, not a noticed event). Any "juice" is deferred to the one finish moment. **This requests an explicit owner exception to §8's "nothing animates without user action (except the timer hairline and the one finish moment)"** — the drift is driven by typing, but it is continuous, so it is a deliberate third carve-out, not an oversight; do not build it without that sign-off. Must respect reduced-motion (per D8). Expose calibration as CSS variables (the `--lockup-lift` pattern) so felt-vs-diverting is dialed live. Aligns with the lamplit-desk atmosphere.
+**Problem:** A sprint should feel like the room responding to your writing — warmth that builds as you write — with nothing you look at and nothing that breaks flow. This is the piece deliberately parked until the rest of the experience existed; it now does. It is the sanctioned third exception to §8's "nothing animates without user action (except the timer hairline and the one finish moment)."
+
+**Investigate first:** (a) Locate the sprint writing surface and timer in `QuickSprint` — the drift attaches to the writing surface and responds to typing activity. (b) Identify the lamplit palette tokens (`--ember`, `--ink-*`) and the existing reduced-motion handling (D8). (c) Check for an existing audio path (likely none — prefer the Web Audio API, no new dependency; flag if a sound asset would be needed).
+
+**Spec — build the mechanism; exact values are tuned later during use:**
+- Slow continuous drift only, no discrete events. As the writer types, the writing surface's ambient warmth builds slowly and continuously (e.g., background color-temperature drifts warmer over tens of seconds of sustained writing); a lull settles it back gently. Never a pop/flash/flicker — it must read as a felt state, not a noticed event.
+- Optional ambient sound bed as the primary "felt" channel (it doesn't compete with the visual field): a faint bed that swells almost imperceptibly with sustained writing, via Web Audio (no dependency). Off by default, behind a quiet toggle; flag if it needs more than built-ins.
+- Juice deferred to the finish moment. No payoff mid-sprint; anything celebratory lands at the existing finish moment only (coordinate with J7's echo there).
+- Conservative defaults + exposed knobs. Ship subtle defaults and expose calibration as CSS variables (the `--lockup-lift` pattern) and/or a small settings control, so felt-vs-diverting is dialed live.
+- Respect reduced-motion (required, D8): with the OS reduced-motion preference set, visual drift is disabled and audio defaults off. The §8 exception does not override accessibility.
+- Scope the exception strictly to the sprint surface's drift + the deferred finish juice; everything else stays under §8.
+
+**Files:** the `QuickSprint` writing-surface component + a small ambient module (drift + optional audio); design tokens/CSS; reduced-motion handling. **No new dependency.** **Out of scope:** any change to capture/journal/sync; discrete animations anywhere; J6; the echo's content (J7).
+
+**DoD** (verify the mechanism via `verify:runtime` — not the subjective feel, which is tuned during use):
+- Sustained typing produces a gradual, continuous warmth drift (verifiable: color changes frame-to-frame are gradual, never a step); a lull settles it back; no discrete visual events.
+- Calibration is changeable via CSS variables / a settings knob without code edits.
+- With reduced-motion set, visual drift is off and audio defaults off.
+- No payoff fires mid-sprint; any lands at the finish moment only.
+- Exception scoped to the sprint surface; nothing else animates or auto-rotates.
+- Typecheck + `build:web` pass; no new dependency; no out-of-scope changes.
+
+**Branch:** `j5-ambient-feedback` off `m1-creative-flow`.
+
+### J6 — Journal entry metadata: star, tags, routed-marker  *(independent; consolidates J4's and J2's deferred bits)*
+
+**Problem:** J4 shipped browse/retrieval but deferred the emergent-organization metadata, and J2 deferred a "routed" provenance marker. Together these are the light, optional, never-forced metadata that makes the journal navigable and stops accidental double-routing: star a scrap, tag it, and see at a glance which scraps you've already sent to a project.
+
+**Investigate first:** (a) Read the `JournalEntry` shape and the `saveJournalEntry` write path — confirm adding optional `starred?`, `tags?: string[]`, and a routed-marker (`routedAt?` or `routedProjectIds?`) is purely additive and rides the existing `journalEntries` sync (in stampMap per J1b). (b) Locate J4's browse + read-view components (where star/tag controls and the routed indicator surface) and J2's routing action (where the marker gets stamped). (c) Reuse the `entryText` helper; no new dependency.
+
+**Spec:**
+- Star: a quiet toggle in the read-view (and/or browse) to star/unstar; a subtle marker on starred entries in browse; optionally a "starred only" filter. Unobtrusive, never forced.
+- Tags: lightweight retroactive free-text tags (add/remove) on an entry; tags shown subtly in browse; a filter-by-tag. Keep the UI minimal — emergent organization, not a taxonomy you're made to fill. (This is the heaviest of the three; if it balloons, flag per §5.)
+- Routed-marker: when J2's routing sends a scrap to a project, stamp the entry so the journal shows it's been cultivated; a subtle "routed" indicator in browse/read-view. Closes the double-route gap. (Touches J2's routing action.)
+- All three are additive optional fields written via `saveJournalEntry`, synced via the existing path. All user-invoked; no animation. Notebook presentation preserved — quiet markers/filters, no counts or badges.
+
+**Files:** `types` (additive `JournalEntry` fields); `persistence` only if a setter is needed (prefer reusing `saveJournalEntry`); J4's browse + read-view (surface markers/filters); J2's routing action (set the marker). **Out of scope:** any change to capture/sync mechanics; semantic search; J5/J7; storing entries differently beyond the additive fields.
+
+**DoD** (verify via `verify:runtime`):
+- Star an entry → marked in browse, persists across reload; "starred" filter (if built) narrows correctly.
+- Add/remove tags → persist across reload; tag filter narrows the list.
+- Route a scrap → entry shows a "routed" marker afterward; a repeat route is visibly indicated.
+- Fields sync via the existing `journalEntries` path; soft-deleted entries still excluded; notebook presentation intact.
+- Typecheck + `build:web` pass; additive only; no new dependency; no out-of-scope changes.
+
+**Branch:** `j6-entry-metadata` off `m1-creative-flow`.
+
+### J7 — Post-sprint echo (reflect the writer's own line back)  *(touches the finish moment — coordinate with J5)*
+
+**Problem:** At the end of a sprint, the most intrinsic reward available is the writer's own words — surfacing one of their own lines back quietly says "you wrote that." The micro counterpart to J3's macro testament; part of the original design, never ticketed.
+
+**Investigate first:** (a) Locate the sprint finish moment in `QuickSprint` (the §8-permitted finish state where options/summary appear — where J5's deferred juice also lands); the echo renders here, alongside J5. (b) Reuse `entryText` to pull lines from the just-written sprint. (c) Confirm the completed sprint's text is available at the finish moment (it's what gets committed to the journal).
+
+**Spec:**
+- At the finish moment, reflect one line from the writer's own just-written sprint back, quietly and affirmingly (e.g., "You wrote:" + the line).
+- Selection is simple and local — pick the first substantial line/sentence (skip empty/very-short ones), or a random substantial one. No AI/generation — this is reflection, consistent with §8's no-AI rule.
+- Skip gracefully when there's no substantial line (very short sprint): no echo rather than an awkward fragment.
+- Quiet, on the lamplit tokens; part of the finish moment, not a mid-sprint interruption; coexists with J5's finish-moment behavior.
+
+**Files:** the `QuickSprint` finish-moment component; reuse `entryText`. **No new dependency.** **Out of scope:** any generated/AI commentary on the writing (reflection only); J5's drift; any change to capture/journal.
+
+**DoD** (verify via `verify:runtime`):
+- After a sprint with substantial text, the finish moment shows one of the writer's own lines, quietly.
+- A short / no-substantial-line sprint shows no echo (graceful skip).
+- The line is the writer's own (from the just-written sprint), not generated.
+- Coexists with J5's finish-moment behavior without conflict.
+- Typecheck + `build:web` pass; no new dependency; no out-of-scope changes.
+
+**Branch:** `j7-post-sprint-echo` off `m1-creative-flow`.
 
 *End of brief. When in doubt: protect the words, protect the momentum, keep the lamp warm.*
