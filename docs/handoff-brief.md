@@ -309,6 +309,21 @@ Rides the existing soft-delete model — `getJournalEntries()` already excludes 
 
 **Branch:** `j1a-honor-discard` off `m1-creative-flow`; merge when DoD met.
 
+### J1b — Register journalEntries in the sync stampMap (completes J1's sync eligibility)
+
+**Problem:** J1 added the `journalEntries` collection and it pushes on sync, but `sync.ts`'s `stampMap` lists only `projects/storyPlans/sessions/drafts` — `journalEntries` is missing, so entries are never `markClean`'d after a successful push and the entire (ever-growing) journal re-uploads every 20s cycle. Idempotent upsert means no corruption, but it's unbounded waste on the substrate collection and degrades the mobile/flaky-connection case. This is the one gap in J1's "sync-eligible by inheriting the adapter pattern" intent.
+
+**Spec:** Add `'journalEntries'` to the `stampMap` collection list in `apps/desktop/src/store/sync.ts` so entries `markClean` after a successful push exactly like the sibling collections. Match the existing pattern; no other changes.
+
+**Files:** `apps/desktop/src/store/sync.ts` only. **Out of scope:** any other sync changes; the J1 entry shape / adapter wiring (unchanged); the harness.
+
+**DoD:**
+- Typecheck passes.
+- Via `verify:runtime`: save a journal entry, run a sync cycle, confirm it pushes once and is not re-queued/re-pushed on the next cycle (it's `markClean`'d like its siblings); sibling collections' clean behavior unchanged.
+- No new deps; no out-of-scope changes; `build:web` compiles.
+
+**Branch:** `j1b-journal-sync-stamp` off `m1-creative-flow`; merge when DoD met.
+
 ### J2 — Pull-based routing (scrap → project)  *(depends on J1)*
 
 A quiet, **invoked** action — summoned by the writer, never a persistent on-screen control and never a post-sprint "where does this go?" prompt — to send a Journal entry into a project. Respects §8's one-brass-action-per-screen rule (adds no competing primary action to the sprint or journal surface). Default semantics: **branch-copy** (the project gets an independent scene record; the Journal entry stays whole — don't tear pages out), the safe choice under record-level last-write-wins. Include a "promote to a new project" path. Full spec after J1 settles the record shape.
