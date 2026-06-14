@@ -71,6 +71,13 @@ export interface JournalEntry {
   createdAt: string; // set once on commit, never mutated
   updatedAt: string;
   deletedAt?: string;
+  // Emergent organization (J6) — light, optional, never forced. All additive and
+  // synced via the existing journalEntries path; the entry's text is never
+  // touched. `routedProjectIds` records which projects a scrap has been
+  // cultivated into (J2 stamps it), closing the double-route gap.
+  starred?: boolean;
+  tags?: string[];
+  routedProjectIds?: string[];
 }
 
 // Writing-session instrumentation (A9). The collection is wired through the

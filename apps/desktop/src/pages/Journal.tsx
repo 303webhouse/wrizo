@@ -25,11 +25,19 @@ const eyebrow: React.CSSProperties = { marginBottom: 8 };
 export function Journal() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [starredOnly, setStarredOnly] = useState(false);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   // Snapshot once per render; reads are cheap and the page is read-only.
   const entries = useMemo(() => getJournalEntries(), []);
   const now = Date.now();
 
-  const filtered = entries.filter(e => matchesQuery(e.text, query));
+  const filtered = entries.filter(e =>
+    matchesQuery(e.text, query)
+    && (!starredOnly || e.starred)
+    && (!tagFilter || (e.tags ?? []).includes(tagFilter)));
+
+  // Unique tags across all entries, for the quiet tag-filter row.
+  const allTags = [...new Set(entries.flatMap(e => e.tags ?? []))].sort();
 
   // Group the filtered list into ordered time buckets (the spine).
   const groups: { label: string; rows: JournalEntry[] }[] = [];
@@ -57,7 +65,7 @@ export function Journal() {
         Everything you've written.
       </h1>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: allTags.length > 0 ? 12 : 24, flexWrap: 'wrap' }}>
         <input
           className="journal-search"
           type="search"
@@ -70,10 +78,40 @@ export function Journal() {
             color: 'var(--text-hi)', fontFamily: 'var(--font-ui)', fontSize: 15,
           }}
         />
+        <button
+          type="button"
+          className="btn-quiet journal-starred-toggle"
+          data-on={starredOnly ? 'true' : 'false'}
+          onClick={() => setStarredOnly(v => !v)}
+          style={{ color: starredOnly ? 'var(--brass)' : 'var(--text-mid)' }}
+        >
+          {starredOnly ? '★ Starred only' : '☆ Starred only'}
+        </button>
         <button type="button" className="btn-quiet journal-surface" onClick={surface} disabled={entries.length === 0}>
           Surface a past page
         </button>
       </div>
+
+      {allTags.length > 0 && (
+        <div className="journal-tag-filters" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 24 }}>
+          {allTags.map(t => (
+            <button
+              key={t}
+              type="button"
+              className="btn-quiet journal-tag-filter"
+              data-tag={t}
+              data-active={tagFilter === t ? 'true' : 'false'}
+              onClick={() => setTagFilter(tagFilter === t ? null : t)}
+              style={{ border: '1px solid var(--ink-border)', borderRadius: 'var(--radius-sm)', padding: '3px 10px', fontSize: 13, color: tagFilter === t ? 'var(--brass)' : 'var(--text-mid)' }}
+            >
+              {t}
+            </button>
+          ))}
+          {tagFilter && (
+            <button type="button" className="btn-quiet journal-tag-clear" onClick={() => setTagFilter(null)} style={{ color: 'var(--text-low)' }}>clear</button>
+          )}
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <p style={{ color: 'var(--text-mid)' }}>No pages yet — your finished sprints will gather here.</p>
@@ -99,13 +137,21 @@ export function Journal() {
                 }}
               >
                 <div className="journal-label" style={{ color: 'var(--text-hi)', fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
+                  {entry.starred && <span className="journal-star" style={{ color: 'var(--brass)', marginRight: 6 }}>★</span>}
                   {firstLine(entry.text).slice(0, 80)}
                 </div>
                 <div className="journal-snippet" style={{ color: 'var(--text-mid)', fontSize: 14, marginBottom: 4 }}>
                   {snippet(entry.text, 120)}
                 </div>
+                {(entry.tags ?? []).length > 0 && (
+                  <div className="journal-row-tags" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                    {(entry.tags ?? []).map(t => (
+                      <span key={t} className="journal-row-tag" style={{ fontSize: 11, color: 'var(--text-low)', border: '1px solid var(--ink-border)', borderRadius: 'var(--radius-sm)', padding: '1px 6px' }}>{t}</span>
+                    ))}
+                  </div>
+                )}
                 <div className="journal-time" style={{ color: 'var(--text-low)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                  {formatStamp(entry.createdAt)}
+                  {formatStamp(entry.createdAt)}{(entry.routedProjectIds?.length ?? 0) > 0 ? ' · routed' : ''}
                 </div>
               </button>
             ))}
