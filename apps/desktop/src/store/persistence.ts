@@ -377,7 +377,7 @@ export function saveSession(session: SessionLog): void {
 }
 
 export function getSessions(): SessionLog[] {
-  return cache.sessions.map(clone);
+  return cache.sessions.filter(s => !s.deletedAt).map(clone);
 }
 
 // --- Journal (J1) ---------------------------------------------------------

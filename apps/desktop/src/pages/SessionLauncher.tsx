@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getProjects } from '../store/persistence';
+import { getProjects, getSessions } from '../store/persistence';
 import { getResumeTarget, relativeDays } from '../store/resume';
+import { selectTestament } from '../store/testament';
 import { Wordmark } from '../components/Wordmark';
 import type { Project } from '../types';
 
@@ -26,9 +27,33 @@ const displayLine: React.CSSProperties = {
   color: 'var(--text-hi)',
 };
 
+const testamentStyle: React.CSSProperties = {
+  color: 'var(--text-mid)',
+  fontFamily: 'var(--font-ui)',
+  fontSize: 14,
+};
+
+// The testament line (J3): quiet text, numbers in Courier Prime (the typewriter
+// motif). Static — computed once at mount, never animated or auto-rotated.
+function TestamentText({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/(\d[\d,]*)/g).map((part, i) =>
+        /^\d[\d,]*$/.test(part) ? (
+          <span key={i} style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-hi)' }}>{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
 export function SessionLauncher() {
   const navigate = useNavigate();
   const [greeting] = useState(timeGreeting);
+  // Computed once at mount: static line, may differ between visits, never rotates.
+  const [testament] = useState(() => selectTestament(getSessions(), Date.now()));
   const resume = getResumeTarget();
   const projects = getProjects();
   const startRef = useRef<HTMLAnchorElement>(null);
@@ -49,8 +74,8 @@ export function SessionLauncher() {
           <Wordmark size={28} />
         </div>
         <h1 style={{ ...displayLine, marginBottom: 12 }}>The page is ready when you are.</h1>
-        <p style={{ color: 'var(--text-mid)', marginBottom: 32 }}>
-          Start a sprint now, or shape a project first.
+        <p className="testament-line" style={{ ...testamentStyle, marginBottom: 32 }}>
+          <TestamentText text={testament.text} />
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 280, margin: '0 auto' }}>
           <Link ref={startRef} to="/sprint" className="btn-brass">Start writing</Link>
@@ -72,7 +97,10 @@ export function SessionLauncher() {
         {greeting && <div className="eyebrow" style={{ marginBottom: 8 }}>{greeting}</div>}
         <Wordmark size={28} />
       </div>
-      <h1 style={{ ...displayLine, textAlign: 'center', marginBottom: 32 }}>The page is ready when you are.</h1>
+      <h1 style={{ ...displayLine, textAlign: 'center', marginBottom: 12 }}>The page is ready when you are.</h1>
+      <p className="testament-line" style={{ ...testamentStyle, textAlign: 'center', marginBottom: 32 }}>
+        <TestamentText text={testament.text} />
+      </p>
 
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="eyebrow" style={{ marginBottom: 12 }}>{resume.project.title}</div>

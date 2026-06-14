@@ -84,6 +84,7 @@ export interface SessionLog {
   words: number;
   durationSec: number;
   updatedAt: string;
+  deletedAt?: string;
 }
 
 export interface WizardAnswers {
