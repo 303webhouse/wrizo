@@ -324,9 +324,56 @@ Rides the existing soft-delete model — `getJournalEntries()` already excludes 
 
 **Branch:** `j1b-journal-sync-stamp` off `m1-creative-flow`; merge when DoD met.
 
-### J2 — Pull-based routing (scrap → project)  *(depends on J1)*
+### J4 — Journal browse + retrieval (the notebook surface)  *(depends on J1; first of the J4→J2 push)*
 
-A quiet, **invoked** action — summoned by the writer, never a persistent on-screen control and never a post-sprint "where does this go?" prompt — to send a Journal entry into a project. Respects §8's one-brass-action-per-screen rule (adds no competing primary action to the sprint or journal surface). Default semantics: **branch-copy** (the project gets an independent scene record; the Journal entry stays whole — don't tear pages out), the safe choice under record-level last-write-wins. Include a "promote to a new project" path. Full spec after J1 settles the record shape.
+**Problem:** Every sprint lands in the journal, but a writer has no way to see it — the substrate is a write-only black box from their side. J4 makes it a visible, browsable, searchable place: a notebook to flip through and pull from, not an inbox to clear.
+
+**Investigate first:** (a) Locate the router config (HashRouter) to add a `/journal` route and a quiet affordance to reach it from `SessionLauncher` (the home). (b) Find the existing Tiptap plain-text extraction helper (the word-count / testament path almost certainly has one) and reuse it for first-line labels, snippets, and search — no new dependency, no reinventing extraction. (c) Confirm `getJournalEntries()` (newest-first, excludes soft-deleted) is the read source.
+
+**Spec:**
+- Route + entry point: a `/journal` route, reachable from home via a quiet affordance (secondary link, not a brass button) — the home's single brass action (Start writing / Resume) stays intact.
+- Chronological browse: entries newest-first, grouped by time (the spine). Each row shows a first-line-derived label (entries have no titles — derive from the opening non-empty line), a short snippet, and the timestamp.
+- Read view: tapping a row opens the full text, read-only. This view reserves a single primary-action slot for routing — J4 leaves it empty (or a disabled placeholder); J2 fills it. This is the seam.
+- Local full-text search: filters entries by content via substring/token match over the in-memory cache (extracted text) — instant, offline, no network, no new dependency.
+- Resurfacing: a user-invoked "surface a past entry" control that shows one random past entry (flip-to-a-page). Invoked only — nothing auto-rotates or animates on its own (§8).
+- Presentation — notebook, not inbox: no unread counter, no backlog meter, no entry-count badge. Cozy and chronological, on the lamplit tokens.
+- Soft-deleted (discarded) entries never appear.
+
+**Files:** new journal route component(s) (e.g., `pages/Journal.tsx` + an entry read-view), `SessionLauncher.tsx` (quiet affordance), router config. **Out of scope:** all J2 routing logic (J4 only reserves the slot); semantic/AI search (local full-text is the deliverable; semantic is a future online-only enhancement); star/tag emergent organization (a later small follow-up); editing or resuming an entry into a sprint; any sync changes.
+
+**DoD** (verify behavior via `verify:runtime`, real bundle, seeded entries, past the login gate):
+- `/journal` reachable from home via a quiet affordance; the home's one brass action preserved.
+- Entries newest-first with a time spine; each shows a first-line label, snippet, timestamp.
+- Read view opens the full text and reserves one empty primary-action slot for routing.
+- Search filters by content, instant and offline, no new dependency.
+- Resurfacing surfaces a random past entry, user-invoked only; nothing auto-rotates/animates (§8).
+- Discarded entries never appear; notebook presentation (no counters/badges).
+- Typecheck + `build:web` pass; read-only; no new dependency; no out-of-scope changes.
+
+**Branch:** `j4-journal-browse` off `m1-creative-flow`.
+
+### J2 — Pull-based routing: scrap → project  *(depends on J4's seam; second of the push)*
+
+**Problem:** The journal is the soil; projects are what you cultivate from it. J2 lets a writer take a scrap they're browsing and develop it — into an existing project or a new one — without damaging the original. Capture stays whole; routing is a branch, not a move.
+
+**Investigate first:** (a) Read the project/chapter/scene structure (project → `chapters[]` → `scenes[]`) and how a new scene is created/added (reuse the existing path if one exists). (b) Decide chapter placement for a routed scrap — a scene needs a chapter, so when sending to an existing project, append the scrap as a new scene to the project's last chapter by default (create a first chapter if the project has none); confirm this is least-surprising against the real structure, flag if ambiguous (§5). (c) Confirm the scene shape (`id, title, content, wordCountGoal, status`) and that `content` accepts the entry's text serialization unchanged (both Tiptap — no conversion). (d) Reuse J4's first-line-derivation helper for titles.
+
+**Spec:**
+- The action lives in the slot J4 reserved in the entry read-view — a quiet, invoked "Send to project" / "Promote to new project." It is the entry view's single brass action (the project picker is a transient selection, not a competing persistent action).
+- Send to existing project: user picks a project; create a new scene whose `content` = the entry's text (same serialization, no lossy conversion), `title` = the first-line label, `status` = draft default, placed per the chapter-placement decision. The journal entry is untouched.
+- Promote to a new project: create a new project with a default first chapter containing the scrap as its first scene; working title from the first-line label (editable later). The journal entry is untouched.
+- Branch-copy invariant: the routed scene is an independent record — later edits to the scene don't change the journal entry, and vice versa. Both ride the existing projects sync (already in stampMap); no sync changes.
+- §8: user-invoked only (no auto-routing); one brass action per screen.
+
+**Files:** the entry read-view (fill the reserved slot), the project/scene creation path, a small project-picker UI. Touch `persistence.ts`/`types` only if the existing scene-creation path doesn't already cover it (prefer reuse). **Out of scope:** any change to how journal entries are stored (read, never modified — the invariant); a "routed" provenance marker on the entry (a later follow-up); semantic search; star/tag; sync changes.
+
+**DoD** (verify via `verify:runtime`, real bundle, seeded entries + a seeded project):
+- From an entry's read-view, "Send to project" → pick a project → a new scene appears in it with the entry's text, placed per the decided default; the journal entry is still present and byte-identical.
+- "Promote to a new project" → a new project created (default first chapter + the scrap as first scene, working title from the first line); the journal entry unchanged.
+- Independence: editing the routed scene doesn't alter the journal entry (and vice versa); every routed scene has a valid chapter (no orphans).
+- New records sync via the existing projects path (no sync changes); typecheck + `build:web` pass; journal-stays-whole invariant holds; no new dependency; no out-of-scope changes.
+
+**Branch:** `j2-scrap-routing` off `m1-creative-flow`.
 
 ### J3 — Homepage testament  *(independent of J1; reads `sessions` only)*
 
@@ -350,10 +397,6 @@ A quiet, **invoked** action — summoned by the writer, never a persistent on-sc
 - Reads only; no new dependency; no out-of-scope changes; typecheck + `build:web` pass; the single brass action (start a sprint) is preserved.
 
 **Branch:** `j3-homepage-testament` off `m1-creative-flow`.
-
-### J4 — Journal browse + retrieval  *(depends on J1; aligns with the D-stream redesign)*
-
-The notebook surface: chronological spine, first-line-derived labels, snippets, optional retroactive star/tag, and resurfacing ("flip to a page"). Primary retrieval is **local full-text + chronological browse** — instant, offline, no new dependency (substring/token match over the in-memory cache), honoring the never-block rule. Optional **semantic search is retrieval-only** (not prose generation — consistent with §8's no-AI-drafting rule) and an **online-only graceful enhancement** that disappears offline, never the primary path. Presented as a notebook to flip, not an inbox to clear: no unread counters, no backlog meter.
 
 ### J5 — Ambient sprint feedback  *(last; owner-gated)*
 
