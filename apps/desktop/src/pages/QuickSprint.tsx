@@ -8,6 +8,7 @@ import {
 import type { JournalEntry } from '../types';
 import { getFramework } from '../store/frameworks';
 import { startAmbient, type AmbientHandle } from '../store/ambient';
+import { pickEchoLine } from '../store/entryText';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -89,6 +90,7 @@ export function QuickSprint() {
   const [beatOpen, setBeatOpen] = useState(true);
   const [markBeatDone, setMarkBeatDone] = useState(false);
   const [soundOn, setSoundOn] = useState(false); // ambient sound bed (J5), off by default
+  const [echoLine, setEchoLine] = useState<string | null>(null); // post-sprint echo (J7)
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
@@ -162,6 +164,7 @@ export function QuickSprint() {
   const enterFinish = (byTimer: boolean) => {
     commitJournalEntry();
     ambientRef.current?.resolve(); // J5: settle the drift; any payoff is the finish moment (J7)
+    setEchoLine(pickEchoLine(draftTextRef.current)); // J7: reflect one of the writer's own lines (or none)
     const words = Math.max(0, wordCount(draftTextRef.current) - sessionStartWordsRef.current);
     const minutes = sprintStartMsRef.current
       ? Math.max(1, Math.round((Date.now() - sprintStartMsRef.current) / 60000))
@@ -616,6 +619,17 @@ export function QuickSprint() {
           {finishStats.byTimer && (
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-mid)', marginTop: 4 }}>
               <span style={{ color: 'var(--ember)' }}>{displayWords}</span> words in {finishStats.minutes} minutes
+            </div>
+          )}
+
+          {/* Post-sprint echo (J7): one of the writer's own lines, reflected
+              back quietly. Skips gracefully when no substantial line exists. */}
+          {echoLine && (
+            <div className="sprint-echo" style={{ marginTop: 16 }}>
+              <div className="eyebrow" style={{ marginBottom: 6 }}>YOU WROTE</div>
+              <div className="sprint-echo-line" style={{ fontFamily: 'var(--font-prose)', fontStyle: 'italic', fontSize: 17, lineHeight: 1.5, color: 'var(--text-hi)' }}>
+                “{echoLine}”
+              </div>
             </div>
           )}
 
