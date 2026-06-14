@@ -60,6 +60,15 @@
   --ember-bright: #F4983F;
   --ember-deep:   #93340F;
 
+  /* Ambient sprint feedback (J5) — the felt layer. Calibration knobs, tunable
+     live without code edits (the --lockup-lift pattern). The sprint surface's
+     warm overlay opacity = --sprint-warmth (a runtime 0..1 value set by the
+     drift loop) × --ambient-intensity. Taus are in seconds. */
+  --ambient-intensity: 0.09;      /* peak warm-overlay opacity at full warmth */
+  --ambient-rise-tau: 28;         /* seconds to ~63% warmth under sustained typing */
+  --ambient-fall-tau: 14;         /* seconds to settle back on a lull */
+  --ambient-active-window: 4;     /* seconds since last keystroke still counted as "typing" */
+
   /* Legacy aliases — keep untouched screens working during migration.
      Removed in D8 once every screen uses the new tokens directly. */
   --color-bg: var(--ink-950);

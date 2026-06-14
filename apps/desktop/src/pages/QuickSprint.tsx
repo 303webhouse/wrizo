@@ -7,6 +7,7 @@ import {
 } from '../store/persistence';
 import type { JournalEntry } from '../types';
 import { getFramework } from '../store/frameworks';
+import { startAmbient, type AmbientHandle } from '../store/ambient';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -87,7 +88,10 @@ export function QuickSprint() {
   const [chromeHover, setChromeHover] = useState(false);
   const [beatOpen, setBeatOpen] = useState(true);
   const [markBeatDone, setMarkBeatDone] = useState(false);
+  const [soundOn, setSoundOn] = useState(false); // ambient sound bed (J5), off by default
 
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  const ambientRef = useRef<AmbientHandle | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const draftTextRef = useRef(draftText);
   draftTextRef.current = draftText;
@@ -157,6 +161,7 @@ export function QuickSprint() {
   // the single point that commits the sprint to the Journal (J1).
   const enterFinish = (byTimer: boolean) => {
     commitJournalEntry();
+    ambientRef.current?.resolve(); // J5: settle the drift; any payoff is the finish moment (J7)
     const words = Math.max(0, wordCount(draftTextRef.current) - sessionStartWordsRef.current);
     const minutes = sprintStartMsRef.current
       ? Math.max(1, Math.round((Date.now() - sprintStartMsRef.current) / 60000))
@@ -252,6 +257,23 @@ export function QuickSprint() {
     textareaRef.current?.focus();
   }, []);
 
+  // Ambient felt-warmth drift (J5). Attaches to the writing surface; honors
+  // reduced-motion internally (drift off, audio off). Torn down on unmount.
+  useEffect(() => {
+    if (!surfaceRef.current) return;
+    const handle = startAmbient(surfaceRef.current);
+    ambientRef.current = handle;
+    return () => {
+      handle.stop();
+      ambientRef.current = null;
+    };
+  }, []);
+
+  // Propagate the quiet sound toggle to the ambient bed (off by default).
+  useEffect(() => {
+    ambientRef.current?.setSoundEnabled(soundOn);
+  }, [soundOn]);
+
   // Idle hint: only after the first keystroke of the session; reset on typing (A8).
   useEffect(() => {
     if (!hasTypedRef.current) return;
@@ -302,6 +324,7 @@ export function QuickSprint() {
     hasTypedRef.current = true;
     if (firstKeystrokeAtRef.current === null) firstKeystrokeAtRef.current = new Date().toISOString();
     lastKeystrokeMsRef.current = Date.now();
+    ambientRef.current?.noteKeystroke(); // J5: feed the felt-warmth drift
     setDraftText(value);
   };
 
@@ -457,6 +480,14 @@ export function QuickSprint() {
           <button type="button" className="btn-quiet" onClick={handleGetNudge} disabled={locked}>
             Take a nudge
           </button>
+          <button
+            type="button"
+            className="btn-quiet sprint-sound-toggle"
+            data-on={soundOn ? 'true' : 'false'}
+            onClick={() => setSoundOn(v => !v)}
+          >
+            {soundOn ? 'Sound on' : 'Sound off'}
+          </button>
         </div>
         {remainingSeconds !== null && (
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 32, lineHeight: 1, color: 'var(--text-hi)' }}>
@@ -508,6 +539,7 @@ export function QuickSprint() {
 
       {/* The page */}
       <div
+        ref={surfaceRef}
         className="paper-page"
         style={{
           maxWidth: '68ch', margin: '0 auto', minHeight: '60vh', position: 'relative',
@@ -517,6 +549,17 @@ export function QuickSprint() {
           transition: 'box-shadow var(--t-state) var(--ease)',
         }}
       >
+        {/* Ambient warm overlay (J5): opacity drifts with --sprint-warmth, set
+            continuously by the drift loop. Decorative, never interactive. */}
+        <div
+          aria-hidden="true"
+          className="sprint-warmth-overlay"
+          style={{
+            position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+            borderRadius: 'var(--radius-md)', background: 'var(--ember)',
+            opacity: 'calc(var(--sprint-warmth, 0) * var(--ambient-intensity))',
+          }}
+        />
         <textarea
           ref={textareaRef}
           value={draftText}
@@ -525,6 +568,7 @@ export function QuickSprint() {
           onBlur={() => { setTextareaFocused(false); flushDraft(); }}
           placeholder="Write without stopping…"
           style={{
+            position: 'relative', zIndex: 1,
             width: '100%', minHeight: '54vh', border: 'none', outline: 'none',
             background: 'transparent', resize: 'none', color: 'var(--ink-on-paper)',
             fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
