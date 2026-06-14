@@ -7,6 +7,8 @@ import { StructureWizard } from './pages/StructureWizard';
 import { BeatWizard } from './pages/BeatWizard';
 import { StructureBoard } from './pages/StructureBoard';
 import { QuickSprint } from './pages/QuickSprint';
+import { Journal } from './pages/Journal';
+import { JournalEntry } from './pages/JournalEntry';
 import { LoginScreen } from './components/LoginScreen';
 import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -152,6 +154,8 @@ export function App() {
         <Route path="/project/:id/beat" element={<BeatWizard />} />
         <Route path="/project/:id/board" element={<StructureBoard />} />
         <Route path="/sprint" element={<QuickSprint />} />
+        <Route path="/journal" element={<Journal />} />
+        <Route path="/journal/:id" element={<JournalEntry />} />
       </Routes>
     </HashRouter>
   );
