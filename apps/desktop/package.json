@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"node scripts/wait-and-electron.mjs\"",
     "build": "vite build && tsc src/main.ts src/preload.ts --outDir dist --declaration false --module commonjs --target es2020 --skipLibCheck --esModuleInterop --moduleResolution node",
-    "build:web": "vite build --outDir dist-web --emptyOutDir"
+    "build:web": "vite build --outDir dist-web --emptyOutDir",
+    "verify:runtime": "node scripts/runtime-verify.mjs --selftest"
   },
   "dependencies": {
     "@fontsource-variable/figtree": "^5.2.10",

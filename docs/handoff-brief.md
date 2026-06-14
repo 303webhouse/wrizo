@@ -197,8 +197,8 @@ Fully specified in `docs/ui-redesign-spec.md` (tokens, type, components, per-scr
 |---|---|---|
 | 1 | **A2** storage adapter | Foundation. Everything builds on it. |
 | 2 | **A1** autosave | Words become loss-proof locally. |
-| 3 | **W1** server + auth | |
-| 4 | **W2** sync engine | |
+| 3 | **W1** server + auth | ✅ In tree (`apps/server`): Express + cookie-session auth (`/auth/*`), `/healthz`, bcrypt, rate limiter, Postgres migrations on boot, static + SPA fallback. Not yet runtime-verified here or deployed (W3). |
+| 4 | **W2** sync engine | ✅ In tree: client engine (`store/sync.ts` — full-pull on login, 20s + `online`/`visibilitychange`, silent backoff, last-write-wins reconcile) and the `/api/sync` endpoint; **login gate** wired in `App.tsx` (`apiMe()`→`LoginScreen`). Consequence: the static bundle can't reach any screen without the running server — see the runtime-verification note in §10. (`store/sync.ts`'s `stampMap` still lists only projects/storyPlans/sessions/drafts — `journalEntries` not yet added; minor follow-up, not addressed here.) |
 | 5 | **W3** Railway deploy | 🚩 **MILESTONE: owner has a URL on his phone.** Ship this before polish — momentum applies to the build too. |
 | 6 | **D1 + D2** tokens, fonts, components | Parallel-safe any time after A2. |
 | 7 | **A8, A7, A6, A4 + D4** | The sprint screen, behavior + skin in one pass. |
@@ -238,6 +238,8 @@ Fully specified in `docs/ui-redesign-spec.md` (tokens, type, components, per-scr
 
 ## 9. Validation gate (after #14, before inviting testers)
 
+**Runtime verification convention:** UI tickets are verified at runtime with the in-repo harness (`apps/desktop/scripts/runtime-verify.mjs`), which boots the built bundle past the W2 login gate via a dependency-free auth/sync test-double (Node built-ins + CDP + headless Edge/Chrome, no added deps — §8). `pnpm --filter @writer-studio/desktop verify:runtime` runs its self-test; per-ticket scenarios `import { withHarness }`.
+
 1. Full `docs/release-checklist.md` smoke tests (both paths) **in a phone browser and a desktop browser**.
 2. Airplane-mode round trip: write 100+ words offline on the phone → reconnect → verify in Postgres.
 3. Two-device session: laptop + phone, same account, edits converge.
@@ -248,6 +250,8 @@ Fully specified in `docs/ui-redesign-spec.md` (tokens, type, components, per-scr
 ## 10. Stream J — Journal substrate & sprint rewards
 
 *Added as a new arc; not yet placed in the §7 sequencing — slot it among the existing 14 at your discretion. Builds on **A2** (storage adapter) and **A1** (drafts under `projectId ?? 'scratch'`); inherits the in-memory cache, dirty-queue, soft-delete, and the never-block-on-network rule for free. Order within the arc: **J1 → (J2, J4)**; **J3** is independent and low-risk; **J5** is last and owner-gated. Protect the words, protect the momentum.*
+
+> **Runtime UI verification requires an auth test-double.** The W2 login gate (`apiMe()` → `LoginScreen`) is wired in `App.tsx`, so the static bundle can't reach any screen without a running `/auth` server. Verifying any UI ticket at runtime (J3, J4, J5, and future surfaces) means driving the rendered bundle past that gate. Use the in-repo harness — `apps/desktop/scripts/runtime-verify.mjs` (`import { withHarness }`): a dependency-free auth/sync test-double + CDP/headless-Edge driver, Node built-ins only, no added deps (§8). Smoke-check it with `pnpm --filter @writer-studio/desktop verify:runtime`.
 
 ### J1 — Journal collection + commit-on-sprint (DO THIS FIRST; foundation for the arc)
 
