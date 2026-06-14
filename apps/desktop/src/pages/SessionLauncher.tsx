@@ -81,6 +81,9 @@ export function SessionLauncher() {
           <Link ref={startRef} to="/sprint" className="btn-brass">Start writing</Link>
           <Link to="/project/new" className="btn-ghost">Plan a project</Link>
         </div>
+        <div style={{ marginTop: 20 }}>
+          <Link to="/journal" className="btn-quiet">The journal</Link>
+        </div>
       </div>
     );
   }
@@ -149,6 +152,7 @@ export function SessionLauncher() {
       <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
         <button type="button" className="btn-quiet" onClick={() => navigate('/sprint')}>Start a new sprint</button>
         <button type="button" className="btn-quiet" onClick={() => navigate('/project/new')}>Plan a project</button>
+        <button type="button" className="btn-quiet" onClick={() => navigate('/journal')}>The journal</button>
       </div>
     </div>
   );
