@@ -356,22 +356,24 @@ Rides the existing soft-delete model — `getJournalEntries()` already excludes 
 
 **Problem:** The journal is the soil; projects are what you cultivate from it. J2 lets a writer take a scrap they're browsing and develop it — into an existing project or a new one — without damaging the original. Capture stays whole; routing is a branch, not a move.
 
-**Investigate first:** (a) Read the project/chapter/scene structure (project → `chapters[]` → `scenes[]`) and how a new scene is created/added (reuse the existing path if one exists). (b) Decide chapter placement for a routed scrap — a scene needs a chapter, so when sending to an existing project, append the scrap as a new scene to the project's last chapter by default (create a first chapter if the project has none); confirm this is least-surprising against the real structure, flag if ambiguous (§5). (c) Confirm the scene shape (`id, title, content, wordCountGoal, status`) and that `content` accepts the entry's text serialization unchanged (both Tiptap — no conversion). (d) Reuse J4's first-line-derivation helper for titles.
+**Investigate first:** (a) Read the project/scene structure and how a new scene is created/added (reuse the existing path if one exists). (b) Decide placement for a routed scrap; confirm least-surprising against the real structure, flag if ambiguous (§5). (c) Confirm the content shape accepts the entry's text serialization unchanged. (d) Reuse J4's first-line-derivation helper for titles.
+
+**Resolved (data model — owner-approved):** This codebase has **no `chapters[]`/`scenes[]` model** — a project's prose is the single `Project.sprintText` string; there is no scene shape, `wordCountGoal`, or `status`, and no rich-text/Tiptap (entries are plain text). So routing maps onto the existing model: **send to existing project** appends the scrap to the target project's `sprintText` under a clear demarcation header (`— from the journal —`), with **no leading separator when the draft is blank**; **promote to a new project** reuses `createQuickSprintProject(text, title)` (title = first-line label). No new types/collection/sync changes; reuses `setProjectSprintText` / `createQuickSprintProject` / `getProjects`.
 
 **Spec:**
-- The action lives in the slot J4 reserved in the entry read-view — a quiet, invoked "Send to project" / "Promote to new project." It is the entry view's single brass action (the project picker is a transient selection, not a competing persistent action).
-- Send to existing project: user picks a project; create a new scene whose `content` = the entry's text (same serialization, no lossy conversion), `title` = the first-line label, `status` = draft default, placed per the chapter-placement decision. The journal entry is untouched.
-- Promote to a new project: create a new project with a default first chapter containing the scrap as its first scene; working title from the first-line label (editable later). The journal entry is untouched.
-- Branch-copy invariant: the routed scene is an independent record — later edits to the scene don't change the journal entry, and vice versa. Both ride the existing projects sync (already in stampMap); no sync changes.
+- The action lives in the slot J4 reserved in the entry read-view — a quiet, invoked routing control. It is the entry view's single brass action ("Send to a project"); the project picker is a transient selection, not a competing persistent action.
+- Send to existing project: user picks a project; the scrap's text is appended to that project's `sprintText` draft under the `— from the journal —` header (no leading separator if the draft is blank). The journal entry is untouched.
+- Promote to a new project: create a new project whose draft is the scrap; working title from the first-line label (editable later). The journal entry is untouched.
+- Branch-copy invariant: the routed draft is an independent record (separate `projects` collection) — later edits to it don't change the journal entry, and vice versa. Rides the existing projects sync (already in stampMap); no sync changes.
 - §8: user-invoked only (no auto-routing); one brass action per screen.
 
-**Files:** the entry read-view (fill the reserved slot), the project/scene creation path, a small project-picker UI. Touch `persistence.ts`/`types` only if the existing scene-creation path doesn't already cover it (prefer reuse). **Out of scope:** any change to how journal entries are stored (read, never modified — the invariant); a "routed" provenance marker on the entry (a later follow-up); semantic search; star/tag; sync changes.
+**Files:** the entry read-view (fill the reserved slot + a small project-picker UI) and the existing project/draft write paths (reused, not extended). No `types`/`persistence` additions were needed — the existing `sprintText` model covers it. **Out of scope:** any change to how journal entries are stored (read, never modified — the invariant); a "routed" provenance marker on the entry (a later follow-up); semantic search; star/tag; sync changes; building a discrete chapters/scenes model (its own future ticket).
 
 **DoD** (verify via `verify:runtime`, real bundle, seeded entries + a seeded project):
-- From an entry's read-view, "Send to project" → pick a project → a new scene appears in it with the entry's text, placed per the decided default; the journal entry is still present and byte-identical.
-- "Promote to a new project" → a new project created (default first chapter + the scrap as first scene, working title from the first line); the journal entry unchanged.
-- Independence: editing the routed scene doesn't alter the journal entry (and vice versa); every routed scene has a valid chapter (no orphans).
-- New records sync via the existing projects path (no sync changes); typecheck + `build:web` pass; journal-stays-whole invariant holds; no new dependency; no out-of-scope changes.
+- From an entry's read-view, "Send to a project" → pick a project → the scrap appears in that project's draft, demarcated and placed per the blank/non-blank rule; the journal entry is still present and byte-identical.
+- "Promote to a new project" → a new project created with the scrap as its draft and a working title from the first line; the journal entry unchanged.
+- Independence: editing the routed draft doesn't alter the journal entry (and vice versa); no orphaned records.
+- New records ride the existing projects sync (no sync changes); typecheck + `build:web` pass; journal-stays-whole invariant holds; no new dependency; no out-of-scope changes.
 
 **Branch:** `j2-scrap-routing` off `m1-creative-flow`.
 
