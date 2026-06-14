@@ -368,6 +368,13 @@ export function QuickSprint() {
 
   const handleDiscard = () => {
     suppressFlushRef.current = true;
+    // J1a: an explicit Discard overrides capture-by-default — soft-delete the
+    // entry J1 committed at finish so the words truly leave the Journal.
+    const entryId = journalEntryIdRef.current;
+    if (entryId) {
+      const entry = getJournalEntry(entryId);
+      if (entry) saveJournalEntry({ ...entry, deletedAt: new Date().toISOString() });
+    }
     clearDraft(draftId);
     localStorage.removeItem(getDraftKey(id));
     navigate(id ? `/project/${id}` : '/');
