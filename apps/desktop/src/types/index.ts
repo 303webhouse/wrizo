@@ -55,6 +55,25 @@ export interface Draft {
   updatedAt: string;
 }
 
+// Ink on a journal page (J8) — pure geometry, no style. A journal entry can
+// carry hand-drawn strokes alongside its text; the entry's text is never
+// touched, so J4 search, J2 routing, and the entryText helpers keep working.
+// One pen: colour and width are render-time constants (J9), never stored per
+// stroke. Coordinates are device-independent (normalized by the sheet at
+// capture time, J9's call) so a page drawn on a tablet renders faithfully on a
+// laptop or phone. Plain serializable data — no functions or handles — so
+// strokes cache, queue, sync, and soft-delete exactly like the rest of the
+// record (whole-record write; saveJournalEntry needs no change).
+export interface StrokePoint {
+  x: number;
+  y: number;
+  p?: number; // pressure 0..1; absent when the device reports none
+}
+
+export interface Stroke {
+  points: StrokePoint[];
+}
+
 // Journal entry (J1) — a permanent, timestamped record of a completed sprint's
 // text. Unlike a Draft (the volatile in-flight buffer, overwritten by the next
 // sprint), a Journal entry is never cleared: it is the complete chronological
@@ -78,6 +97,10 @@ export interface JournalEntry {
   starred?: boolean;
   tags?: string[];
   routedProjectIds?: string[];
+  // Hand-drawn ink (J8) — additive and optional; absent on every existing entry
+  // and on sprint-finish captures (which stay text-only). The capture surface
+  // (J9) reads/writes this field; this ticket fixes only the shape.
+  strokes?: Stroke[];
 }
 
 // Writing-session instrumentation (A9). The collection is wired through the
