@@ -392,6 +392,24 @@ export function saveJournalEntry(entry: JournalEntry): void {
   upsert('journalEntries', cache.journalEntries, clone(entry));
 }
 
+// Create a blank, directly-authored journal page (J10) and persist it. Marked
+// source: 'page' so the read view renders the editable sheet instead of a
+// read-only capture. An empty page left untouched is discarded on exit by the
+// page itself (honor-discard, J1a), so this never litters the journal.
+export function createJournalPage(): JournalEntry {
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text: '',
+    projectId: null,
+    source: 'page',
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries
     .filter(e => !e.deletedAt)

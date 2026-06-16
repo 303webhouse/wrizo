@@ -101,6 +101,11 @@ export interface JournalEntry {
   // and on sprint-finish captures (which stay text-only). The capture surface
   // (J9) reads/writes this field; this ticket fixes only the shape.
   strokes?: Stroke[];
+  // Authored-page marker (J10) — additive, absent on captures. A capture (a
+  // finished sprint) keeps read-only text + ink annotation; an authored page is
+  // a blank sheet opened to write on directly (editable text + ink). The J6
+  // additive pattern: rides existing persistence/sync, never touches text.
+  source?: 'page';
 }
 
 // Writing-session instrumentation (A9). The collection is wired through the

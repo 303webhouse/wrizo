@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getJournalEntries } from '../store/persistence';
+import { getJournalEntries, createJournalPage } from '../store/persistence';
 import { firstLine, snippet, matchesQuery, formatStamp } from '../store/entryText';
 import type { JournalEntry } from '../types';
 
@@ -89,6 +89,13 @@ export function Journal() {
         </button>
         <button type="button" className="btn-quiet journal-surface" onClick={surface} disabled={entries.length === 0}>
           Surface a past page
+        </button>
+        <button
+          type="button"
+          className="btn-quiet journal-new-page"
+          onClick={() => { const page = createJournalPage(); navigate(`/journal/${page.id}`); }}
+        >
+          New page
         </button>
       </div>
 
