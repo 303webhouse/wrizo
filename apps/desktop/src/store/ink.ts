@@ -5,13 +5,15 @@
 // per stroke (J8 keeps strokes as pure geometry).
 import type { Stroke } from '../types';
 
-export const INK_LINE_WIDTH = 2.2; // medium; constant for v1 (pressure may modulate later)
+export const INK_LINE_WIDTH = 1.4; // thin
 
-// The one pen reads the paper's ink token, not a hard-coded hex.
+// The one pen reads the dedicated ink-stroke token — a very dark brown, almost
+// black — falling back to the text ink token, then a hard default.
 export function inkColor(): string {
-  if (typeof getComputedStyle === 'undefined') return '#2B2014';
-  const v = getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper').trim();
-  return v || '#2B2014';
+  if (typeof getComputedStyle === 'undefined') return '#1A1206';
+  const root = getComputedStyle(document.documentElement);
+  const v = root.getPropertyValue('--ink-stroke').trim() || root.getPropertyValue('--ink-on-paper').trim();
+  return v || '#1A1206';
 }
 
 // Render one stroke. Points are stored normalized (0..1 by the sheet's width);

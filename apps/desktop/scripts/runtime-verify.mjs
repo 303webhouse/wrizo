@@ -283,6 +283,13 @@ function makeApp(base, cdp, waitEvent) {
       await pen('mouseReleased', at(points[points.length - 1]));
     },
     /**
+     * Emulate a HiDPI device (devicePixelRatio) so canvas/backing-store sizing
+     * can be verified the way real tablets/phones hit it — headless defaults to
+     * dpr 1, which hides replaced-element canvas sizing bugs.
+     */
+    emulateDpr: (dpr, width = 1024, height = 1400) =>
+      cdp('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: dpr, mobile: false }),
+    /**
      * Type text into the currently-focused editable element via CDP, driving
      * the real beforeinput/input pipeline (so contenteditable handlers fire as
      * for a genuine keypress run). Focus the target first.

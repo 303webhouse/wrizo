@@ -430,7 +430,7 @@ function JournalEntryView() {
         ref={sheetRef}
         className="paper-page entry-full"
         style={{
-          position: 'relative', maxWidth: '68ch', whiteSpace: 'pre-wrap', touchAction: 'pan-y',
+          position: 'relative', maxWidth: '68ch', minHeight: '60vh', whiteSpace: 'pre-wrap', touchAction: 'pan-y',
           color: 'var(--ink-on-paper)', fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
         }}
       >
@@ -448,7 +448,7 @@ function JournalEntryView() {
             spellCheck
             // touchAction:'none' suppresses OS stylus handwriting on the text
             // (J10.1) without disabling page/finger scroll on the container.
-            style={{ outline: 'none', whiteSpace: 'pre-wrap', minHeight: '1.7em', touchAction: 'none' }}
+            style={{ outline: 'none', whiteSpace: 'pre-wrap', minHeight: '54vh', touchAction: 'none' }}
           />
         ) : (
           entry.text
@@ -460,13 +460,13 @@ function JournalEntryView() {
           ref={committedRef}
           className="ink-canvas ink-committed"
           aria-hidden="true"
-          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: 'inherit' }}
         />
         <canvas
           ref={activeRef}
           className="ink-canvas ink-active"
           aria-hidden="true"
-          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: 'inherit' }}
         />
         {canUndo && (
           <button
