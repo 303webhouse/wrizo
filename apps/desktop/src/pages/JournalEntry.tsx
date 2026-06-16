@@ -228,6 +228,17 @@ function JournalEntryView() {
     if (!authoredRef.current || !el || !id) return;
 
     el.setAttribute('contenteditable', 'plaintext-only'); // plain text only
+    // Suppress OS stylus handwriting-to-text on the editable region (J10.1).
+    // Chromium treats handwriting as a direct-manipulation action governed by
+    // touch-action; pan-y permits it (which is why pen-move preventDefault
+    // stops scroll but not handwriting). touch-action:none on the editable
+    // removes it so the pen reaches the app's canvas-ink handlers and no text
+    // is inserted — set imperatively here alongside the style for belt-and-
+    // suspenders. Finger scroll stays on the page/sheet container (taps still
+    // place the caret; only finger-DRAG over the text no longer pans). The
+    // handwriting attribute is an early proposal — harmless if unsupported.
+    el.style.touchAction = 'none';
+    el.setAttribute('handwriting', 'false');
     el.innerText = pageTextRef.current;
     el.focus();
     placeCaretEnd(el);
@@ -430,7 +441,9 @@ function JournalEntryView() {
             aria-multiline="true"
             aria-label="Journal page"
             spellCheck
-            style={{ outline: 'none', whiteSpace: 'pre-wrap', minHeight: '1.7em' }}
+            // touchAction:'none' suppresses OS stylus handwriting on the text
+            // (J10.1) without disabling page/finger scroll on the container.
+            style={{ outline: 'none', whiteSpace: 'pre-wrap', minHeight: '1.7em', touchAction: 'none' }}
           />
         ) : (
           entry.text
