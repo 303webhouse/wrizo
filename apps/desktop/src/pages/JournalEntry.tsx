@@ -256,16 +256,46 @@ function JournalEntryView() {
       saveTimerRef.current = setTimeout(flushText, AUTOSAVE_MS);
     };
 
-    // Permanence rail: block all erasure and selection-replacement before the
-    // DOM changes. Forward typing is allowed; that's the only motion.
+    // Word-level deletion. Backspace removes the whole word before the caret,
+    // Delete the whole word after — one word per press, any length, using the
+    // browser's native word boundaries (Ctrl+Backspace semantics, caret-aware).
+    // Performed via the Range API so it bypasses the beforeinput delete-rail
+    // below; there is no single-character path. Repeated presses walk back word
+    // by word. Not wired into undo — the looping-arrow still reverses the last
+    // typed run or ink stroke, unchanged.
+    const deleteWord = (direction: 'backward' | 'forward') => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      if (sel.isCollapsed) {
+        if (typeof sel.modify !== 'function') return; // no word API → stay forward-only (no deletion)
+        sel.modify('extend', direction, 'word');
+      }
+      if (sel.isCollapsed) return; // caret already at a boundary → nothing to remove
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      pageTextRef.current = el.innerText;
+      touchedRef.current = true;
+      scheduleSave();
+    };
+
+    // Permanence rail: typing is forward-only and selections can't be replaced;
+    // erasure is intercepted and routed to word-granular deletion (never a
+    // single character).
     const onBeforeInput = (e: InputEvent) => {
       const it = e.inputType || '';
-      if (it.startsWith('delete')) { e.preventDefault(); return; } // no erasure
+      if (it.startsWith('delete')) {
+        e.preventDefault(); // cancel the native (often single-character) deletion
+        deleteWord(it.toLowerCase().includes('forward') ? 'forward' : 'backward');
+        return;
+      }
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed) { e.preventDefault(); return; } // no select-then-replace
       // Allowed forward insertion — set the typing-run boundary using the
       // pre-change text (available now, before the DOM mutates). Undo reverses
-      // the whole current burst, not one character (Backspace is suppressed).
+      // the whole current burst, not one character.
       const now = Date.now();
       const la = lastActionRef.current;
       const idle = now - lastTextMsRef.current > BURST_GAP_MS;
@@ -281,8 +311,14 @@ function JournalEntryView() {
       touchedRef.current = true;
       scheduleSave();
     };
+    // Hardware-keyboard path: a plain Backspace/Delete fires keydown (and would
+    // otherwise delete one character). Cancel it and delete a whole word. The
+    // preventDefault stops the native edit, so beforeinput won't also fire for
+    // this press — no double deletion. (Soft keyboards that skip keydown are
+    // handled by the beforeinput branch above.)
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Backspace' || e.key === 'Delete') e.preventDefault(); // explicit forward-only
+      if (e.key === 'Backspace') { e.preventDefault(); deleteWord('backward'); }
+      else if (e.key === 'Delete') { e.preventDefault(); deleteWord('forward'); }
     };
     const onCut = (e: Event) => e.preventDefault(); // cut would remove text
     const onHide = () => { if (document.visibilityState === 'hidden') { flushText(); flushNow(); } };
