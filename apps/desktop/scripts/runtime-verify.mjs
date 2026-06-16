@@ -283,6 +283,22 @@ function makeApp(base, cdp, waitEvent) {
       await pen('mouseReleased', at(points[points.length - 1]));
     },
     /**
+     * Type text into the currently-focused editable element via CDP, driving
+     * the real beforeinput/input pipeline (so contenteditable handlers fire as
+     * for a genuine keypress run). Focus the target first.
+     */
+    type: (text) => cdp('Input.insertText', { text }),
+    /**
+     * Press a single key (down+up) via CDP — e.g. 'Backspace', 'Delete',
+     * 'Enter'. Used to prove the forward-only permanence rail blocks erasure.
+     */
+    key: async (key) => {
+      const vk = { Backspace: 8, Delete: 46, Enter: 13, Tab: 9 }[key] || 0;
+      const p = { key, code: key, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk };
+      await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p });
+      await cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p });
+    },
+    /**
      * Dispatch a TOUCH drag (pointerType === 'touch') over a selector's box via
      * CDP Input — a resting palm / finger. Used to prove palm rejection: the
      * pen handler ignores it and, because the canvas is pass-through, it falls

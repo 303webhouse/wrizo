@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, createQuickSprintProject } from '../store/persistence';
+import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, createQuickSprintProject, flushNow } from '../store/persistence';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke } from '../store/ink';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
@@ -10,14 +10,19 @@ import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../t
 //      text is never modified).
 // J6 — light, optional emergent metadata: star, free-text tags, and a routed
 //      marker (stamped when J2 routes the scrap). All additive, written via
-//      saveJournalEntry, synced via the existing journalEntries path. The entry
-//      text is still never touched — only metadata.
+//      saveJournalEntry, synced via the existing journalEntries path.
 // J9 — a stylus ink layer over the sheet: pen-only (palm/finger rejected),
 //      strokes captured device-independently and persisted to entry.strokes
-//      (J8). Like J6, additive — the typed text stays read-only and untouched.
-//      All painting goes through ink.ts/renderStroke; one pen, one quiet undo.
+//      (J8). All painting goes through ink.ts/renderStroke; one pen.
+// J10 — directly-authored pages (source: 'page'): the sheet becomes editable
+//      text with no-take-backs permanence (forward-only typing, no erasure),
+//      a debounced autosave to entry.text, and a unified one-level undo that
+//      covers the last action whether a typed run or an ink stroke. Captures
+//      (finished sprints) keep J9's read-only text + ink annotation, unchanged.
 
 const SCRAP_HEADING = '— from the journal —';
+const AUTOSAVE_MS = 2000;   // matches QuickSprint's debounced draft autosave
+const BURST_GAP_MS = 1500;  // idle gap that starts a new typing run (undo unit)
 
 function appendScrap(existing: string, entryText: string): string {
   const block = `${SCRAP_HEADING}\n${entryText}`;
@@ -43,6 +48,8 @@ function syncCanvas(canvas: HTMLCanvasElement, w: number, h: number): CanvasRend
 // Paint all committed strokes. Denormalizes by the sheet's current width, so a
 // page drawn at one width keeps its ink in place when the text reflows at
 // another (the J9 sheet-model tradeoff — ink anchors to the sheet, not words).
+// On an authored page the sheet grows with the text; the ResizeObserver re-runs
+// this so existing strokes re-render correctly at the new height.
 function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElement | null, strokes: Stroke[]): void {
   if (!canvas || !sheet) return;
   const rect = sheet.getBoundingClientRect();
@@ -53,36 +60,59 @@ function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElement | n
   for (const s of strokes) renderStroke(ctx, s, rect.width, color);
 }
 
-export function JournalEntry() {
+// Put the caret at the end of a contenteditable (after seeding text or undo).
+function placeCaretEnd(el: HTMLElement): void {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  if (!sel) return;
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// The last reversible action — a typing run (its pre-run text) or an ink stroke.
+type LastAction = { type: 'text'; before: string } | { type: 'stroke' } | null;
+
+function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
   const [tagDraft, setTagDraft] = useState('');
   const [entry, setEntry] = useState<JournalEntryType | null>(() => (id ? getJournalEntry(id) : null));
 
-  // Ink layer (J9). Strokes are held in component state (seeded from the entry)
-  // as the render/undo source of truth, kept in sync with storage. All hooks
-  // run before the early return below so hook order is stable.
+  // All hooks run before the early return below so hook order is stable.
+  // Ink (J9): strokes held in state (seeded from the entry) as the render/undo
+  // source of truth. Text (J10): pageTextRef is the single source of truth for
+  // the entry's text in this component — every write merges it, so metadata
+  // (star/tags/route) and ink writes never clobber freshly-typed text.
   const [strokes, setStrokes] = useState<Stroke[]>(() => (id ? getJournalEntry(id)?.strokes ?? [] : []));
-  const [freshUndo, setFreshUndo] = useState(false); // one-level undo: only the newest stroke is undoable
+  const [canUndo, setCanUndo] = useState(false); // one-level undo: only the last action
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const committedRef = useRef<HTMLCanvasElement | null>(null);
   const activeRef = useRef<HTMLCanvasElement | null>(null);
+  const editRef = useRef<HTMLDivElement | null>(null);
   const strokesRef = useRef<Stroke[]>(strokes);
   const drawingRef = useRef(false);
   const activeStrokeRef = useRef<Stroke | null>(null);
   const captureRectRef = useRef<DOMRect | null>(null);
+  const authoredRef = useRef<boolean>(id ? getJournalEntry(id)?.source === 'page' : false);
+  const pageTextRef = useRef<string>(id ? getJournalEntry(id)?.text ?? '' : '');
+  const lastActionRef = useRef<LastAction>(null);
+  const lastTextMsRef = useRef(0);
+  const touchedRef = useRef(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Repaint committed ink on mount and whenever the stroke set changes. Nothing
-  // here is gated behind a motion flag — reduced-motion needs no branch because
-  // nothing animates; this is just a static repaint.
+  // here is gated behind a motion flag — nothing animates; this is a static
+  // repaint, so reduced-motion needs no branch.
   useEffect(() => {
     strokesRef.current = strokes;
     paintCommitted(committedRef.current, sheetRef.current, strokes);
   }, [strokes]);
 
-  // Keep ink positioned when the sheet's width changes (re-render denormalizes
-  // to the new width). Reads the latest strokes via the ref.
+  // Keep ink positioned when the sheet's width OR height changes (as authored
+  // text grows the sheet, existing strokes re-render at the new size).
   useEffect(() => {
     const sheet = sheetRef.current;
     if (!sheet || typeof ResizeObserver === 'undefined') return;
@@ -91,25 +121,21 @@ export function JournalEntry() {
     return () => ro.disconnect();
   }, []);
 
-  // Pen-only capture. Listeners live on the sheet (not the pass-through canvas)
-  // and are non-passive so a pen move can preventDefault scroll. Touch/mouse are
-  // ignored here and, because the canvas never intercepts input, fall through to
-  // normal scroll/selection — a resting palm registers as touch, so it's
-  // rejected for free.
+  // Pen-only capture (J9). Listeners live on the sheet (not the pass-through
+  // canvas) and are non-passive so a pen move can preventDefault scroll.
+  // Touch/mouse are ignored here and fall through — a resting palm registers as
+  // touch, so it's rejected for free. A pen never types; a key never inks.
   useEffect(() => {
     const sheet = sheetRef.current;
     if (!sheet || !id) return;
 
-    // Canvas-local coords normalized by the sheet WIDTH on both axes, so the
-    // drawing stays aspect-correct (a circle stays a circle) at any width.
     const normPoint = (e: PointerEvent): StrokePoint => {
       const rect = captureRectRef.current ?? sheet.getBoundingClientRect();
       const w = rect.width || 1;
       const point: StrokePoint = { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top) / w };
-      if (e.pressure > 0) point.p = Math.round(e.pressure * 1000) / 1000; // absent when the device reports none
+      if (e.pressure > 0) point.p = Math.round(e.pressure * 1000) / 1000;
       return point;
     };
-
     const paintActive = () => {
       const canvas = activeRef.current;
       const rect = captureRectRef.current;
@@ -125,17 +151,18 @@ export function JournalEntry() {
       if (!canvas || !rect) return;
       canvas.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
     };
-    // Persist via the star/tags pattern; entry.text is never in the patch.
+    // Persist strokes, merging the live text so a pending typed run is never
+    // lost (text from pageTextRef; on a capture it equals the stored text).
     const persist = (next: Stroke[]) => {
       const latest = getJournalEntry(id);
       if (!latest) return;
-      saveJournalEntry({ ...latest, strokes: next });
+      saveJournalEntry({ ...latest, text: pageTextRef.current, strokes: next });
       setEntry(getJournalEntry(id));
     };
 
     const onDown = (e: PointerEvent) => {
-      if (e.pointerType !== 'pen') return; // palm/finger/mouse fall through to the page
-      if ((e.target as Element | null)?.closest?.('.ink-undo')) return; // a pen tap on undo isn't a stroke
+      if (e.pointerType !== 'pen') return; // palm/finger/mouse fall through (and to text on authored pages)
+      if ((e.target as Element | null)?.closest?.('.ink-undo')) return;
       captureRectRef.current = sheet.getBoundingClientRect();
       const ac = activeRef.current;
       if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
@@ -147,7 +174,7 @@ export function JournalEntry() {
     };
     const onMove = (e: PointerEvent) => {
       if (!drawingRef.current || e.pointerType !== 'pen') return;
-      e.preventDefault(); // suppress scroll for the pen only
+      e.preventDefault();
       activeStrokeRef.current?.points.push(normPoint(e));
       paintActive();
     };
@@ -164,7 +191,9 @@ export function JournalEntry() {
         paintCommitted(committedRef.current, sheet, next); // paint now to avoid a 1-frame gap
         clearActive();
         setStrokes(next);
-        setFreshUndo(true);
+        lastActionRef.current = { type: 'stroke' }; // a stroke is now the last action (undo target)
+        setCanUndo(true);
+        touchedRef.current = true;
         persist(next);
       } else {
         clearActive();
@@ -190,16 +219,101 @@ export function JournalEntry() {
     };
   }, [id]);
 
+  // Authored-page text editing (J10). Captures skip this entirely (read-only
+  // text). On an authored page: seed + focus the editable sheet, enforce
+  // forward-only permanence (no Backspace/Delete/cut/select-then-replace),
+  // autosave to entry.text, and on exit discard an empty never-touched page.
+  useEffect(() => {
+    const el = editRef.current;
+    if (!authoredRef.current || !el || !id) return;
+
+    el.setAttribute('contenteditable', 'plaintext-only'); // plain text only
+    el.innerText = pageTextRef.current;
+    el.focus();
+    placeCaretEnd(el);
+
+    const flushText = () => {
+      if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
+      const latest = getJournalEntry(id);
+      if (latest && latest.text !== pageTextRef.current) {
+        saveJournalEntry({ ...latest, text: pageTextRef.current });
+        setEntry(getJournalEntry(id));
+      }
+    };
+    const scheduleSave = () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(flushText, AUTOSAVE_MS);
+    };
+
+    // Permanence rail: block all erasure and selection-replacement before the
+    // DOM changes. Forward typing is allowed; that's the only motion.
+    const onBeforeInput = (e: InputEvent) => {
+      const it = e.inputType || '';
+      if (it.startsWith('delete')) { e.preventDefault(); return; } // no erasure
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) { e.preventDefault(); return; } // no select-then-replace
+      // Allowed forward insertion — set the typing-run boundary using the
+      // pre-change text (available now, before the DOM mutates). Undo reverses
+      // the whole current burst, not one character (Backspace is suppressed).
+      const now = Date.now();
+      const la = lastActionRef.current;
+      const idle = now - lastTextMsRef.current > BURST_GAP_MS;
+      if (!la || la.type !== 'text' || idle) {
+        lastActionRef.current = { type: 'text', before: el.innerText };
+        setCanUndo(true);
+      }
+      lastTextMsRef.current = now;
+      touchedRef.current = true;
+    };
+    const onInput = () => {
+      pageTextRef.current = el.innerText;
+      touchedRef.current = true;
+      scheduleSave();
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Backspace' || e.key === 'Delete') e.preventDefault(); // explicit forward-only
+    };
+    const onCut = (e: Event) => e.preventDefault(); // cut would remove text
+    const onHide = () => { if (document.visibilityState === 'hidden') { flushText(); flushNow(); } };
+
+    el.addEventListener('beforeinput', onBeforeInput as EventListener);
+    el.addEventListener('input', onInput);
+    el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('cut', onCut);
+    document.addEventListener('visibilitychange', onHide);
+
+    return () => {
+      el.removeEventListener('beforeinput', onBeforeInput as EventListener);
+      el.removeEventListener('input', onInput);
+      el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('cut', onCut);
+      document.removeEventListener('visibilitychange', onHide);
+      if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
+      // New-page lifecycle: discard an empty, never-touched page rather than
+      // litter the journal with a blank entry (honor-discard, J1a). Otherwise
+      // flush any pending text edit before teardown.
+      const latest = getJournalEntry(id);
+      if (!latest) return;
+      if (!touchedRef.current && !pageTextRef.current.trim() && strokesRef.current.length === 0) {
+        saveJournalEntry({ ...latest, deletedAt: new Date().toISOString() });
+      } else if (latest.text !== pageTextRef.current) {
+        saveJournalEntry({ ...latest, text: pageTextRef.current });
+      }
+      flushNow();
+    };
+  }, [id]);
+
   if (!entry) return <Navigate to="/journal" replace />;
 
+  const authored = entry.source === 'page';
   const projects = getProjects();
   const routedIds = entry.routedProjectIds ?? [];
 
-  // Re-save the entry with a metadata patch and refresh local state (the text is
-  // never part of the patch — metadata only).
+  // Every write merges the live text (pageTextRef) so star/tags/routing never
+  // clobber a freshly-typed run that the debounced autosave hasn't flushed yet.
   const patch = (changes: Partial<JournalEntryType>) => {
-    const next = { ...entry, ...changes };
-    saveJournalEntry(next);
+    const latest = getJournalEntry(entry.id) ?? entry;
+    saveJournalEntry({ ...latest, text: pageTextRef.current, ...changes });
     setEntry(getJournalEntry(entry.id));
   };
 
@@ -216,41 +330,54 @@ export function JournalEntry() {
 
   // Stamp the routed marker (unique project ids) — closes the double-route gap.
   const stampRouted = (projectId: string) => {
-    if (routedIds.includes(projectId)) return entry;
-    const next = { ...entry, routedProjectIds: [...routedIds, projectId] };
-    saveJournalEntry(next);
-    return next;
+    if (routedIds.includes(projectId)) return;
+    patch({ routedProjectIds: [...routedIds, projectId] });
   };
 
   const sendToProject = (projectId: string) => {
     const project = getProject(projectId);
     if (!project) return;
-    setProjectSprintText(projectId, appendScrap(project.sprintText || '', entry.text));
+    setProjectSprintText(projectId, appendScrap(project.sprintText || '', pageTextRef.current));
     stampRouted(projectId);
     navigate(`/project/${projectId}`);
   };
 
   const promoteToNew = () => {
-    const project = createQuickSprintProject(entry.text, routedTitle(entry.text));
+    const text = pageTextRef.current;
+    const project = createQuickSprintProject(text, routedTitle(text));
     stampRouted(project.id);
     navigate(`/project/${project.id}`);
   };
 
   const routedNames = routedIds.map(pid => getProject(pid)?.title).filter(Boolean) as string[];
 
-  // Undo: one quiet step, the newest stroke only. Not a history stack — once
-  // freshUndo is consumed, nothing is undoable until a new stroke is drawn.
+  // Unified undo: one quiet step, the last action only (a typed run or a
+  // stroke). Not a history stack — once consumed, nothing is undoable until a
+  // new action. A text run restores the pre-run text; a stroke drops the last.
   const undo = () => {
-    if (!freshUndo) return;
-    const next = strokesRef.current.slice(0, -1);
-    strokesRef.current = next;
-    setStrokes(next);
-    setFreshUndo(false);
-    const latest = getJournalEntry(entry.id);
-    if (latest) {
-      saveJournalEntry({ ...latest, strokes: next });
-      setEntry(getJournalEntry(entry.id));
+    const la = lastActionRef.current;
+    if (!la) return;
+    if (la.type === 'stroke') {
+      const next = strokesRef.current.slice(0, -1);
+      strokesRef.current = next;
+      setStrokes(next);
+      const latest = getJournalEntry(entry.id);
+      if (latest) {
+        saveJournalEntry({ ...latest, text: pageTextRef.current, strokes: next });
+        setEntry(getJournalEntry(entry.id));
+      }
+    } else {
+      pageTextRef.current = la.before;
+      const el = editRef.current;
+      if (el) { el.innerText = la.before; placeCaretEnd(el); }
+      const latest = getJournalEntry(entry.id);
+      if (latest) {
+        saveJournalEntry({ ...latest, text: la.before });
+        setEntry(getJournalEntry(entry.id));
+      }
     }
+    lastActionRef.current = null;
+    setCanUndo(false);
   };
 
   return (
@@ -258,7 +385,9 @@ export function JournalEntry() {
       <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>{formatStamp(entry.createdAt)}</div>
+        <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
+          {formatStamp(entry.createdAt)}{authored ? ' · a page' : ''}
+        </div>
         <button
           type="button"
           className="btn-quiet entry-star"
@@ -289,12 +418,26 @@ export function JournalEntry() {
           color: 'var(--ink-on-paper)', fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
         }}
       >
-        {entry.text}
+        {/* On an authored page the text is an editable plaintext sheet, matching
+            the read view's metrics exactly so the ink canvas stays aligned. On a
+            capture it stays read-only text (J9). The contenteditable is set/read
+            imperatively (uncontrolled) so React re-renders never reset the caret. */}
+        {authored ? (
+          <div
+            ref={editRef}
+            className="entry-edit"
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Journal page"
+            spellCheck
+            style={{ outline: 'none', whiteSpace: 'pre-wrap', minHeight: '1.7em' }}
+          />
+        ) : (
+          entry.text
+        )}
         {/* Ink overlay (J9). Both canvases cover the sheet exactly and never
             intercept input (pointer-events:none) — the pen is routed by the
-            sheet's own listeners; text stays selectable/scrollable underneath.
-            A second canvas paints the in-progress stroke so committed strokes
-            aren't repainted every move. */}
+            sheet's own listeners; text stays editable/selectable underneath. */}
         <canvas
           ref={committedRef}
           className="ink-canvas ink-committed"
@@ -307,13 +450,13 @@ export function JournalEntry() {
           aria-hidden="true"
           style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit' }}
         />
-        {freshUndo && (
+        {canUndo && (
           <button
             type="button"
             className="btn-quiet ink-undo"
             onClick={undo}
-            aria-label="Undo last stroke"
-            title="Undo last stroke"
+            aria-label="Undo last action"
+            title="Undo last action"
             style={{ position: 'absolute', top: 8, right: 10, lineHeight: 1, fontSize: 16, color: 'var(--ink-on-paper-low)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 4 }}
           >
             ↺
@@ -383,4 +526,16 @@ export function JournalEntry() {
       </div>
     </div>
   );
+}
+
+// Remount the view per entry id. React Router reuses the component instance on
+// a param-only change (/journal/A -> /journal/B), which would leave the view's
+// per-entry refs (authored?, the text buffer, strokes) seeded from the previous
+// entry — and an authored page's buffer could then clobber a capture's text on
+// the next write. Keying by id forces a clean remount, so "seed once on mount"
+// always holds. (In the UI you reach entries via the list, which already
+// remounts; this also makes direct entry->entry navigation correct.)
+export function JournalEntry() {
+  const { id } = useParams<{ id: string }>();
+  return <JournalEntryView key={id ?? 'new'} />;
 }
