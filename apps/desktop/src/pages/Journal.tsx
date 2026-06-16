@@ -1,13 +1,31 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getJournalEntries, createJournalPage } from '../store/persistence';
 import { firstLine, snippet, matchesQuery, formatStamp } from '../store/entryText';
-import type { JournalEntry } from '../types';
+import { renderThumbnail } from '../store/ink';
+import type { JournalEntry, Stroke } from '../types';
 
 // J4 — the notebook surface. A visible, browsable, searchable place for every
 // finished sprint: a notebook to flip through, not an inbox to clear. Read-only;
 // reads getJournalEntries() (newest-first, excludes soft-deleted). No counters,
 // no badges. Routing into projects (J2) lands in the read view's reserved slot.
+// J12 — entries that carry ink (J9) or are drawing-only authored pages (J10)
+//       get a small stroke thumbnail so a blank-text page reads clearly instead
+//       of as an empty "Untitled" row.
+
+// A tiny rendering of an entry's strokes, scaled to fit (reuses ink.ts).
+function InkThumb({ strokes }: { strokes: Stroke[] }) {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => { if (ref.current) renderThumbnail(ref.current, strokes, 44); }, [strokes]);
+  return (
+    <canvas
+      ref={ref}
+      className="journal-ink-thumb"
+      aria-hidden="true"
+      style={{ width: 44, height: 44, flex: '0 0 auto', borderRadius: 'var(--radius-sm)', border: '1px solid var(--ink-border)', background: 'var(--paper)' }}
+    />
+  );
+}
 
 // Time spine: bucket an entry by how long ago it was written. Entries arrive
 // newest-first, so buckets surface in this order naturally.
@@ -131,37 +149,53 @@ export function Journal() {
               <span>{group.label}</span>
               <span style={{ flex: 1, height: 1, background: 'var(--ink-border)' }} />
             </div>
-            {group.rows.map(entry => (
-              <button
-                key={entry.id}
-                type="button"
-                className="journal-row"
-                onClick={() => navigate(`/journal/${entry.id}`)}
-                style={{
-                  display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
-                  background: 'transparent', border: 'none', borderBottom: '1px solid var(--ink-border)',
-                  padding: '12px 4px',
-                }}
-              >
-                <div className="journal-label" style={{ color: 'var(--text-hi)', fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
-                  {entry.starred && <span className="journal-star" style={{ color: 'var(--brass)', marginRight: 6 }}>★</span>}
-                  {firstLine(entry.text).slice(0, 80)}
-                </div>
-                <div className="journal-snippet" style={{ color: 'var(--text-mid)', fontSize: 14, marginBottom: 4 }}>
-                  {snippet(entry.text, 120)}
-                </div>
-                {(entry.tags ?? []).length > 0 && (
-                  <div className="journal-row-tags" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-                    {(entry.tags ?? []).map(t => (
-                      <span key={t} className="journal-row-tag" style={{ fontSize: 11, color: 'var(--text-low)', border: '1px solid var(--ink-border)', borderRadius: 'var(--radius-sm)', padding: '1px 6px' }}>{t}</span>
-                    ))}
+            {group.rows.map(entry => {
+              // J12: a drawing-only page has no first line to label it; show a
+              // stroke thumbnail and a "sketch" label instead of a blank row. A
+              // mixed entry keeps its first-line label with the thumbnail as the
+              // ink indicator.
+              const hasInk = (entry.strokes?.length ?? 0) > 0;
+              const textEmpty = !entry.text.trim();
+              const label = textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 80);
+              return (
+                <button
+                  key={entry.id}
+                  type="button"
+                  className="journal-row"
+                  data-ink={hasInk ? 'true' : 'false'}
+                  data-sketch={textEmpty && hasInk ? 'true' : 'false'}
+                  onClick={() => navigate(`/journal/${entry.id}`)}
+                  style={{
+                    display: 'flex', gap: 12, alignItems: 'flex-start', width: '100%', textAlign: 'left', cursor: 'pointer',
+                    background: 'transparent', border: 'none', borderBottom: '1px solid var(--ink-border)',
+                    padding: '12px 4px',
+                  }}
+                >
+                  {hasInk && <InkThumb strokes={entry.strokes!} />}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="journal-label" style={{ color: 'var(--text-hi)', fontFamily: 'var(--font-ui)', fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
+                      {entry.starred && <span className="journal-star" style={{ color: 'var(--brass)', marginRight: 6 }}>★</span>}
+                      {label}
+                    </div>
+                    {!textEmpty && (
+                      <div className="journal-snippet" style={{ color: 'var(--text-mid)', fontSize: 14, marginBottom: 4 }}>
+                        {snippet(entry.text, 120)}
+                      </div>
+                    )}
+                    {(entry.tags ?? []).length > 0 && (
+                      <div className="journal-row-tags" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                        {(entry.tags ?? []).map(t => (
+                          <span key={t} className="journal-row-tag" style={{ fontSize: 11, color: 'var(--text-low)', border: '1px solid var(--ink-border)', borderRadius: 'var(--radius-sm)', padding: '1px 6px' }}>{t}</span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="journal-time" style={{ color: 'var(--text-low)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                      {formatStamp(entry.createdAt)}{hasInk && !textEmpty ? ' · ink' : ''}{(entry.routedProjectIds?.length ?? 0) > 0 ? ' · routed' : ''}
+                    </div>
                   </div>
-                )}
-                <div className="journal-time" style={{ color: 'var(--text-low)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                  {formatStamp(entry.createdAt)}{(entry.routedProjectIds?.length ?? 0) > 0 ? ' · routed' : ''}
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         ))
       )}
