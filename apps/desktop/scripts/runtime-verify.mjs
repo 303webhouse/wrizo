@@ -260,6 +260,44 @@ function makeApp(base, cdp, waitEvent) {
     click: (label) => evalJs(`__click(${JSON.stringify(label)})`),
     /** Set a React-controlled input/textarea's value (selector defaults to 'textarea'). */
     setText: (text, sel) => evalJs(`__setText(${JSON.stringify(text)}, ${sel ? JSON.stringify(sel) : 'undefined'})`),
+    /**
+     * Dispatch a genuine PEN pointer sequence (down → moves → up) over a
+     * selector's bounding box via CDP Input, so the page sees real
+     * PointerEvents with pointerType === 'pen' (not synthetic). `points` are
+     * normalized 0..1 within the element box; an optional per-point `p` becomes
+     * pointer pressure (CDP `force`). This is what makes pen-vs-touch routing
+     * verifiable on real input.
+     */
+    penStroke: async (selector, points, { pressure = 0.5 } = {}) => {
+      const rect = await evalJs(
+        `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) throw new Error('penStroke: no element ' + ${JSON.stringify(selector)}); const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`,
+      );
+      const at = (np) => ({ x: rect.x + np.x * rect.w, y: rect.y + np.y * rect.h, f: np.p ?? pressure });
+      const pen = (type, q) => cdp('Input.dispatchMouseEvent', {
+        type, x: q.x, y: q.y, button: 'left',
+        buttons: type === 'mouseReleased' ? 0 : 1,
+        clickCount: 1, pointerType: 'pen', force: type === 'mouseReleased' ? 0 : q.f,
+      });
+      await pen('mousePressed', at(points[0]));
+      for (let i = 1; i < points.length; i++) await pen('mouseMoved', at(points[i]));
+      await pen('mouseReleased', at(points[points.length - 1]));
+    },
+    /**
+     * Dispatch a TOUCH drag (pointerType === 'touch') over a selector's box via
+     * CDP Input — a resting palm / finger. Used to prove palm rejection: the
+     * pen handler ignores it and, because the canvas is pass-through, it falls
+     * to the page.
+     */
+    touchDrag: async (selector, points) => {
+      const rect = await evalJs(
+        `(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) throw new Error('touchDrag: no element ' + ${JSON.stringify(selector)}); const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()`,
+      );
+      const at = (np) => ({ x: rect.x + np.x * rect.w, y: rect.y + np.y * rect.h });
+      const touch = (type, q) => cdp('Input.dispatchTouchEvent', { type, touchPoints: q ? [{ x: q.x, y: q.y }] : [] });
+      await touch('touchStart', at(points[0]));
+      for (let i = 1; i < points.length; i++) await touch('touchMove', at(points[i]));
+      await touch('touchEnd', null);
+    },
     /** Parse a localStorage key as JSON (null if absent). */
     localJSON: async (key) => {
       const raw = await evalJs(`localStorage.getItem(${JSON.stringify(key)})`);
