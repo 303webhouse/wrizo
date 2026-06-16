@@ -308,6 +308,11 @@ function JournalEntryView() {
   const authored = entry.source === 'page';
   const projects = getProjects();
   const routedIds = entry.routedProjectIds ?? [];
+  // J12: an entry can carry ink and/or text. A drawing-only entry (no text) has
+  // nothing to route — its prose would be empty — so the routing action is
+  // hidden; ink stays in the journal. A mixed entry routes its text as usual.
+  const hasInk = (entry.strokes?.length ?? 0) > 0;
+  const textEmpty = !entry.text.trim();
 
   // Every write merges the live text (pageTextRef) so star/tags/routing never
   // clobber a freshly-typed run that the debounced autosave hasn't flushed yet.
@@ -401,7 +406,7 @@ function JournalEntryView() {
       </div>
 
       <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '8px 0 16px' }}>
-        {firstLine(entry.text).slice(0, 100)}
+        {textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100)}
       </h1>
 
       {routedNames.length > 0 && (
@@ -484,7 +489,9 @@ function JournalEntryView() {
       </div>
 
       {/* Routing slot (J2). One brass action; the picker is a transient
-          selection. Projects already routed-to are flagged (J6). */}
+          selection. Projects already routed-to are flagged (J6). Hidden for a
+          drawing-only entry (J12) — there's no prose to send; ink stays here. */}
+      {!textEmpty && (
       <div className="entry-action-slot" style={{ marginTop: 24 }}>
         {!picking ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -524,6 +531,7 @@ function JournalEntryView() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

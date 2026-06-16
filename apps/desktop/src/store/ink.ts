@@ -51,3 +51,40 @@ export function renderStroke(
   ctx.lineTo(last.x, last.y);
   ctx.stroke();
 }
+
+// Render an entry's strokes scaled to fit a small square thumbnail (J12 browse
+// affordance for ink-bearing entries). Reuses renderStroke — normalized coords
+// make the bbox-fit a simple transform. Cheap: one pass over the points.
+export function renderThumbnail(canvas: HTMLCanvasElement, strokes: Stroke[], size: number, color?: string): void {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(size * dpr));
+  canvas.height = Math.max(1, Math.round(size * dpr));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, size, size);
+
+  const pts = strokes.flatMap(s => s.points);
+  if (pts.length === 0) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const bw = Math.max(maxX - minX, 0.02);
+  const bh = Math.max(maxY - minY, 0.02);
+  const pad = size * 0.14;
+  const scale = Math.min((size - 2 * pad) / bw, (size - 2 * pad) / bh);
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  const ink = color || inkColor();
+
+  // Center the drawing's bbox in the box; line width kept ~constant after scale.
+  ctx.save();
+  ctx.translate(size / 2, size / 2);
+  ctx.scale(scale, scale);
+  ctx.translate(-cx, -cy);
+  for (const stroke of strokes) renderStroke(ctx, stroke, 1, ink, Math.max(0.4, 1.3 / scale));
+  ctx.restore();
+}
