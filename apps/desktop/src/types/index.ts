@@ -30,12 +30,53 @@ export interface StoryPlan {
   updatedAt: string;
 }
 
+// Fragment substrate (DM1) — the keystone data model. Creative writing is a
+// graph of fragments, not one string: one privileged ordered path (the spine)
+// plus branches and loose fragments, joined by links — a rhizome as a data
+// structure. Forward-only lives here: text is appended, runs are struck (never
+// erased), fragments are reordered (never deleted). `Project.sprintText` becomes
+// a derived mirror of the unstruck spine; fragments are the source of truth.
+// Invisible substrate in v0.1 — no UI reads it until CW2.
+
+// An append-only span of text. Strikethrough is the only "delete": a struck run
+// stays in `content` (visible, recoverable) but drops out of derived prose.
+export interface Run {
+  text: string;
+  struck: boolean;
+}
+
+// A rhizome side-edge — a bridge or magnetized join between two fragments.
+export interface FragmentLink {
+  targetId: string;
+  kind: 'bridge' | 'magnetized';
+  strength?: number;
+}
+
+export interface Fragment {
+  id: string;
+  projectId: string;
+  content: Run[];            // append-only runs; characters are never deleted, runs are struck
+  role: 'spine' | 'branch' | 'loose';
+  spineOrder?: number;       // sparse/float index for cheap reorder (spine role only)
+  parentId?: string;         // the spine fragment this branches from (branch role only)
+  parentFragmentId?: string; // nullable; theme→principle→point nesting (Trellis, v0.2). One level in v0.1
+  links: FragmentLink[];     // rhizome side-edges (bridges / magnetized joins)
+  clusterId?: string;        // emergent grouping for Gather mode (v0.2); label-capable
+  createdAt: string;
+  updatedAt: string;
+  // NOTE: `heat` (recency + edit-density) is DERIVED at read time, never stored.
+}
+
 export interface Project {
   id: string;
   title: string;
   type: 'creative' | 'academic';
   storyPlanId: string | null;
   sprintText?: string;
+  // Creative-mode source of truth (DM1) — replaces sprintText's role. sprintText
+  // is kept as a derived mirror (concat of unstruck spine runs) so the existing
+  // UI and sync keep working untouched. Absent on legacy projects until migrated.
+  fragments?: Fragment[];
   createdAt: string;
   updatedAt: string;
   // Resume data (A3) — stamped by the adapter on sprint/beat writes.
