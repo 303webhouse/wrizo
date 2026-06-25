@@ -13,8 +13,8 @@
 - Session Launcher -> Start Writing (Quick Sprint)
 - Timer optional: can write/save/finish without starting timer
 - Custom timer works when enabled
-- Nudges: manual only, max 3; no auto-rotation
-- Stuck? hint is non-animated and based on no-typing, not no sentence
+- Nudges: ~25-prompt pool, random with no near-repeats; ONE auto-surfaces on genuine idle (60s, timer resets on every keystroke) up to a shared max of 3, then HOLDS the last; "Take a nudge" pulls one on demand from the same budget; A6 reset returns the budget after sustained writing. (Surfacing-on-idle is permitted per Principle 8 — idle is an edge; an attention-seeking carousel is still not.)
+- Stuck? the idle surface is calm, non-animated under reduced-motion, and based on no-typing, not no sentence
 - Finish -> Save as Project creates project and retains sprint text
 - Restart app -> sprint text persists
 
