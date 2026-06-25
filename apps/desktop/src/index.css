@@ -608,3 +608,29 @@ a:focus-visible,
     display: none;
   }
 }
+
+/* Forward-only editor (CW2). Runs render as DOM spans; the native caret is used
+   and kept at the live insertion point by the component. */
+.forward-only-editor .fo-struck {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  opacity: 0.5;
+}
+.forward-only-editor-wrap .fo-placeholder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  color: var(--ink-on-paper-low);
+}
+.forward-only-editor-wrap .fo-nudge {
+  position: absolute;
+  left: 0;
+  bottom: 8px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-on-paper-low);
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

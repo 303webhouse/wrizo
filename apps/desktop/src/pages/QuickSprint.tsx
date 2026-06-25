@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   clearDraft, createQuickSprintProject, flushNow, generateId, getDraft, getJournalEntry, getProject,
@@ -9,6 +9,7 @@ import type { JournalEntry } from '../types';
 import { getFramework } from '../store/frameworks';
 import { startAmbient, type AmbientHandle } from '../store/ambient';
 import { pickEchoLine } from '../store/entryText';
+import { ForwardOnlyEditor } from '../components/ForwardOnlyEditor';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -81,6 +82,17 @@ export function QuickSprint() {
     if (project?.sprintText) return project.sprintText;
     return localStorage.getItem(getDraftKey(id)) || '';
   });
+  // Seed text for the forward-only editor — same resolution as draftText's
+  // initializer, recomputed per surface so the editor (keyed by draftId)
+  // re-seeds when the sprint surface changes.
+  const seedText = useMemo(() => {
+    const draft = getDraft(draftId);
+    if (draft) return draft.text;
+    const proj = id ? getProject(id) : null;
+    if (proj?.sprintText) return proj.sprintText;
+    return localStorage.getItem(getDraftKey(id)) || '';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, draftId]);
   const [savedUntil, setSavedUntil] = useState<number | null>(null);
   const [currentNudge, setCurrentNudge] = useState('');
   const [nudgesUsed, setNudgesUsed] = useState(0);
@@ -94,7 +106,7 @@ export function QuickSprint() {
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const draftTextRef = useRef(draftText);
   draftTextRef.current = draftText;
   const draftIdRef = useRef(draftId);
@@ -257,7 +269,7 @@ export function QuickSprint() {
 
   // Autofocus the page on mount (A8).
   useEffect(() => {
-    textareaRef.current?.focus();
+    editorRef.current?.focus();
   }, []);
 
   // Ambient felt-warmth drift (J5). Attaches to the writing surface; honors
@@ -313,7 +325,7 @@ export function QuickSprint() {
     setFinishStats(null);
     sprintStartMsRef.current = Date.now();
     sessionStartWordsRef.current = wordCount(draftTextRef.current);
-    textareaRef.current?.focus();
+    editorRef.current?.focus();
   };
 
   const handleCustomTimer = () => {
@@ -323,12 +335,16 @@ export function QuickSprint() {
     setShowCustom(false);
   };
 
-  const handleChange = (value: string) => {
+  // The editor reports its derived text (unstruck spine prose) on every change —
+  // strike included — and draftText mirrors it, so A1/J1/A9/finish/J7 keep
+  // working off draftText unchanged.
+  const handleEditorChange = (value: string) => setDraftText(value);
+  // Forward keystrokes only (not strikes): the A8/A9 typing signals + J5 warmth.
+  const handleForwardKeystroke = () => {
     hasTypedRef.current = true;
     if (firstKeystrokeAtRef.current === null) firstKeystrokeAtRef.current = new Date().toISOString();
     lastKeystrokeMsRef.current = Date.now();
     ambientRef.current?.noteKeystroke(); // J5: feed the felt-warmth drift
-    setDraftText(value);
   };
 
   // Record a writing-session row on sprint save (A9). Returns the new id so the
@@ -379,7 +395,7 @@ export function QuickSprint() {
     setIsFinishing(false);
     setFinishStats(null);
     if (sprintStartMsRef.current === null) sprintStartMsRef.current = Date.now();
-    textareaRef.current?.focus();
+    editorRef.current?.focus();
   };
 
   const advanceBeatIfMarked = () => {
@@ -563,17 +579,24 @@ export function QuickSprint() {
             opacity: 'calc(var(--sprint-warmth, 0) * var(--ambient-intensity))',
           }}
         />
-        <textarea
-          ref={textareaRef}
-          value={draftText}
-          onChange={e => handleChange(e.target.value)}
+        {/* CW2: the plain textarea is replaced by the reusable forward-only
+            editor. It owns the sprint's in-memory fragment and reports derived
+            prose up via onChange; draftText mirrors it, so every already-wired
+            sprint feature keeps working untouched. Keyed by draftId so it
+            re-seeds when the surface changes. */}
+        <ForwardOnlyEditor
+          key={draftId}
+          ref={editorRef}
+          initialText={seedText}
+          onChange={handleEditorChange}
+          onForward={handleForwardKeystroke}
           onFocus={() => setTextareaFocused(true)}
           onBlur={() => { setTextareaFocused(false); flushDraft(); }}
           placeholder="Write without stopping…"
+          ariaLabel="Sprint writing surface"
           style={{
             position: 'relative', zIndex: 1,
-            width: '100%', minHeight: '54vh', border: 'none', outline: 'none',
-            background: 'transparent', resize: 'none', color: 'var(--ink-on-paper)',
+            width: '100%', minHeight: '54vh', color: 'var(--ink-on-paper)',
             fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
           }}
         />
