@@ -296,6 +296,25 @@ function makeApp(base, cdp, waitEvent) {
      */
     type: (text) => cdp('Input.insertText', { text }),
     /**
+     * Type via real per-character key events (keyDown with a `text` field +
+     * keyUp), which trigger the full keydown→beforeinput→input pipeline. More
+     * faithful than insertText for custom contenteditable editors where
+     * insertText may not dispatch beforeinput. Focus the target first.
+     */
+    typeKeys: async (text) => {
+      for (const ch of text) {
+        const isEnter = ch === '\n';
+        const key = isEnter ? 'Enter' : ch;
+        const code = ch === ' ' ? 'Space'
+          : isEnter ? 'Enter'
+          : /[a-zA-Z]/.test(ch) ? 'Key' + ch.toUpperCase()
+          : /[0-9]/.test(ch) ? 'Digit' + ch
+          : 'Unidentified';
+        await cdp('Input.dispatchKeyEvent', { type: 'keyDown', text: isEnter ? '\r' : ch, key, code });
+        await cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code });
+      }
+    },
+    /**
      * Press a single key (down+up) via CDP — e.g. 'Backspace', 'Delete',
      * 'Enter'. Used to prove the forward-only permanence rail blocks erasure.
      */
@@ -349,7 +368,10 @@ function makeApp(base, cdp, waitEvent) {
     },
     /**
      * Writer Studio convenience: clear all local data, land on a deterministic
-     * first-run authed launcher, then click into a fresh scratch sprint.
+     * first-run authed launcher, then click into a fresh scratch sprint. The
+     * sprint surface is the forward-only editor (CW2) — drive it with
+     * typeKeys/key after focusing it; the old setText (textarea .value) won't
+     * register on the contenteditable.
      */
     freshSprint: async () => {
       await cdp('Page.navigate', { url: `${base}/#/` });
@@ -358,7 +380,7 @@ function makeApp(base, cdp, waitEvent) {
       await app.reload();
       await app.waitFor("[...document.querySelectorAll('button,a')].some(b=>b.textContent.includes('Start writing'))", { label: 'launcher Start writing' });
       await app.click('Start writing');
-      await app.waitFor("document.querySelector('textarea')", { label: 'sprint textarea' });
+      await app.waitFor("document.querySelector('.forward-only-editor, textarea')", { label: 'sprint writing surface' });
       await injectHelpers();
     },
   };
@@ -415,9 +437,11 @@ async function selfTest() {
     ok('boots past the W2 login gate to the launcher', true);
 
     // Drive a scratch sprint end to end and read back the app's own state.
+    // The surface is the forward-only editor (CW2): focus + type real keys.
     await app.freshSprint();
-    ok('reaches a scratch sprint with a textarea', true);
-    await app.setText('Harness self-test sentence.');
+    ok('reaches a scratch sprint writing surface', true);
+    await app.evalJs("(document.querySelector('.forward-only-editor, textarea')||{}).focus && document.querySelector('.forward-only-editor, textarea').focus()");
+    await app.typeKeys('Harness self-test sentence. ');
     await app.click('Finish');
     await app.waitFor("!!localStorage.getItem('writer-studio-journal-entries')", { label: 'journal write' });
     const entries = (await app.localJSON('writer-studio-journal-entries')) || [];
