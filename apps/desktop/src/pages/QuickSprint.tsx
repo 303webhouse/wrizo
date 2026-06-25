@@ -16,17 +16,42 @@ const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
 const PRESETS = [5, 10, 20];
-const NUDGE_LIMIT = 3;
+const NUDGE_LIMIT = 3;          // how many surface (auto + manual) before it holds
+const NUDGE_IDLE_MS = 60_000;   // genuine quiet before a nudge auto-surfaces
 const NUDGE_RESET_SECONDS = 180;
 const NUDGE_RESET_CHARS = 50;
 const KEEP_GOING_SECONDS = 300;
 
+// The nudge pool — momentum-first prompts (questions + small concrete moves), in
+// the calm Ember voice. Drawn at random without near repeats. One auto-surfaces
+// on genuine idle (up to NUDGE_LIMIT, then holds); the "Take a nudge" button
+// pulls one on demand from the same budget.
 const NUDGES = [
   'Who wants what right now?',
   'What changes today if they fail?',
   'What risk are they avoiding?',
   'Use only concrete actions for the next paragraph.',
   'Cut one sentence and replace it with a sharper verb.',
+  'What does your narrator notice that no one else would?',
+  'Put something physical in their hands.',
+  'What is the worst thing that could walk through the door right now?',
+  'Say the thing the character will not say out loud.',
+  'Write the next line as if no one will ever read it.',
+  'What is the smallest detail that proves where we are?',
+  'Let them be wrong about something.',
+  'What are they pretending not to feel?',
+  'Skip ahead to the part you actually want to write.',
+  'Give the scene a sound.',
+  'What would break this moment open?',
+  'Whose turn is it to speak — and what do they want?',
+  'Describe it the way a child would.',
+  'What just changed that cannot change back?',
+  'Trade one adjective for an action.',
+  'What is at stake in the next sixty seconds?',
+  'Let someone lie.',
+  'What does the room smell like?',
+  'Start the next sentence with a verb.',
+  'What is the question this scene is really asking?',
 ];
 
 function wordCount(text: string): number {
@@ -97,7 +122,9 @@ export function QuickSprint() {
   const [savedUntil, setSavedUntil] = useState<number | null>(null);
   const [currentNudge, setCurrentNudge] = useState('');
   const [nudgesUsed, setNudgesUsed] = useState(0);
-  const [showIdleHint, setShowIdleHint] = useState(false);
+  const nudgesUsedRef = useRef(0);
+  nudgesUsedRef.current = nudgesUsed;
+  const recentNudgeRef = useRef<number[]>([]); // recently-shown indices → avoid near repeats
   const [textareaFocused, setTextareaFocused] = useState(false);
   const [beatOpen, setBeatOpen] = useState(true);
   const [markBeatDone, setMarkBeatDone] = useState(false);
@@ -293,12 +320,38 @@ export function QuickSprint() {
     ambientRef.current?.setSoundEnabled(soundOn);
   }, [soundOn]);
 
-  // Idle hint: only after the first keystroke of the session; reset on typing (A8).
+  // Pick a prompt at random, avoiding the recently-shown ones so it doesn't
+  // repeat within a session.
+  const pickNudge = (): string => {
+    const avoid = new Set(recentNudgeRef.current);
+    const open = NUDGES.map((_, i) => i).filter(i => !avoid.has(i));
+    const pool = open.length ? open : NUDGES.map((_, i) => i);
+    const idx = pool[Math.floor(Math.random() * pool.length)];
+    const recent = recentNudgeRef.current;
+    recent.push(idx);
+    if (recent.length > Math.min(NUDGES.length - 1, 12)) recent.shift();
+    return NUDGES[idx];
+  };
+
+  // Surface one nudge — auto (idle) or from the "Take a nudge" button; both share
+  // the NUDGE_LIMIT budget. Once spent it holds the last one until the A6 reset.
+  const surfaceNudge = () => {
+    if (nudgesUsedRef.current >= NUDGE_LIMIT) return; // locked → hold the last
+    nudgesUsedRef.current += 1;                       // bump now so a same-tick auto+manual can't double-spend
+    setCurrentNudge(pickNudge());
+    setNudgesUsed(count => count + 1);
+  };
+
+  // Auto-surface a nudge on genuine idle (the §8 exception: nudges may surface on
+  // their own). Only after the first keystroke; the timer resets on every
+  // keystroke, so a nudge appears only after real quiet — never mid-flow. Each
+  // surface counts toward NUDGE_LIMIT; once reached it holds (no more surface
+  // until the A6 reset). Reduced-motion is honored by the .nudge-slip CSS.
   useEffect(() => {
     if (!hasTypedRef.current) return;
-    setShowIdleHint(false);
-    const t = setTimeout(() => setShowIdleHint(true), 60000);
+    const t = setTimeout(() => surfaceNudge(), NUDGE_IDLE_MS);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftText]);
 
   // Nudge reset (A6): during lockout, accumulate active-typing seconds; once 180s
@@ -386,11 +439,7 @@ export function QuickSprint() {
     markSaved();
   };
 
-  const handleGetNudge = () => {
-    if (nudgesUsed >= NUDGE_LIMIT) return;
-    setCurrentNudge(NUDGES[nudgesUsed % NUDGES.length]);
-    setNudgesUsed(count => count + 1);
-  };
+  const handleGetNudge = () => surfaceNudge();
 
   const handleKeepGoing = () => {
     setRemainingSeconds(s => (s ?? 0) + KEEP_GOING_SECONDS);
@@ -545,15 +594,11 @@ export function QuickSprint() {
         </div>
       )}
 
-      {/* Nudge slip, tucked under the page's top edge */}
-      {(currentNudge || (showIdleHint && !locked) || locked) && (
-        <div className="nudge-slip" style={{ marginBottom: 12 }}>
-          {locked
-            ? 'Nudges return after a few minutes of writing.'
-            : currentNudge
-              ? currentNudge
-              : 'A minute of quiet. A nudge is there if you want one.'}
-        </div>
+      {/* Nudge slip, tucked under the page's top edge. A surfaced nudge holds
+          here (auto on idle or from the button); once the budget is spent it
+          keeps the last one until the A6 reset returns the budget quietly. */}
+      {currentNudge && (
+        <div className="nudge-slip" style={{ marginBottom: 12 }}>{currentNudge}</div>
       )}
 
       {/* The page */}
