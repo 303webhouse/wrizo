@@ -97,7 +97,7 @@ export function testamentFramings(t: TestamentStats): Framing[] {
     out.push({ key: 'week-words', text: `${fmt(t.weekWords)} words that didn't exist before this week` });
   }
   if (t.weekSprints > 0) {
-    out.push({ key: 'week-sprints', text: `You've tended Ember ${t.weekSprints} ${t.weekSprints === 1 ? 'time' : 'times'} this week` });
+    out.push({ key: 'week-sprints', text: `You've tended Wrizo ${t.weekSprints} ${t.weekSprints === 1 ? 'time' : 'times'} this week` });
   }
   if (t.currentStreak >= 2) {
     out.push({ key: 'streak', text: `${t.currentStreak} days at the page in a row` });
