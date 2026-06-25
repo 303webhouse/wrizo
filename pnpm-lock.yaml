@@ -10,18 +10,12 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@fontsource-variable/crimson-pro':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@fontsource-variable/figtree':
         specifier: ^5.2.10
         version: 5.2.10
-      '@fontsource-variable/mulish':
-        specifier: ^5.2.8
-        version: 5.2.8
-      '@fontsource-variable/newsreader':
-        specifier: ^5.2.10
-        version: 5.2.10
-      '@fontsource/courier-prime':
-        specifier: ^5.2.8
-        version: 5.2.8
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -340,17 +334,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@fontsource-variable/crimson-pro@5.2.8':
+    resolution: {integrity: sha512-En4uvz5Wb9gZFi/EVPA9jfC7Bh5NLYwOGc2KhUIT5mPSKrOSCaI1IyvQ3SbUXeHJ04MhWJiRLJSuU9CmyDcOIA==}
+
   '@fontsource-variable/figtree@5.2.10':
     resolution: {integrity: sha512-a5Gumbpy3mdd+Yg31g6Qb7CmjYbrfyutJa3bWfP5q8A4GclIOwX7mI+ZuSHsJnw/mHvW6r9oh1AHJcJTIxK4JA==}
-
-  '@fontsource-variable/mulish@5.2.8':
-    resolution: {integrity: sha512-WK2SG2nQhQD+9dPOEw6V6tFgs8b5SodnUB5fuPOLj+2HIR2uPlwj+sUHMfMDGkz57us6xhEiJDaxRy8omad/DA==}
-
-  '@fontsource-variable/newsreader@5.2.10':
-    resolution: {integrity: sha512-MdI2iRwrqWpMOU/2aV2BgfZ4dJNlj/XlYaY8Zb7t87mWqHskYW0XiUANkt1cyOCiEfW2VQ0bQ5vZgGPp6B2B4w==}
-
-  '@fontsource/courier-prime@5.2.8':
-    resolution: {integrity: sha512-M3xOCcXnGuFi9TcGCrz4hm5yeWg4Sn35MALRLPnqNoHhawTFvhyi2KSI2+5RyFtDNJrb58bPh8LLipgiI9KA0w==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -1907,13 +1895,9 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
+  '@fontsource-variable/crimson-pro@5.2.8': {}
+
   '@fontsource-variable/figtree@5.2.10': {}
-
-  '@fontsource-variable/mulish@5.2.8': {}
-
-  '@fontsource-variable/newsreader@5.2.10': {}
-
-  '@fontsource/courier-prime@5.2.8': {}
 
   '@img/colour@1.1.0': {}
 

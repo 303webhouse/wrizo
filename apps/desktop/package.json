@@ -9,10 +9,8 @@
     "verify:runtime": "node scripts/runtime-verify.mjs --selftest"
   },
   "dependencies": {
+    "@fontsource-variable/crimson-pro": "^5.2.8",
     "@fontsource-variable/figtree": "^5.2.10",
-    "@fontsource-variable/mulish": "^5.2.8",
-    "@fontsource-variable/newsreader": "^5.2.10",
-    "@fontsource/courier-prime": "^5.2.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.0"

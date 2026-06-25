@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 // Fonts bundled locally (no CDN) so the app renders fully offline.
-import '@fontsource-variable/newsreader';
-import '@fontsource-variable/mulish';
-import '@fontsource/courier-prime/400.css';
-import '@fontsource/courier-prime/700.css';
+// Wrizo brand: Figtree (titles/UI), Crimson Pro (body/writing surface).
+import '@fontsource-variable/figtree';
+import '@fontsource-variable/crimson-pro';
 import { App } from './App';
 import './index.css';
 
