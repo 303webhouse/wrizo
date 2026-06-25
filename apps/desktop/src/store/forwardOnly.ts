@@ -38,15 +38,26 @@ export function appendStruck(content: Run[], text: string): Run[] {
   return [...content, { text, struck: true }];
 }
 
-// Strike the most recent unstruck run (toggle to struck). Reports whether it
-// changed anything, so the editor can count ineffective ("locked") presses.
-export function strikeLastUnstruck(content: Run[]): { content: Run[]; changed: boolean } {
+// Strike the LAST WORD of the draft — the backspace runway walks back one word
+// per press. Committed prose lives in merged unstruck runs (append extends the
+// last run, mirroring DM1 appendText), so striking must peel the trailing word
+// off the end of the last unstruck run, not the whole run. The peeled word
+// becomes its own struck run (it stays visible, line-through; drops from derived
+// prose); the rest of the run stays unstruck. A single-word run is struck whole.
+// Still forward-only — nothing is erased, the run text is only re-partitioned.
+// Reports whether anything changed, so the editor can count locked presses.
+export function strikeLastWord(content: Run[]): { content: Run[]; changed: boolean } {
   for (let i = content.length - 1; i >= 0; i--) {
-    if (!content[i].struck) {
-      const next = content.slice();
-      next[i] = { ...next[i], struck: true };
-      return { content: next, changed: true };
-    }
+    const run = content[i];
+    if (run.struck) continue;
+    const m = /\S+\s*$/.exec(run.text); // the trailing word + any whitespace after it
+    if (!m) continue;                   // whitespace-only / empty run — nothing to strike here
+    const head = run.text.slice(0, m.index); // earlier words, still unstruck
+    const word = m[0];                       // the word to strike (with its trailing space)
+    const next = content.slice();
+    if (head) next.splice(i, 1, { text: head, struck: false }, { text: word, struck: true });
+    else next[i] = { ...run, struck: true }; // run was a single word → strike it whole
+    return { content: next, changed: true };
   }
   return { content, changed: false };
 }
