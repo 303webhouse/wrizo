@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
-import { append, appendStruck, derivedText, isBoundary, seedContent, strikeLastUnstruck } from '../store/forwardOnly';
+import { append, appendStruck, derivedText, isBoundary, seedContent, strikeLastWord } from '../store/forwardOnly';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -77,8 +77,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   //   1st  → vanish the active word's last char (pre-commit; touches no Run)
   //   2nd  → flush the active word as a struck Run (restoring the vanished
   //          letter so the whole word shows struck); empty buffer → strike the
-  //          last unstruck Run instead
-  //   3rd  → strike the previous unstruck Run
+  //          last committed word instead
+  //   3rd  → strike the previous word (one word, not the whole sentence)
   //   4th+ → locked, no-op; 3 consecutive no-ops show the keep-writing nudge
   const handleBackspace = () => {
     bsRef.current += 1;
@@ -97,11 +97,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         wordRef.current = '';
         did = true;
       } else {
-        const r = strikeLastUnstruck(c);
+        const r = strikeLastWord(c);
         if (r.changed) { contentRef.current = r.content; did = true; }
       }
     } else if (n === 3) {
-      const r = strikeLastUnstruck(c);
+      const r = strikeLastWord(c);
       if (r.changed) { contentRef.current = r.content; did = true; }
     }
 
