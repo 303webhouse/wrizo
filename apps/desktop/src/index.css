@@ -642,7 +642,10 @@ a:focus-visible,
 .chrome-fade {
   transition: opacity var(--t-state) var(--ease);
 }
-[data-chrome-receded='true'] .chrome-fade {
+/* Either a .chrome-fade descendant of a receded container (sprint chrome), or a
+   single element carrying both class + attr (the global App header, CW4). */
+[data-chrome-receded='true'] .chrome-fade,
+.chrome-fade[data-chrome-receded='true'] {
   opacity: 0;
   pointer-events: none;
 }

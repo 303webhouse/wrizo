@@ -106,7 +106,7 @@ export function QuickSprint() {
 
   // CW1 — chrome-fade / Middle Door. Driven by the editor's onForward (writing)
   // and global intent/idle signals. The editor, caret, and J5 warmth never fade.
-  const { receded, noteForward, restore } = useChromeFade();
+  const { receded, noteForward, restore } = useChromeFade({ surface: 'sprint' });
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
