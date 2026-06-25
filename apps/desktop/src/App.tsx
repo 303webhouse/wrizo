@@ -10,6 +10,7 @@ import { QuickSprint } from './pages/QuickSprint';
 import { Journal } from './pages/Journal';
 import { JournalEntry } from './pages/JournalEntry';
 import { LoginScreen } from './components/LoginScreen';
+import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { startSync, stopSync, syncOnce, clearLastSyncAt, subscribeSyncStatus, type SyncStatus } from './store/sync';
@@ -80,6 +81,36 @@ function FullscreenToggle() {
   );
 }
 
+// The global App frame (CW4). A WritingSession consumer: during active writing it
+// recedes with the same fade as the sprint chrome, so the whole frame drops below
+// the attention threshold (P8) and "All changes saved" returns only at rest. The
+// ember handle and the forgiving intent/idle restore (shared writing-mode state)
+// bring it back together with the sprint chrome — one frame settling, not two.
+function GlobalHeader({ onLogout }: { onLogout: () => void }) {
+  const { isWriting } = useWritingSession();
+  return (
+    <div
+      className="chrome-fade"
+      data-chrome-receded={isWriting ? 'true' : 'false'}
+      style={{
+        position: 'fixed', top: 0, right: 0, zIndex: 50,
+        display: 'flex', alignItems: 'center', gap: '0.75rem',
+        padding: '0.5rem 0.75rem',
+      }}
+    >
+      <FullscreenToggle />
+      <SyncIndicator />
+      <button
+        type="button"
+        onClick={onLogout}
+        style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}
+
 export function App() {
   const [authState, setAuthState] = useState<AuthState>('loading');
   // Re-render the routed tree when the adapter cache changes (e.g. a sync pull).
@@ -127,25 +158,10 @@ export function App() {
   }
 
   return (
-    <HashRouter>
-      <div
-        style={{
-          position: 'fixed', top: 0, right: 0, zIndex: 50,
-          display: 'flex', alignItems: 'center', gap: '0.75rem',
-          padding: '0.5rem 0.75rem',
-        }}
-      >
-        <FullscreenToggle />
-        <SyncIndicator />
-        <button
-          type="button"
-          onClick={handleLogout}
-          style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-        >
-          Sign out
-        </button>
-      </div>
-      <Routes>
+    <WritingSessionProvider>
+      <HashRouter>
+        <GlobalHeader onLogout={handleLogout} />
+        <Routes>
         <Route path="/" element={<SessionLauncher />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
@@ -156,7 +172,8 @@ export function App() {
         <Route path="/sprint" element={<QuickSprint />} />
         <Route path="/journal" element={<Journal />} />
         <Route path="/journal/:id" element={<JournalEntry />} />
-      </Routes>
-    </HashRouter>
+        </Routes>
+      </HashRouter>
+    </WritingSessionProvider>
   );
 }
