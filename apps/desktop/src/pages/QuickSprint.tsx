@@ -10,6 +10,7 @@ import { getFramework } from '../store/frameworks';
 import { startAmbient, type AmbientHandle } from '../store/ambient';
 import { pickEchoLine } from '../store/entryText';
 import { ForwardOnlyEditor } from '../components/ForwardOnlyEditor';
+import { useChromeFade, ChromeHandle } from '../components/WritingShell';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -98,11 +99,14 @@ export function QuickSprint() {
   const [nudgesUsed, setNudgesUsed] = useState(0);
   const [showIdleHint, setShowIdleHint] = useState(false);
   const [textareaFocused, setTextareaFocused] = useState(false);
-  const [chromeHover, setChromeHover] = useState(false);
   const [beatOpen, setBeatOpen] = useState(true);
   const [markBeatDone, setMarkBeatDone] = useState(false);
   const [soundOn, setSoundOn] = useState(false); // ambient sound bed (J5), off by default
   const [echoLine, setEchoLine] = useState<string | null>(null); // post-sprint echo (J7)
+
+  // CW1 — chrome-fade / Middle Door. Driven by the editor's onForward (writing)
+  // and global intent/idle signals. The editor, caret, and J5 warmth never fade.
+  const { receded, noteForward, restore } = useChromeFade();
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
@@ -437,13 +441,8 @@ export function QuickSprint() {
     return <Navigate to="/" replace />;
   }
 
-  const dimmed = textareaFocused && !chromeHover;
   const locked = nudgesUsed >= NUDGE_LIMIT;
   const fillPct = totalSeconds && remainingSeconds !== null ? (remainingSeconds / totalSeconds) * 100 : 0;
-  const chromeHoverProps = {
-    onMouseEnter: () => setChromeHover(true),
-    onMouseLeave: () => setChromeHover(false),
-  };
 
   const pill = (active: boolean): React.CSSProperties => ({
     fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 600,
@@ -454,15 +453,16 @@ export function QuickSprint() {
   });
 
   return (
-    <div className="page" style={{ maxWidth: 820, paddingTop: '2.5rem' }}>
+    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 820, paddingTop: '2.5rem' }}>
+      {/* CW1: ever-present reveal handle so chrome is discoverable while receded. */}
+      <ChromeHandle onReveal={restore} />
       {/* Top bar */}
       <div
-        {...chromeHoverProps}
+        className="chrome-fade"
         style={{
           background: 'var(--ink-900)', borderRadius: 'var(--radius-md)',
           padding: '10px 16px', display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-          opacity: dimmed ? 0.7 : 1, transition: 'opacity var(--t-state) var(--ease)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -516,7 +516,7 @@ export function QuickSprint() {
       </div>
       {/* Timer hairline drains while running */}
       {remainingSeconds !== null && (
-        <div className="hairline-timer" style={{ marginBottom: 16 }}>
+        <div className="hairline-timer chrome-fade" style={{ marginBottom: 16 }}>
           {/* idle = brass; warms to ember once the sprint is live (branding §4) */}
           <div className="hairline-timer__fill" style={{ width: `${fillPct}%`, background: isRunning ? 'var(--ember)' : undefined }} />
         </div>
@@ -525,7 +525,7 @@ export function QuickSprint() {
 
       {/* Beat context strip (A4) */}
       {currentBeat && (
-        <div style={{
+        <div className="chrome-fade" style={{
           border: '1px solid var(--ink-border)', borderRadius: 'var(--radius-md)',
           background: 'var(--ink-900)', padding: '12px 16px', marginBottom: 16,
         }}>
@@ -589,7 +589,7 @@ export function QuickSprint() {
           ref={editorRef}
           initialText={seedText}
           onChange={handleEditorChange}
-          onForward={handleForwardKeystroke}
+          onForward={() => { handleForwardKeystroke(); noteForward(); }}
           onFocus={() => setTextareaFocused(true)}
           onBlur={() => { setTextareaFocused(false); flushDraft(); }}
           placeholder="Write without stopping…"
@@ -600,7 +600,7 @@ export function QuickSprint() {
             fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
           }}
         />
-        <div style={{
+        <div className="chrome-fade" style={{
           position: 'absolute', bottom: 12, right: 16,
           fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink-on-paper-low)',
         }}>
@@ -611,11 +611,10 @@ export function QuickSprint() {
       {/* Bottom bar (hidden during the finish moment so the card owns the brass) */}
       {!isFinishing && (
         <div
-          {...chromeHoverProps}
-          className="sprint-bottombar"
+          className="sprint-bottombar chrome-fade"
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginTop: 16, opacity: dimmed ? 0.7 : 1, transition: 'opacity var(--t-state) var(--ease)',
+            marginTop: 16,
           }}
         >
           <span className={`saved-stamp${savedUntil ? '' : ' saved-stamp--hidden'}`}>Saved</span>
