@@ -30,12 +30,26 @@ app.use('/api', syncRouter);
 
 // Static app + SPA fallback. API/auth paths never fall through to index.html.
 // (Express 5 rejects the bare '*' route pattern, so use a path-less middleware.)
-app.use(express.static(distWeb));
+//
+// Caching: index.html MUST revalidate every load (no-cache) so a new deploy is
+// picked up immediately — otherwise a stale index.html keeps pointing browsers
+// at the previous content-hashed bundle. The /assets/* files are content-hashed
+// (their name changes when the content does), so they're safe to cache forever.
+app.use(express.static(distWeb, {
+  setHeaders: (res: Response, filePath: string) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (/[\\/]assets[\\/]/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  },
+}));
 app.use((req: Request, res: Response) => {
   if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path === '/healthz') {
     res.status(404).json({ error: 'Not found' });
     return;
   }
+  res.setHeader('Cache-Control', 'no-cache'); // SPA fallback also serves index.html
   res.sendFile(join(distWeb, 'index.html'));
 });
 
