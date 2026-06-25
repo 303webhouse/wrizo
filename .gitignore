@@ -20,3 +20,8 @@ nul
 # Stray files from other projects � must never re-enter this repo
 backend/
 PROJECT_RULES.md
+
+# build artifacts
+.pnpm-store/
+build/
+*.tsbuildinfo
