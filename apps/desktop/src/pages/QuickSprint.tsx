@@ -445,7 +445,13 @@ export function QuickSprint() {
     markSaved();
   };
 
-  const handleGetNudge = () => showNudge(true); // on-demand → a held nudge until the next keystroke
+  // On-demand → a held nudge until the next keystroke. Cancel any pending
+  // auto-cadence first so a manual pull and the cadence can never fire two
+  // nudges at once.
+  const handleGetNudge = () => {
+    clearNudgeTimers();
+    showNudge(true);
+  };
 
   const handleKeepGoing = () => {
     setRemainingSeconds(s => (s ?? 0) + KEEP_GOING_SECONDS);
@@ -550,7 +556,7 @@ export function QuickSprint() {
               <button type="button" className="btn-quiet" onClick={handleCustomTimer}>Set</button>
             </span>
           )}
-          <button type="button" className="btn-quiet" onClick={handleGetNudge}>
+          <button type="button" className="btn-quiet btn-ghost" onClick={handleGetNudge}>
             Take a nudge
           </button>
           <button

@@ -2,6 +2,9 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Tablet tripwire — "Take a nudge" button (watch, decide on hardware)
+The manual nudge pull is kept but de-emphasized (translucent `.btn-ghost`, surfaces on hover/focus — a tool for someone who needs it, not a treat that beckons). Manual pull and the auto-cadence are guarded so they can't fire two nudges at once. **Tablet watch:** do you reach for it to get *unstuck*, or to *avoid writing*? If it's avoidance, kill the button. That's the tripwire.
+
 ## Nudge pool reconciled to canonical (repo-claim 3 closed)
 Replaced CC's improvised 25 with the canonical SME pool — verbatim, 4 balanced registers (sensory images / concrete moves / permission-giving / pre-1930 public-domain literary allusions). Cleared the `FIXME(home-port)`. Built + confirmed in bundle; old strings gone. Cadence/render unchanged (Crimson Pro italic). Not deployed (held with the pre-home tweaks for the tablet pass).
 
