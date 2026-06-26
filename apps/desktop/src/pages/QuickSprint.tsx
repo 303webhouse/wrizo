@@ -32,13 +32,13 @@ const KEEP_GOING_SECONDS = 300;
 // pre-1930 English-language authors — public-domain originals transformed into
 // prompts, never reproduced translations.
 const NUDGES = [
-  // sensory images
-  "The smell of rain before it arrives.",
-  "A door left open in another room.",
-  "Steam off a cup someone forgot.",
-  "The warmth still in a chair just left.",
-  "Light through a curtain, moving.",
-  "A sound from the street you can't quite place.",
+  // sensory images (fragments — no terminal period; only full sentences punctuate)
+  "The smell of rain before it arrives",
+  "A door left open in another room",
+  "Steam off a cup someone forgot",
+  "The warmth still in a chair just left",
+  "Light through a curtain, moving",
+  "A sound from the street you can't quite place",
   // small concrete moves
   "Write the next sentence badly. Fix it never.",
   "Put something in your character's hands.",
