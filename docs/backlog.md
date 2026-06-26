@@ -2,6 +2,9 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Nudge pool reconciled to canonical (repo-claim 3 closed)
+Replaced CC's improvised 25 with the canonical SME pool — verbatim, 4 balanced registers (sensory images / concrete moves / permission-giving / pre-1930 public-domain literary allusions). Cleared the `FIXME(home-port)`. Built + confirmed in bundle; old strings gone. Cadence/render unchanged (Crimson Pro italic). Not deployed (held with the pre-home tweaks for the tablet pass).
+
 ## Pre-HOME tweaks (v6-independent; branch `pre-home-tweaks`)
 Two standalone tasks from the HOME port brief ([home-port-brief.md](home-port-brief.md)), done while the HOME shell stays gated on `wrizo-home-v6.html`. NOT deployed — held for the tablet pass per the brief.
 - **Nudge re-tune (global mechanic):** replaced the single 60s budget-3 model with an escalating idle cadence — first nudge at 3 min, second +2 min, third +1 min then HOLDS. First two are ephemeral (dissolve after 10s); the third persists. Any keystroke resets to the 3-min countdown. Removed the old A6 budget/lockout. Nudge now renders in Crimson Pro italic (the writing voice) with an opacity-gated fade; reduced-motion → instant via the global reset. Verified the full state machine in-harness with shortened constants (ephemeral #1/#2, held #3, reset, manual). The gate inherits this automatically when it mounts `WritingSession`.
