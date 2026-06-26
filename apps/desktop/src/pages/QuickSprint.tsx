@@ -16,16 +16,20 @@ const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
 const PRESETS = [5, 10, 20];
-const NUDGE_LIMIT = 3;          // how many surface (auto + manual) before it holds
-const NUDGE_IDLE_MS = 60_000;   // genuine quiet before a nudge auto-surfaces
-const NUDGE_RESET_SECONDS = 180;
-const NUDGE_RESET_CHARS = 50;
+// Idle-nudge cadence (re-tuned): gaps SHORTEN as idle persists. First nudge at
+// 3 min, second 2 min later, third 1 min after that — then it holds. The first
+// two are ephemeral (dissolve after NUDGE_EPHEMERAL_MS); the third persists.
+// Any keystroke resets the whole cycle to the 3-min countdown.
+const NUDGE_GAP_1 = 180_000;       // 3 min idle → first nudge
+const NUDGE_GAP_2 = 120_000;       // +2 min still idle → second
+const NUDGE_GAP_3 = 60_000;        // +1 min still idle → third (holds)
+const NUDGE_EPHEMERAL_MS = 10_000; // first two dissolve back out after 10s
 const KEEP_GOING_SECONDS = 300;
 
-// The nudge pool — momentum-first prompts (questions + small concrete moves), in
-// the calm Ember voice. Drawn at random without near repeats. One auto-surfaces
-// on genuine idle (up to NUDGE_LIMIT, then holds); the "Take a nudge" button
-// pulls one on demand from the same budget.
+// FIXME(home-port): this pool is CC's rewrite, NOT the canonical curated 25
+// (4 registers). Reconcile to the canonical verbatim lines from the prototype /
+// transcript (repo-claim 3). The cadence/mechanic below is pool-agnostic —
+// swapping this array is the only change that reconciliation needs.
 const NUDGES = [
   'Who wants what right now?',
   'What changes today if they fail?',
@@ -121,10 +125,9 @@ export function QuickSprint() {
   }, [id, draftId]);
   const [savedUntil, setSavedUntil] = useState<number | null>(null);
   const [currentNudge, setCurrentNudge] = useState('');
-  const [nudgesUsed, setNudgesUsed] = useState(0);
-  const nudgesUsedRef = useRef(0);
-  nudgesUsedRef.current = nudgesUsed;
+  const [nudgeShown, setNudgeShown] = useState(false); // opacity gate for the ephemeral dissolve
   const recentNudgeRef = useRef<number[]>([]); // recently-shown indices → avoid near repeats
+  const nudgeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]); // cadence + dissolve timers
   const [textareaFocused, setTextareaFocused] = useState(false);
   const [beatOpen, setBeatOpen] = useState(true);
   const [markBeatDone, setMarkBeatDone] = useState(false);
@@ -148,8 +151,6 @@ export function QuickSprint() {
   const sessionStartWordsRef = useRef(wordCount(draftText));
   const sprintStartMsRef = useRef<number | null>(null);
   const lastKeystrokeMsRef = useRef(0);
-  const lockoutCharBaselineRef = useRef(0);
-  const accumTypingSecRef = useRef(0);
   // Session instrumentation (A9).
   const sessionStartedAtRef = useRef(new Date().toISOString());
   const firstKeystrokeAtRef = useRef<string | null>(null);
@@ -333,44 +334,44 @@ export function QuickSprint() {
     return NUDGES[idx];
   };
 
-  // Surface one nudge — auto (idle) or from the "Take a nudge" button; both share
-  // the NUDGE_LIMIT budget. Once spent it holds the last one until the A6 reset.
-  const surfaceNudge = () => {
-    if (nudgesUsedRef.current >= NUDGE_LIMIT) return; // locked → hold the last
-    nudgesUsedRef.current += 1;                       // bump now so a same-tick auto+manual can't double-spend
-    setCurrentNudge(pickNudge());
-    setNudgesUsed(count => count + 1);
+  const clearNudgeTimers = () => {
+    nudgeTimersRef.current.forEach(clearTimeout);
+    nudgeTimersRef.current = [];
   };
 
-  // Auto-surface a nudge on genuine idle (the §8 exception: nudges may surface on
-  // their own). Only after the first keystroke; the timer resets on every
-  // keystroke, so a nudge appears only after real quiet — never mid-flow. Each
-  // surface counts toward NUDGE_LIMIT; once reached it holds (no more surface
-  // until the A6 reset). Reduced-motion is honored by the .nudge-slip CSS.
+  // Surface one nudge. `held` → it persists (the third in the cadence, or the
+  // manual button); otherwise it's ephemeral and dissolves after 10s.
+  const showNudge = (held: boolean) => {
+    setCurrentNudge(pickNudge());
+    setNudgeShown(true);
+    if (!held) {
+      nudgeTimersRef.current.push(setTimeout(() => {
+        setNudgeShown(false);                                                  // fade out
+        nudgeTimersRef.current.push(setTimeout(() => setCurrentNudge(''), 320)); // then unmount
+      }, NUDGE_EPHEMERAL_MS));
+    }
+  };
+
+  // The re-tuned idle cadence (the §8 exception: nudges may surface on their own,
+  // but only in the gaps). Resets on every keystroke (draftText change), so a
+  // nudge only ever appears after real quiet — never mid-flow. Gaps shorten as
+  // idle persists: 3 min → +2 min → +1 min, then the third holds. Reduced-motion
+  // collapses the fades to instant via the global reset.
   useEffect(() => {
     if (!hasTypedRef.current) return;
-    const t = setTimeout(() => surfaceNudge(), NUDGE_IDLE_MS);
-    return () => clearTimeout(t);
+    clearNudgeTimers();
+    setNudgeShown(false);   // a keystroke dismisses any shown nudge (no-op re-render if already clear)
+    setCurrentNudge('');
+    const t = nudgeTimersRef.current;
+    t.push(setTimeout(() => showNudge(false), NUDGE_GAP_1));                            // #1, ephemeral
+    t.push(setTimeout(() => showNudge(false), NUDGE_GAP_1 + NUDGE_GAP_2));              // #2, ephemeral
+    t.push(setTimeout(() => showNudge(true),  NUDGE_GAP_1 + NUDGE_GAP_2 + NUDGE_GAP_3)); // #3, holds
+    return clearNudgeTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftText]);
 
-  // Nudge reset (A6): during lockout, accumulate active-typing seconds; once 180s
-  // of writing AND 50+ chars have passed, quietly return the nudges.
-  useEffect(() => {
-    if (nudgesUsed < NUDGE_LIMIT) return;
-    lockoutCharBaselineRef.current = draftTextRef.current.length;
-    accumTypingSecRef.current = 0;
-    const iv = setInterval(() => {
-      if (Date.now() - lastKeystrokeMsRef.current <= 10000) {
-        accumTypingSecRef.current += 1;
-      }
-      const charsTyped = draftTextRef.current.length - lockoutCharBaselineRef.current;
-      if (accumTypingSecRef.current >= NUDGE_RESET_SECONDS && charsTyped >= NUDGE_RESET_CHARS) {
-        setNudgesUsed(0);
-      }
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [nudgesUsed]);
+  // Tidy timers on unmount.
+  useEffect(() => clearNudgeTimers, []);
 
   const startTimer = (minutes: number) => {
     const secs = Math.round(minutes * 60);
@@ -439,7 +440,7 @@ export function QuickSprint() {
     markSaved();
   };
 
-  const handleGetNudge = () => surfaceNudge();
+  const handleGetNudge = () => showNudge(true); // on-demand → a held nudge until the next keystroke
 
   const handleKeepGoing = () => {
     setRemainingSeconds(s => (s ?? 0) + KEEP_GOING_SECONDS);
@@ -490,7 +491,6 @@ export function QuickSprint() {
     return <Navigate to="/" replace />;
   }
 
-  const locked = nudgesUsed >= NUDGE_LIMIT;
   const fillPct = totalSeconds && remainingSeconds !== null ? (remainingSeconds / totalSeconds) * 100 : 0;
 
   const pill = (active: boolean): React.CSSProperties => ({
@@ -545,7 +545,7 @@ export function QuickSprint() {
               <button type="button" className="btn-quiet" onClick={handleCustomTimer}>Set</button>
             </span>
           )}
-          <button type="button" className="btn-quiet" onClick={handleGetNudge} disabled={locked}>
+          <button type="button" className="btn-quiet" onClick={handleGetNudge}>
             Take a nudge
           </button>
           <button
@@ -598,7 +598,7 @@ export function QuickSprint() {
           here (auto on idle or from the button); once the budget is spent it
           keeps the last one until the A6 reset returns the budget quietly. */}
       {currentNudge && (
-        <div className="nudge-slip" style={{ marginBottom: 12 }}>{currentNudge}</div>
+        <div className="nudge-slip" data-shown={nudgeShown ? 'true' : 'false'} style={{ marginBottom: 12 }}>{currentNudge}</div>
       )}
 
       {/* The page */}
