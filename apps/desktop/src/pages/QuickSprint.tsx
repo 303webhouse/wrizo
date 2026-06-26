@@ -26,36 +26,41 @@ const NUDGE_GAP_3 = 60_000;        // +1 min still idle → third (holds)
 const NUDGE_EPHEMERAL_MS = 10_000; // first two dissolve back out after 10s
 const KEEP_GOING_SECONDS = 300;
 
-// FIXME(home-port): this pool is CC's rewrite, NOT the canonical curated 25
-// (4 registers). Reconcile to the canonical verbatim lines from the prototype /
-// transcript (repo-claim 3). The cadence/mechanic below is pool-agnostic —
-// swapping this array is the only change that reconciliation needs.
+// Canonical idle-nudge pool (25) — SME writing/creative committee, 4 balanced
+// registers. VERBATIM; do not improvise. Rendered Crimson Pro italic, drawn at
+// random without near-repeats. Register 4 (literary allusions) is restricted to
+// pre-1930 English-language authors — public-domain originals transformed into
+// prompts, never reproduced translations.
 const NUDGES = [
-  'Who wants what right now?',
-  'What changes today if they fail?',
-  'What risk are they avoiding?',
-  'Use only concrete actions for the next paragraph.',
-  'Cut one sentence and replace it with a sharper verb.',
-  'What does your narrator notice that no one else would?',
-  'Put something physical in their hands.',
-  'What is the worst thing that could walk through the door right now?',
-  'Say the thing the character will not say out loud.',
-  'Write the next line as if no one will ever read it.',
-  'What is the smallest detail that proves where we are?',
-  'Let them be wrong about something.',
-  'What are they pretending not to feel?',
-  'Skip ahead to the part you actually want to write.',
-  'Give the scene a sound.',
-  'What would break this moment open?',
-  'Whose turn is it to speak — and what do they want?',
-  'Describe it the way a child would.',
-  'What just changed that cannot change back?',
-  'Trade one adjective for an action.',
-  'What is at stake in the next sixty seconds?',
-  'Let someone lie.',
-  'What does the room smell like?',
-  'Start the next sentence with a verb.',
-  'What is the question this scene is really asking?',
+  // sensory images
+  "The smell of rain before it arrives.",
+  "A door left open in another room.",
+  "Steam off a cup someone forgot.",
+  "The warmth still in a chair just left.",
+  "Light through a curtain, moving.",
+  "A sound from the street you can't quite place.",
+  // small concrete moves
+  "Write the next sentence badly. Fix it never.",
+  "Put something in your character's hands.",
+  "Name one thing you can see right now.",
+  "Skip ahead to the part you actually want to write.",
+  "Add one true detail.",
+  "Finish this: 'What no one knew was…'",
+  "Write the easy sentence first. The hard one can wait.",
+  // permission-giving phrases
+  "It's allowed to be bad. That's what first drafts are for.",
+  "No one has to read this. Not even future you.",
+  "You're not deciding anything yet. You're just writing.",
+  "Messy is a kind of moving.",
+  "The wrong word still counts as words.",
+  "You can ruin it later. Keep going for now.",
+  // public-domain literary allusions
+  "The old poets began in the middle of things. So can you.",
+  "Even 'it was a dark and stormy night' launched a whole novel. Start anywhere.",
+  "Dickinson wrote in dashes and never apologized. Yours can be ragged.",
+  "Whitman let himself contradict himself. You can hold two thoughts at once.",
+  "A truth, universally acknowledged, is just a first line. Any truth will do.",
+  "Melville opened with three words and a sailor. Open with whatever you've got.",
 ];
 
 function wordCount(text: string): number {
