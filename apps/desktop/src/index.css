@@ -233,6 +233,9 @@ h1, h2, h3 {
   width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
+  /* Structure inputs speak in the UI voice (Figtree), not the UA default font.
+     Form controls don't inherit font-family on their own. */
+  font-family: var(--font-ui);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -248,6 +251,7 @@ h1, h2, h3 {
   width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
+  font-family: var(--font-ui);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -265,7 +269,7 @@ h1, h2, h3 {
   color: var(--color-text);
   min-height: 150px;
   resize: vertical;
-  font-family: inherit;
+  font-family: var(--font-ui); /* structure notes = Figtree, never the prose serif */
 }
 
 .form-textarea:focus {
@@ -490,9 +494,17 @@ h1, h2, h3 {
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
   color: var(--text-hi);
-  font-family: var(--font-ui);
-  font-size: 14px;
+  /* The nudge speaks in the writing voice — Crimson Pro, italic. */
+  font-family: var(--font-prose);
+  font-style: italic;
+  font-size: 15px;
+  opacity: 1;
+  transition: opacity var(--t-state) var(--ease);
   animation: nudge-slip-in var(--t-state) var(--ease);
+}
+/* Ephemeral nudges fade back out (reduced-motion → instant via the global reset). */
+.nudge-slip[data-shown='false'] {
+  opacity: 0;
 }
 @keyframes nudge-slip-in {
   from { opacity: 0; transform: translateY(-6px); }
