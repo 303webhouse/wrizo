@@ -9,7 +9,7 @@ import { StructureBoard } from './pages/StructureBoard';
 import { QuickSprint } from './pages/QuickSprint';
 import { Journal } from './pages/Journal';
 import { JournalEntry } from './pages/JournalEntry';
-import { LoginScreen } from './components/LoginScreen';
+import { HomeFlow } from './components/HomeFlow';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -154,7 +154,7 @@ export function App() {
   }
 
   if (authState === 'anon') {
-    return <LoginScreen onAuthed={handleAuthed} />;
+    return <HomeFlow onAuthed={handleAuthed} />;
   }
 
   return (

@@ -2,6 +2,18 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## HOME port — anon front door (v6) — branch `home-port`, NOT deployed
+First slice of the HOME port ([home-port-brief.md](home-port-brief.md)), built from `wrizo-home-v6.html` (the feel source of truth). Held for the tablet pass per the brief.
+- **`HomeFlow.tsx` (new):** landing → forced first-write gate → reward → account / sign-in, as a stage machine. The gate **mounts the existing `ForwardOnlyEditor`** (zero editor logic) — runway, strikethrough, struck-words-drop-from-derived, paste block all inherited. WORD_GOAL=50 (lowerable). Both progress signals (fill-track + ambient ember-grow 0.4→1.0). Goal → bloom + word-echo of the writer's own clean words; reduced-motion suppresses the bloom, keeps the echo.
+- **Pre-auth content survival (non-negotiable):** on "Create my desk" the gate's clean derived prose is saved as the first journal entry (`saveJournalEntry`), then auth — harness-verified end to end (landing→gate→reward→account→register→authed app, entry present).
+- **Visuals:** ported v6 verbatim — espresso ground `#110600`/lift `#150a04`, light ink `#f0e7d8`, square corners, solid borders (translucent-orange only on the secondary btn), Nick's hand-drawn logo (`public/brand/wrizo-logo.png`, extracted from v6). All scoped under `.wz-home`.
+- **Wiring:** App's anon branch now renders `HomeFlow` (was `LoginScreen`, now orphaned). Harness gained a `WS_ANON=1` gate to drive the anon front door.
+- **DEFERRED / flagged (NOT in this slice):**
+  - **Gate idle-nudges** — the re-tuned cadence lives in QuickSprint; mounting it in the gate needs that system extracted into a shared hook. Follow-up.
+  - **Desk / launchpad** (v6 "launch" screen as the authed home, replacing SessionLauncher; Keep writing / New page / Begin project / grayed Customize + tooltip). After account-create the user currently lands on the existing SessionLauncher.
+  - **Auth model mismatch** — v6's account is email-only, but the shipped `apiRegister` needs **email + password + invite code**. The account step collects all three (styled to v6). A true email-only/passwordless, no-invite public front door needs a backend ticket — decision for Nick.
+  - Bigheads are Figtree `.bighead` placeholders (hand-drawn art swaps later); v6's 25-prompt pool not yet adopted (the nudge system uses the canonical SME pool).
+
 ## Tablet tripwire — "Take a nudge" button (watch, decide on hardware)
 The manual nudge pull is kept but de-emphasized (translucent `.btn-ghost`, surfaces on hover/focus — a tool for someone who needs it, not a treat that beckons). Manual pull and the auto-cadence are guarded so they can't fire two nudges at once. **Tablet watch:** do you reach for it to get *unstuck*, or to *avoid writing*? If it's avoidance, kill the button. That's the tripwire.
 

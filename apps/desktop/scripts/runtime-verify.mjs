@@ -90,6 +90,12 @@ function startServer(dist) {
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
     // sync pull = no-op, so it never touches records the app writes locally.
     if (p === '/auth/me' || p.startsWith('/auth/')) {
+      // WS_ANON=1 → /auth/me is unauthorized (drives the HomeFlow front door);
+      // /auth/login + /auth/register still succeed so the account flow can finish.
+      if (process.env.WS_ANON === '1' && p === '/auth/me') {
+        res.writeHead(401, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'unauthorized' }));
+      }
       return sendJson(res, { id: 'test-user', email: 'tester@example.com' });
     }
     if (p === '/api/sync') {

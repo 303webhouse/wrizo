@@ -25,3 +25,6 @@ PROJECT_RULES.md
 .pnpm-store/
 build/
 *.tsbuildinfo
+
+# HOME port v6 reference prototype (heavy, not app code)
+apps/desktop/scratch/
