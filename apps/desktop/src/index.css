@@ -363,6 +363,13 @@ h1, h2, h3 {
 }
 .btn-quiet:hover { color: var(--text-hi); text-decoration: underline; }
 
+/* De-emphasis modifier (brand: translucency = de-emphasis signal only). For a
+   control that should be reachable but never beckon — a tool for someone who
+   needs it, not a treat. Surfaces to full presence on hover/focus. */
+.btn-ghost { opacity: 0.4; transition: opacity var(--t-state) var(--ease), color var(--t-fast) var(--ease); }
+.btn-ghost:hover,
+.btn-ghost:focus-visible { opacity: 1; }
+
 /* Discard only — the single brick control in the whole app. */
 .btn-brick {
   background: transparent;
