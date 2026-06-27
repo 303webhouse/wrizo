@@ -19,9 +19,9 @@ import type { JournalEntry } from '../types';
 //  - Gate idle-nudges: the re-tuned nudge cadence lives in QuickSprint; mounting
 //    it here needs that system extracted into a shared hook. Follow-up.
 //  - The v6 "launch"/Desk launchpad as the authed home (replaces SessionLauncher).
-//  - Auth model: v6's account is email-only, but the shipped backend register
-//    needs email + password + invite. We collect all three (styled to v6) until a
-//    passwordless / no-invite backend lands. See the account stage.
+//  - Auth model: invite dropped (Wrizo is open — the writing-gate is the filter).
+//    Account collects email + password for now; passwordless / email-first is a
+//    later backend lift (backlog).
 
 const WORD_GOAL = 50; // lowerable for testing
 
@@ -50,7 +50,6 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   // account / sign-in form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [invite, setInvite] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -95,7 +94,7 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   const handleCreate = async () => {
     if (busy) return;
     setError(''); setBusy(true);
-    const res = await apiRegister(email.trim(), password, invite.trim());
+    const res = await apiRegister(email.trim(), password);
     setBusy(false);
     if (res.ok && res.user) {
       persistFirstEntry(); // first, so the entry is on the desk the instant they arrive
@@ -169,7 +168,6 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
           <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           {/* Backend needs these until a passwordless / no-invite flow lands (flagged). */}
           <input className="wz-field" type="password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <input className="wz-field" type="text" placeholder="invite code" value={invite} onChange={(e) => setInvite(e.target.value)} />
         </div>
         <div className="wz-sub" style={{ fontSize: '.98rem' }}>your first entry — <b>“{firstWords(gateText, 9)}”</b></div>
         {error && <div className="wz-error">{error}</div>}

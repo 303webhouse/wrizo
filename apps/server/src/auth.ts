@@ -1,7 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import { pool } from './db';
-import { env } from './env';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 
@@ -30,12 +29,9 @@ authRouter.use(rateLimit(20, 60_000));
 authRouter.post('/register', asyncHandler(async (req: Request, res: Response) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
-  const inviteCode = String(req.body?.inviteCode || '');
 
-  if (inviteCode !== env.inviteCode) {
-    res.status(403).json({ error: 'Invalid invite code' });
-    return;
-  }
+  // Wrizo is open — the writing-gate (HomeFlow) is the membership filter, not an
+  // invite. (Invite check dropped; passwordless/email-first is a later backlog lift.)
   if (!email || !password) {
     res.status(400).json({ error: 'Email and password are required' });
     return;

@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { SessionLauncher } from './pages/SessionLauncher';
+import { Desk } from './pages/Desk';
 import { CreateProject } from './pages/CreateProject';
 import { ProjectHome } from './pages/ProjectHome';
 import { StructureWizard } from './pages/StructureWizard';
@@ -162,7 +162,7 @@ export function App() {
       <HashRouter>
         <GlobalHeader onLogout={handleLogout} />
         <Routes>
-        <Route path="/" element={<SessionLauncher />} />
+        <Route path="/" element={<Desk />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
         <Route path="/project/:id/sprint" element={<QuickSprint />} />

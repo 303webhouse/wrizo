@@ -2,6 +2,12 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Desk (authed home) + invite drop — closes the HOME arc seam
+- **Invite dropped (decided):** removed the invite field from the account step, the `inviteCode` param from `apiRegister`, the server-side invite check + `INVITE_CODE` env requirement (`apps/server/src/auth.ts`, `env.ts`). Wrizo is open — the writing-gate is the membership filter. Account collects email + password for now (passwordless/email-first stays backlog).
+- **Desk (`pages/Desk.tsx`, new) replaces `SessionLauncher`** as the authed home (`/`), in the v6 "launch" aesthetic (scoped `.wz-*`): bighead "You're ready to keep writing." (swappable Figtree slot), filled-orange **Keep writing** (resumes `getResumeTarget()` → else the latest journal entry → else a fresh `/sprint`), quiet **New page** / **Begin project**, grayed **Customize** + tooltip. Account-create AND returning sign-in both land here.
+- **No returning-user regression:** the Desk preserves what SessionLauncher gave — a restyled recent-work list (projects + journal pages, newest first), the journal stays reachable, resume resumes. Harness-verified: account(no invite)→Desk, gate entry in recent, Keep writing → the entry, journal link present; selftest green (freshSprint now navigates the Desk).
+- Deleted orphaned `LoginScreen.tsx` + `SessionLauncher.tsx` (`Wordmark.tsx` now unused — left in place). Harness `freshSprint`/selftest updated off the old "Start writing" button.
+
 ## HOME port — anon front door (v6) — branch `home-port`, NOT deployed
 First slice of the HOME port ([home-port-brief.md](home-port-brief.md)), built from `wrizo-home-v6.html` (the feel source of truth). Held for the tablet pass per the brief.
 - **`HomeFlow.tsx` (new):** landing → forced first-write gate → reward → account / sign-in, as a stage machine. The gate **mounts the existing `ForwardOnlyEditor`** (zero editor logic) — runway, strikethrough, struck-words-drop-from-derived, paste block all inherited. WORD_GOAL=50 (lowerable). Both progress signals (fill-track + ambient ember-grow 0.4→1.0). Goal → bloom + word-echo of the writer's own clean words; reduced-motion suppresses the bloom, keeps the echo.

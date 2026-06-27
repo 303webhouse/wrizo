@@ -795,3 +795,28 @@ a:focus-visible,
   .wz-home *{ animation:none!important; transition:opacity .2s linear!important; }
   .wz-bloom.go{ opacity:0!important; }   /* bloom suppressed; the word-echo still lands */
 }
+
+/* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. */
+.wz-desk{ gap:1.2rem; }
+.wz-btn.wz-primary{ background:var(--wz-orange); color:var(--wz-ground); border-color:var(--wz-orange);
+  padding:.92rem 2.2rem; font-size:1.05rem; box-shadow:0 4px 24px rgba(255,152,0,.22); }
+.wz-btn.wz-primary:hover{ background:#ffab33; border-color:#ffab33; color:var(--wz-ground); }
+.wz-dot{ color:var(--wz-whisper); }
+
+.wz-recent{ display:flex; flex-direction:column; gap:0; width:min(420px,90vw); margin-top:1.2rem; }
+.wz-recent-row{ display:flex; justify-content:space-between; align-items:baseline; gap:1rem;
+  padding:.6rem .2rem; background:none; border:none; border-bottom:1px solid var(--wz-whisper);
+  font-family:var(--wz-ui); cursor:pointer; text-align:left; transition:opacity .2s; }
+.wz-recent-row:hover{ opacity:.75; }
+.wz-recent-title{ color:var(--wz-ink); font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-recent-when{ color:var(--wz-ink-dim); font-size:.8rem; flex-shrink:0; }
+.wz-journal-link{ margin-top:.9rem; align-self:center; }
+
+.wz-customize{ margin-top:.7rem; position:relative; display:inline-block; }
+.wz-cust-link{ font-family:var(--wz-ui); color:var(--wz-whisper); font-size:.85rem; cursor:help; opacity:.75; border-bottom:1px dotted var(--wz-whisper); }
+.wz-tip{ font-family:var(--wz-ui); position:absolute; left:50%; bottom:calc(100% + 12px); transform:translateX(-50%) translateY(5px);
+  width:max-content; max-width:270px; background:var(--wz-lift); border:1px solid var(--wz-whisper); color:var(--wz-ink-dim);
+  font-size:.82rem; line-height:1.5; padding:.65rem .85rem; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+  text-align:center; z-index:10; }
+.wz-customize:hover .wz-tip, .wz-customize:focus .wz-tip, .wz-customize:focus-within .wz-tip{ opacity:1; transform:translateX(-50%) translateY(0); }
+.wz-tip b{ color:var(--wz-ink); font-weight:600; }
