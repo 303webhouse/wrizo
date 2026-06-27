@@ -302,6 +302,18 @@ function makeApp(base, cdp, waitEvent) {
      */
     type: (text) => cdp('Input.insertText', { text }),
     /**
+     * Simulate a mobile soft-keyboard / IME composition: progressively compose,
+     * then commit (fires compositionstart → ...update → compositionend, and the
+     * browser inserts the composing text into the DOM along the way). Focus the
+     * target first. This is the path that broke mobile typing (Bug 1).
+     */
+    ime: async (text) => {
+      for (let i = 1; i <= text.length; i++) {
+        await cdp('Input.imeSetComposition', { text: text.slice(0, i), selectionStart: i, selectionEnd: i });
+      }
+      await cdp('Input.insertText', { text }); // commit the composition
+    },
+    /**
      * Type via real per-character key events (keyDown with a `text` field +
      * keyUp), which trigger the full keydown→beforeinput→input pipeline. More
      * faithful than insertText for custom contenteditable editors where
