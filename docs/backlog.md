@@ -2,6 +2,11 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Gate idle-nudges — extracted to a shared hook + v6 pool
+- **`store/idleNudges.ts` (new):** the re-tuned nudge cadence (3→2→1 min, ephemeral #1/#2, held #3, keystroke-reset, no-repeat) lifted out of QuickSprint into a reusable `useIdleNudges({ active, activityKey })` hook. Behaviour only; each surface dresses its own slip (Crimson italic) + reduced-motion.
+- **Pool swapped to v6's canonical 25** (now the source of truth, superseding the interim SME set) — 4 implicit registers; sensory fragments unpunctuated. **US spelling locked** ("color", "traveled") — v6 had British ("colour"/"travelled"); flag for one-word confirm if UK is wanted (trivial flip).
+- **QuickSprint** refactored onto the hook (no regression — manual "Take a nudge" pull intact). **HomeFlow gate** now mounts it (`.wz-nudge`, bottom-center, v6 style) — a stuck newcomer gets prompts toward the 50-word goal. Both verified in-harness with shortened timers; selftest green.
+
 ## Desk (authed home) + invite drop — closes the HOME arc seam
 - **Invite dropped (decided):** removed the invite field from the account step, the `inviteCode` param from `apiRegister`, the server-side invite check + `INVITE_CODE` env requirement (`apps/server/src/auth.ts`, `env.ts`). Wrizo is open — the writing-gate is the membership filter. Account collects email + password for now (passwordless/email-first stays backlog).
 - **Desk (`pages/Desk.tsx`, new) replaces `SessionLauncher`** as the authed home (`/`), in the v6 "launch" aesthetic (scoped `.wz-*`): bighead "You're ready to keep writing." (swappable Figtree slot), filled-orange **Keep writing** (resumes `getResumeTarget()` → else the latest journal entry → else a fresh `/sprint`), quiet **New page** / **Begin project**, grayed **Customize** + tooltip. Account-create AND returning sign-in both land here.

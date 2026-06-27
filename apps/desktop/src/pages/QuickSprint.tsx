@@ -8,6 +8,7 @@ import {
 import type { JournalEntry } from '../types';
 import { getFramework } from '../store/frameworks';
 import { startAmbient, type AmbientHandle } from '../store/ambient';
+import { useIdleNudges } from '../store/idleNudges';
 import { pickEchoLine } from '../store/entryText';
 import { ForwardOnlyEditor } from '../components/ForwardOnlyEditor';
 import { useChromeFade, ChromeHandle } from '../components/WritingShell';
@@ -16,52 +17,9 @@ const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
 const PRESETS = [5, 10, 20];
-// Idle-nudge cadence (re-tuned): gaps SHORTEN as idle persists. First nudge at
-// 3 min, second 2 min later, third 1 min after that — then it holds. The first
-// two are ephemeral (dissolve after NUDGE_EPHEMERAL_MS); the third persists.
-// Any keystroke resets the whole cycle to the 3-min countdown.
-const NUDGE_GAP_1 = 180_000;       // 3 min idle → first nudge
-const NUDGE_GAP_2 = 120_000;       // +2 min still idle → second
-const NUDGE_GAP_3 = 60_000;        // +1 min still idle → third (holds)
-const NUDGE_EPHEMERAL_MS = 10_000; // first two dissolve back out after 10s
 const KEEP_GOING_SECONDS = 300;
-
-// Canonical idle-nudge pool (25) — SME writing/creative committee, 4 balanced
-// registers. VERBATIM; do not improvise. Rendered Crimson Pro italic, drawn at
-// random without near-repeats. Register 4 (literary allusions) is restricted to
-// pre-1930 English-language authors — public-domain originals transformed into
-// prompts, never reproduced translations.
-const NUDGES = [
-  // sensory images (fragments — no terminal period; only full sentences punctuate)
-  "The smell of rain before it arrives",
-  "A door left open in another room",
-  "Steam off a cup someone forgot",
-  "The warmth still in a chair just left",
-  "Light through a curtain, moving",
-  "A sound from the street you can't quite place",
-  // small concrete moves
-  "Write the next sentence badly. Fix it never.",
-  "Put something in your character's hands.",
-  "Name one thing you can see right now.",
-  "Skip ahead to the part you actually want to write.",
-  "Add one true detail.",
-  "Finish this: 'What no one knew was…'",
-  "Write the easy sentence first. The hard one can wait.",
-  // permission-giving phrases
-  "It's allowed to be bad. That's what first drafts are for.",
-  "No one has to read this. Not even future you.",
-  "You're not deciding anything yet. You're just writing.",
-  "Messy is a kind of moving.",
-  "The wrong word still counts as words.",
-  "You can ruin it later. Keep going for now.",
-  // public-domain literary allusions
-  "The old poets began in the middle of things. So can you.",
-  "Even 'it was a dark and stormy night' launched a whole novel. Start anywhere.",
-  "Dickinson wrote in dashes and never apologized. Yours can be ragged.",
-  "Whitman let himself contradict himself. You can hold two thoughts at once.",
-  "A truth, universally acknowledged, is just a first line. Any truth will do.",
-  "Melville opened with three words and a sailor. Open with whatever you've got.",
-];
+// Idle nudges (cadence + the canonical v6 pool) live in the shared
+// useIdleNudges hook — the sprint and the HOME gate both mount it.
 
 function wordCount(text: string): number {
   const trimmed = text.trim();
@@ -129,10 +87,12 @@ export function QuickSprint() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, draftId]);
   const [savedUntil, setSavedUntil] = useState<number | null>(null);
-  const [currentNudge, setCurrentNudge] = useState('');
-  const [nudgeShown, setNudgeShown] = useState(false); // opacity gate for the ephemeral dissolve
-  const recentNudgeRef = useRef<number[]>([]); // recently-shown indices → avoid near repeats
-  const nudgeTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]); // cadence + dissolve timers
+  // Idle nudges via the shared hook — cadence resets on each keystroke (draftText),
+  // active once the writer has started. handleGetNudge is the "Take a nudge" pull.
+  const { nudge, shown: nudgeShown, pull: handleGetNudge } = useIdleNudges({
+    active: draftText.trim().length > 0,
+    activityKey: draftText,
+  });
   const [textareaFocused, setTextareaFocused] = useState(false);
   const [beatOpen, setBeatOpen] = useState(true);
   const [markBeatDone, setMarkBeatDone] = useState(false);
@@ -326,57 +286,6 @@ export function QuickSprint() {
     ambientRef.current?.setSoundEnabled(soundOn);
   }, [soundOn]);
 
-  // Pick a prompt at random, avoiding the recently-shown ones so it doesn't
-  // repeat within a session.
-  const pickNudge = (): string => {
-    const avoid = new Set(recentNudgeRef.current);
-    const open = NUDGES.map((_, i) => i).filter(i => !avoid.has(i));
-    const pool = open.length ? open : NUDGES.map((_, i) => i);
-    const idx = pool[Math.floor(Math.random() * pool.length)];
-    const recent = recentNudgeRef.current;
-    recent.push(idx);
-    if (recent.length > Math.min(NUDGES.length - 1, 12)) recent.shift();
-    return NUDGES[idx];
-  };
-
-  const clearNudgeTimers = () => {
-    nudgeTimersRef.current.forEach(clearTimeout);
-    nudgeTimersRef.current = [];
-  };
-
-  // Surface one nudge. `held` → it persists (the third in the cadence, or the
-  // manual button); otherwise it's ephemeral and dissolves after 10s.
-  const showNudge = (held: boolean) => {
-    setCurrentNudge(pickNudge());
-    setNudgeShown(true);
-    if (!held) {
-      nudgeTimersRef.current.push(setTimeout(() => {
-        setNudgeShown(false);                                                  // fade out
-        nudgeTimersRef.current.push(setTimeout(() => setCurrentNudge(''), 320)); // then unmount
-      }, NUDGE_EPHEMERAL_MS));
-    }
-  };
-
-  // The re-tuned idle cadence (the §8 exception: nudges may surface on their own,
-  // but only in the gaps). Resets on every keystroke (draftText change), so a
-  // nudge only ever appears after real quiet — never mid-flow. Gaps shorten as
-  // idle persists: 3 min → +2 min → +1 min, then the third holds. Reduced-motion
-  // collapses the fades to instant via the global reset.
-  useEffect(() => {
-    if (!hasTypedRef.current) return;
-    clearNudgeTimers();
-    setNudgeShown(false);   // a keystroke dismisses any shown nudge (no-op re-render if already clear)
-    setCurrentNudge('');
-    const t = nudgeTimersRef.current;
-    t.push(setTimeout(() => showNudge(false), NUDGE_GAP_1));                            // #1, ephemeral
-    t.push(setTimeout(() => showNudge(false), NUDGE_GAP_1 + NUDGE_GAP_2));              // #2, ephemeral
-    t.push(setTimeout(() => showNudge(true),  NUDGE_GAP_1 + NUDGE_GAP_2 + NUDGE_GAP_3)); // #3, holds
-    return clearNudgeTimers;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftText]);
-
-  // Tidy timers on unmount.
-  useEffect(() => clearNudgeTimers, []);
 
   const startTimer = (minutes: number) => {
     const secs = Math.round(minutes * 60);
@@ -443,14 +352,6 @@ export function QuickSprint() {
     lastSavedRef.current = draftText;
     if (id) setProjectSprintText(id, draftText);
     markSaved();
-  };
-
-  // On-demand → a held nudge until the next keystroke. Cancel any pending
-  // auto-cadence first so a manual pull and the cadence can never fire two
-  // nudges at once.
-  const handleGetNudge = () => {
-    clearNudgeTimers();
-    showNudge(true);
   };
 
   const handleKeepGoing = () => {
@@ -608,8 +509,8 @@ export function QuickSprint() {
       {/* Nudge slip, tucked under the page's top edge. A surfaced nudge holds
           here (auto on idle or from the button); once the budget is spent it
           keeps the last one until the A6 reset returns the budget quietly. */}
-      {currentNudge && (
-        <div className="nudge-slip" data-shown={nudgeShown ? 'true' : 'false'} style={{ marginBottom: 12 }}>{currentNudge}</div>
+      {nudge && (
+        <div className="nudge-slip" data-shown={nudgeShown ? 'true' : 'false'} style={{ marginBottom: 12 }}>{nudge}</div>
       )}
 
       {/* The page */}
