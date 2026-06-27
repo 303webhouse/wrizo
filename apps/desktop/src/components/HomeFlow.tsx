@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ForwardOnlyEditor } from './ForwardOnlyEditor';
 import { apiLogin, apiRegister, type AuthUser } from '../store/api';
 import { generateId, saveJournalEntry } from '../store/persistence';
+import { useIdleNudges } from '../store/idleNudges';
 import type { JournalEntry } from '../types';
 
 // HOME port (v6) — the warm-dark front door. Landing → forced first-write gate →
@@ -56,6 +57,10 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   const words = wordCount(gateText);
   const progress = Math.min(1, words / WORD_GOAL);
   const done = progress >= 1;
+
+  // The gate inherits the shared idle-nudge cadence (helps a stuck newcomer reach
+  // the goal). Active whenever the gate is the writing surface; resets on keystroke.
+  const { nudge: gateNudge, shown: gateNudgeShown } = useIdleNudges({ active: stage === 'writing', activityKey: gateText });
 
   // Landing → writing on first keystroke or click (no "start" CTA, per v6).
   useEffect(() => {
@@ -148,6 +153,9 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
           <div className="wz-track"><div className={`wz-trackfill${done ? ' done' : ''}`} style={{ width: `${progress * 100}%` }} /></div>
         </div>
       </section>
+
+      {/* Idle nudge — bottom-center, Crimson italic (v6) */}
+      {gateNudge && <div className="wz-nudge" data-shown={gateNudgeShown ? 'true' : 'false'}>{gateNudge}</div>}
 
       {/* Bloom — the one crescendo */}
       <div className={`wz-bloom${bloom ? ' go' : ''}`} onAnimationEnd={() => setBloom(false)} />
