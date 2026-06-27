@@ -53,12 +53,8 @@ export async function apiLogin(email: string, password: string): Promise<AuthRes
   return { ok: false, error: await errorMessage(res, 'Could not sign in') };
 }
 
-export async function apiRegister(
-  email: string,
-  password: string,
-  inviteCode: string,
-): Promise<AuthResult> {
-  const res = await postJson('/auth/register', { email, password, inviteCode });
+export async function apiRegister(email: string, password: string): Promise<AuthResult> {
+  const res = await postJson('/auth/register', { email, password });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
   return { ok: false, error: await errorMessage(res, 'Could not create account') };
 }

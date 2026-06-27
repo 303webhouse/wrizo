@@ -384,8 +384,8 @@ function makeApp(base, cdp, waitEvent) {
       await sleep(200);
       await evalJs('localStorage.clear()');
       await app.reload();
-      await app.waitFor("[...document.querySelectorAll('button,a')].some(b=>b.textContent.includes('Start writing'))", { label: 'launcher Start writing' });
-      await app.click('Start writing');
+      await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
+      await evalJs(`location.hash = '#/sprint'`); // decoupled from launchpad button text
       await app.waitFor("document.querySelector('.forward-only-editor, textarea')", { label: 'sprint writing surface' });
       await injectHelpers();
     },
@@ -439,8 +439,8 @@ async function selfTest() {
   await withHarness(async (app) => {
     // Boot reaches the authed launcher (past the W2 gate).
     await app.reload();
-    await app.waitFor("[...document.querySelectorAll('button,a')].some(b=>b.textContent.includes('Start writing'))", { label: 'launcher' });
-    ok('boots past the W2 login gate to the launcher', true);
+    await app.waitFor("!!document.querySelector('.wz-desk') && [...document.querySelectorAll('button')].some(b=>b.textContent.includes('Keep writing'))", { label: 'authed Desk' });
+    ok('boots past the W2 login gate to the Desk', true);
 
     // Drive a scratch sprint end to end and read back the app's own state.
     // The surface is the forward-only editor (CW2): focus + type real keys.

@@ -18,7 +18,6 @@ function required(name: string): string {
 export const env = {
   databaseUrl: required('DATABASE_URL'),
   sessionSecret: required('SESSION_SECRET'),
-  inviteCode: required('INVITE_CODE'),
   port: Number(process.env.PORT) || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
   get isProd() {
