@@ -40,6 +40,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   const bsRef = useRef(0);        // consecutive backspaces since the last forward key
   const removedRef = useRef<string | null>(null); // letter vanished by the 1st backspace
   const noopRef = useRef(0);      // consecutive ineffective ("locked") backspaces
+  const composingRef = useRef(false); // IME composition in progress (mobile soft keyboards)
   const [, force] = useReducer((n: number) => n + 1, 0);
 
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -116,15 +117,20 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   };
 
   // Native listeners (not React synthetic) so input is captured identically on
-  // hardware and soft/tablet keyboards. preventDefault on every input keeps the
-  // browser from ever mutating the DOM — React owns the rendered content.
+  // hardware and soft/tablet keyboards. We preventDefault and let React own the
+  // rendered content — EXCEPT during IME composition, where the browser must own
+  // the composing text (preventDefault there makes mobile-typed text vanish). The
+  // host renders via innerHTML, so the post-composition re-render cleanly replaces
+  // the browser's draft nodes.
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
 
     const onBeforeInput = (e: InputEvent) => {
-      e.preventDefault();
       const it = e.inputType || '';
+      // Mid-composition (soft keyboard, swipe, autocorrect): hands off to the IME.
+      if (composingRef.current || e.isComposing || it === 'insertCompositionText') return;
+      e.preventDefault();
       if (it === 'insertFromPaste' || it === 'insertFromDrop') return; // foreign-voice wall: block external paste
       if (it.startsWith('delete')) {
         if (it.toLowerCase().includes('forward')) return; // no forward erasure
@@ -137,20 +143,31 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.isComposing) return; // don't intercept keys mid-composition
       // Hardware keyboard backspace fires keydown; preventDefault here stops the
       // native edit, so beforeinput won't also fire (no double). Soft keyboards
       // that skip keydown are caught by the beforeinput delete branch above.
       if (e.key === 'Backspace') { e.preventDefault(); handleBackspace(); }
     };
+    const onCompStart = () => { composingRef.current = true; };
+    const onCompEnd = (e: CompositionEvent) => {
+      composingRef.current = false;
+      const data = e.data || '';
+      if (data) handleInput(data); // commit the finalized text; the re-render replaces the browser's draft
+    };
     const block = (e: Event) => e.preventDefault(); // cut/copy-out are not this surface's concern; block
 
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
     el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('compositionstart', onCompStart);
+    el.addEventListener('compositionend', onCompEnd as EventListener);
     el.addEventListener('paste', block);
     el.addEventListener('cut', block);
     return () => {
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('compositionstart', onCompStart);
+      el.removeEventListener('compositionend', onCompEnd as EventListener);
       el.removeEventListener('paste', block);
       el.removeEventListener('cut', block);
     };
@@ -174,6 +191,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   useEffect(() => {
     const el = hostRef.current;
     if (!el || document.activeElement !== el) return;
+    if (composingRef.current) return; // never move the caret mid-composition
     // Empty surface: trust the browser's own focus caret (forcing a selection
     // into the empty/placeholder-only host parks it in a non-editable spot and
     // suppresses input). Only re-anchor once there's real content to land on.
@@ -202,10 +220,18 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   const nudge = nudgeRef.current;
   const isEmpty = content.length === 0 && word.length === 0;
 
-  // The host renders ONLY editable content — when empty it has no children, so
-  // the browser can place a caret (non-editable child nodes there would leave
-  // no valid insertion point). Placeholder + nudge are overlays in the wrapper,
-  // never inside the editable.
+  // Render the editable content via innerHTML (not React child spans). Setting
+  // innerHTML on each render fully REPLACES the DOM — which is what lets IME work:
+  // the post-composition render wipes the browser's draft nodes, and React skips
+  // the update entirely when the html string is unchanged (so an unrelated parent
+  // re-render mid-composition can't clobber the composing text). When empty the
+  // host has no children, so the browser can place a caret. Placeholder + nudge
+  // are overlays in the wrapper, never inside the editable.
+  const html = isEmpty
+    ? ''
+    : content.map(run => `<span class="${run.struck ? 'fo-run fo-struck' : 'fo-run'}">${escHtml(run.text)}</span>`).join('')
+      + `<span class="fo-word">${escHtml(word)}</span>`;
+
   return (
     <div className="forward-only-editor-wrap" style={{ position: 'relative', display: 'flex', flexDirection: 'column', ...style }}>
       <div
@@ -220,12 +246,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         onFocus={onFocus}
         onBlur={onBlur}
         style={{ flex: 1, minHeight: 0, outline: 'none', whiteSpace: 'pre-wrap', cursor: 'text' }}
-      >
-        {!isEmpty && content.map((run, i) => (
-          <span key={i} className={run.struck ? 'fo-run fo-struck' : 'fo-run'}>{run.text}</span>
-        ))}
-        {!isEmpty && <span className="fo-word">{word}</span>}
-      </div>
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
       {isEmpty && placeholder && (
         <div className="fo-placeholder" aria-hidden="true">{placeholder}</div>
       )}
@@ -235,3 +257,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     </div>
   );
 });
+
+function escHtml(s: string): string {
+  return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
+}

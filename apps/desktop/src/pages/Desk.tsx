@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { getJournalEntries, getProjects } from '../store/persistence';
+import { clearDraft, getJournalEntries, getProjects } from '../store/persistence';
 import { getResumeTarget, relativeDays } from '../store/resume';
 
 // The Desk — the authed home (replaces SessionLauncher), in the Wrizo / v6
@@ -67,7 +67,7 @@ export function Desk() {
 
         <button type="button" className="wz-btn wz-primary" onClick={() => navigate(keepWritingRoute)}>Keep writing</button>
         <div className="wz-secondary">
-          <span className="wz-link" onClick={() => navigate('/sprint')}>New page</span>
+          <span className="wz-link" onClick={() => { clearDraft('scratch'); navigate('/sprint'); }}>New page</span>
           <span className="wz-dot">·</span>
           <span className="wz-link" onClick={() => navigate('/project/new')}>Begin project</span>
         </div>

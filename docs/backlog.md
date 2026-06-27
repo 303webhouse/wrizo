@@ -2,6 +2,16 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Cleanup: Bug 1 (mobile IME) + Bug 2 (New page) — shipped
+- **Bug 1 (mobile text vanishing) — fixed.** `ForwardOnlyEditor` had no IME/composition handling: `beforeinput` preventDefault clobbered soft-keyboard/swipe/autocorrect composition, so mobile-typed text vanished. Fix: (1) hand off to the IME during composition — skip preventDefault on `insertCompositionText`/`isComposing`, commit the finalized text on `compositionend`; (2) render the editable via `innerHTML` (dangerouslySetInnerHTML) so each render fully replaces the DOM — the post-composition render wipes the browser's draft nodes (no duplication), and React skips the update when the html string is unchanged (an unrelated re-render mid-composition can't clobber the composing text); (3) don't re-anchor the caret mid-composition. Verified in-harness with **real CDP composition events** (`Input.imeSetComposition` + commit): composed text lands, mixed keyboard+IME appends, runway still strikes. *Real-device confirmation still wise, but the CDP path mirrors mobile IME.*
+- **Bug 2 (New page opened previous writing) — fixed.** `/sprint` with no project reuses the shared `'scratch'` draft, so "New page" reseeded the last text. Desk's "New page" now `clearDraft('scratch')` before navigating → blank every time ("Keep writing" still resumes it). Proper per-document persistence (unique page ids, no data loss) is the deferred big-architecture work.
+- Harness gained an `ime()` helper (CDP composition) for future mobile-input testing.
+
+## DEFERRED from the cleanup brief (next batch)
+- **Change 5 — revised forward-only runway** (every backspace strikes; char→char→word→word→sentence escalation; widen `derivedText` to exclude struck content at every granularity). Intricate editor rework — separate focused slice. (Note: `derivedText` already filters by `run.struck`, so it's granularity-agnostic *as long as* strike ops isolate struck content into struck runs — the work is mostly the escalation logic + char/sentence strike ops in `forwardOnly.ts`.)
+- **Change 3 — name at signup** (needs a `name` column + migration on the users table, `apiRegister` + account form) **+ Desk headline** `[Name]'s Writing Desk` (Crimson name over Figtree "Writing Desk") + subheading "Scribble, draft, plot, revise, or share (coming soon)".
+- **Change 4 — resume routing**: Keep writing → project *overview* (not the last step) with a "you last wrote here" marker; track last-active doc + project/step (intersects the persistence-durability gap).
+
 ## Gate idle-nudges — extracted to a shared hook + v6 pool
 - **`store/idleNudges.ts` (new):** the re-tuned nudge cadence (3→2→1 min, ephemeral #1/#2, held #3, keystroke-reset, no-repeat) lifted out of QuickSprint into a reusable `useIdleNudges({ active, activityKey })` hook. Behaviour only; each surface dresses its own slip (Crimson italic) + reduced-motion.
 - **Pool swapped to v6's canonical 25** (now the source of truth, superseding the interim SME set) — 4 implicit registers; sensory fragments unpunctuated. **US spelling locked** ("color", "traveled") — v6 had British ("colour"/"travelled"); flag for one-word confirm if UK is wanted (trivial flip).
