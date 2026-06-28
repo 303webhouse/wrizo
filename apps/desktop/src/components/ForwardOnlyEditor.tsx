@@ -35,11 +35,12 @@ interface Props {
   autoFocus?: boolean;
   placeholder?: string;
   ariaLabel?: string;
+  penColor?: string;           // Journal pen ink (sets text + caret colour); from the pen bar
   style?: React.CSSProperties;
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, style },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, style },
   ref,
 ) {
   const drafting = mode === 'drafting';
@@ -270,7 +271,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         spellCheck={false}
         onFocus={onFocus}
         onBlur={onBlur}
-        style={{ flex: 1, minHeight: 0, outline: 'none', whiteSpace: 'pre-wrap', cursor: 'text' }}
+        style={{ flex: 1, minHeight: 0, outline: 'none', whiteSpace: 'pre-wrap', cursor: 'text', ...(penColor ? { color: penColor, caretColor: penColor } : null) }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {isEmpty && placeholder && (
