@@ -24,8 +24,20 @@ function rowToProject(r: any) {
     type: r.type,
     sprintText: r.sprint_text ?? undefined,
     storyPlanId: r.story_plan_id ?? null,
+    drawerId: r.drawer_id ?? undefined,
     lastActivityAt: iso(r.last_activity_at) ?? undefined,
     lastActivityType: r.last_activity_type ?? undefined,
+    deletedAt: iso(r.deleted_at) ?? undefined,
+    createdAt: iso(r.created_at),
+    updatedAt: iso(r.updated_at),
+  };
+}
+
+function rowToDrawer(r: any) {
+  return {
+    id: r.id,
+    name: r.name,
+    order: r.order ?? 0,
     deletedAt: iso(r.deleted_at) ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
@@ -70,19 +82,20 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
     try {
       await pool.query(
         `insert into projects
-           (id, user_id, title, type, sprint_text, story_plan_id,
+           (id, user_id, title, type, sprint_text, story_plan_id, drawer_id,
             last_activity_at, last_activity_type, deleted_at, created_at, updated_at)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
          on conflict (id) do update set
            title = excluded.title, type = excluded.type,
            sprint_text = excluded.sprint_text, story_plan_id = excluded.story_plan_id,
+           drawer_id = excluded.drawer_id,
            last_activity_at = excluded.last_activity_at,
            last_activity_type = excluded.last_activity_type,
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
          where projects.user_id = excluded.user_id
            and excluded.updated_at > projects.updated_at`,
         [p.id, userId, p.title ?? '', p.type ?? 'creative', p.sprintText ?? null,
-         p.storyPlanId ?? null, p.lastActivityAt ?? null, p.lastActivityType ?? null,
+         p.storyPlanId ?? null, p.drawerId ?? null, p.lastActivityAt ?? null, p.lastActivityType ?? null,
          p.deletedAt ?? null, p.createdAt, p.updatedAt],
       );
     } catch (err) {
@@ -159,6 +172,27 @@ async function upsertDrafts(userId: string, records: any[]): Promise<void> {
   }
 }
 
+async function upsertDrawers(userId: string, records: any[]): Promise<void> {
+  for (const d of records) {
+    if (!d?.id || !d?.updatedAt || !d?.createdAt) continue;
+    try {
+      await pool.query(
+        `insert into drawers
+           (id, user_id, name, "order", deleted_at, created_at, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7)
+         on conflict (id) do update set
+           name = excluded.name, "order" = excluded."order",
+           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
+         where drawers.user_id = excluded.user_id
+           and excluded.updated_at > drawers.updated_at`,
+        [d.id, userId, d.name ?? '', d.order ?? 0, d.deletedAt ?? null, d.createdAt, d.updatedAt],
+      );
+    } catch (err) {
+      console.error('[sync] drawer upsert failed', d.id, err);
+    }
+  }
+}
+
 // --- pulls (everything updated since lastSyncAt) --------------------------
 
 async function pull(table: string, userId: string, lastSyncAt: string | null) {
@@ -179,6 +213,7 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   await upsertStoryPlans(userId, Array.isArray(push.storyPlans) ? push.storyPlans : []);
   await upsertSessions(userId, Array.isArray(push.sessions) ? push.sessions : []);
   await upsertDrafts(userId, Array.isArray(push.drafts) ? push.drafts : []);
+  await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : []);
 
   res.json({
     serverTime: new Date().toISOString(),
@@ -187,6 +222,7 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
       storyPlans: (await pull('story_plans', userId, lastSyncAt)).map(rowToStoryPlan),
       sessions: (await pull('sessions_log', userId, lastSyncAt)).map(rowToSession),
       drafts: (await pull('drafts', userId, lastSyncAt)).map(rowToDraft),
+      drawers: (await pull('drawers', userId, lastSyncAt)).map(rowToDrawer),
     },
   });
 }));

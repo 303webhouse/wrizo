@@ -67,12 +67,29 @@ export interface Fragment {
   // NOTE: `heat` (recency + edit-density) is DERIVED at read time, never stored.
 }
 
+// Drawer (Drawers D1) — the top of the Drawers IA, a browsable level OVER the
+// existing Projects. A Project carries an optional `drawerId`; projects without
+// one (or pointing at a soft-deleted drawer) render under a virtual "Unsorted"
+// group, not a real Drawer row. Soft-deleted + sync-eligible like every other
+// collection. Deliberately minimal: the Binder/Page/Shelf taxonomy is decided
+// separately and must not be re-migrated for.
+export interface Drawer {
+  id: string;
+  name: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
   type: 'creative' | 'academic';
   storyPlanId: string | null;
   sprintText?: string;
+  // Drawers D1 — the Drawer this project lives in. Absent → "Unsorted".
+  drawerId?: string;
   // Creative-mode source of truth (DM1) — replaces sprintText's role. sprintText
   // is kept as a derived mirror (concat of unstruck spine runs) so the existing
   // UI and sync keep working untouched. Absent on legacy projects until migrated.
