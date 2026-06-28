@@ -164,6 +164,14 @@ export interface JournalEntry {
   // a blank sheet opened to write on directly (editable text + ink). The J6
   // additive pattern: rides existing persistence/sync, never touches text.
   source?: 'page';
+  // Pages & Shelf (D2). A page's home is exactly one of three: in a Binder
+  // (projectId set), on the Shelf (projectId null AND shelved), or in the Journal
+  // (projectId null AND shelved falsy). `shelved` keeps Journal and Shelf as
+  // distinct pools without a migration — existing entries default to the Journal.
+  shelved?: boolean;
+  // The Page↔Beat seam (Foundation 3) — which plot slot a page belongs to. Laid
+  // now so a page can know its beat; the Plan-jump UI is a later brief.
+  beatId?: string;
 }
 
 // Writing-session instrumentation (A9). The collection is wired through the

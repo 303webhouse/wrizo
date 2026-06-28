@@ -74,6 +74,25 @@ function rowToDraft(r: any) {
   return { id: r.id, text: r.text, updatedAt: iso(r.updated_at) };
 }
 
+function rowToJournalEntry(r: any) {
+  return {
+    id: r.id,
+    text: r.text ?? '',
+    projectId: r.project_id ?? null,
+    sessionId: r.session_id ?? undefined,
+    starred: r.starred ?? undefined,
+    source: r.source ?? undefined,
+    shelved: r.shelved ?? undefined,
+    beatId: r.beat_id ?? undefined,
+    tags: r.tags ?? undefined,
+    routedProjectIds: r.routed_project_ids ?? undefined,
+    strokes: r.strokes ?? undefined,
+    deletedAt: iso(r.deleted_at) ?? undefined,
+    createdAt: iso(r.created_at),
+    updatedAt: iso(r.updated_at),
+  };
+}
+
 // --- upserts (last-write-wins on updated_at, scoped to user) --------------
 
 async function upsertProjects(userId: string, records: any[]): Promise<void> {
@@ -193,6 +212,34 @@ async function upsertDrawers(userId: string, records: any[]): Promise<void> {
   }
 }
 
+async function upsertJournalEntries(userId: string, records: any[]): Promise<void> {
+  for (const e of records) {
+    if (!e?.id || !e?.updatedAt || !e?.createdAt) continue;
+    try {
+      await pool.query(
+        `insert into journal_entries
+           (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id,
+            tags, routed_project_ids, strokes, deleted_at, created_at, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11::jsonb,$12::jsonb,$13,$14,$15)
+         on conflict (id) do update set
+           project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
+           starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
+           beat_id = excluded.beat_id, tags = excluded.tags,
+           routed_project_ids = excluded.routed_project_ids, strokes = excluded.strokes,
+           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
+         where journal_entries.user_id = excluded.user_id
+           and excluded.updated_at > journal_entries.updated_at`,
+        [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
+         e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null,
+         JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
+         e.deletedAt ?? null, e.createdAt, e.updatedAt],
+      );
+    } catch (err) {
+      console.error('[sync] journal_entry upsert failed', e.id, err);
+    }
+  }
+}
+
 // --- pulls (everything updated since lastSyncAt) --------------------------
 
 async function pull(table: string, userId: string, lastSyncAt: string | null) {
@@ -214,6 +261,7 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   await upsertSessions(userId, Array.isArray(push.sessions) ? push.sessions : []);
   await upsertDrafts(userId, Array.isArray(push.drafts) ? push.drafts : []);
   await upsertDrawers(userId, Array.isArray(push.drawers) ? push.drawers : []);
+  await upsertJournalEntries(userId, Array.isArray(push.journalEntries) ? push.journalEntries : []);
 
   res.json({
     serverTime: new Date().toISOString(),
@@ -223,6 +271,7 @@ syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
       sessions: (await pull('sessions_log', userId, lastSyncAt)).map(rowToSession),
       drafts: (await pull('drafts', userId, lastSyncAt)).map(rowToDraft),
       drawers: (await pull('drawers', userId, lastSyncAt)).map(rowToDrawer),
+      journalEntries: (await pull('journal_entries', userId, lastSyncAt)).map(rowToJournalEntry),
     },
   });
 }));
