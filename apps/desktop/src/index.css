@@ -835,3 +835,18 @@ a:focus-visible,
   opacity:0; pointer-events:none; transition:opacity 1.2s ease, transform 1.2s ease; z-index:5;
   max-width:min(560px,86vw); text-align:center; line-height:1.4; }
 .wz-nudge[data-shown='true']{ opacity:.62; transform:translateX(-50%) translateY(0); }
+
+/* Mode switcher tabs (mode-aware editor) — square, solid borders, brass active. */
+.mode-tabs{ display:flex; align-items:center; position:relative; flex-wrap:wrap; }
+.mode-tab{ background:none; border:1px solid var(--ink-border); border-left:0; cursor:pointer;
+  padding:5px 14px; font-family:var(--font-ui); font-size:13px; font-weight:500; color:var(--text-mid);
+  text-align:left; transition:color .18s, background .18s; }
+.mode-tab:first-child{ border-left:1px solid var(--ink-border); }
+.mode-tab__label{ display:block; line-height:1.2; }
+.mode-tab__sub{ display:block; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; opacity:.5; margin-top:1px; }
+.mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
+.mode-tab.active{ color:var(--on-brass); background:var(--brass); border-color:var(--brass); }
+.mode-tab.active .mode-tab__sub{ opacity:.85; }
+.mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
+.mode-tab.deferred:hover{ background:none; color:var(--text-low); }
+.mode-soon{ margin-left:12px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
