@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getJournalEntries, createJournalPage } from '../store/persistence';
+import { getJournalPages, createJournalPage } from '../store/persistence';
 import { firstLine, snippet, matchesQuery, formatStamp } from '../store/entryText';
 import { renderThumbnail } from '../store/ink';
 import type { JournalEntry, Stroke } from '../types';
@@ -45,8 +45,10 @@ export function Journal() {
   const [query, setQuery] = useState('');
   const [starredOnly, setStarredOnly] = useState(false);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
-  // Snapshot once per render; reads are cheap and the page is read-only.
-  const entries = useMemo(() => getJournalEntries(), []);
+  // Snapshot once per render; reads are cheap and the page is read-only. D2: the
+  // Journal is the loose-page stream — pages filed into a binder live under that
+  // binder's Pages, shelved pages live on the Shelf.
+  const entries = useMemo(() => getJournalPages(), []);
   const now = Date.now();
 
   const filtered = entries.filter(e =>

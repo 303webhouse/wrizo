@@ -598,11 +598,76 @@ export function createJournalPage(): JournalEntry {
   return entry;
 }
 
+// Create a blank page directly on the Shelf (D2) — a loose page awaiting a home,
+// kept out of the chronological Journal stream (projectId null AND shelved).
+export function createShelfPage(): JournalEntry {
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text: '',
+    projectId: null,
+    source: 'page',
+    shelved: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries
     .filter(e => !e.deletedAt)
     .map(clone)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // newest first
+}
+
+// --- Pages & the Shelf (D2) -----------------------------------------------
+// A page is a JournalEntry; its home is exactly one of three pools. These read
+// the same cache, partitioned by (projectId, shelved). `setPageHome` is the one
+// place that moves a page between homes, enforcing the exactly-one-home rule.
+
+// The Journal stream — loose pages only (projectId null AND not shelved).
+export function getJournalPages(): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt && e.projectId == null && !e.shelved)
+    .map(clone)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+// The Shelf — loose pages set aside for filing (projectId null AND shelved).
+export function getShelfPages(): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt && e.projectId == null && !!e.shelved)
+    .map(clone)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)); // most recently touched first
+}
+
+// Pages filed into a binder (projectId === binderId).
+export function getBinderPages(binderId: string): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt && e.projectId === binderId)
+    .map(clone)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+// Move a page to a single home: a binderId, 'shelf', or 'journal'. Enforces
+// exactly-one-home (filing into a binder clears `shelved`; shelving clears
+// `projectId`). An ordinary record update — syncs like any edit.
+export function setPageHome(pageId: string, target: string): void {
+  const entry = getJournalEntry(pageId);
+  if (!entry) return;
+  if (target === 'shelf') {
+    entry.projectId = null;
+    entry.shelved = true;
+  } else if (target === 'journal') {
+    entry.projectId = null;
+    entry.shelved = false;
+  } else {
+    entry.projectId = target; // a binder id
+    entry.shelved = false;
+  }
+  saveJournalEntry(entry);
 }
 
 export function getJournalEntry(id: string): JournalEntry | null {

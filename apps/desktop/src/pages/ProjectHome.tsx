@@ -1,6 +1,8 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { getProject, getStoryPlanByProjectId } from '../store/persistence';
+import { getProject, getStoryPlanByProjectId, getBinderPages } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
+import { firstLine } from '../store/entryText';
+import { PageFileMenu } from '../components/PageFileMenu';
 
 export function ProjectHome() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +20,9 @@ export function ProjectHome() {
   const totalBeats = beatNotes.length;
   const hasSprint = !!project.sprintText?.trim();
   const currentBeat = framework?.beats.find(b => b.id === storyPlan?.currentBeatId);
+  // Pages filed into this binder (D2). The main draft above stays the binder's
+  // primary surface; these are additional documents filed from the Shelf/Journal.
+  const pages = id ? getBinderPages(id) : [];
 
   // One brass action, computed from state.
   const primary = storyPlan && currentBeat
@@ -87,6 +92,27 @@ export function ProjectHome() {
           <Link to={`/project/${id}/sprint`} className="btn-quiet" style={{ display: 'inline-block', marginTop: 8, paddingLeft: 0 }}>
             Open sprint
           </Link>
+        </div>
+      )}
+
+      {/* Pages (D2) — documents filed into this binder, from the Shelf or Journal. */}
+      {pages.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Pages</div>
+          <div className="dz-tree" style={{ maxWidth: '100%', margin: 0 }}>
+            <div className="dz-group">
+              <div className="dz-items" style={{ borderTop: 'none' }}>
+                {pages.map(p => (
+                  <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
+                    <Link to={`/journal/${p.id}`} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                      {p.text.trim() ? firstLine(p.text).slice(0, 80) : 'Untitled page'}
+                    </Link>
+                    <PageFileMenu page={p} label="move…" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

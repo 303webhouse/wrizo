@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Desk } from './pages/Desk';
 import { DrawersPage } from './pages/Drawers';
+import { Shelf } from './pages/Shelf';
 import { CreateProject } from './pages/CreateProject';
 import { ProjectHome } from './pages/ProjectHome';
 import { StructureWizard } from './pages/StructureWizard';
@@ -108,6 +109,13 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
       >
         Open a Drawer
       </button>
+      <button
+        type="button"
+        onClick={() => navigate('/shelf')}
+        style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+      >
+        Shelf
+      </button>
       <FullscreenToggle />
       <SyncIndicator />
       <button
@@ -177,6 +185,7 @@ export function App() {
         <Routes>
         <Route path="/" element={<Desk />} />
         <Route path="/drawers" element={<DrawersPage />} />
+        <Route path="/shelf" element={<Shelf />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
         <Route path="/project/:id/sprint" element={<QuickSprint />} />

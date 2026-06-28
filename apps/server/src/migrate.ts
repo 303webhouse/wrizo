@@ -35,4 +35,29 @@ export async function runMigrations(): Promise<void> {
   );
   await pool.query(`alter table projects add column if not exists drawer_id text`);
   await pool.query(`create index if not exists drawers_user_updated on drawers (user_id, updated_at)`);
+
+  // Pages & Shelf D2 — journal entries finally sync server-side (the client half
+  // was always wired). Same idempotent boot path; carries every JournalEntry
+  // field plus the two new D2 columns: `shelved` (Shelf vs Journal) and `beat_id`
+  // (the Page↔Beat seam, no UI yet). jsonb for the array / ink fields.
+  await pool.query(
+    `create table if not exists journal_entries (
+       id text primary key,
+       user_id uuid not null references users(id),
+       project_id text,
+       text text not null default '',
+       session_id text,
+       starred boolean,
+       source text,
+       shelved boolean not null default false,
+       beat_id text,
+       tags jsonb,
+       routed_project_ids jsonb,
+       strokes jsonb,
+       deleted_at timestamptz,
+       created_at timestamptz not null,
+       updated_at timestamptz not null
+     )`,
+  );
+  await pool.query(`create index if not exists journal_entries_user_updated on journal_entries (user_id, updated_at)`);
 }
