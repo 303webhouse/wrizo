@@ -850,3 +850,125 @@ a:focus-visible,
 .mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
 .mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .mode-soon{ margin-left:12px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
+
+/* ============================================================================
+   Writing studio chrome (mode-aware editor Phase 2-3). The rails / format-pen
+   bar / glow / progress / settings / typewriter that wrap the editor. Built to
+   apps/desktop/scratch/wrizo-modes-hybrid.html, adapted into QuickSprint's flow.
+   --fade-dur is swapped live by useChromeDissolve (fast out, very slow in);
+   --fade-min is the faint floor (8% partial / 0 full); --m drives the glow.
+   ============================================================================ */
+.mode-stage{ position:relative; --fade-min:.08; --fade-dur:1.2s; }
+.mode-stage[data-fade='full']{ --fade-min:0; }
+
+/* Dissolve-on-write: rails, bars, gear, word-count recede to the faint floor.
+   The editor, glow, and progress bar never carry this class. */
+.mode-dissolve{ transition:opacity var(--fade-dur) ease; }
+.mode-stage[data-writing='true'] .mode-dissolve{ opacity:var(--fade-min); pointer-events:none; }
+@media (prefers-reduced-motion:reduce){ .mode-dissolve{ transition:none; } }
+
+/* Ambient ember behind the page — eased with progress, blooms as rails fade. */
+.mode-glow{ position:absolute; top:46%; left:50%; z-index:0; pointer-events:none;
+  width:min(1200px,120%); height:1000px;
+  transform:translate(-50%,-50%) scale(calc(.82 + var(--m,0) * .4));
+  background:radial-gradient(ellipse at center,
+    rgba(255,168,46,.50) 0%, rgba(255,140,0,.28) 27%, rgba(255,110,0,.10) 47%, transparent 64%);
+  opacity:calc(.10 + var(--m,0) * .70); filter:blur(8px);
+  transition:opacity .8s ease, transform 1s ease; }
+@media (prefers-reduced-motion:reduce){ .mode-glow{ transition:none; } }
+
+/* Three-column stage, centered; rails are in-flow and occlude the glow at rest. */
+.mode-row{ position:relative; z-index:1; display:flex; align-items:stretch; justify-content:center; gap:0; }
+
+.mode-rail{ position:relative; z-index:2; width:222px; flex-shrink:0; background:var(--ink-900);
+  border:1px solid var(--ink-border); padding:22px 18px; display:flex; flex-direction:column; gap:2px; }
+.mode-rail.left{ border-right:0; }
+.mode-rail.right{ border-left:0; }
+.mode-rail-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
+.mode-rail-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; cursor:pointer;
+  border:1px solid transparent; transition:.18s; }
+.mode-rail-item:hover{ color:var(--text-hi); border-color:var(--ink-border); background:var(--ink-800); }
+/* Sealed AI — a shuttered wall, not openable (the one hard rule made spatial). */
+.mode-rail.right.sealed{ width:54px; padding:22px 0; align-items:center; justify-content:center;
+  background:repeating-linear-gradient(135deg,#160a02,#160a02 8px,#1b0d03 8px,#1b0d03 16px); }
+.mode-lock{ color:var(--brass-press); font-size:15px; margin-bottom:12px; }
+.mode-seal-note{ writing-mode:vertical-rl; transform:rotate(180deg); font-size:10px; letter-spacing:2px;
+  text-transform:uppercase; color:var(--brass-press); white-space:nowrap; }
+.mode-ai-surface{ flex:1; margin-top:10px; border:1px solid var(--ink-border); background:var(--ink-950);
+  display:flex; align-items:center; justify-content:center; text-align:center; color:var(--text-low);
+  font-size:12px; line-height:1.6; padding:16px; font-style:italic; }
+/* Drawer-open — only on Journal → other ("a tool brought onto the desk"). */
+@keyframes mode-drawer-out{ from{ transform:translateX(42px); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+.mode-rail.right.drawer-open{ animation:mode-drawer-out .62s cubic-bezier(.36,0,.16,1); }
+@media (prefers-reduced-motion:reduce){ .mode-rail.right.drawer-open{ animation:none; } }
+
+.mode-pagecol{ position:relative; z-index:1; width:min(620px,62vw); display:flex; flex-direction:column; }
+
+/* Format / pen bar — chrome at the top of the page. */
+.mode-bar{ display:flex; align-items:center; gap:4px; background:var(--ink-900);
+  border:1px solid var(--ink-border); border-bottom:0; padding:6px 10px; min-height:42px; }
+.mode-tlabel{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--brass-press); margin-right:6px; }
+.mode-tbtn{ min-width:30px; height:28px; padding:0 8px; background:none; border:1px solid transparent;
+  color:var(--text-mid); cursor:pointer; font-family:var(--font-ui); font-size:14px; transition:.15s; }
+.mode-tbtn:hover{ border-color:var(--ink-border); background:var(--ink-800); color:var(--text-hi); }
+.mode-tbtn b{ font-weight:700; } .mode-tbtn i{ font-style:italic; } .mode-tbtn u{ text-decoration:underline; }
+.mode-tdiv{ width:1px; height:18px; background:var(--ink-border); margin:0 5px; }
+.mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }
+.mode-swatch{ width:22px; height:22px; border:1px solid var(--ink-border-strong); cursor:pointer; padding:0; }
+.mode-swatch.active{ outline:2px solid var(--brass); outline-offset:1px; }
+.mode-nib{ height:28px; padding:0 10px; background:none; border:1px solid var(--ink-border);
+  color:var(--text-mid); font-size:12px; cursor:pointer; margin-left:8px; }
+
+/* The lit page — fixed height; the editor scrolls inside it (typewriter fade). */
+.mode-page{ position:relative; background:var(--paper); color:var(--ink-on-paper);
+  border:1px solid #d8c8b4; box-shadow:var(--paper-glow); padding:30px 38px;
+  height:min(60vh,580px); display:flex; flex-direction:column; overflow:hidden;
+  transition:box-shadow var(--t-state) var(--ease); }
+.mode-page.focused{ box-shadow:0 0 0 1px rgba(243,237,225,0.10), 0 6px 40px rgba(212,162,78,0.18), 0 2px 12px rgba(0,0,0,0.45); }
+.mode-page-title{ position:relative; z-index:1; font-family:var(--font-prose); font-size:15px;
+  color:var(--ink-on-paper-low); font-style:italic; margin-bottom:14px; }
+.mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
+  background:transparent; scrollbar-width:none; }
+.mode-scroll::-webkit-scrollbar{ width:0; height:0; }
+/* Typewriter: history rides up through a top gradient and fades to the page. */
+.mode-scroll[data-typewriter='true']{
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0, rgba(0,0,0,.5) 11%, #000 30%, #000 100%);
+          mask-image:linear-gradient(to bottom, transparent 0, rgba(0,0,0,.5) 11%, #000 30%, #000 100%); }
+.mode-wordcount{ position:absolute; bottom:10px; right:14px; z-index:2;
+  font-family:var(--font-mono); font-size:13px; color:var(--ink-on-paper-low); }
+
+/* Progress under the page — feedback, stays visible while writing. */
+.mode-progress{ margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+.mode-ptrack{ height:5px; background:#2a1808; border:1px solid var(--ink-border); }
+.mode-pfill{ height:100%; width:0%; background:var(--brass); transition:width 1s ease; }
+.mode-pmeta{ display:flex; justify-content:space-between; align-items:center; font-size:11px;
+  color:var(--text-low); letter-spacing:.3px; }
+.mode-pmetric{ text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
+
+/* Settings gear + popover (top-right of the stage). */
+.mode-gear-wrap{ position:absolute; top:-2px; right:0; z-index:5; }
+.mode-gear{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  width:30px; height:30px; cursor:pointer; font-size:15px; line-height:1; transition:.15s; }
+.mode-gear:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); background:var(--ink-900); }
+.mode-settings{ position:absolute; top:36px; right:0; width:236px; background:rgba(20,10,2,.96);
+  border:1px solid var(--ink-border); padding:12px 13px; font-size:11px; color:var(--text-mid);
+  z-index:6; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+.mode-settings h4{ font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:9px; font-weight:600; }
+.mode-crow{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:7px 0; }
+.mode-seg{ display:flex; border:1px solid var(--ink-border); }
+.mode-seg button{ background:none; border:0; border-left:1px solid var(--ink-border); color:var(--text-mid);
+  font-size:10px; padding:3px 7px; cursor:pointer; font-family:var(--font-ui); }
+.mode-seg button:first-child{ border-left:0; }
+.mode-seg button.on{ background:var(--brass); color:var(--on-brass); }
+.mode-settings-hint{ margin-top:9px; font-size:9.5px; color:var(--text-low); line-height:1.5; }
+
+/* Narrow screens (tablet portrait / phone): hide the rails — the page is the
+   experience on small surfaces. The dissolve/glow/progress/typewriter remain. */
+@media (max-width:900px){
+  .mode-rail{ display:none; }
+  .mode-pagecol{ width:min(620px,94vw); }
+}
+
+/* Top-bar Dim setting: the receded timer/mode bar stays faintly visible + usable
+   instead of vanishing (default Dissolve → 0). Marked .chrome-top in QuickSprint. */
+[data-chrome-receded='true'][data-topbar='dim'] .chrome-top{ opacity:.42; pointer-events:auto; }

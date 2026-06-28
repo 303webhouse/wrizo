@@ -12,7 +12,8 @@ import { useIdleNudges } from '../store/idleNudges';
 import { pickEchoLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ModeSwitcher } from '../components/ModeSwitcher';
-import { useChromeFade, ChromeHandle } from '../components/WritingShell';
+import { ModeStage } from '../components/ModeStage';
+import { useWritingSettings } from '../store/writingSettings';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -120,9 +121,12 @@ export function QuickSprint() {
   const [soundOn, setSoundOn] = useState(false); // ambient sound bed (J5), off by default
   const [echoLine, setEchoLine] = useState<string | null>(null); // post-sprint echo (J7)
 
-  // CW1 — chrome-fade / Middle Door. Driven by the editor's onForward (writing)
-  // and global intent/idle signals. The editor, caret, and J5 warmth never fade.
-  const { receded, noteForward, restore } = useChromeFade({ surface: 'sprint' });
+  // Mode-aware editor (Phase 2) — the writing studio chrome lives in ModeStage,
+  // which owns the dissolve engine (useChromeDissolve) and reports its state up so
+  // the sprint's own top bar / beat / bottom bar fade in step. `settings` (the gear)
+  // selects the top-bar fade behaviour (dissolve → 0 vs dim → stays clickable).
+  const [receded, setReceded] = useState(false);
+  const settings = useWritingSettings();
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
@@ -435,17 +439,15 @@ export function QuickSprint() {
   });
 
   return (
-    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 820, paddingTop: '2.5rem' }}>
-      {/* CW1: ever-present reveal handle so chrome is discoverable while receded. */}
-      <ChromeHandle onReveal={restore} />
-      {/* Mode-aware editor switcher (Phase 1). Kept reachable for now; the
-          dissolve/top-bar engine that fades it is Phase 2. */}
-      <div style={{ marginBottom: 14 }}>
+    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} data-topbar={settings.topBar} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
+      {/* Mode switcher (Phase 1). Part of the top chrome — dissolves on write
+          (ModeStage's reveal handle / edge / Esc bring it back). */}
+      <div className="chrome-fade chrome-top" style={{ marginBottom: 14 }}>
         <ModeSwitcher mode={mode} onSwitch={switchMode} />
       </div>
       {/* Top bar */}
       <div
-        className="chrome-fade"
+        className="chrome-fade chrome-top"
         style={{
           background: 'var(--ink-900)', borderRadius: 'var(--radius-md)',
           padding: '10px 16px', display: 'flex', alignItems: 'center',
@@ -539,58 +541,40 @@ export function QuickSprint() {
         <div className="nudge-slip" data-shown={nudgeShown ? 'true' : 'false'} style={{ marginBottom: 12 }}>{nudge}</div>
       )}
 
-      {/* The page */}
-      <div
-        ref={surfaceRef}
-        className="paper-page"
-        style={{
-          maxWidth: '68ch', margin: '0 auto', minHeight: '60vh', position: 'relative',
-          boxShadow: textareaFocused
-            ? '0 0 0 1px rgba(243,237,225,0.10), 0 6px 40px rgba(212,162,78,0.18), 0 2px 12px rgba(0,0,0,0.45)'
-            : 'var(--paper-glow)',
-          transition: 'box-shadow var(--t-state) var(--ease)',
-        }}
+      {/* The writing studio (mode-aware editor Phase 2-3). ModeStage wraps the
+          forward-only editor with the rails / format-pen bar / glow / progress /
+          settings / typewriter fade, and owns the dissolve engine. The editor is
+          handed in as a render-prop so it stays owned here: its onForward drives
+          the dissolve (noteWrite) and the Journal pen ink (penColor) flows in.
+          surfaceRef is the J5 ambient-warmth target (the lit page). */}
+      <ModeStage
+        mode={mode}
+        words={wordCount(draftText)}
+        surfaceRef={surfaceRef}
+        focused={textareaFocused}
+        pageTitle={id ? 'an untitled page' : 'a fresh scrap'}
+        onDissolveChange={setReceded}
       >
-        {/* Ambient warm overlay (J5): opacity drifts with --sprint-warmth, set
-            continuously by the drift loop. Decorative, never interactive. */}
-        <div
-          aria-hidden="true"
-          className="sprint-warmth-overlay"
-          style={{
-            position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-            borderRadius: 'var(--radius-md)', background: 'var(--ember)',
-            opacity: 'calc(var(--sprint-warmth, 0) * var(--ambient-intensity))',
-          }}
-        />
-        {/* CW2: the plain textarea is replaced by the reusable forward-only
-            editor. It owns the sprint's in-memory fragment and reports derived
-            prose up via onChange; draftText mirrors it, so every already-wired
-            sprint feature keeps working untouched. Keyed by draftId so it
-            re-seeds when the surface changes. */}
-        <ForwardOnlyEditor
-          key={`${draftId}-${mode}`}
-          ref={editorRef}
-          initialText={modeSeed}
-          mode={mode}
-          onChange={handleEditorChange}
-          onForward={() => { handleForwardKeystroke(); noteForward(); }}
-          onFocus={() => setTextareaFocused(true)}
-          onBlur={() => { setTextareaFocused(false); flushDraft(); }}
-          placeholder="Write without stopping…"
-          ariaLabel="Sprint writing surface"
-          style={{
-            position: 'relative', zIndex: 1,
-            width: '100%', minHeight: '54vh', color: 'var(--ink-on-paper)',
-            fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
-          }}
-        />
-        <div className="chrome-fade" style={{
-          position: 'absolute', bottom: 12, right: 16,
-          fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ink-on-paper-low)',
-        }}>
-          {wordCount(draftText)} words
-        </div>
-      </div>
+        {({ noteWrite, penColor }) => (
+          <ForwardOnlyEditor
+            key={`${draftId}-${mode}`}
+            ref={editorRef}
+            initialText={modeSeed}
+            mode={mode}
+            onChange={handleEditorChange}
+            onForward={() => { handleForwardKeystroke(); noteWrite(); }}
+            onFocus={() => setTextareaFocused(true)}
+            onBlur={() => { setTextareaFocused(false); flushDraft(); }}
+            placeholder="Write without stopping…"
+            ariaLabel="Sprint writing surface"
+            penColor={penColor}
+            style={{
+              width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
+              fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
+            }}
+          />
+        )}
+      </ModeStage>
 
       {/* Bottom bar (hidden during the finish moment so the card owns the brass) */}
       {!isFinishing && (
