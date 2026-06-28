@@ -52,6 +52,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   const bsRef = useRef(0);        // consecutive backspaces since the last forward key
   const noopRef = useRef(0);      // consecutive ineffective ("locked") backspaces
   const composingRef = useRef(false); // IME composition in progress (mobile soft keyboards)
+  const skipCompEndRef = useRef(false); // ignore the stale compositionend a delete-abort triggers
   const [, force] = useReducer((n: number) => n + 1, 0);
 
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -127,15 +128,23 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
 
     const onBeforeInput = (e: InputEvent) => {
       const it = e.inputType || '';
-      // Mid-composition (soft keyboard, swipe, autocorrect): hands off to the IME.
-      if (composingRef.current || e.isComposing || it === 'insertCompositionText') return;
-      e.preventDefault();
-      if (it === 'insertFromPaste' || it === 'insertFromDrop') return; // foreign-voice wall: block external paste
+      // Backspace/delete ALWAYS strikes — even mid-composition. Mobile keyboards
+      // "recompose" a word when you backspace into it; if we hand those deletes to
+      // the browser (the composition path) the first letters get ERASED instead of
+      // struck. So intercept deletes first: abort the (re)composition (the innerHTML
+      // re-render wipes its draft node) and strike from our model.
       if (it.startsWith('delete')) {
+        e.preventDefault();
         if (it.toLowerCase().includes('forward')) return; // no forward erasure
+        if (composingRef.current || e.isComposing) skipCompEndRef.current = true;
+        composingRef.current = false;
         handleBackspace();
         return;
       }
+      // Inserts: hand off to the IME while composing (so typing/autocorrect work).
+      if (composingRef.current || e.isComposing || it === 'insertCompositionText') return;
+      e.preventDefault();
+      if (it === 'insertFromPaste' || it === 'insertFromDrop') return; // foreign-voice wall: block external paste
       if (it.startsWith('insert')) {
         const data = e.data ?? ((it === 'insertParagraph' || it === 'insertLineBreak') ? '\n' : '');
         if (data) handleInput(data);
@@ -151,6 +160,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const onCompStart = () => { composingRef.current = true; };
     const onCompEnd = (e: CompositionEvent) => {
       composingRef.current = false;
+      if (skipCompEndRef.current) { skipCompEndRef.current = false; return; } // a delete aborted this composition
       const data = e.data || '';
       if (data) handleInput(data); // commit the finalized text; the re-render replaces the browser's draft
     };
