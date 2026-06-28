@@ -32,34 +32,78 @@ export function append(content: Run[], text: string): Run[] {
   return [...content, { text, struck: false }];
 }
 
-// Append a NEW struck run — the keyboard word-strike: a word scratched from the
-// draft stays visible, struck, in its own run. Forward-only (never erased).
-export function appendStruck(content: Run[], text: string): Run[] {
-  return [...content, { text, struck: true }];
+// The text of the last (trailing) unstruck run — the live tail the runway eats
+// from. Struck runs accumulate at the end as the runway escalates.
+export function lastUnstruckText(content: Run[]): string {
+  for (let i = content.length - 1; i >= 0; i--) {
+    if (!content[i].struck && content[i].text.length > 0) return content[i].text;
+  }
+  return '';
 }
 
-// Strike the LAST WORD of the draft — the backspace runway walks back one word
-// per press. Committed prose lives in merged unstruck runs (append extends the
-// last run, mirroring DM1 appendText), so striking must peel the trailing word
-// off the end of the last unstruck run, not the whole run. The peeled word
-// becomes its own struck run (it stays visible, line-through; drops from derived
-// prose); the rest of the run stays unstruck. A single-word run is struck whole.
-// Still forward-only — nothing is erased, the run text is only re-partitioned.
-// Reports whether anything changed, so the editor can count locked presses.
-export function strikeLastWord(content: Run[]): { content: Run[]; changed: boolean } {
+// Strike the trailing `n` characters of the last unstruck run — they move into
+// their own struck run (stay visible, line-through; drop from derived prose); the
+// rest of the run stays unstruck. Forward-only: nothing is erased, the run text
+// is only re-partitioned. Reports whether anything changed (for locked presses).
+export function strikeTail(content: Run[], n: number): { content: Run[]; changed: boolean } {
+  if (n <= 0) return { content, changed: false };
   for (let i = content.length - 1; i >= 0; i--) {
     const run = content[i];
-    if (run.struck) continue;
-    const m = /\S+\s*$/.exec(run.text); // the trailing word + any whitespace after it
-    if (!m) continue;                   // whitespace-only / empty run — nothing to strike here
-    const head = run.text.slice(0, m.index); // earlier words, still unstruck
-    const word = m[0];                       // the word to strike (with its trailing space)
+    if (run.struck || run.text.length === 0) continue;
+    const take = Math.min(n, run.text.length);
+    const head = run.text.slice(0, run.text.length - take);
+    const tail = run.text.slice(run.text.length - take);
+    const repl: Run[] = head ? [{ text: head, struck: false }, { text: tail, struck: true }]
+                             : [{ text: tail, struck: true }];
     const next = content.slice();
-    if (head) next.splice(i, 1, { text: head, struck: false }, { text: word, struck: true });
-    else next[i] = { ...run, struck: true }; // run was a single word → strike it whole
+    next.splice(i, 1, ...repl);
     return { content: next, changed: true };
   }
   return { content, changed: false };
+}
+
+const SENT_END = /[.!?]/;
+function trailingNonWS(t: string): number {
+  let n = 0;
+  for (let i = t.length - 1; i >= 0 && !/\s/.test(t[i]); i--) n++;
+  return n;
+}
+// Trailing whitespace + the word before it (the "last full word").
+function lastWordLen(t: string): number {
+  let i = t.length - 1, ws = 0, w = 0;
+  while (i >= 0 && /\s/.test(t[i])) { ws++; i--; }
+  while (i >= 0 && !/\s/.test(t[i])) { w++; i--; }
+  return ws + w;
+}
+// Chars from the end back to (not including) the previous sentence terminator —
+// the "rest of the current sentence". At a sentence boundary (tail ends in a
+// terminator), the LAST FULL sentence (back to the terminator before it).
+function restOfSentenceLen(t: string): number {
+  let last = -1;
+  for (let i = t.length - 1; i >= 0; i--) { if (SENT_END.test(t[i])) { last = i; break; } }
+  if (last === t.length - 1) {
+    let prev = -1;
+    for (let i = last - 1; i >= 0; i--) { if (SENT_END.test(t[i])) { prev = i; break; } }
+    return t.length - (prev + 1);
+  }
+  return t.length - (last + 1); // last === -1 ⇒ whole tail (the sentence so far)
+}
+
+// The revised forward-only runway (Journal mode). Every backspace STRIKES — never
+// deletes — escalating with CONSECUTIVE presses (typing resets to step 1):
+//   1: last single char        2: next char back      3: rest of the current word
+//   4: the previous word       5: rest of the current sentence    6+: locked
+// Struck content stays visible and is excluded from derived/saved prose by
+// derivedText (which filters by run.struck — granularity-agnostic).
+export function strikeStep(content: Run[], step: number): { content: Run[]; changed: boolean } {
+  const t = lastUnstruckText(content);
+  let n: number;
+  if (step === 1 || step === 2) n = 1;
+  else if (step === 3) n = trailingNonWS(t) > 0 ? trailingNonWS(t) : lastWordLen(t);
+  else if (step === 4) n = lastWordLen(t);
+  else if (step === 5) n = restOfSentenceLen(t);
+  else return { content, changed: false }; // 6+ locked
+  return strikeTail(content, n);
 }
 
 // A space, newline, or tab flushes the active-word buffer into the runs.

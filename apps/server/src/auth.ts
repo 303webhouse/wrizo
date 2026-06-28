@@ -10,6 +10,7 @@ interface UserRow {
   id: string;
   email: string;
   pass_hash: string;
+  name: string | null;
 }
 
 // Guard for /api/* routes: 401 unless a session user exists.
@@ -29,6 +30,7 @@ authRouter.use(rateLimit(20, 60_000));
 authRouter.post('/register', asyncHandler(async (req: Request, res: Response) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
+  const name = String(req.body?.name || '').trim().slice(0, 80) || null;
 
   // Wrizo is open — the writing-gate (HomeFlow) is the membership filter, not an
   // invite. (Invite check dropped; passwordless/email-first is a later backlog lift.)
@@ -40,12 +42,12 @@ authRouter.post('/register', asyncHandler(async (req: Request, res: Response) =>
   const passHash = await bcrypt.hash(password, BCRYPT_COST);
   try {
     const { rows } = await pool.query<UserRow>(
-      `insert into users (email, pass_hash) values ($1, $2) returning id, email, pass_hash`,
-      [email, passHash],
+      `insert into users (email, pass_hash, name) values ($1, $2, $3) returning id, email, pass_hash, name`,
+      [email, passHash, name],
     );
     const user = rows[0];
     req.session.userId = user.id;
-    res.status(201).json({ id: user.id, email: user.email });
+    res.status(201).json({ id: user.id, email: user.email, name: user.name });
   } catch (err: any) {
     if (err?.code === '23505') {
       res.status(409).json({ error: 'An account with that email already exists' });
@@ -60,7 +62,7 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const password = String(req.body?.password || '');
 
   const { rows } = await pool.query<UserRow>(
-    `select id, email, pass_hash from users where email = $1`,
+    `select id, email, pass_hash, name from users where email = $1`,
     [email],
   );
   const user = rows[0];
@@ -70,7 +72,7 @@ authRouter.post('/login', asyncHandler(async (req: Request, res: Response) => {
     return;
   }
   req.session.userId = user.id;
-  res.json({ id: user.id, email: user.email });
+  res.json({ id: user.id, email: user.email, name: user.name });
 }));
 
 authRouter.post('/logout', (req: Request, res: Response) => {
@@ -86,7 +88,7 @@ authRouter.get('/me', asyncHandler(async (req: Request, res: Response) => {
     return;
   }
   const { rows } = await pool.query<UserRow>(
-    `select id, email, pass_hash from users where id = $1`,
+    `select id, email, pass_hash, name from users where id = $1`,
     [req.session.userId],
   );
   const user = rows[0];
@@ -95,5 +97,5 @@ authRouter.get('/me', asyncHandler(async (req: Request, res: Response) => {
     res.status(401).json({ error: 'Not authenticated' });
     return;
   }
-  res.json({ id: user.id, email: user.email });
+  res.json({ id: user.id, email: user.email, name: user.name });
 }));

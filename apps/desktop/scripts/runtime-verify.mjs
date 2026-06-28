@@ -96,7 +96,7 @@ function startServer(dist) {
         res.writeHead(401, { 'content-type': 'application/json' });
         return res.end(JSON.stringify({ error: 'unauthorized' }));
       }
-      return sendJson(res, { id: 'test-user', email: 'tester@example.com' });
+      return sendJson(res, { id: 'test-user', email: 'tester@example.com', name: 'Tester' });
     }
     if (p === '/api/sync') {
       return sendJson(res, { serverTime: new Date(0).toISOString(), pull: {} });

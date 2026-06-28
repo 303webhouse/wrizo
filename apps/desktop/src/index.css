@@ -796,8 +796,16 @@ a:focus-visible,
   .wz-bloom.go{ opacity:0!important; }   /* bloom suppressed; the word-echo still lands */
 }
 
-/* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. */
-.wz-desk{ gap:1.2rem; }
+/* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. A top-left
+   letterhead (name in Crimson over "Writing Desk" in Figtree) + left-aligned
+   actions below. */
+.wz-desk{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:flex-start;
+  gap:1.1rem; padding:clamp(2rem,9vh,5rem) clamp(1.5rem,8vw,5rem); width:min(680px,100%); }
+.wz-deskhead{ display:flex; flex-direction:column; line-height:1.04; }
+.wz-deskname{ font-family:var(--wz-text); font-style:italic; font-size:clamp(1.3rem,3vw,1.9rem); color:var(--wz-ink-dim); }
+.wz-desktitle{ font-family:var(--wz-ui); font-weight:700; font-size:clamp(2.2rem,6vw,3.6rem); letter-spacing:-.02em; color:var(--wz-ink); }
+.wz-desksub{ font-family:var(--wz-text); color:var(--wz-ink-dim); font-size:1.06rem; margin-bottom:.5rem; }
+.wz-desk .wz-journal-link{ align-self:flex-start; }
 .wz-btn.wz-primary{ background:var(--wz-orange); color:var(--wz-ground); border-color:var(--wz-orange);
   padding:.92rem 2.2rem; font-size:1.05rem; box-shadow:0 4px 24px rgba(255,152,0,.22); }
 .wz-btn.wz-primary:hover{ background:#ffab33; border-color:#ffab33; color:var(--wz-ground); }

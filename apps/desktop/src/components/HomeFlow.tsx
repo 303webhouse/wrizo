@@ -49,6 +49,7 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   const editorRef = useRef<HTMLDivElement>(null);
 
   // account / sign-in form
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -99,7 +100,7 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
   const handleCreate = async () => {
     if (busy) return;
     setError(''); setBusy(true);
-    const res = await apiRegister(email.trim(), password);
+    const res = await apiRegister(email.trim(), password, name.trim());
     setBusy(false);
     if (res.ok && res.user) {
       persistFirstEntry(); // first, so the entry is on the desk the instant they arrive
@@ -172,6 +173,8 @@ export function HomeFlow({ onAuthed }: { onAuthed: (user: AuthUser) => void }) {
         <div className="wz-bighead">Save it to your desk.</div>
         <div className="wz-sub">Add an email and your writing is here whenever you come back — that first entry already saved.</div>
         <div className="wz-fieldcol">
+          <div className="wz-eyebrow">your name</div>
+          <input className="wz-field" type="text" placeholder="what should we call you?" autoComplete="given-name" value={name} onChange={(e) => setName(e.target.value)} />
           <div className="wz-eyebrow">your email</div>
           <input className="wz-field" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           {/* Backend needs these until a passwordless / no-invite flow lands (flagged). */}

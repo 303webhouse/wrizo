@@ -40,6 +40,9 @@ export function ProjectHome() {
       <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>{project.title}</h1>
 
       <div style={{ marginBottom: '2rem' }}>
+        {(hasSprint || touchedBeats > 0) && (
+          <div className="eyebrow" style={{ marginBottom: 8, color: 'var(--brass)' }}>↩ you last wrote here</div>
+        )}
         <Link to={primary.to} className="btn-brass">{primary.label}</Link>
       </div>
 

@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
-import { append, appendStruck, derivedText, isBoundary, seedContent, strikeLastWord } from '../store/forwardOnly';
+import { append, derivedText, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -38,7 +38,6 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   const wordRef = useRef('');
   const nudgeRef = useRef<string | null>(null);
   const bsRef = useRef(0);        // consecutive backspaces since the last forward key
-  const removedRef = useRef<string | null>(null); // letter vanished by the 1st backspace
   const noopRef = useRef(0);      // consecutive ineffective ("locked") backspaces
   const composingRef = useRef(false); // IME composition in progress (mobile soft keyboards)
   const [, force] = useReducer((n: number) => n + 1, 0);
@@ -55,7 +54,6 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // Any forward keystroke resets the backspace runway and clears the nudge.
   const resetRunway = () => {
     bsRef.current = 0;
-    removedRef.current = null;
     noopRef.current = 0;
     if (nudgeRef.current) { nudgeRef.current = null; }
   };
@@ -74,44 +72,25 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     changed();
   };
 
-  // The locked backspace runway:
-  //   1st  → vanish the active word's last char (pre-commit; touches no Run)
-  //   2nd  → flush the active word as a struck Run (restoring the vanished
-  //          letter so the whole word shows struck); empty buffer → strike the
-  //          last committed word instead
-  //   3rd  → strike the previous word (one word, not the whole sentence)
-  //   4th+ → locked, no-op; 3 consecutive no-ops show the keep-writing nudge
+  // The revised forward-only runway — every backspace STRIKES (never deletes),
+  // escalating with consecutive presses (typing resets via resetRunway):
+  //   1 char · 2 char · 3 rest-of-word · 4 prev-word · 5 rest-of-sentence · 6+ locked.
+  // The active word is flushed into the runs on the first press so all strikes
+  // operate on committed content; struck runs stay visible but drop from derived.
   const handleBackspace = () => {
-    bsRef.current += 1;
-    const n = bsRef.current;
-    const c = contentRef.current;
-    const w = wordRef.current;
-    let did = false;
-
-    if (n === 1) {
-      if (w.length > 0) { removedRef.current = w.slice(-1); wordRef.current = w.slice(0, -1); did = true; }
-    } else if (n === 2) {
-      if (w.length > 0 || removedRef.current) {
-        const full = w + (removedRef.current ?? ''); // restore the vanished letter → whole word struck
-        removedRef.current = null;
-        contentRef.current = appendStruck(c, full);
-        wordRef.current = '';
-        did = true;
-      } else {
-        const r = strikeLastWord(c);
-        if (r.changed) { contentRef.current = r.content; did = true; }
-      }
-    } else if (n === 3) {
-      const r = strikeLastWord(c);
-      if (r.changed) { contentRef.current = r.content; did = true; }
+    if (wordRef.current.length > 0) {
+      contentRef.current = append(contentRef.current, wordRef.current);
+      wordRef.current = '';
     }
-
-    if (did) {
+    bsRef.current += 1;
+    const r = strikeStep(contentRef.current, bsRef.current);
+    if (r.changed) {
+      contentRef.current = r.content;
       noopRef.current = 0;
       if (nudgeRef.current) nudgeRef.current = null;
     } else {
       noopRef.current += 1;
-      if (noopRef.current >= 3) nudgeRef.current = KEEP_WRITING;
+      if (noopRef.current >= 2) nudgeRef.current = KEEP_WRITING; // a couple of locked presses
     }
     changed();
   };
