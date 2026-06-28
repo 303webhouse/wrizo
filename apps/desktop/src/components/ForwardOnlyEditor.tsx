@@ -15,9 +15,20 @@ import { append, derivedText, isBoundary, seedContent, strikeStep } from '../sto
 
 const KEEP_WRITING = 'keep writing — you can shape it later';
 
+// Mode-parameterized writing surface (mode-aware editor brief). ONE surface, two
+// behaviours selected by `mode`:
+//   journal  — forward-only runway (strike, never delete) + IME; the saved text
+//              is the clean derived prose. (Today's behaviour, as-is.)
+//   drafting — free editing (the runway is OFF): a plain contenteditable seeded
+//              with the clean text; onChange reports its live textContent. Switch
+//              modes by remounting with the current clean text (parent keys by
+//              mode), so prose carries across and the caret lands at the end.
+export type EditorMode = 'journal' | 'drafting';
+
 interface Props {
   initialText: string;
   onChange: (derived: string) => void;
+  mode?: EditorMode;
   onForward?: () => void;      // fired on a forward keystroke (e.g. ambient warmth, first-keystroke stamp)
   onFocus?: () => void;
   onBlur?: () => void;
@@ -28,9 +39,10 @@ interface Props {
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, style },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, style },
   ref,
 ) {
+  const drafting = mode === 'drafting';
   // content (committed runs) + word (uncommitted active word) are the model.
   // Refs are the truth read by the input handlers (no stale closures); state
   // mirrors them for rendering. force() re-renders on a model change.
@@ -105,6 +117,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const el = hostRef.current;
     if (!el) return;
 
+    // DRAFTING — free editing. No forward-only interception: the browser owns the
+    // contenteditable; we just report its live text up on every input.
+    if (drafting) {
+      const onInput = () => { onChangeRef.current(el.innerText); onForwardRef.current?.(); };
+      el.addEventListener('input', onInput);
+      return () => el.removeEventListener('input', onInput);
+    }
+
     const onBeforeInput = (e: InputEvent) => {
       const it = e.inputType || '';
       // Mid-composition (soft keyboard, swipe, autocorrect): hands off to the IME.
@@ -158,6 +178,15 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // in sync from the first paint.
   useEffect(() => {
     if (autoFocus) hostRef.current?.focus();
+    // Drafting mounts (incl. a mode switch) land the caret at the end of the
+    // carried-over prose, once. Journal's per-render effect handles its caret.
+    if (drafting) {
+      const el = hostRef.current;
+      if (el) {
+        const sel = window.getSelection();
+        if (sel) { const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
+      }
+    }
     emit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -170,6 +199,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   useEffect(() => {
     const el = hostRef.current;
     if (!el || document.activeElement !== el) return;
+    if (drafting) return;             // drafting is free-edit: the browser owns the caret
     if (composingRef.current) return; // never move the caret mid-composition
     // Empty surface: trust the browser's own focus caret (forcing a selection
     // into the empty/placeholder-only host parks it in a non-editable spot and
@@ -206,10 +236,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // re-render mid-composition can't clobber the composing text). When empty the
   // host has no children, so the browser can place a caret. Placeholder + nudge
   // are overlays in the wrapper, never inside the editable.
-  const html = isEmpty
-    ? ''
-    : content.map(run => `<span class="${run.struck ? 'fo-run fo-struck' : 'fo-run'}">${escHtml(run.text)}</span>`).join('')
-      + `<span class="fo-word">${escHtml(word)}</span>`;
+  // Drafting seeds the host with the carried-over clean text as plain content and
+  // then lets the browser own it (the html below is stable across re-renders, so
+  // React never re-sets innerHTML and never clobbers the free edits). Journal
+  // renders its runs (struck spans stay visible, drop from derived).
+  const html = drafting
+    ? escHtml(initialText)
+    : isEmpty
+      ? ''
+      : content.map(run => `<span class="${run.struck ? 'fo-run fo-struck' : 'fo-run'}">${escHtml(run.text)}</span>`).join('')
+        + `<span class="fo-word">${escHtml(word)}</span>`;
 
   return (
     <div className="forward-only-editor-wrap" style={{ position: 'relative', display: 'flex', flexDirection: 'column', ...style }}>

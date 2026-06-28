@@ -10,7 +10,8 @@ import { getFramework } from '../store/frameworks';
 import { startAmbient, type AmbientHandle } from '../store/ambient';
 import { useIdleNudges } from '../store/idleNudges';
 import { pickEchoLine } from '../store/entryText';
-import { ForwardOnlyEditor } from '../components/ForwardOnlyEditor';
+import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
+import { ModeSwitcher } from '../components/ModeSwitcher';
 import { useChromeFade, ChromeHandle } from '../components/WritingShell';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
@@ -86,6 +87,26 @@ export function QuickSprint() {
     return localStorage.getItem(getDraftKey(id)) || '';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, draftId]);
+
+  // Mode-aware editor (mode-aware editor brief, Phase 1). Journal = forward-only;
+  // Drafting = free edit. Per-document, last-used persisted; default Journal for
+  // scratch scraps, Drafting for project pages. Switching is a lens change on the
+  // same doc: re-seed the new mode with the current clean text (modeSeed) and
+  // remount via key — prose carries across, caret lands at the end. No nav.
+  const modeKey = `wrizo-mode-${draftId}`;
+  const [mode, setMode] = useState<EditorMode>(() => {
+    const saved = localStorage.getItem(modeKey);
+    if (saved === 'journal' || saved === 'drafting') return saved;
+    return id ? 'drafting' : 'journal';
+  });
+  const [modeSeed, setModeSeed] = useState(seedText);
+  const switchMode = (next: EditorMode) => {
+    if (next === mode) return;
+    setModeSeed(draftTextRef.current); // carry the current clean text into the new mode
+    setMode(next);
+    localStorage.setItem(modeKey, next);
+  };
+
   const [savedUntil, setSavedUntil] = useState<number | null>(null);
   // Idle nudges via the shared hook — cadence resets on each keystroke (draftText),
   // active once the writer has started. handleGetNudge is the "Take a nudge" pull.
@@ -417,6 +438,11 @@ export function QuickSprint() {
     <div className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 820, paddingTop: '2.5rem' }}>
       {/* CW1: ever-present reveal handle so chrome is discoverable while receded. */}
       <ChromeHandle onReveal={restore} />
+      {/* Mode-aware editor switcher (Phase 1). Kept reachable for now; the
+          dissolve/top-bar engine that fades it is Phase 2. */}
+      <div style={{ marginBottom: 14 }}>
+        <ModeSwitcher mode={mode} onSwitch={switchMode} />
+      </div>
       {/* Top bar */}
       <div
         className="chrome-fade"
@@ -542,9 +568,10 @@ export function QuickSprint() {
             sprint feature keeps working untouched. Keyed by draftId so it
             re-seeds when the surface changes. */}
         <ForwardOnlyEditor
-          key={draftId}
+          key={`${draftId}-${mode}`}
           ref={editorRef}
-          initialText={seedText}
+          initialText={modeSeed}
+          mode={mode}
           onChange={handleEditorChange}
           onForward={() => { handleForwardKeystroke(); noteForward(); }}
           onFocus={() => setTextareaFocused(true)}
