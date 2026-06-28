@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Desk } from './pages/Desk';
+import { DrawersPage } from './pages/Drawers';
 import { CreateProject } from './pages/CreateProject';
 import { ProjectHome } from './pages/ProjectHome';
 import { StructureWizard } from './pages/StructureWizard';
@@ -89,6 +90,7 @@ function FullscreenToggle() {
 // bring it back together with the sprint chrome — one frame settling, not two.
 function GlobalHeader({ onLogout }: { onLogout: () => void }) {
   const { isWriting } = useWritingSession();
+  const navigate = useNavigate();
   return (
     <div
       className="chrome-fade"
@@ -99,6 +101,13 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
         padding: '0.5rem 0.75rem',
       }}
     >
+      <button
+        type="button"
+        onClick={() => navigate('/drawers')}
+        style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+      >
+        Open a Drawer
+      </button>
       <FullscreenToggle />
       <SyncIndicator />
       <button
@@ -167,6 +176,7 @@ export function App() {
         <GlobalHeader onLogout={handleLogout} />
         <Routes>
         <Route path="/" element={<Desk />} />
+        <Route path="/drawers" element={<DrawersPage />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
         <Route path="/project/:id/sprint" element={<QuickSprint />} />

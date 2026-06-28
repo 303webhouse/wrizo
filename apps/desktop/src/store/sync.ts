@@ -45,7 +45,7 @@ function setLastSyncAt(value: string): void {
 // records that were not re-edited while the request was in flight.
 function stampMap(records: DirtyRecords): Map<string, string> {
   const map = new Map<string, string>();
-  (['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries'] as const).forEach(k => {
+  (['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers'] as const).forEach(k => {
     for (const r of records[k]) map.set(r.id, r.updatedAt);
   });
   return map;

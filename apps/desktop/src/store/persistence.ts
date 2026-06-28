@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer } from '../types';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -22,6 +22,7 @@ const KEYS = {
   sessions: 'writer-studio-sessions',
   drafts: 'writer-studio-drafts',
   journalEntries: 'writer-studio-journal-entries',
+  drawers: 'writer-studio-drawers',
 } as const;
 
 type CollectionName = keyof typeof KEYS;
@@ -32,6 +33,7 @@ interface Cache {
   sessions: SessionLog[];
   drafts: Draft[];
   journalEntries: JournalEntry[];
+  drawers: Drawer[];
 }
 
 function hydrate<T>(key: string): T[] {
@@ -50,6 +52,7 @@ const cache: Cache = {
   sessions: hydrate<SessionLog>(KEYS.sessions),
   drafts: hydrate<Draft>(KEYS.drafts),
   journalEntries: hydrate<JournalEntry>(KEYS.journalEntries),
+  drawers: hydrate<Drawer>(KEYS.drawers),
 };
 
 // Records returned to callers are cloned so the cache is never mutated by
@@ -73,6 +76,7 @@ const dirty: Record<CollectionName, Set<string>> = {
   sessions: new Set(),
   drafts: new Set(),
   journalEntries: new Set(),
+  drawers: new Set(),
 };
 
 export interface DirtyRecords {
@@ -81,6 +85,7 @@ export interface DirtyRecords {
   sessions: SessionLog[];
   drafts: Draft[];
   journalEntries: JournalEntry[];
+  drawers: Drawer[];
 }
 
 export function getDirtyRecords(): DirtyRecords {
@@ -90,6 +95,7 @@ export function getDirtyRecords(): DirtyRecords {
     sessions: cache.sessions.filter(r => dirty.sessions.has(r.id)).map(clone),
     drafts: cache.drafts.filter(r => dirty.drafts.has(r.id)).map(clone),
     journalEntries: cache.journalEntries.filter(r => dirty.journalEntries.has(r.id)).map(clone),
+    drawers: cache.drawers.filter(r => dirty.drawers.has(r.id)).map(clone),
   };
 }
 
@@ -100,6 +106,7 @@ export function markClean(ids: string[]): void {
     dirty.sessions.delete(id);
     dirty.drafts.delete(id);
     dirty.journalEntries.delete(id);
+    dirty.drawers.delete(id);
   }
 }
 
@@ -139,6 +146,7 @@ const flushTimers: Record<CollectionName, ReturnType<typeof setTimeout> | null> 
   sessions: null,
   drafts: null,
   journalEntries: null,
+  drawers: null,
 };
 
 function flush(name: CollectionName): void {
@@ -602,6 +610,63 @@ export function getJournalEntry(id: string): JournalEntry | null {
   return entry && !entry.deletedAt ? clone(entry) : null;
 }
 
+// --- Drawers (Drawers D1) -------------------------------------------------
+// The top of the Drawers IA — a level OVER projects. CRUD mirrors every other
+// collection (upsert → cache + dirty + debounced flush + notify); soft-delete,
+// never hard-delete (a synced row must travel its deletion). A project's
+// `drawerId` is set on the Project record (rides the existing project sync).
+
+export function getDrawers(): Drawer[] {
+  return cache.drawers.filter(d => !d.deletedAt).map(clone);
+}
+
+export function getDrawer(id: string): Drawer | null {
+  const drawer = cache.drawers.find(d => d.id === id);
+  return drawer && !drawer.deletedAt ? clone(drawer) : null;
+}
+
+export function saveDrawer(drawer: Drawer): void {
+  upsert('drawers', cache.drawers, clone(drawer));
+}
+
+export function createDrawer(name: string): Drawer {
+  const now = new Date().toISOString();
+  const maxOrder = cache.drawers.reduce((m, d) => Math.max(m, d.order ?? 0), -1);
+  const drawer: Drawer = {
+    id: generateId(),
+    name: name.trim() || 'New Drawer',
+    order: maxOrder + 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveDrawer(drawer);
+  return drawer;
+}
+
+export function renameDrawer(id: string, name: string): void {
+  const drawer = getDrawer(id);
+  if (!drawer) return;
+  drawer.name = name.trim() || drawer.name;
+  saveDrawer(drawer);
+}
+
+export function softDeleteDrawer(id: string): void {
+  const drawer = getDrawer(id);
+  if (!drawer) return;
+  drawer.deletedAt = new Date().toISOString();
+  saveDrawer(drawer);
+  // The drawer's projects fall back to "Unsorted" automatically — DrawersTree
+  // treats a project whose drawerId points at a missing/deleted drawer as
+  // unsorted — so we don't rewrite each project (keeps the move reversible).
+}
+
+export function setProjectDrawer(projectId: string, drawerId: string | null): void {
+  const project = getProject(projectId);
+  if (!project) return;
+  project.drawerId = drawerId ?? undefined;
+  saveProject(project);
+}
+
 // --- Sync integration -----------------------------------------------------
 // Apply records pulled from the server into the cache (W2). Locally-dirty
 // records are skipped — unsynced on-device edits always win — and applied
@@ -613,6 +678,7 @@ export interface RemoteRecords {
   sessions?: SessionLog[];
   drafts?: Draft[];
   journalEntries?: JournalEntry[];
+  drawers?: Drawer[];
 }
 
 function applyCollection<T extends { id: string; updatedAt: string }>(
@@ -645,6 +711,7 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   changed = applyCollection('sessions', cache.sessions, remote.sessions) || changed;
   changed = applyCollection('drafts', cache.drafts, remote.drafts) || changed;
   changed = applyCollection('journalEntries', cache.journalEntries, remote.journalEntries) || changed;
+  changed = applyCollection('drawers', cache.drawers, remote.drawers) || changed;
   if (changed) notify();
 }
 

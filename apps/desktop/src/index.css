@@ -820,6 +820,10 @@ a:focus-visible,
 .wz-recent-when{ color:var(--wz-ink-dim); font-size:.8rem; flex-shrink:0; }
 .wz-journal-link{ margin-top:.9rem; align-self:center; }
 
+/* Drawers tree on the Desk (Drawers D1) — sits where the recent list was. */
+.wz-drawers{ width:min(560px,92vw); margin-top:1.3rem; display:flex; flex-direction:column; gap:.9rem; }
+.wz-desk-links{ display:flex; align-items:center; gap:.7rem; align-self:center; }
+
 .wz-customize{ margin-top:.7rem; position:relative; display:inline-block; }
 .wz-cust-link{ font-family:var(--wz-ui); color:var(--wz-whisper); font-size:.85rem; cursor:help; opacity:.75; border-bottom:1px dotted var(--wz-whisper); }
 .wz-tip{ font-family:var(--wz-ui); position:absolute; left:50%; bottom:calc(100% + 12px); transform:translateX(-50%) translateY(5px);
@@ -972,3 +976,64 @@ a:focus-visible,
 /* Top-bar Dim setting: the receded timer/mode bar stays faintly visible + usable
    instead of vanishing (default Dissolve → 0). Marked .chrome-top in QuickSprint. */
 [data-chrome-receded='true'][data-topbar='dim'] .chrome-top{ opacity:.42; pointer-events:auto; }
+
+/* ============================================================================
+   Drawers tree (Drawers D1) — the browsable Drawer → Binder(Project) tree.
+   Neutral global tokens so it reads on both the Desk (.wz-home espresso) and the
+   standalone /drawers .page. Square corners, solid borders, brass accents.
+   ============================================================================ */
+.dz-tree{ width:100%; max-width:560px; margin:0 auto; text-align:left;
+  font-family:var(--font-ui); display:flex; flex-direction:column; gap:6px; }
+.dz-new{ align-self:flex-start; background:none; border:1px dashed var(--ink-border-strong);
+  color:var(--brass); font-family:var(--font-ui); font-size:13px; font-weight:600;
+  padding:7px 12px; cursor:pointer; transition:.15s; }
+.dz-new:hover{ border-color:var(--brass); background:rgba(255,152,0,.08); }
+
+.dz-group{ border:1px solid var(--ink-border); background:var(--ink-900); }
+.dz-grouphead{ display:flex; align-items:center; gap:6px; padding:2px 6px 2px 4px; }
+.dz-toggle{ flex:1; display:flex; align-items:center; gap:9px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-ui); font-size:14px; font-weight:600;
+  padding:9px 6px; cursor:pointer; text-align:left; }
+.dz-toggle:hover{ color:#fff; }
+.dz-caret{ color:var(--text-low); font-size:10px; width:12px; flex-shrink:0; }
+.dz-name{ flex:1; }
+.dz-count{ color:var(--text-low); font-size:11px; font-weight:500; }
+.dz-rename{ flex:1; margin:5px 4px; padding:6px 8px; background:var(--ink-800);
+  border:1px solid var(--brass); color:var(--text-hi); font-family:var(--font-ui); font-size:14px; }
+
+.dz-rowmove{ position:relative; flex-shrink:0; }
+.dz-menu-btn{ background:none; border:0; color:var(--text-low); font-size:16px; line-height:1;
+  padding:6px 8px; cursor:pointer; }
+.dz-menu-btn:hover{ color:var(--text-hi); }
+.dz-menu{ position:absolute; right:0; top:calc(100% + 2px); z-index:20; min-width:150px; max-height:240px;
+  overflow-y:auto; background:var(--ink-800); border:1px solid var(--ink-border-strong);
+  box-shadow:0 12px 36px rgba(0,0,0,.5); display:flex; flex-direction:column; }
+.dz-menu-item{ background:none; border:0; color:var(--text-mid); font-family:var(--font-ui); font-size:13px;
+  text-align:left; padding:9px 12px; cursor:pointer; white-space:nowrap; }
+.dz-menu-item:hover{ background:var(--ink-900); color:var(--text-hi); }
+.dz-menu-danger{ color:var(--brick); }
+.dz-menu-danger:hover{ color:var(--brick); background:rgba(181,84,63,.12); }
+.dz-menu-empty{ color:var(--text-low); font-size:12px; padding:9px 12px; font-style:italic; }
+
+.dz-items{ border-top:1px solid var(--ink-border); padding:4px 6px 8px; display:flex; flex-direction:column; }
+.dz-row{ display:flex; align-items:center; gap:6px; padding-left:18px; }
+.dz-rowtitle{ flex:1; background:none; border:0; color:var(--text-mid); font-family:var(--font-ui);
+  font-size:14px; text-align:left; padding:8px 6px; cursor:pointer; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+.dz-rowtitle:hover{ color:var(--text-hi); }
+.dz-move{ background:none; border:0; color:var(--text-low); font-size:11px; font-family:var(--font-ui);
+  padding:6px 8px; cursor:pointer; opacity:0; transition:opacity .15s; flex-shrink:0; }
+.dz-row:hover .dz-move{ opacity:1; }
+.dz-move:hover{ color:var(--brass); }
+.dz-more{ align-self:flex-start; margin-left:18px; background:none; border:0; color:var(--brass);
+  font-family:var(--font-ui); font-size:12px; padding:6px; cursor:pointer; }
+.dz-empty{ color:var(--text-low); font-size:12px; font-style:italic; padding:6px 0 6px 18px; }
+.dz-hint{ color:var(--text-low); font-size:13px; font-style:italic; padding:8px 2px; }
+
+/* Touch: the "move to…" affordance can't hover-reveal — keep it visible. */
+@media (hover:none){ .dz-move{ opacity:.7; } }
+
+/* Standalone /drawers page header. */
+.dz-pagehead{ display:flex; align-items:baseline; justify-content:space-between; max-width:560px;
+  margin:0 auto 18px; }
+.dz-pagetitle{ font-family:var(--font-display); font-size:1.6rem; color:var(--text-hi); font-weight:700; }
