@@ -313,6 +313,9 @@ function makeApp(base, cdp, waitEvent) {
       }
       await cdp('Input.insertText', { text }); // commit the composition
     },
+    // Start (and leave open) an IME composition — simulates a mobile keyboard
+    // "recomposing" a word. Used with key('Backspace') to test delete-mid-compose.
+    imeCompose: (text) => cdp('Input.imeSetComposition', { text, selectionStart: text.length, selectionEnd: text.length }),
     /**
      * Type via real per-character key events (keyDown with a `text` field +
      * keyUp), which trigger the full keydown→beforeinput→input pipeline. More
