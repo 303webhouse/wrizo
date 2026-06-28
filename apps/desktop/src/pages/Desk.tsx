@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { clearDraft, getJournalEntries, getProjects } from '../store/persistence';
 import { getResumeTarget, relativeDays } from '../store/resume';
+import { deskOwnerName } from '../store/currentUser';
 
 // The Desk — the authed home (replaces SessionLauncher), in the Wrizo / v6
 // "launch" aesthetic. Account-create and returning sign-in both land here.
@@ -34,7 +35,16 @@ export function Desk() {
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   const latestEntry = entries[0] || null;
 
-  const keepWritingRoute = resume?.route ?? (latestEntry ? `/journal/${latestEntry.id}` : '/sprint');
+  // Keep writing re-orients rather than dropping into the exact last step: a
+  // project opens its OVERVIEW (not /sprint or /beat); a standalone journal page
+  // opens that page. Whichever was touched most recently wins.
+  const projectMs = resume ? new Date(resume.project.lastActivityAt || resume.project.updatedAt).getTime() : 0;
+  const entryMs = latestEntry ? new Date(latestEntry.updatedAt).getTime() : 0;
+  const keepWritingRoute =
+    resume && projectMs >= entryMs ? `/project/${resume.project.id}`
+    : latestEntry ? `/journal/${latestEntry.id}`
+    : resume ? `/project/${resume.project.id}`
+    : '/sprint';
   const hasWork = !!resume || projects.length > 0 || entries.length > 0;
 
   // Unified recent-work list (projects + journal pages), newest first.
@@ -60,10 +70,14 @@ export function Desk() {
       <div className="wz-ambient" style={{ opacity: 0.5 }} />
       <img className="wz-mark show" src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />
 
-      <section className="wz-screen show wz-desk">
-        {/* swappable Figtree bighead slot (hand-drawn art later) */}
-        <div className="wz-bighead">You're ready to keep writing.</div>
-        <div className="wz-sub">{hasWork ? "That's your work, waiting on your desk." : "That's your first page, waiting on your desk."}</div>
+      <section className="wz-desk">
+        {/* Letterhead: name in Crimson, above the "Writing Desk" element (Figtree
+            swappable slot → hand-drawn graphic later). */}
+        <header className="wz-deskhead">
+          <span className="wz-deskname">{deskOwnerName()}’s</span>
+          <span className="wz-desktitle">Writing Desk</span>
+        </header>
+        <p className="wz-desksub">Scribble, draft, plot, revise, or share (coming soon)</p>
 
         <button type="button" className="wz-btn wz-primary" onClick={() => navigate(keepWritingRoute)}>Keep writing</button>
         <div className="wz-secondary">

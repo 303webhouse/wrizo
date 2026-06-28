@@ -7,6 +7,7 @@ import type { DirtyRecords, RemoteRecords } from './persistence';
 export interface AuthUser {
   id: string;
   email: string;
+  name?: string | null;
 }
 
 export interface SyncResponse {
@@ -53,8 +54,8 @@ export async function apiLogin(email: string, password: string): Promise<AuthRes
   return { ok: false, error: await errorMessage(res, 'Could not sign in') };
 }
 
-export async function apiRegister(email: string, password: string): Promise<AuthResult> {
-  const res = await postJson('/auth/register', { email, password });
+export async function apiRegister(email: string, password: string, name: string): Promise<AuthResult> {
+  const res = await postJson('/auth/register', { email, password, name });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
   return { ok: false, error: await errorMessage(res, 'Could not create account') };
 }

@@ -13,6 +13,7 @@ import { HomeFlow } from './components/HomeFlow';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
+import { setCurrentUser } from './store/currentUser';
 import { startSync, stopSync, syncOnce, clearLastSyncAt, subscribeSyncStatus, type SyncStatus } from './store/sync';
 
 type AuthState = 'loading' | 'anon' | 'authed';
@@ -123,6 +124,7 @@ export function App() {
     apiMe().then((user) => {
       if (!active) return;
       if (user) {
+        setCurrentUser(user);
         setAuthState('authed');
         void startSync();
       } else {
@@ -135,7 +137,8 @@ export function App() {
     };
   }, []);
 
-  const handleAuthed = (_user: AuthUser) => {
+  const handleAuthed = (user: AuthUser) => {
+    setCurrentUser(user);
     setAuthState('authed');
     void startSync();
   };
@@ -146,6 +149,7 @@ export function App() {
     stopSync();
     clearLastSyncAt();
     resetLocalData();
+    setCurrentUser(null);
     setAuthState('anon');
   };
 
