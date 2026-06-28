@@ -30,7 +30,7 @@
 
 ## Left rail — tools / organization / structure (per mode)
 Look = the **solid bordered panel** style (square corners, solid borders). Fades on write (see engine).
-- **Journal:** scapture only — **Spark deck** (the 25-prompt pool), **Fragments** (session scraps), **Send → Drawer**. No structure or edit tools, by design.
+- **Journal:** capture only — **Spark deck** (the 25-prompt pool), **Fragments** (session scraps), **Send → Drawer**. No structure or edit tools, by design.
 - **Drafting:** **Structure** (outline / beats / scene cards) · **Pages** · **Notes & Worldbuilding** · **Find**.
   - **This milestone = the rail FRAME + labels + panels that open as stubs.** The deep internals (outline editing, notes, working Find) are *later briefs*. Build the rail and the openable shells; not the contents.
 
