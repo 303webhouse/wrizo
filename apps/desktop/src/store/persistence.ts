@@ -110,6 +110,18 @@ export function markClean(ids: string[]): void {
   }
 }
 
+// One-time journal backfill (journal-resync patch). Pre-D2, the client pushed
+// journal entries and marked them clean even though the old server silently
+// dropped them — so every pre-existing entry sits in localStorage flagged
+// "synced" while the server never stored it. Re-flag ALL entries dirty (include
+// soft-deleted, so tombstones travel) so they push once against the new server.
+// Touches neither the cache nor updatedAt — LWW + stable ids make a re-push of an
+// entry the server already has a no-op. The sync loop fires this exactly once,
+// gated on the new server's response shape + a localStorage flag.
+export function markAllJournalEntriesDirty(): void {
+  for (const e of cache.journalEntries) dirty.journalEntries.add(e.id);
+}
+
 // --- Subscriptions --------------------------------------------------------
 // The sync engine and reactive screens subscribe to cache changes.
 

@@ -1,4 +1,4 @@
-import { getDirtyRecords, markClean, applyRemoteRecords, type DirtyRecords } from './persistence';
+import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, type DirtyRecords } from './persistence';
 import { apiSync } from './api';
 
 // Background sync engine (W2). Never blocks, debounces, or delays a local
@@ -7,6 +7,7 @@ import { apiSync } from './api';
 // lifecycle events, with silent exponential backoff when offline.
 
 const LAST_SYNC_KEY = 'writer-studio-last-sync';
+const JOURNAL_RESYNC_KEY = 'writer-studio-journal-resync-v1';
 const INTERVAL_MS = 20_000;
 const BACKOFF_BASE_MS = 5_000;
 const BACKOFF_MAX_MS = 120_000;
@@ -51,6 +52,26 @@ function stampMap(records: DirtyRecords): Map<string, string> {
   return map;
 }
 
+// One-time journal backfill (journal-resync patch). The new server's /sync pull
+// always carries a `journalEntries` key; the old server never did — so that key's
+// presence is the signal that we're talking to the post-D2 server. On the first
+// such response, re-dirty every local journal entry so the pre-D2 backlog (each
+// flagged "synced" locally but never actually stored) pushes once. The
+// localStorage flag makes it fire at most once per device; LWW + stable ids make
+// re-pushing a row the server already has a no-op.
+function maybeBackfillJournal(pull: unknown): void {
+  try {
+    if (localStorage.getItem(JOURNAL_RESYNC_KEY)) return;
+    if (!pull || typeof pull !== 'object' || !('journalEntries' in pull)) return;
+    markAllJournalEntriesDirty();
+    localStorage.setItem(JOURNAL_RESYNC_KEY, '1');
+    // Push the re-dirtied backlog promptly, once this cycle settles (inFlight clears).
+    setTimeout(() => { void syncOnce(); }, 0);
+  } catch {
+    // Backfill is best-effort; a storage hiccup must never break sync.
+  }
+}
+
 let running = false;
 let inFlight = false;
 let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -78,6 +99,7 @@ export async function syncOnce(fullPull = false): Promise<void> {
   try {
     const resp = await apiSync({ lastSyncAt, push: dirty });
     applyRemoteRecords(resp.pull);
+    maybeBackfillJournal(resp.pull);
 
     // Clean only records unchanged since we pushed them.
     const stillDirty = stampMap(getDirtyRecords());

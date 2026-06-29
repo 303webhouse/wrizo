@@ -85,6 +85,12 @@ function startServer(dist) {
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(JSON.stringify(obj));
   };
+  // Capture what the client pushes, so tests can assert sync behaviour (e.g. the
+  // journal-resync backfill re-pushing pre-existing entries). The pull now mirrors
+  // the post-D2 server shape — it always carries a `journalEntries` key — which is
+  // the signal the backfill triggers on.
+  const pushedJournalIds = new Set();
+  let syncCount = 0;
   const server = http.createServer(async (req, res) => {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
@@ -98,8 +104,24 @@ function startServer(dist) {
       }
       return sendJson(res, { id: 'test-user', email: 'tester@example.com', name: 'Tester' });
     }
+    // Test introspection: what the client has pushed + how many syncs ran.
+    if (p === '/api/_state') {
+      return sendJson(res, { pushedJournalIds: [...pushedJournalIds], syncCount });
+    }
     if (p === '/api/sync') {
-      return sendJson(res, { serverTime: new Date(0).toISOString(), pull: {} });
+      let body = '';
+      req.on('data', (c) => { body += c; });
+      req.on('end', () => {
+        syncCount += 1;
+        try {
+          const je = JSON.parse(body || '{}')?.push?.journalEntries;
+          if (Array.isArray(je)) for (const e of je) if (e?.id) pushedJournalIds.add(e.id);
+        } catch {}
+        // Empty arrays = no-op pull, but the `journalEntries` KEY mirrors the new
+        // server (the resync backfill triggers on its presence).
+        sendJson(res, { serverTime: new Date(0).toISOString(), pull: { journalEntries: [] } });
+      });
+      return;
     }
     const rel = p === '/' || p === '' ? '/index.html' : p;
     const file = path.join(dist, rel);
