@@ -9,11 +9,14 @@ import type { EditorMode } from './ForwardOnlyEditor';
 // (apps/desktop/scratch/wrizo-modes-hybrid.html).
 
 interface ModeDef { key: string; label: string; sub: string; live: boolean }
+// Page postures (writing-screen redesign). Internal keys stay journal/drafting so
+// the editor + persisted mode keep working; only the labels change. Free write =
+// forward-only (idea generation, AI sealed); Draft = free edit. Format is greyed.
+// Workshop moved off the switcher to a file action button.
 const MODES: ModeDef[] = [
-  { key: 'journal', label: 'Journal', sub: 'generate', live: true },
-  { key: 'drafting', label: 'Drafting', sub: 'revise', live: true },
-  { key: 'formatting', label: 'Formatting', sub: 'convention', live: false },
-  { key: 'workshop', label: 'Workshop', sub: 'share', live: false },
+  { key: 'journal', label: 'Free write', sub: 'generate', live: true },
+  { key: 'drafting', label: 'Draft', sub: 'revise', live: true },
+  { key: 'formatting', label: 'Format', sub: 'convention', live: false },
 ];
 
 export function ModeSwitcher({ mode, onSwitch }: { mode: EditorMode; onSwitch: (m: EditorMode) => void }) {

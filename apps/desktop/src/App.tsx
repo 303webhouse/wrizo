@@ -1,8 +1,9 @@
 import { useEffect, useReducer, useState } from 'react';
-import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { Desk } from './pages/Desk';
 import { DrawersPage } from './pages/Drawers';
 import { Shelf } from './pages/Shelf';
+import { DeskRail } from './components/DeskRail';
 import { CreateProject } from './pages/CreateProject';
 import { ProjectHome } from './pages/ProjectHome';
 import { StructureWizard } from './pages/StructureWizard';
@@ -91,7 +92,8 @@ function FullscreenToggle() {
 // bring it back together with the sprint chrome — one frame settling, not two.
 function GlobalHeader({ onLogout }: { onLogout: () => void }) {
   const { isWriting } = useWritingSession();
-  const navigate = useNavigate();
+  // Desk-area nav (Journal/Shelf/Drawers/Library) now lives in the left DeskRail;
+  // the header keeps only the session controls.
   return (
     <div
       className="chrome-fade"
@@ -102,20 +104,6 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
         padding: '0.5rem 0.75rem',
       }}
     >
-      <button
-        type="button"
-        onClick={() => navigate('/drawers')}
-        style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-      >
-        Open a Drawer
-      </button>
-      <button
-        type="button"
-        onClick={() => navigate('/shelf')}
-        style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-      >
-        Shelf
-      </button>
       <FullscreenToggle />
       <SyncIndicator />
       <button
@@ -181,7 +169,9 @@ export function App() {
   return (
     <WritingSessionProvider>
       <HashRouter>
+        <DeskRail />
         <GlobalHeader onLogout={handleLogout} />
+        <div className="app-main">
         <Routes>
         <Route path="/" element={<Desk />} />
         <Route path="/drawers" element={<DrawersPage />} />
@@ -196,6 +186,7 @@ export function App() {
         <Route path="/journal" element={<Journal />} />
         <Route path="/journal/:id" element={<JournalEntry />} />
         </Routes>
+        </div>
       </HashRouter>
     </WritingSessionProvider>
   );

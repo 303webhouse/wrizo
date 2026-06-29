@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 // the gear changes one value.
 //
 //   progress  — the progress bar's metric (or hidden). Off still warms the glow.
-//   fadeDepth — how faint the rails/format-bar go while writing (8% floor vs gone).
-//   topBar    — the top timer/mode bar dissolves (0%) or dims (stays clickable).
+//   fadeDepth — recede depth: how faint the chrome goes while writing (8% / gone).
+//   timer     — opt-in slim session clock in the incentive layer (off by default).
 //   typewriter— the line-following fade: history scrolls up and fades as you write.
 //
 // Return timing (3-min wait / 2-min slow fade-in) is FIXED product behaviour, not
@@ -16,12 +16,11 @@ import { useEffect, useState } from 'react';
 
 export type ProgressMetric = 'words' | 'time' | 'off';
 export type FadeDepth = 'partial' | 'full';
-export type TopBarMode = 'dissolve' | 'dim';
 
 export interface WritingSettings {
   progress: ProgressMetric;
   fadeDepth: FadeDepth;
-  topBar: TopBarMode;
+  timer: boolean;
   typewriter: boolean;
 }
 
@@ -29,7 +28,7 @@ const KEY = 'wrizo-writing-settings';
 const DEFAULTS: WritingSettings = {
   progress: 'words',
   fadeDepth: 'partial',
-  topBar: 'dissolve',
+  timer: false,
   typewriter: true,
 };
 
