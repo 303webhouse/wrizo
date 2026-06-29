@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
-  clearDraft, createQuickSprintProject, flushNow, generateId, getDraft, getJournalEntry, getProject,
+  clearDraft, createQuickSprintProject, flushNow, generateId, getDraft, getDrawer, getJournalEntry, getProject,
   getStoryPlanByProjectId, saveDraft, saveJournalEntry, saveSession, setBeatStatus, setCurrentBeat,
   setProjectSprintText,
 } from '../store/persistence';
@@ -13,25 +13,16 @@ import { pickEchoLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage } from '../components/ModeStage';
-import { useWritingSettings } from '../store/writingSettings';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
-const PRESETS = [5, 10, 20];
-const KEEP_GOING_SECONDS = 300;
 // Idle nudges (cadence + the canonical v6 pool) live in the shared
 // useIdleNudges hook — the sprint and the HOME gate both mount it.
 
 function wordCount(text: string): number {
   const trimmed = text.trim();
   return trimmed ? trimmed.split(/\s+/).length : 0;
-}
-
-function formatClock(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 function getDraftKey(projectId?: string): string {
@@ -47,7 +38,6 @@ function reducedMotion(): boolean {
 interface FinishStats {
   words: number;
   minutes: number | null;
-  byTimer: boolean;
 }
 
 export function QuickSprint() {
@@ -62,12 +52,6 @@ export function QuickSprint() {
   const currentBeat = framework?.beats.find(b => b.id === plan?.currentBeatId) || null;
   const currentBeatNote = plan?.beatNotes.find(bn => bn.beatId === plan?.currentBeatId) || null;
 
-  const [presetMinutes, setPresetMinutes] = useState(10);
-  const [showCustom, setShowCustom] = useState(false);
-  const [customMinutes, setCustomMinutes] = useState('');
-  const [totalSeconds, setTotalSeconds] = useState<number | null>(null);
-  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
-  const [isRunning, setIsRunning] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishStats, setFinishStats] = useState<FinishStats | null>(null);
   const [displayWords, setDisplayWords] = useState(0);
@@ -89,11 +73,9 @@ export function QuickSprint() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, draftId]);
 
-  // Mode-aware editor (mode-aware editor brief, Phase 1). Journal = forward-only;
-  // Drafting = free edit. Per-document, last-used persisted; default Journal for
-  // scratch scraps, Drafting for project pages. Switching is a lens change on the
-  // same doc: re-seed the new mode with the current clean text (modeSeed) and
-  // remount via key — prose carries across, caret lands at the end. No nav.
+  // Mode-aware editor — Free write = forward-only; Draft = free edit. Per-document
+  // last-used mode persisted; default Free write for scratch scraps, Draft for
+  // project pages. Switching is a lens change on the same doc (re-seed + remount).
   const modeKey = `wrizo-mode-${draftId}`;
   const [mode, setMode] = useState<EditorMode>(() => {
     const saved = localStorage.getItem(modeKey);
@@ -120,13 +102,12 @@ export function QuickSprint() {
   const [markBeatDone, setMarkBeatDone] = useState(false);
   const [soundOn, setSoundOn] = useState(false); // ambient sound bed (J5), off by default
   const [echoLine, setEchoLine] = useState<string | null>(null); // post-sprint echo (J7)
+  const [showPublish, setShowPublish] = useState(false); // Publish stub dialog
 
-  // Mode-aware editor (Phase 2) — the writing studio chrome lives in ModeStage,
-  // which owns the dissolve engine (useChromeDissolve) and reports its state up so
-  // the sprint's own top bar / beat / bottom bar fade in step. `settings` (the gear)
-  // selects the top-bar fade behaviour (dissolve → 0 vs dim → stays clickable).
+  // Writing-screen redesign — the navigation layer (this row + the DeskRail + the
+  // mode tabs) recedes while writing; ModeStage owns the dissolve engine and
+  // reports its state up so the sprint's own chrome fades in step.
   const [receded, setReceded] = useState(false);
-  const settings = useWritingSettings();
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
@@ -137,16 +118,14 @@ export function QuickSprint() {
   draftIdRef.current = draftId;
   const lastSavedRef = useRef(draftText);
   const suppressFlushRef = useRef(false);
-  const hasTypedRef = useRef(false);
   const sessionStartWordsRef = useRef(wordCount(draftText));
   const sprintStartMsRef = useRef<number | null>(null);
-  const lastKeystrokeMsRef = useRef(0);
   // Session instrumentation (A9).
   const sessionStartedAtRef = useRef(new Date().toISOString());
   const firstKeystrokeAtRef = useRef<string | null>(null);
-  // Journal entry committed for this sprint (J1). One entry per sprint: created
-  // on the first completion, reused (text refreshed) if the sprint is extended
-  // via "Keep going" and finished again — so a continuous sprint stays one entry.
+  // Journal entry committed for this sprint (J1). One entry per sprint: created on
+  // the first completion, reused (text refreshed) if writing continues and it's
+  // finished again — so a continuous session stays one entry.
   const journalEntryIdRef = useRef<string | null>(null);
 
   const markSaved = () => setSavedUntil(Date.now() + SAVED_STAMP_MS);
@@ -164,10 +143,8 @@ export function QuickSprint() {
   };
 
   // Commit the current draft buffer to a permanent Journal entry (J1). Fired on
-  // sprint completion, before any Save/Discard choice — so the words are kept
-  // regardless of where the working copy goes (the Journal is the complete
-  // record of every sprint). The volatile drafts buffer (A1) is left untouched;
-  // this is an additive write. Empty text never produces an entry.
+  // finish, before any Save/Discard choice — so the words are kept regardless of
+  // where the working copy goes. Empty text never produces an entry.
   const commitJournalEntry = () => {
     const text = draftTextRef.current;
     if (!text.trim()) return;
@@ -191,39 +168,21 @@ export function QuickSprint() {
     saveJournalEntry(entry);
   };
 
-  // Enter the finish moment. The textarea stays editable + focused behind the
-  // card (A7) — never blurred or disabled, so no keystroke is lost at 0:00.
-  // Both terminal paths (timer expiry and manual Finish) reach here, so this is
-  // the single point that commits the sprint to the Journal (J1).
-  const enterFinish = (byTimer: boolean) => {
+  // Enter the finish moment. The editor stays editable + focused behind the card
+  // (A7) — never blurred or disabled, so no keystroke is lost. Finish is now a
+  // quiet manual action (the countdown sprint timer was retired); the elapsed time
+  // is measured from the first keystroke.
+  const enterFinish = () => {
     commitJournalEntry();
-    ambientRef.current?.resolve(); // J5: settle the drift; any payoff is the finish moment (J7)
+    ambientRef.current?.resolve(); // J5: settle the drift; the payoff is the finish moment (J7)
     setEchoLine(pickEchoLine(draftTextRef.current)); // J7: reflect one of the writer's own lines (or none)
     const words = Math.max(0, wordCount(draftTextRef.current) - sessionStartWordsRef.current);
     const minutes = sprintStartMsRef.current
       ? Math.max(1, Math.round((Date.now() - sprintStartMsRef.current) / 60000))
       : null;
-    setFinishStats({ words, minutes, byTimer });
+    setFinishStats({ words, minutes });
     setIsFinishing(true);
-    setIsRunning(false);
   };
-
-  // Timer tick.
-  useEffect(() => {
-    if (!isRunning || remainingSeconds === null) return;
-    const tick = setInterval(() => {
-      setRemainingSeconds(curr => (curr === null ? null : Math.max(0, curr - 1)));
-    }, 1000);
-    return () => clearInterval(tick);
-  }, [isRunning, remainingSeconds]);
-
-  // Timer reaches zero → finish card, but writing continues behind it (A7).
-  useEffect(() => {
-    if (isRunning && remainingSeconds === 0) {
-      enterFinish(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remainingSeconds, isRunning]);
 
   // Count up the word total over the one 420ms finish moment.
   useEffect(() => {
@@ -311,41 +270,20 @@ export function QuickSprint() {
     ambientRef.current?.setSoundEnabled(soundOn);
   }, [soundOn]);
 
-
-  const startTimer = (minutes: number) => {
-    const secs = Math.round(minutes * 60);
-    setPresetMinutes(minutes);
-    setTotalSeconds(secs);
-    setRemainingSeconds(secs);
-    setIsRunning(true);
-    setIsFinishing(false);
-    setFinishStats(null);
-    sprintStartMsRef.current = Date.now();
-    sessionStartWordsRef.current = wordCount(draftTextRef.current);
-    editorRef.current?.focus();
-  };
-
-  const handleCustomTimer = () => {
-    const minutes = Number(customMinutes);
-    if (!Number.isFinite(minutes) || minutes <= 0) return;
-    startTimer(minutes);
-    setShowCustom(false);
-  };
-
   // The editor reports its derived text (unstruck spine prose) on every change —
   // strike included — and draftText mirrors it, so A1/J1/A9/finish/J7 keep
   // working off draftText unchanged.
   const handleEditorChange = (value: string) => setDraftText(value);
   // Forward keystrokes only (not strikes): the A8/A9 typing signals + J5 warmth.
+  // The session clock starts on the first keystroke (no countdown box anymore).
   const handleForwardKeystroke = () => {
-    hasTypedRef.current = true;
+    if (sprintStartMsRef.current === null) sprintStartMsRef.current = Date.now();
     if (firstKeystrokeAtRef.current === null) firstKeystrokeAtRef.current = new Date().toISOString();
-    lastKeystrokeMsRef.current = Date.now();
     ambientRef.current?.noteKeystroke(); // J5: feed the felt-warmth drift
   };
 
-  // Record a writing-session row on sprint save (A9). Returns the new id so the
-  // Journal entry (J1) can be linked to its session.
+  // Record a writing-session row on save (A9). Returns the new id so the Journal
+  // entry (J1) can be linked to its session.
   const recordSession = (projectId: string): string => {
     const now = new Date();
     const startedMs = new Date(sessionStartedAtRef.current).getTime();
@@ -363,8 +301,7 @@ export function QuickSprint() {
     return sessionId;
   };
 
-  // Back-link the Journal entry committed at finish (J1) to its session row,
-  // when the sprint was saved. Provenance (projectId) is left as committed.
+  // Back-link the Journal entry committed at finish (J1) to its session row.
   const linkJournalSession = (sessionId: string) => {
     const entryId = journalEntryIdRef.current;
     if (!entryId) return;
@@ -379,13 +316,11 @@ export function QuickSprint() {
     markSaved();
   };
 
-  const handleKeepGoing = () => {
-    setRemainingSeconds(s => (s ?? 0) + KEEP_GOING_SECONDS);
-    setTotalSeconds(s => (s ?? 0) + KEEP_GOING_SECONDS);
-    setIsRunning(true);
+  // The finish card's "keep writing" simply dismisses the card and returns focus
+  // to the page (there's no countdown to extend anymore).
+  const handleKeepWriting = () => {
     setIsFinishing(false);
     setFinishStats(null);
-    if (sprintStartMsRef.current === null) sprintStartMsRef.current = Date.now();
     editorRef.current?.focus();
   };
 
@@ -428,66 +363,38 @@ export function QuickSprint() {
     return <Navigate to="/" replace />;
   }
 
-  const fillPct = totalSeconds && remainingSeconds !== null ? (remainingSeconds / totalSeconds) * 100 : 0;
-
-  const pill = (active: boolean): React.CSSProperties => ({
-    fontFamily: 'var(--font-ui)', fontSize: 13, fontWeight: 600,
-    padding: '6px 12px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-    border: `1px solid ${active ? 'var(--brass)' : 'var(--ink-border)'}`,
-    background: active ? 'rgba(212,162,78,0.12)' : 'transparent',
-    color: active ? 'var(--brass)' : 'var(--text-mid)',
-  });
+  // Breadcrumb: Drawer / Binder / Page (quiet, navigation layer).
+  const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
+  const modeLabel = mode === 'drafting' ? 'Draft' : 'Free write';
 
   return (
-    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} data-topbar={settings.topBar} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
-      {/* Mode switcher (Phase 1). Part of the top chrome — dissolves on write
-          (ModeStage's reveal handle / edge / Esc bring it back). */}
-      <div className="chrome-fade chrome-top" style={{ marginBottom: 14 }}>
-        <ModeSwitcher mode={mode} onSwitch={switchMode} />
-      </div>
-      {/* Top bar */}
-      <div
-        className="chrome-fade chrome-top"
-        style={{
-          background: 'var(--ink-900)', borderRadius: 'var(--radius-md)',
-          padding: '10px 16px', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {PRESETS.map(m => (
-            <button
-              key={m}
-              type="button"
-              style={pill(presetMinutes === m && remainingSeconds !== null)}
-              onClick={() => startTimer(m)}
-            >
-              {m} min
-            </button>
-          ))}
-          <button type="button" style={pill(showCustom)} onClick={() => setShowCustom(v => !v)}>
-            Custom
-          </button>
-          {showCustom && (
-            <span style={{ display: 'inline-flex', gap: 6 }}>
-              <input
-                type="number"
-                min={1}
-                value={customMinutes}
-                onChange={e => setCustomMinutes(e.target.value)}
-                placeholder="min"
-                style={{
-                  width: 64, padding: '4px 8px', borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--ink-border)', background: 'var(--ink-800)',
-                  color: 'var(--text-hi)', fontFamily: 'var(--font-ui)',
-                }}
-              />
-              <button type="button" className="btn-quiet" onClick={handleCustomTimer}>Set</button>
-            </span>
+    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
+      {/* Navigation layer — breadcrumb · mode tabs · Pages/Plan · actions. Recedes
+          on write (edge / Esc / tap-off summons it back). */}
+      <div className="chrome-fade chrome-top sprint-nav">
+        <div className="sprint-crumb" aria-label="Location">
+          {id && project ? (
+            <>
+              {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
+              <span className="crumb-item">{project.title}</span>
+              <span className="crumb-sep">/</span>
+              <span className="crumb-here">{modeLabel}</span>
+            </>
+          ) : (
+            <><span className="crumb-item">Journal</span><span className="crumb-sep">/</span><span className="crumb-here">Scratch</span></>
           )}
-          <button type="button" className="btn-quiet btn-ghost" onClick={handleGetNudge}>
-            Take a nudge
-          </button>
+        </div>
+
+        <ModeSwitcher mode={mode} onSwitch={switchMode} />
+
+        <div className="sprint-actions">
+          {id && (
+            <div className="sprint-toggle" role="tablist" aria-label="Binder view">
+              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active">Pages</button>
+              <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => navigate(`/project/${id}/board`)}>Plan</button>
+            </div>
+          )}
+          <button type="button" className="btn-quiet btn-ghost" onClick={handleGetNudge}>Take a nudge</button>
           <button
             type="button"
             className="btn-quiet sprint-sound-toggle"
@@ -496,27 +403,16 @@ export function QuickSprint() {
           >
             {soundOn ? 'Sound on' : 'Sound off'}
           </button>
+          <button type="button" className="btn-quiet sprint-deferred" aria-disabled="true" title="Workshop — coming soon">Workshop</button>
+          <button type="button" className="btn-quiet" onClick={() => setShowPublish(true)}>Publish</button>
         </div>
-        {remainingSeconds !== null && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 32, lineHeight: 1, color: 'var(--text-hi)' }}>
-            {formatClock(remainingSeconds)}
-          </span>
-        )}
       </div>
-      {/* Timer hairline drains while running */}
-      {remainingSeconds !== null && (
-        <div className="hairline-timer chrome-fade" style={{ marginBottom: 16 }}>
-          {/* idle = brass; warms to ember once the sprint is live (branding §4) */}
-          <div className="hairline-timer__fill" style={{ width: `${fillPct}%`, background: isRunning ? 'var(--ember)' : undefined }} />
-        </div>
-      )}
-      {remainingSeconds === null && <div style={{ height: 16 }} />}
 
       {/* Beat context strip (A4) */}
       {currentBeat && (
-        <div className="chrome-fade" style={{
+        <div className="chrome-fade chrome-top" style={{
           border: '1px solid var(--ink-border)', borderRadius: 'var(--radius-md)',
-          background: 'var(--ink-900)', padding: '12px 16px', marginBottom: 16,
+          background: 'var(--ink-900)', padding: '12px 16px', margin: '16px 0',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="eyebrow">DRAFTING · {currentBeat.name}</div>
@@ -533,20 +429,15 @@ export function QuickSprint() {
           )}
         </div>
       )}
+      {!currentBeat && <div style={{ height: 16 }} />}
 
-      {/* Nudge slip, tucked under the page's top edge. A surfaced nudge holds
-          here (auto on idle or from the button); once the budget is spent it
-          keeps the last one until the A6 reset returns the budget quietly. */}
+      {/* Nudge slip, tucked under the page's top edge. */}
       {nudge && (
         <div className="nudge-slip" data-shown={nudgeShown ? 'true' : 'false'} style={{ marginBottom: 12 }}>{nudge}</div>
       )}
 
-      {/* The writing studio (mode-aware editor Phase 2-3). ModeStage wraps the
-          forward-only editor with the rails / format-pen bar / glow / progress /
-          settings / typewriter fade, and owns the dissolve engine. The editor is
-          handed in as a render-prop so it stays owned here: its onForward drives
-          the dissolve (noteWrite) and the Journal pen ink (penColor) flows in.
-          surfaceRef is the J5 ambient-warmth target (the lit page). */}
+      {/* The writing studio (ModeStage): rails / format-pen bar / glow / progress /
+          optional timer / settings / typewriter, around the forward-only editor. */}
       <ModeStage
         mode={mode}
         words={wordCount(draftText)}
@@ -576,10 +467,10 @@ export function QuickSprint() {
         )}
       </ModeStage>
 
-      {/* Bottom bar (hidden during the finish moment so the card owns the brass) */}
+      {/* Bottom bar — quiet Save / Finish (a quiet action, not a box). */}
       {!isFinishing && (
         <div
-          className="sprint-bottombar chrome-fade"
+          className="sprint-bottombar chrome-fade chrome-top"
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             marginTop: 16,
@@ -588,7 +479,7 @@ export function QuickSprint() {
           <span className={`saved-stamp${savedUntil ? '' : ' saved-stamp--hidden'}`}>Saved</span>
           <div style={{ display: 'flex', gap: 12 }}>
             <button type="button" className="btn-quiet" onClick={handleSaveDraft}>Save</button>
-            <button type="button" className="btn-brass" onClick={() => enterFinish(false)}>Finish</button>
+            <button type="button" className="btn-brass" onClick={enterFinish}>Finish</button>
           </div>
         </div>
       )}
@@ -600,20 +491,15 @@ export function QuickSprint() {
           style={{ marginTop: 16, animation: reducedMotion() ? undefined : 'finish-rise var(--t-moment) var(--ease)' }}
         >
           <div className="card-title">
-            {finishStats.byTimer ? (
-              'Time.'
-            ) : (
-              <><span style={{ color: 'var(--ember)' }}>{displayWords}</span> words down.</>
-            )}
+            <span style={{ color: 'var(--ember)' }}>{displayWords}</span> words down.
           </div>
-          {finishStats.byTimer && (
+          {finishStats.minutes !== null && (
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-mid)', marginTop: 4 }}>
               <span style={{ color: 'var(--ember)' }}>{displayWords}</span> words in {finishStats.minutes} minutes
             </div>
           )}
 
-          {/* Post-sprint echo (J7): one of the writer's own lines, reflected
-              back quietly. Skips gracefully when no substantial line exists. */}
+          {/* Post-sprint echo (J7): one of the writer's own lines, reflected back. */}
           {echoLine && (
             <div className="sprint-echo" style={{ marginTop: 16 }}>
               <div className="eyebrow" style={{ marginBottom: 6 }}>YOU WROTE</div>
@@ -631,7 +517,7 @@ export function QuickSprint() {
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-            <button type="button" className="btn-brass" onClick={handleKeepGoing}>Keep going (+5 min)</button>
+            <button type="button" className="btn-brass" onClick={handleKeepWriting}>Keep writing</button>
             <button type="button" className="btn-ghost" onClick={handleSaveToProject}>
               {id ? 'Save to project' : 'Save as project'}
             </button>
@@ -639,6 +525,19 @@ export function QuickSprint() {
             <button type="button" className="btn-brick" onClick={handleDiscard} style={{ marginLeft: 'var(--space-4)' }}>
               Discard
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Publish — stub dialog (options tailored to type/destination/format later). */}
+      {showPublish && (
+        <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
+          <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
+            <div className="card-title">Publish</div>
+            <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
+              Publishing options — tailored to this work's type, destination, and format — are coming soon.
+            </p>
+            <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
           </div>
         </div>
       )}

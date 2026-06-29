@@ -973,9 +973,6 @@ a:focus-visible,
   .mode-pagecol{ width:min(620px,94vw); }
 }
 
-/* Top-bar Dim setting: the receded timer/mode bar stays faintly visible + usable
-   instead of vanishing (default Dissolve → 0). Marked .chrome-top in QuickSprint. */
-[data-chrome-receded='true'][data-topbar='dim'] .chrome-top{ opacity:.42; pointer-events:auto; }
 
 /* ============================================================================
    Drawers tree (Drawers D1) — the browsable Drawer → Binder(Project) tree.
@@ -1057,3 +1054,53 @@ a:focus-visible,
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .shelf-snippet{ color:var(--text-mid); font-size:14px; }
 .shelf-time{ color:var(--text-low); font-family:var(--font-mono); font-size:12px; }
+
+/* ============================================================================
+   Writing-screen redesign — left desk-area rail (navigation layer) + the file's
+   nav row (breadcrumb · mode tabs · Pages/Plan · actions). The rail and nav row
+   carry .chrome-fade, so they recede on write with the existing dissolve rule.
+   ============================================================================ */
+.app-main{ padding-left:64px; }
+
+.desk-rail{ position:fixed; top:0; left:0; bottom:0; width:64px; z-index:45;
+  display:flex; flex-direction:column; gap:2px; padding-top:64px;
+  background:var(--ink-950); border-right:1px solid var(--ink-border); }
+.desk-rail-item{ display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:11px 4px; background:none; border:0; border-left:2px solid transparent; cursor:pointer;
+  color:var(--text-low); font-family:var(--font-ui); transition:.15s; }
+.desk-rail-item:hover{ color:var(--text-hi); background:var(--ink-900); }
+.desk-rail-item.active{ color:var(--brass); border-left-color:var(--brass); }
+.desk-rail-item.deferred{ color:var(--ink-border-strong); cursor:not-allowed; }
+.desk-rail-item.deferred:hover{ color:var(--ink-border-strong); background:none; }
+.desk-rail-glyph{ font-size:18px; line-height:1; }
+.desk-rail-label{ font-size:9px; letter-spacing:.5px; }
+
+/* The file's navigation row. */
+.sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  padding:8px 14px; }
+.sprint-crumb{ display:flex; align-items:center; gap:7px; font-family:var(--font-ui); font-size:12px;
+  color:var(--text-low); min-width:0; }
+.crumb-item{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
+.crumb-sep{ color:var(--ink-border-strong); }
+.crumb-here{ color:var(--text-mid); font-weight:600; }
+.sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.sprint-toggle{ display:flex; border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden; }
+.sprint-toggle-btn{ background:none; border:0; border-left:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; font-weight:600; padding:5px 12px; cursor:pointer; }
+.sprint-toggle-btn:first-child{ border-left:0; }
+.sprint-toggle-btn.active{ background:var(--brass); color:var(--on-brass); }
+.sprint-deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
+
+/* Session timer — slim readout merged into the progress row (incentive layer). */
+.mode-timer{ font-family:var(--font-mono); color:var(--text-mid); margin-right:8px; letter-spacing:.3px; }
+
+/* Publish stub dialog. */
+.sprint-modal-backdrop{ position:fixed; inset:0; z-index:80; background:rgba(8,4,0,.6);
+  display:flex; align-items:center; justify-content:center; padding:20px; }
+.sprint-modal{ max-width:420px; width:100%; }
+
+@media (max-width:720px){
+  .app-main{ padding-left:56px; }
+  .desk-rail{ width:56px; }
+}

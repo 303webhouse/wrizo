@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
-import type { ProgressMetric, FadeDepth, TopBarMode } from '../store/writingSettings';
+import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
 import { ChromeHandle } from './WritingShell';
 
 // Mode-aware editor (Phase 2-3) — the writing studio chrome around the editor,
@@ -77,12 +77,13 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
     return () => { if (timer) clearTimeout(timer); };
   }, [mode]);
 
-  // Tick once a second while the Time metric is live (the bar + glow track it).
+  // Tick once a second while a time readout is live (the Time progress metric, or
+  // the opt-in session timer) so the bar / clock advance.
   useEffect(() => {
-    if (settings.progress !== 'time') return;
+    if (settings.progress !== 'time' && !settings.timer) return;
     const i = setInterval(() => tick(), 1000);
     return () => clearInterval(i);
-  }, [settings.progress]);
+  }, [settings.progress, settings.timer]);
 
   // Typewriter fade: keep the caret/active line at ~62% of the scroll viewport, so
   // earlier lines ride up through the top gradient and fade. Driven by a mutation
@@ -133,6 +134,11 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   }
   const m = Math.pow(displayFrac, 0.55);
 
+  // Opt-in session timer (incentive layer): elapsed since the first keystroke.
+  const elapsedMs = firstWriteRef.current ? Date.now() - firstWriteRef.current : 0;
+  const es = Math.floor(elapsedMs / 1000);
+  const elapsedClock = `${Math.floor(es / 60)}:${String(es % 60).padStart(2, '0')}`;
+
   const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
   const exec = (cmd: string) => { focusEditor(); try { document.execCommand(cmd, false); } catch { /* execCommand unsupported */ } };
   const choosePen = (ink: string) => { setPen(ink); focusEditor(); };
@@ -157,7 +163,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       {/* Settings gear (top-right). */}
       <div className="mode-gear-wrap mode-dissolve">
         <button type="button" className="mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>⚙</button>
-        {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, topBar: settings.topBar, typewriter: settings.typewriter }} />}
+        {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} />}
       </div>
 
       <div className="mode-row">
@@ -225,11 +231,20 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             <div className="mode-wordcount mode-dissolve">{words} words</div>
           </div>
 
-          {/* Progress — feedback, stays visible while writing (unless Off). */}
-          {settings.progress !== 'off' && (
+          {/* Incentive layer — progress bar + optional session timer. Stays
+              visible while writing (never carries the dissolve class). */}
+          {(settings.progress !== 'off' || settings.timer) && (
             <div className="mode-progress">
-              <div className="mode-ptrack"><div className="mode-pfill" style={{ width: `${(displayFrac * 100).toFixed(1)}%` }} /></div>
-              <div className="mode-pmeta"><span>{label}</span><span className="mode-pmetric">{metricLabel}</span></div>
+              {settings.progress !== 'off' && (
+                <div className="mode-ptrack"><div className="mode-pfill" style={{ width: `${(displayFrac * 100).toFixed(1)}%` }} /></div>
+              )}
+              <div className="mode-pmeta">
+                <span>{settings.progress !== 'off' ? label : ''}</span>
+                <span className="mode-pmetric">
+                  {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
+                  {settings.progress !== 'off' && <span>{metricLabel}</span>}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -243,7 +258,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         ) : (
           <aside className={`mode-rail right mode-dissolve${drawerOpen ? ' drawer-open' : ''}`} aria-label="AI assist">
             <div className="mode-rail-h">assist</div>
-            <div className="mode-ai-surface">AI lives here in {mode} mode — frame only for now</div>
+            <div className="mode-ai-surface">AI lives here in {mode === 'drafting' ? 'Draft' : 'Free write'} — frame only for now</div>
           </aside>
         )}
       </div>
@@ -251,14 +266,14 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   );
 }
 
-// The gear menu — the prototype's settings preview, made real and persisted.
-function SettingsPanel({ settings }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; topBar: TopBarMode; typewriter: boolean } }) {
+// The gear menu — the writing-screen chrome settings, persisted.
+function SettingsPanel({ settings }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean } }) {
   return (
     <div className="mode-settings" role="menu">
       <h4>settings</h4>
       <Seg label="Progress" value={settings.progress} opts={[['words', 'Words'], ['time', 'Time'], ['off', 'Off']]} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
-      <Seg label="Fade depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
-      <Seg label="Top bar" value={settings.topBar} opts={[['dissolve', 'Dissolve'], ['dim', 'Dim']]} onPick={v => setWritingSettings({ topBar: v as TopBarMode })} />
+      <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
+      <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ typewriter: v === 'on' })} />
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
