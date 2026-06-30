@@ -26,7 +26,7 @@ import { ChromeHandle } from './WritingShell';
 const WORD_GOAL = 250;
 const TIME_GOAL_MS = 25 * 60 * 1000;
 const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, blue
-const TYPEWRITER_BAND = 0.62; // keep the active line at ~62% of the viewport
+const TYPEWRITER_BAND = 0.73; // hold the active line low (~73%) so ~2 more lines of context stay visible (B2 C1)
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
@@ -85,14 +85,48 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
     return () => clearInterval(i);
   }, [settings.progress, settings.timer]);
 
-  // Typewriter fade: keep the caret/active line at ~62% of the scroll viewport, so
+  // Typewriter fade (B2): hold the active line low in the scroll viewport so
   // earlier lines ride up through the top gradient and fade. Driven by a mutation
-  // observer (covers typing, strikes, IME, and free edits) + input, on a rAF.
+  // observer (covers typing, strikes, IME, free edits) + input, on a rAF.
+  //   • C2 — the top fade only applies once content has actually scrolled past
+  //     (data-scrolled): on a fresh/short page the active line sits above the band,
+  //     so nothing scrolls and line 1 stays full opacity.
+  //   • C3 — a line advance gets a small upward jolt + overshoot-and-settle (a hint
+  //     of mechanical paper-feed), not a smooth glide; honors reduced-motion.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || !settings.typewriter) return;
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
+    let joltRaf = 0;
+    let animating = false;
+    const setScrolled = () => { el.dataset.scrolled = el.scrollTop > 4 ? 'true' : 'false'; };
+    const lineHeight = () => {
+      const ed = el.querySelector('.forward-only-editor') as HTMLElement | null;
+      return ed ? (parseFloat(getComputedStyle(ed).lineHeight) || 28) : 28;
+    };
+    // C3: quick jolt to `target` — overshoot a few px, then settle.
+    const jolt = (target: number) => {
+      animating = true;
+      const start = el.scrollTop;
+      const over = Math.min(7, Math.abs(target - start) * 0.3);
+      const t0 = performance.now();
+      const dur = 130;
+      cancelAnimationFrame(joltRaf);
+      const tick = (t: number) => {
+        const p = Math.min(1, (t - t0) / dur);
+        const pos = p < 0.6
+          ? start + (target + over - start) * (p / 0.6)         // ride up past the mark
+          : (target + over) + (target - (target + over)) * ((p - 0.6) / 0.4); // settle back
+        el.scrollTop = pos;
+        setScrolled();
+        if (p < 1) { joltRaf = requestAnimationFrame(tick); }
+        else { el.scrollTop = target; setScrolled(); animating = false; }
+      };
+      joltRaf = requestAnimationFrame(tick);
+    };
     const band = () => {
+      if (animating) return;
       const ed = el.querySelector('.forward-only-editor') as HTMLElement | null;
       let caretBottom: number | null = null;
       const sel = window.getSelection();
@@ -106,18 +140,28 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         caretBottom = (last ?? ed).getBoundingClientRect().bottom;
       }
       if (caretBottom === null) return;
-      const cRect = el.getBoundingClientRect();
-      const within = caretBottom - cRect.top;
-      const target = el.clientHeight * TYPEWRITER_BAND;
-      const delta = within - target;
-      if (Math.abs(delta) > 1) el.scrollTop += delta;
+      const within = caretBottom - el.getBoundingClientRect().top;
+      const delta = within - el.clientHeight * TYPEWRITER_BAND;
+      // Caret above the band (fresh/short page): don't scroll, don't fade (C2).
+      if (delta <= 1) { setScrolled(); return; }
+      const target = el.scrollTop + delta;
+      if (!reduce && delta >= lineHeight() * 0.5) jolt(target);
+      else { el.scrollTop = target; setScrolled(); }
     };
     const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(band); };
     const mo = new MutationObserver(schedule);
     mo.observe(el, { childList: true, subtree: true, characterData: true });
     el.addEventListener('input', schedule);
+    el.addEventListener('scroll', setScrolled, { passive: true });
+    setScrolled();
     schedule();
-    return () => { mo.disconnect(); el.removeEventListener('input', schedule); cancelAnimationFrame(raf); };
+    return () => {
+      mo.disconnect();
+      el.removeEventListener('input', schedule);
+      el.removeEventListener('scroll', setScrolled);
+      cancelAnimationFrame(raf);
+      cancelAnimationFrame(joltRaf);
+    };
   }, [settings.typewriter]);
 
   // Progress + eased glow.
