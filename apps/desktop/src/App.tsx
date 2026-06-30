@@ -12,6 +12,7 @@ import { StructureBoard } from './pages/StructureBoard';
 import { QuickSprint } from './pages/QuickSprint';
 import { Journal } from './pages/Journal';
 import { JournalEntry } from './pages/JournalEntry';
+import { PageEditor } from './pages/PageEditor';
 import { HomeFlow } from './components/HomeFlow';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData } from './store/persistence';
@@ -185,6 +186,7 @@ export function App() {
         <Route path="/sprint" element={<QuickSprint />} />
         <Route path="/journal" element={<Journal />} />
         <Route path="/journal/:id" element={<JournalEntry />} />
+        <Route path="/page/:id" element={<PageEditor />} />
         </Routes>
         </div>
       </HashRouter>

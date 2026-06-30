@@ -60,4 +60,9 @@ export async function runMigrations(): Promise<void> {
      )`,
   );
   await pool.query(`create index if not exists journal_entries_user_updated on journal_entries (user_id, updated_at)`);
+
+  // B1 — Binder kind on projects + page type on journal entries. Same idempotent
+  // boot path; new rows read null (treated as Other / untyped) — no backfill.
+  await pool.query(`alter table projects add column if not exists kind text`);
+  await pool.query(`alter table journal_entries add column if not exists page_type text`);
 }
