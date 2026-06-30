@@ -34,12 +34,18 @@ function SyncIndicator() {
 // fullscreen, so the button hides itself there (the iOS path is Add to Home
 // Screen → standalone display).
 function FullscreenToggle() {
-  const [supported] = useState(() => {
+  // Use the real Fullscreen API where available (desktop + Android Chrome). iOS
+  // Safari doesn't support element fullscreen, so there it falls back to an in-app
+  // immersive mode — hide the rail/header/watermark and fill the dynamic viewport
+  // — so "full screen" still maximizes the page on mobile. (True OS fullscreen on
+  // iOS Safari isn't possible from the web; Add-to-Home-Screen standalone is.)
+  const [apiSupported] = useState(() => {
     if (typeof document === 'undefined') return false;
     const el = document.documentElement as any;
     return !!(el.requestFullscreen || el.webkitRequestFullscreen);
   });
   const [isFs, setIsFs] = useState(false);
+  const [immersive, setImmersive] = useState(false);
 
   useEffect(() => {
     const onChange = () => {
@@ -54,34 +60,42 @@ function FullscreenToggle() {
     };
   }, []);
 
-  if (!supported) return null;
-
   const toggle = () => {
-    const doc = document as any;
-    const el = document.documentElement as any;
-    const current = document.fullscreenElement || doc.webkitFullscreenElement;
-    try {
-      if (current) {
-        const exit = document.exitFullscreen || doc.webkitExitFullscreen;
-        if (exit) exit.call(document);
-      } else {
-        const req = el.requestFullscreen || el.webkitRequestFullscreen;
-        const p = req && req.call(el);
-        if (p && typeof p.catch === 'function') p.catch(() => {});
+    if (apiSupported) {
+      const doc = document as any;
+      const el = document.documentElement as any;
+      const current = document.fullscreenElement || doc.webkitFullscreenElement;
+      try {
+        if (current) {
+          const exit = document.exitFullscreen || doc.webkitExitFullscreen;
+          if (exit) exit.call(document);
+        } else {
+          const req = el.requestFullscreen || el.webkitRequestFullscreen;
+          const p = req && req.call(el);
+          if (p && typeof p.catch === 'function') p.catch(() => {});
+        }
+      } catch {
+        // denied — never block the app
       }
-    } catch {
-      // ignore — fullscreen can be denied; never block the app
+    } else {
+      // iOS / unsupported: in-app immersive maximize.
+      setImmersive(v => {
+        const next = !v;
+        document.documentElement.classList.toggle('app-immersive', next);
+        return next;
+      });
     }
   };
 
+  const active = apiSupported ? isFs : immersive;
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={isFs ? 'Exit full screen' : 'Enter full screen'}
+      aria-label={active ? 'Exit full screen' : 'Enter full screen'}
       style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
     >
-      {isFs ? 'Exit full screen' : 'Full screen'}
+      {active ? 'Exit full screen' : 'Full screen'}
     </button>
   );
 }

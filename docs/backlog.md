@@ -2,6 +2,10 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## FIX — Journal chrome recede + mobile fullscreen
+- **Journal chrome now recedes on write/draw.** The dissolve engine lived only in the sprint/ModeStage surface, so the JournalEntry view's menus + text never faded while writing or drawing. Added `useChromeDissolve` to JournalEntry (editorSelector `.entry-full` so taps/strokes on the sheet don't summon chrome back; `rootRef` the page so `--fade-dur` stays scoped) driven by `noteWrite` on both text input AND pen `onDown`; marked the back-link / stamp+star / capture strip / title / routed note / tags / routing slot `.chrome-fade`; added the `ChromeHandle`. It drives WritingSession, so the DeskRail + global header recede in step. The lit sheet + ink never fade. Verified in-harness (8 checks: visible at rest, recede on write, rail recedes too, back-link fades, sheet never fades, Esc resurfaces, recede on draw, fullscreen button present).
+- **Mobile fullscreen.** `FullscreenToggle` no longer hides itself where the Fullscreen API is unsupported (iOS Safari): it now always shows and, on iOS, falls back to an **in-app immersive mode** (`html.app-immersive` hides the rail + watermark + rail gutter and fills the dynamic viewport) so "Full screen" still maximizes the page on mobile. Desktop + Android keep the real Fullscreen API. (True OS fullscreen from the web isn't possible on iOS Safari — Add-to-Home-Screen standalone is the OS path; noted.)
+
 ## BUG — Journal ink capture (pen → text) — fixed
 Brief: fix-journal-ink. Stylus drawing in the Journal converted to typed text with no ink retained.
 - **Bisect (confirmed first, not blind):** the routing hypothesis was DISPROVEN — Journal entries open at `/journal/:id` (the ink view), never the text-only PageEditor; B4's only journal change was the additive greyed-tab strip (above the sheet, no stacking impact); strokes still persist. A synthetic CDP pen already produced a stroke (not text), so routing + canvas stacking were fine.

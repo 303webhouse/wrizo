@@ -3,6 +3,8 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, flushNow } from '../store/persistence';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke } from '../store/ink';
+import { useChromeDissolve } from '../components/useChromeDissolve';
+import { ChromeHandle } from '../components/WritingShell';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -81,6 +83,16 @@ function JournalEntryView() {
   const [tabPrompt, setTabPrompt] = useState(false); // B4 #11 — file-it-first prompt
   const [tagDraft, setTagDraft] = useState('');
   const [entry, setEntry] = useState<JournalEntryType | null>(() => (id ? getJournalEntry(id) : null));
+
+  // Chrome recede on write/draw (same engine as the sprint/page surfaces): typing
+  // or drawing dissolves the surrounding menus + text; the sheet + ink never fade.
+  // The sheet (.entry-full) is the "editor", so taps/strokes on it don't summon
+  // the chrome back (only an edge / Esc / tap-off does). Drives WritingSession, so
+  // the global header + DeskRail recede in step.
+  const pageRef = useRef<HTMLDivElement | null>(null);
+  const { dissolved, noteWrite, resurface } = useChromeDissolve({ surface: 'journal', editorSelector: '.entry-full', rootRef: pageRef });
+  const noteWriteRef = useRef<() => void>(() => {});
+  noteWriteRef.current = noteWrite;
 
   // All hooks run before the early return below so hook order is stable.
   // Ink (J9): strokes held in state (seeded from the entry) as the render/undo
@@ -165,6 +177,7 @@ function JournalEntryView() {
       if (e.pointerType !== 'pen') return; // palm/finger/mouse fall through (and to text on authored pages)
       if ((e.target as Element | null)?.closest?.('.ink-undo')) return;
       e.stopPropagation(); // keep the pen off the editable text node (no caret, no handwriting)
+      noteWriteRef.current(); // recede the chrome on draw
       captureRectRef.current = sheet.getBoundingClientRect();
       const ac = activeRef.current;
       if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
@@ -319,6 +332,7 @@ function JournalEntryView() {
     const onInput = () => {
       pageTextRef.current = el.innerText;
       touchedRef.current = true;
+      noteWriteRef.current(); // recede the chrome on write
       scheduleSave();
     };
     // Hardware-keyboard path: a plain Backspace/Delete fires keydown (and would
@@ -443,10 +457,11 @@ function JournalEntryView() {
   };
 
   return (
-    <div className="page" style={{ maxWidth: 720, paddingTop: '3rem' }}>
-      <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
+    <div ref={pageRef} className="page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
+      <ChromeHandle onReveal={() => resurface(true)} />
+      <Link to="/journal" className="btn-quiet chrome-fade" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <div className="chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
           {formatStamp(entry.createdAt)}{authored ? ' · a page' : ''}
         </div>
@@ -467,7 +482,7 @@ function JournalEntryView() {
           to file the entry (Drawer / Shelf) before it can be drafted or formatted.
           Only for loose entries (a filed page opens in the live page editor). */}
       {entry.projectId == null && (
-        <div className="journal-modes">
+        <div className="journal-modes chrome-fade">
           <div className="mode-tabs" role="tablist" aria-label="Mode">
             <button type="button" role="tab" aria-selected="true" className="mode-tab active">
               <span className="mode-tab__label">Free write</span>
@@ -489,12 +504,12 @@ function JournalEntryView() {
         </div>
       )}
 
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '8px 0 16px' }}>
+      <h1 className="chrome-fade" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '8px 0 16px' }}>
         {textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100)}
       </h1>
 
       {routedNames.length > 0 && (
-        <div className="entry-routed" style={{ color: 'var(--text-mid)', fontSize: 13, marginBottom: 16 }}>
+        <div className="entry-routed chrome-fade" style={{ color: 'var(--text-mid)', fontSize: 13, marginBottom: 16 }}>
           Routed to {routedNames.join(', ')}.
         </div>
       )}
@@ -556,7 +571,7 @@ function JournalEntryView() {
       </div>
 
       {/* Tags (J6): retroactive, free-text, optional. */}
-      <div className="entry-tags" style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+      <div className="entry-tags chrome-fade" style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {(entry.tags ?? []).map(t => (
           <span key={t} className="entry-tag" data-tag={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--ink-border)', color: 'var(--text-mid)', fontSize: 13 }}>
             {t}
@@ -578,7 +593,7 @@ function JournalEntryView() {
           selection. Projects already routed-to are flagged (J6). Hidden for a
           drawing-only entry (J12) — there's no prose to send; ink stays here. */}
       {!textEmpty && (
-      <div className="entry-action-slot" style={{ marginTop: 24 }}>
+      <div className="entry-action-slot chrome-fade" style={{ marginTop: 24 }}>
         {!picking ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button type="button" className="btn-brass route-open" onClick={() => setPicking(true)}>

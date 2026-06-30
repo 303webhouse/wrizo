@@ -1118,6 +1118,14 @@ a:focus-visible,
    ============================================================================ */
 .app-main{ padding-left:64px; }
 
+/* In-app immersive mode (mobile fullscreen fallback where the Fullscreen API is
+   unavailable, e.g. iOS Safari): drop the rail/watermark + the rail gutter and
+   let the writing fill the dynamic viewport. (The browser's own address bar can't
+   be hidden from the web on iOS — Add-to-Home-Screen standalone is the OS path.) */
+.app-immersive .desk-rail{ display:none; }
+.app-immersive .brand-mark{ display:none; }
+.app-immersive .app-main{ padding-left:0; min-height:100dvh; }
+
 .desk-rail{ position:fixed; top:0; left:0; bottom:0; width:64px; z-index:45;
   display:flex; flex-direction:column; gap:2px; padding-top:64px;
   background:var(--ink-950); border-right:1px solid var(--ink-border); }
