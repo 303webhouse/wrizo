@@ -2,6 +2,15 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## B3 — AI assist frame — shipped
+Brief: b3-ai-frame. The right-side ASSIST frame gets behaviour: it introduces itself once, invites the user to connect their own AI under the anti-slop boundary (clears blocks, never writes), and is the single channel any future AI response speaks through. Real provider wiring deferred — B3 is the frame + invitation + the channel seam, no model calls.
+- **`store/aiAssist.ts` (new) — the channel.** A module pub/sub: `showAssistResponse(text)` / `clearAssistResponse()` / `useAssistResponse()`. Also exposed on `window.wrizoAssist` as the single public seam a future AI integration calls. Unit-testable independent of React.
+- **C6 — first-entry pop-out + connect invitation.** The frame pops out the FIRST time the user switches to a non-Free-Write mode (flag `wrizo-assist-introduced`, once, never re-nags). It shows the invitation + boundary as invitation not warning ("Connect your AI to help clear blocks in your own writing. It will never write for you.") + a **Connect AI** CTA → a stub dialog.
+- **C7 — frame controls + assist channel.** A collapse arrow on the panel collapses it to a thin border carrying a persistent tan assist icon that re-opens it (state persisted, `wrizo-assist-collapsed`). A response sent through the channel pops the frame out and displays it in `.assist-response`.
+- **AI boundary preserved:** the frame stays SEALED in Free Write (no AI in generation); open/collapsible in Draft/Format. A response never surfaces while sealed.
+- Verified in-harness (11 checks: sealed in Free Write, first pop-out expanded + invitation + flag, connect dialog, close-arrow collapses, icon re-opens, no re-nag after intro, channel pops out + shows text, seal holds on a response). `tsc` + `build:web` + selftest green.
+- **DEFERRED:** the real provider connection (OAuth/keys/model calls); any actual AI feature (block-clearing) — B3 is the channel, not the contents.
+
 ## Top-strip polish + mode-aware typewriter — shipped
 Patch (top-strip-polish) + a clarification on B2's typewriter default.
 - **Typewriter is now mode-aware** (supersedes B2 C4's global default-off): ON in Free Write / Journal (generation), OFF in Draft/Format (revision). `writingSettings.typewriter` default back to `true` (the Free-Write preference); ModeStage gates the mechanic with `typewriterOn = mode === 'journal' && settings.typewriter`, so it never engages outside Free Write regardless of the toggle. This is the right resolution of C4's "scroll fights revision" — revision is Draft, where it's now off.

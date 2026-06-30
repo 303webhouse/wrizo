@@ -3,7 +3,11 @@ import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
+import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
+
+const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
+const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
 
 // Mode-aware editor (Phase 2-3) — the writing studio chrome around the editor,
 // built to the prototype (apps/desktop/scratch/wrizo-modes-hybrid.html):
@@ -67,8 +71,31 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [, tick] = useReducer((n: number) => n + 1, 0);
 
+  // B3 — the AI assist frame. Collapsible (persisted); a future AI response shown
+  // through the shared channel pops it out. Connect is a stub (no provider wired).
+  const [assistCollapsed, setAssistCollapsed] = useState(() => localStorage.getItem(ASSIST_COLLAPSED_KEY) !== '0');
+  const [connectOpen, setConnectOpen] = useState(false);
+  const assistResponse = useAssistResponse();
+  const collapseAssist = (v: boolean) => { setAssistCollapsed(v); localStorage.setItem(ASSIST_COLLAPSED_KEY, v ? '1' : '0'); };
+
   // Tell the host (top-bar fade) whenever the dissolve flips.
   useEffect(() => { onDissolveChange?.(dissolved); }, [dissolved, onDissolveChange]);
+
+  // C6 — first-ever switch to a non-Free-Write mode pops the frame out (once,
+  // remembered) so it introduces itself + the connect invitation; never re-nags.
+  useEffect(() => {
+    if (mode === 'journal') return;
+    if (localStorage.getItem(ASSIST_INTRO_KEY)) return;
+    localStorage.setItem(ASSIST_INTRO_KEY, '1');
+    collapseAssist(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
+  // A response coming through the channel pops the frame out (in an open mode).
+  useEffect(() => {
+    if (assistResponse && mode !== 'journal') collapseAssist(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assistResponse, mode]);
 
   // Drawer-open: leaving Journal slides the AI panel onto the desk; only that
   // direction (Journal → other), per the prototype.
@@ -320,14 +347,54 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             <div className="mode-lock" aria-hidden="true">▦</div>
             <div className="mode-seal-note">journal is yours alone</div>
           </aside>
+        ) : assistCollapsed ? (
+          // Collapsed: a thin border carrying the persistent assist channel icon.
+          <aside className={`mode-rail right assist collapsed mode-dissolve${drawerOpen ? ' drawer-open' : ''}`} aria-label="AI assist">
+            <button type="button" className="assist-tab" aria-label="Open AI assist" title="AI assist" onClick={() => collapseAssist(false)}>
+              <AssistIcon />
+            </button>
+          </aside>
         ) : (
-          <aside className={`mode-rail right mode-dissolve${drawerOpen ? ' drawer-open' : ''}`} aria-label="AI assist">
+          <aside className={`mode-rail right assist mode-dissolve${drawerOpen ? ' drawer-open' : ''}`} aria-label="AI assist">
+            <button type="button" className="assist-collapse" aria-label="Collapse assist" title="Collapse" onClick={() => collapseAssist(true)}>›</button>
             <div className="mode-rail-h">assist</div>
-            <div className="mode-ai-surface">AI lives here in {mode === 'drafting' ? 'Draft' : 'Free write'} — frame only for now</div>
+            <div className="mode-ai-surface assist-body">
+              {assistResponse ? (
+                <div className="assist-response">{assistResponse}</div>
+              ) : (
+                <div className="assist-invite">
+                  <p className="assist-invite-line">Connect your AI to help clear blocks in your own writing. It will never write for you.</p>
+                  <button type="button" className="btn-quiet assist-connect" onClick={() => setConnectOpen(true)}>Connect AI</button>
+                </div>
+              )}
+            </div>
           </aside>
         )}
       </div>
+
+      {/* Connect AI — stub entry point (no provider wired in B3). */}
+      {connectOpen && (
+        <div className="sprint-modal-backdrop" onClick={() => setConnectOpen(false)}>
+          <div className="sprint-modal card" role="dialog" aria-label="Connect AI" onClick={e => e.stopPropagation()}>
+            <div className="card-title">Connect your AI</div>
+            <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 14px' }}>
+              Bring your own AI service (Claude · ChatGPT · Gemini · …) to the desk to help clear blocks. It clears the way — it never writes for you. Connecting is coming soon.
+            </p>
+            <button type="button" className="btn-quiet" onClick={() => setConnectOpen(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+// The persistent assist-channel mark (one-color tan, like the chrome icons).
+function AssistIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z" />
+      <path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" />
+    </svg>
   );
 }
 
