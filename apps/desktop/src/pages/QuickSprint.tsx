@@ -401,17 +401,6 @@ export function QuickSprint() {
             </div>
           )}
           <button type="button" className="btn-quiet sprint-nav-btn" onClick={handleGetNudge}>Take a nudge</button>
-          <button
-            type="button"
-            className="btn-quiet sprint-sound-toggle"
-            data-on={soundOn ? 'true' : 'false'}
-            aria-label={soundOn ? 'Sound on' : 'Sound off'}
-            aria-pressed={soundOn}
-            title={soundOn ? 'Sound on' : 'Sound off'}
-            onClick={() => setSoundOn(v => !v)}
-          >
-            {soundOn ? '🔊' : '🔇'}
-          </button>
         </div>
       </div>
 
@@ -451,6 +440,8 @@ export function QuickSprint() {
         surfaceRef={surfaceRef}
         focused={textareaFocused}
         onDissolveChange={setReceded}
+        soundOn={soundOn}
+        onToggleSound={() => setSoundOn(v => !v)}
       >
         {({ noteWrite, penColor }) => (
           <ForwardOnlyEditor

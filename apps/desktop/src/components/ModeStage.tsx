@@ -41,13 +41,19 @@ interface Props {
   focused?: boolean;                            // editor focus → page glow
   pageTitle?: string;
   onDissolveChange?: (dissolved: boolean) => void;
+  soundOn?: boolean;              // ambient sound bed state (host owns it); absent → no mic shown
+  onToggleSound?: () => void;     // toggling shows the mic in the gear cluster
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, soundOn, onToggleSound, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
+  // Typewriter engages ONLY in Free Write (Journal) — the line-hold helps
+  // generation but fights revision, so it's never on in Draft/Format. The gear
+  // toggle is the Free-Write preference (default on).
+  const typewriterOn = mode === 'journal' && settings.typewriter;
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({ surface: 'sprint', rootRef: stageRef });
 
   const firstWriteRef = useRef<number | null>(null);
@@ -95,7 +101,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   //     of mechanical paper-feed), not a smooth glide; honors reduced-motion.
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || !settings.typewriter) return;
+    if (!el || !typewriterOn) return;
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
     let joltRaf = 0;
@@ -162,7 +168,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       cancelAnimationFrame(raf);
       cancelAnimationFrame(joltRaf);
     };
-  }, [settings.typewriter]);
+  }, [typewriterOn]);
 
   // Progress + eased glow.
   const wordsFrac = Math.min(1, words / WORD_GOAL);
@@ -204,9 +210,24 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       {/* Ambient ember — blooms as the rails dissolve; eased with progress. */}
       <div aria-hidden="true" className="mode-glow" />
 
-      {/* Settings gear (top-right). */}
+      {/* Top-right chrome cluster: the sound toggle (if the host owns sound) +
+          the settings gear — one-color tan glyphs, matched in size. */}
       <div className="mode-gear-wrap mode-dissolve">
-        <button type="button" className="mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>⚙</button>
+        {onToggleSound && (
+          <button
+            type="button"
+            className={`mode-iconbtn mode-sound${soundOn ? '' : ' off'}`}
+            aria-label={soundOn ? 'Sound on' : 'Sound off'}
+            aria-pressed={!!soundOn}
+            title={soundOn ? 'Sound on' : 'Sound off'}
+            onClick={onToggleSound}
+          >
+            <MicIcon off={!soundOn} />
+          </button>
+        )}
+        <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
+          <GearIcon />
+        </button>
         {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} />}
       </div>
 
@@ -267,7 +288,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             <div
               ref={scrollRef}
               className="mode-scroll"
-              data-typewriter={settings.typewriter ? 'true' : 'false'}
+              data-typewriter={typewriterOn ? 'true' : 'false'}
               onClick={focusEditor}
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? pen : undefined })}
@@ -321,6 +342,27 @@ function SettingsPanel({ settings }: { settings: { progress: ProgressMetric; fad
       <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ typewriter: v === 'on' })} />
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
+  );
+}
+
+// One-color tan chrome icons (currentColor; sized for large screens).
+function MicIcon({ off }: { off: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="9" y="2.5" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0" />
+      <line x1="12" y1="18" x2="12" y2="21.5" />
+      {off && <line x1="4" y1="3.5" x2="20" y2="20.5" />}
+    </svg>
+  );
+}
+
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.1" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V15z" />
+    </svg>
   );
 }
 

@@ -2,6 +2,13 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Top-strip polish + mode-aware typewriter — shipped
+Patch (top-strip-polish) + a clarification on B2's typewriter default.
+- **Typewriter is now mode-aware** (supersedes B2 C4's global default-off): ON in Free Write / Journal (generation), OFF in Draft/Format (revision). `writingSettings.typewriter` default back to `true` (the Free-Write preference); ModeStage gates the mechanic with `typewriterOn = mode === 'journal' && settings.typewriter`, so it never engages outside Free Write regardless of the toggle. This is the right resolution of C4's "scroll fights revision" — revision is Draft, where it's now off.
+- **Strip separators** — a vertical seam (`#3a2613`) before Workshop and before Publish splits the postures+actions row into three groups: `Free write · Draft · Format | Workshop | Publish` (writing | workshop | delivery). Visual only — Workshop/Publish still dispatch as actions (`ModeSwitcher` renders a `.mode-tab-sep` + restores the action tab's left border).
+- **Sound + gear → matched tan icon buttons by the editor's top-right.** The speaker emoji left the top strip; the sound toggle is now a one-color tan **mic** SVG (strikethrough when off) co-located with the **gear** in ModeStage's `.mode-gear-wrap` cluster (`soundOn`/`onToggleSound` props from QuickSprint; absent on PageEditor). The gear is a legible one-color tan SVG (was a tiny `⚙` that read as a dot on large monitors); both 34px, `var(--text-mid)`, matched.
+- Verified in-harness (12 checks: two separators in the right places, sound+gear SVGs in the cluster + gone from the strip, icons match the resting label tan + matched size, mic strike toggles, typewriter on in Free Write / off in Draft). `tsc` + `build:web` + selftest green.
+
 ## B2 — Free Write & typewriter fixes — shipped
 Brief: [b2-freewrite-typewriter-brief.md](b2-freewrite-typewriter-brief.md). Five dogfooding fixes to the Free Write / typewriter view in ModeStage (no change to the forward-only rules or the dissolve engine).
 - **C1 — hold the line lower.** Active-line band `0.62 → 0.73`, so ~2 more lines of context stay visible before a line scrolls off / fades. Anchor only — fade curve untouched.
