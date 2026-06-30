@@ -99,20 +99,6 @@ export function DrawersTree() {
     <div className="dz-tree">
       <button type="button" className="dz-new" onClick={startNewDrawer}>+ New Drawer</button>
 
-      {/* Unsorted — virtual group, always at the top; hidden only when empty. */}
-      {unsorted.length > 0 && (
-        <div className="dz-group">
-          <div className="dz-grouphead">
-            <button type="button" className="dz-toggle" onClick={() => toggle('unsorted')}>
-              <span className="dz-caret">{isOpen('unsorted') ? '▾' : '▸'}</span>
-              <span className="dz-name">Unsorted</span>
-              <span className="dz-count">{unsorted.length}</span>
-            </button>
-          </div>
-          {isOpen('unsorted') && renderItems('unsorted', unsorted, null)}
-        </div>
-      )}
-
       {/* Drawers, by order. */}
       {drawers.map(d => {
         const items = projectsOf(d.id);
@@ -169,6 +155,20 @@ export function DrawersTree() {
           </div>
         );
       })}
+
+      {/* On the Shelf (B4 #9) — loose pages awaiting a home, BELOW the filed work. */}
+      {unsorted.length > 0 && (
+        <div className="dz-group">
+          <div className="dz-grouphead">
+            <button type="button" className="dz-toggle" onClick={() => toggle('unsorted')}>
+              <span className="dz-caret">{isOpen('unsorted') ? '▾' : '▸'}</span>
+              <span className="dz-name">On the Shelf</span>
+              <span className="dz-count">{unsorted.length}</span>
+            </button>
+          </div>
+          {isOpen('unsorted') && renderItems('unsorted', unsorted, null)}
+        </div>
+      )}
 
       {drawers.length === 0 && unsorted.length === 0 && (
         <div className="dz-hint">No drawers yet. Make one to start organizing your work.</div>

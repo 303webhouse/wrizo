@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, createQuickSprintProject, flushNow } from '../store/persistence';
+import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, flushNow } from '../store/persistence';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke } from '../store/ink';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
@@ -78,6 +78,7 @@ function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
+  const [tabPrompt, setTabPrompt] = useState(false); // B4 #11 — file-it-first prompt
   const [tagDraft, setTagDraft] = useState('');
   const [entry, setEntry] = useState<JournalEntryType | null>(() => (id ? getJournalEntry(id) : null));
 
@@ -451,6 +452,33 @@ function JournalEntryView() {
           {entry.starred ? '★ Starred' : '☆ Star'}
         </button>
       </div>
+
+      {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the
+          modes with the non-Free-Write tabs GREYED. Clicking one prompts the user
+          to file the entry (Drawer / Shelf) before it can be drafted or formatted.
+          Only for loose entries (a filed page opens in the live page editor). */}
+      {entry.projectId == null && (
+        <div className="journal-modes">
+          <div className="mode-tabs" role="tablist" aria-label="Mode">
+            <button type="button" role="tab" aria-selected="true" className="mode-tab active">
+              <span className="mode-tab__label">Free write</span>
+              <span className="mode-tab__sub">capture</span>
+            </button>
+            {['Draft', 'Format', 'Workshop', 'Publish'].map(t => (
+              <button key={t} type="button" role="tab" aria-selected="false" className="mode-tab deferred" onClick={() => setTabPrompt(true)}>
+                <span className="mode-tab__label">{t}</span>
+              </button>
+            ))}
+          </div>
+          {tabPrompt && (
+            <div className="journal-tab-prompt" role="status">
+              <span>Move this to a Drawer or the Shelf to develop it past capture — drafting and formatting happen once a page is filed.</span>
+              <button type="button" className="btn-quiet" onClick={() => { setPageHome(entry.id, 'shelf'); navigate('/shelf'); }}>Send to the Shelf</button>
+            </div>
+          )}
+          <div className="journal-autosave-note">Saved automatically — even if you never file it to a Drawer or the Shelf.</div>
+        </div>
+      )}
 
       <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '8px 0 16px' }}>
         {textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100)}

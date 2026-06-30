@@ -2,6 +2,14 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## B4 — Home + journal navigation — shipped
+Brief: b4-home-journal. The home answers one question (what now?), stops duplicating the left rail, and fixes the Journal behaviour + the Shelf label. (Large-screen type scale is B5's job — B4 ships at current scale and inherits it.)
+- **#8 — home decluttered, centered, one action.** A single primary: **Keep writing** if there's recent work, else **Start something** (→ the B1 create flow). Below it, the quiet drawers + On-the-Shelf glance (DrawersTree) + the create entry (New page / Begin project) + "+ New Drawer". **Removed** the rail-duplicating "Open a Drawer" / "Open the journal" links. `.wz-desk` now centered (was left-clustered).
+- **One logo element, opacity by surface.** New `App.BrandMark` (bottom-right, `z-index:110` to sit above the Desk's full-screen world): **full opacity on the home**, a faint watermark (`.1`) everywhere else, one `<img>` switched by route. The Desk's own top-left logo removed.
+- **#9 — "On the Shelf".** DrawersTree's virtual "Unsorted" group renamed **On the Shelf** and moved **below** the drawer dropdowns (loose pages sit below filed work).
+- **#11 — Journal = Free-Write capture.** A loose Journal entry's page interface now shows the mode strip with **Free write active and Draft / Format / Workshop / Publish GREYED**; clicking a greyed tab prompts *move this to a Drawer or the Shelf to develop it past capture* (with a "Send to the Shelf" action), and an **auto-save note** reassures that capture is safe without filing. Only for loose entries (`projectId == null`); filed pages open in the live page editor.
+- Verified in-harness (11 checks: empty home → Start something, work → Keep writing, no rail-dup links, logo full on home / faded away, On-the-Shelf renamed + below drawers, no "Unsorted", Journal Free-Write active + 4 greyed + autosave note + file-first prompt). Selftest updated (Desk wait is label-agnostic now) + green. `tsc` + `build:web` green.
+
 ## B3 — AI assist frame — shipped
 Brief: b3-ai-frame. The right-side ASSIST frame gets behaviour: it introduces itself once, invites the user to connect their own AI under the anti-slop boundary (clears blocks, never writes), and is the single channel any future AI response speaks through. Real provider wiring deferred — B3 is the frame + invitation + the channel seam, no model calls.
 - **`store/aiAssist.ts` (new) — the channel.** A module pub/sub: `showAssistResponse(text)` / `clearAssistResponse()` / `useAssistResponse()`. Also exposed on `window.wrizoAssist` as the single public seam a future AI integration calls. Unit-testable independent of React.

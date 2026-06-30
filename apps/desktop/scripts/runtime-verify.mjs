@@ -476,7 +476,7 @@ async function selfTest() {
   await withHarness(async (app) => {
     // Boot reaches the authed launcher (past the W2 gate).
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk') && [...document.querySelectorAll('button')].some(b=>b.textContent.includes('Keep writing'))", { label: 'authed Desk' });
+    await app.waitFor("!!document.querySelector('.wz-desk') && !!document.querySelector('.wz-primary')", { label: 'authed Desk' });
     ok('boots past the W2 login gate to the Desk', true);
 
     // Drive a scratch sprint end to end and read back the app's own state.

@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Desk } from './pages/Desk';
 import { DrawersPage } from './pages/Drawers';
 import { Shelf } from './pages/Shelf';
@@ -118,6 +118,14 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
   );
 }
 
+// B4 — one logo element, opacity by surface. Bottom-right on every authed
+// surface: FULL on the home (Writing Desk), faded elsewhere as a quiet watermark.
+function BrandMark() {
+  const { pathname } = useLocation();
+  const home = pathname === '/';
+  return <img className={`brand-mark${home ? ' home' : ''}`} src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />;
+}
+
 export function App() {
   const [authState, setAuthState] = useState<AuthState>('loading');
   // Re-render the routed tree when the adapter cache changes (e.g. a sync pull).
@@ -172,6 +180,7 @@ export function App() {
       <HashRouter>
         <DeskRail />
         <GlobalHeader onLogout={handleLogout} />
+        <BrandMark />
         <div className="app-main">
         <Routes>
         <Route path="/" element={<Desk />} />
