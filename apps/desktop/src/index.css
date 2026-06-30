@@ -912,6 +912,24 @@ a:focus-visible,
 .mode-rail.right.drawer-open{ animation:mode-drawer-out .62s cubic-bezier(.36,0,.16,1); }
 @media (prefers-reduced-motion:reduce){ .mode-rail.right.drawer-open{ animation:none; } }
 
+/* AI assist frame (B3) — collapsible; the channel any future AI response speaks
+   through. Collapsed = a thin border carrying the persistent assist icon. */
+.mode-rail.right.assist{ position:relative; }
+.mode-rail.right.assist.collapsed{ width:40px; padding:14px 0; align-items:center; }
+.assist-tab{ background:none; border:0; color:var(--text-mid); cursor:pointer; padding:8px 6px;
+  display:flex; flex-direction:column; align-items:center; gap:8px; transition:.15s; }
+.assist-tab:hover{ color:var(--brass); }
+.assist-tab svg{ display:block; }
+.assist-collapse{ position:absolute; top:8px; right:8px; background:none; border:0; color:var(--text-low);
+  font-size:18px; line-height:1; cursor:pointer; padding:2px 6px; }
+.assist-collapse:hover{ color:var(--text-hi); }
+.assist-body{ font-style:normal; text-align:left; align-items:stretch; justify-content:flex-start; flex-direction:column; gap:14px; }
+.assist-invite{ display:flex; flex-direction:column; gap:14px; }
+.assist-invite-line{ color:var(--text-mid); font-size:13px; line-height:1.6; font-style:normal; }
+.assist-connect{ align-self:flex-start; border:1px solid var(--brass); color:var(--brass); }
+.assist-connect:hover{ background:rgba(255,152,0,.10); }
+.assist-response{ color:var(--text-hi); font-size:14px; line-height:1.6; white-space:pre-wrap; }
+
 .mode-pagecol{ position:relative; z-index:1; width:min(620px,62vw); display:flex; flex-direction:column; }
 
 /* Format / pen bar — chrome at the top of the page. */
