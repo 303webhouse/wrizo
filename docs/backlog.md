@@ -2,6 +2,15 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## B2 — Free Write & typewriter fixes — shipped
+Brief: [b2-freewrite-typewriter-brief.md](b2-freewrite-typewriter-brief.md). Five dogfooding fixes to the Free Write / typewriter view in ModeStage (no change to the forward-only rules or the dissolve engine).
+- **C1 — hold the line lower.** Active-line band `0.62 → 0.73`, so ~2 more lines of context stay visible before a line scrolls off / fades. Anchor only — fade curve untouched.
+- **C2 — fresh-page first line full opacity (bug).** The top fade was a fixed mask, so a fresh/short page's first line sat in the faded zone. Now the mask applies only once content has actually scrolled past (`data-scrolled`, set from `scrollTop` in the band loop + a scroll listener); a fresh page never fades line 1.
+- **C3 — typewriter jolt.** A line advance now gets a small upward overshoot-and-settle (~130ms, ~7px) rather than a smooth glide — a hint of mechanical paper-feed; honors reduced-motion (instant).
+- **C4 — typewriter fully off + default off.** `writingSettings.typewriter` defaults **false** (the line-hold scroll fights revision → opt-in). Off → no hold / fade / jolt, plain scrolling (the band effect early-returns; the mask requires `data-typewriter='true'`).
+- **C5 — leaving Free Write drops struck text.** Already correct via the clean re-seed: the editor reports `derivedText` (struck runs excluded), so switching Free write → Draft re-seeds the clean text and the struck spans vanish from view; struck content is never written to storage (the page persists clean text only). Confirmed in-harness.
+- Verified in-harness (7 checks: default off, fresh page not scrolled + no mask, scrolls after fill, line held low, struck shown in Free write, Draft drops struck). `tsc` + `build:web` + selftest green.
+
 ## B1 — Start a book: content types + create pipeline — shipped
 Brief: [b1-start-a-book-brief.md](b1-start-a-book-brief.md). The create-and-organize spine — a project can now actually be *started and written* as a Book. New Books/Stories are modeled as a project of chapter **Pages** from the first keystroke, sidestepping the body-vs-page debt (legacy single-body projects untouched).
 - **Slice 1 — taxonomy (data + sync).** `Project.kind?: 'book'|'story'|'screenplay'|'other'` (the Binder.kind facet, distinct from `type` which stays default creative); `JournalEntry.pageType?: 'manuscript'|'character'|'worldbuilding'|'research'|'note'`. Server: boot-idempotent `alter table projects add column if not exists kind` + `journal_entries add column if not exists page_type`, carried through `rowToProject`/`upsertProjects` + `rowToJournalEntry`/`upsertJournalEntries` (no backfill — null = Other/untyped). `persistence`: `createBinder(title, kind, drawerId?)` + `createBinderPage(binderId, pageType)`.

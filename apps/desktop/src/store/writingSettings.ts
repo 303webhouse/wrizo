@@ -29,7 +29,9 @@ const DEFAULTS: WritingSettings = {
   progress: 'words',
   fadeDepth: 'partial',
   timer: false,
-  typewriter: true,
+  // Typewriter is OFF by default (B2 C4): the line-hold scroll fights revision,
+  // so it's opt-in. When on it fully engages (hold + fade + jolt); off = plain scroll.
+  typewriter: false,
 };
 
 function load(): WritingSettings {
