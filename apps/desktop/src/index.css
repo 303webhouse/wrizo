@@ -849,9 +849,11 @@ a:focus-visible,
 .mode-tab__label{ display:block; line-height:1.2; }
 .mode-tab__sub{ display:block; font-size:7.5px; letter-spacing:1px; text-transform:uppercase; opacity:.5; margin-top:1px; }
 /* Inline file-action tabs (Workshop / Publish) — same strip as the postures. */
-.mode-tab--action{ color:var(--text-mid); }
+.mode-tab--action{ color:var(--text-mid); border-left:1px solid var(--ink-border); }
 .mode-tab--action.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
 .mode-tab--action.deferred:hover{ background:none; color:var(--text-low); }
+/* Vertical seam splitting the strip into writing | workshop | delivery groups. */
+.mode-tab-sep{ width:1px; height:26px; background:#3a2613; margin:0 9px; align-self:center; flex:0 0 auto; }
 .mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
 .mode-tab.active{ color:var(--on-brass); background:var(--brass); border-color:var(--brass); }
 .mode-tab.active .mode-tab__sub{ opacity:.85; }
@@ -956,10 +958,13 @@ a:focus-visible,
 .mode-pmetric{ text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
 
 /* Settings gear + popover (top-right of the stage). */
-.mode-gear-wrap{ position:absolute; top:-2px; right:0; z-index:5; }
-.mode-gear{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
-  width:30px; height:30px; cursor:pointer; font-size:15px; line-height:1; transition:.15s; }
-.mode-gear:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); background:var(--ink-900); }
+.mode-gear-wrap{ position:absolute; top:-2px; right:0; z-index:5; display:flex; align-items:center; gap:8px; }
+/* Top-right chrome icon buttons (sound + gear) — one-color tan, matched in size. */
+.mode-iconbtn{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s; }
+.mode-iconbtn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); background:var(--ink-900); }
+.mode-iconbtn svg{ display:block; }
+.mode-sound.off{ color:var(--text-low); }
 .mode-settings{ position:absolute; top:36px; right:0; width:236px; background:rgba(20,10,2,.96);
   border:1px solid var(--ink-border); padding:12px 13px; font-size:11px; color:var(--text-mid);
   z-index:6; box-shadow:0 12px 40px rgba(0,0,0,.5); }
@@ -1102,8 +1107,6 @@ a:focus-visible,
 .sprint-toggle-btn:first-child{ border-left:0; }
 .sprint-toggle-btn.active{ background:var(--brass); color:var(--on-brass); }
 /* Sound — a bare icon toggle (no label). */
-.sprint-sound-toggle{ font-size:16px; line-height:1; padding:4px 6px; }
-
 /* Session timer — slim readout merged into the progress row (incentive layer). */
 .mode-timer{ font-family:var(--font-mono); color:var(--text-mid); margin-right:8px; letter-spacing:.3px; }
 

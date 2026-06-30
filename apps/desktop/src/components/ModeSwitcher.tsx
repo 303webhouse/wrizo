@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 
 // Mode switcher (writing-screen redesign). Top-bar tabs with stage sub-labels;
@@ -40,17 +40,22 @@ export function ModeSwitcher({ mode, onSwitch, actions = [] }: { mode: EditorMod
           <span className="mode-tab__sub">{m.sub}</span>
         </button>
       ))}
+      {/* A separator before each action tab splits the strip into three sections:
+          writing (postures) | workshop | delivery. Visual only — the actions still
+          dispatch as actions, not postures. */}
       {actions.map(a => (
-        <button
-          key={a.label}
-          type="button"
-          className={`mode-tab mode-tab--action${a.deferred ? ' deferred' : ''}`}
-          aria-disabled={a.deferred}
-          onClick={() => { if (a.deferred) flashSoon(a.label); else a.onClick?.(); }}
-        >
-          <span className="mode-tab__label">{a.label}</span>
-          <span className="mode-tab__sub">{a.sub}</span>
-        </button>
+        <Fragment key={a.label}>
+          <span className="mode-tab-sep" aria-hidden="true" />
+          <button
+            type="button"
+            className={`mode-tab mode-tab--action${a.deferred ? ' deferred' : ''}`}
+            aria-disabled={a.deferred}
+            onClick={() => { if (a.deferred) flashSoon(a.label); else a.onClick?.(); }}
+          >
+            <span className="mode-tab__label">{a.label}</span>
+            <span className="mode-tab__sub">{a.sub}</span>
+          </button>
+        </Fragment>
       ))}
       {soon && <span className="mode-soon" role="status">{soon} — coming soon</span>}
     </div>

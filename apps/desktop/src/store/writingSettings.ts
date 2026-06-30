@@ -29,9 +29,10 @@ const DEFAULTS: WritingSettings = {
   progress: 'words',
   fadeDepth: 'partial',
   timer: false,
-  // Typewriter is OFF by default (B2 C4): the line-hold scroll fights revision,
-  // so it's opt-in. When on it fully engages (hold + fade + jolt); off = plain scroll.
-  typewriter: false,
+  // Typewriter is the Free-Write preference (default ON): the line-hold helps
+  // generation but fights revision, so ModeStage only engages it in Free Write
+  // (Journal) and never in Draft/Format, regardless of this toggle.
+  typewriter: true,
 };
 
 function load(): WritingSettings {
