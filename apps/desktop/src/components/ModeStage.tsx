@@ -35,7 +35,9 @@ const TYPEWRITER_BAND = 0.73; // hold the active line low (~73%) so ~2 more line
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
   journal:  { heading: 'capture', items: ['Spark deck', 'Fragments', 'Send → Drawer'], ai: 'sealed', tools: 'pen' },
-  drafting: { heading: 'sections', items: ['Structure', 'Pages', 'Notes & Worldbuilding', 'Find'], ai: 'open', tools: 'format' },
+  // "Pages" is intentionally NOT here (B5): the one pages door is ProjectHome,
+  // reached via the Pages⟷Plan toggle — the SECTIONS stub was a duplicate.
+  drafting: { heading: 'sections', items: ['Structure', 'Notes & Worldbuilding', 'Find'], ai: 'open', tools: 'format' },
 };
 
 interface Props {
@@ -70,6 +72,18 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   const [gearOpen, setGearOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [, tick] = useReducer((n: number) => n + 1, 0);
+
+  // B5 — in-document pagination. A page is the SHEET HEIGHT (not a line count, so
+  // it survives the type scale): when the editor's content overflows the sheet,
+  // flip to a fresh one with a page-turn (animation + soft sound) and the progress
+  // bar resets with a small reward. `pageFill` (height fraction of the current
+  // sheet) drives the bar; `pageNum` is the current sheet (0-based).
+  const [pageNum, setPageNum] = useState(0);
+  const [pageFill, setPageFill] = useState(0);
+  const [rewarded, setRewarded] = useState(false);
+  const pageNumRef = useRef(0);
+  const soundOnRef = useRef(soundOn);
+  soundOnRef.current = soundOn;
 
   // B3 — the AI assist frame. Collapsible (persisted); a future AI response shown
   // through the shared channel pops it out. Connect is a stub (no provider wired).
@@ -197,6 +211,49 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
     };
   }, [typewriterOn]);
 
+  // Pagination: watch the editor's content height against the sheet height. On
+  // crossing a sheet boundary, flip (page-turn animation + soft sound) and reward
+  // the progress bar (it resets via the page-fill fraction). Height-based, so the
+  // boundary always matches the visible sheet at any type scale.
+  useEffect(() => {
+    const scroll = scrollRef.current;
+    if (!scroll) return;
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let raf = 0;
+    const flip = () => {
+      const pageEl = scroll.closest('.mode-page') as HTMLElement | null;
+      if (pageEl && !reduce) {
+        pageEl.classList.remove('flipping');
+        void pageEl.offsetWidth; // restart the animation
+        pageEl.classList.add('flipping');
+        setTimeout(() => pageEl.classList.remove('flipping'), 600);
+      }
+      if (soundOnRef.current && !reduce) playPageTurn();
+      setRewarded(true);
+      setTimeout(() => setRewarded(false), 650);
+    };
+    const measure = () => {
+      const ed = scroll.querySelector('.forward-only-editor') as HTMLElement | null;
+      if (!ed) return;
+      const sheet = scroll.clientHeight || 1;
+      const content = ed.scrollHeight;
+      const page = Math.floor(content / sheet);
+      setPageFill(content < sheet ? content / sheet : (content % sheet) / sheet);
+      if (page !== pageNumRef.current) {
+        const turned = page > pageNumRef.current;
+        pageNumRef.current = page;
+        setPageNum(page);
+        if (turned) flip();
+      }
+    };
+    const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
+    const mo = new MutationObserver(schedule);
+    mo.observe(scroll, { childList: true, subtree: true, characterData: true });
+    scroll.addEventListener('input', schedule);
+    schedule();
+    return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); cancelAnimationFrame(raf); };
+  }, []);
+
   // Progress + eased glow.
   const wordsFrac = Math.min(1, words / WORD_GOAL);
   let displayFrac = wordsFrac;
@@ -305,6 +362,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           <div
             ref={surfaceRef}
             className={`mode-page${focused ? ' focused' : ''}`}
+            data-page={pageNum}
           >
             <div
               aria-hidden="true"
@@ -328,11 +386,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           {(settings.progress !== 'off' || settings.timer) && (
             <div className="mode-progress">
               {settings.progress !== 'off' && (
-                <div className="mode-ptrack"><div className="mode-pfill" style={{ width: `${(displayFrac * 100).toFixed(1)}%` }} /></div>
+                <div className="mode-ptrack"><div className={`mode-pfill${rewarded ? ' rewarded' : ''}`} style={{ width: `${(pageFill * 100).toFixed(1)}%` }} /></div>
               )}
               <div className="mode-pmeta">
                 <span>{settings.progress !== 'off' ? label : ''}</span>
                 <span className="mode-pmetric">
+                  {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
                   {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
                   {settings.progress !== 'off' && <span>{metricLabel}</span>}
                 </span>
@@ -410,6 +469,34 @@ function SettingsPanel({ settings }: { settings: { progress: ProgressMetric; fad
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
   );
+}
+
+// A soft synthesized paper-rustle for the page turn (no asset; gated by the
+// sound toggle + reduced-motion by the caller). Best-effort — never throws.
+function playPageTurn(): void {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const dur = 0.2;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.5) * 0.22; // decaying noise
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const filt = ctx.createBiquadFilter();
+    filt.type = 'lowpass';
+    filt.frequency.value = 1700;
+    src.connect(filt);
+    filt.connect(ctx.destination);
+    src.start();
+    src.onended = () => { try { ctx.close(); } catch { /* ignore */ } };
+  } catch {
+    // audio unsupported / blocked — silent
+  }
 }
 
 // One-color tan chrome icons (currentColor; sized for large screens).
