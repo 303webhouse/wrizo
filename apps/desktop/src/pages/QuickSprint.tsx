@@ -372,20 +372,26 @@ export function QuickSprint() {
       {/* Navigation layer — breadcrumb · mode tabs · Pages/Plan · actions. Recedes
           on write (edge / Esc / tap-off summons it back). */}
       <div className="chrome-fade chrome-top sprint-nav">
-        <div className="sprint-crumb" aria-label="Location">
-          {id && project ? (
-            <>
-              {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
-              <span className="crumb-item">{project.title}</span>
-              <span className="crumb-sep">/</span>
-              <span className="crumb-here">{modeLabel}</span>
-            </>
-          ) : (
-            <><span className="crumb-item">Journal</span><span className="crumb-sep">/</span><span className="crumb-here">Scratch</span></>
-          )}
-        </div>
+        {/* Breadcrumb only for a binder file — the scratch "Journal / Scratch"
+            is redundant with the Journal location in the left rail. */}
+        {id && project && (
+          <div className="sprint-crumb" aria-label="Location">
+            {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
+            <span className="crumb-item">{project.title}</span>
+            <span className="crumb-sep">/</span>
+            <span className="crumb-here">{modeLabel}</span>
+          </div>
+        )}
 
-        <ModeSwitcher mode={mode} onSwitch={switchMode} />
+        {/* Postures + file actions (Workshop / Publish) inline in one strip. */}
+        <ModeSwitcher
+          mode={mode}
+          onSwitch={switchMode}
+          actions={[
+            { label: 'Workshop', sub: 'coming soon', deferred: true },
+            { label: 'Publish', sub: 'export', onClick: () => setShowPublish(true) },
+          ]}
+        />
 
         <div className="sprint-actions">
           {id && (
@@ -394,17 +400,18 @@ export function QuickSprint() {
               <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => navigate(`/project/${id}/board`)}>Plan</button>
             </div>
           )}
-          <button type="button" className="btn-quiet btn-ghost" onClick={handleGetNudge}>Take a nudge</button>
+          <button type="button" className="btn-quiet sprint-nav-btn" onClick={handleGetNudge}>Take a nudge</button>
           <button
             type="button"
             className="btn-quiet sprint-sound-toggle"
             data-on={soundOn ? 'true' : 'false'}
+            aria-label={soundOn ? 'Sound on' : 'Sound off'}
+            aria-pressed={soundOn}
+            title={soundOn ? 'Sound on' : 'Sound off'}
             onClick={() => setSoundOn(v => !v)}
           >
-            {soundOn ? 'Sound on' : 'Sound off'}
+            {soundOn ? '🔊' : '🔇'}
           </button>
-          <button type="button" className="btn-quiet sprint-deferred" aria-disabled="true" title="Workshop — coming soon">Workshop</button>
-          <button type="button" className="btn-quiet" onClick={() => setShowPublish(true)}>Publish</button>
         </div>
       </div>
 
@@ -443,7 +450,6 @@ export function QuickSprint() {
         words={wordCount(draftText)}
         surfaceRef={surfaceRef}
         focused={textareaFocused}
-        pageTitle={id ? 'an untitled page' : 'a fresh scrap'}
         onDissolveChange={setReceded}
       >
         {({ noteWrite, penColor }) => (

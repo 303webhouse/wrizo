@@ -847,7 +847,11 @@ a:focus-visible,
   text-align:left; transition:color .18s, background .18s; }
 .mode-tab:first-child{ border-left:1px solid var(--ink-border); }
 .mode-tab__label{ display:block; line-height:1.2; }
-.mode-tab__sub{ display:block; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; opacity:.5; margin-top:1px; }
+.mode-tab__sub{ display:block; font-size:7.5px; letter-spacing:1px; text-transform:uppercase; opacity:.5; margin-top:1px; }
+/* Inline file-action tabs (Workshop / Publish) — same strip as the postures. */
+.mode-tab--action{ color:var(--text-mid); }
+.mode-tab--action.deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
+.mode-tab--action.deferred:hover{ background:none; color:var(--text-low); }
 .mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
 .mode-tab.active{ color:var(--on-brass); background:var(--brass); border-color:var(--brass); }
 .mode-tab.active .mode-tab__sub{ opacity:.85; }
@@ -1079,18 +1083,21 @@ a:focus-visible,
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
   padding:8px 14px; }
-.sprint-crumb{ display:flex; align-items:center; gap:7px; font-family:var(--font-ui); font-size:12px;
+/* Nav-row type unified with the mode tabs: Figtree (font-ui), 13px. */
+.sprint-crumb{ display:flex; align-items:center; gap:7px; font-family:var(--font-ui); font-size:13px;
   color:var(--text-low); min-width:0; }
 .crumb-item{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
 .crumb-sep{ color:var(--ink-border-strong); }
 .crumb-here{ color:var(--text-mid); font-weight:600; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.sprint-nav .btn-quiet{ font-family:var(--font-ui); font-size:13px; }
 .sprint-toggle{ display:flex; border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden; }
 .sprint-toggle-btn{ background:none; border:0; border-left:1px solid var(--ink-border); color:var(--text-mid);
-  font-family:var(--font-ui); font-size:12px; font-weight:600; padding:5px 12px; cursor:pointer; }
+  font-family:var(--font-ui); font-size:13px; font-weight:600; padding:5px 12px; cursor:pointer; }
 .sprint-toggle-btn:first-child{ border-left:0; }
 .sprint-toggle-btn.active{ background:var(--brass); color:var(--on-brass); }
-.sprint-deferred{ color:var(--text-low); cursor:not-allowed; opacity:.6; }
+/* Sound — a bare icon toggle (no label). */
+.sprint-sound-toggle{ font-size:16px; line-height:1; padding:4px 6px; }
 
 /* Session timer — slim readout merged into the progress row (incentive layer). */
 .mode-timer{ font-family:var(--font-mono); color:var(--text-mid); margin-right:8px; letter-spacing:.3px; }

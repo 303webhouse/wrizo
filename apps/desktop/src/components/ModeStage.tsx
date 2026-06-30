@@ -31,7 +31,7 @@ const TYPEWRITER_BAND = 0.62; // keep the active line at ~62% of the viewport
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
   journal:  { heading: 'capture', items: ['Spark deck', 'Fragments', 'Send → Drawer'], ai: 'sealed', tools: 'pen' },
-  drafting: { heading: 'tools', items: ['Structure', 'Pages', 'Notes & Worldbuilding', 'Find'], ai: 'open', tools: 'format' },
+  drafting: { heading: 'sections', items: ['Structure', 'Pages', 'Notes & Worldbuilding', 'Find'], ai: 'open', tools: 'format' },
 };
 
 interface Props {
