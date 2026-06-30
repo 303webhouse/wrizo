@@ -1030,6 +1030,9 @@ a:focus-visible,
   font-family:var(--font-ui); font-size:12px; padding:6px; cursor:pointer; }
 .dz-empty{ color:var(--text-low); font-size:12px; font-style:italic; padding:6px 0 6px 18px; }
 .dz-hint{ color:var(--text-low); font-size:13px; font-style:italic; padding:8px 2px; }
+.dz-createnew{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:2px 6px 8px 18px;
+  border-top:1px solid var(--ink-border); }
+.dz-createnew-cancel{ color:var(--text-low); }
 
 /* Touch: the "move to…" affordance can't hover-reveal — keep it visible. */
 @media (hover:none){ .dz-move{ opacity:.7; } }

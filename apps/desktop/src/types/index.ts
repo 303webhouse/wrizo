@@ -82,10 +82,18 @@ export interface Drawer {
   deletedAt?: string;
 }
 
+// Binder kind (B1) — the project's form / "what are you writing". Distinct from
+// `type` (creative|academic, which stays default creative). Sets the project's
+// shape (and later its structure scaffold + Format conventions, deferred). Absent
+// on legacy projects → treated as Other / untyped. "Binder" stays backstage; the
+// UI shows the project's name, never the label.
+export type BinderKind = 'book' | 'story' | 'screenplay' | 'other';
+
 export interface Project {
   id: string;
   title: string;
   type: 'creative' | 'academic';
+  kind?: BinderKind;
   storyPlanId: string | null;
   sprintText?: string;
   // Drawers D1 — the Drawer this project lives in. Absent → "Unsorted".
@@ -172,6 +180,11 @@ export interface JournalEntry {
   // The Page↔Beat seam (Foundation 3) — which plot slot a page belongs to. Laid
   // now so a page can know its beat; the Plan-jump UI is a later brief.
   beatId?: string;
+  // Page type (B1) — what a page IS within a project: `manuscript` (the writing
+  // — chapters/scenes) vs support pages (character/worldbuilding/research/note).
+  // Absent → untyped (legacy filed pages, loose journal pages). Story Structure is
+  // NOT a page type — it's the project's Plan (StoryPlan/StructureBoard).
+  pageType?: 'manuscript' | 'character' | 'worldbuilding' | 'research' | 'note';
 }
 
 // Writing-session instrumentation (A9). The collection is wired through the

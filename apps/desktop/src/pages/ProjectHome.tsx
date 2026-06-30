@@ -1,16 +1,33 @@
-import { useParams, Link, Navigate } from 'react-router-dom';
-import { getProject, getStoryPlanByProjectId, getBinderPages } from '../store/persistence';
+import { useState } from 'react';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
+import { getProject, getStoryPlanByProjectId, getBinderPages, createBinderPage } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { firstLine } from '../store/entryText';
 import { PageFileMenu } from '../components/PageFileMenu';
+import type { JournalEntry } from '../types';
+
+const SUPPORT_TYPES: { key: NonNullable<JournalEntry['pageType']>; label: string }[] = [
+  { key: 'character', label: 'Character' },
+  { key: 'worldbuilding', label: 'Worldbuilding' },
+  { key: 'research', label: 'Research' },
+  { key: 'note', label: 'Note' },
+];
+
+// Open a binder page: typed pages (manuscript/support, B1) use the mode-aware
+// page editor; legacy untyped filed pages keep the authored journal editor.
+function pageRoute(p: JournalEntry): string {
+  return p.pageType ? `/page/${p.id}` : `/journal/${p.id}`;
+}
 
 export function ProjectHome() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [addingSupport, setAddingSupport] = useState(false);
   const project = id ? getProject(id) : null;
   const storyPlan = id ? getStoryPlanByProjectId(id) : null;
   const framework = storyPlan ? getFramework(storyPlan.frameworkId) : null;
 
-  if (!project) {
+  if (!project || !id) {
     return <Navigate to="/" replace />;
   }
 
@@ -20,9 +37,16 @@ export function ProjectHome() {
   const totalBeats = beatNotes.length;
   const hasSprint = !!project.sprintText?.trim();
   const currentBeat = framework?.beats.find(b => b.id === storyPlan?.currentBeatId);
-  // Pages filed into this binder (D2). The main draft above stays the binder's
-  // primary surface; these are additional documents filed from the Shelf/Journal.
-  const pages = id ? getBinderPages(id) : [];
+  // Pages in this binder (B1). Manuscript pages are the writing (chapters/scenes);
+  // support pages (character/worldbuilding/research/note) are grouped apart. Legacy
+  // untyped pages (D2 filed) ride along under support. The Plan (StoryPlan) is NOT
+  // a page — it's reached via the board.
+  const pages = getBinderPages(id).slice().sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const chapters = pages.filter(p => p.pageType === 'manuscript');
+  const support = pages.filter(p => p.pageType !== 'manuscript');
+
+  const newChapter = () => navigate(`/page/${createBinderPage(id, 'manuscript').id}`);
+  const addSupport = (type: NonNullable<JournalEntry['pageType']>) => navigate(`/page/${createBinderPage(id, type).id}`);
 
   // One brass action, computed from state.
   const primary = storyPlan && currentBeat
@@ -95,26 +119,57 @@ export function ProjectHome() {
         </div>
       )}
 
-      {/* Pages (D2) — documents filed into this binder, from the Shelf or Journal. */}
-      {pages.length > 0 && (
-        <div style={{ marginTop: '1.5rem' }}>
-          <div className="eyebrow" style={{ marginBottom: 8 }}>Pages</div>
-          <div className="dz-tree" style={{ maxWidth: '100%', margin: 0 }}>
-            <div className="dz-group">
-              <div className="dz-items" style={{ borderTop: 'none' }}>
-                {pages.map(p => (
-                  <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
-                    <Link to={`/journal/${p.id}`} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
-                      {p.text.trim() ? firstLine(p.text).slice(0, 80) : 'Untitled page'}
-                    </Link>
-                    <PageFileMenu page={p} label="move…" />
-                  </div>
-                ))}
-              </div>
+      {/* Manuscript (B1) — the writing: chapters / scenes, ordered. */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>Manuscript</div>
+        <div className="dz-tree" style={{ maxWidth: '100%', margin: 0 }}>
+          <div className="dz-group">
+            <div className="dz-items" style={{ borderTop: 'none' }}>
+              {chapters.length === 0 && <div className="dz-empty">No chapters yet.</div>}
+              {chapters.map((p, i) => (
+                <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
+                  <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                    {p.text.trim() ? firstLine(p.text).slice(0, 80) : `Chapter ${i + 1}`}
+                  </Link>
+                  <PageFileMenu page={p} label="move…" />
+                </div>
+              ))}
+              <button type="button" className="dz-more" onClick={newChapter}>+ New chapter</button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Support pages (B1) — character / worldbuilding / research / note. */}
+      <div style={{ marginTop: '1.25rem' }}>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>Support pages</div>
+        <div className="dz-tree" style={{ maxWidth: '100%', margin: 0 }}>
+          <div className="dz-group">
+            <div className="dz-items" style={{ borderTop: 'none' }}>
+              {support.length === 0 && <div className="dz-empty">No support pages yet.</div>}
+              {support.map(p => (
+                <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
+                  <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                    {p.pageType && <span className="dz-count" style={{ marginRight: 8, textTransform: 'capitalize' }}>{p.pageType}</span>}
+                    {p.text.trim() ? firstLine(p.text).slice(0, 70) : 'Untitled'}
+                  </Link>
+                  <PageFileMenu page={p} label="move…" />
+                </div>
+              ))}
+              {addingSupport ? (
+                <div className="dz-row" style={{ paddingLeft: 6, gap: 6, flexWrap: 'wrap' }}>
+                  {SUPPORT_TYPES.map(t => (
+                    <button key={t.key} type="button" className="dz-more" style={{ margin: 0 }} onClick={() => addSupport(t.key)}>{t.label}</button>
+                  ))}
+                  <button type="button" className="dz-more" style={{ margin: 0, color: 'var(--text-low)' }} onClick={() => setAddingSupport(false)}>cancel</button>
+                </div>
+              ) : (
+                <button type="button" className="dz-more" onClick={() => setAddingSupport(true)}>+ Add support page</button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

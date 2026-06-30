@@ -239,6 +239,25 @@ export function createProject(title: string, type: 'creative' | 'academic'): Pro
   return project;
 }
 
+// Create a Binder (B1) — a project with a `kind` (book/story/screenplay/other)
+// and an optional home drawer. New Books/Stories live as chapter Pages, never the
+// `sprintText` body, so this never seeds one.
+export function createBinder(title: string, kind: Project['kind'], drawerId?: string): Project {
+  const now = new Date().toISOString();
+  const project: Project = {
+    id: generateId(),
+    title: title.trim() || 'Untitled',
+    type: 'creative',
+    kind,
+    storyPlanId: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  if (drawerId) project.drawerId = drawerId;
+  saveProject(project);
+  return project;
+}
+
 function formatDefaultSprintTitle(now: Date): string {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -602,6 +621,24 @@ export function createJournalPage(): JournalEntry {
     id: generateId(),
     text: '',
     projectId: null,
+    source: 'page',
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
+// Create a typed page inside a Binder (B1) — a JournalEntry parented to the
+// project, with a pageType (manuscript chapter/scene, or a support page). New
+// Books/Stories are project + chapter Pages; this is how a chapter is born.
+export function createBinderPage(binderId: string, pageType: NonNullable<JournalEntry['pageType']>): JournalEntry {
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text: '',
+    projectId: binderId,
+    pageType,
     source: 'page',
     createdAt: now,
     updatedAt: now,

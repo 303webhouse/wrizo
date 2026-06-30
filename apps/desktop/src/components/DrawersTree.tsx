@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Drawer, Project } from '../types';
 import {
-  createDrawer, getDrawers, getProjects, renameDrawer, setProjectDrawer, softDeleteDrawer,
+  createDrawer, createJournalPage, getDrawers, getProjects, renameDrawer, setProjectDrawer, softDeleteDrawer,
 } from '../store/persistence';
 
 // Drawers D1 — the browsable Drawer → Binder(Project) tree that replaces the
@@ -40,6 +40,7 @@ export function DrawersTree() {
   const [editingValue, setEditingValue] = useState('');
   const [menuFor, setMenuFor] = useState<string | null>(null);   // drawer id w/ rename·delete menu open
   const [moveFor, setMoveFor] = useState<string | null>(null);   // project id w/ move-to menu open
+  const [createFor, setCreateFor] = useState<string | null>(null); // drawer id w/ "create new" menu open
 
   const isOpen = (id: string) => expanded.has(id);
   const toggle = (id: string) => setExpanded(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -147,7 +148,24 @@ export function DrawersTree() {
                 )}
               </div>
             </div>
-            {isOpen(d.id) && renderItems(d.id, items, d.id)}
+            {isOpen(d.id) && (
+              <>
+                {renderItems(d.id, items, d.id)}
+                {/* In-drawer "Create New" (B1 #10) — New Page / New Project scoped
+                    to this drawer (a project created here gets this drawerId). */}
+                <div className="dz-createnew">
+                  {createFor === d.id ? (
+                    <>
+                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); const e = createJournalPage(); navigate(`/journal/${e.id}`); }}>New Page</button>
+                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); navigate(`/project/new?drawer=${d.id}`); }}>New Project</button>
+                      <button type="button" className="dz-more dz-createnew-cancel" onClick={() => setCreateFor(null)}>cancel</button>
+                    </>
+                  ) : (
+                    <button type="button" className="dz-more" onClick={() => setCreateFor(d.id)}>+ Create New</button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         );
       })}
