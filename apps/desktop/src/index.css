@@ -945,7 +945,7 @@ a:focus-visible,
 .assist-connect:hover{ background:rgba(255,152,0,.10); }
 .assist-response{ color:var(--text-hi); font-size:14px; line-height:1.6; white-space:pre-wrap; }
 
-.mode-pagecol{ position:relative; z-index:1; width:min(620px,62vw); display:flex; flex-direction:column; }
+.mode-pagecol{ position:relative; z-index:1; width:min(700px,64vw); display:flex; flex-direction:column; }
 
 /* Format / pen bar — chrome at the top of the page. */
 .mode-bar{ display:flex; align-items:center; gap:4px; background:var(--ink-900);
@@ -985,10 +985,18 @@ a:focus-visible,
 /* Progress under the page — feedback, stays visible while writing. */
 .mode-progress{ margin-top:12px; display:flex; flex-direction:column; gap:6px; }
 .mode-ptrack{ height:5px; background:#2a1808; border:1px solid var(--ink-border); }
-.mode-pfill{ height:100%; width:0%; background:var(--brass); transition:width 1s ease; }
+.mode-pfill{ height:100%; width:0%; background:var(--brass); transition:width .4s ease; }
+.mode-pfill.rewarded{ animation:pfill-reward .65s ease; }
+@keyframes pfill-reward{ 0%{ box-shadow:0 0 0 0 rgba(255,152,0,.55); } 100%{ box-shadow:0 0 9px 2px rgba(255,152,0,0); } }
 .mode-pmeta{ display:flex; justify-content:space-between; align-items:center; font-size:11px;
   color:var(--text-low); letter-spacing:.3px; }
-.mode-pmetric{ text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
+.mode-pmetric{ display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
+.mode-pagenum{ color:var(--brass-press); font-family:var(--font-mono); letter-spacing:.3px; }
+
+/* Page-turn (B5) — a subtle paper-feed flip on overflow; honors reduced-motion. */
+@keyframes mode-flip{ 0%{ transform:none; } 28%{ transform:translateY(-7px) scale(.997); } 100%{ transform:none; } }
+.mode-page.flipping{ animation:mode-flip .5s cubic-bezier(.3,.7,.3,1); }
+@media (prefers-reduced-motion:reduce){ .mode-page.flipping{ animation:none; } }
 
 /* Settings gear + popover (top-right of the stage). */
 .mode-gear-wrap{ position:absolute; top:-2px; right:0; z-index:5; display:flex; align-items:center; gap:8px; }
@@ -1016,6 +1024,7 @@ a:focus-visible,
   .mode-rail{ display:none; }
   .mode-pagecol{ width:min(620px,94vw); }
 }
+
 
 
 /* ============================================================================
@@ -1151,4 +1160,27 @@ a:focus-visible,
 @media (max-width:720px){
   .app-main{ padding-left:56px; }
   .desk-rail{ width:56px; }
+}
+
+/* Large-screen foundations (B5) — placed LAST so it overrides the base widths.
+   Scale small type + icons up at wide widths so the 32" is legible (no 7.5px
+   sublabels, no dot-sized icons); the writing column stays a centred sane
+   max-width with the surround as intentional ambient dark. The baseline is
+   always-correct — the ambitious spatial layout is the deferred mockup round.
+   The home (.wz-desk) already uses clamp() type, so it scales too. */
+@media (min-width:1700px){
+  .mode-tab{ font-size:15px; padding:7px 18px; }
+  .mode-tab__sub{ font-size:9px; }
+  .mode-iconbtn{ width:40px; height:40px; }
+  .mode-iconbtn svg{ width:24px; height:24px; }
+  .desk-rail{ width:78px; }
+  .desk-rail-glyph{ font-size:23px; }
+  .desk-rail-label{ font-size:11px; }
+  .app-main{ padding-left:78px; }
+  .mode-rail{ width:248px; }
+  .mode-pagecol{ width:min(760px,46vw); }
+  .mode-page{ font-size:19px; }
+  .sprint-crumb, .sprint-nav .btn-quiet, .sprint-toggle-btn{ font-size:15px; }
+  .mode-pmeta{ font-size:13px; }
+  .mode-pmetric{ font-size:10px; }
 }
