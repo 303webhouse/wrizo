@@ -164,6 +164,7 @@ function JournalEntryView() {
     const onDown = (e: PointerEvent) => {
       if (e.pointerType !== 'pen') return; // palm/finger/mouse fall through (and to text on authored pages)
       if ((e.target as Element | null)?.closest?.('.ink-undo')) return;
+      e.stopPropagation(); // keep the pen off the editable text node (no caret, no handwriting)
       captureRectRef.current = sheet.getBoundingClientRect();
       const ac = activeRef.current;
       if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
@@ -208,15 +209,23 @@ function JournalEntryView() {
       clearActive();
     };
 
-    sheet.addEventListener('pointerdown', onDown, { passive: false });
-    sheet.addEventListener('pointermove', onMove, { passive: false });
-    sheet.addEventListener('pointerup', onUp, { passive: false });
-    sheet.addEventListener('pointercancel', onCancel, { passive: false });
+    // CAPTURE phase (fix-journal-ink): on an authored page the editable text node
+    // is the pen's event TARGET, so a bubble-phase listener fired AFTER it — and OS
+    // stylus handwriting (which converts the pen to text) had already won at the
+    // target. Listening in the capture phase lets the sheet intercept a pen FIRST
+    // and preventDefault the handwriting/default action, so the stroke goes to the
+    // ink canvas, never the text field. Non-pen (finger/mouse) still falls through
+    // (onDown returns without preventDefault), so caret/typing are unaffected.
+    const opts = { passive: false, capture: true } as const;
+    sheet.addEventListener('pointerdown', onDown, opts);
+    sheet.addEventListener('pointermove', onMove, opts);
+    sheet.addEventListener('pointerup', onUp, opts);
+    sheet.addEventListener('pointercancel', onCancel, opts);
     return () => {
-      sheet.removeEventListener('pointerdown', onDown);
-      sheet.removeEventListener('pointermove', onMove);
-      sheet.removeEventListener('pointerup', onUp);
-      sheet.removeEventListener('pointercancel', onCancel);
+      sheet.removeEventListener('pointerdown', onDown, opts);
+      sheet.removeEventListener('pointermove', onMove, opts);
+      sheet.removeEventListener('pointerup', onUp, opts);
+      sheet.removeEventListener('pointercancel', onCancel, opts);
     };
   }, [id]);
 
