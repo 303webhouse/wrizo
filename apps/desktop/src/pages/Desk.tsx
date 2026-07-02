@@ -1,28 +1,26 @@
 import { useNavigate } from 'react-router-dom';
-import { clearDraft } from '../store/persistence';
-import { getResumeTarget } from '../store/resume';
+import { clearDraft, getBinderPages } from '../store/persistence';
+import { firstLine } from '../store/entryText';
+import { getResumeTarget, relativeDays } from '../store/resume';
+import { describeTarget } from '../store/resumeVocab';
 import { deskOwnerName } from '../store/currentUser';
 import { DrawersTree } from '../components/DrawersTree';
 
 // The Desk — the authed home (B4). Answers one question (what now?): a single
-// primary action (Keep writing if there's recent work, else Start something →
-// the create flow), a quiet glance at recent drawers + On the Shelf below, and
-// the create entry. The left rail owns navigation, so the home no longer
-// duplicates it (no "Open a Drawer / Open the journal"). The logo is a single
-// app-wide element (App.BrandMark), full opacity here, faded elsewhere.
+// primary action, a quiet glance at recent drawers + On the Shelf below, and the
+// create entry. The left rail owns navigation, so the home no longer duplicates
+// it. The logo is a single app-wide element (App.BrandMark), full opacity here.
+//
+// F2 — when there's recent work, the primary block becomes the RETURN CARD: a
+// mirror of the writer's own last sentence, rendered only from the typed resume
+// pointer (F1). No target → the plain "Start something" primary, unchanged.
 
 const CUSTOMIZE_TIP =
   'Color themes and AI writing help unlock at writing milestones — and never expire.';
 
 export function Desk() {
   const navigate = useNavigate();
-  // The typed resume pointer (F1) is the single source: the most recently edited
-  // surface — a binder chapter Page (mode-aware editor), a loose/shelf page, or a
-  // legacy body — resolved with its correct route. (F2 renders the return card.)
   const resume = getResumeTarget();
-  const primary = resume
-    ? { label: 'Keep writing', route: resume.route }
-    : { label: 'Start something', route: '/project/new' };
 
   return (
     <div className="wz-home">
@@ -35,7 +33,10 @@ export function Desk() {
         </header>
         <p className="wz-desksub">Scribble, draft, plot, revise, or share (coming soon)</p>
 
-        <button type="button" className="wz-btn wz-primary" onClick={() => navigate(primary.route)}>{primary.label}</button>
+        {resume ? <ReturnCard /> : (
+          <button type="button" className="wz-btn wz-primary" onClick={() => navigate('/project/new')}>Start something</button>
+        )}
+
         <div className="wz-secondary">
           <span className="wz-link" onClick={() => { clearDraft('scratch'); navigate('/sprint'); }}>New page</span>
           <span className="wz-dot">·</span>
@@ -52,6 +53,63 @@ export function Desk() {
           <div className="wz-tip"><b>Earned as you write.</b><br />{CUSTOMIZE_TIP}</div>
         </div>
       </section>
+    </div>
+  );
+}
+
+// The return card — pick-up-where-you-left-off, rendered purely from the typed
+// pointer + its vocabulary. Orange lands only on the action and the tag.
+function ReturnCard() {
+  const navigate = useNavigate();
+  const target = getResumeTarget();
+  if (!target) return null;
+  const vocab = describeTarget(target);
+
+  const fallbackTitle = target.entry ? firstLine(target.entry.text) : (target.project?.title ?? 'Untitled');
+  const line = target.lastLine ? `“${target.lastLine}”` : fallbackTitle;
+
+  // Bold the writer-meaningful crumb piece: the project (binder) or the page label.
+  const boldIdx = target.entry && target.home === 'binder' ? vocab.crumb.length - 2 : vocab.crumb.length - 1;
+
+  // Structural link: a support page (non-manuscript) offers a one-tap route back
+  // to the binder's manuscript — a fact of the binder, never a prediction. Omit
+  // when the binder has no manuscript page.
+  let manuscriptLink: { route: string; title: string } | null = null;
+  if (target.home === 'binder' && target.pageType && target.pageType !== 'manuscript' && target.project) {
+    const ms = getBinderPages(target.project.id).find(p => p.pageType === 'manuscript');
+    if (ms) manuscriptLink = { route: `/page/${ms.id}`, title: firstLine(ms.text).slice(0, 40) };
+  }
+
+  const keepWriting = () => navigate(target.route, { state: { warmStart: true } });
+
+  return (
+    <div className="wz-return">
+      <div className="wz-return-top">
+        <span className="wz-return-eyebrow">PICK UP WHERE YOU LEFT OFF</span>
+        <span className="wz-return-tag">{vocab.tag}</span>
+      </div>
+      <div className="wz-return-crumb">
+        {vocab.crumb.map((piece, i) => (
+          <span key={i}>
+            {i > 0 && <span className="wz-return-sep"> / </span>}
+            {i === boldIdx ? <b>{piece}</b> : piece}
+          </span>
+        ))}
+      </div>
+      <div className="wz-return-line">{line}</div>
+      <div className="wz-return-row">
+        <span className="wz-return-when">{relativeDays(target.daysAgo)}</span>
+        <button type="button" className="wz-btn wz-primary wz-return-go" onClick={keepWriting}>Keep writing</button>
+      </div>
+      <div className="wz-return-alt">
+        {manuscriptLink ? (
+          <button type="button" className="wz-return-altlink" onClick={() => navigate(manuscriptLink!.route, { state: { warmStart: true } })}>
+            …or back to the manuscript → {manuscriptLink.title}
+          </button>
+        ) : vocab.note ? (
+          <span className="wz-return-note">{vocab.note}</span>
+        ) : null}
+      </div>
     </div>
   );
 }

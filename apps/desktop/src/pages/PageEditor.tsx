@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage } from '../components/ModeStage';
+import { useWarmStart } from '../components/useWarmStart';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -51,6 +52,12 @@ function PageEditorView({ id }: { id: string }) {
   const editorRef = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
 
+  // Warm start (F2) — captured once at mount (the hook strips the one-shot state).
+  const location = useLocation();
+  const warmRef = useRef(!!(location.state as { warmStart?: boolean } | null)?.warmStart);
+  const warmWrapRef = useRef<HTMLDivElement>(null);
+  const warm = useWarmStart(warmRef.current, editorRef, warmWrapRef);
+
   const switchMode = (next: EditorMode) => {
     if (next === mode) return;
     setModeSeed(textRef.current); // carry the current clean text into the new mode
@@ -89,7 +96,9 @@ function PageEditorView({ id }: { id: string }) {
 
   if (!entry) return <Navigate to="/" replace />;
 
-  const backTo = project ? `/project/${project.id}` : '/journal';
+  // Exit lands where the page lives: its binder, the Shelf if shelved, else the
+  // Journal (F2 papercut — a shelved typed page returned to /journal before).
+  const backTo = project ? `/project/${project.id}` : entry.shelved ? '/shelf' : '/journal';
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
   return (
@@ -124,23 +133,32 @@ function PageEditorView({ id }: { id: string }) {
         onDissolveChange={setReceded}
       >
         {({ noteWrite, penColor }) => (
-          <ForwardOnlyEditor
-            key={`${id}-${mode}`}
-            ref={editorRef}
-            initialText={modeSeed}
-            mode={mode}
-            onChange={setText}
-            onForward={noteWrite}
-            onFocus={() => setFocused(true)}
-            onBlur={() => { setFocused(false); flush(); }}
-            placeholder="Write…"
-            ariaLabel="Page writing surface"
-            penColor={penColor}
-            style={{
-              width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
-              fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
-            }}
-          />
+          <div ref={warmWrapRef} style={{ position: 'relative', width: '100%', minHeight: '100%' }}>
+            <ForwardOnlyEditor
+              key={`${id}-${mode}`}
+              ref={editorRef}
+              initialText={modeSeed}
+              mode={mode}
+              onChange={setText}
+              onForward={() => { noteWrite(); warm.release(); }}
+              onFocus={() => setFocused(true)}
+              onBlur={() => { setFocused(false); flush(); }}
+              placeholder="Write…"
+              ariaLabel="Page writing surface"
+              penColor={penColor}
+              style={{
+                width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
+                fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
+              }}
+            />
+            {warm.rect && (
+              <div
+                aria-hidden="true"
+                className={`wz-warm${warm.settled ? ' wz-warm--settled' : ''}`}
+                style={{ position: 'absolute', top: warm.rect.top, left: warm.rect.left, width: warm.rect.width, height: warm.rect.height }}
+              />
+            )}
+          </div>
         )}
       </ModeStage>
     </div>
