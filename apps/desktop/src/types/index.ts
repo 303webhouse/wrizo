@@ -104,9 +104,12 @@ export interface Project {
   fragments?: Fragment[];
   createdAt: string;
   updatedAt: string;
-  // Resume data (A3) — stamped by the adapter on sprint/beat writes.
+  // Resume data (A3) — stamped by the adapter on sprint/beat writes. F1 adds
+  // 'page': binder Pages (B1) stamp the parent on every save, and `lastActivePageId`
+  // records which Page was last edited so resume can reopen the exact chapter.
   lastActivityAt?: string;
-  lastActivityType?: 'sprint' | 'beat';
+  lastActivityType?: 'sprint' | 'beat' | 'page';
+  lastActivePageId?: string;
   // Soft delete — rows that must sync are never hard-deleted (see storage adapter / sync).
   deletedAt?: string;
 }

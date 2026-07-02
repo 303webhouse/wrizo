@@ -73,7 +73,7 @@ export function Shelf() {
                   checked={selected.has(p.id)}
                   onChange={() => toggleSel(p.id)}
                 />
-                <button type="button" className="shelf-open" onClick={() => navigate(`/journal/${p.id}`)}>
+                <button type="button" className="shelf-open" onClick={() => navigate(p.pageType ? `/page/${p.id}` : `/journal/${p.id}`)}>
                   <span className="shelf-label">{label}</span>
                   {!textEmpty && <span className="shelf-snippet">{snippet(p.text, 110)}</span>}
                   <span className="shelf-time">{formatStamp(p.updatedAt)}</span>
