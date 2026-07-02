@@ -375,6 +375,10 @@ function JournalEntryView() {
   }, [id]);
 
   if (!entry) return <Navigate to="/journal" replace />;
+  // F1 route hygiene — a TYPED page (a binder chapter/support page, B1) is owned by
+  // the mode-aware editor; never open it in the ink-authored view. Legacy untyped
+  // filed pages stay here (ink preservation is load-bearing).
+  if (entry.pageType != null) return <Navigate to={`/page/${entry.id}`} replace />;
 
   const authored = entry.source === 'page';
   const projects = getProjects();

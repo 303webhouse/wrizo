@@ -609,6 +609,22 @@ export function getSessions(): SessionLog[] {
 
 export function saveJournalEntry(entry: JournalEntry): void {
   upsert('journalEntries', cache.journalEntries, clone(entry));
+  // F1 — resume stamping: a binder Page edit bumps its parent project's resume
+  // pointer. ONE seam catches PageEditor autosave, legacy filed-page edits via
+  // JournalEntry, and filing via setPageHome. Loose pages (no projectId) skip.
+  if (entry.projectId) stampPageActivity(entry.projectId, entry.id);
+}
+
+// Stamp a project's resume pointer to a just-edited Page (F1). Skips silently if
+// the project is missing or soft-deleted (getProject returns null). Every-save
+// stamping mirrors the sprint pattern (setProjectSprintText) — no new cadence.
+function stampPageActivity(projectId: string, pageId: string): void {
+  const project = getProject(projectId);
+  if (!project) return;
+  project.lastActivityAt = new Date().toISOString();
+  project.lastActivityType = 'page';
+  project.lastActivePageId = pageId;
+  saveProject(project);
 }
 
 // Create a blank, directly-authored journal page (J10) and persist it. Marked

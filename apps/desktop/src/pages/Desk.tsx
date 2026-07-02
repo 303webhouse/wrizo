@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { clearDraft, getJournalEntries } from '../store/persistence';
+import { clearDraft } from '../store/persistence';
 import { getResumeTarget } from '../store/resume';
 import { deskOwnerName } from '../store/currentUser';
 import { DrawersTree } from '../components/DrawersTree';
@@ -16,26 +16,12 @@ const CUSTOMIZE_TIP =
 
 export function Desk() {
   const navigate = useNavigate();
+  // The typed resume pointer (F1) is the single source: the most recently edited
+  // surface — a binder chapter Page (mode-aware editor), a loose/shelf page, or a
+  // legacy body — resolved with its correct route. (F2 renders the return card.)
   const resume = getResumeTarget();
-  const entries = getJournalEntries()
-    .filter(e => !e.deletedAt)
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  const latestEntry = entries[0] || null;
-
-  // Keep writing re-orients to the most recent work; a project opens its overview,
-  // a journal page opens that page, whichever was touched most recently.
-  const projectMs = resume ? new Date(resume.project.lastActivityAt || resume.project.updatedAt).getTime() : 0;
-  const entryMs = latestEntry ? new Date(latestEntry.updatedAt).getTime() : 0;
-  const keepWritingRoute =
-    resume && projectMs >= entryMs ? `/project/${resume.project.id}`
-    : latestEntry ? `/journal/${latestEntry.id}`
-    : resume ? `/project/${resume.project.id}`
-    : '/sprint';
-
-  // One obvious action: resume if there's recent work, else start something.
-  const hasWork = !!resume || !!latestEntry;
-  const primary = hasWork
-    ? { label: 'Keep writing', route: keepWritingRoute }
+  const primary = resume
+    ? { label: 'Keep writing', route: resume.route }
     : { label: 'Start something', route: '/project/new' };
 
   return (

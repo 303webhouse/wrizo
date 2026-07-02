@@ -65,4 +65,8 @@ export async function runMigrations(): Promise<void> {
   // boot path; new rows read null (treated as Other / untyped) — no backfill.
   await pool.query(`alter table projects add column if not exists kind text`);
   await pool.query(`alter table journal_entries add column if not exists page_type text`);
+
+  // F1 — resume pointer to the last-edited binder Page (last_activity_type may now
+  // be 'page' — an existing text column, no DDL). Null resolves by newest page.
+  await pool.query(`alter table projects add column if not exists last_active_page_id text`);
 }

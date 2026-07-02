@@ -28,6 +28,7 @@ function rowToProject(r: any) {
     kind: r.kind ?? undefined,
     lastActivityAt: iso(r.last_activity_at) ?? undefined,
     lastActivityType: r.last_activity_type ?? undefined,
+    lastActivePageId: r.last_active_page_id ?? undefined,
     deletedAt: iso(r.deleted_at) ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
@@ -104,20 +105,21 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
       await pool.query(
         `insert into projects
            (id, user_id, title, type, sprint_text, story_plan_id, drawer_id, kind,
-            last_activity_at, last_activity_type, deleted_at, created_at, updated_at)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+            last_activity_at, last_activity_type, last_active_page_id, deleted_at, created_at, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
          on conflict (id) do update set
            title = excluded.title, type = excluded.type,
            sprint_text = excluded.sprint_text, story_plan_id = excluded.story_plan_id,
            drawer_id = excluded.drawer_id, kind = excluded.kind,
            last_activity_at = excluded.last_activity_at,
            last_activity_type = excluded.last_activity_type,
+           last_active_page_id = excluded.last_active_page_id,
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
          where projects.user_id = excluded.user_id
            and excluded.updated_at > projects.updated_at`,
         [p.id, userId, p.title ?? '', p.type ?? 'creative', p.sprintText ?? null,
          p.storyPlanId ?? null, p.drawerId ?? null, p.kind ?? null, p.lastActivityAt ?? null, p.lastActivityType ?? null,
-         p.deletedAt ?? null, p.createdAt, p.updatedAt],
+         p.lastActivePageId ?? null, p.deletedAt ?? null, p.createdAt, p.updatedAt],
       );
     } catch (err) {
       console.error('[sync] project upsert failed', p.id, err);
