@@ -797,6 +797,15 @@ a:focus-visible,
 .wz-secondary{ display:flex; align-items:center; gap:.7rem; margin-top:.4rem; }
 .wz-link{ font-family:var(--wz-ui); color:var(--wz-ink-dim); font-size:.95rem; cursor:pointer; transition:color .25s; }
 .wz-link:hover{ color:var(--wz-ink); }
+/* F3 — Catch: the zero-decision capture. A bordered quiet button (tan, NEVER
+   orange — the orange budget stays on the return card's primary) + a kbd hint. */
+.wz-catch{ font-family:var(--wz-ui); font-weight:600; font-size:.92rem; color:var(--wz-ink-dim);
+  background:transparent; border:1px solid var(--wz-whisper); border-radius:0; padding:.55rem 1rem;
+  cursor:pointer; display:inline-flex; align-items:center; gap:.55rem; transition:color .25s, border-color .25s; }
+.wz-catch:hover{ color:var(--wz-ink); border-color:var(--wz-ink-dim); }
+.wz-catch:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:3px; }
+.wz-kbd{ font-family:var(--wz-ui); font-size:.62rem; letter-spacing:.06em; color:var(--wz-whisper);
+  border:1px solid var(--wz-whisper); border-radius:0; padding:1px 5px; }
 
 .wz-btn{ font-family:var(--wz-ui); font-weight:600; font-size:.98rem; letter-spacing:.02em; padding:.8rem 1.6rem; border-radius:0;
   border:1px solid var(--wz-orange-line); background:transparent; color:var(--wz-orange); cursor:pointer;
@@ -1168,6 +1177,10 @@ a:focus-visible,
 .desk-rail-item.deferred:hover{ color:var(--ink-border-strong); background:none; }
 .desk-rail-glyph{ font-size:18px; line-height:1; }
 .desk-rail-label{ font-size:9px; letter-spacing:.5px; }
+/* F3 — Catch action at the top of the rail. Quiet tan, matching the rail items;
+   an always-available one-tap capture from every authed surface. */
+.desk-rail-catch{ margin-bottom:6px; }
+.desk-rail-catch .desk-rail-glyph{ font-size:20px; }
 
 /* The file's navigation row. */
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;

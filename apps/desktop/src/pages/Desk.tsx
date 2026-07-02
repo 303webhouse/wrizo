@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { clearDraft, getBinderPages } from '../store/persistence';
+import { getBinderPages } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { getResumeTarget, relativeDays } from '../store/resume';
 import { describeTarget } from '../store/resumeVocab';
 import { deskOwnerName } from '../store/currentUser';
 import { DrawersTree } from '../components/DrawersTree';
+import { useCatch } from '../components/useCatch';
 
 // The Desk — the authed home (B4). Answers one question (what now?): a single
 // primary action, a quiet glance at recent drawers + On the Shelf below, and the
@@ -20,6 +21,7 @@ const CUSTOMIZE_TIP =
 
 export function Desk() {
   const navigate = useNavigate();
+  const doCatch = useCatch();
   const resume = getResumeTarget();
 
   return (
@@ -38,7 +40,9 @@ export function Desk() {
         )}
 
         <div className="wz-secondary">
-          <span className="wz-link" onClick={() => { clearDraft('scratch'); navigate('/sprint'); }}>New page</span>
+          <button type="button" className="wz-catch" onClick={doCatch}>
+            ＋ Catch a thought<span className="wz-kbd" aria-hidden="true">N</span>
+          </button>
           <span className="wz-dot">·</span>
           <span className="wz-link" onClick={() => navigate('/project/new')}>Begin project</span>
         </div>
