@@ -1,6 +1,7 @@
-import type { BinderKind, JournalEntry } from '../types';
+import type { JournalEntry } from '../types';
 import { firstLine } from './entryText';
 import { getDrawer } from './persistence';
+import { kindTag } from './kindLabels';
 import type { ResumeTarget } from './resume';
 
 // F2 — the return card's vocabulary. A PURE function of the typed resume pointer
@@ -16,10 +17,6 @@ export interface TargetVocab {
   note?: string;       // a quiet, non-interactive aside (loose/shelf); links are built on the card
 }
 
-const KIND_LABEL: Record<BinderKind, string> = {
-  book: 'BOOK', story: 'STORY', screenplay: 'SCREENPLAY', other: '',
-};
-
 const PAGETYPE_LABEL: Record<NonNullable<JournalEntry['pageType']>, string> = {
   manuscript: 'MANUSCRIPT', character: 'CHARACTER PAGE',
   worldbuilding: 'WORLDBUILDING', research: 'RESEARCH', note: 'NOTE',
@@ -27,10 +24,11 @@ const PAGETYPE_LABEL: Record<NonNullable<JournalEntry['pageType']>, string> = {
 
 const UNFILED_NOTE = 'file it later from the Shelf, or never';
 
-// The project's FORM label: its kind, else its drawer name (uppercased), else a
-// neutral PROJECT — never a persona, only what the binder itself declares.
+// The project's FORM label: its kind (via the ONE shared map), else its drawer
+// name (uppercased), else a neutral PROJECT — never a persona, only what the
+// binder itself declares.
 function formLabel(t: ResumeTarget): string {
-  const byKind = t.kind ? KIND_LABEL[t.kind] : '';
+  const byKind = kindTag(t.kind);
   if (byKind) return byKind;
   const drawerName = t.project?.drawerId ? getDrawer(t.project.drawerId)?.name : undefined;
   return drawerName ? drawerName.toUpperCase() : 'PROJECT';

@@ -139,6 +139,7 @@ function PageEditorView({ id }: { id: string }) {
               ref={editorRef}
               initialText={modeSeed}
               mode={mode}
+              autoFocus={initialText.trim() === ''}
               onChange={setText}
               onForward={() => { noteWrite(); warm.release(); }}
               onFocus={() => setFocused(true)}
