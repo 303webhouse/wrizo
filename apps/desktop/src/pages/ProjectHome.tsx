@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
-import { getProject, getStoryPlanByProjectId, getBinderPages, createBinderPage } from '../store/persistence';
+import { getProject, getStoryPlanByProjectId, getBinderPages, createBinderPage, saveProject } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { firstLine } from '../store/entryText';
+import { domainLabel } from '../store/kindLabels';
 import { PageFileMenu } from '../components/PageFileMenu';
 import type { JournalEntry } from '../types';
 
@@ -23,6 +24,8 @@ export function ProjectHome() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [addingSupport, setAddingSupport] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
   const project = id ? getProject(id) : null;
   const storyPlan = id ? getStoryPlanByProjectId(id) : null;
   const framework = storyPlan ? getFramework(storyPlan.frameworkId) : null;
@@ -48,6 +51,16 @@ export function ProjectHome() {
   const newChapter = () => navigate(`/page/${createBinderPage(id, 'manuscript').id}`);
   const addSupport = (type: NonNullable<JournalEntry['pageType']>) => navigate(`/page/${createBinderPage(id, type).id}`);
 
+  // F4 Slice 5 — title-later's other half: rename "Untitled" (or anything) inline
+  // from the place the writer naturally sees it. Enter/blur commits via saveProject
+  // (the crumb + mirror card reflect it on the next render); Escape cancels.
+  const startRename = () => { setTitleDraft(project.title); setEditingTitle(true); };
+  const commitRename = () => {
+    const next = titleDraft.trim();
+    if (next && next !== project.title) saveProject({ ...project, title: next });
+    setEditingTitle(false);
+  };
+
   // One brass action, computed from state.
   const primary = storyPlan && currentBeat
     ? { label: `Next beat: ${currentBeat.name}`, to: `/project/${id}/beat` }
@@ -64,9 +77,25 @@ export function ProjectHome() {
       </Link>
 
       <div className="eyebrow" style={{ marginBottom: 8 }}>
-        {project.type === 'creative' ? 'Creative project' : 'Academic project'}
+        {domainLabel(project.type)}
       </div>
-      <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>{project.title}</h1>
+      {editingTitle ? (
+        <input
+          className="page-title project-rename"
+          autoFocus
+          value={titleDraft}
+          onChange={e => setTitleDraft(e.target.value)}
+          onBlur={commitRename}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+            else if (e.key === 'Escape') { setEditingTitle(false); }
+          }}
+          aria-label="Project title"
+          style={{ marginBottom: '1.5rem', background: 'transparent', border: 'none', borderBottom: '1px solid var(--brass)', color: 'var(--text-hi)', outline: 'none', width: '100%', maxWidth: '100%', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit' }}
+        />
+      ) : (
+        <h1 className="page-title project-title-editable" style={{ marginBottom: '1.5rem', cursor: 'text' }} title="Click to rename" onClick={startRename}>{project.title}</h1>
+      )}
 
       <div style={{ marginBottom: '2rem' }}>
         {(hasSprint || touchedBeats > 0) && (

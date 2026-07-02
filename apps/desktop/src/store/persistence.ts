@@ -242,12 +242,12 @@ export function createProject(title: string, type: 'creative' | 'academic'): Pro
 // Create a Binder (B1) — a project with a `kind` (book/story/screenplay/other)
 // and an optional home drawer. New Books/Stories live as chapter Pages, never the
 // `sprintText` body, so this never seeds one.
-export function createBinder(title: string, kind: Project['kind'], drawerId?: string): Project {
+export function createBinder(title: string, kind: Project['kind'], drawerId?: string, type: Project['type'] = 'creative'): Project {
   const now = new Date().toISOString();
   const project: Project = {
     id: generateId(),
     title: title.trim() || 'Untitled',
-    type: 'creative',
+    type,
     kind,
     storyPlanId: null,
     createdAt: now,

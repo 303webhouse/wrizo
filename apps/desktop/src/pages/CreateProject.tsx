@@ -1,102 +1,101 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createBinder, createBinderPage } from '../store/persistence';
+import { KIND_META, PICKER_GROUPS } from '../store/kindLabels';
 import type { BinderKind } from '../types';
 
-// B1 Slice 2 — the create pipeline (skeleton). Pick a kind (Book/Story/
-// Screenplay/Other) + title; optionally scoped to a drawer (?drawer=…, set by the
-// in-drawer "Create New"). Book/Story open straight into a first chapter Page in
-// the mode-aware editor; Screenplay/Other open the project home. `type` stays
-// default creative (academic deferred). Refinement of this flow is later.
-
-const KINDS: { key: BinderKind; label: string; desc: string }[] = [
-  { key: 'book', label: 'Book', desc: 'Chapters of prose — a novel or nonfiction' },
-  { key: 'story', label: 'Story', desc: 'Short fiction — scenes toward one arc' },
-  { key: 'screenplay', label: 'Screenplay', desc: 'Script format (conventions coming)' },
-  { key: 'other', label: 'Other', desc: 'Start blank and shape it as you go' },
-];
+// F4 — "What are you writing?" Domain enters at CREATE time, on the binder, never
+// as an app mode (the mirror principle). Three quiet domain groups of honest
+// per-domain forms over ONE shared machinery + label map (store/kindLabels.ts), so
+// the picker and the mirror card can never drift. Title is optional (name it after
+// you've written); every picked form lands straight on ink — binder, first page,
+// Free write, caret waiting. "Something else" opens the project overview to shape
+// as you go.
 
 export function CreateProject() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const drawerId = params.get('drawer') || undefined;
   const [title, setTitle] = useState('');
-  const [kind, setKind] = useState<BinderKind>('book');
+  const [selected, setSelected] = useState<BinderKind | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    const project = createBinder(title.trim(), kind, drawerId);
-    // Book / Story = Pages-only from the first keystroke: open a first chapter in
-    // the mode-aware editor (never the project's sprintText body).
-    if (kind === 'book' || kind === 'story') {
-      const chapter = createBinderPage(project.id, 'manuscript');
-      navigate(`/page/${chapter.id}`);
-    } else {
+  const start = () => {
+    if (!selected) return;
+    const { domain } = KIND_META[selected];
+    const project = createBinder(title.trim(), selected, drawerId, domain);
+    // 'Something else' opens the project overview (shape it as you go). Every real
+    // form is born as binder + first manuscript page and lands on the ink — the
+    // typed pointer (domain + form + pageType) is set from birth, so the mirror
+    // card speaks this project's language from day one.
+    if (selected === 'other') {
       navigate(`/project/${project.id}`);
+    } else {
+      const page = createBinderPage(project.id, 'manuscript');
+      navigate(`/page/${page.id}`);
     }
   };
 
+  const note = !selected
+    ? 'Pick a form to begin — no title required.'
+    : selected === 'other'
+      ? 'Opens the project home — shape it as you go.'
+      : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
+
   return (
-    <div className="page">
-      <Link to="/" className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
-        &larr; Back
-      </Link>
+    <div className="create-picker">
+      <button type="button" className="cp-back" onClick={() => navigate('/')}>&larr; Desk</button>
+      <div className="cp-eyebrow">NEW PROJECT</div>
+      <h1 className="cp-title">What are you writing?</h1>
+      <p className="cp-sub">Books, essays, scripts — same desk underneath. The form sets your page names, and later its format conventions and support pages.</p>
 
-      <div className="eyebrow" style={{ marginBottom: 8 }}>New project</div>
-      <h1 className="page-title">What are you writing?</h1>
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label" htmlFor="title">Title</label>
-          <input
-            id="title"
-            type="text"
-            className="form-input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Name your project…"
-            autoFocus
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Kind</label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-            {KINDS.map(k => (
-              <label
-                key={k.key}
-                className="card kind-card"
-                data-kind={k.key}
-                data-active={kind === k.key ? 'true' : 'false'}
-                style={{
-                  cursor: 'pointer',
-                  borderColor: kind === k.key ? 'var(--brass)' : 'var(--ink-border)',
-                  borderLeft: kind === k.key ? '3px solid var(--brass)' : '1px solid var(--ink-border)',
-                }}
+      {PICKER_GROUPS.map(group => (
+        <div className="cp-group" key={group.domain}>
+          <div className="cp-ghead">
+            <span className="cp-gname">{group.name}</span>
+            <span className="cp-rule" />
+          </div>
+          <div className="cp-cards">
+            {group.kinds.map(kind => (
+              <button
+                key={kind}
+                type="button"
+                className={`cp-kind${selected === kind ? ' sel' : ''}`}
+                data-kind={kind}
+                aria-pressed={selected === kind}
+                onClick={() => setSelected(kind)}
               >
-                <input
-                  type="radio"
-                  name="kind"
-                  value={k.key}
-                  checked={kind === k.key}
-                  onChange={() => setKind(k.key)}
-                  style={{ display: 'none' }}
-                />
-                <div className="card-title">{k.label}</div>
-                <div className="card-description">{k.desc}</div>
-              </label>
+                <span className="cp-k">{KIND_META[kind].label}</span>
+                <span className="cp-d">{KIND_META[kind].desc}</span>
+              </button>
             ))}
           </div>
         </div>
+      ))}
 
-        <div className="button-group">
-          <button type="submit" className="btn-brass" disabled={!title.trim()}>
-            {kind === 'book' || kind === 'story' ? 'Start writing' : 'Create'}
-          </button>
-          <Link to="/" className="btn-quiet">Cancel</Link>
-        </div>
-      </form>
+      <button
+        type="button"
+        className={`cp-else${selected === 'other' ? ' sel' : ''}`}
+        aria-pressed={selected === 'other'}
+        onClick={() => setSelected('other')}
+      >
+        Something else — start blank and shape it as you go
+      </button>
+
+      <div className="cp-titlerow">
+        <input
+          className="cp-title-input"
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && selected) { e.preventDefault(); start(); } }}
+          placeholder="Untitled — you can name it after you’ve written"
+          aria-label="Project title (optional)"
+        />
+        <button type="button" className="cp-go" disabled={!selected} onClick={start}>Start writing</button>
+      </div>
+      <div className="cp-micro">{note}</div>
+
+      <p className="cp-footnote">Support pages adapt to the domain later: character &amp; worldbuilding sheets for Creative, sources &amp; citations for Academic, interviews &amp; research for Professional. One machinery, honest names.</p>
     </div>
   );
 }

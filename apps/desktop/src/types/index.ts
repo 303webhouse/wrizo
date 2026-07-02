@@ -82,17 +82,24 @@ export interface Drawer {
   deletedAt?: string;
 }
 
-// Binder kind (B1) — the project's form / "what are you writing". Distinct from
-// `type` (creative|academic, which stays default creative). Sets the project's
+// Binder kind (B1 → F4) — the project's form / "what are you writing". Distinct
+// from `type` (the domain: creative | academic | professional). Sets the project's
 // shape (and later its structure scaffold + Format conventions, deferred). Absent
 // on legacy projects → treated as Other / untyped. "Binder" stays backstage; the
-// UI shows the project's name, never the label.
-export type BinderKind = 'book' | 'story' | 'screenplay' | 'other';
+// UI shows the project's name, never the label. F4 grows the picker into three
+// domains of honest per-domain forms; `story` is reused under the "Short fiction"
+// label (no redundant storage value). One shared label map (store/kindLabels.ts)
+// feeds both the picker and the mirror card so they can never drift.
+export type BinderKind =
+  | 'book' | 'story' | 'screenplay'          // creative
+  | 'essay' | 'thesis' | 'paper'             // academic
+  | 'article' | 'report' | 'proposal'        // professional
+  | 'other';
 
 export interface Project {
   id: string;
   title: string;
-  type: 'creative' | 'academic';
+  type: 'creative' | 'academic' | 'professional';
   kind?: BinderKind;
   storyPlanId: string | null;
   sprintText?: string;

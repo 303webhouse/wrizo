@@ -887,6 +887,59 @@ a:focus-visible,
 .wz-warm--settled{ background:transparent; box-shadow:inset 3px 0 0 transparent; opacity:0; }
 @media (prefers-reduced-motion:reduce){ .wz-warm{ transition:none; } }
 
+/* ============================================================================
+   F4 — "What are you writing?" create picker. A self-contained F-arc visual world
+   (its own local tokens, like .wz-home): three quiet domain groups over one
+   machinery. Square corners, panel bg, 1px line borders; orange ONLY on selection
+   + the Start writing button.
+   ============================================================================ */
+.create-picker{
+  --cp-ground:#110600; --cp-panel:#1b0d03; --cp-line:#3a2613; --cp-light:#f0e7d8;
+  --cp-accent:#ff9800; --cp-tan:#c9a97e; --cp-tan-mid:#9c7a52; --cp-tan-faint:#6e543a;
+  --cp-ui:var(--font-ui); --cp-prose:var(--font-prose);
+  max-width:820px; margin:0 auto; padding:clamp(2.5rem,7vh,4rem) clamp(1.4rem,5vw,4rem) 4rem;
+  color:var(--cp-light); font-family:var(--cp-ui);
+}
+.cp-back{ background:none; border:none; color:var(--cp-tan-mid); font-size:.72rem; cursor:pointer; margin-bottom:1.6rem; font-family:var(--cp-ui); }
+.cp-back:hover{ color:var(--cp-light); }
+.cp-eyebrow{ font-size:.6rem; letter-spacing:.18em; color:var(--cp-tan-faint); margin-bottom:.5rem; }
+.cp-title{ font-family:var(--cp-ui); font-size:1.5rem; font-weight:600; color:var(--cp-light); margin-bottom:.35rem; letter-spacing:-.01em; }
+.cp-sub{ font-family:var(--cp-ui); font-size:.8rem; color:var(--cp-tan-mid); margin-bottom:1.9rem; line-height:1.5; max-width:60ch; }
+
+.cp-group{ margin-bottom:1.6rem; }
+.cp-ghead{ display:flex; align-items:center; gap:.75rem; margin-bottom:.65rem; }
+.cp-gname{ font-size:.66rem; letter-spacing:.16em; color:var(--cp-tan-mid); }
+.cp-rule{ flex:1; height:1px; background:var(--cp-line); }
+.cp-cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:.65rem; }
+.cp-kind{ display:flex; flex-direction:column; gap:.25rem; text-align:left; border:1px solid var(--cp-line);
+  background:var(--cp-panel); padding:.8rem .95rem; cursor:pointer; font-family:var(--cp-ui); transition:border-color .2s; }
+.cp-kind:hover{ border-color:var(--cp-tan-mid); }
+.cp-kind.sel{ border-color:var(--cp-accent); }
+.cp-k{ font-size:.85rem; font-weight:600; color:var(--cp-light); }
+.cp-kind.sel .cp-k{ color:var(--cp-accent); }
+.cp-d{ font-size:.7rem; color:var(--cp-tan-faint); line-height:1.45; }
+.cp-kind:focus-visible, .cp-else:focus-visible{ outline:2px solid var(--cp-accent); outline-offset:2px; }
+
+.cp-else{ width:100%; border:1px solid var(--cp-line); background:transparent; color:var(--cp-tan-mid);
+  font-size:.8rem; padding:.7rem; cursor:pointer; margin-bottom:1.9rem; font-family:var(--cp-ui); text-align:left; transition:border-color .2s, color .2s; }
+.cp-else:hover{ border-color:var(--cp-tan-mid); }
+.cp-else.sel{ border-color:var(--cp-accent); color:var(--cp-accent); }
+
+.cp-titlerow{ display:flex; gap:.75rem; align-items:center; border-top:1px solid var(--cp-line); padding-top:1.4rem; }
+.cp-title-input{ flex:1; background:var(--cp-panel); border:1px solid var(--cp-line); color:var(--cp-light);
+  font-family:var(--cp-prose); font-style:italic; font-size:1rem; padding:.75rem .9rem; border-radius:0; }
+.cp-title-input::placeholder{ color:var(--cp-tan-faint); font-style:italic; }
+.cp-title-input:focus{ outline:none; border-color:var(--cp-tan-mid); }
+.cp-go{ font-family:var(--cp-ui); font-size:.85rem; font-weight:600; cursor:pointer; border:1px solid var(--cp-accent);
+  background:var(--cp-accent); color:var(--cp-ground); padding:.75rem 1.25rem; border-radius:0; transition:filter .2s; }
+.cp-go:hover{ filter:brightness(1.06); }
+.cp-go:disabled{ background:transparent; color:var(--cp-tan-faint); border-color:var(--cp-line); cursor:default; filter:none; }
+.cp-go:focus-visible{ outline:2px solid var(--cp-accent); outline-offset:2px; }
+.cp-micro{ font-size:.68rem; color:var(--cp-tan-faint); margin-top:.65rem; }
+.cp-footnote{ font-size:.68rem; color:var(--cp-tan-faint); line-height:1.5; margin-top:2.2rem; max-width:70ch; }
+
+@media (max-width:640px){ .cp-cards{ grid-template-columns:1fr 1fr; } }
+
 /* Gate idle nudge (v6 .nudge) — bottom-center, Crimson italic, ink-dim. */
 .wz-nudge{ position:absolute; left:50%; bottom:12vh; transform:translateX(-50%) translateY(8px);
   font-family:var(--wz-text); font-style:italic; font-size:1.25rem; color:var(--wz-ink-dim);
