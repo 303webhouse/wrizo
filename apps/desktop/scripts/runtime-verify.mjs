@@ -318,6 +318,13 @@ function makeApp(base, cdp, waitEvent) {
     emulateDpr: (dpr, width = 1024, height = 1400) =>
       cdp('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: dpr, mobile: false }),
     /**
+     * Override CSS media features (e.g. prefers-reduced-motion) the way real
+     * accessibility settings hit the page — so motion-gated behaviour can be
+     * verified. Pass an array like [{ name: 'prefers-reduced-motion', value:
+     * 'reduce' }]; pass [] to reset.
+     */
+    emulateMedia: (features) => cdp('Emulation.setEmulatedMedia', { features }),
+    /**
      * Type text into the currently-focused editable element via CDP, driving
      * the real beforeinput/input pipeline (so contenteditable handlers fire as
      * for a genuine keypress run). Focus the target first.

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, flushNow } from '../store/persistence';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke } from '../store/ink';
 import { useChromeDissolve } from '../components/useChromeDissolve';
+import { useWarmStart } from '../components/useWarmStart';
 import { ChromeHandle } from '../components/WritingShell';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
@@ -115,6 +116,15 @@ function JournalEntryView() {
   const lastTextMsRef = useRef(0);
   const touchedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Warm start (F2) — only lands on an authored page (editRef is null on a
+  // read-only capture, so the hook no-ops there). Measured over the last
+  // paragraph, released on the first forward keystroke (onInput) or after 6s.
+  const location = useLocation();
+  const warmRef = useRef(!!(location.state as { warmStart?: boolean } | null)?.warmStart);
+  const warm = useWarmStart(warmRef.current, editRef, sheetRef);
+  const warmReleaseRef = useRef<() => void>(() => {});
+  warmReleaseRef.current = warm.release;
 
   // Repaint committed ink on mount and whenever the stroke set changes. Nothing
   // here is gated behind a motion flag — nothing animates; this is a static
@@ -333,6 +343,7 @@ function JournalEntryView() {
       pageTextRef.current = el.innerText;
       touchedRef.current = true;
       noteWriteRef.current(); // recede the chrome on write
+      warmReleaseRef.current(); // release the warm-start glow on the first forward keystroke
       scheduleSave();
     };
     // Hardware-keyboard path: a plain Backspace/Delete fires keydown (and would
@@ -544,6 +555,15 @@ function JournalEntryView() {
           />
         ) : (
           entry.text
+        )}
+        {/* Warm-start glow (F2) — render-only overlay over the last paragraph;
+            never inside the editable node. Under the ink canvases (later siblings). */}
+        {warm.rect && (
+          <div
+            aria-hidden="true"
+            className={`wz-warm${warm.settled ? ' wz-warm--settled' : ''}`}
+            style={{ position: 'absolute', top: warm.rect.top, left: warm.rect.left, width: warm.rect.width, height: warm.rect.height }}
+          />
         )}
         {/* Ink overlay (J9). Both canvases cover the sheet exactly and never
             intercept input (pointer-events:none) — the pen is routed by the
