@@ -296,6 +296,7 @@ export function QuickSprint() {
       endedAt: now.toISOString(),
       words: Math.max(0, wordCount(draftTextRef.current) - sessionStartWordsRef.current),
       durationSec: Math.max(0, Math.round((now.getTime() - startedMs) / 1000)),
+      surface: 'sprint', // F5 — new sprint sessions carry the funnel discriminator
       updatedAt: now.toISOString(),
     });
     return sessionId;

@@ -69,4 +69,12 @@ export async function runMigrations(): Promise<void> {
   // F1 — resume pointer to the last-edited binder Page (last_activity_type may now
   // be 'page' — an existing text column, no DDL). Null resolves by newest page.
   await pool.query(`alter table projects add column if not exists last_active_page_id text`);
+
+  // F5 — TTFK instrumentation on the real writing paths. Two boot-idempotent
+  // columns on sessions_log: `surface` (page | journal | sprint — the funnel
+  // discriminator) and `desk_opened_at` (the one-shot Desk→ink funnel stamp).
+  // Legacy sprint rows read null for both (no backfill). Measurement only — no
+  // app UI reads these; Railway psql is the dashboard.
+  await pool.query(`alter table sessions_log add column if not exists surface text`);
+  await pool.query(`alter table sessions_log add column if not exists desk_opened_at text`);
 }

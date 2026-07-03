@@ -197,8 +197,12 @@ export interface JournalEntry {
   pageType?: 'manuscript' | 'character' | 'worldbuilding' | 'research' | 'note';
 }
 
-// Writing-session instrumentation (A9). The collection is wired through the
-// storage adapter now so sync (W2) has it; recording logic lands with A9.
+// Writing-session instrumentation (A9 → F5). One row per writing session on a
+// real surface. `firstKeystrokeAt` is the north-star (TTFK); F5 finally records it
+// on the paths that matter — the PageEditor and authored journal pages, not just
+// QuickSprint. `surface` discriminates the funnel; `deskOpenedAt` is the one-shot
+// Desk→ink funnel stamp (Desk mount → the next recording session). Measurement
+// only: no UI reads these. `projectId` carries the binder for a page session.
 export interface SessionLog {
   id: string;
   projectId: string | null;
@@ -207,6 +211,10 @@ export interface SessionLog {
   endedAt: string | null;
   words: number;
   durationSec: number;
+  // F5 — the funnel discriminator + the Desk→ink stamp. Both sync (two new
+  // sessions_log columns). Absent on legacy sprint rows (no backfill).
+  surface?: 'page' | 'journal' | 'sprint';
+  deskOpenedAt?: string;
   updatedAt: string;
   deletedAt?: string;
 }

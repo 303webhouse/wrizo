@@ -36,11 +36,13 @@ function formLabel(t: ResumeTarget): string {
 
 export function describeTarget(t: ResumeTarget): TargetVocab {
   // Home overrides — a loose or shelf page announces its unfiled home, not a form.
+  // Filter empty crumb pieces so a blank loose page never renders a trailing
+  // "Journal / " (F5 drive-by).
   if (t.home === 'journal') {
-    return { tag: 'JOURNAL · UNFILED', crumb: ['Journal', firstLine(t.entry?.text ?? '').slice(0, 40)], note: UNFILED_NOTE };
+    return { tag: 'JOURNAL · UNFILED', crumb: ['Journal', firstLine(t.entry?.text ?? '').slice(0, 40)].filter(Boolean), note: UNFILED_NOTE };
   }
   if (t.home === 'shelf') {
-    return { tag: 'SHELF · UNFILED', crumb: ['Shelf', firstLine(t.entry?.text ?? '').slice(0, 40)], note: UNFILED_NOTE };
+    return { tag: 'SHELF · UNFILED', crumb: ['Shelf', firstLine(t.entry?.text ?? '').slice(0, 40)].filter(Boolean), note: UNFILED_NOTE };
   }
 
   // Binder target.
