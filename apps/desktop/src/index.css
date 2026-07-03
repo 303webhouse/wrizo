@@ -887,6 +887,20 @@ a:focus-visible,
 .wz-warm--settled{ background:transparent; box-shadow:inset 3px 0 0 transparent; opacity:0; }
 @media (prefers-reduced-motion:reduce){ .wz-warm{ transition:none; } }
 
+/* First-line invitation (F6) — render-only, over the empty first line of a page.
+   Faint by design; the container is click-through so the caret always wins the
+   space, only the interactive bits (affordance / "don't offer again") take taps. */
+.fl-invite{ position:absolute; top:0; left:0; right:0; pointer-events:none; z-index:1; }
+.fl-affordance{ font-family:var(--font-ui); font-size:13px; color:var(--ink-on-paper-low); opacity:.55;
+  background:none; border:none; cursor:pointer; padding:0; line-height:1.7; pointer-events:auto; transition:opacity .25s; }
+.fl-affordance:hover{ opacity:.9; text-decoration:underline; text-underline-offset:3px; }
+.fl-prompt{ display:block; font-family:var(--font-prose); font-style:italic; font-size:17px; line-height:1.7;
+  color:var(--ink-on-paper-low); opacity:.75; }
+.fl-never{ font-family:var(--font-ui); font-size:11px; color:var(--ink-on-paper-low); opacity:.65;
+  background:none; border:none; cursor:pointer; padding:0; margin-top:6px; pointer-events:auto; transition:opacity .25s; }
+.fl-never:hover{ opacity:1; text-decoration:underline; text-underline-offset:2px; }
+@media (prefers-reduced-motion:reduce){ .fl-affordance, .fl-never{ transition:none; } }
+
 /* ============================================================================
    F4 — "What are you writing?" create picker. A self-contained F-arc visual world
    (its own local tokens, like .wz-home): three quiet domain groups over one

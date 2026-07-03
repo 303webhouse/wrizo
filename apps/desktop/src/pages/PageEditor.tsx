@@ -7,6 +7,7 @@ import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
+import { useFirstLineInvite } from '../components/useFirstLineInvite';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -65,6 +66,9 @@ function PageEditorView({ id }: { id: string }) {
     projectId: () => entry?.projectId ?? null,
     words: () => wordCount(textRef.current),
   });
+
+  // F6 — the first-line invitation on a truly empty page (entry.text.length === 0).
+  const invite = useFirstLineInvite(() => textRef.current.length === 0);
 
   const switchMode = (next: EditorMode) => {
     if (next === mode) return;
@@ -149,10 +153,10 @@ function PageEditorView({ id }: { id: string }) {
               mode={mode}
               autoFocus={initialText.trim() === ''}
               onChange={setText}
-              onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
+              onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); }}
               onFocus={() => setFocused(true)}
               onBlur={() => { setFocused(false); flush(); }}
-              placeholder="Write…"
+              placeholder={invite.visible ? '' : 'Write…'}
               ariaLabel="Page writing surface"
               penColor={penColor}
               style={{
@@ -160,6 +164,7 @@ function PageEditorView({ id }: { id: string }) {
                 fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
               }}
             />
+            {invite.node}
             {warm.rect && (
               <div
                 aria-hidden="true"
