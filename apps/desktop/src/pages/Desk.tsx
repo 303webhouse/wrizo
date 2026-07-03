@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getBinderPages } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { getResumeTarget, relativeDays } from '../store/resume';
 import { describeTarget } from '../store/resumeVocab';
+import { markDeskOpened } from '../store/sessionLog';
 import { deskOwnerName } from '../store/currentUser';
 import { DrawersTree } from '../components/DrawersTree';
 import { useCatch } from '../components/useCatch';
@@ -23,6 +25,10 @@ export function Desk() {
   const navigate = useNavigate();
   const doCatch = useCatch();
   const resume = getResumeTarget();
+
+  // F5 Slice 2 — stamp the Desk→ink funnel origin. The next session that records
+  // (page or authored journal) consumes it; the Desk renders nothing new.
+  useEffect(() => { markDeskOpened(); }, []);
 
   return (
     <div className="wz-home">
@@ -69,7 +75,9 @@ function ReturnCard() {
   if (!target) return null;
   const vocab = describeTarget(target);
 
-  const fallbackTitle = target.entry ? firstLine(target.entry.text) : (target.project?.title ?? 'Untitled');
+  // Fallback for a blank page (no last line): the page/project title, never empty
+  // (F5 drive-by — an all-deleted page rendered an empty quote).
+  const fallbackTitle = (target.entry ? firstLine(target.entry.text) : target.project?.title) || 'Untitled';
   const line = target.lastLine ? `“${target.lastLine}”` : fallbackTitle;
 
   // Bold the writer-meaningful crumb piece: the project (binder) or the page label.

@@ -2,6 +2,37 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## F5 — TTFK instrumentation (SessionLog on the real paths) — built (rides arc-F gate)
+Brief: [f5-ttfk-brief.md](f5-ttfk-brief.md). Arc F ticket 5/6 — the arc's proof of work. TTFK (time to first keystroke) is the north-star but was unmeasurable where it matters: `SessionLog.firstKeystrokeAt` existed and synced, but ONLY QuickSprint wrote sessions — the PageEditor (where books happen) and authored journal pages logged nothing. F5 **extends** the existing instrumentation onto the real writing paths so the funnel becomes a number in Railway SQL. Measurement only — no UI, no dashboard, no streaks.
+- **Slice 0 (schema reality check).** `sessions_log` had no discriminator or funnel timestamp → the ticket's only DDL: two boot-idempotent columns `surface text` + `desk_opened_at text` (mirrored through `rowToSession` AND `upsertSessions`). Per the brief's two-column cap, the entry reference is carried by the existing `projectId` (the binder) for page sessions; no `ref_id` column added.
+- **Slice 1 — sessions on the writing surfaces.** New `store/sessionLog.ts` (`recordSession` + the Desk funnel) + `components/useSessionLog.ts` (a mount=start / unmount=record hook; `noteKeystroke` rides the SAME onForward/onInput seam as F2's warm release — one seam, another consumer). PageEditor logs `surface:'page'` (projectId = binder); authored JournalEntry logs `surface:'journal'` (gated by `enabled` so a read-only capture that's merely viewed stays out of the funnel); QuickSprint's existing write now carries `surface:'sprint'`. **Litter guard:** record at unmount ONLY IF a keystroke happened OR dwell ≥ 10s — a drive-by logs nothing; an opened-and-stalled session (≥10s, zero ink) logs with a null `firstKeystrokeAt` (the TTFK failure case, not noise). Fire-and-forget inside try/catch — a logging failure is silent and the keystroke always wins.
+- **Slice 2 — the Desk→ink funnel.** A module-level `deskOpenedAt` stamped on Desk mount; the NEXT session that RECORDS consumes it (one-shot, cleared on consume, never persisted app-side). Desk→ink latency computed in SQL, not the app. No UI.
+- **Slice 4 — drive-bys (from the F2 review).** Return card line falls back to `'Untitled'` for a blank page (was an empty quote); `describeTarget`'s journal/shelf crumbs filter empty pieces (no trailing "Journal / ").
+- Verified in-harness (9 checks: page session surface+sane TTFK+binder projectId; authored journal surface; drive-by logs nothing; ≥10s stall logs null firstKeystrokeAt; QuickSprint surface:sprint; desk_opened_at on exactly the first post-Desk session; empty-page card "Untitled" + no trailing crumb sep). Zero editor behavior change (listeners on existing seams only). `tsc` (desktop + server) + `build:web` + selftest green.
+- **Pending deploy (rides the arc-F gate):** because columns were added, DoD 6 (live prod round-trip) + DoD 5 (both SQL queries against a seeded run) execute on the next `railway up` — which ships F2+F3+F4+F5 together after Nick's hardware pass (F5 adds no hardware items).
+- **The deliverable — Railway `psql` is the dashboard** (adjusted to the real schema: table `sessions_log`; `started_at`/`first_keystroke_at` are `timestamptz`, `desk_opened_at` is text):
+
+```sql
+-- Median TTFK per surface (seconds), last 30 days
+select surface,
+       percentile_cont(0.5) within group (order by
+         extract(epoch from (first_keystroke_at - started_at))) as median_ttfk_s,
+       count(*) as sessions
+from sessions_log
+where first_keystroke_at is not null
+  and started_at > now() - interval '30 days'
+group by surface;
+
+-- Desk→ink funnel: median open-to-writing + stall rate
+select percentile_cont(0.5) within group (order by
+         extract(epoch from (first_keystroke_at - desk_opened_at::timestamptz))) as median_desk_to_ink_s,
+       avg(case when first_keystroke_at is null then 1.0 else 0 end) as stall_rate,
+       count(*) as sessions
+from sessions_log
+where desk_opened_at is not null
+  and started_at > now() - interval '30 days';
+```
+
 ## F4 — Title-later create + the writing picker — built (rides arc-F gate)
 Brief: [f4-writing-picker-brief.md](f4-writing-picker-brief.md). Arc F ticket 4/6 — UI + TS vocabulary, no DDL. Two convergence tolls at the front door removed: `CreateProject` hard-blocked on an empty title (a naming wall before word one), and the kind picker fenced out every non-fiction writer (essays/articles/theses squatting in 'Other'). F4 grows the picker into "What are you writing?" — three quiet domain groups of honest per-domain forms over ONE shared machinery. Domain lives on the binder at creation, never as an app mode (the mirror principle), so a binder is born with its full typed pointer and the return card speaks its language from day one.
 - **Taxonomy (Nick's call, locked):** creative (book·Book / story·**Short fiction** / screenplay·Screenplay), academic (essay·Essay / thesis·Thesis / paper·Paper), professional (article·Article / report·Report / proposal·Proposal), other·Something else. Six NEW `kind` values; `story` **reused** under the "Short fiction" label (no redundant value); `type` gains `'professional'`.

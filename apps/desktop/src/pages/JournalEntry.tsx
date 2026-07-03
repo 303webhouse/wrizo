@@ -5,6 +5,7 @@ import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke } from '../store/ink';
 import { useChromeDissolve } from '../components/useChromeDissolve';
 import { useWarmStart } from '../components/useWarmStart';
+import { useSessionLog } from '../components/useSessionLog';
 import { ChromeHandle } from '../components/WritingShell';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
@@ -125,6 +126,16 @@ function JournalEntryView() {
   const warm = useWarmStart(warmRef.current, editRef, sheetRef);
   const warmReleaseRef = useRef<() => void>(() => {});
   warmReleaseRef.current = warm.release;
+
+  // F5 — TTFK session, only for an authored page (a read-only capture that's
+  // merely viewed stays out of the funnel). firstKeystroke rides onInput below.
+  const noteSessionKeystroke = useSessionLog('journal', {
+    projectId: () => (id ? getJournalEntry(id)?.projectId ?? null : null),
+    words: () => { const t = pageTextRef.current.trim(); return t ? t.split(/\s+/).length : 0; },
+    enabled: () => authoredRef.current,
+  });
+  const sessionKsRef = useRef<() => void>(() => {});
+  sessionKsRef.current = noteSessionKeystroke;
 
   // Repaint committed ink on mount and whenever the stroke set changes. Nothing
   // here is gated behind a motion flag — nothing animates; this is a static
@@ -344,6 +355,7 @@ function JournalEntryView() {
       touchedRef.current = true;
       noteWriteRef.current(); // recede the chrome on write
       warmReleaseRef.current(); // release the warm-start glow on the first forward keystroke
+      sessionKsRef.current(); // stamp TTFK on the first content keystroke (F5)
       scheduleSave();
     };
     // Hardware-keyboard path: a plain Backspace/Delete fires keydown (and would

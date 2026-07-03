@@ -68,6 +68,8 @@ function rowToSession(r: any) {
     endedAt: iso(r.ended_at),
     words: r.words ?? 0,
     durationSec: r.duration_sec ?? 0,
+    surface: r.surface ?? undefined,
+    deskOpenedAt: iso(r.desk_opened_at) ?? undefined,
     updatedAt: iso(r.updated_at),
   };
 }
@@ -158,17 +160,18 @@ async function upsertSessions(userId: string, records: any[]): Promise<void> {
       await pool.query(
         `insert into sessions_log
            (id, user_id, project_id, started_at, first_keystroke_at, ended_at,
-            words, duration_sec, updated_at)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+            words, duration_sec, surface, desk_opened_at, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
          on conflict (id) do update set
            project_id = excluded.project_id, started_at = excluded.started_at,
            first_keystroke_at = excluded.first_keystroke_at, ended_at = excluded.ended_at,
            words = excluded.words, duration_sec = excluded.duration_sec,
+           surface = excluded.surface, desk_opened_at = excluded.desk_opened_at,
            updated_at = excluded.updated_at
          where sessions_log.user_id = excluded.user_id
            and excluded.updated_at > sessions_log.updated_at`,
         [s.id, userId, s.projectId ?? null, s.startedAt ?? null, s.firstKeystrokeAt ?? null,
-         s.endedAt ?? null, s.words ?? 0, s.durationSec ?? 0, s.updatedAt],
+         s.endedAt ?? null, s.words ?? 0, s.durationSec ?? 0, s.surface ?? null, s.deskOpenedAt ?? null, s.updatedAt],
       );
     } catch (err) {
       console.error('[sync] session upsert failed', s.id, err);

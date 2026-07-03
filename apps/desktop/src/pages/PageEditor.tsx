@@ -6,6 +6,7 @@ import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEdi
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
+import { useSessionLog } from '../components/useSessionLog';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -57,6 +58,13 @@ function PageEditorView({ id }: { id: string }) {
   const warmRef = useRef(!!(location.state as { warmStart?: boolean } | null)?.warmStart);
   const warmWrapRef = useRef<HTMLDivElement>(null);
   const warm = useWarmStart(warmRef.current, editorRef, warmWrapRef);
+
+  // F5 — TTFK session for this chapter/support page. projectId carries the binder;
+  // firstKeystroke rides the same onForward seam as the warm release below.
+  const noteSessionKeystroke = useSessionLog('page', {
+    projectId: () => entry?.projectId ?? null,
+    words: () => wordCount(textRef.current),
+  });
 
   const switchMode = (next: EditorMode) => {
     if (next === mode) return;
@@ -141,7 +149,7 @@ function PageEditorView({ id }: { id: string }) {
               mode={mode}
               autoFocus={initialText.trim() === ''}
               onChange={setText}
-              onForward={() => { noteWrite(); warm.release(); }}
+              onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
               onFocus={() => setFocused(true)}
               onBlur={() => { setFocused(false); flush(); }}
               placeholder="Write…"
