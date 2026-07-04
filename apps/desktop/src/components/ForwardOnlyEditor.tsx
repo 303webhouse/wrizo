@@ -185,6 +185,42 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // I0 — pen discipline. Ink is SEALED IN THE JOURNAL; the ForwardOnlyEditor is a
+  // NON-Journal surface (the sprint, the page in BOTH modes, the gate), so the
+  // stylus must be INERT here: zero characters, zero OS handwriting recognition,
+  // metaphor-coherent (typewriters ignore pens). Two mechanisms, the proven J10
+  // pattern used to NEUTRALIZE rather than ink:
+  //   (a) capture-phase pen-only pointer preventDefault — no caret, no default, so
+  //       recognition never initiates from the pointer;
+  //   (b) touch-action:none + the declarative handwriting opt-out — Chromium routes
+  //       handwriting through touch-action (pointer preventDefault alone doesn't
+  //       stop it), so `none` is what actually seals it.
+  // Finger / mouse / keyboard are never intercepted (pen-only guard), so their
+  // behavior is unchanged apart from touch-action (finger-drag over the editor no
+  // longer pans — the same tradeoff the shipped Journal sheet already makes; the
+  // scroll container `.mode-scroll` still owns finger scroll). Verified on hardware
+  // (Nick's phone) before deploy — this bug class is hardware-invisible.
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    el.style.touchAction = 'none';
+    el.setAttribute('handwriting', 'false');
+    const neutralizePen = (e: PointerEvent) => {
+      if (e.pointerType !== 'pen') return; // finger / mouse fall through, byte-identical
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const opts = { passive: false, capture: true } as const;
+    el.addEventListener('pointerdown', neutralizePen, opts);
+    el.addEventListener('pointermove', neutralizePen, opts);
+    el.addEventListener('pointerup', neutralizePen, opts);
+    return () => {
+      el.removeEventListener('pointerdown', neutralizePen, opts);
+      el.removeEventListener('pointermove', neutralizePen, opts);
+      el.removeEventListener('pointerup', neutralizePen, opts);
+    };
+  }, []);
+
   // Autofocus on mount (A8) — and emit the seed once so the host's draftText is
   // in sync from the first paint.
   useEffect(() => {
