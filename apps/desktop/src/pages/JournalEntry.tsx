@@ -206,6 +206,18 @@ function JournalEntryView() {
       if (e.pointerType !== 'pen') return; // palm/finger/mouse fall through (and to text on authored pages)
       if ((e.target as Element | null)?.closest?.('.ink-undo')) return;
       e.stopPropagation(); // keep the pen off the editable text node (no caret, no handwriting)
+      // I0 Slice 2 hardening (Samsung S25 / Chrome S-Pen). `touch-action:none` +
+      // capture-phase preventDefault stopped OS handwriting on older builds but a
+      // OneUI/Chrome update now converts the stroke to text anyway (Samsung's
+      // "handwriting to text" watches the FOCUSED editable, largely independent of
+      // touch-action/JS-default). So for the duration of a pen stroke we make the
+      // editable a NON-target: blur it and drop contenteditable, restored on lift.
+      // With no focused editable to convert into, the recognizer has nowhere to
+      // insert; the stroke goes to the ink canvas only. Finger typing resumes on
+      // the next tap (a tap re-focuses and places the caret). Captures have no
+      // editable — this is a no-op there.
+      const edit = editRef.current;
+      if (edit) { try { edit.blur(); } catch { /* */ } edit.setAttribute('contenteditable', 'false'); }
       noteWriteRef.current(); // recede the chrome on draw
       captureRectRef.current = sheet.getBoundingClientRect();
       const ac = activeRef.current;
@@ -222,10 +234,17 @@ function JournalEntryView() {
       activeStrokeRef.current?.points.push(normPoint(e));
       paintActive();
     };
+    // Restore the editable after a stroke (it stays BLURRED — the writer taps to
+    // resume typing — so re-enabling it can't hand the recognizer a focused target).
+    const restoreEditable = () => {
+      const edit = editRef.current;
+      if (edit) edit.setAttribute('contenteditable', 'plaintext-only');
+    };
     const onUp = (e: PointerEvent) => {
       if (!drawingRef.current || e.pointerType !== 'pen') return;
       e.preventDefault();
       drawingRef.current = false;
+      restoreEditable();
       const stroke = activeStrokeRef.current;
       activeStrokeRef.current = null;
       try { sheet.releasePointerCapture(e.pointerId); } catch { /* */ }
@@ -246,6 +265,7 @@ function JournalEntryView() {
     const onCancel = (e: PointerEvent) => {
       if (!drawingRef.current) return;
       drawingRef.current = false;
+      restoreEditable();
       activeStrokeRef.current = null;
       try { sheet.releasePointerCapture(e.pointerId); } catch { /* */ }
       clearActive();
