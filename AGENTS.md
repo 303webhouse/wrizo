@@ -1,8 +1,15 @@
 # AGENTS.md — Working rules for agents
 
-## Stage 1 goal (M1)
-Build a Writer Studio with a guided flow by default:
-Session Launcher → Structure Wizard → Beat Wizard → Structure Board.
+## Stage goal (current)
+The **F-arc** ("from open to flow") is complete in code — F1 resume (the typed
+pointer) → F2 mirror card → F3 Catch → F4 title-later create + the writing picker
+→ F5 TTFK instrumentation → F6 first-line invitation — staged on `main` behind two
+hardware gates (tablet: F2–F6; phone: I0 pen discipline). **TTFK** (time to first
+keystroke) is the north-star metric, now instrumented per surface. Next queue:
+**HOME verification** (first-run / anon-gate flow), the **anti-slop paste rail**
+(the foreign-voice import wall, PHILOSOPHY.md § Voice Wall), and
+**fragments-under-Pages** — with INK **I3** (unlink-to-movable-graphic) married to
+that design pass. (See docs/north-star.md v0.2 for the as-built architecture.)
 
 ## Stack (do not change unless ticket says so)
 - Windows

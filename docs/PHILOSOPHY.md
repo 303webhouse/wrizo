@@ -10,6 +10,14 @@ We are building **for flow** (the psychological state the writer wants — absor
 
 ---
 
+## The Simulation (the founder's line)
+
+> "I want this app to simulate the experience of a writer with a journal and typewriter and drawing pad in front of them with as much integrity as possible."
+
+*Integrity* means each instrument keeps its own channel. The **Journal** is the diary and drawing pad — ink lives here and nowhere else. **Pages are the typewriter** — forward-only text, no stylus, no OS handwriting recognition; ink reaches a project only by **porting** (the ink canon, 2026-07-03). **AI is sealed the same way ink is**: it demonstrates inside the writer's own words in Free write and never crosses into authored prose (the sealed-AI frame). No foreign voice and no stray stroke ever enters a channel it doesn't own — the same law as "a pen never types; a key never inks" (Principle 9), read at the level of whole surfaces.
+
+---
+
 ## The Core Thesis
 
 > **Divergence is free; convergence is the product.**
