@@ -89,6 +89,7 @@ function rowToJournalEntry(r: any) {
     shelved: r.shelved ?? undefined,
     beatId: r.beat_id ?? undefined,
     pageType: r.page_type ?? undefined,
+    orderIndex: r.order_index ?? undefined,
     tags: r.tags ?? undefined,
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
@@ -226,19 +227,19 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
       await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
-            tags, routed_project_ids, strokes, deleted_at, created_at, updated_at)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12::jsonb,$13::jsonb,$14,$15,$16)
+            order_index, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15,$16,$17)
          on conflict (id) do update set
            project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
            starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
-           beat_id = excluded.beat_id, page_type = excluded.page_type, tags = excluded.tags,
-           routed_project_ids = excluded.routed_project_ids, strokes = excluded.strokes,
+           beat_id = excluded.beat_id, page_type = excluded.page_type, order_index = excluded.order_index,
+           tags = excluded.tags, routed_project_ids = excluded.routed_project_ids, strokes = excluded.strokes,
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
          where journal_entries.user_id = excluded.user_id
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,
-         JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
+         e.orderIndex ?? null, JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
          e.deletedAt ?? null, e.createdAt, e.updatedAt],
       );
     } catch (err) {

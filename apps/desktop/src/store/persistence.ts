@@ -1,4 +1,5 @@
 import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer } from '../types';
+import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './pageOrder';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -706,6 +707,63 @@ export function getShelfPages(): JournalEntry[] {
     .filter(e => !e.deletedAt && e.projectId == null && !!e.shelved)
     .map(clone)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)); // most recently touched first
+}
+
+// J1 — the loose Journal in NOTEBOOK order (ascending: oldest first, like a real
+// notebook fills). Nav (prev/next) + the spread view (J3) walk this. The
+// chronological list feed is unchanged (getJournalPages stays newest-first).
+export function getNotebookPages(): JournalEntry[] {
+  return sortNotebook(
+    cache.journalEntries.filter(e => !e.deletedAt && e.projectId == null && !e.shelved).map(clone),
+  );
+}
+
+// Re-spread every loose page onto clean, well-separated indexes (order preserved)
+// — the insert path calls this only when a target midpoint gap is exhausted.
+function normalizeNotebook(): JournalEntry[] {
+  for (const { id, orderIndex } of respread(getNotebookPages())) {
+    const live = cache.journalEntries.find(e => e.id === id);
+    if (live) saveJournalEntry({ ...live, orderIndex });
+  }
+  return getNotebookPages();
+}
+
+// Create a blank loose Journal page placed in the notebook: at the END (afterId
+// omitted), or immediately AFTER `afterId` (between it and its successor).
+// Normalizes first if that gap is exhausted. Honor-discard (J1a) still cleans up
+// an abandoned blank — no litter.
+export function createLoosePage(afterId?: string): JournalEntry {
+  let nb = getNotebookPages();
+  const lastKey = nb.length ? notebookKey(nb[nb.length - 1]) : undefined;
+  let orderIndex: number;
+  const i0 = afterId ? nb.findIndex(p => p.id === afterId) : -1;
+  if (!afterId || i0 < 0) {
+    orderIndex = midpoint(lastKey, undefined); // append at the end
+  } else {
+    let i = i0;
+    let cur = notebookKey(nb[i]);
+    let nxt = i + 1 < nb.length ? notebookKey(nb[i + 1]) : undefined;
+    if (nxt != null && gapExhausted(cur, nxt)) {
+      nb = normalizeNotebook();
+      i = nb.findIndex(p => p.id === afterId);
+      cur = notebookKey(nb[i]);
+      nxt = i + 1 < nb.length ? notebookKey(nb[i + 1]) : undefined;
+    }
+    orderIndex = midpoint(cur, nxt);
+  }
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(), text: '', projectId: null, source: 'page',
+    orderIndex, createdAt: now, updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
+// Test/inspection seam — the loose notebook in order (id + resolved key).
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoNotebook?: unknown }).wrizoNotebook =
+    () => getNotebookPages().map(p => ({ id: p.id, oi: p.orderIndex ?? null, key: notebookKey(p) }));
 }
 
 // Pages filed into a binder (projectId === binderId).

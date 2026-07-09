@@ -752,6 +752,20 @@ a:focus-visible,
   padding:10px 12px; color:var(--text-mid); font-size:13px; line-height:1.5; }
 .journal-autosave-note{ margin-top:8px; color:var(--text-low); font-size:12px; font-style:italic; }
 
+/* J1 — notebook navigation (loose Journal pages). Quiet chrome; dissolves with
+   everything else. */
+.journal-nav{ display:flex; align-items:center; gap:.5rem; margin-bottom:16px; }
+.journal-nav-btn{ display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px;
+  font-size:20px; line-height:1; background:none; border:1px solid var(--ink-border); border-radius:var(--radius-sm);
+  color:var(--text-mid); cursor:pointer; transition:color .2s, border-color .2s; }
+.journal-nav-btn:hover:not(:disabled){ color:var(--text-hi); border-color:var(--text-mid); }
+.journal-nav-btn:disabled{ opacity:.35; cursor:default; }
+.journal-nav-add{ color:var(--brass); border-color:var(--ink-border); }
+.journal-nav-pos{ font-family:var(--font-mono); font-size:.72rem; color:var(--text-low); min-width:3.5em; text-align:center; }
+.journal-nav-insert{ background:none; border:none; color:var(--text-low); font-family:var(--font-ui); font-size:.78rem;
+  cursor:pointer; padding:4px 6px; transition:color .2s; }
+.journal-nav-insert:hover{ color:var(--text-mid); }
+
 .wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
   opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
 .wz-gate.show{ opacity:1; pointer-events:auto; }

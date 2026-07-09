@@ -77,4 +77,8 @@ export async function runMigrations(): Promise<void> {
   // app UI reads these; Railway psql is the dashboard.
   await pool.query(`alter table sessions_log add column if not exists surface text`);
   await pool.query(`alter table sessions_log add column if not exists desk_opened_at text`);
+
+  // J1 — loose-Journal notebook order. One boot-idempotent column; null on every
+  // existing page (sort falls back to createdAt — no backfill).
+  await pool.query(`alter table journal_entries add column if not exists order_index double precision`);
 }
