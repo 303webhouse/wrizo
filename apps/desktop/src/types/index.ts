@@ -195,6 +195,12 @@ export interface JournalEntry {
   // Absent → untyped (legacy filed pages, loose journal pages). Story Structure is
   // NOT a page type — it's the project's Plan (StoryPlan/StructureBoard).
   pageType?: 'manuscript' | 'character' | 'worldbuilding' | 'research' | 'note';
+  // Notebook order (J1) — the loose Journal's explicit page order. Additive/
+  // optional (the J6 pattern): absent → the page keeps its chronological place
+  // (sort falls back to `epoch(createdAt)`), so there is no backfill or migration.
+  // A sparse float (the `spineOrder` pattern) so insert-between is a midpoint.
+  // Scope: the loose Journal only — binder pages + the Shelf keep their orderings.
+  orderIndex?: number;
 }
 
 // Writing-session instrumentation (A9 → F5). One row per writing session on a

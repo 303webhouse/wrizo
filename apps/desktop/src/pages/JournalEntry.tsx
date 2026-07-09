@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, flushNow } from '../store/persistence';
+import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, getNotebookPages, createLoosePage, flushNow } from '../store/persistence';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke } from '../store/ink';
 import { useChromeDissolve } from '../components/useChromeDissolve';
@@ -144,6 +144,26 @@ function JournalEntryView() {
   const invite = useFirstLineInvite(() => authoredRef.current && pageTextRef.current.length === 0 && strokesRef.current.length === 0);
   const inviteDismissRef = useRef<() => void>(() => {});
   inviteDismissRef.current = invite.dismiss;
+
+  // J1 — walk the notebook with the ← / → keys (loose pages only), NEVER while an
+  // editable has focus or mid-IME (the F3 shortcut-guard pattern). Self-contained
+  // so it needs no prev/next in deps.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
+      const cur = id ? getJournalEntry(id) : null;
+      if (!cur || cur.projectId != null || cur.shelved) return; // loose notebook only
+      const nb = getNotebookPages();
+      const i = nb.findIndex(p => p.id === id);
+      if (i < 0) return;
+      const target = e.key === 'ArrowLeft' ? nb[i - 1] : nb[i + 1];
+      if (target) { e.preventDefault(); navigate(`/journal/${target.id}`); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [id, navigate]);
 
   // Repaint committed ink on mount and whenever the stroke set changes. Nothing
   // here is gated behind a motion flag — nothing animates; this is a static
@@ -443,6 +463,14 @@ function JournalEntryView() {
   const authored = entry.source === 'page';
   const projects = getProjects();
   const routedIds = entry.routedProjectIds ?? [];
+
+  // J1 — notebook navigation, loose Journal pages only (filed + Shelf show none).
+  const isLoose = entry.projectId == null && !entry.shelved;
+  const notebook = isLoose ? getNotebookPages() : [];
+  const nbIndex = isLoose ? notebook.findIndex(p => p.id === entry.id) : -1;
+  const prevPage = nbIndex > 0 ? notebook[nbIndex - 1] : null;
+  const nextPage = nbIndex >= 0 && nbIndex < notebook.length - 1 ? notebook[nbIndex + 1] : null;
+  const openLoose = (afterId?: string) => navigate(`/journal/${createLoosePage(afterId).id}`);
   // J12: an entry can carry ink and/or text. A drawing-only entry (no text) has
   // nothing to route — its prose would be empty — so the routing action is
   // hidden; ink stays in the journal. A mixed entry routes its text as usual.
@@ -524,6 +552,29 @@ function JournalEntryView() {
     <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
       <ChromeHandle onReveal={() => resurface(true)} />
       <Link to="/journal" className="btn-quiet chrome-fade" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
+
+      {/* J1 — walk the notebook (loose pages only). The arrows live in the chrome
+          layer, so they dissolve + summon with everything else. The forward arrow
+          becomes "+" at the end (append + open); "+ insert" drops a page between
+          this one and the next. */}
+      {isLoose && (
+        <nav className="journal-nav chrome-fade" aria-label="Notebook">
+          <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
+            onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
+          <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
+          {nextPage ? (
+            <button type="button" className="journal-nav-btn" aria-label="Next page"
+              onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
+          ) : (
+            <button type="button" className="journal-nav-btn journal-nav-add" aria-label="New page at the end"
+              onClick={() => openLoose()}>+</button>
+          )}
+          {nextPage && (
+            <button type="button" className="journal-nav-insert" aria-label="Insert a page here"
+              onClick={() => openLoose(entry.id)}>+ insert</button>
+          )}
+        </nav>
+      )}
 
       <div className="chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
