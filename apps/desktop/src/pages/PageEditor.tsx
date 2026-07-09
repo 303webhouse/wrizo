@@ -8,6 +8,7 @@ import { ModeStage } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
+import { copyText } from '../store/clipboard';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -120,6 +121,7 @@ function PageEditorView({ id }: { id: string }) {
           {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
           {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
           <span className="crumb-here">{pageTitle}</span>
+          {entry.importedAt && <span className="page-imported-tag" title="Imported into this binder">Imported</span>}
         </div>
 
         <ModeSwitcher mode={mode} onSwitch={switchMode} />
@@ -131,6 +133,7 @@ function PageEditorView({ id }: { id: string }) {
               <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>Plan</button>
             </div>
           )}
+          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title="Copy the clean page text">Copy page text</button>
           <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
         </div>
       </div>

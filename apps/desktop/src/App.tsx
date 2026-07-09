@@ -13,7 +13,9 @@ import { QuickSprint } from './pages/QuickSprint';
 import { Journal } from './pages/Journal';
 import { JournalEntry } from './pages/JournalEntry';
 import { PageEditor } from './pages/PageEditor';
+import { ImportDraft } from './pages/ImportDraft';
 import { HomeFlow } from './components/HomeFlow';
+import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -195,6 +197,7 @@ export function App() {
         <DeskRail />
         <GlobalHeader onLogout={handleLogout} />
         <BrandMark />
+        <VoiceWallWhisper />
         <div className="app-main">
         <Routes>
         <Route path="/" element={<Desk />} />
@@ -202,6 +205,8 @@ export function App() {
         <Route path="/shelf" element={<Shelf />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
+        <Route path="/project/:id/import" element={<ImportDraft />} />
+        <Route path="/import" element={<ImportDraft />} />
         <Route path="/project/:id/sprint" element={<QuickSprint />} />
         <Route path="/project/:id/wizard" element={<StructureWizard />} />
         <Route path="/project/:id/beat" element={<BeatWizard />} />

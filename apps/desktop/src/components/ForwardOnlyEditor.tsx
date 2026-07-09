@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
+import { notePasteBlocked } from '../store/voiceWall';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -119,12 +120,27 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const el = hostRef.current;
     if (!el) return;
 
-    // DRAFTING — free editing. No forward-only interception: the browser owns the
-    // contenteditable; we just report its live text up on every input.
+    // DRAFTING — free editing. No forward-only interception (the browser owns the
+    // contenteditable; cut/delete are allowed here — this is the revise mode). But
+    // the Voice Wall still stands: Draft is a prose surface, so paste/drop of
+    // foreign prose is blocked + whispered (copy-out stays free).
     if (drafting) {
       const onInput = () => { onChangeRef.current(el.innerText); onForwardRef.current?.(); };
+      const onBeforeInputDraft = (e: InputEvent) => {
+        const it = e.inputType || '';
+        if (it === 'insertFromPaste' || it === 'insertFromDrop') { e.preventDefault(); notePasteBlocked(); }
+      };
+      const blockPaste = (e: Event) => { e.preventDefault(); notePasteBlocked(); };
       el.addEventListener('input', onInput);
-      return () => el.removeEventListener('input', onInput);
+      el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
+      el.addEventListener('paste', blockPaste);
+      el.addEventListener('drop', blockPaste);
+      return () => {
+        el.removeEventListener('input', onInput);
+        el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
+        el.removeEventListener('paste', blockPaste);
+        el.removeEventListener('drop', blockPaste);
+      };
     }
 
     const onBeforeInput = (e: InputEvent) => {
@@ -145,7 +161,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // Inserts: hand off to the IME while composing (so typing/autocorrect work).
       if (composingRef.current || e.isComposing || it === 'insertCompositionText') return;
       e.preventDefault();
-      if (it === 'insertFromPaste' || it === 'insertFromDrop') return; // foreign-voice wall: block external paste
+      if (it === 'insertFromPaste' || it === 'insertFromDrop') { notePasteBlocked(); return; } // foreign-voice wall: block external paste (VW)
       if (it.startsWith('insert')) {
         const data = e.data ?? ((it === 'insertParagraph' || it === 'insertLineBreak') ? '\n' : '');
         if (data) handleInput(data);
@@ -165,20 +181,26 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const data = e.data || '';
       if (data) handleInput(data); // commit the finalized text; the re-render replaces the browser's draft
     };
-    const block = (e: Event) => e.preventDefault(); // cut/copy-out are not this surface's concern; block
+    const block = (e: Event) => e.preventDefault(); // cut: block (removes committed text). Copy-out is NOT blocked.
+    // Paste + drop are the foreign-voice wall — block AND whisper (belt-and-
+    // suspenders alongside the beforeinput branch, for any browser that fires the
+    // event without a beforeinput). The once-per-session gate dedups.
+    const blockPaste = (e: Event) => { e.preventDefault(); notePasteBlocked(); };
 
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
     el.addEventListener('keydown', onKeyDown);
     el.addEventListener('compositionstart', onCompStart);
     el.addEventListener('compositionend', onCompEnd as EventListener);
-    el.addEventListener('paste', block);
+    el.addEventListener('paste', blockPaste);
+    el.addEventListener('drop', blockPaste);
     el.addEventListener('cut', block);
     return () => {
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('compositionstart', onCompStart);
       el.removeEventListener('compositionend', onCompEnd as EventListener);
-      el.removeEventListener('paste', block);
+      el.removeEventListener('paste', blockPaste);
+      el.removeEventListener('drop', blockPaste);
       el.removeEventListener('cut', block);
     };
     // handlers read refs only, so a once-attached listener stays correct

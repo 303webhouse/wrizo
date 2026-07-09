@@ -902,6 +902,55 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){ .fl-affordance, .fl-never{ transition:none; } }
 
 /* ============================================================================
+   VW — The Voice Wall. The whisper (a paste was blocked on a prose surface), the
+   Import door (the writer's own work flowing in), and the "Imported" provenance
+   tag. Calm, never red, never modal (Principle 5).
+   ============================================================================ */
+.vw-whisper{ position:fixed; left:50%; bottom:6vh; transform:translateX(-50%) translateY(8px); z-index:120;
+  max-width:min(520px,90vw); text-align:center; font-family:var(--font-prose); font-style:italic; font-size:1rem;
+  line-height:1.45; color:var(--text-mid); background:var(--ink-900); border:1px solid var(--ink-border);
+  border-radius:var(--radius-sm); padding:.7rem 1.1rem; opacity:0; pointer-events:none;
+  transition:opacity .7s ease, transform .7s ease; box-shadow:0 6px 30px rgba(0,0,0,.4); }
+.vw-whisper[data-shown='true']{ opacity:.94; transform:translateX(-50%) translateY(0); }
+@media (prefers-reduced-motion:reduce){ .vw-whisper{ transition:opacity .2s linear; } }
+
+/* The "Imported" provenance tag on a page crumb — quiet, metadata only. */
+.page-imported-tag{ margin-left:.6rem; font-family:var(--font-ui); font-size:.62rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--text-low); border:1px solid var(--ink-border); border-radius:var(--radius-sm);
+  padding:1px 6px; }
+
+/* Drawers page header actions row. */
+.dz-pagehead-actions{ display:flex; align-items:center; gap:.9rem; }
+
+/* The Import door — a plain, non-generative paste surface at the binder edge. */
+.import-draft{ max-width:720px; margin:0 auto; padding:clamp(2.5rem,7vh,4rem) clamp(1.4rem,5vw,3rem) 4rem; }
+.import-back{ display:inline-block; margin-bottom:1.4rem; padding-left:0; }
+.import-eyebrow{ margin-bottom:.5rem; }
+.import-title{ font-family:var(--font-display); font-weight:500; font-size:1.7rem; letter-spacing:-.01em; color:var(--text-hi); margin-bottom:.35rem; }
+.import-sub{ font-family:var(--font-ui); font-size:.9rem; color:var(--text-mid); line-height:1.5; margin-bottom:1.6rem; max-width:56ch; }
+.import-textarea{ width:100%; min-height:min(42vh,360px); resize:vertical; background:var(--ink-900);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); color:var(--text-hi);
+  font-family:var(--font-prose); font-size:16px; line-height:1.7; padding:1rem 1.15rem; outline:none; }
+.import-textarea:focus{ border-color:var(--brass); }
+.import-textarea::placeholder{ color:var(--text-low); font-style:italic; }
+.import-kinds{ display:flex; flex-wrap:wrap; gap:.65rem; margin-top:1.1rem; }
+.import-kind{ display:flex; flex-direction:column; gap:.2rem; text-align:left; flex:1; min-width:180px;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  padding:.7rem .9rem; cursor:pointer; font-family:var(--font-ui); transition:border-color .2s; }
+.import-kind:hover{ border-color:var(--text-mid); }
+.import-kind.sel{ border-color:var(--brass); }
+.import-kind-label{ font-size:.9rem; font-weight:600; color:var(--text-hi); }
+.import-kind.sel .import-kind-label{ color:var(--brass); }
+.import-kind-hint{ font-size:.72rem; color:var(--text-low); line-height:1.4; }
+.import-kind:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+.import-actions{ margin-top:1.4rem; display:flex; justify-content:flex-end; }
+.import-binders{ display:flex; flex-direction:column; gap:.5rem; margin-top:1rem; }
+.import-binder{ text-align:left; background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  padding:.75rem 1rem; cursor:pointer; font-family:var(--font-ui); font-size:.95rem; color:var(--text-hi); transition:border-color .2s; }
+.import-binder:hover{ border-color:var(--brass); }
+.import-empty{ color:var(--text-low); font-size:.9rem; }
+
+/* ============================================================================
    F4 — "What are you writing?" create picker. A self-contained F-arc visual world
    (its own local tokens, like .wz-home): three quiet domain groups over one
    machinery. Square corners, panel bg, 1px line borders; orange ONLY on selection

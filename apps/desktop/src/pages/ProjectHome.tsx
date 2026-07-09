@@ -164,6 +164,8 @@ export function ProjectHome() {
                 </div>
               ))}
               <button type="button" className="dz-more" onClick={newChapter}>+ New chapter</button>
+              {/* VW — the Import door at the binder edge (never inside an editor). */}
+              <button type="button" className="dz-more" onClick={() => navigate(`/project/${id}/import`)}>↓ Import a draft</button>
             </div>
           </div>
         </div>

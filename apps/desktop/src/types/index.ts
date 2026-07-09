@@ -195,6 +195,10 @@ export interface JournalEntry {
   // Absent → untyped (legacy filed pages, loose journal pages). Story Structure is
   // NOT a page type — it's the project's Plan (StoryPlan/StructureBoard).
   pageType?: 'manuscript' | 'character' | 'worldbuilding' | 'research' | 'note';
+  // Provenance (VW — the Voice Wall / Import door). Set when a page is born from
+  // the Import-a-draft flow (the writer's own work flowing in). Metadata only —
+  // the page behaves as a normal page; the header shows a quiet "Imported" tag.
+  importedAt?: string;
 }
 
 // Writing-session instrumentation (A9 → F5). One row per writing session on a

@@ -10,7 +10,11 @@ export function DrawersPage() {
     <div className="page" style={{ maxWidth: 760, paddingTop: '3rem' }}>
       <div className="dz-pagehead">
         <h1 className="dz-pagetitle">Drawers</h1>
-        <button type="button" className="btn-quiet" onClick={() => navigate('/')}>← Desk</button>
+        <div className="dz-pagehead-actions">
+          {/* VW — the Import door (Drawers edge). Picks a binder, then the paste surface. */}
+          <button type="button" className="btn-quiet" onClick={() => navigate('/import')}>↓ Import a draft</button>
+          <button type="button" className="btn-quiet" onClick={() => navigate('/')}>← Desk</button>
+        </div>
       </div>
       <DrawersTree />
     </div>

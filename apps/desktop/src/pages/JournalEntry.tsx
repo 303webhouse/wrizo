@@ -7,6 +7,8 @@ import { useChromeDissolve } from '../components/useChromeDissolve';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
+import { notePasteBlocked } from '../store/voiceWall';
+import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
@@ -363,6 +365,10 @@ function JournalEntryView() {
         deleteWord(it.toLowerCase().includes('forward') ? 'forward' : 'backward');
         return;
       }
+      // Voice Wall (VW): external prose pasted/dropped into this prose surface
+      // imports a foreign voice — block it and whisper once. (The J10 editable was
+      // a hole in the wall until now.)
+      if (it === 'insertFromPaste' || it === 'insertFromDrop') { e.preventDefault(); notePasteBlocked(); return; }
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed) { e.preventDefault(); return; } // no select-then-replace
       // Allowed forward insertion — set the typing-run boundary using the
@@ -396,13 +402,16 @@ function JournalEntryView() {
       if (e.key === 'Backspace') { e.preventDefault(); deleteWord('backward'); }
       else if (e.key === 'Delete') { e.preventDefault(); deleteWord('forward'); }
     };
-    const onCut = (e: Event) => e.preventDefault(); // cut would remove text
+    const onCut = (e: Event) => e.preventDefault(); // cut would remove text (copy-out is NOT blocked)
+    const onPasteDrop = (e: Event) => { e.preventDefault(); notePasteBlocked(); }; // VW: foreign-voice wall
     const onHide = () => { if (document.visibilityState === 'hidden') { flushText(); flushNow(); } };
 
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
     el.addEventListener('cut', onCut);
+    el.addEventListener('paste', onPasteDrop);
+    el.addEventListener('drop', onPasteDrop);
     document.addEventListener('visibilitychange', onHide);
 
     return () => {
@@ -410,6 +419,8 @@ function JournalEntryView() {
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('cut', onCut);
+      el.removeEventListener('paste', onPasteDrop);
+      el.removeEventListener('drop', onPasteDrop);
       document.removeEventListener('visibilitychange', onHide);
       if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
       // New-page lifecycle: discard an empty, never-touched page rather than
@@ -521,16 +532,20 @@ function JournalEntryView() {
         <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
           {formatStamp(entry.createdAt)}{authored ? ' · a page' : ''}
         </div>
-        <button
-          type="button"
-          className="btn-quiet entry-star"
-          data-starred={entry.starred ? 'true' : 'false'}
-          aria-pressed={!!entry.starred}
-          onClick={toggleStar}
-          style={{ color: entry.starred ? 'var(--brass)' : 'var(--text-low)' }}
-        >
-          {entry.starred ? '★ Starred' : '☆ Star'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
+          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the page text">Copy page text</button>
+          <button
+            type="button"
+            className="btn-quiet entry-star"
+            data-starred={entry.starred ? 'true' : 'false'}
+            aria-pressed={!!entry.starred}
+            onClick={toggleStar}
+            style={{ color: entry.starred ? 'var(--brass)' : 'var(--text-low)' }}
+          >
+            {entry.starred ? '★ Starred' : '☆ Star'}
+          </button>
+        </div>
       </div>
 
       {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the
