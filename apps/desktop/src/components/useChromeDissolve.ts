@@ -21,7 +21,7 @@ import { useWritingSession } from './WritingSession';
 
 const WAIT_MS = 180_000;      // 3-minute pause before chrome returns
 const FADE_IN_S = 120;        // ~2-minute slow return
-const FADE_OUT_S = 1.2;       // recede on write
+const FADE_OUT_S = 2.8;       // recede on write/draw — slow + near-imperceptible (was 1.2, felt abrupt on the Journal pen)
 const QUICK_S = 0.4;          // explicit-summon return
 const EDGE_PX = 56;           // reach this close to a viewport edge to summon
 
