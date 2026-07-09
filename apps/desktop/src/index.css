@@ -828,6 +828,9 @@ a:focus-visible,
 .wz-deskhead{ display:flex; flex-direction:column; line-height:1.04; align-items:center; }
 .wz-deskname{ font-family:var(--wz-text); font-style:italic; font-size:clamp(1.3rem,3vw,1.9rem); color:var(--wz-ink-dim); }
 .wz-desktitle{ font-family:var(--wz-ui); font-weight:700; font-size:clamp(2.2rem,6vw,3.6rem); letter-spacing:-.02em; color:var(--wz-ink); }
+/* Hand-drawn "Writing Desk" title (white-transparent PNG) — replaces the type. */
+.wz-desktitle-img{ display:block; width:clamp(260px,60vw,440px); height:auto; margin-top:.15rem;
+  filter:drop-shadow(0 4px 18px rgba(0,0,0,.45)); }
 .wz-desksub{ font-family:var(--wz-text); color:var(--wz-ink-dim); font-size:1.06rem; margin-bottom:.5rem; }
 .wz-desk .wz-journal-link{ align-self:flex-start; }
 .wz-btn.wz-primary{ background:var(--wz-orange); color:var(--wz-ground); border-color:var(--wz-orange);

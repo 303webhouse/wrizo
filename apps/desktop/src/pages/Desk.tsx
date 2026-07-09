@@ -37,7 +37,7 @@ export function Desk() {
       <section className="wz-desk">
         <header className="wz-deskhead">
           <span className="wz-deskname">{deskOwnerName()}’s</span>
-          <span className="wz-desktitle">Writing Desk</span>
+          <img className="wz-desktitle-img" src="/brand/writing-desk-title.png" alt="Writing Desk" />
         </header>
         <p className="wz-desksub">Scribble, draft, plot, revise, or share (coming soon)</p>
 
