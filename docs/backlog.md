@@ -2,6 +2,9 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Desk title → hand-drawn "Writing Desk" graphic — shipped
+Replaced the Figtree-type `Writing Desk` title on the Desk with Nick's hand-drawn white-transparent PNG (`images/logo/Writing-Desk-(white-transparent).png` → `apps/desktop/public/brand/writing-desk-title.png`, clean filename for URLs). The Desk header now renders `<img className="wz-desktitle-img">` under the italic `{owner}'s`; sized `width:clamp(260px,60vw,440px)` with a soft drop-shadow. `build:web` bundles it to `dist-web/brand/`; selftest green.
+
 ## Journal mobile/feel fixes (S25 feedback) — shipped
 Three quick fixes from Nick's live S25 test of the ink stack (the larger "Journal pages + ink-to-Draft" vision — pixel eraser, ordered pages + nav, thumbnail reorder, journal→Draft box-porting — is going to Fable for an architectural brief).
 - **Strokes no longer select text.** A short pen stroke over existing text was starting a text selection (yanking the writer out of drawing). On pen-down the JournalEntry ink handler now clears any live selection and sets `user-select:none` on the sheet for the stroke's duration (restored on lift) — layered on the existing blur + `contenteditable=false` hardening. Verified in-harness: a pen stroke draws + persists with an empty selection.
