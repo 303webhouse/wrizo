@@ -1280,6 +1280,31 @@ a:focus-visible,
   .desk-rail{ width:56px; }
 }
 
+/* Mobile — the page is the hero (Journal feel pass). The left rail becomes a
+   bottom bar and the entry's metadata drops BELOW the sheet, so opening a Journal
+   page shows the page you're working on, not chrome. */
+@media (max-width:640px){
+  .desk-rail{ top:auto; left:0; right:0; bottom:0; width:auto; height:auto;
+    flex-direction:row; justify-content:space-around; gap:0; padding:4px 0;
+    border-right:none; border-top:1px solid var(--ink-border); }
+  .desk-rail-item{ flex:1; padding:6px 2px; border-left:none; border-top:2px solid transparent; }
+  .desk-rail-item.active{ border-left-color:transparent; border-top-color:var(--brass); }
+  .desk-rail-catch{ margin-bottom:0; }
+  .app-main{ padding-left:0; padding-bottom:62px; }
+  .app-immersive .app-main{ padding-bottom:0; }
+
+  /* Journal page: sheet first (hero, near-full-screen), everything else below. */
+  .journal-page{ display:flex; flex-direction:column; max-width:100%!important;
+    padding-top:.6rem!important; padding-left:12px; padding-right:12px; }
+  .journal-page .entry-full{ order:-1; min-height:80vh!important; max-width:100%!important; }
+  .journal-page > .btn-quiet,          /* ← The journal (back link) */
+  .journal-page > .journal-modes,      /* capture strip */
+  .journal-page > h1,                  /* title */
+  .journal-page > .entry-routed,
+  .journal-page > .entry-tags,
+  .journal-page > .entry-action-slot{ order:1; }
+}
+
 /* Large-screen foundations (B5) — placed LAST so it overrides the base widths.
    Scale small type + icons up at wide widths so the 32" is legible (no 7.5px
    sublabels, no dot-sized icons); the writing column stays a centred sane

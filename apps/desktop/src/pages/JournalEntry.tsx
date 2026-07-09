@@ -218,6 +218,12 @@ function JournalEntryView() {
       // editable — this is a no-op there.
       const edit = editRef.current;
       if (edit) { try { edit.blur(); } catch { /* */ } edit.setAttribute('contenteditable', 'false'); }
+      // A short pen stroke over existing text was starting a TEXT SELECTION (which
+      // yanks the writer out of drawing). Clear any live selection and forbid
+      // selection on the sheet for the duration of the stroke; restored on lift.
+      try { window.getSelection()?.removeAllRanges(); } catch { /* */ }
+      sheet.style.setProperty('user-select', 'none');
+      sheet.style.setProperty('-webkit-user-select', 'none');
       noteWriteRef.current(); // recede the chrome on draw
       captureRectRef.current = sheet.getBoundingClientRect();
       const ac = activeRef.current;
@@ -239,6 +245,8 @@ function JournalEntryView() {
     const restoreEditable = () => {
       const edit = editRef.current;
       if (edit) edit.setAttribute('contenteditable', 'plaintext-only');
+      sheet.style.removeProperty('user-select');
+      sheet.style.removeProperty('-webkit-user-select');
     };
     const onUp = (e: PointerEvent) => {
       if (!drawingRef.current || e.pointerType !== 'pen') return;
@@ -513,7 +521,7 @@ function JournalEntryView() {
   };
 
   return (
-    <div ref={pageRef} className="page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
+    <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
       <ChromeHandle onReveal={() => resurface(true)} />
       <Link to="/journal" className="btn-quiet chrome-fade" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
 

@@ -2,6 +2,13 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Journal mobile/feel fixes (S25 feedback) — shipped
+Three quick fixes from Nick's live S25 test of the ink stack (the larger "Journal pages + ink-to-Draft" vision — pixel eraser, ordered pages + nav, thumbnail reorder, journal→Draft box-porting — is going to Fable for an architectural brief).
+- **Strokes no longer select text.** A short pen stroke over existing text was starting a text selection (yanking the writer out of drawing). On pen-down the JournalEntry ink handler now clears any live selection and sets `user-select:none` on the sheet for the stroke's duration (restored on lift) — layered on the existing blur + `contenteditable=false` hardening. Verified in-harness: a pen stroke draws + persists with an empty selection.
+- **Chrome fades gently.** `useChromeDissolve` recede-on-write/draw slowed from 1.2s → **2.8s** so the menus/text melt away near-imperceptibly instead of blinking off when you start drawing.
+- **Mobile: the page is the hero.** `@media (max-width:640px)` — the left rail becomes a **bottom bar** (page reclaims the full width), and a `.journal-page` flex-column drops the sheet to `order:-1` (top, `min-height:80vh`, full width) with all metadata (back link, stamp/star/copy, capture strip, title, tags, routing) **below** it. Opening a Journal page shows the page you're working on, not chrome.
+- `tsc` + `build:web` + selftest green. Mobile layout is best-effort (responsive/visual) — tuned against Nick's S25.
+
 ## I0 Slice 2 — Journal ink hardening (Samsung S25 handwriting) — candidate (phone gate)
 Follow-up to I0 (whose Slice 2 was deferred). Nick's phone report (2026-07-04): **Samsung Galaxy S25, built-in S-Pen, Chrome** — drawing on a Journal page makes a line for a moment, then the OS/Chrome **handwriting-to-text converts the stroke** (squiggle disappears, a guessed letter or two remains). The prior J10 defense (capture-phase pen interception + `touch-action:none` + `handwriting="false"`) no longer beats OneUI/Chrome's S-Pen handwriting (the "again after an update" regression I0 predicted).
 - **Fix (candidate):** during a pen stroke, make the editable a NON-target for the recognizer — on pen-down (capture phase) `blur()` the `.entry-edit` + drop `contenteditable` to `false`; restore `plaintext-only` on pen-up/cancel (it stays blurred, so re-enabling can't hand the recognizer a focused field). With no focused editable to convert into, the stroke goes to the ink canvas only. Finger typing resumes on the next tap. Captures (read-only, no editable) are a no-op. Layered on top of the existing capture-phase interception + `touch-action:none`.
