@@ -760,11 +760,12 @@ function JournalEntryView() {
             border: '1.5px solid var(--ink-on-paper-low)', pointerEvents: 'none',
           }}
         />
-        {/* J2 — pen/eraser toggle: two states, rides the chrome-fade layer like the
-            rest of the ink chrome cluster. Session-scoped (pen by default on open). */}
+        {/* J2 — pen/eraser toggle: two states. Deliberately NOT chrome-fade — it's
+            a tool control the writer needs mid-draw (exactly when chrome is
+            receded), not passive chrome. Session-scoped (pen by default on open). */}
         <button
           type="button"
-          className="btn-quiet ink-tool-toggle chrome-fade"
+          className="btn-quiet ink-tool-toggle"
           onClick={() => setEraserArmed(a => !a)}
           aria-pressed={eraserArmed}
           aria-label={eraserArmed ? 'Eraser armed — tap for pen' : 'Pen armed — tap for eraser'}

@@ -34,9 +34,10 @@ transform losslessly into J4's ink boxes.
   fit (an erase sweep must not shrink the drawing in the frame).
 
 ### Slice 2 — capture + chrome (`pages/JournalEntry.tsx`)
-- A two-state pen/eraser toggle in the ink chrome cluster (with undo), riding
-  the chrome-fade layer. Session-scoped: a freshly opened page always arms
-  the pen.
+- A two-state pen/eraser toggle in the ink chrome cluster (with undo).
+  Deliberately NOT chrome-fade — a tool control the writer needs mid-draw,
+  exactly when chrome is receded. Session-scoped: a freshly opened page
+  always arms the pen.
 - Hardware eraser as progressive enhancement: on pen pointerdown, if the
   event reports the eraser (`pointerType 'pen'` with `buttons & 32`, or an
   eraser pointerType where the platform reports one), that stroke is an
@@ -73,7 +74,8 @@ server or schema change; anything Board (J4).
 4. Undo removes the last stroke whether ink or erase; an undone erase
    restores the hidden pixels.
 5. Toggle: pen by default per page; arm/disarm works; the ring preview
-   follows while armed; everything rides the chrome-fade layer.
+   follows while armed; the toggle and ring stay visible regardless of
+   chrome-fade state (tool controls, not passive chrome).
 6. `tsc` (desktop + server) + `build:web` + selftest green.
 7. S25 GATE (deploy blocks on this): rubbing feels like rubbing (latency,
    width verdict on real handwriting), the ring is visible-but-quiet on the
