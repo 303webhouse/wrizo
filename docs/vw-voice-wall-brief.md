@@ -1,102 +1,98 @@
-# VW — The Voice Wall (anti-slop paste rail) — build brief
+# VW — The Voice Wall (anti-slop paste rail) — build brief · v2
 
-**Branch:** `vw-voice-wall` — created FIRST, before the first edit. Off `main`.
-**Merge condition (hard):** do NOT merge to `main` until Nick's phone
-verification of the currently deployed stack (F2–F6 + I0 Slice 2) returns a
-verdict. Build and verify on the branch; merge after his word.
-**Deploy note:** no hardware gate of its own — input-layer work, fully
-harness-verifiable (the pen path is untouched).
-**Arc:** standalone identity ticket · queue item 2 of the July review
-**Canon:** `PHILOSOPHY.md` → "The Voice Wall" (the settled design) +
-`north-star.md` v0.2 · Written 2026-07-04
+**v2 note:** adds Slice 4 (the own-ink clipboard shadow — REQUIRED pre-merge,
+from the Fable review of the v1 build) and updates the merge condition.
+Replace the entire contents of `docs/vw-voice-wall-brief.md` with this file.
+
+**Branch:** `vw-voice-wall` (exists, built through Slice 3 — unpushed).
+FIRST action this pass: `git --no-pager push -u origin vw-voice-wall`
+(report = push), then build Slice 4 on it.
+**Merge condition (updated):** the v1 gate ("Nick's stack verdict") is
+functionally satisfied — the deployed stack has been Nick's daily driver
+since early July; his J2 S25 pass carries the formal word. Merge after
+Slice 4 lands AND the Fable review of the pushed branch returns green.
+**Deploy note:** no hardware gate — input-layer, harness-verifiable.
+**Canon:** `PHILOSOPHY.md` → "The Voice Wall" · `north-star.md` v0.2 · 2026-07-10
 
 ## Why
 
-The wall was never about paste — it is about WHOSE VOICE. External prose
-pasted into a generative surface imports a foreign voice (the same reason
-AI-ghostwriting is out); the writer's own work flowing in, and finished work
-flowing out, is always permitted. Discovered during the I0 review: the wall is
-PARTIALLY BUILT — `ForwardOnlyEditor` already blocks `insertFromPaste` /
-`insertFromDrop` with the comment "foreign-voice wall." This ticket completes
-the wall and, critically, builds its DOOR.
+The wall is about WHOSE VOICE, never about clipboards. Slices 1–3 (built)
+close the prose surfaces, keep copy-out sacred, and open the Import door.
+Slice 4 closes the one hole the v1 build opened: with paste blocked and cut
+free in Draft, a writer can cut a paragraph of their OWN prose and never put
+it back — reorganizing a revision, the core act of Draft mode, would require
+retyping. That walls the writer's own voice, which is precisely what the Wall
+promises never to do.
 
-Framing that governs every copy decision below (Principle 8): **importing is
-an edge activity.** Paste is blocked mid-flow not as punishment but because
-decisions live at edges, never the middle. The block protects flow; the
-Import door serves migration.
+## Slices 1–3 — BUILT (v1, verified by CC's 16-check run; Fable review pending push)
+1. Prose surfaces closed: `beforeinput` blocks `insertFromPaste`/`insertFromDrop`
+   on Free write, Draft, the journal editable, and the gate — with the
+   once-per-session whisper ("Outside text stays outside — Import it from
+   your binder if it's yours"), calm, auto-fading, never modal. Metadata
+   inputs (titles, rename, search, create form) paste normally.
+2. Copy-out sacred: selection/copy never blocked; "Copy page text" on
+   PageEditor + JournalEntry copies derived clean text (struck runs excluded).
+3. The Import door: `ImportDraft` (plain non-generative textarea → Manuscript /
+   Research / Note) from ProjectHome + Drawers; `journal_entries.imported_at`
+   boot-idempotent through both sync mappers; quiet "Imported" crumb tag;
+   imported pages behave as normal pages.
 
-## Slices
+## Slice 4 — the own-ink clipboard shadow (NEW, required pre-merge)
 
-### Slice 1 — close the prose surfaces
-- Verify + keep the existing ForwardOnlyEditor block (covers sprint, pages in
-  both modes, the gate).
-- Add the same `beforeinput` block (`insertFromPaste`, `insertFromDrop`) to
-  the Journal's `.entry-edit` path (J10) if absent. Verify drop events and
-  context-menu paste route through `beforeinput` on both surfaces; close any
-  path that bypasses it.
-- The whisper: when a paste is blocked on a prose surface, one calm inline
-  line — "Outside text stays outside — Import it from your binder if it's
-  yours." — auto-fading, non-modal, at most ONCE per session. Never a scold,
-  never a modal, never red (Principle 5). After the one whisper: silent.
-- Metadata inputs are NOT prose: titles, rename fields, search, the create
-  form keep normal paste. The wall guards voice, not clipboards.
+The writer's own words, cut or copied from inside the app THIS SESSION, pass
+back through the wall silently. Foreign text still walls.
 
-### Slice 2 — copy-out is sacred (verification)
-- Selection + copy must work on every prose surface in both modes (confirm
-  nothing in the forward-only guards preventDefaults `copy` or selection of
-  committed text).
-- Add a quiet "Copy page text" action to the PageEditor / JournalEntry
-  overflow so mobile writers aren't fighting long-press selection for a full
-  page. Copies derived clean text (struck runs excluded — the clean-save
-  invariant's public face).
+- **Recording:** in `store/voiceWall.ts`, a session-scoped in-memory shadow
+  (one slot, last-wins — no history, never persisted). Populate it from:
+  (a) a capture-phase document `copy`/`cut` listener that records
+  `String(document.getSelection())` WHEN the selection lies within a prose
+  surface (the same surface set Slice 1 guards); (b) the "Copy page text"
+  action records its exact payload.
+- **The gate check:** in the Slice-1 paste-block path, read the incoming
+  clipboard text (`event.dataTransfer?.getData('text/plain')` per the
+  beforeinput spec, with the `event.data` fallback). ALLOW when it equals the
+  shadow — exact match, or both-sides-trimmed match to survive editor edge
+  whitespace. No whisper on an allowed paste.
+- **Mode semantics on allow:**
+  - Draft (free editing): simply do not preventDefault — the browser paste
+    proceeds.
+  - Free write / journal (forward-only): preventDefault and route the text
+    through the EXISTING append path (the same seam typed input uses), so
+    the paste lands at the end like everything else. Forward-only's law —
+    text enters at the runway's tip — is not suspended for own ink.
+- **Drop:** the same shadow check applies to `insertFromDrop` in Draft
+  (drag-moving your own selected paragraph is the same gesture).
+- The whisper copy stays as-is; a blocked FOREIGN paste after an allowed own
+  paste still whispers if the session hasn't yet.
 
-### Slice 3 — the door: Import a draft
-- Entry points: a quiet "Import a draft" action on ProjectHome (binder level)
-  and in the Drawers view. Deliberately NOT on the Desk and NOT inside any
-  editor — the door lives at the edge.
-- Flow: a plain paste surface (a textarea — intentionally non-generative, no
-  forward-only, no modes) → land as: a MANUSCRIPT page or a SUPPORT page
-  (research / note), writer's choice → `createBinderPage` with the chosen
-  pageType, text set, and provenance stamped.
-- Provenance: one boot-idempotent column on `journal_entries` —
-  `imported_at text` — mirrored through BOTH sync mappers per the checklist
-  (rowToEntry + upsert). Client type gains `importedAt?: string`. The page
-  header/crumb shows a quiet "Imported" tag. The stamp is metadata only — no
-  behavior hangs off it yet (Workshop/publishing honesty later).
-- Generosity is the point: a writer migrating a half-finished novel is the
-  writer's own voice flowing in. v1 = one page per import, any length.
-
-## Non-goals (later)
-Chapter-splitting long imports; file-upload import (paste only in v1);
-provenance ENFORCEMENT of any kind; Workshop rules; clipboard inspection or
-origin heuristics (unknowable on the web — the design doesn't need them);
-any change to the pen/ink layer.
+## Non-goals (logged)
+Cross-session or cross-device shadow (in-memory only, by design — provenance
+beyond the live session is unknowable and Import is the door for it);
+multi-item clipboard history; chapter-splitting imports; file-upload import;
+provenance enforcement; any pen/ink change.
 
 ## Invariants
-- No failure states: the whisper informs once, then the wall is silent.
-- No surface accepts text the writer didn't type — EXCEPT the Import door,
-  which exists precisely so that rule can hold everywhere else.
-- Copy-out unrestricted, everywhere, always.
-- One-home rule untouched; forward-only untouched; clean-save untouched
-  (imported text enters as plain committed text, no struck runs).
-- Sync checklist: `imported_at` in push AND pull mappers; live round-trip
-  after this eventually deploys.
+- No surface accepts text the writer didn't type — the shadow is not an
+  exception to this rule, it is its proof: shadowed text IS text the writer
+  typed, returning.
+- Forward-only semantics hold even for allowed pastes (append-at-tip).
+- Copy-out unrestricted, everywhere, always. One-home, clean-save: untouched.
+- The shadow never persists, never syncs, never logs its contents.
 
-## Definition of done (in-harness)
-1. Paste + drop blocked on: Free write, Draft, the journal editable, the
-   gate's editor — each shows the whisper once per session, then silence.
-2. Titles / rename / search / create form paste normally.
-3. Copy-out verified on every prose surface; "Copy page text" yields derived
-   clean text (struck runs excluded).
-4. Import → manuscript page and Import → support page both land with
-   `importedAt` set, the "Imported" tag visible, and the page behaving as a
-   normal page thereafter (modes, filing, resume card all correct).
-5. `imported_at` round-trips through push AND pull in the harness.
-6. `tsc` (desktop + server) + `build:web` + selftest green; CDP checks 1–4.
-7. Merge to `main` ONLY after Nick's stack verdict; deploys with the next
-   `railway up` thereafter.
+## Definition of done (in-harness; v1 checks 1–16 must still pass)
+17. Draft: select a paragraph → cut → click elsewhere in the page → paste →
+    the paragraph lands byte-identical; no whisper.
+18. Copy on page A (prose) → paste on page B (Draft) same session → allowed.
+19. Free write: copy own sentence → paste → text APPENDS at the runway tip
+    (forward-only preserved), byte-identical; no whisper.
+20. Foreign text (harness-injected clipboard content that never transited a
+    prose copy/cut) → still blocked + whisper fires (session-fresh fixture).
+21. Trimmed-equality tolerance works; near-miss text (one char off) blocks.
+22. Reload clears the shadow (paste of pre-reload own text blocks — the
+    session boundary is real).
+23. `tsc` (desktop + server) + `build:web` + selftest green.
 
 ## Working environment
-- Branch `vw-voice-wall` FIRST, before the first edit.
+- Push the existing branch FIRST (report = push), then Slice 4 on it.
 - PowerShell edits via `[System.IO.File]::ReadAllText/WriteAllText`, UTF-8 no
   BOM; `git --no-pager` always. Log the shipped ticket to `docs/backlog.md`.
