@@ -6,6 +6,7 @@
 import type { Stroke } from '../types';
 
 export const INK_LINE_WIDTH = 1.4; // thin
+export const ERASER_WIDTH = 22; // S25 pass tunes this
 
 // The one pen reads the dedicated ink-stroke token — a very dark brown, almost
 // black — falling back to the text ink token, then a hard default.
@@ -20,15 +21,22 @@ export function inkColor(): string {
 // denormalize by the current sheet width — the same scale on both axes — so a
 // circle stays a circle at any width. Smoothing: quadratic midpoints through the
 // polyline. A single-point stroke renders as a dot.
+// J2 — an erase is a stroke with `eraser: true`, painted with the same geometry
+// under `destination-out` at ERASER_WIDTH (color's hue is irrelevant, only its
+// opacity is — inkColor() is always opaque). save/restore around the composite
+// state because callers (paintCommitted, renderThumbnail) loop this over mixed
+// ink/erase strokes without resetting context state between calls.
 export function renderStroke(
   ctx: CanvasRenderingContext2D,
   stroke: Stroke,
   sheetW: number,
   color: string,
-  lineWidth: number = INK_LINE_WIDTH,
+  lineWidth: number = stroke.eraser ? ERASER_WIDTH : INK_LINE_WIDTH,
 ): void {
   const pts = stroke.points;
   if (!pts || pts.length === 0) return;
+  ctx.save();
+  if (stroke.eraser) ctx.globalCompositeOperation = 'destination-out';
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   ctx.lineWidth = lineWidth;
@@ -40,6 +48,7 @@ export function renderStroke(
     ctx.arc(P[0].x, P[0].y, lineWidth / 2, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
+    ctx.restore();
     return;
   }
   ctx.beginPath();
@@ -52,6 +61,7 @@ export function renderStroke(
   const last = P[P.length - 1];
   ctx.lineTo(last.x, last.y);
   ctx.stroke();
+  ctx.restore();
 }
 
 // Render an entry's strokes scaled to fit a small square thumbnail (J12 browse
@@ -66,7 +76,9 @@ export function renderThumbnail(canvas: HTMLCanvasElement, strokes: Stroke[], si
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, size, size);
 
-  const pts = strokes.flatMap(s => s.points);
+  // J2 — an erase sweep must not shrink the fit: exclude its points from the
+  // bbox, but it still paints below (a fully-erased drawing renders as blank).
+  const pts = strokes.filter(s => !s.eraser).flatMap(s => s.points);
   if (pts.length === 0) return;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const p of pts) {
@@ -87,6 +99,11 @@ export function renderThumbnail(canvas: HTMLCanvasElement, strokes: Stroke[], si
   ctx.translate(size / 2, size / 2);
   ctx.scale(scale, scale);
   ctx.translate(-cx, -cy);
-  for (const stroke of strokes) renderStroke(ctx, stroke, 1, ink, Math.max(0.4, 1.3 / scale));
+  for (const stroke of strokes) {
+    const lw = stroke.eraser
+      ? Math.max(0.4, (ERASER_WIDTH / INK_LINE_WIDTH) * (1.3 / scale))
+      : Math.max(0.4, 1.3 / scale);
+    renderStroke(ctx, stroke, 1, ink, lw);
+  }
   ctx.restore();
 }
