@@ -110,6 +110,9 @@ export function Journal() {
         <button type="button" className="btn-quiet journal-surface" onClick={surface} disabled={entries.length === 0}>
           Surface a past page
         </button>
+        <Link to="/journal/spread" className="btn-quiet journal-spread-link">
+          Spread
+        </Link>
         <button
           type="button"
           className="btn-quiet journal-new-page"

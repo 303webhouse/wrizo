@@ -728,29 +728,52 @@ function normalizeNotebook(): JournalEntry[] {
   return getNotebookPages();
 }
 
+// J3 — the ONE ordering implementation shared by every writer of `orderIndex`:
+// createLoosePage (append/insert-blank, below) and setNotebookPosition (drag
+// reorder, J3 Slice 2). Computes a fresh index placing a page immediately
+// after `afterId`, normalizing the notebook first if that gap is exhausted.
+// `afterId` is a three-state selector: omitted -> append at the end (the
+// original createLoosePage contract, unchanged); `null` -> insert before the
+// very first page (the drag-to-the-front target, which has no "after" id to
+// name — the open end at the other side of `midpoint`); a page id -> insert
+// immediately after that page. `excludeId` drops a page (the one being
+// dragged) out of the notebook read BEFORE any gap is measured, so moving a
+// page never measures a gap against its own current position.
+function notebookIndexAfter(afterId?: string | null, excludeId?: string): number {
+  let nb = getNotebookPages();
+  if (excludeId) nb = nb.filter(p => p.id !== excludeId);
+
+  if (afterId === null) {
+    // Before the first page — the open end symmetric to "append at the end"
+    // below; nothing precedes it, so there's no gap that can be exhausted.
+    const firstKey = nb.length ? notebookKey(nb[0]) : undefined;
+    return midpoint(undefined, firstKey);
+  }
+
+  const lastKey = nb.length ? notebookKey(nb[nb.length - 1]) : undefined;
+  const i0 = afterId ? nb.findIndex(p => p.id === afterId) : -1;
+  if (!afterId || i0 < 0) {
+    return midpoint(lastKey, undefined); // append at the end
+  }
+  let i = i0;
+  let cur = notebookKey(nb[i]);
+  let nxt = i + 1 < nb.length ? notebookKey(nb[i + 1]) : undefined;
+  if (nxt != null && gapExhausted(cur, nxt)) {
+    nb = normalizeNotebook();
+    if (excludeId) nb = nb.filter(p => p.id !== excludeId);
+    i = nb.findIndex(p => p.id === afterId);
+    cur = notebookKey(nb[i]);
+    nxt = i + 1 < nb.length ? notebookKey(nb[i + 1]) : undefined;
+  }
+  return midpoint(cur, nxt);
+}
+
 // Create a blank loose Journal page placed in the notebook: at the END (afterId
 // omitted), or immediately AFTER `afterId` (between it and its successor).
 // Normalizes first if that gap is exhausted. Honor-discard (J1a) still cleans up
 // an abandoned blank — no litter.
 export function createLoosePage(afterId?: string): JournalEntry {
-  let nb = getNotebookPages();
-  const lastKey = nb.length ? notebookKey(nb[nb.length - 1]) : undefined;
-  let orderIndex: number;
-  const i0 = afterId ? nb.findIndex(p => p.id === afterId) : -1;
-  if (!afterId || i0 < 0) {
-    orderIndex = midpoint(lastKey, undefined); // append at the end
-  } else {
-    let i = i0;
-    let cur = notebookKey(nb[i]);
-    let nxt = i + 1 < nb.length ? notebookKey(nb[i + 1]) : undefined;
-    if (nxt != null && gapExhausted(cur, nxt)) {
-      nb = normalizeNotebook();
-      i = nb.findIndex(p => p.id === afterId);
-      cur = notebookKey(nb[i]);
-      nxt = i + 1 < nb.length ? notebookKey(nb[i + 1]) : undefined;
-    }
-    orderIndex = midpoint(cur, nxt);
-  }
+  const orderIndex = notebookIndexAfter(afterId);
   const now = new Date().toISOString();
   const entry: JournalEntry = {
     id: generateId(), text: '', projectId: null, source: 'page',
@@ -758,6 +781,20 @@ export function createLoosePage(afterId?: string): JournalEntry {
   };
   saveJournalEntry(entry);
   return entry;
+}
+
+// J3 — persist a drag reorder (the spread view, Slice 2): place an existing
+// loose page immediately after `afterId` (`null` = the very front, omitted =
+// the very end). Rides `notebookIndexAfter` — the SAME helper `createLoosePage`
+// uses — so there is exactly one ordering implementation, per the J3 invariant.
+// Loose notebook pages only (filed/Shelf pages have no notebook order to move
+// within); a no-op if `id` isn't a live loose page or the drop targets itself.
+export function setNotebookPosition(id: string, afterId?: string | null): void {
+  if (afterId === id) return;
+  const entry = getJournalEntry(id);
+  if (!entry || entry.projectId != null || entry.shelved) return;
+  const orderIndex = notebookIndexAfter(afterId, id);
+  saveJournalEntry({ ...entry, orderIndex });
 }
 
 // Test/inspection seam — the loose notebook in order (id + resolved key).
