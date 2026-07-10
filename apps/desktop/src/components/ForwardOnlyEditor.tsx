@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
-import { notePasteBlocked } from '../store/voiceWall';
+import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -126,11 +126,19 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // foreign prose is blocked + whispered (copy-out stays free).
     if (drafting) {
       const onInput = () => { onChangeRef.current(el.innerText); onForwardRef.current?.(); };
+      // VW Slice 4 — own ink passes silently: simply don't preventDefault, and
+      // the browser's native paste/drop proceeds (Draft owns its contenteditable).
       const onBeforeInputDraft = (e: InputEvent) => {
         const it = e.inputType || '';
-        if (it === 'insertFromPaste' || it === 'insertFromDrop') { e.preventDefault(); notePasteBlocked(); }
+        if (it === 'insertFromPaste' || it === 'insertFromDrop') {
+          if (shadowAllows(extractIncomingText(e))) return;
+          e.preventDefault(); notePasteBlocked();
+        }
       };
-      const blockPaste = (e: Event) => { e.preventDefault(); notePasteBlocked(); };
+      const blockPaste = (e: Event) => {
+        if (shadowAllows(extractIncomingText(e))) return;
+        e.preventDefault(); notePasteBlocked();
+      };
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
       el.addEventListener('paste', blockPaste);
@@ -161,7 +169,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // Inserts: hand off to the IME while composing (so typing/autocorrect work).
       if (composingRef.current || e.isComposing || it === 'insertCompositionText') return;
       e.preventDefault();
-      if (it === 'insertFromPaste' || it === 'insertFromDrop') { notePasteBlocked(); return; } // foreign-voice wall: block external paste (VW)
+      if (it === 'insertFromPaste' || it === 'insertFromDrop') {
+        // VW Slice 4 — own ink: route through the SAME append path typed input
+        // uses (forward-only's law holds — text still enters at the runway tip).
+        const text = extractIncomingText(e);
+        if (shadowAllows(text)) { handleInput(text); return; }
+        notePasteBlocked();
+        return;
+      }
       if (it.startsWith('insert')) {
         const data = e.data ?? ((it === 'insertParagraph' || it === 'insertLineBreak') ? '\n' : '');
         if (data) handleInput(data);
@@ -184,8 +199,16 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const block = (e: Event) => e.preventDefault(); // cut: block (removes committed text). Copy-out is NOT blocked.
     // Paste + drop are the foreign-voice wall — block AND whisper (belt-and-
     // suspenders alongside the beforeinput branch, for any browser that fires the
-    // event without a beforeinput). The once-per-session gate dedups.
-    const blockPaste = (e: Event) => { e.preventDefault(); notePasteBlocked(); };
+    // event without a beforeinput). The once-per-session gate dedups. Own ink
+    // (VW Slice 4) still must preventDefault here — this surface's rendering is
+    // fully model-owned (Run state -> innerHTML), so even an allowed paste is
+    // routed through handleInput rather than a native DOM mutation.
+    const blockPaste = (e: Event) => {
+      e.preventDefault();
+      const text = extractIncomingText(e);
+      if (shadowAllows(text)) { handleInput(text); return; }
+      notePasteBlocked();
+    };
 
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
     el.addEventListener('keydown', onKeyDown);

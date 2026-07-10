@@ -7,7 +7,7 @@ import { useChromeDissolve } from '../components/useChromeDissolve';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
-import { notePasteBlocked } from '../store/voiceWall';
+import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
@@ -367,8 +367,15 @@ function JournalEntryView() {
       }
       // Voice Wall (VW): external prose pasted/dropped into this prose surface
       // imports a foreign voice — block it and whisper once. (The J10 editable was
-      // a hole in the wall until now.)
-      if (it === 'insertFromPaste' || it === 'insertFromDrop') { e.preventDefault(); notePasteBlocked(); return; }
+      // a hole in the wall until now.) Slice 4: own ink passes silently, routed
+      // through execCommand('insertText') — the same native path plain typing
+      // uses here (this surface has no separate append function; onInput reads
+      // el.innerText either way), so autosave/caret/onInput all fire as normal.
+      if (it === 'insertFromPaste' || it === 'insertFromDrop') {
+        const text = extractIncomingText(e);
+        if (shadowAllows(text)) { e.preventDefault(); document.execCommand('insertText', false, text); return; }
+        e.preventDefault(); notePasteBlocked(); return;
+      }
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed) { e.preventDefault(); return; } // no select-then-replace
       // Allowed forward insertion — set the typing-run boundary using the
@@ -403,7 +410,11 @@ function JournalEntryView() {
       else if (e.key === 'Delete') { e.preventDefault(); deleteWord('forward'); }
     };
     const onCut = (e: Event) => e.preventDefault(); // cut would remove text (copy-out is NOT blocked)
-    const onPasteDrop = (e: Event) => { e.preventDefault(); notePasteBlocked(); }; // VW: foreign-voice wall
+    const onPasteDrop = (e: Event) => { // VW: foreign-voice wall (Slice 4: own ink passes silently)
+      const text = extractIncomingText(e);
+      if (shadowAllows(text)) { e.preventDefault(); document.execCommand('insertText', false, text); return; }
+      e.preventDefault(); notePasteBlocked();
+    };
     const onHide = () => { if (document.visibilityState === 'hidden') { flushText(); flushNow(); } };
 
     el.addEventListener('beforeinput', onBeforeInput as EventListener);

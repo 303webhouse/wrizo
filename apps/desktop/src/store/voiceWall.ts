@@ -23,3 +23,30 @@ export function subscribeWhisper(l: Listener): () => void {
   listeners.add(l);
   return () => { listeners.delete(l); };
 }
+
+// Slice 4 — the own-ink clipboard shadow. Session-scoped, one slot, last-wins,
+// NEVER persisted (a reload clears it — the session boundary is real, and
+// provenance beyond the live session is unknowable by design; Import is the
+// door for that). Populated by a copy/cut on a prose surface, or by "Copy
+// page text". A paste/drop that matches the shadow is the writer's own words
+// returning, not a foreign voice — it passes the wall silently.
+let shadow: string | null = null;
+
+export function recordShadow(text: string): void {
+  if (text) shadow = text;
+}
+
+// Exact match, or both-sides-trimmed match (survives editor edge whitespace
+// the round-trip through a contenteditable can introduce).
+export function shadowAllows(text: string): boolean {
+  if (!text || shadow == null) return false;
+  return text === shadow || text.trim() === shadow.trim();
+}
+
+// The incoming text of a paste/drop, whichever event actually carries it —
+// beforeinput's `dataTransfer`/`data`, or a raw ClipboardEvent/DragEvent's
+// `clipboardData`/`dataTransfer` (surfaces guard both layers; see Slice 1).
+export function extractIncomingText(e: Event): string {
+  const anyE = e as InputEvent & ClipboardEvent & DragEvent;
+  return anyE.dataTransfer?.getData('text/plain') || anyE.clipboardData?.getData('text/plain') || anyE.data || '';
+}

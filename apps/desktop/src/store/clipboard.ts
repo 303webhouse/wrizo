@@ -3,7 +3,12 @@
 // the clean-save invariant's public face) so mobile writers don't fight long-press
 // selection for a whole page. Tries the async Clipboard API, falls back to an
 // off-screen textarea + execCommand for non-secure contexts.
+import { recordShadow } from './voiceWall';
+
 export function copyText(text: string): void {
+  // VW Slice 4 — this exact payload is the writer's own words; record it in
+  // the own-ink shadow so pasting it back anywhere passes the wall silently.
+  recordShadow(text);
   // Test/inspection seam — the last copied text, for the harness.
   if (typeof window !== 'undefined') (window as unknown as { __wzLastCopy?: string }).__wzLastCopy = text;
   try {
