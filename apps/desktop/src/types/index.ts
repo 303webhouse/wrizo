@@ -148,6 +148,9 @@ export interface StrokePoint {
 
 export interface Stroke {
   points: StrokePoint[];
+  // J2 — an erase IS a stroke: same geometry, painted destination-out (ink.ts).
+  // Additive/optional; absent on every ink stroke drawn before this ticket.
+  eraser?: true;
 }
 
 // Journal entry (J1) — a permanent, timestamped record of a completed sprint's
