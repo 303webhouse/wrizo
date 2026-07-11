@@ -373,7 +373,17 @@ function JournalEntryView() {
       // el.innerText either way), so autosave/caret/onInput all fire as normal.
       if (it === 'insertFromPaste' || it === 'insertFromDrop') {
         const text = extractIncomingText(e);
-        if (shadowAllows(text)) { e.preventDefault(); document.execCommand('insertText', false, text); return; }
+        if (shadowAllows(text)) {
+          e.preventDefault();
+          // An allowed own-ink paste over a live selection would otherwise
+          // REPLACE it via execCommand — select-then-replace through the
+          // back door, violating the surface's forward-only law. Collapse
+          // to end first so the paste always appends, never replaces.
+          const activeSel = window.getSelection();
+          if (activeSel && !activeSel.isCollapsed) activeSel.collapseToEnd();
+          document.execCommand('insertText', false, text);
+          return;
+        }
         e.preventDefault(); notePasteBlocked(); return;
       }
       const sel = window.getSelection();
@@ -412,7 +422,13 @@ function JournalEntryView() {
     const onCut = (e: Event) => e.preventDefault(); // cut would remove text (copy-out is NOT blocked)
     const onPasteDrop = (e: Event) => { // VW: foreign-voice wall (Slice 4: own ink passes silently)
       const text = extractIncomingText(e);
-      if (shadowAllows(text)) { e.preventDefault(); document.execCommand('insertText', false, text); return; }
+      if (shadowAllows(text)) {
+        e.preventDefault();
+        const activeSel = window.getSelection(); // collapse first: an allowed
+        if (activeSel && !activeSel.isCollapsed) activeSel.collapseToEnd(); // paste must append, never replace a selection
+        document.execCommand('insertText', false, text);
+        return;
+      }
       e.preventDefault(); notePasteBlocked();
     };
     const onHide = () => { if (document.visibilityState === 'hidden') { flushText(); flushNow(); } };
