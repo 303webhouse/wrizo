@@ -112,6 +112,7 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
 
     let phase: 'idle' | 'pending' | 'dragging' = 'idle';
     let startX = 0, startY = 0, startId: string | null = null, ptype = 'mouse';
+    let activePointerId: number | null = null;
     let longPressTimer: ReturnType<typeof setTimeout> | null = null;
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
@@ -145,6 +146,12 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
       draggingCommittedRef.current = true;
       setDrag(id);
       setDrop(undefined);
+      // Without capture, a drag released outside the grid never delivers
+      // pointerup to the grid listener — a lifted cell + stale drop line
+      // strand until the next full drag cycle.
+      if (activePointerId != null) {
+        try { grid.setPointerCapture(activePointerId); } catch { /* pointer already gone */ }
+      }
     };
 
     const finishDrag = (commit: boolean) => {
@@ -152,6 +159,9 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
       if (commit && dragIdRef.current && dropAfterIdRef.current !== undefined) {
         setNotebookPosition(dragIdRef.current, dropAfterIdRef.current);
         onReorderedRef.current();
+      }
+      if (activePointerId != null && grid.hasPointerCapture(activePointerId)) {
+        try { grid.releasePointerCapture(activePointerId); } catch { /* already released */ }
       }
       phase = 'idle';
       startId = null;
@@ -168,6 +178,7 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
       const id = cellEl?.dataset.pageId;
       if (!id) return;
       startX = e.clientX; startY = e.clientY; startId = id; ptype = e.pointerType;
+      activePointerId = e.pointerId;
       phase = 'pending';
       if (ptype === 'touch' || ptype === 'pen') {
         longPressTimer = setTimeout(() => { if (phase === 'pending' && startId) beginDrag(startId); }, LONG_PRESS_MS);
