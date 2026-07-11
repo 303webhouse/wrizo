@@ -204,6 +204,10 @@ export interface JournalEntry {
   // A sparse float (the `spineOrder` pattern) so insert-between is a midpoint.
   // Scope: the loose Journal only — binder pages + the Shelf keep their orderings.
   orderIndex?: number;
+  // Provenance (VW — the Voice Wall / Import door). Set when a page is born from
+  // the Import-a-draft flow (the writer's own work flowing in). Metadata only —
+  // the page behaves as a normal page; the header shows a quiet "Imported" tag.
+  importedAt?: string;
 }
 
 // Writing-session instrumentation (A9 → F5). One row per writing session on a

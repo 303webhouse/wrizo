@@ -664,6 +664,27 @@ export function createBinderPage(binderId: string, pageType: NonNullable<Journal
   return entry;
 }
 
+// Import a draft (VW — the Voice Wall's door). The writer's own work flowing IN:
+// a new binder page seeded with pasted text and stamped with provenance
+// (`importedAt`). It behaves as a normal page thereafter (modes, filing, resume);
+// the stamp is metadata only. Rides saveJournalEntry, so it stamps page activity
+// (F1) and syncs like any page. One page per import, any length (v1).
+export function importDraft(binderId: string, pageType: NonNullable<JournalEntry['pageType']>, text: string): JournalEntry {
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text,
+    projectId: binderId,
+    pageType,
+    source: 'page',
+    importedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
 // Create a blank page directly on the Shelf (D2) — a loose page awaiting a home,
 // kept out of the chronological Journal stream (projectId null AND shelved).
 export function createShelfPage(): JournalEntry {

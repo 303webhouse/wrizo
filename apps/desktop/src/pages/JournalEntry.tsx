@@ -7,6 +7,8 @@ import { useChromeDissolve } from '../components/useChromeDissolve';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
+import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
+import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
@@ -455,6 +457,27 @@ function JournalEntryView() {
         deleteWord(it.toLowerCase().includes('forward') ? 'forward' : 'backward');
         return;
       }
+      // Voice Wall (VW): external prose pasted/dropped into this prose surface
+      // imports a foreign voice — block it and whisper once. (The J10 editable was
+      // a hole in the wall until now.) Slice 4: own ink passes silently, routed
+      // through execCommand('insertText') — the same native path plain typing
+      // uses here (this surface has no separate append function; onInput reads
+      // el.innerText either way), so autosave/caret/onInput all fire as normal.
+      if (it === 'insertFromPaste' || it === 'insertFromDrop') {
+        const text = extractIncomingText(e);
+        if (shadowAllows(text)) {
+          e.preventDefault();
+          // An allowed own-ink paste over a live selection would otherwise
+          // REPLACE it via execCommand — select-then-replace through the
+          // back door, violating the surface's forward-only law. Collapse
+          // to end first so the paste always appends, never replaces.
+          const activeSel = window.getSelection();
+          if (activeSel && !activeSel.isCollapsed) activeSel.collapseToEnd();
+          document.execCommand('insertText', false, text);
+          return;
+        }
+        e.preventDefault(); notePasteBlocked(); return;
+      }
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed) { e.preventDefault(); return; } // no select-then-replace
       // Allowed forward insertion — set the typing-run boundary using the
@@ -488,13 +511,26 @@ function JournalEntryView() {
       if (e.key === 'Backspace') { e.preventDefault(); deleteWord('backward'); }
       else if (e.key === 'Delete') { e.preventDefault(); deleteWord('forward'); }
     };
-    const onCut = (e: Event) => e.preventDefault(); // cut would remove text
+    const onCut = (e: Event) => e.preventDefault(); // cut would remove text (copy-out is NOT blocked)
+    const onPasteDrop = (e: Event) => { // VW: foreign-voice wall (Slice 4: own ink passes silently)
+      const text = extractIncomingText(e);
+      if (shadowAllows(text)) {
+        e.preventDefault();
+        const activeSel = window.getSelection(); // collapse first: an allowed
+        if (activeSel && !activeSel.isCollapsed) activeSel.collapseToEnd(); // paste must append, never replace a selection
+        document.execCommand('insertText', false, text);
+        return;
+      }
+      e.preventDefault(); notePasteBlocked();
+    };
     const onHide = () => { if (document.visibilityState === 'hidden') { flushText(); flushNow(); } };
 
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
     el.addEventListener('cut', onCut);
+    el.addEventListener('paste', onPasteDrop);
+    el.addEventListener('drop', onPasteDrop);
     document.addEventListener('visibilitychange', onHide);
 
     return () => {
@@ -502,6 +538,8 @@ function JournalEntryView() {
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('cut', onCut);
+      el.removeEventListener('paste', onPasteDrop);
+      el.removeEventListener('drop', onPasteDrop);
       document.removeEventListener('visibilitychange', onHide);
       if (saveTimerRef.current) { clearTimeout(saveTimerRef.current); saveTimerRef.current = null; }
       // New-page lifecycle: discard an empty, never-touched page rather than
@@ -644,16 +682,20 @@ function JournalEntryView() {
         <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
           {formatStamp(entry.createdAt)}{authored ? ' · a page' : ''}
         </div>
-        <button
-          type="button"
-          className="btn-quiet entry-star"
-          data-starred={entry.starred ? 'true' : 'false'}
-          aria-pressed={!!entry.starred}
-          onClick={toggleStar}
-          style={{ color: entry.starred ? 'var(--brass)' : 'var(--text-low)' }}
-        >
-          {entry.starred ? '★ Starred' : '☆ Star'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
+          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the page text">Copy page text</button>
+          <button
+            type="button"
+            className="btn-quiet entry-star"
+            data-starred={entry.starred ? 'true' : 'false'}
+            aria-pressed={!!entry.starred}
+            onClick={toggleStar}
+            style={{ color: entry.starred ? 'var(--brass)' : 'var(--text-low)' }}
+          >
+            {entry.starred ? '★ Starred' : '☆ Star'}
+          </button>
+        </div>
       </div>
 
       {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the

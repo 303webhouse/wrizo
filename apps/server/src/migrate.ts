@@ -81,4 +81,8 @@ export async function runMigrations(): Promise<void> {
   // J1 — loose-Journal notebook order. One boot-idempotent column; null on every
   // existing page (sort falls back to createdAt — no backfill).
   await pool.query(`alter table journal_entries add column if not exists order_index double precision`);
+
+  // VW — the Voice Wall's Import door stamps provenance on imported pages. One
+  // boot-idempotent column; null on every existing/typed page (no backfill).
+  await pool.query(`alter table journal_entries add column if not exists imported_at text`);
 }
