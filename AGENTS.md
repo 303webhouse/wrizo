@@ -27,6 +27,18 @@ that design pass. (See docs/north-star.md v0.2 for the as-built architecture.)
 - No new deps unless required by the ticket.
 - Stop when Definition of Done is met.
 
+## Harness scenarios persist
+Every ticket's verification scenario is a committed artifact, not a throwaway:
+`scripts/harness/<ticket>.mjs` (or the ticket's established harness location),
+landing in the same commit as the build it verifies. Review fixes re-run the
+ticket's scenario verbatim and extend it when a fix adds behavior. J4 is the
+first citizen; J3/VW predate the rule and have no scripts to backfill.
+
+## Config changes: propose, never ship
+Changes to CC's own permissions, harness configuration, or session settings
+are proposed in a report and made only on Nick's explicit word — never shipped
+inside a build. (First stated in docs/j-arc-runbook.md.)
+
 ## Commands you must run before saying done
 - pnpm install
 - pnpm dev

@@ -671,6 +671,7 @@ export function createBinderPage(binderId: string, pageType: NonNullable<Journal
 // box's h follows its re-normalized stroke bbox aspect so it never distorts.
 
 const BOARD_TEXT_W = 0.6;
+const BOARD_INK_MIN_W = 0.15;
 const BOARD_INK_MAX_W = 0.5;
 const BOARD_GROUP_GAP = 0.05;  // between a locked group's text box and its ink box
 const BOARD_STACK_GAP = 0.08;  // between successive ported pages
@@ -698,15 +699,17 @@ function strokesBBox(strokes: Stroke[]): { minX: number; minY: number; w: number
 
 // Re-normalize a page's strokes for an ink Box (J4 invariant): bbox origin ->
 // 0,0, scaled so bbox width = 1 — the box crop-fits its drawing and transforms
-// losslessly with `w`. Returns the drawing's aspect ratio (h/w) for the box.
-function renormalizeStrokesForBox(strokes: Stroke[]): { strokes: Stroke[]; aspect: number } {
+// losslessly with `w`. Returns the drawing's aspect ratio (h/w) AND its
+// original bbox width (page-width fraction, pre-scale) so the box can land
+// bbox-fit — the size the writer actually drew it at — rather than flat-maxed.
+function renormalizeStrokesForBox(strokes: Stroke[]): { strokes: Stroke[]; aspect: number; bboxW: number } {
   const bbox = strokesBBox(strokes);
   const scale = 1 / bbox.w;
   const normalized = strokes.map(s => ({
     ...s,
     points: s.points.map(p => ({ x: (p.x - bbox.minX) * scale, y: (p.y - bbox.minY) * scale, ...(p.p != null ? { p: p.p } : null) })),
   }));
-  return { strokes: normalized, aspect: bbox.h / bbox.w };
+  return { strokes: normalized, aspect: bbox.h / bbox.w, bboxW: bbox.w };
 }
 
 // Create a Board page (J4 Slice 1) — a binder page with pageType:'board' and
@@ -764,8 +767,8 @@ export function portToBoard(sourceIds: string[], dest: string | 'new', includeIn
       y += h + BOARD_GROUP_GAP;
     }
     if (hasInk) {
-      const { strokes, aspect } = renormalizeStrokesForBox(source.strokes!);
-      const w = BOARD_INK_MAX_W;
+      const { strokes, aspect, bboxW } = renormalizeStrokesForBox(source.strokes!);
+      const w = Math.min(Math.max(bboxW, BOARD_INK_MIN_W), BOARD_INK_MAX_W);
       const h = w * aspect;
       boxes.push({ id: generateId(), kind: 'ink', x: 0.05, y, w, h, z: z++, groupId, strokes, sourceEntryId: source.id, portedAt: now });
       y += h;

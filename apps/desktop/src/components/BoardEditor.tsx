@@ -496,6 +496,15 @@ export function BoardEditor({ id }: { id: string }) {
                   <BoardInkBox box={box} pageWidthPx={pageWidthPx} />
                 ) : (
                   <BoardTextBox
+                    // Review fix — remount per edit session: without this key,
+                    // the SAME instance survives edit -> blur -> edit again, so
+                    // its useState(() => escHtml(initialText)) initializer never
+                    // re-runs — the second session's dangerouslySetInnerHTML
+                    // renders the FIRST session's stale html, visibly reverting
+                    // the box, and the next keystroke commits stale+new (a
+                    // data-loss class bug). A fresh key per session forces a
+                    // fresh mount, so the initializer re-seeds from current text.
+                    key={editingId === box.id ? box.id + ':edit' : box.id}
                     boxId={box.id}
                     initialText={box.text ?? ''}
                     editing={editingId === box.id}
