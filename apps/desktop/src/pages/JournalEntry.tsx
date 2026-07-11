@@ -918,11 +918,16 @@ function JournalEntryView() {
           onClose={() => setAddOpen(false)}
           onDone={(message, verb) => {
             setAddOpen(false);
-            toast.show(message);
             // A MOVE takes the page out of the Journal — this loose-page view
             // no longer applies to it, so follow it out. COPY/LINK leave the
-            // page exactly here.
-            if (verb === 'MOVES') navigate('/journal');
+            // page exactly here, so the local toast shows normally. A MOVE's
+            // toast can't: this view unmounts on navigate, taking the toast
+            // node with it (Fable R1) — hand the message to the Journal list
+            // as one-shot nav state instead (the F2 `warmStart`
+            // consume-on-arrival pattern; the list clears the state on
+            // arrival so a refresh never re-shows it).
+            if (verb === 'MOVES') navigate('/journal', { state: { actionToast: message } });
+            else toast.show(message);
           }}
         />
       )}

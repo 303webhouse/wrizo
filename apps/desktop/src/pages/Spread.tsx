@@ -461,6 +461,9 @@ export function Spread() {
       )}
       {addOpen && (
         <AddToSheet
+          // R3 (Fable review, 2026-07-11): `pages` is already notebook order
+          // (Your order) — sourced that way regardless of click/selection
+          // sequence, matching J4's port precedent. Ratified, not a bug.
           sourceIds={pages.filter(p => selected.has(p.id)).map(p => p.id)}
           onClose={() => setAddOpen(false)}
           onDone={(message) => { setAddOpen(false); setSelected(new Set()); refreshPages(); toast.show(message); }}

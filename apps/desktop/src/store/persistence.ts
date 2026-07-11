@@ -812,8 +812,9 @@ export function fileToNewBinder(sourceIds: string[], drawerId?: string): Project
 }
 
 // J5 Slice 3 — "Append to <chapter>" (COPIES): selected pages' TEXT, in
-// selection order, each landing at the chapter's end separated by one blank
-// line. Sources are never touched — read-only here.
+// notebook order (Your order — the J4 port precedent; click/selection
+// sequence is NOT honored, Fable R3), each landing at the chapter's end
+// separated by one blank line. Sources are never touched — read-only here.
 export function appendToChapter(sourceIds: string[], chapterId: string): void {
   const chapter = getJournalEntry(chapterId);
   if (!chapter) return;

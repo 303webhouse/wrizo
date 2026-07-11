@@ -181,6 +181,34 @@ await withHarness(async (app) => {
   const noteGone = await app.evalJs("!!document.querySelector('.spread-lens-note')");
   ok('the lens note is gone in the default lens state', noteGone === false);
 
+  // -- Slice 1 / Fable R2: DoD 2's positive half — an ACTUAL default-lens drag
+  // reorder. The blocked-drag check above only proves lift is refused OUTSIDE
+  // the default lens; an inverted `dragEnabled` flag would kill ALL
+  // reordering and nothing above would catch it (no persisted J3 script
+  // backstops this — J3 predates the harness-persistence rule). Compute the
+  // exact delta to B's cell center so `computeTarget`'s nearest-cell
+  // heuristic drops A deterministically right after B.
+  const dragDelta = await app.evalJs(`
+    (() => {
+      const a = document.querySelector('[data-page-id="${A.id}"]').getBoundingClientRect();
+      const b = document.querySelector('[data-page-id="${B.id}"]').getBoundingClientRect();
+      return { dx: (b.left + b.width / 2) - (a.left + a.width / 2) + 4, dy: (b.top + b.height / 2) - (a.top + a.height / 2) };
+    })()
+  `);
+  const orderBeforeDrag = await visibleIds();
+  await app.evalJs(`__pointerSeq('[data-page-id="${A.id}"]', ${dragDelta.dx}, ${dragDelta.dy}, {steps:6})`);
+  await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
+  const orderAfterDrag = await visibleIds();
+  ok('R2: a default-lens drag actually reorders A to directly after B', orderAfterDrag[0] === B.id && orderAfterDrag[1] === A.id, JSON.stringify({ before: orderBeforeDrag, after: orderAfterDrag }));
+  const aOrderIndexAfterDrag = (await app.localJSON('writer-studio-journal-entries')).find((e) => e.id === A.id).orderIndex;
+  ok('R2: the drag wrote a real orderIndex for A', typeof aOrderIndexAfterDrag === 'number', String(aOrderIndexAfterDrag));
+  await app.reload();
+  await app.evalJs(POINTER_HELPER);
+  await app.goto('/journal/spread');
+  await app.waitFor("!!document.querySelector('.spread-lens-row')", { label: 'lens row after drag reload' });
+  const orderAfterReload = await visibleIds();
+  ok('R2: the reordered position survives a reload', JSON.stringify(orderAfterReload) === JSON.stringify(orderAfterDrag), JSON.stringify(orderAfterReload));
+
   // -- Slice 2: FILE to the Shelf (single page A) ----------------------------
   await app.click('Select');
   await app.evalJs(`document.querySelector('[data-page-id="${A.id}"]').click()`);
@@ -197,6 +225,24 @@ await withHarness(async (app) => {
   await sleep(150);
   vis = await visibleIds();
   ok('A left the Spread grid', !vis.includes(A.id), JSON.stringify(vis));
+
+  // -- Slice 2 / Fable R1: single-page FILE via the entry view's OWN "Add
+  // to…" button (JournalEntry.tsx, not the Spread's multi-select) — the
+  // toast must survive the navigate('/journal') that follows a MOVES verb.
+  // Previously lost: the toast node lived inside the view being unmounted.
+  const idF = await makePage('Foxtrot, filed from its own entry view.', false);
+  await app.goto(`/journal/${idF}`);
+  await app.waitFor("!!document.querySelector('.entry-add')", { label: 'entry view (F)' });
+  await app.evalJs("document.querySelector('.entry-add').click()");
+  await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (entry view)' });
+  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('The Shelf')).click()");
+  await app.waitFor("!!document.querySelector('.action-toast')", { label: 'toast on /journal after MOVE (R1)' });
+  const entryViewToast = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
+  ok('R1: single-page FILE-to-Shelf toast survives the navigate to /journal', entryViewToast === 'Filed 1 page to the Shelf — moved; it left the Journal.', entryViewToast);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.journal-row')", { label: 'Journal after reload (R1)' });
+  const toastGoneAfterReload = await app.evalJs("!!document.querySelector('.action-toast')");
+  ok('R1: the one-shot toast does not reappear on reload', toastGoneAfterReload === false, String(toastGoneAfterReload));
 
   // -- Slice 2: FILE standalone into a NEW, empty drawer (B) -----------------
   await app.goto('/drawers');
@@ -267,6 +313,35 @@ await withHarness(async (app) => {
   ok('text lands at the end, blank-line separated', chapterAfter.text === 'Chapter start.\n\nDelta has both.', chapterAfter.text);
   const dAfter = entries.find((e) => e.id === D.id);
   ok('D (the source) is byte-untouched — COPY never mutates a source', dAfter.text === dTextBefore && JSON.stringify(dAfter.strokes) === dStrokesBefore);
+
+  // -- Slice 3 / Fable R3: two-source chapter-append lands in NOTEBOOK order
+  // even when clicked in reverse — pins the ruling (notebook order stands;
+  // click/selection sequence is never honored).
+  const idG = await makePage('Golf comes first in the notebook.', false);
+  const idH = await makePage('Hotel comes second in the notebook.', false);
+  entries = await app.localJSON('writer-studio-journal-entries');
+  const G = entries.find((e) => e.id === idG);
+  const H = entries.find((e) => e.id === idH);
+
+  await app.goto('/journal/spread');
+  await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (R3)' });
+  await app.click('Select');
+  // Click H FIRST, then G — the reverse of notebook order.
+  await app.evalJs(`document.querySelector('[data-page-id="${H.id}"]').click()`);
+  await app.evalJs(`document.querySelector('[data-page-id="${G.id}"]').click()`);
+  const selCountR3 = await app.evalJs("document.querySelector('.spread-select-count').textContent");
+  ok('R3 setup: both G and H are selected (2)', selCountR3.startsWith('2'), selCountR3);
+  await app.evalJs("document.querySelector('.spread-add').click()");
+  await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (R3)' });
+  await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(newDrawer.name)})).click()`); // root -> the drawer
+  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Untitled'))", { label: 'drawer level (R3)' });
+  await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes('Untitled')).click()`); // drawer -> the standalone binder
+  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Append to'))", { label: 'binder level (R3)' });
+  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Append to')).click()");
+  await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
+  entries = await app.localJSON('writer-studio-journal-entries');
+  const chapterAfterR3 = entries.find((e) => e.id === chapter.id);
+  ok('R3: a 2-source append lands in NOTEBOOK order (G, then H) despite reverse click order', chapterAfterR3.text.endsWith('Golf comes first in the notebook.\n\nHotel comes second in the notebook.'), chapterAfterR3.text);
 
   // -- Slice 3: plan-link (seed a StoryPlan fixture; lens authoring is out of
   // scope, but attach/link behavior is this ticket's own new code) ----------

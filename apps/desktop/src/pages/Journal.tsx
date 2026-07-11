@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getJournalPages, createJournalPage } from '../store/persistence';
 import { firstLine, snippet, matchesQuery, formatStamp } from '../store/entryText';
 import { renderThumbnail } from '../store/ink';
+import { useActionToast } from '../components/ActionToast';
 import type { JournalEntry, Stroke } from '../types';
 
 // J4 — the notebook surface. A visible, browsable, searchable place for every
@@ -42,9 +43,24 @@ const eyebrow: React.CSSProperties = { marginBottom: 8 };
 
 export function Journal() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const toast = useActionToast();
   const [query, setQuery] = useState('');
   const [starredOnly, setStarredOnly] = useState(false);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+
+  // Fable R1 — a single-page MOVE (JournalEntry.tsx's own "Add to…") navigates
+  // here carrying its confirmation as one-shot history state, since the
+  // toast's home view unmounted before it could show. Consume-and-replace on
+  // arrival (the F2 `warmStart` pattern) so back/refresh never re-shows it.
+  useEffect(() => {
+    const state = location.state as { actionToast?: string } | null;
+    if (state?.actionToast) {
+      toast.show(state.actionToast);
+      navigate(location.pathname + location.search, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Snapshot once per render; reads are cheap and the page is read-only. D2: the
   // Journal is the loose-page stream — pages filed into a binder live under that
   // binder's Pages, shelved pages live on the Shelf.
@@ -204,6 +220,7 @@ export function Journal() {
           </div>
         ))
       )}
+      {toast.node}
     </div>
   );
 }
