@@ -31,12 +31,19 @@ outlive a session lives here, not in chat.
      practice; this session makes it official).
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
-3. **J5 — the Spread console.** Runbook Step 4 self-executes after the J4
-   merge: CC re-runs the prerequisite gate and builds per
-   `docs/j5-spread-console-brief.md`. Then: Fable review → Nick's merge word
-   → J5's own S25 + desktop gate items (lens chips at thumb, sheet drill,
-   toast legibility; pointer precision). Owner: CC → Fable → Nick.
-   **Status: CC starting Step 4 now** (item 1 landed).
+3. **J5 — the Spread console.** Runbook Step 4 self-executed after the J4
+   merge: CC re-ran the prerequisite gate (both held) and built per
+   `docs/j5-spread-console-brief.md` on `j5-spread-console`, off post-merge
+   `main`. **CC's part is DONE — pushed, awaiting review.** Slices 0-3 all
+   shipped: the lens row (order/content/star/tag, drag disabled outside the
+   default lens), the "Add to…" destination-drill sheet (FILE to Shelf/
+   Drawer/Binder, COPY to a chapter or Board, LINK to a plan beat). Verified
+   in-harness (33 checks, `scripts/harness/j5.mjs`, committed); the J4
+   scenario re-run green (no regression). `tsc`/`build:web`/selftest green.
+   See `docs/backlog.md` for the full slice-by-slice log. Next: Fable review
+   → Nick's merge word → J5's own S25 + desktop gate items (lens chips at
+   thumb, sheet drill, toast legibility; pointer precision). Owner now:
+   Fable → Nick.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 4. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now

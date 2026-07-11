@@ -4,6 +4,8 @@ import { getNotebookPages, setNotebookPosition, flushNow } from '../store/persis
 import { firstLine } from '../store/entryText';
 import { renderThumbnail } from '../store/ink';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
+import { AddToSheet } from '../components/AddToSheet';
+import { useActionToast } from '../components/ActionToast';
 import type { JournalEntry, Stroke } from '../types';
 
 // J3 — the spread view: a visual grid of the loose Journal in notebook order
@@ -14,6 +16,13 @@ import type { JournalEntry, Stroke } from '../types';
 // there is exactly one ordering implementation. A selection mode toggles brass
 // borders and a count; it wires NO actions (the Port arrives with J4). Loose
 // pages only — filed/Shelf pages are a logged non-goal.
+//
+// J5 — the console. A quiet lens row (order/content/star/tag) turns the grid
+// into a VIEW, composed on top of the one notebook-order data source; lenses
+// never write orderIndex. "Your order" is the user-facing label for the
+// internal notebook sequence — the vocabulary canon (2026-07-10) keeps
+// "notebook" strictly internal (function/variable names only), never surfaced
+// to the writer, including in accessible names.
 
 const THUMB_SIZE = 92;
 const LONG_PRESS_MS = 350;
@@ -72,18 +81,21 @@ interface GridProps {
   pages: JournalEntry[];
   selectMode: boolean;
   selected: Set<string>;
+  dragEnabled: boolean; // J5 — drag-reorder lives ONLY in the default lens state
   onOpen: (id: string) => void;
   onToggleSelect: (id: string) => void;
   onReordered: () => void;
 }
 
-function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReordered }: GridProps) {
+function SpreadGrid({ pages, selectMode, selected, dragEnabled, onOpen, onToggleSelect, onReordered }: GridProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const cellElsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pagesRef = useRef(pages);
   pagesRef.current = pages;
   const selectModeRef = useRef(selectMode);
   selectModeRef.current = selectMode;
+  const dragEnabledRef = useRef(dragEnabled);
+  dragEnabledRef.current = dragEnabled;
   const onReorderedRef = useRef(onReordered);
   onReorderedRef.current = onReordered;
 
@@ -175,6 +187,10 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
 
     const onDown = (e: PointerEvent) => {
       if (selectModeRef.current) return; // selection mode: tap-to-select only, no drag
+      // J5 — lift never begins outside the default lens state (Your order,
+      // no filters): a filtered/re-sorted subset can't honestly express an
+      // insert-between write. Tap/select/focus are untouched.
+      if (!dragEnabledRef.current) return;
       const cellEl = (e.target as HTMLElement).closest('.spread-cell') as HTMLElement | null;
       const id = cellEl?.dataset.pageId;
       if (!id) return;
@@ -254,7 +270,7 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
   const lastDisplayId = displayOrder[displayOrder.length - 1];
 
   return (
-    <div ref={gridRef} className="spread-grid" role="grid" aria-label="Notebook spread" onKeyDown={onGridKeyDown}>
+    <div ref={gridRef} className="spread-grid" role="grid" aria-label="Journal spread" onKeyDown={onGridKeyDown}>
       {pages.map((entry, i) => (
         <SpreadCell
           key={entry.id}
@@ -274,14 +290,91 @@ function SpreadGrid({ pages, selectMode, selected, onOpen, onToggleSelect, onReo
   );
 }
 
+// J5 Slice 1 — content predicate, ported verbatim from the Journal list's own
+// thumbnail idiom so "Text"/"Ink"/"Text+ink" mean exactly what the row-level
+// ink thumbnail already means elsewhere in the app.
+type ContentLens = 'all' | 'text' | 'ink' | 'both';
+function matchesContent(entry: JournalEntry, lens: ContentLens): boolean {
+  if (lens === 'all') return true;
+  const hasInk = (entry.strokes?.length ?? 0) > 0;
+  const hasText = !!entry.text.trim();
+  if (lens === 'text') return hasText && !hasInk;
+  if (lens === 'ink') return hasInk && !hasText;
+  return hasInk && hasText; // 'both'
+}
+
+// J5 Slice 1 — the lens row. Square corners, quiet borders, brass ONLY on the
+// active chip; reduced-motion: no transitions (none used here regardless).
+interface LensRowProps {
+  order: 'your' | 'newest'; setOrder: (v: 'your' | 'newest') => void;
+  content: ContentLens; setContent: (v: ContentLens) => void;
+  starOnly: boolean; setStarOnly: (v: boolean) => void;
+  tagFilter: string | null; setTagFilter: (v: string | null) => void;
+  allTags: string[];
+}
+function SpreadLensRow({ order, setOrder, content, setContent, starOnly, setStarOnly, tagFilter, setTagFilter, allTags }: LensRowProps) {
+  const chip = (active: boolean, label: string, onClick: () => void, key?: string) => (
+    <button key={key ?? label} type="button" className="spread-lens-chip" data-active={active ? 'true' : 'false'} onClick={onClick}>
+      {label}
+    </button>
+  );
+  return (
+    <div className="spread-lens-row" role="group" aria-label="View lenses" style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', marginBottom: 12 }}>
+      <div className="spread-lens-group" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {chip(order === 'your', 'Your order', () => setOrder('your'))}
+        {chip(order === 'newest', 'Newest', () => setOrder('newest'))}
+      </div>
+      <div className="spread-lens-group" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {chip(content === 'all', 'All', () => setContent('all'))}
+        {chip(content === 'text', 'Text', () => setContent('text'))}
+        {chip(content === 'ink', 'Ink', () => setContent('ink'))}
+        {chip(content === 'both', 'Text+ink', () => setContent('both'))}
+      </div>
+      <div className="spread-lens-group" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {chip(starOnly, starOnly ? '★ Starred' : '☆ Starred', () => setStarOnly(!starOnly))}
+      </div>
+      {allTags.length > 0 && (
+        <div className="spread-lens-group spread-lens-tags" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          {allTags.map(t => chip(tagFilter === t, t, () => setTagFilter(tagFilter === t ? null : t), t))}
+          {tagFilter && (
+            <button type="button" className="btn-quiet spread-lens-clear" onClick={() => setTagFilter(null)} style={{ color: 'var(--text-low)' }}>clear</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Spread() {
   const navigate = useNavigate();
   const [pages, setPages] = useState<JournalEntry[]>(() => getNotebookPages());
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [portOpen, setPortOpen] = useState(false); // J4 Slice 2 — "Port N pages…"
+  const [addOpen, setAddOpen] = useState(false); // J5 Slice 2/3 — "Add to…"
+  const toast = useActionToast();
+
+  // J5 Slice 1 — the lenses. VIEW ONLY: none of these ever write orderIndex.
+  // "Your order" is the user-facing label for the notebook sequence.
+  const [order, setOrder] = useState<'your' | 'newest'>('your');
+  const [content, setContent] = useState<ContentLens>('all');
+  const [starOnly, setStarOnly] = useState(false);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   const refreshPages = useCallback(() => setPages(getNotebookPages()), []);
+
+  // Unique tags across ALL loose pages (unfiltered — matches the Journal
+  // list's own idiom: the chip row never hides a tag just because a
+  // different filter is currently narrowing the view).
+  const allTags = [...new Set(pages.flatMap(p => p.tags ?? []))].sort();
+
+  const isDefaultLens = order === 'your' && content === 'all' && !starOnly && !tagFilter;
+
+  const viewPages = (() => {
+    const filtered = pages.filter(p => matchesContent(p, content) && (!starOnly || p.starred) && (!tagFilter || (p.tags ?? []).includes(tagFilter)));
+    if (order === 'your') return filtered; // pages is already in notebook order
+    return filtered.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  })();
 
   // A drag reorder's write is debounced (~300ms) to localStorage like any
   // other edit; flush immediately on tab-hide/navigate-away so a reorder made
@@ -324,22 +417,53 @@ export function Spread() {
               Port {selected.size} page{selected.size === 1 ? '' : 's'}…
             </button>
           )}
+          {/* J5 Slice 2/3 — "Add to…" joins Select-mode beside "Port…". */}
+          {selectMode && selected.size > 0 && (
+            <button type="button" className="btn-quiet spread-add" onClick={() => setAddOpen(true)}>
+              Add to…
+            </button>
+          )}
           <button type="button" className="btn-quiet spread-select-toggle" onClick={toggleSelectMode}>
             {selectMode ? 'Done' : 'Select'}
           </button>
         </div>
       </div>
 
+      {pages.length > 0 && (
+        <SpreadLensRow
+          order={order} setOrder={setOrder}
+          content={content} setContent={setContent}
+          starOnly={starOnly} setStarOnly={setStarOnly}
+          tagFilter={tagFilter} setTagFilter={setTagFilter}
+          allTags={allTags}
+        />
+      )}
+      {pages.length > 0 && !isDefaultLens && (
+        <p className="spread-lens-note" role="status">
+          a view, not an arrangement — drag to reorder in Your order
+        </p>
+      )}
+
       {pages.length === 0 ? (
         <p style={{ color: 'var(--text-mid)' }}>No loose pages yet — pages you write in the Journal will spread out here.</p>
+      ) : viewPages.length === 0 ? (
+        <p style={{ color: 'var(--text-mid)' }}>Nothing matches this view.</p>
       ) : (
         <SpreadGrid
-          pages={pages}
+          pages={viewPages}
           selectMode={selectMode}
           selected={selected}
+          dragEnabled={isDefaultLens}
           onOpen={openPage}
           onToggleSelect={toggleSelect}
           onReordered={refreshPages}
+        />
+      )}
+      {addOpen && (
+        <AddToSheet
+          sourceIds={pages.filter(p => selected.has(p.id)).map(p => p.id)}
+          onClose={() => setAddOpen(false)}
+          onDone={(message) => { setAddOpen(false); setSelected(new Set()); refreshPages(); toast.show(message); }}
         />
       )}
       {portOpen && (
@@ -348,6 +472,7 @@ export function Spread() {
           onClose={() => setPortOpen(false)}
         />
       )}
+      {toast.node}
     </div>
   );
 }
