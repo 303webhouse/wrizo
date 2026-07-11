@@ -12,8 +12,8 @@ outlive a session lives here, not in chat.
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
 2. **The consolidated hardware session** (after the deploy — deploy is now
-   live, J4 + J5 both). Five gates, one sitting; bugs → side chats, verdicts
-   → the ledger. Owner: Nick.
+   live, J4 + J5 + S1 all). Six gates, one sitting; bugs → side chats,
+   verdicts → the ledger. Owner: Nick.
    - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
      visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
      eraser tip — a finding, not a failure; the toggle is the path).
@@ -31,6 +31,9 @@ outlive a session lives here, not in chat.
      drill-down feel, toast legibility (S25); pointer precision on chips/
      handles/sheet rows (desktop). Folded in here rather than a separate
      sitting — same surface family as J3/J4, same hand.
+   - S1 · S25 + desktop: typing rhythm, ghost legibility, autocomplete at
+     thumb (S25); keyboard-map muscle memory, autocomplete at pointer
+     precision (desktop). The Screenplay Room's first hardware pass.
    - Plus: the formal stack word (VW's old merge condition, satisfied in
      practice; this session makes it official).
 
@@ -59,52 +62,34 @@ outlive a session lives here, not in chat.
    `docs/backlog.md`. Next: J5's own S25 + desktop gate items (lens chips at
    thumb, sheet drill, toast legibility; pointer precision) — fold into the
    consolidated hardware session (item 2) rather than a separate sitting.
-4. **S1 — the element engine (the Screenplay Room).** Built per
-   `docs/s1-script-editor-brief.md` on `s1-script-editor`, off post-J5
-   `main` — the S-arc's heavyweight (~2× a J-ticket), authorized by
-   `docs/fragments-under-pages-canon.md`'s ruling (item 7 below) that
-   ScriptDoc conforms. The substrate (`pageType:'script'`, one `script`
-   jsonb column through both sync mappers), the birth paths (Screenplay-
-   kind create + ProjectHome's dedicated button + the generic picker's
-   Script leaf), and the room itself — a house-native block editor, one
-   live element at a time (the `BoardTextBox` pattern), the frozen Enter/
-   Tab keyboard map, slugline/location/TOD + character + extension
-   autocomplete, auto (CONT'D), Voice Wall + I0 pen discipline + TTFK
-   wiring. One new dep (`@fontsource/courier-prime`, scoped to
-   `--font-script` — `--font-mono` untouched).
-   **Fable's review returned 2026-07-11: REQUIRED FIXES — 2** (one code,
-   one verification), no data-loss/sync-law findings — "for a 1,400-line
-   heavyweight this is an unusually clean build" (`docs/s1-review-fable.md`).
-   CC folded R1 (the autocomplete popover was unanchored — it rendered as
-   the sheet's last child with no top/left, so it took its static position
-   at the bottom of the WHOLE document instead of beneath the active
-   element; every harness check had always edited the document's tail, so
-   82/82 passed while it was broken for the primary case — mid-document
-   editing. Fixed by rendering it as the active element's own flow-sibling;
-   a new mid-document harness check measured `gap:0` from the active
-   element, `250px` from the sheet's bottom — unambiguous.) and R2 (grepped
-   all 6 CSS vars the surface consumes — confirmed present, no fix needed).
-   Also folded three advisories Fable flagged as fix-opportunistically (a
-   DOM-vs-state read asymmetry in Backspace-merge/arrow-walk/click-commits;
-   a comma-operator bug silently dropping half a `waitFor` condition; one
-   exact-match golden-string assertion, since containment alone can't catch
-   whitespace drift in a string that's S3's future parser contract) —
-   deferred A1 (synthetic-heading id churn) to P3 per Fable's own call, and
-   A5 (ghost-visibility feel) to the hardware gate. Found and fixed one
-   flaky-harness bug of CC's own along the way: two blind `sleep(2300)`
-   calls sat at the exact debounce worst-case with zero buffer and
-   intermittently read stale content — fixed by polling instead (the same
-   lesson J5's harness already learned once). `scripts/harness/s1.mjs`
-   grew 82 → 87 checks, stable across 3 runs; `j4.mjs`/`j5.mjs` re-run
-   green; `tsc`/`build:web`/selftest green. See `docs/backlog.md` for the
-   full log. **CC's part is DONE — re-pushed, awaiting Fable's delta
-   spot-check + Nick's merge word** (same protocol as J4/J5). **Note per
-   Fable: unlike J5, this deploy is NOT zero-schema** — the live prod
-   push/pull round-trip for the new `script` column (the D2/J4 ritual) is
-   required on first deploy, not optional. Next: Fable's delta check →
-   Nick's merge word → `railway up` + the live round-trip → S1's own S25 +
-   desktop gate items (typing rhythm, ghost legibility, autocomplete at
-   pointer/thumb, keyboard-map muscle memory). Owner now: Fable → Nick.
+4. ~~**S1 — the element engine (the Screenplay Room).**~~ **DONE —
+   2026-07-11.** Built per `docs/s1-script-editor-brief.md` on
+   `s1-script-editor`, off post-J5 `main` — the S-arc's heavyweight, authorized
+   by `docs/fragments-under-pages-canon.md`'s ruling (item 7 below). The
+   substrate (`pageType:'script'`, one `script` jsonb column through both sync
+   mappers), the birth paths, and the room itself — a house-native block
+   editor, the frozen Enter/Tab keyboard map, full autocomplete chain, auto
+   (CONT'D), Voice Wall + I0 pen discipline + TTFK wiring. Fable's review
+   returned REQUIRED FIXES — 2 (`docs/s1-review-fable.md`) — CC folded both
+   plus three opportunistic advisories; `scripts/harness/s1.mjs` grew
+   82 → 87 checks, stable across 3 runs. Nick relayed "Merge `s1-script-editor`
+   to `main`... `railway up`... then run the live prod push/pull round-trip
+   for the `script` column." CC set aside an unrelated in-progress workstream
+   sitting uncommitted in the working tree (`git stash push -u` on an
+   explicit pathspec, not a blanket stash), merged clean (no conflicts), ran
+   `tsc` (desktop + server) + `build:web` + selftest + `j4.mjs` (26/26) +
+   `j5.mjs` (40/40) + `s1.mjs` (87/87) — all green on merged `main` —
+   pushed, `railway up`. **The live prod round-trip (required — NOT
+   zero-schema, per Fable's note): a scratchpad script registered a
+   throwaway account, pushed a `journal_entries` row with a populated
+   multi-element `ScriptDoc`, and pulled it back down via a second
+   `/api/sync` call simulating a second device — `pageType`, `entry.text`,
+   and the full `ScriptDoc` all matched byte-for-byte (key-order-insensitive).
+   ROUND-TRIP: PASS.** Test entry soft-deleted after. Stash restored
+   afterward, applied clean. See `docs/backlog.md`. S1's own S25 + desktop
+   gate items (typing rhythm, ghost legibility, autocomplete at
+   pointer/thumb, keyboard-map muscle memory) join the consolidated hardware
+   session (item 2) — Nick's device verdict closes the ticket.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 5. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
