@@ -9,6 +9,7 @@ import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { copyText } from '../store/clipboard';
+import { BoardEditor } from '../components/BoardEditor';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -183,8 +184,12 @@ function PageEditorView({ id }: { id: string }) {
 }
 
 // Key by id so per-page refs/state re-seed cleanly on page→page navigation.
+// J4 — /page/:id stays the one typed-page route; a pageType:'board' entry
+// delegates to the BoardEditor here, before either component's hooks run.
 export function PageEditor() {
   const { id } = useParams<{ id: string }>();
   if (!id) return <Navigate to="/" replace />;
+  const entry = getJournalEntry(id);
+  if (entry?.pageType === 'board') return <BoardEditor key={id} id={id} />;
   return <PageEditorView key={id} id={id} />;
 }

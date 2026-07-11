@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getNotebookPages, setNotebookPosition, flushNow } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { renderThumbnail } from '../store/ink';
+import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import type { JournalEntry, Stroke } from '../types';
 
 // J3 — the spread view: a visual grid of the loose Journal in notebook order
@@ -278,6 +279,7 @@ export function Spread() {
   const [pages, setPages] = useState<JournalEntry[]>(() => getNotebookPages());
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [portOpen, setPortOpen] = useState(false); // J4 Slice 2 — "Port N pages…"
 
   const refreshPages = useCallback(() => setPages(getNotebookPages()), []);
 
@@ -316,6 +318,12 @@ export function Spread() {
               {selected.size} selected
             </span>
           )}
+          {/* J4 Slice 2 — the Spread's FIRST select-mode action (the J3 dead-button rule lifts here). */}
+          {selectMode && selected.size > 0 && (
+            <button type="button" className="btn-quiet spread-port" onClick={() => setPortOpen(true)}>
+              Port {selected.size} page{selected.size === 1 ? '' : 's'}…
+            </button>
+          )}
           <button type="button" className="btn-quiet spread-select-toggle" onClick={toggleSelectMode}>
             {selectMode ? 'Done' : 'Select'}
           </button>
@@ -332,6 +340,12 @@ export function Spread() {
           onOpen={openPage}
           onToggleSelect={toggleSelect}
           onReordered={refreshPages}
+        />
+      )}
+      {portOpen && (
+        <PortToBoardSheet
+          sourceIds={pages.filter(p => selected.has(p.id)).map(p => p.id)}
+          onClose={() => setPortOpen(false)}
         />
       )}
     </div>

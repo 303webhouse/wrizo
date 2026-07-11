@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke } from '../types';
 import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './pageOrder';
 
 // ---------------------------------------------------------------------------
@@ -662,6 +662,119 @@ export function createBinderPage(binderId: string, pageType: NonNullable<Journal
   };
   saveJournalEntry(entry);
   return entry;
+}
+
+// --- J4 — the Board + the port ---------------------------------------------
+// The Board is a new page species (pageType 'board'): a canvas of positioned
+// boxes, ported (copied, never moved) from the loose Journal. Layout constants
+// are normalized to the page WIDTH (the Board's one coordinate unit); an ink
+// box's h follows its re-normalized stroke bbox aspect so it never distorts.
+
+const BOARD_TEXT_W = 0.6;
+const BOARD_INK_MAX_W = 0.5;
+const BOARD_GROUP_GAP = 0.05;  // between a locked group's text box and its ink box
+const BOARD_STACK_GAP = 0.08;  // between successive ported pages
+const BOARD_LINE_H = 0.045;    // one text line's height, normalized to page width
+const BOARD_CHARS_PER_LINE = 70; // rough wrap estimate at BOARD_TEXT_W; Slice 3 corrects live
+
+function estimateTextBoxHeight(text: string): number {
+  const lines = text.split('\n').reduce((n, para) => n + Math.max(1, Math.ceil(para.length / BOARD_CHARS_PER_LINE)), 0);
+  return Math.max(1, lines) * BOARD_LINE_H + 0.02;
+}
+
+// Non-eraser bbox (J2's convention — an erase sweep must not distort the fit).
+function strokesBBox(strokes: Stroke[]): { minX: number; minY: number; w: number; h: number } {
+  const pts = strokes.filter(s => !s.eraser).flatMap(s => s.points);
+  if (pts.length === 0) return { minX: 0, minY: 0, w: 1, h: 1 };
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return { minX, minY, w: Math.max(maxX - minX, 0.001), h: Math.max(maxY - minY, 0.001) };
+}
+
+// Re-normalize a page's strokes for an ink Box (J4 invariant): bbox origin ->
+// 0,0, scaled so bbox width = 1 — the box crop-fits its drawing and transforms
+// losslessly with `w`. Returns the drawing's aspect ratio (h/w) for the box.
+function renormalizeStrokesForBox(strokes: Stroke[]): { strokes: Stroke[]; aspect: number } {
+  const bbox = strokesBBox(strokes);
+  const scale = 1 / bbox.w;
+  const normalized = strokes.map(s => ({
+    ...s,
+    points: s.points.map(p => ({ x: (p.x - bbox.minX) * scale, y: (p.y - bbox.minY) * scale, ...(p.p != null ? { p: p.p } : null) })),
+  }));
+  return { strokes: normalized, aspect: bbox.h / bbox.w };
+}
+
+// Create a Board page (J4 Slice 1) — a binder page with pageType:'board' and
+// empty boxes. `title` seeds entry.text (the same firstLine convention every
+// page title reads from) — empty renders "Untitled" like any fresh page
+// (F4's title-later law, reused rather than inventing a second naming field).
+export function createBoardPage(binderId: string, title?: string): JournalEntry {
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text: title?.trim() ?? '',
+    projectId: binderId,
+    pageType: 'board',
+    boxes: [],
+    source: 'page',
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
+// Persist a Board's box array (Slice 3 autosave) — merges into the latest
+// record so metadata written elsewhere is never clobbered.
+export function saveBoardBoxes(id: string, boxes: Box[]): void {
+  const latest = getJournalEntry(id);
+  if (!latest) return;
+  saveJournalEntry({ ...latest, boxes });
+}
+
+// Port loose Journal pages onto a Board (J4 Slice 2 — I2 realized): COPY,
+// never move — source pages are byte-untouched. Each source page becomes a
+// text box and/or an ink box (when includeInk and it has strokes), stacked
+// vertically in selection order; when a page has BOTH, they share a fresh
+// groupId (the locked group — "ink locked to the text"). A text-empty page
+// ports ink-only; an ink-empty page ports text-only; a page with neither
+// contributes nothing. Provenance travels on every box. `dest: 'new'` births
+// an Untitled binder (kind 'other', F4's law) on the spot.
+export function portToBoard(sourceIds: string[], dest: string | 'new', includeInk: boolean): JournalEntry {
+  const binderId = dest === 'new' ? createBinder('', 'other').id : dest;
+  const now = new Date().toISOString();
+  const boxes: Box[] = [];
+  let y = 0.06;
+  let z = 1;
+  for (const sourceId of sourceIds) {
+    const source = getJournalEntry(sourceId);
+    if (!source) continue;
+    const hasText = !!source.text.trim();
+    const hasInk = includeInk && (source.strokes?.length ?? 0) > 0;
+    if (!hasText && !hasInk) continue;
+    const groupId = hasText && hasInk ? generateId() : undefined;
+    if (hasText) {
+      const h = estimateTextBoxHeight(source.text);
+      boxes.push({ id: generateId(), kind: 'text', x: 0.05, y, w: BOARD_TEXT_W, h, z: z++, groupId, text: source.text, sourceEntryId: source.id, portedAt: now });
+      y += h + BOARD_GROUP_GAP;
+    }
+    if (hasInk) {
+      const { strokes, aspect } = renormalizeStrokesForBox(source.strokes!);
+      const w = BOARD_INK_MAX_W;
+      const h = w * aspect;
+      boxes.push({ id: generateId(), kind: 'ink', x: 0.05, y, w, h, z: z++, groupId, strokes, sourceEntryId: source.id, portedAt: now });
+      y += h;
+    }
+    y += BOARD_STACK_GAP;
+  }
+  const board = createBoardPage(binderId);
+  saveJournalEntry({ ...board, boxes });
+  return getJournalEntry(board.id)!;
 }
 
 // Import a draft (VW — the Voice Wall's door). The writer's own work flowing IN:
