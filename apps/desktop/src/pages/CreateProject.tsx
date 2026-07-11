@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { createBinder, createBinderPage } from '../store/persistence';
+import { createBinder, createBinderPage, createScriptPage } from '../store/persistence';
 import { KIND_META, PICKER_GROUPS } from '../store/kindLabels';
 import type { BinderKind } from '../types';
 
@@ -24,11 +24,16 @@ export function CreateProject() {
     const { domain } = KIND_META[selected];
     const project = createBinder(title.trim(), selected, drawerId, domain);
     // 'Something else' opens the project overview (shape it as you go). Every real
-    // form is born as binder + first manuscript page and lands on the ink — the
-    // typed pointer (domain + form + pageType) is set from birth, so the mirror
-    // card speaks this project's language from day one.
+    // form is born as binder + first page and lands on the ink — the typed
+    // pointer (domain + form + pageType) is set from birth, so the mirror card
+    // speaks this project's language from day one. S1 — Screenplay is the one
+    // kind whose first page isn't a manuscript chapter: it's a script page,
+    // caret waiting in the scene-heading ghost (still no title demanded).
     if (selected === 'other') {
       navigate(`/project/${project.id}`);
+    } else if (selected === 'screenplay') {
+      const page = createScriptPage(project.id);
+      navigate(`/page/${page.id}`);
     } else {
       const page = createBinderPage(project.id, 'manuscript');
       navigate(`/page/${page.id}`);

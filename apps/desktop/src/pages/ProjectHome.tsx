@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
-import { getProject, getStoryPlanByProjectId, getBinderPages, createBinderPage, saveProject } from '../store/persistence';
+import { getProject, getStoryPlanByProjectId, getBinderPages, createBinderPage, createScriptPage, saveProject } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { firstLine } from '../store/entryText';
 import { domainLabel } from '../store/kindLabels';
 import { PageFileMenu } from '../components/PageFileMenu';
 import type { JournalEntry } from '../types';
 
+// S1 — 'script' rides the same generic type-picker as the support types (any
+// binder may hold a script page, not only Screenplay-kind ones), but a script
+// page needs its OWN seeded ScriptDoc (createScriptPage), not a blank
+// createBinderPage entry — see addSupport below. It also renders in its own
+// "Scripts" section (atop Manuscript), never under Support pages.
 const SUPPORT_TYPES: { key: NonNullable<JournalEntry['pageType']>; label: string }[] = [
   { key: 'character', label: 'Character' },
   { key: 'worldbuilding', label: 'Worldbuilding' },
   { key: 'research', label: 'Research' },
   { key: 'note', label: 'Note' },
+  { key: 'script', label: 'Script' },
 ];
 
 // Open a binder page: typed pages (manuscript/support, B1) use the mode-aware
@@ -41,15 +47,21 @@ export function ProjectHome() {
   const hasSprint = !!project.sprintText?.trim();
   const currentBeat = framework?.beats.find(b => b.id === storyPlan?.currentBeatId);
   // Pages in this binder (B1). Manuscript pages are the writing (chapters/scenes);
-  // support pages (character/worldbuilding/research/note) are grouped apart. Legacy
-  // untyped pages (D2 filed) ride along under support. The Plan (StoryPlan) is NOT
-  // a page — it's reached via the board.
+  // script pages (S1) are a sibling of Manuscript, grouped atop it; support pages
+  // (character/worldbuilding/research/note) are grouped apart. Legacy untyped
+  // pages (D2 filed) ride along under support. The Plan (StoryPlan) is NOT a
+  // page — it's reached via the board.
   const pages = getBinderPages(id).slice().sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const chapters = pages.filter(p => p.pageType === 'manuscript');
-  const support = pages.filter(p => p.pageType !== 'manuscript');
+  const scripts = pages.filter(p => p.pageType === 'script');
+  const support = pages.filter(p => p.pageType !== 'manuscript' && p.pageType !== 'script');
 
   const newChapter = () => navigate(`/page/${createBinderPage(id, 'manuscript').id}`);
-  const addSupport = (type: NonNullable<JournalEntry['pageType']>) => navigate(`/page/${createBinderPage(id, type).id}`);
+  const newScript = () => navigate(`/page/${createScriptPage(id).id}`);
+  // S1 — a script page needs its own seeded ScriptDoc; the generic
+  // createBinderPage would leave `entry.script` undefined.
+  const addSupport = (type: NonNullable<JournalEntry['pageType']>) =>
+    navigate(`/page/${(type === 'script' ? createScriptPage(id) : createBinderPage(id, type)).id}`);
 
   // F4 Slice 5 — title-later's other half: rename "Untitled" (or anything) inline
   // from the place the writer naturally sees it. Enter/blur commits via saveProject
@@ -145,6 +157,32 @@ export function ProjectHome() {
           <Link to={`/project/${id}/sprint`} className="btn-quiet" style={{ display: 'inline-block', marginTop: 8, paddingLeft: 0 }}>
             Open sprint
           </Link>
+        </div>
+      )}
+
+      {/* S1 — Scripts: the Screenplay Room's pages, grouped atop Manuscript.
+          Any binder may hold one (TV episodes are sibling script pages); the
+          Screenplay kind just defaults to one from birth. Rendered only when
+          the binder actually has one, so every non-screenplay project's home
+          looks exactly as it did before S1. */}
+      {scripts.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Scripts</div>
+          <div className="dz-tree" style={{ maxWidth: '100%', margin: 0 }}>
+            <div className="dz-group">
+              <div className="dz-items" style={{ borderTop: 'none' }}>
+                {scripts.map((p, i) => (
+                  <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
+                    <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                      {p.text.trim() ? firstLine(p.text).slice(0, 80) : `Script ${i + 1}`}
+                    </Link>
+                    <PageFileMenu page={p} label="move…" />
+                  </div>
+                ))}
+                <button type="button" className="dz-more" onClick={newScript}>+ New script page</button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

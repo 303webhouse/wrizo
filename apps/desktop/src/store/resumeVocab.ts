@@ -21,6 +21,7 @@ const PAGETYPE_LABEL: Record<NonNullable<JournalEntry['pageType']>, string> = {
   manuscript: 'MANUSCRIPT', character: 'CHARACTER PAGE',
   worldbuilding: 'WORLDBUILDING', research: 'RESEARCH', note: 'NOTE',
   board: 'BOARD', // J4 — the mirror card speaks it
+  script: 'SCRIPT', // S1 — the mirror card speaks it
 };
 
 const UNFILED_NOTE = 'file it later from the Shelf, or never';

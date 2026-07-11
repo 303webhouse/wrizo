@@ -59,19 +59,41 @@ outlive a session lives here, not in chat.
    `docs/backlog.md`. Next: J5's own S25 + desktop gate items (lens chips at
    thumb, sheet drill, toast legibility; pointer precision) — fold into the
    consolidated hardware session (item 2) rather than a separate sitting.
+4. **S1 — the element engine (the Screenplay Room).** Built per
+   `docs/s1-script-editor-brief.md` on `s1-script-editor`, off post-J5
+   `main` — the S-arc's heavyweight (~2× a J-ticket), authorized by
+   `docs/fragments-under-pages-canon.md`'s ruling (item 7 below) that
+   ScriptDoc conforms. The substrate (`pageType:'script'`, one `script`
+   jsonb column through both sync mappers), the birth paths (Screenplay-
+   kind create + ProjectHome's dedicated button + the generic picker's
+   Script leaf), and the room itself — a house-native block editor, one
+   live element at a time (the `BoardTextBox` pattern), the frozen Enter/
+   Tab keyboard map, slugline/location/TOD + character + extension
+   autocomplete, auto (CONT'D), Voice Wall + I0 pen discipline + TTFK
+   wiring. One new dep (`@fontsource/courier-prime`, scoped to
+   `--font-script` — `--font-mono` untouched). Verified in-harness (82
+   checks, `scripts/harness/s1.mjs`, committed, stable across 2 runs);
+   `j4.mjs` (26/26) + `j5.mjs` (40/40) re-run green; `tsc`/`build:web`/
+   selftest green. See `docs/backlog.md` for the full slice-by-slice log
+   and disclosed gaps (IME composition, the plaintext-only fallback path,
+   mouse click-to-activate, the transition autocomplete branch — none
+   harness-exercised this pass). **CC's part is DONE — pushed, awaiting
+   review.** Next: Fable review → Nick's merge word → S1's own S25 +
+   desktop gate items (typing rhythm, ghost legibility, autocomplete at
+   pointer/thumb, keyboard-map muscle memory). Owner now: Fable → Nick.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
-4. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
+5. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
    "Your order"/Journal-only vocabulary ruling, and the J-arc verdicts.
    Trigger: Nick's session verdicts land.
-5. **F5 TTFK DoD-6 empirical close.** One small CC task: run the
+6. **F5 TTFK DoD-6 empirical close.** One small CC task: run the
    sessions_log queries against prod (non-null `surface` +
    `desk_opened_at` rows). Fold into the Rev 3 prep relay.
 
 ## POST-ARC QUEUE — unblocks when J5 ships + gates close
-6. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
+7. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
    (`docs/fragments-under-pages-canon.md`, convened on Nick's word — "let's
    get it built" — with a sequencing pull-forward). Names the pattern `Box`
    and `ScriptDoc` already share: one jsonb column per substrate family on
@@ -81,22 +103,22 @@ outlive a session lives here, not in chat.
    shadow, a spatial one (boxes) doesn't; each substrate gets its own
    `PageEditor()` delegate (the J4 routing rule). Ruled: `Box` conforms
    (grandfathered on schema `v`); `ScriptDoc` conforms as designed —
-   **S1 may proceed.** Closes this item; future structured pageTypes join
-   by satisfying §2's checklist in their own brief's Slice 0, no new
-   committee pass required.
-7. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
+   **S1 may proceed** (see item 4 above, now built). Closes this item;
+   future structured pageTypes join by satisfying §2's checklist in their
+   own brief's Slice 0, no new committee pass required.
+8. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
    deferred until Journal UI surfaces existed; the Spread and the Board now
    exist. B4 intersects the Journal sprint reward surface (design together).
-8. **HOME verification remainder**: bighead art, sort-hint.
+9. **HOME verification remainder**: bighead art, sort-hint.
 
 ## HORIZON — no ticket yet, on the map
-9. **User-authored identity / rhizomatic personalization**: wordmark
-   replaceable with the writer's own hand; four launch themes (Plateau,
-   Flux, Volant, Nomad); single hard invariant = the orange accent.
-10. **Reciprocity gate** for the future workshop feature (review before
+10. **User-authored identity / rhizomatic personalization**: wordmark
+    replaceable with the writer's own hand; four launch themes (Plateau,
+    Flux, Volant, Nomad); single hard invariant = the orange accent.
+11. **Reciprocity gate** for the future workshop feature (review before
     submitting).
-11. **wrizo.app Cloudflare resolution** (domain plumbing).
-12. **USPTO "Wrizo" search** before significant brand investment (one
+12. **wrizo.app Cloudflare resolution** (domain plumbing).
+13. **USPTO "Wrizo" search** before significant brand investment (one
     low-threat prior use known: a throwaway utility on pi7.org).
 
 ## TOOLING STATUS — for any fresh session's orientation

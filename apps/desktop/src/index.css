@@ -44,6 +44,10 @@
   --font-prose:   'Crimson Pro Variable', Georgia, serif;
   --font-ui:      'Figtree Variable', system-ui, sans-serif;
   --font-mono:    ui-monospace, 'Courier New', monospace;
+  /* S1 — Courier Prime, scoped to the script surface only (a ratified
+     exception to the type tokens — the industry's own token, not a UI font).
+     --font-mono above is UNTOUCHED; nothing else reads --font-script. */
+  --font-script:  'Courier Prime', ui-monospace, 'Courier New', monospace;
 
   /* Spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 only. */
   --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
@@ -851,6 +855,29 @@ a:focus-visible,
 }
 .action-toast[data-shown="true"]{ opacity:1; }
 @media (prefers-reduced-motion:reduce){ .action-toast{ transition:none; } }
+
+/* S1 — the Screenplay Room. Anti-Canva in its purest form: no styling
+   toolbar, ever; format is semantic (element type drives width/indent/case),
+   never a writer choice. Square corners, solid borders; accent spent ONLY on
+   the active element's hairline + caret (the caret itself is the browser's
+   native caret, already brass via caret-color below). */
+.script-page{ font-family:var(--font-script); }
+.script-sheet{ color:var(--ink-on-paper); background:var(--paper); border:1px solid var(--ink-border); padding:1in 1in 1in 1.5in; margin:0 auto; }
+.script-el{ white-space:pre-wrap; min-height:1.2em; }
+.script-el-active{
+  outline:none; cursor:text; caret-color:var(--brass);
+  border-bottom:1px solid var(--brass);
+}
+.script-el-active:empty::before{
+  content: attr(data-ghost); color:var(--ink-on-paper-low); pointer-events:none;
+}
+.script-autocomplete{
+  position:absolute; z-index:50; min-width:10ch;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:0;
+  font-family:var(--font-ui); font-size:13px;
+}
+.script-autocomplete-opt{ padding:4px 10px; color:var(--text-mid); white-space:nowrap; }
+.script-autocomplete-opt[data-highlighted="true"]{ color:var(--brass); background:var(--ink-800); }
 
 .wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
   opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }

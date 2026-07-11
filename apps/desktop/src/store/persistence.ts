@@ -1,5 +1,7 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc } from '../types';
 import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './pageOrder';
+import { serializeScriptDoc } from './scriptText';
+import { createEmptyScriptDoc } from './scriptDoc';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -800,6 +802,44 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
   const newBoxes = buildPortedBoxes(sourceIds, includeInk, startY, startZ);
   saveJournalEntry({ ...board, boxes: [...existing, ...newBoxes] });
   return getJournalEntry(boardEntryId);
+}
+
+// --- S1 — the Screenplay Room's document (fragments-canon §2) -------------
+// One jsonb column, exactly the `boxes` recipe. `getScriptDoc` is a plain
+// read; `saveScriptDoc` writes the doc AND its derived `entry.text` shadow in
+// ONE call (canon §2.4) — resume, the mirror card, and future search read
+// the shadow, never the jsonb directly.
+
+export function getScriptDoc(entryId: string): ScriptDoc | null {
+  return getJournalEntry(entryId)?.script ?? null;
+}
+
+export function saveScriptDoc(entryId: string, doc: ScriptDoc): void {
+  const latest = getJournalEntry(entryId);
+  if (!latest) return;
+  saveJournalEntry({ ...latest, script: doc, text: serializeScriptDoc(doc) });
+}
+
+// Create a Script page (S1 Slice 2) — a binder page with pageType:'script'
+// and a fresh one-scene ScriptDoc, mirroring createBoardPage's shape exactly.
+// `entry.text` is seeded from the (empty) doc's own shadow, not a separate
+// title field — F4's title-later law, reused rather than inventing a second
+// naming convention.
+export function createScriptPage(binderId: string): JournalEntry {
+  const now = new Date().toISOString();
+  const doc = createEmptyScriptDoc();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text: serializeScriptDoc(doc),
+    projectId: binderId,
+    pageType: 'script',
+    script: doc,
+    source: 'page',
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
 }
 
 // J5 Slice 2 — the "＋ Standalone document here" leaf: file ALL selected
