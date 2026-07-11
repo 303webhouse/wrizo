@@ -766,6 +766,36 @@ a:focus-visible,
   cursor:pointer; padding:4px 6px; transition:color .2s; }
 .journal-nav-insert:hover{ color:var(--text-mid); }
 
+/* J3 — the spread view. A grid of square paper cells (square corners, solid
+   1px border — no decoration on a text-only page, an honest blank square).
+   Brass is reserved for the drop-target line and selection; the lift itself
+   is a shadow (+ scale, suppressed under reduced motion). Touch-action:none
+   on each cell so a real finger-drag never fights the page's own scroll. */
+.spread-grid{ display:flex; flex-wrap:wrap; gap:22px 20px; }
+.spread-cell{ position:relative; width:120px; display:flex; flex-direction:column; align-items:center; gap:6px;
+  background:none; border:none; padding:0; cursor:pointer; font-family:var(--font-ui); touch-action:none; }
+.spread-cell-paper{ width:104px; height:104px; box-sizing:border-box;
+  border:1px solid var(--ink-border); border-radius:0; background:var(--paper);
+  display:flex; align-items:center; justify-content:center; overflow:hidden; transition:box-shadow .15s; }
+.spread-cell[data-selected="true"] .spread-cell-paper{ border:2px solid var(--brass); }
+.spread-cell[data-lifted="true"] .spread-cell-paper{ box-shadow:0 8px 20px rgba(0,0,0,.45); }
+@media (prefers-reduced-motion:no-preference){
+  .spread-cell[data-lifted="true"] .spread-cell-paper{ transform:scale(1.06); }
+}
+.spread-cell-caption{ font-size:12px; color:var(--text-mid); max-width:118px; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.spread-cell-pos{ font-size:10px; color:var(--text-low); font-family:var(--font-mono); }
+.spread-cell:focus-visible{ outline:none; }
+.spread-cell:focus-visible .spread-cell-paper{ outline:2px solid var(--brass); outline-offset:2px; }
+/* The 2px brass drop-target line, sitting in the gutter between cells (or
+   after the last cell), never merged with a cell's own 1px border. */
+.spread-cell[data-drop-before="true"]::before,
+.spread-cell[data-drop-after="true"]::after{
+  content:''; position:absolute; top:0; width:2px; height:104px; background:var(--brass);
+}
+.spread-cell[data-drop-before="true"]::before{ left:-12px; }
+.spread-cell[data-drop-after="true"]::after{ right:-12px; }
+
 .wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
   opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
 .wz-gate.show{ opacity:1; pointer-events:auto; }

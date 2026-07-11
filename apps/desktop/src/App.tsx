@@ -11,6 +11,7 @@ import { BeatWizard } from './pages/BeatWizard';
 import { StructureBoard } from './pages/StructureBoard';
 import { QuickSprint } from './pages/QuickSprint';
 import { Journal } from './pages/Journal';
+import { Spread } from './pages/Spread';
 import { JournalEntry } from './pages/JournalEntry';
 import { PageEditor } from './pages/PageEditor';
 import { HomeFlow } from './components/HomeFlow';
@@ -208,6 +209,7 @@ export function App() {
         <Route path="/project/:id/board" element={<StructureBoard />} />
         <Route path="/sprint" element={<QuickSprint />} />
         <Route path="/journal" element={<Journal />} />
+        <Route path="/journal/spread" element={<Spread />} />
         <Route path="/journal/:id" element={<JournalEntry />} />
         <Route path="/page/:id" element={<PageEditor />} />
         </Routes>
