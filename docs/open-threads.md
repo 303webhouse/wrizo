@@ -71,16 +71,19 @@ outlive a session lives here, not in chat.
    `desk_opened_at` rows). Fold into the Rev 3 prep relay.
 
 ## POST-ARC QUEUE — unblocks when J5 ships + gates close
-6. **Fragments-under-Pages committee pass** (Fable deliverable): convenes
-   with three living citizens now — the Box schema, the S-arc's ScriptDoc
-   scenes (`docs/s-arc-screenplay-plan.md`, v1.1), and the Structure Spine's
-   links-on-the-child rule (`docs/structure-spine-plan.md` — **PROPOSED,
-   awaiting Nick's ratification**; not yet a build authorization). Proposal
-   doc, double-pass deliberation per AGENTS.md committees. Downstream: once
-   this pass convenes, the spine's P-arc runs P1 (vocab+templates) and P2
-   (the two-way materialize/promote seam) parallel to the S-arc; P3
-   (fragment-granular) waits on S1. Briefs for P1/S1 etc. follow one ticket
-   at a time — this plan alone builds nothing.
+6. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
+   (`docs/fragments-under-pages-canon.md`, convened on Nick's word — "let's
+   get it built" — with a sequencing pull-forward). Names the pattern `Box`
+   and `ScriptDoc` already share: one jsonb column per substrate family on
+   `journal_entries`, both sync mappers, boot-idempotent DDL, never a new
+   collection; links live on the child (fragment `beatId?`, never a beat's
+   target list); a prose-bearing substrate maintains a derived `entry.text`
+   shadow, a spatial one (boxes) doesn't; each substrate gets its own
+   `PageEditor()` delegate (the J4 routing rule). Ruled: `Box` conforms
+   (grandfathered on schema `v`); `ScriptDoc` conforms as designed —
+   **S1 may proceed.** Closes this item; future structured pageTypes join
+   by satisfying §2's checklist in their own brief's Slice 0, no new
+   committee pass required.
 7. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
    deferred until Journal UI surfaces existed; the Spread and the Board now
    exist. B4 intersects the Journal sprint reward surface (design together).
