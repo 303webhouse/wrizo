@@ -31,12 +31,19 @@ outlive a session lives here, not in chat.
      practice; this session makes it official).
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
-3. **J5 — the Spread console.** Runbook Step 4 self-executes after the J4
-   merge: CC re-runs the prerequisite gate and builds per
-   `docs/j5-spread-console-brief.md`. Then: Fable review → Nick's merge word
-   → J5's own S25 + desktop gate items (lens chips at thumb, sheet drill,
-   toast legibility; pointer precision). Owner: CC → Fable → Nick.
-   **Status: CC starting Step 4 now** (item 1 landed).
+3. **J5 — the Spread console.** Runbook Step 4 self-executed after the J4
+   merge: CC re-ran the prerequisite gate (both held) and built per
+   `docs/j5-spread-console-brief.md` on `j5-spread-console`, off post-merge
+   `main`. **CC's part is DONE — pushed, awaiting review.** Slices 0-3 all
+   shipped: the lens row (order/content/star/tag, drag disabled outside the
+   default lens), the "Add to…" destination-drill sheet (FILE to Shelf/
+   Drawer/Binder, COPY to a chapter or Board, LINK to a plan beat). Verified
+   in-harness (33 checks, `scripts/harness/j5.mjs`, committed); the J4
+   scenario re-run green (no regression). `tsc`/`build:web`/selftest green.
+   See `docs/backlog.md` for the full slice-by-slice log. Next: Fable review
+   → Nick's merge word → J5's own S25 + desktop gate items (lens chips at
+   thumb, sheet drill, toast legibility; pointer precision). Owner now:
+   Fable → Nick.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 4. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -50,8 +57,15 @@ outlive a session lives here, not in chat.
 
 ## POST-ARC QUEUE — unblocks when J5 ships + gates close
 6. **Fragments-under-Pages committee pass** (Fable deliverable): convenes
-   with the Box schema as its first living citizen. Proposal doc, double-
-   pass deliberation per AGENTS.md committees.
+   with three living citizens now — the Box schema, the S-arc's ScriptDoc
+   scenes (`docs/s-arc-screenplay-plan.md`, v1.1), and the Structure Spine's
+   links-on-the-child rule (`docs/structure-spine-plan.md` — **PROPOSED,
+   awaiting Nick's ratification**; not yet a build authorization). Proposal
+   doc, double-pass deliberation per AGENTS.md committees. Downstream: once
+   this pass convenes, the spine's P-arc runs P1 (vocab+templates) and P2
+   (the two-way materialize/promote seam) parallel to the S-arc; P3
+   (fragment-granular) waits on S1. Briefs for P1/S1 etc. follow one ticket
+   at a time — this plan alone builds nothing.
 7. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
    deferred until Journal UI surfaces existed; the Spread and the Board now
    exist. B4 intersects the Journal sprint reward surface (design together).
