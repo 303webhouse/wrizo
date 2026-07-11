@@ -90,4 +90,8 @@ export async function runMigrations(): Promise<void> {
   // text) so it round-trips through the pull mapper with no manual parse;
   // null on every existing page — only pageType:'board' pages ever populate it.
   await pool.query(`alter table journal_entries add column if not exists boxes jsonb`);
+
+  // S1 — the Screenplay Room's ScriptDoc. jsonb, same recipe as boxes; null on
+  // every existing page — only pageType:'script' pages ever populate it.
+  await pool.query(`alter table journal_entries add column if not exists script jsonb`);
 }

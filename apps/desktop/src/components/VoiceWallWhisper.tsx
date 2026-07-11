@@ -14,7 +14,9 @@ const FADE_MS = 700;
 // paste/drop guard) already checked shadowAllows, but nothing recorded a copy
 // FROM a board text box, so pasting your own board-copied words elsewhere
 // blocked and whispered.
-const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text';
+// S1 — .script-el-active joins the set: the same blocking/recording pattern,
+// applied to the Screenplay Room's one live element block.
+const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text, .script-el-active';
 
 export function VoiceWallWhisper() {
   const [msg, setMsg] = useState<string | null>(null);

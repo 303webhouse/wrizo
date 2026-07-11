@@ -10,6 +10,7 @@ import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
+import { ScriptEditor } from '../components/ScriptEditor';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -186,10 +187,15 @@ function PageEditorView({ id }: { id: string }) {
 // Key by id so per-page refs/state re-seed cleanly on page→page navigation.
 // J4 — /page/:id stays the one typed-page route; a pageType:'board' entry
 // delegates to the BoardEditor here, before either component's hooks run.
+// S1 — pageType:'script' delegates to ScriptEditor the same way. Draft law
+// only: neither delegate mounts ModeSwitcher/ModeStage (the mode strip stays
+// PageEditorView's alone) — a Board is Trellis-side by design, and a script
+// page ships Draft-only until S4 brings script Free-write.
 export function PageEditor() {
   const { id } = useParams<{ id: string }>();
   if (!id) return <Navigate to="/" replace />;
   const entry = getJournalEntry(id);
   if (entry?.pageType === 'board') return <BoardEditor key={id} id={id} />;
+  if (entry?.pageType === 'script') return <ScriptEditor key={id} id={id} />;
   return <PageEditorView key={id} id={id} />;
 }
