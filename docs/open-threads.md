@@ -32,16 +32,27 @@ outlive a session lives here, not in chat.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. **J5 — the Spread console.** Runbook Step 4 self-executed after the J4
-   merge: CC re-ran the prerequisite gate (both held) and built per
-   `docs/j5-spread-console-brief.md` on `j5-spread-console`, off post-merge
-   `main`. **CC's part is DONE — pushed, awaiting review.** Slices 0-3 all
-   shipped: the lens row (order/content/star/tag, drag disabled outside the
-   default lens), the "Add to…" destination-drill sheet (FILE to Shelf/
-   Drawer/Binder, COPY to a chapter or Board, LINK to a plan beat). Verified
-   in-harness (33 checks, `scripts/harness/j5.mjs`, committed); the J4
-   scenario re-run green (no regression). `tsc`/`build:web`/selftest green.
-   See `docs/backlog.md` for the full slice-by-slice log. Next: Fable review
-   → Nick's merge word → J5's own S25 + desktop gate items (lens chips at
+   merge: CC built per `docs/j5-spread-console-brief.md` on
+   `j5-spread-console`, off post-merge `main`. Slices 0-3 shipped: the lens
+   row (order/content/star/tag, drag disabled outside the default lens), the
+   "Add to…" destination-drill sheet (FILE to Shelf/Drawer/Binder, COPY to a
+   chapter or Board, LINK to a plan beat).
+   **Fable's review returned 2026-07-11: REQUIRED FIXES — 3, all small, no
+   data-loss-class findings** (`docs/j5-review-fable.md`). CC folded all
+   three on-branch: R1 — a single-page MOVE's confirmation toast was lost
+   (the view unmounted before it could show; fixed via one-shot nav state,
+   the F2 `warmStart` consume-on-arrival pattern, into the Journal list).
+   R2 — DoD 2's positive drag-reorder path had never actually been exercised
+   in-harness (only the block-outside-default-lens half was proven); no app
+   fix, `j5.mjs` gained the missing real-drag check. R3 — multi-source
+   append order: **ruling pinned as notebook order** (matches J4's port
+   precedent), the brief/backlog's "selection order" wording corrected;
+   no behavior changed. `scripts/harness/j5.mjs` now 40 checks, all green;
+   J4 regression scenario re-run green (26/26); `tsc`/`build:web`/selftest
+   green. **CC's part is DONE — re-pushed, awaiting Fable's delta spot-check
+   + Nick's merge word** (same protocol as J4). See `docs/backlog.md` for
+   the full slice-by-slice + fix-by-fix log. Next: Fable's delta check →
+   Nick's merge word → J5's own S25 + desktop gate items (lens chips at
    thumb, sheet drill, toast legibility; pointer precision). Owner now:
    Fable → Nick.
 
