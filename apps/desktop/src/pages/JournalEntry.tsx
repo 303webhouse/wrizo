@@ -10,6 +10,7 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
+import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -85,6 +86,7 @@ function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
+  const [portOpen, setPortOpen] = useState(false); // J4 — "Port to a Board…" sheet
   const [tabPrompt, setTabPrompt] = useState(false); // B4 #11 — file-it-first prompt
   const [tagDraft, setTagDraft] = useState('');
   const [entry, setEntry] = useState<JournalEntryType | null>(() => (id ? getJournalEntry(id) : null));
@@ -685,6 +687,10 @@ function JournalEntryView() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
           <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the page text">Copy page text</button>
+          {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
+          {isLoose && (
+            <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>
+          )}
           <button
             type="button"
             className="btn-quiet entry-star"
@@ -897,6 +903,7 @@ function JournalEntryView() {
         )}
       </div>
       )}
+      {portOpen && <PortToBoardSheet sourceIds={[entry.id]} onClose={() => setPortOpen(false)} />}
     </div>
   );
 }

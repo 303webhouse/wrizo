@@ -197,7 +197,9 @@ export interface JournalEntry {
   // — chapters/scenes) vs support pages (character/worldbuilding/research/note).
   // Absent → untyped (legacy filed pages, loose journal pages). Story Structure is
   // NOT a page type — it's the project's Plan (StoryPlan/StructureBoard).
-  pageType?: 'manuscript' | 'character' | 'worldbuilding' | 'research' | 'note';
+  // J4 — 'board' is the Board species (a canvas of positioned boxes; see
+  // `boxes` below). Still not Story Structure — that stays the project's Plan.
+  pageType?: 'manuscript' | 'character' | 'worldbuilding' | 'research' | 'note' | 'board';
   // Notebook order (J1) — the loose Journal's explicit page order. Additive/
   // optional (the J6 pattern): absent → the page keeps its chronological place
   // (sort falls back to `epoch(createdAt)`), so there is no backfill or migration.
@@ -208,6 +210,31 @@ export interface JournalEntry {
   // the Import-a-draft flow (the writer's own work flowing in). Metadata only —
   // the page behaves as a normal page; the header shows a quiet "Imported" tag.
   importedAt?: string;
+  // J4 — the Board's positioned content, when pageType === 'board'. A JSON
+  // column exactly like strokes; absent on every non-Board page (no backfill).
+  boxes?: Box[];
+}
+
+// J4 — a Board's positioned content unit (I2/I3 realized): the first
+// fragments-under-Pages instance, designed fragment-compatible on purpose.
+// x/y/w/h are normalized to the page WIDTH (a single width unit), so a box
+// transforms losslessly at any viewport; z is stacking order (new = max+1).
+// `groupId` links a locked text+ink pair minted by a port — Ungroup frees
+// them. Provenance (`sourceEntryId`/`portedAt`) records where a box came
+// from; the Journal original it was copied from is never touched.
+export interface Box {
+  id: string;
+  kind: 'text' | 'ink';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  z: number;
+  groupId?: string;
+  text?: string;      // kind 'text'
+  strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
+  sourceEntryId?: string;
+  portedAt?: string;
 }
 
 // Writing-session instrumentation (A9 → F5). One row per writing session on a

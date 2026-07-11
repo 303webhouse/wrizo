@@ -184,7 +184,8 @@ export function ProjectHome() {
                     {p.pageType && <span className="dz-count" style={{ marginRight: 8, textTransform: 'capitalize' }}>{p.pageType}</span>}
                     {p.text.trim() ? firstLine(p.text).slice(0, 70) : 'Untitled'}
                   </Link>
-                  <PageFileMenu page={p} label="move…" />
+                  {/* J4 — Boards are binder-only in v1; Shelf/Journal homes for them are a logged non-goal. */}
+                  {p.pageType !== 'board' && <PageFileMenu page={p} label="move…" />}
                 </div>
               ))}
               {addingSupport ? (

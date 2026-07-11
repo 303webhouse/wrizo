@@ -10,7 +10,11 @@ const FADE_MS = 700;
 // VW Slice 4 — the prose-surface set Slice 1 guards; a copy/cut originating
 // inside one of these records the own-ink shadow. Kept alongside the whisper
 // (the one global Voice Wall mount point) rather than a second wire-in.
-const PROSE_SURFACES = '.forward-only-editor, .entry-edit';
+// J4 review fix — .board-text joins the set: the blocking side (BoardEditor's
+// paste/drop guard) already checked shadowAllows, but nothing recorded a copy
+// FROM a board text box, so pasting your own board-copied words elsewhere
+// blocked and whispered.
+const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text';
 
 export function VoiceWallWhisper() {
   const [msg, setMsg] = useState<string | null>(null);

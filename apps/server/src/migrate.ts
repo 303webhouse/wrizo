@@ -85,4 +85,9 @@ export async function runMigrations(): Promise<void> {
   // VW — the Voice Wall's Import door stamps provenance on imported pages. One
   // boot-idempotent column; null on every existing/typed page (no backfill).
   await pool.query(`alter table journal_entries add column if not exists imported_at text`);
+
+  // J4 — the Board's positioned boxes. jsonb like strokes/tags (not plain
+  // text) so it round-trips through the pull mapper with no manual parse;
+  // null on every existing page — only pageType:'board' pages ever populate it.
+  await pool.query(`alter table journal_entries add column if not exists boxes jsonb`);
 }
