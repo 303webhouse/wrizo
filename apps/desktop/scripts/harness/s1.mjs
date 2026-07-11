@@ -43,6 +43,12 @@ window.__setCaret = function(offset) {
   sel.addRange(range);
   return true;
 };
+window.__setActiveText = function(text) {
+  const el = document.querySelector('.script-el-active');
+  el.textContent = text;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  return true;
+};
 window.__activeType = () => document.querySelector('.script-el-active')?.dataset.type ?? null;
 window.__activeText = () => document.querySelector('.script-el-active')?.textContent ?? null;
 window.__elCount = () => document.querySelectorAll('.script-el').length;
@@ -256,6 +262,38 @@ await withHarness(async (app) => {
   await app.evalJs("__key('Enter')"); // a SECOND Enter — no popover left open — commits the scene heading
   await sleep(60);
 
+  // -- R1: the popover anchors to the ACTIVE element, not the sheet's tail.
+  // Every check up to here always edited the document's LAST element — click
+  // back to element 0 (many elements now follow it) to exercise the actual
+  // regression Fable found: mid-document editing in a script longer than a
+  // screen. -------------------------------------------------------------
+  await app.evalJs("document.querySelectorAll('.script-el')[0].click()");
+  await sleep(80);
+  ok('R1 setup: clicking an earlier element activates it (not the tail)', (await app.evalJs('__activeType()')) === 'scene', await app.evalJs('__activeType()'));
+  await app.evalJs("__setActiveText('int. kit')"); // reuses the known KITCHEN fixture — no type change, sidesteps A1 entirely
+  await sleep(80);
+  const r1Opts = await app.evalJs('__acOptions()');
+  ok('R1 setup: the popover is genuinely open mid-document', r1Opts.includes('KITCHEN'), JSON.stringify(r1Opts));
+  const r1Geometry = await app.evalJs(`
+    (() => {
+      const activeEl = document.querySelector('.script-el-active');
+      const pop = document.querySelector('.script-autocomplete');
+      const sheet = document.querySelector('.script-sheet');
+      return {
+        gap: pop.offsetTop - (activeEl.offsetTop + activeEl.offsetHeight),
+        distFromSheetBottom: sheet.scrollHeight - pop.offsetTop,
+      };
+    })()
+  `);
+  ok('R1: the popover sits within one line-height of the ACTIVE element (not the sheet\'s bottom)', r1Geometry.gap >= 0 && r1Geometry.gap < 40, JSON.stringify(r1Geometry));
+  ok('R1: many elements still follow it — the popover is nowhere near the sheet\'s bottom', r1Geometry.distFromSheetBottom > 100, JSON.stringify(r1Geometry));
+  // Restore element 0 and return to the tail, so the rest of the scenario
+  // (which assumes a fresh empty ACTIVE element) is undisturbed.
+  await app.evalJs("__setActiveText('INT. KITCHEN - DAY')");
+  await sleep(60);
+  await app.evalJs("(() => { const all = document.querySelectorAll('.script-el'); all[all.length - 1].click(); return true; })()");
+  await sleep(80);
+
   // -- VW: foreign paste blocked + whispered; own-shadow paste allowed;
   // copy-out emits the derived serialization untouched. -----------------------
   const foreignBlocked = await app.evalJs("__pasteText('FOREIGN VOICE TEXT')");
@@ -279,8 +317,14 @@ await withHarness(async (app) => {
   `);
   ok('DoD8: the active element carries the I0 pen-discipline guard (touch-action:none, handwriting=false)', penGuard === true);
 
-  // -- settle the debounced autosave (2000ms), then verify persisted shape. --
-  await sleep(2300);
+  // -- settle the debounced autosave (2000ms component debounce + 300ms
+  // persistence flush), then verify persisted shape. A blind sleep(2300) sits
+  // right at that worst case with no buffer and proved flaky under load —
+  // poll for the specific latest content instead (the J5 harness lesson). --
+  await app.waitFor(
+    `(() => { const l = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]'); const e = l.find(x => x.id === ${JSON.stringify(scriptId)}); if (!e?.script?.scenes) return false; const flat = e.script.scenes.flatMap(s => [s.heading, ...s.body]).map(el => el.text); return flat.includes('BOB(V.O.)'); })()`,
+    { label: 'script doc autosaved with latest content', timeout: 6000 },
+  );
   entries = await app.localJSON('writer-studio-journal-entries');
   scriptEntry = entries.find((e) => e.id === scriptId);
   const flat = (scriptEntry.script.scenes || []).flatMap((s) => [s.heading, ...s.body]).map((e) => e.text);
@@ -294,7 +338,8 @@ await withHarness(async (app) => {
   const scenesBeforeReload = JSON.stringify(scriptEntry.script);
   await app.goto('/journal'); // navigate off first — the same unmount-flush-clobber hazard J5 documented
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk'), !!document.querySelector('.journal-new-page')", { label: 'app after reload', timeout: 8000 });
+  await app.waitFor("!!document.querySelector('.wz-desk') || !!document.querySelector('.journal-new-page')", { label: 'app after reload', timeout: 8000 });
+  await app.evalJs(HELPERS); // a hard reload wipes injected window functions — re-inject
   const entriesAfterReload = await app.localJSON('writer-studio-journal-entries');
   const scriptAfterReload = entriesAfterReload.find((e) => e.id === scriptId);
   ok('DoD6: the ScriptDoc round-trips byte-identical across a full reload', JSON.stringify(scriptAfterReload.script) === scenesBeforeReload);
@@ -338,6 +383,24 @@ await withHarness(async (app) => {
   ok('birth paths: the binder now shows its own "Scripts" section, atop Manuscript', scriptsSectionShown === true);
   const newScriptBtnShown = await app.evalJs("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New script page'))");
   ok('birth paths: the dedicated "+ New script page" button is present once a script page exists', newScriptBtnShown === true);
+
+  // -- A4: an exact-match golden-string assertion on a small, ISOLATED doc.
+  // Containment testing (used everywhere above) can't catch whitespace drift
+  // in the shadow — and this string is S3's future Fountain parser input. --
+  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New script page')).click()");
+  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'a second, clean script page' });
+  const goldenId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  await app.typeKeys('int. office');
+  await app.evalJs("__key('Enter')");
+  await sleep(60);
+  await app.typeKeys('She sits.');
+  await app.waitFor(
+    `(() => { const l = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]'); const e = l.find(x => x.id === ${JSON.stringify(goldenId)}); return e?.text === ${JSON.stringify('INT. OFFICE\n\nShe sits.')}; })()`,
+    { label: 'golden doc autosaved', timeout: 6000 },
+  );
+  const goldenEntries = await app.localJSON('writer-studio-journal-entries');
+  const goldenEntry = goldenEntries.find((e) => e.id === goldenId);
+  ok('A4: the golden serialization is an EXACT match, not just a substring', goldenEntry.text === 'INT. OFFICE\n\nShe sits.', JSON.stringify(goldenEntry.text));
 });
 
 // eslint-disable-next-line no-console

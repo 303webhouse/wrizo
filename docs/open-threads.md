@@ -71,14 +71,38 @@ outlive a session lives here, not in chat.
    Tab keyboard map, slugline/location/TOD + character + extension
    autocomplete, auto (CONT'D), Voice Wall + I0 pen discipline + TTFK
    wiring. One new dep (`@fontsource/courier-prime`, scoped to
-   `--font-script` — `--font-mono` untouched). Verified in-harness (82
-   checks, `scripts/harness/s1.mjs`, committed, stable across 2 runs);
-   `j4.mjs` (26/26) + `j5.mjs` (40/40) re-run green; `tsc`/`build:web`/
-   selftest green. See `docs/backlog.md` for the full slice-by-slice log
-   and disclosed gaps (IME composition, the plaintext-only fallback path,
-   mouse click-to-activate, the transition autocomplete branch — none
-   harness-exercised this pass). **CC's part is DONE — pushed, awaiting
-   review.** Next: Fable review → Nick's merge word → S1's own S25 +
+   `--font-script` — `--font-mono` untouched).
+   **Fable's review returned 2026-07-11: REQUIRED FIXES — 2** (one code,
+   one verification), no data-loss/sync-law findings — "for a 1,400-line
+   heavyweight this is an unusually clean build" (`docs/s1-review-fable.md`).
+   CC folded R1 (the autocomplete popover was unanchored — it rendered as
+   the sheet's last child with no top/left, so it took its static position
+   at the bottom of the WHOLE document instead of beneath the active
+   element; every harness check had always edited the document's tail, so
+   82/82 passed while it was broken for the primary case — mid-document
+   editing. Fixed by rendering it as the active element's own flow-sibling;
+   a new mid-document harness check measured `gap:0` from the active
+   element, `250px` from the sheet's bottom — unambiguous.) and R2 (grepped
+   all 6 CSS vars the surface consumes — confirmed present, no fix needed).
+   Also folded three advisories Fable flagged as fix-opportunistically (a
+   DOM-vs-state read asymmetry in Backspace-merge/arrow-walk/click-commits;
+   a comma-operator bug silently dropping half a `waitFor` condition; one
+   exact-match golden-string assertion, since containment alone can't catch
+   whitespace drift in a string that's S3's future parser contract) —
+   deferred A1 (synthetic-heading id churn) to P3 per Fable's own call, and
+   A5 (ghost-visibility feel) to the hardware gate. Found and fixed one
+   flaky-harness bug of CC's own along the way: two blind `sleep(2300)`
+   calls sat at the exact debounce worst-case with zero buffer and
+   intermittently read stale content — fixed by polling instead (the same
+   lesson J5's harness already learned once). `scripts/harness/s1.mjs`
+   grew 82 → 87 checks, stable across 3 runs; `j4.mjs`/`j5.mjs` re-run
+   green; `tsc`/`build:web`/selftest green. See `docs/backlog.md` for the
+   full log. **CC's part is DONE — re-pushed, awaiting Fable's delta
+   spot-check + Nick's merge word** (same protocol as J4/J5). **Note per
+   Fable: unlike J5, this deploy is NOT zero-schema** — the live prod
+   push/pull round-trip for the new `script` column (the D2/J4 ritual) is
+   required on first deploy, not optional. Next: Fable's delta check →
+   Nick's merge word → `railway up` + the live round-trip → S1's own S25 +
    desktop gate items (typing rhythm, ghost legibility, autocomplete at
    pointer/thumb, keyboard-map muscle memory). Owner now: Fable → Nick.
 

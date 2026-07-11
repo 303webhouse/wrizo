@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getJournalEntry, saveScriptDoc, flushNow, getDrawer, getProject } from '../store/persistence';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
@@ -206,9 +206,9 @@ function StaticScriptElement({ el, onActivate }: { el: ScriptEl; onActivate: (cl
   );
 }
 
-function AutocompletePopover({ state, index }: { state: AutocompleteState; index: number }) {
+function AutocompletePopover({ state, index, indentCh }: { state: AutocompleteState; index: number; indentCh: number }) {
   return (
-    <div className="script-autocomplete" role="listbox" aria-label="Script autocomplete">
+    <div className="script-autocomplete" role="listbox" aria-label="Script autocomplete" style={{ marginLeft: `${indentCh}ch` }}>
       {state.options.map((o, i) => (
         <div key={o} className="script-autocomplete-opt" data-highlighted={i === index ? 'true' : 'false'} role="option" aria-selected={i === index}>
           {o}
@@ -379,7 +379,10 @@ export function ScriptEditor({ id }: { id: string }) {
       const prevIndex = activeIndex - 1;
       const boundary = elements[prevIndex]?.text.length ?? 0;
       setElements(prev => {
-        const merged = prev[prevIndex].text + prev[activeIndex].text;
+        // `text` (read above from the live DOM, not `prev[activeIndex].text`)
+        // is ground truth for what's actually typed right now — same
+        // reasoning as Enter's own DOM read (Fable A2).
+        const merged = prev[prevIndex].text + text;
         const next = prev.map((el, i) => (i === prevIndex ? { ...el, text: merged } : el));
         next.splice(activeIndex, 1);
         return next;
@@ -389,13 +392,13 @@ export function ScriptEditor({ id }: { id: string }) {
     }
     if (e.key === 'ArrowUp' && offset === 0 && activeIndex > 0) {
       e.preventDefault();
-      setElements(prev => commitElement(prev, activeIndex));
+      setElements(prev => commitElement(prev.map((el, i) => (i === activeIndex ? { ...el, text } : el)), activeIndex));
       moveActive(activeIndex - 1, 'end');
       return;
     }
     if (e.key === 'ArrowDown' && offset >= text.length && activeIndex < elements.length - 1) {
       e.preventDefault();
-      setElements(prev => commitElement(prev, activeIndex));
+      setElements(prev => commitElement(prev.map((el, i) => (i === activeIndex ? { ...el, text } : el)), activeIndex));
       moveActive(activeIndex + 1, 'start');
       return;
     }
@@ -403,7 +406,11 @@ export function ScriptEditor({ id }: { id: string }) {
 
   const activateAt = (index: number, clientX: number, clientY: number) => {
     if (index === activeIndex) return;
-    setElements(prev => commitElement(prev, activeIndex));
+    const domText = activeElRef.current?.textContent;
+    setElements(prev => commitElement(
+      domText != null ? prev.map((el, i) => (i === activeIndex ? { ...el, text: domText } : el)) : prev,
+      activeIndex,
+    ));
     let hint: CaretHint = 'end';
     const caretApi = (document as unknown as { caretRangeFromPoint?: (x: number, y: number) => Range | null }).caretRangeFromPoint;
     if (caretApi) {
@@ -446,19 +453,25 @@ export function ScriptEditor({ id }: { id: string }) {
           const active = i === activeIndex;
           if (active) {
             return (
-              <ActiveScriptElement
-                key={`${el.id}:${seedNonce}`}
-                el={el}
-                caretHint={caretHint}
-                onInput={handleInput}
-                onKeyDown={handleKeyDown}
-                elRef={activeElRef}
-              />
+              <Fragment key={`${el.id}:${seedNonce}:wrap`}>
+                <ActiveScriptElement
+                  key={`${el.id}:${seedNonce}`}
+                  el={el}
+                  caretHint={caretHint}
+                  onInput={handleInput}
+                  onKeyDown={handleKeyDown}
+                  elRef={activeElRef}
+                />
+                {/* Fable R1 — rendered as the active element's own flow-sibling
+                    (not the sheet's last child) so its no-top/left absolute
+                    position resolves to right beneath THIS block, wherever it
+                    sits in the document, instead of the bottom of the sheet. */}
+                {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}
+              </Fragment>
             );
           }
           return <StaticScriptElement key={el.id} el={el} onActivate={(x, y) => activateAt(i, x, y)} />;
         })}
-        {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} />}
       </div>
     </div>
   );
