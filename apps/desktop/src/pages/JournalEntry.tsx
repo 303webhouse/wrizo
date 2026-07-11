@@ -11,6 +11,8 @@ import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/vo
 import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
+import { AddToSheet } from '../components/AddToSheet';
+import { useActionToast } from '../components/ActionToast';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -87,6 +89,8 @@ function JournalEntryView() {
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
   const [portOpen, setPortOpen] = useState(false); // J4 — "Port to a Board…" sheet
+  const [addOpen, setAddOpen] = useState(false); // J5 — "Add to…" sheet (single-page flow)
+  const toast = useActionToast();
   const [tabPrompt, setTabPrompt] = useState(false); // B4 #11 — file-it-first prompt
   const [tagDraft, setTagDraft] = useState('');
   const [entry, setEntry] = useState<JournalEntryType | null>(() => (id ? getJournalEntry(id) : null));
@@ -662,7 +666,7 @@ function JournalEntryView() {
           becomes "+" at the end (append + open); "+ insert" drops a page between
           this one and the next. */}
       {isLoose && (
-        <nav className="journal-nav chrome-fade" aria-label="Notebook">
+        <nav className="journal-nav chrome-fade" aria-label="Journal">
           <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
             onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
           <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
@@ -690,6 +694,10 @@ function JournalEntryView() {
           {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
           {isLoose && (
             <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>
+          )}
+          {/* J5 Slice 2/3 — "Add to…", single-page flow. Loose pages only. */}
+          {isLoose && (
+            <button type="button" className="btn-quiet entry-add" onClick={() => setAddOpen(true)}>Add to…</button>
           )}
           <button
             type="button"
@@ -904,6 +912,26 @@ function JournalEntryView() {
       </div>
       )}
       {portOpen && <PortToBoardSheet sourceIds={[entry.id]} onClose={() => setPortOpen(false)} />}
+      {addOpen && (
+        <AddToSheet
+          sourceIds={[entry.id]}
+          onClose={() => setAddOpen(false)}
+          onDone={(message, verb) => {
+            setAddOpen(false);
+            // A MOVE takes the page out of the Journal — this loose-page view
+            // no longer applies to it, so follow it out. COPY/LINK leave the
+            // page exactly here, so the local toast shows normally. A MOVE's
+            // toast can't: this view unmounts on navigate, taking the toast
+            // node with it (Fable R1) — hand the message to the Journal list
+            // as one-shot nav state instead (the F2 `warmStart`
+            // consume-on-arrival pattern; the list clears the state on
+            // arrival so a refresh never re-shows it).
+            if (verb === 'MOVES') navigate('/journal', { state: { actionToast: message } });
+            else toast.show(message);
+          }}
+        />
+      )}
+      {toast.node}
     </div>
   );
 }

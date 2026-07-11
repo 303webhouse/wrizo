@@ -825,6 +825,33 @@ a:focus-visible,
 .board-dest-row{ width:100%; text-align:left; background:none; border:none; cursor:pointer; }
 @media (prefers-reduced-motion:reduce){ .board-box{ transition:none; } }
 
+/* J5 — the lens row: square corners, quiet borders, brass ONLY on the
+   active chip. No transitions (reduced-motion is a non-issue: none used). */
+.spread-lens-chip{
+  font-family:var(--font-ui); font-size:13px; padding:4px 10px;
+  border:1px solid var(--ink-border); border-radius:0; background:none;
+  color:var(--text-mid); cursor:pointer;
+}
+.spread-lens-chip[data-active="true"]{ border-color:var(--brass); color:var(--brass); }
+.spread-lens-note{ color:var(--text-low); font-size:13px; margin:-4px 0 16px; }
+
+/* J5 — Add to… sheet: verb tags (the two-verb law made visible) + the toast. */
+.add-verb-tag{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.04em;
+  color:var(--text-low); border:1px solid var(--ink-border); border-radius:0;
+  padding:1px 5px; margin-left:8px; white-space:nowrap;
+}
+.add-verb-tag[data-verb="MOVES"]{ color:var(--brass); border-color:var(--brass); }
+.action-toast{
+  position:fixed; left:50%; bottom:32px; transform:translateX(-50%);
+  max-width:min(480px,90vw); padding:.7rem 1.1rem; z-index:300;
+  font-family:var(--font-ui); font-size:14px; color:var(--text-hi);
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:0;
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.action-toast[data-shown="true"]{ opacity:1; }
+@media (prefers-reduced-motion:reduce){ .action-toast{ transition:none; } }
+
 .wz-gate{ position:absolute; inset:0; display:flex; align-items:flex-start; justify-content:center; padding:15vh 8vw 12vh;
   opacity:0; pointer-events:none; transition:opacity .9s ease; z-index:4; }
 .wz-gate.show{ opacity:1; pointer-events:auto; }

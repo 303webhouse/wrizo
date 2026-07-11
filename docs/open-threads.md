@@ -53,8 +53,6 @@ outlive a session lives here, not in chat.
    + Nick's merge word** (same protocol as J4). See `docs/backlog.md` for
    the full slice-by-slice + fix-by-fix log. Next: Fable's delta check →
    Nick's merge word → J5's own S25 + desktop gate items (lens chips at
-   thumb, sheet drill, toast legibility; pointer precision). Owner now:
-   Fable → Nick.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 4. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now

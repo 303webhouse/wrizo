@@ -746,14 +746,12 @@ export function saveBoardBoxes(id: string, boxes: Box[]): void {
 // vertically in selection order; when a page has BOTH, they share a fresh
 // groupId (the locked group — "ink locked to the text"). A text-empty page
 // ports ink-only; an ink-empty page ports text-only; a page with neither
-// contributes nothing. Provenance travels on every box. `dest: 'new'` births
-// an Untitled binder (kind 'other', F4's law) on the spot.
-export function portToBoard(sourceIds: string[], dest: string | 'new', includeInk: boolean): JournalEntry {
-  const binderId = dest === 'new' ? createBinder('', 'other').id : dest;
+// contributes nothing. Provenance travels on every box.
+function buildPortedBoxes(sourceIds: string[], includeInk: boolean, startY: number, startZ: number): Box[] {
   const now = new Date().toISOString();
   const boxes: Box[] = [];
-  let y = 0.06;
-  let z = 1;
+  let y = startY;
+  let z = startZ;
   for (const sourceId of sourceIds) {
     const source = getJournalEntry(sourceId);
     if (!source) continue;
@@ -775,9 +773,71 @@ export function portToBoard(sourceIds: string[], dest: string | 'new', includeIn
     }
     y += BOARD_STACK_GAP;
   }
+  return boxes;
+}
+
+// `dest: 'new'` births an Untitled binder (kind 'other', F4's law) on the
+// spot and creates a fresh Board inside it. `dest: <binderId>` creates a
+// fresh Board in that existing binder.
+export function portToBoard(sourceIds: string[], dest: string | 'new', includeInk: boolean): JournalEntry {
+  const binderId = dest === 'new' ? createBinder('', 'other').id : dest;
+  const boxes = buildPortedBoxes(sourceIds, includeInk, 0.06, 1);
   const board = createBoardPage(binderId);
   saveJournalEntry({ ...board, boxes });
   return getJournalEntry(board.id)!;
+}
+
+// J5 Slice 3 — the port's other destination: an EXISTING Board. New locked
+// groups append BELOW current content (start y = max box bottom + spacing,
+// the same stacking `portToBoard` uses for a fresh Board) rather than
+// replacing anything; z continues past the board's current max.
+export function appendToBoard(sourceIds: string[], boardEntryId: string, includeInk: boolean): JournalEntry | null {
+  const board = getJournalEntry(boardEntryId);
+  if (!board || board.pageType !== 'board') return null;
+  const existing = board.boxes ?? [];
+  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
+  const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  const newBoxes = buildPortedBoxes(sourceIds, includeInk, startY, startZ);
+  saveJournalEntry({ ...board, boxes: [...existing, ...newBoxes] });
+  return getJournalEntry(boardEntryId);
+}
+
+// J5 Slice 2 — the "＋ Standalone document here" leaf: file ALL selected
+// pages into ONE new Untitled binder (kind 'other', F4's title-later law) in
+// the given drawer. N pages -> one binder, not N. MOVES (rides setPageHome).
+export function fileToNewBinder(sourceIds: string[], drawerId?: string): Project {
+  const binder = createBinder('', 'other', drawerId);
+  for (const id of sourceIds) setPageHome(id, binder.id);
+  return binder;
+}
+
+// J5 Slice 3 — "Append to <chapter>" (COPIES): selected pages' TEXT, in
+// notebook order (Your order — the J4 port precedent; click/selection
+// sequence is NOT honored, Fable R3), each landing at the chapter's end
+// separated by one blank line. Sources are never touched — read-only here.
+export function appendToChapter(sourceIds: string[], chapterId: string): void {
+  const chapter = getJournalEntry(chapterId);
+  if (!chapter) return;
+  const blocks = sourceIds.map(id => getJournalEntry(id)?.text ?? '').filter(t => t.trim());
+  if (blocks.length === 0) return;
+  const appended = [chapter.text, ...blocks].filter(t => t.trim()).join('\n\n');
+  saveJournalEntry({ ...chapter, text: appended });
+}
+
+// J5 Slice 3 — "Attach to the plan" (LINKS): sets beatId and appends the
+// binder's project id to routedProjectIds on each selected entry. Nothing
+// moves, nothing copies — the page stays exactly where it is.
+export function attachToPlanBeat(sourceIds: string[], binderId: string, beatId: string): void {
+  for (const id of sourceIds) {
+    const entry = getJournalEntry(id);
+    if (!entry) continue;
+    const routed = entry.routedProjectIds ?? [];
+    saveJournalEntry({
+      ...entry,
+      beatId,
+      routedProjectIds: routed.includes(binderId) ? routed : [...routed, binderId],
+    });
+  }
 }
 
 // Import a draft (VW — the Voice Wall's door). The writer's own work flowing IN:
