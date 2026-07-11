@@ -12,8 +12,8 @@ outlive a session lives here, not in chat.
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
 2. **The consolidated hardware session** (after the deploy — deploy is now
-   live). Four gates, one sitting; bugs → side chats, verdicts → the ledger.
-   Owner: Nick.
+   live, J4 + J5 both). Five gates, one sitting; bugs → side chats, verdicts
+   → the ledger. Owner: Nick.
    - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
      visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
      eraser tip — a finding, not a failure; the toggle is the path).
@@ -27,32 +27,38 @@ outlive a session lives here, not in chat.
      verdict decides if a width-scale param becomes J4.1).
    - J4 · desktop: handle target size, double-click-edit vs single-click-
      select, drag a box off the right edge (retrievability).
+   - J5 · S25 + desktop: lens chips and the "Add to…" sheet at thumb size,
+     drill-down feel, toast legibility (S25); pointer precision on chips/
+     handles/sheet rows (desktop). Folded in here rather than a separate
+     sitting — same surface family as J3/J4, same hand.
    - Plus: the formal stack word (VW's old merge condition, satisfied in
      practice; this session makes it official).
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
-3. **J5 — the Spread console.** Runbook Step 4 self-executed after the J4
-   merge: CC built per `docs/j5-spread-console-brief.md` on
-   `j5-spread-console`, off post-merge `main`. Slices 0-3 shipped: the lens
-   row (order/content/star/tag, drag disabled outside the default lens), the
-   "Add to…" destination-drill sheet (FILE to Shelf/Drawer/Binder, COPY to a
-   chapter or Board, LINK to a plan beat).
-   **Fable's review returned 2026-07-11: REQUIRED FIXES — 3, all small, no
-   data-loss-class findings** (`docs/j5-review-fable.md`). CC folded all
-   three on-branch: R1 — a single-page MOVE's confirmation toast was lost
-   (the view unmounted before it could show; fixed via one-shot nav state,
-   the F2 `warmStart` consume-on-arrival pattern, into the Journal list).
-   R2 — DoD 2's positive drag-reorder path had never actually been exercised
-   in-harness (only the block-outside-default-lens half was proven); no app
-   fix, `j5.mjs` gained the missing real-drag check. R3 — multi-source
-   append order: **ruling pinned as notebook order** (matches J4's port
-   precedent), the brief/backlog's "selection order" wording corrected;
-   no behavior changed. `scripts/harness/j5.mjs` now 40 checks, all green;
-   J4 regression scenario re-run green (26/26); `tsc`/`build:web`/selftest
-   green. **CC's part is DONE — re-pushed, awaiting Fable's delta spot-check
-   + Nick's merge word** (same protocol as J4). See `docs/backlog.md` for
-   the full slice-by-slice + fix-by-fix log. Next: Fable's delta check →
-   Nick's merge word → J5's own S25 + desktop gate items (lens chips at
+3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
+   `docs/j5-spread-console-brief.md` on `j5-spread-console`, off post-merge
+   `main` (Slices 0-3: the lens row — order/content/star/tag, drag disabled
+   outside the default lens — and the "Add to…" destination-drill sheet —
+   FILE to Shelf/Drawer/Binder, COPY to a chapter or Board, LINK to a plan
+   beat). Fable's review returned REQUIRED FIXES — 3, all small, no
+   data-loss-class findings (`docs/j5-review-fable.md`); CC folded R1
+   (single-page MOVE toast lost on navigate — fixed via the F2 `warmStart`
+   one-shot-state pattern), R2 (DoD 2's positive drag-reorder path was
+   unverified — harness gained the missing check, no app fix), R3
+   (multi-source append order ruled **notebook order** — docs/comment fix,
+   no behavior change); `scripts/harness/j5.mjs` grew to 40 checks. Nick
+   relayed "Merge `j5-spread-console` to `main` and deploy." CC merged
+   (one expected conflict in this ledger's own item 3, resolved in favor of
+   the more current text), ran `tsc` (desktop + server) + `build:web` +
+   selftest + the persisted `scripts/harness/j4.mjs` (26/26) +
+   `scripts/harness/j5.mjs` (40/40) — all green on merged `main` — pushed,
+   `railway up`. **Zero-schema deploy** (no server files touched; every new
+   path rides pre-existing synced fields) — confirmed live via a basic
+   liveness check (`200` on `/`, the auth gate responding) rather than a
+   new-field round-trip, since there was no new field to check. See
+   `docs/backlog.md`. Next: J5's own S25 + desktop gate items (lens chips at
+   thumb, sheet drill, toast legibility; pointer precision) — fold into the
+   consolidated hardware session (item 2) rather than a separate sitting.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 4. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
