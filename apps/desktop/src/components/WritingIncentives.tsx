@@ -18,7 +18,10 @@ const CELEBRATE_MS = 1100;
 // CELEBRATE_MS whenever a new lap completes (value crosses a goal multiple).
 export function useGoalProgress(value: number, goal: number): { frac: number; celebrating: boolean } {
   const [celebrating, setCelebrating] = useState(false);
-  const lapsRef = useRef(0);
+  // Seed from the first-render value/goal (Fable W1-R1) — a page opened with
+  // e.g. 600 words already written must NOT celebrate laps completed in some
+  // earlier session; only a lap crossed DURING this mount should fire.
+  const lapsRef = useRef(goal > 0 ? Math.floor(value / goal) : 0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const laps = goal > 0 ? Math.floor(value / goal) : 0;

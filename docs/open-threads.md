@@ -1,4 +1,4 @@
-# Open threads — the studio ledger · 2026-07-11
+# Open threads — the studio ledger · 2026-07-12
 
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
@@ -12,8 +12,8 @@ outlive a session lives here, not in chat.
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
 2. **The consolidated hardware session** (after the deploy — deploy is now
-   live, J4 + J5 + S1 all). Six gates, one sitting; bugs → side chats,
-   verdicts → the ledger. Owner: Nick.
+   live, J4 + J5 + S1 all; W1 pending its own merge, see item 5). Seven
+   gates, one sitting; bugs → side chats, verdicts → the ledger. Owner: Nick.
    - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
      visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
      eraser tip — a finding, not a failure; the toggle is the path).
@@ -34,6 +34,12 @@ outlive a session lives here, not in chat.
    - S1 · S25 + desktop: typing rhythm, ghost legibility, autocomplete at
      thumb (S25); keyboard-map muscle memory, autocomplete at pointer
      precision (desktop). The Screenplay Room's first hardware pass.
+   - W1 · S25 + desktop: edge-dwell + 0.7s summon feel (deliberate reach vs
+     drive-by), typewriter window-scroll on the ink surface (stylus-down
+     judder; does Draft want it at all), progress caret + celebration read
+     (reward vs interruption; A4's reset-drain), ≥1700px rail-toggle page
+     stability (the actual bug W1 fixed), Workshop/Publish tabs behaving
+     sanely on a Page.
    - Plus: the formal stack word (VW's old merge condition, satisfied in
      practice; this session makes it official).
 
@@ -65,7 +71,7 @@ outlive a session lives here, not in chat.
 4. ~~**S1 — the element engine (the Screenplay Room).**~~ **DONE —
    2026-07-11.** Built per `docs/s1-script-editor-brief.md` on
    `s1-script-editor`, off post-J5 `main` — the S-arc's heavyweight, authorized
-   by `docs/fragments-under-pages-canon.md`'s ruling (item 7 below). The
+   by `docs/fragments-under-pages-canon.md`'s ruling (item 8 below). The
    substrate (`pageType:'script'`, one `script` jsonb column through both sync
    mappers), the birth paths, and the room itself — a house-native block
    editor, the frozen Enter/Tab keyboard map, full autocomplete chain, auto
@@ -90,19 +96,31 @@ outlive a session lives here, not in chat.
    gate items (typing rhythm, ghost legibility, autocomplete at
    pointer/thumb, keyboard-map muscle memory) join the consolidated hardware
    session (item 2) — Nick's device verdict closes the ticket.
+5. **W1 — writing-surface polish.** Built on `w1-writing-surface-polish`
+   (shared `WritingIncentives`/`useTypewriterFade` extraction, Journal
+   incentive-layer parity, page-is-primary metadata relocation, edge-dwell +
+   0.7s summon, fixed-track grid, Workshop/Publish tabs into PageEditor).
+   Fable's review: REQUIRED FIXES — 4 (`docs/w1-review-fable.md`), no
+   data-loss-class findings. R1–R3 folded (spurious mount celebration seed,
+   Journal progress-setting gate, window-scroll `data-scrolled` C2 fix); R4
+   ruled — Nick: ratify the `.vscode/settings.json` auto-approve expansion
+   in place, logged in the fix-batch commit. Merge waits on the delta
+   spot-check + Nick's word; device gates fold into item 2. Rode along in
+   the original push: `fe24918` (state-of-wrizo 2026-07 + logo set,
+   docs-only sweep).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
-5. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
+6. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
    "Your order"/Journal-only vocabulary ruling, and the J-arc verdicts.
    Trigger: Nick's session verdicts land.
-6. **F5 TTFK DoD-6 empirical close.** One small CC task: run the
+7. **F5 TTFK DoD-6 empirical close.** One small CC task: run the
    sessions_log queries against prod (non-null `surface` +
    `desk_opened_at` rows). Fold into the Rev 3 prep relay.
 
 ## POST-ARC QUEUE — unblocks when J5 ships + gates close
-7. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
+8. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
    (`docs/fragments-under-pages-canon.md`, convened on Nick's word — "let's
    get it built" — with a sequencing pull-forward). Names the pattern `Box`
    and `ScriptDoc` already share: one jsonb column per substrate family on
@@ -115,19 +133,31 @@ outlive a session lives here, not in chat.
    **S1 may proceed** (see item 4 above, now built). Closes this item;
    future structured pageTypes join by satisfying §2's checklist in their
    own brief's Slice 0, no new committee pass required.
-8. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
+9. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
    deferred until Journal UI surfaces existed; the Spread and the Board now
    exist. B4 intersects the Journal sprint reward surface (design together).
-9. **HOME verification remainder**: bighead art, sort-hint.
+10. **HOME verification remainder**: bighead art, sort-hint.
+11. **Page-is-primary committee pass** (`docs/page-primacy-committee-brief.md`,
+    logged 2026-07-11/12). Drawers/Shelf/Library are still full route
+    navigations that unmount the current writing surface — W1 only fixed the
+    in-ModeStage instance of the bug (the assist-rail layout shift). Needs
+    the Experts + Architects to rule overlay-vs-navigation and, if overlay,
+    the interaction model, before a build brief exists.
+12. **Progress-milestones committee pass**
+    (`docs/progress-milestones-committee-brief.md`, logged 2026-07-11/12).
+    The Words⟷Project progress-bar toggle (milestone circles per
+    chapter/scene) and extending the bar to Structure Board notecards, both
+    requested alongside W1's progress-bar redesign — needs a ruling on what
+    "chapter complete" means before it's buildable.
 
 ## HORIZON — no ticket yet, on the map
-10. **User-authored identity / rhizomatic personalization**: wordmark
+13. **User-authored identity / rhizomatic personalization**: wordmark
     replaceable with the writer's own hand; four launch themes (Plateau,
     Flux, Volant, Nomad); single hard invariant = the orange accent.
-11. **Reciprocity gate** for the future workshop feature (review before
+14. **Reciprocity gate** for the future workshop feature (review before
     submitting).
-12. **wrizo.app Cloudflare resolution** (domain plumbing).
-13. **USPTO "Wrizo" search** before significant brand investment (one
+15. **wrizo.app Cloudflare resolution** (domain plumbing).
+16. **USPTO "Wrizo" search** before significant brand investment (one
     low-threat prior use known: a throwaway utility on pi7.org).
 
 ## TOOLING STATUS — for any fresh session's orientation
@@ -138,6 +168,9 @@ outlive a session lives here, not in chat.
 - CC sessions launch FROM THE REPO ROOT (`writer-studio`) or the
   permissions allowlist doesn't govern.
 - AGENTS.md rules ratified 2026-07-11: harness scenarios persist as
-  committed artifacts; config changes propose-never-ship.
+  committed artifacts; config changes propose-never-ship (2026-07-12:
+  `.vscode/settings.json` auto-approve expansion ratified post-hoc as a W1
+  exception — see item 5 / `docs/w1-review-fable.md` R4; the rule stands
+  for future changes).
 - Per-ticket harness scripts exist from J4 forward (`scripts/harness/`);
   J3/VW predate the rule (no backfill).

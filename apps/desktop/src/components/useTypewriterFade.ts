@@ -55,8 +55,17 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     let animating = false;
 
     const setScrolled = () => {
-      const box = readBox(!!useWindowScroll, container);
-      scrolledEl.dataset.scrolled = box.scrollTop - box.top > 4 || (useWindowScroll && container.getBoundingClientRect().top < -4) ? 'true' : 'false';
+      // Window mode: gate on the SHEET's own top vs the viewport (has content
+      // actually scrolled past the fold?), not raw window.scrollY — a page
+      // can be scrolled a little (chrome above the sheet moving out of view)
+      // while the sheet's first line is still fully below the viewport top.
+      // Using window.scrollY there (Fable W1-R3) washed line 1 into paper on
+      // a short-but-scrolled page, violating C2. Container mode is unchanged:
+      // the scroll box's own scrollTop vs its top edge.
+      const scrolled = useWindowScroll
+        ? container.getBoundingClientRect().top < -4
+        : (() => { const box = readBox(false, container); return box.scrollTop - box.top > 4; })();
+      scrolledEl.dataset.scrolled = scrolled ? 'true' : 'false';
     };
     const lineHeight = () => {
       const ed = container.querySelector(editorSelector) as HTMLElement | null;

@@ -851,15 +851,23 @@ function JournalEntryView() {
       </div>
 
       {/* Incentive layer — progress bar + typewriter toggle. Authored pages
-          only; stays visible while writing (never carries chrome-fade). */}
+          only; stays visible while writing (never carries chrome-fade). The
+          bar honors the persisted Progress setting (Fable W1-R2) — a writer
+          who turned it off elsewhere has no gear on this route to undo it,
+          so the setting must be respected here too. Only Words applies on
+          the Journal (no session-timer readout on this surface); Time stays
+          ModeStage-only for now. The typewriter toggle is independent and
+          always shown regardless of the progress metric. */}
       {authored && (
         <div className="mode-incentive-row">
-          <ProgressBar
-            frac={lapFrac}
-            celebrating={celebrating}
-            label={`${words} word${words === 1 ? '' : 's'}`}
-            metricLabel="words"
-          />
+          {writingSettings.progress !== 'off' && (
+            <ProgressBar
+              frac={lapFrac}
+              celebrating={celebrating}
+              label={`${words} word${words === 1 ? '' : 's'}`}
+              metricLabel="words"
+            />
+          )}
           <TypewriterToggle on={writingSettings.typewriter} onToggle={() => setWritingSettings({ typewriter: !writingSettings.typewriter })} />
         </div>
       )}

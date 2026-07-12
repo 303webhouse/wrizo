@@ -1,5 +1,11 @@
 # J-arc execution runbook — for the fresh CC session
 
+> **EXECUTED IN FULL — 2026-07-11.** Steps 1–2 (J3 + VW merge/deploy), J4
+> build → review → merge → deploy, J5 build → review → merge → deploy all
+> closed; see `docs/open-threads.md` and `docs/backlog.md`. Kept for pattern
+> reference — the runbook proved the chat-independent execution model. The
+> ledger (`docs/open-threads.md`) is the living tracker now.
+
 **Place this file at:** `docs/j-arc-runbook.md` and commit it.
 **What this is:** the consolidated, chat-independent order of operations to
 take the arc from its current state (J3 + VW reviewed on branches, J4/J5
