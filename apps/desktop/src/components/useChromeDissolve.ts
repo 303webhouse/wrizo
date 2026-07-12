@@ -10,10 +10,13 @@ import { useWritingSession } from './WritingSession';
 //   • Return timing FIXED — after writing STOPS, wait 3 min, then fade the chrome
 //                           back in slowly over ~2 min. A thinking writer is not
 //                           nagged. (No Preview/Real toggle — that was a demo.)
-//   • Explicit summon     — rolling the cursor to the page EDGES, pressing Esc, or
-//                           tapping outside the text fades chrome back FAST (~0.4s)
-//                           and cancels the slow timer. Casual pointer movement
-//                           over the page does NOT summon — the menus never nag.
+//   • Explicit summon     — lingering at a page EDGE (a brief dwell, so a pointer
+//                           passing through doesn't count), pressing Esc, or
+//                           tapping outside the text fades chrome back gently
+//                           (~0.7s) and cancels the slow timer. Casual pointer
+//                           movement over the page does NOT summon — reaching
+//                           the chrome should take a little more deliberate
+//                           effort than just continuing to write.
 //
 // The engine drives WritingSession so the global header (App.tsx) recedes in step,
 // and writes `--fade-dur` onto the root so CSS can run the slow/fast curves. The
@@ -22,12 +25,17 @@ import { useWritingSession } from './WritingSession';
 const WAIT_MS = 180_000;      // 3-minute pause before chrome returns
 const FADE_IN_S = 120;        // ~2-minute slow return
 const FADE_OUT_S = 2.8;       // recede on write/draw — slow + near-imperceptible (was 1.2, felt abrupt on the Journal pen)
-const QUICK_S = 0.4;          // explicit-summon return
+const QUICK_S = 0.7;          // explicit-summon return — gentle, not a snap (was 0.4)
 const EDGE_PX = 56;           // reach this close to a viewport edge to summon
+const EDGE_DWELL_MS = 260;    // must linger at the edge this long — a deliberate reach, not a pass-through
 
 interface Options {
   surface?: string;                       // names the active surface in the session
-  rootRef?: React.RefObject<HTMLElement>;  // where --fade-dur is written (defaults to <html>)
+  // Where --fade-dur is written (defaults to <html>). Pass an array when the
+  // engine's own root (e.g. ModeStage's .mode-stage) doesn't cover chrome that
+  // lives OUTSIDE it in the DOM (e.g. PageEditor's top bar, a .mode-stage
+  // sibling) — every ref in the array gets the same value.
+  rootRef?: React.RefObject<HTMLElement> | React.RefObject<HTMLElement>[];
   editorSelector?: string;                 // a tap inside this is writing, not "tap outside"
 }
 
@@ -49,8 +57,11 @@ export function useChromeDissolve({
   const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setFadeDur = useCallback((seconds: number) => {
-    const el = rootRef?.current ?? document.documentElement;
-    el.style.setProperty('--fade-dur', `${seconds}s`);
+    const refs = Array.isArray(rootRef) ? rootRef : [rootRef];
+    const targets = refs.map(r => r?.current).filter((el): el is HTMLElement => !!el);
+    for (const el of targets.length ? targets : [document.documentElement]) {
+      el.style.setProperty('--fade-dur', `${seconds}s`);
+    }
   }, [rootRef]);
 
   const clearTimer = () => {
@@ -76,24 +87,37 @@ export function useChromeDissolve({
 
   // Explicit-summon signals. Deliberate reach only: a viewport edge, Esc, or a tap
   // outside the text. Casual movement over the page is ignored (the menus are
-  // never a procrastination surface mid-flow).
+  // never a procrastination surface mid-flow). Reaching an edge must LINGER
+  // (EDGE_DWELL_MS) before it counts — a pointer merely passing through on its
+  // way back to the text shouldn't summon anything; only pausing there (an
+  // actual intent to reach for the chrome) does. Esc and a deliberate tap
+  // outside the text are already unambiguous acts, so those stay instant.
   useEffect(() => {
-    const onMove = (e: PointerEvent) => {
-      if (!dissolvedRef.current) return;
-      if (e.clientX <= EDGE_PX || e.clientX >= window.innerWidth - EDGE_PX || e.clientY <= EDGE_PX) {
-        resurface(true);
-      }
+    let dwellTimer: ReturnType<typeof setTimeout> | null = null;
+    let inZone = false;
+    const clearDwell = () => {
+      if (dwellTimer) { clearTimeout(dwellTimer); dwellTimer = null; }
+      inZone = false;
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') resurface(true); };
+    const onMove = (e: PointerEvent) => {
+      if (!dissolvedRef.current) { clearDwell(); return; }
+      const atEdge = e.clientX <= EDGE_PX || e.clientX >= window.innerWidth - EDGE_PX || e.clientY <= EDGE_PX;
+      if (!atEdge) { clearDwell(); return; }
+      if (inZone) return; // already lingering — dwell timer running
+      inZone = true;
+      dwellTimer = setTimeout(() => { dwellTimer = null; resurface(true); }, EDGE_DWELL_MS);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { clearDwell(); resurface(true); } };
     const onDown = (e: PointerEvent) => {
       if (!dissolvedRef.current) return;
       const t = e.target as Element | null;
-      if (!t || !t.closest || !t.closest(editorSelector)) resurface(true); // deliberate tap off the text
+      if (!t || !t.closest || !t.closest(editorSelector)) { clearDwell(); resurface(true); } // deliberate tap off the text
     };
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointerdown', onDown, true);
     return () => {
+      clearDwell();
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('pointerdown', onDown, true);

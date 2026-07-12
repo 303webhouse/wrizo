@@ -110,6 +110,7 @@ export function QuickSprint() {
   const [receded, setReceded] = useState(false);
 
   const surfaceRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const ambientRef = useRef<AmbientHandle | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const draftTextRef = useRef(draftText);
@@ -369,7 +370,7 @@ export function QuickSprint() {
   const modeLabel = mode === 'drafting' ? 'Draft' : 'Free write';
 
   return (
-    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
+    <div ref={pageRef} className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
       {/* Navigation layer — breadcrumb · mode tabs · Pages/Plan · actions. Recedes
           on write (edge / Esc / tap-off summons it back). */}
       <div className="chrome-fade chrome-top sprint-nav">
@@ -443,6 +444,7 @@ export function QuickSprint() {
         onDissolveChange={setReceded}
         soundOn={soundOn}
         onToggleSound={() => setSoundOn(v => !v)}
+        chromeRootRef={pageRef}
       >
         {({ noteWrite, penColor }) => (
           <ForwardOnlyEditor

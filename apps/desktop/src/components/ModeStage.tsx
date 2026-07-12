@@ -5,6 +5,8 @@ import { useWritingSettings, setWritingSettings } from '../store/writingSettings
 import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
+import { useTypewriterFade } from './useTypewriterFade';
+import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -27,10 +29,7 @@ const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel stat
 // current pen ink. The dissolve engine also drives WritingSession, so the global
 // header recedes in step; `onDissolveChange` lets the host fade its own top bar.
 
-const WORD_GOAL = 250;
-const TIME_GOAL_MS = 25 * 60 * 1000;
 const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, blue
-const TYPEWRITER_BAND = 0.73; // hold the active line low (~73%) so ~2 more lines of context stay visible (B2 C1)
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
@@ -49,18 +48,27 @@ interface Props {
   onDissolveChange?: (dissolved: boolean) => void;
   soundOn?: boolean;              // ambient sound bed state (host owns it); absent → no mic shown
   onToggleSound?: () => void;     // toggling shows the mic in the gear cluster
+  // The host's own top bar (PageEditor's/QuickSprint's breadcrumb + mode tabs
+  // row) is a SIBLING of .mode-stage in the DOM, not a descendant — pass its
+  // ref so --fade-dur reaches it too and its .chrome-fade transition runs on
+  // the same context-aware curve as the rest of this surface's chrome.
+  chromeRootRef?: React.RefObject<HTMLElement>;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, soundOn, onToggleSound, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, soundOn, onToggleSound, chromeRootRef, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
-  // Typewriter engages ONLY in Free Write (Journal) — the line-hold helps
-  // generation but fights revision, so it's never on in Draft/Format. The gear
-  // toggle is the Free-Write preference (default on).
-  const typewriterOn = mode === 'journal' && settings.typewriter;
-  const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({ surface: 'sprint', rootRef: stageRef });
+  // Typewriter engages in Free Write and Draft (writing postures) — never in
+  // Format/Workshop/Publish (convention/delivery, revision-shaped work the
+  // hold would fight). Gated by the persisted setting AND the bottom-right
+  // icon, both toggling the same value.
+  const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
+    surface: 'sprint',
+    rootRef: chromeRootRef ? [stageRef, chromeRootRef] : stageRef,
+  });
 
   const firstWriteRef = useRef<number | null>(null);
   const noteWrite = useCallback(() => {
@@ -75,12 +83,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
 
   // B5 — in-document pagination. A page is the SHEET HEIGHT (not a line count, so
   // it survives the type scale): when the editor's content overflows the sheet,
-  // flip to a fresh one with a page-turn (animation + soft sound) and the progress
-  // bar resets with a small reward. `pageFill` (height fraction of the current
-  // sheet) drives the bar; `pageNum` is the current sheet (0-based).
+  // flip to a fresh one with a page-turn (animation + soft sound). `pageNum` is
+  // the current sheet (0-based), shown as "p.N" beside the progress bar. The bar
+  // itself no longer tracks page fill — it's the word/time goal lap (see
+  // WritingIncentives.tsx); a page turn and a goal-lap completion are
+  // independent rewards now.
   const [pageNum, setPageNum] = useState(0);
-  const [pageFill, setPageFill] = useState(0);
-  const [rewarded, setRewarded] = useState(false);
   const pageNumRef = useRef(0);
   const soundOnRef = useRef(soundOn);
   soundOnRef.current = soundOn;
@@ -132,89 +140,16 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
     return () => clearInterval(i);
   }, [settings.progress, settings.timer]);
 
-  // Typewriter fade (B2): hold the active line low in the scroll viewport so
-  // earlier lines ride up through the top gradient and fade. Driven by a mutation
-  // observer (covers typing, strikes, IME, free edits) + input, on a rAF.
-  //   • C2 — the top fade only applies once content has actually scrolled past
-  //     (data-scrolled): on a fresh/short page the active line sits above the band,
-  //     so nothing scrolls and line 1 stays full opacity.
-  //   • C3 — a line advance gets a small upward jolt + overshoot-and-settle (a hint
-  //     of mechanical paper-feed), not a smooth glide; honors reduced-motion.
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el || !typewriterOn) return;
-    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let raf = 0;
-    let joltRaf = 0;
-    let animating = false;
-    const setScrolled = () => { el.dataset.scrolled = el.scrollTop > 4 ? 'true' : 'false'; };
-    const lineHeight = () => {
-      const ed = el.querySelector('.forward-only-editor') as HTMLElement | null;
-      return ed ? (parseFloat(getComputedStyle(ed).lineHeight) || 28) : 28;
-    };
-    // C3: quick jolt to `target` — overshoot a few px, then settle.
-    const jolt = (target: number) => {
-      animating = true;
-      const start = el.scrollTop;
-      const over = Math.min(7, Math.abs(target - start) * 0.3);
-      const t0 = performance.now();
-      const dur = 130;
-      cancelAnimationFrame(joltRaf);
-      const tick = (t: number) => {
-        const p = Math.min(1, (t - t0) / dur);
-        const pos = p < 0.6
-          ? start + (target + over - start) * (p / 0.6)         // ride up past the mark
-          : (target + over) + (target - (target + over)) * ((p - 0.6) / 0.4); // settle back
-        el.scrollTop = pos;
-        setScrolled();
-        if (p < 1) { joltRaf = requestAnimationFrame(tick); }
-        else { el.scrollTop = target; setScrolled(); animating = false; }
-      };
-      joltRaf = requestAnimationFrame(tick);
-    };
-    const band = () => {
-      if (animating) return;
-      const ed = el.querySelector('.forward-only-editor') as HTMLElement | null;
-      let caretBottom: number | null = null;
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount && ed && sel.anchorNode && ed.contains(sel.anchorNode)) {
-        const rects = sel.getRangeAt(0).getClientRects();
-        const r = rects[rects.length - 1];
-        if (r && r.height) caretBottom = r.bottom;
-      }
-      if (caretBottom === null && ed) {
-        const last = ed.lastElementChild as HTMLElement | null;
-        caretBottom = (last ?? ed).getBoundingClientRect().bottom;
-      }
-      if (caretBottom === null) return;
-      const within = caretBottom - el.getBoundingClientRect().top;
-      const delta = within - el.clientHeight * TYPEWRITER_BAND;
-      // Caret above the band (fresh/short page): don't scroll, don't fade (C2).
-      if (delta <= 1) { setScrolled(); return; }
-      const target = el.scrollTop + delta;
-      if (!reduce && delta >= lineHeight() * 0.5) jolt(target);
-      else { el.scrollTop = target; setScrolled(); }
-    };
-    const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(band); };
-    const mo = new MutationObserver(schedule);
-    mo.observe(el, { childList: true, subtree: true, characterData: true });
-    el.addEventListener('input', schedule);
-    el.addEventListener('scroll', setScrolled, { passive: true });
-    setScrolled();
-    schedule();
-    return () => {
-      mo.disconnect();
-      el.removeEventListener('input', schedule);
-      el.removeEventListener('scroll', setScrolled);
-      cancelAnimationFrame(raf);
-      cancelAnimationFrame(joltRaf);
-    };
-  }, [typewriterOn]);
+  // Typewriter fade (B2, shared engine — see useTypewriterFade.ts): hold the
+  // active line low in the scroll viewport so earlier lines ride up through
+  // the top gradient and fade, with a subtle jolt on line advance. C2/C3 live
+  // in the shared hook now; JournalEntry uses the same engine (window-scroll
+  // variant) for parity across the app's two writing surfaces.
+  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor' });
 
   // Pagination: watch the editor's content height against the sheet height. On
-  // crossing a sheet boundary, flip (page-turn animation + soft sound) and reward
-  // the progress bar (it resets via the page-fill fraction). Height-based, so the
-  // boundary always matches the visible sheet at any type scale.
+  // crossing a sheet boundary, flip (page-turn animation + soft sound). Height-
+  // based, so the boundary always matches the visible sheet at any type scale.
   useEffect(() => {
     const scroll = scrollRef.current;
     if (!scroll) return;
@@ -229,8 +164,6 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         setTimeout(() => pageEl.classList.remove('flipping'), 600);
       }
       if (soundOnRef.current && !reduce) playPageTurn();
-      setRewarded(true);
-      setTimeout(() => setRewarded(false), 650);
     };
     const measure = () => {
       const ed = scroll.querySelector('.forward-only-editor') as HTMLElement | null;
@@ -238,7 +171,6 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       const sheet = scroll.clientHeight || 1;
       const content = ed.scrollHeight;
       const page = Math.floor(content / sheet);
-      setPageFill(content < sheet ? content / sheet : (content % sheet) / sheet);
       if (page !== pageNumRef.current) {
         const turned = page > pageNumRef.current;
         pageNumRef.current = page;
@@ -254,19 +186,24 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
     return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); cancelAnimationFrame(raf); };
   }, []);
 
-  // Progress + eased glow.
-  const wordsFrac = Math.min(1, words / WORD_GOAL);
-  let displayFrac = wordsFrac;
-  let label = `${words} word${words === 1 ? '' : 's'}`;
-  let metricLabel = 'words';
+  // Glow warmth: cumulative for the session (never resets), eased so early
+  // words give visible warmth. The progress BAR below is a repeating lap
+  // instead — it fills, celebrates, and resets every WORD_GOAL/TIME_GOAL_MS.
+  const elapsedForGoal = firstWriteRef.current ? Date.now() - firstWriteRef.current : 0;
+  const goalValue = settings.progress === 'time' ? elapsedForGoal : words;
+  const goalTarget = settings.progress === 'time' ? TIME_GOAL_MS : WORD_GOAL;
+  const m = Math.pow(Math.min(1, goalValue / goalTarget), 0.55);
+  const { frac: lapFrac, celebrating } = useGoalProgress(goalValue, goalTarget);
+  let label: string;
+  let metricLabel: string;
   if (settings.progress === 'time') {
-    const t = firstWriteRef.current ? Date.now() - firstWriteRef.current : 0;
-    displayFrac = Math.min(1, t / TIME_GOAL_MS);
-    const s = Math.floor(t / 1000);
+    const s = Math.floor(elapsedForGoal / 1000);
     label = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     metricLabel = 'session';
+  } else {
+    label = `${words} word${words === 1 ? '' : 's'}`;
+    metricLabel = 'words';
   }
-  const m = Math.pow(displayFrac, 0.55);
 
   // Opt-in session timer (incentive layer): elapsed since the first keystroke.
   const elapsedMs = firstWriteRef.current ? Date.now() - firstWriteRef.current : 0;
@@ -278,7 +215,6 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   const choosePen = (ink: string) => { setPen(ink); focusEditor(); };
 
   const rail = RAILS[mode];
-  const stageStyle = { ['--m' as string]: m.toFixed(3) } as React.CSSProperties;
 
   return (
     <div
@@ -286,13 +222,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       className="mode-stage"
       data-writing={dissolved ? 'true' : 'false'}
       data-fade={settings.fadeDepth}
-      style={stageStyle}
     >
       {/* Always-discoverable reveal handle (top-left ember dot). */}
       <ChromeHandle onReveal={() => resurface(true)} />
 
       {/* Ambient ember — blooms as the rails dissolve; eased with progress. */}
-      <div aria-hidden="true" className="mode-glow" />
+      <AmbientGlow m={m} />
 
       {/* Top-right chrome cluster: the sound toggle (if the host owns sound) +
           the settings gear — one-color tan glyphs, matched in size. */}
@@ -381,23 +316,28 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             <div className="mode-wordcount mode-dissolve">{words} words</div>
           </div>
 
-          {/* Incentive layer — progress bar + optional session timer. Stays
-              visible while writing (never carries the dissolve class). */}
-          {(settings.progress !== 'off' || settings.timer) && (
-            <div className="mode-progress">
-              {settings.progress !== 'off' && (
-                <div className="mode-ptrack"><div className={`mode-pfill${rewarded ? ' rewarded' : ''}`} style={{ width: `${(pageFill * 100).toFixed(1)}%` }} /></div>
-              )}
-              <div className="mode-pmeta">
-                <span>{settings.progress !== 'off' ? label : ''}</span>
-                <span className="mode-pmetric">
+          {/* Incentive layer — progress bar (a repeating lap toward the word/
+              time goal; celebrates + resets on completion) + optional session
+              timer + the typewriter toggle. Stays visible while writing
+              (never carries the dissolve class). */}
+          <div className="mode-incentive-row">
+            {(settings.progress !== 'off' || settings.timer) && (
+              <ProgressBar
+                frac={lapFrac}
+                celebrating={celebrating}
+                label={label}
+                metricLabel={metricLabel}
+                hidden={settings.progress === 'off'}
+                rightSlot={<>
                   {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
                   {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
-                  {settings.progress !== 'off' && <span>{metricLabel}</span>}
-                </span>
-              </div>
-            </div>
-          )}
+                </>}
+              />
+            )}
+            {(mode === 'journal' || mode === 'drafting') && (
+              <TypewriterToggle on={settings.typewriter} onToggle={() => setWritingSettings({ typewriter: !settings.typewriter })} />
+            )}
+          </div>
         </div>
 
         {/* RIGHT rail — AI frame. Sealed in Journal; open elsewhere. */}

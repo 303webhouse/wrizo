@@ -13,6 +13,9 @@ import { ChromeHandle } from '../components/WritingShell';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { AddToSheet } from '../components/AddToSheet';
 import { useActionToast } from '../components/ActionToast';
+import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL } from '../components/WritingIncentives';
+import { useTypewriterFade } from '../components/useTypewriterFade';
+import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -41,6 +44,11 @@ function appendScrap(existing: string, entryText: string): string {
 
 function routedTitle(text: string): string {
   return firstLine(text).slice(0, 80);
+}
+
+function wordCount(text: string): number {
+  const t = text.trim();
+  return t ? t.split(/\s+/).length : 0;
 }
 
 // --- ink layer (J9) -------------------------------------------------------
@@ -159,6 +167,18 @@ function JournalEntryView() {
   const invite = useFirstLineInvite(() => authoredRef.current && pageTextRef.current.length === 0 && strokesRef.current.length === 0);
   const inviteDismissRef = useRef<() => void>(() => {});
   inviteDismissRef.current = invite.dismiss;
+
+  // Incentive layer (glow + progress bar + typewriter) — brought to parity with
+  // the mode-aware editor (ModeStage). Authored pages only; a read-only capture
+  // is a finished artifact, not a writing session in progress. `words` is a
+  // real state (not just the ref) so the bar/glow re-render live as you type.
+  const writingSettings = useWritingSettings();
+  const [words, setWords] = useState(() => wordCount(pageTextRef.current));
+  const authored = authoredRef.current;
+  const glowM = Math.pow(Math.min(1, words / WORD_GOAL), 0.55);
+  const { frac: lapFrac, celebrating } = useGoalProgress(words, WORD_GOAL);
+  const typewriterOn = authored && writingSettings.typewriter;
+  useTypewriterFade({ enabled: typewriterOn, containerRef: sheetRef, editorSelector: '.entry-edit', useWindowScroll: true });
 
   // J1 — walk the notebook with the ← / → keys (loose pages only), NEVER while an
   // editable has focus or mid-IME (the F3 shortcut-guard pattern). Self-contained
@@ -449,6 +469,7 @@ function JournalEntryView() {
       sel.removeAllRanges();
       sel.addRange(range);
       pageTextRef.current = el.innerText;
+      setWords(wordCount(el.innerText));
       touchedRef.current = true;
       scheduleSave();
     };
@@ -501,6 +522,7 @@ function JournalEntryView() {
     };
     const onInput = () => {
       pageTextRef.current = el.innerText;
+      setWords(wordCount(el.innerText));
       touchedRef.current = true;
       noteWriteRef.current(); // recede the chrome on write
       warmReleaseRef.current(); // release the warm-start glow on the first forward keystroke
@@ -568,7 +590,6 @@ function JournalEntryView() {
   // filed pages stay here (ink preservation is load-bearing).
   if (entry.pageType != null) return <Navigate to={`/page/${entry.id}`} replace />;
 
-  const authored = entry.source === 'page';
   const projects = getProjects();
   const routedIds = entry.routedProjectIds ?? [];
 
@@ -644,6 +665,7 @@ function JournalEntryView() {
       }
     } else {
       pageTextRef.current = la.before;
+      setWords(wordCount(la.before));
       const el = editRef.current;
       if (el) { el.innerText = la.before; placeCaretEnd(el); }
       const latest = getJournalEntry(entry.id);
@@ -659,57 +681,35 @@ function JournalEntryView() {
   return (
     <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
       <ChromeHandle onReveal={() => resurface(true)} />
-      <Link to="/journal" className="btn-quiet chrome-fade" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
 
-      {/* J1 — walk the notebook (loose pages only). The arrows live in the chrome
-          layer, so they dissolve + summon with everything else. The forward arrow
-          becomes "+" at the end (append + open); "+ insert" drops a page between
-          this one and the next. */}
-      {isLoose && (
-        <nav className="journal-nav chrome-fade" aria-label="Journal">
-          <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
-            onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
-          <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
-          {nextPage ? (
-            <button type="button" className="journal-nav-btn" aria-label="Next page"
-              onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
-          ) : (
-            <button type="button" className="journal-nav-btn journal-nav-add" aria-label="New page at the end"
-              onClick={() => openLoose()}>+</button>
-          )}
-          {nextPage && (
-            <button type="button" className="journal-nav-insert" aria-label="Insert a page here"
-              onClick={() => openLoose(entry.id)}>+ insert</button>
-          )}
-        </nav>
-      )}
-
-      <div className="chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
-          {formatStamp(entry.createdAt)}{authored ? ' · a page' : ''}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
-          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the page text">Copy page text</button>
-          {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
-          {isLoose && (
-            <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>
-          )}
-          {/* J5 Slice 2/3 — "Add to…", single-page flow. Loose pages only. */}
-          {isLoose && (
-            <button type="button" className="btn-quiet entry-add" onClick={() => setAddOpen(true)}>Add to…</button>
-          )}
-          <button
-            type="button"
-            className="btn-quiet entry-star"
-            data-starred={entry.starred ? 'true' : 'false'}
-            aria-pressed={!!entry.starred}
-            onClick={toggleStar}
-            style={{ color: entry.starred ? 'var(--brass)' : 'var(--text-low)' }}
-          >
-            {entry.starred ? '★ Starred' : '☆ Star'}
-          </button>
-        </div>
+      {/* PAGE IS PRIMARY: only wayfinding (back / notebook paging) and the
+          document-type tabs sit above the writing surface. Everything about
+          THIS document — timestamp, actions, star, tags, routing, autosave
+          status — lives below the surface now (see the metadata cluster near
+          the end of this component). */}
+      <div className="journal-top chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
+        <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
+        {/* J1 — walk the notebook (loose pages only). The forward arrow becomes
+            "+" at the end (append + open); "+ insert" drops a page between this
+            one and the next. */}
+        {isLoose && (
+          <nav className="journal-nav" aria-label="Journal">
+            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
+              onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
+            <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
+            {nextPage ? (
+              <button type="button" className="journal-nav-btn" aria-label="Next page"
+                onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
+            ) : (
+              <button type="button" className="journal-nav-btn journal-nav-add" aria-label="New page at the end"
+                onClick={() => openLoose()}>+</button>
+            )}
+            {nextPage && (
+              <button type="button" className="journal-nav-insert" aria-label="Insert a page here"
+                onClick={() => openLoose(entry.id)}>+ insert</button>
+            )}
+          </nav>
+        )}
       </div>
 
       {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the
@@ -735,28 +735,29 @@ function JournalEntryView() {
               <button type="button" className="btn-quiet" onClick={() => { setPageHome(entry.id, 'shelf'); navigate('/shelf'); }}>Send to the Shelf</button>
             </div>
           )}
-          <div className="journal-autosave-note">Saved automatically — even if you never file it to a Drawer or the Shelf.</div>
         </div>
       )}
 
-      <h1 className="chrome-fade" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 24, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '8px 0 16px' }}>
-        {textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100)}
-      </h1>
-
-      {routedNames.length > 0 && (
-        <div className="entry-routed chrome-fade" style={{ color: 'var(--text-mid)', fontSize: 13, marginBottom: 16 }}>
-          Routed to {routedNames.join(', ')}.
-        </div>
-      )}
-
-      <div
-        ref={sheetRef}
-        className="paper-page entry-full"
-        style={{
-          position: 'relative', maxWidth: '68ch', minHeight: '60vh', whiteSpace: 'pre-wrap', touchAction: 'pan-y',
-          color: 'var(--ink-on-paper)', fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
-        }}
-      >
+      {/* THE WRITING SURFACE — primary, prominent, centered. The ambient glow
+          sits behind it (authored pages only — a read-only capture isn't a
+          session in progress). */}
+      <div style={{ position: 'relative' }}>
+        {authored && <AmbientGlow m={glowM} />}
+        <div
+          ref={sheetRef}
+          className="paper-page entry-full"
+          data-typewriter={typewriterOn ? 'true' : 'false'}
+          style={{
+            position: 'relative', maxWidth: '68ch', minHeight: '60vh', whiteSpace: 'pre-wrap', touchAction: 'pan-y',
+            color: 'var(--ink-on-paper)', fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
+          }}
+        >
+        {/* Typewriter fade (B2, window-scroll variant — see useTypewriterFade.ts).
+            A sticky gradient pinned to the viewport top, opacity gated by
+            data-scrolled (set on this sheet) so a fresh/short page's first line
+            stays full opacity (C2). Purely visual; the actual hold/jolt
+            auto-scroll is the hook above. */}
+        {typewriterOn && <div aria-hidden="true" className="entry-typewriter-fade" />}
         {/* On an authored page the text is an editable plaintext sheet, matching
             the read view's metrics exactly so the ink canvas stays aligned. On a
             capture it stays read-only text (J9). The contenteditable is set/read
@@ -846,7 +847,67 @@ function JournalEntryView() {
             ↺
           </button>
         )}
+        </div>
       </div>
+
+      {/* Incentive layer — progress bar + typewriter toggle. Authored pages
+          only; stays visible while writing (never carries chrome-fade). */}
+      {authored && (
+        <div className="mode-incentive-row">
+          <ProgressBar
+            frac={lapFrac}
+            celebrating={celebrating}
+            label={`${words} word${words === 1 ? '' : 's'}`}
+            metricLabel="words"
+          />
+          <TypewriterToggle on={writingSettings.typewriter} onToggle={() => setWritingSettings({ typewriter: !writingSettings.typewriter })} />
+        </div>
+      )}
+
+      {/* Everything about THIS document — moved below the writing surface per
+          the page-is-primary rule. Title, timestamp, actions, star, routing
+          status, tags, the routing action, and the autosave note. */}
+      <h1 className="chrome-fade" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 22, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '24px 0 14px' }}>
+        {textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100)}
+      </h1>
+
+      <div className="chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div className="eyebrow" style={{ fontFamily: 'var(--font-mono)' }}>
+          {formatStamp(entry.createdAt)}{authored ? ' · a page' : ''}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
+          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the page text">Copy page text</button>
+          {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
+          {isLoose && (
+            <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>
+          )}
+          {/* J5 Slice 2/3 — "Add to…", single-page flow. Loose pages only. */}
+          {isLoose && (
+            <button type="button" className="btn-quiet entry-add" onClick={() => setAddOpen(true)}>Add to…</button>
+          )}
+          <button
+            type="button"
+            className="btn-quiet entry-star"
+            data-starred={entry.starred ? 'true' : 'false'}
+            aria-pressed={!!entry.starred}
+            onClick={toggleStar}
+            style={{ color: entry.starred ? 'var(--brass)' : 'var(--text-low)' }}
+          >
+            {entry.starred ? '★ Starred' : '☆ Star'}
+          </button>
+        </div>
+      </div>
+
+      {entry.projectId == null && (
+        <div className="journal-autosave-note chrome-fade">Saved automatically — even if you never file it to a Drawer or the Shelf.</div>
+      )}
+
+      {routedNames.length > 0 && (
+        <div className="entry-routed chrome-fade" style={{ color: 'var(--text-mid)', fontSize: 13, marginTop: 16 }}>
+          Routed to {routedNames.join(', ')}.
+        </div>
+      )}
 
       {/* Tags (J6): retroactive, free-text, optional. */}
       <div className="entry-tags chrome-fade" style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>

@@ -1,5 +1,18 @@
 {
     "chat.tools.terminal.autoApprove": {
-        "pnpm": true
+        "pnpm": true,
+        "git status": true,
+        "git log": true,
+        "git diff": true,
+        "git show": true,
+        "git branch": true,
+        "git rev-parse": true,
+        "grep": true,
+        "ls": true,
+        "cat": true,
+        "head": true,
+        "tail": true,
+        "wc": true,
+        "tsc": true
     }
 }

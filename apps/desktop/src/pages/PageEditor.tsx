@@ -50,12 +50,14 @@ function PageEditorView({ id }: { id: string }) {
   const [modeSeed, setModeSeed] = useState(initialText);
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
 
   const textRef = useRef(text);
   textRef.current = text;
   const lastSavedRef = useRef(initialText);
   const editorRef = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
 
   // Warm start (F2) — captured once at mount (the hook strips the one-shot state).
   const location = useLocation();
@@ -117,7 +119,7 @@ function PageEditorView({ id }: { id: string }) {
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
   return (
-    <div className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
+    <div ref={pageRef} className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
       <div className="chrome-fade chrome-top sprint-nav">
         <div className="sprint-crumb" aria-label="Location">
           {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
@@ -126,7 +128,14 @@ function PageEditorView({ id }: { id: string }) {
           {entry.importedAt && <span className="page-imported-tag" title="Imported into this binder">Imported</span>}
         </div>
 
-        <ModeSwitcher mode={mode} onSwitch={switchMode} />
+        <ModeSwitcher
+          mode={mode}
+          onSwitch={switchMode}
+          actions={[
+            { label: 'Workshop', sub: 'coming soon', deferred: true },
+            { label: 'Publish', sub: 'export', onClick: () => setShowPublish(true) },
+          ]}
+        />
 
         <div className="sprint-actions">
           {project && (
@@ -148,6 +157,7 @@ function PageEditorView({ id }: { id: string }) {
         surfaceRef={surfaceRef}
         focused={focused}
         onDissolveChange={setReceded}
+        chromeRootRef={pageRef}
       >
         {({ noteWrite, penColor }) => (
           <div ref={warmWrapRef} style={{ position: 'relative', width: '100%', minHeight: '100%' }}>
@@ -180,6 +190,19 @@ function PageEditorView({ id }: { id: string }) {
           </div>
         )}
       </ModeStage>
+
+      {/* Publish — stub dialog (options tailored to type/destination/format later). */}
+      {showPublish && (
+        <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
+          <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
+            <div className="card-title">Publish</div>
+            <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
+              Publishing options — tailored to this work's type, destination, and format — are coming soon.
+            </p>
+            <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
