@@ -15,6 +15,7 @@ import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage } from '../components/ModeStage';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
+import { milestonesForProject } from '../store/milestones';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -53,6 +54,10 @@ function QuickSprintView() {
   const framework = plan ? getFramework(plan.frameworkId) : null;
   const currentBeat = framework?.beats.find(b => b.id === plan?.currentBeatId) || null;
   const currentBeatNote = plan?.beatNotes.find(bn => bn.beatId === plan?.currentBeatId) || null;
+  // M1 — a sprint has no page/beatId of its own yet (it isn't a JournalEntry
+  // until Finished), so it anchors on the plan's currentBeatId directly,
+  // rather than PageEditor's entry.beatId path.
+  const milestones = id ? milestonesForProject(id, currentBeat?.id ?? null) : null;
 
   const [isFinishing, setIsFinishing] = useState(false);
   const [finishStats, setFinishStats] = useState<FinishStats | null>(null);
@@ -460,6 +465,7 @@ function QuickSprintView() {
         soundOn={soundOn}
         onToggleSound={() => setSoundOn(v => !v)}
         chromeRootRef={pageRef}
+        milestones={milestones}
       >
         {({ noteWrite, penColor }) => (
           <ForwardOnlyEditor
@@ -572,5 +578,11 @@ function QuickSprintView() {
 // other writing surface already relies on.
 export function QuickSprint() {
   const { id } = useParams<{ id: string }>();
+  // key={id ?? 'scratch'} here is only equivalent to key={draftId} (computed
+  // inside QuickSprintView, not here) because draftId is CURRENTLY a pure
+  // function of id alone (`const draftId = id ?? 'scratch';`) — no other
+  // input. If draftId's derivation ever changes to depend on anything else,
+  // this key must be updated to match, or the exact identity-mismatch this
+  // key exists to prevent can resurface in a new form.
   return <QuickSprintView key={id ?? 'scratch'} />;
 }

@@ -14,7 +14,13 @@ import { useEffect, useState } from 'react';
 // Return timing (3-min wait / 2-min slow fade-in) is FIXED product behaviour, not
 // a setting — the prototype's Preview/Real toggle was a demo affordance, not shipped.
 
-export type ProgressMetric = 'words' | 'time' | 'off';
+// M1 — 'project' (the milestone circle-bar) joins the axis. Offered in the
+// gear only when the current page belongs to a project with a StoryPlan
+// (docs/progress-milestones-canon.md, Q3); on any other page this setting
+// silently degrades to 'words' at render time — no greyed states, and the
+// stored value itself is untouched (so it "comes back" the next time the
+// writer is on a plan-linked page).
+export type ProgressMetric = 'words' | 'time' | 'project' | 'off';
 export type FadeDepth = 'partial' | 'full';
 
 export interface WritingSettings {

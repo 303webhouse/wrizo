@@ -466,6 +466,13 @@ h1, h2, h3 {
   background: linear-gradient(to top, var(--brass) 50%, transparent 50%);
 }
 .status-dot--done { background: var(--sage); }
+/* M1 — the same celebration grammar as the writing-surface circle-bar (one
+   grammar app-wide, per the canon), reusing pfill-celebrate verbatim: a
+   brief brass pulse marks the moment of completion, independent of the
+   dot's own resting color (sage for "done" here). Applied only on a
+   transition to done DURING the session — never on mount (the W1-R1 law). */
+.status-dot.celebrate { animation: pfill-celebrate 1.1s ease; }
+@media (prefers-reduced-motion: reduce) { .status-dot.celebrate { animation: none; } }
 
 /* Brass progress line that draws itself (Beat rail, Project Home). */
 .ink-line {
@@ -1320,6 +1327,26 @@ a:focus-visible,
   color:var(--text-low); letter-spacing:.3px; }
 .mode-pmetric{ display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
 .mode-pagenum{ color:var(--brass-press); font-family:var(--font-mono); letter-spacing:.3px; }
+
+/* M1 — the milestone circle-bar (Progress: Project). A read-only projection
+   of Plan beat coverage — empty ring / kindled (ring + brass center dot,
+   the progress-caret vocabulary reused) / lit (solid brass), with the SAME
+   pfill-celebrate pulse on the transition into lit (one celebration grammar
+   app-wide, reused verbatim, not a derived duplicate). pointer-events:none
+   is set inline (an invariant, not a style) — no tap-navigate from a writing
+   surface. `.windowed` edge-fades both sides: a centered window can truncate
+   on either end. */
+.mode-milestones{ display:flex; align-items:center; gap:6px; flex:1; min-width:0; overflow:hidden; padding:2px 0; }
+.mode-milestones.windowed{
+  -webkit-mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+          mask-image:linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%); }
+.mode-milestone{ position:relative; width:10px; height:10px; border-radius:50%; flex-shrink:0;
+  border:1.5px solid var(--ink-border-strong); background:transparent;
+  transition:background .3s ease, border-color .3s ease; }
+.mode-milestone--kindled::after{ content:''; position:absolute; inset:2.5px; border-radius:50%; background:var(--brass); }
+.mode-milestone--lit{ background:var(--brass); border-color:var(--brass); }
+.mode-milestone.celebrate{ animation:pfill-celebrate 1.1s ease; }
+@media (prefers-reduced-motion:reduce){ .mode-milestone.celebrate{ animation:none; } }
 
 /* Bottom-right typewriter toggle — an always-clickable incentive-layer icon
    button beside the progress bar, alongside the gear setting. */

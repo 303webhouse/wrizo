@@ -6,7 +6,8 @@ import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
 import { useTypewriterFade } from './useTypewriterFade';
-import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
+import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
+import type { Milestones } from '../store/milestones';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -53,10 +54,16 @@ interface Props {
   // ref so --fade-dur reaches it too and its .chrome-fade transition runs on
   // the same context-aware curve as the rest of this surface's chrome.
   chromeRootRef?: React.RefObject<HTMLElement>;
+  // M1 — the host's own precomputed milestone projection (store/milestones.ts
+  // is pure and needs the page/project context ModeStage doesn't have).
+  // null/undefined = no plan to project (Journal never has one; a plan-less
+  // project silently degrades the gear's Progress:Project option away — no
+  // greyed states).
+  milestones?: Milestones | null;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, soundOn, onToggleSound, chromeRootRef, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, soundOn, onToggleSound, chromeRootRef, milestones, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -205,6 +212,14 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
     metricLabel = 'words';
   }
 
+  // M1 — Progress:Project shows the milestone circle-bar in place of the
+  // word/time lap bar. Silent degrade (no greyed states): 'project' with no
+  // milestones to project (a plan-less project, or milestones not passed at
+  // all) renders as if 'words' were selected — the stored setting itself is
+  // untouched.
+  const showMilestones = settings.progress === 'project' && !!milestones && milestones.beats.length > 0;
+  const effectiveProgress = settings.progress === 'project' && !showMilestones ? 'words' : settings.progress;
+
   // Opt-in session timer (incentive layer): elapsed since the first keystroke.
   const elapsedMs = firstWriteRef.current ? Date.now() - firstWriteRef.current : 0;
   const es = Math.floor(elapsedMs / 1000);
@@ -247,7 +262,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
           <GearIcon />
         </button>
-        {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} />}
+        {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
       </div>
 
       <div className="mode-row">
@@ -317,22 +332,30 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           </div>
 
           {/* Incentive layer — progress bar (a repeating lap toward the word/
-              time goal; celebrates + resets on completion) + optional session
+              time goal; celebrates + resets on completion) OR the M1
+              milestone circle-bar (Progress: Project) + optional session
               timer + the typewriter toggle. Stays visible while writing
-              (never carries the dissolve class). */}
+              (never carries the dissolve class). M1's silent-degrade rule:
+              'project' with no milestones available renders as 'words'
+              instead — the STORED setting is untouched, so it resumes on a
+              plan-linked page without the writer doing anything. */}
           <div className="mode-incentive-row">
-            {(settings.progress !== 'off' || settings.timer) && (
-              <ProgressBar
-                frac={lapFrac}
-                celebrating={celebrating}
-                label={label}
-                metricLabel={metricLabel}
-                hidden={settings.progress === 'off'}
-                rightSlot={<>
-                  {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
-                  {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
-                </>}
-              />
+            {showMilestones ? (
+              <MilestoneBar milestones={milestones!} />
+            ) : (
+              (effectiveProgress !== 'off' || settings.timer) && (
+                <ProgressBar
+                  frac={lapFrac}
+                  celebrating={celebrating}
+                  label={label}
+                  metricLabel={metricLabel}
+                  hidden={effectiveProgress === 'off'}
+                  rightSlot={<>
+                    {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
+                    {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
+                  </>}
+                />
+              )
             )}
             {(mode === 'journal' || mode === 'drafting') && (
               <TypewriterToggle on={settings.typewriter} onToggle={() => setWritingSettings({ typewriter: !settings.typewriter })} />
@@ -397,12 +420,17 @@ function AssistIcon() {
   );
 }
 
-// The gear menu — the writing-screen chrome settings, persisted.
-function SettingsPanel({ settings }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean } }) {
+// The gear menu — the writing-screen chrome settings, persisted. `hasMilestones`
+// gates the Progress:Project option — offered ONLY when the current page
+// belongs to a project with a StoryPlan (the canon's Q3 rule; no greyed
+// states, the option simply isn't in the list otherwise).
+function SettingsPanel({ settings, hasMilestones }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean }; hasMilestones?: boolean }) {
+  const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
+  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Project']);
   return (
     <div className="mode-settings" role="menu">
       <h4>settings</h4>
-      <Seg label="Progress" value={settings.progress} opts={[['words', 'Words'], ['time', 'Time'], ['off', 'Off']]} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
+      <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
       <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
       <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ typewriter: v === 'on' })} />

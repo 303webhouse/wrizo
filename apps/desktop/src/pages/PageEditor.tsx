@@ -10,6 +10,7 @@ import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
+import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
@@ -37,6 +38,10 @@ function PageEditorView({ id }: { id: string }) {
   const entry = getJournalEntry(id);
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
+  // M1 — null on any plan-less project (Journal pages never reach this
+  // surface at all); ModeStage silently degrades Progress:Project to Words
+  // when this is null, per the canon's no-greyed-states rule.
+  const milestones = projectMilestones(id);
 
   // Per-page last-used mode. Default: a manuscript chapter opens in Free write
   // (forward-only generation); support pages open in Draft (free edit).
@@ -174,6 +179,7 @@ function PageEditorView({ id }: { id: string }) {
         focused={focused}
         onDissolveChange={setReceded}
         chromeRootRef={pageRef}
+        milestones={milestones}
       >
         {({ noteWrite, penColor }) => (
           <div ref={warmWrapRef} style={{ position: 'relative', width: '100%', minHeight: '100%' }}>

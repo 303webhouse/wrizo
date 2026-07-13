@@ -136,7 +136,7 @@ outlive a session lives here, not in chat.
    `components/useWayBack.ts`) wired into all five writing surfaces; the
    return chip in DeskRail's top slot. Fable's review returned REQUIRED — 2
    (`docs/w2-review-fable.md`), no data-loss-class or architecture findings.
-   **w2.1 folded before close:** R1 — the review's own comment ("callers
+   **w2.1 folded before close:** R1 — the hook's own comment ("callers
    are keyed by id") turned out to be false for QuickSprint: it had NO
    remount-forcing key at its route mount (unlike PageEditor/JournalEntry),
    so navigating between two different sprint routes reused the same

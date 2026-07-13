@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { getProject, getStoryPlanByProjectId, setCurrentBeat, setBeatStatus } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
+import { useMilestoneCelebration } from '../components/WritingIncentives';
+import type { MilestoneBeat } from '../store/milestones';
 
 export function StructureBoard() {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +11,24 @@ export function StructureBoard() {
   const project = id ? getProject(id) : null;
   const [storyPlan, setStoryPlan] = useState(() => id ? getStoryPlanByProjectId(id) : null);
   const framework = storyPlan ? getFramework(storyPlan.frameworkId) : null;
+
+  // M1 S4 — the same celebration grammar as the writing-surface circle-bar
+  // (one grammar app-wide), reusing useMilestoneCelebration's mount-seeding
+  // law directly: only a transition to 'complete' DURING this mount
+  // celebrates, never a beat that was already done when the Board opened.
+  // Called unconditionally (before the early return below) per the Rules of
+  // Hooks — beatNote.status maps onto the shared empty/kindled/lit
+  // vocabulary collapsed to just empty-vs-lit for this purpose ('started'
+  // doesn't celebrate, so it's folded into 'empty' here).
+  const celebrationInput: MilestoneBeat[] = (framework?.beats ?? []).map(beat => {
+    const status = storyPlan?.beatNotes.find(bn => bn.beatId === beat.id)?.status;
+    return { id: beat.id, label: beat.name, state: status === 'complete' ? 'lit' : 'empty' };
+  });
+  // Scoped by the StoryPlan's id, same as the writing-surface circle-bar —
+  // beat ids are shared verbatim across every project on the same framework.
+  // celebrationInput is already the full, unwindowed beat list, so it doubles
+  // as the baseline lit set (no separate windowed/full split needed here).
+  const celebrating = useMilestoneCelebration(celebrationInput, storyPlan?.id ?? '', celebrationInput.filter(b => b.state === 'lit').map(b => b.id));
 
   if (!project || !storyPlan || !framework) {
     return <Navigate to="/" replace />;
@@ -49,6 +69,7 @@ export function StructureBoard() {
     const isCurrent = beat.id === storyPlan.currentBeatId;
     const isDone = status === 'complete';
     const dotClass = isDone ? 'status-dot--done' : status === 'started' ? 'status-dot--started' : 'status-dot--empty';
+    const dotCelebrate = celebrating.has(beat.id) ? ' celebrate' : '';
 
     return (
       <div key={beat.id} className="card board-card" style={{ position: 'relative', marginBottom: 0 }}>
@@ -56,7 +77,7 @@ export function StructureBoard() {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8, marginBottom: '0.5rem' }}>
           <div className="card-title" style={{ fontSize: '1rem' }}>{beat.name}</div>
-          <span className={`status-dot ${dotClass}`} title={status} aria-label={status} style={{ marginTop: 6, flexShrink: 0 }} />
+          <span className={`status-dot ${dotClass}${dotCelebrate}`} title={status} aria-label={status} style={{ marginTop: 6, flexShrink: 0 }} />
         </div>
 
         {notes.length > 0 ? (
