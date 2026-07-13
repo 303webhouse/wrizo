@@ -1,6 +1,6 @@
 # W1 close + committee ratification handoff — for CC · 2026-07-12
 
-> **EXECUTED IN FULL — 2026-07-14.** Steps 1–4 (W1 merge/deploy, the
+> **EXECUTED IN FULL — 2026-07-13.** Steps 1–4 (W1 merge/deploy, the
 > committee-artifact commit, W2 build → review → merge → deploy, M1 build →
 > review → merge → deploy) all closed; see `docs/open-threads.md` items 6
 > and 13, and `docs/backlog.md`. Kept for pattern reference — the ledger

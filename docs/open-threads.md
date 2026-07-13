@@ -169,6 +169,15 @@ outlive a session lives here, not in chat.
    check only. See `docs/backlog.md`. W2's own S25 + desktop gate items
    join the consolidated hardware session (item 2) — Nick's device verdict
    closes the ticket.
+19. **TH1 — the theme seam.** Brief: docs/th1-theme-seam-brief.md, canon:
+    docs/flux-theme-canon.md, visual ref: docs/design/flux-rc2.html.
+    ACTIVE 2026-07-13 on Nick's word, post-M1 spot-check GREEN. Branch
+    `th1-theme-seam` off main @ 7f4bc6b. Plateau must be visually
+    unchanged. Harness scripts/harness/th1.mjs ships with the ticket.
+    Report = push; merge only on Nick's word after Fable's review.
+20. **TH2 — Flux.** Brief: docs/th2-flux-brief.md. Armed only after TH1's
+    review/merge cycle closes. Hardware-gate items join the consolidated
+    session (item 2); device verdict closes the ticket.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -210,7 +219,7 @@ outlive a session lives here, not in chat.
     no marking gestures on writing surfaces; word targets vetoed; notecards
     get the status-dot, not a bar; one celebration grammar, B4 the final
     authority. Build: **M1 — milestone circles + notecard dots.** **DONE —
-    merged/deployed 2026-07-14.** Built per `docs/m1-milestones-brief.md` on
+    merged/deployed 2026-07-13.** Built per `docs/m1-milestones-brief.md` on
     `m1-milestones` @ `44afe2f`, off post-W2 `main` — a read-only projection
     of a StoryPlan's beat coverage onto writing surfaces (a new
     Progress:Project setting, offered only when a StoryPlan exists — no
@@ -266,6 +275,8 @@ outlive a session lives here, not in chat.
 14. **User-authored identity / rhizomatic personalization**: wordmark
     replaceable with the writer's own hand; four launch themes (Plateau,
     Flux, Volant, Nomad); single hard invariant = the orange accent.
+    -> converted to TH-arc 2026-07-13 (items 19-20); wordmark replacement
+    and Volant/Nomad remain horizon.
 15. **Reciprocity gate** for the future workshop feature (review before
     submitting).
 16. **wrizo.app Cloudflare resolution** (domain plumbing).
