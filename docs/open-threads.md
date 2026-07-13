@@ -12,8 +12,8 @@ outlive a session lives here, not in chat.
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
 2. **The consolidated hardware session** (after the deploy — deploy is now
-   live, J4 + J5 + S1 all; W1 pending its own merge, see item 5). Seven
-   gates, one sitting; bugs → side chats, verdicts → the ledger. Owner: Nick.
+   live, J4 + J5 + S1 + W1 all). Seven gates, one sitting; bugs → side
+   chats, verdicts → the ledger. Owner: Nick.
    - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
      visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
      eraser tip — a finding, not a failure; the toggle is the path).
@@ -96,18 +96,33 @@ outlive a session lives here, not in chat.
    gate items (typing rhythm, ghost legibility, autocomplete at
    pointer/thumb, keyboard-map muscle memory) join the consolidated hardware
    session (item 2) — Nick's device verdict closes the ticket.
-5. **W1 — writing-surface polish.** Built on `w1-writing-surface-polish`
-   (shared `WritingIncentives`/`useTypewriterFade` extraction, Journal
-   incentive-layer parity, page-is-primary metadata relocation, edge-dwell +
-   0.7s summon, fixed-track grid, Workshop/Publish tabs into PageEditor).
-   Fable's review: REQUIRED FIXES — 4 (`docs/w1-review-fable.md`), no
-   data-loss-class findings. R1–R3 folded (spurious mount celebration seed,
-   Journal progress-setting gate, window-scroll `data-scrolled` C2 fix); R4
-   ruled — Nick: ratify the `.vscode/settings.json` auto-approve expansion
-   in place, logged in the fix-batch commit. Merge waits on the delta
-   spot-check + Nick's word; device gates fold into item 2. Rode along in
-   the original push: `fe24918` (state-of-wrizo 2026-07 + logo set,
-   docs-only sweep).
+5. ~~**W1 — writing-surface polish.**~~ **DONE — merged/deployed
+   2026-07-12.** Built on `w1-writing-surface-polish` (shared
+   `WritingIncentives`/`useTypewriterFade` extraction, Journal incentive-
+   layer parity, page-is-primary metadata relocation, edge-dwell + 0.7s
+   summon, fixed-track grid, Workshop/Publish tabs into PageEditor). Fable's
+   review returned REQUIRED FIXES — 4 (`docs/w1-review-fable.md`), no
+   data-loss-class findings; CC folded R1 (spurious mount celebration —
+   `lapsRef` now seeds from the first-render value), R2 (Journal now honors
+   the persisted Progress=off setting), R3 (window-scroll `data-scrolled`
+   gated on the sheet's own top vs. viewport, not raw `scrollY` — fixes a
+   C2 violation); R4 ruled — Nick: ratify the `.vscode/settings.json`
+   auto-approve expansion in place, logged in the fix-batch commit.
+   `scripts/harness/w1.mjs` grew to 18 checks, including the two regression
+   scenarios Fable specified. Per `docs/w1-close-handoff.md`: Nick relayed
+   the W1 merge word plus delegated the two committee-canon ratifications to
+   Fable under a progress-over-perfection directive. CC merged (fast-
+   forward, no conflicts), ran `tsc` (desktop + server) + `build:web` +
+   selftest + `j4.mjs` (26/26) + `j5.mjs` (40/40) + `s1.mjs` (87/87) +
+   `w1.mjs` (18/18) — all green on merged `main` — pushed, `railway up`.
+   **Zero-schema deploy** — confirmed live via `200` on `/` and the auth
+   gate responding as expected. See `docs/backlog.md`. W1's own S25 +
+   desktop gate items (edge-dwell/summon feel, typewriter window-scroll,
+   progress caret/celebration read, ≥1700px rail-toggle stability,
+   Workshop/Publish on a Page) join the consolidated hardware session
+   (item 2) — Nick's device verdict closes the ticket. Rode along in the
+   original push: `fe24918` (state-of-wrizo 2026-07 + logo set, docs-only
+   sweep).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 6. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -137,18 +152,20 @@ outlive a session lives here, not in chat.
    deferred until Journal UI surfaces existed; the Spread and the Board now
    exist. B4 intersects the Journal sprint reward surface (design together).
 10. **HOME verification remainder**: bighead art, sort-hint.
-11. **Page-is-primary committee pass** (`docs/page-primacy-committee-brief.md`,
-    logged 2026-07-11/12). Drawers/Shelf/Library are still full route
-    navigations that unmount the current writing surface — W1 only fixed the
-    in-ModeStage instance of the bug (the assist-rail layout shift). Needs
-    the Experts + Architects to rule overlay-vs-navigation and, if overlay,
-    the interaction model, before a build brief exists.
-12. **Progress-milestones committee pass**
-    (`docs/progress-milestones-committee-brief.md`, logged 2026-07-11/12).
-    The Words⟷Project progress-bar toggle (milestone circles per
-    chapter/scene) and extending the bar to Structure Board notecards, both
-    requested alongside W1's progress-bar redesign — needs a ruling on what
-    "chapter complete" means before it's buildable.
+11. ~~Page-is-primary committee pass~~ **RULED — 2026-07-12**
+    (`docs/page-primacy-canon.md`, on Nick's delegated word via Fable): tools
+    orbit, navigation departs with a guaranteed way back; overlay-Drawers
+    trimmed to horizon; metadata-below-page blessed final; Plan-beside-page
+    pull-forward declined with reason. Build: **W2 — the way back**
+    (`docs/w2-way-back-brief.md`), sequenced after the W1 merge; AGENTS.md
+    rule text ships with the W2 ticket.
+12. ~~Progress-milestones committee pass~~ **RULED — 2026-07-12**
+    (`docs/progress-milestones-canon.md`, on Nick's delegated word via
+    Fable): coverage, never verdicts — circles project beat facts read-only;
+    no marking gestures on writing surfaces; word targets vetoed; notecards
+    get the status-dot, not a bar; one celebration grammar, B4 the final
+    authority. Build: **M1** (`docs/m1-milestones-brief.md`), sequenced
+    after W2's review/merge cycle, designed with B4.
 
 ## HORIZON — no ticket yet, on the map
 13. **User-authored identity / rhizomatic personalization**: wordmark
