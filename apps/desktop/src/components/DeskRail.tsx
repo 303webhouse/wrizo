@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWritingSession } from './WritingSession';
 import { useCatch } from './useCatch';
+import { getWayBack, isWritingRoute, type WayBackSession } from '../store/wayBack';
+import { getJournalEntry, getDraft } from '../store/persistence';
+import { firstLine, snippet } from '../store/entryText';
 
 // Writing-screen redesign (Slice 2) — the slim left rail of desk-area LOCATIONS,
 // replacing D1/D2's top-bar nav. Global nav and a WritingSession reader: it
@@ -18,11 +21,34 @@ const ITEMS: RailItem[] = [
   { key: 'library', label: 'Library', glyph: '▣', to: '/library', live: false },
 ];
 
+// W2 — resolve a way back's preview text across the two persistence shapes it
+// can point at: a JournalEntry (PageEditor/JournalEntry surfaces) or a Draft
+// (QuickSprint, which has no JournalEntry until a sprint finishes). Returns
+// null if the underlying record no longer exists (or was soft-deleted) —
+// the chip must never point at a dead entry.
+function wayBackPreview(session: WayBackSession): string | null {
+  const entry = getJournalEntry(session.entryId);
+  if (entry) return entry.deletedAt ? null : snippet(firstLine(entry.text), 24);
+  const draft = getDraft(session.entryId);
+  return draft ? snippet(firstLine(draft.text), 24) : null;
+}
+
 export function DeskRail() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { isWriting } = useWritingSession();
   const doCatch = useCatch();
+
+  // W2 — the return chip. Re-checked on every route change: a departure just
+  // captured (or consumed) the slot as part of the same navigation, so
+  // reading it fresh here on pathname change always reflects the current
+  // truth. Never shown while already on a writing surface (departing FROM
+  // one is the only way a way back exists) or once its entry is gone.
+  const [wayBack, setWayBack] = useState<WayBackSession | null>(null);
+  useEffect(() => {
+    setWayBack(isWritingRoute(pathname) ? null : getWayBack());
+  }, [pathname]);
+  const wayBackLabel = wayBack ? wayBackPreview(wayBack) : null;
 
   // F3 Slice 3 — the `n` shortcut (Gmail-style). A single app-level listener,
   // active on every authed surface (the rail mounts once inside the router).
@@ -44,6 +70,18 @@ export function DeskRail() {
 
   return (
     <nav className="desk-rail chrome-fade" data-chrome-receded={isWriting ? 'true' : 'false'} aria-label="Desk areas">
+      {wayBack && wayBackLabel && (
+        <button
+          type="button"
+          className="desk-rail-item desk-rail-wayback"
+          title={`Return to: ${wayBackLabel}`}
+          aria-label="Return to the page"
+          onClick={() => navigate(wayBack.route)}
+        >
+          <span className="desk-rail-glyph" aria-hidden="true">↩</span>
+          <span className="desk-rail-label desk-rail-wayback-label">{wayBackLabel}</span>
+        </button>
+      )}
       <button
         type="button"
         className="desk-rail-item desk-rail-catch"

@@ -8,6 +8,8 @@ import { ModeStage } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
+import { useWayBack } from '../components/useWayBack';
+import { setCaretOffset } from '../store/caretOffset';
 import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
@@ -74,6 +76,20 @@ function PageEditorView({ id }: { id: string }) {
 
   // F6 — the first-line invitation on a truly empty page (entry.text.length === 0).
   const invite = useFirstLineInvite(() => textRef.current.length === 0);
+
+  // W2 — the way back. Scroll lives on ModeStage's internal .mode-scroll box
+  // (surfaceRef is the .mode-page ancestor the host already owns); caret
+  // lives on the ForwardOnlyEditor host div (editorRef). Mode itself is
+  // already restored independently via the per-page localStorage key above —
+  // this hook doesn't need to touch it.
+  useWayBack({
+    entryId: id,
+    mode,
+    scrollEl: () => surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll') ?? null,
+    editorEl: () => editorRef.current,
+    applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) el.scrollTop = y; },
+    applyCaret: offset => { if (editorRef.current) setCaretOffset(editorRef.current, offset); },
+  });
 
   const switchMode = (next: EditorMode) => {
     if (next === mode) return;

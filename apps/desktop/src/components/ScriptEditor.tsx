@@ -10,6 +10,7 @@ import { shouldPromoteToScene, applyAutoContd } from '../store/scriptSmartText';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { copyText } from '../store/clipboard';
 import { useSessionLog } from './useSessionLog';
+import { useWayBack } from './useWayBack';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
@@ -222,6 +223,10 @@ export function ScriptEditor({ id }: { id: string }) {
   const navigate = useNavigate();
   const initialEntry = getJournalEntry(id);
   const initialDoc = initialEntry?.script ?? createEmptyScriptDoc();
+
+  // W2 — route + mount identity only (S1: element-level state — active index,
+  // caret hint — is this surface's own thing; no scroll/caret capture here).
+  useWayBack({ entryId: id });
 
   const [elements, setElements] = useState<ScriptEl[]>(() => flattenScenes(initialDoc.scenes));
   const [activeIndex, setActiveIndex] = useState(0);

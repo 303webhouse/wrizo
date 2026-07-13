@@ -15,6 +15,8 @@ import { AddToSheet } from '../components/AddToSheet';
 import { useActionToast } from '../components/ActionToast';
 import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL } from '../components/WritingIncentives';
 import { useTypewriterFade } from '../components/useTypewriterFade';
+import { useWayBack } from '../components/useWayBack';
+import { setCaretOffset } from '../store/caretOffset';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
@@ -167,6 +169,19 @@ function JournalEntryView() {
   const invite = useFirstLineInvite(() => authoredRef.current && pageTextRef.current.length === 0 && strokesRef.current.length === 0);
   const inviteDismissRef = useRef<() => void>(() => {});
   inviteDismissRef.current = invite.dismiss;
+
+  // W2 — the way back. Authored pages only (a read-only capture has no
+  // writing session to depart from — no-op via the authoredRef guards below,
+  // matching F5/F6's own gating pattern). This surface window-scrolls (the
+  // ink layer can't sit in a fixed-height box — see useTypewriterFade), so
+  // scroll capture/restore reads/writes window.scrollY, not a container.
+  useWayBack({
+    entryId: id ?? '',
+    useWindowScroll: true,
+    editorEl: () => (authoredRef.current ? editRef.current : null),
+    applyScrollY: y => { if (authoredRef.current) window.scrollTo(0, y); },
+    applyCaret: offset => { if (authoredRef.current && editRef.current) setCaretOffset(editRef.current, offset); },
+  });
 
   // Incentive layer (glow + progress bar + typewriter) — brought to parity with
   // the mode-aware editor (ModeStage). Authored pages only; a read-only capture

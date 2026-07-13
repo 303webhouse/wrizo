@@ -27,6 +27,31 @@ that design pass. (See docs/north-star.md v0.2 for the as-built architecture.)
 - No new deps unless required by the ticket.
 - Stop when Definition of Done is met.
 
+## PAGE IS PRIMARY (ratified 2026-07-12, `docs/page-primacy-canon.md`)
+While a writing surface is mounted, no tool, panel, menu, assistant, sheet,
+or setting may move, resize, or unmount it. Tools orbit the page: they
+collapse and expand inside fixed layout tracks, overlay without displacing,
+and dissolve with the chrome. Only an explicit act of departure — opening
+different work via wayfinding — may replace the page, and every departure
+must offer a stateful one-tap return (the return chip: scroll, caret, and
+mode restored).
+
+Self-check for any ticket touching a writing surface:
+1. Does the page's bounding rect change when your feature opens or closes?
+2. Does the editor unmount at any point your feature is used as intended?
+3. If the user leaves through your feature, does one tap return them to
+   the exact writing state?
+
+"Yes / yes / no" on any line fails the rule. Prior art: W1's fixed-track
+grid (the rect half) and J5's Add to… sheet (the no-unmount half); W2's
+return chip (the guaranteed-return half).
+
+Category table for future self-checks — **tools/chrome** (never displace):
+AI assist rail, settings gear, incentive row, format bar, Add to…/Port to…
+sheets, toasts, any future panel or menu. **Navigation** (may replace, must
+be return-faithful): DeskRail destinations, the notebook pager, Pages⟷Plan,
+opening any document from any list.
+
 ## Harness scenarios persist
 Every ticket's verification scenario is a committed artifact, not a throwaway:
 `scripts/harness/<ticket>.mjs` (or the ticket's established harness location),

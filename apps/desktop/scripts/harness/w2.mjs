@@ -1,0 +1,240 @@
+// W2 — the way back. A committed CDP verification scenario (per AGENTS.md
+// "Harness scenarios persist"). S0 (verify current loss) is documented in
+// store/wayBack.ts's header comment, confirmed by code inspection rather
+// than a separate empirical pre-fix run: before this ticket, no surface
+// persisted scroll or caret across an unmount — only the route survived,
+// via React Router's own history.
+// Run: node apps/desktop/scripts/harness/w2.mjs   (from apps/desktop, with
+// dist-web freshly built via `pnpm run build:web`).
+import { withHarness } from '../runtime-verify.mjs';
+
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Place the caret at a linear character offset within an element — the
+// harness-side mirror of store/caretOffset.ts's setCaretOffset, injected so
+// scenarios can position a "mid-caret" state deterministically (not just
+// wherever typing left it) before capturing a departure.
+const CARET_HELPER = `
+window.__setCaretAt = function(selector, target) {
+  const el = document.querySelector(selector);
+  if (!el) throw new Error('setCaretAt: not found ' + selector);
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let offset = 0, node = null, localOffset = 0, n;
+  while ((n = walker.nextNode())) {
+    const len = n.data.length;
+    if (offset + len >= target) { node = n; localOffset = target - offset; break; }
+    offset += len;
+  }
+  const sel = window.getSelection();
+  const range = document.createRange();
+  if (node) range.setStart(node, Math.max(0, Math.min(localOffset, node.data.length)));
+  else range.selectNodeContents(el);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  el.focus();
+  return true;
+};
+`;
+
+await withHarness(async (app) => {
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.evalJs(CARET_HELPER);
+
+  // === 1. PageEditor (text surface): mid-scroll + mid-caret way back =======
+  await app.goto('/project/new');
+  await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
+  await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+  await app.click('Start writing');
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted' });
+  const pageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  const manyLines = Array.from({ length: 45 }, (_, i) => `Line ${i} of the growing manuscript page, long enough to wrap and force real scroll.`).join('\n');
+  await app.typeKeys(manyLines);
+  await sleep(2200); // clear the debounced autosave window
+  await app.evalJs("document.querySelector('.mode-scroll').scrollTop = 300");
+  await sleep(150);
+  const pageScrollBefore = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+  await app.evalJs("window.__setCaretAt('.forward-only-editor', 40)");
+  const pageCaretBefore = await app.evalJs(`(() => {
+    const sel = window.getSelection();
+    const el = document.querySelector('.forward-only-editor');
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let offset = 0, n;
+    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
+    return null;
+  })()`);
+  ok('PageEditor: caret + scroll positioned pre-departure', pageScrollBefore > 0 && pageCaretBefore === 40, `scroll=${pageScrollBefore} caret=${pageCaretBefore}`);
+  const pageTextBefore = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+
+  // Depart via the rail (Journal) — a real route change, not a special exit.
+  await app.click('Journal');
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (departed PageEditor)' });
+  await sleep(150);
+  const pageChipLabel = await app.evalJs("document.querySelector('.desk-rail-wayback')?.getAttribute('aria-label')");
+  ok('return chip present after departing PageEditor, accessible name is "Return to the page"', pageChipLabel === 'Return to the page', String(pageChipLabel));
+  const pageChipTitle = await app.evalJs("document.querySelector('.desk-rail-wayback')?.getAttribute('title')");
+  ok('chip label reflects the page\'s own first line (not a generic string)', (pageChipTitle || '').includes('Line 0 of the growing'), pageChipTitle);
+
+  await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor restored via chip' });
+  await sleep(500); // let the multi-write restore settle (up to 350ms + margin)
+  const pageRouteAfter = await app.evalJs('location.hash');
+  const pageScrollAfter = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+  const pageCaretAfter = await app.evalJs(`(() => {
+    const sel = window.getSelection();
+    const el = document.querySelector('.forward-only-editor');
+    if (!el.contains(sel.anchorNode)) return null;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let offset = 0, n;
+    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
+    return null;
+  })()`);
+  const pageTextAfter = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  ok('route restored to the exact page', pageRouteAfter === `#/page/${pageId}`, pageRouteAfter);
+  ok('scrollY restored within +/-4px', Math.abs(pageScrollAfter - pageScrollBefore) <= 4, `before=${pageScrollBefore} after=${pageScrollAfter}`);
+  ok('caret offset restored exactly', pageCaretAfter === 40, `caret=${pageCaretAfter}`);
+  ok('the editor\'s mount is fresh-but-equivalent: text byte-identical', pageTextAfter === pageTextBefore);
+  const chipGoneAfterConsume = await app.evalJs("!document.querySelector('.desk-rail-wayback')");
+  ok('the chip is gone immediately after being consumed (one-shot)', chipGoneAfterConsume === true);
+
+  // === 2. JournalEntry authored page (window-scroll): mid-scroll + mid-caret
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture' });
+  await app.evalJs(CARET_HELPER);
+  await app.emulateDpr(1, 1024, 700);
+  await app.goto('/journal');
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
+  await app.click('New page');
+  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored Journal page' });
+  const journalId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
+  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  const journalLines = Array.from({ length: 40 }, (_, i) => `Journal line ${i} — enough content to make the window scroll for real.`).join('\n');
+  await app.typeKeys(journalLines);
+  await sleep(2200);
+  await app.evalJs('window.scrollTo(0, 150)');
+  await sleep(150);
+  const journalScrollBefore = await app.evalJs('window.scrollY');
+  await app.evalJs("window.__setCaretAt('.entry-edit', 30)");
+  const journalTextBefore = await app.evalJs("document.querySelector('.entry-edit').innerText");
+  ok('JournalEntry: window scrolled pre-departure', journalScrollBefore > 0, `scrollY=${journalScrollBefore}`);
+
+  await app.click('Journal'); // depart via the rail
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (departed authored page)' });
+  await sleep(150);
+  const journalChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
+  ok('return chip present after departing an authored Journal page', journalChipPresent === true);
+
+  await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
+  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'Journal page restored via chip' });
+  await sleep(500); // let the multi-write restore settle (up to 350ms + margin)
+  const journalRouteAfter = await app.evalJs('location.hash');
+  const journalScrollAfter = await app.evalJs('window.scrollY');
+  const journalCaretAfter = await app.evalJs(`(() => {
+    const sel = window.getSelection();
+    const el = document.querySelector('.entry-edit');
+    if (!el.contains(sel.anchorNode)) return null;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let offset = 0, n;
+    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
+    return null;
+  })()`);
+  const journalTextAfter = await app.evalJs("document.querySelector('.entry-edit').innerText");
+  ok('Journal route restored to the exact page', journalRouteAfter === `#/journal/${journalId}`, journalRouteAfter);
+  ok('Journal window scrollY restored within +/-4px', Math.abs(journalScrollAfter - journalScrollBefore) <= 4, `before=${journalScrollBefore} after=${journalScrollAfter}`);
+  ok('Journal caret offset restored exactly', journalCaretAfter === 30, `caret=${journalCaretAfter}`);
+  ok('Journal text byte-identical across the departure/return', journalTextAfter === journalTextBefore);
+
+  // === 3. Board + script: route-restore only (no scroll/caret claim) ======
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before board/script fixtures' });
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    entries.push({ id: 'w2-board', text: '', pageType: 'board', boxes: [], createdAt: now, updatedAt: now });
+    entries.push({ id: 'w2-script', text: '', pageType: 'script', script: { v: 1, scenes: [] }, createdAt: now, updatedAt: now });
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+  })()`);
+  await app.reload();
+
+  for (const [id, waitSel] of [['w2-board', '.board-canvas, .board-page, [data-board]'], ['w2-script', '.script-page, .script-sheet']]) {
+    await app.evalJs(`location.hash = '#/page/${id}'`);
+    await sleep(400);
+    await app.click('Journal');
+    await app.waitFor("!!document.querySelector('.journal-new-page')", { label: `Journal list (departed ${id})` });
+    await sleep(150);
+    const chipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
+    ok(`return chip present after departing a ${id.includes('board') ? 'board' : 'script'} page`, chipPresent === true, id);
+    if (chipPresent) {
+      await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
+      await sleep(400);
+      const routeAfter = await app.evalJs('location.hash');
+      ok(`${id} route restored via the chip`, routeAfter === `#/page/${id}`, routeAfter);
+    }
+  }
+
+  // === 4. Standing assertions: PAGE IS PRIMARY invariants ==================
+  // 4a — assist rail collapse/expand (promoted from W1's own check).
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before rect-invariant fixture' });
+  await app.goto('/project/new');
+  await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), rect check' });
+  await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+  await app.click('Start writing');
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, rect check' });
+  await app.click('Draft');
+  await sleep(100);
+  const rectBefore = await app.evalJs("(() => { const r = document.querySelector('.mode-pagecol').getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()");
+  const hasAssistCollapse = await app.evalJs("!!document.querySelector('.assist-collapse')");
+  if (hasAssistCollapse) {
+    await app.evalJs("document.querySelector('.assist-collapse').click()");
+    await sleep(700);
+    const rectDuring = await app.evalJs("(() => { const r = document.querySelector('.mode-pagecol').getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()");
+    ok('PAGE IS PRIMARY: assist-rail collapse leaves the page rect byte-identical', JSON.stringify(rectBefore) === JSON.stringify(rectDuring), `${JSON.stringify(rectBefore)} -> ${JSON.stringify(rectDuring)}`);
+  } else {
+    ok('assist-collapse button found for the rect-invariant check', false);
+  }
+
+  // 4b — the Add to... sheet (a loose Journal page) leaves the page rect
+  // byte-identical while open, and after closing.
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Add-to rect fixture' });
+  await app.goto('/journal');
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list, Add-to rect check' });
+  await app.click('New page');
+  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page, Add-to rect check' });
+  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.typeKeys('A page with something to add elsewhere.');
+  await sleep(2200);
+  const sheetPageRectBefore = await app.evalJs("(() => { const r = document.querySelector('.entry-full').getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()");
+  await app.click('Add to…');
+  await app.waitFor("!!document.querySelector('[aria-label=\"Add to…\"]')", { label: 'Add to… sheet open' });
+  const sheetPageRectDuring = await app.evalJs("(() => { const r = document.querySelector('.entry-full').getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()");
+  ok('PAGE IS PRIMARY: the Add to… sheet leaves the page rect byte-identical while open', JSON.stringify(sheetPageRectBefore) === JSON.stringify(sheetPageRectDuring), `${JSON.stringify(sheetPageRectBefore)} -> ${JSON.stringify(sheetPageRectDuring)}`);
+  const stillMounted = await app.evalJs("!!document.querySelector('.entry-edit')");
+  ok('PAGE IS PRIMARY: the editor never unmounts while the Add to… sheet is open', stillMounted === true);
+
+  return checks;
+});
+
+// eslint-disable-next-line no-console
+console.log(JSON.stringify(checks, null, 2));
+const pass = checks.every((c) => c.pass);
+// eslint-disable-next-line no-console
+console.log(pass ? `\nW2 VERIFY: PASS (${checks.length} checks)` : `\nW2 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+process.exit(pass ? 0 : 1);

@@ -1479,6 +1479,16 @@ a:focus-visible,
 .desk-rail-catch{ margin-bottom:6px; }
 .desk-rail-catch .desk-rail-glyph{ font-size:20px; }
 
+/* W2 — the return chip. The DeskRail's top slot; the ChromeHandle dot's
+   ember-warm visual family (quiet until noticed), not its literal size —
+   this carries a label, so it reads as a rail item with an ember accent
+   rather than a bare dot. */
+.desk-rail-wayback{ color:var(--ember-bright); border-left-color:transparent; }
+.desk-rail-wayback:hover{ color:var(--ember-bright); background:var(--ink-900); border-left-color:var(--ember); }
+.desk-rail-wayback .desk-rail-glyph{ font-size:16px; }
+.desk-rail-wayback-label{ font-size:8px; line-height:1.25; text-align:center;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
 /* The file's navigation row. */
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);

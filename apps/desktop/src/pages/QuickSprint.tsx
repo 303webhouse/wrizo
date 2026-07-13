@@ -13,6 +13,8 @@ import { pickEchoLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage } from '../components/ModeStage';
+import { useWayBack } from '../components/useWayBack';
+import { setCaretOffset } from '../store/caretOffset';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -128,6 +130,19 @@ export function QuickSprint() {
   // the first completion, reused (text refreshed) if writing continues and it's
   // finished again — so a continuous session stays one entry.
   const journalEntryIdRef = useRef<string | null>(null);
+
+  // W2 — the way back. Sprints aren't JournalEntry records until Finished, so
+  // the identity the chip restores against is the DRAFT id (matches getDraft/
+  // saveDraft's keying) — the chip's own preview text falls back to the draft
+  // text when no journal entry exists yet (see DeskRail).
+  useWayBack({
+    entryId: draftId,
+    mode,
+    scrollEl: () => surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll') ?? null,
+    editorEl: () => editorRef.current,
+    applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) el.scrollTop = y; },
+    applyCaret: offset => { if (editorRef.current) setCaretOffset(editorRef.current, offset); },
+  });
 
   const markSaved = () => setSavedUntil(Date.now() + SAVED_STAMP_MS);
 

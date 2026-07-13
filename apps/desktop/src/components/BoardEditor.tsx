@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject } from '../store/persistence';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
+import { useWayBack } from './useWayBack';
 import type { Box, Project } from '../types';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
@@ -161,6 +162,12 @@ type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup'; before: Box[
 export function BoardEditor({ id }: { id: string }) {
   const navigate = useNavigate();
   const initialEntry = getJournalEntry(id);
+
+  // W2 — route + mount identity only (S1: a Board's own view state — pan,
+  // zoom, selection — already persists through its own store; no scroll/
+  // caret to capture here).
+  useWayBack({ entryId: id });
+
   const [boxes, setBoxes] = useState<Box[]>(() => initialEntry?.boxes ?? []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
