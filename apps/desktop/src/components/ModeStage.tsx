@@ -341,7 +341,13 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               plan-linked page without the writer doing anything. */}
           <div className="mode-incentive-row">
             {showMilestones ? (
-              <MilestoneBar milestones={milestones!} />
+              <MilestoneBar
+                milestones={milestones!}
+                rightSlot={<>
+                  {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
+                  {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
+                </>}
+              />
             ) : (
               (effectiveProgress !== 'off' || settings.timer) && (
                 <ProgressBar

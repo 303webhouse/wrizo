@@ -44,6 +44,10 @@ outlive a session lives here, not in chat.
      slot, the restore "snap" (does arriving mid-scroll/mid-caret feel like
      resuming or like being teleported), and the ember warmth reading as
      invitation rather than notification.
+   - M1 · S25 + desktop: circle legibility at 10px on the slate, kindled vs
+     lit distinguishability at arm's length, the celebration pulse's felt
+     weight on both surfaces, windowed edge-fade readability, and whether
+     `started`-as-empty-ring reads oddly against the Board's half-dot (A3).
    - Plus: the formal stack word (VW's old merge condition, satisfied in
      practice; this session makes it official).
 
@@ -205,9 +209,58 @@ outlive a session lives here, not in chat.
     Fable): coverage, never verdicts — circles project beat facts read-only;
     no marking gestures on writing surfaces; word targets vetoed; notecards
     get the status-dot, not a bar; one celebration grammar, B4 the final
-    authority. Build: **M1** (`docs/m1-milestones-brief.md`), sequenced
-    after W2's review/merge cycle (now closed, item 6) — arms once w2.1's
-    delta spot-check comes back green, per `docs/w1-close-handoff.md`.
+    authority. Build: **M1 — milestone circles + notecard dots.** **DONE —
+    merged/deployed 2026-07-14.** Built per `docs/m1-milestones-brief.md` on
+    `m1-milestones` @ `44afe2f`, off post-W2 `main` — a read-only projection
+    of a StoryPlan's beat coverage onto writing surfaces (a new
+    Progress:Project setting, offered only when a StoryPlan exists — no
+    greyed states) and onto Structure Board's pre-existing notecard
+    status-dots (celebration-on-transition added; the Board's own
+    empty/started/done vocabulary kept as shipped). Celebration tracking is
+    scoped per StoryPlan — bare beat ids are framework-authored strings
+    ('midpoint', 'climax', ...) shared verbatim across every project on the
+    same framework, so an unscoped id space cross-talks the moment two
+    projects share one (an adversarial review caught this pre-merge;
+    `m1.mjs`'s fixture 3 reproduces both the false-celebration and the
+    swallowed-celebration direction) — seeded from the plan's full
+    unwindowed lit set, with the seen-commit deferred to the celebration
+    timer's completion so App.tsx's persistence-notify force-render can't
+    silently consume an unpainted celebration mid-navigation. Fable's
+    review (`docs/m1-review-fable.md`) returned REQUIRED — 1 (small), 3
+    advisories, two doc promotions — "best-engineered ticket of the arc,"
+    no data-loss-class or architecture findings, zero-schema confirmed.
+    **Folded before merge:** R1 — `Timer: On` is an independent toggle
+    designed to survive every Progress value, but `showMilestones` replaced
+    `ProgressBar` wholesale, silently losing the session clock under
+    Progress:Project; fixed by giving `MilestoneBar` the same `rightSlot`
+    `ProgressBar` already had (page number + timer ride alongside the
+    circles). A1 — qualified `useMilestoneCelebration`'s header comment: the
+    "still celebrates" claim holds only once the plan's scope has already
+    been established by a prior render; completing a beat while Progress is
+    Words and switching to Project later in the same app-load seeds that
+    beat quiet on first look — inherent to storage-free session memory,
+    erring in the correct (missed-pulse, not false-pulse) direction, not a
+    bug. Two doc promotions: AGENTS.md gained "the harness seeding law"
+    (`flushNow()`'s unconditional full-cache-flush can clobber a raw
+    fixture seed made while a flush-handler surface is still mounted — seed
+    from Desk instead); this file's HORIZON gained item 18 (App.tsx's
+    force-render-on-every-write is a real perf ceiling eventually — no
+    ticket yet). `scripts/harness/m1.mjs` grew 32 → 33 checks (Timer:On +
+    Progress:Project renders both the circles and the clock). **Ruled:** the
+    canon's Q4 "in the same three states" was loose drafting; keeping the
+    Board's pre-existing three-state vocabulary and adding only celebration
+    is the conservative, correct reading — overwriting Plan-authored
+    `started` with attachment-driven `kindled` would have destroyed
+    information on the one surface where status is authored. Ran the full
+    suite (`tsc` ×2 + `build:web` + selftest + `j4.mjs` 26/26 + `j5.mjs`
+    40/40 + `s1.mjs` 87/87 + `w1.mjs` 18/18 + `w2.mjs` 31/31 + `m1.mjs`
+    33/33) green on merged `main`, pushed, `railway up`, confirmed live.
+    **Zero-schema** — no server files anywhere in this diff, liveness check
+    only. See `docs/backlog.md`. M1's own S25 + desktop gate items join the
+    consolidated hardware session (item 2, now a ninth cluster) — Nick's
+    device verdict closes the ticket. `docs/w1-close-handoff.md` Step 4:
+    struck as executed on this merge — the handoff is fully spent
+    (archive-headed).
 
 ## HORIZON — no ticket yet, on the map
 14. **User-authored identity / rhizomatic personalization**: wordmark
@@ -218,6 +271,13 @@ outlive a session lives here, not in chat.
 16. **wrizo.app Cloudflare resolution** (domain plumbing).
 17. **USPTO "Wrizo" search** before significant brand investment (one
     low-threat prior use known: a throwaway utility on pi7.org).
+18. **App.tsx force-renders the whole routed tree on every persistence
+    write** (its sync/reactive-screens `subscribe(forceRender)` — one
+    listener, every `save*`/`upsert` call notifies it). Harmless at current
+    scale; a real perf ceiling eventually as the app and its write volume
+    grow. M1's deferred-seen-commit in `useMilestoneCelebration` is the
+    local workaround pattern for one symptom of this (an interim render mid-
+    navigation-away) — not a fix for the underlying cost. No ticket yet.
 
 ## TOOLING STATUS — for any fresh session's orientation
 - GitHub connector: READ-ONLY (Fable reviews via read pipe; write grant

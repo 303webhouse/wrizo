@@ -1,5 +1,11 @@
 # W1 close + committee ratification handoff — for CC · 2026-07-12
 
+> **EXECUTED IN FULL — 2026-07-14.** Steps 1–4 (W1 merge/deploy, the
+> committee-artifact commit, W2 build → review → merge → deploy, M1 build →
+> review → merge → deploy) all closed; see `docs/open-threads.md` items 6
+> and 13, and `docs/backlog.md`. Kept for pattern reference — the ledger
+> (`docs/open-threads.md`) is the living tracker now.
+
 **Place at:** `docs/w1-close-handoff.md`. Self-contained; a fresh CC session
 can execute this top to bottom with no chat context.
 
@@ -73,11 +79,16 @@ See `docs/open-threads.md` item 6 and `docs/backlog.md`.
 
 ## Step 4 — Build M1 (authorized after W2's cycle closes)
 
-**Arms once w2.1's delta spot-check comes back green** (per
+~~**Arms once w2.1's delta spot-check comes back green** (per
 `docs/w2-review-fable.md`'s merge/close protocol) — not yet started as of
 this edit. Execute `docs/m1-milestones-brief.md`. **S0 is a hard gate:** if
 the beat status vocabulary has no terminal value, STOP and return to
-Fable — do not invent schema mid-build.
+Fable — do not invent schema mid-build.~~
+
+**EXECUTED — 2026-07-14.** Built, pushed, reviewed (`docs/m1-review-fable.md`,
+REQUIRED — 1), R1 + the A1 comment amendment + two doc promotions folded,
+merged, deployed. See `docs/open-threads.md` item 13 and `docs/backlog.md`.
+This handoff is now fully spent — all four steps closed.
 
 ## On completion
 

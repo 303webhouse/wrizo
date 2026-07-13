@@ -59,6 +59,17 @@ landing in the same commit as the build it verifies. Review fixes re-run the
 ticket's scenario verbatim and extend it when a fix adds behavior. J4 is the
 first citizen; J3/VW predate the rule and have no scripts to backfill.
 
+**The harness seeding law.** A fixture that seeds state via raw `localStorage`
+writes (bypassing the app's own `save*`/`upsert` functions, then `app.reload()`
+to hydrate the cache) must do so while OFF any surface with a flush handler.
+`persistence.ts`'s `flushNow()` re-serializes *every* collection from the
+in-memory cache unconditionally, not just the ones with a pending write — a
+raw seed made while such a surface is still mounted gets silently overwritten
+when the reload's teardown fires that handler. Navigate to a route with no
+flush handler (Desk works) first, seed, reload from there, then navigate to
+the actual target. Discovered in M1 (`scripts/harness/m1.mjs`); load-bearing
+for every future harness that seeds fixtures this way.
+
 ## Config changes: propose, never ship
 Changes to CC's own permissions, harness configuration, or session settings
 are proposed in a report and made only on Nick's explicit word — never shipped

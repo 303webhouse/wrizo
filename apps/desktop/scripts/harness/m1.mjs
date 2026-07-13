@@ -130,6 +130,20 @@ await withHarness(async (app) => {
   const circlePointerEvents = await app.evalJs("[...document.querySelectorAll('.mode-milestone')].map(el => getComputedStyle(el).pointerEvents)");
   ok('S2: every individual .mode-milestone circle computes pointer-events: none', Array.isArray(circlePointerEvents) && circlePointerEvents.length > 0 && circlePointerEvents.every(v => v === 'none'), JSON.stringify(circlePointerEvents));
 
+  // -- Fable R1: Timer:On is independent of the Progress metric (it survives
+  // Progress:Off via ProgressBar's rightSlot) and must survive Progress:Project
+  // the same way — MilestoneBar must not eat the session clock. -------------
+  await app.evalJs("document.querySelector('.mode-gear').click()");
+  await sleep(100);
+  await app.evalJs(`(() => {
+    const row = [...document.querySelectorAll('.mode-crow')].find(r => r.querySelector('span')?.textContent === 'Timer');
+    [...row.querySelectorAll('.mode-seg button')].find(b => b.textContent === 'On').click();
+  })()`);
+  await app.evalJs("document.querySelector('.mode-gear').click()");
+  await sleep(50);
+  const circlesAndTimer = await app.evalJs("({ circles: document.querySelectorAll('.mode-milestone').length, timer: !!document.querySelector('.mode-timer') })");
+  ok('R1: Timer:On + Progress:Project renders both the milestone circles and the session clock', circlesAndTimer.circles > 0 && circlesAndTimer.timer === true, JSON.stringify(circlesAndTimer));
+
   // -- S3: the toggle is offered once a StoryPlan exists --------------------
   const offeredLabels = await progressOptions(app);
   ok('S3: Progress gains a "Project" option once a StoryPlan exists', Array.isArray(offeredLabels) && offeredLabels.includes('Project'), JSON.stringify(offeredLabels));

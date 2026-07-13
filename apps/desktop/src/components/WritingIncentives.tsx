@@ -111,6 +111,18 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
 // writer next — never a beat that was already lit before this app-load
 // began. A hard reload clears the module (fresh boot, fresh baseline).
 //
+// Fable A1: that "still celebrates" claim holds only when the plan's scope
+// was already established (some consumer for this plan rendered) *before*
+// the transition. If the writer completes a beat while Progress is Words
+// (no milestone-consumer for this plan has rendered at all yet) and switches
+// to Project later in the same app-load, that switch's first render IS the
+// scope's baseline-establishing render — it seeds the already-lit beat as
+// quiet, no pulse. Inherent to storage-free, app-load-only memory (there is
+// nowhere to durably record "already celebrated" without adding persistence,
+// which would trade this for the worse failure — a false pulse on a
+// different device or a later session); this cold-path errs in the correct
+// direction, a missed pulse rather than a false one, and is not a bug.
+//
 // `seenLit` is committed lazily, when a celebration's timer actually completes
 // — never at the moment the transition is first detected. App.tsx force-
 // renders the whole routed tree on every persistence change (its sync/reactive-
@@ -174,22 +186,29 @@ export function useMilestoneCelebration(beats: MilestoneBeat[], scopeKey: string
 // truncate on either end) hinting more beats exist beyond the cap. Takes the
 // whole Milestones object (not just `beats`) so it can hand the celebration
 // hook the plan-scoped id and the full unwindowed lit set — see the comment
-// above useMilestoneCelebration.
-export function MilestoneBar({ milestones }: { milestones: Milestones }) {
+// above useMilestoneCelebration. `rightSlot` mirrors ProgressBar's — Fable
+// R1: Timer:On is independent of the Progress metric and must survive
+// Progress:Project the same way it survives Progress:Off, so the page
+// number + session clock ride alongside the circles rather than vanishing
+// when the milestone bar replaces the word/time track.
+export function MilestoneBar({ milestones, rightSlot }: { milestones: Milestones; rightSlot?: React.ReactNode }) {
   const { beats, windowed, planId, allLitBeatIds } = milestones;
   const celebrating = useMilestoneCelebration(beats, planId, allLitBeatIds);
   if (beats.length === 0) return null;
   return (
-    <div className={`mode-milestones${windowed ? ' windowed' : ''}`} aria-label="Plan coverage for this section" style={{ pointerEvents: 'none' }}>
-      {beats.map(b => (
-        <span
-          key={b.id}
-          className={`mode-milestone mode-milestone--${b.state}${celebrating.has(b.id) ? ' celebrate' : ''}`}
-          title={`${b.label} — ${b.state}`}
-          aria-label={`${b.label}: ${b.state}`}
-        />
-      ))}
-    </div>
+    <>
+      <div className={`mode-milestones${windowed ? ' windowed' : ''}`} aria-label="Plan coverage for this section" style={{ pointerEvents: 'none' }}>
+        {beats.map(b => (
+          <span
+            key={b.id}
+            className={`mode-milestone mode-milestone--${b.state}${celebrating.has(b.id) ? ' celebrate' : ''}`}
+            title={`${b.label} — ${b.state}`}
+            aria-label={`${b.label}: ${b.state}`}
+          />
+        ))}
+      </div>
+      {rightSlot && <span className="mode-pmetric">{rightSlot}</span>}
+    </>
   );
 }
 
