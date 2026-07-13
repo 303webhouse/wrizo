@@ -105,6 +105,26 @@ await withHarness(async (app) => {
   const chipGoneAfterConsume = await app.evalJs("!document.querySelector('.desk-rail-wayback')");
   ok('the chip is gone immediately after being consumed (one-shot)', chipGoneAfterConsume === true);
 
+  // === R2: a real input during the re-assert window cancels the LATER
+  // writes — moving the caret right after restore must stick, not get
+  // snapped back by the 200/350ms re-asserts. This restore already fired its
+  // rAF apply (caret=40, asserted above); dispatch a keydown (the canceller's
+  // trigger) then move the caret elsewhere, and confirm it's still there
+  // well past the 350ms window.
+  await app.evalJs("window.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true }))");
+  await app.evalJs("window.__setCaretAt('.forward-only-editor', 10)");
+  await sleep(500); // past the 350ms re-assert window + margin
+  const pageCaretAfterInput = await app.evalJs(`(() => {
+    const sel = window.getSelection();
+    const el = document.querySelector('.forward-only-editor');
+    if (!el.contains(sel.anchorNode)) return null;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let offset = 0, n;
+    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
+    return null;
+  })()`);
+  ok('R2: a real input cancels the later restore re-asserts (caret stays where the writer moved it, not snapped back)', pageCaretAfterInput === 10, `caret=${pageCaretAfterInput}`);
+
   // === 2. JournalEntry authored page (window-scroll): mid-scroll + mid-caret
   await app.goto('/');
   await app.evalJs('localStorage.clear()');
@@ -153,6 +173,94 @@ await withHarness(async (app) => {
   ok('Journal window scrollY restored within +/-4px', Math.abs(journalScrollAfter - journalScrollBefore) <= 4, `before=${journalScrollBefore} after=${journalScrollAfter}`);
   ok('Journal caret offset restored exactly', journalCaretAfter === 30, `caret=${journalCaretAfter}`);
   ok('Journal text byte-identical across the departure/return', journalTextAfter === journalTextBefore);
+
+  // === R1(c): the notebook pager A -> B never leaks A's state onto B, and
+  // A's capture (if it fired) is correctly labeled A, not mislabeled B — the
+  // exact failure mode an unkeyed surface would produce (see the QuickSprint
+  // fix above). JournalEntry is already keyed (`key={id ?? 'new'}`), so this
+  // is a proving/regression test, not a live bug — but it's the "live path"
+  // Fable named, so it gets its own explicit check.
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before pager fixture' });
+  await app.emulateDpr(1, 1024, 700);
+  await app.goto('/journal');
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (pager fixture)' });
+  await app.click('New page');
+  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page A' });
+  const pagerAId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
+  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.typeKeys(Array.from({ length: 40 }, (_, i) => `Page A line ${i}.`).join('\n'));
+  await sleep(2200);
+  await app.evalJs('window.scrollTo(0, 200)');
+  await sleep(150);
+
+  await app.evalJs("document.querySelector('.journal-nav-add').click()"); // the pager's "+": create + navigate to B
+  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page B' });
+  await sleep(500); // past the 350ms re-assert window, so a leak would have fully applied by now
+  const pagerBId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
+  const pagerBScroll = await app.evalJs('window.scrollY');
+  // Not asserting a specific value: this SPA doesn't reset window.scrollY on
+  // a route change at all (a pre-existing, separate characteristic, out of
+  // this ticket's scope — noted for the record, not fixed here). The
+  // meaningful proof of "no leak via the way-back mechanism" is that B's
+  // scrollY is NOT the value A's restore would have written (200, set right
+  // before departure) — i.e. nothing here applied A's captured state to B.
+  ok('pager: B\'s scroll was never set BY the way-back mechanism (not A\'s captured 200)', pagerBScroll !== 200, `B scrollY=${pagerBScroll} (A had captured 200)`);
+  const pagerWayBack = await app.evalJs("sessionStorage.getItem('wrizo-way-back')");
+  const pagerWb = pagerWayBack ? JSON.parse(pagerWayBack) : null;
+  ok('pager: if A\'s departure captured a way back, it names A, not B', !pagerWb || pagerWb.entryId === pagerAId, JSON.stringify({ pagerWb, pagerAId, pagerBId }));
+
+  // === R1: QuickSprint depart/return (scroll + caret + mode) — same shape
+  // as PageEditor's, now that QuickSprint is correctly keyed by draftId. ===
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before QuickSprint fixture' });
+  await app.evalJs(CARET_HELPER);
+  await app.goto('/sprint');
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint mounted' });
+  await app.click('Draft'); // a non-default mode, to prove mode survives the round trip too
+  await sleep(100);
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  const sprintLines = Array.from({ length: 45 }, (_, i) => `Sprint line ${i} of the growing scratch draft, long enough to force real scroll.`).join('\n');
+  await app.typeKeys(sprintLines);
+  await sleep(2200);
+  await app.evalJs("document.querySelector('.mode-scroll').scrollTop = 250");
+  await sleep(150);
+  const sprintScrollBefore = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+  await app.evalJs("window.__setCaretAt('.forward-only-editor', 20)");
+  const sprintTextBefore = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  ok('QuickSprint: caret + scroll + Draft mode positioned pre-departure', sprintScrollBefore > 0, `scroll=${sprintScrollBefore}`);
+
+  await app.click('Journal');
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (departed QuickSprint)' });
+  await sleep(150);
+  const sprintChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
+  ok('return chip present after departing QuickSprint', sprintChipPresent === true);
+
+  await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint restored via chip' });
+  await sleep(500);
+  const sprintRouteAfter = await app.evalJs('location.hash');
+  const sprintScrollAfter = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+  const sprintCaretAfter = await app.evalJs(`(() => {
+    const sel = window.getSelection();
+    const el = document.querySelector('.forward-only-editor');
+    if (!el.contains(sel.anchorNode)) return null;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let offset = 0, n;
+    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
+    return null;
+  })()`);
+  const sprintTextAfter = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  const sprintModeAfter = await app.evalJs(`(() => { const tabs = [...document.querySelectorAll('.mode-tab')]; const active = tabs.find(t => t.classList.contains('active')); return active?.textContent ?? null; })()`);
+  ok('QuickSprint route restored', sprintRouteAfter === '#/sprint', sprintRouteAfter);
+  ok('QuickSprint scrollY restored within +/-4px', Math.abs(sprintScrollAfter - sprintScrollBefore) <= 4, `before=${sprintScrollBefore} after=${sprintScrollAfter}`);
+  ok('QuickSprint caret offset restored exactly', sprintCaretAfter === 20, `caret=${sprintCaretAfter}`);
+  ok('QuickSprint text byte-identical across the departure/return', sprintTextAfter === sprintTextBefore);
+  ok('QuickSprint mode (Draft) persisted across the departure/return', (sprintModeAfter || '').includes('Draft'), sprintModeAfter);
 
   // === 3. Board + script: route-restore only (no scroll/caret claim) ======
   await app.goto('/');

@@ -42,7 +42,7 @@ interface FinishStats {
   minutes: number | null;
 }
 
-export function QuickSprint() {
+function QuickSprintView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const project = id ? getProject(id) : null;
@@ -558,4 +558,19 @@ export function QuickSprint() {
       )}
     </div>
   );
+}
+
+// W2 Fable R1 — key by draftId so the surface actually remounts on a route
+// param change, matching PageEditor's `key={id}` and JournalEntry's
+// `key={id ?? 'new'}`. Without this, navigating /project/A/sprint ->
+// /project/B/sprint reused the SAME component instance (React Router sees
+// an unchanged `element`) — useWayBack's capture-on-unmount never fired for
+// A at all, and worse, its liveRef (updated unconditionally every render,
+// not gated by entryId) would already read B's identity by the time A's
+// effect cleanup ran on the entryId-change, mislabeling A's scroll/caret
+// under B's id. Keying forces a real unmount+mount, the same invariant every
+// other writing surface already relies on.
+export function QuickSprint() {
+  const { id } = useParams<{ id: string }>();
+  return <QuickSprintView key={id ?? 'scratch'} />;
 }

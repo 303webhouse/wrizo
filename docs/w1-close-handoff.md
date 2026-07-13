@@ -60,17 +60,24 @@ can execute this top to bottom with no chat context.
 
 ## Step 3 — Build W2 (authorized now)
 
-Branch `w2-way-back` off post-merge `main`; execute
+~~Branch `w2-way-back` off post-merge `main`; execute
 `docs/w2-way-back-brief.md` S0→S4 as written. House laws in full force:
 harness committed (`scripts/harness/w2.mjs`), propose-never-ship on any
 config, flag harness-invisible feel items for the hardware session.
-**Report = push.** Fable reviews the branch; merge on Nick's word.
+**Report = push.** Fable reviews the branch; merge on Nick's word.~~
+
+**EXECUTED — 2026-07-13.** Built, pushed, reviewed (`docs/w2-review-fable.md`,
+REQUIRED — 2), merged (pre-authorized, fix-forward mode), w2.1 folded
+(R1 + R2 + harness growth 21→31), pushed again for the delta spot-check.
+See `docs/open-threads.md` item 6 and `docs/backlog.md`.
 
 ## Step 4 — Build M1 (authorized after W2's cycle closes)
 
-Execute `docs/m1-milestones-brief.md`. **S0 is a hard gate:** if the beat
-status vocabulary has no terminal value, STOP and return to Fable — do not
-invent schema mid-build.
+**Arms once w2.1's delta spot-check comes back green** (per
+`docs/w2-review-fable.md`'s merge/close protocol) — not yet started as of
+this edit. Execute `docs/m1-milestones-brief.md`. **S0 is a hard gate:** if
+the beat status vocabulary has no terminal value, STOP and return to
+Fable — do not invent schema mid-build.
 
 ## On completion
 

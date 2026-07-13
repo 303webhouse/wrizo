@@ -10,6 +10,11 @@
 // step): before W2, browser/router back-navigation restores the ROUTE (React
 // Router's own history) but nothing else — no surface anywhere persisted
 // scroll position or caret offset across an unmount. This module is the fix.
+//
+// Fable W2-review advisory A3 (2026-07-13): a reload on a non-writing route
+// preserves the chip, since sessionStorage survives a same-tab reload. Judged
+// CORRECT, not a bug — the "live thread" should survive a refresh; it dies
+// with the tab. Recorded here so this isn't "fixed" by a future pass.
 
 export interface WayBackSession {
   entryId: string;

@@ -12,7 +12,7 @@ outlive a session lives here, not in chat.
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
 2. **The consolidated hardware session** (after the deploy — deploy is now
-   live, J4 + J5 + S1 + W1 all). Seven gates, one sitting; bugs → side
+   live, J4 + J5 + S1 + W1 + W2 all). Eight gates, one sitting; bugs → side
    chats, verdicts → the ledger. Owner: Nick.
    - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
      visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
@@ -40,6 +40,10 @@ outlive a session lives here, not in chat.
      (reward vs interruption; A4's reset-drain), ≥1700px rail-toggle page
      stability (the actual bug W1 fixed), Workshop/Publish tabs behaving
      sanely on a Page.
+   - W2 · S25 + desktop: chip legibility + thumb reach at the rail's top
+     slot, the restore "snap" (does arriving mid-scroll/mid-caret feel like
+     resuming or like being teleported), and the ember warmth reading as
+     invitation rather than notification.
    - Plus: the formal stack word (VW's old merge condition, satisfied in
      practice; this session makes it official).
 
@@ -124,18 +128,56 @@ outlive a session lives here, not in chat.
    original push: `fe24918` (state-of-wrizo 2026-07 + logo set, docs-only
    sweep).
 
+6. ~~**W2 — the way back.**~~ **DONE — merged/deployed 2026-07-13.** Built
+   per `docs/w2-way-back-brief.md` on `w2-way-back` @ `1b10d04`, off
+   post-W1 `main` — the PAGE IS PRIMARY rule (AGENTS.md, verbatim from
+   `docs/page-primacy-canon.md`) landed with this ticket, per the canon.
+   Session capture (`store/wayBack.ts`, `store/caretOffset.ts`,
+   `components/useWayBack.ts`) wired into all five writing surfaces; the
+   return chip in DeskRail's top slot. Fable's review returned REQUIRED — 2
+   (`docs/w2-review-fable.md`), no data-loss-class or architecture findings.
+   **w2.1 folded before close:** R1 — the review's own comment ("callers
+   are keyed by id") turned out to be false for QuickSprint: it had NO
+   remount-forcing key at its route mount (unlike PageEditor/JournalEntry),
+   so navigating between two different sprint routes reused the same
+   component instance — `liveRef` (updated unconditionally every render)
+   would already read the NEW id by the time the OLD entry's capture
+   cleanup ran, mislabeling its scroll/caret under the wrong id. Fixed by
+   wrapping `QuickSprint` in an outer `key={draftId}`-forcing component,
+   the same pattern PageEditor/JournalEntry already used. R2 — the restore
+   effect's rAF + 80/200/350ms re-assert ladder (needed to win the
+   mount-seeding race against a surface's own initial adjustments, e.g. the
+   typewriter's hold-band scroll) fought the writer if they acted inside
+   that window; fixed with a self-removing canceller on
+   keydown/pointerdown/wheel/touchstart that clears the remaining
+   re-asserts the moment the writer does anything. `scripts/harness/w2.mjs`
+   grew 21 → 31 checks (the pager A→B non-leak proof, the QuickSprint
+   depart/return round trip, the R2 cancel-on-input proof). Advisories
+   A1/A2/A3 noted in file headers, not fixed (no live problem at current
+   scale; A3 — a reload preserving the chip — judged correct, not a bug).
+   Merge was pre-authorized (Nick, 2026-07-13, fix-forward mode). CC merged
+   (fast-forward, no conflicts), ran the full suite (`tsc` ×2 + `build:web`
+   + selftest + `j4.mjs` 26/26 + `j5.mjs` 40/40 + `s1.mjs` 87/87 +
+   `w1.mjs` 18/18 + `w2.mjs` 21/21) green on merged `main`, pushed,
+   `railway up`, confirmed live — then folded w2.1, re-ran the full suite
+   again (all green, `w2.mjs` now 31/31), and pushed + redeployed a second
+   time for Fable's delta spot-check. **Zero-schema** both times — liveness
+   check only. See `docs/backlog.md`. W2's own S25 + desktop gate items
+   join the consolidated hardware session (item 2) — Nick's device verdict
+   closes the ticket.
+
 ## CANON DEBTS — Fable's, actionable after the gate session
-6. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
+7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
    "Your order"/Journal-only vocabulary ruling, and the J-arc verdicts.
    Trigger: Nick's session verdicts land.
-7. **F5 TTFK DoD-6 empirical close.** One small CC task: run the
+8. **F5 TTFK DoD-6 empirical close.** One small CC task: run the
    sessions_log queries against prod (non-null `surface` +
    `desk_opened_at` rows). Fold into the Rev 3 prep relay.
 
 ## POST-ARC QUEUE — unblocks when J5 ships + gates close
-8. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
+9. ~~**Fragments-under-Pages committee pass.**~~ **RULED — 2026-07-11**
    (`docs/fragments-under-pages-canon.md`, convened on Nick's word — "let's
    get it built" — with a sequencing pull-forward). Names the pattern `Box`
    and `ScriptDoc` already share: one jsonb column per substrate family on
@@ -148,33 +190,33 @@ outlive a session lives here, not in chat.
    **S1 may proceed** (see item 4 above, now built). Closes this item;
    future structured pageTypes join by satisfying §2's checklist in their
    own brief's Slice 0, no new committee pass required.
-9. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
-   deferred until Journal UI surfaces existed; the Spread and the Board now
-   exist. B4 intersects the Journal sprint reward surface (design together).
-10. **HOME verification remainder**: bighead art, sort-hint.
-11. ~~Page-is-primary committee pass~~ **RULED — 2026-07-12**
+10. **B3 atmosphere pass · B4 ember accent finish · W5 responsive** — were
+    deferred until Journal UI surfaces existed; the Spread and the Board now
+    exist. B4 intersects the Journal sprint reward surface (design together).
+11. **HOME verification remainder**: bighead art, sort-hint.
+12. ~~Page-is-primary committee pass~~ **RULED — 2026-07-12**
     (`docs/page-primacy-canon.md`, on Nick's delegated word via Fable): tools
     orbit, navigation departs with a guaranteed way back; overlay-Drawers
     trimmed to horizon; metadata-below-page blessed final; Plan-beside-page
     pull-forward declined with reason. Build: **W2 — the way back**
-    (`docs/w2-way-back-brief.md`), sequenced after the W1 merge; AGENTS.md
-    rule text ships with the W2 ticket.
-12. ~~Progress-milestones committee pass~~ **RULED — 2026-07-12**
+    (`docs/w2-way-back-brief.md`) — **DONE, see item 6 above.**
+13. ~~Progress-milestones committee pass~~ **RULED — 2026-07-12**
     (`docs/progress-milestones-canon.md`, on Nick's delegated word via
     Fable): coverage, never verdicts — circles project beat facts read-only;
     no marking gestures on writing surfaces; word targets vetoed; notecards
     get the status-dot, not a bar; one celebration grammar, B4 the final
     authority. Build: **M1** (`docs/m1-milestones-brief.md`), sequenced
-    after W2's review/merge cycle, designed with B4.
+    after W2's review/merge cycle (now closed, item 6) — arms once w2.1's
+    delta spot-check comes back green, per `docs/w1-close-handoff.md`.
 
 ## HORIZON — no ticket yet, on the map
-13. **User-authored identity / rhizomatic personalization**: wordmark
+14. **User-authored identity / rhizomatic personalization**: wordmark
     replaceable with the writer's own hand; four launch themes (Plateau,
     Flux, Volant, Nomad); single hard invariant = the orange accent.
-14. **Reciprocity gate** for the future workshop feature (review before
+15. **Reciprocity gate** for the future workshop feature (review before
     submitting).
-15. **wrizo.app Cloudflare resolution** (domain plumbing).
-16. **USPTO "Wrizo" search** before significant brand investment (one
+16. **wrizo.app Cloudflare resolution** (domain plumbing).
+17. **USPTO "Wrizo" search** before significant brand investment (one
     low-threat prior use known: a throwaway utility on pi7.org).
 
 ## TOOLING STATUS — for any fresh session's orientation

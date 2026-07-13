@@ -5,6 +5,19 @@
 // node (JournalEntry's plaintext-only sheet) or many (ForwardOnlyEditor's
 // per-run spans) — the same shape `placeCaretEnd`/`lastBlockRange` already
 // use elsewhere in this codebase, generalized to an arbitrary offset.
+//
+// Fable W2-review advisories (2026-07-13), noted here for the future rather
+// than fixed now — neither is a live problem at current scale:
+//   A1 — useWayBack calls getCaretOffset on every `selectionchange` (i.e. on
+//        every keystroke), walking the TreeWalker from the editor's start
+//        each time. Negligible at current node counts (µs-scale). If a
+//        future editor structure multiplies text nodes (per-word spans,
+//        heavy run-splitting), switch to tracking anchorNode/anchorOffset
+//        directly and resolving the linear offset only once, at capture.
+//   A2 — setCaretOffset calls el.focus() AFTER addRange (below). Correct in
+//        Chromium/Electron — the harness proves the restored offsets land
+//        exactly — but if a non-Chromium target ever matters, the safer
+//        order is focus-then-range.
 
 // Read the caret's linear offset within `el` (chars from the start of its
 // text content), or null if the selection isn't inside `el` at all.

@@ -86,7 +86,16 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entryId]);
 
-  // Restore.
+  // Restore. The rAF + 80/200/350ms re-assert ladder wins the mount-seeding
+  // race (see above) — but left unchecked it also fights the WRITER: typing
+  // resumed at ~300ms would get the caret yanked back mid-word by the 350ms
+  // write; an immediate flick-scroll would get un-scrolled (Fable W2-R2). The
+  // initial rAF apply always lands (it's what makes the return feel instant);
+  // the LATER re-asserts exist only to win the settling race against the
+  // surface's own mount-time adjustments, so they cancel the moment the
+  // writer does anything — a real keystroke, pointer action, wheel, or touch
+  // means they've already resumed and any further correction would fight them
+  // instead of helping.
   useEffect(() => {
     const wb = getWayBack();
     if (!wb || wb.entryId !== entryId) return;
@@ -97,7 +106,23 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
     };
     const raf = requestAnimationFrame(apply);
     const timers = [80, 200, 350].map(ms => window.setTimeout(apply, ms));
-    return () => { cancelAnimationFrame(raf); timers.forEach(t => window.clearTimeout(t)); };
+    const cancelReasserts = () => { timers.forEach(t => window.clearTimeout(t)); };
+    const events: Array<[string, EventListenerOptions]> = [
+      ['keydown', { capture: true }],
+      ['pointerdown', { capture: true }],
+      ['wheel', { capture: true }],
+      ['touchstart', { capture: true }],
+    ];
+    const onFirstInput = () => {
+      cancelReasserts();
+      events.forEach(([type, opts]) => window.removeEventListener(type, onFirstInput, opts));
+    };
+    events.forEach(([type, opts]) => window.addEventListener(type, onFirstInput, opts));
+    return () => {
+      cancelAnimationFrame(raf);
+      cancelReasserts();
+      events.forEach(([type, opts]) => window.removeEventListener(type, onFirstInput, opts));
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entryId]);
 
