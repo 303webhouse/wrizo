@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<!--
+  MACHINA · MOCKUP B4 · "INSTRUMENT"                       Fable · 2026-07-14
+  TH-arc, theme #3. Third revision on Nick's word (supersedes B3). Base
+  unchanged: IBM Plex suite (Mono chrome / Sans labels + prose-sans /
+  Serif prose-serif), true-neutral ladder. This revision adds:
+
+  · CAST neutral|cool and STEEL off|on ported from C, retuned to B's
+    ladder values.
+  · The wordmark O-square: the mark folds into the wordmark — the terminal
+    O of WRIZO is the orange square. One of the four orange sites; the
+    brand's own spark. (Touches the wordmark lane — the production mark is
+    the hand-drawn logo; treat this as Machina's wordmark treatment,
+    ruling at canon time.)
+  · THESIS REFINEMENT (Nick, 2026-07-14): output and efficiency take
+    priority; the human recedes — orange persists only as sparks of
+    humanity in the machine. The canon doc carries final wording.
+  · TWO PROPOSED SPARK SITES, judgeable via the SPARK toggle (the toggle
+    governs only these two; caret / surge / O-square are structural):
+      1. Selection — the human's touch on the text: a faint orange wash
+         that exists only while the hand is on the words.
+      2. The way back — the return chip's ◂ glyph: the trail back to
+         where you were. Memory as the human residue.
+    Both are interaction- or meaning-coupled, never ambient — no new
+    effect primitives (canon §1 conformant).
+
+  B3 REVISIONS (Nick's rulings, 2026-07-14):
+  · Cool cast is now the DEFAULT ladder; the toggle offers NEUTRAL. The RC
+    bakes cool into the base values.
+  · The sprint bar's caret notch joins the writer's lane — orange, in
+    flight and at rest. The prose caret marks where you are in the text;
+    the bar caret marks where you are in the work. Both are the human's
+    position. (STEEL no longer touches the notch — the reserve covers
+    focus / active-tab / line-active carriers only.)
+  · Prose-sans bake-off: SANS toggle cycles IBM Plex Sans → Instrument
+    Sans → Public Sans → Atkinson Hyperlegible (auto-switches VOICE to
+    SANS). Metrics normalize at RC once one is chosen.
+  · The O-square corrected to a true letterform: cap-height, seated on
+    the baseline, stroke matched to the caps. Nick's reading, canonical:
+    the human, squared off by civilization.
+
+  B4 REVISIONS (Nick's rulings, 2026-07-14 — supersede any toggle
+  mechanics described in the blocks above):
+  · Prose-sans DECIDED: Atkinson Hyperlegible. Bake-off closed; SANS
+    toggle removed; Instrument Sans / Public Sans dropped from the load.
+  · Prose size 11pt, both voices (document-world sizing; titles 17pt
+    serif / 15pt sans, proportional).
+  · CAST is now the theme's two TEMPERAMENTS, one control:
+      COOL (default) — the machine: steel system accents (#7FA0BC on all
+        line-active carriers: focus, active tab, rail edge), sparks OFF.
+        Orange only at positions (prose caret, bar notch), completion,
+        and the mark.
+      NEUTRAL — the human: system accents go theme orange; sparks ON
+        (selection wash, the way back).
+    STEEL and SPARK toggles removed — both behaviors bound to cast.
+  · Rail active edge thinned to 1px, matching the tab underline.
+
+  ENCODES (Machina frame v0, pending Nick's rulings):
+  · Orange #FF9800 as the ONLY chroma — caret / completion surge / Publish /
+    the mark. Lanes carried by value and weight, not hue: world = dark
+    grays, system = light grays + hairlines (line-active, the bar notch),
+    live work = orange on completion.
+  · Identity lexicon — zero renames (rail nouns, Voice Wall chip canonical).
+  · Effects layer EMPTY by design; the celebration grammar is the sole
+    RESPONSE element, skinned gray→orange, ≤1.6s, identical every time.
+  · Canon refs: flux-theme-canon.md §2/§6/§9/§10/§11/§12/§14. Square
+    corners, solid borders, ≤3Hz, prefers-reduced-motion honored.
+
+  DEMO CORE (RC-2 pattern): editable title + prose (orange caret), live
+  word count, 30-word sprint bar w/ completion surge (sweep → orange
+  handoff → 8-tick burst; reduced-motion = crossfade), celebrate-summon
+  (~2.5s), chrome fade while typing (~.7s down, 4.2s idle return, pointer
+  return), paste-block chip "VOICE WALL · PASTE BLOCKED", toggles: PAGE
+  dark|light · VOICE serif|sans · FADE on|off. RESET is demo-only.
+
+  Fonts via Google CDN for the standalone demo; production ships fontsource
+  (@fontsource/ibm-plex-mono / ibm-plex-sans / ibm-plex-serif —
+  availability verified, re-verify at brief time). Token names are the
+  canon's semantic slots; production re-points material names per TH1
+  Slice 0.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machina — Mockup B4 · Instrument</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#0A0A0A; --chrome:#121212; --rail:#0E0E0E;
+    --line:#242424; --line-strong:#333333; --line-active:var(--accent); /* NEUTRAL: system accents go orange (B4) */
+    --signal-live:#A3A3A3;
+    --page:#161616; --page-border:#2E2E2E;
+    --ink:#E9E9E9; --page-ink:#E9E9E9; --meta:#8A8A8A; --muted:#6F6F6F;
+    --accent:#FF9800;
+    --font-chrome:'IBM Plex Mono',monospace; --font-label:'IBM Plex Sans',sans-serif;
+    --font-serif:'IBM Plex Serif',serif;     --font-sans:'Atkinson Hyperlegible',sans-serif; /* DECIDED (B4) */
+  }
+  body[data-page="light"]{
+    --page:#FAFAFA; --page-border:#D6D6D6; --page-ink:#141414;
+  }
+  /* CAST cool — ~2% blue cast on B's ladder (experiment) */
+  body[data-cast="cool"]{
+    --ground:#0A0B0E; --chrome:#12141A; --rail:#0E1015;
+    --line:#252933; --line-strong:#343A46; --line-active:#7FA0BC; /* COOL: steel — the machine's accent (B4) */
+    --signal-live:#9DA5B4;
+    --page:#16181F; --page-border:#2F3541;
+    --ink:#E6E9F1; --page-ink:#E6E9F1; --meta:#878E9C; --muted:#6C7482;
+  }
+  body[data-cast="cool"][data-page="light"]{
+    --page:#F8F9FC; --page-border:#D3D8E1; --page-ink:#13161C;
+  }
+  /* B4: steel + sparks are bound to CAST; prose-sans decided (Atkinson) */
+  *{box-sizing:border-box; margin:0; padding:0; border-radius:0}
+  html,body{height:100%}
+  body{
+    background:var(--ground); color:var(--ink);
+    display:grid; grid-template-rows:52px 1fr 56px; grid-template-columns:176px 1fr;
+    font-family:var(--font-label); overflow:hidden;
+  }
+  button{background:none; border:none; color:inherit; font:inherit; cursor:pointer}
+  button:focus-visible{outline:1px solid var(--line-active); outline-offset:2px}
+
+  /* ---------- chrome ---------- */
+  .chrome{transition:opacity .9s ease}
+  body.writing[data-fade="on"] .chrome{opacity:.05; transition:opacity .7s ease}
+  body.writing[data-fade="on"] .bottombar.summon{opacity:1}
+
+  .topbar{
+    grid-column:1/-1; background:var(--chrome); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:26px; padding:0 20px;
+  }
+  .wordmark{font-family:var(--font-label); font-weight:600; letter-spacing:.06em; font-size:13.5px; line-height:1}
+  .wordmark .oq{display:inline-block; width:9.5px; height:9.5px; margin-left:2px;
+                border:2px solid var(--accent); vertical-align:baseline}
+  .mtag{font-family:var(--font-chrome); color:var(--muted); font-size:10px; font-weight:500; letter-spacing:.1em}
+  .tabs{display:flex; gap:24px; margin-left:6px}
+  .tab{
+    font-family:var(--font-chrome); font-size:11px; font-weight:500;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+    padding:17px 1px 15px; border-bottom:1px solid transparent;
+  }
+  .tab.active{color:var(--ink); border-bottom-color:var(--line-active)}
+  .tab:hover{color:var(--ink)}
+  .controls{margin-left:auto; display:flex; gap:10px}
+  .tgl{
+    font-family:var(--font-chrome); font-size:10px; font-weight:500;
+    letter-spacing:.09em; color:var(--muted);
+    border:1px solid var(--line); padding:4px 9px;
+  }
+  .tgl b{color:var(--ink); font-weight:500}
+  .tgl:hover{border-color:var(--line-strong)}
+
+  .rail{
+    background:var(--rail); border-right:1px solid var(--line);
+    padding:16px 14px; display:flex; flex-direction:column; gap:22px;
+  }
+  .chip{
+    font-family:var(--font-chrome); font-size:10px; font-weight:500;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--meta);
+    border:1px solid var(--line); padding:7px 9px; text-align:left; width:100%;
+  }
+  .chip:hover{color:var(--ink); border-color:var(--line-strong)}
+  .rail nav{display:flex; flex-direction:column; gap:2px}
+  .ritem{
+    font-family:var(--font-chrome); font-size:10.5px; font-weight:500;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+    text-align:left; padding:8px 9px; border-left:1px solid transparent;
+  }
+  .ritem.active{color:var(--ink); border-left-color:var(--line-active)}
+  .ritem:hover{color:var(--ink)}
+
+  /* ---------- stage ---------- */
+  main{overflow-y:auto; padding:44px 24px 64px; scrollbar-width:thin; scrollbar-color:var(--line) transparent}
+  .page{
+    max-width:720px; margin:0 auto; background:var(--page); color:var(--page-ink);
+    border:1px solid var(--page-border); padding:58px 66px 70px; min-height:620px;
+  }
+  .doc-title{font-weight:600; margin-bottom:26px}
+  .prose p{margin-bottom:1em}
+  .prose:focus,.doc-title:focus{outline:none}
+  .doc-title,.prose{caret-color:var(--accent)} /* the only color in the room */
+  body[data-voice="serif"] .prose{font-family:var(--font-serif); font-size:11pt; line-height:1.75} /* 11pt — Nick's ruling (B4) */
+  body[data-voice="serif"] .doc-title{font-family:var(--font-serif); font-size:17pt}
+  body[data-voice="sans"]  .prose{font-family:var(--font-sans); font-size:11pt; line-height:1.8}
+  body[data-voice="sans"]  .doc-title{font-family:var(--font-sans); font-size:15pt}
+  ::selection{background:rgba(190,190,190,.28)}
+  body[data-page="light"] .page ::selection{background:rgba(0,0,0,.13)}
+  /* the sparks — live under the NEUTRAL temperament only (B4) */
+  body[data-cast="neutral"] ::selection{background:rgba(255,152,0,.22)}
+  body[data-cast="neutral"][data-page="light"] .page ::selection{background:rgba(255,152,0,.28)}
+  .way{color:inherit}
+  body[data-cast="neutral"] .way{color:var(--accent)}
+  .page-meta{
+    max-width:720px; margin:12px auto 0; text-align:right;
+    font-family:var(--font-chrome); font-size:10px; font-weight:500;
+    letter-spacing:.08em; color:var(--muted);
+  }
+
+  /* ---------- bottom bar / sprint ---------- */
+  .bottombar{
+    grid-column:1/-1; background:var(--chrome); border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:16px; padding:0 20px;
+  }
+  .sprint{display:flex; align-items:center; gap:14px}
+  .track{position:relative; width:240px; height:4px}
+  .trackin{position:absolute; inset:0; background:var(--line); overflow:hidden}
+  .fill{position:absolute; top:0; bottom:0; left:0; width:0%;
+        background:var(--signal-live); transition:width .25s ease, background-color .35s ease}
+  .sweeper{position:absolute; top:0; bottom:0; width:36%; left:-40%; opacity:0;
+           background:linear-gradient(90deg,transparent,rgba(233,233,233,.85),var(--accent))}
+  .track.sweep .sweeper{animation:sweep .55s ease-out}
+  @keyframes sweep{from{left:-40%;opacity:1}to{left:104%;opacity:1}}
+  .notch{position:absolute; top:-3px; bottom:-3px; width:2px; left:-1px;
+         background:var(--accent); animation:npulse 1.8s ease-in-out infinite} /* the human's position in the work */
+  @keyframes npulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .track.complete .fill{background:var(--accent)}
+  .track.complete .notch{background:var(--accent); animation:none; opacity:1}
+  .burst{position:absolute; left:100%; top:50%; width:0; height:0}
+  .burst span{position:absolute; left:0; top:0; width:9px; height:1px;
+              background:var(--accent); opacity:0; transform-origin:left center}
+  .burst.go span{animation:tick .6s ease-out forwards}
+  .burst span:nth-child(2){animation-delay:.02s} .burst span:nth-child(3){animation-delay:.04s}
+  .burst span:nth-child(4){animation-delay:.06s} .burst span:nth-child(5){animation-delay:.08s}
+  .burst span:nth-child(6){animation-delay:.10s} .burst span:nth-child(7){animation-delay:.12s}
+  .burst span:nth-child(8){animation-delay:.14s}
+  @keyframes tick{from{opacity:.95; transform:rotate(var(--r)) translateX(3px)}
+                  to{opacity:0;  transform:rotate(var(--r)) translateX(19px)}}
+  .slabel,.reset,.rightslot{
+    font-family:var(--font-chrome); font-size:10px; font-weight:500;
+    letter-spacing:.09em; color:var(--muted);
+  }
+  .slabel{color:var(--meta); min-width:116px}
+  .reset{border:1px solid var(--line); padding:3px 8px}
+  .reset:hover{border-color:var(--line-strong); color:var(--ink)}
+  .rightslot{margin-left:auto}
+
+  /* ---------- voice wall chip ---------- */
+  .wallchip{
+    position:fixed; top:66px; left:50%; transform:translateX(-50%);
+    background:var(--chrome); border:1px solid var(--line-strong); color:var(--ink);
+    font-family:var(--font-chrome); font-size:10px; font-weight:500;
+    letter-spacing:.11em; padding:8px 14px; opacity:0; pointer-events:none;
+    transition:opacity .18s ease;
+  }
+  .wallchip.show{opacity:1}
+
+  @media (prefers-reduced-motion: reduce){
+    .notch{animation:none}
+    .track.sweep .sweeper{animation:none}
+    .burst.go span{animation:none}
+  }
+</style>
+</head>
+<body data-page="dark" data-voice="serif" data-fade="on" data-cast="cool">
+
+  <header class="topbar chrome">
+    <span class="wordmark" aria-label="WRIZO">WRIZ<span class="oq" aria-hidden="true"></span></span>
+    <span class="mtag">MACHINA · B4</span>
+    <nav class="tabs">
+      <button class="tab active">Draft</button>
+      <button class="tab">Workshop</button>
+      <button class="tab">Publish</button>
+    </nav>
+    <div class="controls">
+      <button class="tgl" data-k="page"  data-vals="dark,light">PAGE · <b>DARK</b></button>
+      <button class="tgl" data-k="voice" data-vals="serif,sans">VOICE · <b>SERIF</b></button>
+      <button class="tgl" data-k="fade"  data-vals="on,off">FADE · <b>ON</b></button>
+      <button class="tgl" data-k="cast"  data-vals="cool,neutral" title="The two temperaments — COOL: the machine (steel accents, no sparks) · NEUTRAL: the human (orange accents + sparks)">CAST · <b>COOL</b></button>
+    </div>
+  </header>
+
+  <aside class="rail chrome">
+    <button class="chip"><span class="way">◂</span> Scope notes</button>
+    <nav>
+      <button class="ritem">Journal</button>
+      <button class="ritem active">Pages</button>
+      <button class="ritem">Plan</button>
+      <button class="ritem">Board</button>
+      <button class="ritem">Shelf</button>
+    </nav>
+  </aside>
+
+  <main>
+    <section class="page">
+      <h1 class="doc-title" id="title" contenteditable="true" spellcheck="false">Interim Risk Assessment — Draft 2</h1>
+      <div class="prose" id="prose" contenteditable="true" spellcheck="false">
+        <p>This document consolidates the open findings from the March review cycle and sets out the assumptions under which the current mitigation schedule was approved. Each finding is stated with its owner, its review date, and the condition under which it escalates.</p>
+        <p>Two items remain unresolved from the prior cycle. Both concern data retention at the vendor boundary, and both are held pending the counterparty's revised terms, expected before the end of the quarter.</p>
+      </div>
+    </section>
+    <div class="page-meta chrome" id="pageMeta">— words · edited just now</div>
+  </main>
+
+  <footer class="bottombar chrome" id="bottombar">
+    <div class="sprint">
+      <div class="track" id="track">
+        <div class="trackin"><div class="fill" id="fill"></div><div class="sweeper"></div></div>
+        <div class="notch" id="notch"></div>
+        <div class="burst" id="burst">
+          <span style="--r:-90deg"></span><span style="--r:-64deg"></span>
+          <span style="--r:-38deg"></span><span style="--r:-12deg"></span>
+          <span style="--r:12deg"></span><span style="--r:38deg"></span>
+          <span style="--r:64deg"></span><span style="--r:90deg"></span>
+        </div>
+      </div>
+      <span class="slabel" id="slabel">SPRINT 0 / 30</span>
+      <button class="reset" id="reset" title="Demo affordance — resets the sprint baseline">RESET</button>
+    </div>
+    <div class="rightslot">P. 3 · <span id="clock">00:00</span></div>
+  </footer>
+
+  <div class="wallchip" id="wallchip" role="status">VOICE WALL · PASTE BLOCKED</div>
+
+<script>
+(function(){
+  const body=document.body;
+  const prose=document.getElementById('prose'), title=document.getElementById('title');
+  const fill=document.getElementById('fill'), notch=document.getElementById('notch');
+  const track=document.getElementById('track'), burst=document.getElementById('burst');
+  const slabel=document.getElementById('slabel'), pageMeta=document.getElementById('pageMeta');
+  const bottombar=document.getElementById('bottombar'), wall=document.getElementById('wallchip');
+  const clock=document.getElementById('clock');
+  const GOAL=30;
+  const words=el=>((el.innerText||'').trim().match(/\S+/g)||[]).length;
+  let baseline=words(prose), done=false;
+  const rm=matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* session clock (M1 rightSlot) */
+  const t0=Date.now();
+  setInterval(()=>{const s=Math.floor((Date.now()-t0)/1e3);
+    clock.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);
+
+  /* chrome fade — type fades the room; idle or pointer summons it */
+  let idle=null;
+  function typed(){ body.classList.add('writing'); clearTimeout(idle);
+    idle=setTimeout(()=>body.classList.remove('writing'),4200); }
+  document.addEventListener('pointermove',()=>{clearTimeout(idle); body.classList.remove('writing');});
+  [prose,title].forEach(el=>el.addEventListener('keydown',e=>{
+    if(e.key.length===1||e.key==='Backspace'||e.key==='Enter') typed(); }));
+
+  /* sprint */
+  function update(){
+    const n=Math.max(0,words(prose)-baseline), g=Math.min(n/GOAL,1);
+    fill.style.width=(g*100)+'%'; notch.style.left='calc('+(g*100)+'% - 1px)';
+    slabel.textContent='SPRINT '+n+' / '+GOAL;
+    pageMeta.textContent=words(prose)+' words · edited just now';
+    if(!done && n>=GOAL) celebrate();
+  }
+  function celebrate(){
+    done=true;
+    track.classList.add('complete');            /* gray hands off to orange */
+    bottombar.classList.add('summon');          /* the surge defies the fade */
+    setTimeout(()=>bottombar.classList.remove('summon'),2500);
+    if(rm.matches) return;                      /* reduced motion: crossfade only */
+    track.classList.add('sweep');  setTimeout(()=>track.classList.remove('sweep'),600);
+    burst.classList.add('go');     setTimeout(()=>burst.classList.remove('go'),780);
+  }
+  prose.addEventListener('input',update);
+  document.getElementById('reset').addEventListener('click',()=>{
+    baseline=words(prose); done=false; track.classList.remove('complete'); update(); });
+  update();
+
+  /* the Voice Wall speaks only when it acts — canonical name, identity lexicon */
+  [prose,title].forEach(el=>el.addEventListener('paste',e=>{
+    e.preventDefault();
+    wall.classList.add('show'); clearTimeout(wall._t);
+    wall._t=setTimeout(()=>wall.classList.remove('show'),2200); }));
+
+  /* pref toggles — Voice / Page / Fade (canon §11) */
+  document.querySelectorAll('.tgl').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const k=btn.dataset.k, vals=btn.dataset.vals.split(',');
+      const next=vals[(vals.indexOf(body.dataset[k])+1)%vals.length];
+      body.dataset[k]=next;
+      btn.innerHTML=btn.textContent.split('·')[0].trim()+' · <b>'+next.toUpperCase()+'</b>';
+    });
+  });
+})();
+</script>
+</body>
+</html>

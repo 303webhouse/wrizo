@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!--
+  NOMAD · RC-3  —  2026-07-14
+  Variants (toggleable, Machina precedent): STEPPE (green days / fire nights)
+  and AFTERGLOW (olive days / magenta-rose nights). TH1 flag: seam needs a
+  per-theme variant slot. Nav is fenceless — no group labels; whitespace
+  clusters carry grouping. Journey lexicon (display-only; canonical persists):
+  Camp, Fireside, Leaves, Route, Script, Drift · Waybook, Vista, Clearing,
+  Cairn, Saddlebag, Bundle · Waypoints, Relay, Stones, the Watch.
+  Mark: bold plate (dilated +6px, IoU .962), olive — sage #B7BC9A at night,
+  variant deep olive by day. Writable prose + live chrome fade (W1 constants).
+  Destination: docs/design/nomad-rc3.html
+-->
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOMAD · RC-3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Julius+Sans+One&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --accent:#FF9800; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; }
+  body { display:grid; grid-template-rows:60px 1fr 54px; grid-template-columns:242px 1fr;
+    background:var(--ground); color:var(--ink);
+    font-family:"Alegreya Sans", system-ui, sans-serif;
+    transition:background .45s ease, color .45s ease; overflow:hidden; }
+  ::selection { background:var(--selbg); color:var(--selink); }
+  :focus-visible { outline:1.5px solid var(--dim); outline-offset:3px; }
+  .chromeLabel { font-family:"Julius Sans One", sans-serif; letter-spacing:.2em; text-transform:uppercase; }
+  .fades { transition:opacity 1.4s ease; }
+  body.writing .fades { opacity:.05; transition-duration:.7s; pointer-events:none; }
+
+  header { grid-column:1/3; display:flex; align-items:center; gap:34px; padding:0 26px; z-index:3; }
+  .mark { height:38px; width:auto; flex:0 0 auto; transition:color .45s ease; }
+  .tabs { margin-left:auto; display:flex; gap:30px; align-items:flex-end; }
+  .tab { font-size:12px; color:var(--muted); position:relative; padding-bottom:8px; cursor:default; display:flex; gap:8px; align-items:center; }
+  .tab.active { color:var(--ink); }
+  .tab.active .tabline { position:absolute; left:-2px; right:-4px; bottom:0; height:8px; color:var(--accent); }
+  .tab .g { width:15px; height:15px; color:var(--muted); }
+
+  nav { grid-row:2; padding:20px 0 24px 26px; display:flex; flex-direction:column; z-index:2; overflow-y:auto; scrollbar-width:none; }
+  .wayback { display:flex; gap:10px; align-items:center; color:var(--muted); font-size:13.5px; font-style:italic; cursor:default; flex:0 0 auto; margin-bottom:30px; }
+  .wayback .g { width:18px; height:18px; color:var(--faint); }
+  .menu { display:flex; flex-direction:column; gap:15px; }
+  .menu + .menu { margin-top:36px; }
+  .item { display:flex; gap:13px; align-items:center; font-size:11.5px; color:var(--muted); cursor:default; }
+  .item .g { width:20px; height:20px; color:var(--faint); flex:0 0 auto; }
+  .item.active { color:var(--ink); }
+  .item.active .g { color:var(--dim); }
+
+  main { grid-row:2; position:relative; overflow-y:auto; z-index:1; }
+  .glow { position:fixed; left:50%; bottom:54px; transform:translateX(-50%); width:132vw; height:48vh;
+          background:radial-gradient(ellipse at 50% 100%, var(--glow) 0%, transparent 62%);
+          pointer-events:none; z-index:0; animation:breathe 7.5s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{opacity:.88} 50%{opacity:1} }
+  .sheet { position:relative; z-index:1; max-width:60ch; margin:0 auto; padding:7vh 28px 20vh; }
+  .entrytag { font-size:10.5px; color:var(--muted); margin-bottom:32px; }
+  .prose { font-family:"Crimson Pro", Georgia, serif; font-size:19px; line-height:1.78;
+           caret-color:var(--accent); outline:none; min-height:46vh; }
+  .prose p + p { margin-top:1.15em; }
+
+  .orbit { position:absolute; right:30px; top:8vh; display:flex; flex-direction:column; gap:20px; z-index:2; }
+  .tool { display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--faint); cursor:default; }
+  .tool .g { width:19px; height:19px; }
+  .tool span { font-family:"Julius Sans One", sans-serif; font-size:7.5px; letter-spacing:.22em; text-transform:uppercase; }
+
+  .dune { position:fixed; left:10px; bottom:64px; width:230px; height:70px; color:var(--dim); opacity:.06; z-index:0; pointer-events:none; }
+
+  footer { grid-column:1/3; display:flex; align-items:center; gap:26px; padding:0 26px;
+           border-top:1px solid var(--hairline); z-index:3; }
+  .sprint { font-size:10.5px; color:var(--muted); white-space:nowrap; }
+  .barwrap { flex:1; position:relative; height:24px; }
+  .track { position:absolute; left:0; right:0; top:10.5px; height:3px; background:var(--track); }
+  .fill  { position:absolute; left:0; top:10.5px; height:3px; width:62%; background:var(--dim); }
+  .wp { position:absolute; top:0; width:24px; height:24px; transform:translateX(-50%); }
+  .wp svg { width:100%; height:100%; overflow:visible; }
+  .wp.done, .wp.kindled { color:var(--dim); }
+  .wp.open { color:var(--faint); }
+  .clock { font-size:11px; color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+  .rc { position:fixed; right:16px; bottom:72px; z-index:9; background:rgba(20,20,20,.92); color:#cfcfcf;
+        font:11px/1.5 system-ui, sans-serif; padding:11px 12px; border-radius:6px; min-width:210px; }
+  .rc h6 { font-size:9.5px; letter-spacing:.14em; color:#8f8f8f; margin-bottom:8px; font-weight:600; }
+  .rc button { display:block; width:100%; text-align:left; background:none; border:1px solid #3a3a3a;
+        color:#cfcfcf; font:11px system-ui; padding:4px 8px; margin-bottom:5px; border-radius:4px; cursor:pointer; }
+  .rc button.on { border-color:#e8a04c; color:#f0c68a; }
+  .rc .row { display:flex; gap:5px; margin-bottom:5px; }
+  .rc .row button { flex:1; text-align:center; margin-bottom:0; }
+  .rc .readout { margin-top:6px; color:#8f8f8f; font-size:10px; }
+
+  @media (prefers-reduced-motion: reduce) { .glow { animation:none; } }
+  @media (max-width:900px) { body { grid-template-columns:0 1fr; } nav { display:none; } }
+</style></head>
+<body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <filter id="sand" x="-25%" y="-25%" width="150%" height="150%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.014 0.026" numOctaves="2" seed="11" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/>
+  </filter>
+  <filter id="sandx" x="-25%" y="-25%" width="150%" height="150%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.016" numOctaves="2" seed="4" result="m"/>
+    <feDisplacementMap in="SourceGraphic" in2="m" scale="3.4"/>
+  </filter>
+</defs></svg>
+
+<header class="fades">
+  <svg class="mark" id="mark" viewBox="0 0 1079 545" aria-label="Wrizo"><path d="M632 528C627 527 605 516 600 512C591 505 584 487 584 472C584 462 585 458 591 449C599 436 605 433 608 439C609 441 610 441 611 440C612 440 614 439 616 439C618 438 621 438 622 438C624 437 627 439 627 441C627 445 619 450 616 448C614 446 605 451 598 460C587 473 596 499 614 502C615 503 617 503 618 504C622 505 627 506 641 507L652 507L655 503C658 500 659 497 661 491C662 486 663 482 665 480C667 479 668 476 668 474C669 467 674 467 677 473C682 482 678 499 668 509C666 511 663 514 661 517C654 526 644 530 632 528zM648 518C649 517 649 517 646 517C645 518 643 518 642 518C641 518 640 519 639 519C638 521 647 519 648 518zM605 471L603 468L606 465C610 460 612 458 619 453C632 443 628 447 687 391C697 381 709 370 714 365L722 357L720 355C718 354 716 351 715 349C713 347 713 346 709 347C707 347 704 347 702 347C701 348 693 348 686 349C673 349 667 350 664 350C663 350 664 351 665 352C673 359 665 363 650 359C648 359 644 359 642 359C629 358 613 356 608 355C607 355 605 355 604 355C602 354 599 354 597 353C591 352 589 352 586 354C585 355 584 355 583 354C582 353 579 352 570 353C564 353 558 353 556 353C555 353 554 353 553 354C553 355 552 355 551 354C550 353 549 353 549 354C548 354 545 355 541 355C537 355 534 356 533 357C532 357 531 358 531 357C530 357 529 358 527 359C524 361 523 361 522 359C519 357 520 356 524 352C526 349 527 347 528 345C528 341 530 338 533 337C534 336 536 334 538 331C543 324 556 312 556 315C556 316 561 311 573 300C578 294 584 289 586 289C588 288 598 276 610 259C612 256 616 251 618 249C620 247 625 241 628 237C631 233 637 227 641 223C652 212 654 208 647 211C646 211 643 211 641 211C639 210 637 211 636 211C636 212 634 212 633 212C632 211 631 211 631 212C630 213 629 213 628 212C626 212 624 211 622 211C620 211 616 211 614 210C609 209 591 209 581 210C557 213 549 213 540 211C523 208 521 203 533 197C538 195 539 195 547 195C560 196 569 196 579 196C584 195 593 195 600 194C607 194 613 194 614 194C615 193 624 192 646 192C652 191 660 191 664 190C685 189 694 190 693 195C692 195 693 196 694 196C697 196 698 199 697 201C696 203 695 205 695 206C695 208 688 213 687 213C686 212 656 235 655 236C655 237 654 238 653 239C651 241 649 243 648 246C646 248 643 252 642 254C638 258 637 260 632 270C630 274 628 278 627 279C626 280 626 281 626 281C627 281 625 284 623 289C621 293 616 301 613 308C610 314 606 322 604 325C603 329 601 332 601 333C602 333 606 333 610 334C635 335 646 336 648 337C648 338 649 338 650 338C650 337 651 338 652 338C653 338 654 338 655 338C656 337 658 337 658 338C659 338 670 338 682 338L705 338L701 331C696 322 694 312 694 301C694 296 694 292 695 292C695 292 695 289 696 287C696 285 697 283 697 282C698 281 698 280 697 280C697 279 700 270 703 263C704 261 706 257 707 254C708 250 710 247 710 246C710 246 713 241 715 236C718 232 721 227 722 226C724 223 731 213 729 214C729 215 725 218 722 221C718 225 715 228 715 229C715 229 713 232 710 235C706 239 697 254 697 256C697 256 687 278 684 283C683 284 683 286 683 286C683 289 680 292 678 291C676 289 677 287 686 268C689 262 691 256 691 254C692 253 693 251 694 250C696 247 703 235 703 234C703 234 710 225 711 224C712 223 714 221 715 219C718 215 730 205 731 205C732 205 734 204 736 202C739 201 744 197 748 195C753 193 759 189 763 187C770 183 778 180 784 179C786 178 790 177 792 177C802 175 822 175 829 177C840 180 844 182 847 184C854 189 865 197 866 198C866 200 873 194 875 190C876 187 876 187 878 188C878 189 879 189 880 189C880 188 881 189 882 189C883 190 883 190 882 189C881 187 881 187 883 185C887 183 916 154 920 149C921 147 923 144 924 143C925 143 926 140 928 138L931 134L928 131C925 127 927 123 933 123C936 123 938 123 940 122C943 122 945 125 942 128C940 130 940 130 950 134C962 139 963 141 955 145C952 146 949 148 948 149C946 151 945 152 944 152C943 152 930 162 924 168C922 170 919 173 918 174C917 174 911 180 904 188C897 195 890 202 887 204C885 206 883 209 883 209C883 210 882 211 881 212C879 213 879 213 880 214C883 216 893 234 893 237C893 237 894 238 895 238C897 239 900 244 899 247C899 248 900 250 900 252C901 253 901 256 902 258C902 260 903 266 905 280C908 296 906 312 900 326C893 345 894 347 902 338C912 327 920 315 920 311C920 310 920 309 921 308C922 308 922 307 922 307C921 305 924 300 926 300C928 301 928 306 926 313C923 325 903 350 894 353C892 354 892 355 888 364C885 371 877 381 871 386C867 389 865 391 865 391C865 390 863 391 861 392C856 396 849 397 847 396C844 394 845 393 849 391C862 386 874 378 878 370C879 369 880 366 882 363L884 359L880 361C875 364 872 365 859 369C856 370 850 373 846 375C843 378 837 381 835 382C826 386 822 387 821 387C820 387 819 388 818 388C818 389 817 389 816 389C816 388 815 388 815 389C814 389 813 390 812 390C802 390 800 392 808 393C811 393 814 393 815 393C818 394 820 396 819 398C818 400 812 400 798 396C793 395 788 394 787 394C786 393 784 392 782 391C780 391 778 390 778 390C777 389 775 389 774 388C772 388 771 387 770 387C769 387 758 379 753 374C744 366 743 365 741 364C739 364 737 364 736 363C732 361 729 362 724 371C723 373 722 375 721 375C720 375 717 376 715 379C712 381 709 384 708 385C706 386 703 388 702 391C700 393 695 399 691 404C688 409 684 414 683 416C680 420 657 445 651 451C648 453 646 454 644 454C643 454 642 454 642 456C642 458 635 464 632 464C624 463 622 464 620 466C618 467 617 468 616 468C616 468 614 469 612 470C607 474 608 474 605 471zM646 442C646 441 644 442 642 444C639 446 638 448 639 448C641 449 647 443 646 442zM804 385C813 384 827 380 830 378C832 377 834 376 835 376C836 376 837 375 838 375C839 373 839 373 836 374C825 376 777 376 766 373C758 371 758 372 766 377C776 384 789 386 804 385zM442 371C439 368 434 364 431 362C429 360 425 357 423 355C421 353 419 352 419 352C418 352 415 350 412 348C409 345 406 343 406 343C406 343 402 340 398 336C392 330 381 322 379 322C377 322 363 314 358 309C347 302 336 294 328 289C326 289 326 288 326 287C326 287 325 286 324 286C322 286 321 286 320 286C318 285 318 286 318 297C318 316 317 326 314 338C312 345 311 349 311 352C311 353 310 354 308 354C307 355 305 357 304 358C301 361 300 361 298 358C296 356 296 352 297 344C298 342 298 341 297 341C296 340 296 337 297 332C297 326 297 321 295 313C294 307 293 299 292 294C292 289 292 285 291 285C290 283 290 254 291 246C292 241 292 235 293 232C293 229 294 223 295 220C297 211 297 204 295 201C293 198 293 198 297 194C301 190 302 190 308 190C313 190 316 190 320 188C323 187 326 186 326 186C326 187 328 186 330 185C340 181 368 186 377 194C378 194 379 195 380 195C383 196 389 200 389 202C389 203 391 206 394 210C397 213 399 216 399 216C399 216 399 217 399 217C399 217 399 219 400 220C400 221 401 224 402 226C405 233 406 238 404 242C404 244 403 246 404 246C404 247 402 249 399 252C392 259 378 265 353 273L347 275L352 278C355 281 358 283 360 284C364 288 370 293 373 295C387 305 390 307 392 308C393 308 396 310 400 313C404 315 411 319 416 322C428 330 436 335 437 337C437 337 436 339 435 340C433 342 433 343 433 344C435 345 436 345 436 344C436 340 442 338 444 340C445 342 444 348 443 350C442 352 443 355 448 360C451 363 452 365 450 366C449 366 450 367 451 368C454 370 453 373 450 375C448 376 448 376 442 371zM831 364C832 364 834 363 836 362C839 361 836 361 822 363C815 363 792 363 790 362C786 361 783 361 784 362C787 365 828 367 831 364zM756 362C755 361 754 360 754 360C753 360 751 359 750 358C749 357 746 355 745 354L742 352L743 355C745 356 747 359 751 360C757 363 759 364 756 362zM93 358C90 355 90 353 90 350C90 349 89 348 88 348C85 348 84 345 85 342C86 340 81 329 75 319C73 316 69 308 62 293C59 287 58 285 55 280C54 278 53 277 53 276C53 275 52 274 52 273C51 272 50 271 50 270C50 269 49 268 48 267C47 267 46 265 47 265C47 264 47 263 46 263C46 262 44 258 43 254C41 246 38 241 35 238C34 237 33 236 33 236C33 235 32 233 30 232C29 230 28 228 28 228C28 227 27 226 26 224C16 211 16 210 21 208L23 208L21 207C13 203 17 199 29 199C35 198 40 198 40 197C44 193 51 197 49 202C49 203 50 206 52 209C54 212 55 214 55 215C55 215 56 217 57 219C61 229 62 231 64 238C65 242 66 247 67 248C69 256 73 265 79 276C82 283 88 294 91 300C96 310 101 316 103 316C104 316 111 305 113 301C117 293 118 290 122 282C135 248 139 242 145 247C146 248 147 249 148 250C150 250 151 252 151 255C151 259 153 265 155 267C156 268 160 272 163 277C172 292 179 300 188 309C194 315 196 317 196 319C196 324 199 323 202 317C203 315 205 311 206 310C206 309 207 306 207 304C206 302 207 299 207 297C208 293 208 292 210 278C211 272 212 267 212 266C213 266 213 264 213 262C214 260 215 254 216 249C218 244 219 237 219 233C220 229 221 226 221 226C222 225 222 224 222 222C222 220 225 208 227 201C227 200 227 197 227 196C226 194 226 192 228 192C229 192 230 190 231 188C233 183 235 181 238 183C239 183 240 184 240 185C240 186 240 186 241 187C241 187 242 189 242 190C243 192 247 194 251 194C252 194 255 195 257 196L260 198L263 195C264 193 265 193 267 194C269 195 269 199 268 200C266 200 267 206 269 206C271 207 270 211 263 222C257 232 246 255 244 260C243 263 240 268 238 273C236 278 233 284 233 287C232 290 230 293 229 295C229 296 228 297 228 297C229 297 227 302 225 308C224 313 221 321 219 325C215 337 212 342 209 344C207 346 206 347 206 348C207 353 202 353 198 348C195 344 194 343 194 345C193 348 189 347 187 344C186 342 185 340 186 340C186 339 186 338 185 337C185 336 184 334 184 332C183 331 181 326 179 323C177 319 175 316 175 315C175 315 174 313 166 300C163 297 157 289 152 284L142 275L141 279C140 281 138 285 137 288C134 294 128 310 124 320C123 323 122 326 122 327C121 333 117 338 113 339C112 339 110 340 109 341C108 342 106 345 104 348C102 350 100 353 100 354C100 357 97 361 96 361C96 361 94 360 93 358zM461 354C461 353 460 351 460 349C460 347 459 345 457 343C455 340 455 340 456 338C457 336 459 335 460 335C461 335 461 333 460 332C459 332 459 331 460 330C460 329 460 328 461 327C461 326 461 326 461 326C461 326 461 324 462 323C462 322 463 319 463 318C465 314 465 290 464 280C463 276 463 272 463 271C462 268 460 254 460 250C459 249 459 245 459 242C459 239 458 236 457 235C456 234 456 232 456 231C457 230 456 229 456 228C455 228 455 227 456 227C456 227 456 226 455 226C454 225 455 216 457 215C460 213 462 215 463 218C464 220 464 220 464 218C464 214 463 212 461 212C460 212 459 211 458 210C457 209 456 208 456 208C452 210 447 202 450 198C451 197 452 196 460 196C470 196 472 196 474 195C480 191 488 194 483 199C482 201 482 201 483 204C484 205 484 209 485 213C485 217 486 220 486 221C487 221 487 226 488 230C488 249 490 274 491 278C492 281 493 312 492 323C490 340 487 346 481 347C480 347 477 347 476 347C474 347 473 347 473 345C471 342 470 342 470 346C470 347 469 349 469 350C468 350 468 351 468 351C469 351 469 352 468 353C467 355 463 356 461 354zM799 354C798 354 794 353 790 353C785 352 781 352 780 351C778 351 778 351 779 352C780 353 786 354 796 355C799 355 800 355 799 354zM820 354C819 353 807 353 806 354C806 355 809 355 813 355C817 355 820 355 820 354zM833 353C833 352 826 353 825 354C825 354 826 354 829 354C831 354 833 353 833 353zM657 352C657 351 656 350 654 350C651 350 651 352 654 352C655 353 657 353 657 353C657 353 657 352 657 352zM849 350C851 350 855 349 856 349C858 349 859 348 860 347C861 347 863 346 866 345C868 344 870 343 870 343C869 343 865 344 861 346C852 348 847 350 843 351C837 352 834 353 840 352C842 352 847 351 849 350zM732 349C732 348 729 342 728 341C727 341 727 340 727 339C727 339 726 336 724 333C720 327 711 310 710 306C709 298 707 302 708 312C708 326 713 335 720 339C722 340 724 341 724 343C725 345 732 351 732 349zM552 344C553 342 554 341 553 340C551 338 550 339 546 342L543 346L547 346C549 346 551 345 552 344zM838 343C842 343 847 341 849 341C856 340 860 338 866 335C870 334 873 333 873 333C875 332 884 325 884 323C884 323 885 322 886 321C886 320 887 319 887 319C887 318 887 316 888 315C891 312 892 303 890 302C890 301 889 299 889 297C890 295 889 294 889 293C888 293 888 291 887 289C886 286 885 284 884 283C884 282 883 281 884 281C884 281 883 280 882 279C881 278 880 276 880 275C880 275 878 271 876 268C874 265 873 262 873 262C873 261 871 260 869 258C868 257 866 255 866 255C866 254 865 252 863 251C862 250 859 246 857 244C855 240 849 237 851 240C853 242 807 289 797 296C792 300 788 300 787 296C787 293 792 287 794 287C798 287 799 285 798 282C797 280 798 279 803 273C807 270 810 266 810 266C810 265 813 262 816 258C826 247 839 233 840 230C842 227 839 224 830 214C825 209 823 208 821 208C820 208 818 208 817 208C816 207 814 207 813 207C812 208 810 208 810 208C809 208 809 209 809 211C809 214 806 217 803 217C802 217 801 216 801 214C801 210 802 210 790 211C785 212 770 217 768 218C768 219 767 219 766 219C765 219 757 224 754 227C747 233 745 236 744 238C743 239 742 242 740 244C731 259 728 268 728 282C730 301 730 303 738 322C740 328 753 338 762 339C764 340 766 341 766 341C768 342 769 342 785 344C790 345 795 345 795 345C796 346 833 345 838 343zM739 339C737 338 736 336 735 334C735 333 734 333 734 333C733 333 735 335 737 338C739 340 740 342 741 342C741 341 740 340 739 339zM421 337C421 336 420 335 419 335C415 333 410 330 408 329C408 328 407 328 406 328C405 329 418 340 420 339C420 338 421 337 421 337zM562 330C562 329 561 329 558 331C557 332 557 332 558 333C560 334 563 331 562 330zM598 321C601 316 605 307 605 307C604 307 597 318 598 319C598 319 597 320 596 321C593 324 590 331 591 331C592 332 593 330 594 329C595 327 597 323 598 321zM583 326C584 324 585 322 586 321C587 320 589 317 590 315C591 313 593 309 594 307C595 305 597 302 599 300C600 298 601 297 600 297C600 297 598 298 598 300C597 302 596 303 595 303C594 303 594 304 594 304C594 305 593 307 591 308C587 312 576 326 577 327C578 329 582 328 583 326zM97 322C97 321 95 319 94 316C92 314 88 307 86 302C81 292 78 288 80 295C82 298 85 304 92 318C94 323 97 325 97 322zM484 306C484 300 483 301 483 308C482 312 482 313 483 312C484 311 484 309 484 306zM303 302C304 284 304 273 300 262C299 258 298 255 298 254C298 252 298 252 297 253C296 255 297 275 297 281C298 286 299 291 300 298C300 302 300 306 301 306C301 307 301 308 301 309C301 312 302 309 303 302zM720 304C719 301 718 299 718 299C717 299 717 300 718 301C719 302 719 304 719 304C719 304 720 309 721 309C721 309 721 307 720 304zM718 291C718 287 718 287 717 290C717 293 717 296 718 296C718 296 718 294 718 291zM349 294C349 293 346 291 342 288C338 285 334 283 333 282C332 281 331 280 330 280C329 280 330 281 332 283C334 285 336 287 336 288C336 289 336 289 337 288C338 287 340 288 344 291C349 294 349 294 349 294zM891 276C890 274 889 272 889 271C889 270 888 268 887 267C885 266 884 264 884 264C885 264 884 262 882 261C881 260 880 258 881 258C881 257 878 254 867 243C865 241 864 239 864 239C865 239 864 237 862 235C860 234 859 233 858 233C858 234 862 239 870 248C873 252 880 261 884 268C889 274 893 280 893 280C893 279 892 278 891 276zM222 268C224 263 225 257 226 255C226 253 226 249 227 247C229 243 231 233 235 217C235 216 235 215 234 214C233 214 234 209 235 208C236 208 235 207 234 207C233 206 233 206 233 206C232 207 226 233 225 241C224 245 222 252 222 256C221 259 219 265 219 268C219 272 218 275 217 276C217 278 217 278 218 278C218 277 220 273 222 268zM330 258C363 253 385 242 385 231C385 229 385 226 384 226C384 225 383 224 383 224C383 224 383 222 382 220C381 217 380 215 380 215C380 213 377 211 375 211C374 211 371 210 370 210C359 205 356 204 354 205C352 205 351 205 350 204C349 203 348 202 348 203C347 203 345 203 343 202C335 199 317 197 315 199C315 200 315 201 316 201C316 202 317 206 317 210C316 223 316 230 317 245L317 260L320 260C322 259 326 258 330 258zM384 253C385 252 386 251 387 250C389 247 386 249 381 253C377 256 380 256 384 253zM59 253C56 244 46 227 46 231C46 232 59 255 60 255C60 255 60 254 59 253zM879 244C877 241 872 236 871 236C871 236 873 238 875 241C880 246 881 247 879 244zM886 240C885 239 884 237 884 236C884 234 880 226 878 224C877 223 876 221 877 221C878 219 874 218 871 220L869 223L878 232C887 242 888 244 886 240zM397 238C397 236 397 234 397 234C397 233 397 233 396 234C396 235 396 236 396 238C396 239 397 240 396 240C396 241 396 241 397 241C397 241 398 240 397 238zM741 214C744 211 743 211 740 216C737 218 733 222 732 224C729 228 730 228 733 224C736 221 739 217 741 214zM45 222C43 215 40 209 38 210C37 210 36 211 36 211C36 212 45 225 46 225C46 225 45 224 45 222zM671 214C676 211 676 210 673 211C672 211 669 213 668 215C664 220 666 219 671 214zM248 209L250 204L248 204C245 203 245 202 245 209C244 216 245 216 248 209zM308 206C308 203 308 202 307 202C305 202 304 206 306 209C307 212 308 210 308 206zM860 209L862 206L860 204C859 203 857 202 854 201C852 201 850 201 849 200C846 199 842 199 841 200C839 201 839 201 845 204C847 205 851 207 852 208C856 212 856 211 860 209zM463 206C464 205 464 205 464 205C460 204 458 205 460 206C461 207 461 207 463 206zM236 203C237 201 237 201 236 201C235 201 234 202 234 203C233 204 233 205 233 205C234 205 235 204 236 203zM687 203C686 203 685 203 684 202C682 202 676 202 674 203C673 204 675 204 680 204C685 204 688 204 687 203zM768 201C773 199 779 197 781 197C783 196 786 196 787 195C796 194 806 193 813 194C816 195 818 193 816 193C813 192 805 192 798 192C794 193 787 193 783 194C776 194 771 195 770 195C769 195 767 196 765 196C762 196 756 202 757 203C759 204 758 204 768 201zM838 192C838 191 839 191 839 192C841 193 846 193 845 192C845 191 838 187 836 186C836 186 834 186 832 185C831 184 828 184 827 183C826 183 823 183 822 183C821 182 819 182 818 183C817 184 817 184 819 184C821 184 823 186 823 189C823 190 823 191 824 191C824 191 825 192 826 192C827 193 837 193 838 192zM965 158C965 157 964 157 963 158C958 159 948 154 950 151C951 150 960 147 966 146C968 146 972 146 975 145C979 144 982 144 982 145C984 145 993 139 995 136C996 133 996 133 994 131C993 129 992 128 992 127C992 126 985 119 984 119C984 119 981 117 979 115C976 113 974 111 973 111C971 111 970 109 971 108C972 106 968 103 966 104C966 105 964 104 963 103C956 98 951 98 947 103C944 107 940 105 942 101C944 97 943 96 939 98C933 100 931 103 929 110C928 114 926 117 925 118C924 119 924 120 925 121C926 122 926 122 925 123C924 124 924 126 924 127C925 130 923 131 920 129C919 129 918 127 918 127C918 124 918 123 916 123C914 123 912 121 911 116C911 112 913 107 919 99C921 96 923 93 923 93C923 92 925 90 927 88C931 83 940 82 951 85C954 85 958 86 958 85C959 85 970 90 973 93C976 96 975 96 990 78C1003 61 1021 43 1027 40C1032 38 1033 39 1034 41C1035 43 1036 44 1037 44C1039 43 1040 44 1041 44C1043 46 1044 38 1042 32C1042 30 1042 28 1042 27C1042 23 1035 26 1032 31C1031 33 1029 34 1029 34C1028 34 1027 35 1026 37C1024 41 1023 41 1020 37C1017 34 1017 32 1021 25C1024 18 1026 17 1034 17C1043 17 1050 22 1057 33L1063 41L1061 44C1060 45 1058 46 1057 46C1056 46 1054 48 1051 50C1048 53 1047 53 1045 52C1045 51 1044 51 1044 51C1044 52 1043 51 1042 50C1040 50 1039 49 1039 49C1039 50 1038 49 1036 48C1030 45 1025 50 1007 73C1004 77 1000 83 997 85C994 89 993 90 994 92C994 94 991 98 990 97C989 97 988 97 988 98C987 99 986 99 985 98C984 98 983 99 982 100C980 102 980 102 985 105C992 110 998 116 1003 122C1010 132 1008 139 998 148C996 150 993 152 993 152C992 152 990 153 988 154C986 155 983 156 983 156C982 156 981 157 980 157C979 159 966 159 965 158z" fill="currentColor" fill-rule="evenodd"/></svg>
+  <div class="tabs chromeLabel">
+    <div class="tab active">Workshop
+      <svg class="tabline" viewBox="0 0 90 8" preserveAspectRatio="none"><g filter="url(#sandx)"><path d="M3 4.5 C 24 3.2, 58 5.4, 87 3.8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></g></svg>
+    </div>
+    <div class="tab"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 6.4 a5.6 5.8 0 1 0 .2 0"/><path d="M5.6 19.2 L18.8 4.8"/><path d="M5.6 19.2 q-1.9 1.5 -.5 2.7"/><path d="M16.9 6.6 a1.6 1.4 0 1 0 2 -.5"/></g></svg>Relay</div>
+  </div>
+</header>
+
+<nav class="fades">
+  <div class="wayback"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M16.5 6.2 a7 7 0 1 0 2.8 6.1"/><path d="M15.4 3.2 L16.6 6.5 L13.3 7.2"/></g></svg>back to the page</div>
+  <div class="menu chromeLabel">
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12.2 4.6 L19.8 18.8 L4.4 18.4 L12.6 5"/></g></svg>Camp</div>
+    <div class="item active"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12.6 11.4 a1.5 1.5 0 1 0 -1.7 1.8 a3 3.1 0 1 0 3.4 -3.6 a5.2 5.4 0 1 0 -5.9 6"/></g></svg>Fireside</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 7.8 L18.6 7.3"/><path d="M5.2 12.2 L19 11.8"/><path d="M5 16.5 L14.6 16.2"/></g></svg>Leaves</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18.6 C 7 14.6, 8.4 16.2, 11 12.4 S 15.6 6.8, 20 5.2"/><circle cx="9.6" cy="14" r="1.5"/><circle cx="16.2" cy="7.8" r="1.5"/></g></svg>Route</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 7 L16 6.7"/><path d="M8.6 11.6 L19 11.2"/><path d="M5 16.2 L13.6 15.9"/></g></svg>Script</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.6 17.5 C7 11.5, 9.5 16.5, 12.5 10.5 S 17.5 5.5, 20.5 7.5"/></g></svg>Drift</div>
+  </div>
+  <div class="menu chromeLabel">
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4.5 8.2 C7.5 5.8, 10.5 6.4, 12 8.4 C13.5 6.4, 16.5 5.8, 19.5 8.2"/><path d="M4.5 8.2 L4.7 15.9 C7.6 13.9, 10.6 14.3, 12 16 C13.4 14.3, 16.4 13.9, 19.3 15.9 L19.5 8.2"/></g></svg>Waybook</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 19 L9.5 5.5"/><path d="M8.5 19.2 L14.5 6.5"/><path d="M11 19.4 L19 8"/></g></svg>Vista</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 4.9 a7.2 7.4 0 1 0 .3 0"/><path d="M9.4 11.8 l.15 .1"/><path d="M14.6 9.6 l.15 .1"/><path d="M13 14.7 l.15 .1"/></g></svg>Clearing</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="16.6" r="3.3"/><circle cx="11.7" cy="11.6" r="2.5"/><circle cx="12.2" cy="7.6" r="1.7"/></g></svg>Cairn</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 9.5 L6.6 18 L17.4 18 L19 9.5"/><path d="M10.4 7.7 L13.6 7.6"/></g></svg>Saddlebag</div>
+    <div class="item"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7.2 10 C6.2 15.5, 8.8 19, 12 19 C15.2 19, 17.8 15.5, 16.8 10"/><path d="M9.6 8.6 L14.4 8.4"/><path d="M12 8.5 L10.7 5.9"/><path d="M12 8.5 L13.5 6"/></g></svg>Bundle</div>
+  </div>
+</nav>
+
+<main>
+  <div class="sheet">
+    <div class="entrytag chromeLabel fades">Fireside · The Long Crossing</div>
+    <div class="prose" id="editor" contenteditable="true" spellcheck="false">
+      <p>The steppe does not ask where you are going. It offers distance, and distance is enough. You write the way the herder moves &mdash; by feel, by season, by the shape of the land underfoot &mdash; and the page keeps no fences.</p>
+      <p>Tonight the fire does the remembering. Shadows lean and straighten on the rock, the ink cools, and whatever was worth carrying is already in the saddlebag. The rest the wind can have. Click here and keep the line moving &mdash; the room will step back.</p>
+    </div>
+  </div>
+  <div class="orbit fades">
+    <div class="tool"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 5 a7 7.2 0 1 0 .3 0"/><path d="M12 12 L15.4 7.6"/></g></svg><span>Timer</span></div>
+    <div class="tool"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 12 L20 11.8"/><circle cx="12" cy="11.9" r="2.6"/></g></svg><span>Scroll</span></div>
+    <div class="tool"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6.5 18.5 C10 15, 14.5 9.5, 18 5.5"/><path d="M6.5 18.5 L8.9 17.9"/></g></svg><span>Voice</span></div>
+    <div class="tool"><svg class="g" viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 12 L12 11.9"/><path d="M15 11.9 l.05 0"/><path d="M17.6 11.85 l.05 0"/><path d="M19.8 11.8 l.05 0"/></g></svg><span>Fade</span></div>
+  </div>
+</main>
+
+<div class="glow"></div>
+<svg class="dune fades" viewBox="0 0 230 70"><g filter="url(#sandx)"><path d="M4 58 C 52 30, 96 46, 138 34 S 206 40, 226 26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></g></svg>
+
+<footer class="fades">
+  <div class="sprint chromeLabel">Sprint · 412 / 600</div>
+  <div class="barwrap">
+    <div class="track"></div><div class="fill"></div>
+    <div class="wp done" style="left:22%"><svg viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M9.7 16.9 L14.4 6.8"/></g></svg></div>
+    <div class="wp done" style="left:48%"><svg viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><path d="M9.7 16.9 L14.4 6.8"/></g></svg></div>
+    <div class="wp kindled" style="left:76%"><svg viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.1"/></g></svg></div>
+    <div class="wp open" style="left:94%"><svg viewBox="0 0 24 24"><g filter="url(#sand)" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="6"/></g></svg></div>
+  </div>
+  <div class="clock">26:14 &middot; p.3</div>
+</footer>
+
+<div class="rc">
+  <h6>RC-3 CONTROLS &mdash; variant toggle graduates to a theme setting</h6>
+  <button data-board="steppe" class="on">STEPPE &middot; green days, fire nights</button>
+  <button data-board="afterglow">AFTERGLOW &middot; the fading sun</button>
+  <div class="row"><button data-field="night" class="on">NIGHT</button><button data-field="day">DAY</button></div>
+  <div class="readout" id="readout"></div>
+</div>
+
+<script>
+var BOARDS = {"steppe": {"label": "STEPPE \u2014 green days, fire nights", "night": {"ground": "#140708", "panel": "#200D0E", "ink": "#F0E9D6", "muted": "#C9A98A", "faint": "#8A6450", "dim": "#8C2F3F", "hairline": "rgba(240,233,214,0.10)", "track": "#351216", "pubink": "#2A100C", "selbg": "#8C2F3F", "selink": "#F0E9D6", "glow": "rgba(200,70,60,0.38)", "mark": "#B7BC9A"}, "day": {"ground": "#F5F4E6", "panel": "#EDECD8", "ink": "#333A24", "muted": "#6E754F", "faint": "#A7AC85", "dim": "#7E8C5F", "hairline": "rgba(51,58,36,0.16)", "track": "#D8D8BE", "pubink": "#2E2413", "selbg": "#E1E4C8", "selink": "#333A24", "glow": "rgba(190,170,100,0.14)", "mark": "#6E754F"}}, "afterglow": {"label": "AFTERGLOW \u2014 the fading sun", "night": {"ground": "#1E0D15", "panel": "#2C1220", "ink": "#F4E4D6", "muted": "#D0A0A6", "faint": "#96606E", "dim": "#9E3A55", "hairline": "rgba(244,228,214,0.10)", "track": "#3A1626", "pubink": "#2A1208", "selbg": "#9E3A55", "selink": "#F4E4D6", "glow": "rgba(210,80,90,0.36)", "mark": "#B7BC9A"}, "day": {"ground": "#F6F0DE", "panel": "#EFE7CE", "ink": "#40381F", "muted": "#7A744D", "faint": "#ABA37E", "dim": "#85894F", "hairline": "rgba(64,56,31,0.16)", "track": "#E4DCC0", "pubink": "#2E2413", "selbg": "#EAE6C9", "selink": "#40381F", "glow": "rgba(200,175,105,0.15)", "mark": "#7A744D"}}};
+var board = 'steppe', field = 'night';
+function apply() {
+  var t = BOARDS[board][field], r = document.documentElement.style;
+  for (var k in t) { if (k !== 'label' && k !== 'mark') r.setProperty('--' + k, t[k]); }
+  document.getElementById('mark').style.color = t.mark;
+  document.querySelectorAll('[data-board]').forEach(function(b){ b.classList.toggle('on', b.dataset.board === board); });
+  document.querySelectorAll('[data-field]').forEach(function(b){ b.classList.toggle('on', b.dataset.field === field); });
+  document.getElementById('readout').textContent =
+    BOARDS[board].label + ' / ' + field + '  ·  ' + t.ground + ' / ' + t.ink;
+}
+document.querySelectorAll('[data-board]').forEach(function(b){ b.onclick = function(){ board = b.dataset.board; apply(); }; });
+document.querySelectorAll('[data-field]').forEach(function(b){ b.onclick = function(){ field = b.dataset.field; apply(); }; });
+apply();
+
+var editor = document.getElementById('editor'), idleT = null, lastMove = 0;
+function writeOn(){ document.body.classList.add('writing'); clearTimeout(idleT); idleT = setTimeout(writeOff, 4200); }
+function writeOff(){ document.body.classList.remove('writing'); }
+editor.addEventListener('input', writeOn);
+editor.addEventListener('keydown', function(e){ if (!e.metaKey && !e.ctrlKey) writeOn(); });
+window.addEventListener('pointermove', function(){
+  var n = Date.now();
+  if (n - lastMove > 180) { lastMove = n; if (document.body.classList.contains('writing')) writeOff(); }
+});
+window.addEventListener('pointerdown', function(e){ if (!editor.contains(e.target)) writeOff(); });
+</script>
+</body></html>
