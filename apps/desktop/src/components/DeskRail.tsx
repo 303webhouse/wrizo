@@ -5,6 +5,7 @@ import { useCatch } from './useCatch';
 import { getWayBack, isWritingRoute, type WayBackSession } from '../store/wayBack';
 import { getJournalEntry, getDraft } from '../store/persistence';
 import { firstLine, snippet } from '../store/entryText';
+import { useLexicon, type TermId } from '../store/themeLexicon';
 
 // Writing-screen redesign (Slice 2) — the slim left rail of desk-area LOCATIONS,
 // replacing D1/D2's top-bar nav. Global nav and a WritingSession reader: it
@@ -13,10 +14,15 @@ import { firstLine, snippet } from '../store/entryText';
 // (stub for later); the rest are live. On the Desk (its own full-screen world)
 // the rail sits behind the overlay, exactly as the old header nav did.
 
-interface RailItem { key: string; label: string; glyph: string; to: string; live: boolean }
+// TH1 Slice 1 — 'journal' and 'shelf' route through the lexicon (exact
+// singular-noun matches to canon §5's term IDs). 'drawers' stays a literal:
+// the canonical term is singular ('Drawer') but this label is plural, and
+// the lexicon has no pluralization rule (flagged for TH2, not guessed here).
+// 'library' isn't a canon §5 term at all (a separate future stub).
+interface RailItem { key: string; term?: TermId; label: string; glyph: string; to: string; live: boolean }
 const ITEMS: RailItem[] = [
-  { key: 'journal', label: 'Journal', glyph: '❧', to: '/journal', live: true },
-  { key: 'shelf', label: 'Shelf', glyph: '▤', to: '/shelf', live: true },
+  { key: 'journal', term: 'journal', label: 'Journal', glyph: '❧', to: '/journal', live: true },
+  { key: 'shelf', term: 'shelf', label: 'Shelf', glyph: '▤', to: '/shelf', live: true },
   { key: 'drawers', label: 'Drawers', glyph: '▥', to: '/drawers', live: true },
   { key: 'library', label: 'Library', glyph: '▣', to: '/library', live: false },
 ];
@@ -38,6 +44,7 @@ export function DeskRail() {
   const { pathname } = useLocation();
   const { isWriting } = useWritingSession();
   const doCatch = useCatch();
+  const t = useLexicon();
 
   // W2 — the return chip. Re-checked on every route change: a departure just
   // captured (or consumed) the slot as part of the same navigation, so
@@ -93,6 +100,7 @@ export function DeskRail() {
       </button>
       {ITEMS.map(it => {
         const active = pathname.startsWith(it.to);
+        const label = it.term ? t(it.term) : it.label;
         return (
           <button
             key={it.key}
@@ -100,11 +108,11 @@ export function DeskRail() {
             className={`desk-rail-item${active ? ' active' : ''}${it.live ? '' : ' deferred'}`}
             aria-current={active ? 'page' : undefined}
             aria-disabled={!it.live}
-            title={it.live ? it.label : `${it.label} — coming soon`}
+            title={it.live ? label : `${label} — coming soon`}
             onClick={() => { if (it.live) navigate(it.to); }}
           >
             <span className="desk-rail-glyph" aria-hidden="true">{it.glyph}</span>
-            <span className="desk-rail-label">{it.label}</span>
+            <span className="desk-rail-label">{label}</span>
           </button>
         );
       })}

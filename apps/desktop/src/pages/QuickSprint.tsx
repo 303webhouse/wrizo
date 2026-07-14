@@ -16,6 +16,7 @@ import { ModeStage } from '../components/ModeStage';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
 import { milestonesForProject } from '../store/milestones';
+import { useLexicon } from '../store/themeLexicon';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -46,6 +47,7 @@ interface FinishStats {
 function QuickSprintView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const lex = useLexicon();
   const project = id ? getProject(id) : null;
   const draftId = id ?? 'scratch';
 
@@ -411,15 +413,15 @@ function QuickSprintView() {
           onSwitch={switchMode}
           actions={[
             { label: 'Workshop', sub: 'coming soon', deferred: true },
-            { label: 'Publish', sub: 'export', onClick: () => setShowPublish(true) },
+            { label: lex('publish'), sub: 'export', onClick: () => setShowPublish(true) },
           ]}
         />
 
         <div className="sprint-actions">
           {id && (
             <div className="sprint-toggle" role="tablist" aria-label="Binder view">
-              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active">Pages</button>
-              <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => navigate(`/project/${id}/board`)}>Plan</button>
+              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active">{lex('page')}</button>
+              <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => navigate(`/project/${id}/board`)}>{lex('plan')}</button>
             </div>
           )}
           <button type="button" className="btn-quiet sprint-nav-btn" onClick={handleGetNudge}>Take a nudge</button>
@@ -553,8 +555,8 @@ function QuickSprintView() {
       {/* Publish — stub dialog (options tailored to type/destination/format later). */}
       {showPublish && (
         <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
-          <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
-            <div className="card-title">Publish</div>
+          <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
+            <div className="card-title">{lex('publish')}</div>
             <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
               Publishing options — tailored to this work's type, destination, and format — are coming soon.
             </p>

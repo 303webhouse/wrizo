@@ -16,9 +16,15 @@ importers:
       '@fontsource-variable/figtree':
         specifier: ^5.2.10
         version: 5.2.10
+      '@fontsource/chakra-petch':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@fontsource/courier-prime':
         specifier: ^5.2.8
         version: 5.2.8
+      '@fontsource/rajdhani':
+        specifier: ^5.2.7
+        version: 5.2.7
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -343,8 +349,14 @@ packages:
   '@fontsource-variable/figtree@5.2.10':
     resolution: {integrity: sha512-a5Gumbpy3mdd+Yg31g6Qb7CmjYbrfyutJa3bWfP5q8A4GclIOwX7mI+ZuSHsJnw/mHvW6r9oh1AHJcJTIxK4JA==}
 
+  '@fontsource/chakra-petch@5.2.7':
+    resolution: {integrity: sha512-GLbun5WZJNAEc8FtWxwcgo+4Kurqdwejvf671l+YfIjyQgPvTjyxXYP7Ffg2HAY89NGnp3oOvKQjRzfm/fBECw==}
+
   '@fontsource/courier-prime@5.2.8':
     resolution: {integrity: sha512-M3xOCcXnGuFi9TcGCrz4hm5yeWg4Sn35MALRLPnqNoHhawTFvhyi2KSI2+5RyFtDNJrb58bPh8LLipgiI9KA0w==}
+
+  '@fontsource/rajdhani@5.2.7':
+    resolution: {integrity: sha512-7Gy10U688fCdeFfYKebUF2TZotdgH/ghKyMsseXPmB60lpaUHC8aoCSJl5/OpZ+KHKSU2TqBfKfteVkcIXxTAQ==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -1905,7 +1917,11 @@ snapshots:
 
   '@fontsource-variable/figtree@5.2.10': {}
 
+  '@fontsource/chakra-petch@5.2.7': {}
+
   '@fontsource/courier-prime@5.2.8': {}
+
+  '@fontsource/rajdhani@5.2.7': {}
 
   '@img/colour@1.1.0': {}
 

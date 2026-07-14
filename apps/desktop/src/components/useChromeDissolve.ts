@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWritingSession } from './WritingSession';
+import { useThemePrefs } from '../store/themePrefs';
 
 // Mode-aware editor (Phase 2) — the push-back-to-writing engine. The richer
 // successor to useChromeFade's binary recede, matching the prototype
@@ -51,6 +52,10 @@ export function useChromeDissolve({
   editorSelector = '.forward-only-editor',
 }: Options = {}): ChromeDissolve {
   const { setWriting, beginSession, endSession } = useWritingSession();
+  // TH1 Slice 3 — the Fade pref (canon §11). Default 'on' preserves today's
+  // shipped behavior exactly; 'off' is a new opt-in that keeps chrome fully
+  // surfaced (noteWrite becomes a no-op below) — no chrome ever recedes.
+  const { fade } = useThemePrefs();
   const [dissolved, setDissolved] = useState(false);
   const dissolvedRef = useRef(false);
   dissolvedRef.current = dissolved;
@@ -76,11 +81,12 @@ export function useChromeDissolve({
 
   // A forward keystroke means writing: recede fast, then arm the 3-minute return.
   const noteWrite = useCallback(() => {
+    if (fade === 'off') return; // Fade:off — chrome stays fully surfaced, always
     setFadeDur(FADE_OUT_S);
     setDissolved(true);
     clearTimer();
     returnTimer.current = setTimeout(() => { returnTimer.current = null; resurface(false); }, WAIT_MS);
-  }, [setFadeDur, resurface]);
+  }, [fade, setFadeDur, resurface]);
 
   // Keep the global header (and any other session reader) in step.
   useEffect(() => { setWriting(dissolved); }, [dissolved, setWriting]);

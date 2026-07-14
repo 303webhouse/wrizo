@@ -38,11 +38,28 @@
   --clay: #C97B5A;      /* warnings, sentence nudge */
   --brick: #B5543F;     /* destructive — Discard only */
 
+  /* TH1 — the two slots every theme gets (canon §3), wired but unused on
+     Plateau: nothing reads these yet, so they cost nothing here and are
+     free for a future Plateau feature or a theme pack to claim. Quiet
+     in-family defaults, not new accents. */
+  --line-active: var(--ink-border-strong);
+  --signal-live: var(--sage);
+
+  /* TH1 — the four font slots (canon §4), the theme-facing layer. Material
+     names below (--font-display/--font-ui/--font-prose) are the
+     component-facing layer and re-point to these — zero component edits,
+     per the seam pattern. Plateau's proseSans is the canon table's
+     provisional value (flagged debt, Slice 3). */
+  --font-chromeLabel:  'Figtree Variable', system-ui, sans-serif;
+  --font-contentLabel: 'Figtree Variable', system-ui, sans-serif;
+  --font-proseSerif:   'Crimson Pro Variable', Georgia, serif;
+  --font-proseSans:    'Figtree Variable', system-ui, sans-serif;
+
   /* Type — Wrizo brand. Figtree for titles/UI/buttons/labels; Crimson Pro for
      body + the writing surface (inherited via --font-prose on .paper-page). */
-  --font-display: 'Figtree Variable', system-ui, sans-serif;
-  --font-prose:   'Crimson Pro Variable', Georgia, serif;
-  --font-ui:      'Figtree Variable', system-ui, sans-serif;
+  --font-display: var(--font-chromeLabel);
+  --font-prose:   var(--font-proseSerif);
+  --font-ui:      var(--font-chromeLabel);
   --font-mono:    ui-monospace, 'Courier New', monospace;
   /* S1 — Courier Prime, scoped to the script surface only (a ratified
      exception to the type tokens — the industry's own token, not a UI font).
@@ -90,6 +107,59 @@
   --color-success: var(--sage);
   --color-warning: var(--clay);
   --radius: var(--radius-md);
+}
+
+/* ============================================================================
+   TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
+   Slice 0 token audit: Plateau's existing material-named vars mapped to the
+   canon's semantic slots (canon §3). No component reads a slot name directly —
+   material names stay the component-facing layer; a theme pack re-points them
+   under [data-theme='…'] the way --font-* is re-pointed to the font slots
+   above. This table is documentation, not code:
+
+     ground          <- --ink-950
+     chrome surface  <- --ink-900 / --ink-800 (raised)
+     rail surface    <- --ink-900 (.mode-rail, .desk-rail)
+     line            <- --ink-border
+     line (strong)   <- --ink-border-strong
+     line-active     <- --line-active (new slot, canon §3)
+     signal-live     <- --signal-live (new slot, canon §3)
+     page            <- --paper / --paper-dim
+     ink (on page)   <- --ink-on-paper / --ink-on-paper-low
+     meta            <- --text-low / --ink-on-paper-low (context-dependent)
+     text (hi/mid/lo)<- --text-hi / --text-mid / --text-low
+     accent(invariant)<- --brass (locked — canon §1's single hard invariant)
+
+   `.wz-home` (HOME v6) and `.create-picker` (F4) are each their OWN
+   self-contained visual world with local tokens (already documented at their
+   definitions) — explicitly out of the seam, not part of this map.
+
+   Theme selection: a `data-theme` attribute on <html> (store/theme.ts).
+   Plateau is the bare :root block above — no [data-theme='plateau'] override
+   needed, so it is byte-equivalent to pre-TH1 values by construction. A
+   theme pack (Flux, TH2) adds `:root[data-theme='flux']{ …overrides… }`,
+   strictly additive, zero component edits.
+   ============================================================================ */
+
+/* Slice 3 — Voice preference (serif | sans), canon §11. Default is unset
+   (serif — today's shipped behavior, byte-equivalent). `store/themePrefs.ts`
+   sets data-voice='sans' to opt in; Page (dark|light) and Fade (on|off) are
+   store-level + JS-gated (useChromeDissolve) for Plateau in TH1 — Plateau's
+   dark-paper pair is the canon §11 debt, deliberately not designed here. */
+:root[data-voice='sans'] { --font-prose: var(--font-proseSans); }
+
+/* Slice 4 — the effects compositor scaffold (canon §6, ThemeEffectsLayer.tsx).
+   One layer, absolutely positioned behind everything painted, pointer-events
+   none, transform/opacity only — zero layout participation (W1's fixed-track
+   .mode-row grid never measures this). Plateau registers no events, so this
+   renders empty; TH2 (Flux) populates .theme-fx-texture / .theme-fx-response
+   children with its own animations scoped under [data-theme='flux']. */
+.theme-fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1; /* behind all normal-flow page content; above the body background */
+  pointer-events: none;
+  overflow: hidden;
 }
 
 html {

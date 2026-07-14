@@ -18,6 +18,7 @@ import { useTypewriterFade } from '../components/useTypewriterFade';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
+import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -97,6 +98,7 @@ type LastAction = { type: 'text'; before: string } | { type: 'stroke' } | null;
 function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const lex = useLexicon();
   const [picking, setPicking] = useState(false);
   const [portOpen, setPortOpen] = useState(false); // J4 — "Port to a Board…" sheet
   const [addOpen, setAddOpen] = useState(false); // J5 — "Add to…" sheet (single-page flow)
@@ -735,12 +737,12 @@ function JournalEntryView() {
         <div className="journal-modes chrome-fade">
           <div className="mode-tabs" role="tablist" aria-label="Mode">
             <button type="button" role="tab" aria-selected="true" className="mode-tab active">
-              <span className="mode-tab__label">Free write</span>
+              <span className="mode-tab__label">{lex('freewrite')}</span>
               <span className="mode-tab__sub">capture</span>
             </button>
-            {['Draft', 'Format', 'Workshop', 'Publish'].map(t => (
-              <button key={t} type="button" role="tab" aria-selected="false" className="mode-tab deferred" onClick={() => setTabPrompt(true)}>
-                <span className="mode-tab__label">{t}</span>
+            {['Draft', 'Format', 'Workshop', lex('publish')].map(label => (
+              <button key={label} type="button" role="tab" aria-selected="false" className="mode-tab deferred" onClick={() => setTabPrompt(true)}>
+                <span className="mode-tab__label">{label}</span>
               </button>
             ))}
           </div>

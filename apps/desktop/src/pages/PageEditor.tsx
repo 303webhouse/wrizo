@@ -14,6 +14,7 @@ import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
+import { useLexicon } from '../store/themeLexicon';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -35,6 +36,7 @@ function wordCount(text: string): number {
 
 function PageEditorView({ id }: { id: string }) {
   const navigate = useNavigate();
+  const lex = useLexicon();
   const entry = getJournalEntry(id);
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
@@ -154,15 +156,15 @@ function PageEditorView({ id }: { id: string }) {
           onSwitch={switchMode}
           actions={[
             { label: 'Workshop', sub: 'coming soon', deferred: true },
-            { label: 'Publish', sub: 'export', onClick: () => setShowPublish(true) },
+            { label: lex('publish'), sub: 'export', onClick: () => setShowPublish(true) },
           ]}
         />
 
         <div className="sprint-actions">
           {project && (
             <div className="sprint-toggle" role="tablist" aria-label="Binder view">
-              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>Pages</button>
-              <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>Plan</button>
+              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lex('page')}</button>
+              <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
             </div>
           )}
           <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title="Copy the clean page text">Copy page text</button>
@@ -216,8 +218,8 @@ function PageEditorView({ id }: { id: string }) {
       {/* Publish — stub dialog (options tailored to type/destination/format later). */}
       {showPublish && (
         <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
-          <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
-            <div className="card-title">Publish</div>
+          <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
+            <div className="card-title">{lex('publish')}</div>
             <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
               Publishing options — tailored to this work's type, destination, and format — are coming soon.
             </p>
