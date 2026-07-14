@@ -9,11 +9,12 @@ import { effectiveAmbianceDial } from '../store/ambianceDial';
 // possible. `.theme-fx-layer` (index.css) is position:fixed, pointer-events
 // none, zero layout participation.
 //
-// A theme claims this layer by adding an entry to FX_REGISTRY: TH2 (Flux)
-// wires the Signal Loss texture dialect (canon §7) and the RESPONSE glow
-// (canon §8) here, reading `store/ambianceDial.ts` for the dial value and
-// `store/effectsScheduler.ts` for the jittered timers — without editing this
-// component. Empty for every theme in TH1: **Plateau runs this layer empty.**
+// A theme claims this layer by calling registerThemeFx(id, handlers) — TH2
+// (Flux) wires the Signal Loss texture dialect (canon §7) and the RESPONSE
+// glow (canon §8) this way, reading `store/ambianceDial.ts` for the dial
+// value and `store/effectsScheduler.ts` for the jittered timers — without
+// editing this component. Empty for every theme in TH1 (nothing calls
+// registerThemeFx yet): **Plateau runs this layer empty.**
 interface ThemeFxHandlers {
   // getDial() reads store/ambianceDial.ts's effective (reduced-motion-aware)
   // value; isBusy() reads the typing-state signal for TEXTURE's damping.
@@ -21,6 +22,12 @@ interface ThemeFxHandlers {
 }
 
 const FX_REGISTRY: Partial<Record<ThemeId, ThemeFxHandlers>> = {};
+
+// The one seam TH2 (or Volant/Nomad/Machina, later) touches to light this
+// layer up — registering a second time for the same id replaces the first.
+export function registerThemeFx(id: ThemeId, handlers: ThemeFxHandlers): void {
+  FX_REGISTRY[id] = handlers;
+}
 
 export function ThemeEffectsLayer() {
   const theme = useTheme();
@@ -37,4 +44,10 @@ export function ThemeEffectsLayer() {
   }, [theme]);
 
   return <div ref={layerRef} className="theme-fx-layer" data-theme-fx={theme} aria-hidden="true" />;
+}
+
+// Test/inspection seam (the resumeVocab.ts / wrizoVocab pattern) — lets the
+// harness exercise the registration seam without a real TH2 theme pack.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoThemeFx?: unknown }).wrizoThemeFx = { register: registerThemeFx };
 }

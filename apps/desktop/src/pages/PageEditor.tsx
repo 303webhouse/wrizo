@@ -36,7 +36,7 @@ function wordCount(text: string): number {
 
 function PageEditorView({ id }: { id: string }) {
   const navigate = useNavigate();
-  const lex = useLexicon();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const entry = getJournalEntry(id);
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
@@ -163,7 +163,7 @@ function PageEditorView({ id }: { id: string }) {
         <div className="sprint-actions">
           {project && (
             <div className="sprint-toggle" role="tablist" aria-label="Binder view">
-              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lex('page')}</button>
+              <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
               <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
             </div>
           )}

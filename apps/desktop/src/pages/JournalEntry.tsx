@@ -98,7 +98,7 @@ type LastAction = { type: 'text'; before: string } | { type: 'stroke' } | null;
 function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const lex = useLexicon();
+  const { t: lex } = useLexicon();
   const [picking, setPicking] = useState(false);
   const [portOpen, setPortOpen] = useState(false); // J4 — "Port to a Board…" sheet
   const [addOpen, setAddOpen] = useState(false); // J5 — "Add to…" sheet (single-page flow)

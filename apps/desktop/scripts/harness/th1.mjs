@@ -1,11 +1,16 @@
 // TH1 — the theme seam. A committed CDP verification scenario (per AGENTS.md
-// "Harness scenarios persist"), covering the brief's 6 harness checks:
+// "Harness scenarios persist"), covering the brief's 6 harness checks plus
+// Fable's post-build review fold (docs/open-threads.md item 19):
 //   1. Theme switch applies the expected token values (spot-check per slot).
 //   2. Lexicon projection maps every term ID; unknown/missing falls through
 //      to canonical; canonical nouns still resolve in routes and search.
+//      R1 fold: both number forms (t=one, tMany=many) resolve and fall
+//      through independently; the Drawers/Pages sweep renders tMany's value.
 //   3. Prefs persist across reload; prefs survive a theme switch.
 //   4. Reduced-motion forces dial to 0; dial 0 yields zero scheduled events.
 //   5. Effects layer contributes no layout size (fixed-track grid unchanged).
+//      R2 fold: registerThemeFx is the seam TH2 calls — it must not disturb
+//      Plateau's own (still-empty) render for an unregistered id.
 //   6. Plateau default-theme regression: rendered token values byte-equal to
 //      pre-TH1 `main` where measurable.
 // Run: node apps/desktop/scripts/harness/th1.mjs   (from apps/desktop, with
@@ -67,27 +72,39 @@ await withHarness(async (app) => {
   // -- check 2: lexicon — every term ID maps to a non-empty string; DOM sites
   // render exactly what the lexicon returns; canonical routes still resolve --
   const lexiconCheck = await app.evalJs(`(() => {
-    const { t, CANONICAL_TERMS } = window.wrizoLexicon;
+    const { t, tMany, CANONICAL_TERMS } = window.wrizoLexicon;
     const mapped = CANONICAL_TERMS.map(id => [id, t(id)]);
     const allNonEmpty = mapped.every(([, v]) => typeof v === 'string' && v.length > 0);
     const fallThrough = t('journal', 'nonexistent-theme'); // unknown theme -> canonical
-    return { mapped, allNonEmpty, fallThrough };
+    const fallThroughMany = tMany('drawer', 'nonexistent-theme'); // R1: many falls through too
+    const pageOne = t('page');
+    const pageMany = tMany('page');
+    return { mapped, allNonEmpty, fallThrough, fallThroughMany, pageOne, pageMany };
   })()`);
   ok('check 2: every canonical term ID maps to a non-empty display string', lexiconCheck.allNonEmpty, JSON.stringify(lexiconCheck.mapped));
-  ok('check 2: an unregistered theme id falls through to the canonical noun', lexiconCheck.fallThrough === 'Journal', String(lexiconCheck.fallThrough));
+  ok('check 2: an unregistered theme id falls through to the canonical noun (t/one)', lexiconCheck.fallThrough === 'Journal', String(lexiconCheck.fallThrough));
+  ok('check 2 (R1): an unregistered theme id falls through to the canonical plural (tMany/many)', lexiconCheck.fallThroughMany === 'Drawers', String(lexiconCheck.fallThroughMany));
+  ok('check 2 (R1): t() and tMany() resolve distinct, correct number forms for the same term', lexiconCheck.pageOne === 'Page' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
 
   await app.goto('/journal');
   await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (canonical route resolves)' });
   // Rail order is [Catch, Journal, Shelf, Drawers, Library] with no way-back
-  // chip present (fresh state) — the Journal item is index 1, not 0 (Catch).
+  // chip present (fresh state) — indices 1/3 (Catch is 0).
   const journalRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[1]?.textContent");
   const journalLexiconVal = await app.evalJs("window.wrizoLexicon.t('journal')");
   ok('check 2: DeskRail label renders exactly the lexicon projection for its term', journalRailLabel === journalLexiconVal, `${journalRailLabel} vs ${journalLexiconVal}`);
 
+  const drawersRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[3]?.textContent");
+  const drawersLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('drawer')");
+  ok('check 2 (R1): DeskRail\'s Drawers item now renders via tMany(\'drawer\') — matches the lexicon projection exactly', drawersRailLabel === drawersLexiconMany, `${drawersRailLabel} vs ${drawersLexiconMany}`);
+
   await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.dz-pagetitle')", { label: 'Drawers route resolves (canonical path segment)' });
+  // The route's own page HEADING (.dz-pagetitle) is a DIFFERENT site from the
+  // DeskRail nav item above — R1 swept the rail, not this heading — so it
+  // stays the plain canonical literal, unswept, no lexicon call here.
   const drawersTitle = await app.evalJs("document.querySelector('.dz-pagetitle')?.textContent");
-  ok('check 2: canonical noun still renders where the lexicon has no override (Drawers, unswept)', drawersTitle === 'Drawers', String(drawersTitle));
+  ok('check 2: the Drawers route\'s own page heading has no lexicon override — still the canonical literal', drawersTitle === 'Drawers', String(drawersTitle));
 
   // -- check 3: prefs persist across reload; survive a theme switch -----------
   await app.evalJs("window.wrizoThemePrefs.set({ voice: 'sans', fade: 'off' })");
@@ -135,6 +152,20 @@ await withHarness(async (app) => {
   ok('check 5: the layer never intercepts pointer events', fx?.pointerEvents === 'none', String(fx?.pointerEvents));
   ok('check 4: Plateau schedules zero effects-layer events (empty FX_REGISTRY entry)', fx?.childCount === 0, String(fx?.childCount));
 
+  // -- R2: registerThemeFx is the seam TH2 calls — registering a DIFFERENT
+  // theme id must not throw and must not disturb Plateau's own empty render --
+  const registerResult = await app.evalJs(`(() => {
+    try {
+      window.wrizoThemeFx.register('__th1_harness_probe__', { mount: () => () => {} });
+      return { threw: false };
+    } catch (e) {
+      return { threw: true, message: String(e) };
+    }
+  })()`);
+  ok('check 5 (R2): registerThemeFx registers a theme\'s handlers without throwing', registerResult.threw === false, JSON.stringify(registerResult));
+  const fxAfterRegister = await app.evalJs("document.querySelector('.theme-fx-layer')?.childElementCount");
+  ok('check 5 (R2): registering a DIFFERENT theme id leaves Plateau\'s active effects layer empty', fxAfterRegister === 0, String(fxAfterRegister));
+
   const gridColsBefore = await app.evalJs("getComputedStyle(document.querySelector('.mode-row')).gridTemplateColumns");
   const rowRectBefore = await app.evalJs("JSON.stringify(document.querySelector('.mode-row').getBoundingClientRect())");
   // Toggling ambiance / theme prefs while the layer sits mounted must not
@@ -160,8 +191,9 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted' });
   const planLabel = await app.evalJs("document.querySelector('.sprint-toggle-btn:nth-child(2)')?.textContent");
   const pagesLabel = await app.evalJs("document.querySelector('.sprint-toggle-btn:nth-child(1)')?.textContent");
+  const pagesLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('page')");
   ok('check 2/6: the Plan toggle still reads exactly "Plan" on Plateau', planLabel === 'Plan', String(planLabel));
-  ok('check 2/6: the Pages toggle still reads exactly "Pages" on Plateau', pagesLabel === 'Pages', String(pagesLabel));
+  ok('check 2/6 (R1): the Pages toggle now renders via tMany(\'page\') — matches the lexicon projection and stays byte-equal to "Pages"', pagesLabel === 'Pages' && pagesLabel === pagesLexiconMany, `${pagesLabel} vs ${pagesLexiconMany}`);
 
   // -- check 6: Plateau default-theme regression — byte-equal to pre-TH1 values --
   const finalVals = await rootVals(Object.keys(PRE_TH1));

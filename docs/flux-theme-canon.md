@@ -93,6 +93,12 @@ display strings; canonical terms keep working everywhere. Zero-schema.
 | Publish | **Connect** — the single sanctioned verb rename |
 | Script | Script (already dual-natured) |
 
+**Number forms (TH1 R1 fold):** each row above names the term's canonical
+form loosely — in the implementation every term carries two independent
+forms, `one` and `many` (pluralization isn't algorithmic from a single
+string), and a theme overriding a term may supply either form alone, with
+the other falling through to Plateau's canonical form for that number.
+
 ## 6. Ambient doctrine — two classes, opposite damping
 
 - **TEXTURE** (the failing-monitor events): random, narratively empty, and

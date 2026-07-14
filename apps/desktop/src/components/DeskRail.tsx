@@ -14,16 +14,15 @@ import { useLexicon, type TermId } from '../store/themeLexicon';
 // (stub for later); the rest are live. On the Desk (its own full-screen world)
 // the rail sits behind the overlay, exactly as the old header nav did.
 
-// TH1 Slice 1 — 'journal' and 'shelf' route through the lexicon (exact
-// singular-noun matches to canon §5's term IDs). 'drawers' stays a literal:
-// the canonical term is singular ('Drawer') but this label is plural, and
-// the lexicon has no pluralization rule (flagged for TH2, not guessed here).
+// TH1 Slice 1 — 'journal' and 'shelf' route through the lexicon's singular
+// form; 'drawers' (R1 fold) through the plural form (tMany('drawer')) — the
+// lexicon now carries both number forms, so the plural label sweeps too.
 // 'library' isn't a canon §5 term at all (a separate future stub).
-interface RailItem { key: string; term?: TermId; label: string; glyph: string; to: string; live: boolean }
+interface RailItem { key: string; term?: TermId; plural?: boolean; label: string; glyph: string; to: string; live: boolean }
 const ITEMS: RailItem[] = [
   { key: 'journal', term: 'journal', label: 'Journal', glyph: '❧', to: '/journal', live: true },
   { key: 'shelf', term: 'shelf', label: 'Shelf', glyph: '▤', to: '/shelf', live: true },
-  { key: 'drawers', label: 'Drawers', glyph: '▥', to: '/drawers', live: true },
+  { key: 'drawers', term: 'drawer', plural: true, label: 'Drawers', glyph: '▥', to: '/drawers', live: true },
   { key: 'library', label: 'Library', glyph: '▣', to: '/library', live: false },
 ];
 
@@ -44,7 +43,7 @@ export function DeskRail() {
   const { pathname } = useLocation();
   const { isWriting } = useWritingSession();
   const doCatch = useCatch();
-  const t = useLexicon();
+  const { t: lex, tMany: lexMany } = useLexicon();
 
   // W2 — the return chip. Re-checked on every route change: a departure just
   // captured (or consumed) the slot as part of the same navigation, so
@@ -100,7 +99,7 @@ export function DeskRail() {
       </button>
       {ITEMS.map(it => {
         const active = pathname.startsWith(it.to);
-        const label = it.term ? t(it.term) : it.label;
+        const label = it.term ? (it.plural ? lexMany(it.term) : lex(it.term)) : it.label;
         return (
           <button
             key={it.key}

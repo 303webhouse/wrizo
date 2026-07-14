@@ -48,7 +48,7 @@ export function setTheme(theme: ThemeId): void {
   subs.forEach(fn => fn(current));
 }
 
-// Called once at app boot (App.tsx) — puts the attribute on <html> before
+// Called once at app boot (main.tsx) — puts the attribute on <html> before
 // first paint-adjacent render so there is never a themeless flash.
 export function initTheme(): void {
   applyAttribute(current);
