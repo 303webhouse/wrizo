@@ -169,15 +169,53 @@ outlive a session lives here, not in chat.
    check only. See `docs/backlog.md`. W2's own S25 + desktop gate items
    join the consolidated hardware session (item 2) — Nick's device verdict
    closes the ticket.
-19. **TH1 — the theme seam.** Brief: docs/th1-theme-seam-brief.md, canon:
-    docs/flux-theme-canon.md, visual ref: docs/design/flux-rc2.html.
-    ACTIVE 2026-07-13 on Nick's word, post-M1 spot-check GREEN. Branch
-    `th1-theme-seam` off main @ 7f4bc6b. Plateau must be visually
-    unchanged. Harness scripts/harness/th1.mjs ships with the ticket.
-    Report = push; merge only on Nick's word after Fable's review.
-20. **TH2 — Flux.** Brief: docs/th2-flux-brief.md. Armed only after TH1's
-    review/merge cycle closes. Hardware-gate items join the consolidated
-    session (item 2); device verdict closes the ticket.
+19. ~~**TH1 — the theme seam.**~~ **DONE — merged/deployed 2026-07-14.**
+    Brief: docs/th1-theme-seam-brief.md, canon: docs/flux-theme-canon.md,
+    visual ref: docs/design/flux-rc2.html. Built per the brief's Slices 0-4
+    on `th1-theme-seam` off post-docs-sweep `main` @ `dfc7dc3` (errata: this
+    item originally named the branch point `7f4bc6b` — the actual
+    merge-base is `dfc7dc3`, the TH-arc docs sweep commit; corrected here)
+    — a theme-agnostic seam (data-theme attribute; the token audit + two
+    new slots `--line-active`/`--signal-live`; lexicon projection; four
+    font slots re-pointing the existing material-named vars; the
+    Voice/Page/Fade preference matrix; the effects-layer scaffold), zero
+    component forks, Plateau byte-equivalent to pre-TH1 values.
+    Fable's review returned REQUIRED — 2, 3 advisories carried to TH2, no
+    data-loss-class or architecture findings. **Folded before merge:**
+    R1 — the lexicon carried one string per term; English pluralization
+    isn't algorithmic from a single string (Drawer/Drawers works with a
+    mechanical +s, but a theme's own noun might not), so
+    `store/themeLexicon.ts` now carries two independent number forms per
+    term (`one`/`many`), each separately overridable per theme; `t()`
+    returns `one`, new `tMany()` returns `many` with the same canonical
+    fall-through — swept DeskRail's Drawers rail item and the
+    PageEditor/QuickSprint Pages toggle (the two plural-noun UI sites the
+    original build left unswept) through `tMany()`, byte-equivalent on
+    Plateau. R2 — `ThemeEffectsLayer.tsx` now exports `registerThemeFx(id,
+    handlers)`, the actual seam a theme calls to light the layer up, plus
+    two comment truth-ups (that file's header; `store/theme.ts`'s
+    `initTheme()` doc-comment named the wrong call site, corrected to
+    `main.tsx`). `docs/flux-theme-canon.md` §5 gained a two-sentence
+    number-forms note. `scripts/harness/th1.mjs` grew 21 -> 26 checks,
+    stable across 3 runs. **Merge mode: CONTINGENT** — Nick's merge word
+    granted on a green fold. `main` had diverged (this session's own
+    `docs/theme-foundations` commit, `befd377`, landed on `main` after the
+    branch point) — rebased the branch onto `main` clean (zero conflicts,
+    fully disjoint files), force-pushed, then fast-forward merged. Ran the
+    full suite (`tsc` ×2 + `build:web` + selftest + `j4.mjs` 26/26 +
+    `j5.mjs` 40/40 + `s1.mjs` 87/87 + `w1.mjs` 18/18 + `w2.mjs` 31/31 +
+    `m1.mjs` 33/33 + `th1.mjs` 26/26) green on merged `main`, pushed,
+    `railway up` — confirmed live (`200` on `/healthz` and `/`, `/auth/me`
+    returning the expected `401`). **Zero-schema deploy** — no server files
+    touched, liveness check only. See `docs/backlog.md`. Fable's delta
+    spot-check runs post-merge (fix-forward). TH1's hardware-gate item
+    folds into the consolidated session (item 2); Plateau's only
+    feel-check (visually unchanged) is satisfied by the byte-equivalence
+    checks, already green pre-merge.
+20. **TH2 — Flux.** Brief: docs/th2-flux-brief.md. Arms on Fable's
+    post-merge spot-check GREEN (closing TH1's review/merge cycle).
+    Hardware-gate items join the consolidated session (item 2); device
+    verdict closes the ticket.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
