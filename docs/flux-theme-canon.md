@@ -4,8 +4,8 @@
 sessions (full committee double-pass, then a joint Architects + Experts
 cognition/ADHD bench for revisions). Nick's rulings are final throughout.
 Converts ledger horizon item 14 into the TH-arc. Normative visual reference:
-`docs/design/flux-rc2.html` — **where this prose and RC-2 disagree, RC-2 wins**
-pending errata.
+`docs/theme-foundations/flux/flux-rc2.html` — **where this prose and RC-2
+disagree, RC-2 wins** pending errata.
 
 ## 1. What a theme is
 

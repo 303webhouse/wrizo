@@ -212,10 +212,23 @@ outlive a session lives here, not in chat.
     folds into the consolidated session (item 2); Plateau's only
     feel-check (visually unchanged) is satisfied by the byte-equivalence
     checks, already green pre-merge.
-20. **TH2 — Flux.** Brief: docs/th2-flux-brief.md. Arms on Fable's
-    post-merge spot-check GREEN (closing TH1's review/merge cycle).
-    Hardware-gate items join the consolidated session (item 2); device
-    verdict closes the ticket.
+20. **TH2 — Flux.** Brief: docs/th2-flux-brief.md, canon:
+    docs/flux-theme-canon.md, foundations: docs/theme-foundations/flux/
+    flux-foundations.md, visual ref: docs/theme-foundations/flux/
+    flux-rc2.html. **ACTIVE 2026-07-14** — Fable's TH1 post-merge
+    spot-check returned GREEN, closing TH1's review/merge cycle and arming
+    this ticket. Branch `th2-flux` off post-docs `main`. In scope beyond
+    the brief's slices: review advisories A1 (Fade->off must resurface
+    chrome immediately, not on the next dissolve cycle — folds into
+    Slice 1) and A2 (prefs enum values validated on load, not trusted
+    verbatim from localStorage — folds into Slice 0); A3 (a genuine
+    Flux<->Plateau round trip, not just Plateau-side assertions) into
+    `scripts/harness/th2.mjs`; and a full lexicon surface sweep — every
+    user-facing noun site including in-page headings (`.dz-pagetitle` is
+    the documented starting example from `th1.mjs`'s rail-item/page-heading
+    distinction). Plateau stays byte-equivalent throughout. Harness
+    scripts/harness/th2.mjs ships with the ticket. Report = push; merge
+    only on Nick's word after Fable's review.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now

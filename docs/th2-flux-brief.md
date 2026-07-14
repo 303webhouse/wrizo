@@ -2,8 +2,8 @@
 
 **Place at:** `docs/th2-flux-brief.md`. Fable, 2026-07-13. Canon:
 `docs/flux-theme-canon.md` (all sections). Normative visual reference:
-`docs/design/flux-rc2.html` — where prose and RC-2 disagree, RC-2 wins.
-Branch: `th2-flux`, off post-TH1 `main`. **Armed only after TH1's
+`docs/theme-foundations/flux/flux-rc2.html` — where prose and RC-2 disagree,
+RC-2 wins. Branch: `th2-flux`, off post-TH1 `main`. **Armed only after TH1's
 review/merge cycle closes.**
 
 ## Goal
