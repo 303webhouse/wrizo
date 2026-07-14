@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createShelfPage, getProjects, getShelfPages, setPageHome } from '../store/persistence';
 import { firstLine, snippet, formatStamp } from '../store/entryText';
 import { PageFileMenu } from '../components/PageFileMenu';
+import { useLexicon } from '../store/themeLexicon';
 
 // Pages & Shelf D2 — the Shelf: loose pages set aside for filing, kept out of the
 // chronological Journal stream. Open a page (the existing page editor), file it
@@ -10,6 +11,7 @@ import { PageFileMenu } from '../components/PageFileMenu';
 // file sets up the future AI "tidy the shelf" (a sorting task, not prose).
 export function Shelf() {
   const navigate = useNavigate();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const pages = getShelfPages();
   const binders = getProjects();
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -26,9 +28,9 @@ export function Shelf() {
     <div className="page" style={{ maxWidth: 640, paddingTop: '3rem' }}>
       <Link to="/" className="btn-quiet" style={{ display: 'inline-block', marginBottom: 24 }}>← Home</Link>
 
-      <div className="eyebrow" style={{ marginBottom: 8 }}>THE SHELF</div>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>THE {lex('shelf').toUpperCase()}</div>
       <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28, letterSpacing: '-0.01em', color: 'var(--text-hi)', marginBottom: 20 }}>
-        Loose pages, waiting for a home.
+        Loose {lexMany('page').toLowerCase()}, waiting for a home.
       </h1>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24, flexWrap: 'wrap' }}>
@@ -37,7 +39,7 @@ export function Shelf() {
           className="btn-quiet shelf-new-page"
           onClick={() => { const page = createShelfPage(); navigate(`/journal/${page.id}`); }}
         >
-          New shelf page
+          New {lex('shelf').toLowerCase()} {lex('page').toLowerCase()}
         </button>
         {selected.size > 0 && (
           <div className="dz-rowmove">
@@ -46,11 +48,11 @@ export function Shelf() {
             </button>
             {bulkOpen && (
               <div className="dz-menu" role="menu">
-                <button type="button" className="dz-menu-item" onClick={() => bulkFile('journal')}>To Journal</button>
+                <button type="button" className="dz-menu-item" onClick={() => bulkFile('journal')}>To {lex('journal')}</button>
                 {binders.map(b => (
                   <button type="button" key={b.id} className="dz-menu-item" onClick={() => bulkFile(b.id)}>{b.title || 'Untitled'}</button>
                 ))}
-                {binders.length === 0 && <span className="dz-menu-empty">No binders to file into</span>}
+                {binders.length === 0 && <span className="dz-menu-empty">No {lexMany('binder').toLowerCase()} to file into</span>}
               </div>
             )}
           </div>
@@ -58,7 +60,7 @@ export function Shelf() {
       </div>
 
       {pages.length === 0 ? (
-        <p style={{ color: 'var(--text-mid)' }}>The shelf is empty. Loose pages you set aside for filing will gather here.</p>
+        <p style={{ color: 'var(--text-mid)' }}>The {lex('shelf').toLowerCase()} is empty. Loose {lexMany('page').toLowerCase()} you set aside for filing will gather here.</p>
       ) : (
         <div className="shelf-list">
           {pages.map(p => {
@@ -69,7 +71,7 @@ export function Shelf() {
                 <input
                   type="checkbox"
                   className="shelf-check"
-                  aria-label="Select page"
+                  aria-label={`Select ${lex('page').toLowerCase()}`}
                   checked={selected.has(p.id)}
                   onChange={() => toggleSel(p.id)}
                 />

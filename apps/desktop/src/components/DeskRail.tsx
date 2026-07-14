@@ -81,7 +81,7 @@ export function DeskRail() {
           type="button"
           className="desk-rail-item desk-rail-wayback"
           title={`Return to: ${wayBackLabel}`}
-          aria-label="Return to the page"
+          aria-label={`Return to the ${lex('page').toLowerCase()}`}
           onClick={() => navigate(wayBack.route)}
         >
           <span className="desk-rail-glyph" aria-hidden="true">↩</span>

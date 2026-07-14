@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { MilestoneBeat, Milestones } from '../store/milestones';
+import { useTheme } from '../store/theme';
+import { createJitteredScheduler } from '../store/effectsScheduler';
+
+// TH2 Slice 2 — the spark burst is Flux-only spectacle riding the SAME
+// celebrate class/timing Plateau already uses (one celebration grammar,
+// canon §9) — 14 sparks, orange core with ~30% lime, fired once per lap
+// completion. Fixed count/angles: "predictable, never variable" is a
+// binding guardrail, not a suggestion — no randomness here.
+const SPARK_COUNT = 14;
+const SPARK_ANGLES = Array.from({ length: SPARK_COUNT }, (_, i) => (360 / SPARK_COUNT) * i);
 
 // Shared incentive-layer pieces (glow + progress bar + typewriter toggle) used
 // by both ModeStage (Free write/Draft/Format) and JournalEntry (the ink-capable
@@ -45,8 +55,46 @@ export function useGoalProgress(value: number, goal: number): { frac: number; ce
 
 // Ambient ember behind the page — eased with progress, blooms as chrome fades.
 // `m` is the eased 0..1 progress fraction (Math.pow(frac, 0.55) by callers).
-export function AmbientGlow({ m }: { m: number }) {
-  return <div aria-hidden="true" className="mode-glow" style={{ ['--m' as CSSProperties & string]: m.toFixed(3) } as CSSProperties} />;
+// TH2 Slice 3 — Flux restyles this SAME mount point (canon §8, RESPONSE):
+// a teal pool instead of the orange ember. `typing` pauses the 4.3s sputter
+// cycle (RESPONSE's honest inverse of TEXTURE's damping — see canon §6);
+// `celebrating` fires the one-shot brightness bloom. Plateau's own glow is
+// completely untouched — this only branches under [data-theme='flux'] CSS.
+export function AmbientGlow({ m, typing, celebrating }: { m: number; typing?: boolean; celebrating?: boolean }) {
+  const theme = useTheme();
+  const [deepSputter, setDeepSputter] = useState(false);
+  const typingRef = useRef(!!typing);
+  typingRef.current = !!typing;
+
+  // Jittered deep sputters (canon §8: ~130ms to ~24% opacity, every 6-12s) —
+  // only scheduled on Flux; store/effectsScheduler.ts's structural min-gap
+  // floor is the ≤3Hz backstop even though these rates are nowhere near it.
+  useEffect(() => {
+    if (theme !== 'flux') return;
+    const scheduler = createJitteredScheduler({
+      minMs: 6000,
+      maxMs: 12000,
+      isBusy: () => typingRef.current,
+      onFire: () => {
+        setDeepSputter(true);
+        setTimeout(() => setDeepSputter(false), 130);
+      },
+    });
+    scheduler.start();
+    return () => scheduler.stop();
+  }, [theme]);
+
+  if (theme !== 'flux') {
+    return <div aria-hidden="true" className="mode-glow" style={{ ['--m' as CSSProperties & string]: m.toFixed(3) } as CSSProperties} />;
+  }
+  // Two layers so the 4.3s sputter's own opacity animation multiplies
+  // against the progress-driven opacity/scale, rather than one CSS
+  // animation fighting a calc()'d static value on the same property.
+  return (
+    <div aria-hidden="true" className="mode-glow-flux-wrap" data-typing={typing ? 'true' : 'false'} data-deep-sputter={deepSputter ? 'true' : 'false'}>
+      <div className={`mode-glow mode-glow--flux${celebrating ? ' bloom' : ''}`} style={{ ['--m' as CSSProperties & string]: m.toFixed(3) } as CSSProperties} />
+    </div>
+  );
 }
 
 interface ProgressBarProps {
@@ -63,6 +111,12 @@ interface ProgressBarProps {
 // timer) can show on its own — matches the pre-existing off-but-timer-on case.
 export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rightSlot }: ProgressBarProps) {
   const pct = celebrating ? 100 : Math.max(0, Math.min(100, frac * 100));
+  // TH2 Slice 2 — Flux restyles this SAME bar (canon §9): lime fill, blue
+  // caret notch in flight; on celebrate, an ignition sweep + 14-spark burst
+  // ride the identical `celebrate` class/timing Plateau already uses. Zero
+  // DOM cost on Plateau (sparks never render) or when not celebrating.
+  const theme = useTheme();
+  const fluxCelebrate = theme === 'flux' && celebrating;
   return (
     <div className="mode-progress">
       {!hidden && (
@@ -70,7 +124,19 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
           <div
             className={`mode-pfill${celebrating ? ' celebrate' : ''}${pct > 0 ? ' started' : ''}`}
             style={{ width: `${pct.toFixed(1)}%` }}
-          />
+          >
+            {fluxCelebrate && (
+              <span className="mode-pfill-sparks" aria-hidden="true">
+                {SPARK_ANGLES.map((deg, i) => (
+                  <span
+                    key={i}
+                    className={`mode-pfill-spark${i % 3 === 0 ? ' lime' : ''}`}
+                    style={{ ['--spark-angle' as CSSProperties & string]: `${deg}deg` } as CSSProperties}
+                  />
+                ))}
+              </span>
+            )}
+          </div>
         </div>
       )}
       <div className="mode-pmeta">

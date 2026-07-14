@@ -44,11 +44,32 @@ const CANONICAL: Record<TermId, TermForms> = {
   script: { one: 'Script', many: 'Scripts' },
 };
 
-// Themes register overrides here (TH2 adds a 'flux' entry — a Partial of a
-// Partial, so a theme may override just .one, just .many, or neither, and
-// fall through per-field to canonical). Empty for every theme in TH1: the
-// seam carries zero Flux content.
-const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {};
+// Themes register overrides here — a Partial of a Partial, so a theme may
+// override just .one, just .many, or neither, and fall through per-field to
+// canonical. Flux (canon §5 / flux-foundations.md §3.4): 'page' and 'box'
+// keep the canonical's own plural-shaped-noun pattern ('Docs'/'Nodes' as the
+// natural .many, an English-singularized .one for symmetry — the canon
+// table doesn't pin a singular form for these, so 'Doc'/'Node' are this
+// module's own construction); 'script' is intentionally absent (unchanged,
+// "already dual-natured" per the canon).
+const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
+  flux: {
+    page: { one: 'Doc', many: 'Docs' },
+    shelf: { one: 'Cache', many: 'Caches' },
+    drawer: { one: 'Rack', many: 'Racks' },
+    binder: { one: 'Cartridge', many: 'Cartridges' },
+    box: { one: 'Node', many: 'Nodes' },
+    board: { one: 'Circuit', many: 'Circuits' },
+    notebook: { one: 'Deck', many: 'Decks' },
+    journal: { one: 'Log', many: 'Logs' },
+    plan: { one: 'Schematic', many: 'Schematics' },
+    milestone: { one: 'Checkpoint', many: 'Checkpoints' },
+    freewrite: { one: 'Overclock', many: 'Overclocks' },
+    home: { one: 'Safehouse', many: 'Safehouses' },
+    voicewall: { one: 'Firewall', many: 'Firewalls' },
+    publish: { one: 'Connect', many: 'Connect' }, // a verb/label, mirrors Plateau's own .many=.one shape
+  },
+};
 
 function resolveTheme(theme: ThemeId | undefined): ThemeId {
   if (theme) return theme;

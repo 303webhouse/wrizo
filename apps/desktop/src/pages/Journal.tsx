@@ -4,6 +4,7 @@ import { getJournalPages, createJournalPage } from '../store/persistence';
 import { firstLine, snippet, matchesQuery, formatStamp } from '../store/entryText';
 import { renderThumbnail } from '../store/ink';
 import { useActionToast } from '../components/ActionToast';
+import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry, Stroke } from '../types';
 
 // J4 — the notebook surface. A visible, browsable, searchable place for every
@@ -45,6 +46,7 @@ export function Journal() {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useActionToast();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const [query, setQuery] = useState('');
   const [starredOnly, setStarredOnly] = useState(false);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export function Journal() {
     <div className="page" style={{ maxWidth: 640, paddingTop: '3rem' }}>
       <Link to="/" className="btn-quiet" style={{ display: 'inline-block', marginBottom: 24 }}>← Home</Link>
 
-      <div className="eyebrow" style={eyebrow}>THE JOURNAL</div>
+      <div className="eyebrow" style={eyebrow}>THE {lex('journal').toUpperCase()}</div>
       <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28, letterSpacing: '-0.01em', color: 'var(--text-hi)', marginBottom: 20 }}>
         Everything you've written.
       </h1>
@@ -107,7 +109,7 @@ export function Journal() {
           type="search"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Search your pages"
+          placeholder={`Search your ${lexMany('page').toLowerCase()}`}
           style={{
             flex: 1, minWidth: 200, padding: '8px 12px', borderRadius: 'var(--radius-sm)',
             border: '1px solid var(--ink-border)', background: 'var(--ink-800)',
@@ -124,7 +126,7 @@ export function Journal() {
           {starredOnly ? '★ Starred only' : '☆ Starred only'}
         </button>
         <button type="button" className="btn-quiet journal-surface" onClick={surface} disabled={entries.length === 0}>
-          Surface a past page
+          Surface a past {lex('page').toLowerCase()}
         </button>
         <Link to="/journal/spread" className="btn-quiet journal-spread-link">
           Spread
@@ -134,7 +136,7 @@ export function Journal() {
           className="btn-quiet journal-new-page"
           onClick={() => { const page = createJournalPage(); navigate(`/journal/${page.id}`); }}
         >
-          New page
+          New {lex('page').toLowerCase()}
         </button>
       </div>
 
@@ -160,7 +162,7 @@ export function Journal() {
       )}
 
       {entries.length === 0 ? (
-        <p style={{ color: 'var(--text-mid)' }}>No pages yet — your finished sprints will gather here.</p>
+        <p style={{ color: 'var(--text-mid)' }}>No {lexMany('page').toLowerCase()} yet — your finished sprints will gather here.</p>
       ) : filtered.length === 0 ? (
         <p style={{ color: 'var(--text-mid)' }}>Nothing matches “{query.trim()}”.</p>
       ) : (

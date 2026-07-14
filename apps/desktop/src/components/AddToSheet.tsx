@@ -6,6 +6,7 @@ import {
 } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { firstLine } from '../store/entryText';
+import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry } from '../types';
 
 // J5 Slices 2+3 — the "Add to…" sheet: a destination-first drill-down
@@ -29,6 +30,7 @@ type Level =
 type Verb = 'MOVES' | 'COPIES' | 'LINKS';
 
 export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]; onClose: () => void; onDone: (message: string, verb: Verb) => void }) {
+  const { t: lex, tMany: lexMany } = useLexicon();
   const [path, setPath] = useState<Level[]>([{ kind: 'root' }]);
   const [pendingBoard, setPendingBoard] = useState<{ id: string; title: string } | null>(null);
   const n = sourceIds.length;
@@ -46,35 +48,37 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const crumbLabel = (lvl: Level) => (lvl.kind === 'root' ? 'Add to…' : lvl.kind === 'drawer' ? lvl.drawerName : lvl.binderName);
 
+  const pageWord = (count: number) => (count === 1 ? lex('page') : lexMany('page')).toLowerCase();
+
   const fileToShelf = () => {
     for (const id of sourceIds) setPageHome(id, 'shelf');
-    onDone(`Filed ${n} page${n === 1 ? '' : 's'} to the Shelf — moved; it left the Journal.`, 'MOVES');
+    onDone(`Filed ${n} ${pageWord(n)} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`, 'MOVES');
   };
 
   const fileStandalone = (drawerId?: string) => {
     const binder = fileToNewBinder(sourceIds, drawerId);
-    onDone(`Filed ${n} page${n === 1 ? '' : 's'} to ${binder.title || 'Untitled'} — moved; it left the Journal.`, 'MOVES');
+    onDone(`Filed ${n} ${pageWord(n)} to ${binder.title || 'Untitled'} — moved; it left the ${lex('journal')}.`, 'MOVES');
   };
 
   const fileHere = (binderId: string) => {
     for (const id of sourceIds) setPageHome(id, binderId);
     const binder = getProject(binderId);
-    onDone(`Filed ${n} page${n === 1 ? '' : 's'} to ${binder?.title || 'Untitled'} — moved; it left the Journal.`, 'MOVES');
+    onDone(`Filed ${n} ${pageWord(n)} to ${binder?.title || 'Untitled'} — moved; it left the ${lex('journal')}.`, 'MOVES');
   };
 
   const doAppendChapter = (chapter: JournalEntry) => {
     appendToChapter(sourceIds, chapter.id);
-    onDone(`Copied — appended to "${pageTitle(chapter)}". The originals stay in the Journal.`, 'COPIES');
+    onDone(`Copied — appended to "${pageTitle(chapter)}". The originals stay in the ${lex('journal')}.`, 'COPIES');
   };
 
   const doAttachPlan = (binderId: string, beatId: string, beatName: string) => {
     attachToPlanBeat(sourceIds, binderId, beatId);
-    onDone(`Linked — marked routed to "${beatName}"; the page stays in the Journal.`, 'LINKS');
+    onDone(`Linked — marked routed to "${beatName}"; the ${lex('page').toLowerCase()} stays in the ${lex('journal')}.`, 'LINKS');
   };
 
   const doBoardAppend = (boardId: string, title: string, includeInk: boolean) => {
     appendToBoard(sourceIds, boardId, includeInk);
-    onDone(`Copied — added to the "${title}" Board. The originals stay in the Journal.`, 'COPIES');
+    onDone(`Copied — added to the "${title}" ${lex('board')}. The originals stay in the ${lex('journal')}.`, 'COPIES');
   };
 
   const clickBoard = (b: JournalEntry) => {
@@ -97,9 +101,9 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   if (pendingBoard) {
     return (
-      <div className="board-sheet" role="dialog" aria-label={`Add onto Board — ${pendingBoard.title}`}>
+      <div className="board-sheet" role="dialog" aria-label={`Add onto ${lex('board')} — ${pendingBoard.title}`}>
         <div className="board-sheet-inner">
-          <div className="board-sheet-title">Add onto Board — {pendingBoard.title}</div>
+          <div className="board-sheet-title">Add onto {lex('board')} — {pendingBoard.title}</div>
           <p style={{ color: 'var(--text-mid)', marginBottom: 16 }}>This selection has ink.</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <button type="button" className="btn-quiet" onClick={() => doBoardAppend(pendingBoard.id, pendingBoard.title, false)}>Text only</button>
@@ -118,7 +122,7 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     body = (
       <>
         <button type="button" className="dz-more add-dest-row" onClick={fileToShelf}>
-          The Shelf <VerbTag verb="MOVES" />
+          The {lex('shelf')} <VerbTag verb="MOVES" />
         </button>
         {drawers.map(d => (
           <button key={d.id} type="button" className="dz-row board-dest-row" onClick={() => push({ kind: 'drawer', drawerId: d.id, drawerName: d.name })}>
@@ -152,7 +156,7 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
     body = (
       <>
         <button type="button" className="dz-more add-dest-row" onClick={() => fileHere(binderId)}>
-          File here as a new page <VerbTag verb="MOVES" />
+          File here as a new {lex('page').toLowerCase()} <VerbTag verb="MOVES" />
         </button>
         {chapters.length > 0 && (
           <div style={{ marginTop: 16 }}>
@@ -173,7 +177,7 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
         )}
         {plan && framework && (
           <div style={{ marginTop: 16 }}>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Attach to the plan</div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Attach to the {lex('plan').toLowerCase()}</div>
             <div style={{ maxHeight: 160, overflow: 'auto' }}>
               {framework.beats.map(beat => (
                 <button key={beat.id} type="button" className="dz-row board-dest-row" onClick={() => doAttachPlan(binderId, beat.id, beat.name)}>
@@ -185,11 +189,11 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
         )}
         {boards.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <div className="eyebrow" style={{ marginBottom: 6 }}>Add onto a Board</div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Add onto a {lex('board')}</div>
             <div style={{ maxHeight: 160, overflow: 'auto' }}>
               {boards.map(b => (
                 <button key={b.id} type="button" className="dz-row board-dest-row" onClick={() => clickBoard(b)}>
-                  <span className="dz-rowtitle">Add onto Board — {pageTitle(b)}</span> <VerbTag verb="COPIES" />
+                  <span className="dz-rowtitle">Add onto {lex('board')} — {pageTitle(b)}</span> <VerbTag verb="COPIES" />
                 </button>
               ))}
             </div>

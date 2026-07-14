@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDrawers, getProjects, getJournalEntry, portToBoard } from '../store/persistence';
+import { useLexicon } from '../store/themeLexicon';
 
 // J4 Slice 2 — the port's destination-first sheet. Shared by the loose
 // journal page's single-page "Port to a Board…" and the Spread's multi-page
@@ -9,6 +10,7 @@ import { getDrawers, getProjects, getJournalEntry, portToBoard } from '../store/
 // binders, drawer-grouped, + "＋ New project").
 export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; onClose: () => void }) {
   const navigate = useNavigate();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const anyInk = sourceIds.some(id => (getJournalEntry(id)?.strokes?.length ?? 0) > 0);
   const [includeInk, setIncludeInk] = useState<boolean | null>(anyInk ? null : false);
 
@@ -20,9 +22,9 @@ export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; 
 
   if (anyInk && includeInk === null) {
     return (
-      <div className="board-sheet" role="dialog" aria-label="Port to a Board">
+      <div className="board-sheet" role="dialog" aria-label={`Port to a ${lex('board')}`}>
         <div className="board-sheet-inner">
-          <div className="board-sheet-title">Port {sourceIds.length > 1 ? `${sourceIds.length} pages` : 'this page'} to a Board</div>
+          <div className="board-sheet-title">Port {sourceIds.length > 1 ? `${sourceIds.length} ${lexMany('page').toLowerCase()}` : `this ${lex('page').toLowerCase()}`} to a {lex('board')}</div>
           <p style={{ color: 'var(--text-mid)', marginBottom: 16 }}>This selection has ink.</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <button type="button" className="btn-quiet" onClick={() => setIncludeInk(false)}>Text only</button>
@@ -42,7 +44,7 @@ export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; 
   const unsorted = projects.filter(p => !p.drawerId || !drawers.some(d => d.id === p.drawerId));
 
   return (
-    <div className="board-sheet" role="dialog" aria-label="Port to a Board — choose a destination">
+    <div className="board-sheet" role="dialog" aria-label={`Port to a ${lex('board')} — choose a destination`}>
       <div className="board-sheet-inner">
         <div className="board-sheet-title">Choose a destination</div>
         <button type="button" className="dz-more" onClick={() => choose('new')}>＋ New project</button>

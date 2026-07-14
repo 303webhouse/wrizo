@@ -8,6 +8,8 @@ import { ChromeHandle } from './WritingShell';
 import { useTypewriterFade } from './useTypewriterFade';
 import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
+import { useTheme, setTheme, type ThemeId } from '../store/theme';
+import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -47,6 +49,12 @@ interface Props {
   focused?: boolean;                            // editor focus → page glow
   pageTitle?: string;
   onDissolveChange?: (dissolved: boolean) => void;
+  // TH2 — the celebrate-summon rule (canon §10): fires once per lap
+  // completion so the host can override its OWN bottom bar's fade for
+  // ~2.5s. Cross-theme (lands behind the Fade pref, so Plateau gains it
+  // too) but only Flux's sprint bar actually surges visually — see
+  // WritingIncentives.tsx Slice 2.
+  onCelebrate?: () => void;
   soundOn?: boolean;              // ambient sound bed state (host owns it); absent → no mic shown
   onToggleSound?: () => void;     // toggling shows the mic in the gear cluster
   // The host's own top bar (PageEditor's/QuickSprint's breadcrumb + mode tabs
@@ -63,7 +71,7 @@ interface Props {
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, soundOn, onToggleSound, chromeRootRef, milestones, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -78,10 +86,20 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   });
 
   const firstWriteRef = useRef<number | null>(null);
+  // TH2 — a short-lived "actively typing" signal for the glow's sputter
+  // pause (canon §8/§6: RESPONSE persists, but its sputter pauses while keys
+  // flow). Distinct from useChromeDissolve's 3-minute dissolve window —
+  // this clears on a brief pause (~1.5s idle), not a long one.
+  const [activelyTyping, setActivelyTyping] = useState(false);
+  const typingIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const noteWrite = useCallback(() => {
     if (firstWriteRef.current === null) firstWriteRef.current = Date.now();
+    setActivelyTyping(true);
+    if (typingIdleRef.current) clearTimeout(typingIdleRef.current);
+    typingIdleRef.current = setTimeout(() => { typingIdleRef.current = null; setActivelyTyping(false); }, 1500);
     engineNote();
   }, [engineNote]);
+  useEffect(() => () => { if (typingIdleRef.current) clearTimeout(typingIdleRef.current); }, []);
 
   const [pen, setPen] = useState(PEN_INKS[0]);
   const [gearOpen, setGearOpen] = useState(false);
@@ -201,6 +219,13 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   const goalTarget = settings.progress === 'time' ? TIME_GOAL_MS : WORD_GOAL;
   const m = Math.pow(Math.min(1, goalValue / goalTarget), 0.55);
   const { frac: lapFrac, celebrating } = useGoalProgress(goalValue, goalTarget);
+  // TH2 — fire the celebrate-summon rule once per lap, on the transition
+  // into celebrating (not on every render while it stays true).
+  const prevCelebratingRef = useRef(false);
+  useEffect(() => {
+    if (celebrating && !prevCelebratingRef.current) onCelebrate?.();
+    prevCelebratingRef.current = celebrating;
+  }, [celebrating, onCelebrate]);
   let label: string;
   let metricLabel: string;
   if (settings.progress === 'time') {
@@ -242,7 +267,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       <ChromeHandle onReveal={() => resurface(true)} />
 
       {/* Ambient ember — blooms as the rails dissolve; eased with progress. */}
-      <AmbientGlow m={m} />
+      <AmbientGlow m={m} typing={activelyTyping} celebrating={celebrating} />
 
       {/* Top-right chrome cluster: the sound toggle (if the host owns sound) +
           the settings gear — one-color tan glyphs, matched in size. */}
@@ -263,6 +288,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           <GearIcon />
         </button>
         {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+        {gearOpen && <ThemePanel />}
       </div>
 
       <div className="mode-row">
@@ -441,6 +467,26 @@ function SettingsPanel({ settings, hasMilestones }: { settings: { progress: Prog
       <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ typewriter: v === 'on' })} />
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
+    </div>
+  );
+}
+
+// TH2 — the theme/prefs menu, a second panel beside SettingsPanel (kept
+// separate: theme selection is cross-theme/account-level, not this surface's
+// own writing-chrome behavior). Switching Theme is instant and lossless —
+// only a data-theme attribute write, no reload, no unmount of the editor
+// (PAGE IS PRIMARY holds trivially: nothing here touches the page's rect).
+function ThemePanel() {
+  const theme = useTheme();
+  const prefs = useThemePrefs();
+  const themeOpts: [string, string][] = [['plateau', 'Plateau'], ['flux', 'Flux']];
+  return (
+    <div className="mode-settings mode-theme-settings" role="menu">
+      <h4>theme</h4>
+      <Seg label="Theme" value={theme} opts={themeOpts} onPick={v => setTheme(v as ThemeId)} />
+      <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
+      <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={v => setThemePrefs({ page: v as 'dark' | 'light' })} />
+      <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
     </div>
   );
 }

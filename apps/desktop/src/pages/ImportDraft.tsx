@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { getProject, getProjects, importDraft } from '../store/persistence';
+import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry } from '../types';
 
 // VW — the Import door. A plain paste surface (a real <textarea> — intentionally
@@ -19,6 +20,7 @@ const KIND_CHOICES: { key: ImportKind; label: string; hint: string }[] = [
 
 export function ImportDraft() {
   const navigate = useNavigate();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const { id } = useParams<{ id: string }>();
   // Binder-scoped (/project/:id/import) knows its target; the Drawers-level door
   // (/import) picks one first.
@@ -40,7 +42,7 @@ export function ImportDraft() {
     const projects = getProjects();
     return (
       <div className="import-draft">
-        <Link to="/drawers" className="btn-quiet import-back">&larr; Drawers</Link>
+        <Link to="/drawers" className="btn-quiet import-back">&larr; {lexMany('drawer')}</Link>
         <div className="eyebrow import-eyebrow">Import a draft</div>
         <h1 className="import-title">Which binder?</h1>
         <p className="import-sub">Your own work, flowing in. Pick where it lands.</p>
@@ -48,7 +50,7 @@ export function ImportDraft() {
           {projects.map(p => (
             <button key={p.id} type="button" className="import-binder" onClick={() => setBinderId(p.id)}>{p.title}</button>
           ))}
-          {projects.length === 0 && <span className="import-empty">No binders yet — begin a project first.</span>}
+          {projects.length === 0 && <span className="import-empty">No {lexMany('binder').toLowerCase()} yet — begin a project first.</span>}
         </div>
       </div>
     );
@@ -61,7 +63,7 @@ export function ImportDraft() {
       <Link to={id ? `/project/${id}` : '/drawers'} className="btn-quiet import-back">&larr; Back</Link>
       <div className="eyebrow import-eyebrow">Import a draft → {targetTitle}</div>
       <h1 className="import-title">Paste your draft</h1>
-      <p className="import-sub">Your own work is always welcome in. Paste it below, choose where it lands, and it becomes a page you can keep writing.</p>
+      <p className="import-sub">Your own work is always welcome in. Paste it below, choose where it lands, and it becomes a {lex('page').toLowerCase()} you can keep writing.</p>
 
       <textarea
         className="import-textarea"

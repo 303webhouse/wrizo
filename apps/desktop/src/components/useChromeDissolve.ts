@@ -91,6 +91,16 @@ export function useChromeDissolve({
   // Keep the global header (and any other session reader) in step.
   useEffect(() => { setWriting(dissolved); }, [dissolved, setWriting]);
 
+  // Fable's A1 (TH1 review, folded in TH2) — noteWrite's Fade:off guard only
+  // stops FUTURE dissolves; flipping the pref mid-dissolve (chrome already
+  // faded) left it faded until the next natural resurface trigger. Fade:off
+  // means "chrome is never hidden," so the transition itself must resurface
+  // immediately, not just gate the next keystroke.
+  useEffect(() => {
+    if (fade === 'off' && dissolvedRef.current) resurface(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fade]);
+
   // Explicit-summon signals. Deliberate reach only: a viewport edge, Esc, or a tap
   // outside the text. Casual movement over the page is ignored (the menus are
   // never a procrastination surface mid-flow). Reaching an edge must LINGER

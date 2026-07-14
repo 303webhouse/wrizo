@@ -4,6 +4,7 @@ import type { Drawer, Project } from '../types';
 import {
   createDrawer, createJournalPage, getDrawers, getProjects, renameDrawer, setProjectDrawer, softDeleteDrawer,
 } from '../store/persistence';
+import { useLexicon } from '../store/themeLexicon';
 
 // Drawers D1 — the browsable Drawer → Binder(Project) tree that replaces the
 // Desk's flat recent list. The top of the Drawers IA. A "Binder" is still the
@@ -25,6 +26,7 @@ function byActivityThenTitle(a: Project, b: Project): number {
 
 export function DrawersTree() {
   const navigate = useNavigate();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const drawers = getDrawers().sort((a, b) => a.order - b.order);
   const projects = getProjects();
   const liveDrawerIds = new Set(drawers.map(d => d.id));
@@ -74,7 +76,7 @@ export function DrawersTree() {
               <button type="button" key={d.id} className="dz-menu-item" onClick={() => move(p.id, d.id)}>{d.name}</button>
             ))}
             {drawers.length === 0 && currentDrawerId === null && (
-              <span className="dz-menu-empty">No drawers yet</span>
+              <span className="dz-menu-empty">No {lexMany('drawer').toLowerCase()} yet</span>
             )}
           </div>
         )}
@@ -97,7 +99,7 @@ export function DrawersTree() {
 
   return (
     <div className="dz-tree">
-      <button type="button" className="dz-new" onClick={startNewDrawer}>+ New Drawer</button>
+      <button type="button" className="dz-new" onClick={startNewDrawer}>+ New {lex('drawer')}</button>
 
       {/* Drawers, by order. */}
       {drawers.map(d => {
@@ -125,7 +127,7 @@ export function DrawersTree() {
                 </button>
               )}
               <div className="dz-rowmove">
-                <button type="button" className="dz-menu-btn" aria-label="Drawer options" onClick={() => setMenuFor(f => (f === d.id ? null : d.id))}>⋯</button>
+                <button type="button" className="dz-menu-btn" aria-label={`${lex('drawer')} options`} onClick={() => setMenuFor(f => (f === d.id ? null : d.id))}>⋯</button>
                 {menuFor === d.id && (
                   <div className="dz-menu" role="menu">
                     <button type="button" className="dz-menu-item" onClick={() => startRename(d)}>Rename</button>
@@ -142,7 +144,7 @@ export function DrawersTree() {
                 <div className="dz-createnew">
                   {createFor === d.id ? (
                     <>
-                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); const e = createJournalPage(); navigate(`/journal/${e.id}`); }}>New Page</button>
+                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); const e = createJournalPage(); navigate(`/journal/${e.id}`); }}>New {lex('page')}</button>
                       <button type="button" className="dz-more" onClick={() => { setCreateFor(null); navigate(`/project/new?drawer=${d.id}`); }}>New Project</button>
                       <button type="button" className="dz-more dz-createnew-cancel" onClick={() => setCreateFor(null)}>cancel</button>
                     </>
@@ -162,7 +164,7 @@ export function DrawersTree() {
           <div className="dz-grouphead">
             <button type="button" className="dz-toggle" onClick={() => toggle('unsorted')}>
               <span className="dz-caret">{isOpen('unsorted') ? '▾' : '▸'}</span>
-              <span className="dz-name">On the Shelf</span>
+              <span className="dz-name">On the {lex('shelf')}</span>
               <span className="dz-count">{unsorted.length}</span>
             </button>
           </div>
@@ -171,7 +173,7 @@ export function DrawersTree() {
       )}
 
       {drawers.length === 0 && unsorted.length === 0 && (
-        <div className="dz-hint">No drawers yet. Make one to start organizing your work.</div>
+        <div className="dz-hint">No {lexMany('drawer').toLowerCase()} yet. Make one to start organizing your work.</div>
       )}
     </div>
   );

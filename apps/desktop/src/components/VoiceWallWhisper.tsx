@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { subscribeWhisper, recordShadow } from '../store/voiceWall';
+import { useTheme } from '../store/theme';
+import { t } from '../store/themeLexicon';
 
 // The single global whisper element (mounted once in App). Non-modal, auto-fading,
 // calm — the wall's only voice, and only once per session. Reduced-motion just
@@ -19,6 +21,7 @@ const FADE_MS = 700;
 const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text, .script-el-active';
 
 export function VoiceWallWhisper() {
+  const theme = useTheme();
   const [msg, setMsg] = useState<string | null>(null);
   const [shown, setShown] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -53,5 +56,18 @@ export function VoiceWallWhisper() {
   }, []);
 
   if (!msg) return null;
+  // TH2 Slice 5 — the Firewall chip (canon §12): "the guard speaks only
+  // when it acts." Same trigger/timing as Plateau's whisper (binds to the
+  // Voice Wall's existing blocking events, per the brief — no new detection
+  // logic), Flux just presents it as a terse technical chip instead of a
+  // conversational line. No persistent status chip either way — both forms
+  // fire only on the blocking event and fade.
+  if (theme === 'flux') {
+    return (
+      <div className="flux-firewall-chip" data-shown={shown ? 'true' : 'false'} role="status">
+        {t('voicewall').toUpperCase()} ▪ PASTE BLOCKED
+      </div>
+    );
+  }
   return <div className="vw-whisper" data-shown={shown ? 'true' : 'false'} role="status">{msg}</div>;
 }

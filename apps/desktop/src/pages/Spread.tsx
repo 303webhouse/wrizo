@@ -6,6 +6,7 @@ import { renderThumbnail } from '../store/ink';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { AddToSheet } from '../components/AddToSheet';
 import { useActionToast } from '../components/ActionToast';
+import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry, Stroke } from '../types';
 
 // J3 — the spread view: a visual grid of the loose Journal in notebook order
@@ -88,6 +89,7 @@ interface GridProps {
 }
 
 function SpreadGrid({ pages, selectMode, selected, dragEnabled, onOpen, onToggleSelect, onReordered }: GridProps) {
+  const { t: lex } = useLexicon();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const cellElsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
   const pagesRef = useRef(pages);
@@ -270,7 +272,7 @@ function SpreadGrid({ pages, selectMode, selected, dragEnabled, onOpen, onToggle
   const lastDisplayId = displayOrder[displayOrder.length - 1];
 
   return (
-    <div ref={gridRef} className="spread-grid" role="grid" aria-label="Journal spread" onKeyDown={onGridKeyDown}>
+    <div ref={gridRef} className="spread-grid" role="grid" aria-label={`${lex('journal')} spread`} onKeyDown={onGridKeyDown}>
       {pages.map((entry, i) => (
         <SpreadCell
           key={entry.id}
@@ -347,6 +349,7 @@ function SpreadLensRow({ order, setOrder, content, setContent, starOnly, setStar
 
 export function Spread() {
   const navigate = useNavigate();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const [pages, setPages] = useState<JournalEntry[]>(() => getNotebookPages());
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -396,13 +399,13 @@ export function Spread() {
 
   return (
     <div className="page spread-page" style={{ maxWidth: 960, paddingTop: '3rem' }}>
-      <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block', marginBottom: 24 }}>← The journal</Link>
+      <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block', marginBottom: 24 }}>← The {lex('journal').toLowerCase()}</Link>
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 8 }}>THE SPREAD</div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 28, letterSpacing: '-0.01em', color: 'var(--text-hi)' }}>
-            Every loose page, laid out.
+            Every loose {lex('page').toLowerCase()}, laid out.
           </h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -414,7 +417,7 @@ export function Spread() {
           {/* J4 Slice 2 — the Spread's FIRST select-mode action (the J3 dead-button rule lifts here). */}
           {selectMode && selected.size > 0 && (
             <button type="button" className="btn-quiet spread-port" onClick={() => setPortOpen(true)}>
-              Port {selected.size} page{selected.size === 1 ? '' : 's'}…
+              Port {selected.size} {selected.size === 1 ? lex('page').toLowerCase() : lexMany('page').toLowerCase()}…
             </button>
           )}
           {/* J5 Slice 2/3 — "Add to…" joins Select-mode beside "Port…". */}
@@ -445,7 +448,7 @@ export function Spread() {
       )}
 
       {pages.length === 0 ? (
-        <p style={{ color: 'var(--text-mid)' }}>No loose pages yet — pages you write in the Journal will spread out here.</p>
+        <p style={{ color: 'var(--text-mid)' }}>No loose {lexMany('page').toLowerCase()} yet — {lexMany('page').toLowerCase()} you write in the {lex('journal')} will spread out here.</p>
       ) : viewPages.length === 0 ? (
         <p style={{ color: 'var(--text-mid)' }}>Nothing matches this view.</p>
       ) : (

@@ -1,15 +1,20 @@
 import { Fragment, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
+import { useLexicon } from '../store/themeLexicon';
 
 // Mode switcher (writing-screen redesign). Top-bar tabs with stage sub-labels;
 // active tab filled brass. Internal keys stay journal/drafting so the editor +
 // persisted mode keep working; only the labels changed. Free write = forward-only
 // (idea generation, AI sealed); Draft = free edit. Format is greyed. File actions
 // (Workshop / Publish) render inline as trailing tabs in the same strip.
-
-interface ModeDef { key: string; label: string; sub: string; live: boolean }
+//
+// TH2 lexicon sweep — this is the SHARED component PageEditor/QuickSprint
+// mount (JournalEntry has its own separate tab row, already swept in TH1);
+// 'Free write' lived only here, un-lexiconed, so those two surfaces' tabs
+// were never actually themed despite both files importing useLexicon.
+interface ModeDef { key: string; term?: 'freewrite'; label: string; sub: string; live: boolean }
 const MODES: ModeDef[] = [
-  { key: 'journal', label: 'Free write', sub: 'generate', live: true },
+  { key: 'journal', term: 'freewrite', label: 'Free write', sub: 'generate', live: true },
   { key: 'drafting', label: 'Draft', sub: 'revise', live: true },
   { key: 'formatting', label: 'Format', sub: 'convention', live: false },
 ];
@@ -21,25 +26,29 @@ export interface ActionTab { label: string; sub: string; onClick?: () => void; d
 export function ModeSwitcher({ mode, onSwitch, actions = [] }: { mode: EditorMode; onSwitch: (m: EditorMode) => void; actions?: ActionTab[] }) {
   const [soon, setSoon] = useState<string | null>(null);
   const flashSoon = (label: string) => { setSoon(label); setTimeout(() => setSoon(null), 1800); };
+  const { t: lex } = useLexicon();
   return (
     <div className="mode-tabs" role="tablist" aria-label="Writing mode">
-      {MODES.map(m => (
-        <button
-          key={m.key}
-          type="button"
-          role="tab"
-          aria-selected={m.key === mode}
-          aria-disabled={!m.live}
-          className={`mode-tab${m.key === mode ? ' active' : ''}${m.live ? '' : ' deferred'}`}
-          onClick={() => {
-            if (m.live) onSwitch(m.key as EditorMode);
-            else flashSoon(m.label);
-          }}
-        >
-          <span className="mode-tab__label">{m.label}</span>
-          <span className="mode-tab__sub">{m.sub}</span>
-        </button>
-      ))}
+      {MODES.map(m => {
+        const label = m.term ? lex(m.term) : m.label;
+        return (
+          <button
+            key={m.key}
+            type="button"
+            role="tab"
+            aria-selected={m.key === mode}
+            aria-disabled={!m.live}
+            className={`mode-tab${m.key === mode ? ' active' : ''}${m.live ? '' : ' deferred'}`}
+            onClick={() => {
+              if (m.live) onSwitch(m.key as EditorMode);
+              else flashSoon(label);
+            }}
+          >
+            <span className="mode-tab__label">{label}</span>
+            <span className="mode-tab__sub">{m.sub}</span>
+          </button>
+        );
+      })}
       {/* A separator before each action tab splits the strip into three sections:
           writing (postures) | workshop | delivery. Visual only — the actions still
           dispatch as actions, not postures. */}

@@ -18,6 +18,7 @@ import { ImportDraft } from './pages/ImportDraft';
 import { HomeFlow } from './components/HomeFlow';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
+import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -201,6 +202,7 @@ export function App() {
         <BrandMark />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
+        <FluxBlockCaret />
         <div className="app-main">
         <Routes>
         <Route path="/" element={<Desk />} />

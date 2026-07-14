@@ -117,6 +117,17 @@ function QuickSprintView() {
   // mode tabs) recedes while writing; ModeStage owns the dissolve engine and
   // reports its state up so the sprint's own chrome fades in step.
   const [receded, setReceded] = useState(false);
+  // TH2 — the celebrate-summon rule (canon §10): true for ~2.5s starting the
+  // instant a lap completes, overriding the bottom bar's own fade regardless
+  // of the shared receded state.
+  const [celebrateSummon, setCelebrateSummon] = useState(false);
+  const celebrateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleCelebrate = () => {
+    if (celebrateTimerRef.current) clearTimeout(celebrateTimerRef.current);
+    setCelebrateSummon(true);
+    celebrateTimerRef.current = setTimeout(() => { celebrateTimerRef.current = null; setCelebrateSummon(false); }, 2500);
+  };
+  useEffect(() => () => { if (celebrateTimerRef.current) clearTimeout(celebrateTimerRef.current); }, []);
 
   const surfaceRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -464,6 +475,7 @@ function QuickSprintView() {
         surfaceRef={surfaceRef}
         focused={textareaFocused}
         onDissolveChange={setReceded}
+        onCelebrate={handleCelebrate}
         soundOn={soundOn}
         onToggleSound={() => setSoundOn(v => !v)}
         chromeRootRef={pageRef}
@@ -493,7 +505,7 @@ function QuickSprintView() {
       {/* Bottom bar — quiet Save / Finish (a quiet action, not a box). */}
       {!isFinishing && (
         <div
-          className="sprint-bottombar chrome-fade chrome-top"
+          className={`sprint-bottombar chrome-fade chrome-top${celebrateSummon ? ' celebrate-summon' : ''}`}
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             marginTop: 16,

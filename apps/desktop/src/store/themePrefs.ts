@@ -26,12 +26,25 @@ export interface ThemePrefs {
 const KEY = 'wrizo-theme-prefs';
 const DEFAULTS: ThemePrefs = { voice: 'serif', page: 'light', fade: 'on' };
 
+// Fable's A2 (TH1 review, folded in TH2) — a raw localStorage read is
+// untrusted input (hand-edited, a stale shape from a future version, or
+// simply corrupted); each field is validated against its own enum before
+// use rather than spread in verbatim, so a bad stored value falls through
+// to that field's default instead of ever reaching `applyAttributes` (which
+// would otherwise write a garbage `data-*` value straight onto <html>).
+function sanitize(parsed: Partial<Record<keyof ThemePrefs, unknown>>): ThemePrefs {
+  const voice: Voice = parsed.voice === 'serif' || parsed.voice === 'sans' ? parsed.voice : DEFAULTS.voice;
+  const page: PageTone = parsed.page === 'dark' || parsed.page === 'light' ? parsed.page : DEFAULTS.page;
+  const fade: Fade = parsed.fade === 'on' || parsed.fade === 'off' ? parsed.fade : DEFAULTS.fade;
+  return { voice, page, fade };
+}
+
 function load(): ThemePrefs {
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(KEY) : null;
     if (!raw) return { ...DEFAULTS };
-    const parsed = JSON.parse(raw) as Partial<ThemePrefs>;
-    return { ...DEFAULTS, ...parsed };
+    const parsed = JSON.parse(raw) as Partial<Record<keyof ThemePrefs, unknown>>;
+    return sanitize(parsed);
   } catch {
     return { ...DEFAULTS };
   }
@@ -53,7 +66,7 @@ export function getThemePrefs(): ThemePrefs {
 }
 
 export function setThemePrefs(patch: Partial<ThemePrefs>): void {
-  current = { ...current, ...patch };
+  current = sanitize({ ...current, ...patch });
   try { localStorage.setItem(KEY, JSON.stringify(current)); } catch { /* ignore */ }
   applyAttributes(current);
   subs.forEach(fn => fn(current));

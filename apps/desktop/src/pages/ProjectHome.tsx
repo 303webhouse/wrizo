@@ -5,6 +5,7 @@ import { getFramework } from '../store/frameworks';
 import { firstLine } from '../store/entryText';
 import { domainLabel } from '../store/kindLabels';
 import { PageFileMenu } from '../components/PageFileMenu';
+import { useLexicon } from '../store/themeLexicon';
 import type { JournalEntry } from '../types';
 
 // S1 — 'script' rides the same generic type-picker as the support types (any
@@ -29,6 +30,7 @@ function pageRoute(p: JournalEntry): string {
 export function ProjectHome() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const [addingSupport, setAddingSupport] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -211,11 +213,11 @@ export function ProjectHome() {
 
       {/* Support pages (B1) — character / worldbuilding / research / note. */}
       <div style={{ marginTop: '1.25rem' }}>
-        <div className="eyebrow" style={{ marginBottom: 8 }}>Support pages</div>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>Support {lexMany('page').toLowerCase()}</div>
         <div className="dz-tree" style={{ maxWidth: '100%', margin: 0 }}>
           <div className="dz-group">
             <div className="dz-items" style={{ borderTop: 'none' }}>
-              {support.length === 0 && <div className="dz-empty">No support pages yet.</div>}
+              {support.length === 0 && <div className="dz-empty">No support {lexMany('page').toLowerCase()} yet.</div>}
               {support.map(p => (
                 <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
                   <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
@@ -234,7 +236,7 @@ export function ProjectHome() {
                   <button type="button" className="dz-more" style={{ margin: 0, color: 'var(--text-low)' }} onClick={() => setAddingSupport(false)}>cancel</button>
                 </div>
               ) : (
-                <button type="button" className="dz-more" onClick={() => setAddingSupport(true)}>+ Add support page</button>
+                <button type="button" className="dz-more" onClick={() => setAddingSupport(true)}>+ Add support {lex('page').toLowerCase()}</button>
               )}
             </div>
           </div>

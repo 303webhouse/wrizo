@@ -21,6 +21,10 @@ import { App } from './App';
 import './index.css';
 import { initTheme } from './store/theme';
 import { initThemePrefs } from './store/themePrefs';
+// TH2 — registers Flux's texture/glow handlers onto TH1's effects scaffold
+// (registerThemeFx side effect). Import-for-effect only; nothing here reads
+// the binding. Harmless on Plateau — registration just sits unused.
+import './store/fluxThemeFx';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.

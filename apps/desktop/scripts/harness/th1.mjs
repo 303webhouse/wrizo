@@ -63,7 +63,7 @@ await withHarness(async (app) => {
     `${JSON.stringify(before)} vs ${JSON.stringify(afterSameTheme)}`);
 
   const rejectedUnknown = await app.evalJs(`(() => {
-    window.wrizoTheme.set('flux'); // not registered in TH1 — must no-op
+    window.wrizoTheme.set('nonexistent-theme'); // never registered — must no-op
     return document.documentElement.getAttribute('data-theme');
   })()`);
   ok('check 1: setting an unregistered theme id is rejected (root stays plateau, never blank)',
@@ -101,10 +101,12 @@ await withHarness(async (app) => {
   await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.dz-pagetitle')", { label: 'Drawers route resolves (canonical path segment)' });
   // The route's own page HEADING (.dz-pagetitle) is a DIFFERENT site from the
-  // DeskRail nav item above — R1 swept the rail, not this heading — so it
-  // stays the plain canonical literal, unswept, no lexicon call here.
+  // DeskRail nav item above — at R1 this heading was still a bare literal;
+  // TH2's full lexicon sweep later routed it through tMany('drawer') too
+  // (docs/open-threads.md item 20's ".dz-pagetitle starting example"). The
+  // assertion is unchanged either way: Plateau renders the same literal.
   const drawersTitle = await app.evalJs("document.querySelector('.dz-pagetitle')?.textContent");
-  ok('check 2: the Drawers route\'s own page heading has no lexicon override — still the canonical literal', drawersTitle === 'Drawers', String(drawersTitle));
+  ok('check 2: the Drawers route\'s own page heading renders the canonical literal on Plateau', drawersTitle === 'Drawers', String(drawersTitle));
 
   // -- check 3: prefs persist across reload; survive a theme switch -----------
   await app.evalJs("window.wrizoThemePrefs.set({ voice: 'sans', fade: 'off' })");

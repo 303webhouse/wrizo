@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 // onto the attribute — zero runtime cost, no component reads this value to
 // render (components read CSS custom properties, never `theme` itself).
 //
-// 'plateau' is the only registered theme in TH1 — the union is deliberately
-// open so TH2 (Flux) and later Volant/Nomad add a literal, never a rewrite.
-export type ThemeId = 'plateau';
+// TH2 — 'flux' joins the union, exactly the literal-add TH1's comment
+// anticipated; later Volant/Nomad/Machina follow the same pattern.
+export type ThemeId = 'plateau' | 'flux';
 
-const REGISTERED: readonly ThemeId[] = ['plateau'];
+const REGISTERED: readonly ThemeId[] = ['plateau', 'flux'];
 const KEY = 'wrizo-theme';
 const DEFAULT: ThemeId = 'plateau';
 

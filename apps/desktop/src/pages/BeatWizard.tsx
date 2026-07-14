@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { getProject, getStoryPlanByProjectId, updateBeatNotes, setCurrentBeat, flushNow } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
+import { useLexicon } from '../store/themeLexicon';
 
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
@@ -26,6 +27,7 @@ function checkForSentences(text: string): string[] {
 export function BeatWizard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t: lex } = useLexicon();
   const project = id ? getProject(id) : null;
   const [storyPlan, setStoryPlan] = useState(() => id ? getStoryPlanByProjectId(id) : null);
   const framework = storyPlan ? getFramework(storyPlan.frameworkId) : null;
@@ -172,7 +174,7 @@ export function BeatWizard() {
           Beat {currentBeatIndex + 1} of {framework.beats.length}
           {currentBeat?.act ? ` · Act ${currentBeat.act}` : ''} · {framework.name}
         </div>
-        <button type="button" className="btn-quiet" onClick={handleGoToBoard}>Go to board</button>
+        <button type="button" className="btn-quiet" onClick={handleGoToBoard}>Go to {lex('board').toLowerCase()}</button>
       </div>
 
       {currentBeat && (
@@ -186,7 +188,7 @@ export function BeatWizard() {
             <label className="form-label">
               Your notes
               <span style={{ fontWeight: 'normal', color: 'var(--text-mid)', marginLeft: '0.5rem', fontSize: 13 }}>
-                Bullets and fragments — sentences are for the page.
+                Bullets and fragments — sentences are for the {lex('page').toLowerCase()}.
               </span>
             </label>
             <textarea
@@ -225,7 +227,7 @@ export function BeatWizard() {
             {!isLastBeat ? (
               <button type="button" className="btn-ghost" onClick={handleNext}>Next beat &rarr;</button>
             ) : (
-              <button type="button" className="btn-ghost" onClick={handleGoToBoard}>Finish &rarr; Board</button>
+              <button type="button" className="btn-ghost" onClick={handleGoToBoard}>Finish &rarr; {lex('board')}</button>
             )}
           </div>
         </>
