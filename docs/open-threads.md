@@ -250,14 +250,20 @@ outlive a session lives here, not in chat.
     (fix-forward). Flux ships to prod at merge; the ticket itself closes
     only on Nick's device verdict (item 2's tenth cluster) — born in a
     mockup, graduates on hardware.
-22. **J2/W1 S25 fix brief** — CC-parallel lane, no Fable gate, runnable in
-    any idle moment. Banked verdicts (S1 eraser 22px→11px, S2 cursor
-    simplify, S3 target-tool indicator, S4 S-Pen barrel toggle, S5 ink-room
-    incentive-row fade) spec'd in `docs/wrizo-alpha/j2-s25-fixes-brief.md`;
-    branch `j2-s25-fixes` off `main`. Independent of the AB-arc (item 21) —
-    touches only `j2`-adjacent ink surfaces, non-goal on any AB-arc surface.
-    Device gate: S4's barrel-button check, one two-minute pass, folds into
-    Nick's first natural app touch.
+22. **J2/W1 S25 fix brief.** **BUILT + PUSHED — 2026-07-14, device gate
+    open.** Built on `j2-s25-fixes` off `main` @ `6c8a9eb`: S1 eraser
+    22px→11px (ring follows), S2 quiet square-cornered SVG tool icons, S3
+    the toggle shows the TARGET tool, S4 S-Pen barrel toggle wired with a
+    mid-stroke guard + a committed hardware probe log (code-complete,
+    unverifiable without real S-Pen hardware), S5 the ink-room rule
+    (incentive row fades on stylus, restores on keyboard, reusing
+    `--fade-dur`). `tsc` + `build:web` + selftest + full harness green
+    (`w1.mjs` 24/24, up from 18 — gained a genuine CDP pen-stroke check
+    pair). Independently re-verified, no fixes needed. One commit `eae41e9`,
+    pushed to `origin/j2-s25-fixes` — **not merged**, per the brief's own
+    "merge on Nick's word." See `docs/backlog.md`. Device gate: S4's
+    barrel-bit assumption + S3's target-tool interpretation both want Nick's
+    two-minute pen check before merge, independent of the AB-arc (item 21).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
