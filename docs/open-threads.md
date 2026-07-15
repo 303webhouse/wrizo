@@ -396,6 +396,32 @@ outlive a session lives here, not in chat.
     "merge on Nick's word." See `docs/backlog.md`. Device gate: S4's
     barrel-bit assumption + S3's target-tool interpretation both want Nick's
     two-minute pen check before merge, independent of the AB-arc (item 21).
+23. **AB3 — the Drawer and the Homes.** **BRIEF RECEIVED, BUILD IN
+    FLIGHT — 2026-07-15.** `docs/wrizo-alpha/ab3-drawer-and-homes-brief.md`
+    committed. S0 declares this ticket's one schema addition (nullable
+    `origin` text column on entries, `'journal'|'project'|'loose'`,
+    additive-only, both sync directions, grandfathered null-safe for
+    every existing row per amendment A2) — the first schema-touching AB
+    ticket. S1-S7: the Drawer (tools/page/place faces composing AB2's
+    ToolRail, not rebuilding it), the Page face (subject-based per
+    amendment A1, for AB4's sake), metadata retirement under the paper,
+    origin-per-creation-door, the Journal-forgets-nothing law, the
+    Places faces, `ab3.mjs` with the ab2.1 geometry-floor lesson applied
+    from day one. Building on `ab3-drawer-and-homes` off `main` @
+    `73150ea`, isolated worktree, build → independent verify/fold, same
+    protocol as AB1/AB2. See item 24.
+24. ~~**Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never
+    landed.**~~ **RESOLVED — 2026-07-15.** Relayed by Nick directly
+    into chat; committed at `14d846e` — the eight laws, the four ranges
+    of attention, the vocabulary/theme-boundary sections, and the
+    proposed AB3→AB4→AB5→I1 ladder, all matching the AB3 brief's own
+    paraphrase with no discrepancies found on comparison. Status
+    flipped PROPOSED → RULED and the ratification record (amendments
+    A1 the drawer's subject, A2 the grandfather clause) appended per
+    the brief's own instruction — both steps CC had explicitly skipped
+    while the file was missing (see AB3's build report, item 23). No
+    rework owed to the in-flight AB3 build: the brief it was built from
+    already carried everything operative from this canon.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
