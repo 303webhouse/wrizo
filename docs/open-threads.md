@@ -73,6 +73,39 @@ outlive a session lives here, not in chat.
     device look (wide + near-floor; finding 1's composition verdict and
     A1's active-tab orange read are his to make there; no deploy owed
     first) — OPEN.** Item closes only after (2) and (3).
+    **AB2 — MERGED, NOT CLOSED — 2026-07-15.** Built S0-S8 on
+    `ab2-tools-by-mode` off post-ab1.1 `main` @ `8e98337`
+    (`docs/wrizo-alpha/ab2-tools-by-mode-brief.md`). S0 ruled Draft storage
+    SUSTAINED (markdown conventions in `entry.text`, iA display register).
+    `components/ToolRail.tsx` fills DeskFrame's tool-rail track per mode;
+    Free Write gets ink/typewriter (un-parked)/forward-lock (persisted,
+    default on, matches pre-AB2 behavior)/capture items (retiring AB1's
+    interim corkboard Journal tab); Draft gets Bold/Italic/Heading/Spacing
+    (`store/draftFormat.ts`) plus the Structure picker
+    (`store/structureConvert.ts`, mechanical only, confirmed AI-free by
+    grep); Publish gains Copy My Words/Copy Formatted on both prose and
+    script (findings 2, 3 dead); `JournalEntry` enters the frame at
+    ≥1100px (the AB1 review's R2 ruling, satisfied); the strip quiets —
+    brass off the active tab, a 1px olive `--accent-rest` hairline,
+    uppercase/letterspaced presentation only (ratified strings/
+    `deskLexicon` untouched). `ab2.mjs` (38 checks); `ab1.mjs`'s four
+    now-superseded checks moved to PARKED (originals quoted, one-line
+    reasons, successors in `ab2.mjs`). An independent review pass then
+    stress-tested S3's live contenteditable decoration engine and found a
+    **real, serious bug**: Draft-mode Enter-key handling silently
+    corrupted caret position under ordinary typing (`execCommand`
+    produced a block split, not a text newline, compounding with a
+    genuine Chromium EOF-caret quirk reproduced React-free) — root-caused
+    and fixed with a shared, guarded redecorate helper now used
+    consistently by both the editor and the rail's format actions;
+    reverified via the same stress scenarios plus a persisted-storage
+    check. `tsc` + `build:web` + selftest + the full suite
+    (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`/`ab2`, 379 checks
+    total, both `HARNESS_PARKED` settings) green, independently re-run a
+    second time on merged `main` by CC before push. Fast-forwarded to
+    `main` @ `136f438`, pushed. **Not deployed.** Same close conditions as
+    AB1.1: CC's fold+push is done; Fable's spot-check and Nick's device
+    look remain — this item does not close on this merge.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
