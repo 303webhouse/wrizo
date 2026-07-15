@@ -152,8 +152,11 @@ outlive a session lives here, not in chat.
     where you are; orange marks what you do* — the resting-orange
     allowance is engraved zone headings only now. Full suite green — 384
     checks total (`ab1` 37/40 armed, `ab2` 43, +5 over the AB2 review's
-    379). Report = push; **redeploy held for Nick's word** per the
-    brief's own DoD — the live site does not yet carry this fold.
+    379). Report = push.
+    **Redeployed — 2026-07-15**, Nick's word ("Deploy it so I can test out
+    the page"): `railway up` on `main` @ `fce22df`, confirmed live (`200`
+    on `/healthz` and `/`, `401` on `/auth/me`). The live site now carries
+    ab2.1.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
