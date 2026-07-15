@@ -410,24 +410,18 @@ outlive a session lives here, not in chat.
     from day one. Building on `ab3-drawer-and-homes` off `main` @
     `73150ea`, isolated worktree, build → independent verify/fold, same
     protocol as AB1/AB2. See item 24.
-24. **Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never landed.**
-    **OPEN — 2026-07-15, for Fable.** The AB3 brief is "Authorized by"
-    this canon (eight laws, four ranges, RULED 2026-07-15 per the
-    brief's own ratification-record block) and instructs CC to append
-    that record and flip the canon's status line on commit — but the
-    file does not exist anywhere in this repo (confirmed exhaustively:
-    exact name, its predecessor name `gaze-and-flight-canon.md`, and by
-    mtime across all of `docs/`). `docs/wrizo-alpha/fable-session-handoff-v2.md`
-    (committed) predicted exactly this failure mode ("the last session
-    delivered several documents through relay and did not re-verify
-    every landing"). Nick confirmed on asking that no local copy exists
-    to paste in either. **CC built AB3 from the brief's own
-    self-contained text per Nick's word, skipped the ratification-append
-    (nothing to append to), and did not touch the canon path.** Next
-    Fable session: relay the actual canon doc to disk, then append the
-    ratification record and flip its status line as the brief
-    originally intended — until then, AB3's exact eight-laws text is
-    only as durable as the brief's own paraphrase of it.
+24. ~~**Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never
+    landed.**~~ **RESOLVED — 2026-07-15.** Relayed by Nick directly
+    into chat; committed at `14d846e` — the eight laws, the four ranges
+    of attention, the vocabulary/theme-boundary sections, and the
+    proposed AB3→AB4→AB5→I1 ladder, all matching the AB3 brief's own
+    paraphrase with no discrepancies found on comparison. Status
+    flipped PROPOSED → RULED and the ratification record (amendments
+    A1 the drawer's subject, A2 the grandfather clause) appended per
+    the brief's own instruction — both steps CC had explicitly skipped
+    while the file was missing (see AB3's build report, item 23). No
+    rework owed to the in-flight AB3 build: the brief it was built from
+    already carried everything operative from this canon.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
