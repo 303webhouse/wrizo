@@ -4,6 +4,7 @@ import { getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject } from
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { useWayBack } from './useWayBack';
+import { useLexicon } from '../store/themeLexicon';
 import type { Box, Project } from '../types';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
@@ -76,6 +77,7 @@ function BoardTextBox({
 }) {
   const elRef = useRef<HTMLDivElement | null>(null);
   const [html] = useState(() => escHtml(initialText));
+  const { t: lex } = useLexicon();
 
   useEffect(() => {
     const el = elRef.current;
@@ -149,7 +151,7 @@ function BoardTextBox({
       suppressContentEditableWarning
       role="textbox"
       aria-multiline="true"
-      aria-label="Board text box"
+      aria-label={`${lex('board')} text box`}
       onInput={() => onCommitText(boxId, elRef.current?.innerText ?? '')}
       onBlur={onBlurEdit}
       dangerouslySetInnerHTML={{ __html: html }}

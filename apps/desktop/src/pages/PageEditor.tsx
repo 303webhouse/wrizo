@@ -148,7 +148,7 @@ function PageEditorView({ id }: { id: string }) {
           {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
           {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
           <span className="crumb-here">{pageTitle}</span>
-          {entry.importedAt && <span className="page-imported-tag" title="Imported into this binder">Imported</span>}
+          {entry.importedAt && <span className="page-imported-tag" title={`Imported into this ${lex('binder').toLowerCase()}`}>Imported</span>}
         </div>
 
         <ModeSwitcher
@@ -162,12 +162,12 @@ function PageEditorView({ id }: { id: string }) {
 
         <div className="sprint-actions">
           {project && (
-            <div className="sprint-toggle" role="tablist" aria-label="Binder view">
+            <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
               <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
               <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
             </div>
           )}
-          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title="Copy the clean page text">Copy page text</button>
+          <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title={`Copy the clean ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
           <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
         </div>
       </div>

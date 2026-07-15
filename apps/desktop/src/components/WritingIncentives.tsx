@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { MilestoneBeat, Milestones } from '../store/milestones';
 import { useTheme } from '../store/theme';
+import { useLexicon } from '../store/themeLexicon';
 import { createJitteredScheduler } from '../store/effectsScheduler';
 
 // TH2 Slice 2 — the spark burst is Flux-only spectacle riding the SAME
@@ -260,10 +261,11 @@ export function useMilestoneCelebration(beats: MilestoneBeat[], scopeKey: string
 export function MilestoneBar({ milestones, rightSlot }: { milestones: Milestones; rightSlot?: React.ReactNode }) {
   const { beats, windowed, planId, allLitBeatIds } = milestones;
   const celebrating = useMilestoneCelebration(beats, planId, allLitBeatIds);
+  const { t: lex } = useLexicon();
   if (beats.length === 0) return null;
   return (
     <>
-      <div className={`mode-milestones${windowed ? ' windowed' : ''}`} aria-label="Plan coverage for this section" style={{ pointerEvents: 'none' }}>
+      <div className={`mode-milestones${windowed ? ' windowed' : ''}`} aria-label={`${lex('plan')} coverage for this section`} style={{ pointerEvents: 'none' }}>
         {beats.map(b => (
           <span
             key={b.id}

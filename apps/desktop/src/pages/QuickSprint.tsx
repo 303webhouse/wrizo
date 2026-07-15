@@ -430,7 +430,7 @@ function QuickSprintView() {
 
         <div className="sprint-actions">
           {id && (
-            <div className="sprint-toggle" role="tablist" aria-label="Binder view">
+            <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
               <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active">{lexMany('page')}</button>
               <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => navigate(`/project/${id}/board`)}>{lex('plan')}</button>
             </div>

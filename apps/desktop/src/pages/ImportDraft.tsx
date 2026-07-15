@@ -44,7 +44,7 @@ export function ImportDraft() {
       <div className="import-draft">
         <Link to="/drawers" className="btn-quiet import-back">&larr; {lexMany('drawer')}</Link>
         <div className="eyebrow import-eyebrow">Import a draft</div>
-        <h1 className="import-title">Which binder?</h1>
+        <h1 className="import-title">Which {lex('binder').toLowerCase()}?</h1>
         <p className="import-sub">Your own work, flowing in. Pick where it lands.</p>
         <div className="import-binders">
           {projects.map(p => (

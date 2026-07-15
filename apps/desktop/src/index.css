@@ -1561,11 +1561,19 @@ a:focus-visible,
 /* TH2 Slice 2 — Flux restyles the SAME bar (canon §9/§3.7): lime fill,
    electric-blue caret notch pulsing at 1.8s in flight; the `.celebrate`
    class (Plateau's own, unchanged trigger/timing) additionally fires an
-   ignition sweep + 14-spark burst, then rests on `.mode-pfill.celebrate`'s
-   already-brass background — one celebration grammar, Flux is simply its
-   fuller expression. Predictable/never-variable: fixed count, fixed angles
-   (component-side), fixed one-shot timing here. */
+   ignition sweep + 14-spark burst, then hands off to brass — one
+   celebration grammar, Flux is simply its fuller expression.
+   Predictable/never-variable: fixed count, fixed angles (component-side),
+   fixed one-shot timing here. */
 [data-theme='flux'] .mode-pfill{ background:var(--signal-live); }
+/* Fable's R1 (TH2 review) — Plateau's `.mode-pfill.celebrate` rule (below,
+   two classes) and the lime base rule above (one attribute + one class)
+   are EQUAL specificity, so source order alone decided the winner — and
+   this Flux block, being later in the file, was silently keeping the fill
+   lime straight through the celebrate window (ignition sweep, orange
+   notch, and sparks all rendering over a lime bar). A three-selector rule
+   (attribute + two classes) beats both cleanly regardless of source order. */
+[data-theme='flux'] .mode-pfill.celebrate{ background:var(--brass); }
 [data-theme='flux'] .mode-pfill::after{
   background:var(--line-active); box-shadow:0 0 4px 1px rgba(0,194,255,.55); }
 [data-theme='flux'] .mode-pfill.started::after{ animation:flux-caret-pulse 1.8s ease-in-out infinite; }

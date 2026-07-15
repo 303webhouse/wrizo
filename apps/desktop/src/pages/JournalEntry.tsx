@@ -710,19 +710,19 @@ function JournalEntryView() {
             "+" at the end (append + open); "+ insert" drops a page between this
             one and the next. */}
         {isLoose && (
-          <nav className="journal-nav" aria-label="Journal">
-            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label="Previous page"
+          <nav className="journal-nav" aria-label={lex('journal')}>
+            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
               onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
             <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
             {nextPage ? (
-              <button type="button" className="journal-nav-btn" aria-label="Next page"
+              <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
                 onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
             ) : (
-              <button type="button" className="journal-nav-btn journal-nav-add" aria-label="New page at the end"
+              <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
                 onClick={() => openLoose()}>+</button>
             )}
             {nextPage && (
-              <button type="button" className="journal-nav-insert" aria-label="Insert a page here"
+              <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
                 onClick={() => openLoose(entry.id)}>+ insert</button>
             )}
           </nav>
@@ -785,7 +785,7 @@ function JournalEntryView() {
             className="entry-edit"
             role="textbox"
             aria-multiline="true"
-            aria-label="Journal page"
+            aria-label={`${lex('journal')} ${lex('page').toLowerCase()}`}
             spellCheck
             // touchAction:'none' suppresses OS stylus handwriting on the text
             // (J10.1) without disabling page/finger scroll on the container.
@@ -902,7 +902,7 @@ function JournalEntryView() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Copy-out is sacred (VW) — clean page text, one tap, no long-press. */}
-          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title="Copy the page text">Copy page text</button>
+          <button type="button" className="btn-quiet entry-copy" onClick={() => copyText(pageTextRef.current)} title={`Copy the ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
           {/* J4 Slice 2 — the port, single-page flow. Loose pages only. */}
           {isLoose && (
             <button type="button" className="btn-quiet entry-port" onClick={() => setPortOpen(true)}>Port to a Board…</button>

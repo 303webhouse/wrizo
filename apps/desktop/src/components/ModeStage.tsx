@@ -9,7 +9,9 @@ import { useTypewriterFade } from './useTypewriterFade';
 import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
+import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
+import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -75,6 +77,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
+  const { t: lex } = useLexicon();
   // Typewriter engages in Free Write and Draft (writing postures) — never in
   // Format/Workshop/Publish (convention/delivery, revision-shaped work the
   // hold would fight). Gated by the persisted setting AND the bottom-right
@@ -397,9 +400,9 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
 
         {/* RIGHT rail — AI frame. Sealed in Journal; open elsewhere. */}
         {rail.ai === 'sealed' ? (
-          <aside className="mode-rail right sealed mode-dissolve" aria-label="AI sealed in Journal">
+          <aside className="mode-rail right sealed mode-dissolve" aria-label={`AI sealed in ${lex('journal')}`}>
             <div className="mode-lock" aria-hidden="true">▦</div>
-            <div className="mode-seal-note">journal is yours alone</div>
+            <div className="mode-seal-note">{lex('journal').toLowerCase()} is yours alone</div>
           </aside>
         ) : assistCollapsed ? (
           // Collapsed: a thin border carrying the persistent assist channel icon.
@@ -479,6 +482,13 @@ function SettingsPanel({ settings, hasMilestones }: { settings: { progress: Prog
 function ThemePanel() {
   const theme = useTheme();
   const prefs = useThemePrefs();
+  const dial = useAmbianceDial();
+  // Fable's A3 (TH2 review) — picker order follows theme-arc.md's narrative
+  // progression (Plateau -> Machina -> Flux -> Nomad -> Volant), not launch
+  // order; later territories arrive here only by progressive disclosure
+  // (engagement-facts the app already shows, never a solicited/gated
+  // target — the M1 anti-gamification frame). Two entries make the order
+  // moot today, but the law belongs at the site that will enforce it.
   const themeOpts: [string, string][] = [['plateau', 'Plateau'], ['flux', 'Flux']];
   return (
     <div className="mode-settings mode-theme-settings" role="menu">
@@ -487,6 +497,9 @@ function ThemePanel() {
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
       <Seg label="Page" value={prefs.page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={v => setThemePrefs({ page: v as 'dark' | 'light' })} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
+      {/* R2 (TH2 review) — a canon-level pref with no UI is a TH1 allowance,
+          not a TH2 one, now that Flux actually schedules dial-scaled events. */}
+      <Seg label="Ambiance" value={String(dial)} opts={[['0', '0'], ['25', '25'], ['50', '50'], ['75', '75'], ['100', '100']]} onPick={v => setAmbianceDial(Number(v))} />
     </div>
   );
 }

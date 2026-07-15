@@ -150,12 +150,29 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys(words251 + ' ');
   await app.waitFor("document.querySelector('.mode-pmeta span')?.textContent?.includes('251 words')", { label: 'word count crosses 251 (Flux)', timeout: 15000 });
-  let sawCelebrate = 0;
-  for (let i = 0; i < 20; i++) {
-    if (await app.evalJs("!!document.querySelector('.mode-pfill.celebrate')")) sawCelebrate++;
-    await sleep(100);
+  // waitFor (not a fixed-count poll) — it returns the instant the class
+  // appears rather than risking a whole 1.1s window landing between two
+  // fixed-interval samples under harness/CDP overhead.
+  let celebrateSeen = false;
+  let celebrateBgSettled = null;
+  try {
+    await app.waitFor("!!document.querySelector('.mode-pfill.celebrate')", { label: 'celebrate class appears', timeout: 3000 });
+    celebrateSeen = true;
+    // Sample the color once, well past the fill's own .35s background
+    // transition (an immediate read can catch the lime->brass ease
+    // mid-flight, which is a transition artifact, not the cascade result).
+    await sleep(450);
+    celebrateBgSettled = await app.evalJs("(() => { const el = document.querySelector('.mode-pfill.celebrate'); return el ? getComputedStyle(el).backgroundColor : 'gone'; })()");
+  } catch {
+    celebrateSeen = false;
   }
-  ok('check 4: crossing the goal fires the celebration exactly once (a single contiguous celebrate window)', sawCelebrate > 0, `sampled celebrate=true ${sawCelebrate}/20 times`);
+  ok('check 4: crossing the goal fires the celebration (celebrate class appears)', celebrateSeen, String(celebrateSeen));
+  // Fable's R1 (TH2 review) — the class alone isn't proof; the lime base
+  // rule and .celebrate were equal specificity, so source order silently
+  // kept the fill lime straight through the whole celebrate window. Sample
+  // the actual settled computed color, not just the class.
+  ok('check 4 (R1): the fill\'s computed background resolves to brass (#FF9800) during the celebrate window, not lime',
+    celebrateBgSettled === 'rgb(255, 152, 0)', String(celebrateBgSettled));
   await sleep(1300); // let the pulse fully clear
   const stillCelebratingAfterSettle = await app.evalJs("!!document.querySelector('.mode-pfill.celebrate')");
   ok('check 4: the celebration does not re-fire on continued typing past the goal (settles back to false)', stillCelebratingAfterSettle === false, String(stillCelebratingAfterSettle));
@@ -226,6 +243,47 @@ await withHarness(async (app) => {
   const dampedOpacity = await app.evalJs("getComputedStyle(document.querySelector('.theme-fx-layer')).opacity");
   ok('check 5: the texture layer damps toward its typing-state opacity floor while busy', Number(dampedOpacity) <= 0.2, dampedOpacity);
 
+  // -- check 5 (R2): the dial SCALES rate, not just gates it -----------------
+  const scaleSpots = await app.evalJs("({ at50: window.wrizoAmbiance.intervalScale(50), at1: window.wrizoAmbiance.intervalScale(1), at100: window.wrizoAmbiance.intervalScale(100) })");
+  ok('check 5 (R2): dialIntervalScale(50) is exactly 1.0 (RC-2 dial-center, unchanged rates)', scaleSpots.at50 === 1, JSON.stringify(scaleSpots));
+  ok('check 5 (R2): dialIntervalScale is monotonic decreasing (low dial slower, high dial faster)',
+    scaleSpots.at1 > scaleSpots.at50 && scaleSpots.at50 > scaleSpots.at100, JSON.stringify(scaleSpots));
+
+  // The floor: assert the math directly (clampedIntervalMs), not by
+  // observing real-timer DOM mutations across six independently-scheduled
+  // loops — those coincidentally overlap by chance often enough (two
+  // different event types landing within ~150ms of each other) to make a
+  // real-timer version of this check flaky without that being a real bug.
+  const floorSample = await app.evalJs(`(() => {
+    const { clampedIntervalMs, macroblockFloorMs } = window.wrizoFluxFx;
+    // Sample the fastest loop (macroblock, minMs=2600/maxMs=4800) many
+    // times at dial 100 — Math.random() inside means a single call proves
+    // nothing about the floor, only the distribution does.
+    const samples = Array.from({ length: 500 }, () => clampedIntervalMs(2600, 4800, 100));
+    return { min: Math.min(...samples), macroblockFloorMs };
+  })()`);
+  ok('check 5 (R2): even at dial 100, the fastest loop\'s clamped interval never breaches its structural floor (1040ms)',
+    floorSample.min >= floorSample.macroblockFloorMs, JSON.stringify(floorSample));
+
+  // -- check 5 (R2): the Ambiance row renders in ThemePanel and writes the pref --
+  // .mode-gear only exists on a ModeStage-mounted writing surface — Desk has none.
+  await app.evalJs(`location.hash = '#/sprint'`);
+  await app.waitFor("!!document.querySelector('.mode-gear')", { label: 'settings gear present on a writing surface', timeout: 5000 });
+  await app.evalJs("document.querySelector('.mode-gear').click()");
+  await sleep(150);
+  const ambianceRowText = await app.evalJs("[...document.querySelectorAll('.mode-theme-settings .mode-crow')].find(r => r.textContent.includes('Ambiance'))?.textContent");
+  ok('check 5 (R2): an Ambiance row renders in the theme settings panel', !!ambianceRowText, String(ambianceRowText));
+  await app.evalJs("[...document.querySelectorAll('.mode-theme-settings .mode-crow')].find(r => r.textContent.includes('Ambiance'))?.querySelector('button:nth-of-type(2)')?.click()"); // the "25" stop
+  await sleep(100);
+  const dialAfterUiPick = await app.evalJs('window.wrizoAmbiance.get()');
+  ok('check 5 (R2): picking an Ambiance stop in the UI writes the pref', dialAfterUiPick === 25, String(dialAfterUiPick));
+  await app.evalJs("window.wrizoAmbiance.set(50)");
+
+  // -- check 1 (R2): fontsource imports actually loaded (not just declared) --
+  await app.evalJs("document.fonts.ready");
+  const fontsLoaded = await app.evalJs("({ rajdhani: document.fonts.check('12px Rajdhani'), chakra: document.fonts.check('12px \\'Chakra Petch\\'') })");
+  ok('check 1 (R2): Rajdhani and Chakra Petch actually loaded (not just declared in a slot var)', fontsLoaded.rajdhani && fontsLoaded.chakra, JSON.stringify(fontsLoaded));
+
   // -- check 7 / A3: the round trip is lossless — Flux -> Plateau -> Flux ----
   const beforeRoundTrip = await app.evalJs("({ theme: window.wrizoTheme.get(), prefs: window.wrizoThemePrefs.get(), dial: window.wrizoAmbiance.get() })");
   await app.evalJs("window.wrizoTheme.set('plateau')");
@@ -251,6 +309,13 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.desk-rail')", { label: 'reloaded after corrupt prefs seed' });
   const dataVoiceAfterCorruptLoad = await app.evalJs("document.documentElement.getAttribute('data-voice')");
   ok('check A2: a corrupted stored value never reaches the data-voice attribute on load (falls back to the default)', dataVoiceAfterCorruptLoad === 'serif', String(dataVoiceAfterCorruptLoad));
+
+  // -- check 2 (R3): the closing sweep — ImportDraft's own heading ----------
+  await app.evalJs("window.wrizoTheme.set('flux')");
+  await app.goto('/import');
+  await app.waitFor("!!document.querySelector('.import-title')", { label: 'ImportDraft picker under Flux' });
+  const importHeading = await app.evalJs("document.querySelector('.import-title')?.textContent");
+  ok('check 2 (R3): ImportDraft\'s own heading now reads "Which cartridge?" under Flux', importHeading === 'Which cartridge?', String(importHeading));
 
   // -- Firewall chip + block caret (Slice 5) ----------------------------------
   await app.evalJs("window.wrizoTheme.set('flux')");

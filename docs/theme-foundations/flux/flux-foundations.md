@@ -164,6 +164,10 @@ peripheral, no sound v1, reduced-motion falls back to a crossfade.
 Checkpoints remain read-only coverage facts and never surge; one celebration
 grammar app-wide, B4 the finish authority.
 
+**Errata (TH2 R1):** the app's bar is a repeating lap, not this doc's
+single-goal demo — "calm orange rest" means for the celebrate window; each
+new lap charges lime afresh.
+
 ### 3.8 Chrome, prefs, caret
 All chrome and page metadata fade on active writing (~0.7s to ~5%), return
 on idle or pointer intent (W1 dissolve machinery, shared constants); the

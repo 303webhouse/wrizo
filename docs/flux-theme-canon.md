@@ -161,6 +161,10 @@ One-shot ≤1.6s, fully peripheral (no focus steal, no layout shift, no sound
 v1), reduced-motion falls back to a plain crossfade. One celebration grammar
 app-wide; B4 remains the final authority on its finish.
 
+**Errata (TH2 R1):** the app's bar is a repeating lap, not the RC's
+single-goal demo — "rests calm orange" means for the celebrate window;
+each new lap charges lime afresh.
+
 ## 10. Chrome fade — cross-theme invariant
 
 All chrome (top bar, rail, bottom bar) and page metadata fade on active

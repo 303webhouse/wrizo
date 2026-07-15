@@ -1,4 +1,5 @@
 import { registerThemeFx } from '../components/ThemeEffectsLayer';
+import { dialIntervalScale } from './ambianceDial';
 
 // TH2 Slice 4 — the Signal Loss texture dialect (canon §7), registered onto
 // TH1's effects scaffold via registerThemeFx('flux', ...) — the seam the
@@ -17,6 +18,23 @@ function rand(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
+// Fable's R2 (TH2 review) — the dial used to be a boolean (0 vs >0); every
+// scheduled delay now reads dialIntervalScale(getDial()) LIVE at scheduling
+// time (not once at mount), so a mid-session dial change takes effect on
+// the very next tick. `minMs * FLOOR_FRACTION` is this loop's own
+// structural floor — at dial 100 (the fastest multiplier, ~0.55x) the
+// scaled delay can never breach it, which is what actually protects the
+// ≤3Hz-family spacing canon §7 requires; dialIntervalScale itself only
+// supplies the multiplier, never the safety floor. Exported (not just used
+// internally by loop() below) so the harness can assert the floor
+// mathematically rather than by observing real-timer DOM mutations across
+// six independently-scheduled loops, which coincidentally overlap by
+// chance often enough to make that kind of test flaky.
+const FLOOR_FRACTION = 0.4;
+export function clampedIntervalMs(minMs: number, maxMs: number, dial: number): number {
+  return Math.max(minMs * FLOOR_FRACTION, rand(minMs, maxMs) * dialIntervalScale(dial));
+}
+
 // A self-rescheduling jittered loop, ported from the mockup's `(function
 // st(){ setTimeout(function(){ if(!busy()){...} st() }, delay) })()`
 // pattern. `dial === 0` is the "fully static Flux" hard floor (canon §7);
@@ -25,12 +43,13 @@ function rand(min: number, max: number): number {
 function loop(minMs: number, maxMs: number, isBusy: () => boolean, getDial: () => number, fire: () => void): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let stopped = false;
+  const nextDelay = () => clampedIntervalMs(minMs, maxMs, getDial());
   const tick = () => {
     if (stopped) return;
     if (!isBusy() && getDial() > 0) fire();
-    if (!stopped) timer = setTimeout(tick, rand(minMs, maxMs));
+    if (!stopped) timer = setTimeout(tick, nextDelay());
   };
-  timer = setTimeout(tick, rand(minMs, maxMs));
+  timer = setTimeout(tick, nextDelay());
   return () => { stopped = true; if (timer) clearTimeout(timer); };
 }
 
@@ -148,3 +167,13 @@ function mount(container: HTMLDivElement, getDial: () => number, isBusy: () => b
 }
 
 registerThemeFx('flux', { mount });
+
+// Test/inspection seam (the resumeVocab.ts / wrizoVocab pattern) — the
+// macroblock loop's own minMs (2600ms) is the fastest of the six, so its
+// floor (2600 * 0.4 = 1040ms) is the binding one across the whole dialect.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoFluxFx?: unknown }).wrizoFluxFx = {
+    clampedIntervalMs,
+    macroblockFloorMs: 2600 * FLOOR_FRACTION,
+  };
+}
