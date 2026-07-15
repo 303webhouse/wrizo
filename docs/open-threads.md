@@ -48,18 +48,31 @@ outlive a session lives here, not in chat.
     suite (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`, 341 checks
     total) green, independently re-run a second time on merged `main` by
     CC (not just trusted from the build/review agents) before push.
-    Fast-forwarded to `main` @ `fba81c7`, pushed. **Per Fable: merge was
-    pre-authorized, close is not** — next is Fable's post-merge review
-    (the W2/M1 compressed rhythm: full patch, R/A findings), fixes fold as
-    **ab1.1**, and this item closes only after that fold plus Nick's
-    device look. Flagged for the reviewer, beyond the strings-seam
-    naming: the ≥1100px gate means the new frame is not yet universal at
-    all widths (well-supported by the brief's own text, but worth an
-    explicit sign-off before AB2); `JournalEntry.tsx`/`QuickSprint.tsx`
-    were classified absorb-deferred in the shell inventory rather than
-    folded into `DeskFrame`, in tension with one reading of S2's literal
-    text but defensible against the design doc's Part 4 and the brief's
-    editor-core non-goal.
+    Fast-forwarded to `main` @ `fba81c7`, pushed.
+    **Fable's post-merge review landed** (`docs/wrizo-alpha/ab1-review-fable.md`):
+    REQUIRED FIXES — 2, no data-loss-class or architecture findings.
+    Rulings of record: the `store/deskLexicon.ts` naming **RATIFIED**
+    (over the handoff's `desk/strings.ts`); the ≥1100px gate **RATIFIED**;
+    SyncIndicator's global silence **RATIFIED**; CC's self-review pass and
+    the `ModeStage` dwell fix **endorsed**; finding 1 argued
+    dead-by-composition, formal death certificate deferred to Nick's
+    device look. Six advisories carried (A1-A6), none blocking.
+    **ab1.1 folded — 2026-07-14** @ `f01b400`: R1 — the vanishing law
+    missed the `sprint-nav` row (breadcrumb + Done/Undo) on framed Script
+    and Board, which carried no `chrome-fade`/`data-chrome-receded` and so
+    stayed visible while the rest of the room dissolved; fixed by
+    mirroring PageEditorView's pattern in `ScriptEditor.tsx` and
+    `BoardEditor.tsx`, `ab1.mjs` grew 4 checks (recede + restore, both
+    surfaces) 37→41. R2 — `ab1-page-frame-brief.md`'s S2 now carries the
+    ruling on JournalEntry: absorb-deferred is **sustained**, the work is
+    **re-homed to AB2 as a named slice** (QuickSprint's deferral likewise
+    sustained — never in S2's list). Full suite re-verified green
+    (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`, 345 checks total),
+    pushed. **Close conditions per Fable: (1) CC folds ab1.1 + reports=push
+    — DONE; (2) Fable spot-checks the ab1.1 delta — OPEN; (3) Nick's
+    device look (wide + near-floor; finding 1's composition verdict and
+    A1's active-tab orange read are his to make there; no deploy owed
+    first) — OPEN.** Item closes only after (2) and (3).
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
