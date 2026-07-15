@@ -25,6 +25,41 @@ outlive a session lives here, not in chat.
     Part 6 (now RULED). Briefs per `docs/wrizo-alpha/fable-week-plan.md`.
     Supersedes item 2's remaining gates (see above). Blocks: AB2/AB3 briefs,
     the succession dossier.
+    **AB1 — MERGED, NOT CLOSED — 2026-07-14.** Built S0-S6 on
+    `ab1-page-frame` off post-handoff `main` (shell inventory
+    `docs/wrizo-alpha/ab1-shell-inventory.md`; `DeskFrame` + the five zone
+    tracks, gated at the brief's own ≥1100px floor — below it every surface
+    is byte-identical pre-AB1 JSX; `ModeStrip` with the ratified strings on
+    text + script; flourishes unmounted, meter track empty; the vanishing
+    law generalized (found and fixed a real pre-existing `ModeStage`
+    edge-dwell resurface bug along the way — the dwell listener was being
+    torn down every render); chrome purge + the script containment fix
+    (finding 4 dead); `store/deskLexicon.ts` for the strings seam — **note
+    for review: Fable's handoff named `desk/strings.ts`, CC built
+    `store/deskLexicon.ts` instead (sibling to `themeLexicon.ts`), a
+    reasoned but unconfirmed deviation, flag at review**; `ab1.mjs`
+    harness). An independent CC review pass then found and fixed two real
+    defects before folding back: a genuine layout overflow at the exact
+    1100px gate floor (page column overlapped the tool-rail/corkboard
+    tracks — a `minmax(0,1fr)`/min-width chain fix, new permanent harness
+    coverage) and Board's vanishing law left unwired (judged a real gap,
+    not a Nick-level call, and wired to match Script's pattern).
+    `ab1.mjs` grew 32→37 checks. `tsc` + `build:web` + selftest + the full
+    suite (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`, 341 checks
+    total) green, independently re-run a second time on merged `main` by
+    CC (not just trusted from the build/review agents) before push.
+    Fast-forwarded to `main` @ `fba81c7`, pushed. **Per Fable: merge was
+    pre-authorized, close is not** — next is Fable's post-merge review
+    (the W2/M1 compressed rhythm: full patch, R/A findings), fixes fold as
+    **ab1.1**, and this item closes only after that fold plus Nick's
+    device look. Flagged for the reviewer, beyond the strings-seam
+    naming: the ≥1100px gate means the new frame is not yet universal at
+    all widths (well-supported by the brief's own text, but worth an
+    explicit sign-off before AB2); `JournalEntry.tsx`/`QuickSprint.tsx`
+    were classified absorb-deferred in the shell inventory rather than
+    folded into `DeskFrame`, in tension with one reading of S2's literal
+    text but defensible against the design doc's Part 4 and the brief's
+    editor-core non-goal.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
