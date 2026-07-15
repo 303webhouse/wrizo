@@ -12,7 +12,7 @@ outlive a session lives here, not in chat.
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
 2. **The consolidated hardware session** (after the deploy — deploy is now
-   live, J4 + J5 + S1 + W1 + W2 all). Eight gates, one sitting; bugs → side
+   live, J4 + J5 + S1 + W1 + W2 all). Ten gates, one sitting; bugs → side
    chats, verdicts → the ledger. Owner: Nick.
    - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
      visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
@@ -48,6 +48,15 @@ outlive a session lives here, not in chat.
      lit distinguishability at arm's length, the celebration pulse's felt
      weight on both surfaces, windowed edge-fade readability, and whether
      `started`-as-empty-ring reads oddly against the Board's half-dot (A3).
+   - TH2 · S25 + desktop (the tenth cluster): glitch feel at real refresh
+     rates + S25 battery draw, Chakra's long-session endurance read (the
+     standing flag's judgment day), the surge's reward-vs-interruption read,
+     fade + celebrate-summon feel (deliberate vs drive-by, W1's probe
+     family), block-caret feel including the A1 scroll/resize staleness
+     case, ≥1700px stability with the effects layer live, and the Ambiance
+     dial tuning session R2's scaling fix made possible (rate is tuned here;
+     opacity-envelope scaling stays the sanctioned deferral). Device verdict
+     closes TH2 — it was born in a mockup, it graduates on hardware.
    - Plus: the formal stack word (VW's old merge condition, satisfied in
      practice; this session makes it official).
 
@@ -212,23 +221,69 @@ outlive a session lives here, not in chat.
     folds into the consolidated session (item 2); Plateau's only
     feel-check (visually unchanged) is satisfied by the byte-equivalence
     checks, already green pre-merge.
-20. **TH2 — Flux.** Brief: docs/th2-flux-brief.md, canon:
-    docs/flux-theme-canon.md, foundations: docs/theme-foundations/flux/
-    flux-foundations.md, visual ref: docs/theme-foundations/flux/
-    flux-rc2.html. **ACTIVE 2026-07-14** — Fable's TH1 post-merge
-    spot-check returned GREEN, closing TH1's review/merge cycle and arming
-    this ticket. Branch `th2-flux` off post-docs `main`. In scope beyond
-    the brief's slices: review advisories A1 (Fade->off must resurface
-    chrome immediately, not on the next dissolve cycle — folds into
-    Slice 1) and A2 (prefs enum values validated on load, not trusted
-    verbatim from localStorage — folds into Slice 0); A3 (a genuine
-    Flux<->Plateau round trip, not just Plateau-side assertions) into
-    `scripts/harness/th2.mjs`; and a full lexicon surface sweep — every
-    user-facing noun site including in-page headings (`.dz-pagetitle` is
-    the documented starting example from `th1.mjs`'s rail-item/page-heading
-    distinction). Plateau stays byte-equivalent throughout. Harness
-    scripts/harness/th2.mjs ships with the ticket. Report = push; merge
-    only on Nick's word after Fable's review.
+20. ~~**TH2 — Flux.**~~ **DONE-AT-MERGE — merged/deployed 2026-07-14** (device
+    verdict still open — see item 2's tenth cluster). Brief:
+    docs/th2-flux-brief.md, canon: docs/flux-theme-canon.md, foundations:
+    docs/theme-foundations/flux/flux-foundations.md, visual ref:
+    docs/theme-foundations/flux/flux-rc2.html. Built per the brief's Slices
+    0-5 on `th2-flux` off post-docs `main` @ `a18a9fb`, plus TH1's carried
+    advisories (A1 Fade->off resurfaces chrome immediately; A2 prefs enum
+    validation on load) and a full lexicon surface sweep across 12+ files.
+    Fable's review (`docs/th2-review-fable.md`) returned REQUIRED — 3, 4
+    advisories, no data-loss-class findings — "the arc's best craftsmanship
+    yet." **Folded before merge:** R1 — the earn-the-orange handoff never
+    fired: `[data-theme='flux'] .mode-pfill{background:signal-live}` and
+    Plateau's own `.mode-pfill.celebrate{background:brass}` were equal CSS
+    specificity, so source order alone silently kept the fill lime straight
+    through the celebrate window (ignition sweep, orange notch, and sparks
+    all rendering over lime) — a three-selector override rule fixed it
+    cleanly; canon §9 + `flux-foundations.md` §3.7 both gained the errata
+    reconciling "rests calm orange" with the app's repeating-lap mechanics
+    (each new lap charges lime afresh). R2 — the Ambiance dial was a boolean
+    (fires vs doesn't) when the brief mandates scaling: added
+    `dialIntervalScale()` (50 -> 1.0 dial-center, monotonic 1 -> ~1.75x
+    slower / 100 -> ~0.55x faster), read live per scheduled tick with each
+    loop clamped to its own structural floor (protects the ≤3Hz-family
+    spacing regardless of dial position); added an Ambiance row to
+    ThemePanel (a canon-level pref with no UI was a TH1-only allowance);
+    confirmed the `@fontsource` Rajdhani/Chakra Petch imports actually load
+    fonts, not just declare slot-var strings. Opacity-envelope scaling is a
+    **sanctioned deferral** to the hardware-tuning pass, recorded as such.
+    R3 — closed the mandated sweep's residuals (`ImportDraft`'s own
+    heading, the sprint-toggle's "Binder view" aria-label ×2) plus a
+    closing grep-audit that found and fixed 9 more: JournalEntry's notebook
+    nav + copy-text controls, PageEditor's imported-tag + copy-text
+    controls, WritingIncentives' milestone aria-label, BoardEditor's text-box
+    aria-label, ModeStage's sealed-AI aria-label/copy. Exempted (recorded,
+    not swept): store-level Plateau-only strings (`WHISPER`) and documented
+    prose judgment calls (marketing copy, `SCRAP_HEADING`). **Advisories:**
+    A1 (block caret goes stale on scroll/resize — harness-invisible,
+    recorded, joins the hardware-gate feel items) and A2 (Firewall chip
+    correct today/coupled tomorrow if Voice Wall grows a second message
+    kind — recorded) carried as-is; A3 (ThemePanel's picker-order law
+    belongs at the site that will enforce it) folded — one comment citing
+    `theme-arc.md`; A4 (blur(8px) on the glow, fixed spark count/angles,
+    `--ink-stroke`/`--paper-glow` left inherited, interpolated-token inline
+    flags) ratified as-is, the pattern for future theme packs.
+    `scripts/harness/th2.mjs` grew 35 -> 43 checks (two of the new checks
+    needed a second pass: the celebrate-color sample had to move past the
+    fill's own .35s background transition, and the dial-100 floor check
+    moved from flaky real-timer DOM observation — independently-scheduled
+    loops coincidentally overlap by chance — to asserting the exported
+    `clampedIntervalMs` math directly). Ran the full suite (`tsc` ×2 +
+    `build:web` + selftest + `j4.mjs` 26/26 + `j5.mjs` 40/40 + `s1.mjs`
+    87/87 + `w1.mjs` 18/18 + `w2.mjs` 31/31 + `m1.mjs` 33/33 + `th1.mjs`
+    26/26 + `th2.mjs` 43/43) green on the fold commit, `th2.mjs` stable
+    ×3, fast-forward merged to `main` @ `6c5b948` (no divergence — clean
+    fast-forward), full suite + `th2.mjs` re-run and green a second time
+    (×3 more, 6 consecutive green `th2.mjs` runs total) on merged `main`,
+    `railway up` — confirmed live (`200` on `/healthz` and `/`, `401` on
+    `/auth/me`, unauthenticated as expected), pushed. **Zero-schema
+    deploy** — liveness check only. See
+    `docs/backlog.md`. Fable's delta spot-check runs post-merge
+    (fix-forward). Flux ships to prod at merge; the ticket itself closes
+    only on Nick's device verdict (item 2's tenth cluster) — born in a
+    mockup, graduates on hardware.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
