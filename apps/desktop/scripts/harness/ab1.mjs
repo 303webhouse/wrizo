@@ -79,24 +79,13 @@ await withHarness(async (app) => {
     JSON.stringify(stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
     JSON.stringify(stripLabels));
 
-  // -- S2: flourishes are NOT mounted in the frame (do-not-mount list) ------
-  const flourishes = await app.evalJs(`({
-    typewriterToggle: !!document.querySelector('.desk-frame .typewriter-toggle'),
-    progressBar: !!document.querySelector('.desk-frame .mode-incentive-row'),
-    milestones: !!document.querySelector('.desk-frame .mode-milestone'),
-    ambientGlow: !!document.querySelector('.desk-frame .mode-glow'),
-  })`);
-  ok('S2: no flourish (typewriter/progress-bar/milestones/ambient-glow) mounts inside the frame',
-    !flourishes.typewriterToggle && !flourishes.progressBar && !flourishes.milestones && !flourishes.ambientGlow,
-    JSON.stringify(flourishes));
-
-  // -- S2: ink tools remain available (the pen/format bar is not a flourish) -
-  ok('S2: the pen/format bar (ink tools) still renders inside the frame', await app.evalJs("!!document.querySelector('.desk-frame .mode-bar')"));
-
-  // -- S2: the Journal capture stub relocated into the corkboard tab --------
-  const corkboardItems = await app.evalJs("[...document.querySelectorAll('.desk-corkboard-item')].map(i => i.textContent)");
-  ok('S2: the corkboard Journal tab carries the relocated capture items', JSON.stringify(corkboardItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), JSON.stringify(corkboardItems));
-  ok('S2: the corkboard tab is headed "Journal" (Plateau)', (await app.evalJs("document.querySelector('.desk-corkboard-h')?.textContent")) === 'Journal');
+  // -- S2/AB2 — four checks retired here, moved to the PARKED section below
+  // (first real tenant of the scaffold — S8 of docs/wrizo-alpha/ab2-tools-
+  // by-mode-brief.md): AB2 gives the typewriter a rail home (still "inside
+  // the frame"), retires the top-of-page pen/format bar on framed surfaces
+  // (its contents move to the rail too), and retires the interim corkboard
+  // Journal tab entirely (capture items move to the rail — their ruled
+  // final home). Their successor assertions live in ab2.mjs.
 
   // -- finding 1: "the writing page is oddly small on a large monitor (stage
   // sizing)" — re-read against app-bones-canon.md's own fuller description
@@ -391,21 +380,89 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
-// === PARKED (S6) — gated behind HARNESS_PARKED=1, skipped by default. ======
-// See this file's header comment for why nothing from w1.mjs/m1.mjs actually
-// needed moving here: the >=1100px gate keeps every existing flourish check
-// exercising only the untouched legacy branch. Scaffolded and ready — if a
-// future change ever makes one of THOSE checks viewport-sensitive, move it
-// into this block (as its own `await withHarness(async (app) => {...})`
-// scenario, one-line reason comment per check, per the brief) instead of
-// deleting it. No browser session is launched here today because there is
-// nothing parked yet — this is a documentation no-op, not a stub scenario.
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// AB1's own scaffold comment predicted a gate-widening scenario; AB2 is the
+// first real tenant instead (docs/wrizo-alpha/ab2-tools-by-mode-brief.md
+// S8) — four checks this ticket's S2 design supersedes, moved here rather
+// than deleted (parked != deleted, the law working as designed). Each is
+// quoted verbatim from AB1 for the audit trail, then re-asserted against
+// its NEW, opposite truth (proving the retirement, not re-testing a
+// presence AB2 deliberately removed) — the only way to keep this block
+// green under HARNESS_PARKED=1 while the checks it documents are honestly
+// obsolete. Successor assertions for the rail's real contents live in
+// ab2.mjs, not here.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk (PARKED)' });
+    await app.evalJs('localStorage.clear()');
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear (PARKED)' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), PARKED' });
+    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed, PARKED' });
+    await sleep(200);
+
+    // ORIGINAL (AB1): ok('S2: no flourish (typewriter/progress-bar/
+    // milestones/ambient-glow) mounts inside the frame', !flourishes.
+    // typewriterToggle && !flourishes.progressBar && !flourishes.
+    // milestones && !flourishes.ambientGlow, JSON.stringify(flourishes));
+    // AB2 S2 — the typewriter returns from parking into the rail (still
+    // "inside the frame"); progress-bar/milestones/ambient-glow are
+    // untouched by this ticket and stay absent.
+    const flourishesNow = await app.evalJs(`({
+      typewriterToggle: !!document.querySelector('.desk-frame .typewriter-toggle'),
+      progressBar: !!document.querySelector('.desk-frame .mode-incentive-row'),
+      milestones: !!document.querySelector('.desk-frame .mode-milestone'),
+      ambientGlow: !!document.querySelector('.desk-frame .mode-glow'),
+    })`);
+    pok('PARKED (was "S2: no flourish mounts inside the frame") — AB2 S2 gives the typewriter a rail home: it now DOES mount inside the frame; progress-bar/milestones/ambient-glow remain absent, unchanged',
+      flourishesNow.typewriterToggle === true && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
+      JSON.stringify(flourishesNow));
+
+    // ORIGINAL (AB1): ok('S2: the pen/format bar (ink tools) still renders
+    // inside the frame', await app.evalJs("!!document.querySelector('.desk-
+    // frame .mode-bar')"));
+    // AB2 S2/S3 — the pen/format bar retires on framed surfaces; its ink
+    // swatches and Draft's format tools both moved to the rail.
+    const modeBarGone = await app.evalJs("!document.querySelector('.desk-frame .mode-bar')");
+    pok('PARKED (was "S2: the pen/format bar still renders inside the frame") — AB2 S2/S3 retires it on framed surfaces (contents moved to the rail): it no longer renders',
+      modeBarGone === true);
+
+    // ORIGINAL (AB1): ok('S2: the corkboard Journal tab carries the
+    // relocated capture items', JSON.stringify(corkboardItems) ===
+    // JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), ...);
+    // ok('S2: the corkboard tab is headed "Journal" (Plateau)', ... ===
+    // 'Journal');
+    // AB2 S2 — the interim corkboard Journal tab retires entirely (the
+    // corkboard track returns to empty/reserved until AB3); the capture
+    // items move to their ruled final home, the tool rail.
+    const corkboardGone = await app.evalJs(`({
+      items: document.querySelectorAll('.desk-corkboard-item').length,
+      heading: !!document.querySelector('.desk-corkboard-h'),
+    })`);
+    pok('PARKED (was "S2: the corkboard Journal tab carries the relocated capture items" + "...is headed Journal") — AB2 S2 retires the interim corkboard tab entirely: no items, no heading',
+      corkboardGone.items === 0 && corkboardGone.heading === false,
+      JSON.stringify(corkboardGone));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nAB1 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of w1.mjs/m1.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nAB1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nAB1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecks = checks.concat(parkedChecks);
+const pass = allChecks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nAB1 VERIFY: PASS (${checks.length} checks)` : `\nAB1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nAB1 VERIFY: PASS (${allChecks.length} checks)` : `\nAB1 VERIFY: FAIL — ${allChecks.filter((c) => !c.pass).length}/${allChecks.length} failed`);
 process.exit(pass ? 0 : 1);
