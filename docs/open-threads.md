@@ -132,6 +132,28 @@ outlive a session lives here, not in chat.
     olive hairline in situ, Draft's iA register under the hand, a
     Structure-picker conversion each way, the Journal inside the frame,
     the forward-lock switch). Item 21 closes on (3) alone now.
+    **ab2.1 folded — 2026-07-15** @ `3defe3f`
+    (`docs/wrizo-alpha/ab2-1-fix-brief.md`), found by (3)'s device look
+    itself against the live deploy: the Journal paper rendered as an
+    ~80px sliver. **F1 (required):** `JournalEntry.tsx`'s framed wrapper
+    had `alignItems:'center'`, overriding flex's default `stretch` and
+    collapsing every block child — including the paper — to
+    fit-content; fixed with `width:'min(100%, 720px)'`, no `alignItems`.
+    **F2 (required, the class fix):** a rendered-geometry sanity sweep
+    added to `ab2.mjs` across every framed surface — which immediately
+    caught a **second, previously-undetected instance of the same bug**,
+    live since AB1: `BoardEditor`'s framed branch passed two children
+    into `DeskFrame`'s flex-row stage with no width wrapper, collapsing
+    `.board-canvas-wrap` to 2px. Fixed with the same wrapper pattern
+    (capped at legacy board's own 1100px measure). **F3 (lawful sweep,
+    Nick may veto on sight):** `DeskRail`'s active-item indicator swapped
+    brass → `--accent-rest`, per `docs/theme-foundations/plateau/`'s new
+    foundations doc (§3/§5, committed alongside this brief): *olive marks
+    where you are; orange marks what you do* — the resting-orange
+    allowance is engraved zone headings only now. Full suite green — 384
+    checks total (`ab1` 37/40 armed, `ab2` 43, +5 over the AB2 review's
+    379). Report = push; **redeploy held for Nick's word** per the
+    brief's own DoD — the live site does not yet carry this fold.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
