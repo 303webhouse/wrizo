@@ -103,7 +103,12 @@ outlive a session lives here, not in chat.
     (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`/`ab2`, 379 checks
     total, both `HARNESS_PARKED` settings) green, independently re-run a
     second time on merged `main` by CC before push. Fast-forwarded to
-    `main` @ `136f438`, pushed. **Not deployed.**
+    `main` @ `136f438`, pushed.
+    **Deployed — 2026-07-15**, Nick's word (`railway up`): live at
+    `writer-studio-app-production.up.railway.app`, confirmed (`200` on
+    `/healthz` and `/`, `401` on `/auth/me`, unauthenticated as expected).
+    Carries AB1 + AB2 together (main was already merged through both at
+    deploy time).
     **Fable's post-merge review landed — 2026-07-15**
     (`docs/wrizo-alpha/ab2-review-fable.md`): **REQUIRED FIXES — 0**, the
     first clean sheet of the AB arc — no data-loss-class or architecture
