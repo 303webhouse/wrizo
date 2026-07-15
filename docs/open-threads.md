@@ -396,6 +396,38 @@ outlive a session lives here, not in chat.
     "merge on Nick's word." See `docs/backlog.md`. Device gate: S4's
     barrel-bit assumption + S3's target-tool interpretation both want Nick's
     two-minute pen check before merge, independent of the AB-arc (item 21).
+23. **AB3 — the Drawer and the Homes.** **BRIEF RECEIVED, BUILD IN
+    FLIGHT — 2026-07-15.** `docs/wrizo-alpha/ab3-drawer-and-homes-brief.md`
+    committed. S0 declares this ticket's one schema addition (nullable
+    `origin` text column on entries, `'journal'|'project'|'loose'`,
+    additive-only, both sync directions, grandfathered null-safe for
+    every existing row per amendment A2) — the first schema-touching AB
+    ticket. S1-S7: the Drawer (tools/page/place faces composing AB2's
+    ToolRail, not rebuilding it), the Page face (subject-based per
+    amendment A1, for AB4's sake), metadata retirement under the paper,
+    origin-per-creation-door, the Journal-forgets-nothing law, the
+    Places faces, `ab3.mjs` with the ab2.1 geometry-floor lesson applied
+    from day one. Building on `ab3-drawer-and-homes` off `main` @
+    `73150ea`, isolated worktree, build → independent verify/fold, same
+    protocol as AB1/AB2. See item 24.
+24. **Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never landed.**
+    **OPEN — 2026-07-15, for Fable.** The AB3 brief is "Authorized by"
+    this canon (eight laws, four ranges, RULED 2026-07-15 per the
+    brief's own ratification-record block) and instructs CC to append
+    that record and flip the canon's status line on commit — but the
+    file does not exist anywhere in this repo (confirmed exhaustively:
+    exact name, its predecessor name `gaze-and-flight-canon.md`, and by
+    mtime across all of `docs/`). `docs/wrizo-alpha/fable-session-handoff-v2.md`
+    (committed) predicted exactly this failure mode ("the last session
+    delivered several documents through relay and did not re-verify
+    every landing"). Nick confirmed on asking that no local copy exists
+    to paste in either. **CC built AB3 from the brief's own
+    self-contained text per Nick's word, skipped the ratification-append
+    (nothing to append to), and did not touch the canon path.** Next
+    Fable session: relay the actual canon doc to disk, then append the
+    ratification record and flip its status line as the brief
+    originally intended — until then, AB3's exact eight-laws text is
+    only as durable as the brief's own paraphrase of it.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
