@@ -11,54 +11,20 @@ outlive a session lives here, not in chat.
    on merged `main` — pushed, `railway up`, and confirmed a live prod
    round-trip for `boxes` (kind/groupId/strokes/provenance all intact).
    See `docs/backlog.md`. J5's prerequisite gate now passes.
-2. **The consolidated hardware session** (after the deploy — deploy is now
-   live, J4 + J5 + S1 + W1 + W2 all). Ten gates, one sitting; bugs → side
-   chats, verdicts → the ledger. Owner: Nick.
-   - J2 · S25: eraser rubbing feel + latency, 22px width verdict, ring
-     visible-but-quiet, hardware-eraser matrix (expect the S-Pen button ≠
-     eraser tip — a finding, not a failure; the toggle is the path).
-   - J3 · S25: long-press lift timing, drag latency, drop-line visibility,
-     and the #1 probe — can a finger scroll the spread from a cell? (If not:
-     pre-authorized fallback = pan-y + hold-still-drag, or drag handles.)
-   - J4 · S25: box drag/resize at thumb size, group-move feel, pen-as-pointer
-     (pen drags a box but CANNOT type into an editing text box — the
-     recognizer probe on real silicon), ink line weight after scaling a
-     sketch big and small (constant-px weight is the current behavior;
-     verdict decides if a width-scale param becomes J4.1).
-   - J4 · desktop: handle target size, double-click-edit vs single-click-
-     select, drag a box off the right edge (retrievability).
-   - J5 · S25 + desktop: lens chips and the "Add to…" sheet at thumb size,
-     drill-down feel, toast legibility (S25); pointer precision on chips/
-     handles/sheet rows (desktop). Folded in here rather than a separate
-     sitting — same surface family as J3/J4, same hand.
-   - S1 · S25 + desktop: typing rhythm, ghost legibility, autocomplete at
-     thumb (S25); keyboard-map muscle memory, autocomplete at pointer
-     precision (desktop). The Screenplay Room's first hardware pass.
-   - W1 · S25 + desktop: edge-dwell + 0.7s summon feel (deliberate reach vs
-     drive-by), typewriter window-scroll on the ink surface (stylus-down
-     judder; does Draft want it at all), progress caret + celebration read
-     (reward vs interruption; A4's reset-drain), ≥1700px rail-toggle page
-     stability (the actual bug W1 fixed), Workshop/Publish tabs behaving
-     sanely on a Page.
-   - W2 · S25 + desktop: chip legibility + thumb reach at the rail's top
-     slot, the restore "snap" (does arriving mid-scroll/mid-caret feel like
-     resuming or like being teleported), and the ember warmth reading as
-     invitation rather than notification.
-   - M1 · S25 + desktop: circle legibility at 10px on the slate, kindled vs
-     lit distinguishability at arm's length, the celebration pulse's felt
-     weight on both surfaces, windowed edge-fade readability, and whether
-     `started`-as-empty-ring reads oddly against the Board's half-dot (A3).
-   - TH2 · S25 + desktop (the tenth cluster): glitch feel at real refresh
-     rates + S25 battery draw, Chakra's long-session endurance read (the
-     standing flag's judgment day), the surge's reward-vs-interruption read,
-     fade + celebrate-summon feel (deliberate vs drive-by, W1's probe
-     family), block-caret feel including the A1 scroll/resize staleness
-     case, ≥1700px stability with the effects layer live, and the Ambiance
-     dial tuning session R2's scaling fix made possible (rate is tuned here;
-     opacity-envelope scaling stays the sanctioned deferral). Device verdict
-     closes TH2 — it was born in a mockup, it graduates on hardware.
-   - Plus: the formal stack word (VW's old merge condition, satisfied in
-     practice; this session makes it official).
+2. ~~**The consolidated hardware session.**~~ **PARTIAL, THEN SUPERSEDED —
+   2026-07-14.** Nick's device pass ruled five J2/W1 specifics (S1-S5) before
+   the sitting was superseded by the App Bones pivot
+   (`docs/wrizo-alpha/app-bones-canon.md`). J2 + W1-partial verdicts banked
+   (`docs/wrizo-alpha/j2-s25-fixes-brief.md`); all remaining gates (J3, J4,
+   J5, S1, W2, M1, and TH2's tenth cluster) superseded per the canon's Q3 —
+   parked surfaces carry no debt; AB slices carry their own device gates.
+   See item 21.
+21. **The AB-arc.** Canon ratified 2026-07-14 — Nick's word, rulings folded
+    into `docs/wrizo-alpha/ab1-page-frame-brief.md` (mode strings, flourishes
+    unmounted, theme-scoped module names) and `docs/wrizo-alpha/the-desk-design.md`
+    Part 6 (now RULED). Briefs per `docs/wrizo-alpha/fable-week-plan.md`.
+    Supersedes item 2's remaining gates (see above). Blocks: AB2/AB3 briefs,
+    the succession dossier.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
@@ -284,6 +250,14 @@ outlive a session lives here, not in chat.
     (fix-forward). Flux ships to prod at merge; the ticket itself closes
     only on Nick's device verdict (item 2's tenth cluster) — born in a
     mockup, graduates on hardware.
+22. **J2/W1 S25 fix brief** — CC-parallel lane, no Fable gate, runnable in
+    any idle moment. Banked verdicts (S1 eraser 22px→11px, S2 cursor
+    simplify, S3 target-tool indicator, S4 S-Pen barrel toggle, S5 ink-room
+    incentive-row fade) spec'd in `docs/wrizo-alpha/j2-s25-fixes-brief.md`;
+    branch `j2-s25-fixes` off `main`. Independent of the AB-arc (item 21) —
+    touches only `j2`-adjacent ink surfaces, non-goal on any AB-arc surface.
+    Device gate: S4's barrel-button check, one two-minute pass, folds into
+    Nick's first natural app touch.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
