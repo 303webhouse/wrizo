@@ -93,6 +93,7 @@ function rowToJournalEntry(r: any) {
     importedAt: iso(r.imported_at) ?? undefined,
     boxes: r.boxes ?? undefined,
     script: r.script ?? undefined,
+    origin: r.origin ?? undefined,
     tags: r.tags ?? undefined,
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
@@ -230,20 +231,20 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
       await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
-            order_index, imported_at, boxes, script, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15::jsonb,$16::jsonb,$17::jsonb,$18,$19,$20)
+            order_index, imported_at, boxes, script, origin, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19,$20,$21)
          on conflict (id) do update set
            project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
            starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
            beat_id = excluded.beat_id, page_type = excluded.page_type, order_index = excluded.order_index,
            imported_at = excluded.imported_at, boxes = excluded.boxes, script = excluded.script,
-           tags = excluded.tags, routed_project_ids = excluded.routed_project_ids, strokes = excluded.strokes,
-           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
+           origin = excluded.origin, tags = excluded.tags, routed_project_ids = excluded.routed_project_ids,
+           strokes = excluded.strokes, deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
          where journal_entries.user_id = excluded.user_id
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,
-         e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
+         e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), e.origin ?? null, JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
          e.deletedAt ?? null, e.createdAt, e.updatedAt],
       );
     } catch (err) {

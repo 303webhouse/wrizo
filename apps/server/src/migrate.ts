@@ -94,4 +94,11 @@ export async function runMigrations(): Promise<void> {
   // S1 — the Screenplay Room's ScriptDoc. jsonb, same recipe as boxes; null on
   // every existing page — only pageType:'script' pages ever populate it.
   await pool.query(`alter table journal_entries add column if not exists script jsonb`);
+
+  // AB3 S0 — the provenance law. One nullable text column, `'journal' |
+  // 'project' | 'loose'`. Grandfather clause (canon amendment A2): every
+  // existing row stays null; null means "behave exactly as today." No
+  // backfill, no re-homing — the provenance law governs creation from this
+  // ticket forward only. Same recipe as imported_at (plain text, not jsonb).
+  await pool.query(`alter table journal_entries add column if not exists origin text`);
 }

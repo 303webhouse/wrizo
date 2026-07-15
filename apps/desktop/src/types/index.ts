@@ -218,6 +218,14 @@ export interface JournalEntry {
   // S1 — the Screenplay Room's document, when pageType === 'script'. A JSON
   // column exactly like boxes; absent on every non-script page (no backfill).
   script?: ScriptDoc;
+  // AB3 S0 — the provenance law (canon amendment A2, the grandfather clause).
+  // Which door a page was born through: 'journal' (Journal/Catch — homes in
+  // the Journal), 'project' (a project door — homes in that project, the
+  // Journal never sees it), 'loose' (the Desk's start-writing/home-base door
+  // — homes nowhere, and starting there never files it). Undefined/null on
+  // every existing row means "behave exactly as today" — no backfill, no
+  // re-homing; this field governs creation from AB3 forward only.
+  origin?: 'journal' | 'project' | 'loose';
 }
 
 // J4 — a Board's positioned content unit (I2/I3 realized): the first
