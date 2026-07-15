@@ -48,6 +48,13 @@
      selectors. Working value only. */
   --accent-rest: #96a05a;
 
+  /* AB3 S1 — the Drawer's fixed geometry, a per-theme constant (the brief's
+     own wording): the tool-rail track's width, unchanged in VALUE from AB1's
+     original bare 200px, now a token a theme CAN override without touching
+     .desk-frame-grid's structure. No theme claims a different value this
+     ticket — Drawer progressive-disclosure/resize is explicitly deferred. */
+  --drawer-width: 200px;
+
   /* TH1 — the two slots every theme gets (canon §3), wired but unused on
      Plateau: nothing reads these yet, so they cost nothing here and are
      free for a future Plateau feature or a theme pack to claim. Quiet
@@ -1730,7 +1737,7 @@ a:focus-visible,
 .desk-frame{ position:relative; }
 .desk-frame-grid{
   display:grid;
-  grid-template-columns: 200px minmax(0,1fr) 260px;
+  grid-template-columns: var(--drawer-width) minmax(0,1fr) 260px;
   column-gap:28px; align-items:start; justify-content:center;
 }
 .desk-frame-toolrail{ min-height:70vh; background:var(--desk-ground);
@@ -1849,6 +1856,61 @@ a:focus-visible,
 .desk-toolrail-structure-btn:hover{ color:var(--text-hi); background:var(--ink-800); }
 .desk-toolrail-structure-btn.active{ background:var(--brass); color:var(--on-brass); }
 .desk-toolrail-structure-btn + .desk-toolrail-structure-btn{ border-left:1px solid var(--ink-border); }
+
+/* AB3 S1 — the Drawer (components/Drawer.tsx). Fills the toolrail track
+   exactly as ToolRail did (same padding-free outer, .desk-toolrail-body's
+   own padding stays inside the `tools` face) — the drawer adds only its own
+   nav row above the face content, so the track's rect never moves when a
+   face flips (fixed geometry, day one). */
+.wz-drawer{ display:flex; flex-direction:column; height:100%; }
+.wz-drawer-nav{ display:flex; flex-direction:column; gap:8px; padding:14px 14px 12px; border-bottom:1px solid var(--ink-border); }
+.wz-drawer-pull{ background:none; border:1px solid transparent; color:var(--text-mid); text-align:left;
+  font-family:var(--font-ui); font-size:13px; padding:6px 8px; cursor:pointer; transition:.15s; border-radius:var(--radius-sm); }
+.wz-drawer-pull:hover{ color:var(--text-hi); background:var(--ink-800); }
+/* Two-regime orange + the olive law — the drawer's active pull wears
+   --accent-rest, never brass (brass is evental/press moments only). */
+.wz-drawer-pull.active{ color:var(--text-hi); border-color:var(--accent-rest); }
+.wz-drawer-sep{ height:1px; background:var(--ink-border); margin:2px 0; }
+.wz-drawer-places{ display:flex; flex-direction:column; gap:2px; }
+.wz-drawer-face{ flex:1; min-width:0; animation:wz-drawer-flip 180ms ease; }
+@keyframes wz-drawer-flip{ from{ opacity:0; transform:translateX(6px); } to{ opacity:1; transform:translateX(0); } }
+@media (prefers-reduced-motion:reduce){ .wz-drawer-face{ animation:none; } }
+
+/* AB3 S2 — the Page face (components/PageFace.tsx). Plain, quiet metadata —
+   no orange at rest (the star only wears --brass while ACTUALLY starred, an
+   evental toggle, matching the pre-AB3 .entry-star convention verbatim). */
+.wz-pageface{ display:flex; flex-direction:column; gap:14px; padding:16px 14px; }
+.wz-pageface-title{ font-family:var(--font-display); font-weight:500; font-size:16px; color:var(--text-hi); }
+.wz-pageface-star{ align-self:flex-start; background:none; border:none; color:var(--text-low); font-family:var(--font-ui); font-size:13px; cursor:pointer; padding:0; }
+.wz-pageface-star[data-starred='true']{ color:var(--brass); }
+.wz-pageface-home{ display:flex; flex-direction:column; gap:2px; font-size:13px; }
+.wz-pageface-home-label{ color:var(--text-hi); }
+.wz-pageface-membership{ color:var(--text-mid); }
+.wz-pageface-tags{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.wz-pageface-tag{ display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:var(--radius-sm); border:1px solid var(--ink-border); color:var(--text-mid); font-size:12px; }
+.wz-pageface-tag-remove{ background:none; border:none; color:var(--text-low); cursor:pointer; padding:0; }
+.wz-pageface-tag-input{ padding:3px 7px; border-radius:var(--radius-sm); border:1px solid var(--ink-border); background:var(--ink-800); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; width:88px; }
+.wz-pageface-tag-add{ background:none; border:none; color:var(--text-low); font-size:12px; cursor:pointer; }
+.wz-pageface-verbs{ display:flex; flex-direction:column; gap:6px; }
+.wz-pageface-verb{ text-align:left; background:none; border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:12px; padding:7px 9px; cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
+.wz-pageface-verb:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-pageface-footer{ color:var(--text-low); font-size:12px; line-height:1.5; }
+
+/* AB3 S6 — the Places faces (components/PlaceFace.tsx). One flat list, one
+   level deep; no counts, no badges, no orange at rest (anti-solicitation). */
+.wz-placeface{ display:flex; flex-direction:column; height:100%; }
+.wz-placeface-list{ flex:1; overflow-y:auto; padding:10px 10px 0; display:flex; flex-direction:column; gap:2px; }
+.wz-placeface-empty{ color:var(--text-low); font-size:13px; padding:8px 4px; }
+.wz-placeface-item{ display:flex; flex-direction:column; gap:4px; padding:8px 6px; border-bottom:1px solid var(--ink-border); }
+.wz-placeface-item-title{ color:var(--text-hi); font-size:13px; }
+.wz-placeface-item-verbs{ display:flex; gap:4px; }
+.wz-placeface-verb{ background:none; border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:11px; padding:3px 7px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-placeface-verb:hover{ color:var(--text-hi); }
+/* Peek (AB4 stub) — "disabled-quiet with no greyed ceremony": same visual
+   weight as its siblings, not a faded/greyed native-disabled control. */
+.wz-placeface-verb-peek{ cursor:default; }
+.wz-placeface-room{ margin:10px; background:none; border:1px solid var(--ink-border); color:var(--text-mid); font-family:var(--font-ui); font-size:12px; padding:8px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-placeface-room:hover{ color:var(--text-hi); }
 
 /* The interim Journal capture tab, relocated into the corkboard track (S2). */
 .desk-corkboard-journal{ display:flex; flex-direction:column; gap:2px; }

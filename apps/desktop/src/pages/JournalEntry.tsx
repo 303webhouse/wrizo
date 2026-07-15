@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, getNotebookPages, createLoosePage, flushNow } from '../store/persistence';
+import { describePageHome } from '../store/pageHome';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke, ERASER_WIDTH } from '../store/ink';
 import { useChromeDissolve } from '../components/useChromeDissolve';
@@ -21,7 +22,9 @@ import { useWritingSettings, setWritingSettings } from '../store/writingSettings
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
-import { ToolRail, CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { Drawer } from '../components/Drawer';
+import type { PageFaceSubject } from '../components/PageFace';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -673,6 +676,26 @@ function JournalEntryView() {
 
   const routedNames = routedIds.map(pid => getProject(pid)?.title).filter(Boolean) as string[];
 
+  // AB3 S2 — the Page face's subject (canon amendment A1: the face describes
+  // the thing under the writer's attention; `subject`, not `currentPage`, so
+  // AB4 plugs in a different subject kind without surgery here). S3: this is
+  // what supersedes the below-page metadata cluster on framed surfaces.
+  const homeProject = entry.projectId ? getProject(entry.projectId) : null;
+  const { homeLabel, memberships } = describePageHome(entry, homeProject);
+  const pageFaceSubject: PageFaceSubject = {
+    kind: 'page',
+    entry,
+    homeLabel,
+    memberships,
+    // The saved-silently line — its only appearance anywhere once framed.
+    footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    onToggleStar: toggleStar,
+    onAddTag: addTag,
+    onRemoveTag: removeTag,
+    onOpenMoveCopy: () => setAddOpen(true),
+    onOpenPortToBoard: () => setPortOpen(true),
+  };
+
   // Unified undo: one quiet step, the last action only (a typed run or a
   // stroke). Not a history stack — once consumed, nothing is undoable until a
   // new action. A text run restores the pre-run text; a stroke drops the last.
@@ -854,9 +877,13 @@ function JournalEntryView() {
         </div>
       )}
 
-      {/* Everything about THIS document — moved below the writing surface per
-          the page-is-primary rule. Title, timestamp, actions, star, routing
-          status, tags, the routing action, and the autosave note. */}
+      {/* AB3 S3 — the space under the paper becomes desk again: this whole
+          metadata cluster (title, timestamp, actions, star, routing status,
+          tags, the routing action, the autosave note) unmounts on framed
+          surfaces — superseded by the Page face (S2), parked not deleted.
+          Below the gate, byte-identical legacy. */}
+      {!framed && (
+      <>
       <h1 className="chrome-fade" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 22, letterSpacing: '-0.01em', color: 'var(--text-hi)', margin: '24px 0 14px' }}>
         {textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100)}
       </h1>
@@ -962,6 +989,8 @@ function JournalEntryView() {
         )}
       </div>
       )}
+      </>
+      )}
     </>
   );
 
@@ -1044,7 +1073,7 @@ function JournalEntryView() {
         <DeskFrame
           pageKind="prose"
           modeStrip={<ModeStrip mode="journal" onSwitch={() => setTabPrompt(true)} onPublish={() => setTabPrompt(true)} />}
-          toolRail={<ToolRail content={toolRailContent} />}
+          toolRail={<Drawer toolsContent={toolRailContent} subject={pageFaceSubject} />}
           dissolved={dissolved}
         >
           {/* .desk-frame-stage is a `display:flex` row expecting ONE child
@@ -1109,8 +1138,12 @@ function JournalEntryView() {
       {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the
           modes with the non-Free-Write tabs GREYED. Clicking one prompts the user
           to file the entry (Drawer / Shelf) before it can be drafted or formatted.
-          Only for loose entries (a filed page opens in the live page editor). */}
-      {entry.projectId == null && (
+          Only for loose entries (a filed page opens in the live page editor).
+          AB3 S4 — the file-it-first prompt survives HERE and only here: a
+          loose-origin page (the Desk's home-base door) is never nudged to
+          file, even if it somehow renders on this surface (anti-solicitation
+          is a hard invariant, not a preference). */}
+      {entry.projectId == null && entry.origin !== 'loose' && (
         <div className="journal-modes chrome-fade">
           <div className="mode-tabs" role="tablist" aria-label="Mode">
             <button type="button" role="tab" aria-selected="true" className="mode-tab active">

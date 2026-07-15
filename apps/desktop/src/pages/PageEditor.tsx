@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry } from '../store/persistence';
+import { describePageHome } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ModeSwitcher } from '../components/ModeSwitcher';
@@ -17,7 +18,11 @@ import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
-import { ToolRail, CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { Drawer } from '../components/Drawer';
+import type { PageFaceSubject } from '../components/PageFace';
+import { AddToSheet } from '../components/AddToSheet';
+import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor } from '../store/draftDecoration';
@@ -80,6 +85,12 @@ function PageEditorView({ id }: { id: string }) {
   // AB2 S4 — the Structure picker's one-time confirmation (prose page with
   // words -> screenplay). Switching an empty page is free (no modal).
   const [structureConfirm, setStructureConfirm] = useState(false);
+  // AB3 S2 — the Page face's sending verbs. Genuinely new capability here
+  // (PageEditor never had Move/Copy or Port-to-Board before this ticket —
+  // "everything about a page" now includes typed/filed pages too, not just
+  // the Journal's own authored surface).
+  const [portOpen, setPortOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
 
   const textRef = useRef(text);
   textRef.current = text;
@@ -156,10 +167,48 @@ function PageEditorView({ id }: { id: string }) {
 
   if (!entry) return <Navigate to="/" replace />;
 
-  // Exit lands where the page lives: its binder, the Shelf if shelved, else the
-  // Journal (F2 papercut — a shelved typed page returned to /journal before).
-  const backTo = project ? `/project/${project.id}` : entry.shelved ? '/shelf' : '/journal';
+  // Exit lands where the page lives: its binder, the Shelf if shelved, else
+  // the Journal (F2 papercut — a shelved typed page returned to /journal
+  // before). AB3 — a loose-origin page (the Desk's home-base door) homes
+  // NOWHERE, not the Journal (it was never nudged there) — Done returns to
+  // the Desk instead.
+  const backTo = project ? `/project/${project.id}` : entry.shelved ? '/shelf' : entry.origin === 'loose' ? '/' : '/journal';
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
+
+  // AB3 S2 — star/tag mutations, new capability on this surface (mirrors
+  // JournalEntry.tsx's own patch-based closures, now shared via
+  // patchJournalEntry so both hosts can't drift on the "merge live text"
+  // discipline).
+  const toggleStar = () => { patchJournalEntry(id, textRef.current, { starred: !entry.starred }); flushNow(); };
+  const addTag = (tag: string) => {
+    const tags = entry.tags ?? [];
+    if (!tags.includes(tag)) patchJournalEntry(id, textRef.current, { tags: [...tags, tag] });
+    flushNow();
+  };
+  const removeTag = (tag: string) => {
+    patchJournalEntry(id, textRef.current, { tags: (entry.tags ?? []).filter(t => t !== tag) });
+    flushNow();
+  };
+
+  // AB3 S2 — the Page face's subject (canon amendment A1). `entry` here is
+  // the render-time snapshot (re-fetched on every getJournalEntry(id) call
+  // elsewhere in this component); star/tag edits above trigger the same
+  // persistence-change re-render every other write in this app already
+  // relies on (App.tsx's reactive-screens subscription), so the face reads
+  // fresh values on the next render without any extra plumbing here.
+  const { homeLabel, memberships } = describePageHome(entry, project);
+  const pageFaceSubject: PageFaceSubject = {
+    kind: 'page',
+    entry,
+    homeLabel,
+    memberships,
+    footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    onToggleStar: toggleStar,
+    onAddTag: addTag,
+    onRemoveTag: removeTag,
+    onOpenMoveCopy: () => setAddOpen(true),
+    onOpenPortToBoard: () => setPortOpen(true),
+  };
 
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
@@ -242,14 +291,24 @@ function PageEditorView({ id }: { id: string }) {
     requestScreenplay();
   };
 
+  // AB3 S4 — Journal furniture (ink/forward-lock/capture items) returns
+  // conditional on the page's ORIGIN, not the editor's Free-Write MODE
+  // alone: a project- or loose-origin page in Free Write mode gets none of
+  // it — only a journal-origin page does. Canon amendment A2 (the
+  // grandfather clause): a null-origin row (every page that existed before
+  // this ticket) behaves EXACTLY as today, where mode alone decided it — so
+  // null reads as "journal-equivalent" here, and only an EXPLICIT non-
+  // journal origin ('project' | 'loose') suppresses the furniture.
+  const journalFurniture = entry.origin == null || entry.origin === 'journal';
+
   const toolRailContent: ToolRailContent = !framed
     ? { kind: 'empty' }
     : mode === 'journal'
       ? {
           kind: 'freewrite',
-          ink: { penColor, inks: PEN_INKS, onChoosePen: setPenColor },
-          forwardLock: { on: forwardLock, onToggle: setForwardLock },
-          captureItems: CAPTURE_ITEMS,
+          ink: journalFurniture ? { penColor, inks: PEN_INKS, onChoosePen: setPenColor } : undefined,
+          forwardLock: journalFurniture ? { on: forwardLock, onToggle: setForwardLock } : undefined,
+          captureItems: journalFurniture ? CAPTURE_ITEMS : [],
         }
       : {
           kind: 'draft',
@@ -299,6 +358,22 @@ function PageEditorView({ id }: { id: string }) {
     </div>
   );
 
+  // AB3 S2 — the Page face's sending verbs, mounted once here (framed only —
+  // the legacy/unframed branch below the gate stays byte-identical, no Page
+  // face there).
+  const pageFaceSheets = (
+    <>
+      {portOpen && <PortToBoardSheet sourceIds={[entry.id]} onClose={() => setPortOpen(false)} />}
+      {addOpen && (
+        <AddToSheet
+          sourceIds={[entry.id]}
+          onClose={() => setAddOpen(false)}
+          onDone={() => setAddOpen(false)}
+        />
+      )}
+    </>
+  );
+
   // AB1 S1/S2/S4 — the framed (>=1100px) composition. Breadcrumb + Pages/Plan
   // toggle stay (real page-level navigation, not "top-bar orphans" — those
   // are GlobalHeader's Fullscreen/Sync/Sign out, collapsed separately per
@@ -330,7 +405,7 @@ function PageEditorView({ id }: { id: string }) {
         <DeskFrame
           pageKind="prose"
           modeStrip={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />}
-          toolRail={<ToolRail content={toolRailContent} />}
+          toolRail={<Drawer toolsContent={toolRailContent} subject={pageFaceSubject} />}
           dissolved={receded}
         >
           <ModeStage
@@ -350,6 +425,7 @@ function PageEditorView({ id }: { id: string }) {
 
         {publishDialog}
         {structureConfirmDialog}
+        {pageFaceSheets}
       </div>
     );
   }

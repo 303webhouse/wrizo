@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getBinderPages } from '../store/persistence';
+import { getBinderPages, createLooseHomePage } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { getResumeTarget, relativeDays } from '../store/resume';
 import { describeTarget } from '../store/resumeVocab';
@@ -51,6 +51,18 @@ export function Desk() {
           </button>
           <span className="wz-dot">·</span>
           <span className="wz-link" onClick={() => navigate('/project/new')}>Begin project</span>
+          <span className="wz-dot">·</span>
+          {/* AB3 S4 — the Desk's start-writing / home-base door: a blank page
+              with no project and no Journal membership. `loose` is a
+              legitimate PERMANENT home (the canon's "loose forever" clause)
+              — starting here never files it, and this link never nudges it
+              anywhere (anti-solicitation). */}
+          <span
+            className="wz-link wz-start-writing"
+            onClick={() => { const page = createLooseHomePage(); navigate(`/page/${page.id}`); }}
+          >
+            Start writing
+          </span>
         </div>
 
         {/* A quiet glance at recent drawers + On the Shelf (the rail owns the rest). */}

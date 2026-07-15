@@ -23,7 +23,17 @@ export type DeskTermId =
   // user-facing strings this ticket introduces land in this seam per the
   // AB1 review's ratified naming, not a second lexicon file.
   | 'railInk' | 'railControls' | 'railForwardLock' | 'railReading' | 'railTypewriter'
-  | 'railFormat' | 'railStructure' | 'railStructureProse' | 'railStructureScreenplay';
+  | 'railFormat' | 'railStructure' | 'railStructureProse' | 'railStructureScreenplay'
+  // AB3 — the Drawer's own nav pulls (components/Drawer.tsx): the Page pull
+  // above the separator, the three Places below it.
+  | 'drawerPage' | 'drawerPlaceJournal' | 'drawerPlaceShelf' | 'drawerPlaceDrawers'
+  // AB3 S2 — the Page face (components/PageFace.tsx).
+  | 'pageFaceStar' | 'pageFaceStarred' | 'pageFaceAddTag' | 'pageFaceAdd'
+  | 'pageFaceMoveCopy' | 'pageFacePortToBoard'
+  // AB3 S6 — the Places faces (components/PlaceFace.tsx): three verbs per
+  // item, plus the honest door at the foot.
+  | 'placeFaceOpen' | 'placeFaceFileSend' | 'placeFacePeek' | 'placeFacePeekSoon'
+  | 'placeFaceGoToRoom' | 'placeFaceEmpty';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -47,6 +57,22 @@ const CANONICAL: Record<DeskTermId, string> = {
   railStructure: 'Structure',
   railStructureProse: 'Prose',
   railStructureScreenplay: 'Screenplay',
+  drawerPage: 'Page',
+  drawerPlaceJournal: 'Journal',
+  drawerPlaceShelf: 'Shelf',
+  drawerPlaceDrawers: 'Drawers',
+  pageFaceStar: 'Star',
+  pageFaceStarred: 'Starred',
+  pageFaceAddTag: 'Add a tag',
+  pageFaceAdd: 'Add',
+  pageFaceMoveCopy: 'Move to… / Copy to…',
+  pageFacePortToBoard: 'Port to a Board…',
+  placeFaceOpen: 'Open',
+  placeFaceFileSend: 'File/Send',
+  placeFacePeek: 'Peek',
+  placeFacePeekSoon: 'Peek — coming soon',
+  placeFaceGoToRoom: 'Go to the Room',
+  placeFaceEmpty: 'Nothing here yet.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
@@ -56,6 +82,9 @@ const CANONICAL: Record<DeskTermId, string> = {
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> = {
   flux: {
     corkboardJournalTab: 'Log',
+    // AB3 — the Places face's Journal pull, kept in step with the corkboard
+    // tab's own Flux name so the two seams never visibly disagree.
+    drawerPlaceJournal: 'Log',
   },
 };
 

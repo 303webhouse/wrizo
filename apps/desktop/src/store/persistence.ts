@@ -641,6 +641,8 @@ export function createJournalPage(): JournalEntry {
     text: '',
     projectId: null,
     source: 'page',
+    // AB3 S4 — the Journal/Catch door: this page homes in the Journal.
+    origin: 'journal',
     createdAt: now,
     updatedAt: now,
   };
@@ -659,6 +661,9 @@ export function createBinderPage(binderId: string, pageType: NonNullable<Journal
     projectId: binderId,
     pageType,
     source: 'page',
+    // AB3 S4 — a project door: this page homes in the project; the Journal
+    // never sees it (no journal listing, no journal count).
+    origin: 'project',
     createdAt: now,
     updatedAt: now,
   };
@@ -835,6 +840,9 @@ export function createScriptPage(binderId: string): JournalEntry {
     pageType: 'script',
     script: doc,
     source: 'page',
+    // AB3 S4 — a project door (new screenplay from a project): homes in the
+    // project; the Journal never sees it.
+    origin: 'project',
     createdAt: now,
     updatedAt: now,
   };
@@ -930,10 +938,24 @@ export function getJournalEntries(): JournalEntry[] {
 // the same cache, partitioned by (projectId, shelved). `setPageHome` is the one
 // place that moves a page between homes, enforcing the exactly-one-home rule.
 
-// The Journal stream — loose pages only (projectId null AND not shelved).
+// AB3 S5 — the Journal-forgets-nothing predicate, shared by every Journal
+// view (list, notebook nav). A page belongs to the Journal if it was BORN
+// there (origin==='journal'), regardless of its current home (filed,
+// shelved — "a filed journal page appears in both places"); a null-origin
+// row (canon amendment A2, the grandfather clause) keeps EXACTLY today's
+// rule (loose AND not shelved) — untouched by this ticket. A 'project'- or
+// 'loose'-origin page never matches, even if projectId happens to be null
+// (the loose-origin door produces exactly that shape on purpose).
+export function inJournalView(e: JournalEntry): boolean {
+  if (e.origin === 'journal') return true;
+  if (e.origin != null) return false; // explicit 'project' | 'loose' — never
+  return e.projectId == null && !e.shelved; // A2 — today's rule, untouched
+}
+
+// The Journal stream — every page that belongs there (see inJournalView).
 export function getJournalPages(): JournalEntry[] {
   return cache.journalEntries
-    .filter(e => !e.deletedAt && e.projectId == null && !e.shelved)
+    .filter(e => !e.deletedAt && inJournalView(e))
     .map(clone)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
@@ -951,8 +973,17 @@ export function getShelfPages(): JournalEntry[] {
 // chronological list feed is unchanged (getJournalPages stays newest-first).
 export function getNotebookPages(): JournalEntry[] {
   return sortNotebook(
-    cache.journalEntries.filter(e => !e.deletedAt && e.projectId == null && !e.shelved).map(clone),
+    cache.journalEntries.filter(e => !e.deletedAt && inJournalView(e)).map(clone),
   );
+}
+
+// AB3 S6 — the Drawers place face's contents: every page currently filed
+// into ANY project (a flat, one-level list — no per-project drill-down).
+export function getDrawerFiledPages(): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt && e.projectId != null)
+    .map(clone)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 // Re-spread every loose page onto clean, well-separated indexes (order preserved)
@@ -1014,10 +1045,50 @@ export function createLoosePage(afterId?: string): JournalEntry {
   const now = new Date().toISOString();
   const entry: JournalEntry = {
     id: generateId(), text: '', projectId: null, source: 'page',
+    // AB3 S4 — a Journal-domain door (notebook insert): this page homes in
+    // the Journal, same as createJournalPage/Catch.
+    origin: 'journal',
     orderIndex, createdAt: now, updatedAt: now,
   };
   saveJournalEntry(entry);
   return entry;
+}
+
+// AB3 S4 — the Desk's start-writing / home-base door. A blank page with no
+// project and no Journal membership: `loose` is a legitimate PERMANENT home
+// (canon's "loose forever" clause) — never nudged to file, and this door
+// never puts it in the Journal (S5's predicate keys off `origin`, not the
+// projectId/shelved shape alone, so a loose-origin page is structurally
+// identical to a Journal page yet correctly excluded from every Journal
+// view). Opens at /page/:id (PageEditor) — not /journal/:id — so it never
+// inherits JournalEntry's Journal-only furniture (notebook nav, the
+// file-it-first prompt).
+export function createLooseHomePage(): JournalEntry {
+  const now = new Date().toISOString();
+  const entry: JournalEntry = {
+    id: generateId(),
+    text: '',
+    projectId: null,
+    source: 'page',
+    origin: 'loose',
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveJournalEntry(entry);
+  return entry;
+}
+
+// AB3 S2 — a shared merge-write used by the Page face's star/tag mutations
+// on both JournalEntry.tsx and PageEditor.tsx. `currentText` is the host's
+// own live text ref/buffer, re-injected on every write so a star/tag toggle
+// never clobbers a freshly-typed run the debounced autosave hasn't flushed
+// yet (the same discipline JournalEntry.tsx's own `patch` closure already
+// used — lifted here so PageEditor.tsx, which never had this, gets it too).
+export function patchJournalEntry(id: string, currentText: string, changes: Partial<JournalEntry>): JournalEntry | null {
+  const latest = getJournalEntry(id);
+  if (!latest) return null;
+  saveJournalEntry({ ...latest, text: currentText, ...changes });
+  return getJournalEntry(id);
 }
 
 // J3 — persist a drag reorder (the spread view, Slice 2): place an existing
