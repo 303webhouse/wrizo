@@ -103,9 +103,30 @@ outlive a session lives here, not in chat.
     (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`/`ab2`, 379 checks
     total, both `HARNESS_PARKED` settings) green, independently re-run a
     second time on merged `main` by CC before push. Fast-forwarded to
-    `main` @ `136f438`, pushed. **Not deployed.** Same close conditions as
-    AB1.1: CC's fold+push is done; Fable's spot-check and Nick's device
-    look remain — this item does not close on this merge.
+    `main` @ `136f438`, pushed. **Not deployed.**
+    **Fable's post-merge review landed — 2026-07-15**
+    (`docs/wrizo-alpha/ab2-review-fable.md`): **REQUIRED FIXES — 0**, the
+    first clean sheet of the AB arc — no data-loss-class or architecture
+    findings, no fold. Five endorsements on the record (the caret fix's
+    diagnosis and one-gate architecture; S6 carrying AB1's R1 lesson
+    whole, clean on the first pass; the prose↔screenplay conversion's
+    data discipline; the parked-section disposition blessed; the
+    reasoned rail omissions sustained). Five advisories carried, none
+    blocking (A1 a low-stakes `sync.ts` seam to eyeball next
+    server-adjacent touch; A2 the typewriter toggle unreachable from a
+    script-only workflow, a 2-line fold candidate for AB3; A3 the
+    sentinel strip also cleans user-authored zero-width-spaces,
+    recorded as a decision; A4 name the PARKED section's two check
+    species — dormant vs. superseded; A5 the italic matcher is looser
+    than strict markdown, house-convention-acceptable). Suite arithmetic
+    independently verified (304 + 37 + 38 = 379 default-flow; armed adds
+    3). **Close conditions per Fable: (1) CC build→review→merge→push —
+    DONE; (2) Fable's post-merge review — DONE, this document, no fold
+    owed; (3) Nick's device look — the SOLE remaining gate, one sitting
+    for both AB1 and AB2** (composition wide + near-floor, the strip's
+    olive hairline in situ, Draft's iA register under the hand, a
+    Structure-picker conversion each way, the Journal inside the frame,
+    the forward-lock switch). Item 21 closes on (3) alone now.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
