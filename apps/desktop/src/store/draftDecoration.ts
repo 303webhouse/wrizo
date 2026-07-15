@@ -57,3 +57,68 @@ export function decorateMarkdown(text: string): string {
     })
     .join('\n');
 }
+
+// AB2 fix (post-build review) — a documented Chromium contenteditable
+// quirk, proven via the harness's own typeKeys driving against a bare,
+// React-free contenteditable: a caret positioned at the very end of a text
+// node whose OWN content ends in '\n', with nothing after it, causes the
+// NEXT typed character to land BEFORE that trailing newline instead of
+// after it — even though window.getSelection() correctly reports the caret
+// at the true end. Chrome's native default Enter handling doesn't hit this
+// (it never leaves a bare trailing '\n' text node), but decorateMarkdown's
+// flat-text redecoration always does whenever the caret needs to land at
+// the tail of trailing-newline content. The standard workaround (used by
+// every serious contenteditable-based editor for exactly this class of
+// quirk): append an invisible zero-width-space sentinel and park the caret
+// INSIDE it instead — a text node that does NOT itself end in '\n', which
+// resolves the quirk. The sentinel is transient and MUST be stripped via
+// readEditorPlainText before the result ever reaches entry.text — every
+// caller that redecorates a live contenteditable through this module
+// (ForwardOnlyEditor.tsx's drafting branch, PageEditor.tsx's rail format
+// actions) shares this one pair of helpers so neither path can drift back
+// into the unguarded bug.
+const EOF_GUARD = '​';
+
+/** Strip the EOF guard from raw DOM text, adjusting a raw caret offset to
+ * account for any guard characters that preceded it. Wherever the guard
+ * ends up in the string (not just the tail — once real typing continues
+ * past it, it's no longer at the tail), it is removed. */
+export function readEditorPlainText(raw: string, rawOffset: number | null): { plain: string; caret: number | null } {
+  if (rawOffset === null) return { plain: raw.split(EOF_GUARD).join(''), caret: null };
+  let removedBefore = 0;
+  let plain = '';
+  for (let i = 0; i < raw.length; i++) {
+    if (raw[i] === EOF_GUARD) { if (i < rawOffset) removedBefore++; continue; }
+    plain += raw[i];
+  }
+  return { plain, caret: rawOffset - removedBefore };
+}
+
+/** Redecorate `el`'s innerHTML from `plain` and restore the caret at
+ * `caret`, guarding against the trailing-newline-at-EOF quirk above. The
+ * one place a live contenteditable's decorated DOM is ever written from
+ * plain text + a caret offset — do not `el.innerHTML = decorateMarkdown(...)`
+ * directly outside this helper. */
+export function decorateEditorFor(
+  el: HTMLElement,
+  plain: string,
+  caret: number | null,
+  setCaretOffset: (el: HTMLElement, target: number) => void,
+): void {
+  if (caret === null) return;
+  const needsGuard = plain.endsWith('\n');
+  el.innerHTML = decorateMarkdown(plain) + (needsGuard ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : '');
+  if (needsGuard && caret === plain.length) {
+    const guardText = el.lastElementChild?.firstChild as Text | null;
+    const sel = window.getSelection();
+    if (guardText && sel) {
+      const r = document.createRange();
+      r.setStart(guardText, guardText.data.length);
+      r.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      return;
+    }
+  }
+  setCaretOffset(el, caret);
+}

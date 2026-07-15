@@ -20,7 +20,7 @@ import { ModeStrip } from '../components/ModeStrip';
 import { ToolRail, CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
-import { decorateMarkdown } from '../store/draftDecoration';
+import { decorateEditorFor } from '../store/draftDecoration';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
 
@@ -201,10 +201,14 @@ function PageEditorView({ id }: { id: string }) {
   // rich-text state). Reads the editor's current selection via the SAME
   // linear-offset technique the rest of this codebase uses for caret math
   // (store/caretOffset.ts), applies the transform (store/draftFormat.ts),
-  // then imperatively re-decorates the DOM (store/draftDecoration.ts) —
-  // mirroring exactly what ForwardOnlyEditor's own native listener does on
-  // every keystroke, so a rail click and a keystroke leave the surface in
-  // the identical state.
+  // then imperatively re-decorates the DOM through the SAME guarded helper
+  // ForwardOnlyEditor's own native listener uses on every keystroke
+  // (store/draftDecoration.ts's decorateEditorFor) — not a bare
+  // `el.innerHTML = decorateMarkdown(...)`, which would reintroduce the
+  // Chromium trailing-newline-at-EOF caret quirk that helper guards against
+  // (reachable here too: Spacing at the very end of the page inserts a
+  // trailing blank line, landing the caret exactly in that state) — so a
+  // rail click and a keystroke leave the surface in the identical state.
   const applyRailFormat = (action: FormatAction) => {
     const el = editorRef.current;
     if (!el || mode !== 'drafting') return;
@@ -212,8 +216,7 @@ function PageEditorView({ id }: { id: string }) {
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     setText(result.text);
-    el.innerHTML = decorateMarkdown(result.text);
-    setCaretOffset(el, result.start);
+    decorateEditorFor(el, result.text, result.start, setCaretOffset);
   };
 
   // AB2 S4 — the Structure picker. Prose -> Screenplay: free on an empty

@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
-import { decorateMarkdown } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdown, readEditorPlainText } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
@@ -157,25 +157,22 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // whenever the selection isn't inside the host (nothing to restore).
     if (drafting) {
       let composingDraft = false;
-      const redecorate = (plain: string, caret: number | null) => {
-        if (caret === null) return;
-        el.innerHTML = decorateMarkdown(plain);
-        setPlainOffset(el, caret);
-      };
+      // AB2 fix (post-build review) — see draftDecoration.ts's decorateEditorFor/
+      // readEditorPlainText for the Chromium EOF-caret quirk this guards
+      // against. Every write to el.innerHTML and every read of the live DOM
+      // in this branch goes through those two shared helpers (also used by
+      // PageEditor.tsx's rail format actions) so no path can drift back into
+      // the unguarded bug.
+      const redecorate = (plain: string, caret: number | null) => decorateEditorFor(el, plain, caret, setPlainOffset);
       const onInput = () => {
-        const plain = el.innerText;
+        const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
         onChangeRef.current(plain);
         onForwardRef.current?.();
         if (composingDraft) return;
-        redecorate(plain, getPlainOffset(el));
+        redecorate(plain, caret);
       };
       // VW Slice 4 — own ink passes silently: simply don't preventDefault, and
       // the browser's native paste/drop proceeds (Draft owns its contenteditable).
-      // Enter is intercepted here too — inserted as a literal '\n' via
-      // execCommand('insertText') rather than letting the browser split into a
-      // new <div> (Chrome's default insertParagraph behavior), so the DOM stays
-      // a flat run of text nodes + decoration spans and el.innerText / the
-      // TreeWalker-based caret math in store/caretOffset.ts never disagree.
       const onBeforeInputDraft = (e: InputEvent) => {
         const it = e.inputType || '';
         if (it === 'insertFromPaste' || it === 'insertFromDrop') {
@@ -183,17 +180,51 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
           e.preventDefault(); notePasteBlocked();
           return;
         }
-        if (it === 'insertParagraph' || it === 'insertLineBreak') {
-          e.preventDefault();
-          try { document.execCommand('insertText', false, '\n'); } catch { /* best-effort */ }
-        }
+      };
+      // AB2 fix (post-build review) — Enter is intercepted at KEYDOWN with a
+      // manual Range/Text-node insertion, replacing the original beforeinput
+      // + execCommand('insertText', '\n') approach, which the harness's own
+      // typeKeys driving proved BROKEN: Chrome's execCommand('insertText',
+      // ...) does NOT insert a literal '\n' text character — it treats an
+      // embedded newline as a paragraph command and splits in a
+      // `<div><br></div>`, exactly the block-splitting the original comment
+      // here said it was avoiding. The fix inserts a genuine single-
+      // character Text node via the Range API (never a `<div>`), keeps the
+      // caret INSIDE that text node before reading it back, then replicates
+      // onInput's own redecorate pass manually (a Range mutation fires no
+      // native 'input' event, the same reason onCompEndDraft below does its
+      // own inline pass) — going through the same readEditorPlainText/
+      // decorateEditorFor guard path as onInput, since this is exactly the
+      // trailing-newline-at-EOF case that guard exists for. Composing (IME)
+      // is left alone so an Enter that commits a composition candidate
+      // isn't hijacked. keydown-level
+      // preventDefault (not beforeinput) mirrors ScriptEditor.tsx's own
+      // proven Enter-handling pattern elsewhere in this codebase.
+      const onKeyDownDraft = (e: KeyboardEvent) => {
+        if (e.key !== 'Enter' || e.isComposing) return;
+        e.preventDefault();
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+        const range = sel.getRangeAt(0);
+        if (!el.contains(range.startContainer)) return;
+        range.deleteContents();
+        const textNode = document.createTextNode('\n');
+        range.insertNode(textNode);
+        range.setStart(textNode, 1); // caret lands INSIDE the new text node (a valid text-node container)
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        onChangeRef.current(plain);
+        onForwardRef.current?.();
+        redecorate(plain, caret);
       };
       const onCompStartDraft = () => { composingDraft = true; };
       const onCompEndDraft = () => {
         composingDraft = false;
-        const plain = el.innerText;
+        const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
         onChangeRef.current(plain);
-        redecorate(plain, getPlainOffset(el));
+        redecorate(plain, caret);
       };
       const blockPaste = (e: Event) => {
         if (shadowAllows(extractIncomingText(e))) return;
@@ -201,6 +232,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
+      el.addEventListener('keydown', onKeyDownDraft);
       el.addEventListener('compositionstart', onCompStartDraft);
       el.addEventListener('compositionend', onCompEndDraft);
       el.addEventListener('paste', blockPaste);
@@ -208,6 +240,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       return () => {
         el.removeEventListener('input', onInput);
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
+        el.removeEventListener('keydown', onKeyDownDraft);
         el.removeEventListener('compositionstart', onCompStartDraft);
         el.removeEventListener('compositionend', onCompEndDraft);
         el.removeEventListener('paste', blockPaste);
@@ -336,12 +369,15 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     if (autoFocus) hostRef.current?.focus();
     // Drafting mounts (incl. a mode switch) land the caret at the end of the
     // carried-over prose, once. Journal's per-render effect handles its caret.
+    // AB2 fix (post-build review) — routed through decorateEditorFor rather
+    // than a bare selectNodeContents/collapse(false): if the carried-over
+    // prose itself ends with '\n' (e.g. a page whose stored text ends in a
+    // blank line), collapsing straight to the container's end lands the
+    // caret in exactly the trailing-newline-at-EOF state the Chromium quirk
+    // (see draftDecoration.ts) corrupts on the very next keystroke.
     if (drafting) {
       const el = hostRef.current;
-      if (el) {
-        const sel = window.getSelection();
-        if (sel) { const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
-      }
+      if (el) decorateEditorFor(el, initialText, initialText.length, setPlainOffset);
     }
     emit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
