@@ -34,7 +34,11 @@ const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel stat
 // current pen ink. The dissolve engine also drives WritingSession, so the global
 // header recedes in step; `onDissolveChange` lets the host fade its own top bar.
 
-const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, blue
+// AB2 S2 — exported so PageEditor.tsx (the framed host) can seed ToolRail's
+// ink swatch list with the SAME three inks, when it lifts pen-color into a
+// controlled prop below (the pen bar itself retires from the frame; its
+// palette does not change).
+export const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, blue
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
@@ -79,10 +83,17 @@ interface Props {
   // caller (QuickSprint, and this component below the 1100px gate) byte-
   // identical to pre-AB1 behavior.
   framed?: boolean;
+  // AB2 S2 — when framed, ink color is owned by the host (ToolRail is
+  // DeskFrame's sibling, not ModeStage's child, so it can't reach ModeStage's
+  // own internal `pen` state) and passed down as a controlled value. Absent
+  // (every existing caller — QuickSprint, and this component below the
+  // 1100px gate) falls through to the internal uncontrolled `pen` state,
+  // byte-identical to pre-AB2 behavior.
+  penColor?: string;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -90,9 +101,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // Typewriter engages in Free Write and Draft (writing postures) — never in
   // Format/Workshop/Publish (convention/delivery, revision-shaped work the
   // hold would fight). Gated by the persisted setting AND the bottom-right
-  // icon, both toggling the same value. AB1 S2 — framed (DeskFrame) never
-  // engages it: "do not mount the typewriter effect or its toggle."
-  const typewriterOn = !framed && (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // icon, both toggling the same value. AB1 S2 froze this out entirely when
+  // framed ("do not mount the typewriter effect or its toggle"); AB2 S2
+  // returns it from parking — the EFFECT now engages framed too (its own
+  // toggle button moves to ToolRail, a DeskFrame sibling reading/writing the
+  // same shared store — see components/ToolRail.tsx), independent of framed.
+  const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
   // pre-existing on this surface too — not new here) — this array literal
   // was previously rebuilt on every ModeStage render, so useChromeDissolve's
@@ -330,7 +344,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         )}
 
         <div className="mode-pagecol">
-          {/* Format / pen bar (top of page) — chrome, dissolves on write. */}
+          {/* Format / pen bar (top of page) — chrome, dissolves on write.
+              AB2 S2/S3 — retires when framed: its ink swatches and Draft's
+              format tools both have a rail home now (components/ToolRail.tsx,
+              mounted in DeskFrame's own tool-rail track, a sibling of this
+              whole ModeStage). Below the gate this is unchanged. */}
+          {!framed && (
           <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}>
             {rail.tools === 'pen' ? (
               <>
@@ -364,6 +383,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               </>
             )}
           </div>
+          )}
 
           {/* The lit page. Fixed height; the editor scrolls inside (typewriter). */}
           <div
@@ -383,7 +403,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               data-typewriter={typewriterOn ? 'true' : 'false'}
               onClick={focusEditor}
             >
-              {children({ noteWrite, penColor: rail.tools === 'pen' ? pen : undefined })}
+              {children({ noteWrite, penColor: rail.tools === 'pen' ? (penColorProp ?? pen) : undefined })}
             </div>
             {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>

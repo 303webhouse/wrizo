@@ -1,7 +1,9 @@
 import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
-import { append, derivedText, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
+import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
+import { decorateMarkdown } from '../store/draftDecoration';
+import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -37,11 +39,18 @@ interface Props {
   placeholder?: string;
   ariaLabel?: string;
   penColor?: string;           // Journal pen ink (sets text + caret colour); from the pen bar
+  // AB2 S2 — the forward lock, exposed in Free Write's tool rail
+  // (store/forwardLock.ts). Only meaningful in journal mode (drafting is
+  // always free-edit already). Default true matches today's shipped Free
+  // Write behavior exactly: every backspace strikes via the existing runway.
+  // false swaps to a REAL one-character erase (eraseTail) — still never a
+  // select-then-replace, still never touches already-struck history.
+  forwardLock?: boolean;
   style?: React.CSSProperties;
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, style },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style },
   ref,
 ) {
   const drafting = mode === 'drafting';
@@ -62,6 +71,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   onChangeRef.current = onChange;
   const onForwardRef = useRef(onForward);
   onForwardRef.current = onForward;
+  // AB2 S2 — the native listeners below attach once ([] deps), so a toggle
+  // flipped mid-session (the rail's forward-lock switch) must reach
+  // handleBackspace through a ref, not the closed-over prop value.
+  const forwardLockRef = useRef(forwardLock);
+  forwardLockRef.current = forwardLock;
 
   const emit = () => onChangeRef.current(derivedText(contentRef.current) + wordRef.current);
   const changed = () => { force(); emit(); };
@@ -92,10 +106,18 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   //   1 char · 2 char · 3 rest-of-word · 4 prev-word · 5 rest-of-sentence · 6+ locked.
   // The active word is flushed into the runs on the first press so all strikes
   // operate on committed content; struck runs stay visible but drop from derived.
+  // AB2 S2 — forwardLock===false swaps this whole escalation for a real,
+  // one-character erase (eraseTail): no runway, no lock, no nudge — a
+  // backspace behaves like backspace, per the rail's explicit switch.
   const handleBackspace = () => {
     if (wordRef.current.length > 0) {
       contentRef.current = append(contentRef.current, wordRef.current);
       wordRef.current = '';
+    }
+    if (forwardLockRef.current === false) {
+      contentRef.current = eraseTail(contentRef.current, 1);
+      changed();
+      return;
     }
     bsRef.current += 1;
     const r = strikeStep(contentRef.current, bsRef.current);
@@ -124,16 +146,54 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // contenteditable; cut/delete are allowed here — this is the revise mode). But
     // the Voice Wall still stands: Draft is a prose surface, so paste/drop of
     // foreign prose is blocked + whispered (copy-out stays free).
+    // AB2 S0/S3 — the iA register: every input re-decorates the plain text into
+    // dimmed-mark/live-effect spans (store/draftDecoration.ts), imperatively
+    // (bypassing React's own re-render) so it stays perfectly in step with the
+    // native DOM the browser just mutated, then restores the caret at the SAME
+    // linear offset (decoration only wraps existing characters in <span>s — it
+    // never changes the character count, so the pre-decoration offset is still
+    // valid post-decoration). Guarded off mid-IME-composition (composing text
+    // must stay browser-owned, exactly like the journal path below) and off
+    // whenever the selection isn't inside the host (nothing to restore).
     if (drafting) {
-      const onInput = () => { onChangeRef.current(el.innerText); onForwardRef.current?.(); };
+      let composingDraft = false;
+      const redecorate = (plain: string, caret: number | null) => {
+        if (caret === null) return;
+        el.innerHTML = decorateMarkdown(plain);
+        setPlainOffset(el, caret);
+      };
+      const onInput = () => {
+        const plain = el.innerText;
+        onChangeRef.current(plain);
+        onForwardRef.current?.();
+        if (composingDraft) return;
+        redecorate(plain, getPlainOffset(el));
+      };
       // VW Slice 4 — own ink passes silently: simply don't preventDefault, and
       // the browser's native paste/drop proceeds (Draft owns its contenteditable).
+      // Enter is intercepted here too — inserted as a literal '\n' via
+      // execCommand('insertText') rather than letting the browser split into a
+      // new <div> (Chrome's default insertParagraph behavior), so the DOM stays
+      // a flat run of text nodes + decoration spans and el.innerText / the
+      // TreeWalker-based caret math in store/caretOffset.ts never disagree.
       const onBeforeInputDraft = (e: InputEvent) => {
         const it = e.inputType || '';
         if (it === 'insertFromPaste' || it === 'insertFromDrop') {
           if (shadowAllows(extractIncomingText(e))) return;
           e.preventDefault(); notePasteBlocked();
+          return;
         }
+        if (it === 'insertParagraph' || it === 'insertLineBreak') {
+          e.preventDefault();
+          try { document.execCommand('insertText', false, '\n'); } catch { /* best-effort */ }
+        }
+      };
+      const onCompStartDraft = () => { composingDraft = true; };
+      const onCompEndDraft = () => {
+        composingDraft = false;
+        const plain = el.innerText;
+        onChangeRef.current(plain);
+        redecorate(plain, getPlainOffset(el));
       };
       const blockPaste = (e: Event) => {
         if (shadowAllows(extractIncomingText(e))) return;
@@ -141,11 +201,15 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
+      el.addEventListener('compositionstart', onCompStartDraft);
+      el.addEventListener('compositionend', onCompEndDraft);
       el.addEventListener('paste', blockPaste);
       el.addEventListener('drop', blockPaste);
       return () => {
         el.removeEventListener('input', onInput);
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
+        el.removeEventListener('compositionstart', onCompStartDraft);
+        el.removeEventListener('compositionend', onCompEndDraft);
         el.removeEventListener('paste', blockPaste);
         el.removeEventListener('drop', blockPaste);
       };
@@ -330,10 +394,12 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // are overlays in the wrapper, never inside the editable.
   // Drafting seeds the host with the carried-over clean text as plain content and
   // then lets the browser own it (the html below is stable across re-renders, so
-  // React never re-sets innerHTML and never clobbers the free edits). Journal
-  // renders its runs (struck spans stay visible, drop from derived).
+  // React never re-sets innerHTML and never clobbers the free edits — the native
+  // 'input' listener below re-decorates imperatively on every keystroke instead,
+  // AB2 S0/S3's iA register). Journal renders its runs (struck spans stay
+  // visible, drop from derived).
   const html = drafting
-    ? escHtml(initialText)
+    ? decorateMarkdown(initialText)
     : isEmpty
       ? ''
       : content.map(run => `<span class="${run.struck ? 'fo-run fo-struck' : 'fo-run'}">${escHtml(run.text)}</span>`).join('')
