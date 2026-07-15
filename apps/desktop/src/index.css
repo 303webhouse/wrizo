@@ -39,6 +39,15 @@
   --clay: #C97B5A;      /* warnings, sentence nudge */
   --brick: #B5543F;     /* destructive — Discard only */
 
+  /* AB2 S7 — Nick's rulings, 2026-07-14: the mode strip's active tab loses
+     its brass fill for a quieter resting register — brightened ink + a 1px
+     olive hairline. A NEW token slot (the established theme seam pattern —
+     store/theme*.ts's own convention, zero component edits to re-point it);
+     the Plateau foundations doc locks the final hue and may change the
+     value below without touching components/ModeStrip.tsx or index.css's
+     selectors. Working value only. */
+  --accent-rest: #96a05a;
+
   /* TH1 — the two slots every theme gets (canon §3), wired but unused on
      Plateau: nothing reads these yet, so they cost nothing here and are
      free for a future Plateau feature or a theme pack to claim. Quiet
@@ -1782,21 +1791,85 @@ a:focus-visible,
 /* The unified mode strip (S2) — five ratified strings, title case. Visually
    modeled on .mode-tab/.mode-tabs (the strip it supersedes inside the
    frame), kept as its own class family so ModeSwitcher.tsx's own styling
-   (still used by QuickSprint, unchanged) can't drift underneath it. */
+   (still used by QuickSprint, unchanged) can't drift underneath it.
+   AB2 S7 (Nick's rulings, 2026-07-14) — the strip quiets: orange leaves it
+   entirely (the active tab's brass fill is gone), replaced by brightened
+   ink + a 1px olive hairline (--accent-rest); the whole strip renders in
+   the engraved register — uppercase, letterspaced — as PRESENTATION only
+   (CSS text-transform). The canonical strings stay exactly the ratified
+   title case in the DOM (ModeStrip.tsx / store/deskLexicon.ts untouched;
+   ab1.mjs's exact-string .textContent assertions untouched) — this is a
+   paint, not a rewrite. */
 .desk-mode-strip{ display:flex; align-items:center; gap:2px; background:var(--chrome-surface);
   border:1px solid var(--ink-border); padding:4px; }
 .desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
-  font-family:var(--font-ui); font-size:13px; padding:9px 16px; cursor:pointer; transition:.15s; }
+  font-family:var(--font-ui); font-size:13px; padding:9px 16px; cursor:pointer; transition:.15s;
+  text-transform:uppercase; letter-spacing:.08em; }
 .desk-mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
-.desk-mode-tab.active{ background:var(--brass); color:var(--on-brass); }
+.desk-mode-tab.active{ background:none; color:var(--text-hi); border-bottom:1px solid var(--accent-rest); }
 .desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
+
+/* AB2 S1-S4 — the tool rail's own contents (components/ToolRail.tsx),
+   mounted into DeskFrame's .desk-frame-toolrail track (already fixed-width
+   from AB1 — only the CONTENTS here change per mode, never the track).
+   Deliberately plain: instruments within reach, not a menu — reuses
+   .mode-swatch/.mode-nib/.mode-tbtn's existing look rather than inventing a
+   parallel visual language. */
+.desk-toolrail-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
+.desk-toolrail-section{ display:flex; flex-direction:column; gap:8px; }
+.desk-toolrail-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); }
+.desk-toolrail-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.desk-toolrail-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+.desk-toolrail-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+.desk-toolrail-typewriter{ display:flex; align-items:center; gap:8px; }
+.desk-toolrail-typewriter-label{ font-size:13px; color:var(--text-mid); }
+
+/* A labeled on/off switch — the forward-lock control (S2). Deliberately its
+   own small component rather than reusing .mode-seg (a 2/3-way segmented
+   picker elsewhere): this is a single binary switch, not a choice among
+   named options. */
+.desk-toolrail-toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+  width:100%; background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; padding:8px 10px; cursor:pointer; transition:.15s; }
+.desk-toolrail-toggle:hover{ border-color:var(--ink-border-strong); color:var(--text-hi); }
+.desk-toolrail-toggle-label{ text-align:left; }
+.desk-toolrail-toggle-switch{ position:relative; flex:0 0 auto; width:28px; height:16px;
+  border:1px solid var(--ink-border-strong); border-radius:8px; background:var(--ink-950); transition:.15s; }
+.desk-toolrail-toggle-switch::after{ content:''; position:absolute; top:1px; left:1px; width:12px; height:12px;
+  border-radius:50%; background:var(--text-low); transition:.15s; }
+.desk-toolrail-toggle[data-on='true'] .desk-toolrail-toggle-switch{ background:var(--brass); border-color:var(--brass); }
+.desk-toolrail-toggle[data-on='true'] .desk-toolrail-toggle-switch::after{ left:13px; background:var(--on-brass); }
+
+/* The Structure picker (S4) — a two-way segmented control, Prose | Screenplay. */
+.desk-toolrail-structure{ display:flex; border:1px solid var(--ink-border); }
+.desk-toolrail-structure-btn{ flex:1; background:none; border:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:8px 6px; cursor:pointer; transition:.15s; }
+.desk-toolrail-structure-btn:hover{ color:var(--text-hi); background:var(--ink-800); }
+.desk-toolrail-structure-btn.active{ background:var(--brass); color:var(--on-brass); }
+.desk-toolrail-structure-btn + .desk-toolrail-structure-btn{ border-left:1px solid var(--ink-border); }
 
 /* The interim Journal capture tab, relocated into the corkboard track (S2). */
 .desk-corkboard-journal{ display:flex; flex-direction:column; gap:2px; }
 .desk-corkboard-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
 .desk-corkboard-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+
+/* AB2 S0/S3 — the iA register (draftDecoration.ts): syntax visible, dimmed;
+   effect live. The marks show their work — honest text, no hidden state. */
+.md-mark{ opacity:.38; }
+.md-bold{ font-weight:700; }
+.md-italic{ font-style:italic; }
+.md-h1{ font-size:1.3em; font-weight:600; }
+.md-h2{ font-size:1.14em; font-weight:600; }
+
+/* AB2 S2 DoD — the typewriter's hold-band on the SCRIPT surface, container-
+   mode (the sheet lives inside the bounded .desk-frame-scroll-cap — finding
+   4's containment fix — not the window), same fade recipe as .mode-scroll's
+   own fixed-viewport variant just above. */
+.desk-frame-scroll-cap[data-typewriter='true'][data-scrolled='true']{
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0, rgba(0,0,0,.5) 11%, #000 30%, #000 100%);
+          mask-image:linear-gradient(to bottom, transparent 0, rgba(0,0,0,.5) 11%, #000 30%, #000 100%); }
 
 /* The corner-glyph collapse (S4 chrome purge) — App.tsx's GlobalHeader
    folds Fullscreen/Sync/Sign out behind one glyph while a DeskFrame is

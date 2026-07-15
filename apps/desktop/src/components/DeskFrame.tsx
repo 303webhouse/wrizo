@@ -56,6 +56,10 @@ export function useDeskFrameViewport(): boolean {
 export interface DeskFrameProps {
   pageKind: 'prose' | 'screenplay';
   modeStrip?: ReactNode;
+  // AB2 S1 — the tool-rail track's real content, per mode
+  // (components/ToolRail.tsx). Empty/reserved (desk ground, exactly as AB1
+  // shipped it) when omitted — Board still passes nothing here.
+  toolRail?: ReactNode;
   corkboard?: ReactNode;
   dissolved?: boolean;
   children: ReactNode;
@@ -70,7 +74,7 @@ export interface DeskFrameProps {
 // `.desk-frame-toolrail` / `.desk-frame-corkboard` (each carrying
 // `chrome-fade desk-dissolve`) pick up the same fast-out/slow-in curve
 // automatically, without DeskFrame needing to touch the timing itself.
-export function DeskFrame({ pageKind, modeStrip, corkboard, dissolved, children }: DeskFrameProps) {
+export function DeskFrame({ pageKind, modeStrip, toolRail, corkboard, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -85,7 +89,9 @@ export function DeskFrame({ pageKind, modeStrip, corkboard, dissolved, children 
   return (
     <div ref={rootRef} className="desk-frame" data-writing={dissolved ? 'true' : 'false'}>
       <div className="desk-frame-grid">
-        <aside className="desk-frame-toolrail chrome-fade desk-dissolve" aria-label={t('zoneToolRail')} />
+        <aside className="desk-frame-toolrail chrome-fade desk-dissolve" aria-label={t('zoneToolRail')}>
+          {toolRail}
+        </aside>
         <div className="desk-frame-stagecol">
           {modeStrip && <div className="desk-frame-modestrip chrome-fade desk-dissolve">{modeStrip}</div>}
           <div className={`desk-frame-stage desk-frame-stage--${pageKind}`}>
@@ -101,19 +107,11 @@ export function DeskFrame({ pageKind, modeStrip, corkboard, dissolved, children 
   );
 }
 
-// The interim Journal capture tab (S2) — the stub items that used to live in
-// ModeStage's left rail when mode==='journal' (RAILS.journal.items), pulled
-// forward into the corkboard track. Final home is AB2's Free Write tool
-// rail; this is deliberately still a stub (no functionality added or
-// removed, only relocated).
-const CAPTURE_ITEMS = ['Spark deck', 'Fragments', 'Send → Drawer'];
-
-export function CorkboardJournalTab() {
-  const { t } = useDeskLexicon();
-  return (
-    <div className="desk-corkboard-journal">
-      <div className="desk-corkboard-h">{t('corkboardJournalTab')}</div>
-      {CAPTURE_ITEMS.map(it => <div key={it} className="desk-corkboard-item">{it}</div>)}
-    </div>
-  );
-}
+// AB2 S2 — the interim Journal capture tab (AB1's CorkboardJournalTab /
+// CAPTURE_ITEMS) is RETIRED here: the corkboard track returns to
+// empty/reserved until AB3, and the capture items (Spark deck / Fragments /
+// Send → Drawer) move to their ruled final home, the Free Write tool rail
+// (components/ToolRail.tsx — see its own CAPTURE_ITEMS export). Parked, not
+// deleted: the harness checks that once asserted this stub's presence live
+// on in scripts/harness/ab1.mjs's PARKED section (S8), with their successors
+// in ab2.mjs.
