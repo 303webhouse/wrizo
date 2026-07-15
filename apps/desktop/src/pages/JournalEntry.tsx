@@ -19,6 +19,9 @@ import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import { useLexicon } from '../store/themeLexicon';
+import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
+import { ModeStrip } from '../components/ModeStrip';
+import { ToolRail, CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
 // J4 — the entry read view: full text, read-only, on a lit paper page.
@@ -106,6 +109,11 @@ function JournalEntryView() {
   const [tabPrompt, setTabPrompt] = useState(false); // B4 #11 — file-it-first prompt
   const [tagDraft, setTagDraft] = useState('');
   const [entry, setEntry] = useState<JournalEntryType | null>(() => (id ? getJournalEntry(id) : null));
+  // AB2 S6 — the R2 ruling (ab1-review-fable.md): the Journal's page enters
+  // the frame. >=1100px only; below the gate this is byte-identical legacy
+  // JSX (the AB1 pattern exactly), which is also why the existing
+  // JournalEntry-flavored harness checks stay green untouched.
+  const framed = useDeskFrameViewport();
 
   // Chrome recede on write/draw (same engine as the sprint/page surfaces): typing
   // or drawing dissolves the surrounding menus + text; the sheet + ink never fade.
@@ -695,71 +703,23 @@ function JournalEntryView() {
     setCanUndo(false);
   };
 
-  return (
-    <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
-      <ChromeHandle onReveal={() => resurface(true)} />
-
-      {/* PAGE IS PRIMARY: only wayfinding (back / notebook paging) and the
-          document-type tabs sit above the writing surface. Everything about
-          THIS document — timestamp, actions, star, tags, routing, autosave
-          status — lives below the surface now (see the metadata cluster near
-          the end of this component). */}
-      <div className="journal-top chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
-        <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
-        {/* J1 — walk the notebook (loose pages only). The forward arrow becomes
-            "+" at the end (append + open); "+ insert" drops a page between this
-            one and the next. */}
-        {isLoose && (
-          <nav className="journal-nav" aria-label={lex('journal')}>
-            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
-              onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
-            <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
-            {nextPage ? (
-              <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
-                onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
-            ) : (
-              <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
-                onClick={() => openLoose()}>+</button>
-            )}
-            {nextPage && (
-              <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
-                onClick={() => openLoose(entry.id)}>+ insert</button>
-            )}
-          </nav>
-        )}
-      </div>
-
-      {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the
-          modes with the non-Free-Write tabs GREYED. Clicking one prompts the user
-          to file the entry (Drawer / Shelf) before it can be drafted or formatted.
-          Only for loose entries (a filed page opens in the live page editor). */}
-      {entry.projectId == null && (
-        <div className="journal-modes chrome-fade">
-          <div className="mode-tabs" role="tablist" aria-label="Mode">
-            <button type="button" role="tab" aria-selected="true" className="mode-tab active">
-              <span className="mode-tab__label">{lex('freewrite')}</span>
-              <span className="mode-tab__sub">capture</span>
-            </button>
-            {['Draft', 'Format', 'Workshop', lex('publish')].map(label => (
-              <button key={label} type="button" role="tab" aria-selected="false" className="mode-tab deferred" onClick={() => setTabPrompt(true)}>
-                <span className="mode-tab__label">{label}</span>
-              </button>
-            ))}
-          </div>
-          {tabPrompt && (
-            <div className="journal-tab-prompt" role="status">
-              <span>Move this to a Drawer or the Shelf to develop it past capture — drafting and formatting happen once a page is filed.</span>
-              <button type="button" className="btn-quiet" onClick={() => { setPageHome(entry.id, 'shelf'); navigate('/shelf'); }}>Send to the Shelf</button>
-            </div>
-          )}
-        </div>
-      )}
-
+  // AB2 S6 — the shared writing-surface body (ink layer, editable sheet,
+  // incentive layer, and every below-the-page metadata cluster), factored
+  // out so the framed and legacy returns below can't drift from each other
+  // (the same reason PageEditor.tsx's `editorBody` exists). Only the OUTER
+  // shell — wayfinding, the mode strip / legacy tab row, the frame itself —
+  // forks on `framed`; the sheet and everything about THIS document stay
+  // byte-identical either way, including their DOM position (PAGE IS
+  // PRIMARY: the metadata/star band keeps its below-the-page position
+  // inside the stage column, framed or not).
+  const pageBody = (
+    <>
       {/* THE WRITING SURFACE — primary, prominent, centered. The ambient glow
           sits behind it (authored pages only — a read-only capture isn't a
-          session in progress). */}
+          session in progress; framed — DeskFrame's own meter/glow tracks stay
+          empty/reserved this ticket, matching ModeStage's own framed gate). */}
       <div style={{ position: 'relative' }}>
-        {authored && <AmbientGlow m={glowM} />}
+        {authored && !framed && <AmbientGlow m={glowM} />}
         <div
           ref={sheetRef}
           className="paper-page entry-full"
@@ -874,8 +834,13 @@ function JournalEntryView() {
           so the setting must be respected here too. Only Words applies on
           the Journal (no session-timer readout on this surface); Time stays
           ModeStage-only for now. The typewriter toggle is independent and
-          always shown regardless of the progress metric. */}
-      {authored && (
+          always shown regardless of the progress metric.
+          AB2 S2/S6 — framed: this whole row stays unmounted (ModeStage's own
+          established framed gate, generalized here) — the typewriter toggle
+          moves to the rail (components/ToolRail.tsx), and the meter track
+          stays empty/reserved this ticket, matching every other DeskFrame
+          surface. */}
+      {authored && !framed && (
         <div className="mode-incentive-row">
           {writingSettings.progress !== 'off' && (
             <ProgressBar
@@ -997,6 +962,20 @@ function JournalEntryView() {
         )}
       </div>
       )}
+    </>
+  );
+
+  // AB2 S1/S6 — the "capture" (Free Write) tool-rail content: the SAME
+  // Spark deck / Fragments / Send → Drawer items AB1 parked in the interim
+  // corkboard tab, at their ruled final home. No ink swatches here (this
+  // surface has no typed-text pen — the ink layer above is hand-drawn
+  // strokes, a single fixed color, not a palette); no forward-lock switch
+  // here either (S2 ties that explicitly to ForwardOnlyEditor's propulsion,
+  // which this surface's own word-granular deletion rail does not use).
+  const toolRailContent: ToolRailContent = { kind: 'freewrite', captureItems: CAPTURE_ITEMS };
+
+  const modalsAndToast = (
+    <>
       {portOpen && <PortToBoardSheet sourceIds={[entry.id]} onClose={() => setPortOpen(false)} />}
       {addOpen && (
         <AddToSheet
@@ -1018,6 +997,135 @@ function JournalEntryView() {
         />
       )}
       {toast.node}
+    </>
+  );
+
+  // AB2 S6 (the R2 ruling) — the Journal's page enters the frame at
+  // >=1100px. The legacy tab row (below) does not mount here — superseded
+  // by the unified mode strip, not deleted. Free Write is this surface's
+  // only posture; Draft/Revise/Workshop/Publish all route to the SAME
+  // file-it-first prompt the legacy tab row already used (there is no
+  // typed-editor pipeline for an unfiled ink+text page to switch into).
+  if (framed) {
+    return (
+      <div ref={pageRef} className="desk-frame-host" data-chrome-receded={dissolved ? 'true' : 'false'}>
+        <ChromeHandle onReveal={() => resurface(true)} />
+        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
+          {isLoose && (
+            <nav className="journal-nav" aria-label={lex('journal')}>
+              <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
+                onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
+              <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
+              {nextPage ? (
+                <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
+                  onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
+              ) : (
+                <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
+                  onClick={() => openLoose()}>+</button>
+              )}
+              {nextPage && (
+                <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
+                  onClick={() => openLoose(entry.id)}>+ insert</button>
+              )}
+            </nav>
+          )}
+        </div>
+
+        {tabPrompt && (
+          <div className="journal-tab-prompt chrome-fade" role="status">
+            <span>Move this to a Drawer or the Shelf to develop it past capture — drafting and formatting happen once a page is filed.</span>
+            <button type="button" className="btn-quiet" onClick={() => { setPageHome(entry.id, 'shelf'); navigate('/shelf'); }}>Send to the Shelf</button>
+          </div>
+        )}
+
+        <div style={{ height: 16 }} />
+
+        <DeskFrame
+          pageKind="prose"
+          modeStrip={<ModeStrip mode="journal" onSwitch={() => setTabPrompt(true)} onPublish={() => setTabPrompt(true)} />}
+          toolRail={<ToolRail content={toolRailContent} />}
+          dissolved={dissolved}
+        >
+          {/* .desk-frame-stage is a `display:flex` row expecting ONE child
+              (PageEditorView/ScriptEditor each pass a single element).
+              pageBody is a Fragment (metadata band, tags, routing slot are
+              all top-level siblings) — spreading those directly as flex
+              items would lay them out in a ROW instead of stacked, which is
+              exactly the bug this wrapper prevents (own block-flow column,
+              independent of the stage's own flex context). */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            {pageBody}
+          </div>
+        </DeskFrame>
+
+        {modalsAndToast}
+      </div>
+    );
+  }
+
+  return (
+    <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
+      <ChromeHandle onReveal={() => resurface(true)} />
+
+      {/* PAGE IS PRIMARY: only wayfinding (back / notebook paging) and the
+          document-type tabs sit above the writing surface. Everything about
+          THIS document — timestamp, actions, star, tags, routing, autosave
+          status — lives below the surface now (see the metadata cluster near
+          the end of this component). */}
+      <div className="journal-top chrome-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
+        <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
+        {/* J1 — walk the notebook (loose pages only). The forward arrow becomes
+            "+" at the end (append + open); "+ insert" drops a page between this
+            one and the next. */}
+        {isLoose && (
+          <nav className="journal-nav" aria-label={lex('journal')}>
+            <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
+              onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
+            <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
+            {nextPage ? (
+              <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
+                onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
+            ) : (
+              <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
+                onClick={() => openLoose()}>+</button>
+            )}
+            {nextPage && (
+              <button type="button" className="journal-nav-insert" aria-label={`Insert a ${lex('page').toLowerCase()} here`}
+                onClick={() => openLoose(entry.id)}>+ insert</button>
+            )}
+          </nav>
+        )}
+      </div>
+
+      {/* B4 #11 — the Journal is Free-Write capture: the page interface shows the
+          modes with the non-Free-Write tabs GREYED. Clicking one prompts the user
+          to file the entry (Drawer / Shelf) before it can be drafted or formatted.
+          Only for loose entries (a filed page opens in the live page editor). */}
+      {entry.projectId == null && (
+        <div className="journal-modes chrome-fade">
+          <div className="mode-tabs" role="tablist" aria-label="Mode">
+            <button type="button" role="tab" aria-selected="true" className="mode-tab active">
+              <span className="mode-tab__label">{lex('freewrite')}</span>
+              <span className="mode-tab__sub">capture</span>
+            </button>
+            {['Draft', 'Format', 'Workshop', lex('publish')].map(label => (
+              <button key={label} type="button" role="tab" aria-selected="false" className="mode-tab deferred" onClick={() => setTabPrompt(true)}>
+                <span className="mode-tab__label">{label}</span>
+              </button>
+            ))}
+          </div>
+          {tabPrompt && (
+            <div className="journal-tab-prompt" role="status">
+              <span>Move this to a Drawer or the Shelf to develop it past capture — drafting and formatting happen once a page is filed.</span>
+              <button type="button" className="btn-quiet" onClick={() => { setPageHome(entry.id, 'shelf'); navigate('/shelf'); }}>Send to the Shelf</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {pageBody}
+      {modalsAndToast}
     </div>
   );
 }
