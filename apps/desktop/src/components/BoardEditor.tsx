@@ -540,8 +540,10 @@ export function BoardEditor({ id }: { id: string }) {
   // line has nothing to remove here beyond what DeskFrame already omits).
   if (framed) {
     return (
-      <div className="desk-frame-host">
-        <div className="sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <div className="desk-frame-host" data-chrome-receded={boardDissolve.dissolved ? 'true' : 'false'}>
+        {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
+            chrome that never recessed with the rest of the room. */}
+        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div className="sprint-crumb" aria-label="Location">
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}

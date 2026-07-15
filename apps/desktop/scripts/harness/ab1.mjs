@@ -224,10 +224,25 @@ await withHarness(async (app) => {
   await sleep(150);
   const boardDissolvedState = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
   ok('S3: typing inside a Board text box dissolves the frame too (the law reaches Board, not just prose/script)', boardDissolvedState === 'true', String(boardDissolvedState));
+  // ab1.1 R1 (Fable review) — the sprint-nav row was the one piece of framed
+  // chrome that never carried chrome-fade/data-chrome-receded; it must
+  // recede with everything else, and restore on the same resurface below.
+  const boardNavReceded = await app.evalJs(`({
+    pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
+    hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
+  })`);
+  ok('S3 R1: Board\'s sprint-nav row recedes with the rest of the room (chrome-fade, not left behind)',
+    boardNavReceded.pointerEvents === 'none' && boardNavReceded.hostReceded === 'true', JSON.stringify(boardNavReceded));
   await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 4, bubbles: true }))");
   await sleep(500);
   const boardResurfaced = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
   ok('S3: Board resurfaces on the same pointer-edge dwell rule', boardResurfaced === 'false', String(boardResurfaced));
+  const boardNavRestored = await app.evalJs(`({
+    pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
+    hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
+  })`);
+  ok('S3 R1: Board\'s sprint-nav row restores on the same edge-dwell resurface',
+    boardNavRestored.pointerEvents !== 'none' && boardNavRestored.hostReceded === 'false', JSON.stringify(boardNavRestored));
   await app.evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"] .board-text-editing')?.blur()");
 
   // -- Script: DeskFrame mounts, mode strip present (finding 5 dies here) ---
@@ -291,10 +306,23 @@ await withHarness(async (app) => {
   const scriptDissolveAfter = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
   ok('S3: typing on the script surface dissolves its own DeskFrame too (the law generalizes per-surface)',
     scriptDissolveAfter === 'true', String(scriptDissolveAfter));
+  // ab1.1 R1 (Fable review) — same nav-row gap on Script.
+  const scriptNavReceded = await app.evalJs(`({
+    pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
+    hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
+  })`);
+  ok('S3 R1: Script\'s sprint-nav row recedes with the rest of the room (chrome-fade, not left behind)',
+    scriptNavReceded.pointerEvents === 'none' && scriptNavReceded.hostReceded === 'true', JSON.stringify(scriptNavReceded));
   await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 4, bubbles: true }))");
   await sleep(500);
   const scriptResurfaced = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
   ok('S3: the script surface resurfaces on the same pointer-edge dwell rule', scriptResurfaced === 'false', String(scriptResurfaced));
+  const scriptNavRestored = await app.evalJs(`({
+    pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
+    hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
+  })`);
+  ok('S3 R1: Script\'s sprint-nav row restores on the same edge-dwell resurface',
+    scriptNavRestored.pointerEvents !== 'none' && scriptNavRestored.hostReceded === 'false', JSON.stringify(scriptNavRestored));
 
   // === 3b. PAGE IS PRIMARY at the gate FLOOR (1100px exactly) ===============
   // Review fix — every check above ran at 1400px, where the stage has ample

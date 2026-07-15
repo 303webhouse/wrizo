@@ -47,7 +47,11 @@ Nick's words: the bones must know sections around the page are coming.
   stays an empty reserved zone. Ink tools remain available (pen mode is
   words-on-page, not a flourish). Journal's CAPTURE items relocate into
   the frame (interim: corkboard track's Journal tab; final home is AB2's
-  Free Write tool rail).
+  Free Write tool rail). **Erratum (Fable review, 2026-07-14):** the
+  Journal's own editor (JournalEntry) shipped absorb-deferred per the
+  shell inventory's row 6, not mounted in AB1 — the deferral is sustained
+  and the work is ruled re-homed to AB2 as a named slice, on the record in
+  `docs/wrizo-alpha/ab1-review-fable.md`.
 - **S3 — the vanishing law, generalized.** Constitutional, not a flourish
   — stays exactly as v1: any words-producing input (keydown, pen stroke)
   dissolves every non-page zone together; edge-reach/pause resurfaces per
