@@ -5,6 +5,7 @@ import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { useWayBack } from './useWayBack';
 import { useLexicon } from '../store/themeLexicon';
+import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import type { Box, Project } from '../types';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
@@ -164,6 +165,11 @@ type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup'; before: Box[
 export function BoardEditor({ id }: { id: string }) {
   const navigate = useNavigate();
   const initialEntry = getJournalEntry(id);
+  // AB1 S1 — DeskFrame owns the viewport at >=1100px only; below that this
+  // renders its exact pre-AB1 markup. No mode strip on Board (Trellis-side
+  // by design — matches w1.mjs's existing "board never gets mode tabs"
+  // assertion), so DeskFrame mounts here with no modeStrip prop.
+  const framed = useDeskFrameViewport();
 
   // W2 — route + mount identity only (S1: a Board's own view state — pan,
   // zoom, selection — already persists through its own store; no scroll/
@@ -448,6 +454,103 @@ export function BoardEditor({ id }: { id: string }) {
 
   const sorted = boxes.slice().sort((a, b) => a.z - b.z);
 
+  const boardActionRow = selectedBox && (
+    <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
+      {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
+      <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
+    </div>
+  );
+
+  const boardCanvas = (
+    <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: '78vh', border: '1px solid var(--ink-border)' }}>
+      <div
+        ref={canvasRef}
+        className="board-canvas"
+        style={{ position: 'relative', width: '100%', height: canvasHeightPx, background: 'var(--paper)' }}
+        onDoubleClick={(e) => {
+          const boxEl = (e.target as HTMLElement).closest('.board-box') as HTMLElement | null;
+          const boxId = boxEl?.dataset.boxId;
+          if (!boxId) return;
+          const box = boxesRef.current.find(b => b.id === boxId);
+          if (box?.kind === 'text') { setSelectedId(boxId); setEditingId(boxId); }
+        }}
+      >
+        {sorted.map(box => {
+          const selected = selectedIds.has(box.id);
+          return (
+            <div
+              key={box.id}
+              className="board-box"
+              data-box-id={box.id}
+              data-kind={box.kind}
+              data-selected={selected ? 'true' : 'false'}
+              data-grouped={box.groupId ? 'true' : 'false'}
+              style={{
+                position: 'absolute',
+                left: box.x * pageWidthPx, top: box.y * pageWidthPx,
+                width: box.w * pageWidthPx, height: box.h * pageWidthPx,
+                zIndex: box.z,
+              }}
+            >
+              {box.kind === 'ink' ? (
+                <BoardInkBox box={box} pageWidthPx={pageWidthPx} />
+              ) : (
+                <BoardTextBox
+                  // Review fix — remount per edit session: without this key,
+                  // the SAME instance survives edit -> blur -> edit again, so
+                  // its useState(() => escHtml(initialText)) initializer never
+                  // re-runs — the second session's dangerouslySetInnerHTML
+                  // renders the FIRST session's stale html, visibly reverting
+                  // the box, and the next keystroke commits stale+new (a
+                  // data-loss class bug). A fresh key per session forces a
+                  // fresh mount, so the initializer re-seeds from current text.
+                  key={editingId === box.id ? box.id + ':edit' : box.id}
+                  boxId={box.id}
+                  initialText={box.text ?? ''}
+                  editing={editingId === box.id}
+                  measureRef={measureRef}
+                  onCommitText={commitText}
+                  onBlurEdit={() => setEditingId(null)}
+                />
+              )}
+              {selected && canResize && box.id === selectedId && (
+                <div className="board-handle" data-handle="se" aria-hidden="true" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // AB1 S1/S4 — framed (>=1100px): DeskFrame wraps the canvas (no mode strip;
+  // no "Copy page text" analog exists on Board today, so S4's chrome-purge
+  // line has nothing to remove here beyond what DeskFrame already omits).
+  if (framed) {
+    return (
+      <div className="desk-frame-host">
+        <div className="sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div className="sprint-crumb" aria-label="Location">
+            {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
+            {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
+            <span className="crumb-here">{title}</span>
+          </div>
+          <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}
+            <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
+          </div>
+        </div>
+
+        <div style={{ height: 16 }} />
+
+        <DeskFrame pageKind="prose">
+          {boardActionRow}
+          {boardCanvas}
+        </DeskFrame>
+      </div>
+    );
+  }
+
   return (
     <div className="page board-page" style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
       <div className="sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -464,72 +567,8 @@ export function BoardEditor({ id }: { id: string }) {
 
       <div style={{ height: 16 }} />
 
-      {(selectedBox) && (
-        <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-          {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
-          <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
-        </div>
-      )}
-
-      <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: '78vh', border: '1px solid var(--ink-border)' }}>
-        <div
-          ref={canvasRef}
-          className="board-canvas"
-          style={{ position: 'relative', width: '100%', height: canvasHeightPx, background: 'var(--paper)' }}
-          onDoubleClick={(e) => {
-            const boxEl = (e.target as HTMLElement).closest('.board-box') as HTMLElement | null;
-            const boxId = boxEl?.dataset.boxId;
-            if (!boxId) return;
-            const box = boxesRef.current.find(b => b.id === boxId);
-            if (box?.kind === 'text') { setSelectedId(boxId); setEditingId(boxId); }
-          }}
-        >
-          {sorted.map(box => {
-            const selected = selectedIds.has(box.id);
-            return (
-              <div
-                key={box.id}
-                className="board-box"
-                data-box-id={box.id}
-                data-kind={box.kind}
-                data-selected={selected ? 'true' : 'false'}
-                data-grouped={box.groupId ? 'true' : 'false'}
-                style={{
-                  position: 'absolute',
-                  left: box.x * pageWidthPx, top: box.y * pageWidthPx,
-                  width: box.w * pageWidthPx, height: box.h * pageWidthPx,
-                  zIndex: box.z,
-                }}
-              >
-                {box.kind === 'ink' ? (
-                  <BoardInkBox box={box} pageWidthPx={pageWidthPx} />
-                ) : (
-                  <BoardTextBox
-                    // Review fix — remount per edit session: without this key,
-                    // the SAME instance survives edit -> blur -> edit again, so
-                    // its useState(() => escHtml(initialText)) initializer never
-                    // re-runs — the second session's dangerouslySetInnerHTML
-                    // renders the FIRST session's stale html, visibly reverting
-                    // the box, and the next keystroke commits stale+new (a
-                    // data-loss class bug). A fresh key per session forces a
-                    // fresh mount, so the initializer re-seeds from current text.
-                    key={editingId === box.id ? box.id + ':edit' : box.id}
-                    boxId={box.id}
-                    initialText={box.text ?? ''}
-                    editing={editingId === box.id}
-                    measureRef={measureRef}
-                    onCommitText={commitText}
-                    onBlurEdit={() => setEditingId(null)}
-                  />
-                )}
-                {selected && canResize && box.id === selectedId && (
-                  <div className="board-handle" data-handle="se" aria-hidden="true" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {boardActionRow}
+      {boardCanvas}
     </div>
   );
 }

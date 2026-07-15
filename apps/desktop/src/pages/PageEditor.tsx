@@ -15,6 +15,8 @@ import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
+import { DeskFrame, CorkboardJournalTab, useDeskFrameViewport } from '../components/DeskFrame';
+import { ModeStrip } from '../components/ModeStrip';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -37,6 +39,10 @@ function wordCount(text: string): number {
 function PageEditorView({ id }: { id: string }) {
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
+  // AB1 S1 — DeskFrame owns the viewport at >=1100px only; below that this
+  // component's legacy JSX (byte-identical to pre-AB1) renders instead. See
+  // docs/wrizo-alpha/ab1-shell-inventory.md.
+  const framed = useDeskFrameViewport();
   const entry = getJournalEntry(id);
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
@@ -141,6 +147,105 @@ function PageEditorView({ id }: { id: string }) {
   const backTo = project ? `/project/${project.id}` : entry.shelved ? '/shelf' : '/journal';
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
+  // The editor's own render-prop body — identical between the legacy and the
+  // AB1-framed ModeStage instance, factored out so the two branches below
+  // can't drift.
+  const editorBody = ({ noteWrite, penColor }: { noteWrite: () => void; penColor?: string }) => (
+    <div ref={warmWrapRef} style={{ position: 'relative', width: '100%', minHeight: '100%' }}>
+      <ForwardOnlyEditor
+        key={`${id}-${mode}`}
+        ref={editorRef}
+        initialText={modeSeed}
+        mode={mode}
+        autoFocus={initialText.trim() === ''}
+        onChange={setText}
+        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => { setFocused(false); flush(); }}
+        placeholder={invite.visible ? '' : 'Write…'}
+        ariaLabel="Page writing surface"
+        penColor={penColor}
+        style={{
+          width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
+          fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
+        }}
+      />
+      {invite.node}
+      {warm.rect && (
+        <div
+          aria-hidden="true"
+          className={`wz-warm${warm.settled ? ' wz-warm--settled' : ''}`}
+          style={{ position: 'absolute', top: warm.rect.top, left: warm.rect.left, width: warm.rect.width, height: warm.rect.height }}
+        />
+      )}
+    </div>
+  );
+
+  const publishDialog = showPublish && (
+    <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
+      <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
+        <div className="card-title">{lex('publish')}</div>
+        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
+          Publishing options — tailored to this work's type, destination, and format — are coming soon.
+        </p>
+        <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+      </div>
+    </div>
+  );
+
+  // AB1 S1/S2/S4 — the framed (>=1100px) composition. Breadcrumb + Pages/Plan
+  // toggle stay (real page-level navigation, not "top-bar orphans" — those
+  // are GlobalHeader's Fullscreen/Sync/Sign out, collapsed separately per
+  // S4 via store/deskFrameActive.ts). "Copy page text" leaves top chrome
+  // entirely here (S4) — its future home is a later ticket's Publish surface.
+  if (framed) {
+    return (
+      <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
+        <div className="chrome-fade chrome-top sprint-nav">
+          <div className="sprint-crumb" aria-label="Location">
+            {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
+            {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
+            <span className="crumb-here">{pageTitle}</span>
+            {entry.importedAt && <span className="page-imported-tag" title={`Imported into this ${lex('binder').toLowerCase()}`}>Imported</span>}
+          </div>
+          <div className="sprint-actions">
+            {project && (
+              <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
+                <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
+                <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
+              </div>
+            )}
+            <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
+          </div>
+        </div>
+
+        <div style={{ height: 16 }} />
+
+        <DeskFrame
+          pageKind="prose"
+          modeStrip={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />}
+          corkboard={<CorkboardJournalTab />}
+          dissolved={receded}
+        >
+          <ModeStage
+            mode={mode}
+            words={wordCount(text)}
+            surfaceRef={surfaceRef}
+            focused={focused}
+            onDissolveChange={setReceded}
+            chromeRootRef={pageRef}
+            milestones={milestones}
+            framed
+          >
+            {editorBody}
+          </ModeStage>
+        </DeskFrame>
+
+        {publishDialog}
+      </div>
+    );
+  }
+
   return (
     <div ref={pageRef} className="page" data-chrome-receded={receded ? 'true' : 'false'} style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
       <div className="chrome-fade chrome-top sprint-nav">
@@ -183,50 +288,10 @@ function PageEditorView({ id }: { id: string }) {
         chromeRootRef={pageRef}
         milestones={milestones}
       >
-        {({ noteWrite, penColor }) => (
-          <div ref={warmWrapRef} style={{ position: 'relative', width: '100%', minHeight: '100%' }}>
-            <ForwardOnlyEditor
-              key={`${id}-${mode}`}
-              ref={editorRef}
-              initialText={modeSeed}
-              mode={mode}
-              autoFocus={initialText.trim() === ''}
-              onChange={setText}
-              onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); }}
-              onFocus={() => setFocused(true)}
-              onBlur={() => { setFocused(false); flush(); }}
-              placeholder={invite.visible ? '' : 'Write…'}
-              ariaLabel="Page writing surface"
-              penColor={penColor}
-              style={{
-                width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
-                fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
-              }}
-            />
-            {invite.node}
-            {warm.rect && (
-              <div
-                aria-hidden="true"
-                className={`wz-warm${warm.settled ? ' wz-warm--settled' : ''}`}
-                style={{ position: 'absolute', top: warm.rect.top, left: warm.rect.left, width: warm.rect.width, height: warm.rect.height }}
-              />
-            )}
-          </div>
-        )}
+        {editorBody}
       </ModeStage>
 
-      {/* Publish — stub dialog (options tailored to type/destination/format later). */}
-      {showPublish && (
-        <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
-          <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
-            <div className="card-title">{lex('publish')}</div>
-            <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-              Publishing options — tailored to this work's type, destination, and format — are coming soon.
-            </p>
-            <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
-          </div>
-        </div>
-      )}
+      {publishDialog}
     </div>
   );
 }
@@ -234,10 +299,13 @@ function PageEditorView({ id }: { id: string }) {
 // Key by id so per-page refs/state re-seed cleanly on page→page navigation.
 // J4 — /page/:id stays the one typed-page route; a pageType:'board' entry
 // delegates to the BoardEditor here, before either component's hooks run.
-// S1 — pageType:'script' delegates to ScriptEditor the same way. Draft law
-// only: neither delegate mounts ModeSwitcher/ModeStage (the mode strip stays
-// PageEditorView's alone) — a Board is Trellis-side by design, and a script
-// page ships Draft-only until S4 brings script Free-write.
+// S1 — pageType:'script' delegates to ScriptEditor the same way. Below
+// AB1's 1100px gate this is still Draft law only: neither delegate mounts
+// ModeSwitcher/ModeStage there (a Board is Trellis-side by design; a script
+// page ships Draft-only). At >=1100px each delegate owns its own DeskFrame
+// instead (AB1 S1/S2) — Board still never gets a mode strip; Script does
+// (Draft live, Free Write/Revise/Workshop deferred — script Free-write
+// itself is still AB2).
 export function PageEditor() {
   const { id } = useParams<{ id: string }>();
   if (!id) return <Navigate to="/" replace />;

@@ -24,14 +24,23 @@ import { subscribe, resetLocalData } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { startSync, stopSync, syncOnce, clearLastSyncAt, subscribeSyncStatus, type SyncStatus } from './store/sync';
+import { useDeskFrameMounted } from './store/deskFrameActive';
 
 type AuthState = 'loading' | 'anon' | 'authed';
 
+// AB1 S4 — "make 'saved' silent (only a save failure should speak)," the
+// constitution's own words (the-desk-design.md Part 1: "Saving is assumed").
+// 'synced' and 'pending' are the assumed-working states and now render
+// nothing; only 'offline' (the closest this app has to a save failure —
+// local data is fine, but the remote round-trip isn't happening) still
+// speaks. Applied globally (not gated to DeskFrame) since it's a
+// constitutional rule, not a frame-specific one, and only ever REMOVES a
+// benign status string — no harness asserts its old always-on text.
 function SyncIndicator() {
   const [status, setStatus] = useState<SyncStatus>('pending');
   useEffect(() => subscribeSyncStatus(setStatus), []);
-  const label = status === 'synced' ? 'All changes saved' : status === 'pending' ? 'Saving…' : 'Offline — saved here';
-  return <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{label}</span>;
+  if (status !== 'offline') return null;
+  return <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Offline — saved here</span>;
 }
 
 // Full-screen toggle (Fullscreen API). Works on desktop + Android and goes
@@ -112,8 +121,16 @@ function FullscreenToggle() {
 // bring it back together with the sprint chrome — one frame settling, not two.
 function GlobalHeader({ onLogout }: { onLogout: () => void }) {
   const { isWriting } = useWritingSession();
-  // Desk-area nav (Journal/Shelf/Drawers/Library) now lives in the left DeskRail;
-  // the header keeps only the session controls.
+  // AB1 S4 — "top-bar orphans collapse to one corner glyph + gear." While a
+  // DeskFrame is mounted (store/deskFrameActive.ts), these three previously
+  // independent controls collapse behind one glyph + popover instead of
+  // sitting inline; every other route (Desk, Journal, Shelf, Drawers,
+  // QuickSprint, any writing surface below the 1100px gate) renders exactly
+  // as it always has — this flag is false there.
+  const deskFrameActive = useDeskFrameMounted();
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => { if (!deskFrameActive) setMenuOpen(false); }, [deskFrameActive]);
+
   return (
     <div
       className="chrome-fade"
@@ -124,15 +141,38 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
         padding: '0.5rem 0.75rem',
       }}
     >
-      <FullscreenToggle />
-      <SyncIndicator />
-      <button
-        type="button"
-        onClick={onLogout}
-        style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-      >
-        Sign out
-      </button>
+      {deskFrameActive ? (
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className="gh-corner-glyph"
+            aria-label="Desk menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(v => !v)}
+          >
+            ⋯
+          </button>
+          {menuOpen && (
+            <div className="gh-corner-menu" role="menu">
+              <FullscreenToggle />
+              <SyncIndicator />
+              <button type="button" onClick={onLogout}>Sign out</button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <FullscreenToggle />
+          <SyncIndicator />
+          <button
+            type="button"
+            onClick={onLogout}
+            style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Sign out
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
@@ -70,10 +70,19 @@ interface Props {
   // project silently degrades the gear's Progress:Project option away — no
   // greyed states).
   milestones?: Milestones | null;
+  // AB1 S2 — true when a DeskFrame (>=1100px) hosts this ModeStage. The
+  // rails, the incentive row (progress bar/laps/celebration/milestones), and
+  // the ambient glow move to DeskFrame's own tracks or are parked entirely
+  // (never mounted) — DeskFrame owns those zones now. The pen/format bar,
+  // the page/scroll container, and the settings gear are unaffected: they
+  // stay exactly as they render today. Default false keeps every existing
+  // caller (QuickSprint, and this component below the 1100px gate) byte-
+  // identical to pre-AB1 behavior.
+  framed?: boolean;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -81,11 +90,24 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // Typewriter engages in Free Write and Draft (writing postures) — never in
   // Format/Workshop/Publish (convention/delivery, revision-shaped work the
   // hold would fight). Gated by the persisted setting AND the bottom-right
-  // icon, both toggling the same value.
-  const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // icon, both toggling the same value. AB1 S2 — framed (DeskFrame) never
+  // engages it: "do not mount the typewriter effect or its toggle."
+  const typewriterOn = !framed && (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
+  // pre-existing on this surface too — not new here) — this array literal
+  // was previously rebuilt on every ModeStage render, so useChromeDissolve's
+  // rootRef dependency changed identity every render, tearing down and
+  // re-mounting its edge-dwell listener effect constantly and clearing any
+  // in-flight dwell timer before EDGE_DWELL_MS could ever elapse — an
+  // edge-reach resurface could never actually complete. Memoized on the one
+  // input that should matter (chromeRootRef itself, a stable ref object).
+  const dissolveRootRef = useMemo(
+    () => (chromeRootRef ? [stageRef, chromeRootRef] : stageRef),
+    [chromeRootRef],
+  );
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
     surface: 'sprint',
-    rootRef: chromeRootRef ? [stageRef, chromeRootRef] : stageRef,
+    rootRef: dissolveRootRef,
   });
 
   const firstWriteRef = useRef<number | null>(null);
@@ -269,8 +291,9 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       {/* Always-discoverable reveal handle (top-left ember dot). */}
       <ChromeHandle onReveal={() => resurface(true)} />
 
-      {/* Ambient ember — blooms as the rails dissolve; eased with progress. */}
-      <AmbientGlow m={m} typing={activelyTyping} celebrating={celebrating} />
+      {/* Ambient ember — blooms as the rails dissolve; eased with progress.
+          AB1 S2 — "do not mount the ambient glow" when framed (DeskFrame). */}
+      {!framed && <AmbientGlow m={m} typing={activelyTyping} celebrating={celebrating} />}
 
       {/* Top-right chrome cluster: the sound toggle (if the host owns sound) +
           the settings gear — one-color tan glyphs, matched in size. */}
@@ -294,12 +317,17 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         {gearOpen && <ThemePanel />}
       </div>
 
-      <div className="mode-row">
-        {/* LEFT rail — capture (Journal) / tools (Drafting). Frames only. */}
-        <aside className="mode-rail left mode-dissolve" aria-label={`${rail.heading} rail`}>
-          <div className="mode-rail-h">{rail.heading}</div>
-          {rail.items.map(it => <div key={it} className="mode-rail-item">{it}</div>)}
-        </aside>
+      <div className="mode-row" data-framed={framed ? 'true' : 'false'}>
+        {/* LEFT rail — capture (Journal) / tools (Drafting). Frames only.
+            AB1 S2 — when framed, DeskFrame's own tool-rail/corkboard tracks
+            take over this job (the Journal capture stub relocates to the
+            corkboard's Journal tab); ModeStage's own rail does not mount. */}
+        {!framed && (
+          <aside className="mode-rail left mode-dissolve" aria-label={`${rail.heading} rail`}>
+            <div className="mode-rail-h">{rail.heading}</div>
+            {rail.items.map(it => <div key={it} className="mode-rail-item">{it}</div>)}
+          </aside>
+        )}
 
         <div className="mode-pagecol">
           {/* Format / pen bar (top of page) — chrome, dissolves on write. */}
@@ -357,7 +385,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? pen : undefined })}
             </div>
-            <div className="mode-wordcount mode-dissolve">{words} words</div>
+            {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>
 
           {/* Incentive layer — progress bar (a repeating lap toward the word/
@@ -367,39 +395,46 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               (never carries the dissolve class). M1's silent-degrade rule:
               'project' with no milestones available renders as 'words'
               instead — the STORED setting is untouched, so it resumes on a
-              plan-linked page without the writer doing anything. */}
-          <div className="mode-incentive-row">
-            {showMilestones ? (
-              <MilestoneBar
-                milestones={milestones!}
-                rightSlot={<>
-                  {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
-                  {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
-                </>}
-              />
-            ) : (
-              (effectiveProgress !== 'off' || settings.timer) && (
-                <ProgressBar
-                  frac={lapFrac}
-                  celebrating={celebrating}
-                  label={label}
-                  metricLabel={metricLabel}
-                  hidden={effectiveProgress === 'off'}
+              plan-linked page without the writer doing anything.
+              AB1 S2 — none of this mounts when framed (DeskFrame): the
+              meter track stays empty/reserved for its later return. */}
+          {!framed && (
+            <div className="mode-incentive-row">
+              {showMilestones ? (
+                <MilestoneBar
+                  milestones={milestones!}
                   rightSlot={<>
                     {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
                     {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
                   </>}
                 />
-              )
-            )}
-            {(mode === 'journal' || mode === 'drafting') && (
-              <TypewriterToggle on={settings.typewriter} onToggle={() => setWritingSettings({ typewriter: !settings.typewriter })} />
-            )}
-          </div>
+              ) : (
+                (effectiveProgress !== 'off' || settings.timer) && (
+                  <ProgressBar
+                    frac={lapFrac}
+                    celebrating={celebrating}
+                    label={label}
+                    metricLabel={metricLabel}
+                    hidden={effectiveProgress === 'off'}
+                    rightSlot={<>
+                      {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
+                      {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
+                    </>}
+                  />
+                )
+              )}
+              {(mode === 'journal' || mode === 'drafting') && (
+                <TypewriterToggle on={settings.typewriter} onToggle={() => setWritingSettings({ typewriter: !settings.typewriter })} />
+              )}
+            </div>
+          )}
         </div>
 
-        {/* RIGHT rail — AI frame. Sealed in Journal; open elsewhere. */}
-        {rail.ai === 'sealed' ? (
+        {/* RIGHT rail — AI frame. Sealed in Journal; open elsewhere. AB1 S2 —
+            not mounted when framed (a reserved tool-rail/corkboard track
+            takes its structural place; the assist channel's own DeskFrame
+            home is a later ticket). */}
+        {!framed && (rail.ai === 'sealed' ? (
           <aside className="mode-rail right sealed mode-dissolve" aria-label={`AI sealed in ${lex('journal')}`}>
             <div className="mode-lock" aria-hidden="true">▦</div>
             <div className="mode-seal-note">{lex('journal').toLowerCase()} is yours alone</div>
@@ -426,11 +461,11 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               )}
             </div>
           </aside>
-        )}
+        ))}
       </div>
 
       {/* Connect AI — stub entry point (no provider wired in B3). */}
-      {connectOpen && (
+      {!framed && connectOpen && (
         <div className="sprint-modal-backdrop" onClick={() => setConnectOpen(false)}>
           <div className="sprint-modal card" role="dialog" aria-label="Connect AI" onClick={e => e.stopPropagation()}>
             <div className="card-title">Connect your AI</div>

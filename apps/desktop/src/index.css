@@ -54,6 +54,14 @@
   --chrome-surface: var(--ink-900);
   --rail-surface: var(--ink-950);
 
+  /* AB1 S1 — the desk ground: the warm, quiet surface around the Page
+     (the-desk-design.md Part 1 — "not a black void"). Plateau's own
+     foundations doc (the-desk-design.md's own words) hasn't landed yet, so
+     until it does, the shipped --chrome-surface token IS the spec — this
+     slot exists so that doc can re-point it later without any component
+     edit, the same seam pattern as --chrome-surface/--rail-surface above. */
+  --desk-ground: var(--chrome-surface);
+
   /* TH1 — the four font slots (canon §4), the theme-facing layer. Material
      names below (--font-display/--font-ui/--font-prose) are the
      component-facing layer and re-point to these — zero component edits,
@@ -1674,6 +1682,105 @@ a:focus-visible,
   .mode-rail{ display:none; }
   .mode-row{ grid-template-columns:1fr; }
   .mode-pagecol{ width:min(620px,94vw); }
+}
+
+/* A framed ModeStage (AB1 S2) has no rails either side — center the single
+   remaining column instead of leaving it pinned to the old 3-column grid's
+   first track. */
+.mode-row[data-framed='true']{ grid-template-columns:1fr; justify-content:center; }
+
+/* ============================================================================
+   AB1 — DeskFrame (docs/wrizo-alpha/ab1-page-frame-brief.md). One component
+   owning the viewport at >=1100px (components/DeskFrame.tsx's
+   DESKFRAME_MIN_WIDTH — kept in step with this breakpoint by hand, since CSS
+   can't read the JS constant; both currently 1100px). Below the breakpoint
+   every call site renders its exact pre-AB1 markup instead (none of this
+   applies there) — see ab1-shell-inventory.md for why that keeps the
+   existing harness suite green untouched.
+
+   Five zone tracks (S1): the wayfinding rail is DeskRail (.desk-rail),
+   already reserved via .app-main's padding-left — not re-declared here.
+   .desk-frame-grid owns the other four: tool-rail | stage | corkboard, plus
+   the meter as a row under the stage. Fixed grid-template-columns (not
+   flex) is the PAGE IS PRIMARY guarantee: track WIDTHS never move when a
+   track's CONTENT changes (mode switch, corkboard content, gear open).
+   ============================================================================ */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem; }
+.desk-frame{ position:relative; }
+.desk-frame-grid{
+  display:grid;
+  grid-template-columns: 200px minmax(0,1fr) 260px;
+  column-gap:28px; align-items:start; justify-content:center;
+}
+.desk-frame-toolrail{ min-height:70vh; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); }
+.desk-frame-stagecol{ display:flex; flex-direction:column; min-width:0; }
+.desk-frame-modestrip{ margin-bottom:14px; }
+.desk-frame-stage{ display:flex; justify-content:center; }
+/* Stage centers the page: prose min(760px,60ch); screenplay keeps its own
+   courier measure (no forced prose width — the per-element WIDTH_CH values
+   in store/scriptMetrics.ts stay exactly as they are). */
+.desk-frame-stage--prose .mode-pagecol{ width:min(760px,60ch); }
+.desk-frame-stage--screenplay{ width:min(900px,70ch); }
+.desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); }
+.desk-frame-corkboard{ min-height:70vh; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); padding:18px; }
+
+/* Vanishing law (S3) — same fast-out/slow-in transition mode-dissolve already
+   uses, scoped to .desk-frame's own dissolve flag. --fade-dur/--fade-min are
+   inherited from an ancestor the host's useChromeDissolve already writes to
+   (see components/DeskFrame.tsx's header comment). */
+.desk-dissolve{ transition:opacity var(--fade-dur,1.2s) ease; }
+.desk-frame[data-writing='true'] .desk-dissolve{ opacity:var(--fade-min,.08); pointer-events:none; }
+@media (prefers-reduced-motion:reduce){ .desk-dissolve{ transition:none; } }
+
+/* A scroll-capped, un-styled containment box (S4 finding 4) — wraps content
+   that has no bounded-height container of its own (the script sheet today).
+   Deliberately NOT reusing .mode-page's paper styling: the wrapped content
+   (e.g. .script-sheet) already carries its own paper look, so this only
+   supplies the missing height cap + internal scroll. */
+.desk-frame-scroll-cap{ height:min(64vh,620px); overflow-y:auto; scrollbar-width:none; }
+.desk-frame-scroll-cap::-webkit-scrollbar{ width:0; height:0; }
+
+/* The unified mode strip (S2) — five ratified strings, title case. Visually
+   modeled on .mode-tab/.mode-tabs (the strip it supersedes inside the
+   frame), kept as its own class family so ModeSwitcher.tsx's own styling
+   (still used by QuickSprint, unchanged) can't drift underneath it. */
+.desk-mode-strip{ display:flex; align-items:center; gap:2px; background:var(--chrome-surface);
+  border:1px solid var(--ink-border); padding:4px; }
+.desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; padding:9px 16px; cursor:pointer; transition:.15s; }
+.desk-mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
+.desk-mode-tab.active{ background:var(--brass); color:var(--on-brass); }
+.desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
+.desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
+.desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
+
+/* The interim Journal capture tab, relocated into the corkboard track (S2). */
+.desk-corkboard-journal{ display:flex; flex-direction:column; gap:2px; }
+.desk-corkboard-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); margin-bottom:12px; }
+.desk-corkboard-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+
+/* The corner-glyph collapse (S4 chrome purge) — App.tsx's GlobalHeader
+   folds Fullscreen/Sync/Sign out behind one glyph while a DeskFrame is
+   mounted (store/deskFrameActive.ts). */
+.gh-corner-glyph{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+  font-size:15px; cursor:pointer; transition:.15s; }
+.gh-corner-glyph:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.gh-corner-menu{ position:absolute; top:38px; right:0; min-width:180px; background:rgba(20,10,2,.96);
+  border:1px solid var(--ink-border); padding:8px; display:flex; flex-direction:column; gap:2px;
+  z-index:6; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+.gh-corner-menu button{ text-align:left; background:none; border:0; color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:8px 9px; cursor:pointer; }
+.gh-corner-menu button:hover{ color:var(--text-hi); background:var(--ink-800); }
+
+@media (max-width:1099px){
+  /* Below the DeskFrame gate, none of the above ever mounts — this rule is
+     a documentation no-op (kept for a reviewer scanning the cascade), since
+     .desk-frame's call sites themselves branch in JS at the same width. */
+  .desk-frame{ display:none; }
 }
 
 

@@ -11,6 +11,9 @@ import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/vo
 import { copyText } from '../store/clipboard';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
+import { useChromeDissolve } from './useChromeDissolve';
+import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
+import { ModeStrip } from './ModeStrip';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
@@ -223,6 +226,19 @@ export function ScriptEditor({ id }: { id: string }) {
   const navigate = useNavigate();
   const initialEntry = getJournalEntry(id);
   const initialDoc = initialEntry?.script ?? createEmptyScriptDoc();
+  // AB1 S1/S2 — DeskFrame owns the viewport at >=1100px only; below that
+  // this renders its exact pre-AB1 markup (findings 4 and 5 both live only
+  // in the framed branch, since a <1100px script surface is untouched).
+  const framed = useDeskFrameViewport();
+  const [showPublish, setShowPublish] = useState(false);
+  // AB1 S3 — the vanishing law, generalized to the script surface's own
+  // DeskFrame chrome (the mode strip; the corner glyph via App.tsx's shared
+  // isWriting session). Mounted unconditionally (rootRef omitted -> writes
+  // --fade-dur onto <html>, same default every other caller relies on) but
+  // only ever actually triggered when framed (see handleInput below) — below
+  // the 1100px gate this never dissolves anything, matching pre-AB1
+  // behavior exactly (script never had a dissolve engine before this).
+  const scriptDissolve = useChromeDissolve({ surface: 'script', editorSelector: '.script-sheet' });
 
   // W2 — route + mount identity only (S1: element-level state — active index,
   // caret hint — is this surface's own thing; no scroll/caret capture here).
@@ -305,6 +321,7 @@ export function ScriptEditor({ id }: { id: string }) {
 
   const handleInput = (text: string) => {
     noteFirstKeystroke();
+    if (framed) scriptDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setElements(prev => {
       const el = prev[activeIndex];
       if (!el) return prev;
@@ -435,6 +452,83 @@ export function ScriptEditor({ id }: { id: string }) {
   const title = elements.find(e => e.t === 'scene')?.text.trim() || 'Untitled';
   const backTo = project ? `/project/${project.id}` : '/journal';
 
+  // Draft law only (S1, still true below the AB1 gate) — the Screenplay
+  // Room's forward-only mode (script Free-write) is AB2, not this ticket;
+  // framed (S2) shows all five ModeStrip strings with Free Write/Revise/
+  // Workshop deferred and Draft the only live posture.
+  const scriptSheet = (
+    <div className="script-sheet" style={{ position: 'relative', maxWidth: '60ch' }}>
+      {elements.map((el, i) => {
+        const active = i === activeIndex;
+        if (active) {
+          return (
+            <Fragment key={`${el.id}:${seedNonce}:wrap`}>
+              <ActiveScriptElement
+                key={`${el.id}:${seedNonce}`}
+                el={el}
+                caretHint={caretHint}
+                onInput={handleInput}
+                onKeyDown={handleKeyDown}
+                elRef={activeElRef}
+              />
+              {/* Fable R1 — rendered as the active element's own flow-sibling
+                  (not the sheet's last child) so its no-top/left absolute
+                  position resolves to right beneath THIS block, wherever it
+                  sits in the document, instead of the bottom of the sheet. */}
+              {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}
+            </Fragment>
+          );
+        }
+        return <StaticScriptElement key={el.id} el={el} onActivate={(x, y) => activateAt(i, x, y)} />;
+      })}
+    </div>
+  );
+
+  // AB1 S1/S2/S4 — framed (>=1100px): DeskFrame + the unified mode strip
+  // (finding 5 dies here), and the containment fix (finding 4 dies here —
+  // .desk-frame-scroll-cap gives the sheet a bounded height + internal
+  // scroll it has never had). "Copy script text" leaves top chrome (S4).
+  if (framed) {
+    return (
+      <div className="desk-frame-host">
+        <div className="sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div className="sprint-crumb" aria-label="Location">
+            {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
+            {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
+            <span className="crumb-here">{title}</span>
+          </div>
+          <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
+          </div>
+        </div>
+
+        <div style={{ height: 16 }} />
+
+        <DeskFrame
+          pageKind="screenplay"
+          modeStrip={<ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} />}
+          dissolved={scriptDissolve.dissolved}
+        >
+          <div className="desk-frame-scroll-cap">
+            {scriptSheet}
+          </div>
+        </DeskFrame>
+
+        {showPublish && (
+          <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
+            <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
+              <div className="card-title">Publish</div>
+              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
+                Publishing options — tailored to this work's type, destination, and format — are coming soon.
+              </p>
+              <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="page script-page" style={{ maxWidth: 1100, paddingTop: '2.5rem' }}>
       <div className="sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -453,31 +547,7 @@ export function ScriptEditor({ id }: { id: string }) {
 
       {/* Draft law only (S1) — no ModeSwitcher/ModeStage on this surface; the
           Screenplay Room's forward-only mode (script Free-write) is S4. */}
-      <div className="script-sheet" style={{ position: 'relative', maxWidth: '60ch' }}>
-        {elements.map((el, i) => {
-          const active = i === activeIndex;
-          if (active) {
-            return (
-              <Fragment key={`${el.id}:${seedNonce}:wrap`}>
-                <ActiveScriptElement
-                  key={`${el.id}:${seedNonce}`}
-                  el={el}
-                  caretHint={caretHint}
-                  onInput={handleInput}
-                  onKeyDown={handleKeyDown}
-                  elRef={activeElRef}
-                />
-                {/* Fable R1 — rendered as the active element's own flow-sibling
-                    (not the sheet's last child) so its no-top/left absolute
-                    position resolves to right beneath THIS block, wherever it
-                    sits in the document, instead of the bottom of the sheet. */}
-                {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}
-              </Fragment>
-            );
-          }
-          return <StaticScriptElement key={el.id} el={el} onActivate={(x, y) => activateAt(i, x, y)} />;
-        })}
-      </div>
+      {scriptSheet}
     </div>
   );
 }
