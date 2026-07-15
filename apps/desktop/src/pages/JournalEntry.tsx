@@ -1053,8 +1053,16 @@ function JournalEntryView() {
               all top-level siblings) — spreading those directly as flex
               items would lay them out in a ROW instead of stacked, which is
               exactly the bug this wrapper prevents (own block-flow column,
-              independent of the stage's own flex context). */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              independent of the stage's own flex context).
+              ab2.1 F1 — no alignItems here: the default `stretch` is load-
+              bearing. `alignItems:'center'` (the original AB2 S6 patch)
+              collapsed every block child, including the paper itself, to
+              fit-content width — legacy's block-flow stretch inside a
+              maxWidth:720 host had no framed-side replacement. `width:
+              min(100%, 720px)` restores that same bounded-but-full-width
+              context; the stage row's own `justify-content:center` centers
+              the column, matching the legacy 720px measure exactly. */}
+          <div style={{ width: 'min(100%, 720px)', display: 'flex', flexDirection: 'column' }}>
             {pageBody}
           </div>
         </DeskFrame>

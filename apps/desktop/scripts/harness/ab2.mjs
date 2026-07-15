@@ -64,6 +64,16 @@ await withHarness(async (app) => {
   // content swapping in the SAME fixed-width track). -------------------------
   const railRectBefore = await app.evalJs(rectOf('.desk-frame-toolrail'));
   const pageRectBefore = await app.evalJs(rectOf('.mode-pagecol'));
+
+  // ab2.1 F2 — rendered-geometry sanity: presence checks prove mounting,
+  // this proves composition has a floor. This exact class of bug (a lost
+  // width context collapsing the writing surface to fit-content) is what
+  // slipped through AB2 on JournalEntry (ab2.1 F1) — cheap to catch here,
+  // transition-independent, covering every framed surface, not just the
+  // one that broke.
+  ok('F2 geometry: framed prose page column renders a sane width [600,800]',
+    pageRectBefore.width >= 600 && pageRectBefore.width <= 800, JSON.stringify(pageRectBefore));
+
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(150);
 
@@ -124,6 +134,8 @@ await withHarness(async (app) => {
   await sleep(300);
   ok('S4: Convert produces a script surface (script-sheet mounts, forward-only-editor is gone)',
     await app.evalJs("!!document.querySelector('.script-sheet') && !document.querySelector('.forward-only-editor')"));
+  const scriptRect = await app.evalJs(rectOf('.script-sheet'));
+  ok('F2 geometry: framed script sheet renders a sane width (>=400)', scriptRect.width >= 400, JSON.stringify(scriptRect));
   const convertedElements = await app.evalJs("[...document.querySelectorAll('.script-el')].map(e => ({ type: e.dataset.type, text: (e.textContent||'').trim() }))");
   ok('S4: the mechanical mapping produced action elements matching the source paragraph verbatim (including its ** conventions — mechanical only, nothing stripped)',
     Array.isArray(convertedElements) && convertedElements.some(e => e.type === 'action' && e.text === '**plain words**'),
@@ -348,6 +360,22 @@ await withHarness(async (app) => {
   ok('S6: the ink layer (canvas) is present — the sheet mounts editor core untouched', journalFramed.inkPresent);
   ok('S6: the metadata/star band keeps its below-the-page position inside the stage column', journalFramed.metadataBelow.ok, JSON.stringify(journalFramed.metadataBelow));
 
+  // ab2.1 F1/F2 — the paper lost its width source in the original S6 patch
+  // (a lone `alignItems:'center'` collapsed it to an ~80px fit-content
+  // sliver on an empty page). Fixed in F1; this is the permanent regression
+  // guard for that exact class of bug.
+  const journalPaperRect = await app.evalJs(rectOf('.paper-page.entry-full'));
+  ok('F2 geometry: framed Journal paper renders a sane width [600,760]',
+    journalPaperRect.width >= 600 && journalPaperRect.width <= 760, JSON.stringify(journalPaperRect));
+
+  // ab2.1 F3 — Plateau foundations §3/§5 (olive marks where you are; orange
+  // marks what you do): DeskRail's active-place indicator is a where-you-
+  // are-at-rest, so it must NOT wear brass. The Journal rail item is
+  // active on this route (/journal/:id).
+  const railActiveColor = await app.evalJs("getComputedStyle(document.querySelector('.desk-rail-item.active')).color");
+  ok('F3: DeskRail\'s active item is not brass (olive/--accent-rest per the foundations)',
+    railActiveColor !== 'rgb(255, 152, 0)', railActiveColor);
+
   // -- S6: below the gate, legacy JSX is untouched (byte-identical). --------
   await app.emulateDpr(1, 900, 900);
   await sleep(200);
@@ -357,6 +385,32 @@ await withHarness(async (app) => {
   })`);
   ok('S6: below 1100px, DeskFrame does not mount and the legacy tab row is back (non-goal — mobile untouched)',
     journalLegacy.deskFrameGone && journalLegacy.legacyTabs, JSON.stringify(journalLegacy));
+
+  // === ab2.1 F2 — the fourth framed surface: Board. AB2 never wired a
+  // Board fixture (it doesn't get rail content or a mode strip), but F2
+  // asks the geometry-sanity sweep to cover every framed writing surface,
+  // not just the ones that broke. Fixture pattern matches ab1.mjs's own
+  // board seed. ================================================================
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Board fixture' });
+  await app.emulateDpr(1, 1400, 900);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    entries.push({ id: 'ab2-board', text: '', pageType: 'board', boxes: [
+      { id: 'ab2-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
+    ], createdAt: now, updatedAt: now });
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Board seed' });
+  await app.evalJs("location.hash = '#/page/ab2-board'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Board framed' });
+  await sleep(200);
+  const boardRect = await app.evalJs(rectOf('.board-canvas-wrap'));
+  ok('F2 geometry: framed board canvas wrapper renders a sane width (>=400)', boardRect.width >= 400, JSON.stringify(boardRect));
 
   return checks;
 });

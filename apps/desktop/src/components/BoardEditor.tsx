@@ -558,8 +558,20 @@ export function BoardEditor({ id }: { id: string }) {
         <div style={{ height: 16 }} />
 
         <DeskFrame pageKind="prose" dissolved={boardDissolve.dissolved}>
-          {boardActionRow}
-          {boardCanvas}
+          {/* ab2.1 F2 (geometry-sanity sweep) caught the same class of bug
+              as F1, previously unchecked here: .desk-frame-stage is a
+              display:flex ROW expecting ONE child. boardActionRow and
+              boardCanvas were passed as two separate children with no
+              width-establishing wrapper (unlike PageEditorView's
+              .mode-pagecol or ScriptEditor's .desk-frame-scroll-cap), so
+              they laid out side by side, each shrinking to fit-content —
+              .board-canvas-wrap rendered at ~2px. legacy's own
+              board-page container caps at maxWidth:1100 (board wants more
+              room than prose's 720/760 measure); mirrored here. */}
+          <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column' }}>
+            {boardActionRow}
+            {boardCanvas}
+          </div>
         </DeskFrame>
       </div>
     );

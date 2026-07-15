@@ -2000,7 +2000,11 @@ a:focus-visible,
   padding:11px 4px; background:none; border:0; border-left:2px solid transparent; cursor:pointer;
   color:var(--text-low); font-family:var(--font-ui); transition:.15s; }
 .desk-rail-item:hover{ color:var(--text-hi); background:var(--ink-900); }
-.desk-rail-item.active{ color:var(--brass); border-left-color:var(--brass); }
+/* ab2.1 F3 — Plateau foundations §3/§5: olive marks where you are, orange
+   marks what you do. The rail's active-place indicator is a where-you-are
+   at rest, so it wears --accent-rest, not brass (matching the mode strip's
+   own S7 hairline treatment, not the evental/press orange). */
+.desk-rail-item.active{ color:var(--accent-rest); border-left-color:var(--accent-rest); }
 .desk-rail-item.deferred{ color:var(--ink-border-strong); cursor:not-allowed; }
 .desk-rail-item.deferred:hover{ color:var(--ink-border-strong); background:none; }
 .desk-rail-glyph{ font-size:18px; line-height:1; }
@@ -2059,7 +2063,7 @@ a:focus-visible,
     flex-direction:row; justify-content:space-around; gap:0; padding:4px 0;
     border-right:none; border-top:1px solid var(--ink-border); }
   .desk-rail-item{ flex:1; padding:6px 2px; border-left:none; border-top:2px solid transparent; }
-  .desk-rail-item.active{ border-left-color:transparent; border-top-color:var(--brass); }
+  .desk-rail-item.active{ border-left-color:transparent; border-top-color:var(--accent-rest); }
   .desk-rail-catch{ margin-bottom:0; }
   .app-main{ padding-left:0; padding-bottom:62px; }
   .app-immersive .app-main{ padding-bottom:0; }
