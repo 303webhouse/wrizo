@@ -18,7 +18,12 @@ import { useTheme, type ThemeId } from './theme';
 export type DeskTermId =
   | 'modeFreeWrite' | 'modeDraft' | 'modeRevise' | 'modeWorkshop' | 'modePublish'
   | 'zoneWayfinding' | 'zoneToolRail' | 'zoneStage' | 'zoneCorkboard' | 'zoneMeter'
-  | 'corkboardJournalTab' | 'deskMenuGlyph';
+  | 'corkboardJournalTab' | 'deskMenuGlyph'
+  // AB2 — the tool rail's own labels (components/ToolRail.tsx). New
+  // user-facing strings this ticket introduces land in this seam per the
+  // AB1 review's ratified naming, not a second lexicon file.
+  | 'railInk' | 'railControls' | 'railForwardLock' | 'railReading' | 'railTypewriter'
+  | 'railFormat' | 'railStructure' | 'railStructureProse' | 'railStructureScreenplay';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -33,6 +38,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   zoneMeter: 'Meter',
   corkboardJournalTab: 'Journal',
   deskMenuGlyph: 'Desk menu',
+  railInk: 'Ink',
+  railControls: 'Controls',
+  railForwardLock: 'Forward lock',
+  railReading: 'Reading',
+  railTypewriter: 'Typewriter',
+  railFormat: 'Format',
+  railStructure: 'Structure',
+  railStructureProse: 'Prose',
+  railStructureScreenplay: 'Screenplay',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

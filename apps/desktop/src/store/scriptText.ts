@@ -25,6 +25,22 @@ function isDialogueBlockMember(t: ScriptElType): boolean {
   return t === 'character' || t === 'paren' || t === 'dialogue';
 }
 
+// AB2 S5 — "Copy My Words": the writer's own typed lines, in order, with NO
+// screenplay convention applied (no forced uppercase, no dialogue-block
+// tightening, no blank-line scene separation) — the honest inverse of
+// serializeScriptDoc's "Copy Formatted" rendering. Empty elements (a fresh
+// scene heading, an untouched action line) are skipped rather than emitted
+// as blank noise.
+export function plainScriptWords(doc: ScriptDoc): string {
+  const lines: string[] = [];
+  for (const scene of doc.scenes) {
+    for (const el of [scene.heading, ...scene.body]) {
+      if (el.text.trim()) lines.push(el.text);
+    }
+  }
+  return lines.join('\n');
+}
+
 export function serializeScriptDoc(doc: ScriptDoc): string {
   const parts: string[] = [];
   let prevType: ScriptElType | null = null;

@@ -36,6 +36,37 @@ export function getCaretOffset(el: HTMLElement): number | null {
   return offset; // caret's container wasn't a text node under el (e.g. an empty el) — end is the honest answer
 }
 
+// AB2 S3 — the SAME linear-offset idea, but both boundaries of a (possibly
+// non-collapsed) selection at once, for the rail's format actions (Bold/
+// Italic wrap a selection; store/draftFormat.ts). Returns null if the
+// selection isn't inside `el` at all — same "honest null" contract as
+// getCaretOffset above.
+//
+// Uses the Range.toString().length technique (ScriptEditor.tsx's own
+// getCaretOffset helper, proven there) rather than a text-node TreeWalker
+// comparison: a boundary's (container, offset) pair is valid for EITHER a
+// text node (offset = characters) OR an element node (offset = child-node
+// index) per the DOM spec — a plain "Select All" in a contenteditable
+// commonly produces the latter (Chromium: startContainer/endContainer ===
+// the editable element itself). A text-node-only walker never matches an
+// element container and silently falls through to "end of content" for
+// both boundaries, collapsing a real selection. Cloning a range up to each
+// boundary and reading its serialized length is container-type-agnostic —
+// it walks the DOM the same way for both cases.
+export function getSelectionOffsets(el: HTMLElement): { start: number; end: number } | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return null;
+  const range = sel.getRangeAt(0);
+  if (!el.contains(range.startContainer) || !el.contains(range.endContainer)) return null;
+  const pre = document.createRange();
+  pre.selectNodeContents(el);
+  pre.setEnd(range.startContainer, range.startOffset);
+  const start = pre.toString().length;
+  pre.setEnd(range.endContainer, range.endOffset);
+  const end = pre.toString().length;
+  return { start, end };
+}
+
 // Place the caret at a linear offset within `el`, clamping to the end if the
 // target exceeds the current content (e.g. the page changed elsewhere since
 // the offset was captured — never throw, just land somewhere reasonable).

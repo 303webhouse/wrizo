@@ -62,6 +62,27 @@ export function strikeTail(content: Run[], n: number): { content: Run[]; changed
   return { content, changed: false };
 }
 
+// AB2 S2 — the forward lock's OFF path (store/forwardLock.ts). A real erase,
+// not a strike: the trailing `n` characters of the last unstruck run are
+// actually removed (never marked struck, never recoverable), mirroring
+// strikeTail's tail-finding shape exactly so the two behaviors stay easy to
+// compare. Never touches a struck run — an already-struck history stays
+// exactly as it is regardless of the lock setting.
+export function eraseTail(content: Run[], n: number): Run[] {
+  if (n <= 0) return content;
+  for (let i = content.length - 1; i >= 0; i--) {
+    const run = content[i];
+    if (run.struck || run.text.length === 0) continue;
+    const take = Math.min(n, run.text.length);
+    const head = run.text.slice(0, run.text.length - take);
+    const next = content.slice();
+    if (head) next.splice(i, 1, { ...run, text: head });
+    else next.splice(i, 1);
+    return next;
+  }
+  return content;
+}
+
 const SENT_END = /[.!?]/;
 function trailingNonWS(t: string): number {
   let n = 0;
