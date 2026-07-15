@@ -4,19 +4,25 @@ import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry } fr
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { ModeSwitcher } from '../components/ModeSwitcher';
-import { ModeStage } from '../components/ModeStage';
+import { ModeStage, PEN_INKS } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { useWayBack } from '../components/useWayBack';
-import { setCaretOffset } from '../store/caretOffset';
+import { setCaretOffset, getSelectionOffsets } from '../store/caretOffset';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
-import { DeskFrame, CorkboardJournalTab, useDeskFrameViewport } from '../components/DeskFrame';
+import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
+import { ToolRail, CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { useForwardLock, setForwardLock } from '../store/forwardLock';
+import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { decorateMarkdown } from '../store/draftDecoration';
+import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
+import { serializeScriptDoc } from '../store/scriptText';
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -66,6 +72,14 @@ function PageEditorView({ id }: { id: string }) {
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
+  // AB2 S2 — ink color, lifted out of ModeStage so ToolRail (a DeskFrame
+  // sibling) can control it; ModeStage falls back to its own internal state
+  // when this isn't passed (unframed/below-the-gate, untouched).
+  const [penColor, setPenColor] = useState(PEN_INKS[0]);
+  const forwardLock = useForwardLock();
+  // AB2 S4 — the Structure picker's one-time confirmation (prose page with
+  // words -> screenplay). Switching an empty page is free (no modal).
+  const [structureConfirm, setStructureConfirm] = useState(false);
 
   const textRef = useRef(text);
   textRef.current = text;
@@ -165,6 +179,7 @@ function PageEditorView({ id }: { id: string }) {
         placeholder={invite.visible ? '' : 'Write…'}
         ariaLabel="Page writing surface"
         penColor={penColor}
+        forwardLock={mode === 'journal' ? forwardLock : true}
         style={{
           width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
           fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
@@ -181,6 +196,86 @@ function PageEditorView({ id }: { id: string }) {
     </div>
   );
 
+  // AB2 S3 — the rail's Bold/Italic/Heading/Spacing tools, operating on
+  // entry.text directly (S0's ruling: markdown conventions, no separate
+  // rich-text state). Reads the editor's current selection via the SAME
+  // linear-offset technique the rest of this codebase uses for caret math
+  // (store/caretOffset.ts), applies the transform (store/draftFormat.ts),
+  // then imperatively re-decorates the DOM (store/draftDecoration.ts) —
+  // mirroring exactly what ForwardOnlyEditor's own native listener does on
+  // every keystroke, so a rail click and a keystroke leave the surface in
+  // the identical state.
+  const applyRailFormat = (action: FormatAction) => {
+    const el = editorRef.current;
+    if (!el || mode !== 'drafting') return;
+    el.focus();
+    const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
+    const result = applyFormat(textRef.current, sel.start, sel.end, action);
+    setText(result.text);
+    el.innerHTML = decorateMarkdown(result.text);
+    setCaretOffset(el, result.start);
+  };
+
+  // AB2 S4 — the Structure picker. Prose -> Screenplay: free on an empty
+  // page, one plain confirmation otherwise (mechanical mapping only, no AI —
+  // store/structureConvert.ts). Screenplay -> Prose has no code path here
+  // (this surface only ever renders prose); ScriptEditor.tsx owns that
+  // direction's one-way warning.
+  const convertToScreenplay = () => {
+    const latest = getJournalEntry(id);
+    if (!latest) return;
+    const doc = proseTextToScriptDoc(latest.text);
+    saveJournalEntry({ ...latest, pageType: 'script', script: doc, text: serializeScriptDoc(doc) });
+  };
+  const requestScreenplay = () => {
+    flush(); flushNow();
+    const latest = getJournalEntry(id);
+    if (!latest) return;
+    if (isProseEmpty(latest.text)) { convertToScreenplay(); return; }
+    setStructureConfirm(true);
+  };
+  const onSwitchStructure = (next: 'prose' | 'screenplay') => {
+    if (next === 'prose') return; // already prose — nothing to do on this surface
+    requestScreenplay();
+  };
+
+  const toolRailContent: ToolRailContent = !framed
+    ? { kind: 'empty' }
+    : mode === 'journal'
+      ? {
+          kind: 'freewrite',
+          ink: { penColor, inks: PEN_INKS, onChoosePen: setPenColor },
+          forwardLock: { on: forwardLock, onToggle: setForwardLock },
+          captureItems: CAPTURE_ITEMS,
+        }
+      : {
+          kind: 'draft',
+          structure: 'prose',
+          onSwitchStructure,
+          format: { onFormat: applyRailFormat },
+        };
+
+  const structureConfirmDialog = structureConfirm && (
+    <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>
+      <div className="sprint-modal card" role="dialog" aria-label="Convert to Screenplay" onClick={e => e.stopPropagation()}>
+        <div className="card-title">Convert to Screenplay?</div>
+        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
+          Each paragraph becomes an action line in a fresh script. Mechanical only — no AI — your words move verbatim.
+        </p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button type="button" className="btn-quiet" onClick={() => setStructureConfirm(false)}>Cancel</button>
+          <button
+            type="button"
+            className="btn-brass structure-confirm-screenplay"
+            onClick={() => { setStructureConfirm(false); convertToScreenplay(); }}
+          >
+            Convert
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   const publishDialog = showPublish && (
     <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
       <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
@@ -188,6 +283,14 @@ function PageEditorView({ id }: { id: string }) {
         <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
           Publishing options — tailored to this work's type, destination, and format — are coming soon.
         </p>
+        {/* AB2 S5 — copy-out comes home to Publish (findings 2/3 of record die
+            here). "Copy My Words" strips the markdown conventions back to
+            honest plain text; "Copy Formatted" copies entry.text as stored —
+            the conventions travel, markdown is the portable format. */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <button type="button" className="btn-quiet publish-copy-words" onClick={() => copyText(stripMarkdownConventions(textRef.current))}>Copy My Words</button>
+          <button type="button" className="btn-quiet publish-copy-formatted" onClick={() => copyText(textRef.current)}>Copy Formatted</button>
+        </div>
         <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
       </div>
     </div>
@@ -224,7 +327,7 @@ function PageEditorView({ id }: { id: string }) {
         <DeskFrame
           pageKind="prose"
           modeStrip={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />}
-          corkboard={<CorkboardJournalTab />}
+          toolRail={<ToolRail content={toolRailContent} />}
           dissolved={receded}
         >
           <ModeStage
@@ -235,6 +338,7 @@ function PageEditorView({ id }: { id: string }) {
             onDissolveChange={setReceded}
             chromeRootRef={pageRef}
             milestones={milestones}
+            penColor={penColor}
             framed
           >
             {editorBody}
@@ -242,6 +346,7 @@ function PageEditorView({ id }: { id: string }) {
         </DeskFrame>
 
         {publishDialog}
+        {structureConfirmDialog}
       </div>
     );
   }

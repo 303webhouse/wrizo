@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getJournalEntry, saveScriptDoc, flushNow, getDrawer, getProject } from '../store/persistence';
+import { getJournalEntry, saveScriptDoc, saveJournalEntry, flushNow, getDrawer, getProject } from '../store/persistence';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
-import { serializeScriptDoc } from '../store/scriptText';
+import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
 import { WIDTH_CH, INDENT_CH, RIGHT_ALIGN_TYPES, UPPERCASE_TYPES } from '../store/scriptMetrics';
 import { ENTER_MAP, TAB_MAP, TYPE_CYCLE, cycleBackward } from '../store/scriptKeys';
 import { computeAutocomplete, applyAutocomplete, type AutocompleteState } from '../store/scriptAutocomplete';
@@ -12,8 +12,12 @@ import { copyText } from '../store/clipboard';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
+import { useTypewriterFade } from './useTypewriterFade';
+import { useWritingSettings } from '../store/writingSettings';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
+import { ToolRail, type ToolRailContent } from './ToolRail';
+import { isScriptEmpty } from '../store/structureConvert';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
@@ -231,6 +235,21 @@ export function ScriptEditor({ id }: { id: string }) {
   // in the framed branch, since a <1100px script surface is untouched).
   const framed = useDeskFrameViewport();
   const [showPublish, setShowPublish] = useState(false);
+  // AB2 S4 — the Structure picker's one-way warning (screenplay -> prose;
+  // element types don't survive the trip). Switching an empty script is free.
+  const [structureConfirm, setStructureConfirm] = useState(false);
+  // AB2 S2 DoD — the typewriter option reaches the script surface's Draft
+  // posture through the rail; its hold-band targets the SAME bounded
+  // scroll-cap the containment fix (finding 4) already gives this surface,
+  // so the two behaviors can't fight (container-mode useTypewriterFade, not
+  // window-mode — see the `desk-frame-scroll-cap` ref below).
+  const scrollCapRef = useRef<HTMLDivElement>(null);
+  const writingSettings = useWritingSettings();
+  useTypewriterFade({
+    enabled: framed && writingSettings.typewriter,
+    containerRef: scrollCapRef,
+    editorSelector: '.script-el-active',
+  });
   // AB1 S3 — the vanishing law, generalized to the script surface's own
   // DeskFrame chrome (the mode strip; the corner glyph via App.tsx's shared
   // isWriting session). Mounted unconditionally (rootRef omitted -> writes
@@ -449,6 +468,40 @@ export function ScriptEditor({ id }: { id: string }) {
     copyText(serializeScriptDoc({ v: 1, scenes }));
   };
 
+  // AB2 S5 — "Copy My Words": the writer's own lines, screenplay convention
+  // (uppercase sluglines, dialogue-block tightening) stripped back out.
+  const copyMyWords = () => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    copyText(plainScriptWords({ v: 1, scenes }));
+  };
+
+  // AB2 S4 — Structure picker, screenplay -> prose. entry.text (the derived
+  // shadow, kept current by every autosave above) IS the prose rendering;
+  // adopt it verbatim. Element types do not survive — the one-way warning
+  // this gates. Mechanical only: no AI, nothing here rewrites a word.
+  const convertToProse = () => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    const doc = { v: 1 as const, scenes };
+    saveScriptDoc(id, doc); // flush the live doc + its shadow first
+    const latest = getJournalEntry(id);
+    if (!latest) return;
+    saveJournalEntry({ ...latest, pageType: 'manuscript', script: undefined });
+  };
+  const requestProse = () => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    if (isScriptEmpty({ v: 1, scenes })) { convertToProse(); return; }
+    setStructureConfirm(true);
+  };
+  const onSwitchStructure = (next: 'prose' | 'screenplay') => {
+    if (next === 'screenplay') return; // already screenplay — nothing to do here
+    requestProse();
+  };
+  const toolRailContent: ToolRailContent = {
+    kind: 'draft',
+    structure: 'screenplay',
+    onSwitchStructure,
+  };
+
   const title = elements.find(e => e.t === 'scene')?.text.trim() || 'Untitled';
   const backTo = project ? `/project/${project.id}` : '/journal';
 
@@ -509,9 +562,10 @@ export function ScriptEditor({ id }: { id: string }) {
         <DeskFrame
           pageKind="screenplay"
           modeStrip={<ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} />}
+          toolRail={<ToolRail content={toolRailContent} />}
           dissolved={scriptDissolve.dissolved}
         >
-          <div className="desk-frame-scroll-cap">
+          <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter={writingSettings.typewriter ? 'true' : 'false'}>
             {scriptSheet}
           </div>
         </DeskFrame>
@@ -523,7 +577,35 @@ export function ScriptEditor({ id }: { id: string }) {
               <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
                 Publishing options — tailored to this work's type, destination, and format — are coming soon.
               </p>
+              {/* AB2 S5 — copy-out comes home to Publish; "the existing
+                  copy-script-text rendering" is Copy Formatted verbatim. */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <button type="button" className="btn-quiet publish-copy-words" onClick={copyMyWords}>Copy My Words</button>
+                <button type="button" className="btn-quiet publish-copy-formatted" onClick={copyScriptText}>Copy Formatted</button>
+              </div>
               <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+            </div>
+          </div>
+        )}
+
+        {structureConfirm && (
+          <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>
+            <div className="sprint-modal card" role="dialog" aria-label="Convert to Prose" onClick={e => e.stopPropagation()}>
+              <div className="card-title">Convert to Prose?</div>
+              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
+                This is one-way: element types (scene/character/dialogue/…) will not survive the trip — only the
+                plain text carries over, verbatim.
+              </p>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button type="button" className="btn-quiet" onClick={() => setStructureConfirm(false)}>Cancel</button>
+                <button
+                  type="button"
+                  className="btn-brass structure-confirm-prose"
+                  onClick={() => { setStructureConfirm(false); convertToProse(); }}
+                >
+                  Convert
+                </button>
+              </div>
             </div>
           </div>
         )}
