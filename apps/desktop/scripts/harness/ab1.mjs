@@ -98,7 +98,20 @@ await withHarness(async (app) => {
   ok('S2: the corkboard Journal tab carries the relocated capture items', JSON.stringify(corkboardItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), JSON.stringify(corkboardItems));
   ok('S2: the corkboard tab is headed "Journal" (Plateau)', (await app.evalJs("document.querySelector('.desk-corkboard-h')?.textContent")) === 'Journal');
 
-  // -- S1: PAGE IS PRIMARY — the page rect is invariant under a mode toggle -
+  // -- finding 1: "the writing page is oddly small on a large monitor (stage
+  // sizing)" — re-read against app-bones-canon.md's own fuller description
+  // ("the page floats undersized in undifferentiated dark; chrome orphaned
+  // at viewport corners"), this is a COMPOSITION complaint, not a raw-column-
+  // width one: a capped 60ch reading measure is standard typographic practice
+  // (~50-75 characters/line for readability) and is SMALLER in px than an
+  // arbitrary wide column by design — narrower is correct here, not a
+  // regression. What actually kills finding 1 is the page no longer floating
+  // alone in undifferentiated dark: it now sits inside a deliberately
+  // composed frame (fixed tool-rail/stage/corkboard tracks on desk ground,
+  // asserted structurally by the S1 zone-track and PAGE IS PRIMARY checks
+  // just above/below) instead of an orphaned column with chrome pinned to
+  // viewport corners. No separate raw-width assertion belongs here — a
+  // "wider column" check would be testing the wrong thing.
   const textRectBefore = await app.evalJs(rectOf('.mode-pagecol'));
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(100);
@@ -176,7 +189,12 @@ await withHarness(async (app) => {
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'ab1-board', text: '', pageType: 'board', boxes: [], createdAt: now, updatedAt: now });
+    // One text box (S3's board fixture) so there is something to double-click
+    // into and type — commitText's own keydown-driven noteWrite() call needs
+    // a live edit session to prove the dissolve actually fires on Board too.
+    entries.push({ id: 'ab1-board', text: '', pageType: 'board', boxes: [
+      { id: 'ab1-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
+    ], createdAt: now, updatedAt: now });
     // One scene, one empty heading — createEmptyScriptDoc()'s own shape, so
     // there's a live .script-el-active to type into (an empty scenes: []
     // array renders NO elements at all, unlike w2.mjs's route-restore-only
@@ -195,6 +213,22 @@ await withHarness(async (app) => {
   ok('Board mounts inside DeskFrame at >=1100px', await app.evalJs("!!document.querySelector('.board-canvas, .board-canvas-wrap')"));
   ok('Board never renders the mode strip (Trellis-side by design)', await app.evalJs("!document.querySelector('.desk-mode-strip')"));
   const boardToolrailRect = await app.evalJs(rectOf('.desk-frame-toolrail'));
+
+  // -- S3 on Board: committing an edit inside a text box (real keydown input,
+  // even though Board has no live pen-stroke authoring — J4: ink boxes only
+  // ever arrive via a port) dissolves the frame's own reserved tracks too,
+  // and the same pointer-edge dwell rule resurfaces it. -----------------------
+  await app.evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+  await app.waitFor("!!document.querySelector('[data-box-id=\"ab1-board-box\"] .board-text-editing')", { label: 'board text box in edit mode' });
+  await app.typeKeys(' EDITED');
+  await sleep(150);
+  const boardDissolvedState = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
+  ok('S3: typing inside a Board text box dissolves the frame too (the law reaches Board, not just prose/script)', boardDissolvedState === 'true', String(boardDissolvedState));
+  await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 4, bubbles: true }))");
+  await sleep(500);
+  const boardResurfaced = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
+  ok('S3: Board resurfaces on the same pointer-edge dwell rule', boardResurfaced === 'false', String(boardResurfaced));
+  await app.evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"] .board-text-editing')?.blur()");
 
   // -- Script: DeskFrame mounts, mode strip present (finding 5 dies here) ---
   await app.evalJs("location.hash = '#/page/ab1-script'");
@@ -261,6 +295,51 @@ await withHarness(async (app) => {
   await sleep(500);
   const scriptResurfaced = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
   ok('S3: the script surface resurfaces on the same pointer-edge dwell rule', scriptResurfaced === 'false', String(scriptResurfaced));
+
+  // === 3b. PAGE IS PRIMARY at the gate FLOOR (1100px exactly) ===============
+  // Review fix — every check above ran at 1400px, where the stage has ample
+  // room. Near DESKFRAME_MIN_WIDTH itself, the stage's actual available
+  // width (viewport minus the fixed 200px tool-rail + 260px corkboard + two
+  // 28px gaps + host padding) is well under the desired 760px/60ch prose
+  // measure. A real bug found here: the inner `.mode-row` grid used a bare
+  // `1fr` track (not `minmax(0,1fr)`, unlike the outer `.desk-frame-grid`,
+  // which already got this right), so the track's growth limit defaulted to
+  // its item's max-content size — the page column rendered WIDER than its
+  // own stage box and visually overlapped the tool-rail/corkboard tracks at
+  // viewports as wide as ~1260px. Fixed in index.css (`.mode-row[data-
+  // framed]`'s track + a min-width:0/max-width:100% chain down through
+  // `.mode-stage`/`.mode-pagecol`); asserted here so it can't silently
+  // regress.
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before gate-floor fixture' });
+  await app.emulateDpr(1, 1100, 900); // the exact DESKFRAME_MIN_WIDTH floor
+  await app.goto('/project/new');
+  await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), gate floor' });
+  await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+  await app.click('Start writing');
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'DeskFrame at exactly 1100px' });
+  await sleep(200);
+  // rectOf only returns {left,top,width,height} (no .right) — derive right
+  // edges explicitly rather than reading a property that doesn't exist.
+  const gateFloorRects = await app.evalJs(`({
+    toolrail: ${rectOf('.desk-frame-toolrail')},
+    pagecol: ${rectOf('.mode-pagecol')},
+    corkboard: ${rectOf('.desk-frame-corkboard')},
+    hasHorizScroll: document.documentElement.scrollWidth > window.innerWidth,
+  })`);
+  const toolrailRight = gateFloorRects.toolrail.left + gateFloorRects.toolrail.width;
+  const pagecolRight = gateFloorRects.pagecol.left + gateFloorRects.pagecol.width;
+  const corkboardLeft = gateFloorRects.corkboard.left;
+  ok('PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail',
+    gateFloorRects.pagecol.left >= toolrailRight,
+    JSON.stringify({ ...gateFloorRects, toolrailRight, pagecolRight }));
+  ok('PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the corkboard',
+    pagecolRight <= corkboardLeft,
+    JSON.stringify({ ...gateFloorRects, toolrailRight, pagecolRight }));
+  ok('PAGE IS PRIMARY at the gate floor (1100px): no horizontal scroll (nothing overflows the viewport)',
+    gateFloorRects.hasHorizScroll === false, JSON.stringify(gateFloorRects));
 
   // === 4. Mobile / below the gate: current behavior is untouched (non-goal) =
   await app.goto('/');

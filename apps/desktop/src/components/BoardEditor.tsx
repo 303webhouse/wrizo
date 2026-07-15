@@ -4,6 +4,7 @@ import { getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject } from
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { useWayBack } from './useWayBack';
+import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import type { Box, Project } from '../types';
@@ -170,6 +171,16 @@ export function BoardEditor({ id }: { id: string }) {
   // by design — matches w1.mjs's existing "board never gets mode tabs"
   // assertion), so DeskFrame mounts here with no modeStrip prop.
   const framed = useDeskFrameViewport();
+  // AB1 S3 — the vanishing law, generalized to Board too. A Board has no
+  // live pen-stroke authoring (J4: ink boxes only ever arrive via a port,
+  // never drawn here), but committing text inside a selected text box IS
+  // real keydown/words-producing input (the brief's own S3 wording: "any
+  // words-producing input (keydown, pen stroke) dissolves every non-page
+  // zone together" does not carve Board out) — wired here the same way
+  // ScriptEditor wires its own dissolve: mounted unconditionally (so its
+  // begin/endSession bookkeeping is uniform) but only ever triggered when
+  // framed, since Board had no dissolve engine at all before this ticket.
+  const boardDissolve = useChromeDissolve({ surface: 'board', editorSelector: '.board-canvas' });
 
   // W2 — route + mount identity only (S1: a Board's own view state — pan,
   // zoom, selection — already persists through its own store; no scroll/
@@ -260,6 +271,7 @@ export function BoardEditor({ id }: { id: string }) {
   };
 
   const commitText = (boxId: string, text: string) => {
+    if (framed) boardDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, text } : b)));
   };
 
@@ -543,7 +555,7 @@ export function BoardEditor({ id }: { id: string }) {
 
         <div style={{ height: 16 }} />
 
-        <DeskFrame pageKind="prose">
+        <DeskFrame pageKind="prose" dissolved={boardDissolve.dissolved}>
           {boardActionRow}
           {boardCanvas}
         </DeskFrame>

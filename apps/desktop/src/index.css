@@ -1686,8 +1686,20 @@ a:focus-visible,
 
 /* A framed ModeStage (AB1 S2) has no rails either side — center the single
    remaining column instead of leaving it pinned to the old 3-column grid's
-   first track. */
-.mode-row[data-framed='true']{ grid-template-columns:1fr; justify-content:center; }
+   first track.
+   Review fix — `minmax(0,1fr)`, not bare `1fr`: with a bare `1fr` track,
+   the track's growth-limit-when-content-demands-more defaults to its item's
+   MAX-CONTENT size (here, .mode-pagecol's/the screenplay stage's own forced
+   width, e.g. 60ch), so near the 1100px gate floor — where the actual
+   available stage width is well under 760px/60ch — the track (and the page
+   column inside it) rendered WIDER than DeskFrame's own stage box and
+   visually overflowed into the tool-rail/corkboard tracks beside it, a real
+   breach of "nothing covers the organizers." `minmax(0,1fr)` floors the
+   track's base size at 0 instead of at its content's intrinsic size —
+   exactly the same fix `.desk-frame-grid` already applies to its own middle
+   column, one level up. `.mode-pagecol`'s own `max-width:100%` (below) then
+   has a genuinely definite containing block to resolve against. */
+.mode-row[data-framed='true']{ grid-template-columns:minmax(0,1fr); justify-content:center; min-width:0; max-width:100%; }
 
 /* ============================================================================
    AB1 — DeskFrame (docs/wrizo-alpha/ab1-page-frame-brief.md). One component
@@ -1716,12 +1728,36 @@ a:focus-visible,
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
 .desk-frame-stagecol{ display:flex; flex-direction:column; min-width:0; }
 .desk-frame-modestrip{ margin-bottom:14px; }
-.desk-frame-stage{ display:flex; justify-content:center; }
+.desk-frame-stage{ display:flex; justify-content:center; min-width:0; }
+/* Review fix — the actual flex ITEM of .desk-frame-stage is .mode-stage
+   (ModeStage's own root div; .mode-row/.mode-pagecol are further BLOCK
+   descendants of it, not flex items of the stage themselves). .mode-stage
+   carries no width of its own (index.css's base rule only sets position/
+   fade vars), so its default flex-basis:auto resolved to its content's
+   intrinsic (max-content) width — i.e. whatever .mode-pagecol's forced
+   width demanded — and neither min-width:0 nor max-width on .mode-row/
+   .mode-pagecol below could correct that, because THEIR percentage/shrink
+   math resolves against .mode-stage's box, which was itself already
+   oversized. Constraining the true flex item directly is what actually
+   stops the page column overflowing into the tool-rail/corkboard tracks
+   near the 1100px gate floor (see the .desk-frame-stage--prose/--screenplay
+   comment below for the full failure mode). */
+.desk-frame-stage > .mode-stage{ min-width:0; max-width:100%; }
 /* Stage centers the page: prose min(760px,60ch); screenplay keeps its own
    courier measure (no forced prose width — the per-element WIDTH_CH values
-   in store/scriptMetrics.ts stay exactly as they are). */
-.desk-frame-stage--prose .mode-pagecol{ width:min(760px,60ch); }
-.desk-frame-stage--screenplay{ width:min(900px,70ch); }
+   in store/scriptMetrics.ts stay exactly as they are).
+   Review fix — near the DESKFRAME_MIN_WIDTH floor (1100px) the stage's
+   actual available width (viewport minus the fixed 200px tool-rail + 260px
+   corkboard + gaps) can be LESS than 760px/60ch or 900px/70ch. Without the
+   max-width chain above AND below, the page column overflowed its own
+   stage track and visually overlapped the tool-rail/corkboard at viewports
+   as wide as ~1260px — a real breach of "nothing covers the organizers."
+   `min-width:0` undoes the default flex/grid item min-width:auto floor that
+   otherwise blocks shrinking below the page's own intrinsic content size;
+   `max-width:100%` at every link in the chain then lets the desired measure
+   yield to whatever the stage track actually has, instead of forcing it. */
+.desk-frame-stage--prose .mode-pagecol{ width:min(760px,60ch); max-width:100%; min-width:0; }
+.desk-frame-stage--screenplay{ width:min(900px,70ch); max-width:100%; min-width:0; }
 .desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
 .desk-frame-corkboard{ min-height:70vh; background:var(--desk-ground);
