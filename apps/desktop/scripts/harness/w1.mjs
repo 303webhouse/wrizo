@@ -191,6 +191,73 @@ await withHarness(async (app) => {
   const afterTw = await app.evalJs("document.querySelector('.entry-full').dataset.typewriter");
   ok('typewriter toggle flips data-typewriter on the sheet', beforeTw !== afterTw, `${beforeTw} -> ${afterTw}`);
 
+  // -- j2-s25-fixes S5: "the ink room rule" — the incentive row fades out
+  // while a stylus pointer is active on the surface and returns only on
+  // keyboard input (not on pen-lift). A fresh, normal-viewport page, so this
+  // doesn't interact with R3's short-viewport/typewriter state above. -------
+  await app.emulateDpr(1, 1024, 1400); // back to a normal viewport (R3 above emulated a short one)
+  await app.goto('/');
+  await app.evalJs('localStorage.clear()');
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before S5 fixture' });
+  await app.goto('/journal');
+  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (S5)' });
+  await app.click('New page');
+  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page (S5)' });
+  await app.waitFor("!!document.querySelector('.mode-incentive-row')", { label: 'incentive row mounted (S5)' });
+
+  // Baseline (keyboard-condition parity with the presence checks above):
+  // visible, interactive, and data-stylus-active is explicitly 'false'.
+  const s5Before = await app.evalJs(`(() => {
+    const row = document.querySelector('.mode-incentive-row');
+    const page = document.querySelector('.journal-page');
+    const st = getComputedStyle(row);
+    return { opacity: st.opacity, pointerEvents: st.pointerEvents, stylusActive: page?.dataset.stylusActive };
+  })()`);
+  ok(
+    'S5: incentive row starts visible/interactive with data-stylus-active=false',
+    s5Before.opacity === '1' && s5Before.pointerEvents !== 'none' && s5Before.stylusActive === 'false',
+    JSON.stringify(s5Before),
+  );
+
+  // A genuine pen stroke (CDP pointerType 'pen', not synthetic) over the sheet.
+  await app.penStroke('.entry-full', [{ x: 0.2, y: 0.3 }, { x: 0.4, y: 0.32 }, { x: 0.6, y: 0.3 }]);
+  // pointer-events and the data attribute are discrete (not transitioned), so
+  // they flip the instant React commits — no need to wait out the opacity
+  // transition to observe them.
+  const s5AfterStrokeInstant = await app.evalJs(`(() => {
+    const row = document.querySelector('.mode-incentive-row');
+    const page = document.querySelector('.journal-page');
+    return { pointerEvents: getComputedStyle(row).pointerEvents, stylusActive: page?.dataset.stylusActive };
+  })()`);
+  ok(
+    'S5: a stylus stroke on the sheet immediately flips data-stylus-active + pointer-events:none',
+    s5AfterStrokeInstant.pointerEvents === 'none' && s5AfterStrokeInstant.stylusActive === 'true',
+    JSON.stringify(s5AfterStrokeInstant),
+  );
+  // Opacity itself animates over --fade-dur (reused from the chrome-fade
+  // engine, refreshed to the same ~2.8s "recede on write" duration by the
+  // stroke's own noteWrite call) — poll for it to settle at 0.
+  await app.waitFor("getComputedStyle(document.querySelector('.mode-incentive-row')).opacity === '0'", {
+    label: 'S5: incentive row opacity settles to 0 after the stylus stroke', timeout: 4000,
+  });
+  ok('S5: incentive row opacity reaches 0 after a stylus stroke', true);
+
+  // The pen has already lifted (penStroke ends with mouseReleased) — the row
+  // must stay hidden; only KEYBOARD input restores it (the ink-room rule is
+  // deliberately not "pen lift" like the chrome-fade engine's own return).
+  const s5AfterLift = await app.evalJs("getComputedStyle(document.querySelector('.mode-incentive-row')).opacity");
+  ok('S5: the row stays hidden after the pen lifts (pen-lift alone does not restore it)', s5AfterLift === '0', s5AfterLift);
+
+  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.typeKeys('back to the keyboard');
+  const s5AfterKeyboardInstant = await app.evalJs("document.querySelector('.journal-page')?.dataset.stylusActive");
+  ok('S5: keyboard input immediately clears data-stylus-active', s5AfterKeyboardInstant === 'false', s5AfterKeyboardInstant);
+  await app.waitFor("getComputedStyle(document.querySelector('.mode-incentive-row')).opacity === '1'", {
+    label: 'S5: incentive row opacity restores to 1 after keyboard input', timeout: 4000,
+  });
+  ok('S5: keyboard input restores the incentive row to full opacity', true);
+
   return checks;
 });
 

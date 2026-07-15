@@ -1541,6 +1541,17 @@ a:focus-visible,
    orange caret riding the fill's leading edge (the "you are here" mark), and
    a full-orange celebration pulse + reset when a lap completes. */
 .mode-incentive-row{ display:flex; align-items:flex-end; gap:10px; margin-top:12px; }
+
+/* J2/S25 fixes S5 — "the ink room rule" (Journal only): the incentive row
+   fades out while a stylus pointer is active on the surface and returns only
+   on keyboard input — a DIFFERENT trigger than .chrome-fade's keyboard-driven
+   dissolve above (which this row deliberately never carries), so it's its own
+   class keyed off `data-stylus-active` rather than `data-chrome-receded`.
+   Reuses the SAME --fade-dur transition vocabulary/fallback as .chrome-fade
+   per the brief, not a new fade system. */
+.ink-room-fade{ transition: opacity var(--fade-dur, var(--t-state)) var(--ease); }
+[data-stylus-active='true'] .ink-room-fade{ opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce){ .ink-room-fade{ transition: none; } }
 .mode-progress{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
 .mode-ptrack{ position:relative; height:6px; background:var(--paper-dim); border:1px solid var(--ink-on-paper-low); overflow:visible; }
 .mode-pfill{ position:relative; height:100%; width:0%; background:#a98a5c; transition:width .5s ease, background .35s ease; }

@@ -6,7 +6,7 @@
 import type { Stroke } from '../types';
 
 export const INK_LINE_WIDTH = 1.4; // thin
-export const ERASER_WIDTH = 22; // S25 pass tunes this
+export const ERASER_WIDTH = 11; // S25 device pass (j2-s25-fixes S1) — ruled down from 22
 
 // The one pen reads the dedicated ink-stroke token — a very dark brown, almost
 // black — falling back to the text ink token, then a hard default.

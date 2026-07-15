@@ -95,6 +95,26 @@ function placeCaretEnd(el: HTMLElement): void {
 // The last reversible action — a typing run (its pre-run text) or an ink stroke.
 type LastAction = { type: 'text'; before: string } | { type: 'stroke' } | null;
 
+// J2/S25 fixes S2 — the ink tool-toggle icons: one quiet stroke each, square
+// corners (miter join, square cap), no interior shading. Replaces the earlier
+// Unicode pencil/eraser glyphs the S25 device pass called "too detailed at
+// size" — the house's quiet line vocabulary (matches TypewriterIcon's stroke
+// weight, but square- rather than round-cornered, per the ruling).
+function PenIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
+      <path d="M4.5 19.5l1.2-4.6L15.4 5.2l3.4 3.4-9.7 9.7z" />
+    </svg>
+  );
+}
+function EraserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
+      <rect x="5.5" y="5.5" width="13" height="13" />
+    </svg>
+  );
+}
+
 function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -130,6 +150,13 @@ function JournalEntryView() {
   const [eraserArmed, setEraserArmed] = useState(false);
   const eraserArmedRef = useRef(false);
   eraserArmedRef.current = eraserArmed;
+  // J2/S25 fixes S5 — "the ink room rule": the incentive row fades out while a
+  // stylus pointer is active on the surface (set true on pen touch-down) and
+  // only returns on keyboard input (set false from the text-editing effect's
+  // onInput below) — NOT on pen lift, so picking the pen back up mid-thought
+  // doesn't flash the row back. Mirrored to a ref for the same stale-closure
+  // reason as eraserArmedRef.
+  const [stylusActive, setStylusActive] = useState(false);
   const ringRef = useRef<HTMLDivElement | null>(null);
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const committedRef = useRef<HTMLCanvasElement | null>(null);
@@ -288,9 +315,50 @@ function JournalEntryView() {
       setEntry(getJournalEntry(id));
     };
 
+    // J2/S25 fixes S4 — the S-Pen barrel button toggles pen<->eraser
+    // persistently (distinct from the per-stroke hwErase signal above, which
+    // only marks the CURRENT stroke). Guard: never flip mid-stroke — a press
+    // with no active stroke flips immediately; a press DURING a stroke is
+    // queued and applied once the stroke ends (onUp/onCancel), so a press can
+    // never retroactively change what's already on the page. Edge-triggered
+    // on the barrel bit's rising edge so a held press doesn't retoggle every
+    // subsequent pointer event.
+    const barrelWasDownRef = { current: false };
+    const barrelLastLoggedRef = { current: -1 };
+    const pendingBarrelToggleRef = { current: false };
+    const toggleEraserArmed = () => {
+      const next = !eraserArmedRef.current;
+      eraserArmedRef.current = next;
+      setEraserArmed(next);
+    };
+    const checkBarrel = (e: PointerEvent) => {
+      if (e.pointerType !== 'pen') return;
+      // S4 PROBE (banked 2026-07-14 device pass, j2-s25-fixes brief) — log the
+      // REAL button/buttons values this hardware/OS/browser combo reports for
+      // the barrel button; headless CDP cannot exercise a genuine S-Pen, so
+      // this line is what a human runs the build with a real pen to read.
+      // Chromium's *typical* mapping is button === 5 / buttons & 32 (the same
+      // bit historically used for the eraser-tip signal above) but reporting
+      // is documented to vary by device — treat this console line as the
+      // source of truth, not the assumption below it.
+      if (e.buttons !== barrelLastLoggedRef.current) {
+        // eslint-disable-next-line no-console
+        console.debug('[S4 probe] pen buttons', { type: e.type, button: e.button, buttons: e.buttons });
+        barrelLastLoggedRef.current = e.buttons;
+      }
+      const barrelDown = (e.buttons & 32) !== 0 || e.button === 5;
+      if (barrelDown && !barrelWasDownRef.current) {
+        if (drawingRef.current) pendingBarrelToggleRef.current = true; // defer past stroke-end
+        else toggleEraserArmed();
+      }
+      barrelWasDownRef.current = barrelDown;
+    };
+
     const onDown = (e: PointerEvent) => {
       if (e.pointerType !== 'pen') return; // palm/finger/mouse fall through (and to text on authored pages)
       if ((e.target as Element | null)?.closest?.('.ink-undo, .ink-tool-toggle')) return;
+      checkBarrel(e); // still !drawingRef here — a press coincident with touch-down flips immediately
+      setStylusActive(true); // S5 — the ink room rule: stylus touch-down fades the incentive row
       e.stopPropagation(); // keep the pen off the editable text node (no caret, no handwriting)
       // I0 Slice 2 hardening (Samsung S25 / Chrome S-Pen). `touch-action:none` +
       // capture-phase preventDefault stopped OS handwriting on older builds but a
@@ -331,9 +399,17 @@ function JournalEntryView() {
     };
     const onMove = (e: PointerEvent) => {
       if (!drawingRef.current || e.pointerType !== 'pen') return;
+      // S4's checkBarrel runs from onHover below (the same 'pointermove', a
+      // second bubble-phase listener on this element) — it fires for every
+      // pen move including mid-stroke, so it's not duplicated here.
       e.preventDefault();
       activeStrokeRef.current?.points.push(normPoint(e));
       paintActive();
+    };
+    // S4 — apply a barrel press that landed mid-stroke, now that the stroke
+    // (whose content it must never retroactively change) has finished.
+    const applyPendingBarrelToggle = () => {
+      if (pendingBarrelToggleRef.current) { pendingBarrelToggleRef.current = false; toggleEraserArmed(); }
     };
     // Restore the editable after a stroke (it stays BLURRED — the writer taps to
     // resume typing — so re-enabling it can't hand the recognizer a focused target).
@@ -364,6 +440,7 @@ function JournalEntryView() {
       } else {
         clearActive();
       }
+      applyPendingBarrelToggle();
     };
     const onCancel = (e: PointerEvent) => {
       if (!drawingRef.current) return;
@@ -377,6 +454,7 @@ function JournalEntryView() {
       // canvas (paintActive) with no corresponding entry in strokesRef; repaint
       // from the authoritative array to undo the stray in-progress rub-out.
       if (wasErasing) paintCommitted(committedRef.current, sheet, strokesRef.current);
+      applyPendingBarrelToggle();
     };
 
     // J2 — ring preview: a quiet ERASER_WIDTH-diameter ring follows the pen while
@@ -386,6 +464,10 @@ function JournalEntryView() {
     // render on every pointermove. Tracks hover where the device reports it, and
     // continues to track during an active stroke too (same listener).
     const onHover = (e: PointerEvent) => {
+      // S4 — fires on every pen pointermove regardless of armed state or an
+      // active stroke, so a barrel press while merely hovering (tip not yet
+      // down) is caught here too, not just in onDown/onMove.
+      checkBarrel(e);
       const ring = ringRef.current;
       if (!ring) return;
       if (!eraserArmedRef.current || e.pointerType !== 'pen') { ring.style.display = 'none'; return; }
@@ -542,6 +624,7 @@ function JournalEntryView() {
       setWords(wordCount(el.innerText));
       touchedRef.current = true;
       noteWriteRef.current(); // recede the chrome on write
+      setStylusActive(false); // S5 — keyboard input returns the incentive row (the ink room rule)
       warmReleaseRef.current(); // release the warm-start glow on the first forward keystroke
       sessionKsRef.current(); // stamp TTFK on the first content keystroke (F5)
       inviteDismissRef.current(); // dismiss the first-line invitation for this page (F6)
@@ -696,7 +779,7 @@ function JournalEntryView() {
   };
 
   return (
-    <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
+    <div ref={pageRef} className="page journal-page" data-chrome-receded={dissolved ? 'true' : 'false'} data-stylus-active={stylusActive ? 'true' : 'false'} style={{ maxWidth: 720, paddingTop: '3rem' }}>
       <ChromeHandle onReveal={() => resurface(true)} />
 
       {/* PAGE IS PRIMARY: only wayfinding (back / notebook paging) and the
@@ -836,7 +919,12 @@ function JournalEntryView() {
         />
         {/* J2 — pen/eraser toggle: two states. Deliberately NOT chrome-fade — it's
             a tool control the writer needs mid-draw (exactly when chrome is
-            receded), not passive chrome. Session-scoped (pen by default on open). */}
+            receded), not passive chrome. Session-scoped (pen by default on open).
+            J2/S25 fixes S3 — the icon shown is the TARGET tool (what tapping
+            switches TO), not the current one: while inking, the eraser icon;
+            while erasing, the pen icon. The label/title were already
+            target-oriented ("tap for pen" while erasing) — only the glyph
+            lagged behind; this brings the two in line. */}
         <button
           type="button"
           className="btn-quiet ink-tool-toggle"
@@ -850,7 +938,7 @@ function JournalEntryView() {
             border: 'none', cursor: 'pointer', padding: 4,
           }}
         >
-          {eraserArmed ? '⬚' : '✎'}
+          {eraserArmed ? <PenIcon /> : <EraserIcon />}
         </button>
         {canUndo && (
           <button
@@ -874,9 +962,15 @@ function JournalEntryView() {
           so the setting must be respected here too. Only Words applies on
           the Journal (no session-timer readout on this surface); Time stays
           ModeStage-only for now. The typewriter toggle is independent and
-          always shown regardless of the progress metric. */}
+          always shown regardless of the progress metric.
+          J2/S25 fixes S5 — "the ink room rule": this row DOES carry a fade,
+          just not the keyboard chrome-fade one above — `ink-room-fade` reuses
+          the SAME --fade-dur transition vocabulary (index.css), keyed off the
+          `data-stylus-active` attribute set on the page root (not
+          data-chrome-receded), so it recedes only for stylus use and returns
+          only on keyboard input (see the pointer/text effects above). */}
       {authored && (
-        <div className="mode-incentive-row">
+        <div className="mode-incentive-row ink-room-fade">
           {writingSettings.progress !== 'off' && (
             <ProgressBar
               frac={lapFrac}
