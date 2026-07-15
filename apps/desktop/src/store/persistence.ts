@@ -971,9 +971,16 @@ export function getShelfPages(): JournalEntry[] {
 // J1 — the loose Journal in NOTEBOOK order (ascending: oldest first, like a real
 // notebook fills). Nav (prev/next) + the spread view (J3) walk this. The
 // chronological list feed is unchanged (getJournalPages stays newest-first).
+// AB3 — deliberately NOT origin-aware (unlike getJournalPages above). This
+// powers the Spread's spatial drag-reorder grid (J1/J5), which needs a page
+// to actually LEAVE when filed or shelved (J5's own harness asserts this:
+// filing to the Shelf removes a page from the grid) — S5's "notebook nav"
+// wording is about JournalEntry.tsx's own prev/next paging (still gated by
+// the unchanged isLoose there), not the Spread's reorder surface. Untouched
+// from pre-AB3 behavior for every row, journal-origin included.
 export function getNotebookPages(): JournalEntry[] {
   return sortNotebook(
-    cache.journalEntries.filter(e => !e.deletedAt && inJournalView(e)).map(clone),
+    cache.journalEntries.filter(e => !e.deletedAt && e.projectId == null && !e.shelved).map(clone),
   );
 }
 

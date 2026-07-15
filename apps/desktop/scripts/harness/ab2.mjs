@@ -44,8 +44,15 @@ await withHarness(async (app) => {
 
   ok('S1: ToolRail mounts into the reserved tool-rail track', await app.evalJs("!!document.querySelector('.desk-frame-toolrail .desk-toolrail-body')"));
 
-  // A fresh manuscript page opens in Free Write (journal mode) by default —
-  // its rail: ink swatches + capture items, no format/structure tools.
+  // A fresh manuscript page opens in Free Write (journal mode) by default.
+  // AB3 S4 — this fixture is born through a PROJECT door (CreateProject ->
+  // createBinderPage), so origin:'project' now SUPPRESSES the Journal
+  // furniture (ink/forward-lock/capture items) that AB2 asserted here
+  // unconditionally; only format/structure stay unconditionally-absent in
+  // Free Write mode, unchanged. The retired AB2 claim is parked below
+  // (HARNESS_PARKED=1, quoted-history + opposite-reassertion); AB3's own
+  // fixture for the OPPOSITE case (a journal-origin page keeping the
+  // furniture) lives in ab3.mjs.
   const freeWriteRail = await app.evalJs(`({
     ink: !!document.querySelector('.desk-toolrail-inks'),
     forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
@@ -53,9 +60,9 @@ await withHarness(async (app) => {
     format: !!document.querySelector('.desk-toolrail-format'),
     structure: !!document.querySelector('.desk-toolrail-structure'),
   })`);
-  ok('S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those',
-    freeWriteRail.ink && freeWriteRail.forwardLock
-      && JSON.stringify(freeWriteRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer'])
+  ok('AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)',
+    !freeWriteRail.ink && !freeWriteRail.forwardLock
+      && freeWriteRail.captureItems.length === 0
       && !freeWriteRail.format && !freeWriteRail.structure,
     JSON.stringify(freeWriteRail));
 
@@ -179,6 +186,15 @@ await withHarness(async (app) => {
 
   // === S2 — the forward lock: an explicit persisted toggle, default ON
   // (today's shipped Free Write behavior), OFF swaps to a real erase. ========
+  // AB3 S4 — freshProsePage's fixture is project-origin, so the RAIL TOGGLE
+  // itself no longer mounts here (see the AB3 S4 check above); the setting
+  // is toggled directly via its own localStorage key instead of clicking a
+  // rail control that's correctly absent for this fixture. The underlying
+  // strike/erase MECHANIC (store/forwardOnly.ts) is origin-independent —
+  // still exercised in full. The rail-toggle-specific assertions this
+  // replaces are parked below (HARNESS_PARKED=1); ab3.mjs's own journal-
+  // origin fixture proves the rail toggle itself still works where it
+  // belongs.
   await freshProsePage(app);
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('ab');
@@ -188,10 +204,10 @@ await withHarness(async (app) => {
   const strikeDefault = await app.evalJs("!!document.querySelector('.forward-only-editor .fo-struck')");
   ok('S2: forward lock defaults ON — a backspace STRIKES (today\'s shipped Free Write behavior, unchanged)', strikeDefault);
 
-  await app.evalJs("document.querySelector('.desk-toolrail-forwardlock').click()");
-  await sleep(100);
-  const lockOffState = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock').dataset.on");
-  ok('S2: the rail toggle flips to off', lockOffState === 'false', lockOffState);
+  await app.evalJs("localStorage.setItem('wrizo-forward-lock', '0')");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor after forward-lock-off reload' });
+  await sleep(200);
 
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('cd');
@@ -204,12 +220,7 @@ await withHarness(async (app) => {
     afterErase === beforeErase.slice(0, -1), `${JSON.stringify(beforeErase)} -> ${JSON.stringify(afterErase)}`);
 
   const forwardLockPersisted = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
-  ok('S2: the forward-lock setting persists (localStorage)', forwardLockPersisted === '0', forwardLockPersisted);
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor after reload' });
-  await sleep(200);
-  const forwardLockAfterReload = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
-  ok('S2: the forward-lock setting is honored on reload (rail shows off, not reset to the default)', forwardLockAfterReload === 'false', forwardLockAfterReload);
+  ok('S2: the forward-lock setting persists (localStorage) across the reload that applied it', forwardLockPersisted === '0', forwardLockPersisted);
 
   // === S5 — copy-out comes home to Publish: both actions present, payloads
   // differ correctly. =========================================================
@@ -343,14 +354,11 @@ await withHarness(async (app) => {
     captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
     corkboardItems: document.querySelectorAll('.desk-corkboard-item').length,
     inkPresent: !!document.querySelector('.entry-full .ink-canvas'),
-    metadataBelow: (() => {
-      const sheet = document.querySelector('.entry-full');
-      const h1 = document.querySelector('h1');
-      if (!sheet || !h1) return { ok: false, reason: 'missing element', hasSheet: !!sheet, hasH1: !!h1 };
-      const sheetRect = sheet.getBoundingClientRect();
-      const h1Rect = h1.getBoundingClientRect();
-      return { ok: h1Rect.top > sheetRect.bottom - 5, sheetBottom: sheetRect.bottom, h1Top: h1Rect.top };
-    })(),
+    // AB3 S3 — the below-page metadata cluster (the <h1> title among it)
+    // unmounts entirely when framed, superseded by the Page face. The
+    // retired "keeps its below-the-page position" claim is parked below
+    // (HARNESS_PARKED=1); ab3.mjs asserts the Page face's own presence.
+    metadataAbsent: !document.querySelector('.entry-full ~ h1, h1'),
   })`);
   ok('S6: JournalEntry mounts inside DeskFrame at >=1100px', journalFramed.deskFrame);
   ok('S6: the unified mode strip is present, five ratified strings', JSON.stringify(journalFramed.strip) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']), JSON.stringify(journalFramed.strip));
@@ -358,7 +366,7 @@ await withHarness(async (app) => {
   ok('S6: capture items are in the rail (their ruled final home)', JSON.stringify(journalFramed.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), JSON.stringify(journalFramed.captureItems));
   ok('S6: the interim corkboard Journal tab is retired (no .desk-corkboard-item anywhere)', journalFramed.corkboardItems === 0);
   ok('S6: the ink layer (canvas) is present — the sheet mounts editor core untouched', journalFramed.inkPresent);
-  ok('S6: the metadata/star band keeps its below-the-page position inside the stage column', journalFramed.metadataBelow.ok, JSON.stringify(journalFramed.metadataBelow));
+  ok('AB3 S3: the below-page metadata cluster (title/star/tags) is entirely absent when framed — no <h1> anywhere (superseded by the Page face)', journalFramed.metadataAbsent);
 
   // ab2.1 F1/F2 — the paper lost its width source in the original S6 patch
   // (a lone `alignItems:'center'` collapsed it to an ~80px fit-content
@@ -419,17 +427,97 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED (S8) — gated behind HARNESS_PARKED=1, skipped by default. ======
-// AB2 itself parks nothing new (its own gate-floor/viewport behavior is
-// identical to AB1's — the >=1100px gate is unchanged) — this scaffold
-// exists so a future ticket that widens the gate again has a documented
-// home to move any of THIS file's checks into, matching ab1.mjs's own
-// pattern. Nothing to run today.
+// AB2 itself never widened the gate — this scaffold sat empty until AB3
+// (docs/wrizo-alpha/ab3-drawer-and-homes-brief.md S7) became the first real
+// tenant: three checks AB3's origin-gating and Page-face design supersede,
+// moved here rather than deleted (parked != deleted). Per the AB2 review's
+// A4, the two parked species named explicitly: every check below is the
+// SUPERSEDED species (quoted verbatim from its ORIGINAL AB2 form, then
+// re-asserted against its NEW, opposite truth) — none are DORMANT (a check
+// temporarily unmountable but expected to re-arm unchanged; this file has
+// none of those). Successor assertions for the rail's real (journal-origin)
+// contents and the Page face's own presence live in ab3.mjs, not here.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshProsePage(app);
+
+    // ORIGINAL (AB2 S1/S2): ok('S1/S2: Free Write rail shows ink + forward
+    // lock + capture items, and ONLY those', freeWriteRail.ink &&
+    // freeWriteRail.forwardLock && JSON.stringify(freeWriteRail.
+    // captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send →
+    // Drawer']) && !freeWriteRail.format && !freeWriteRail.structure, ...);
+    // AB3 S4 — this fixture (CreateProject -> createBinderPage) is now
+    // PROJECT-origin; the furniture that check assumed unconditional is
+    // gone. The opposite is now true: none of it mounts.
+    const freeWriteRailNow = await app.evalJs(`({
+      ink: !!document.querySelector('.desk-toolrail-inks'),
+      forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
+      captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    })`);
+    pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those") — AB3 S4 origin-gates the furniture: a project-origin page in Free Write now shows NONE of it',
+      !freeWriteRailNow.ink && !freeWriteRailNow.forwardLock && freeWriteRailNow.captureItems.length === 0,
+      JSON.stringify(freeWriteRailNow));
+
+    // ORIGINAL (AB2 S2): ok('S2: the rail toggle flips to off',
+    // lockOffState === 'false', lockOffState); ok('S2: the forward-lock
+    // setting is honored on reload (rail shows off, not reset to the
+    // default)', forwardLockAfterReload === 'false', forwardLockAfterReload);
+    // AB3 S4 — the rail toggle these checks clicked/read no longer mounts
+    // for a project-origin page at all (same origin-gating). The mechanic
+    // itself (localStorage-driven, reload-honored) is still proven live in
+    // ab2.mjs's own unparked S2 block, just without the now-correctly-absent
+    // rail control.
+    const forwardLockRailGone = await app.evalJs("!document.querySelector('.desk-toolrail-forwardlock')");
+    pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload") — AB3 S4: the forward-lock rail control does not mount at all for a project-origin page',
+      forwardLockRailGone === true);
+
+    // === S6 fixture — a fresh Journal entry, framed. =========================
+    await app.goto('/');
+    await app.evalJs('localStorage.clear()');
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture (PARKED)' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab2-journal-parked', text: '', projectId: null, source: 'page', createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Journal seed (PARKED)' });
+    await app.evalJs("location.hash = '#/journal/ab2-journal-parked'");
+    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (PARKED)' });
+    await sleep(200);
+
+    // ORIGINAL (AB2 S6): ok('S6: the metadata/star band keeps its below-
+    // the-page position inside the stage column', metadataBelow.ok, ...);
+    // (metadataBelow computed h1Rect.top > sheetRect.bottom - 5 — the title
+    // rendered BELOW the paper, inside the frame.)
+    // AB3 S3 — the whole cluster (including that <h1>) unmounts entirely
+    // when framed, superseded by the Page face; there is no h1 to measure.
+    const metadataGoneNow = await app.evalJs(`(() => {
+      const sheet = document.querySelector('.entry-full');
+      return { hasSheet: !!sheet, hasH1: !!document.querySelector('h1') };
+    })()`);
+    pok('PARKED (was "S6: the metadata/star band keeps its below-the-page position inside the stage column") — AB3 S3: the sheet mounts, but the metadata band (and its <h1>) is gone entirely when framed',
+      metadataGoneNow.hasSheet === true && metadataGoneNow.hasH1 === false,
+      JSON.stringify(metadataGoneNow));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nAB2 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of ab2.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nAB2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nAB2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecks = checks.concat(parkedChecks);
+const pass = allChecks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nAB2 VERIFY: PASS (${checks.length} checks)` : `\nAB2 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nAB2 VERIFY: PASS (${allChecks.length} checks)` : `\nAB2 VERIFY: FAIL — ${allChecks.filter((c) => !c.pass).length}/${allChecks.length} failed`);
 process.exit(pass ? 0 : 1);
