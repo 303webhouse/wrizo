@@ -80,24 +80,35 @@ await withHarness(async (app) => {
 
   const flipTo = async (sel) => { await app.evalJs(`document.querySelector(${JSON.stringify(sel)}).click()`); await sleep(220); };
 
-  await flipTo('.wz-drawer-pull-page'); // tools -> page
-  const railRect1 = await app.evalJs(rectOf('.desk-frame-toolrail'));
+  // CD1 S3 (canon A3) — the drawer's rest face is `page` now, not `tools`
+  // (retired). The ORIGINAL flip sequence below started with a `tools ->
+  // page` click assuming `tools` was the rest state; that first click is
+  // now a same-face no-op (already resting on `page`). Re-sequenced to
+  // exercise page -> journal -> shelf -> drawers -> page (via the Page
+  // pull) -> drawers -> (toggle off) page, so every transition is real,
+  // INCLUDING the toggle-off path the retired check named. The ORIGINAL
+  // "S1 geometry..." and "S1: ...toggles the face back to tools" checks are
+  // parked below (SUPERSEDED); their successors are live here.
   await flipTo('.wz-drawer-pull-place[data-place="journal"]'); // page -> place:journal
-  const railRect2 = await app.evalJs(rectOf('.desk-frame-toolrail'));
+  const railRect1 = await app.evalJs(rectOf('.desk-frame-toolrail'));
   await flipTo('.wz-drawer-pull-place[data-place="shelf"]'); // place:journal -> place:shelf
-  const railRect3 = await app.evalJs(rectOf('.desk-frame-toolrail'));
+  const railRect2 = await app.evalJs(rectOf('.desk-frame-toolrail'));
   await flipTo('.wz-drawer-pull-place[data-place="drawers"]'); // place:shelf -> place:drawers
+  const railRect3 = await app.evalJs(rectOf('.desk-frame-toolrail'));
+  await flipTo('.wz-drawer-pull-page'); // place:drawers -> page (CD1: the rest face, via its own pull)
   const railRect4 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  // Toggle the active place off — back to tools.
-  await flipTo('.wz-drawer-pull-place[data-place="drawers"]');
+  await flipTo('.wz-drawer-pull-place[data-place="drawers"]'); // page -> place:drawers, once more
   const railRect5 = await app.evalJs(rectOf('.desk-frame-toolrail'));
+  // Toggle the active place off — CD1: back to `page`, not `tools`.
+  await flipTo('.wz-drawer-pull-place[data-place="drawers"]');
+  const railRect6 = await app.evalJs(rectOf('.desk-frame-toolrail'));
 
-  const allRects = [railRect0, railRect1, railRect2, railRect3, railRect4, railRect5];
-  ok('S1 geometry (ab2.1 lesson, applied day one): the tool-rail track rect is BYTE-IDENTICAL across every face flip (tools->page->place:journal->place:shelf->place:drawers->tools)',
+  const allRects = [railRect0, railRect1, railRect2, railRect3, railRect4, railRect5, railRect6];
+  ok('CD1 S3 (was "S1 geometry (ab2.1 lesson, applied day one): ...tools->page->place:journal->..."): the tool-rail track rect is BYTE-IDENTICAL across every face flip (page->journal->shelf->drawers->page->drawers->page)',
     allRects.every(r => JSON.stringify(r) === JSON.stringify(railRect0)), JSON.stringify(allRects));
 
   const faceAfterToggleOff = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
-  ok('S1: clicking the active place pull again toggles the face back to tools (no dead-end face)', faceAfterToggleOff === 'tools', faceAfterToggleOff);
+  ok('CD1 S3 (was "S1: ...toggles the face back to tools..."): clicking the active place pull again toggles the face back to page (the drawer\'s rest face now — no dead-end face)', faceAfterToggleOff === 'page', faceAfterToggleOff);
 
   // === S1 — the Page pull above a separator, Places below. ==================
   const navShape = await app.evalJs(`({
@@ -111,14 +122,19 @@ await withHarness(async (app) => {
       && JSON.stringify(navShape.placeOrder) === JSON.stringify(['journal', 'shelf', 'drawers']),
     JSON.stringify(navShape));
 
-  // === S1 — the `tools` face is AB2's ToolRail, composed verbatim. ==========
-  const toolsFaceContent = await app.evalJs(`({
-    inFace: !!document.querySelector('.wz-drawer-face[data-face="tools"] .desk-toolrail-body'),
-    captureItems: [...document.querySelectorAll('.wz-drawer-face .desk-toolrail-item')].map(i => i.textContent),
+  // CD1 S3 (canon A3) — the `tools` face retires entirely: "the drawer
+  // rests on the Page face; hand tools live in the paper-edge sliver." The
+  // ORIGINAL "S1: the tools face composes ToolRail verbatim" check is
+  // parked below (SUPERSEDED); its successor proves the opposite — no
+  // `tools` face is reachable, the drawer rests on `page` by default.
+  const toolsFaceGoneNow = await app.evalJs(`({
+    restFace: document.querySelector('.wz-drawer-face')?.dataset.face,
+    toolsFaceReachable: !!document.querySelector('.wz-drawer-face[data-face="tools"]'),
+    toolsPullReachable: !!document.querySelector('.wz-drawer-pull-tools'),
   })`);
-  ok('S1: the tools face composes ToolRail verbatim (its own .desk-toolrail-body, real capture items)',
-    toolsFaceContent.inFace && JSON.stringify(toolsFaceContent.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
-    JSON.stringify(toolsFaceContent));
+  ok('CD1 S3 (was "S1: the tools face composes ToolRail verbatim..."): the drawer rests on the Page face by default; no `tools` face or pull is reachable anywhere',
+    toolsFaceGoneNow.restFace === 'page' && !toolsFaceGoneNow.toolsFaceReachable && !toolsFaceGoneNow.toolsPullReachable,
+    JSON.stringify(toolsFaceGoneNow));
 
   // === S2 — the Page face's content, on a journal-origin, unfiled page. =====
   await flipTo('.wz-drawer-pull-page');
@@ -183,16 +199,18 @@ await withHarness(async (app) => {
   ok('S6: the Drawers place face mounts (empty — nothing filed yet)', drawersPlace.face === 'place:drawers' && drawersPlace.empty, JSON.stringify(drawersPlace));
 
   // === S6 guardrail — a keystroke dissolves the face back to the room
-  // (tools), and the whole drawer inherits the vanishing law + resurfaces on
-  // edge-dwell (the SAME useChromeDissolve engine, no second fade system). ==
+  // (CD1 S3: `page`, the drawer's new rest face — `tools` retired), and the
+  // whole drawer inherits the vanishing law + resurfaces on edge-dwell (the
+  // SAME useChromeDissolve engine, no second fade system). The ORIGINAL
+  // check (which named `tools` as the room) is parked below (SUPERSEDED). =
   const faceBeforeType = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('x');
   await sleep(150);
   const faceAfterType = await app.evalJs("document.querySelector('.wz-drawer-face')?.dataset.face");
   const writingNow = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
-  ok('S6: a keystroke dissolves the open place face back to the tools room (was NOT tools before typing)',
-    faceBeforeType !== 'tools' && faceAfterType === 'tools', `${faceBeforeType} -> ${faceAfterType}`);
+  ok('CD1 S3 (was "S6: ...dissolves the open place face back to the tools room..."): a keystroke dissolves the open place face back to the page room (was NOT page before typing)',
+    faceBeforeType !== 'page' && faceAfterType === 'page', `${faceBeforeType} -> ${faceAfterType}`);
   ok('S1: the whole drawer carries the vanishing law (the SAME .desk-frame[data-writing] the rest of the frame uses)', writingNow === 'true', writingNow);
 
   await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 10, bubbles: true }))");
@@ -243,7 +261,9 @@ await withHarness(async (app) => {
   // === "the saved-silently footer exists only in the drawer" — its ONLY
   // appearance anywhere once framed. The width round-trip above unmounts and
   // remounts DeskFrame (and the Drawer inside it), so the face resets to
-  // 'tools' — reopen the Page face before checking its footer.
+  // its rest state — CD1 S3: `page`, not the retired `tools` — the Page
+  // face is already showing, but the click below stays harmless (a
+  // same-face no-op) and keeps this fixture robust either way.
   await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
   await sleep(220);
   const footerOnlyInDrawer = await app.evalJs(`({
@@ -329,14 +349,20 @@ await withHarness(async (app) => {
   // rail never carries any of this furniture regardless of origin, so the
   // ORIGINAL R1(a) check was passing for the wrong reason). Switch modes
   // explicitly so this actually exercises what it claims to. ==================
+  // CD1 S2/S7 — ToolRail's `.desk-toolrail-*` class family retired with the
+  // component; the sliver (`.wz-sliver-*`) hosts this content now, mounted
+  // closed — open it before reading. The ORIGINAL "FX1 S3 (was R1(a))"
+  // check is parked below (SUPERSEDED — class rename only, same truth).
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write').click()");
   await sleep(150);
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(150);
   const looseRail = await app.evalJs(`({
-    ink: !!document.querySelector('.desk-toolrail-inks'),
-    forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    ink: !!document.querySelector('.wz-sliver-inks'),
+    forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
   })`);
-  ok('FX1 S3 (was R1(a)): a LOOSE-origin page shows the forward lock PRESENT (mode furniture now) in Free Write, but ink/capture items stay absent (unchanged journal furniture)',
+  ok('CD1 S2 (was "FX1 S3 (was R1(a))"): a LOOSE-origin page shows the forward lock PRESENT (mode furniture now) in Free Write, but ink/capture items stay absent (unchanged journal furniture) — now in the sliver',
     !looseRail.ink && looseRail.forwardLock && looseRail.captureItems.length === 0,
     JSON.stringify(looseRail));
 
@@ -431,12 +457,16 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/ab3-legacy-page'");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'legacy null-origin page framed' });
   await sleep(200);
+  // CD1 S2/S7 — open the sliver (fresh mount, closed by default); its
+  // `.wz-sliver-*` class family hosts this content now (ToolRail retired).
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(150);
   const legacyRail = await app.evalJs(`({
-    ink: !!document.querySelector('.desk-toolrail-inks'),
-    forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    ink: !!document.querySelector('.wz-sliver-inks'),
+    forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
   })`);
-  ok('S4 A2 (grandfather clause): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — ink/forward-lock/capture items all present',
+  ok('CD1 S2/S7 (was "S4 A2 (grandfather clause): ..."): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — ink/forward-lock/capture items all present (now in the sliver)',
     legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
     JSON.stringify(legacyRail));
 
@@ -445,13 +475,14 @@ await withHarness(async (app) => {
   // its presence was ever asserted. This fixture is fresh off freshDesk()
   // (localStorage cleared, reloaded) so wrizo-forward-lock hasn't been
   // written yet — load() falls to DEFAULT (true), matching today's shipped
-  // behavior exactly. =========================================================
-  const lockBefore = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
-  await app.evalJs("document.querySelector('.desk-toolrail-forwardlock').click()");
+  // behavior exactly. CD1 S2/S7 — `.wz-sliver-forwardlock` now (class
+  // rename only, same mechanic). =============================================
+  const lockBefore = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
+  await app.evalJs("document.querySelector('.wz-sliver-forwardlock').click()");
   await sleep(100);
-  const lockAfter = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
+  const lockAfter = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
   const lockStorage = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
-  ok('R2: clicking the forward-lock control actually flips dataset.on AND writes wrizo-forward-lock (function, not just presence)',
+  ok('CD1 S2/S7 (was "R2: ..."): clicking the forward-lock control (now in the sliver) actually flips dataset.on AND writes wrizo-forward-lock (function, not just presence)',
     lockBefore === 'true' && lockAfter === 'false' && lockStorage === '0',
     `${lockBefore} -> ${lockAfter}, storage=${lockStorage}`);
 
@@ -487,9 +518,16 @@ if (process.env.HARNESS_PARKED === '1') {
   await withHarness(async (app) => {
     await freshLoosePage(app);
     // FX1 fixture fix (matching the live section's own note above) — a
-    // loose page defaults to Draft (no pageType stamped), and this check's
-    // name always meant Free Write.
+    // loose page originally defaulted to Draft (no pageType stamped), and
+    // this check's name always meant Free Write. CD1 S8 (A7) now makes
+    // origin:'loose' open in Free Write BY DEFAULT (its own live check in
+    // cd1.mjs) — this click is a harmless same-tab no-op today, kept so
+    // this fixture stays robust even if that default ever changes again.
     await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write').click()");
+    await sleep(150);
+    // CD1 S2/S7 — open the sliver (fresh mount, closed by default);
+    // `.wz-sliver-*` hosts this content now (ToolRail retired).
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
     await sleep(150);
 
     // ORIGINAL (ab3.1 R1(a)): ok('R1(a): a LOOSE-origin page shows none of
@@ -498,15 +536,123 @@ if (process.env.HARNESS_PARKED === '1') {
     // looseRail.captureItems.length === 0, JSON.stringify(looseRail));
     // FX1 S3 — the forward lock splits off journalFurniture's suppressed
     // bundle: it's mode furniture now, present regardless of origin. Ink/
-    // capture items are unchanged AB3 law and stay absent.
+    // capture items are unchanged AB3 law and stay absent. CD1 S2/S7 —
+    // `.wz-sliver-*` selectors now (ToolRail's class family renamed with
+    // its retirement); same truth either way.
     const looseRailNow = await app.evalJs(`({
-      ink: !!document.querySelector('.desk-toolrail-inks'),
-      forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-      captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
     })`);
-    pok('PARKED (was "R1(a): a LOOSE-origin page shows none of the journal furniture in Free Write (ink/forward-lock/capture items all absent)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items stay absent',
+    pok('PARKED (was "R1(a): a LOOSE-origin page shows none of the journal furniture in Free Write (ink/forward-lock/capture items all absent)") — FX1 S3 (then CD1 S2/S7\'s class rename): the forward lock is present (mode furniture, now in the sliver); ink/capture items stay absent',
       !looseRailNow.ink && looseRailNow.forwardLock && looseRailNow.captureItems.length === 0,
       JSON.stringify(looseRailNow));
+
+    // === CD1 S2/S3/S7 — the drawer's `tools` face retires (canon A3: the
+    // drawer rests on `page` now); ToolRail.tsx retires whole (its content
+    // moves to the sliver). Five checks this ticket's design supersedes,
+    // moved here rather than deleted. ==========================================
+    await freshJournalPage(app, 'AB3PARKEDGEOMETRY');
+
+    // ORIGINAL (S1 geometry): ok('S1 geometry (ab2.1 lesson, applied day
+    // one): the tool-rail track rect is BYTE-IDENTICAL across every face
+    // flip (tools->page->place:journal->place:shelf->place:drawers->
+    // tools)', allRects.every(r => JSON.stringify(r) ===
+    // JSON.stringify(railRect0)), JSON.stringify(allRects)); — the flip
+    // sequence assumed `tools` was both the START and END rest state.
+    // CD1 S3 — `page` is the rest state now; the live section's own
+    // successor re-sequences the SAME geometry-invariance proof
+    // (page->journal->shelf->drawers->page->drawers->page). Re-proven here
+    // on a fresh fixture as a straightforward two-point check instead of
+    // re-deriving the whole sequence a second time.
+    const railRectParkedBefore = await app.evalJs(rectOf('.desk-frame-toolrail'));
+    await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()");
+    await sleep(220);
+    const railRectParkedAfter = await app.evalJs(rectOf('.desk-frame-toolrail'));
+    pok('PARKED (was "S1 geometry (ab2.1 lesson, applied day one): ...tools->page->place:journal->...") — CD1 S3: the rect stays byte-identical page <-> place:journal too (rest state is `page`, not `tools`)',
+      JSON.stringify(railRectParkedBefore) === JSON.stringify(railRectParkedAfter),
+      JSON.stringify({ railRectParkedBefore, railRectParkedAfter }));
+
+    // ORIGINAL (S1): ok('S1: clicking the active place pull again toggles
+    // the face back to tools (no dead-end face)', faceAfterToggleOff ===
+    // 'tools', faceAfterToggleOff);
+    // CD1 S3 — the toggle-off target is `page` now.
+    await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()"); // toggle it off
+    await sleep(220);
+    const faceAfterToggleOffNow = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
+    pok('PARKED (was "S1: clicking the active place pull again toggles the face back to tools (no dead-end face)") — CD1 S3: it toggles back to `page` (no dead-end face)',
+      faceAfterToggleOffNow === 'page', faceAfterToggleOffNow);
+
+    // ORIGINAL (S1): ok('S1: the tools face composes ToolRail verbatim (its
+    // own .desk-toolrail-body, real capture items)', toolsFaceContent.
+    // inFace && JSON.stringify(toolsFaceContent.captureItems) ===
+    // JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), ...);
+    // (toolsFaceContent read `.wz-drawer-face[data-face="tools"] .desk-
+    // toolrail-body` and `.wz-drawer-face .desk-toolrail-item`.)
+    // CD1 S3/S7 — no `tools` face exists to compose anything into; the
+    // capture items live in the sliver now, proven live in this file's own
+    // R1(a)/FX1-S3 section above (`.wz-sliver-item`).
+    const toolsFaceStillGoneNow = await app.evalJs("!document.querySelector('.wz-drawer-face[data-face=\"tools\"]')");
+    pok('PARKED (was "S1: the tools face composes ToolRail verbatim (its own .desk-toolrail-body, real capture items)") — CD1 S3/S7: no `tools` face exists at all; capture items live in the sliver (proven live, this file\'s own R1(a)/FX1-S3 section)',
+      toolsFaceStillGoneNow === true, String(toolsFaceStillGoneNow));
+
+    // ORIGINAL (S6 guardrail): ok('S6: a keystroke dissolves the open place
+    // face back to the tools room (was NOT tools before typing)',
+    // faceBeforeType !== 'tools' && faceAfterType === 'tools', ...);
+    // CD1 S3 — the room a keystroke dissolves back to is `page` now.
+    await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"shelf\"]').click()");
+    await sleep(220);
+    const faceBeforeTypeNow = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
+    await app.evalJs("document.querySelector('.entry-edit').focus()");
+    await app.typeKeys('y');
+    await sleep(150);
+    const faceAfterTypeNow = await app.evalJs("document.querySelector('.wz-drawer-face')?.dataset.face");
+    pok('PARKED (was "S6: a keystroke dissolves the open place face back to the tools room (was NOT tools before typing)") — CD1 S3: it dissolves back to the page room (was NOT page before typing)',
+      faceBeforeTypeNow !== 'page' && faceAfterTypeNow === 'page', `${faceBeforeTypeNow} -> ${faceAfterTypeNow}`);
+
+    // === CD1 S2/S7 — the two remaining checks this ticket's class rename
+    // supersedes (mechanical only, same mechanic — quoted for the record). =
+    await freshDesk(app);
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
+      projects.push({ id: 'ab3-legacy-proj-parked', title: 'Legacy Book (parked)', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab3-legacy-page-parked', text: '', projectId: 'ab3-legacy-proj-parked', pageType: 'manuscript', source: 'page', createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after legacy seed (PARKED)' });
+    await app.evalJs("location.hash = '#/page/ab3-legacy-page-parked'");
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'legacy null-origin page framed (PARKED)' });
+    await sleep(200);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+    await sleep(150);
+
+    // ORIGINAL (S4 A2, before this file's own CD1 rename): read
+    // `.desk-toolrail-inks` / `.desk-toolrail-forwardlock` / `.desk-
+    // toolrail-item`. CD1 S2/S7 — `.wz-sliver-*` now.
+    const legacyRailClassRenameCheck = await app.evalJs(`({
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
+    })`);
+    pok('PARKED (was "S4 A2 (grandfather clause): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+      legacyRailClassRenameCheck.ink && legacyRailClassRenameCheck.forwardLock
+        && JSON.stringify(legacyRailClassRenameCheck.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
+      JSON.stringify(legacyRailClassRenameCheck));
+
+    // ORIGINAL (R2, before this file's own CD1 rename): read `.desk-
+    // toolrail-forwardlock`. CD1 S2/S7 — `.wz-sliver-forwardlock` now.
+    const lockBeforeParked = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
+    await app.evalJs("document.querySelector('.wz-sliver-forwardlock').click()");
+    await sleep(100);
+    const lockAfterParked = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
+    const lockStorageParked = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
+    pok('PARKED (was "R2: clicking the forward-lock control actually flips dataset.on AND writes wrizo-forward-lock (function, not just presence)") — CD1 S2/S7: same truth, .wz-sliver-forwardlock',
+      lockBeforeParked === 'true' && lockAfterParked === 'false' && lockStorageParked === '0',
+      `${lockBeforeParked} -> ${lockAfterParked}, storage=${lockStorageParked}`);
 
     return parkedChecks;
   });

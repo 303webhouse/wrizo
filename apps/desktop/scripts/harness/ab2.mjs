@@ -37,12 +37,27 @@ const selectAllInEditor = (sel) => `(() => {
   s.addRange(range);
 })()`;
 
+// CD1 S2/S7 — the sliver's panel is CLOSED by default (opacity:0,
+// pointer-events:none until the grip opens it); every check below that
+// reads or clicks the hand tools now opens it first, matching what a real
+// writer's hand would actually do (ToolRail's content was always-visible;
+// the sliver's is reach-to-open).
+const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+
 await withHarness(async (app) => {
-  // === S1 — the tool rail: per-mode registry, and only the active mode's
-  // tools render (the relevance law). ========================================
+  // === S1/CD1 S2 — the hand tools: per-mode registry, and only the active
+  // mode's tools render (the relevance law), now inside the sliver
+  // (components/Sliver.tsx) rather than always-visible in the drawer track.
+  // CD1 S7 — ToolRail.tsx itself retired whole; the ORIGINAL "S1: ToolRail
+  // mounts..." check is parked below (SUPERSEDED). =============================
   await freshProsePage(app);
 
-  ok('S1: ToolRail mounts into the reserved tool-rail track', await app.evalJs("!!document.querySelector('.desk-frame-toolrail .desk-toolrail-body')"));
+  ok('CD1 S2/S7: the sliver grip is present on the paper\'s edge; opening it mounts the hand tools (the sliver, not ToolRail, hosts them now)',
+    await app.evalJs("!!document.querySelector('.wz-sliver-grip')"));
+  await openSliver(app);
+  await sleep(150);
+  ok('CD1 S2: opening the sliver reveals its body (.wz-sliver-body) inside the panel',
+    await app.evalJs("document.querySelector('.wz-sliver-panel')?.dataset.open === 'true' && !!document.querySelector('.wz-sliver-body')"));
 
   // A fresh manuscript page opens in Free Write (journal mode) by default.
   // AB3 S4 — this fixture is born through a PROJECT door (CreateProject ->
@@ -57,14 +72,17 @@ await withHarness(async (app) => {
   // ABSENT here) is parked below (HARNESS_PARKED=1, quoted-history +
   // opposite-reassertion, SUPERSEDED species); ink/capture-items absence is
   // unchanged law and stays live.
+  // CD1 S2/S7 — the ORIGINAL "FX1 S3" check (below, `.desk-toolrail-*`) is
+  // parked below (SUPERSEDED — the class family renamed with the sliver);
+  // this is its direct successor, same fixture, same truth, `.wz-sliver-*`.
   const freeWriteRail = await app.evalJs(`({
-    ink: !!document.querySelector('.desk-toolrail-inks'),
-    forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
-    format: !!document.querySelector('.desk-toolrail-format'),
-    structure: !!document.querySelector('.desk-toolrail-structure'),
+    ink: !!document.querySelector('.wz-sliver-inks'),
+    forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
+    format: !!document.querySelector('.wz-sliver-format'),
+    structure: !!document.querySelector('.wz-sliver-structure'),
   })`);
-  ok('FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT (mode furniture now) but still none of the Journal-only furniture (ink/capture items absent); format/structure stay absent too (Free Write, not Draft)',
+  ok('CD1 S2 (was "FX1 S3: ..."): Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture now) but still none of the Journal-only furniture (ink/capture items absent); format/structure stay absent too (Free Write, not Draft)',
     !freeWriteRail.ink && freeWriteRail.forwardLock
       && freeWriteRail.captureItems.length === 0
       && !freeWriteRail.format && !freeWriteRail.structure,
@@ -88,15 +106,19 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(150);
 
+  // CD1 S2/S7 — the ORIGINAL "S1/S3/S4: Draft rail..." check (`.desk-
+  // toolrail-*`) is parked below (SUPERSEDED); the sliver's `open` state
+  // survives a mode switch (no remount — same component, new props), so no
+  // re-open is needed here.
   const draftRail = await app.evalJs(`({
-    ink: !!document.querySelector('.desk-toolrail-inks'),
-    captureItems: document.querySelectorAll('.desk-toolrail-item').length,
-    format: !!document.querySelector('.desk-toolrail-format'),
-    structure: !!document.querySelector('.desk-toolrail-structure'),
-    formatButtons: [...document.querySelectorAll('.desk-toolrail-format .mode-tbtn')].map(b => b.title),
-    structureLabels: [...document.querySelectorAll('.desk-toolrail-structure-btn')].map(b => b.textContent),
+    ink: !!document.querySelector('.wz-sliver-inks'),
+    captureItems: document.querySelectorAll('.wz-sliver-item').length,
+    format: !!document.querySelector('.wz-sliver-format'),
+    structure: !!document.querySelector('.wz-sliver-structure'),
+    formatButtons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
+    structureLabels: [...document.querySelectorAll('.wz-sliver-structure-btn')].map(b => b.textContent),
   })`);
-  ok('S1/S3/S4: Draft rail shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those (no ink, no capture items)',
+  ok('CD1 S2 (was "S1/S3/S4: Draft rail..."): Draft sliver shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those (no ink, no capture items)',
     !draftRail.ink && draftRail.captureItems === 0 && draftRail.format && draftRail.structure
       && JSON.stringify(draftRail.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
       && JSON.stringify(draftRail.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
@@ -115,7 +137,7 @@ await withHarness(async (app) => {
   await app.typeKeys('plain words');
   await sleep(100);
   await app.evalJs(selectAllInEditor('.forward-only-editor'));
-  await app.evalJs("document.querySelector('.desk-toolrail-format .mode-tbtn[title=\"Bold\"]').click()");
+  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
   await sleep(100);
   const boldedDom = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
   ok('S3: Bold wraps the selection in ** conventions in the live DOM', boldedDom === '**plain words**', boldedDom);
@@ -130,7 +152,7 @@ await withHarness(async (app) => {
 
   // === S4 — the Structure picker: prose -> screenplay, mechanical only,
   // confirmation gates a non-empty page, empty pages switch free. ============
-  await app.evalJs("[...document.querySelectorAll('.desk-toolrail-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   await sleep(150);
   ok('S4: a non-empty page requesting Screenplay shows the confirmation (gated, does not act yet)',
     await app.evalJs("!!document.querySelector('.structure-confirm-modal')"));
@@ -139,7 +161,7 @@ await withHarness(async (app) => {
   ok('S4: after Cancel, the surface is still prose (forward-only-editor present, no script-sheet)',
     await app.evalJs("!!document.querySelector('.forward-only-editor') && !document.querySelector('.script-sheet')"));
 
-  await app.evalJs("[...document.querySelectorAll('.desk-toolrail-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   await sleep(150);
   await app.evalJs("document.querySelector('.structure-confirm-screenplay').click()");
   await sleep(300);
@@ -153,10 +175,14 @@ await withHarness(async (app) => {
     JSON.stringify(convertedElements));
 
   // -- S4: an EMPTY page switches structure for free (no confirmation). ------
+  // CD1 S2 — a fresh page mounts a fresh (closed) sliver; open it before
+  // reaching for the structure picker inside it.
   await freshProsePage(app);
+  await openSliver(app);
+  await sleep(150);
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(100);
-  await app.evalJs("[...document.querySelectorAll('.desk-toolrail-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   await sleep(300);
   const emptySwitchState = await app.evalJs(`({
     modal: !!document.querySelector('.structure-confirm-modal'),
@@ -170,12 +196,17 @@ await withHarness(async (app) => {
   // this check) then Enter into a fresh action element before typing the
   // line this check actually verifies, so the "verbatim" claim below isn't
   // confounded by the heading's own case-forcing.
+  // CD1 S7 — the empty-page conversion above forced a remount into
+  // ScriptEditor (a different component tree); its OWN sliver mounts fresh
+  // (closed) — open it before reaching for the structure picker again.
+  await openSliver(app);
+  await sleep(150);
   await app.evalJs("document.querySelector('.script-el-active').focus()");
   await app.typeKeys('int. office - day');
   await app.key('Enter');
   await app.typeKeys('A line of action.');
   await sleep(150);
-  await app.evalJs("[...document.querySelectorAll('.desk-toolrail-structure-btn')].find(b => b.textContent === 'Prose').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Prose').click()");
   await sleep(150);
   ok('S4: a non-empty script requesting Prose shows the one-way warning (gated)',
     await app.evalJs("!!document.querySelector('.structure-confirm-modal') && document.body.innerText.includes('one-way')"));
@@ -233,13 +264,15 @@ await withHarness(async (app) => {
   // === S5 — copy-out comes home to Publish: both actions present, payloads
   // differ correctly. =========================================================
   await freshProsePage(app);
+  await openSliver(app); // CD1 S2 — fresh mount, fresh (closed) sliver
+  await sleep(150);
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(100);
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('hello');
   await sleep(100);
   await app.evalJs(selectAllInEditor('.forward-only-editor'));
-  await app.evalJs("document.querySelector('.desk-toolrail-format .mode-tbtn[title=\"Bold\"]').click()");
+  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
   await sleep(100);
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Publish').click()");
   await sleep(150);
@@ -263,7 +296,7 @@ await withHarness(async (app) => {
   // rendering; "Copy My Words" is its honest, convention-free inverse. =======
   // This page already carries "**hello**" from the prose check above, so the
   // Structure picker's confirmation gate fires — click through it.
-  await app.evalJs("[...document.querySelectorAll('.desk-toolrail-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   await sleep(150);
   await app.evalJs("document.querySelector('.structure-confirm-screenplay')?.click()");
   await sleep(300);
@@ -286,9 +319,13 @@ await withHarness(async (app) => {
     JSON.stringify({ scriptFormatted, scriptWords }));
 
   // === S2 DoD — the typewriter reaches the script surface's Draft posture
-  // through the rail; its hold-band respects the containment fix. ===========
-  ok('S2 DoD: the typewriter toggle is present in the rail on the script surface', await app.evalJs("!!document.querySelector('.desk-toolrail-typewriter .typewriter-toggle')"));
-  const scriptTypewriterOn = await app.evalJs("document.querySelector('.desk-toolrail-typewriter .typewriter-toggle').classList.contains('on')");
+  // through the sliver; its hold-band respects the containment fix. CD1 S7
+  // — this ScriptEditor mounted fresh at the Screenplay conversion just
+  // above (a full component swap, new closed sliver) — open it first. =====
+  await openSliver(app);
+  await sleep(150);
+  ok('CD1 S2 (was "S2 DoD: ...in the rail..."): the typewriter toggle is present in the sliver on the script surface', await app.evalJs("!!document.querySelector('.wz-sliver-typewriter .typewriter-toggle')"));
+  const scriptTypewriterOn = await app.evalJs("document.querySelector('.wz-sliver-typewriter .typewriter-toggle').classList.contains('on')");
   ok('S2 DoD: the typewriter defaults on (the persisted setting, honored on the script surface too)', scriptTypewriterOn === true);
 
   const longScene = Array.from({ length: 18 }, (_, i) => `Action line ${i} overflows the sheet, respecting the cap.`);
@@ -354,12 +391,15 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/journal/ab2-journal'");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed' });
   await sleep(200);
+  // CD1 S2 — a fresh JournalEntry mount, fresh (closed) sliver.
+  await openSliver(app);
+  await sleep(150);
 
   const journalFramed = await app.evalJs(`({
     deskFrame: !!document.querySelector('.desk-frame'),
     strip: [...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent),
     legacyTabsGone: !document.querySelector('.journal-modes'),
-    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
     corkboardItems: document.querySelectorAll('.desk-corkboard-item').length,
     inkPresent: !!document.querySelector('.entry-full .ink-canvas'),
     // AB3 S3 — the below-page metadata cluster (the <h1> title among it)
@@ -371,7 +411,7 @@ await withHarness(async (app) => {
   ok('S6: JournalEntry mounts inside DeskFrame at >=1100px', journalFramed.deskFrame);
   ok('S6: the unified mode strip is present, five ratified strings', JSON.stringify(journalFramed.strip) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']), JSON.stringify(journalFramed.strip));
   ok('S6: the legacy tab row does NOT mount when framed (superseded, not deleted)', journalFramed.legacyTabsGone);
-  ok('S6: capture items are in the rail (their ruled final home)', JSON.stringify(journalFramed.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), JSON.stringify(journalFramed.captureItems));
+  ok('CD1 S2 (was "S6: capture items are in the rail..."): capture items are in the sliver now (their ruled final home, post-CD1)', JSON.stringify(journalFramed.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), JSON.stringify(journalFramed.captureItems));
   ok('S6: the interim corkboard Journal tab is retired (no .desk-corkboard-item anywhere)', journalFramed.corkboardItems === 0);
   ok('S6: the ink layer (canvas) is present — the sheet mounts editor core untouched', journalFramed.inkPresent);
   ok('AB3 S3: the below-page metadata cluster (title/star/tags) is entirely absent when framed — no <h1> anywhere (superseded by the Page face)', journalFramed.metadataAbsent);
@@ -385,12 +425,17 @@ await withHarness(async (app) => {
     journalPaperRect.width >= 600 && journalPaperRect.width <= 760, JSON.stringify(journalPaperRect));
 
   // ab2.1 F3 — Plateau foundations §3/§5 (olive marks where you are; orange
-  // marks what you do): DeskRail's active-place indicator is a where-you-
-  // are-at-rest, so it must NOT wear brass. The Journal rail item is
-  // active on this route (/journal/:id).
-  const railActiveColor = await app.evalJs("getComputedStyle(document.querySelector('.desk-rail-item.active')).color");
-  ok('F3: DeskRail\'s active item is not brass (olive/--accent-rest per the foundations)',
-    railActiveColor !== 'rgb(255, 152, 0)', railActiveColor);
+  // marks what you do): DeskRail's active-place indicator used to be a
+  // where-you-are-at-rest marker here. CD1 S4 — DeskRail no longer mounts
+  // on this (framed) route at all, so there is no active rail item's color
+  // left to read (getComputedStyle on a null selector would throw, not
+  // fail gracefully). The ORIGINAL check is parked below (SUPERSEDED); its
+  // successor reinforces S4 directly on this same fixture — the drawer's
+  // own olive-active-pull law is ab3.mjs's territory (R3), not re-proven
+  // here.
+  const railGoneOnJournal = await app.evalJs("!document.querySelector('.desk-rail')");
+  ok('CD1 S4 (was "F3: DeskRail\'s active item is not brass..."): DeskRail (.desk-rail) does not mount on the framed Journal route either',
+    railGoneOnJournal === true, String(railGoneOnJournal));
 
   // -- S6: below the gate, legacy JSX is untouched (byte-identical). --------
   await app.emulateDpr(1, 900, 900);
@@ -450,6 +495,13 @@ if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
     await freshProsePage(app);
+    // CD1 S2/S7 — every `.desk-toolrail-*` selector below is updated to its
+    // `.wz-sliver-*` successor (ToolRail's class family moved whole with
+    // it, mechanically — the historical commentary chains below are
+    // otherwise untouched); the sliver mounts closed, so it needs opening
+    // before its content can be read.
+    await openSliver(app);
+    await sleep(150);
 
     // ORIGINAL (AB2 S1/S2): ok('S1/S2: Free Write rail shows ink + forward
     // lock + capture items, and ONLY those', freeWriteRail.ink &&
@@ -467,9 +519,9 @@ if (process.env.HARNESS_PARKED === '1') {
     // items are unchanged AB3 law and stay absent. Live equivalent asserted
     // in this file's own unparked S1 block now, on the same fixture.
     const freeWriteRailNow = await app.evalJs(`({
-      ink: !!document.querySelector('.desk-toolrail-inks'),
-      forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-      captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
     })`);
     pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those", then AB3-superseded to "...shows NONE of it") — FX1 S3 re-supersedes AB3\'s own re-assertion: forward lock is back (mode furniture), ink/capture items stay absent',
       !freeWriteRailNow.ink && freeWriteRailNow.forwardLock && freeWriteRailNow.captureItems.length === 0,
@@ -490,11 +542,11 @@ if (process.env.HARNESS_PARKED === '1') {
     // The live opposite-truth successor is asserted in this file's own
     // unparked S1 block now (named "FX1 S3: ..."), on the same fixture.
     const freeWriteRailFull = await app.evalJs(`({
-      ink: !!document.querySelector('.desk-toolrail-inks'),
-      forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-      captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
-      format: !!document.querySelector('.desk-toolrail-format'),
-      structure: !!document.querySelector('.desk-toolrail-structure'),
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
+      format: !!document.querySelector('.wz-sliver-format'),
+      structure: !!document.querySelector('.wz-sliver-structure'),
     })`);
     pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items and format/structure stay absent',
       !freeWriteRailFull.ink && freeWriteRailFull.forwardLock && freeWriteRailFull.captureItems.length === 0
@@ -512,7 +564,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // for a project-origin page (mode furniture, not journal furniture). The
     // mechanic itself (localStorage-driven, reload-honored) is still proven
     // live in ab2.mjs's own unparked S2 block, unaffected either way.
-    const forwardLockRailPresent = await app.evalJs("!!document.querySelector('.desk-toolrail-forwardlock')");
+    const forwardLockRailPresent = await app.evalJs("!!document.querySelector('.wz-sliver-forwardlock')");
     pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload", then AB3-superseded to "...control does not mount at all") — FX1 S3 re-supersedes AB3\'s own re-assertion: the forward-lock rail control mounts again for a project-origin page',
       forwardLockRailPresent === true);
 
@@ -547,6 +599,143 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S6: the metadata/star band keeps its below-the-page position inside the stage column") — AB3 S3: the sheet mounts, but the metadata band (and its <h1>) is gone entirely when framed',
       metadataGoneNow.hasSheet === true && metadataGoneNow.hasH1 === false,
       JSON.stringify(metadataGoneNow));
+
+    // === CD1 S7 — ToolRail.tsx itself retires whole; the sliver
+    // (components/Sliver.tsx) hosts its content now. Six checks this
+    // ticket's S2/S7 design supersedes, moved here rather than deleted. ====
+    await freshProsePage(app);
+    await openSliver(app);
+    await sleep(150);
+
+    // ORIGINAL (S1): ok('S1: ToolRail mounts into the reserved tool-rail
+    // track', await app.evalJs("!!document.querySelector('.desk-frame-
+    // toolrail .desk-toolrail-body')"));
+    // CD1 S7 — ToolRail.tsx is deleted; the sliver (an overlay anchored
+    // inside .desk-frame-stage, NOT the tool-rail track) hosts the hand
+    // tools now. Live successor asserted in this file's own S1 section.
+    const toolRailGoneNow = await app.evalJs("!document.querySelector('.desk-toolrail-body')");
+    pok('PARKED (was "S1: ToolRail mounts into the reserved tool-rail track") — CD1 S7: ToolRail.tsx is deleted; .desk-toolrail-body does not exist anywhere',
+      toolRailGoneNow === true, String(toolRailGoneNow));
+
+    // ORIGINAL (FX1 S3, before this file's own CD1 rename): ok('FX1 S3:
+    // Free Write rail on a PROJECT-origin page shows the forward lock
+    // PRESENT (mode furniture now) but still none of the Journal-only
+    // furniture (ink/capture items absent); format/structure stay absent
+    // too (Free Write, not Draft)', !freeWriteRail.ink &&
+    // freeWriteRail.forwardLock && freeWriteRail.captureItems.length === 0
+    // && !freeWriteRail.format && !freeWriteRail.structure, ...); — read
+    // `.desk-toolrail-inks` / `.desk-toolrail-forwardlock` /
+    // `.desk-toolrail-item` / `.desk-toolrail-format` /
+    // `.desk-toolrail-structure`.
+    // CD1 S2/S7 — same truth, same fixture, `.wz-sliver-*` now (the class
+    // family moved whole with the sliver). Live successor in this file's
+    // own S1 section (named "CD1 S2 (was \"FX1 S3: ...\")").
+    const freeWriteRailClassRenameCheck = await app.evalJs(`({
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
+      format: !!document.querySelector('.wz-sliver-format'),
+      structure: !!document.querySelector('.wz-sliver-structure'),
+    })`);
+    pok('PARKED (was "FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT...") — CD1 S2/S7: same truth, .wz-sliver-* selectors (ToolRail\'s class family renamed with its retirement)',
+      !freeWriteRailClassRenameCheck.ink && freeWriteRailClassRenameCheck.forwardLock
+        && freeWriteRailClassRenameCheck.captureItems.length === 0
+        && !freeWriteRailClassRenameCheck.format && !freeWriteRailClassRenameCheck.structure,
+      JSON.stringify(freeWriteRailClassRenameCheck));
+
+    // ORIGINAL (S1/S3/S4): ok('S1/S3/S4: Draft rail shows Bold/Italic/
+    // Heading/Spacing + the Structure picker, and ONLY those (no ink, no
+    // capture items)', !draftRail.ink && draftRail.captureItems === 0 &&
+    // draftRail.format && draftRail.structure && ... — read
+    // `.desk-toolrail-inks` / `.desk-toolrail-item` / `.desk-toolrail-
+    // format` / `.desk-toolrail-structure` / `.desk-toolrail-format
+    // .mode-tbtn` / `.desk-toolrail-structure-btn`.
+    // CD1 S2/S7 — same truth, `.wz-sliver-*` now. Live successor in this
+    // file's own S1 section.
+    await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
+    await sleep(150);
+    const draftRailClassRenameCheck = await app.evalJs(`({
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      captureItems: document.querySelectorAll('.wz-sliver-item').length,
+      format: !!document.querySelector('.wz-sliver-format'),
+      structure: !!document.querySelector('.wz-sliver-structure'),
+      formatButtons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
+      structureLabels: [...document.querySelectorAll('.wz-sliver-structure-btn')].map(b => b.textContent),
+    })`);
+    pok('PARKED (was "S1/S3/S4: Draft rail shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+      !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+        && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
+        && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
+      JSON.stringify(draftRailClassRenameCheck));
+
+    // ORIGINAL (S6): ok('S6: capture items are in the rail (their ruled
+    // final home)', JSON.stringify(journalFramed.captureItems) ===
+    // JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), ...); —
+    // read `.desk-toolrail-item` inside a fresh, framed JournalEntry.
+    // CD1 S2/S7 — capture items' "ruled final home" moves again, from
+    // ToolRail's rail track to the sliver. Live successor in this file's
+    // own S6 section.
+    await app.goto('/');
+    await app.evalJs('localStorage.clear()');
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture (PARKED capture items)' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab2-journal-parked-capture', text: '', projectId: null, source: 'page', createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Journal seed (PARKED capture items)' });
+    await app.evalJs("location.hash = '#/journal/ab2-journal-parked-capture'");
+    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (PARKED capture items)' });
+    await sleep(200);
+    await openSliver(app);
+    await sleep(150);
+    const captureItemsInSliverNow = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent)");
+    pok('PARKED (was "S6: capture items are in the rail (their ruled final home)") — CD1 S2/S7: capture items are in the sliver now, same three items',
+      JSON.stringify(captureItemsInSliverNow) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
+      JSON.stringify(captureItemsInSliverNow));
+
+    // ORIGINAL (S2 DoD): ok('S2 DoD: the typewriter toggle is present in
+    // the rail on the script surface', await app.evalJs("!!document.
+    // querySelector('.desk-toolrail-typewriter .typewriter-toggle')"));
+    // CD1 S2/S7 — same truth, `.wz-sliver-typewriter` now. Live successor
+    // in this file's own S2 DoD section.
+    await app.goto('/');
+    await app.evalJs('localStorage.clear()');
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before script fixture (PARKED typewriter)' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab2-script-parked-typewriter', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after script seed (PARKED typewriter)' });
+    await app.evalJs("location.hash = '#/page/ab2-script-parked-typewriter'");
+    await app.waitFor("!!document.querySelector('.script-sheet')", { label: 'Script framed (PARKED typewriter)' });
+    await sleep(200);
+    await openSliver(app);
+    await sleep(150);
+    const typewriterInSliverNow = await app.evalJs("!!document.querySelector('.wz-sliver-typewriter .typewriter-toggle')");
+    pok('PARKED (was "S2 DoD: the typewriter toggle is present in the rail on the script surface") — CD1 S2/S7: it is present in the sliver now',
+      typewriterInSliverNow === true, String(typewriterInSliverNow));
+
+    // ORIGINAL (ab2.1 F3): ok('F3: DeskRail\'s active item is not brass
+    // (olive/--accent-rest per the foundations)', railActiveColor !==
+    // 'rgb(255, 152, 0)', railActiveColor); — read getComputedStyle on
+    // `.desk-rail-item.active` on the framed Journal route.
+    // CD1 S4 — DeskRail does not mount on ANY framed route at all; there is
+    // no active rail item left to color-check. Live successor in this
+    // file's own S6 section asserts absence directly, on the same route.
+    const railStillGoneOnJournalNow = await app.evalJs("!document.querySelector('.desk-rail')");
+    pok('PARKED (was "F3: DeskRail\'s active item is not brass (olive/--accent-rest per the foundations)") — CD1 S4: DeskRail does not mount on the framed Journal route at all (nothing to color-check)',
+      railStillGoneOnJournalNow === true, String(railStillGoneOnJournalNow));
 
     return parkedChecks;
   });

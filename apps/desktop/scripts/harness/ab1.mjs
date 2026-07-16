@@ -58,8 +58,10 @@ await withHarness(async (app) => {
 
   ok('DeskFrame mounts at >=1100px on the text surface', await app.evalJs("!!document.querySelector('.desk-frame')"));
 
-  // -- S1: four zone tracks present (wayfinding = pre-existing DeskRail; the
-  // other three are DeskFrame's own). FX1 S5 retired the ALWAYS-empty meter
+  // -- S1: zone tracks present. CD1 S4 — wayfinding (DeskRail, `.desk-rail`)
+  // no longer mounts on ANY framed surface; the ORIGINAL "four zone tracks"
+  // check (which required it present) is parked below (SUPERSEDED), with
+  // the opposite assertion live here. FX1 S5 retired the ALWAYS-empty meter
   // track's own presence assertion — see this file's PARKED section and the
   // new live check just below. ------------------------------------------------
   const zones = await app.evalJs(`({
@@ -69,16 +71,21 @@ await withHarness(async (app) => {
     corkboard: !!document.querySelector('.desk-frame-corkboard'),
     meter: document.querySelectorAll('.desk-frame-meter').length,
   })`);
-  ok('S1: four zone tracks present (wayfinding+toolrail+stage+corkboard)',
-    zones.wayfinding && zones.toolRail && zones.stage && zones.corkboard,
+  ok('CD1 S4/S1: DeskFrame\'s own tool-rail/stage tracks are present; the far-left rail (.desk-rail) does NOT mount while framed',
+    !zones.wayfinding && zones.toolRail && zones.stage,
     JSON.stringify(zones));
   // FX1 S5 — Nick's "dead bar" verdict: the meter track never had a content
   // prop (AB1 S2's own "ALWAYS empty/reserved"), so it rendered a wide,
   // purposeless desk-ground shell along the stage's bottom on every framed
   // page. DeskFrame now takes a `meter` prop and renders the track only when
   // something is passed; nothing is passed yet, so it renders NOTHING.
-  ok('FX1 S5: the dead meter-track bar is gone (no host renders while empty) — the named non-goal corkboard track is untouched, still present',
-    zones.meter === 0 && zones.corkboard === true, JSON.stringify(zones));
+  // CD1 S5 — the corkboard track (previously a NAMED NON-GOAL, deliberately
+  // left "untouched, still present" by FX1 S5) now adopts the SAME "render
+  // only with content" law itself: the ORIGINAL check asserting it present
+  // is parked below (SUPERSEDED), with the opposite assertion live here —
+  // no CD1 caller passes corkboard content, so the track is absent too.
+  ok('CD1 S5/FX1 S5: the dead meter-track bar is gone AND the corkboard track (no longer a named non-goal — CD1 S5 claims it) is also absent while empty',
+    zones.meter === 0 && zones.corkboard === false, JSON.stringify(zones));
 
   // -- S2: the unified mode strip, exact ratified strings, title case -------
   const stripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
@@ -149,12 +156,19 @@ await withHarness(async (app) => {
   // checking a threshold mid-animation is inherently timing-flaky. pointer-
   // events flips the instant the attribute/class changes (not animated), so
   // it's the reliable signal that the dissolve state itself actually took.
+  // CD1 S1 — `.desk-frame-modestrip` (DeskFrame's own wrapper) retired along
+  // with the modeStrip prop it once held; the mode strip itself
+  // (`.desk-mode-strip`) now lives in the host's own header row
+  // (`.sprint-nav`, carrying `chrome-fade` directly), outside DeskFrame
+  // entirely. The ORIGINAL check (which read the now-gone wrapper) is
+  // parked below (SUPERSEDED); this asserts the SAME truth — the strip goes
+  // non-interactive on dissolve — through its new, correct ancestor.
   const dissolvedState = await app.evalJs(`({
     frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
-    stripPointerEvents: getComputedStyle(document.querySelector('.desk-frame-modestrip')).pointerEvents,
+    stripPointerEvents: getComputedStyle(document.querySelector('.desk-mode-strip')).pointerEvents,
     glyphChromeReceded: document.querySelector('.gh-corner-glyph').closest('[data-chrome-receded]')?.dataset.chromeReceded,
   })`);
-  ok('S3: a keydown dissolves the frame (data-writing=true, mode strip goes non-interactive)',
+  ok('CD1 S1 (was "S3: ...mode strip goes non-interactive"): a keydown dissolves the frame (data-writing=true) AND the mode strip (now in the header row, not DeskFrame\'s own track) goes non-interactive too — one shared engine',
     dissolvedState.frameWriting === 'true' && dissolvedState.stripPointerEvents === 'none',
     JSON.stringify(dissolvedState));
   // The corner glyph rides the SAME global isWriting session (App.tsx's
@@ -347,20 +361,25 @@ await withHarness(async (app) => {
   await sleep(200);
   // rectOf only returns {left,top,width,height} (no .right) — derive right
   // edges explicitly rather than reading a property that doesn't exist.
+  // CD1 S5 — `.desk-frame-corkboard` no longer mounts AT ALL while empty
+  // (the FX1 S5 "render only with content" law, reused for this track; no
+  // CD1 caller ever passes content), so its own rect no longer exists to
+  // read. The ORIGINAL "never overlaps the corkboard" check is parked below
+  // (SUPERSEDED); the tool-rail overlap check is untouched (still a real
+  // track) and stays live as-is.
   const gateFloorRects = await app.evalJs(`({
     toolrail: ${rectOf('.desk-frame-toolrail')},
     pagecol: ${rectOf('.mode-pagecol')},
-    corkboard: ${rectOf('.desk-frame-corkboard')},
+    corkboardAbsent: !document.querySelector('.desk-frame-corkboard'),
     hasHorizScroll: document.documentElement.scrollWidth > window.innerWidth,
   })`);
   const toolrailRight = gateFloorRects.toolrail.left + gateFloorRects.toolrail.width;
   const pagecolRight = gateFloorRects.pagecol.left + gateFloorRects.pagecol.width;
-  const corkboardLeft = gateFloorRects.corkboard.left;
   ok('PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail',
     gateFloorRects.pagecol.left >= toolrailRight,
     JSON.stringify({ ...gateFloorRects, toolrailRight, pagecolRight }));
-  ok('PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the corkboard',
-    pagecolRight <= corkboardLeft,
+  ok('CD1 S5/S1 (was "...never overlaps the corkboard"): the corkboard track does not mount at all at the gate floor either (nothing to overlap — the FX1 S5 law, universal, not just on a wide viewport)',
+    gateFloorRects.corkboardAbsent === true,
     JSON.stringify({ ...gateFloorRects, toolrailRight, pagecolRight }));
   ok('PAGE IS PRIMARY at the gate floor (1100px): no horizontal scroll (nothing overflows the viewport)',
     gateFloorRects.hasHorizScroll === false, JSON.stringify(gateFloorRects));
@@ -474,6 +493,76 @@ if (process.env.HARNESS_PARKED === '1') {
     const meterGoneNow = await app.evalJs("document.querySelectorAll('.desk-frame-meter').length");
     pok('PARKED (was "S1: all five zone tracks present..." + "S1: exactly one meter track, and it is empty") — FX1 S5: the meter track does not mount at all while empty (zero tracks, not one empty one)',
       meterGoneNow === 0, String(meterGoneNow));
+
+    // ORIGINAL (S1): ok('S1: four zone tracks present
+    // (wayfinding+toolrail+stage+corkboard)', zones.wayfinding &&
+    // zones.toolRail && zones.stage && zones.corkboard, JSON.stringify(zones));
+    // CD1 S4 — the far-left rail (.desk-rail, "wayfinding") no longer
+    // mounts on ANY framed surface (store/deskFrameActive.ts: DeskRail
+    // itself returns null while a DeskFrame is on screen). Successor
+    // assertion lives in this file's own live section (S1), not moved to
+    // another file — this bug and its fix are both AB1/CD1's own territory,
+    // same precedent as the meter-track entry just above.
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), PARKED wayfinding' });
+    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'DeskFrame framed, PARKED wayfinding' });
+    await sleep(200);
+    const wayfindingGoneNow = await app.evalJs("!!document.querySelector('.desk-rail')");
+    pok('PARKED (was "S1: four zone tracks present (wayfinding+toolrail+stage+corkboard)") — CD1 S4: wayfinding (.desk-rail) is ABSENT while framed, not present',
+      wayfindingGoneNow === false, String(wayfindingGoneNow));
+
+    // ORIGINAL (S3): ok('S3: a keydown dissolves the frame (data-writing=
+    // true, mode strip goes non-interactive)', dissolvedState.frameWriting
+    // === 'true' && dissolvedState.stripPointerEvents === 'none', ...);
+    // (dissolvedState read getComputedStyle(document.querySelector(
+    // '.desk-frame-modestrip')).pointerEvents — that wrapper element no
+    // longer exists.) CD1 S1 — the mode strip moved out of DeskFrame
+    // entirely, into the host's own header row; its dissolve now rides
+    // `.sprint-nav`'s own `chrome-fade` class, proven live in this file's
+    // own S3 section above via `.desk-mode-strip` directly (a valid,
+    // still-existing selector) rather than the retired wrapper.
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys('PARKED wrapper-retirement probe. ');
+    await sleep(150);
+    const modestripWrapperGoneNow = await app.evalJs("!document.querySelector('.desk-frame-modestrip')");
+    pok('PARKED (was "S3: ...mode strip goes non-interactive", reading the now-gone .desk-frame-modestrip wrapper) — CD1 S1: that wrapper is ABSENT entirely (the strip lives in the header row now, not a DeskFrame track)',
+      modestripWrapperGoneNow === true, String(modestripWrapperGoneNow));
+
+    // ORIGINAL (AB1 gate-floor fixture): const gateFloorRects = await
+    // app.evalJs(`({ toolrail: ${rectOf('.desk-frame-toolrail')}, pagecol:
+    // ${rectOf('.mode-pagecol')}, corkboard: ${rectOf('.desk-frame-
+    // corkboard')}, hasHorizScroll: document.documentElement.scrollWidth >
+    // window.innerWidth, })`); const corkboardLeft = gateFloorRects.
+    // corkboard.left; ok('PAGE IS PRIMARY at the gate floor (1100px): the
+    // page column never overlaps the corkboard', pagecolRight <=
+    // corkboardLeft, ...); — `.desk-frame-corkboard` no longer mounts at
+    // all while empty (CD1 S5, the FX1 S5 law reused), so `rectOf(...)`
+    // itself threw (getBoundingClientRect on null) — not a graceful
+    // failure, a crash, which is exactly why this file's own live section
+    // above computes `corkboardAbsent` instead of a rect now.
+    await app.emulateDpr(1, 1100, 900); // the exact DESKFRAME_MIN_WIDTH floor, PARKED fixture
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), PARKED gate floor' });
+    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'DeskFrame at 1100px, PARKED gate floor' });
+    await sleep(200);
+    const corkboardStillGoneAtFloor = await app.evalJs("!document.querySelector('.desk-frame-corkboard')");
+    pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the corkboard", a rect read that now crashes on the retired track) — CD1 S5: the corkboard track is simply ABSENT at the gate floor, nothing to overlap',
+      corkboardStillGoneAtFloor === true, String(corkboardStillGoneAtFloor));
+
+    // ORIGINAL (FX1 S5): ok('FX1 S5: the dead meter-track bar is gone (no
+    // host renders while empty) — the named non-goal corkboard track is
+    // untouched, still present', zones.meter === 0 && zones.corkboard ===
+    // true, JSON.stringify(zones));
+    // CD1 S5 — the corkboard track stops being a named non-goal and adopts
+    // the SAME "render only with content" law FX1 S5 gave the meter track:
+    // it is now ABSENT while empty, same as meter, not present.
+    const corkboardGoneTooNow = await app.evalJs("!document.querySelector('.desk-frame-corkboard')");
+    pok('PARKED (was "...the named non-goal corkboard track is untouched, still present") — CD1 S5: the corkboard track is no longer untouched; it is ABSENT while empty too',
+      corkboardGoneTooNow === true, String(corkboardGoneTooNow));
 
     return parkedChecks;
   });

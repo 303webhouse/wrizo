@@ -81,6 +81,11 @@ const freshLoosePage = async (app) => {
 
 // A journal-origin authored page, framed — for S4's drawer-pull/place-face-
 // verb/Add-to-sheet border-radius asserts (mirrors ab3.mjs's journalPageHere).
+// CD1 S2/S7 — the sliver's panel is CLOSED by default (ToolRail's content
+// was always-visible; the sliver's is reach-to-open). Every fixture below
+// that reads the hand tools opens it first.
+const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+
 const freshJournalPage = async (app, marker) => {
   await freshDesk(app);
   await app.goto('/journal');
@@ -235,30 +240,36 @@ await withHarness(async (app) => {
   // The park+reassert pairs live in ab2.mjs/ab3.mjs's own PARKED sections
   // (A4); this re-proves the same live law fresh, plus the actual MECHANIC.
   // ==========================================================================
+  // CD1 S2/S7 — ToolRail retired whole; `.wz-sliver-*` hosts this content
+  // now (the sliver mounts closed — open it first). Every named check in
+  // this S3 block is parked below (SUPERSEDED, class rename only, same
+  // truth) with a live successor right here.
   await freshLoosePage(app);
+  await openSliver(app);
+  await sleep(150);
   const looseRail = await app.evalJs(`({
-    ink: !!document.querySelector('.desk-toolrail-inks'),
-    forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    ink: !!document.querySelector('.wz-sliver-inks'),
+    forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
   })`);
-  ok('S3: a LOOSE-origin page\'s Free Write rail shows the forward-lock control, with ink/capture items still absent',
+  ok('CD1 S2 (was "S3: a LOOSE-origin page\'s Free Write rail shows the forward-lock control..."): a LOOSE-origin page\'s Free Write sliver shows the forward-lock control, with ink/capture items still absent',
     looseRail.forwardLock && !looseRail.ink && looseRail.captureItems.length === 0, JSON.stringify(looseRail));
 
   // R2 pattern — presence is not function: click actually flips dataset.on
   // AND writes the persisted setting.
-  const lockBefore = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
-  await app.evalJs("document.querySelector('.desk-toolrail-forwardlock').click()");
+  const lockBefore = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
+  await app.evalJs("document.querySelector('.wz-sliver-forwardlock').click()");
   await sleep(100);
-  const lockAfter = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
+  const lockAfter = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
   const lockStorage = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
-  ok('S3: clicking the loose page\'s forward-lock control flips dataset.on AND writes wrizo-forward-lock',
+  ok('CD1 S2 (was "S3: clicking the loose page\'s forward-lock control..."): clicking the loose page\'s forward-lock control (in the sliver) flips dataset.on AND writes wrizo-forward-lock',
     lockBefore === 'true' && lockAfter === 'false' && lockStorage === '0', `${lockBefore} -> ${lockAfter}, storage=${lockStorage}`);
 
   // Restore lock ON, then prove the MECHANIC (not just the control): typing
   // then backspacing strikes (.fo-struck appears) rather than truly erasing.
-  await app.evalJs("document.querySelector('.desk-toolrail-forwardlock').click()");
+  await app.evalJs("document.querySelector('.wz-sliver-forwardlock').click()");
   await sleep(100);
-  const lockRestored = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
+  const lockRestored = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('ab');
   await app.key('Backspace');
@@ -269,19 +280,21 @@ await withHarness(async (app) => {
 
   // -- The project-origin fixture: control present, ink/capture still absent. -
   await freshProsePage(app);
+  await openSliver(app);
+  await sleep(150);
   const projectRail = await app.evalJs(`({
-    ink: !!document.querySelector('.desk-toolrail-inks'),
-    forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
-    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    ink: !!document.querySelector('.wz-sliver-inks'),
+    forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
   })`);
-  ok('S3: a PROJECT-origin page\'s Free Write rail ALSO shows the forward-lock control, with ink/capture items still absent',
+  ok('CD1 S2 (was "S3: a PROJECT-origin page\'s Free Write rail ALSO shows..."): a PROJECT-origin page\'s Free Write sliver ALSO shows the forward-lock control, with ink/capture items still absent',
     projectRail.forwardLock && !projectRail.ink && projectRail.captureItems.length === 0, JSON.stringify(projectRail));
 
   // Independent of typewriter — toggling typewriter off doesn't touch it.
   await app.evalJs("[...document.querySelectorAll('.typewriter-toggle')].find(Boolean)?.click()");
   await sleep(100);
-  const lockStillPresent = await app.evalJs("!!document.querySelector('.desk-toolrail-forwardlock')");
-  ok('S3: the forward lock stays mounted independent of the typewriter toggle (no coupling)', lockStillPresent);
+  const lockStillPresent = await app.evalJs("!!document.querySelector('.wz-sliver-forwardlock')");
+  ok('CD1 S2 (was "S3: the forward lock stays mounted independent of the typewriter toggle..."): the forward lock (sliver) stays mounted independent of the typewriter toggle (no coupling)', lockStillPresent);
 
   // ==========================================================================
   // S4 — square corners. Plateau's radius tokens are 0; the sweep holds on a
@@ -310,27 +323,32 @@ await withHarness(async (app) => {
   ok('S4: computed border-radius is 0px on the Add-to sheet', addToSheetRadius === '0px', addToSheetRadius);
 
   // ==========================================================================
-  // S5 — the dead bar dies: the meter track's host doesn't mount while empty
-  // (the named non-goal corkboard track is untouched, still present).
+  // S5 — the dead bar dies: the meter track's host doesn't mount while
+  // empty. CD1 S5 — the corkboard track is no longer a named non-goal; it
+  // adopts the SAME "render only with content" law meter already has, so
+  // it is ALSO absent while empty now (not "untouched, still present" —
+  // the ORIGINAL check is parked below, SUPERSEDED).
   // ==========================================================================
   await freshProsePage(app);
   const s5 = await app.evalJs(`({
     meter: document.querySelectorAll('.desk-frame-meter').length,
     corkboard: !!document.querySelector('.desk-frame-corkboard'),
   })`);
-  ok('S5: the empty meter-track bar is absent on a fresh framed page; the corkboard track (named non-goal) is untouched',
-    s5.meter === 0 && s5.corkboard === true, JSON.stringify(s5));
+  ok('CD1 S5 (was "S5: ...the corkboard track (named non-goal) is untouched, still present"): the empty meter-track bar is absent on a fresh framed page; the corkboard track is ALSO absent now (no longer a named non-goal)',
+    s5.meter === 0 && s5.corkboard === false, JSON.stringify(s5));
 
   // ==========================================================================
   // S6 — the orange-at-rest sweep. Negative asserts while olive stays a
   // working value (A3's standing graduation, per ab2.1/ab3.1's own F3/R3).
   // ==========================================================================
   await freshScriptPage(app);
-  const structureBtnBg = await app.evalJs("getComputedStyle(document.querySelector('.desk-toolrail-structure-btn.active')).backgroundColor");
-  ok('S6: the active Structure button\'s computed background is not brass', structureBtnBg !== 'rgb(255, 152, 0)', structureBtnBg);
+  await openSliver(app);
+  await sleep(150);
+  const structureBtnBg = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-structure-btn.active')).backgroundColor");
+  ok('CD1 S2 (was "S6: the active Structure button\'s computed background is not brass"): the active Structure button (in the sliver) is not brass', structureBtnBg !== 'rgb(255, 152, 0)', structureBtnBg);
 
-  const eyebrowColor = await app.evalJs("getComputedStyle(document.querySelector('.desk-toolrail-h')).color");
-  ok('S6: an eyebrow label\'s computed color is not brass', eyebrowColor !== 'rgb(255, 152, 0)', eyebrowColor);
+  const eyebrowColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-h')).color");
+  ok('CD1 S2 (was "S6: an eyebrow label\'s computed color is not brass"): an eyebrow label (in the sliver) is not brass', eyebrowColor !== 'rgb(255, 152, 0)', eyebrowColor);
 
   const typewriterGlyphColor = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
   ok('S6: the Typewriter glyph\'s computed color is not brass (typewriter defaults ON, so this is the common resting state)',
@@ -343,19 +361,130 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// FX1 parks nothing of its OWN out of this file (every check above reflects
-// this ticket's live, current design) — the checks FX1 itself supersedes
-// belonged to AB2/AB3 and are parked in THEIR OWN files (ab2.mjs's and
-// ab3.mjs's PARKED sections), per the established precedent. This scaffold
-// exists so a future ticket that supersedes any of THIS file's checks has a
-// documented home to move them into, matching ab1.mjs/ab2.mjs/ab3.mjs's own
-// pattern. Nothing to run today.
+// FX1's own scaffold sat empty until now — CD1 is its first real tenant:
+// ToolRail.tsx retires whole (S7), its `.desk-toolrail-*` class family
+// moving to the sliver (`.wz-sliver-*`, S2). Six checks this ticket's
+// design supersedes, moved here rather than deleted (parked != deleted).
+// All SUPERSEDED species (quoted verbatim from their ORIGINAL FX1 form,
+// then re-asserted against the same truth through the new class family);
+// none are DORMANT. Live successors are in this file's own S3/S6 sections.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshLoosePage(app);
+    await openSliver(app);
+    await sleep(150);
+
+    // ORIGINAL (S3): ok('S3: a LOOSE-origin page\'s Free Write rail shows
+    // the forward-lock control, with ink/capture items still absent',
+    // looseRail.forwardLock && !looseRail.ink && looseRail.captureItems.
+    // length === 0, ...); — read `.desk-toolrail-inks` / `.desk-toolrail-
+    // forwardlock` / `.desk-toolrail-item`.
+    // CD1 S2/S7 — `.wz-sliver-*` now (ToolRail's class family retired with
+    // the component). Same truth.
+    const looseRailParked = await app.evalJs(`({
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
+    })`);
+    pok('PARKED (was "S3: a LOOSE-origin page\'s Free Write rail shows the forward-lock control, with ink/capture items still absent") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+      looseRailParked.forwardLock && !looseRailParked.ink && looseRailParked.captureItems.length === 0,
+      JSON.stringify(looseRailParked));
+
+    // ORIGINAL (S3): ok('S3: clicking the loose page\'s forward-lock
+    // control flips dataset.on AND writes wrizo-forward-lock',
+    // lockBefore === 'true' && lockAfter === 'false' && lockStorage ===
+    // '0', ...); — read `.desk-toolrail-forwardlock`.
+    // CD1 S2/S7 — `.wz-sliver-forwardlock` now.
+    const lockBeforeParked = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
+    await app.evalJs("document.querySelector('.wz-sliver-forwardlock').click()");
+    await sleep(100);
+    const lockAfterParked = await app.evalJs("document.querySelector('.wz-sliver-forwardlock')?.dataset.on");
+    const lockStorageParked = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
+    pok('PARKED (was "S3: clicking the loose page\'s forward-lock control flips dataset.on AND writes wrizo-forward-lock") — CD1 S2/S7: same truth, .wz-sliver-forwardlock',
+      lockBeforeParked === 'true' && lockAfterParked === 'false' && lockStorageParked === '0',
+      `${lockBeforeParked} -> ${lockAfterParked}, storage=${lockStorageParked}`);
+
+    // -- Project-origin fixture. ------------------------------------------
+    await freshProsePage(app);
+    await openSliver(app);
+    await sleep(150);
+
+    // ORIGINAL (S3): ok('S3: a PROJECT-origin page\'s Free Write rail ALSO
+    // shows the forward-lock control, with ink/capture items still
+    // absent', projectRail.forwardLock && !projectRail.ink &&
+    // projectRail.captureItems.length === 0, ...);
+    // CD1 S2/S7 — `.wz-sliver-*` now.
+    const projectRailParked = await app.evalJs(`({
+      ink: !!document.querySelector('.wz-sliver-inks'),
+      forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
+      captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
+    })`);
+    pok('PARKED (was "S3: a PROJECT-origin page\'s Free Write rail ALSO shows the forward-lock control, with ink/capture items still absent") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+      projectRailParked.forwardLock && !projectRailParked.ink && projectRailParked.captureItems.length === 0,
+      JSON.stringify(projectRailParked));
+
+    // ORIGINAL (S3): ok('S3: the forward lock stays mounted independent of
+    // the typewriter toggle (no coupling)', lockStillPresent); — read
+    // `.desk-toolrail-forwardlock`.
+    // CD1 S2/S7 — `.wz-sliver-forwardlock` now.
+    await app.evalJs("[...document.querySelectorAll('.typewriter-toggle')].find(Boolean)?.click()");
+    await sleep(100);
+    const lockStillPresentParked = await app.evalJs("!!document.querySelector('.wz-sliver-forwardlock')");
+    pok('PARKED (was "S3: the forward lock stays mounted independent of the typewriter toggle (no coupling)") — CD1 S2/S7: same truth, .wz-sliver-forwardlock',
+      lockStillPresentParked === true, String(lockStillPresentParked));
+
+    // -- S6 orange-at-rest sweep, on the script surface. -------------------
+    await freshScriptPage(app);
+    await openSliver(app);
+    await sleep(150);
+
+    // ORIGINAL (S6): ok('S6: the active Structure button\'s computed
+    // background is not brass', structureBtnBg !== 'rgb(255, 152, 0)',
+    // structureBtnBg); — read `.desk-toolrail-structure-btn.active`.
+    // CD1 S2/S7 — `.wz-sliver-structure-btn.active` now.
+    const structureBtnBgParked = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-structure-btn.active')).backgroundColor");
+    pok('PARKED (was "S6: the active Structure button\'s computed background is not brass") — CD1 S2/S7: same truth, .wz-sliver-structure-btn.active',
+      structureBtnBgParked !== 'rgb(255, 152, 0)', structureBtnBgParked);
+
+    // ORIGINAL (S6): ok('S6: an eyebrow label\'s computed color is not
+    // brass', eyebrowColor !== 'rgb(255, 152, 0)', eyebrowColor); — read
+    // `.desk-toolrail-h`.
+    // CD1 S2/S7 — `.wz-sliver-h` now.
+    const eyebrowColorParked = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-h')).color");
+    pok('PARKED (was "S6: an eyebrow label\'s computed color is not brass") — CD1 S2/S7: same truth, .wz-sliver-h',
+      eyebrowColorParked !== 'rgb(255, 152, 0)', eyebrowColorParked);
+
+    // -- S5, the corkboard's own supersession. -----------------------------
+    await freshProsePage(app);
+
+    // ORIGINAL (S5): ok('S5: the empty meter-track bar is absent on a fresh
+    // framed page; the corkboard track (named non-goal) is untouched',
+    // s5.meter === 0 && s5.corkboard === true, JSON.stringify(s5));
+    // CD1 S5 — the corkboard track is no longer a named non-goal; it
+    // renders only with content, same as meter, so it is ABSENT while
+    // empty too (every CD1 caller passes none).
+    const s5Parked = await app.evalJs(`({
+      meter: document.querySelectorAll('.desk-frame-meter').length,
+      corkboard: !!document.querySelector('.desk-frame-corkboard'),
+    })`);
+    pok('PARKED (was "S5: ...the corkboard track (named non-goal) is untouched, still present") — CD1 S5: the corkboard track is ABSENT while empty too, not untouched',
+      s5Parked.meter === 0 && s5Parked.corkboard === false, JSON.stringify(s5Parked));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nFX1 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of fx1.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nFX1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nFX1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecksFx1 = checks.concat(parkedChecks);
+const pass = allChecksFx1.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nFX1 VERIFY: PASS (${checks.length} checks)` : `\nFX1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nFX1 VERIFY: PASS (${allChecksFx1.length} checks)` : `\nFX1 VERIFY: FAIL — ${allChecksFx1.filter((c) => !c.pass).length}/${allChecksFx1.length} failed`);
 process.exit(pass ? 0 : 1);
