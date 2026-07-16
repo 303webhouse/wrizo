@@ -590,9 +590,54 @@ outlive a session lives here, not in chat.
     provisional by design — the committee pass owns the formal
     ratification. **Per the corrected rule (item 23's R5): this ticket
     is zero-schema, so merge pre-authorization stood on its own — no
-    separate Nick's-go was needed for the merge itself.** Close awaits
-    Fable's post-merge review and (per the brief) folds into the AB
-    gates rather than opening a new device-look cycle on its own.
+    separate Nick's-go was needed for the merge itself.**
+    **Fable's post-merge review landed — 2026-07-16**
+    (`docs/wrizo-alpha/fx1-review-fable.md`): **GREEN — zero
+    product-code defects.** S3's gate change and the harness law
+    verified patch-by-patch; S1/S2/S4/S5/S6 verified at census level
+    (exactly the five named files touched, no schema/sync surface) plus
+    behaviorally via `fx1.mjs`'s 25 checks. Five rulings of record: (1)
+    the Journal's centered-start skip **sustained** (ink-coordinate
+    risk is real; a felt inconsistency becomes a real ticket, never a
+    tweak); (2) the `ab1` meter-track supersession **ratified as
+    precedent** — A4's park law applies to any check a fix falsifies,
+    brief-enumerated or not; (3) double supersession **ratified as
+    house pattern** — an already-parked check going stale again still
+    must pass under `HARNESS_PARKED=1`, generations accrete, all
+    preserved; (4) **Fable's own R1(a) owned as vacuous, not the
+    build's defect** — a loose page opens in Draft by default (no
+    pageType, the support-page rule), so a Draft rail never carries
+    journal furniture regardless of origin, meaning the original check
+    never exercised the origin gate until this fold's fixtures clicked
+    Free Write explicitly; standing lesson recorded: a check reading a
+    mode-dependent surface sets the mode explicitly, never assumes a
+    fixture's default. New committee docket item surfaced here: which
+    mode should a loose page open in — Draft today by mere inheritance;
+    Free Write is arguably the true home-base posture; the incoming
+    HB-arc's first-run forces Free Write regardless — the committee
+    reconciles, not this ticket; (5) the A4 in-place-edit catch
+    (`72cb547`) **endorsed as the review process working as designed**,
+    noted without drama. **Advisory:** `th2.mjs` now stands at two
+    flake events (the ab3.1 fold, this ticket's first full-suite run) —
+    a third within the month arms a standing deflake micro-pass.
+    **Close conditions per Fable: (1) this review committed, ledger
+    notes GREEN — DONE, this entry; (2) redeploy on Nick's word — DONE,
+    see the deploy record below; (3) Nick's next sitting** (the six FX1
+    felt checks, plus items 21/23's carried-over notebook felt-check
+    and olive rail read) **— open; one sitting can close three ledger
+    items (21, 23, 25).**
+    **Deployed — 2026-07-16**, Nick's word ("go ahead and deploy"):
+    `railway up` on `main` @ `465816f`, confirmed live (`200` on
+    `/healthz` and `/`, `401` on `/auth/me`). The live site now carries
+    FX1.
+    **Committee docket addition (from Fable's review, Ruling 4): the
+    loose page's default mode** — Draft today (inheritance, not a
+    ruling), Free Write arguably the true home-base posture, the
+    incoming HB-arc's first-run forcing Free Write regardless. Relevant
+    to both the standing composition committee pass (this item's
+    sitting record above) and the new HB-arc threshold workstream
+    (`docs/wrizo-alpha/hb-arc-handoff.md`) — ownership for whichever
+    committee reconciles it first, not ruled here.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
