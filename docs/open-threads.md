@@ -627,7 +627,7 @@ outlive a session lives here, not in chat.
     and olive rail read) **— open; one sitting can close three ledger
     items (21, 23, 25).**
     **Deployed — 2026-07-16**, Nick's word ("go ahead and deploy"):
-    `railway up` on `main` @ `465816f`, confirmed live (`200` on
+    `railway up` on `main` @ `6f1eff8`, confirmed live (`200` on
     `/healthz` and `/`, `401` on `/auth/me`). The live site now carries
     FX1.
     **Committee docket addition (from Fable's review, Ruling 4): the
