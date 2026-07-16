@@ -906,3 +906,19 @@ outlive a session lives here, not in chat.
   for future changes).
 - Per-ticket harness scripts exist from J4 forward (`scripts/harness/`);
   J3/VW predate the rule (no backfill).
+- **ONE CHECKOUT PER AGENT — ratified 2026-07-16 (Fable), citing this
+  same day's CD1.1-fold incident (item 26) as the trigger.** Concurrent
+  sessions never share a working tree. Uncommitted edits sitting in a
+  tree another session can `git checkout` out from under are now a LAW
+  VIOLATION, not just a risk — this happened twice in one day on this
+  exact pair of tickets (CD1.1's fold vs. HB1's build), the second time
+  even after the first collision had already been caught and flagged.
+  Each concurrent agent gets its own `git worktree` off the same repo
+  (same remotes, fully separate working trees, no collision surface) —
+  never a re-clone. To add one: `git worktree add ../<name> <branch>`
+  from the repo root (the branch must not already be checked out
+  elsewhere — switch it out first if it is). `git worktree list` shows
+  every live worktree. HB1 now builds at `../wrizo-hb1` on
+  `hb1-threshold`; CD1's session keeps the original checkout
+  (`writer-studio`) on `main`. Any future third concurrent agent gets
+  its own worktree the same way before it writes a single file.
