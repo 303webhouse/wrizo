@@ -291,14 +291,27 @@ function PageEditorView({ id }: { id: string }) {
     requestScreenplay();
   };
 
-  // AB3 S4 — Journal furniture (ink/forward-lock/capture items) returns
-  // conditional on the page's ORIGIN, not the editor's Free-Write MODE
-  // alone: a project- or loose-origin page in Free Write mode gets none of
-  // it — only a journal-origin page does. Canon amendment A2 (the
-  // grandfather clause): a null-origin row (every page that existed before
-  // this ticket) behaves EXACTLY as today, where mode alone decided it — so
-  // null reads as "journal-equivalent" here, and only an EXPLICIT non-
-  // journal origin ('project' | 'loose') suppresses the furniture.
+  // AB3 S4 — Journal furniture (ink/capture items) stays conditional on the
+  // page's ORIGIN, not the editor's Free-Write MODE alone: a project- or
+  // loose-origin page in Free Write mode gets none of it — only a
+  // journal-origin page does. Canon amendment A2 (the grandfather clause): a
+  // null-origin row (every page that existed before this ticket) behaves
+  // EXACTLY as today, where mode alone decided it — so null reads as
+  // "journal-equivalent" here, and only an EXPLICIT non-journal origin
+  // ('project' | 'loose') suppresses the furniture.
+  //
+  // FX1 S3 (Nick's first-sitting verdict, provisional canon note) — the
+  // forward lock SPLITS off this gate: it belongs to Free Write the
+  // POSTURE, not the Journal the PLACE, so it now mounts on every page's
+  // Free Write rail regardless of origin. Ink and capture items are
+  // unchanged — still journal furniture, still origin-gated. This amends
+  // Law 2's furniture list in practice (forward lock is mode furniture, not
+  // journal furniture) pending Nick's feel-test and the committee pass's
+  // formal canon-doc amendment; the canon doc itself is untouched this
+  // ticket. The MECHANIC (ForwardOnlyEditor's `forwardLock` prop below) was
+  // never origin-gated — only this rail control was — so no change was
+  // needed there for loose/project pages to actually strike/erase per the
+  // persisted setting.
   const journalFurniture = entry.origin == null || entry.origin === 'journal';
 
   const toolRailContent: ToolRailContent = !framed
@@ -307,7 +320,7 @@ function PageEditorView({ id }: { id: string }) {
       ? {
           kind: 'freewrite',
           ink: journalFurniture ? { penColor, inks: PEN_INKS, onChoosePen: setPenColor } : undefined,
-          forwardLock: journalFurniture ? { on: forwardLock, onToggle: setForwardLock } : undefined,
+          forwardLock: { on: forwardLock, onToggle: setForwardLock },
           captureItems: journalFurniture ? CAPTURE_ITEMS : [],
         }
       : {

@@ -1,22 +1,33 @@
 import { useEffect } from 'react';
 
-// Shared typewriter-scroll engine (B2): holds the active line low in the
-// viewport so earlier lines ride up and fade, with a subtle mechanical jolt on
-// line advance. Originally ModeStage-only (a fixed-height `.mode-scroll` box);
-// generalized here so JournalEntry's naturally-growing, window-scrolled sheet
-// (ink strokes anchor to the sheet's own growing height, so it can't be
-// clipped into a fixed-height overflow box — see JournalEntry.tsx) can share
-// the same hold/jolt behavior via `useWindowScroll`. The visual fade itself is
-// CSS: a `mask-image` on the scroll box for the container case, or a sticky
+// Shared typewriter-scroll engine (B2, FX1 S1 rewrite): holds the active line
+// low in the viewport so earlier lines ride up and fade. Originally
+// ModeStage-only (a fixed-height `.mode-scroll` box); generalized here so
+// JournalEntry's naturally-growing, window-scrolled sheet (ink strokes anchor
+// to the sheet's own growing height, so it can't be clipped into a fixed-
+// height overflow box — see JournalEntry.tsx) can share the same hold
+// behavior via `useWindowScroll`. The visual fade itself is CSS: a
+// `mask-image` on the scroll box for the container case, or a sticky
 // gradient overlay for the window case (see index.css / JournalEntry.tsx).
+//
+// FX1 S1 (Nick's first-sitting verdict) — the old engine held the active line
+// at a fixed band and, on crossing it, snapped the scroll position with a
+// hand-rolled overshoot-then-settle "jolt" animation. That overshoot read as
+// a pop/jerk on every line commit. This rewrite drops the jolt entirely: once
+// the writing zone's lower bound (still TYPEWRITER_BAND) is crossed, the box
+// scrolls smoothly (native smooth scroll; instant under reduced-motion) by
+// exactly the delta needed to restore the bound — which, for ordinary one-
+// line-at-a-time typing, is one line-height, never a multi-line jump.
 
-const TYPEWRITER_BAND = 0.73; // hold the active line low (~73%) — B2 C1
+const TYPEWRITER_BAND = 0.73; // the writing zone's lower bound — hold the active line low (~73%), B2 C1
+const FADE_LINES = 3;         // the fade band's depth, in line-heights (S1)
+const START_FRACTION = 0.45;  // a fresh page's first line starts ~45% down the stage (S1)
 
 interface ScrollBox {
   top: number;                 // viewport-space top of the clipping box (0 for window)
   clientHeight: number;
   scrollTop: number;
-  setScrollTop(v: number): void;
+  setScrollTop(v: number, smooth: boolean): void;
 }
 
 function readBox(useWindowScroll: boolean, container: HTMLElement): ScrollBox {
@@ -25,14 +36,14 @@ function readBox(useWindowScroll: boolean, container: HTMLElement): ScrollBox {
       top: 0,
       clientHeight: window.innerHeight,
       scrollTop: window.scrollY,
-      setScrollTop: v => window.scrollTo(0, v),
+      setScrollTop: (v, smooth) => window.scrollTo({ top: v, left: 0, behavior: smooth ? 'smooth' : 'auto' }),
     };
   }
   return {
     top: container.getBoundingClientRect().top,
     clientHeight: container.clientHeight,
     scrollTop: container.scrollTop,
-    setScrollTop: v => { container.scrollTop = v; },
+    setScrollTop: (v, smooth) => { container.scrollTo({ top: v, behavior: smooth ? 'smooth' : 'auto' }); },
   };
 }
 
@@ -51,8 +62,6 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const scrolledEl = scrolledTarget?.current ?? container;
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
-    let joltRaf = 0;
-    let animating = false;
 
     const setScrolled = () => {
       // Window mode: gate on the SHEET's own top vs the viewport (has content
@@ -71,29 +80,18 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       return ed ? (parseFloat(getComputedStyle(ed).lineHeight) || 28) : 28;
     };
-    // C3: quick jolt to `target` — overshoot a few px, then settle.
-    const jolt = (target: number) => {
-      animating = true;
-      const box = readBox(!!useWindowScroll, container);
-      const start = box.scrollTop;
-      const over = Math.min(7, Math.abs(target - start) * 0.3);
-      const t0 = performance.now();
-      const dur = 130;
-      cancelAnimationFrame(joltRaf);
-      const tick = (t: number) => {
-        const p = Math.min(1, (t - t0) / dur);
-        const pos = p < 0.6
-          ? start + (target + over - start) * (p / 0.6)
-          : (target + over) + (target - (target + over)) * ((p - 0.6) / 0.4);
-        readBox(!!useWindowScroll, container).setScrollTop(pos);
-        setScrolled();
-        if (p < 1) { joltRaf = requestAnimationFrame(tick); }
-        else { readBox(!!useWindowScroll, container).setScrollTop(target); setScrolled(); animating = false; }
-      };
-      joltRaf = requestAnimationFrame(tick);
+    // S1 — the fade band (line-height based) and the fresh-page start offset
+    // (stage-height based) are both STATIC CSS the writing surface reads via
+    // custom properties; this just keeps them in step with the actual
+    // rendered type scale / box size. Cheap; safe to call often.
+    const measure = () => {
+      const stageEl = (useWindowScroll ? null : container.closest('.desk-frame-stage') || container.closest('.mode-stage')) as HTMLElement | null;
+      const stageHeight = useWindowScroll ? window.innerHeight : (stageEl ?? container).clientHeight;
+      scrolledEl.style.setProperty('--tw-fade-band', `${Math.round(lineHeight() * FADE_LINES)}px`);
+      scrolledEl.style.setProperty('--tw-start-offset', `${Math.round(stageHeight * START_FRACTION)}px`);
     };
     const band = () => {
-      if (animating) return;
+      measure();
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       let caretBottom: number | null = null;
       const sel = window.getSelection();
@@ -112,8 +110,8 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const delta = within - box.clientHeight * TYPEWRITER_BAND;
       if (delta <= 1) { setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
       const target = box.scrollTop + delta;
-      if (!reduce && delta >= lineHeight() * 0.5) jolt(target);
-      else { box.setScrollTop(target); setScrolled(); }
+      box.setScrollTop(target, !reduce);
+      setScrolled();
     };
     const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(band); };
     const mo = new MutationObserver(schedule);
@@ -121,14 +119,16 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     container.addEventListener('input', schedule);
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
+    window.addEventListener('resize', measure);
+    measure();
     setScrolled();
     schedule();
     return () => {
       mo.disconnect();
       container.removeEventListener('input', schedule);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
+      window.removeEventListener('resize', measure);
       cancelAnimationFrame(raf);
-      cancelAnimationFrame(joltRaf);
     };
   }, [enabled, containerRef, editorSelector, useWindowScroll, scrolledTarget]);
 }

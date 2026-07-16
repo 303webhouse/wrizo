@@ -509,8 +509,13 @@ export function ScriptEditor({ id }: { id: string }) {
   // Room's forward-only mode (script Free-write) is AB2, not this ticket;
   // framed (S2) shows all five ModeStrip strings with Free Write/Revise/
   // Workshop deferred and Draft the only live posture.
+  // FX1 S2 — the script sheet's own width is no longer a bare inline
+  // maxWidth: it lives inside `.mode-pagecol` (mounted below, in the framed
+  // branch only), the SAME paper geometry class/width band prose uses (Law
+  // 1). Legacy (<1100px) is untouched — it never wrapped in mode-pagecol and
+  // keeps this inline width exactly as before.
   const scriptSheet = (
-    <div className="script-sheet" style={{ position: 'relative', maxWidth: '60ch' }}>
+    <div className="script-sheet" style={{ position: 'relative', maxWidth: framed ? undefined : '60ch' }}>
       {elements.map((el, i) => {
         const active = i === activeIndex;
         if (active) {
@@ -566,7 +571,7 @@ export function ScriptEditor({ id }: { id: string }) {
           dissolved={scriptDissolve.dissolved}
         >
           <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter={writingSettings.typewriter ? 'true' : 'false'}>
-            {scriptSheet}
+            <div className="mode-pagecol">{scriptSheet}</div>
           </div>
         </DeskFrame>
 

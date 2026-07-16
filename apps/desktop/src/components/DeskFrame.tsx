@@ -61,6 +61,13 @@ export interface DeskFrameProps {
   // shipped it) when omitted — Board still passes nothing here.
   toolRail?: ReactNode;
   corkboard?: ReactNode;
+  // FX1 S5 — the meter track never got a content prop (AB1 S2: "ALWAYS
+  // empty/reserved... do not mount the incentive layer here"), so its
+  // desk-ground shell rendered as a wide, purposeless bar along the stage's
+  // bottom on every framed page — Nick's "the dead bar" verdict. No caller
+  // passes this yet; when the incentive layer eventually returns here, it
+  // renders through this prop and the track reappears with it.
+  meter?: ReactNode;
   dissolved?: boolean;
   children: ReactNode;
 }
@@ -74,7 +81,7 @@ export interface DeskFrameProps {
 // `.desk-frame-toolrail` / `.desk-frame-corkboard` (each carrying
 // `chrome-fade desk-dissolve`) pick up the same fast-out/slow-in curve
 // automatically, without DeskFrame needing to touch the timing itself.
-export function DeskFrame({ pageKind, modeStrip, toolRail, corkboard, dissolved, children }: DeskFrameProps) {
+export function DeskFrame({ pageKind, modeStrip, toolRail, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -97,7 +104,13 @@ export function DeskFrame({ pageKind, modeStrip, toolRail, corkboard, dissolved,
           <div className={`desk-frame-stage desk-frame-stage--${pageKind}`}>
             {children}
           </div>
-          <div className="desk-frame-meter" aria-label={t('zoneMeter')} />
+          {/* FX1 S5 — render nothing instead of an empty vessel (see the
+              `meter` prop's own comment above). The 260px corkboard track
+              beside it is a NAMED NON-GOAL (brief) — left exactly as AB1/AB3
+              shipped it, empty shell and all, even though it's the same
+              species of bug; that track's fate is the composition
+              committee's, not this ticket's. */}
+          {meter && <div className="desk-frame-meter" aria-label={t('zoneMeter')}>{meter}</div>}
         </div>
         <aside className="desk-frame-corkboard chrome-fade desk-dissolve" aria-label={t('zoneCorkboard')}>
           {corkboard}
