@@ -19,11 +19,18 @@ export type DeskTermId =
   | 'modeFreeWrite' | 'modeDraft' | 'modeRevise' | 'modeWorkshop' | 'modePublish'
   | 'zoneWayfinding' | 'zoneToolRail' | 'zoneStage' | 'zoneCorkboard' | 'zoneMeter'
   | 'corkboardJournalTab' | 'deskMenuGlyph'
-  // AB2 — the tool rail's own labels (components/ToolRail.tsx). New
-  // user-facing strings this ticket introduces land in this seam per the
-  // AB1 review's ratified naming, not a second lexicon file.
+  // AB2 — the hand-tools' own labels, born on AB2's ToolRail.tsx (now
+  // components/Sliver.tsx, CD1 S2/S7 — ToolRail itself retired, these ids
+  // did not). New user-facing strings this ticket introduces land in this
+  // seam per the AB1 review's ratified naming, not a second lexicon file.
   | 'railInk' | 'railControls' | 'railForwardLock' | 'railReading' | 'railTypewriter'
   | 'railFormat' | 'railStructure' | 'railStructureProse' | 'railStructureScreenplay'
+  // CD1 S2/S6 — the sliver's goal block (components/Sliver.tsx's foot). The
+  // sliver's own keyboard shortcut (Ctrl/Cmd+/, SLIVER_SHORTCUT_LABEL in
+  // that file) is a chord constant, not user-facing prose, so it does NOT
+  // ride this lexicon seam — only its surrounding strings do.
+  | 'goalEdit' | 'goalLabel' | 'goalUnitLines' | 'goalSet' | 'goalClear'
+  | 'sliverOpen' | 'sliverClose'
   // AB3 — the Drawer's own nav pulls (components/Drawer.tsx): the Page pull
   // above the separator, the three Places below it.
   | 'drawerPage' | 'drawerPlaceJournal' | 'drawerPlaceShelf' | 'drawerPlaceDrawers'
@@ -73,6 +80,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   placeFacePeekSoon: 'Peek — coming soon',
   placeFaceGoToRoom: 'Go to the Room',
   placeFaceEmpty: 'Nothing here yet.',
+  goalEdit: 'Set a goal',
+  goalLabel: 'Goal',
+  goalUnitLines: 'lines',
+  goalSet: 'Set',
+  goalClear: 'Clear',
+  sliverOpen: 'Open hand tools',
+  sliverClose: 'Close hand tools',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
