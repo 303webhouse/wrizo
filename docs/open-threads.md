@@ -69,10 +69,13 @@ outlive a session lives here, not in chat.
     sustained — never in S2's list). Full suite re-verified green
     (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`, 345 checks total),
     pushed. **Close conditions per Fable: (1) CC folds ab1.1 + reports=push
-    — DONE; (2) Fable spot-checks the ab1.1 delta — OPEN; (3) Nick's
-    device look (wide + near-floor; finding 1's composition verdict and
-    A1's active-tab orange read are his to make there; no deploy owed
-    first) — OPEN.** Item closes only after (2) and (3).
+    — DONE; (2) Fable spot-checks the ab1.1 delta — DONE, 2026-07-15,
+    GREEN, no findings (verified against `f01b400` full patch; fixes
+    match the review's prescription verbatim, framed-only, harness
+    asserts recede+restore on both surfaces); (3) Nick's device look
+    (wide + near-floor; finding 1's composition verdict and A1's
+    active-tab orange read are his to make there; no deploy owed
+    first) — OPEN.** Item closes only after (3).
     **AB2 — MERGED, NOT CLOSED — 2026-07-15.** Built S0-S8 on
     `ab2-tools-by-mode` off post-ab1.1 `main` @ `8e98337`
     (`docs/wrizo-alpha/ab2-tools-by-mode-brief.md`). S0 ruled Draft storage
@@ -157,6 +160,12 @@ outlive a session lives here, not in chat.
     the page"): `railway up` on `main` @ `fce22df`, confirmed live (`200`
     on `/healthz` and `/`, `401` on `/auth/me`). The live site now carries
     ab2.1.
+    **Fable's delta spot-check — DONE 2026-07-15, GREEN** (verified
+    against `3defe3f` full patch). Advisory: F3's not-brass assertion is
+    correct strength while olive is a working value — graduate to a
+    positive olive assert when the Plateau token locks. Carry to AB3
+    review context: `BoardEditor` mounts `DeskFrame` `pageKind='prose'`
+    (pre-existing AB1 wiring, untouched by the fold).
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
@@ -396,20 +405,60 @@ outlive a session lives here, not in chat.
     "merge on Nick's word." See `docs/backlog.md`. Device gate: S4's
     barrel-bit assumption + S3's target-tool interpretation both want Nick's
     two-minute pen check before merge, independent of the AB-arc (item 21).
-23. **AB3 — the Drawer and the Homes.** **BRIEF RECEIVED, BUILD IN
-    FLIGHT — 2026-07-15.** `docs/wrizo-alpha/ab3-drawer-and-homes-brief.md`
-    committed. S0 declares this ticket's one schema addition (nullable
-    `origin` text column on entries, `'journal'|'project'|'loose'`,
-    additive-only, both sync directions, grandfathered null-safe for
-    every existing row per amendment A2) — the first schema-touching AB
-    ticket. S1-S7: the Drawer (tools/page/place faces composing AB2's
-    ToolRail, not rebuilding it), the Page face (subject-based per
-    amendment A1, for AB4's sake), metadata retirement under the paper,
-    origin-per-creation-door, the Journal-forgets-nothing law, the
-    Places faces, `ab3.mjs` with the ab2.1 geometry-floor lesson applied
-    from day one. Building on `ab3-drawer-and-homes` off `main` @
-    `73150ea`, isolated worktree, build → independent verify/fold, same
-    protocol as AB1/AB2. See item 24.
+23. **AB3 — the Drawer and the Homes.** **MERGED, NOT CLOSED —
+    2026-07-15.** `docs/wrizo-alpha/ab3-drawer-and-homes-brief.md` built
+    S0-S7 on `ab3-drawer-and-homes` off `main` @ `73150ea`. **S0 — the
+    arc's first schema change:** nullable `origin` text column
+    (`'journal'|'project'|'loose'`) on entries, additive-only
+    (`add column if not exists`, no default, no CHECK — matching the
+    `script`-column precedent exactly), both sync-mapper directions.
+    S1-S7: `Drawer.tsx` (tools/page/place faces composing AB2's
+    `ToolRail` verbatim, fixed geometry via `--drawer-width`),
+    `PageFace.tsx` (subject-based per amendment A1 — title/star/tags/
+    Where-it-lives/Move/Copy/Port), the below-page metadata retired
+    when framed (parked, byte-identical below the gate), origin stamped
+    at every creation door (Journal/Catch → journal; project doors →
+    project, invisible to the Journal; the Desk's start-writing door →
+    loose, never nudged), the Journal-forgets-nothing law, `PlaceFace.tsx`,
+    `ab3.mjs` (30 checks) with the ab2.1 geometry-floor lesson applied
+    from day one; `ab2.mjs` grew 3 parked checks (A4-named species,
+    quoted history + opposite reassertion) for the AB3-superseded claims.
+    Mid-build, `main` advanced three commits (the canon landing +
+    ledger updates) — the build agent noticed, read the newly-RULED
+    canon in full, cross-checked every interpretive call against it
+    (zero conflicts — the brief's paraphrase matched verbatim), and
+    self-merged `main` into its branch before continuing, docs-only,
+    zero code conflicts.
+    **Independent review** re-derived the grandfather-clause proof from
+    scratch (not trusting the build's own script — traced `origin`
+    through every client mutation path and both sync-mapper directions
+    by hand, confirmed a genuine unconditional null↔undefined fixed
+    point), live-exercised all three creation doors through the harness
+    including a manual end-to-end screenplay-door check, and found
+    **zero bugs — the first AB-arc review to make no code changes at
+    all.** Judged five interpretive calls: four sustained outright (no
+    rename pipe ever existed for a page title — confirmed by grep, not
+    a miss; Drawer wiring scoped to JournalEntry/PageEditor only, Script/
+    Board untouched this ticket; `getNotebookPages()` deliberately not
+    origin-aware, keeping J5's Spread-grid harness green; Move/Copy/Port
+    expanded from loose-only to all pages, traced safe against Law 3).
+    **One flagged as a genuine Nick-level call, not resolved by either
+    agent:** S4's brief text names "the timer readout, the quiet
+    progress bar" as journal furniture that should re-mount in the
+    rail; only typewriter/ink/forward-lock actually were. Not in the
+    DoD's lived tests or S7's own minimum-assert list, and no
+    regression (framed surfaces never showed it before AB3 either) —
+    recommended as a small fast-follow rather than blocking. `tsc`
+    (desktop + server) + `build:web` + server build + selftest + the
+    full 11-script suite (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/
+    `ab1`/`ab2`/`ab3`) green, independently re-run a THIRD time by CC on
+    merged `main` (matching both prior reports exactly) before push.
+    Fast-forwarded to `main` @ `b9993a6`, pushed. **Not deployed.**
+    **Per the AB1/AB2 precedent: merge is pre-authorized, close is
+    not.** Awaiting Fable's post-merge review and Nick's device look
+    (likely folding into a larger look alongside items 21's remaining
+    gate, per Fable's own prediction). See item 24 for the canon-doc
+    resolution.
 24. ~~**Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never
     landed.**~~ **RESOLVED — 2026-07-15.** Relayed by Nick directly
     into chat; committed at `14d846e` — the eight laws, the four ranges
