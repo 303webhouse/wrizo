@@ -523,7 +523,7 @@ if (process.env.HARNESS_PARKED === '1') {
       forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
       captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
     })`);
-    pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those", then AB3-superseded to "...shows NONE of it") — FX1 S3 re-supersedes AB3\'s own re-assertion: forward lock is back (mode furniture), ink/capture items stay absent',
+    pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those", then AB3-superseded to "...shows NONE of it") — FX1 S3 re-supersedes AB3\'s own re-assertion: forward lock is back (mode furniture), ink/capture items stay absent (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
       !freeWriteRailNow.ink && freeWriteRailNow.forwardLock && freeWriteRailNow.captureItems.length === 0,
       JSON.stringify(freeWriteRailNow));
 
@@ -548,7 +548,7 @@ if (process.env.HARNESS_PARKED === '1') {
       format: !!document.querySelector('.wz-sliver-format'),
       structure: !!document.querySelector('.wz-sliver-structure'),
     })`);
-    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items and format/structure stay absent',
+    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items and format/structure stay absent (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
       !freeWriteRailFull.ink && freeWriteRailFull.forwardLock && freeWriteRailFull.captureItems.length === 0
         && !freeWriteRailFull.format && !freeWriteRailFull.structure,
       JSON.stringify(freeWriteRailFull));
@@ -565,7 +565,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // mechanic itself (localStorage-driven, reload-honored) is still proven
     // live in ab2.mjs's own unparked S2 block, unaffected either way.
     const forwardLockRailPresent = await app.evalJs("!!document.querySelector('.wz-sliver-forwardlock')");
-    pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload", then AB3-superseded to "...control does not mount at all") — FX1 S3 re-supersedes AB3\'s own re-assertion: the forward-lock rail control mounts again for a project-origin page',
+    pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload", then AB3-superseded to "...control does not mount at all") — FX1 S3 re-supersedes AB3\'s own re-assertion: the forward-lock rail control mounts again for a project-origin page (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
       forwardLockRailPresent === true);
 
     // === S6 fixture — a fresh Journal entry, framed. =========================

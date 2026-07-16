@@ -85,6 +85,26 @@ export function Sliver({ content, goalText }: SliverProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // Review fix (post-CD1) — mirrors ModeStage's own pre-existing "opt-in
+  // session timer" semantic (`firstWriteRef`: elapsed since the FIRST
+  // KEYSTROKE, not since the surface mounted). The sliver had no keystroke
+  // signal threaded to it, so the original cut anchored the clock to the
+  // sliver's own mount instead — meaning it started counting the moment the
+  // page loaded, even before the writer typed a single character (idle
+  // reading time silently counted as "writing time"). goalText already
+  // updates live on every keystroke (every host's own input handler feeds
+  // it), so the first time it changes from its as-mounted value IS the
+  // first-keystroke signal, with no new prop threading needed from the
+  // three hosts. Captured once per Sliver mount (a fresh page = a fresh
+  // clock), same as the pre-existing pattern.
+  const initialGoalTextRef = useRef(goalText);
+  const [firstWriteAt, setFirstWriteAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (firstWriteAt === null && goalText !== initialGoalTextRef.current) {
+      setFirstWriteAt(Date.now());
+    }
+  }, [goalText, firstWriteAt]);
+
   const lines = countLineEquivalents(goalText);
   const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
 
@@ -103,7 +123,7 @@ export function Sliver({ content, goalText }: SliverProps) {
 
       <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'}>
         <SliverToolsBody content={content} />
-        <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} />
+        <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
       </div>
     </div>
   );
@@ -235,18 +255,26 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // announced beyond the writer's OWN edit affordance reading back the
 // target itself — the hairline never labels itself with a fraction/percent,
 // and nothing here fires an event or shows a toast on arrival.
-function SliverGoalFoot({ target, lines, fraction, timerOn }: { target: number | null; lines: number; fraction: number; timerOn: boolean }) {
+//
+// Review fix (post-CD1) — `firstWriteAt` (Sliver's own state, lifted so it
+// survives this component's re-renders) anchors the clock to the first
+// actual keystroke, not this component's mount: matches ModeStage's own
+// pre-existing "elapsed since first keystroke" session-timer semantic
+// exactly (the numeral still shows, reading 0:00, before the writer's
+// first keystroke — same as that pattern always has — it just doesn't
+// start ADVANCING until they do).
+function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { target: number | null; lines: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
   const { t } = useDeskLexicon();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
   const [elapsedMs, setElapsedMs] = useState(0);
-  const mountedAtRef = useRef(Date.now());
 
   useEffect(() => {
-    if (!timerOn) return;
-    const i = setInterval(() => setElapsedMs(Date.now() - mountedAtRef.current), 1000);
+    if (!timerOn || firstWriteAt == null) { setElapsedMs(0); return; }
+    setElapsedMs(Date.now() - firstWriteAt);
+    const i = setInterval(() => setElapsedMs(Date.now() - firstWriteAt), 1000);
     return () => clearInterval(i);
-  }, [timerOn]);
+  }, [timerOn, firstWriteAt]);
 
   const commit = () => {
     const n = Number(draft);
