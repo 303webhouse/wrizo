@@ -143,8 +143,8 @@ await withHarness(async (app) => {
     JSON.stringify(topLine.stripLabels));
   ok('S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)',
     topLine.noCrumb, JSON.stringify(topLine));
-  ok('S1: the right corner is Done, alone — nothing beside it (no Catch anywhere on this framed surface)',
-    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Done']) && !topLine.catchAnywhere,
+  ok('S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface',
+    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Done']) && !topLine.catchAnywhere,
     JSON.stringify(topLine));
 
   // ==========================================================================
@@ -195,6 +195,22 @@ await withHarness(async (app) => {
   ok('S7: ScriptEditor mounts the SAME drawer as prose (Page pull + 3 Places, resting on Page)',
     scriptDrawer.pagePullPresent && scriptDrawer.placesPresent && scriptDrawer.restFace === 'page',
     JSON.stringify(scriptDrawer));
+
+  // ==========================================================================
+  // S1/cd1.1 — ScriptEditor's header also carries the Pages/Plan flight
+  // toggle beside Done, on a real project-origin screenplay (the actual
+  // screenplay-creation door, not the script fixture above, which is loose).
+  // ==========================================================================
+  await freshDesk(app);
+  await app.goto('/project/new');
+  await app.waitFor("!!document.querySelector('[data-kind=\"screenplay\"]')", { label: 'CreateProject picker (screenplay)' });
+  await app.evalJs("document.querySelector('[data-kind=\"screenplay\"]').click()");
+  await app.click('Start writing');
+  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'screenplay project lands' });
+  await sleep(200);
+  const scriptActionButtons = await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
+  ok('S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay',
+    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages', 'Plan', 'Done']), JSON.stringify(scriptActionButtons));
 
   // ==========================================================================
   // S8 (A7) — a loose page opens in Free Write on first mount, no explicit

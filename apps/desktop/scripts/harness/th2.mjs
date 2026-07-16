@@ -156,13 +156,24 @@ await withHarness(async (app) => {
   let celebrateSeen = false;
   let celebrateBgSettled = null;
   try {
-    await app.waitFor("!!document.querySelector('.mode-pfill.celebrate')", { label: 'celebrate class appears', timeout: 3000 });
+    // cd1.1 deflake, drive-by — observed intermittently timing out at 3000ms
+    // on a freshly spawned browser instance (first-timer-fire latency before
+    // the event loop/JIT are warm), unrelated to the brass-color race this
+    // check exists to catch. CELEBRATE_MS itself is only 1100ms and waitFor
+    // polls every 100ms, so a wider budget only buys margin against startup
+    // jitter — it can't paper over a genuinely missed pulse.
+    await app.waitFor("!!document.querySelector('.mode-pfill.celebrate')", { label: 'celebrate class appears', timeout: 6000 });
     celebrateSeen = true;
-    // Sample the color once, well past the fill's own .35s background
-    // transition (an immediate read can catch the lime->brass ease
-    // mid-flight, which is a transition artifact, not the cascade result).
-    await sleep(450);
-    celebrateBgSettled = await app.evalJs("(() => { const el = document.querySelector('.mode-pfill.celebrate'); return el ? getComputedStyle(el).backgroundColor : 'gone'; })()");
+    // cd1.1 deflake (Fable review) — a fixed sleep() before a SEPARATE evalJs
+    // read raced the celebrate window itself: it can auto-clear between the
+    // two CDP round-trips, even after the color momentarily matched. Wait on
+    // a predicate that stashes the matched value onto window as part of the
+    // SAME evaluation that observes it, closing the round-trip gap entirely.
+    await app.waitFor(
+      "(() => { const el = document.querySelector('.mode-pfill.celebrate'); if (!el) return false; const bg = getComputedStyle(el).backgroundColor; if (bg !== 'rgb(255, 152, 0)') return false; window.__th2CelebrateBg = bg; return true; })()",
+      { label: 'celebrate fill settles to brass', timeout: 3000 },
+    );
+    celebrateBgSettled = await app.evalJs("window.__th2CelebrateBg");
   } catch {
     celebrateSeen = false;
   }
