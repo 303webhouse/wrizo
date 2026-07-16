@@ -6,6 +6,7 @@ import { getWayBack, isWritingRoute, type WayBackSession } from '../store/wayBac
 import { getJournalEntry, getDraft } from '../store/persistence';
 import { firstLine, snippet } from '../store/entryText';
 import { useLexicon, type TermId } from '../store/themeLexicon';
+import { useDeskFrameMounted } from '../store/deskFrameActive';
 
 // Writing-screen redesign (Slice 2) — the slim left rail of desk-area LOCATIONS,
 // replacing D1/D2's top-bar nav. Global nav and a WritingSession reader: it
@@ -44,6 +45,22 @@ export function DeskRail() {
   const { isWriting } = useWritingSession();
   const doCatch = useCatch();
   const { t: lex, tMany: lexMany } = useLexicon();
+  // CD1 S4 — the far-left rail retires on FRAMED surfaces only: wherever a
+  // DeskFrame is actually mounted (store/deskFrameActive.ts — the SAME
+  // signal App.tsx's GlobalHeader already reads to collapse its own
+  // top-right orphans, and that App.tsx itself now reads to collapse
+  // `.app-main`'s reserved gutter in step). Legacy (<1100px) never mounts a
+  // DeskFrame, so this stays false there and DeskRail is byte-identical;
+  // routes that never mount a DeskFrame at all (Desk, Journal/Shelf/Drawers
+  // lists) are equally untouched at any width. Places (Journal/Shelf/
+  // Drawers) now live in the Drawer's own Places faces on a framed surface
+  // (AB3); Library's stub and Catch's rail entry (button + the 'n'
+  // shortcut, guarded below) leave WITH the rail — no empty doors, and
+  // Catch's underlying route/model (useCatch/createJournalPage) is
+  // untouched, just unreachable from here while framed. The resume
+  // pointer's interim home is the drawer's Journal place face (already
+  // lists recent pages) — no new UI needed for that gap.
+  const deskFrameActive = useDeskFrameMounted();
 
   // W2 — the return chip. Re-checked on every route change: a departure just
   // captured (or consumed) the slot as part of the same navigation, so
@@ -63,6 +80,10 @@ export function DeskRail() {
   // can't be intercepted, so a bare key on non-editing surfaces is the pattern.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // CD1 S4 — Catch's shortcut parks with the rest of the rail while
+      // framed (see the component-level comment above): no UI trace, no
+      // door wiring either, not just a hidden button.
+      if (deskFrameActive) return;
       if (e.key !== 'n' && e.key !== 'N') return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
       const t = e.target as HTMLElement | null;
@@ -72,7 +93,9 @@ export function DeskRail() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [doCatch]);
+  }, [doCatch, deskFrameActive]);
+
+  if (deskFrameActive) return null;
 
   return (
     <nav className="desk-rail chrome-fade" data-chrome-receded={isWriting ? 'true' : 'false'} aria-label="Desk areas">

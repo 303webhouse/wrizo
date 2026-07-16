@@ -26,6 +26,23 @@ import { setCurrentUser } from './store/currentUser';
 import { startSync, stopSync, syncOnce, clearLastSyncAt, subscribeSyncStatus, type SyncStatus } from './store/sync';
 import { useDeskFrameMounted } from './store/deskFrameActive';
 
+// CD1 S4 — `.app-main`'s reserved gutter (index.css, historically
+// `padding-left:64px` for DeskRail's fixed-position column) collapses
+// exactly when DeskRail itself stops mounting (store/deskFrameActive.ts —
+// the SAME "is a DeskFrame on screen" signal DeskRail.tsx now reads to
+// return null). Reading the hook here, at the router's own top level, and
+// writing it out as a data attribute keeps the two opposite-but-paired
+// effects (rail disappears / gutter reclaimed) driven by ONE flag instead
+// of two independently-derived booleans that could drift out of step.
+function AppMain({ children }: { children: React.ReactNode }) {
+  const deskFrameActive = useDeskFrameMounted();
+  return (
+    <div className="app-main" data-desk-frame-active={deskFrameActive ? 'true' : 'false'}>
+      {children}
+    </div>
+  );
+}
+
 type AuthState = 'loading' | 'anon' | 'authed';
 
 // AB1 S4 — "make 'saved' silent (only a save failure should speak)," the
@@ -243,7 +260,7 @@ export function App() {
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
-        <div className="app-main">
+        <AppMain>
         <Routes>
         <Route path="/" element={<Desk />} />
         <Route path="/drawers" element={<DrawersPage />} />
@@ -262,7 +279,7 @@ export function App() {
         <Route path="/journal/:id" element={<JournalEntry />} />
         <Route path="/page/:id" element={<PageEditor />} />
         </Routes>
-        </div>
+        </AppMain>
       </HashRouter>
     </WritingSessionProvider>
   );
