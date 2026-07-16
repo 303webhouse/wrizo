@@ -454,11 +454,40 @@ outlive a session lives here, not in chat.
     `ab1`/`ab2`/`ab3`) green, independently re-run a THIRD time by CC on
     merged `main` (matching both prior reports exactly) before push.
     Fast-forwarded to `main` @ `b9993a6`, pushed. **Not deployed.**
-    **Per the AB1/AB2 precedent: merge is pre-authorized, close is
-    not.** Awaiting Fable's post-merge review and Nick's device look
-    (likely folding into a larger look alongside items 21's remaining
-    gate, per Fable's own prediction). See item 24 for the canon-doc
-    resolution.
+    **Correction (Fable's AB3 review, R5, 2026-07-15):** the AB1/AB2
+    merge pre-authorization was a **zero-schema** precedent — it does
+    not generalize to schema-touching tickets. AB3 is the arc's first
+    schema ticket and merged ahead of Fable's review **on Nick's go**,
+    not on any standing pre-authorization; schema tickets carry no
+    standing pre-auth, full stop. Post-merge review gating the close
+    (the AB1 pattern) remains lawful. **Fable's AB3 review landed
+    GREEN — 2026-07-15** (`docs/wrizo-alpha/ab3-review-fable.md`): zero
+    product-code defects, independently reconfirmed. Required — 5, all
+    harness/docs, none code (see the ab3.1 fold entry below). Awaiting
+    the fold's own spot-check and Nick's device look (likely folding
+    into a larger look alongside item 21's remaining gate). See item 24
+    for the canon-doc resolution.
+    **ab3.1 folded — 2026-07-15:** R1(a) `ab3.mjs` asserts the loose
+    fixture carries none of the journal furniture (the one origin value
+    with no negative guard before — `journal`/null covered in `ab3.mjs`,
+    `project` in `ab2.mjs`, `loose` nowhere); R1(b) asserts framed
+    PageEditor also carries no below-page metadata cluster (it never
+    had one — the brief named both surfaces, only JournalEntry's
+    absence was ever checked; the law now has its missing guard). R2
+    clicks `.desk-toolrail-forwardlock` on the null-origin legacy
+    fixture and asserts `dataset.on` actually flips and
+    `wrizo-forward-lock` writes — presence isn't function, and this is
+    the first assertion that the control's click handler is wired at
+    all. R3 asserts the drawer's active pull's computed border-color is
+    not brass (the ab2.1 F3 pattern — a negative guard while olive
+    stays a working value). R4 corrects a comment in `ab3.mjs`'s A2
+    section that claimed the project-origin negative was local; it
+    lives in `ab2.mjs`. Brief errata added to
+    `ab3-drawer-and-homes-brief.md`: S2's rename assumption withdrawn
+    (no title/rename pipe ever existed); S5's "notebook nav" clarified
+    per Ruling 3 (the Spread's flip-through is the loose notebook's own
+    sequence, not part of the Journal's memory — Nick-vetoable at the
+    device look). Full suite re-verified green, pushed.
 24. ~~**Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never
     landed.**~~ **RESOLVED — 2026-07-15.** Relayed by Nick directly
     into chat; committed at `14d846e` — the eight laws, the four ranges
