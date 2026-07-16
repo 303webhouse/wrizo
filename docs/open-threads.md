@@ -671,7 +671,81 @@ outlive a session lives here, not in chat.
     zones check's wayfinding clause, every `.desk-toolrail-*` selector) —
     every one must park per A4, quoted verbatim, SUPERSEDED species, in
     its own file, with the full sweep enumerated in the fold's commit
-    message. Building now.
+    message.
+    **MERGED, NOT CLOSED — 2026-07-16.** Built S1-S9 on
+    `cd1-composed-desk` off `main` @ `ac396f5` (S0's records were done
+    directly on `main` by CC before the build started — no separate
+    build work there). `components/ToolRail.tsx` deleted entirely; its
+    estate divides between the new paper-edge `Sliver.tsx` (hand tools,
+    overlays the stage margin, paper rect provably never moves — position:
+    absolute anchored purely off the paper's own canonical measure, no
+    JS measurement) and nothing (the drawer's tools face retires,
+    `Drawer.tsx` rests on Page + Places only). `DeskRail.tsx` stops
+    mounting framed (`useDeskFrameMounted()`), and its reserved gutter is
+    reclaimed via a `.app-main[data-desk-frame-active='true']{padding-
+    left:0}` rule beating every width-keyed padding rule on specificity —
+    empirically verified at the exact 1099px/1100px boundary, not just
+    trusted. The mode strip moves to the header row, the top-bar title
+    retires (the paper names itself), **Catch scrapped from the UI**
+    (Desk.tsx's own "+ Catch a thought" button and DeskRail's affordance
+    both parked, code intact). New `store/writingGoal.ts` +
+    `store/lineEquivalents.ts`: one writer-level target in
+    line-equivalents at the paper's canonical measure (viewport-
+    independent), default 24 lines, driving the progress hairline + the
+    new `GoalGlow.tsx` — warmth only, hard-capped, no numbers/completion
+    event/deficit state, glow **default-on**. Script gains the drawer +
+    sliver, matching prose exactly. New `apps/desktop/scripts/harness/cd1.mjs`
+    (26 checks) — **the largest park sweep in the project's history**,
+    enumerated in full in commit `bd43fb6`'s message: 24 checks newly
+    parked (`ab1` +4, `ab2` +6, `ab3` +7, `fx1` +7), all SUPERSEDED
+    species, quoted verbatim.
+    **Independent review** found two real defects and fixed both: (1) a
+    genuine, if lesser, parking-discipline gap — three `ab2.mjs` parked
+    reassertions had their selectors updated (`.desk-toolrail-*` →
+    `.wz-sliver-*`) without their own name string disclosing that CD1
+    touched them, inconsistent with this same commit's own correctly-done
+    entries and with the FX1 review's own Ruling 5 precedent (rewrite the
+    stale comment, don't hide the touch) — fixed by adding the missing
+    inline chain-link disclosure to all three; (2) the sliver's timer was
+    anchoring to its own mount rather than the first keystroke (matching
+    the pre-existing `ModeStage` timer's `firstWriteRef` pattern), meaning
+    idle reading time before typing silently counted as writing time — a
+    real semantic bug, not cosmetic, fixed in `Sliver.tsx`. The review
+    also independently re-derived the CSS-specificity gutter-reclaim
+    claim empirically (not just read the code) and confirmed the park
+    sweep's completeness by grepping every one of the 12 pre-CD1 harness
+    files against their pre-CD1 state. `tsc` + `build:web` + selftest +
+    the full 13-script suite green, independently re-run a THIRD time by
+    CC on merged `main` (matching the review's counts exactly:
+    `j4` 26, `j5` 40, `m1` 33, `s1` 87, `th1` 26, `th2` 43, `w1` 18,
+    `w2` 31, `ab1` 37/45 armed, `ab2` 42/52 armed, `ab3` 34/41 armed,
+    `fx1` 25/32 armed, `cd1` 26/26 armed) before push. Fast-forwarded to
+    `main` @ `389e674`, pushed. **Not deployed.**
+    **`th2.mjs`'s known transient flake hit a 4th time** (once during the
+    review's PARKED pass, once again on CC's own merged-`main` run) —
+    cleared cleanly both times on immediate re-run, not a regression, but
+    this is now well past Fable's own standing rule ("a third within the
+    month triggers the deflake micro-pass") — **a deflake pass is
+    overdue and unscheduled.**
+    **Three items surfaced by review, left open as genuine calls — not
+    resolved by any agent:** (1) the top-right cluster's "Done alone" law
+    holds for PageEditor and ScriptEditor but not JournalEntry, whose
+    "← The journal" link sits on the LEFT paired with the mode strip (a
+    pre-existing, pre-CD1 idiom, not something this ticket introduced) —
+    rename/reposition vs. preserve the distinct wayfinding idiom is
+    Nick's call; (2) the canon's bolded "Catch is SCRAPPED from the UI
+    **entirely**" vs. the build brief's narrower framed-surface-only
+    scope — Desk.tsx's own Catch button (outside the framed/legacy split
+    entirely) was left untouched, a defensible literal reading of the
+    *brief* that may not satisfy the *canon's* broader language; (3)
+    JournalEntry's paper stays at a pre-existing 720px while
+    PageEditor/ScriptEditor use 760px/60ch, so the sliver's canonical-
+    width anchor sits ~20px off true-flush there specifically — static,
+    cosmetic, the hard "paper never moves" invariant still holds
+    regardless. **Per the standing rule: this ticket is zero-schema, so
+    merge pre-authorization stood on its own** — no separate Nick's-go
+    was needed for the merge itself. Close awaits Fable's post-merge
+    review.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
