@@ -780,6 +780,147 @@ outlive a session lives here, not in chat.
     review, whether to deploy now or hold. **Close conditions remaining:**
     Fable's delta spot-check against `1c8de6b`, and Nick's device-look
     sitting.
+27. **HB1 — the Threshold.** **BUILT, NOT MERGED — 2026-07-16.** Brief:
+    `docs/wrizo-alpha/hb1-threshold-brief.md`. Charter:
+    `docs/wrizo-alpha/hb-arc-handoff.md`. Nick's direct word waived the
+    committee double-pass for this ticket; R1 (Flux stands in for Machina
+    at the unlock, data not hardcode) and R2 (a visible locked door is
+    accepted, once, for the first-run threshold only — M1 governs in full
+    everywhere after the veil lifts) recorded in the brief itself.
+    **Pre-build discovery, ruled before any code was written:** the app
+    already had a second, unrelated pre-auth front door —
+    `components/HomeFlow.tsx` ("HOME port v6"), a 50-word forced-write
+    gate + reward + account flow that fully owned every anonymous visitor
+    (mounted BEFORE the router; route `/`, where the brief specs Arrival,
+    was literally unreachable pre-login). Neither the brief nor the
+    charter named it. Flagged to Nick directly; his word: **Arrival
+    replaces HomeFlow too, not just the Desk room** — Write works with no
+    account (local-first, persists immediately, per Journal-forgets-
+    nothing), account creation deferred and reachable via Open's sign-in
+    (F2), not resolved to a specific ritual moment (an open call, not this
+    ticket's to close — the charter's own "Write-before-signup" tension,
+    left unresolved when the committee pass was waived). This roughly
+    doubled the ticket's real scope beyond the brief's literal S1-S6 text:
+    `App.tsx`'s auth-gated routing restructured so the router mounts
+    regardless of auth state (Journal/Shelf/Drawers/Project already
+    operate on local data with or without a session; only `startSync()`
+    stays authed-only, untouched).
+    **The build (S1-S6), all six slices.** New `components/Arrival.tsx` —
+    route `/` for every boot, authed or not: the mark, a real-readiness
+    boot bar (doors disable until `authState` resolves), Write (primary,
+    local-first, no account) and Open (quiet-secondary, F2: authed with a
+    resume target → lands on it directly; anon → the existing sign-in,
+    relocated from `HomeFlow` verbatim, not rebuilt). New
+    `store/firstRun.ts` (the once-per-device flag, F3), `store/
+    firstRunGateActive.ts` (a `deskFrameActive.ts`-shaped ephemeral signal
+    so `App.tsx`'s `GlobalHeader` goes fully absent — not just collapsed —
+    while the gate holds), `store/themeTerritories.ts` (R1's data-not-
+    hardcode offered/future lists — Machina arms later by moving one
+    entry, no component changes). New `components/FirstRunGate.tsx`
+    (`FirstRunVeil` — inert + aria-hidden + blurred, renders children with
+    NO wrapper at all when inactive so `.hb1-veil` stays a true "gate is
+    live" signal on every other page in the app; the monotonic word
+    counter, F1's "monotone under forward lock" — struck-run flicker in
+    the derived text never reads backward; a glow mirroring `GoalGlow`'s
+    exact rendering contract, fed the gate's word fraction instead of
+    line-equivalents, "consume don't fork" per the brief's own seam) and
+    `components/UnlockCeremony.tsx` (the S4 rite: Plateau/Flux offered,
+    Machina/Nomad/Volant grayed in that order; a transient single-valued
+    `.chosen` flash is the only brass on screen, never a resting
+    `.btn-brass`, so the house "exactly one brass per screen" law holds).
+    `PageEditor.tsx`'s framed branch wires it together: the top chrome
+    row, the Drawer, and the Sliver all veiled; `ModeStage` gained an
+    optional `firstRunGateActive` prop (default false, byte-identical
+    everywhere else) so its OWN chrome — the reveal handle and the
+    settings gear — veils too (see independent review, below). S5 rehomed
+    the Desk's orphans: the resume pointer into Open; Begin Project/the
+    recent-drawers glance into the Drawer's existing Places faces (already
+    the AB3-era interim home); `CreateProject.tsx`/`Drawers.tsx`'s stale
+    "← Desk" back-links relabeled "← Home". `Desk.tsx` and `HomeFlow.tsx`
+    both PARKED (unimported, not deleted, headed with a pointer to this
+    entry). Every one of the 13 pre-existing harness fixtures' cold-boot
+    helper updated (`.wz-desk`→`.wz-arrival`, `.wz-start-writing`→
+    `.wz-arrival-write`, `wrizo-first-run-complete=1` seeded alongside
+    every `localStorage.clear()` so old fixtures get an ordinary,
+    non-gated Write — the FX1 review's own standing lesson, "never assume
+    a fixture's default," applied fresh). One check, `s1.mjs`'s "the
+    Desk's mirror surfaces the SCRIPT tag unprompted," PARKED as
+    **DORMANT** (not superseded — no successor proves the same unprompted-
+    glance truth, because Arrival deliberately shows none; the resume
+    pointer itself still resolves correctly, just behind a click now) —
+    whether an unprompted mirror belongs on Arrival is flagged for Fable/
+    Nick, not resolved either way. New `apps/desktop/scripts/harness/hb1.mjs`
+    (28 checks) + a small fix to the shared `runtime-verify.mjs` (its own
+    `--selftest` and `freshSprint()` read `.wz-desk` too; a new `WS_ANON`
+    env var already existed there, unused until now, driving the anon-path
+    fixtures).
+    **Independent review** (a separate subagent pass, adversarial, before
+    any commit) found two real defects and fixed both: **(1, HIGH)** the
+    veil covered DeskFrame's toolRail/sliver/top-row but NOT `ModeStage`'s
+    own chrome — the reveal handle and, critically, the settings gear,
+    which exposes a live Theme switch and the Typewriter toggle. A writer
+    could open the gear mid-gate and pick a theme directly, or turn the
+    forced typewriter off, bypassing both the accessibility invariant
+    ("AT perceives exactly one path") and R2's actual premise (a theme
+    *earned* by writing). Fixed by giving `ModeStage` the `firstRunGateActive`
+    prop and veiling the handle + gear cluster; the empty-page F6 "invite a
+    first line?" affordance (a second voice alongside the gate's own
+    instruction) suppressed the same way. **(2, lower)** below 1100px no
+    ceremony ever exists to flip `firstRunComplete`, so every Write from
+    Arrival kept re-forcing forward-lock/typewriter back on — silently
+    clobbering a sub-1100px writer's own later preference change, not just
+    a one-time founding default. Fixed: `Arrival.tsx` flips the flag itself
+    on a sub-1100px Write (via `useDeskFrameViewport()`), once, since no
+    rite will ever complete there. Both fixes added their own `hb1.mjs`
+    checks (25→28) — the review's own lesson embedded: a raw `.hb1-veil`
+    count assertion had missed the gap, so a defense-in-depth check now
+    walks every `button/a/[role=button]` on the gated page and asserts
+    each sits inside an `[inert]` ancestor. **One open call left standing,
+    not fixed:** `UnlockCeremony` is `aria-modal="true"` without a real
+    focus trap — the editor behind it (deliberately left interactive, "the
+    one path") is still Tab-reachable while the ceremony is up, so the
+    `aria-modal` promise of an inert background isn't fully kept. Flagged
+    for Fable, not silently patched.
+    **A concurrent-checkout collision, twice** (see item 26's own account
+    of the first): the shared `writer-studio` checkout was switched to
+    `main` mid-build by CD1's session, once during the original stash-vs-
+    WIP discovery and once again mid-review. Both times a checkpoint
+    commit (`2200302`, `3ea2e6e`) preserved every uncommitted edit before
+    the switch — no data lost either time — but it happened twice in one
+    day on this exact ticket pair, which is what triggered the new **ONE
+    CHECKOUT PER AGENT** standing rule (this file, TOOLING STATUS, below).
+    HB1 now builds at `../wrizo-hb1` on `hb1-threshold`, its own worktree;
+    this entry's own verification (below) is the first full run from
+    there, clean. Merged `main` (through the cd1.1 fold, `fccddcc`) into
+    `hb1-threshold` mid-build — one real conflict, in `PageEditor.tsx`'s
+    header row (both tickets touched it: cd1.1 restored the Pages/Plan
+    toggle, HB1 added the veil wrapper) — resolved by wrapping cd1.1's
+    toggle inside HB1's veil (it's chrome, it belongs gated too).
+    **Verified, from the clean worktree, after the collision:** `tsc`
+    (desktop + server) clean; `build:web` clean; `verify:runtime
+    --selftest` PASS; the full 14-script suite green —
+    `j4` 26, `j5` 40, `m1` 33, `s1` 86 (87 armed), `th1` 26, `th2` 43,
+    `w1` 18, `w2` 31, `ab1` 37 (45 armed), `ab2` 42 (52 armed), `ab3` 34
+    (41 armed), `fx1` 25 (32 armed), `cd1` 27 (27 armed, nothing new
+    parked), `hb1` 28/28 — zero failures, both `HARNESS_PARKED` settings
+    where applicable.
+    **Two more genuine open calls, disclosed, not resolved by any agent:**
+    (1) S5's brief text — "loose pages' `backTo '/'` exit: remove the
+    room-change... not a navigation to `/`" — read here as satisfied by
+    the Desk room's own retirement (there is no more literal "room" to
+    navigate to; `/` is Arrival now, a legitimate permanent destination,
+    not a special case), so `PageEditor.tsx`'s existing `backTo` logic for
+    loose pages was left pointing at `/`, unchanged; a stricter reading
+    (Done should never target `/` at all) was not built. (2) Account-
+    creation timing, per the HomeFlow-retirement ruling above — reachable,
+    not ritualized to a specific moment.
+    **Not deployed. Not pushed yet — pushing with this entry.** Per the
+    brief's own DoD: Fable diff review (stats-first) still owed before
+    merge; merge word and device verdict are Nick's alone. The stash left
+    behind by the first collision (`cd1.1 erratum WIP...`, this file's
+    prior session) is now superseded by `1c8de6b`'s properly-folded,
+    reviewed version — safe to drop, left for Nick/Fable to confirm rather
+    than dropped unilaterally.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
