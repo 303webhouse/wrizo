@@ -190,15 +190,19 @@ await withHarness(async (app) => {
 
   // === S2 — the forward lock: an explicit persisted toggle, default ON
   // (today's shipped Free Write behavior), OFF swaps to a real erase. ========
-  // AB3 S4 — freshProsePage's fixture is project-origin, so the RAIL TOGGLE
-  // itself no longer mounts here (see the AB3 S4 check above); the setting
-  // is toggled directly via its own localStorage key instead of clicking a
-  // rail control that's correctly absent for this fixture. The underlying
-  // strike/erase MECHANIC (store/forwardOnly.ts) is origin-independent —
-  // still exercised in full. The rail-toggle-specific assertions this
-  // replaces are parked below (HARNESS_PARKED=1); ab3.mjs's own journal-
-  // origin fixture proves the rail toggle itself still works where it
-  // belongs.
+  // AB3 S4 (original rationale, now stale post-FX1 S3 — kept for the record):
+  // freshProsePage's fixture was project-origin, so the RAIL TOGGLE no longer
+  // mounted here; the setting was toggled directly via its own localStorage
+  // key instead of clicking a rail control that was correctly absent for
+  // this fixture. FX1 S3 makes the forward lock mode furniture (mounts
+  // regardless of origin), so the rail control DOES mount here again now
+  // (see this file's own "FX1 S3: ..." check above) — but this S2 block
+  // still exercises the underlying strike/erase MECHANIC
+  // (store/forwardOnly.ts) directly via localStorage, which remains a valid,
+  // origin-independent proof either way. The rail-toggle-specific assertions
+  // this replaces are parked below (HARNESS_PARKED=1); ab3.mjs's own
+  // journal-origin fixture proves the rail toggle itself still works where
+  // it belongs.
   await freshProsePage(app);
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('ab');
@@ -470,6 +474,32 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those", then AB3-superseded to "...shows NONE of it") — FX1 S3 re-supersedes AB3\'s own re-assertion: forward lock is back (mode furniture), ink/capture items stay absent',
       !freeWriteRailNow.ink && freeWriteRailNow.forwardLock && freeWriteRailNow.captureItems.length === 0,
       JSON.stringify(freeWriteRailNow));
+
+    // ORIGINAL (AB3 S4, live in this file's own unparked S1 block — never
+    // previously parked, unlike the AB2-era entry just above): ok('AB3 S4:
+    // Free Write rail on a PROJECT-origin page shows none of the Journal
+    // furniture (ink/forward-lock/capture items absent); format/structure
+    // stay absent too (Free Write, not Draft)', !freeWriteRail.ink &&
+    // !freeWriteRail.forwardLock && freeWriteRail.captureItems.length === 0
+    // && !freeWriteRail.format && !freeWriteRail.structure,
+    // JSON.stringify(freeWriteRail));
+    // FX1 S3 (Nick's first-sitting verdict, provisional canon note) —
+    // supersedes this AB3-authored live check directly: the forward lock
+    // splits off to become mode furniture (mounts regardless of origin);
+    // ink/capture items AND format/structure absence are unchanged AB3 law.
+    // The live opposite-truth successor is asserted in this file's own
+    // unparked S1 block now (named "FX1 S3: ..."), on the same fixture.
+    const freeWriteRailFull = await app.evalJs(`({
+      ink: !!document.querySelector('.desk-toolrail-inks'),
+      forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
+      captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+      format: !!document.querySelector('.desk-toolrail-format'),
+      structure: !!document.querySelector('.desk-toolrail-structure'),
+    })`);
+    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items and format/structure stay absent',
+      !freeWriteRailFull.ink && freeWriteRailFull.forwardLock && freeWriteRailFull.captureItems.length === 0
+        && !freeWriteRailFull.format && !freeWriteRailFull.structure,
+      JSON.stringify(freeWriteRailFull));
 
     // ORIGINAL (AB2 S2): ok('S2: the rail toggle flips to off',
     // lockOffState === 'false', lockOffState); ok('S2: the forward-lock
