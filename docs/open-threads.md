@@ -453,7 +453,11 @@ outlive a session lives here, not in chat.
     full 11-script suite (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/
     `ab1`/`ab2`/`ab3`) green, independently re-run a THIRD time by CC on
     merged `main` (matching both prior reports exactly) before push.
-    Fast-forwarded to `main` @ `b9993a6`, pushed. **Not deployed.**
+    Fast-forwarded to `main` @ `b9993a6`, pushed.
+    **Deployed — 2026-07-16**, Nick's word ("Push everything that's
+    ready live"): `railway up` on `main` @ `32db861` (carrying AB1's
+    ab1.1 fold, AB2's ab2.1 fold, and AB3's ab3.1 fold together),
+    confirmed live (`200` on `/healthz` and `/`, `401` on `/auth/me`).
     **Correction (Fable's AB3 review, R5, 2026-07-15):** the AB1/AB2
     merge pre-authorization was a **zero-schema** precedent — it does
     not generalize to schema-touching tickets. AB3 is the arc's first
