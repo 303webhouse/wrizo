@@ -22,7 +22,8 @@ import { useWritingSettings, setWritingSettings } from '../store/writingSettings
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
-import { CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
+import { GoalGlow } from '../components/GoalGlow';
 import { Drawer } from '../components/Drawer';
 import type { PageFaceSubject } from '../components/PageFace';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
@@ -202,6 +203,12 @@ function JournalEntryView() {
   // real state (not just the ref) so the bar/glow re-render live as you type.
   const writingSettings = useWritingSettings();
   const [words, setWords] = useState(() => wordCount(pageTextRef.current));
+  // CD1 S6 — the goal system's own live text (store/lineEquivalents.ts
+  // needs the raw text, not a word count). `pageTextRef` already tracks
+  // this on every keystroke but is a ref (no re-render); this small sibling
+  // state gives the sliver's goal foot + the glow something reactive to
+  // read, mirroring `words`' own pattern immediately above.
+  const [goalText, setGoalText] = useState(() => pageTextRef.current);
   const authored = authoredRef.current;
   const glowM = Math.pow(Math.min(1, words / WORD_GOAL), 0.55);
   const { frac: lapFrac, celebrating } = useGoalProgress(words, WORD_GOAL);
@@ -551,6 +558,7 @@ function JournalEntryView() {
     const onInput = () => {
       pageTextRef.current = el.innerText;
       setWords(wordCount(el.innerText));
+      setGoalText(el.innerText);
       touchedRef.current = true;
       noteWriteRef.current(); // recede the chrome on write
       warmReleaseRef.current(); // release the warm-start glow on the first forward keystroke
@@ -714,6 +722,7 @@ function JournalEntryView() {
     } else {
       pageTextRef.current = la.before;
       setWords(wordCount(la.before));
+      setGoalText(la.before);
       const el = editRef.current;
       if (el) { el.innerText = la.before; placeCaretEnd(el); }
       const latest = getJournalEntry(entry.id);
@@ -860,9 +869,9 @@ function JournalEntryView() {
           always shown regardless of the progress metric.
           AB2 S2/S6 — framed: this whole row stays unmounted (ModeStage's own
           established framed gate, generalized here) — the typewriter toggle
-          moves to the rail (components/ToolRail.tsx), and the meter track
-          stays empty/reserved this ticket, matching every other DeskFrame
-          surface. */}
+          moves to the sliver (CD1: components/Sliver.tsx), and the meter
+          track stays empty/reserved this ticket, matching every other
+          DeskFrame surface. */}
       {authored && !framed && (
         <div className="mode-incentive-row">
           {writingSettings.progress !== 'off' && (
@@ -1001,7 +1010,7 @@ function JournalEntryView() {
   // strokes, a single fixed color, not a palette); no forward-lock switch
   // here either (S2 ties that explicitly to ForwardOnlyEditor's propulsion,
   // which this surface's own word-granular deletion rail does not use).
-  const toolRailContent: ToolRailContent = { kind: 'freewrite', captureItems: CAPTURE_ITEMS };
+  const sliverContent: SliverContent = { kind: 'freewrite', captureItems: CAPTURE_ITEMS };
 
   const modalsAndToast = (
     <>
@@ -1029,18 +1038,24 @@ function JournalEntryView() {
     </>
   );
 
-  // AB2 S6 (the R2 ruling) — the Journal's page enters the frame at
-  // >=1100px. The legacy tab row (below) does not mount here — superseded
-  // by the unified mode strip, not deleted. Free Write is this surface's
-  // only posture; Draft/Revise/Workshop/Publish all route to the SAME
-  // file-it-first prompt the legacy tab row already used (there is no
-  // typed-editor pipeline for an unfiled ink+text page to switch into).
+  // CD1 S1 — the Journal's own composed frame gains the same top-line
+  // treatment: the mode strip moves up into this header row, left-set,
+  // beside "← The journal" (this surface's own equivalent of Done — kept
+  // as its own established wording, not renamed, since it's semantically
+  // distinct: "leave THIS page for the Journal list" vs. the generic
+  // Done elsewhere). The notebook-paging chip stays at the right (real
+  // page-to-page navigation, not a title/orphan) — flagged for a
+  // reviewer's symmetry check against PageEditor's own Pages/Plan-toggle
+  // removal (see that file's own S1 comment).
   if (framed) {
     return (
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={dissolved ? 'true' : 'false'}>
         <ChromeHandle onReveal={() => resurface(true)} />
         <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
+            <ModeStrip mode="journal" onSwitch={() => setTabPrompt(true)} onPublish={() => setTabPrompt(true)} />
+          </div>
           {isLoose && (
             <nav className="journal-nav" aria-label={lex('journal')}>
               <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
@@ -1072,8 +1087,9 @@ function JournalEntryView() {
 
         <DeskFrame
           pageKind="prose"
-          modeStrip={<ModeStrip mode="journal" onSwitch={() => setTabPrompt(true)} onPublish={() => setTabPrompt(true)} />}
-          toolRail={<Drawer toolsContent={toolRailContent} subject={pageFaceSubject} />}
+          toolRail={<Drawer subject={pageFaceSubject} />}
+          sliver={<Sliver content={sliverContent} goalText={goalText} />}
+          goalGlow={<GoalGlow text={goalText} />}
           dissolved={dissolved}
         >
           {/* .desk-frame-stage is a `display:flex` row expecting ONE child

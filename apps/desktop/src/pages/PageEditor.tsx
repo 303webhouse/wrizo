@@ -18,7 +18,8 @@ import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
-import { CAPTURE_ITEMS, type ToolRailContent } from '../components/ToolRail';
+import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
+import { GoalGlow } from '../components/GoalGlow';
 import { Drawer } from '../components/Drawer';
 import type { PageFaceSubject } from '../components/PageFace';
 import { AddToSheet } from '../components/AddToSheet';
@@ -62,13 +63,19 @@ function PageEditorView({ id }: { id: string }) {
   // when this is null, per the canon's no-greyed-states rule.
   const milestones = projectMilestones(id);
 
-  // Per-page last-used mode. Default: a manuscript chapter opens in Free write
-  // (forward-only generation); support pages open in Draft (free edit).
+  // Per-page last-used mode. Default: a manuscript chapter opens in Free
+  // write (forward-only generation); other untyped support pages open in
+  // Draft (free edit). CD1 S8 (A7) — a LOOSE-origin page (the Desk's
+  // start-writing/home-base door, origin==='loose' only — no pageType is
+  // ever stamped there) ALSO opens in Free Write, matching the front-door
+  // posture; this is deliberately narrower than "any untyped page" — a
+  // filed-but-untyped support page (origin 'journal'/'project'/null) still
+  // opens in Draft, unchanged.
   const modeKey = `wrizo-mode-page-${id}`;
   const [mode, setMode] = useState<EditorMode>(() => {
     const saved = localStorage.getItem(modeKey);
     if (saved === 'journal' || saved === 'drafting') return saved;
-    return entry?.pageType === 'manuscript' ? 'journal' : 'drafting';
+    return entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' : 'drafting';
   });
 
   const initialText = entry?.text ?? '';
@@ -77,9 +84,10 @@ function PageEditorView({ id }: { id: string }) {
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
-  // AB2 S2 — ink color, lifted out of ModeStage so ToolRail (a DeskFrame
-  // sibling) can control it; ModeStage falls back to its own internal state
-  // when this isn't passed (unframed/below-the-gate, untouched).
+  // AB2 S2 — ink color, lifted out of ModeStage so the sliver (CD1:
+  // components/Sliver.tsx, a DeskFrame sibling) can control it; ModeStage
+  // falls back to its own internal state when this isn't passed
+  // (unframed/below-the-gate, untouched).
   const [penColor, setPenColor] = useState(PEN_INKS[0]);
   const forwardLock = useForwardLock();
   // AB2 S4 — the Structure picker's one-time confirmation (prose page with
@@ -314,7 +322,7 @@ function PageEditorView({ id }: { id: string }) {
   // persisted setting.
   const journalFurniture = entry.origin == null || entry.origin === 'journal';
 
-  const toolRailContent: ToolRailContent = !framed
+  const sliverContent: SliverContent = !framed
     ? { kind: 'empty' }
     : mode === 'journal'
       ? {
@@ -387,28 +395,22 @@ function PageEditorView({ id }: { id: string }) {
     </>
   );
 
-  // AB1 S1/S2/S4 — the framed (>=1100px) composition. Breadcrumb + Pages/Plan
-  // toggle stay (real page-level navigation, not "top-bar orphans" — those
-  // are GlobalHeader's Fullscreen/Sync/Sign out, collapsed separately per
-  // S4 via store/deskFrameActive.ts). "Copy page text" leaves top chrome
-  // entirely here (S4) — its future home is a later ticket's Publish surface.
+  // CD1 S1 — the framed (>=1100px) composition. The mode strip moves up
+  // into this header row (left-set, engraved register via its own CSS);
+  // the top-bar title retires (the crumb/breadcrumb it duplicated — the
+  // Page face already carries the same title + "where it lives" chain via
+  // describePageHome, S3); the Pages/Plan toggle retires from this row too
+  // (the ground-truth's own "Done alone, nothing beside it" reading of A5
+  // — a reviewer should double check this call: Plan is still reachable via
+  // Done -> ProjectHome). "Copy page text" already left top chrome
+  // entirely in AB1/AB2 (S4) — its future home is a later ticket's Publish
+  // surface.
   if (framed) {
     return (
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
         <div className="chrome-fade chrome-top sprint-nav">
-          <div className="sprint-crumb" aria-label="Location">
-            {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
-            {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-            <span className="crumb-here">{pageTitle}</span>
-            {entry.importedAt && <span className="page-imported-tag" title={`Imported into this ${lex('binder').toLowerCase()}`}>Imported</span>}
-          </div>
+          <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
           <div className="sprint-actions">
-            {project && (
-              <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
-                <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
-                <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
-              </div>
-            )}
             <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
           </div>
         </div>
@@ -417,8 +419,9 @@ function PageEditorView({ id }: { id: string }) {
 
         <DeskFrame
           pageKind="prose"
-          modeStrip={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />}
-          toolRail={<Drawer toolsContent={toolRailContent} subject={pageFaceSubject} />}
+          toolRail={<Drawer subject={pageFaceSubject} />}
+          sliver={<Sliver content={sliverContent} goalText={text} />}
+          goalGlow={<GoalGlow text={text} />}
           dissolved={receded}
         >
           <ModeStage

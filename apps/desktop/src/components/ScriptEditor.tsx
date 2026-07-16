@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getJournalEntry, saveScriptDoc, saveJournalEntry, flushNow, getDrawer, getProject } from '../store/persistence';
+import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject } from '../store/persistence';
+import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
 import { WIDTH_CH, INDENT_CH, RIGHT_ALIGN_TYPES, UPPERCASE_TYPES } from '../store/scriptMetrics';
@@ -16,7 +17,12 @@ import { useTypewriterFade } from './useTypewriterFade';
 import { useWritingSettings } from '../store/writingSettings';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
-import { ToolRail, type ToolRailContent } from './ToolRail';
+import { Sliver, type SliverContent } from './Sliver';
+import { GoalGlow } from './GoalGlow';
+import { Drawer } from './Drawer';
+import type { PageFaceSubject } from './PageFace';
+import { PortToBoardSheet } from './PortToBoardSheet';
+import { AddToSheet } from './AddToSheet';
 import { isScriptEmpty } from '../store/structureConvert';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 
@@ -269,6 +275,12 @@ export function ScriptEditor({ id }: { id: string }) {
   const [seedNonce, setSeedNonce] = useState(0);
   const [acIndex, setAcIndex] = useState(0);
   const [acDismissed, setAcDismissed] = useState<string | null>(null);
+  // CD1 S7 — the Page face's sending-verb sheets (mirrors PageEditor.tsx's
+  // own wiring verbatim; the Screenplay Room never had a Page face before
+  // this ticket — Move/Copy/Port-to-Board are genuinely new capability
+  // here, same as they were for PageEditor in AB3).
+  const [portOpen, setPortOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
 
   const elementsRef = useRef(elements);
   elementsRef.current = elements;
@@ -326,6 +338,39 @@ export function ScriptEditor({ id }: { id: string }) {
   const noteFirstKeystroke = () => { if (!firedFirstKeystroke.current) { firedFirstKeystroke.current = true; noteSessionKeystroke(); } };
 
   if (!initialEntry) return null;
+
+  // CD1 S7 — star/tag mutations, mirroring PageEditor.tsx's own
+  // patch-based closures (shared via store/persistence.ts's
+  // patchJournalEntry so neither host can drift on the "merge live text"
+  // discipline). The script's own "live text" is its serialized doc, not
+  // ForwardOnlyEditor's textRef — recomputed from the live element/scene
+  // state at click-time so a Star tap right after typing can't clobber an
+  // unflushed edit (AUTOSAVE_MS is 2000ms).
+  const liveScriptText = () => serializeScriptDoc({ v: 1, scenes: groupIntoScenes(elementsRef.current, scenesRef.current) });
+  const toggleStar = () => { patchJournalEntry(id, liveScriptText(), { starred: !initialEntry.starred }); flushNow(); };
+  const addTag = (tag: string) => {
+    const tags = initialEntry.tags ?? [];
+    if (!tags.includes(tag)) patchJournalEntry(id, liveScriptText(), { tags: [...tags, tag] });
+    flushNow();
+  };
+  const removeTag = (tag: string) => {
+    patchJournalEntry(id, liveScriptText(), { tags: (initialEntry.tags ?? []).filter(t => t !== tag) });
+    flushNow();
+  };
+
+  const { homeLabel, memberships } = describePageHome(initialEntry, project);
+  const pageFaceSubject: PageFaceSubject = {
+    kind: 'page',
+    entry: initialEntry,
+    homeLabel,
+    memberships,
+    footer: initialEntry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
+    onToggleStar: toggleStar,
+    onAddTag: addTag,
+    onRemoveTag: removeTag,
+    onOpenMoveCopy: () => setAddOpen(true),
+    onOpenPortToBoard: () => setPortOpen(true),
+  };
 
   const moveActive = (nextIndex: number, hint: CaretHint) => {
     setActiveIndex(nextIndex);
@@ -496,11 +541,16 @@ export function ScriptEditor({ id }: { id: string }) {
     if (next === 'screenplay') return; // already screenplay — nothing to do here
     requestProse();
   };
-  const toolRailContent: ToolRailContent = {
+  const sliverContent: SliverContent = {
     kind: 'draft',
     structure: 'screenplay',
     onSwitchStructure,
   };
+  // CD1 S6 — the goal system's live text for this surface: the script's
+  // elements read as lines (matches the deterministic hard-newline
+  // splitting store/lineEquivalents.ts already does for prose — one
+  // element per line is the script's own natural "line" unit).
+  const goalText = elements.map(e => e.text).join('\n');
 
   const title = elements.find(e => e.t === 'scene')?.text.trim() || 'Untitled';
   const backTo = project ? `/project/${project.id}` : '/journal';
@@ -542,22 +592,21 @@ export function ScriptEditor({ id }: { id: string }) {
     </div>
   );
 
-  // AB1 S1/S2/S4 — framed (>=1100px): DeskFrame + the unified mode strip
-  // (finding 5 dies here), and the containment fix (finding 4 dies here —
-  // .desk-frame-scroll-cap gives the sheet a bounded height + internal
-  // scroll it has never had). "Copy script text" leaves top chrome (S4).
+  // CD1 S1/S7 — framed (>=1100px): the mode strip moves to this header row
+  // (left-set; top-bar title/crumb retires — the Page face carries it now,
+  // S7's new Drawer); ScriptEditor gains the drawer (Page + Places) and the
+  // sliver (structure — script's hand tools), mirroring the prose wiring
+  // exactly. AB1 S1/S2/S4's containment fix (finding 4) is unchanged —
+  // .desk-frame-scroll-cap still gives the sheet a bounded height +
+  // internal scroll. "Copy script text" leaves top chrome (S4, unchanged).
   if (framed) {
     return (
       <div className="desk-frame-host" data-chrome-receded={scriptDissolve.dissolved ? 'true' : 'false'}>
         {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
             chrome that never recessed with the rest of the room. */}
-        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div className="sprint-crumb" aria-label="Location">
-            {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
-            {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-            <span className="crumb-here">{title}</span>
-          </div>
-          <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="chrome-fade chrome-top sprint-nav">
+          <ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} />
+          <div className="sprint-actions">
             <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
           </div>
         </div>
@@ -566,14 +615,24 @@ export function ScriptEditor({ id }: { id: string }) {
 
         <DeskFrame
           pageKind="screenplay"
-          modeStrip={<ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} />}
-          toolRail={<ToolRail content={toolRailContent} />}
+          toolRail={<Drawer subject={pageFaceSubject} />}
+          sliver={<Sliver content={sliverContent} goalText={goalText} />}
+          goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
         >
           <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter={writingSettings.typewriter ? 'true' : 'false'}>
             <div className="mode-pagecol">{scriptSheet}</div>
           </div>
         </DeskFrame>
+
+        {portOpen && <PortToBoardSheet sourceIds={[id]} onClose={() => setPortOpen(false)} />}
+        {addOpen && (
+          <AddToSheet
+            sourceIds={[id]}
+            onClose={() => setAddOpen(false)}
+            onDone={() => setAddOpen(false)}
+          />
+        )}
 
         {showPublish && (
           <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>

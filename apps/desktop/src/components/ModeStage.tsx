@@ -34,10 +34,11 @@ const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel stat
 // current pen ink. The dissolve engine also drives WritingSession, so the global
 // header recedes in step; `onDissolveChange` lets the host fade its own top bar.
 
-// AB2 S2 — exported so PageEditor.tsx (the framed host) can seed ToolRail's
-// ink swatch list with the SAME three inks, when it lifts pen-color into a
-// controlled prop below (the pen bar itself retires from the frame; its
-// palette does not change).
+// AB2 S2 — exported so PageEditor.tsx (the framed host) can seed the
+// sliver's (CD1: components/Sliver.tsx, formerly ToolRail) ink swatch list
+// with the SAME three inks, when it lifts pen-color into a controlled prop
+// below (the pen bar itself retires from the frame; its palette does not
+// change).
 export const PEN_INKS = ['#1a0f06', '#b8231f', '#1f4fb8']; // black-brown, red, blue
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
@@ -83,7 +84,7 @@ interface Props {
   // caller (QuickSprint, and this component below the 1100px gate) byte-
   // identical to pre-AB1 behavior.
   framed?: boolean;
-  // AB2 S2 — when framed, ink color is owned by the host (ToolRail is
+  // AB2 S2 — when framed, ink color is owned by the host (the sliver is
   // DeskFrame's sibling, not ModeStage's child, so it can't reach ModeStage's
   // own internal `pen` state) and passed down as a controlled value. Absent
   // (every existing caller — QuickSprint, and this component below the
@@ -104,8 +105,8 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // icon, both toggling the same value. AB1 S2 froze this out entirely when
   // framed ("do not mount the typewriter effect or its toggle"); AB2 S2
   // returns it from parking — the EFFECT now engages framed too (its own
-  // toggle button moves to ToolRail, a DeskFrame sibling reading/writing the
-  // same shared store — see components/ToolRail.tsx), independent of framed.
+  // toggle button moves to the sliver, a DeskFrame sibling reading/writing
+  // the same shared store — CD1: components/Sliver.tsx), independent of framed.
   const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
   // pre-existing on this surface too — not new here) — this array literal
@@ -346,9 +347,10 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
         <div className="mode-pagecol">
           {/* Format / pen bar (top of page) — chrome, dissolves on write.
               AB2 S2/S3 — retires when framed: its ink swatches and Draft's
-              format tools both have a rail home now (components/ToolRail.tsx,
-              mounted in DeskFrame's own tool-rail track, a sibling of this
-              whole ModeStage). Below the gate this is unchanged. */}
+              format tools both have a home now in the sliver (CD1:
+              components/Sliver.tsx, an overlay anchored inside DeskFrame's
+              own stage, a sibling of this whole ModeStage). Below the gate
+              this is unchanged. */}
           {!framed && (
           <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}>
             {rail.tools === 'pen' ? (
