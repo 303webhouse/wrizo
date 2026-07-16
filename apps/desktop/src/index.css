@@ -55,6 +55,20 @@
      ticket — Drawer progressive-disclosure/resize is explicitly deferred. */
   --drawer-width: 200px;
 
+  /* CD1 S5 — the composed frame's own working max width (drawer | stage |
+     wall-track): caps and centers on a wide monitor so a wide desk reads as
+     more wood, not more furniture — the desk-ground texture (below) owns
+     everything outside it. A real, tunable CSS custom property, not a
+     baked-in layout constant. */
+  --frame-max: 1720px;
+
+  /* CD1 S6 — the goal glow's hard cap: a subtle halo, never a luminance
+     event, regardless of progress. Themes may dial this value but the CAP
+     ITSELF must stay a "subtle halo" — nothing here ever multiplies past
+     it (components/GoalGlow.tsx reads it back at runtime, so a theme
+     override actually takes effect). */
+  --goal-glow-cap: .34;
+
   /* TH1 — the two slots every theme gets (canon §3), wired but unused on
      Plateau: nothing reads these yet, so they cost nothing here and are
      free for a future Plateau feature or a theme pack to claim. Quiet
@@ -1761,18 +1775,28 @@ a:focus-visible,
    flex) is the PAGE IS PRIMARY guarantee: track WIDTHS never move when a
    track's CONTENT changes (mode switch, corkboard content, gear open).
    ============================================================================ */
-.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem; }
+/* CD1 S5 — the desk-ground texture owns the OUTER field: `.desk-frame-host`
+   stays full-bleed (max-width:none, as AB1 shipped it) and now carries the
+   background itself, while `.desk-frame-grid` (below) caps at --frame-max
+   and centers within it — "a wide desk is more wood, not more furniture." */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem; background:var(--desk-ground); }
 .desk-frame{ position:relative; }
 .desk-frame-grid{
   display:grid;
   grid-template-columns: var(--drawer-width) minmax(0,1fr) 260px;
   column-gap:28px; align-items:start; justify-content:center;
+  max-width:var(--frame-max); margin:0 auto;
 }
+/* CD1 S5 — the corkboard track's grid COLUMN disappears with its content
+   (FX1 S5's "render only with content" law, reused): DeskFrame.tsx only
+   ever renders the third `<aside>` when it has something to hold, and
+   drops this data attribute to `false` in step — so no CD1 caller (none
+   pass `corkboard` yet) ever pays for a dead 260px column + its gap. */
+.desk-frame-grid[data-corkboard='false']{ grid-template-columns: var(--drawer-width) minmax(0,1fr); }
 .desk-frame-toolrail{ min-height:70vh; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
 .desk-frame-stagecol{ display:flex; flex-direction:column; min-width:0; }
-.desk-frame-modestrip{ margin-bottom:14px; }
-.desk-frame-stage{ display:flex; justify-content:center; min-width:0; }
+.desk-frame-stage{ position:relative; display:flex; justify-content:center; min-width:0; }
 /* Review fix — the actual flex ITEM of .desk-frame-stage is .mode-stage
    (ModeStage's own root div; .mode-row/.mode-pagecol are further BLOCK
    descendants of it, not flex items of the stage themselves). .mode-stage
@@ -1812,6 +1836,39 @@ a:focus-visible,
    relative to the sheet's own font size, not the page's pixel width. */
 .desk-frame-stage--prose .mode-pagecol,
 .desk-frame-stage--screenplay .mode-pagecol{ width:min(760px,60ch); max-width:100%; min-width:0; }
+
+/* CD1 S2 — the sliver's anchor: an ABSOLUTELY POSITIONED overlay inside
+   `.desk-frame-stage` (position:relative, above), left-edge flush against
+   the paper's own left edge. `left` is computed from the stage's own 50%
+   midpoint minus half the paper's canonical width minus the sliver's own
+   200px — the SAME `min(760px,60ch)` measure `.mode-pagecol` uses (nested
+   `min()` in `calc()`), so it tracks the paper without ever needing to
+   measure it in JS. Being `position:absolute` is the geometry guarantee
+   itself: this box is OUT OF FLOW, so it cannot resize/reposition
+   `.desk-frame-stage`'s in-flow child (the paper) regardless of its own
+   open/closed/dissolved state — S2's hard invariant, structural, not
+   merely visual. */
+.desk-frame-sliver-anchor{ position:absolute; top:0; z-index:5; width:200px; height:100%;
+  left:calc(50% - min(380px,30ch) - 200px); }
+.desk-frame-sliver-anchor--prose,
+.desk-frame-sliver-anchor--screenplay{ left:calc(50% - min(380px,30ch) - 200px); }
+
+/* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
+   z-index; the paper itself paints in normal flow above it). Same
+   canonical-width math as the sliver anchor, centered instead of offset. */
+.desk-frame-goalglow-anchor{ position:absolute; top:0; z-index:-1; pointer-events:none;
+  width:min(760px,60ch); height:100%; left:calc(50% - min(380px,30ch)); }
+
+/* CD1 S6 — the goal's glow itself (components/GoalGlow.tsx). Warmth, never
+   brass (the olive/orange lanes hold): a fixed warm gradient whose ONLY
+   variable is opacity (`--glow-intensity`, already pre-multiplied by the
+   hard --goal-glow-cap token in JS — see GoalGlow.tsx) — no color shift at
+   any fraction, easing to rest at the cap when full. */
+.wz-goal-glow{ position:absolute; inset:-10% -20%; pointer-events:none;
+  background:radial-gradient(ellipse at center, rgba(224,113,44,.55) 0%, rgba(224,113,44,.22) 40%, transparent 68%);
+  opacity:var(--glow-intensity,0); transition:opacity 1.4s ease; filter:blur(6px); }
+@media (prefers-reduced-motion:reduce){ .wz-goal-glow{ transition:none; } }
+
 .desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
 .desk-frame-corkboard{ min-height:70vh; background:var(--desk-ground);
@@ -1856,58 +1913,93 @@ a:focus-visible,
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
 
-/* AB2 S1-S4 — the tool rail's own contents (components/ToolRail.tsx),
-   mounted into DeskFrame's .desk-frame-toolrail track (already fixed-width
-   from AB1 — only the CONTENTS here change per mode, never the track).
-   Deliberately plain: instruments within reach, not a menu — reuses
-   .mode-swatch/.mode-nib/.mode-tbtn's existing look rather than inventing a
-   parallel visual language. */
-.desk-toolrail-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
-.desk-toolrail-section{ display:flex; flex-direction:column; gap:8px; }
+/* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired
+   contents move here VERBATIM (same look — .mode-swatch/.mode-nib/
+   .mode-tbtn — only the class family renames, .desk-toolrail-* ->
+   .wz-sliver-*), now inside an absolutely positioned overlay (see
+   .desk-frame-sliver-anchor below) instead of a grid track. */
+.wz-sliver{ position:relative; width:100%; height:100%; }
+.wz-sliver-grip{ position:absolute; top:16px; right:0; width:16px; height:34px;
+  display:flex; align-items:center; justify-content:center; z-index:2;
+  background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
+  color:var(--text-mid); cursor:pointer; transition:.15s; }
+.wz-sliver-grip:hover{ color:var(--text-hi); }
+/* Plateau foundations — olive marks where you are; the grip wears
+   --accent-rest only while OPEN (a where-you-are-now state), never brass. */
+.wz-sliver[data-open='true'] .wz-sliver-grip{ color:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-sliver-grip-glyph{ font-size:13px; line-height:1; }
+.wz-sliver-panel{ position:absolute; top:0; right:16px; width:calc(100% - 16px); height:100%;
+  overflow-y:auto; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
+  opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease; }
+.wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+@media (prefers-reduced-motion:reduce){ .wz-sliver-panel{ transition:none; } }
+.wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
+.wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
 /* FX1 S6 (Nick's first-sitting verdict, "the orange-at-rest sweep") — the
-   rail's eyebrow labels (READING/STRUCTURE/CAPTURE/etc.) are informational,
-   not evental: olive marks where you are, orange marks what you do, and an
-   eyebrow label is neither — it's just quiet. Was --brass-press at rest. */
-.desk-toolrail-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
-.desk-toolrail-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
-.desk-toolrail-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
-.desk-toolrail-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
-.desk-toolrail-typewriter{ display:flex; align-items:center; gap:8px; }
-.desk-toolrail-typewriter-label{ font-size:13px; color:var(--text-mid); }
+   sliver's eyebrow labels (READING/STRUCTURE/CAPTURE/etc.) are
+   informational, not evental: olive marks where you are, orange marks what
+   you do, and an eyebrow label is neither — it's just quiet. */
+.wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+.wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+.wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+.wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
+.wz-sliver-typewriter-label{ font-size:13px; color:var(--text-mid); }
 
 /* A labeled on/off switch — the forward-lock control (S2). Deliberately its
    own small component rather than reusing .mode-seg (a 2/3-way segmented
    picker elsewhere): this is a single binary switch, not a choice among
    named options. */
-.desk-toolrail-toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+.wz-sliver-toggle{ display:flex; align-items:center; justify-content:space-between; gap:10px;
   width:100%; background:none; border:1px solid var(--ink-border); color:var(--text-mid);
   font-family:var(--font-ui); font-size:13px; padding:8px 10px; cursor:pointer; transition:.15s; }
-.desk-toolrail-toggle:hover{ border-color:var(--ink-border-strong); color:var(--text-hi); }
-.desk-toolrail-toggle-label{ text-align:left; }
-.desk-toolrail-toggle-switch{ position:relative; flex:0 0 auto; width:28px; height:16px;
+.wz-sliver-toggle:hover{ border-color:var(--ink-border-strong); color:var(--text-hi); }
+.wz-sliver-toggle-label{ text-align:left; }
+.wz-sliver-toggle-switch{ position:relative; flex:0 0 auto; width:28px; height:16px;
   border:1px solid var(--ink-border-strong); border-radius:0; background:var(--ink-950); transition:.15s; }
-.desk-toolrail-toggle-switch::after{ content:''; position:absolute; top:1px; left:1px; width:12px; height:12px;
+.wz-sliver-toggle-switch::after{ content:''; position:absolute; top:1px; left:1px; width:12px; height:12px;
   border-radius:50%; background:var(--text-low); transition:.15s; }
-.desk-toolrail-toggle[data-on='true'] .desk-toolrail-toggle-switch{ background:var(--brass); border-color:var(--brass); }
-.desk-toolrail-toggle[data-on='true'] .desk-toolrail-toggle-switch::after{ left:13px; background:var(--on-brass); }
+.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:var(--brass); border-color:var(--brass); }
+.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ left:13px; background:var(--on-brass); }
 
 /* The Structure picker (S4) — a two-way segmented control, Prose | Screenplay.
    FX1 S6 — the active state was a solid brass fill (an evental treatment for
    a where-you-are marker); moved to the F3/mode-tab species instead
    (--accent-rest — see .desk-mode-tab.active above), the same lawful active
    pattern .wz-drawer-pull.active already uses. */
-.desk-toolrail-structure{ display:flex; border:1px solid var(--ink-border); }
-.desk-toolrail-structure-btn{ flex:1; background:none; border:0; border-bottom:2px solid transparent; color:var(--text-mid);
+.wz-sliver-structure{ display:flex; border:1px solid var(--ink-border); }
+.wz-sliver-structure-btn{ flex:1; background:none; border:0; border-bottom:2px solid transparent; color:var(--text-mid);
   font-family:var(--font-ui); font-size:12px; padding:8px 6px 6px; cursor:pointer; transition:.15s; }
-.desk-toolrail-structure-btn:hover{ color:var(--text-hi); background:var(--ink-800); }
-.desk-toolrail-structure-btn.active{ background:none; color:var(--text-hi); border-bottom-color:var(--accent-rest); }
-.desk-toolrail-structure-btn + .desk-toolrail-structure-btn{ border-left:1px solid var(--ink-border); }
+.wz-sliver-structure-btn:hover{ color:var(--text-hi); background:var(--ink-800); }
+.wz-sliver-structure-btn.active{ background:none; color:var(--text-hi); border-bottom-color:var(--accent-rest); }
+.wz-sliver-structure-btn + .wz-sliver-structure-btn{ border-left:1px solid var(--ink-border); }
 
-/* AB3 S1 — the Drawer (components/Drawer.tsx). Fills the toolrail track
-   exactly as ToolRail did (same padding-free outer, .desk-toolrail-body's
-   own padding stays inside the `tools` face) — the drawer adds only its own
-   nav row above the face content, so the track's rect never moves when a
-   face flips (fixed geometry, day one). */
+/* CD1 S6 — the goal block, the sliver's foot. Timer numeral (opt-in,
+   --text-mid, quiet); the 2px progress hairline; one inline goal edit.
+   No verdict styling anywhere here — the hairline's fill is the SAME olive
+   accent as every other where-you-are marker, never brass, and never
+   changes color as it fills. */
+.wz-sliver-goal{ display:flex; flex-direction:column; gap:8px; padding:14px; margin-top:auto;
+  border-top:1px solid var(--ink-border); }
+.wz-sliver-goal-timer{ font-family:var(--font-mono); font-size:12px; color:var(--text-mid); letter-spacing:.3px; }
+.wz-sliver-goal-hairline{ height:2px; background:var(--ink-border); }
+.wz-sliver-goal-hairline-fill{ height:100%; background:var(--accent-rest); transition:width .4s ease; }
+@media (prefers-reduced-motion:reduce){ .wz-sliver-goal-hairline-fill{ transition:none; } }
+.wz-sliver-goal-edit{ align-self:flex-start; background:none; border:0; padding:0;
+  color:var(--text-low); font-family:var(--font-ui); font-size:12px; cursor:pointer; text-decoration:underline; }
+.wz-sliver-goal-edit:hover{ color:var(--text-mid); }
+.wz-sliver-goal-edit-row{ display:flex; align-items:center; gap:6px; }
+.wz-sliver-goal-edit-input{ width:56px; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-mono); font-size:12px; padding:3px 6px; }
+.wz-sliver-goal-edit-commit,.wz-sliver-goal-edit-clear{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:11px; padding:3px 8px; cursor:pointer; }
+.wz-sliver-goal-edit-commit:hover,.wz-sliver-goal-edit-clear:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+
+/* AB3 S1 — the Drawer (components/Drawer.tsx). Fills the toolrail track;
+   the drawer adds only its own nav row above the face content, so the
+   track's rect never moves when a face flips (fixed geometry, day one).
+   CD1 S3 — the `tools` face retires (its hand-tool content lives in the
+   sliver now, components/Sliver.tsx, .wz-sliver-*): Page + Places only. */
 .wz-drawer{ display:flex; flex-direction:column; height:100%; }
 .wz-drawer-nav{ display:flex; flex-direction:column; gap:8px; padding:14px 14px 12px; border-bottom:1px solid var(--ink-border); }
 .wz-drawer-pull{ background:none; border:1px solid transparent; color:var(--text-mid); text-align:left;
@@ -2095,6 +2187,16 @@ a:focus-visible,
    carry .chrome-fade, so they recede on write with the existing dissolve rule.
    ============================================================================ */
 .app-main{ padding-left:64px; }
+
+/* CD1 S4 — the reclaim: while ANY DeskFrame is mounted (App.tsx's AppMain
+   reads store/deskFrameActive.ts, the same flag DeskRail.tsx itself reads
+   to stop rendering), the gutter DeskRail used to occupy collapses to 0.
+   Higher specificity than every width-keyed `.app-main{padding-left:…}`
+   rule below (including the >=1700px one) by construction (one extra
+   attribute selector), so it wins regardless of source order — and it can
+   only ever be true at >=1100px (DeskFrame's own viewport gate), so it
+   never fires inside any of the legacy/mobile breakpoints either. */
+.app-main[data-desk-frame-active='true']{ padding-left:0; }
 
 /* In-app immersive mode (mobile fullscreen fallback where the Fullscreen API is
    unavailable, e.g. iOS Safari): drop the rail/watermark + the rail gutter and
