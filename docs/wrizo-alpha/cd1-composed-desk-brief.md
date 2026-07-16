@@ -29,6 +29,10 @@ drawer's Page face carries it. Right corner: **Done alone** (Catch is
 scrapped from the UI per Nick's word — park the affordance and its
 door wiring, never delete).
 
+**Erratum (Fable review, 2026-07-16):** "Done alone" meant no title and
+no Catch, never no doorways — the Pages/Plan flight toggle belongs
+beside Done on both hosts.
+
 ## S2 — the sliver
 
 A slim grip riding the paper's left edge on every framed writing

@@ -434,12 +434,15 @@ function PageEditorView({ id }: { id: string }) {
   // into this header row (left-set, engraved register via its own CSS);
   // the top-bar title retires (the crumb/breadcrumb it duplicated — the
   // Page face already carries the same title + "where it lives" chain via
-  // describePageHome, S3); the Pages/Plan toggle retires from this row too
-  // (the ground-truth's own "Done alone, nothing beside it" reading of A5
-  // — a reviewer should double check this call: Plan is still reachable via
-  // Done -> ProjectHome). "Copy page text" already left top chrome
+  // describePageHome, S3). "Copy page text" already left top chrome
   // entirely in AB1/AB2 (S4) — its future home is a later ticket's Publish
   // surface.
+  //
+  // cd1.1 (Fable review erratum) — S1's brief read "Done alone" as scrapping
+  // the Pages/Plan toggle too; that was Fable's own defect, not the build's.
+  // "Done alone" meant no title and no Catch, never no doorways — the
+  // toggle belongs beside Done here (and on ScriptEditor's own framed
+  // header, which never had one before this ticket).
   if (framed) {
     return (
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
@@ -447,6 +450,12 @@ function PageEditorView({ id }: { id: string }) {
           <div className="chrome-fade chrome-top sprint-nav">
             <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
             <div className="sprint-actions">
+              {project && (
+                <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
+                  <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
+                  <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
+                </div>
+              )}
               <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
             </div>
           </div>

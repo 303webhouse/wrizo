@@ -61,9 +61,10 @@ export function Desk() {
         )}
 
         <div className="wz-secondary">
-          <button type="button" className="wz-catch" onClick={doCatch}>
-            ＋ Catch a thought<span className="wz-kbd" aria-hidden="true">N</span>
-          </button>
+          {/* PARKED — cd1.1 (Fable review, 2026-07-16): Nick's "Done alone"
+              word was unqualified — it scraps Catch here too, not just
+              DeskRail's copy. doCatch stays wired (house law: parked, not
+              deleted) though nothing on this surface calls it now. */}
           <span className="wz-dot">·</span>
           <span className="wz-link" onClick={() => navigate('/project/new')}>Begin project</span>
           <span className="wz-dot">·</span>

@@ -749,6 +749,37 @@ outlive a session lives here, not in chat.
     merge pre-authorization stood on its own** — no separate Nick's-go
     was needed for the merge itself. Close awaits Fable's post-merge
     review.
+    **Fable's post-merge review: GREEN with a fold, cd1.1 — 2026-07-16**
+    (`docs/wrizo-alpha/cd1-review-fable.md`, committed). Toggle removal
+    ruled Fable's own brief defect (erratum on S1, not the build's);
+    Catch's scrap ruled to extend to Desk.tsx too (Nick's "Done alone"
+    word was unqualified); the ~20px JournalEntry width gap ruled not a
+    defect (Nick's eye rules); the park/timer/disclosure precedents from
+    the independent review all ratified.
+    **cd1.1 folded and pushed — 2026-07-16**, commit `1c8de6b`: (1) the
+    Pages/Plan flight toggle restored beside Done on both PageEditor's
+    and ScriptEditor's framed headers (new capability on ScriptEditor,
+    which never had one); (2) Desk.tsx's Catch button parked (code
+    intact, unreachable); (3) `th2.mjs`'s celebrate-window brass-color
+    check deflaked — the old fixed-`sleep()`-then-separate-`evalJs`
+    pattern raced the celebrate window's own auto-clear; now stashes the
+    matched value inside the same predicate that observes it, plus a
+    widened 6s budget on the preceding class-appears wait after
+    intermittent fresh-browser first-timer latency (not a race —
+    `CELEBRATE_MS` is 1100ms, `waitFor` polls every 100ms); (4) full
+    suite verified green: `tsc`, `build:web`, selftest, all 13 harness
+    scripts under both `HARNESS_PARKED` settings (`cd1` 27/27 armed).
+    **Fold-time incident, no data lost:** a concurrent session (HB1,
+    building on `hb1-threshold` in the same checkout) switched branches
+    mid-fold and silently clobbered three of the four uncommitted fold
+    edits plus one already-verified `th2.mjs` deflake pass. Caught before
+    any commit via `git status`/`reflog`; `main` itself was never at
+    risk. HB1's own in-progress work was preserved with a checkpoint
+    commit on its own branch before redoing the fold cleanly on `main`.
+    **Redeploy NOT bundled with this fold** — Nick's call per Fable's own
+    review, whether to deploy now or hold. **Close conditions remaining:**
+    Fable's delta spot-check against `1c8de6b`, and Nick's device-look
+    sitting.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now

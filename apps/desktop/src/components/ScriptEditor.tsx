@@ -15,6 +15,7 @@ import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useTypewriterFade } from './useTypewriterFade';
 import { useWritingSettings } from '../store/writingSettings';
+import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
 import { Sliver, type SliverContent } from './Sliver';
@@ -290,6 +291,7 @@ export function ScriptEditor({ id }: { id: string }) {
 
   const project: Project | null = initialEntry?.projectId ? getProject(initialEntry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
+  const { t: lex, tMany: lexMany } = useLexicon();
 
   const activeEl = elements[activeIndex];
   const ac = activeEl ? computeAutocomplete(activeEl.t, activeEl.text, elements) : null;
@@ -607,6 +609,15 @@ export function ScriptEditor({ id }: { id: string }) {
         <div className="chrome-fade chrome-top sprint-nav">
           <ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} />
           <div className="sprint-actions">
+            {/* cd1.1 (Fable review erratum) — the Pages/Plan flight toggle
+                belongs beside Done on both hosts; a script page IS a "Pages"
+                view (PageEditor.tsx's own toggle carries the same semantics). */}
+            {project && (
+              <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
+                <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
+                <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
+              </div>
+            )}
             <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
           </div>
         </div>
