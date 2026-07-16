@@ -720,7 +720,10 @@ outlive a session lives here, not in chat.
     `j4` 26, `j5` 40, `m1` 33, `s1` 87, `th1` 26, `th2` 43, `w1` 18,
     `w2` 31, `ab1` 37/45 armed, `ab2` 42/52 armed, `ab3` 34/41 armed,
     `fx1` 25/32 armed, `cd1` 26/26 armed) before push. Fast-forwarded to
-    `main` @ `389e674`, pushed. **Not deployed.**
+    `main` @ `389e674`, pushed.
+    **Deployed — 2026-07-16**, Nick's word ("Deploy it"): `railway up`
+    on `main` @ `6126055`, confirmed live (`200` on `/healthz` and `/`,
+    `401` on `/auth/me`). The live site now carries CD1.
     **`th2.mjs`'s known transient flake hit a 4th time** (once during the
     review's PARKED pass, once again on CC's own merged-`main` run) —
     cleared cleanly both times on immediate re-run, not a regression, but
