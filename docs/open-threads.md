@@ -537,6 +537,62 @@ outlive a session lives here, not in chat.
     while the file was missing (see AB3's build report, item 23). No
     rework owed to the in-flight AB3 build: the brief it was built from
     already carried everything operative from this canon.
+25. **FX1 — the First Sitting.** **MERGED, NOT CLOSED — 2026-07-16.**
+    `docs/wrizo-alpha/fx1-first-sitting-brief.md` built S1-S7 on
+    `fx1-first-sitting` off `main` @ `c9767f7` — the six fixable verdicts
+    from Nick's first device sitting (see item 21's sitting record; the
+    composition verdict that sitting also returned is NOT this ticket's
+    — it drives a separate, not-yet-written committee-pass brief). Zero
+    schema, zero new deps. S1: the typewriter feel rewritten
+    (`useTypewriterFade.ts`) — no per-line pop, a real fade band, fresh
+    pages start near vertical center; shared by prose, script, and the
+    Journal. S2: the screenplay paper now mounts prose's own geometry
+    class (was collapsed/misaligned), courier font restored, typewriter
+    defaults on for both surfaces. S3: **the forward lock ruled mode
+    furniture** — mounts on every page's Free Write rail regardless of
+    origin (ink and capture items stay journal furniture, unchanged);
+    the strike/erase mechanic itself verified engaging, not just the
+    control. **Provisional canon note:** Law 2's furniture list amends
+    in practice pending the committee pass's formal ratification — the
+    canon doc itself was not touched this ticket. S4: square corners
+    (`--radius-sm`/`--radius-md`/`--radius` → 0, hardcoded literals
+    swept). S5: the empty bottom bar renders nothing (`DeskFrame.tsx`
+    gained a `meter` prop) — the 260px corkboard track explicitly left
+    alone (named non-goal). S6: brass-at-rest swept off the Structure
+    picker's active state, the rail's eyebrow labels, and the
+    typewriter glyph — `--accent-rest`/quiet text now, olive law
+    applied fresh. New `apps/desktop/scripts/harness/fx1.mjs` (25
+    checks). **The A4 harness-parking law, exercised precisely**: two
+    forward-lock-absence checks this ticket supersedes (`ab2.mjs`'s
+    live project-origin check, `ab3.1`'s R1(a) loose check) were parked
+    verbatim rather than edited — **except the independent review
+    caught that the build had silently edited `ab2.mjs`'s check in
+    place instead**, a direct violation of the exact discipline this
+    ticket's own brief states in so many words; fixed by adding the
+    missing quoted-history PARKED entry (SUPERSEDED species) before
+    merge. `ab3.mjs`'s R1(a) treatment was correct from the first pass.
+    `tsc` + `build:web` + selftest + the full 12-script suite
+    (`j4`/`j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`/`ab1`/`ab2`/`ab3`/`fx1`)
+    green, independently re-run a THIRD time by CC on merged `main`
+    before push (`th2.mjs` hit its known transient timing flake once
+    during CC's own pass — 2/43 — cleared cleanly on two immediate
+    re-runs with zero code changes between attempts, consistent with
+    its documented history, not a regression). Fast-forwarded to `main`
+    @ `72cb547`, pushed. **Not deployed** — the brief's own DoD gates
+    redeploy on both Fable's post-merge review and Nick's word.
+    **Two items flagged for Nick/Fable, not resolved by either agent:**
+    (1) `JournalEntry.tsx`'s window-scroll typewriter fade got the S1
+    fade-band recalibration but deliberately NOT the centered-start
+    treatment (ink-stroke coordinate risk) — a disclosed scope call,
+    worth an explicit feel-test on the Journal surface specifically
+    since the brief's DoD says "writing starts centered" without
+    carving that surface out; (2) the S3 canon amendment stays
+    provisional by design — the committee pass owns the formal
+    ratification. **Per the corrected rule (item 23's R5): this ticket
+    is zero-schema, so merge pre-authorization stood on its own — no
+    separate Nick's-go was needed for the merge itself.** Close awaits
+    Fable's post-merge review and (per the brief) folds into the AB
+    gates rather than opening a new device-look cycle on its own.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
