@@ -277,7 +277,11 @@ function PageEditorView({ id }: { id: string }) {
           fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
         }}
       />
-      {invite.node}
+      {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
+          utterance; the first-line invite (F6) would speak a second one on
+          this exact (empty) page. gateActive is only ever true when framed
+          (F4), so this never touches the legacy branch's behavior. */}
+      {gateActive ? null : invite.node}
       {warm.rect && (
         <div
           aria-hidden="true"
@@ -488,6 +492,7 @@ function PageEditorView({ id }: { id: string }) {
             milestones={milestones}
             penColor={penColor}
             framed
+            firstRunGateActive={gateActive}
           >
             {editorBody}
           </ModeStage>

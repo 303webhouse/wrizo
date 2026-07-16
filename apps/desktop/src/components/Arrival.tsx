@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { createLooseHomePage } from '../store/persistence';
 import { setForwardLock } from '../store/forwardLock';
 import { setWritingSettings } from '../store/writingSettings';
-import { getFirstRunComplete } from '../store/firstRun';
+import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
 import { getResumeTarget } from '../store/resume';
 import { apiLogin, apiRegister, type AuthUser } from '../store/api';
+import { useDeskFrameViewport } from './DeskFrame';
 
 // HB1 S1/S5 — the Threshold. Route '/' for every boot, authed or not:
 // the mark, a boot bar (real readiness — doors disable until authState
@@ -37,6 +38,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [busy, setBusy] = useState(false);
 
   const ready = authState !== 'loading';
+  const framed = useDeskFrameViewport();
 
   const handleWrite = () => {
     if (!ready) return;
@@ -50,6 +52,12 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       // shipped, per the brief's own invariant.
       setForwardLock(true);
       setWritingSettings({ typewriter: true });
+      // F4 — no rite exists below the gate (framed-only), so there is no
+      // ceremony there to ever flip firstRunComplete (PageEditor.tsx's
+      // handleChooseTheme is the only other place that does). Flip it here
+      // instead, once, so a sub-1100px writer's own later preference
+      // changes aren't silently re-forced back on every subsequent Write.
+      if (!framed) setFirstRunComplete(true);
     }
     const page = createLooseHomePage();
     navigate(`/page/${page.id}`, firstRun ? { state: { firstRunGate: true } } : undefined);

@@ -82,11 +82,24 @@ await withHarness(async (app) => {
       instruction: document.querySelector('.hb1-gate-instruction')?.textContent,
     };
   })()`);
-  ok('S3: the veil wraps at least the top chrome row, the Drawer, and the Sliver — all inert',
-    veil.count >= 3 && veil.allInert, JSON.stringify(veil));
+  ok('S3: the veil wraps the top chrome row, the Drawer, the Sliver, the reveal handle, and the settings gear — all inert',
+    veil.count >= 5 && veil.allInert, JSON.stringify(veil));
   ok('S3: every veiled element is aria-hidden and carries data-veiled=true', veil.allAriaHidden && veil.allDataVeiled, JSON.stringify(veil));
   ok('S3: the gate’s one sanctioned instruction is visible, naming the 100-word threshold',
     veil.bannerPresent && /100 words/.test(veil.instruction || ''), JSON.stringify(veil));
+
+  // Defense in depth (the review's own lesson — a veil-count assertion alone
+  // missed ModeStage's own chrome the first time): walk every button/link/
+  // role=button on the page and confirm each one is either inside an
+  // [inert] ancestor or is the editor's own placeholder-less body — i.e.
+  // "AT must perceive exactly one path" holds structurally, not just by
+  // counting known wrapper nodes.
+  const escapees = await app.evalJs(`(() => {
+    const all = [...document.querySelectorAll('button, a, [role=button]')];
+    return all.filter(el => !el.closest('[inert]')).map(el => el.className || el.tagName);
+  })()`);
+  ok('S3: no focusable control escapes the veil — every button/link outside the editor is inside an inert ancestor',
+    escapees.length === 0, JSON.stringify(escapees));
 
   // The editor itself stays fully interactive under the veil (only chrome is
   // wrapped) — proven by actually typing into it below, not asserted here in
@@ -169,6 +182,7 @@ await withHarness(async (app) => {
 await withHarness(async (app) => {
   await freshArrival(app, { anon: false });
   await app.emulateDpr(1, 800, 900); // below DESKFRAME_MIN_WIDTH (1100)
+  await sleep(200); // let useDeskFrameViewport's matchMedia listener settle before interacting
   await app.click('Write');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, legacy' });
   await sleep(300);
@@ -185,6 +199,24 @@ await withHarness(async (app) => {
   ok('F4: no rite at all below the gate — no veil, no banner, no ceremony, even on an un-completed first run',
     legacy.veil === 0 && legacy.banner === false && legacy.ceremony === false, JSON.stringify(legacy));
   ok('S2: forced defaults are width-independent — forward lock is still ON here', legacy.forwardLock === '1', JSON.stringify(legacy));
+
+  // F4/D2 — since no ceremony exists below the gate to ever complete the
+  // rite, Arrival flips firstRunComplete itself on a sub-1100px Write (see
+  // components/Arrival.tsx's handleWrite) so a SECOND write doesn't keep
+  // re-forcing the writer's own later preference changes back on.
+  const completeAfterFirst = await app.evalJs("localStorage.getItem('wrizo-first-run-complete')");
+  ok('F4/D2: a sub-1100px Write completes the rite itself (no ceremony exists to do it)', completeAfterFirst === '1', completeAfterFirst);
+
+  await app.evalJs("localStorage.setItem('wrizo-forward-lock', '0')"); // the writer turns it off, deliberately
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival, second sub-1100px write' });
+  await app.click('Write');
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, legacy, second write' });
+  await sleep(300);
+  const forwardLockAfterSecond = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
+  ok('F4/D2: a second sub-1100px Write does NOT re-force forward lock back on — the writer\'s own change sticks',
+    forwardLockAfterSecond === '0', forwardLockAfterSecond);
+
   return checks;
 });
 

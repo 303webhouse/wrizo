@@ -34,16 +34,29 @@ export function useMonotonicWordCount(text: string, active: boolean): number {
 // input both structurally cannot reach the wrapped subtree — `aria-hidden`
 // and the CSS blur/pointer-events:none (index.css) are the belt-and-
 // suspenders layers on top, not the only ones.
+//
+// Renders children with NO wrapper at all when inactive — this component is
+// reused at call sites (ModeStage's reveal handle + settings gear) that
+// mount on EVERY page, framed or not, gated or not; leaving an always-
+// present (if inert-false) `.hb1-veil` node there would make ".hb1-veil
+// exists" stop meaning "the gate is active," and would add a DOM node to
+// every page in the app for a feature that touches exactly one page per
+// device. The wrapped children never hold state that could be lost by the
+// wrapper appearing/disappearing across the active/inactive edge: they're
+// either inert for the entire time they'd have such state (Drawer/Sliver
+// can't diverge from their mount defaults while unreachable) or stateless
+// controls (ChromeHandle, the gear buttons).
 export function FirstRunVeil({ active, children }: { active: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
-    if (active) el.setAttribute('inert', '');
-    else el.removeAttribute('inert');
+    if (!el || !active) return;
+    el.setAttribute('inert', '');
+    return () => { el.removeAttribute('inert'); };
   }, [active]);
+  if (!active) return <>{children}</>;
   return (
-    <div ref={ref} className="hb1-veil" data-veiled={active ? 'true' : 'false'} aria-hidden={active || undefined}>
+    <div ref={ref} className="hb1-veil" data-veiled="true" aria-hidden="true">
       {children}
     </div>
   );

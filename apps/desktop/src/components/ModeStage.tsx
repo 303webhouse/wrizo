@@ -12,6 +12,7 @@ import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
+import { FirstRunVeil } from './FirstRunGate';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -91,10 +92,19 @@ interface Props {
   // 1100px gate) falls through to the internal uncontrolled `pen` state,
   // byte-identical to pre-AB2 behavior.
   penColor?: string;
+  // HB1 S3 — true only on the one page a first-run Write click produced,
+  // while the veil holds. The reveal handle and the settings gear (which
+  // exposes a Theme switch and the Typewriter toggle — exactly the two
+  // things the gate forces and the ceremony is meant to earn) are the only
+  // pieces of chrome ModeStage renders itself, outside DeskFrame's own
+  // toolRail/sliver tracks the host already veils; this closes that gap.
+  // Absent/false (every existing caller) is byte-identical to pre-HB1
+  // behavior.
+  firstRunGateActive?: boolean;
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, firstRunGateActive, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -303,34 +313,44 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
       data-writing={dissolved ? 'true' : 'false'}
       data-fade={settings.fadeDepth}
     >
-      {/* Always-discoverable reveal handle (top-left ember dot). */}
-      <ChromeHandle onReveal={() => resurface(true)} />
+      {/* Always-discoverable reveal handle (top-left ember dot). HB1 S3 —
+          veiled during the first-run gate: it's the one other piece of
+          chrome ModeStage renders outside DeskFrame's own toolRail/sliver
+          tracks (which the host already veils), and its gear (below)
+          exposes exactly the Theme switch and Typewriter toggle the gate
+          forces and the ceremony is meant to earn. */}
+      <FirstRunVeil active={!!firstRunGateActive}>
+        <ChromeHandle onReveal={() => resurface(true)} />
+      </FirstRunVeil>
 
       {/* Ambient ember — blooms as the rails dissolve; eased with progress.
           AB1 S2 — "do not mount the ambient glow" when framed (DeskFrame). */}
       {!framed && <AmbientGlow m={m} typing={activelyTyping} celebrating={celebrating} />}
 
       {/* Top-right chrome cluster: the sound toggle (if the host owns sound) +
-          the settings gear — one-color tan glyphs, matched in size. */}
-      <div className="mode-gear-wrap mode-dissolve">
-        {onToggleSound && (
-          <button
-            type="button"
-            className={`mode-iconbtn mode-sound${soundOn ? '' : ' off'}`}
-            aria-label={soundOn ? 'Sound on' : 'Sound off'}
-            aria-pressed={!!soundOn}
-            title={soundOn ? 'Sound on' : 'Sound off'}
-            onClick={onToggleSound}
-          >
-            <MicIcon off={!soundOn} />
+          the settings gear — one-color tan glyphs, matched in size. HB1 S3 —
+          veiled during the first-run gate (see above). */}
+      <FirstRunVeil active={!!firstRunGateActive}>
+        <div className="mode-gear-wrap mode-dissolve">
+          {onToggleSound && (
+            <button
+              type="button"
+              className={`mode-iconbtn mode-sound${soundOn ? '' : ' off'}`}
+              aria-label={soundOn ? 'Sound on' : 'Sound off'}
+              aria-pressed={!!soundOn}
+              title={soundOn ? 'Sound on' : 'Sound off'}
+              onClick={onToggleSound}
+            >
+              <MicIcon off={!soundOn} />
+            </button>
+          )}
+          <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
+            <GearIcon />
           </button>
-        )}
-        <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
-          <GearIcon />
-        </button>
-        {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
-        {gearOpen && <ThemePanel />}
-      </div>
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {gearOpen && <ThemePanel />}
+        </div>
+      </FirstRunVeil>
 
       <div className="mode-row" data-framed={framed ? 'true' : 'false'}>
         {/* LEFT rail — capture (Journal) / tools (Drafting). Frames only.
