@@ -2,6 +2,9 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## Nick's first device sitting — PARTIAL — 2026-07-16
+Ran against the AB1+AB2+AB3 deploy (`main` @ `32db861`). **Composition verdict: FAILS on wide** — the tool sliver, panel architecture, mode-strip placement, and wide-monitor composition don't hold up as built; drives a new committee design pass (structural, brief pending, not yet written). **Ruled and answered by FX1** ([wrizo-alpha/fx1-first-sitting-brief.md](wrizo-alpha/fx1-first-sitting-brief.md), building): typewriter feel, the screenplay paper, the forward lock (ruled **mode furniture**, not journal furniture — provisional canon note, formal amendment rides the committee pass), square corners. **Still open for a later sitting:** the notebook felt-check (item 23's Ruling 3), the olive rail read, the timer/progress feel once the goal system lands. Ledger items 21 and 23 do **not** close on this sitting — see `docs/open-threads.md` items 21/23.
+
 ## AB3 — the Drawer and the Homes — merged to `main`, NOT deployed, Fable's review + Nick's device look pending
 Brief: [wrizo-alpha/ab3-drawer-and-homes-brief.md](wrizo-alpha/ab3-drawer-and-homes-brief.md). Canon: [wrizo-alpha/page-and-homes-canon.md](wrizo-alpha/page-and-homes-canon.md) (RULED, landed mid-build). Built on `ab3-drawer-and-homes` off `main` @ `73150ea`.
 - **S0 — the arc's first schema change.** Nullable `origin` text column (`'journal'|'project'|'loose'`) on `journal_entries`, additive-only (`add column if not exists`, no default, no CHECK constraint — matching the `script`-column precedent exactly), mapped in both `sync.ts` directions with `origin` correctly slotted as the 15th of 21 positional params. Grandfathered null-safe: every pre-existing row stays null, behaves exactly as before.

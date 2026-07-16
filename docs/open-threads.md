@@ -166,6 +166,28 @@ outlive a session lives here, not in chat.
     positive olive assert when the Plateau token locks. Carry to AB3
     review context: `BoardEditor` mounts `DeskFrame` `pageKind='prose'`
     (pre-existing AB1 wiring, untouched by the fold).
+    **Nick's first device sitting — PARTIAL, 2026-07-16.** Ran against
+    the AB1+AB2+AB3 deploy (`main` @ `32db861`). **Composition verdict:
+    FAILS on wide** — the tool sliver, panel architecture, mode-strip
+    placement, and wide-monitor composition don't hold up as built; this
+    drives a **new committee design pass**, structural, not a fix-fold —
+    brief pending, not yet written. **Ruled and answered by FX1**
+    (`docs/wrizo-alpha/fx1-first-sitting-brief.md`, building): the
+    typewriter feel (no per-line pop, fade band, centered start), the
+    screenplay paper (was collapsed/misaligned — Law 1 violated), the
+    forward lock (Nick's verdict: it's **mode furniture** — belongs to
+    Free Write the posture, not the Journal the place — reinstated on
+    every page's rail regardless of origin; **provisional canon note**:
+    Law 2's furniture list amends in practice pending the committee
+    pass's formal ratification), square corners everywhere. **Still open
+    for a later sitting** (not FX1's to answer): the notebook
+    felt-check (item 23's Ruling 3 — file a page, flip the notebook,
+    does its absence from the flip-through feel like forgetting?), the
+    olive rail read, and the timer/progress feel once the goal system
+    lands. Item 21 does **not** close on this sitting alone — the
+    composition verdict alone reopens it, independent of FX1's fate. See
+    FX1's own ledger entry once built, and watch for the pending
+    committee-pass brief.
 
 ## IN FLIGHT — proceeds without Nick once (1) lands
 3. ~~**J5 — the Spread console.**~~ **DONE — 2026-07-11.** Built per
@@ -498,6 +520,11 @@ outlive a session lives here, not in chat.
     merge→push — DONE; (2) Fable's spot-check of the ab3.1 delta —
     DONE; (3) Nick's device look — the sole remaining gate**, one
     sitting now serving AB1, AB2, and AB3 together.
+    **Nick's first device sitting — PARTIAL, 2026-07-16** (full verdict
+    recorded under item 21, same event, one sitting for both items):
+    the notebook felt-check (this item's own Ruling 3) was **not yet
+    reached** — still open for a later sitting. Item 23 does not close
+    on this sitting either.
 24. ~~**Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never
     landed.**~~ **RESOLVED — 2026-07-15.** Relayed by Nick directly
     into chat; committed at `14d846e` — the eight laws, the four ranges
