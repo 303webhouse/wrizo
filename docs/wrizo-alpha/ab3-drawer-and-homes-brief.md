@@ -49,7 +49,11 @@ this ticket forward only. Everything else in this brief is zero-schema.
   attention — on a page, that page; at a wall (AB4), the selected item,
   or the wall itself when nothing is selected. Structure the face's
   data source as `subject`, not `currentPage`, so AB4 plugs in without
-  surgery.
+  surgery. **Erratum (Fable review, 2026-07-15):** the "wires the
+  existing rename" assumption is withdrawn — no stored title field or
+  rename pipe ever existed; a page has always titled itself by its
+  first line, which the build correctly kept. A stored title, if ever
+  wanted, is its own future schema question.
 - **S3 — the space under the paper becomes desk.** On framed surfaces,
   the below-page metadata clusters (JournalEntry's and PageEditor's:
   timestamp row, action row, star, tag row, the autosave sentence)
@@ -74,7 +78,12 @@ this ticket forward only. Everything else in this brief is zero-schema.
   its current home. A filed journal page appears in both places; the
   drawer's Where-it-lives tells both truths. Null-origin entries keep
   today's behavior exactly (A2). No badges, no indicators in lists —
-  the drawer is where the truth lives (anti-solicitation).
+  the drawer is where the truth lives (anti-solicitation). **Erratum
+  (Fable review, 2026-07-15):** "notebook nav" overspecified — the
+  Spread's prev/next flip-through is the loose notebook's own sequence,
+  not part of the Journal's memory; the Journal's memory is the list,
+  the count, and the truthful drawer (Ruling 3, one-order-surface
+  principle). Nick-vetoable at the device look.
 - **S6 — the Places faces.** Journal, Shelf, and Drawers on the rail
   open as drawer faces while a page is mounted (the absorbed canon's
   reach law): the place's contents, three verbs — Open (travel, way

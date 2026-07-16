@@ -254,6 +254,24 @@ await withHarness(async (app) => {
     !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
     JSON.stringify(footerOnlyInDrawer));
 
+  // === ab3.1 R1(b) (Fable review) — the brief's S3 named "JournalEntry's
+  // AND PageEditor's" below-page metadata clusters; only JournalEntry's
+  // absence was ever asserted. PageEditor never had a title/star/tags/
+  // autosave-note cluster of its own to begin with (the Page face's star/
+  // tag wiring is new this ticket — toggleStar/addTag/removeTag didn't
+  // exist here before AB3) — this guards the law on the second surface the
+  // brief named, not just the first. ==========================================
+  await freshProjectPage(app, 'AB3R1BMETA');
+  const pageEditorFramedMetadata = await app.evalJs(`({
+    h1: !!document.querySelector('h1'),
+    star: !!document.querySelector('.entry-star'),
+    tags: !!document.querySelector('.entry-tags'),
+    autosaveNote: !!document.querySelector('.journal-autosave-note, .page-autosave-note'),
+  })`);
+  ok('R1(b): framed PageEditor also carries no below-page metadata cluster (the Page face supersedes it here too)',
+    !pageEditorFramedMetadata.h1 && !pageEditorFramedMetadata.star && !pageEditorFramedMetadata.tags && !pageEditorFramedMetadata.autosaveNote,
+    JSON.stringify(pageEditorFramedMetadata));
+
   // === S4 — origin per door. ==================================================
   // Door 1: Journal/Catch -> 'journal', homes in the Journal.
   await freshJournalPage(app, 'AB3ORIGINJOURNAL');
@@ -293,6 +311,19 @@ await withHarness(async (app) => {
   // Newest by createdAt among entries with no text (the fresh loose page).
   const looseDoorEntry = looseEntries.filter(e => e.origin === 'loose').sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
   ok('S4: the Desk\'s start-writing door stamps origin:\'loose\', projectId null, not shelved', looseDoorEntry?.origin === 'loose' && looseDoorEntry?.projectId == null && !looseDoorEntry?.shelved, JSON.stringify(looseDoorEntry));
+
+  // === ab3.1 R1(a) (Fable review) — the loose fixture's negative space.
+  // The journalFurniture conditional correctly excludes 'loose', but
+  // nothing asserted it: 'journal'/null are covered in this file, 'project'
+  // in ab2.mjs — 'loose' had no guard anywhere. ================================
+  const looseRail = await app.evalJs(`({
+    ink: !!document.querySelector('.desk-toolrail-inks'),
+    forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
+    captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+  })`);
+  ok('R1(a): a LOOSE-origin page shows none of the journal furniture in Free Write (ink/forward-lock/capture items all absent)',
+    !looseRail.ink && !looseRail.forwardLock && looseRail.captureItems.length === 0,
+    JSON.stringify(looseRail));
 
   await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
   await sleep(220);
@@ -362,10 +393,13 @@ await withHarness(async (app) => {
     JSON.stringify(bothTruths));
 
   // === S4 grandfather clause (A2) — a NULL-origin typed page (pre-AB3 data)
-  // keeps EXACTLY today's Free-Write furniture; an EXPLICIT project-origin
-  // typed page correctly shows none of it. Seeded directly (no real door
-  // predates this ticket to reach it through), same technique ab2.mjs uses
-  // for its Journal/Board fixtures. ===========================================
+  // keeps EXACTLY today's Free-Write furniture. Seeded directly (no real
+  // door predates this ticket to reach it through), same technique ab2.mjs
+  // uses for its Journal/Board fixtures.
+  // ab3.1 R4 (Fable review) — the project-origin NEGATIVE (an EXPLICIT
+  // project-origin page shows none of this furniture) is asserted in
+  // ab2.mjs, not here — see its S4/AB3 addition and PARKED successor. This
+  // section only ever covered the null-origin positive. ========================
   await freshDesk(app);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
@@ -390,6 +424,30 @@ await withHarness(async (app) => {
   ok('S4 A2 (grandfather clause): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — ink/forward-lock/capture items all present',
     legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
     JSON.stringify(legacyRail));
+
+  // === ab3.1 R2 (Fable review) — presence is not function. The forward-lock
+  // control's CLICK could unwire while the suite stayed green, since only
+  // its presence was ever asserted. This fixture is fresh off freshDesk()
+  // (localStorage cleared, reloaded) so wrizo-forward-lock hasn't been
+  // written yet — load() falls to DEFAULT (true), matching today's shipped
+  // behavior exactly. =========================================================
+  const lockBefore = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
+  await app.evalJs("document.querySelector('.desk-toolrail-forwardlock').click()");
+  await sleep(100);
+  const lockAfter = await app.evalJs("document.querySelector('.desk-toolrail-forwardlock')?.dataset.on");
+  const lockStorage = await app.evalJs("localStorage.getItem('wrizo-forward-lock')");
+  ok('R2: clicking the forward-lock control actually flips dataset.on AND writes wrizo-forward-lock (function, not just presence)',
+    lockBefore === 'true' && lockAfter === 'false' && lockStorage === '0',
+    `${lockBefore} -> ${lockAfter}, storage=${lockStorage}`);
+
+  // === ab3.1 R3 (Fable review) — the active pull's olive, the ab2.1 F3
+  // pattern: a negative assert while olive stays a working value (graduates
+  // to a positive assert when the Plateau token locks). ========================
+  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
+  await sleep(220);
+  const pullColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-drawer-pull.active')).borderColor");
+  ok('R3: the drawer\'s active pull is not brass (olive/--accent-rest per the foundations)',
+    pullColor !== 'rgb(255, 152, 0)', pullColor);
 
   return checks;
 });
