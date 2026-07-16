@@ -2,7 +2,13 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
-## FX1 — the First Sitting — merged to `main` and deployed, Fable's review GREEN
+## CD1 — the Composed Desk — ratified, build authorized, in flight
+Committee pass: [wrizo-alpha/composed-desk-committee-pass.md](wrizo-alpha/composed-desk-committee-pass.md). Brief: [wrizo-alpha/cd1-composed-desk-brief.md](wrizo-alpha/cd1-composed-desk-brief.md). Canon: amendments A3-A7 appended to [wrizo-alpha/page-and-homes-canon.md](wrizo-alpha/page-and-homes-canon.md)'s second ratification record.
+**Nick's ratifications, 2026-07-16:** A3-A7 RATIFIED (the drawer slims to Page+Places; furniture graduates by kind — practice furniture rides the mode, goal instruments ride the goal on any page; the mode strip becomes the top line, the top-bar title retires; the FX1 typewriter-feel wording folded into Law 8; loose-origin pages open in Free Write). Script scope APPROVED — `ToolRail` retires entirely, one system for prose/script/board. Glow DEFAULT-ON, subtle, hard-capped. **Catch SCRAPPED from the UI** — parked, not rehomed, future home undecided, overruling the committee's own top-bar proposal (the top-right cluster is Done alone).
+**Ledger items 21, 23, and 25 CLOSED on Nick's word.** Two standing rulings remain vetoable at any future sitting and block nothing: item 23's Ruling 3 (the notebook felt-check) and FX1's Journal centered-start skip.
+Building now on `cd1-composed-desk` off `main`, zero-schema (merge pre-authorized), Fable reviews post-merge. **S9's park sweep is the ticket's real test** — the far-left rail's and `ToolRail`'s retirement falsify more live harness checks than any ticket before; every one must park per A4, quoted verbatim, in its own file. See `docs/open-threads.md` item 26.
+
+## FX1 — the First Sitting — merged to `main` and deployed, Fable's review GREEN — CLOSED 2026-07-16
 Brief: [wrizo-alpha/fx1-first-sitting-brief.md](wrizo-alpha/fx1-first-sitting-brief.md). Built on `fx1-first-sitting` off `main` @ `c9767f7` — the six fixable verdicts from Nick's first device sitting (see the sitting entry below; the composition verdict from that same sitting is a separate, not-yet-written committee-pass ticket, not this one). Zero schema, zero new deps.
 - **S1 — the typewriter feel**, rewritten (`useTypewriterFade.ts`): no per-line pop, a real fade band on the topmost lines, fresh pages start near vertical center. Shared by prose, script, and the Journal.
 - **S2 — the screenplay paper obeys Law 1**: mounts prose's own geometry class (was collapsed/misaligned), courier font restored, typewriter defaults on for both surfaces.

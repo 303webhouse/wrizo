@@ -19,7 +19,7 @@ outlive a session lives here, not in chat.
    J5, S1, W2, M1, and TH2's tenth cluster) superseded per the canon's Q3 —
    parked surfaces carry no debt; AB slices carry their own device gates.
    See item 21.
-21. **The AB-arc.** Canon ratified 2026-07-14 — Nick's word, rulings folded
+21. ~~**The AB-arc.**~~ **CLOSED — 2026-07-16, Nick's word.** Canon ratified 2026-07-14 — Nick's word, rulings folded
     into `docs/wrizo-alpha/ab1-page-frame-brief.md` (mode strings, flourishes
     unmounted, theme-scoped module names) and `docs/wrizo-alpha/the-desk-design.md`
     Part 6 (now RULED). Briefs per `docs/wrizo-alpha/fable-week-plan.md`.
@@ -427,8 +427,9 @@ outlive a session lives here, not in chat.
     "merge on Nick's word." See `docs/backlog.md`. Device gate: S4's
     barrel-bit assumption + S3's target-tool interpretation both want Nick's
     two-minute pen check before merge, independent of the AB-arc (item 21).
-23. **AB3 — the Drawer and the Homes.** **MERGED, NOT CLOSED —
-    2026-07-15.** `docs/wrizo-alpha/ab3-drawer-and-homes-brief.md` built
+23. ~~**AB3 — the Drawer and the Homes.**~~ **CLOSED — 2026-07-16,
+    Nick's word.** Merged 2026-07-15.
+    `docs/wrizo-alpha/ab3-drawer-and-homes-brief.md` built
     S0-S7 on `ab3-drawer-and-homes` off `main` @ `73150ea`. **S0 — the
     arc's first schema change:** nullable `origin` text column
     (`'journal'|'project'|'loose'`) on entries, additive-only
@@ -537,7 +538,8 @@ outlive a session lives here, not in chat.
     while the file was missing (see AB3's build report, item 23). No
     rework owed to the in-flight AB3 build: the brief it was built from
     already carried everything operative from this canon.
-25. **FX1 — the First Sitting.** **MERGED, NOT CLOSED — 2026-07-16.**
+25. ~~**FX1 — the First Sitting.**~~ **CLOSED — 2026-07-16, Nick's
+    word.** Merged 2026-07-16.
     `docs/wrizo-alpha/fx1-first-sitting-brief.md` built S1-S7 on
     `fx1-first-sitting` off `main` @ `c9767f7` — the six fixable verdicts
     from Nick's first device sitting (see item 21's sitting record; the
@@ -638,6 +640,38 @@ outlive a session lives here, not in chat.
     sitting record above) and the new HB-arc threshold workstream
     (`docs/wrizo-alpha/hb-arc-handoff.md`) — ownership for whichever
     committee reconciles it first, not ruled here.
+    **Items 21, 23, and 25 CLOSED together on Nick's word, 2026-07-16.**
+    Two standing rulings remain **vetoable at any future sitting** and
+    **block nothing** now that these items are closed: item 23's Ruling
+    3 (the notebook felt-check — file a page, flip the notebook, does
+    its absence *feel* like forgetting) and FX1's Journal centered-start
+    skip (the ink-coordinate-risk scope call). Either can still reopen
+    with a real ticket if Nick's eye finds them wanting; neither owes
+    anything until then.
+26. **CD1 — the Composed Desk.** **BRIEF RATIFIED, BUILD AUTHORIZED —
+    2026-07-16.** The second committee double-pass
+    (`docs/wrizo-alpha/composed-desk-committee-pass.md`) proposed
+    consolidating the tool sliver, the drawer's slimming, the far-left
+    rail's retirement, the mode strip's move to the top line, a
+    wide-viewport composition cap, and a coverage-never-verdict goal/glow
+    system into one zero-schema ticket. **Nick's ratifications,
+    2026-07-16:** amendments A3-A7 RATIFIED (recorded in
+    `docs/wrizo-alpha/page-and-homes-canon.md`'s second ratification
+    record); Script scope APPROVED (`ToolRail` retires entirely); glow
+    DEFAULT-ON; **Catch SCRAPPED from the UI** — parked, not rehomed,
+    future home undecided, overruling the committee's own top-bar
+    proposal (the top-right cluster is Done alone). Build brief:
+    `docs/wrizo-alpha/cd1-composed-desk-brief.md`, S0-S9, authorized to
+    build immediately on `cd1-composed-desk` off `main`. Zero-schema —
+    merge pre-authorized per the standing rule; Fable reviews
+    post-merge, gating close and deploy. **S9's park sweep is the
+    ticket's real test**: the far-left rail's retirement and `ToolRail`'s
+    death falsify live checks across `ab1`/`ab2`/`ab3`/`fx1` and the
+    older `j`/`s` harnesses (every `.desk-rail` presence assert, the
+    zones check's wayfinding clause, every `.desk-toolrail-*` selector) —
+    every one must park per A4, quoted verbatim, SUPERSEDED species, in
+    its own file, with the full sweep enumerated in the fold's commit
+    message. Building now.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
