@@ -2,7 +2,9 @@
 
 **Status: RULED — 2026-07-15, Nick's word.** Ratified by double pass
 (Experts + Architects) with two amendments — see the Ratification record
-at the foot of this document. One word rules everything below: this document **absorbs and
+at the foot of this document. **Amended again 2026-07-16** (the
+Composed Desk committee pass): amendments A3–A7 ratified — see the
+second Ratification record, same foot. One word rules everything below: this document **absorbs and
 supersedes** `gaze-and-flight-canon.md` (its reach-panels, flight
 doorways, and guardrails are carried forward intact in §Laws 4–5 and
 §Ranges), so no separate word is owed on the older document.
@@ -230,4 +232,33 @@ CC-facing seeds (nothing armed until briefs land):
 > distinction made literal — the typewriter stream and the settled
 > sheet are two inhabitations of the same space, toggled at will.
 
-— Fable, for the committees, 2026-07-15
+## Ratification record — 2026-07-16 (the Composed Desk)
+
+> **Ratification record (Nick's word, 2026-07-16, the Composed Desk
+> committee pass — `docs/wrizo-alpha/composed-desk-committee-pass.md`).**
+> **A3–A7 RATIFIED.** **A3 (Law 4):** the drawer rests on the **Page
+> face**; hand tools live in a new paper-edge sliver; the tools face
+> retires. One drawer, one sliver, one vanishing law. **A4 (Law 2):**
+> furniture graduates by kind — the practice's (typewriter, forward
+> lock) rides the mode; the goal's (timer, progress, glow) rides the
+> goal, on any page; the Journal keeps what only it needs (ink,
+> capture). **A5 (placement):** the mode strip becomes the frame's top
+> line; the top-bar title retires — the paper names itself, carried in
+> the drawer's Page face. **The right corner is Done alone** — Nick's
+> word overrules the committee's proposal to seat Catch beside it;
+> **Catch is SCRAPPED from the UI entirely** (parked, not rehomed, its
+> future home undecided). **A6 (Law 8 wording):** the typewriter's
+> letter updated to the FX1 felt spec — no pop, lines descend, the top
+> fades, writing starts near center (the Journal's start-offset
+> carve-out recorded, per FX1's own disclosed scope call, still
+> vetoable at any future sitting). **A7:** loose-origin pages open in
+> Free Write; other untyped support pages keep Draft. **Riders ratified
+> alongside the amendments:** Script joins the composed frame's scope
+> (APPROVED — the `ToolRail` component retires entirely, one system for
+> prose/script/board, no seams, Board's own drawer/sliver still rides
+> AB4); the goal system's glow ships **DEFAULT-ON**, subtle, hard-capped
+> (the field never burns — growth wanted it vivid, brand held the cap,
+> Nick sided with the cap). Build brief:
+> `docs/wrizo-alpha/cd1-composed-desk-brief.md`.
+
+— Fable, for the committees, 2026-07-15 and 2026-07-16
