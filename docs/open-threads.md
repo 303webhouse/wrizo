@@ -488,6 +488,12 @@ outlive a session lives here, not in chat.
     per Ruling 3 (the Spread's flip-through is the loose notebook's own
     sequence, not part of the Journal's memory — Nick-vetoable at the
     device look). Full suite re-verified green, pushed.
+    **Fable's ab3.1 spot-check — DONE, GREEN, no findings.** Verified
+    against `86623dd` + `5072892` full patches; the review doc confirmed
+    on disk verbatim. **Close conditions per Fable: (1) build→review→
+    merge→push — DONE; (2) Fable's spot-check of the ab3.1 delta —
+    DONE; (3) Nick's device look — the sole remaining gate**, one
+    sitting now serving AB1, AB2, and AB3 together.
 24. ~~**Gap: `docs/wrizo-alpha/page-and-homes-canon.md` never
     landed.**~~ **RESOLVED — 2026-07-15.** Relayed by Nick directly
     into chat; committed at `14d846e` — the eight laws, the four ranges
