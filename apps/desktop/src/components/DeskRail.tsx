@@ -82,8 +82,9 @@ export function DeskRail() {
     const onKey = (e: KeyboardEvent) => {
       // CD1 S4 — Catch's shortcut parks with the rest of the rail while
       // framed (see the component-level comment above): no UI trace, no
-      // door wiring either, not just a hidden button.
-      if (deskFrameActive) return;
+      // door wiring either, not just a hidden button. HB1 — same parking on
+      // Arrival ('/'), which never renders the rail either.
+      if (deskFrameActive || pathname === '/') return;
       if (e.key !== 'n' && e.key !== 'N') return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing) return;
       const t = e.target as HTMLElement | null;
@@ -93,9 +94,12 @@ export function DeskRail() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [doCatch, deskFrameActive]);
+  }, [doCatch, deskFrameActive, pathname]);
 
-  if (deskFrameActive) return null;
+  // HB1 — Arrival (route '/') owns its whole screen; the rail (and its
+  // Catch shortcut below) stays off there exactly as it did on the Desk
+  // room it replaces, plus every framed surface (CD1 S4, above).
+  if (deskFrameActive || pathname === '/') return null;
 
   return (
     <nav className="desk-rail chrome-fade" data-chrome-receded={isWriting ? 'true' : 'false'} aria-label="Desk areas">

@@ -43,10 +43,10 @@ async function progressOptions(app) {
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
 
   // === Fixture 1 — story_circle (8 beats, no windowing): seeded attachments,
   // toggle offered, pointer-events inert, cross-surface celebration, mount-
@@ -70,7 +70,7 @@ await withHarness(async (app) => {
   // to seed directly. Off this route (Desk has no such handler), a reload
   // can't race a stale in-memory write back over the seed.
   await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before seeding the StoryPlan' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding the StoryPlan' });
 
   const projectId = await app.evalJs(`(() => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
@@ -111,7 +111,7 @@ await withHarness(async (app) => {
   ok('fixture 1: StoryPlan (story_circle) seeded, page attached to beat[1]', typeof planId === 'string' && planId.startsWith('m1-plan-'), String(planId));
 
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after reload (seed durable)' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after reload (seed durable)' });
   await app.evalJs(`location.hash = '#/page/${pageId}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'manuscript page after seeding' });
 
@@ -225,9 +225,9 @@ await withHarness(async (app) => {
   // absent on a plan-less project, and the window centers on the anchor
   // beat rather than truncating to the first 12. ============================
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture 2' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture 2' });
   await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'project' }))");
 
   await app.goto('/project/new');
@@ -245,7 +245,7 @@ await withHarness(async (app) => {
 
   // Off PageEditor before raw-localStorage seeding (same flushNow race as fixture 1).
   await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before seeding fixture 2\'s StoryPlan' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding fixture 2\'s StoryPlan' });
 
   const projectId2 = await app.evalJs(`(() => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
@@ -276,7 +276,7 @@ await withHarness(async (app) => {
   })()`);
 
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after reload (fixture 2 seed durable)' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after reload (fixture 2 seed durable)' });
   await app.evalJs(`location.hash = '#/page/${pageId2}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'fixture 2 manuscript page after seeding' });
 
@@ -300,9 +300,9 @@ await withHarness(async (app) => {
   // on B gets silently swallowed because A's 'midpoint' already "used up" the
   // bare id. ==================================================================
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture 3' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture 3' });
   await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'project' }))");
 
   const threeActBeats = threeAct.beats.slice().sort((a, b) => a.order - b.order).map(b => b.id);
@@ -316,7 +316,7 @@ await withHarness(async (app) => {
   await sleep(400);
   const pageIdA = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
   await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before seeding project A' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding project A' });
   const projectIdA = await app.evalJs(`(() => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     return entries.find(e => e.id === '${pageIdA}')?.projectId ?? null;
@@ -345,7 +345,7 @@ await withHarness(async (app) => {
   // action (creating project B) can schedule a flush of the (still-stale,
   // pre-seed) in-memory `projects`/`storyPlans` cache back over it.
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after reload (project A seed durable)' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after reload (project A seed durable)' });
 
   // Project B: SAME framework, 'midpoint' still empty (a DIFFERENT plan/scope).
   await app.goto('/project/new');
@@ -356,7 +356,7 @@ await withHarness(async (app) => {
   await sleep(400);
   const pageIdB = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
   await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before seeding project B' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding project B' });
   const projectIdB = await app.evalJs(`(() => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     return entries.find(e => e.id === '${pageIdB}')?.projectId ?? null;
@@ -383,7 +383,7 @@ await withHarness(async (app) => {
   })()`);
 
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after reload (fixture 3 seeds durable)' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after reload (fixture 3 seeds durable)' });
 
   // View Project B FIRST — establishes ITS OWN baseline ('midpoint' not lit there).
   await app.evalJs(`location.hash = '#/page/${pageIdB}'`);
@@ -420,9 +420,9 @@ await withHarness(async (app) => {
   // === Fixture 4 — the Journal: no gear at all, and Progress:project (if
   // ever forced via the shared setting) silently degrades to the words bar. =
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture 4' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture 4' });
   await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'project' }))");
   await app.goto('/journal');
   await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });

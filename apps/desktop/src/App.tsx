@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { Desk } from './pages/Desk';
+import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { Shelf } from './pages/Shelf';
 import { DeskRail } from './components/DeskRail';
@@ -15,7 +15,6 @@ import { Spread } from './pages/Spread';
 import { JournalEntry } from './pages/JournalEntry';
 import { PageEditor } from './pages/PageEditor';
 import { ImportDraft } from './pages/ImportDraft';
-import { HomeFlow } from './components/HomeFlow';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
@@ -25,6 +24,7 @@ import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { startSync, stopSync, syncOnce, clearLastSyncAt, subscribeSyncStatus, type SyncStatus } from './store/sync';
 import { useDeskFrameMounted } from './store/deskFrameActive';
+import { useFirstRunGateActive } from './store/firstRunGateActive';
 
 // CD1 S4 — `.app-main`'s reserved gutter (index.css, historically
 // `padding-left:64px` for DeskRail's fixed-position column) collapses
@@ -136,17 +136,25 @@ function FullscreenToggle() {
 // the attention threshold (P8) and "All changes saved" returns only at rest. The
 // ember handle and the forgiving intent/idle restore (shared writing-mode state)
 // bring it back together with the sprint chrome — one frame settling, not two.
-function GlobalHeader({ onLogout }: { onLogout: () => void }) {
+function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: boolean }) {
   const { isWriting } = useWritingSession();
   // AB1 S4 — "top-bar orphans collapse to one corner glyph + gear." While a
   // DeskFrame is mounted (store/deskFrameActive.ts), these three previously
   // independent controls collapse behind one glyph + popover instead of
-  // sitting inline; every other route (Desk, Journal, Shelf, Drawers,
-  // QuickSprint, any writing surface below the 1100px gate) renders exactly
-  // as it always has — this flag is false there.
+  // sitting inline; every other route (Journal, Shelf, Drawers, QuickSprint,
+  // any writing surface below the 1100px gate) renders exactly as it always
+  // has — this flag is false there.
   const deskFrameActive = useDeskFrameMounted();
+  // HB1 S3 — the veil's accessibility invariant covers every piece of
+  // chrome, not just the component that renders it: while the first-run
+  // gate holds, this corner cluster (including Sign out) goes away
+  // entirely rather than merely collapsing, so there is exactly one
+  // reachable control on the whole surface.
+  const gateActive = useFirstRunGateActive();
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => { if (!deskFrameActive) setMenuOpen(false); }, [deskFrameActive]);
+
+  if (gateActive) return null;
 
   return (
     <div
@@ -173,7 +181,7 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
             <div className="gh-corner-menu" role="menu">
               <FullscreenToggle />
               <SyncIndicator />
-              <button type="button" onClick={onLogout}>Sign out</button>
+              {authed && <button type="button" onClick={onLogout}>Sign out</button>}
             </div>
           )}
         </div>
@@ -181,25 +189,29 @@ function GlobalHeader({ onLogout }: { onLogout: () => void }) {
         <>
           <FullscreenToggle />
           <SyncIndicator />
-          <button
-            type="button"
-            onClick={onLogout}
-            style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            Sign out
-          </button>
+          {authed && (
+            <button
+              type="button"
+              onClick={onLogout}
+              style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Sign out
+            </button>
+          )}
         </>
       )}
     </div>
   );
 }
 
-// B4 — one logo element, opacity by surface. Bottom-right on every authed
-// surface: FULL on the home (Writing Desk), faded elsewhere as a quiet watermark.
+// B4 — one logo element, opacity by surface: a faint bottom-right watermark
+// everywhere. HB1 — absent at '/' now: Arrival mounts its own mark (the
+// route's former "full on the home" variant retired with the Desk room it
+// belonged to, per the AB1-era comment this one replaces).
 function BrandMark() {
   const { pathname } = useLocation();
-  const home = pathname === '/';
-  return <img className={`brand-mark${home ? ' home' : ''}`} src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />;
+  if (pathname === '/') return null;
+  return <img className="brand-mark" src="/brand/wrizo-logo.png" alt="" aria-hidden="true" />;
 }
 
 export function App() {
@@ -243,26 +255,28 @@ export function App() {
     setAuthState('anon');
   };
 
-  if (authState === 'loading') {
-    return <div className="page" style={{ paddingTop: '5rem', color: 'var(--color-text-muted)' }}>Loading…</div>;
-  }
-
-  if (authState === 'anon') {
-    return <HomeFlow onAuthed={handleAuthed} />;
-  }
-
+  // HB1 — the router now mounts regardless of auth state. Arrival (route
+  // '/') is both the boot screen and the front door: Write works local-first
+  // with no account (F2), so there is no reason to gate the rest of the app
+  // — Journal/Shelf/Drawers/Project all already operate on local data with
+  // or without a session; only startSync() above is genuinely authed-only,
+  // and that's untouched. This retires the old `authState === 'anon' →
+  // HomeFlow` short-circuit and the plain-text loading screen — Arrival's
+  // own boot bar (authState threaded through as a prop) carries both jobs
+  // now, per Nick's ruling on the HomeFlow/Arrival overlap (see
+  // components/Arrival.tsx's header comment).
   return (
     <WritingSessionProvider>
       <HashRouter>
         <DeskRail />
-        <GlobalHeader onLogout={handleLogout} />
+        <GlobalHeader onLogout={handleLogout} authed={authState === 'authed'} />
         <BrandMark />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
         <AppMain>
         <Routes>
-        <Route path="/" element={<Desk />} />
+        <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />
         <Route path="/drawers" element={<DrawersPage />} />
         <Route path="/shelf" element={<Shelf />} />
         <Route path="/project/new" element={<CreateProject />} />

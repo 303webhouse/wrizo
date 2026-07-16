@@ -15,7 +15,7 @@ export function DrawersPage() {
         <div className="dz-pagehead-actions">
           {/* VW — the Import door (Drawers edge). Picks a binder, then the paste surface. */}
           <button type="button" className="btn-quiet" onClick={() => navigate('/import')}>↓ Import a draft</button>
-          <button type="button" className="btn-quiet" onClick={() => navigate('/')}>← Desk</button>
+          <button type="button" className="btn-quiet" onClick={() => navigate('/')}>← Home</button>
         </div>
       </div>
       <DrawersTree />

@@ -13,9 +13,9 @@ const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.string
 
 const freshDesk = async (app) => {
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
   await app.emulateDpr(1, 1400, 900);
 };
 
@@ -61,7 +61,7 @@ const freshProjectPage = async (app, marker) => {
 // nowhere. Opens at /page/:id (PageEditor), never /journal/:id.
 const freshLoosePage = async (app) => {
   await freshDesk(app);
-  await app.evalJs("document.querySelector('.wz-start-writing').click()");
+  await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(500); // past persistence.ts's 300ms debounced flush
 };
@@ -386,6 +386,12 @@ await withHarness(async (app) => {
   // === S5 — the Journal forgets nothing: file a journal-born page to a NEW
   // project, assert it lists in BOTH the Journal and that project. ===========
   await freshDesk(app);
+  // HB1 — DrawersTree (`.dz-new`) no longer renders inline on the Desk
+  // room (retired); its persistent home was always also `/drawers`
+  // (Drawers.tsx renders the SAME <DrawersTree/> — see j5.mjs's own
+  // `.dz-new` fixture, which already navigated there explicitly).
+  await app.goto('/drawers');
+  await app.waitFor("!!document.querySelector('.dz-new')", { label: 'Drawers page' });
   await app.evalJs("document.querySelector('.dz-new').click()");
   await app.waitFor("!!document.querySelector('.dz-rename')", { label: 'new Drawer rename input' });
   await app.evalJs("document.querySelector('.dz-rename').blur()");
@@ -453,7 +459,7 @@ await withHarness(async (app) => {
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after legacy seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after legacy seed' });
   await app.evalJs("location.hash = '#/page/ab3-legacy-page'");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'legacy null-origin page framed' });
   await sleep(200);
@@ -623,7 +629,7 @@ if (process.env.HARNESS_PARKED === '1') {
       localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
     })()`);
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after legacy seed (PARKED)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after legacy seed (PARKED)' });
     await app.evalJs("location.hash = '#/page/ab3-legacy-page-parked'");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'legacy null-origin page framed (PARKED)' });
     await sleep(200);

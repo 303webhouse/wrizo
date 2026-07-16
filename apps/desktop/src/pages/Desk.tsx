@@ -9,6 +9,21 @@ import { deskOwnerName } from '../store/currentUser';
 import { DrawersTree } from '../components/DrawersTree';
 import { useCatch } from '../components/useCatch';
 
+// PARKED — HB1, 2026-07-16 (docs/wrizo-alpha/hb1-threshold-brief.md, flow
+// §6: "The Desk room dies... Route / no longer renders it anywhere.").
+// App.tsx no longer imports this component; components/Arrival.tsx is
+// route '/' now. Park, don't delete (house law) — kept intact, unreachable
+// from any UI. ReturnCard's resume-pointer logic is NOT orphaned: S5 rehomed
+// it into Arrival's Open door (getResumeTarget/warmStart, same as here).
+// Begin Project / Start writing rehomed onto Arrival's own doors + the
+// Drawer's Places faces (already the AB3-era interim home for the recents/
+// Shelf glance — DrawersTree below was already redundant with it before
+// this ticket). CUSTOMIZE_TIP's premise (themes "unlock at writing
+// milestones") is superseded by HB1's actual mechanic (the one-time 100-
+// word threshold, not a recurring milestone) — left as-is, parked with the
+// rest of this file, not rewritten for a component that no longer renders.
+//
+// Original header comment, preserved below for context:
 // The Desk — the authed home (B4). Answers one question (what now?): a single
 // primary action, a quiet glance at recent drawers + On the Shelf below, and the
 // create entry. The left rail owns navigation, so the home no longer duplicates

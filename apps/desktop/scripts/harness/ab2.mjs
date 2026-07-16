@@ -15,9 +15,9 @@ const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.string
 // chapter) — the S1-S5 template surface (PageEditorView, prose, Draft law).
 const freshProsePage = async (app) => {
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
   await app.emulateDpr(1, 1400, 900);
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
@@ -376,9 +376,9 @@ await withHarness(async (app) => {
 
   // === S6 — the Journal's page enters the frame (the R2 ruling). ============
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture' });
   await app.emulateDpr(1, 1400, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
@@ -387,7 +387,7 @@ await withHarness(async (app) => {
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Journal seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Journal seed' });
   await app.evalJs("location.hash = '#/journal/ab2-journal'");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed' });
   await sleep(200);
@@ -453,9 +453,9 @@ await withHarness(async (app) => {
   // not just the ones that broke. Fixture pattern matches ab1.mjs's own
   // board seed. ================================================================
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Board fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Board fixture' });
   await app.emulateDpr(1, 1400, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
@@ -466,7 +466,7 @@ await withHarness(async (app) => {
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Board seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Board seed' });
   await app.evalJs("location.hash = '#/page/ab2-board'");
   await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Board framed' });
   await sleep(200);
@@ -570,9 +570,9 @@ if (process.env.HARNESS_PARKED === '1') {
 
     // === S6 fixture — a fresh Journal entry, framed. =========================
     await app.goto('/');
-    await app.evalJs('localStorage.clear()');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture (PARKED)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture (PARKED)' });
     await app.emulateDpr(1, 1400, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
@@ -581,7 +581,7 @@ if (process.env.HARNESS_PARKED === '1') {
       localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
     })()`);
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Journal seed (PARKED)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Journal seed (PARKED)' });
     await app.evalJs("location.hash = '#/journal/ab2-journal-parked'");
     await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (PARKED)' });
     await sleep(200);
@@ -677,9 +677,9 @@ if (process.env.HARNESS_PARKED === '1') {
     // ToolRail's rail track to the sliver. Live successor in this file's
     // own S6 section.
     await app.goto('/');
-    await app.evalJs('localStorage.clear()');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture (PARKED capture items)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture (PARKED capture items)' });
     await app.emulateDpr(1, 1400, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
@@ -688,7 +688,7 @@ if (process.env.HARNESS_PARKED === '1') {
       localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
     })()`);
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after Journal seed (PARKED capture items)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Journal seed (PARKED capture items)' });
     await app.evalJs("location.hash = '#/journal/ab2-journal-parked-capture'");
     await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (PARKED capture items)' });
     await sleep(200);
@@ -705,9 +705,9 @@ if (process.env.HARNESS_PARKED === '1') {
     // CD1 S2/S7 — same truth, `.wz-sliver-typewriter` now. Live successor
     // in this file's own S2 DoD section.
     await app.goto('/');
-    await app.evalJs('localStorage.clear()');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before script fixture (PARKED typewriter)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before script fixture (PARKED typewriter)' });
     await app.emulateDpr(1, 1400, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
@@ -716,7 +716,7 @@ if (process.env.HARNESS_PARKED === '1') {
       localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
     })()`);
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after script seed (PARKED typewriter)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed (PARKED typewriter)' });
     await app.evalJs("location.hash = '#/page/ab2-script-parked-typewriter'");
     await app.waitFor("!!document.querySelector('.script-sheet')", { label: 'Script framed (PARKED typewriter)' });
     await sleep(200);

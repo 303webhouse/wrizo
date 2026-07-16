@@ -26,10 +26,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
   await app.evalJs("window.wrizoTheme.set('flux')");
 
   // -- check 1: Flux token application spot-checks (canon §3 table) ----------
@@ -81,9 +81,9 @@ await withHarness(async (app) => {
 
   // Tabs (ModeSwitcher) + Connect (Publish) + Board — via a real project's PageEditor.
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before PageEditor fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PageEditor fixture' });
   await app.evalJs("window.wrizoTheme.set('flux')");
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
@@ -138,9 +138,9 @@ await withHarness(async (app) => {
   // instant the goal-crossing block lands — a fresh project starts at 0.
   const words251 = Array.from({ length: 251 }, (_, i) => 'w' + i).join(' ');
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before surge fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before surge fixture' });
   await app.evalJs("window.wrizoTheme.set('flux')");
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker for surge fixture' });
@@ -185,9 +185,9 @@ await withHarness(async (app) => {
 
   // -- check 3 continued: celebrate-summon overrides the bottom bar's fade ---
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before QuickSprint fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before QuickSprint fixture' });
   await app.evalJs("window.wrizoTheme.set('flux')");
   await app.evalJs(`location.hash = '#/sprint'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint mounted under Flux' });

@@ -48,7 +48,7 @@ export function CreateProject() {
 
   return (
     <div className="create-picker">
-      <button type="button" className="cp-back" onClick={() => navigate('/')}>&larr; Desk</button>
+      <button type="button" className="cp-back" onClick={() => navigate('/')}>&larr; Home</button>
       <div className="cp-eyebrow">NEW PROJECT</div>
       <h1 className="cp-title">What are you writing?</h1>
       <p className="cp-sub">Books, essays, scripts — same desk underneath. The form sets your page names, and later its format conventions and support pages.</p>

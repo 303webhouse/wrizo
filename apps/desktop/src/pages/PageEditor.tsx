@@ -29,6 +29,14 @@ import { applyFormat, stripMarkdownConventions, type FormatAction } from '../sto
 import { decorateEditorFor } from '../store/draftDecoration';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
+import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
+import { setFirstRunGateActive } from '../store/firstRunGateActive';
+import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
+import { UnlockCeremony } from '../components/UnlockCeremony';
+import type { ThemeId } from '../store/theme';
+
+// HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
+const FIRST_RUN_WORD_TARGET = 100;
 
 // B1 Slice 3 — the manuscript page editor. A binder Page (a JournalEntry with
 // projectId set) opens in the mode-aware editor (Free write / Draft / Format),
@@ -112,6 +120,33 @@ function PageEditorView({ id }: { id: string }) {
   const warmRef = useRef(!!(location.state as { warmStart?: boolean } | null)?.warmStart);
   const warmWrapRef = useRef<HTMLDivElement>(null);
   const warm = useWarmStart(warmRef.current, editorRef, warmWrapRef);
+
+  // HB1 S2/S3 — the first-run gate. Captured once at mount, the exact same
+  // one-shot-navigation-state pattern as warmRef above (components/
+  // Arrival.tsx's Write door sets this only on the page it just created,
+  // only during first run) — never re-armed by a later reload of this same
+  // page (location.state doesn't survive a reload; F3 rules that as an
+  // accepted edge case, not a resume feature this ticket builds) and never
+  // true on any OTHER page. F4 — framed (>=1100px) only; below the gate the
+  // ref may be true but nothing ever reads it (legacy JSX stays untouched).
+  const firstRunGateRequested = useRef(
+    !!(location.state as { firstRunGate?: boolean } | null)?.firstRunGate && !getFirstRunComplete(),
+  );
+  const [gateUnlocked, setGateUnlocked] = useState(false);
+  const gateActive = framed && firstRunGateRequested.current && !gateUnlocked;
+  const gateWords = useMonotonicWordCount(text, gateActive);
+  const gateReached = gateActive && gateWords >= FIRST_RUN_WORD_TARGET;
+
+  useEffect(() => {
+    setFirstRunGateActive(gateActive);
+    return () => setFirstRunGateActive(false);
+  }, [gateActive]);
+
+  const handleChooseTheme = (themeId: ThemeId) => {
+    void themeId; // setTheme already applied by UnlockCeremony itself
+    setFirstRunComplete(true);
+    setGateUnlocked(true);
+  };
 
   // F5 — TTFK session for this chapter/support page. projectId carries the binder;
   // firstKeystroke rides the same onForward seam as the warm release below.
@@ -408,20 +443,30 @@ function PageEditorView({ id }: { id: string }) {
   if (framed) {
     return (
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
-        <div className="chrome-fade chrome-top sprint-nav">
-          <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
-          <div className="sprint-actions">
-            <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
+        <FirstRunVeil active={gateActive}>
+          <div className="chrome-fade chrome-top sprint-nav">
+            <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
+            <div className="sprint-actions">
+              <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
+            </div>
           </div>
-        </div>
+        </FirstRunVeil>
 
         <div style={{ height: 16 }} />
 
         <DeskFrame
           pageKind="prose"
-          toolRail={<Drawer subject={pageFaceSubject} />}
-          sliver={<Sliver content={sliverContent} goalText={text} />}
-          goalGlow={<GoalGlow text={text} />}
+          toolRail={<FirstRunVeil active={gateActive}><Drawer subject={pageFaceSubject} /></FirstRunVeil>}
+          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} /></FirstRunVeil>}
+          // HB1 S3 — the SAME progress-fraction seam GoalGlow already
+          // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
+          // contract exactly), fed the gate's own word fraction instead of
+          // GoalGlow's line-equivalents one while the gate holds; the real
+          // GoalGlow resumes the instant it doesn't (it renders nothing
+          // anyway, absent a writer-set goal — first run never sets one).
+          goalGlow={(gateActive || gateReached)
+            ? <FirstRunGlow fraction={gateWords / FIRST_RUN_WORD_TARGET} />
+            : <GoalGlow text={text} />}
           dissolved={receded}
         >
           <ModeStage
@@ -438,6 +483,9 @@ function PageEditorView({ id }: { id: string }) {
             {editorBody}
           </ModeStage>
         </DeskFrame>
+
+        {gateActive && <FirstRunGateBanner words={gateWords} target={FIRST_RUN_WORD_TARGET} />}
+        {gateReached && <UnlockCeremony onChoose={handleChooseTheme} />}
 
         {publishDialog}
         {structureConfirmDialog}

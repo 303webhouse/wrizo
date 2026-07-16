@@ -96,8 +96,10 @@ function startServer(dist) {
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
     // sync pull = no-op, so it never touches records the app writes locally.
     if (p === '/auth/me' || p.startsWith('/auth/')) {
-      // WS_ANON=1 → /auth/me is unauthorized (drives the HomeFlow front door);
-      // /auth/login + /auth/register still succeed so the account flow can finish.
+      // WS_ANON=1 → /auth/me is unauthorized (HB1 — drives Arrival's anon
+      // path: Write still works local-first, Open reaches the sign-in
+      // screen); /auth/login + /auth/register still succeed so the account
+      // flow can finish.
       if (process.env.WS_ANON === '1' && p === '/auth/me') {
         res.writeHead(401, { 'content-type': 'application/json' });
         return res.end(JSON.stringify({ error: 'unauthorized' }));
@@ -426,9 +428,14 @@ function makeApp(base, cdp, waitEvent) {
     freshSprint: async () => {
       await cdp('Page.navigate', { url: `${base}/#/` });
       await sleep(200);
-      await evalJs('localStorage.clear()');
+      // HB1 — seed firstRunComplete alongside every clear: this fixture
+      // navigates straight to /sprint by hash (never through Arrival's Write
+      // door), so the first-run gate never applies here regardless — seeded
+      // for consistency with every other fixture's boot helper, not because
+      // this one needs it.
+      await evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
       await app.reload();
-      await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
+      await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Arrival' });
       await evalJs(`location.hash = '#/sprint'`); // decoupled from launchpad button text
       await app.waitFor("document.querySelector('.forward-only-editor, textarea')", { label: 'sprint writing surface' });
       await injectHelpers();
@@ -483,8 +490,8 @@ async function selfTest() {
   await withHarness(async (app) => {
     // Boot reaches the authed launcher (past the W2 gate).
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk') && !!document.querySelector('.wz-primary')", { label: 'authed Desk' });
-    ok('boots past the W2 login gate to the Desk', true);
+    await app.waitFor("!!document.querySelector('.wz-arrival') && !!document.querySelector('.wz-primary')", { label: 'authed Arrival' });
+    ok('boots past the W2 login gate to Arrival', true);
 
     // Drive a scratch sprint end to end and read back the app's own state.
     // The surface is the forward-only editor (CW2): focus + type real keys.

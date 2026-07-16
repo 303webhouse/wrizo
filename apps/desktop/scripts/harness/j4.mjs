@@ -35,10 +35,10 @@ window.__pointerSeq = function(selector, dx, dy, opts) {
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
   await app.evalJs(DRAG_HELPER);
 
   // -- create page 1 (text only) --------------------------------------------

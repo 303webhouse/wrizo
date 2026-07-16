@@ -39,10 +39,10 @@ const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.string
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
 
   // A desktop viewport for every fixture below unless stated otherwise —
   // DeskFrame's own gate (DESKFRAME_MIN_WIDTH = 1100).
@@ -192,9 +192,9 @@ await withHarness(async (app) => {
 
   // === 3. BOARD + SCRIPT surfaces, framed ===================================
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before board/script fixtures' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script fixtures' });
   await app.emulateDpr(1, 1400, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
@@ -214,7 +214,7 @@ await withHarness(async (app) => {
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after board/script seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed' });
 
   // -- Board: DeskFrame mounts, no mode strip (Trellis-side by design) ------
   await app.evalJs("location.hash = '#/page/ab1-board'");
@@ -349,9 +349,9 @@ await withHarness(async (app) => {
   // `.mode-stage`/`.mode-pagecol`); asserted here so it can't silently
   // regress.
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before gate-floor fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before gate-floor fixture' });
   await app.emulateDpr(1, 1100, 900); // the exact DESKFRAME_MIN_WIDTH floor
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), gate floor' });
@@ -386,9 +386,9 @@ await withHarness(async (app) => {
 
   // === 4. Mobile / below the gate: current behavior is untouched (non-goal) =
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before mobile fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before mobile fixture' });
   await app.emulateDpr(1, 900, 700); // below DESKFRAME_MIN_WIDTH
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), mobile' });
@@ -422,10 +422,10 @@ if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk (PARKED)' });
-    await app.evalJs('localStorage.clear()');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk (PARKED)' });
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear (PARKED)' });
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear (PARKED)' });
     await app.emulateDpr(1, 1400, 900);
     await app.goto('/project/new');
     await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), PARKED' });

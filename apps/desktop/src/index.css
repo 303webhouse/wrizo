@@ -1223,6 +1223,24 @@ a:focus-visible,
   .wz-bloom.go{ opacity:0!important; }   /* bloom suppressed; the word-echo still lands */
 }
 
+/* HB1 — Arrival (components/Arrival.tsx). Composes .wz-home's warm-dark
+   shell + tokens; only the boot bar and the two doors are new here. */
+.wz-arrival-bootbar{ position:relative; width:min(220px,60vw); height:2px; margin-top:1.6rem;
+  background:rgba(140,128,112,.18); overflow:hidden; border-radius:0; }
+.wz-arrival-bootbar-fill{ position:absolute; inset:0; background:var(--wz-orange-line); }
+/* Not ready: an indeterminate sweep (real async work, not a timed flourish —
+   the sweep just says "still waiting," it never claims a duration). Ready:
+   the fill settles to full and fades, handing focus to the doors. */
+.wz-arrival-bootbar[data-ready='false'] .wz-arrival-bootbar-fill{ width:40%; animation:wz-arrival-sweep 1.1s ease-in-out infinite; }
+.wz-arrival-bootbar[data-ready='true'] .wz-arrival-bootbar-fill{ width:100%; opacity:0; transition:opacity .6s ease .15s; }
+@keyframes wz-arrival-sweep{ 0%{ transform:translateX(-100%); } 100%{ transform:translateX(350%); } }
+@media (prefers-reduced-motion:reduce){
+  .wz-arrival-bootbar[data-ready='false'] .wz-arrival-bootbar-fill{ animation:none; opacity:.5; width:40%; }
+}
+.wz-arrival-doors{ display:flex; flex-direction:column; align-items:center; gap:.6rem; margin-top:.8rem; }
+.wz-arrival-write:disabled, .wz-arrival-open:disabled{ opacity:.35; cursor:default; }
+.wz-arrival-open{ background:none; border:none; font-size:.95rem; }
+
 /* Desk (authed home) — v6 "launch" aesthetic. Reuses .wz-home tokens. A top-left
    letterhead (name in Crimson over "Writing Desk" in Figtree) + left-aligned
    actions below. */
@@ -1881,6 +1899,60 @@ a:focus-visible,
 .desk-dissolve{ transition:opacity var(--fade-dur,1.2s) ease; }
 .desk-frame[data-writing='true'] .desk-dissolve{ opacity:var(--fade-min,.08); pointer-events:none; }
 @media (prefers-reduced-motion:reduce){ .desk-dissolve{ transition:none; } }
+
+/* HB1 S3 — the veil (components/FirstRunGate.tsx's FirstRunVeil). `inert`
+   (set imperatively by the component) already removes the wrapped subtree
+   from focus/pointer/AT; this is the visual half — blurred, dimmed, and a
+   belt-and-suspenders pointer-events:none in case a test driver's pointer
+   dispatch doesn't honor `inert`. Never touches the paper/editor itself —
+   only ever wraps chrome (the top row, the Drawer, the Sliver). */
+.hb1-veil[data-veiled='true']{ filter:blur(4px); opacity:.45; pointer-events:none; transition:filter .4s ease, opacity .4s ease; }
+@media (prefers-reduced-motion:reduce){ .hb1-veil[data-veiled='true']{ transition:none; } }
+
+/* HB1 S3 — the gate's one sanctioned instruction + its progress bar. Fixed,
+   top-center, ABOVE the veil (never wrapped by it) — the one thing that
+   stays crisp while everything else recedes. Square corners (FX1 S4 law);
+   quiet — olive at rest, never brass (brass is the ceremony's alone). */
+.hb1-gate-banner{ position:fixed; top:22px; left:50%; transform:translateX(-50%); z-index:60;
+  display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
+.hb1-gate-instruction{ font-family:var(--font-ui); font-size:14px; letter-spacing:.02em;
+  color:var(--text-hi); background:var(--ink-900); border:1px solid var(--ink-border);
+  border-radius:0; padding:8px 16px; }
+.hb1-gate-track{ width:min(320px,70vw); height:3px; background:var(--ink-border); overflow:hidden; }
+.hb1-gate-trackfill{ height:100%; background:var(--accent-rest); transition:width .5s ease; }
+@media (prefers-reduced-motion:reduce){ .hb1-gate-trackfill{ transition:none; } }
+
+/* HB1 S4 — the unlock ceremony (components/UnlockCeremony.tsx). A modal,
+   the same backdrop convention as .sprint-modal-backdrop; entrance pop
+   suppressed under reduced motion (the word-echo pattern .wz-bloom already
+   uses — motion is decoration, the content lands regardless). */
+.hb1-ceremony-backdrop{ position:fixed; inset:0; z-index:220; display:flex; align-items:center;
+  justify-content:center; background:rgba(0,0,0,.55); }
+.hb1-ceremony{ width:min(480px,92vw); padding:1.75rem; background:var(--ink-900);
+  border:1px solid var(--ink-border); border-radius:0; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:.6rem;
+  opacity:0; transform:scale(.94) translateY(6px); animation:hb1-ceremony-pop .5s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes hb1-ceremony-pop{ to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){ .hb1-ceremony{ animation:none; opacity:1; transform:none; } }
+.hb1-ceremony-eyebrow{ font-family:var(--font-ui); font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--text-low); }
+.hb1-ceremony-title{ font-family:var(--font-display); font-size:22px; color:var(--text-hi); margin-bottom:.4rem; }
+.hb1-ceremony-offered{ display:flex; gap:.75rem; margin-bottom:.6rem; }
+.hb1-territory{ font-family:var(--font-ui); font-size:14px; padding:.7rem 1.3rem;
+  border-radius:0; cursor:pointer; transition:background .3s ease, color .3s ease, border-color .3s ease; }
+.hb1-territory-offered{ background:none; border:1px solid var(--ink-border); color:var(--text-hi); }
+.hb1-territory-offered:hover:not(:disabled){ border-color:var(--accent-rest); color:var(--accent-rest); }
+/* Orange fires once, here — the instant a human actually chooses (S4's own
+   law). A transient, single-valued flash, never a resting brass button, so
+   this never becomes a second .btn-brass on the same screen. */
+.hb1-territory-offered.chosen{ background:var(--brass); border-color:var(--brass); color:var(--on-brass); }
+.hb1-territory-offered:disabled{ cursor:default; }
+.hb1-ceremony-future-label{ font-family:var(--font-ui); font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--text-low); margin-top:.5rem; }
+.hb1-ceremony-future{ display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; }
+.hb1-territory-future{ font-family:var(--font-ui); font-size:13px; padding:.45rem 1rem;
+  border:1px solid var(--ink-border); color:var(--text-low); opacity:.5; cursor:default; }
+@media (prefers-reduced-motion:reduce){ .hb1-territory{ transition:none; } }
 
 /* A scroll-capped, un-styled containment box (S4 finding 4) — wraps content
    that has no bounded-height container of its own (the script sheet today).

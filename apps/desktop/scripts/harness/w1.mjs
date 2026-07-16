@@ -11,10 +11,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
 
   // -- structure: Journal chrome order (wayfinding + tabs above the sheet;
   // metadata below it) -----------------------------------------------------
@@ -90,9 +90,9 @@ await withHarness(async (app) => {
 
   // -- R1, ModeStage side: same regression, PageEditor surface -------------
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before PageEditor fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PageEditor fixture' });
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
@@ -150,9 +150,9 @@ await withHarness(async (app) => {
 
   // -- R3: window-scroll typewriter data-scrolled gate (C2) ----------------
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before R3 fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before R3 fixture' });
   await app.emulateDpr(1, 1024, 500); // short viewport: guarantees overflow from the below-sheet metadata cluster alone
   await app.goto('/journal');
   await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (R3)' });

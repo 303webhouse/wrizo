@@ -73,10 +73,10 @@ const TYPE_CYCLE = ['scene', 'action', 'character', 'paren', 'dialogue', 'transi
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
   await app.evalJs(HELPERS);
 
   // -- DoD 1: Screenplay-kind create lands the caret in the scene-heading
@@ -338,18 +338,25 @@ await withHarness(async (app) => {
   const scenesBeforeReload = JSON.stringify(scriptEntry.script);
   await app.goto('/journal'); // navigate off first — the same unmount-flush-clobber hazard J5 documented
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk') || !!document.querySelector('.journal-new-page')", { label: 'app after reload', timeout: 8000 });
+  await app.waitFor("!!document.querySelector('.wz-arrival') || !!document.querySelector('.journal-new-page')", { label: 'app after reload', timeout: 8000 });
   await app.evalJs(HELPERS); // a hard reload wipes injected window functions — re-inject
   const entriesAfterReload = await app.localJSON('writer-studio-journal-entries');
   const scriptAfterReload = entriesAfterReload.find((e) => e.id === scriptId);
   ok('DoD6: the ScriptDoc round-trips byte-identical across a full reload', JSON.stringify(scriptAfterReload.script) === scenesBeforeReload);
 
-  // -- DoD 5 (resume mirror): the SCRIPT tag + a recognizable last line
-  // surface unprompted on the Desk. -------------------------------------------
-  await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk (resume check)' });
-  const mirrorText = await app.evalJs('document.body.innerText');
-  ok('DoD5: the Desk\'s mirror surfaces the SCRIPT tag unprompted', mirrorText.includes('SCRIPT'), mirrorText.slice(0, 400));
+  // -- DoD 5 (resume mirror) — PARKED by HB1 (see the PARKED section below,
+  // A4 discipline): the Desk room this originally read (ReturnCard, an
+  // unprompted passive glance) is retired. Arrival (route '/') deliberately
+  // shows only the mark, the boot bar, and the two doors — no passive
+  // mirror content — per the brief's own flow (docs/wrizo-alpha/
+  // hb1-threshold-brief.md). The underlying resume-target resolution this
+  // check exercised is still correct and still reachable (now behind
+  // Arrival's Open door, F2 — see scripts/harness/hb1.mjs's own "Open,
+  // authed with a resume target" check), so this is DORMANT, not
+  // SUPERSEDED: no successor proves the SAME unprompted-glance truth,
+  // because HB1 ruled that UX away. Whether an unprompted mirror belongs on
+  // Arrival is a genuine open call, not resolved here — flagged for Fable/
+  // Nick, not silently reinstated or silently dropped.
 
   // -- birth paths: the picker leaf + the dedicated button on an EXISTING
   // (non-screenplay) binder; a non-screenplay kind still births manuscript. --
@@ -405,7 +412,59 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.every((c) => c.pass);
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// HB1 (docs/wrizo-alpha/hb1-threshold-brief.md) retires the Desk room this
+// file's own DoD5 check read from. First real tenant of the A4 park law in
+// this file (S1 predates most of the arc's parking history). DORMANT, not
+// SUPERSEDED — see the in-line note left at the check's original call site
+// (search this file for "PARKED by HB1"): no successor proves the SAME
+// unprompted-glance truth, because Arrival deliberately doesn't offer one.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.reload();
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival after clear (PARKED)' });
+    await app.evalJs(HELPERS);
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"screenplay\"]')", { label: 'CreateProject picker (PARKED)' });
+    await app.evalJs("document.querySelector('[data-kind=\"screenplay\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'script editor lands (PARKED)' });
+    await app.typeKeys('int. kitchen - day');
+    await app.evalJs("__key('Enter')");
+    await sleep(3200); // past PageEditor/ScriptEditor's autosave debounce
+
+    // ORIGINAL (DoD5): ok('DoD5: the Desk\'s mirror surfaces the SCRIPT tag
+    // unprompted', mirrorText.includes('SCRIPT'), mirrorText.slice(0,400));
+    // — read document.body.innerText straight off '/' (the Desk room, its
+    // ReturnCard rendering the resume pointer with no click required).
+    // DORMANT: '/' is Arrival now (mark + boot bar + two doors only); no
+    // unprompted mirror exists there to read. This re-assertion proves the
+    // NARROWER truth that survives — the resume pointer itself still
+    // resolves to this SCRIPT page — via the one path that still reaches
+    // it (Open, F2), not via an unprompted glance.
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival, resume check (PARKED)' });
+    await app.click('Open');
+    await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'Open resumes the script page (PARKED)', timeout: 4000 });
+    pok('PARKED (was "DoD5: the Desk\'s mirror surfaces the SCRIPT tag unprompted") — DORMANT, no unprompted successor: the resume pointer still resolves to this SCRIPT page, now reachable via Open (F2) rather than an unprompted glance',
+      true);
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nS1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed`
+    : `\nS1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
+const allChecksS1 = checks.concat(parkedChecks);
+const pass = allChecksS1.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nS1 VERIFY: PASS (${checks.length} checks)` : `\nS1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nS1 VERIFY: PASS (${allChecksS1.length} checks)` : `\nS1 VERIFY: FAIL — ${allChecksS1.filter((c) => !c.pass).length}/${allChecksS1.length} failed`);
 process.exit(pass ? 0 : 1);

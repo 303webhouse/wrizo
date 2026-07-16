@@ -41,10 +41,10 @@ window.__setCaretAt = function(selector, target) {
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
   await app.evalJs(CARET_HELPER);
 
   // === 1. PageEditor (text surface): mid-scroll + mid-caret way back =======
@@ -127,9 +127,9 @@ await withHarness(async (app) => {
 
   // === 2. JournalEntry authored page (window-scroll): mid-scroll + mid-caret
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Journal fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture' });
   await app.evalJs(CARET_HELPER);
   await app.emulateDpr(1, 1024, 700);
   await app.goto('/journal');
@@ -181,9 +181,9 @@ await withHarness(async (app) => {
   // is a proving/regression test, not a live bug — but it's the "live path"
   // Fable named, so it gets its own explicit check.
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before pager fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before pager fixture' });
   await app.emulateDpr(1, 1024, 700);
   await app.goto('/journal');
   await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (pager fixture)' });
@@ -215,9 +215,9 @@ await withHarness(async (app) => {
   // === R1: QuickSprint depart/return (scroll + caret + mode) — same shape
   // as PageEditor's, now that QuickSprint is correctly keyed by draftId. ===
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before QuickSprint fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before QuickSprint fixture' });
   await app.evalJs(CARET_HELPER);
   await app.goto('/sprint');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint mounted' });
@@ -264,9 +264,9 @@ await withHarness(async (app) => {
 
   // === 3. Board + script: route-restore only (no scroll/caret claim) ======
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before board/script fixtures' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script fixtures' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
@@ -295,9 +295,9 @@ await withHarness(async (app) => {
   // === 4. Standing assertions: PAGE IS PRIMARY invariants ==================
   // 4a — assist rail collapse/expand (promoted from W1's own check).
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before rect-invariant fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before rect-invariant fixture' });
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), rect check' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
@@ -319,9 +319,9 @@ await withHarness(async (app) => {
   // 4b — the Add to... sheet (a loose Journal page) leaves the page rect
   // byte-identical while open, and after closing.
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before Add-to rect fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Add-to rect fixture' });
   await app.goto('/journal');
   await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list, Add-to rect check' });
   await app.click('New page');

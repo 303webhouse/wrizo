@@ -40,10 +40,10 @@ const PRE_TH1 = {
 
 await withHarness(async (app) => {
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'authed Desk' });
-  await app.evalJs('localStorage.clear()');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after clear' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
 
   // -- boot state: data-theme is on <html> before first render, default 'plateau' --
   const bootTheme = await app.evalJs("document.documentElement.getAttribute('data-theme')");
@@ -183,9 +183,9 @@ await withHarness(async (app) => {
   // -- Slice 1 sweep sites (PageEditor, a real project) render exactly the
   // lexicon projection, unchanged text on Plateau at default settings --------
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before PageEditor fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PageEditor fixture' });
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");

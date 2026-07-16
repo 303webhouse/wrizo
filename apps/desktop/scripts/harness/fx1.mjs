@@ -20,9 +20,9 @@ const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.string
 
 const freshDesk = async (app) => {
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
   await app.emulateDpr(1, 1400, 900);
 };
 
@@ -57,7 +57,7 @@ const freshScriptPage = async (app) => {
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after script seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed' });
   await app.evalJs("location.hash = '#/page/fx1-script'");
   await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Script framed' });
   await sleep(300);
@@ -72,7 +72,7 @@ const freshScriptPage = async (app) => {
 // strip) before any rail content is read.
 const freshLoosePage = async (app) => {
   await freshDesk(app);
-  await app.evalJs("document.querySelector('.wz-start-writing').click()");
+  await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(500);
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write').click()");
