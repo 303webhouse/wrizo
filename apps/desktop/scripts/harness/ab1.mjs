@@ -58,8 +58,10 @@ await withHarness(async (app) => {
 
   ok('DeskFrame mounts at >=1100px on the text surface', await app.evalJs("!!document.querySelector('.desk-frame')"));
 
-  // -- S1: all five zone tracks present (wayfinding = pre-existing DeskRail;
-  // the other four are DeskFrame's own). ------------------------------------
+  // -- S1: four zone tracks present (wayfinding = pre-existing DeskRail; the
+  // other three are DeskFrame's own). FX1 S5 retired the ALWAYS-empty meter
+  // track's own presence assertion — see this file's PARKED section and the
+  // new live check just below. ------------------------------------------------
   const zones = await app.evalJs(`({
     wayfinding: !!document.querySelector('.desk-rail'),
     toolRail: !!document.querySelector('.desk-frame-toolrail'),
@@ -67,11 +69,16 @@ await withHarness(async (app) => {
     corkboard: !!document.querySelector('.desk-frame-corkboard'),
     meter: document.querySelectorAll('.desk-frame-meter').length,
   })`);
-  ok('S1: all five zone tracks present (wayfinding+toolrail+stage+corkboard+meter)',
-    zones.wayfinding && zones.toolRail && zones.stage && zones.corkboard && zones.meter === 1,
+  ok('S1: four zone tracks present (wayfinding+toolrail+stage+corkboard)',
+    zones.wayfinding && zones.toolRail && zones.stage && zones.corkboard,
     JSON.stringify(zones));
-  ok('S1: exactly one meter track, and it is empty', zones.meter === 1
-    && (await app.evalJs("document.querySelector('.desk-frame-meter').children.length === 0")) === true);
+  // FX1 S5 — Nick's "dead bar" verdict: the meter track never had a content
+  // prop (AB1 S2's own "ALWAYS empty/reserved"), so it rendered a wide,
+  // purposeless desk-ground shell along the stage's bottom on every framed
+  // page. DeskFrame now takes a `meter` prop and renders the track only when
+  // something is passed; nothing is passed yet, so it renders NOTHING.
+  ok('FX1 S5: the dead meter-track bar is gone (no host renders while empty) — the named non-goal corkboard track is untouched, still present',
+    zones.meter === 0 && zones.corkboard === true, JSON.stringify(zones));
 
   // -- S2: the unified mode strip, exact ratified strings, title case -------
   const stripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
@@ -449,6 +456,24 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S2: the corkboard Journal tab carries the relocated capture items" + "...is headed Journal") — AB2 S2 retires the interim corkboard tab entirely: no items, no heading',
       corkboardGone.items === 0 && corkboardGone.heading === false,
       JSON.stringify(corkboardGone));
+
+    // ORIGINAL (AB1 S1): ok('S1: all five zone tracks present
+    // (wayfinding+toolrail+stage+corkboard+meter)', zones.wayfinding &&
+    // zones.toolRail && zones.stage && zones.corkboard && zones.meter === 1,
+    // JSON.stringify(zones)); ok('S1: exactly one meter track, and it is
+    // empty', zones.meter === 1 && (await app.evalJs("document.
+    // querySelector('.desk-frame-meter').children.length === 0")) === true);
+    // FX1 S5 (Nick's first-sitting verdict, "the dead bar dies") — the meter
+    // track's own ALWAYS-empty presence was itself the bug (a wide,
+    // purposeless desk-ground shell along the stage's bottom); DeskFrame now
+    // renders the track only when a `meter` prop is passed, and nothing
+    // passes one yet, so the opposite is now true: the track doesn't mount
+    // at all. Successor assertion lives in this file's own live section
+    // (S1), not moved to another file — this bug and its fix are both AB1/
+    // FX1's own territory.
+    const meterGoneNow = await app.evalJs("document.querySelectorAll('.desk-frame-meter').length");
+    pok('PARKED (was "S1: all five zone tracks present..." + "S1: exactly one meter track, and it is empty") — FX1 S5: the meter track does not mount at all while empty (zero tracks, not one empty one)',
+      meterGoneNow === 0, String(meterGoneNow));
 
     return parkedChecks;
   });

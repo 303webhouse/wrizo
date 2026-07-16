@@ -315,14 +315,29 @@ await withHarness(async (app) => {
   // === ab3.1 R1(a) (Fable review) — the loose fixture's negative space.
   // The journalFurniture conditional correctly excludes 'loose', but
   // nothing asserted it: 'journal'/null are covered in this file, 'project'
-  // in ab2.mjs — 'loose' had no guard anywhere. ================================
+  // in ab2.mjs — 'loose' had no guard anywhere.
+  // FX1 S3 (Nick's first-sitting verdict, provisional canon note) — the
+  // forward lock is no longer part of journalFurniture's suppressed bundle:
+  // it's mode furniture now, mounting regardless of origin. R1(a)'s original
+  // "forward-lock absent" clause is superseded; parked below (HARNESS_
+  // PARKED=1, quoted-history + opposite-reassertion, SUPERSEDED species).
+  // Ink/capture-items absence is unchanged AB3 law and stays live here.
+  // FX1 fixture fix — createLooseHomePage() stamps no pageType, so
+  // PageEditor's own default-mode rule ("a manuscript chapter opens in Free
+  // write... support pages open in Draft") lands a loose page in DRAFT, not
+  // Free Write — this check's own name always meant Free Write (a Draft
+  // rail never carries any of this furniture regardless of origin, so the
+  // ORIGINAL R1(a) check was passing for the wrong reason). Switch modes
+  // explicitly so this actually exercises what it claims to. ==================
+  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write').click()");
+  await sleep(150);
   const looseRail = await app.evalJs(`({
     ink: !!document.querySelector('.desk-toolrail-inks'),
     forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
     captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
   })`);
-  ok('R1(a): a LOOSE-origin page shows none of the journal furniture in Free Write (ink/forward-lock/capture items all absent)',
-    !looseRail.ink && !looseRail.forwardLock && looseRail.captureItems.length === 0,
+  ok('FX1 S3 (was R1(a)): a LOOSE-origin page shows the forward lock PRESENT (mode furniture now) in Free Write, but ink/capture items stay absent (unchanged journal furniture)',
+    !looseRail.ink && looseRail.forwardLock && looseRail.captureItems.length === 0,
     JSON.stringify(looseRail));
 
   await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
@@ -456,20 +471,56 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// AB3 parks nothing of its OWN out of this file (every check above reflects
-// this ticket's live, current design) — the checks AB3 itself supersedes
-// belonged to AB1/AB2 and are parked in THEIR OWN files (ab2.mjs's PARKED
-// section), per the established precedent (ab1.mjs parks what AB2
-// superseded; ab2.mjs now parks what AB3 supersedes). This scaffold exists
-// so a future ticket that supersedes any of THIS file's checks has a
-// documented home to move them into, matching ab1.mjs/ab2.mjs's own
-// pattern. Nothing to run today.
+// AB3 itself parked nothing of its OWN out of this file (every check AB3
+// wrote reflected its ticket's live, current design) — the checks AB3
+// superseded belonged to AB1/AB2 and were parked in THEIR OWN files
+// (ab2.mjs's PARKED section), per the established precedent (ab1.mjs parks
+// what AB2 superseded; ab2.mjs parks what AB3 supersedes). FX1 is the first
+// real tenant of THIS file's own scaffold: S3 (Nick's first-sitting verdict,
+// provisional canon note) supersedes ab3.1 R1(a)'s "forward lock ABSENT on
+// a loose-origin page" claim — the forward lock is mode furniture now,
+// mounting regardless of origin. Parked here (SUPERSEDED species, quoted
+// verbatim), with the opposite reassertion in this file's own live section.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshLoosePage(app);
+    // FX1 fixture fix (matching the live section's own note above) — a
+    // loose page defaults to Draft (no pageType stamped), and this check's
+    // name always meant Free Write.
+    await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write').click()");
+    await sleep(150);
+
+    // ORIGINAL (ab3.1 R1(a)): ok('R1(a): a LOOSE-origin page shows none of
+    // the journal furniture in Free Write (ink/forward-lock/capture items
+    // all absent)', !looseRail.ink && !looseRail.forwardLock &&
+    // looseRail.captureItems.length === 0, JSON.stringify(looseRail));
+    // FX1 S3 — the forward lock splits off journalFurniture's suppressed
+    // bundle: it's mode furniture now, present regardless of origin. Ink/
+    // capture items are unchanged AB3 law and stay absent.
+    const looseRailNow = await app.evalJs(`({
+      ink: !!document.querySelector('.desk-toolrail-inks'),
+      forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
+      captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
+    })`);
+    pok('PARKED (was "R1(a): a LOOSE-origin page shows none of the journal furniture in Free Write (ink/forward-lock/capture items all absent)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items stay absent',
+      !looseRailNow.ink && looseRailNow.forwardLock && looseRailNow.captureItems.length === 0,
+      JSON.stringify(looseRailNow));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nAB3 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of ab3.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nAB3 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nAB3 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecksAb3 = checks.concat(parkedChecks);
+const pass = allChecksAb3.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nAB3 VERIFY: PASS (${checks.length} checks)` : `\nAB3 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nAB3 VERIFY: PASS (${allChecksAb3.length} checks)` : `\nAB3 VERIFY: FAIL — ${allChecksAb3.filter((c) => !c.pass).length}/${allChecksAb3.length} failed`);
 process.exit(pass ? 0 : 1);

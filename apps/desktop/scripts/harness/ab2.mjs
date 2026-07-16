@@ -47,12 +47,16 @@ await withHarness(async (app) => {
   // A fresh manuscript page opens in Free Write (journal mode) by default.
   // AB3 S4 — this fixture is born through a PROJECT door (CreateProject ->
   // createBinderPage), so origin:'project' now SUPPRESSES the Journal
-  // furniture (ink/forward-lock/capture items) that AB2 asserted here
-  // unconditionally; only format/structure stay unconditionally-absent in
-  // Free Write mode, unchanged. The retired AB2 claim is parked below
-  // (HARNESS_PARKED=1, quoted-history + opposite-reassertion); AB3's own
-  // fixture for the OPPOSITE case (a journal-origin page keeping the
-  // furniture) lives in ab3.mjs.
+  // furniture (ink/capture items) that AB2 asserted here unconditionally;
+  // format/structure stay unconditionally-absent in Free Write mode,
+  // unchanged.
+  // FX1 S3 (Nick's first-sitting verdict, provisional canon note) — the
+  // forward lock is no longer part of this suppressed bundle: it's mode
+  // furniture now (Free Write the posture, not the Journal the place), so it
+  // mounts regardless of origin. The retired AB3 claim (forward-lock
+  // ABSENT here) is parked below (HARNESS_PARKED=1, quoted-history +
+  // opposite-reassertion, SUPERSEDED species); ink/capture-items absence is
+  // unchanged law and stays live.
   const freeWriteRail = await app.evalJs(`({
     ink: !!document.querySelector('.desk-toolrail-inks'),
     forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
@@ -60,8 +64,8 @@ await withHarness(async (app) => {
     format: !!document.querySelector('.desk-toolrail-format'),
     structure: !!document.querySelector('.desk-toolrail-structure'),
   })`);
-  ok('AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)',
-    !freeWriteRail.ink && !freeWriteRail.forwardLock
+  ok('FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT (mode furniture now) but still none of the Journal-only furniture (ink/capture items absent); format/structure stay absent too (Free Write, not Draft)',
+    !freeWriteRail.ink && freeWriteRail.forwardLock
       && freeWriteRail.captureItems.length === 0
       && !freeWriteRail.format && !freeWriteRail.structure,
     JSON.stringify(freeWriteRail));
@@ -448,30 +452,39 @@ if (process.env.HARNESS_PARKED === '1') {
     // freeWriteRail.forwardLock && JSON.stringify(freeWriteRail.
     // captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send →
     // Drawer']) && !freeWriteRail.format && !freeWriteRail.structure, ...);
-    // AB3 S4 — this fixture (CreateProject -> createBinderPage) is now
-    // PROJECT-origin; the furniture that check assumed unconditional is
-    // gone. The opposite is now true: none of it mounts.
+    // AB3 S4 (superseded once already): this fixture (CreateProject ->
+    // createBinderPage) went PROJECT-origin; the furniture that check
+    // assumed unconditional was gone, so AB3 re-asserted here as
+    // `!freeWriteRailNow.ink && !freeWriteRailNow.forwardLock &&
+    // freeWriteRailNow.captureItems.length === 0` — none of it mounts.
+    // FX1 S3 (Nick's first-sitting verdict, provisional canon note) —
+    // supersedes AB3's OWN re-assertion in turn: the forward lock splits off
+    // to become mode furniture (mounts regardless of origin); ink/capture
+    // items are unchanged AB3 law and stay absent. Live equivalent asserted
+    // in this file's own unparked S1 block now, on the same fixture.
     const freeWriteRailNow = await app.evalJs(`({
       ink: !!document.querySelector('.desk-toolrail-inks'),
       forwardLock: !!document.querySelector('.desk-toolrail-forwardlock'),
       captureItems: [...document.querySelectorAll('.desk-toolrail-item')].map(i => i.textContent),
     })`);
-    pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those") — AB3 S4 origin-gates the furniture: a project-origin page in Free Write now shows NONE of it',
-      !freeWriteRailNow.ink && !freeWriteRailNow.forwardLock && freeWriteRailNow.captureItems.length === 0,
+    pok('PARKED (was "S1/S2: Free Write rail shows ink + forward lock + capture items, and ONLY those", then AB3-superseded to "...shows NONE of it") — FX1 S3 re-supersedes AB3\'s own re-assertion: forward lock is back (mode furniture), ink/capture items stay absent',
+      !freeWriteRailNow.ink && freeWriteRailNow.forwardLock && freeWriteRailNow.captureItems.length === 0,
       JSON.stringify(freeWriteRailNow));
 
     // ORIGINAL (AB2 S2): ok('S2: the rail toggle flips to off',
     // lockOffState === 'false', lockOffState); ok('S2: the forward-lock
     // setting is honored on reload (rail shows off, not reset to the
     // default)', forwardLockAfterReload === 'false', forwardLockAfterReload);
-    // AB3 S4 — the rail toggle these checks clicked/read no longer mounts
-    // for a project-origin page at all (same origin-gating). The mechanic
-    // itself (localStorage-driven, reload-honored) is still proven live in
-    // ab2.mjs's own unparked S2 block, just without the now-correctly-absent
-    // rail control.
-    const forwardLockRailGone = await app.evalJs("!document.querySelector('.desk-toolrail-forwardlock')");
-    pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload") — AB3 S4: the forward-lock rail control does not mount at all for a project-origin page',
-      forwardLockRailGone === true);
+    // AB3 S4 (superseded once already): the rail toggle these checks
+    // clicked/read no longer mounted for a project-origin page at all (same
+    // origin-gating), re-asserted here as `forwardLockRailGone === true`.
+    // FX1 S3 — supersedes that re-assertion too: the control mounts again
+    // for a project-origin page (mode furniture, not journal furniture). The
+    // mechanic itself (localStorage-driven, reload-honored) is still proven
+    // live in ab2.mjs's own unparked S2 block, unaffected either way.
+    const forwardLockRailPresent = await app.evalJs("!!document.querySelector('.desk-toolrail-forwardlock')");
+    pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload", then AB3-superseded to "...control does not mount at all") — FX1 S3 re-supersedes AB3\'s own re-assertion: the forward-lock rail control mounts again for a project-origin page',
+      forwardLockRailPresent === true);
 
     // === S6 fixture — a fresh Journal entry, framed. =========================
     await app.goto('/');
