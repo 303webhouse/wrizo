@@ -782,6 +782,12 @@ outlive a session lives here, not in chat.
     (verified against `1c8de6b`'s full patch; review doc confirmed on
     disk verbatim). **Close conditions 1 and 2 satisfied — only Nick's
     device-look sitting remains.**
+    **cd1.1 deployed — 2026-07-16**, Nick's word ("Deploy"): `railway up`
+    on `main` @ `2103b1c` (deployment `bbb3c88d`, SUCCESS). Confirmed
+    live: `200` on `/healthz` and `/`, `401` on `/auth/me`. The toggle
+    restoration, Desk's Catch parking, and the th2 deflake are all now
+    on the live site. Only Nick's device-look sitting remains to close
+    item 26.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
