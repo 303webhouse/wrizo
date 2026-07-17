@@ -777,9 +777,25 @@ outlive a session lives here, not in chat.
     risk. HB1's own in-progress work was preserved with a checkpoint
     commit on its own branch before redoing the fold cleanly on `main`.
     **Redeploy NOT bundled with this fold** — Nick's call per Fable's own
-    review, whether to deploy now or hold. **Close conditions remaining:**
-    Fable's delta spot-check against `1c8de6b`, and Nick's device-look
-    sitting.
+    review, whether to deploy now or hold.
+    **Fable's cd1.1 spot-check: DONE, GREEN, no findings — 2026-07-16**
+    (verified against `1c8de6b`'s full patch; review doc confirmed on
+    disk verbatim). **Close conditions 1 and 2 satisfied — only Nick's
+    device-look sitting remains.**
+    **cd1.1 deployed — 2026-07-16**, Nick's word ("Deploy"): `railway up`
+    on `main` @ `2103b1c` (deployment `bbb3c88d`, SUCCESS). Confirmed
+    live: `200` on `/healthz` and `/`, `401` on `/auth/me`. The toggle
+    restoration, Desk's Catch parking, and the th2 deflake are all now
+    on the live site. Only Nick's device-look sitting remains to close
+    item 26.
+    **Item 26 stays OPEN — 2026-07-16.** The device-look sitting
+    returned two findings; both are recorded against this item and
+    ticketed as their own build (item 28, FX2) rather than folded here
+    — the fold cycle for cd1.1 is done. Nick's remaining sitting
+    verdicts (the glow, the journal-paper question, the drawer at
+    rest, the wide field) arrive on his own clock and aren't presumed
+    by FX2 or anything else; item 26 doesn't close until his sitting
+    is fully spent.
 27. **HB1 — the Threshold.** **BUILT, NOT MERGED — 2026-07-16.** Brief:
     `docs/wrizo-alpha/hb1-threshold-brief.md`. Charter:
     `docs/wrizo-alpha/hb-arc-handoff.md`. Nick's direct word waived the
@@ -961,6 +977,26 @@ outlive a session lives here, not in chat.
     (`cd1.1 erratum WIP...`) stays put per the review's own housekeeping
     note — forensic material for item 26's still-open close conditions, not
     this ticket's to drop.
+28. **FX2 — the Second Sitting.** **BRIEF COMMITTED, BUILD AUTHORIZED —
+    2026-07-16.** Two findings from Nick's device-look sitting with the
+    composed desk (item 26): (1) on his laptop, the sliver's grip
+    overlaps the writing surface — new law: persistent chrome never
+    enters the text measure, at any viewport (the grip clamps to ride
+    the paper's border/padding on narrow screens rather than crossing
+    into the text column; cd1.mjs's own geometry asserts never tested
+    a laptop width, only ~1400px/2200px); (2) Draft should open with
+    the typewriter active unless the page already holds 10+
+    line-equivalents (reading posture vs. forward-flow posture),
+    explicit toggle always wins for the rest of the session, Free
+    Write unchanged. Build brief:
+    `docs/wrizo-alpha/fx2-second-sitting-brief.md`, S1-S3, authorized
+    to build immediately on `fx2-second-sitting` off `main`.
+    Zero-schema — merge pre-authorized per the standing rule; Fable
+    reviews post-merge, gating close and redeploy. New
+    `apps/desktop/scripts/harness/fx2.mjs` required (S3): grip/text
+    disjointness at 1280px AND 2200px, sliver open/closed; the Draft
+    threshold both sides plus explicit-toggle persistence; full suite
+    green both `HARNESS_PARKED` settings.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -1103,3 +1139,16 @@ outlive a session lives here, not in chat.
   `hb1-threshold`; CD1's session keeps the original checkout
   (`writer-studio`) on `main`. Any future third concurrent agent gets
   its own worktree the same way before it writes a single file.
+- **Erratum vs. supersession, for harness checks — ratified 2026-07-16
+  (Fable, cd1.1 spot-check).** Two different situations, two different
+  moves. A check falsified because the DESIGN changed (a surface
+  retires, a selector's target is genuinely gone) parks per A4:
+  original moved verbatim (quoted, SUPERSEDED/DORMANT species, one-line
+  reason) into its own file's PARKED section, a NEW live check asserts
+  the new truth. A check falsified because an EARLIER REVIEW's own
+  brief reading was wrong (an erratum — the code was right, the
+  ground-truth call was the defect) updates IN PLACE instead: same
+  check, corrected assertion, renamed with the fold's label (e.g.
+  `S1/cd1.1: ...`) so its diff discloses the touch — no parking, since
+  nothing about the design was ever superseded. cd1.mjs's S1 check
+  (Pages/Plan toggle) is the worked example of the second case.
