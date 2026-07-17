@@ -1313,46 +1313,70 @@ outlive a session lives here, not in chat.
     gating close and redeploy. Non-goals (explicit): the Cascade (item
     30, awaits Nick's ratification), the Wall/AB4 (re-scoped by the
     Cascade pass, not this ticket), any measure widening, canon edits.
-30. **The Cascade — committee double-pass.** **PROPOSED, AWAITING
-    NICK'S RATIFICATION — 2026-07-17.** Commissioned by Nick from the
-    desktop sitting: the left drawer becomes a pop-out cascade from a
-    persistent vertical strip on the FAR RIGHT — categories (Page,
-    Journal, Plan, Drawers, Shelf) each opening a reach panel (layer
-    2), with a third pop-out survey layer (layer 3) for browsing
-    contents as large thumbnails. Committee record only:
-    `docs/wrizo-alpha/cascade-committee-pass.md` — no build authorized
-    from it yet, CD2's own brief follows Nick's words on the four named
-    tensions below. **Architects' review: sound — completes the
-    canon's attention ladder.** The strip is glance; the category
-    panel is reach (drawer-pull semantics carried forward whole); the
-    survey layer names a range the canon never had (seeing a
-    container's contents without traveling into it). Mechanics: layers
-    2-3 overlay only (paper never reflows, standing law), dissolve on
-    keystroke via the one vanishing engine, the strip persists like the
-    grip; left side after the move is paper + sliver only, feeding
-    FX3's larger paper directly. **The pass's biggest call:** the
-    reserved right track was AB4's (the Wall) — the cascade now owns
-    that edge, and Nick's own Plan example (cards as large thumbnails
-    beside a focused page) IS the Wall's browsing posture.
-    Recommendation: **AB4 formally re-scopes onto the cascade** — the
-    survey layer becomes how boards/walls are browsed, pinning and
-    threads build ON this system as the next arc ticket, the reserved
-    corkboard track retires from the plan. **AB4 re-scoping is pending
-    T2's ratification below** — not yet final. Two-pass complete with
-    trims (image-only thumbnails per Brand over Growth's richer
-    ask; no pinned rows, no per-category settings, no strip
-    customization this ticket, breadcrumbs rejected). Four amendments
-    drafted for ratification: **A8** (drawer's estate moves to the
-    cascade, supersedes A3's position-and-rest clause), **A9** (ranges
-    are glance/reach/survey/travel), **A10** (goal unit is the
-    writer's preference — words/lines/time, lines default), **A11**
-    (strip roster: Page/Journal/Plan/Drawers/Shelf, expandable by
-    ratification only). **Four named tensions await Nick's word:** T1
-    (ratify A8-A11? lean: all four), T2 (the Wall folds onto the
-    cascade, corkboard track retires? lean: yes), T3 (strip order as
-    listed, or Journal first?), T4 (Delete: disclosure + confirm +
-    Shelf-instead offered? lean: yes). CD2's brief follows Nick's
-    words on all four.
+30. **The Cascade — committee double-pass.** **PROPOSED — 2026-07-17.**
+    Commissioned by Nick from the desktop sitting: the left drawer
+    becomes a pop-out cascade from a persistent vertical strip —
+    categories each opening a reach panel (layer 2), with a third
+    pop-out survey layer (layer 3) for browsing contents as large
+    thumbnails. Committee record: `docs/wrizo-alpha/cascade-committee-
+    pass.md`. **Architects' review: sound — completes the canon's
+    attention ladder.** The strip is glance; the category panel is
+    reach (drawer-pull semantics carried forward whole); the survey
+    layer names a range the canon never had (seeing a container's
+    contents without traveling into it). Mechanics: layers 2-3 overlay
+    only (paper never reflows, standing law), dissolve on keystroke via
+    the one vanishing engine, the strip persists like the grip. **The
+    pass's biggest call:** the reserved right track was AB4's (the
+    Wall) — the cascade (as first proposed, right-sided) would own that
+    edge, and Nick's own Plan example (cards as large thumbnails beside
+    a focused page) IS the Wall's browsing posture; recommended AB4
+    formally re-scope onto the cascade. Two-pass complete with trims
+    (image-only thumbnails per Brand over Growth's richer ask; no
+    pinned rows, no per-category settings, no strip customization this
+    ticket, breadcrumbs rejected).
+    **Correction, Nick's word, 2026-07-17: the cascade lives on the
+    LEFT, not the right** (`cascade-committee-pass.md` carries the
+    correction note; every "right" reading in the pass's own text is
+    superseded, its underlying reasoning otherwise unchanged). With the
+    cascade back on the left, the Wall/AB4 re-scoping question stood
+    independent of "who owns the right edge" — ruled on its own merits
+    (T2, below).
+    **Nick's ratifications, 2026-07-17 — T1-T4 all resolved, CD2
+    AUTHORIZED TO BUILD:** T1 — **A8-A11 RATIFIED**, A8 corrected to
+    "persistent **left** strip" (blockquote note beside A8, original
+    text preserved); **A11's roster is Nick's own re-sectioning**, not
+    the pass's flat list — four sections: **A** Journal, **B** Page ·
+    Plan, **C** Drawers · Shelf, **D** (strip's foot) Settings
+    (site-wide) · Change Theme — D is new, not in the pass's original
+    proposal. T2 — **the Wall folds onto the cascade, RULED YES**; AB4
+    formally re-scopes (survey layer = how boards/walls are browsed;
+    pinning/threads build ON this system as the next arc ticket; the
+    reserved corkboard track retires from the plan). T3 — **Journal
+    first** (per A11's own roster above, not the pass's original
+    Page-first draft). T4 — **Delete is Delete, RULED AGAINST the
+    pass's own lean**: disclosure + one plain confirm, NO
+    "Move to Shelf instead" soft-path offer (the confirm alone is the
+    data-safety floor) — overrides the pass's PASS TWO recommendation.
+    **Plus one addition beyond the pass's own four tensions: THE DOCK**
+    — a deliberate-keep affordance for the survey layer (close/reopen
+    slide, ~180ms, reduced-motion honored), with its own vanishing-law
+    rider (a docked survey survives keystrokes; undocked layers still
+    dissolve as before) and a small-screen rule (transient layers may
+    overlay the paper rather than reflow it at laptop widths; a docked
+    survey compresses to a 120px floor instead of occluding the
+    measure, or the dock affordance is simply unavailable below it).
+    **Build brief:** `docs/wrizo-alpha/cd2-cascade-brief.md`, S0-S6,
+    authorized to build on `cd2-cascade` off `main` — **after FX3
+    (item 29) merges**, not concurrently (one checkout per agent; no
+    mid-flight collision surface). Zero-schema — merge pre-authorized
+    per the standing rule; Fable reviews post-merge, gating close and
+    redeploy. S0 requires the canon touch (A8-A11 + the ratification
+    record, A11's roster verbatim as sectioned) as part of the build
+    itself, not done here. New `apps/desktop/scripts/harness/cd2.mjs`
+    required (S6), plus the largest park sweep since CD1's own S9 — the
+    left drawer's retirement falsifies `cd1.mjs`'s drawer-track
+    geometry and face checks (and likely others); every falsified check
+    parks per A4, enumerated in the fold's own commit message.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
