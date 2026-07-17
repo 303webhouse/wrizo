@@ -777,9 +777,11 @@ outlive a session lives here, not in chat.
     risk. HB1's own in-progress work was preserved with a checkpoint
     commit on its own branch before redoing the fold cleanly on `main`.
     **Redeploy NOT bundled with this fold** — Nick's call per Fable's own
-    review, whether to deploy now or hold. **Close conditions remaining:**
-    Fable's delta spot-check against `1c8de6b`, and Nick's device-look
-    sitting.
+    review, whether to deploy now or hold.
+    **Fable's cd1.1 spot-check: DONE, GREEN, no findings — 2026-07-16**
+    (verified against `1c8de6b`'s full patch; review doc confirmed on
+    disk verbatim). **Close conditions 1 and 2 satisfied — only Nick's
+    device-look sitting remains.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -922,3 +924,16 @@ outlive a session lives here, not in chat.
   `hb1-threshold`; CD1's session keeps the original checkout
   (`writer-studio`) on `main`. Any future third concurrent agent gets
   its own worktree the same way before it writes a single file.
+- **Erratum vs. supersession, for harness checks — ratified 2026-07-16
+  (Fable, cd1.1 spot-check).** Two different situations, two different
+  moves. A check falsified because the DESIGN changed (a surface
+  retires, a selector's target is genuinely gone) parks per A4:
+  original moved verbatim (quoted, SUPERSEDED/DORMANT species, one-line
+  reason) into its own file's PARKED section, a NEW live check asserts
+  the new truth. A check falsified because an EARLIER REVIEW's own
+  brief reading was wrong (an erratum — the code was right, the
+  ground-truth call was the defect) updates IN PLACE instead: same
+  check, corrected assertion, renamed with the fold's label (e.g.
+  `S1/cd1.1: ...`) so its diff discloses the touch — no parking, since
+  nothing about the design was ever superseded. cd1.mjs's S1 check
+  (Pages/Plan toggle) is the worked example of the second case.
