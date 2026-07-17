@@ -325,6 +325,14 @@ function makeApp(base, cdp, waitEvent) {
      */
     emulateMedia: (features) => cdp('Emulation.setEmulatedMedia', { features }),
     /**
+     * FX2 — capture a PNG screenshot of the current viewport (base64), for
+     * an actual eyeball look at geometry a rect-reading assert can't fully
+     * convey (e.g. this project's own "look at what you built" verification
+     * step). Not used by any committed check — a human/agent verification
+     * aid only, decode and write to a file to view it.
+     */
+    screenshot: async () => (await cdp('Page.captureScreenshot', { format: 'png' })).data,
+    /**
      * Type text into the currently-focused editable element via CDP, driving
      * the real beforeinput/input pipeline (so contenteditable handlers fire as
      * for a genuine keypress run). Focus the target first.
