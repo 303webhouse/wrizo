@@ -131,6 +131,29 @@ await withHarness(async (app) => {
     JSON.stringify(at100.future) === JSON.stringify(['Machina', 'Nomad', 'Volant']), JSON.stringify(at100));
 
   // ==========================================================================
+  // hb1.1 F-1 (Fable review) — the ceremony's focus containment. aria-modal
+  // only actually means something if focus can't leave the dialog.
+  // ==========================================================================
+  const ceremonyFocus = await app.evalJs(`({
+    focusedIsFirstButton: document.activeElement === document.querySelector('.hb1-territory-offered'),
+    focusedLabel: document.activeElement?.textContent,
+  })`);
+  ok('hb1.1 F-1: the ceremony moves focus to the first offered territory on mount',
+    ceremonyFocus.focusedIsFirstButton, JSON.stringify(ceremonyFocus));
+
+  await app.evalJs("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }))");
+  await sleep(80);
+  const afterShiftTab = await app.evalJs('document.activeElement?.textContent');
+  ok('hb1.1 F-1: Shift+Tab from the first territory wraps to the last — Tab is contained, not free to leave the dialog',
+    afterShiftTab === 'Flux', afterShiftTab);
+
+  await app.evalJs("document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: false, bubbles: true, cancelable: true }))");
+  await sleep(80);
+  const afterTab = await app.evalJs('document.activeElement?.textContent');
+  ok('hb1.1 F-1: Tab from the last territory wraps back to the first',
+    afterTab === 'Plateau', afterTab);
+
+  // ==========================================================================
   // S4 — choosing a territory applies the theme, then the veil lifts.
   // ==========================================================================
   await app.evalJs("[...document.querySelectorAll('.hb1-territory-offered')].find(b => b.textContent === 'Flux').click()");

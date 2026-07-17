@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { setTheme, type ThemeId } from '../store/theme';
 import { OFFERED_TERRITORIES, FUTURE_TERRITORIES } from '../store/themeTerritories';
 
@@ -13,6 +13,15 @@ import { OFFERED_TERRITORIES, FUTURE_TERRITORIES } from '../store/themeTerritori
 // as resting decoration on either offered button (so it never becomes a
 // second .btn-brass on the same screen — the ceremony's own `.chosen` class
 // is a transient, single-valued flash, not the shared brass utility).
+//
+// hb1.1 F-1 (Fable review) — `aria-modal="true"` claimed an inert
+// background while the editor behind stayed genuinely Tab-reachable (S3's
+// "one path" invariant belongs to the GATE, not this dialog — the editor is
+// deliberately left interactive, this dialog is the thing overlaying it).
+// Focus moves to the first offered territory on mount and Tab is contained
+// within the dialog's two buttons while it's open, so the aria-modal claim
+// is actually true now. No Escape-dismiss, by design: the rite resolves in
+// a choice, not a cancel — there is no prior state to back out to.
 function reducedMotion(): boolean {
   return typeof window !== 'undefined'
     && typeof window.matchMedia === 'function'
@@ -21,6 +30,33 @@ function reducedMotion(): boolean {
 
 export function UnlockCeremony({ onChoose }: { onChoose: (themeId: ThemeId) => void }) {
   const [chosen, setChosen] = useState<ThemeId | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const firstButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    firstButtonRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const el = dialogRef.current;
+      if (!el) return;
+      const focusable = [...el.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const choose = (themeId: ThemeId) => {
     if (chosen) return; // one shot — a second click mid-flash is a no-op
@@ -32,13 +68,14 @@ export function UnlockCeremony({ onChoose }: { onChoose: (themeId: ThemeId) => v
 
   return (
     <div className="hb1-ceremony-backdrop">
-      <div className="hb1-ceremony" role="dialog" aria-modal="true" aria-label="A second theme, unlocked">
+      <div ref={dialogRef} className="hb1-ceremony" role="dialog" aria-modal="true" aria-label="A second theme, unlocked">
         <div className="hb1-ceremony-eyebrow">A hundred words in.</div>
         <div className="hb1-ceremony-title">A second theme, unlocked.</div>
         <div className="hb1-ceremony-offered">
-          {OFFERED_TERRITORIES.map(t => (
+          {OFFERED_TERRITORIES.map((t, i) => (
             <button
               key={t.id}
+              ref={i === 0 ? firstButtonRef : undefined}
               type="button"
               className={`hb1-territory hb1-territory-offered${chosen === t.themeId ? ' chosen' : ''}`}
               disabled={chosen != null}
