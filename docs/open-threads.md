@@ -1220,6 +1220,15 @@ outlive a session lives here, not in chat.
     served by this SAME laptop session, not a separate one. Item 27
     (HB1) is untouched by this review — stays with its own session's
     Fable.
+    **Deployed — 2026-07-17**, Nick's word ("Go ahead and deploy"):
+    `railway up` on `main` @ `740b572` (deployment `66837d33`, SUCCESS).
+    Confirmed live: `200` on `/healthz` and `/`, `401` on `/auth/me`.
+    Two of three close conditions now met (the review, and this
+    deploy) — the third, Nick's laptop check resolving S1's own open
+    question (did the grip/Drawer overlap actually resolve, and is his
+    width above or below the ~1265px clamp threshold), remains, on his
+    own clock. Item 26 stays open in parallel, served by the same
+    session.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
