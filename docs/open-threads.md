@@ -875,12 +875,12 @@ outlive a session lives here, not in chat.
     checks (25→28) — the review's own lesson embedded: a raw `.hb1-veil`
     count assertion had missed the gap, so a defense-in-depth check now
     walks every `button/a/[role=button]` on the gated page and asserts
-    each sits inside an `[inert]` ancestor. **One open call left standing,
-    not fixed:** `UnlockCeremony` is `aria-modal="true"` without a real
-    focus trap — the editor behind it (deliberately left interactive, "the
-    one path") is still Tab-reachable while the ceremony is up, so the
-    `aria-modal` promise of an inert background isn't fully kept. Flagged
-    for Fable, not silently patched.
+    each sits inside an `[inert]` ancestor. One open call was left standing
+    at build time — `UnlockCeremony` was `aria-modal="true"` without a real
+    focus trap, so the editor behind it (deliberately left interactive,
+    "the one path") stayed Tab-reachable while the ceremony was up — left
+    for Fable rather than silently patched; **fixed in the hb1.1 fold,
+    below.**
     **A concurrent-checkout collision, twice** (see item 26's own account
     of the first): the shared `writer-studio` checkout was switched to
     `main` mid-build by CD1's session, once during the original stash-vs-
@@ -914,13 +914,53 @@ outlive a session lives here, not in chat.
     (Done should never target `/` at all) was not built. (2) Account-
     creation timing, per the HomeFlow-retirement ruling above — reachable,
     not ritualized to a specific moment.
-    **Not deployed. Not pushed yet — pushing with this entry.** Per the
-    brief's own DoD: Fable diff review (stats-first) still owed before
-    merge; merge word and device verdict are Nick's alone. The stash left
-    behind by the first collision (`cd1.1 erratum WIP...`, this file's
-    prior session) is now superseded by `1c8de6b`'s properly-folded,
-    reviewed version — safe to drop, left for Nick/Fable to confirm rather
-    than dropped unilaterally.
+    **Fable's review landed — GREEN with a fold, hb1.1 — 2026-07-16**
+    (`docs/wrizo-alpha/hb1-review-fable.md`, committed): verdict GREEN,
+    merge on Nick's word after the fold. Verification method disclosed and
+    checked, not trusted — the tail merge (`b8c3b72`) audited and confirmed
+    docs-only, so the reviewed state is byte-for-byte the build's own
+    verified tip. Five rulings of record: (1) the defense-in-depth harness
+    pattern (walk the DOM for violators, never just count wrapper nodes)
+    ratified as house precedent — "the gear bug is exactly what enumeration
+    misses"; (2) the checkpoint-blob rescue commits accepted **this once**
+    (the collision made them the right call in the moment) but slice-commits
+    remain the law going forward — a future ticket arriving as preservation
+    blobs gets returned for re-staging, not reviewed; (3) `.hb1-veil`
+    existence ⇔ gate active recorded as a load-bearing selector contract,
+    so a future refactor doesn't reintroduce a dormant veil node and
+    silently break the harness's own meaning; **(4) mid-gate refresh
+    dropping the veil (the gate's one-shot nav-state design means a reload
+    mid-rite lands the writer on their page unveiled, rite incomplete, next
+    Arrival re-gates on a fresh page) ruled a *mercy valve, kept* —
+    "trapping a writer under blur is a worse failure than letting one slip
+    the rite," deliberate not accidental, standing until Nick overrules it
+    at the device sitting;** (5) Open's no-resume `/journal` fallback ruled
+    a fine interim home, revisited when the Places-rail work lands (the
+    origin chat's own seam, not re-ruled here).
+    **hb1.1 folded and pushed — 2026-07-16**, commit `2a606d2`: **F-1**
+    (code) — `UnlockCeremony` now moves focus to the first offered
+    territory on mount and contains Tab within its two buttons while open
+    (Shift+Tab from the first wraps to the last, Tab from the last wraps to
+    the first), making the `aria-modal="true"` claim actually true; no
+    Escape-dismiss, by design, noted in a comment — the rite resolves in a
+    choice, not a cancel. `hb1.mjs` grew 28 → 31 checks (the mount-focus
+    assertion plus both wrap directions). **F-2** (no code) — ruling 4's
+    mercy valve recorded above, closed as *decided* rather than left
+    pending. F-3 (HomeFlow/Desk parked-shim wording, the `backTo '/'`
+    sweep entries, s1.mjs's DORMANT entries) is Fable's own spot-check at
+    fold time, riding this delta — not this fold's to action.
+    **Re-verified after the fold:** `tsc` (desktop + server) clean;
+    `build:web` clean; the full 14-script suite green — `hb1` now 31/31,
+    every other count unchanged from the pre-fold run above — zero
+    failures.
+    **Pushed to `origin/hb1-threshold`.** Per the brief's own DoD and the
+    review's own sequencing: Fable's fold-delta spot-check (F-3 riding
+    along) is next, then Nick's merge word, then the device sitting on
+    `main`, then deploy on Nick's word — one merge, one sitting, one deploy
+    decision, in that order. The stash left behind by the first collision
+    (`cd1.1 erratum WIP...`) stays put per the review's own housekeeping
+    note — forensic material for item 26's still-open close conditions, not
+    this ticket's to drop.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
