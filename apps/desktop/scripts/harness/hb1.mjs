@@ -3,6 +3,13 @@
 // on fx1.mjs/cd1.mjs.
 // Run: node apps/desktop/scripts/harness/hb1.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
+//
+// FX3 (2026-07-17) — S3's own veil-count check superseded: the settings
+// gear no longer mounts on the paper at all when framed (moved whole into
+// the sliver's own foot), so it no longer has its own `.hb1-veil` wrapper
+// to count — four wrappers now, not five. Parked verbatim below
+// (SUPERSEDED, this file's first-ever PARKED entry — no scaffold existed
+// here before); live successor stays in this file's own S3 section.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -82,8 +89,15 @@ await withHarness(async (app) => {
       instruction: document.querySelector('.hb1-gate-instruction')?.textContent,
     };
   })()`);
-  ok('S3: the veil wraps the top chrome row, the Drawer, the Sliver, the reveal handle, and the settings gear — all inert',
-    veil.count >= 5 && veil.allInert, JSON.stringify(veil));
+  // FX3 S5 — "...and the settings gear" retired here (parked below,
+  // SUPERSEDED): the gear no longer mounts on the paper at all when framed
+  // (ModeStage.tsx), so it no longer has its OWN `.hb1-veil` wrapper to
+  // count — it moves whole into the sliver's own foot, which is ALREADY
+  // one of the other four counted wrappers (the Sliver itself). Four named
+  // wrappers now, not five: the top chrome row, the Drawer, the Sliver, and
+  // the reveal handle.
+  ok('S3 (FX3 S5): the veil wraps the top chrome row, the Drawer, the Sliver, and the reveal handle — all inert (the settings gear has no wrapper of its own now — it moved into the sliver, already counted)',
+    veil.count >= 4 && veil.allInert, JSON.stringify(veil));
   ok('S3: every veiled element is aria-hidden and carries data-veiled=true', veil.allAriaHidden && veil.allDataVeiled, JSON.stringify(veil));
   ok('S3: the gate’s one sanctioned instruction is visible, naming the 100-word threshold',
     veil.bannerPresent && /100 words/.test(veil.instruction || ''), JSON.stringify(veil));
@@ -271,7 +285,47 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.every((c) => c.pass);
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// This file's first-ever PARKED entry (no scaffold existed before FX3) —
+// one check, the A4 convention applied fresh: quoted verbatim, SUPERSEDED
+// species, re-asserted against the new truth.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshArrival(app, { anon: true });
+    await app.click('Write');
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed, first run (PARKED)' });
+    await sleep(300);
+    const veilParked = await app.evalJs("[...document.querySelectorAll('.hb1-veil')].length");
+
+    // ORIGINAL (S3, live section): ok('S3: the veil wraps the top chrome
+    // row, the Drawer, the Sliver, the reveal handle, and the settings
+    // gear — all inert', veil.count >= 5 && veil.allInert,
+    // JSON.stringify(veil));
+    // FX3 S5 — the settings gear no longer mounts on the paper when
+    // framed at all (moved whole into the sliver's own foot); it has no
+    // `.hb1-veil` wrapper of its own to count anymore. This entry only
+    // proves the count dropped as expected (4, not 5) — the fuller "still
+    // all inert" assertion is re-proven fresh in this file's own live S3
+    // section, not duplicated here.
+    pok('PARKED (was "S3: the veil wraps... the settings gear — all inert", counting >=5 wrappers) — FX3 S5: only 4 named wrappers exist now (the gear\'s own wrapper is gone; it lives in the sliver, already counted)',
+      veilParked >= 4, String(veilParked));
+
+    return parkedChecks;
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nHB1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nHB1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
+const allChecks = checks.concat(parkedChecks);
+const pass = allChecks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nHB1 VERIFY: PASS (${checks.length} checks)` : `\nHB1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nHB1 VERIFY: PASS (${allChecks.length} checks)` : `\nHB1 VERIFY: FAIL — ${allChecks.filter((c) => !c.pass).length}/${allChecks.length} failed`);
 process.exit(pass ? 0 : 1);

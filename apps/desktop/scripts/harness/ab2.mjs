@@ -3,6 +3,15 @@
 // persist"), modeled on ab1.mjs.
 // Run: node apps/desktop/scripts/harness/ab2.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
+//
+// FX3 (2026-07-17) — two of this file's own checks superseded: the
+// typewriter toggle sheds `.wz-sliver-typewriter` (its wrapper + label)
+// entirely, becoming icon-only in the sliver foot's new instruments row
+// (crashed a live `.classList` read on the now-null wrapper); the script
+// scroll-cap's old flat capHeight<=660px ceiling is replaced by S1's
+// stage-filling height. Both parked verbatim below (SUPERSEDED); live
+// successors stay in this file's own S2 DoD section (the least-disruptive
+// home, per this file's own established pattern for in-place successors).
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -324,8 +333,16 @@ await withHarness(async (app) => {
   // above (a full component swap, new closed sliver) — open it first. =====
   await openSliver(app);
   await sleep(150);
-  ok('CD1 S2 (was "S2 DoD: ...in the rail..."): the typewriter toggle is present in the sliver on the script surface', await app.evalJs("!!document.querySelector('.wz-sliver-typewriter .typewriter-toggle')"));
-  const scriptTypewriterOn = await app.evalJs("document.querySelector('.wz-sliver-typewriter .typewriter-toggle').classList.contains('on')");
+  // FX3 S5 — "`.wz-sliver-typewriter` now" (this file's own CD1 S2 note,
+  // itself already one layer of history) is retired a second time here
+  // (parked below, SUPERSEDED): the toggle sheds its wrapper AND label
+  // entirely, becoming icon-only in the sliver foot's new instruments row
+  // (`.wz-sliver-instruments-row`, components/Sliver.tsx) — a `null`
+  // `.classList` read crashed this whole file. Same underlying truth (the
+  // toggle is present on the script surface and reflects the persisted
+  // setting), asserted fresh against the CURRENT selector.
+  ok('FX3 S5 (was "CD1 S2: ...in the sliver..."): the typewriter toggle is present on the script surface (now icon-only, sliver foot)', await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')"));
+  const scriptTypewriterOn = await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle').classList.contains('on')");
   ok('S2 DoD: the typewriter defaults on (the persisted setting, honored on the script surface too)', scriptTypewriterOn === true);
 
   const longScene = Array.from({ length: 18 }, (_, i) => `Action line ${i} overflows the sheet, respecting the cap.`);
@@ -344,8 +361,17 @@ await withHarness(async (app) => {
       viewportHeight: window.innerHeight,
     };
   })()`);
-  ok('S2 DoD: the typewriter and the containment fix do not fight — the cap stays bounded, content scrolls inside it, typewriter engaged',
-    typewriterVsContainment.capHeight <= 660 && typewriterVsContainment.overflowed === true
+  // FX3 S1 — "capHeight <= 660" clause retired here (parked below,
+  // SUPERSEDED): S1 deliberately replaces the scroll-cap's old flat
+  // height:min(64vh,620px) with a stage-filling height ("no height cap
+  // short of the stage"), so capHeight is now ~733px, past 660 by design.
+  // The REST of this check's own claim — the cap still stays BOUNDED
+  // (just by the stage now, not a flat ceiling), content still scrolls
+  // INSIDE it, typewriter is still engaged, and the document itself still
+  // never grows to swallow the overflow — is untouched and still asserted
+  // live here.
+  ok('S2 DoD: the typewriter and the containment fix do not fight — the cap still scrolls content inside it (not the whole page), typewriter engaged',
+    typewriterVsContainment.overflowed === true
       && typewriterVsContainment.typewriter === 'true'
       && typewriterVsContainment.bodyScrollHeight <= typewriterVsContainment.viewportHeight + 40,
     JSON.stringify(typewriterVsContainment));
@@ -702,8 +728,12 @@ if (process.env.HARNESS_PARKED === '1') {
     // ORIGINAL (S2 DoD): ok('S2 DoD: the typewriter toggle is present in
     // the rail on the script surface', await app.evalJs("!!document.
     // querySelector('.desk-toolrail-typewriter .typewriter-toggle')"));
-    // CD1 S2/S7 — same truth, `.wz-sliver-typewriter` now. Live successor
-    // in this file's own S2 DoD section.
+    // CD1 S2/S7 — same truth, `.wz-sliver-typewriter` next.
+    // FX3 S5 (amended 2026-07-17) — `.wz-sliver-typewriter` itself retires:
+    // the toggle sheds its wrapper and label, becoming icon-only in the
+    // sliver foot's new instruments row. Same truth a third time,
+    // `.wz-sliver-instruments-row` now. Live successor in this file's own
+    // S2 DoD section.
     await app.goto('/');
     await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
@@ -722,9 +752,35 @@ if (process.env.HARNESS_PARKED === '1') {
     await sleep(200);
     await openSliver(app);
     await sleep(150);
-    const typewriterInSliverNow = await app.evalJs("!!document.querySelector('.wz-sliver-typewriter .typewriter-toggle')");
-    pok('PARKED (was "S2 DoD: the typewriter toggle is present in the rail on the script surface") — CD1 S2/S7: it is present in the sliver now',
+    const typewriterInSliverNow = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')");
+    pok('PARKED (was "S2 DoD: the typewriter toggle is present in the rail on the script surface") — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now',
       typewriterInSliverNow === true, String(typewriterInSliverNow));
+
+    // ORIGINAL (S2 DoD, live section): ok('S2 DoD: the typewriter and the
+    // containment fix do not fight — the cap stays bounded, content
+    // scrolls inside it, typewriter engaged', typewriterVsContainment.
+    // capHeight <= 660 && ...other clauses..., ...);
+    // FX3 S1 — the scroll-cap's old flat height:min(64vh,620px) cap is
+    // replaced by a stage-filling height; capHeight is now ~733px at this
+    // fixture's viewport, past the retired 660px ceiling by design. The
+    // OTHER clauses (still scrolls internally, typewriter engaged, document
+    // doesn't grow to swallow the overflow) remain live in this file's own
+    // S2 DoD section — only the flat-ceiling clause is parked here.
+    await app.evalJs("document.querySelector('.script-el-active').focus()");
+    const overflowLinesParked = Array.from({ length: 18 }, (_, i) => `Overflow probe line ${i}.`);
+    for (const line of overflowLinesParked) {
+      await app.typeKeys(line);
+      await app.key('Enter');
+    }
+    await sleep(200);
+    const capHeightNow = await app.evalJs(`(() => {
+      const cap = document.querySelector('.desk-frame-scroll-cap');
+      const stage = document.querySelector('.desk-frame-stage');
+      return { capHeight: cap.getBoundingClientRect().height, stageHeight: stage.getBoundingClientRect().height };
+    })()`);
+    pok('PARKED (was "S2 DoD: ...the cap stays bounded..." asserting a flat capHeight<=660px ceiling) — FX3 S1: the cap is now bounded by the STAGE\'s own height instead',
+      capHeightNow.capHeight > 660 && Math.abs(capHeightNow.capHeight - capHeightNow.stageHeight) < 1,
+      JSON.stringify(capHeightNow));
 
     // ORIGINAL (ab2.1 F3): ok('F3: DeskRail\'s active item is not brass
     // (olive/--accent-rest per the foundations)', railActiveColor !==

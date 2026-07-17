@@ -29,6 +29,14 @@
 // clearly-marked home for whatever specific w1.mjs/m1.mjs checks that change
 // makes viewport-sensitive — nothing needs inventing at that point, only
 // moving into the block below.
+//
+// FX3 (2026-07-17) — the scaffold's first genuine tenant beyond the S6
+// disposition above: FX3 S5 moves the settings gear (`.mode-gear`) off the
+// framed paper entirely (into the sliver's own foot, components/Sliver.tsx),
+// which crashed this file's own "PAGE IS PRIMARY... gear is open" check (a
+// `.click()` on a now-nonexistent node). Parked verbatim below (SUPERSEDED);
+// the successor assertion (opening the RELOCATED gear still never moves the
+// paper) lives in fx3.mjs, the file that owns the relocation.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -123,17 +131,13 @@ await withHarness(async (app) => {
     JSON.stringify(textRectBefore) === JSON.stringify(textRectAfterModeSwitch),
     `${JSON.stringify(textRectBefore)} -> ${JSON.stringify(textRectAfterModeSwitch)}`);
 
-  const gearOpenRectCheck = await app.evalJs(`(() => {
-    const before = ${rectOf('.mode-pagecol')};
-    document.querySelector('.mode-gear').click();
-    return before;
-  })()`);
-  await sleep(100);
-  const textRectAfterGear = await app.evalJs(rectOf('.mode-pagecol'));
-  ok('PAGE IS PRIMARY: the page rect is byte-identical while the settings gear is open',
-    JSON.stringify(gearOpenRectCheck) === JSON.stringify(textRectAfterGear),
-    `${JSON.stringify(gearOpenRectCheck)} -> ${JSON.stringify(textRectAfterGear)}`);
-  await app.evalJs("document.querySelector('.mode-gear').click()"); // close it back
+  // FX3 S5 — "PAGE IS PRIMARY: the page rect is byte-identical while the
+  // settings gear is open" retired here (parked below, SUPERSEDED): the
+  // gear this check opened (`.mode-gear`, the paper's own top-right corner
+  // button) no longer mounts on a framed surface at all — FX3 S5 moves it
+  // whole to the sliver's own foot (components/Sliver.tsx). The equivalent
+  // invariant (opening the RELOCATED gear still never moves the paper) is
+  // asserted live in fx3.mjs instead, the file that owns the relocation.
 
   // -- S4: the corner glyph (top-bar orphans collapsed) ----------------------
   ok('S4: GlobalHeader collapses to one corner glyph while framed', await app.evalJs("!!document.querySelector('.gh-corner-glyph')"));
@@ -304,7 +308,15 @@ await withHarness(async (app) => {
       viewportHeight: window.innerHeight,
     };
   })()`);
-  ok('finding 4: the script sheet has a bounded scroll-cap height (does not grow unbounded)', containment.capHeight <= 660, JSON.stringify(containment));
+  // FX3 S1 — "capHeight <= 660" retired here (parked below, SUPERSEDED):
+  // that flat ceiling was the OLD fixed `height:min(64vh,620px)` cap S1
+  // deliberately replaces with a stage-filling height (the whole point of
+  // S1 — "no height cap short of the stage"), so capHeight is now ~733px at
+  // this fixture's viewport, well past 660. The underlying CONCEPT this
+  // check names ("bounded... does not grow unbounded") is still true — it's
+  // bounded by the STAGE now, not literally unbounded/equal to scrollHeight
+  // — asserted correctly (against the new bound) in fx3.mjs's own S1
+  // section instead of re-hardcoding a magic number here.
   ok('finding 4: the overflowing content scrolls INSIDE the cap, not the whole page', containment.overflowed === true, JSON.stringify(containment));
   ok('finding 4: the document itself never grows to swallow the overflow (no "drops to the taskbar")',
     containment.bodyScrollHeight <= containment.viewportHeight + 40,
@@ -563,6 +575,58 @@ if (process.env.HARNESS_PARKED === '1') {
     const corkboardGoneTooNow = await app.evalJs("!document.querySelector('.desk-frame-corkboard')");
     pok('PARKED (was "...the named non-goal corkboard track is untouched, still present") — CD1 S5: the corkboard track is no longer untouched; it is ABSENT while empty too',
       corkboardGoneTooNow === true, String(corkboardGoneTooNow));
+
+    // ORIGINAL (AB1, live section): const gearOpenRectCheck = await
+    // app.evalJs(`(() => { const before = ${rectOf('.mode-pagecol')};
+    // document.querySelector('.mode-gear').click(); return before; })()`);
+    // ok('PAGE IS PRIMARY: the page rect is byte-identical while the
+    // settings gear is open', JSON.stringify(gearOpenRectCheck) ===
+    // JSON.stringify(textRectAfterGear), ...); — `.mode-gear` no longer
+    // exists on a framed surface at all (querySelector returns null,
+    // `.click()` throws — not a graceful failure, a crash, same species as
+    // the retired-corkboard-rect entry above).
+    // FX3 S5 — the settings gear moves whole off the paper into the
+    // sliver's own foot (components/Sliver.tsx's SliverInstrumentRow); the
+    // equivalent PAGE IS PRIMARY invariant (opening the gear never moves
+    // the paper) is asserted live in fx3.mjs against the gear's NEW
+    // location, not re-tested here — this entry only proves the retirement.
+    const gearGoneFromPaper = await app.evalJs("!document.querySelector('.mode-gear')");
+    pok('PARKED (was "PAGE IS PRIMARY: the page rect is byte-identical while the settings gear is open", a click that now crashes on the retired gear) — FX3 S5: .mode-gear is ABSENT from the paper entirely; the gear lives in the sliver foot now (successor assertion in fx3.mjs)',
+      gearGoneFromPaper === true, String(gearGoneFromPaper));
+
+    // ORIGINAL (AB1, live section): ok('finding 4: the script sheet has a
+    // bounded scroll-cap height (does not grow unbounded)', containment.
+    // capHeight <= 660, JSON.stringify(containment));
+    // FX3 S1 — the script sheet's scroll-cap trades its old flat
+    // height:min(64vh,620px) cap for a stage-filling height (S1's own "no
+    // height cap short of the stage"); capHeight is now ~733px at a typical
+    // fixture viewport, not <=660. A fresh script fixture (this PARKED
+    // block's own fixtures above are all prose) proves the cap is bounded
+    // by the STAGE now, not the old flat ceiling — the fuller "fence"
+    // assertion (paper bottom within 32-48px of the stage bottom, at both
+    // reference widths) lives in fx3.mjs's own S1 section.
+    await app.goto('/'); // back to Arrival first — the preceding fixture left us on a /page/:id route, and a bare reload() would just re-render THAT route, never landing on .wz-arrival
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      const headingId = 'ab1-parked-script-heading';
+      entries.push({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED script seed' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs("location.hash = '#/page/ab1-parked-script'");
+    await app.waitFor("!!document.querySelector('.desk-frame-scroll-cap')", { label: 'PARKED script framed' });
+    await sleep(200);
+    const scriptScrollCapHeightNow = await app.evalJs(`(() => {
+      const cap = document.querySelector('.desk-frame-scroll-cap');
+      const stage = document.querySelector('.desk-frame-stage');
+      return { capHeight: cap.getBoundingClientRect().height, stageHeight: stage.getBoundingClientRect().height };
+    })()`);
+    pok('PARKED (was "finding 4: the script sheet has a bounded scroll-cap height (does not grow unbounded)", asserting a flat capHeight<=660px ceiling) — FX3 S1: the cap is now bounded by the STAGE\'s own height (not the retired flat ceiling, and not literally unbounded either)',
+      scriptScrollCapHeightNow.capHeight > 660 && Math.abs(scriptScrollCapHeightNow.capHeight - scriptScrollCapHeightNow.stageHeight) < 1,
+      JSON.stringify(scriptScrollCapHeightNow));
 
     return parkedChecks;
   });

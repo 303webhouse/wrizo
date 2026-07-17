@@ -10,6 +10,12 @@
 // file parks what supersedes ITS OWN checks). This file re-proves the same
 // law fresh (S3's own minimum asserts below), plus everything else FX1
 // shipped that has no earlier-ticket file to live in.
+//
+// FX3 (2026-07-17) — S3's own "40-55% start band" (prose AND script) is
+// SUPERSEDED: Nick's desktop-sitting verdict lowered the working value from
+// ~45% into a new 30-35% fence, genuinely outside this file's old asserted
+// range. Both parked verbatim below; live successors are in fx3.mjs's own
+// S3 section.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -114,8 +120,13 @@ await withHarness(async (app) => {
     const ed = document.querySelector('.forward-only-editor').getBoundingClientRect();
     return (ed.top - stage.top) / stage.height;
   })()`);
-  ok('S1: a fresh prose page\'s first line starts within 40-55% of the stage height',
-    startFrac >= 0.40 && startFrac <= 0.55, String(startFrac));
+  // FX3 S3 — "40-55%" retired here (parked below, SUPERSEDED): Nick's
+  // desktop-sitting verdict on his own test page ("the first line started
+  // too far down") lowered the working value from ~45% into a NEW 30-35%
+  // fence, genuinely outside this old band by design. Live successor
+  // (asserting the new 30-35% band, both prose and script) is in fx3.mjs's
+  // own S3 section.
+  void startFrac;
 
   // -- Type enough lines to cross the writing zone's lower bound and force
   // scrolling. Track the caret's own bottom edge (the SAME fallback
@@ -193,8 +204,9 @@ await withHarness(async (app) => {
     const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
     return (sheet.top - stage.top) / stage.height;
   })()`);
-  ok('S1: a fresh script page\'s first line also starts within 40-55% of the stage height',
-    scriptStartFrac >= 0.40 && scriptStartFrac <= 0.55, String(scriptStartFrac));
+  // FX3 S3 — same retirement as the prose check above (SUPERSEDED, parked
+  // below); live successor in fx3.mjs's own S3 section.
+  void scriptStartFrac;
 
   await app.evalJs("document.querySelector('.script-el-active').focus()");
   const scriptLineHeight = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.script-el-active')).lineHeight) || 28");
@@ -471,6 +483,34 @@ if (process.env.HARNESS_PARKED === '1') {
     })`);
     pok('PARKED (was "S5: ...the corkboard track (named non-goal) is untouched, still present") — CD1 S5: the corkboard track is ABSENT while empty too, not untouched',
       s5Parked.meter === 0 && s5Parked.corkboard === false, JSON.stringify(s5Parked));
+
+    // ORIGINAL (S1): ok('S1: a fresh prose page\'s first line starts within
+    // 40-55% of the stage height', startFrac >= 0.40 && startFrac <= 0.55,
+    // String(startFrac));
+    // FX3 S3 — Nick's desktop-sitting verdict lowers the working value from
+    // ~45% into a NEW 30-35% fence (genuinely outside the old 40-55% band,
+    // by design). Live successor in fx3.mjs's own S3 section.
+    await freshProsePage(app);
+    const startFracParked = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
+      const ed = document.querySelector('.forward-only-editor').getBoundingClientRect();
+      return (ed.top - stage.top) / stage.height;
+    })()`);
+    pok('PARKED (was "S1: a fresh prose page\'s first line starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
+      startFracParked >= 0.28 && startFracParked <= 0.37, String(startFracParked));
+
+    // ORIGINAL (S1): ok('S1: a fresh script page\'s first line also starts
+    // within 40-55% of the stage height', scriptStartFrac >= 0.40 &&
+    // scriptStartFrac <= 0.55, String(scriptStartFrac));
+    // FX3 S3 — same retirement, script surface (S7 mirrors prose).
+    await freshScriptPage(app);
+    const scriptStartFracParked = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
+      const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
+      return (sheet.top - stage.top) / stage.height;
+    })()`);
+    pok('PARKED (was "S1: a fresh script page\'s first line also starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
+      scriptStartFracParked >= 0.28 && scriptStartFracParked <= 0.37, String(scriptStartFracParked));
 
     return parkedChecks;
   });
