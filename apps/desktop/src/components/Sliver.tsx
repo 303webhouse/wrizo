@@ -1,9 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { useWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
+import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
 import { countLineEquivalents } from '../store/lineEquivalents';
 import { TypewriterToggle } from './WritingIncentives';
+// FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
+// the sliver's own foot (below); rather than duplicate SettingsPanel/
+// ThemePanel/Seg/GearIcon's JSX here, they're exported from ModeStage.tsx
+// (their original home — gear/theme selection stays exactly the same
+// mechanism, just reached from a new place) and reused verbatim, with a
+// scoped CSS override (index.css's `.wz-sliver-instruments .mode-settings`)
+// repositioning their popover to sit inline in the sliver's own scrolling
+// panel instead of ModeStage's absolute stage-corner placement.
+import { SettingsPanel, ThemePanel, Seg, GearIcon } from './ModeStage';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 
 // CD1 S2/S7 — the sliver. A slim grip riding the paper's left edge on every
@@ -66,9 +76,16 @@ export interface SliverProps {
   // progress (store/lineEquivalents.ts) — viewport-independent, computed
   // fresh on every render (cheap: a handful of string splits).
   goalText: string;
+  // FX3 S5 — threaded through from the host (PageEditor.tsx has its own
+  // `milestones` already; ScriptEditor.tsx has no milestones concept at all
+  // and simply never passes this) so the relocated gear's Progress:Project
+  // option can apply the SAME "no greyed states" silent-degrade rule
+  // ModeStage.tsx's own gear always has (M1, canon Q3) — absent/false reads
+  // as "no plan to project," exactly like a plan-less project already did.
+  hasMilestones?: boolean;
 }
 
-export function Sliver({ content, goalText }: SliverProps) {
+export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const target = useWritingGoal();
@@ -124,6 +141,14 @@ export function Sliver({ content, goalText }: SliverProps) {
       <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'}>
         <SliverToolsBody content={content} />
         <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
+        {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
+            Nested inside THIS panel (which already carries chrome-fade
+            desk-dissolve) so its own open gear/instruments popovers dissolve
+            on a keystroke through the exact same ambient mechanism, with no
+            separate close-on-keystroke logic of its own (S6's "one
+            vanishing engine" requirement — see the panel's own header
+            comment on the dissolve law). */}
+        <SliverInstrumentRow hasMilestones={hasMilestones} target={target} />
       </div>
     </div>
   );
@@ -131,7 +156,6 @@ export function Sliver({ content, goalText }: SliverProps) {
 
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
-  const settings = useWritingSettings();
 
   if (content.kind === 'empty') return null;
 
@@ -169,20 +193,13 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
 
-      {/* Typewriter — Free Write and Draft both engage it (ModeStage's own
-          typewriterOn gate). Reads/writes the SAME shared, persisted store
-          ModeStage/JournalEntry already use — moved verbatim from ToolRail.
-          FX2 S2 — routes through setTypewriterExplicit (not the bare
-          setter): a hand-click here is the ONE signal that means "the
-          writer chose this," which must outrank any later Draft-open seed
-          for the rest of the session (store/writingSettings.ts). */}
-      <div className="wz-sliver-section">
-        <div className="wz-sliver-h">{t('railReading')}</div>
-        <div className="wz-sliver-typewriter">
-          <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
-          <span className="wz-sliver-typewriter-label">{t('railTypewriter')}</span>
-        </div>
-      </div>
+      {/* FX3 S5 — the typewriter toggle (formerly here, with the READING
+          label + "Typewriter" text) moved DOWN to the foot's new
+          instruments row (SliverInstrumentRow, below SliverGoalFoot) as an
+          icon-only control — not duplicated, moved: this section is gone,
+          not merely relabeled. aria-label keeps the word for assistive tech
+          (TypewriterToggle's own aria-label, WritingIncentives.tsx,
+          unchanged) even though no visible text remains anywhere. */}
 
       {content.kind === 'draft' && content.format && (
         <div className="wz-sliver-section">
@@ -269,6 +286,12 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // start ADVANCING until they do).
 function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { target: number | null; lines: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
   const { t } = useDeskLexicon();
+  // FX3 S5 — the instruments panel's own on/off (SliverInstrumentRow,
+  // below), an ADDITIONAL gate on the hairline alongside the existing
+  // target-null check — see GoalGlow.tsx's matching comment for the same
+  // "additive, not a replacement" reasoning (clearing the target already
+  // hides this; this just lets a writer hide it without losing the number).
+  const settings = useWritingSettings();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -294,7 +317,7 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
     <div className="wz-sliver-goal" data-target={target ?? ''} data-lines={lines}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {target != null && (
+      {target != null && settings.instrumentsOn && (
         <div className="wz-sliver-goal-hairline" aria-hidden="true">
           <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
         </div>
@@ -324,5 +347,134 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
         </button>
       )}
     </div>
+  );
+}
+
+// FX3 S5 — the sliver foot's new quiet icon row, beneath the goal block:
+// (1) the typewriter toggle, ICON ONLY (moved here from SliverToolsBody's
+// old "READING" section — see that removal's own comment); (2) the
+// writing-settings gear, relocated whole from the paper (ModeStage.tsx no
+// longer mounts it when framed) — SettingsPanel AND ThemePanel travel
+// together behind the SAME gear click, exactly as they did there, rather
+// than splitting the theme switcher off to some new, brief-unspecified
+// home (the brief's own "don't leave an orphaned half-gear if you split
+// them" — the safest reading, given the foot row's three icons are already
+// spoken for and nothing in S5 names a fourth place for Theme, is to move
+// the gear WHOLE); (3) a new instruments icon (a minimal, working-value
+// panel — store/writingGoalUnit.ts's own header comment has the "committee
+// pass refines this" caveat in full). All three buttons are `--text-mid`/
+// olive at rest (`.wz-sliver-instruments-btn`, index.css) — brass appears
+// only on hover, matching the sliver's own pre-existing law elsewhere.
+function SliverInstrumentRow({ hasMilestones, target }: { hasMilestones?: boolean; target: number | null }) {
+  const { t } = useDeskLexicon();
+  const settings = useWritingSettings();
+  const [gearOpen, setGearOpen] = useState(false);
+  const [instrumentsOpen, setInstrumentsOpen] = useState(false);
+
+  return (
+    <div className="wz-sliver-instruments">
+      <div className="wz-sliver-instruments-row">
+        <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
+        <button
+          type="button"
+          className="wz-sliver-instruments-btn"
+          aria-label="Writing settings"
+          aria-expanded={gearOpen}
+          onClick={() => { setGearOpen(o => !o); setInstrumentsOpen(false); }}
+        >
+          <GearIcon />
+        </button>
+        <button
+          type="button"
+          className="wz-sliver-instruments-btn"
+          aria-label={t('sliverInstruments')}
+          title={t('sliverInstruments')}
+          aria-expanded={instrumentsOpen}
+          onClick={() => { setInstrumentsOpen(o => !o); setGearOpen(false); }}
+        >
+          <InstrumentsIcon />
+        </button>
+      </div>
+      {gearOpen && (
+        <SettingsPanel
+          settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }}
+          hasMilestones={hasMilestones}
+        />
+      )}
+      {gearOpen && <ThemePanel />}
+      {instrumentsOpen && <InstrumentsPanel target={target} />}
+    </div>
+  );
+}
+
+// The instruments panel — S5's own working-value list, verbatim: on/off,
+// unit preference (words/lines/time), target value. Reuses .mode-settings'
+// look (via Seg/the shared class, index.css scopes its position when
+// nested here) and the SAME goal edit affordance SliverGoalFoot's inline
+// edit already uses (store/writingGoal.ts) — this is a second surface onto
+// the SAME target, not an independent value.
+function InstrumentsPanel({ target }: { target: number | null }) {
+  const { t } = useDeskLexicon();
+  const settings = useWritingSettings();
+  const unit = useGoalUnit();
+  const [draft, setDraft] = useState(() => String(target ?? DEFAULT_GOAL_LINES));
+
+  const commit = () => {
+    const n = Number(draft);
+    setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
+  };
+  const clear = () => setWritingGoal(null);
+
+  const unitOpts: [string, string][] = [['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']];
+
+  return (
+    <div className="mode-settings wz-sliver-instruments-panel" role="menu">
+      <h4>{t('sliverInstruments')}</h4>
+      <Seg
+        label={t('sliverInstrumentsShow')}
+        value={settings.instrumentsOn ? 'on' : 'off'}
+        opts={[['on', 'On'], ['off', 'Off']]}
+        onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })}
+      />
+      <Seg
+        label={t('sliverInstrumentsUnit')}
+        value={unit}
+        opts={unitOpts}
+        onPick={v => setGoalUnit(v as GoalUnit)}
+      />
+      <div className="wz-sliver-goal-edit-row">
+        <input
+          className="wz-sliver-goal-edit-input"
+          type="number"
+          min={1}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }}
+        />
+        <button type="button" className="wz-sliver-goal-edit-commit" onClick={commit}>{t('goalSet')}</button>
+        <button type="button" className="wz-sliver-goal-edit-clear" onClick={clear}>{t('goalClear')}</button>
+      </div>
+      {/* Honest working-value note (store/writingGoalUnit.ts's own header
+          comment has the full reasoning) — the unit above doesn't yet
+          change how the target number itself is computed; it only labels
+          it. The committee pass is the ticket that will wire real
+          per-unit conversion. */}
+      <div className="mode-settings-hint">
+        {target != null ? `${t('goalLabel')}: ${target} ${unit === 'lines' ? t('goalUnitLines') : unit}` : t('goalEdit')}
+      </div>
+    </div>
+  );
+}
+
+function InstrumentsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="5" y1="4" x2="5" y2="20" />
+      <circle cx="5" cy="9" r="2.2" />
+      <line x1="12" y1="4" x2="12" y2="20" />
+      <circle cx="12" cy="15" r="2.2" />
+      <line x1="19" y1="4" x2="19" y2="20" />
+      <circle cx="19" cy="7" r="2.2" />
+    </svg>
   );
 }

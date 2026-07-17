@@ -5,7 +5,7 @@ import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '.
 import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
-import { useTypewriterFade } from './useTypewriterFade';
+import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
 import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
@@ -220,7 +220,11 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // the top gradient and fade, with a subtle jolt on line advance. C2/C3 live
   // in the shared hook now; JournalEntry uses the same engine (window-scroll
   // variant) for parity across the app's two writing surfaces.
-  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor' });
+  // FX3 S3 — CONTAINER_HOLD_BAND (not the shared default): this is a
+  // container-mode call, one of the two "paper" surfaces the brief's S3
+  // retunes; Journal's own window-scroll call is untouched (see
+  // useTypewriterFade.ts's own comment).
+  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND });
 
   // Pagination: watch the editor's content height against the sheet height. On
   // crossing a sheet boundary, flip (page-turn animation + soft sound). Height-
@@ -329,7 +333,18 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
 
       {/* Top-right chrome cluster: the sound toggle (if the host owns sound) +
           the settings gear — one-color tan glyphs, matched in size. HB1 S3 —
-          veiled during the first-run gate (see above). */}
+          veiled during the first-run gate (see above).
+          FX3 S5 — "the paper sheds the gear... entirely": framed (DeskFrame)
+          no longer mounts this at all — the SAME SettingsPanel/ThemePanel
+          components (exported below) now render from the sliver's own foot
+          instead (components/Sliver.tsx's SliverInstrumentRow), reached
+          through a gear button there rather than here. Below the 1100px
+          gate (every existing non-framed caller — QuickSprint) this is
+          byte-identical to pre-FX3: the sound toggle was never wired for
+          any framed caller either (PageEditor.tsx's framed ModeStage call
+          passes neither prop), so nothing framed ever actually used this
+          block for sound before now. */}
+      {!framed && (
       <FirstRunVeil active={!!firstRunGateActive}>
         <div className="mode-gear-wrap mode-dissolve">
           {onToggleSound && (
@@ -351,6 +366,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
+      )}
 
       <div className="mode-row" data-framed={framed ? 'true' : 'false'}>
         {/* LEFT rail — capture (Journal) / tools (Drafting). Frames only.
@@ -539,7 +555,7 @@ function AssistIcon() {
 // gates the Progress:Project option — offered ONLY when the current page
 // belongs to a project with a StoryPlan (the canon's Q3 rule; no greyed
 // states, the option simply isn't in the list otherwise).
-function SettingsPanel({ settings, hasMilestones }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean }; hasMilestones?: boolean }) {
+export function SettingsPanel({ settings, hasMilestones }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean }; hasMilestones?: boolean }) {
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Project']);
   return (
@@ -564,7 +580,7 @@ function SettingsPanel({ settings, hasMilestones }: { settings: { progress: Prog
 // own writing-chrome behavior). Switching Theme is instant and lossless —
 // only a data-theme attribute write, no reload, no unmount of the editor
 // (PAGE IS PRIMARY holds trivially: nothing here touches the page's rect).
-function ThemePanel() {
+export function ThemePanel() {
   const theme = useTheme();
   const prefs = useThemePrefs();
   const dial = useAmbianceDial();
@@ -629,7 +645,7 @@ function MicIcon({ off }: { off: boolean }) {
   );
 }
 
-function GearIcon() {
+export function GearIcon() {
   return (
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="3.1" />
@@ -638,7 +654,7 @@ function GearIcon() {
   );
 }
 
-function Seg({ label, value, opts, onPick }: { label: string; value: string; opts: [string, string][]; onPick: (v: string) => void }) {
+export function Seg({ label, value, opts, onPick }: { label: string; value: string; opts: [string, string][]; onPick: (v: string) => void }) {
   return (
     <div className="mode-crow">
       <span>{label}</span>

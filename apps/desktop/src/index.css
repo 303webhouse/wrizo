@@ -77,6 +77,38 @@
      override actually takes effect). */
   --goal-glow-cap: .34;
 
+  /* FX3 S1 — the paper fills the stage's available height instead of
+     sitting at its old fixed intrinsic size (Nick's "far too much dead
+     space below the paper" desktop-sitting verdict). --fx3-chrome-budget is
+     the desk-frame-host's own fixed chrome ABOVE and BELOW the frame grid —
+     its top padding (2.5rem=40px) + the sprint-nav row's own rendered
+     height (measured empirically via the runtime harness against the row's
+     current font-size/padding: 63px) + the 16px spacer PageEditor.tsx/
+     ScriptEditor.tsx place under it + the host's own bottom padding
+     (3rem=48px) — 40+63+16+48=167px. Hand-synced the same way
+     CANONICAL_MEASURE_CH/--sliver-paper-pad already are elsewhere in this
+     file (CSS can't read a sibling's rendered height) — if a later ticket
+     changes the top bar's own size, this needs re-measuring too, and the
+     fx3.mjs harness's own dual-width geometry checks will catch a drift.
+     --fx3-paper-fence is S1's own margin between the paper's bottom edge
+     and the stage's (brief's fence: 32-48px; tuned to 40px, the middle). */
+  --fx3-chrome-budget: 167px;
+  --fx3-paper-fence: 40px;
+
+  /* FX3 S2 — the paper's scale token: type size AND paper dimensions grow
+     TOGETHER above 1440px so the character-measure (CANONICAL_MEASURE_CH,
+     store/lineEquivalents.ts's 60ch) stays the constant, not the pixel
+     width (Law 1) — a bigger paper with the same words-per-line, not a
+     wider one. One token, themes inherit it for free (defined once here,
+     not duplicated per theme). A stepped ramp, not a continuous curve:
+     CSS calc() can't derive a dimensionless ratio from a viewport length
+     (length/length division isn't valid calc() grammar, so a single fluid
+     expression isn't available without a JS-computed custom property) —
+     two steps between 1440 and 1920px approximates the brief's own "ramps
+     ... tune by eye" fence closely enough. See the media queries near the
+     large-screen foundations block below for the actual ramp values. */
+  --paper-scale: 1;
+
   /* TH1 — the two slots every theme gets (canon §3), wired but unused on
      Plateau: nothing reads these yet, so they cost nothing here and are
      free for a future Plateau feature or a theme pack to claim. Quiet
@@ -1805,7 +1837,26 @@ a:focus-visible,
    stays full-bleed (max-width:none, as AB1 shipped it) and now carries the
    background itself, while `.desk-frame-grid` (below) caps at --frame-max
    and centers within it — "a wide desk is more wood, not more furniture." */
-.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem; background:var(--desk-ground); }
+/* FX3 S1 — overflow:hidden added here (was unset/visible). The goal glow
+   (`.wz-goal-glow`, CD1 S6) is `position:absolute; inset:-10% -20%` against
+   its own anchor's box — a fixed PERCENTAGE bleed, unchanged by this
+   ticket. S1 makes that anchor's own height track the stage's (now much
+   taller, filling the viewport instead of a short intrinsic box), so the
+   SAME percentage bleed now reaches proportionally further in absolute
+   pixels — far enough, at some viewport heights, to poke past the
+   viewport's own bottom edge and trigger a vertical scrollbar (confirmed
+   empirically: a 35px document-height overflow at 2200x1000, entirely
+   attributable to the glow, nothing else). Clipping at THIS box (the
+   route's own full-bleed outer container, effectively the whole viewport)
+   only trims the extreme excess that would otherwise leak into the page's
+   scrollable area — the glow's intentional soft bleed beyond the paper's
+   own edges is untouched (this boundary sits far outside where that bleed
+   ever reaches under normal conditions). Every overlay this route renders
+   (`.sprint-modal-backdrop`, `.hb1-gate-banner`, `.hb1-ceremony-backdrop`)
+   is `position:fixed`, not `absolute`, and a bare `overflow:hidden` with no
+   `transform`/`filter`/`will-change` does not create a containing block for
+   `position:fixed` descendants — so none of them are clipped by this. */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem; background:var(--desk-ground); overflow:hidden; }
 .desk-frame{ position:relative; }
 .desk-frame-grid{
   display:grid;
@@ -1821,8 +1872,29 @@ a:focus-visible,
 .desk-frame-grid[data-corkboard='false']{ grid-template-columns: var(--drawer-width) minmax(0,1fr); }
 .desk-frame-toolrail{ min-height:70vh; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
-.desk-frame-stagecol{ display:flex; flex-direction:column; min-width:0; }
-.desk-frame-stage{ position:relative; display:flex; justify-content:center; min-width:0; }
+/* FX3 S1 — the one definite, non-percentage height near the top of the
+   chain (a flex/grid `height:100%` further down needs an explicit height
+   somewhere above it to resolve against — a naive `height:100%` on the
+   paper alone, with nothing above it definite, silently no-ops back to
+   auto/intrinsic, which is exactly the bug this fixes). Anchored to the
+   VIEWPORT via --fx3-chrome-budget's subtraction (the stage's own available
+   height, not the viewport read directly by the paper — the paper never
+   reads vh itself, only this one ancestor does), not to .desk-frame-grid
+   (whose `align-items:start` — see below — means an explicit height set
+   there wouldn't stretch its children anyway; this has to live on the
+   actual column that owns the stage). min-height is a floor for pathological
+   short viewports, never a cap. */
+.desk-frame-stagecol{ display:flex; flex-direction:column; min-width:0;
+  height:calc(100vh - var(--fx3-chrome-budget)); min-height:360px; }
+/* FX3 S1 — flex-grow so this stage actually CONSUMES stagecol's new
+   definite height (a flex child's cross-size stretches by default, but
+   its MAIN-size along a column parent's axis — here, height — still needs
+   flex-grow; stagecol's flex-direction is column, so height is its main
+   axis). min-height:0 overrides the flex default min-height:auto floor,
+   which would otherwise refuse to shrink below the stage's own content
+   size on a short viewport. */
+.desk-frame-stage{ position:relative; display:flex; justify-content:center; min-width:0;
+  flex:1 1 auto; min-height:0; }
 /* Review fix — the actual flex ITEM of .desk-frame-stage is .mode-stage
    (ModeStage's own root div; .mode-row/.mode-pagecol are further BLOCK
    descendants of it, not flex items of the stage themselves). .mode-stage
@@ -1860,8 +1932,70 @@ a:focus-visible,
    inherit, so the flex item shrank to fit-content instead. Courier's
    per-element ch measures (store/scriptMetrics.ts) are unaffected — they're
    relative to the sheet's own font size, not the page's pixel width. */
+/* FX3 S2 — width AND the ch-unit's own reference font-size scale together:
+   `ch` resolves against the font-size of the element it's declared on, so
+   pinning an explicit, --paper-scale-scaled baseline HERE (rather than
+   leaving it at whatever this element inherits by default) is what makes
+   `60ch` itself grow in lockstep with the scale factor — the measure
+   (character count) never changes, only its pixel width does (Law 1). The
+   760px cap is scaled too so it can never clamp the ch-derived width once
+   the scale grows it past the old flat cap. */
 .desk-frame-stage--prose .mode-pagecol,
-.desk-frame-stage--screenplay .mode-pagecol{ width:min(760px,60ch); max-width:100%; min-width:0; }
+.desk-frame-stage--screenplay .mode-pagecol{
+  width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%; min-width:0;
+  font-size:calc(1rem * var(--paper-scale));
+}
+
+/* FX3 S1 — the fill-down chain's remaining links, both surfaces (S7's
+   standing "mirror the wiring" convention — prose and screenplay share one
+   fix, not two). `.mode-row` is a normal block child of `.mode-stage` (not
+   itself a flex/grid item with automatic stretch), so it needs the explicit
+   height:100% a percentage needs; `.mode-row`'s own `align-items:stretch`
+   (base rule, above) then carries that height into `.mode-pagecol`
+   automatically. `.mode-pagecol` gets `min-height:100%` (not `height`) so
+   it can share ONE rule with the script path below, where content that
+   overflows still needs to grow the box (see `.script-sheet` below) rather
+   than being clipped — for prose this is a no-op ceiling-equals-floor
+   (grid stretch already made it exactly 100%), for script it's the actual
+   floor that makes a short page fill down while a long one still scrolls. */
+.desk-frame-stage .mode-row{ height:100%; }
+.desk-frame-stage .mode-pagecol{ min-height:100%; }
+/* .mode-page trades its old fixed height:min(60vh,580px) cap for flex-fill
+   within .mode-pagecol's now-definite height — a FIXED box (not min-height):
+   .mode-page's own internal editor already scrolls via .mode-scroll
+   (flex:1; overflow-y:auto), so the outer sheet staying a true fixed size
+   (never growing past the stage) is the same "simulated paper" model this
+   surface already had, just resized to the stage instead of 580px/60vh.
+   margin-bottom is S1's own fence (32-48px) between the paper's bottom edge
+   and the stage's. Padding scales with --paper-scale (S2) so the RENDERED
+   text column's pixel width grows by the exact same ratio as the font —
+   a fixed padding would otherwise eat a shrinking share of a growing box,
+   quietly drifting the actual characters-per-line even though
+   CANONICAL_MEASURE_CH itself never moves. */
+.desk-frame-stage .mode-page{
+  height:auto; flex:1 1 auto; min-height:0;
+  margin-bottom:var(--fx3-paper-fence);
+  padding:calc(30px * var(--paper-scale)) calc(38px * var(--paper-scale));
+}
+/* The script sheet has no bounded height of its own by design (see
+   .desk-frame-scroll-cap's own comment below — it wraps content that grows
+   with the document); FX3 S1 replaces the SCROLL-CAP's old fixed
+   height:min(64vh,620px) with the same stage-fill flex-grow prose's stage
+   link gets, and gives .mode-pagecol (script's own copy of the same class)
+   min-height:100% so a short script's sheet still fills down. The sheet
+   ITSELF (the visible paper — background/border) then needs its own
+   flex-grow to actually stretch to that floor, or the extra space would sit
+   empty inside .mode-pagecol below an unstretched sheet. flex-shrink stays
+   at its default (0 via the shorthand's third value) so a long script's
+   sheet is never compressed — .desk-frame-scroll-cap's overflow-y:auto
+   handles that overflow exactly as it already did pre-FX3. */
+.desk-frame-stage > .desk-frame-scroll-cap{ height:auto; flex:1 1 auto; min-height:0; }
+.desk-frame-stage .script-sheet{
+  flex:1 0 auto; margin:0 auto var(--fx3-paper-fence);
+  font-size:calc(1rem * var(--paper-scale));
+  padding:calc(1in * var(--paper-scale)) calc(1in * var(--paper-scale))
+          calc(1in * var(--paper-scale)) calc(1.5in * var(--paper-scale));
+}
 
 /* CD1 S2 — the sliver's anchor: an ABSOLUTELY POSITIONED overlay inside
    `.desk-frame-stage` (position:relative, above). Being `position:absolute`
@@ -1920,7 +2054,16 @@ a:focus-visible,
    this anchor's width/position, so neither needs its own separate clamp. */
 .desk-frame-sliver-anchor{
   position:absolute; top:0; z-index:5; height:100%;
-  --sliver-paper-half: min(380px,30ch);
+  /* FX3 S2 — scales in lockstep with .mode-pagecol's own width formula (the
+     SAME font-size pin, the SAME scaled px cap): without this, the anchor's
+     positioning math silently drifts away from the paper's actual (now
+     scaled) left edge at wide viewports, since `ch` resolves against THIS
+     element's own font-size, not a sibling's — empirically confirmed (a
+     61.5px gap at 2200px/scale=1.2) before this fix was added, via the
+     same headless-harness-before-CSS-reasoning discipline FX2 S1's own
+     comment below already established for this exact rule. */
+  font-size:calc(1rem * var(--paper-scale));
+  --sliver-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
   --sliver-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, see comment above */
   --sliver-margin: calc(50% - var(--sliver-paper-half) + var(--frame-gap));
   --sliver-overflow: clamp(0px, calc(160px - var(--sliver-margin)), var(--sliver-paper-pad));
@@ -1938,8 +2081,14 @@ a:focus-visible,
 /* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
    z-index; the paper itself paints in normal flow above it). Same
    canonical-width math as the sliver anchor, centered instead of offset. */
+/* FX3 S2 — same scaling fix as the sliver anchor immediately above (font-size
+   pin + scaled px cap), for the same reason: this anchor's own `ch` values
+   resolve against ITS font-size, not `.mode-pagecol`'s, so without this it
+   drifts out of alignment with the (now-scaled) paper at wide viewports. */
 .desk-frame-goalglow-anchor{ position:absolute; top:0; z-index:-1; pointer-events:none;
-  width:min(760px,60ch); height:100%; left:calc(50% - min(380px,30ch)); }
+  font-size:calc(1rem * var(--paper-scale));
+  width:min(calc(760px * var(--paper-scale)), 60ch); height:100%;
+  left:calc(50% - min(calc(380px * var(--paper-scale)), 30ch)); }
 
 /* CD1 S6 — the goal's glow itself (components/GoalGlow.tsx). Warmth, never
    brass (the olive/orange lanes hold): a fixed warm gradient whose ONLY
@@ -2130,6 +2279,39 @@ a:focus-visible,
 .wz-sliver-goal-edit-commit,.wz-sliver-goal-edit-clear{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
   font-family:var(--font-ui); font-size:11px; padding:3px 8px; cursor:pointer; }
 .wz-sliver-goal-edit-commit:hover,.wz-sliver-goal-edit-clear:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+
+/* FX3 S5 — the sliver foot's new instruments row (components/Sliver.tsx's
+   SliverInstrumentRow): typewriter (icon only) / gear / instruments, quiet
+   at rest per the olive/orange law (brass is evental only — hover/press,
+   never resting), matching `.wz-sliver-toggle`'s own resting palette
+   (`--text-mid`/`--ink-border`) rather than `.typewriter-toggle.on`'s
+   `--accent-rest` treatment, since none of these three is a persistent
+   "where you are" state the way the typewriter's OWN on/off is — they're
+   just quiet triggers for a popover, closer kin to `.wz-sliver-grip`. */
+.wz-sliver-instruments{ margin-top:10px; padding-top:10px; border-top:1px solid var(--ink-border); }
+.wz-sliver-instruments-row{ display:flex; align-items:center; gap:8px; }
+.wz-sliver-instruments-btn{ width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+  background:none; border:1px solid var(--ink-border); color:var(--text-low); cursor:pointer; transition:.15s; }
+.wz-sliver-instruments-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-sliver-instruments-btn[aria-expanded='true']{ color:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-sliver-instruments-btn svg{ display:block; }
+/* Reused SettingsPanel/ThemePanel/InstrumentsPanel (ModeStage.tsx's own
+   `.mode-settings` — position:absolute, anchored to the stage's top-right
+   corner there) need a different, INLINE placement inside the sliver's own
+   narrower, already-scrolling panel — this scoped override wins on
+   specificity (2 classes vs 1) without touching `.mode-settings`'s base
+   rule, so ModeStage's own (still-live, legacy/unframed-only) gear popover
+   is untouched. */
+.wz-sliver-instruments .mode-settings{ position:static; top:auto; right:auto; width:auto; margin-top:10px; box-shadow:none; }
+.wz-sliver-instruments-panel{ margin-top:10px; }
+/* A Seg's selected option (`.mode-seg button.on`, ModeStage's own base rule)
+   fills brass — correct at the stage's OWN gear (a corner popover, not
+   itself part of the sliver's established visual law), but a resting
+   "where you are" marker inside the sliver should read olive, matching
+   `.wz-sliver-structure-btn.active`/every other sliver "active" state
+   already swept under FX1 S6. Scoped the same way as the position override
+   above, for the same reason. */
+.wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
 
 /* AB3 S1 — the Drawer (components/Drawer.tsx). Fills the toolrail track;
    the drawer adds only its own nav row above the face content, so the
@@ -2384,6 +2566,21 @@ a:focus-visible,
 .crumb-sep{ color:var(--ink-border-strong); }
 .crumb-here{ color:var(--text-mid); font-weight:600; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+/* FX3 S4 — TRIAL (Nick's own working-value experiment; not settled law).
+   The modes move toward the right instead of sitting flush left; Done
+   stays the rightmost element with a fixed gap (not auto-margin) keeping
+   it clearly separated from the modes rather than glued to them. Scoped to
+   `.desk-frame-host` (framed, >=1100px, only) — `.sprint-nav`/
+   `.sprint-actions` are the SAME shared classes the legacy (<1100px)
+   3-child layout (crumb + ModeSwitcher + actions, PageEditor.tsx's/
+   ScriptEditor.tsx's non-framed branch) still relies on its own
+   `margin-left:auto` to push Done past the other two — `.desk-frame-host`
+   never renders there, so that layout is untouched by this block.
+   REVERT (one line each): delete this whole block — the base
+   `.sprint-nav`/`.sprint-actions` rules above already reproduce the
+   pre-FX3 (flush-left strip, right-pinned actions) layout on their own. */
+.desk-frame-host .sprint-nav{ justify-content:flex-end; }
+.desk-frame-host .sprint-actions{ margin-left:28px; }
 .sprint-nav .btn-quiet{ font-family:var(--font-ui); font-size:13px; }
 .sprint-toggle{ display:flex; border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden; }
 .sprint-toggle-btn{ background:none; border:0; border-left:1px solid var(--ink-border); color:var(--text-mid);
@@ -2422,6 +2619,23 @@ a:focus-visible,
      just gives it more room on a small screen. */
   .journal-page{ max-width:100%!important; padding-top:.6rem!important; padding-left:12px; padding-right:12px; }
   .journal-page .entry-full{ min-height:80vh!important; max-width:100%!important; }
+}
+
+/* FX3 S2 — the paper-scale ramp: 1.0 up to 1440px, stepping toward ~1.2 by
+   1920px (brief's fence, tuned by eye). A stepped ramp rather than a
+   continuous one — see --paper-scale's own :root comment for why a single
+   fluid calc() expression isn't available here without JS. Placed here
+   (not beside --paper-scale's :root declaration) so it reads next to this
+   file's other wide-screen rules, but it governs the FRAMED paper only —
+   nothing in this block touches .desk-mode-tab/.sprint-nav/.desk-rail sizing
+   the way the large-screen block below does, so FX3 S1's --fx3-chrome-budget
+   (measured against the top bar's un-scaled height) stays valid at every
+   width this ramp covers. */
+@media (min-width:1680px){
+  :root{ --paper-scale: 1.1; }
+}
+@media (min-width:1920px){
+  :root{ --paper-scale: 1.2; }
 }
 
 /* Large-screen foundations (B5) — placed LAST so it overrides the base widths.

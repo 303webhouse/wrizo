@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWritingGoal } from '../store/writingGoal';
+import { useWritingSettings } from '../store/writingSettings';
 import { countLineEquivalents } from '../store/lineEquivalents';
 
 // CD1 S6 — the goal's glow: a warm radial behind the paper, mapping to
@@ -34,6 +35,12 @@ function readGlowCap(el: HTMLElement | null): number {
 // disables this instrument immediately, everywhere).
 export function GoalGlow({ text }: { text: string }) {
   const target = useWritingGoal();
+  // FX3 S5 — the instruments panel's own on/off (Sliver.tsx's foot row),
+  // an ADDITIONAL gate on top of the existing target-null check below, not
+  // a replacement for it — clearing the target already hides this (CD1 S6,
+  // untouched); this just lets a writer hide it temporarily without losing
+  // the stored target number.
+  const settings = useWritingSettings();
   const ref = useRef<HTMLDivElement>(null);
   const [cap, setCap] = useState(DEFAULT_CAP);
 
@@ -43,7 +50,7 @@ export function GoalGlow({ text }: { text: string }) {
   // picked up correctly the first time it actually renders.
   useEffect(() => { setCap(readGlowCap(ref.current)); }, [target]);
 
-  if (target == null || target <= 0) return null;
+  if (target == null || target <= 0 || !settings.instrumentsOn) return null;
 
   const lines = countLineEquivalents(text);
   const fraction = Math.max(0, Math.min(1, lines / target));

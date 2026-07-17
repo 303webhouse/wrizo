@@ -31,6 +31,14 @@ export type DeskTermId =
   // ride this lexicon seam — only its surrounding strings do.
   | 'goalEdit' | 'goalLabel' | 'goalUnitLines' | 'goalSet' | 'goalClear'
   | 'sliverOpen' | 'sliverClose'
+  // FX3 S5 — the sliver foot's new instruments row (components/Sliver.tsx's
+  // SliverInstrumentRow). Only the row/section-level labels ride this seam,
+  // matching the existing railInk/railControls/railReading precedent above;
+  // the terse Seg OPTION strings themselves ('On'/'Off'/'Lines'/'Words'/
+  // 'Time') follow ModeStage.tsx's own SettingsPanel/ThemePanel precedent
+  // (already hardcoded inline there, pre-FX3) rather than adding a new key
+  // per option.
+  | 'sliverInstruments' | 'sliverInstrumentsShow' | 'sliverInstrumentsUnit'
   // AB3 — the Drawer's own nav pulls (components/Drawer.tsx): the Page pull
   // above the separator, the three Places below it.
   | 'drawerPage' | 'drawerPlaceJournal' | 'drawerPlaceShelf' | 'drawerPlaceDrawers'
@@ -87,6 +95,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   goalClear: 'Clear',
   sliverOpen: 'Open hand tools',
   sliverClose: 'Close hand tools',
+  sliverInstruments: 'Instruments',
+  sliverInstrumentsShow: 'Show',
+  sliverInstrumentsUnit: 'Unit',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
