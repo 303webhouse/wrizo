@@ -788,6 +788,34 @@ outlive a session lives here, not in chat.
     restoration, Desk's Catch parking, and the th2 deflake are all now
     on the live site. Only Nick's device-look sitting remains to close
     item 26.
+    **Item 26 stays OPEN — 2026-07-16.** The device-look sitting
+    returned two findings; both are recorded against this item and
+    ticketed as their own build (item 27, FX2) rather than folded here
+    — the fold cycle for cd1.1 is done. Nick's remaining sitting
+    verdicts (the glow, the journal-paper question, the drawer at
+    rest, the wide field) arrive on his own clock and aren't presumed
+    by FX2 or anything else; item 26 doesn't close until his sitting
+    is fully spent.
+27. **FX2 — the Second Sitting.** **BRIEF COMMITTED, BUILD AUTHORIZED —
+    2026-07-16.** Two findings from Nick's device-look sitting with the
+    composed desk (item 26): (1) on his laptop, the sliver's grip
+    overlaps the writing surface — new law: persistent chrome never
+    enters the text measure, at any viewport (the grip clamps to ride
+    the paper's border/padding on narrow screens rather than crossing
+    into the text column; cd1.mjs's own geometry asserts never tested
+    a laptop width, only ~1400px/2200px); (2) Draft should open with
+    the typewriter active unless the page already holds 10+
+    line-equivalents (reading posture vs. forward-flow posture),
+    explicit toggle always wins for the rest of the session, Free
+    Write unchanged. Build brief:
+    `docs/wrizo-alpha/fx2-second-sitting-brief.md`, S1-S3, authorized
+    to build immediately on `fx2-second-sitting` off `main`.
+    Zero-schema — merge pre-authorized per the standing rule; Fable
+    reviews post-merge, gating close and redeploy. New
+    `apps/desktop/scripts/harness/fx2.mjs` required (S3): grip/text
+    disjointness at 1280px AND 2200px, sliver open/closed; the Draft
+    threshold both sides plus explicit-toggle persistence; full suite
+    green both `HARNESS_PARKED` settings.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
