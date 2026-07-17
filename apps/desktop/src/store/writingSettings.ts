@@ -28,6 +28,15 @@ export interface WritingSettings {
   fadeDepth: FadeDepth;
   timer: boolean;
   typewriter: boolean;
+  // FX3 S5 — the sliver foot's new instruments panel (components/Sliver.tsx's
+  // SliverInstrumentRow): a master on/off for the goal instruments (the
+  // sliver's progress hairline + GoalGlow.tsx's paper glow), independent of
+  // whether a target NUMBER is stored (store/writingGoal.ts) — clearing the
+  // target already hides both (a standing CD1 S6 law, untouched); this is
+  // an ADDITIONAL gate on top of that, for hiding them temporarily without
+  // losing the stored target. Default true: byte-identical to pre-FX3
+  // behavior (both instruments already showed whenever a target existed).
+  instrumentsOn: boolean;
 }
 
 const KEY = 'wrizo-writing-settings';
@@ -46,6 +55,7 @@ const DEFAULTS: WritingSettings = {
   // the page's own line count — Free Write is untouched by that seed and
   // keeps relying on this bare default.
   typewriter: true,
+  instrumentsOn: true,
 };
 
 function load(): WritingSettings {

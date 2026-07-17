@@ -13,7 +13,7 @@ import { copyText } from '../store/clipboard';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useTypewriterFade } from './useTypewriterFade';
+import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
 import { useWritingSettings, seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
 import { countLineEquivalents } from '../store/lineEquivalents';
 import { useLexicon } from '../store/themeLexicon';
@@ -257,6 +257,10 @@ export function ScriptEditor({ id }: { id: string }) {
     enabled: framed && writingSettings.typewriter,
     containerRef: scrollCapRef,
     editorSelector: '.script-el-active',
+    // FX3 S3 — the container-mode retune (see useTypewriterFade.ts and
+    // ModeStage.tsx's own matching call); Journal's window-scroll call is
+    // untouched.
+    holdBand: CONTAINER_HOLD_BAND,
   });
   // FX2 S2 — ScriptEditor has no `mode` concept at all; it's always
   // effectively Draft (the brief's own "ScriptEditor's always-drafting

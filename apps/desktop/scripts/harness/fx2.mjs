@@ -284,7 +284,13 @@ await withHarness(async (app) => {
   // ==========================================================================
   await openSliver(app);
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-typewriter .typewriter-toggle')?.click()");
+  // FX3 S5 — the toggle's wrapper (`.wz-sliver-typewriter`, with its
+  // label) retires; it's icon-only in the sliver foot's instruments row
+  // now (`.wz-sliver-instruments-row`). Same button, same click, updated
+  // selector only — this check's own name never referenced the old
+  // wrapper, so no park entry: the truth it asserts (a hand-click flips
+  // the setting) is unchanged.
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   await sleep(150);
   const afterExplicitClick = await typewriterDom(app);
   ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
@@ -326,7 +332,13 @@ await withHarness(async (app) => {
 
   await openSliver(app);
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-typewriter .typewriter-toggle')?.click()");
+  // FX3 S5 — the toggle's wrapper (`.wz-sliver-typewriter`, with its
+  // label) retires; it's icon-only in the sliver foot's instruments row
+  // now (`.wz-sliver-instruments-row`). Same button, same click, updated
+  // selector only — this check's own name never referenced the old
+  // wrapper, so no park entry: the truth it asserts (a hand-click flips
+  // the setting) is unchanged.
+  await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
   ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',

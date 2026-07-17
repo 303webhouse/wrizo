@@ -295,7 +295,16 @@ function PageEditorView({ id }: { id: string }) {
         forwardLock={mode === 'journal' ? forwardLock : true}
         style={{
           width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
-          fontFamily: 'var(--font-prose)', fontSize: 17, lineHeight: 1.7,
+          fontFamily: 'var(--font-prose)',
+          // FX3 S2 — scales with --paper-scale (index.css) so the editor's
+          // own rendered type grows in lockstep with the paper (Law 1: the
+          // measure, not the pixel width, is the constant). Reaches the
+          // actual contenteditable node via inheritance, not directly
+          // (ForwardOnlyEditor spreads this `style` onto the outer
+          // `.forward-only-editor-wrap`, not the `.forward-only-editor`
+          // node itself — font-size is an inherited property, so this
+          // still works).
+          fontSize: 'calc(17px * var(--paper-scale))', lineHeight: 1.7,
         }}
       />
       {/* HB1 S3 — the gate's instruction is the threshold's one sanctioned
@@ -491,7 +500,7 @@ function PageEditorView({ id }: { id: string }) {
         <DeskFrame
           pageKind="prose"
           toolRail={<FirstRunVeil active={gateActive}><Drawer subject={pageFaceSubject} /></FirstRunVeil>}
-          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} /></FirstRunVeil>}
+          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} /></FirstRunVeil>}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
           // contract exactly), fed the gate's own word fraction instead of
