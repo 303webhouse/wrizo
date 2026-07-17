@@ -27,6 +27,19 @@ const freshArrival = async (app, { anon = false } = {}) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival before fixture' });
   await app.emulateDpr(1, 1400, 900);
+  // FX3 deflake — clicking Write immediately on Arrival's own FIRST mount
+  // after a hard reload raced the first-run gate's one-shot arming ref
+  // (firstRunGateRequested in PageEditorView) roughly 40-50% of the time in
+  // testing: `.wz-arrival-write`'s own disabled state and the eventual
+  // navigation's `location.state.firstRunGate` both read correctly in EVERY
+  // run (confirmed via direct diagnostic), yet the veil sometimes never
+  // mounted — a genuine first-paint timing sensitivity, not a fixture logic
+  // bug. Sections in this file that detour through Open->back before Write
+  // never hit it, purely because that detour's own async settling happens
+  // to absorb the same window. A brief explicit settle reproduces that
+  // protection deterministically (6/6 clean in testing) without depending
+  // on an unrelated detour to keep working by accident.
+  await sleep(200);
 };
 
 await withHarness(async (app) => {
