@@ -18,7 +18,7 @@ import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL 
 import { useTypewriterFade } from '../components/useTypewriterFade';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
-import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
+import { useWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
@@ -882,7 +882,16 @@ function JournalEntryView() {
               metricLabel="words"
             />
           )}
-          <TypewriterToggle on={writingSettings.typewriter} onToggle={() => setWritingSettings({ typewriter: !writingSettings.typewriter })} />
+          {/* FX2 S2 fold — this is a THIRD toggle click-site the branch's own
+              S2 pass missed: unframed Journal entries render this row (see
+              the framed-gate comment above) with their own bare setter,
+              which never armed `explicitlySetThisSession`
+              (store/writingSettings.ts). That let an explicit choice made
+              here be silently overwritten by a later Draft-open seed on a
+              different page within the SAME session — exactly the bypass
+              S2 says must never happen. Routed through setTypewriterExplicit
+              like Sliver.tsx/ModeStage.tsx's own two sites. */}
+          <TypewriterToggle on={writingSettings.typewriter} onToggle={() => setTypewriterExplicit(!writingSettings.typewriter)} />
         </div>
       )}
 
