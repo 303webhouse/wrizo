@@ -11,6 +11,18 @@
 // S2 — the Draft-open typewriter default, the ten-line exception, the
 // explicit-toggle-wins-for-the-session rule, and Free Write's own
 // unaffected default.
+//
+// Independent-review addition (post-build verification pass, not in the
+// original brief's S3 list): an S1 regression guard at DESKFRAME_MIN_WIDTH
+// (1100px) — empirically the only width range where the anchor/Drawer
+// overlap the fix actually clamps ever manifests; the brief's own two named
+// widths (1280/2200) turn out to produce byte-identical geometry whether or
+// not the width-clamp fix is present, so without this block a regression of
+// the clamp mechanism would slip past this file silently. Also an S2 cross-
+// PAGE (not just cross-mode-switch) explicit-toggle-persistence check, using
+// a two-entries-seeded-before-boot fixture that sidesteps the raw-
+// localStorage-after-reload cache-staleness limit the build's own report
+// flagged for why it dropped this case.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -18,6 +30,22 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height, right:r.right, bottom:r.bottom}; })()`;
+
+// The brief's own S1 distinguishes "the paper's border and padding gutter"
+// (the grip/anchor MAY ride there) from "the text column" (never) — but
+// `.mode-pagecol`/`.mode-page` share one border box (confirmed: identical
+// rects at every width measured), so `rectOf('.mode-pagecol')` above is the
+// paper's OUTER edge, padding included, not the text column itself. That
+// distinction is invisible at 1280px/2200px (the brief's own two named
+// widths) because the anchor's padding-dip never engages there — margin is
+// always >= the 200px cap, so grip.right lands exactly on the paper's
+// outer edge with zero dip, making the two rects equivalent by
+// coincidence. It stops being equivalent once the dip DOES engage
+// (independent-review's own 1100px addition, below), so that check needs
+// the real text column: the paper's own box inset by its OWN computed
+// left padding (read live, not the hand-copied 38px constant CSS itself
+// has to hand-sync — this harness shouldn't repeat that same hand-sync).
+const textColumnOf = (sel) => `(() => { const el = document.querySelector(${JSON.stringify(sel)}); const r = el.getBoundingClientRect(); const pad = parseFloat(getComputedStyle(el).paddingLeft) || 0; return {left:r.left + pad, top:r.top, width:r.width - pad, height:r.height, right:r.right, bottom:r.bottom}; })()`;
 
 // Two rects "never intersect" — a small epsilon (0.5px) absorbs the
 // sub-pixel calc()/ch-unit rounding noise this layout's own nested
@@ -74,6 +102,37 @@ const freshDraftPage = async (app, text, width = 1400, height = 900) => {
   await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after draft seed' });
   await app.evalJs("location.hash = '#/page/fx2-draft'");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'Draft page framed' });
+  await sleep(250);
+};
+
+// Independent-review addition (not in the original brief's own S3 list,
+// which named only 1280px/2200px): two draft pages seeded into the SAME
+// pre-boot localStorage write, so BOTH exist in persistence.ts's in-memory
+// `cache.journalEntries` from the app's first hydrate — the module-level
+// cache is only populated at import time (`hydrate()` at module scope, see
+// store/persistence.ts), so a SECOND raw localStorage write made after that
+// first reload would silently miss the cache and 404 on navigation. Seeding
+// both up front sidesteps that limitation entirely: no second reload is
+// needed, so navigating between them via a bare `location.hash` change (the
+// same SPA navigation `freshDraftPage` already uses) exercises a genuine
+// cross-PAGE/cross-MOUNT case, not just the cross-MODE-switch-within-one-
+// mount case the brief's own S3 line already covers.
+const freshTwoDraftPages = async (app, textA, textB, width = 1400, height = 900) => {
+  await freshDesk(app, width, height);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    entries.push({ id: 'fx2-draft-a', text: ${JSON.stringify(textA)}, createdAt: now, updatedAt: now });
+    entries.push({ id: 'fx2-draft-b', text: ${JSON.stringify(textB)}, createdAt: now, updatedAt: now });
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after two-page draft seed' });
+};
+
+const gotoPage = async (app, id) => {
+  await app.evalJs(`location.hash = '#/page/${id}'`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `Page ${id} framed` });
   await sleep(250);
 };
 
@@ -151,6 +210,48 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
+  // S1 — independent-review addition: a regression guard at DESKFRAME_MIN_
+  // WIDTH (1100px, DeskFrame.tsx), not one of the brief's own two named
+  // widths (1280/2200). Empirical, independent verification (before-fix CSS
+  // swapped in and re-measured) found the anchor/Drawer-track overlap this
+  // ticket actually fixes ONLY exists at widths below ~1265px — at 1280px
+  // the pre-fix and post-fix geometry are byte-identical (the clamp's
+  // width/overflow math never engages there; --sliver-margin already
+  // exceeds the 200px cap). That means the committed S1 loop above, run
+  // only at the brief's two named widths, cannot actually catch a
+  // regression of the width-clamp mechanism — it would pass identically
+  // whether the clamp fix were present or reverted. This block closes that
+  // gap without touching the brief's own two checkpoints.
+  //
+  // Uses `textColumnOf`, not `rectOf('.mode-pagecol')` — at 1100px the
+  // anchor's own design LEGITIMATELY dips into the paper's left padding
+  // gutter (the brief's own explicit allowance: "may ride the paper's
+  // border and padding gutter... NEVER cross into the text column"), so
+  // asserting disjointness against the padding-INCLUSIVE paper rect here
+  // would fail on fully-compliant, by-design geometry, not a real bug
+  // (confirmed by first writing it that way — it failed at exactly the
+  // padding-gutter depth the fix's own `clamp()` allows, nothing more).
+  // ==========================================================================
+  await freshProsePage(app, 1100, 900);
+  const gripFloor = await app.evalJs(rectOf('.wz-sliver-grip'));
+  const textColFloor = await app.evalJs(textColumnOf('.mode-page'));
+  ok('S1 @ 1100px (DESKFRAME_MIN_WIDTH floor, independent-review addition): the grip rect and the TRUE text column (paper inset by its own live padding) never intersect, sliver CLOSED',
+    disjoint(gripFloor, textColFloor), JSON.stringify({ gripFloor, textColFloor }));
+  const drawerFloor = await app.evalJs(rectOf('.wz-drawer'));
+  const anchorFloor = await app.evalJs(rectOf('.desk-frame-sliver-anchor'));
+  ok('S1 @ 1100px (independent-review addition): the sliver anchor never overlaps the Drawer track — the actual mechanism S1\'s fix clamps, unexercised by the brief\'s own 1280px/2200px checkpoints',
+    anchorFloor.left >= drawerFloor.right - 0.5, JSON.stringify({ drawerFloor, anchorFloor }));
+  await openSliver(app);
+  await sleep(250);
+  const anchorFloorOpen = await app.evalJs(rectOf('.desk-frame-sliver-anchor'));
+  const gripFloorOpen = await app.evalJs(rectOf('.wz-sliver-grip'));
+  const textColFloorOpen = await app.evalJs(textColumnOf('.mode-page'));
+  ok('S1 @ 1100px (independent-review addition): the Drawer stays clear with the sliver OPEN too (the opaque panel is the visible half of the original complaint)',
+    anchorFloorOpen.left >= drawerFloor.right - 0.5, JSON.stringify({ drawerFloor, anchorFloorOpen }));
+  ok('S1 @ 1100px (independent-review addition): the true text-column disjointness law holds at the floor width with the sliver OPEN',
+    disjoint(gripFloorOpen, textColFloorOpen), JSON.stringify({ gripFloorOpen, textColFloorOpen }));
+
+  // ==========================================================================
   // S2 — Draft threshold, both sides: seeding a page below the 10-line
   // threshold opens Draft with typewriter ON; at/above it, OFF.
   // ==========================================================================
@@ -199,6 +300,48 @@ await withHarness(async (app) => {
   const afterRoundTripSetting = await typewriterSetting(app);
   ok('S2: ...and the stored setting itself reflects the same explicit ON, not a reverted OFF',
     afterRoundTripSetting === true, String(afterRoundTripSetting));
+
+  // ==========================================================================
+  // S2 — independent-review addition: the explicit flag across a SECOND
+  // PAGE, not just a mode switch within one mount. store/writingSettings.ts's
+  // own comment on `explicitlySetThisSession` claims the flag "has to
+  // survive across DIFFERENT pages/mounts within one session, not just one
+  // component's lifetime" — that's the stated reason it's module-scoped
+  // rather than a page-level ref, but nothing above actually exercises TWO
+  // distinct pages in one session (freshDraftPage's raw-localStorage-after-
+  // boot fixture can only address ONE page per session; see
+  // freshTwoDraftPages above for how this sidesteps that). Page A: short
+  // (natural seed = ON); explicitly flip it OFF. Page B: ALSO short (natural
+  // seed would ALSO be ON) — chosen deliberately so a silent re-seed on
+  // open would flip it back to ON and this check would catch it; if B's own
+  // seed correctly no-ops (because the module-level flag armed on page A is
+  // still true), it opens OFF instead.
+  // ==========================================================================
+  await freshTwoDraftPages(app, shortDraftText, shortDraftText);
+  await gotoPage(app, 'fx2-draft-a');
+  const pageAMode = await activeModeTab(app);
+  const pageASeed = await typewriterDom(app);
+  ok('S2 (cross-page, independent-review addition): page A (short) opens Draft with typewriter ON — fixture sanity',
+    pageAMode === 'Draft' && pageASeed === 'true', JSON.stringify({ pageAMode, pageASeed }));
+
+  await openSliver(app);
+  await sleep(200);
+  await app.evalJs("document.querySelector('.wz-sliver-typewriter .typewriter-toggle')?.click()");
+  await sleep(150);
+  const pageAExplicitOff = await typewriterDom(app);
+  ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',
+    pageAExplicitOff === 'false', String(pageAExplicitOff));
+
+  await gotoPage(app, 'fx2-draft-b');
+  const pageBMode = await activeModeTab(app);
+  const pageBDom = await typewriterDom(app);
+  const pageBSetting = await typewriterSetting(app);
+  ok('S2 (cross-page, independent-review addition): page B (a DIFFERENT page/mount, also short) is Draft, sanity',
+    pageBMode === 'Draft', String(pageBMode));
+  ok('S2 (cross-page, independent-review addition): page B does NOT get silently re-seeded ON — the explicit OFF from page A survives the page/mount boundary, matching writingSettings.ts\'s own "different pages/mounts" claim for the module-level flag',
+    pageBDom === 'false', String(pageBDom));
+  ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
+    pageBSetting === false, String(pageBSetting));
 
   // ==========================================================================
   // S2 — Free Write is unaffected: a genuinely fresh session's loose page
