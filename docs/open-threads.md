@@ -1342,6 +1342,109 @@ outlive a session lives here, not in chat.
     gating close and redeploy. Non-goals (explicit): the Cascade (item
     30, awaits Nick's ratification), the Wall/AB4 (re-scoped by the
     Cascade pass, not this ticket), any measure widening, canon edits.
+    **MERGED, PUSHED — 2026-07-17.** Built S1-S6 on `fx3-proportions`
+    off `main`, in an isolated worktree. **S1** — the paper's height
+    chain was purely intrinsic (no definite height anywhere from
+    `#root` to `.mode-page`), so a naive `height:100%` silently no-ops;
+    fixed by giving `.desk-frame-stagecol` ONE definite height
+    (`calc(100vh - var(--fx3-chrome-budget))`, a hand-measured 167px
+    constant — same idiom as `CANONICAL_MEASURE_CH`, empirically
+    verified to hold with zero drift at BOTH 1280px and 2200px, fence
+    a clean 40px at both, no scrollbar) with everything below riding
+    ordinary flex-grow off that one anchor. Also caught and fixed: the
+    goal glow's pre-existing CSS now bled past the viewport at some
+    heights (a taller stage stretches its anchor proportionally),
+    fixed with `overflow:hidden` on `.desk-frame-host` — independently
+    verified this clips no `position:fixed` element anywhere in the
+    route (none of `.desk-frame-host`/its ancestors establish a new
+    containing block). **S2** — new `--paper-scale` token (stepped
+    1.0/1.1/1.2 at 1440/1680/1920px — CSS `calc()` can't derive a
+    dimensionless ratio from a viewport length without a JS-computed
+    property, so stepped rather than continuous) applied to BOTH the
+    paper's width AND its own font-size at the SAME element, so `ch`
+    (which resolves against whichever element declares it) scales in
+    lockstep — independently re-derived algebraically (not just
+    visually eyeballed) that characters-per-line is provably
+    scale-invariant, `CANONICAL_MEASURE_CH` untouched. Also fixed a
+    real bug this surfaced: the sliver/goal-glow anchors' own
+    `min(380px,30ch)`-style formulas didn't scale, a 61.5px
+    misalignment at 2200px, fixed by pinning the same scaled font-size
+    baseline there too. **S3** — `START_FRACTION`: 0.45 -> 0.29 in
+    `useTypewriterFade.ts` (below the brief's literal 30-35% text, but
+    independently hand-calculated — not just trusted — to land at
+    ≈33.3% once `.mode-page`'s own padding/border are counted the same
+    way `fx1.mjs`'s own pre-existing measurement method does; the
+    *visual* result matches the brief's intent even though the raw
+    constant reads lower). Also fixed a genuine PRE-EXISTING bug found
+    along the way: `setScrolled()`'s container-mode branch compared an
+    internal scroll offset against a viewport-space Y coordinate — a
+    real unit mismatch, independently confirmed correct. **S4** — top
+    bar right-aligned as a trial, scoped to `.desk-frame-host
+    .sprint-nav`; independent review found a real, undisclosed gap:
+    `JournalEntry.tsx`/`BoardEditor.tsx` carry pre-existing inline
+    `justifyContent:'space-between'` styles that silently beat the new
+    CSS rule (inline always wins). Investigated further: BoardEditor's
+    row has no ModeStrip at all — S4 doesn't conceptually apply there,
+    not a real gap. JournalEntry's row does carry one and does diverge
+    — left AS-IS and flagged rather than force-matched, consistent
+    with this project's own prior ruling that JournalEntry's top-right
+    cluster is a deliberately distinct idiom from PageEditor/
+    ScriptEditor's (CD1's own review, item 26). **S5** — gear travels
+    WHOLE into the sliver's foot (settings + theme panel stay bundled,
+    a documented judgment call — the brief names only three foot
+    icons and never a fourth destination for Theme); icon-only
+    typewriter toggle confirmed via direct render read (one button,
+    SVG only, no text node); new `store/writingGoalUnit.ts` confirmed
+    honestly self-documented as display-only, no real per-unit
+    conversion yet (deferred to the Cascade's own instruments-panel
+    refinement, item 30). **S6** — new `fx3.mjs` (30 checks). **The
+    park sweep grew beyond the brief's own cd1/fx2 guess** — real
+    supersessions turned up in `ab1.mjs`/`ab2.mjs`/`fx1.mjs`/`hb1.mjs`
+    too (`fx2.mjs` needed only plain selector updates, no park;
+    `cd1.mjs` needed zero changes, confirmed byte-identical). Every
+    parked check independently audited against this project's own
+    A4/FX1-Ruling-5 precedent (quoted verbatim, genuinely superseded,
+    live successor exists, the check's own name discloses the touch)
+    — all correct, including `ab2.mjs`'s novel "layered park" (a park
+    entry parking an already-parked entry a second time) and `hb1.mjs`
+    getting its first-ever PARKED scaffold.
+    **A real, reproducible defect found and fixed post-review:**
+    `hb1.mjs`'s new PARKED veil-count check (S5's own successor to
+    HB1's S3 wrapper-count check) flaked ~40-50% (confirmed via 5
+    direct runs after an independent reviewer surfaced it, having
+    first been told — wrongly — it was "deterministic"). Root-caused
+    via direct diagnostic instrumentation: the app's own gate-arming
+    state (`location.state.firstRunGate`, the Write door's disabled
+    state) read CORRECTLY in every single run, pass or fail — the
+    veil itself sometimes just never mounted on Arrival's very FIRST
+    paint after a hard reload, a genuine first-mount timing
+    sensitivity, not a fixture logic bug. This file's own LIVE S3
+    check never showed it (4/4 clean) purely because its fixture
+    detours through Open->back before Write, and that unrelated
+    navigation's own async settling happened to absorb the same
+    window by accident. Fixed with an explicit settle wait in
+    `freshArrival` itself (protects every section using it
+    deterministically, not by borrowing an unrelated detour's luck) —
+    19/19 clean after the fix, across two separate machines/worktrees.
+    Also directly measured and closed out (not merely trusted) the
+    reviewer's own flagged-but-unfinished concern that a
+    `@media(min-width:1700px)` top-bar font bump might drift
+    `--fx3-chrome-budget`'s hand-measured 63px component at 2200px:
+    empirically zero drift, nav height exactly 63px at both 1280px and
+    2200px, fence exactly 40px at both, no scrollbar either width —
+    the theoretical concern doesn't materialize in practice.
+    **Full suite green on the fully merged, pushed tree:** `tsc`,
+    `build:web`, selftest, all 16 harness files (`ab1` 35/45, `ab2`
+    42/53, `ab3` 34/41, `cd1` 27/27, `fx1` 23/32, `fx2` 33/33, `fx3`
+    30/30, `hb1` 31/32, `j4` 26, `j5` 40, `m1` 33, `s1` 86/87, `th1`
+    26, `th2` 43, `w1` 18, `w2` 31) under both `HARNESS_PARKED`
+    settings. `cd1.mjs` hit one isolated "CDP page target never
+    appeared" crash during the review's own run, cleared on immediate
+    retry, byte-identical to `main` — an infra flake, not a code
+    regression (same class as the documented `th2.mjs`/`m1.mjs`
+    flakes). Pushed to `origin/main` @ `f87295e`.
+    **Not deployed** — Fable's post-merge review hasn't landed;
+    redeploy is Nick's call, as always.
 30. **The Cascade — committee double-pass.** **PROPOSED — 2026-07-17.**
     Commissioned by Nick from the desktop sitting: the left drawer
     becomes a pop-out cascade from a persistent vertical strip —
