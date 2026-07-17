@@ -1169,6 +1169,41 @@ outlive a session lives here, not in chat.
     own three (`de60636`, `2ab78e1`) — history not rewritten. **Still
     NOT merged, NOT pushed** — awaits the orchestrating session's own
     final check before merge, per this ticket's instructions.
+    **MERGED, PUSHED — 2026-07-17.** `origin/main` had moved since this
+    branch's base (`df88ff5`) — HB1 (item 27) merged in the interim, in
+    its own isolated worktree, per the standing rule. Local `main`
+    fast-forwarded to `origin/main` first (`df88ff5` -> `7e7d7f4`), then
+    `fx2-second-sitting` merged in: one real conflict, `PageEditor.tsx`'s
+    import block (both branches appended new imports after the same
+    shared line — the exact collision the independent review's own
+    `git merge-tree` dry run had already predicted), resolved by keeping
+    both. `fx2.mjs` itself needed a post-merge fixture fix neither build
+    nor review could have caught (their branch predates HB1's merge):
+    `freshDesk`/`freshLoosePage`/`freshDraftPage`/`freshTwoDraftPages`
+    still bootstrapped against the retired `.wz-desk`/`.wz-start-writing`
+    — the same class of fix `cd1.mjs`/`th2.mjs` already got when HB1
+    first landed (`.wz-arrival`, `wrizo-first-run-complete` seeded so
+    HB1's first-run gate doesn't interfere with FX2's own fixtures).
+    Fixed in `25644ea`, re-verified 33/33. One false alarm chased down
+    and closed, not left as a loose thread: `s1.mjs` read 86 checks
+    default / 87 armed post-merge, against this ledger's own earlier
+    "s1 87" (flat, no split) baseline recorded elsewhere. Isolated via a
+    throwaway worktree at `7e7d7f4` (HB1-merged, pre-FX2) — already
+    86/87 there, `s1.mjs` itself byte-identical to its pre-HB1 content —
+    then confirmed the file has always carried its own one-check PARKED
+    section (`grep HARNESS_PARKED apps/desktop/scripts/harness/s1.mjs`),
+    matching every other split-count file's pattern exactly. Not a
+    regression from HB1 or FX2; the earlier flat "87" was simply
+    imprecise. Full suite green on the fully merged, pushed tree: `tsc`,
+    `build:web`, selftest, all 15 harness files (`ab1` 37/45, `ab2`
+    42/52, `ab3` 34/41, `cd1` 27/27, `fx1` 25/32, `fx2` 33/33, `hb1`
+    31/31, `j4` 26, `j5` 40, `m1` 33, `s1` 86/87, `th1` 26, `th2` 43,
+    `w1` 18, `w2` 31) under both `HARNESS_PARKED` settings. Pushed to
+    `origin/main` @ `25644ea`. **Not deployed** — redeploy is Nick's
+    call, and Fable's own post-merge review (gating close) hasn't landed
+    yet; the S1 1280px-vs-Nick's-actual-laptop-width question the
+    independent review flagged is still open and unresolved by anything
+    in this ticket.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
