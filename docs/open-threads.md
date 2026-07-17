@@ -1004,6 +1004,54 @@ outlive a session lives here, not in chat.
     `writer-studio` checkout (on `main`) will read as behind `origin/main`
     until its own next fetch/pull — expected, not a conflict, since only
     the remote ref moved.
+    **Fable's F-3 fold-delta spot-check landed — GREEN — 2026-07-17**
+    (`docs/wrizo-alpha/hb1-review-fable-addendum.md`, committed; blob hash
+    independently verified against the live file, `c6ddbd5`, matches). The
+    late paper CC flagged missing at merge time — the spot-check ran
+    in-session before Nick's merge word, this is the record catching up,
+    not a skipped step. All four hb1.1 commits verified by SHA; the review
+    doc's own blob confirmed unchanged. F-1's focus trap independently
+    re-confirmed real (one harmless transient noted: both territory
+    buttons disable during the chosen-flash, freeing Tab for ~500ms over
+    an otherwise-inert page). F-2's ledger record confirmed complete. The
+    merge itself re-verified: fast-forward `df88ff5 → 7e7d7f4` audited,
+    the item-27 chronology resolution endorsed as-is.
+    **Four findings, none required fixes — handed to the device sitting:**
+    (1) the parked `HomeFlow` ("HOME port v6") is prior art of the rite
+    itself, park quality called exemplary; two things it knew that HB1's
+    rite doesn't are named as open, hb1.2-sized design questions for
+    Nick's sitting — **the echo** (v6 showed the writer their own words
+    back on reward; HB1's ceremony announces only the theme) and **the
+    mercy** (v6 idle-nudged a stuck newcomer; HB1's gate stays silent by
+    the "speaks once" ruling); (2) `s1.mjs`'s DORMANT park ruled A4
+    discipline done right, and its own honest flag reframed as a live
+    sitting question — **the glance** — should Arrival stay austere or
+    offer a quiet unprompted trace of where the writer left off; (3) an
+    **F5 correction against the brief's own claim**: the paste seam is
+    likely already closed (the Voice Wall blocks foreign paste on script;
+    the forward-only surface has carried a paste block since the v6 era)
+    — one Ctrl+V at the gate during the sitting confirms, then the ledger
+    takes a one-line correction at next docs touch, not presumed here;
+    (4) `Desk.tsx`'s parked-shim prose accepted at census level only (not
+    eyeballed line-by-line) — flagged for the next actual touch of that
+    file, not actioned now.
+    **Post-merge landscape, for orientation:** FX2 (item 28, born from
+    Nick's CD1 sitting) merged into `main` after HB1 in the other session
+    — `ee69bbc` → `25644ea` → `2b866c8`, `fx2.mjs` fixtures adapted to
+    HB1's post-merge world (`.wz-desk`→`.wz-arrival`), one import-block
+    conflict in `PageEditor.tsx` resolved kept-both. Full 15-script suite
+    reconfirmed green from `../wrizo-hb1` after fast-forwarding to this
+    state — `hb1` 31/31, `fx2` 33/33, every other count unchanged. FX2's
+    own post-merge review belongs to the origin chat's Fable by lineage,
+    not annexed here. **The device sitting now happens on a main carrying
+    both tickets** — Nick's two FX2 findings can be felt in the same
+    sitting as HB1's, verdicts routed to their own tracks. Sitting list:
+    the original review's felt checks, plus the echo, the mercy, the
+    glance, the Ctrl+V, and one poke at any in-app "Done" that still
+    targets `/`.
+    **Standing: deploy still waits on the sitting and Nick's word.** The
+    `cd1.1 erratum WIP` stash stays held per the review's own instruction,
+    until CD1's own origin-chat close conditions clear.
 28. ~~**FX2 — the Second Sitting.**~~ **BRIEF COMMITTED, BUILD AUTHORIZED —
     2026-07-16.** Two findings from Nick's device-look sitting with the
     composed desk (item 26): (1) on his laptop, the sliver's grip
