@@ -648,7 +648,7 @@ outlive a session lives here, not in chat.
     skip (the ink-coordinate-risk scope call). Either can still reopen
     with a real ticket if Nick's eye finds them wanting; neither owes
     anything until then.
-26. **CD1 — the Composed Desk.** **BRIEF RATIFIED, BUILD AUTHORIZED —
+26. ~~**CD1 — the Composed Desk.**~~ **BRIEF RATIFIED, BUILD AUTHORIZED —
     2026-07-16.** The second committee double-pass
     (`docs/wrizo-alpha/composed-desk-committee-pass.md`) proposed
     consolidating the tool sliver, the drawer's slimming, the far-left
@@ -796,6 +796,12 @@ outlive a session lives here, not in chat.
     rest, the wide field) arrive on his own clock and aren't presumed
     by FX2 or anything else; item 26 doesn't close until his sitting
     is fully spent.
+    **CLOSED — 2026-07-17, Nick's word.** The sitting was delivered:
+    FX2 (item 28) shipped its two fixable findings. The remainder (the
+    glow, the journal-paper question, the drawer at rest, the wide
+    field) is not left dangling — folded forward into FX3 (item 29)
+    and the Cascade committee pass (item 30), both from Nick's own
+    follow-on desktop sitting. Nothing here was dropped, only re-homed.
 27. **HB1 — the Threshold.** **MERGED, NOT CLOSED — 2026-07-17.** Brief:
     `docs/wrizo-alpha/hb1-threshold-brief.md`. Charter:
     `docs/wrizo-alpha/hb-arc-handoff.md`. Nick's direct word waived the
@@ -998,7 +1004,7 @@ outlive a session lives here, not in chat.
     `writer-studio` checkout (on `main`) will read as behind `origin/main`
     until its own next fetch/pull — expected, not a conflict, since only
     the remote ref moved.
-28. **FX2 — the Second Sitting.** **BRIEF COMMITTED, BUILD AUTHORIZED —
+28. ~~**FX2 — the Second Sitting.**~~ **BRIEF COMMITTED, BUILD AUTHORIZED —
     2026-07-16.** Two findings from Nick's device-look sitting with the
     composed desk (item 26): (1) on his laptop, the sliver's grip
     overlaps the writing surface — new law: persistent chrome never
@@ -1229,6 +1235,76 @@ outlive a session lives here, not in chat.
     width above or below the ~1265px clamp threshold), remains, on his
     own clock. Item 26 stays open in parallel, served by the same
     session.
+    **CLOSED — 2026-07-17, Nick's word.** The grip fix confirmed
+    working on his laptop — the ~1265px width question is moot (the
+    fix works regardless of which side of that threshold his own
+    laptop sits on).
+29. **FX3 — the Proportions.** **BRIEF COMMITTED, BUILD AUTHORIZED —
+    2026-07-17.** From Nick's desktop sitting (the same sitting behind
+    the Cascade committee pass, item 30) — including a verdict he
+    wrote directly into the test page itself (S3: the typewriter start
+    reads too far down, broken to a fresh eye). Six slices: S1 the
+    paper fills down to near the stage's bottom on desktop (no fixed
+    aspect, no height cap short of the stage); S2 the paper SCALES on
+    wide screens (type + paper dimensions grow together so the measure
+    — readable line length — is preserved, not widened; a tuned CSS
+    scale token, 1.0 at <=1440px ramping to ~1.2 at >=1920px); S3 the
+    typewriter start offset lowers (~30-35% of stage height, from 45%)
+    and the scroll/fade engages within the first few lines rather than
+    lagging (Journal's own start-offset carve-out unchanged); S4 the
+    top bar's modes go right-aligned as a TRIAL (one-line revert if
+    Nick's eye rejects it — a working-value experiment, not law); S5
+    the settings gear leaves the paper entirely — the sliver's foot
+    gains an icon row (typewriter as icon-only, the gear, and a NEW
+    instruments icon opening a minimal progress/glow panel); S6 new
+    `apps/desktop/scripts/harness/fx3.mjs`, geometry checks at both
+    reference widths (standing law). Build brief:
+    `docs/wrizo-alpha/fx3-proportions-brief.md`, authorized to build
+    immediately on `fx3-proportions` off `main`. Zero-schema — merge
+    pre-authorized per the standing rule; Fable reviews post-merge,
+    gating close and redeploy. Non-goals (explicit): the Cascade (item
+    30, awaits Nick's ratification), the Wall/AB4 (re-scoped by the
+    Cascade pass, not this ticket), any measure widening, canon edits.
+30. **The Cascade — committee double-pass.** **PROPOSED, AWAITING
+    NICK'S RATIFICATION — 2026-07-17.** Commissioned by Nick from the
+    desktop sitting: the left drawer becomes a pop-out cascade from a
+    persistent vertical strip on the FAR RIGHT — categories (Page,
+    Journal, Plan, Drawers, Shelf) each opening a reach panel (layer
+    2), with a third pop-out survey layer (layer 3) for browsing
+    contents as large thumbnails. Committee record only:
+    `docs/wrizo-alpha/cascade-committee-pass.md` — no build authorized
+    from it yet, CD2's own brief follows Nick's words on the four named
+    tensions below. **Architects' review: sound — completes the
+    canon's attention ladder.** The strip is glance; the category
+    panel is reach (drawer-pull semantics carried forward whole); the
+    survey layer names a range the canon never had (seeing a
+    container's contents without traveling into it). Mechanics: layers
+    2-3 overlay only (paper never reflows, standing law), dissolve on
+    keystroke via the one vanishing engine, the strip persists like the
+    grip; left side after the move is paper + sliver only, feeding
+    FX3's larger paper directly. **The pass's biggest call:** the
+    reserved right track was AB4's (the Wall) — the cascade now owns
+    that edge, and Nick's own Plan example (cards as large thumbnails
+    beside a focused page) IS the Wall's browsing posture.
+    Recommendation: **AB4 formally re-scopes onto the cascade** — the
+    survey layer becomes how boards/walls are browsed, pinning and
+    threads build ON this system as the next arc ticket, the reserved
+    corkboard track retires from the plan. **AB4 re-scoping is pending
+    T2's ratification below** — not yet final. Two-pass complete with
+    trims (image-only thumbnails per Brand over Growth's richer
+    ask; no pinned rows, no per-category settings, no strip
+    customization this ticket, breadcrumbs rejected). Four amendments
+    drafted for ratification: **A8** (drawer's estate moves to the
+    cascade, supersedes A3's position-and-rest clause), **A9** (ranges
+    are glance/reach/survey/travel), **A10** (goal unit is the
+    writer's preference — words/lines/time, lines default), **A11**
+    (strip roster: Page/Journal/Plan/Drawers/Shelf, expandable by
+    ratification only). **Four named tensions await Nick's word:** T1
+    (ratify A8-A11? lean: all four), T2 (the Wall folds onto the
+    cascade, corkboard track retires? lean: yes), T3 (strip order as
+    listed, or Journal first?), T4 (Delete: disclosure + confirm +
+    Shelf-instead offered? lean: yes). CD2's brief follows Nick's
+    words on all four.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
