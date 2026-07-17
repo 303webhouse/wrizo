@@ -796,7 +796,7 @@ outlive a session lives here, not in chat.
     rest, the wide field) arrive on his own clock and aren't presumed
     by FX2 or anything else; item 26 doesn't close until his sitting
     is fully spent.
-27. **HB1 — the Threshold.** **BUILT, NOT MERGED — 2026-07-16.** Brief:
+27. **HB1 — the Threshold.** **MERGED, NOT CLOSED — 2026-07-17.** Brief:
     `docs/wrizo-alpha/hb1-threshold-brief.md`. Charter:
     `docs/wrizo-alpha/hb-arc-handoff.md`. Nick's direct word waived the
     committee double-pass for this ticket; R1 (Flux stands in for Machina
@@ -977,6 +977,27 @@ outlive a session lives here, not in chat.
     (`cd1.1 erratum WIP...`) stays put per the review's own housekeeping
     note — forensic material for item 26's still-open close conditions, not
     this ticket's to drop.
+    **Merged — 2026-07-17**, Nick's word ("let's merge it"), ahead of
+    Fable's F-3 fold-delta spot-check (not yet landed on disk at merge
+    time — Nick's merge word stands on its own per house law; F-3 still
+    rides the delta whenever Fable next looks). Merged from the isolated
+    `../wrizo-hb1` worktree (no shared checkout touched, per ONE CHECKOUT
+    PER AGENT): `origin/main` was first merged into `hb1-threshold` to
+    reconcile — one real conflict, both sessions having independently
+    claimed **item 27** for their own ticket (this one and FX2, born from
+    Nick's CD1 device sitting in the interim); resolved by chronology
+    (this item's own item-27 commit landed 2026-07-16 17:24, FX2's
+    2026-07-17 07:16 — FX2 renumbered to **item 28**, its self-reference
+    and item 26's cross-reference both corrected, no content lost either
+    side). Full suite re-verified green post-merge (`tsc` ×2, `build:web`
+    byte-identical output, selftest, all 14 harness scripts, `hb1` 31/31)
+    before `origin/main` was fast-forwarded to `hb1-threshold`'s tip
+    (`df88ff5` → `8674f87`, confirmed ancestor-checked, no force needed).
+    **Not deployed.** Per the review's own sequencing, the device sitting
+    on `main` is next, then deploy on Nick's word. The other session's
+    `writer-studio` checkout (on `main`) will read as behind `origin/main`
+    until its own next fetch/pull — expected, not a conflict, since only
+    the remote ref moved.
 28. **FX2 — the Second Sitting.** **BRIEF COMMITTED, BUILD AUTHORIZED —
     2026-07-16.** Two findings from Nick's device-look sitting with the
     composed desk (item 26): (1) on his laptop, the sliver's grip
