@@ -35,9 +35,16 @@ const DEFAULTS: WritingSettings = {
   progress: 'words',
   fadeDepth: 'partial',
   timer: false,
-  // Typewriter is the Free-Write preference (default ON): the line-hold helps
-  // generation but fights revision, so ModeStage only engages it in Free Write
-  // (Journal) and never in Draft/Format, regardless of this toggle.
+  // FX2 S2 errata — the line below this comment used to claim ModeStage
+  // "never" engages typewriter in Draft; that stopped being true when a
+  // prior ticket (believed FX1) extended the gate to `mode === 'drafting'`
+  // too (see ModeStage.tsx's own typewriterOn line) — trust the code, not
+  // this comment, was the standing lesson. This default (true) is only
+  // the FIRST-EVER-LOAD fallback before any page has opened; FX2 S2 adds a
+  // real opening default on top of it (seedTypewriterDefault, below) that
+  // fires once per Draft-mode page-open and sets this to ON/OFF based on
+  // the page's own line count — Free Write is untouched by that seed and
+  // keeps relying on this bare default.
   typewriter: true,
 };
 
@@ -77,4 +84,51 @@ export function useWritingSettings(): WritingSettings {
     return () => { subs.delete(fn); };
   }, []);
   return value;
+}
+
+// FX2 S2 (docs/wrizo-alpha/fx2-second-sitting-brief.md) — the Draft-open
+// typewriter default: Draft opens with typewriter ON unless the page
+// already holds 10+ line-equivalents at mount; Free Write is unaffected.
+// `typewriter` itself stays the ONE global, persisted value above (no
+// per-page storage) — what's new is the SESSION-scoped (in-memory only; a
+// fresh app load is a fresh session) bookkeeping needed to tell "the app
+// auto-seeding a Draft-open default" apart from "the writer explicitly
+// chose a value" — the latter must win for the rest of the session and
+// never be silently re-imposed by a later page-open seed. A page-level ref
+// (PageEditor.tsx's warmRef idiom) can't carry this: the flag has to
+// survive across DIFFERENT pages/mounts within one session, not just one
+// component's lifetime, so it lives at module scope instead, exactly like
+// `current`/`subs` above.
+let explicitlySetThisSession = false;
+
+// The toggle's own click handlers (Sliver.tsx, ModeStage.tsx's SettingsPanel
+// Seg) call this instead of the bare setter — it both writes the setting
+// AND arms the flag that makes every later seedTypewriterDefault() a no-op,
+// for the rest of this session.
+export function setTypewriterExplicit(on: boolean): void {
+  explicitlySetThisSession = true;
+  setWritingSettings({ typewriter: on });
+}
+
+// The line-equivalents threshold (store/lineEquivalents.ts's canonical
+// measure) below which a fresh Draft-open seeds typewriter ON rather than
+// OFF. Shared here (not duplicated in PageEditor.tsx/ScriptEditor.tsx, its
+// only two callers) so the two hosts can't drift on what "already holds
+// substantial work" means.
+export const DRAFT_TYPEWRITER_LINE_THRESHOLD = 10;
+
+// Called once per surface mount, only when the EFFECTIVE mode at OPEN is
+// Draft (PageEditor.tsx's per-page remembered mode, or ScriptEditor.tsx's
+// always-Draft posture). Callers guard the "once per mount, never re-armed
+// by a later mode switch" part themselves — an effect with empty deps is
+// enough since both hosts already remount per page via `key={id}`
+// (PageEditor.tsx's warmRef / Sliver.tsx's initialGoalTextRef are the same
+// "captured once at mount" idiom for cases that need an explicit ref
+// instead) — that guard is inherently per-component, not something this
+// module-level store can own. A no-op once the writer has explicitly
+// chosen a value this session — the one thing this whole mechanism exists
+// to prevent.
+export function seedTypewriterDefault(on: boolean): void {
+  if (explicitlySetThisSession) return;
+  setWritingSettings({ typewriter: on });
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
+import { useWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
 import { countLineEquivalents } from '../store/lineEquivalents';
 import { TypewriterToggle } from './WritingIncentives';
@@ -171,11 +171,15 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
 
       {/* Typewriter — Free Write and Draft both engage it (ModeStage's own
           typewriterOn gate). Reads/writes the SAME shared, persisted store
-          ModeStage/JournalEntry already use — moved verbatim from ToolRail. */}
+          ModeStage/JournalEntry already use — moved verbatim from ToolRail.
+          FX2 S2 — routes through setTypewriterExplicit (not the bare
+          setter): a hand-click here is the ONE signal that means "the
+          writer chose this," which must outrank any later Draft-open seed
+          for the rest of the session (store/writingSettings.ts). */}
       <div className="wz-sliver-section">
         <div className="wz-sliver-h">{t('railReading')}</div>
         <div className="wz-sliver-typewriter">
-          <TypewriterToggle on={settings.typewriter} onToggle={() => setWritingSettings({ typewriter: !settings.typewriter })} />
+          <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
           <span className="wz-sliver-typewriter-label">{t('railTypewriter')}</span>
         </div>
       </div>

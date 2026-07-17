@@ -14,7 +14,8 @@ import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useTypewriterFade } from './useTypewriterFade';
-import { useWritingSettings } from '../store/writingSettings';
+import { useWritingSettings, seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
+import { countLineEquivalents } from '../store/lineEquivalents';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
@@ -257,6 +258,22 @@ export function ScriptEditor({ id }: { id: string }) {
     containerRef: scrollCapRef,
     editorSelector: '.script-el-active',
   });
+  // FX2 S2 — ScriptEditor has no `mode` concept at all; it's always
+  // effectively Draft (the brief's own "ScriptEditor's always-drafting
+  // posture"), so the Draft-open seed applies unconditionally here, unlike
+  // PageEditor.tsx's `mode === 'drafting'` gate. `initialEntry?.text` is
+  // the derived shadow persistence.ts's saveScriptDoc keeps in sync with
+  // the ScriptDoc on every save (canon §2.4) — as of THIS mount it reflects
+  // the doc's line count without needing to serialize `initialDoc` by hand.
+  // Captured once via the effect's own closure (empty deps): this
+  // component remounts per page (`key={id}`, PageEditor.tsx), so "once per
+  // mount" already means "once per page-open," satisfying "mid-session
+  // mode switches don't re-evaluate" the same way PageEditor.tsx's own
+  // effect does.
+  useEffect(() => {
+    seedTypewriterDefault(countLineEquivalents(initialEntry?.text ?? '') < DRAFT_TYPEWRITER_LINE_THRESHOLD);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // AB1 S3 — the vanishing law, generalized to the script surface's own
   // DeskFrame chrome (the mode strip; the corner glyph via App.tsx's shared
   // isWriting session). Mounted unconditionally (rootRef omitted -> writes

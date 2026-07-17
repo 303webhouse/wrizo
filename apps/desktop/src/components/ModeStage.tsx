@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
@@ -446,7 +446,10 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                 )
               )}
               {(mode === 'journal' || mode === 'drafting') && (
-                <TypewriterToggle on={settings.typewriter} onToggle={() => setWritingSettings({ typewriter: !settings.typewriter })} />
+                // FX2 S2 — a hand-click here must outrank any later
+                // Draft-open seed for the rest of the session (see
+                // setTypewriterExplicit's own comment).
+                <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
               )}
             </div>
           )}
@@ -525,7 +528,12 @@ function SettingsPanel({ settings, hasMilestones }: { settings: { progress: Prog
       <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
       <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
       <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
-      <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ typewriter: v === 'on' })} />
+      {/* FX2 S2 — routes through setTypewriterExplicit, not the bare
+          setter: the gear is the OTHER hand-click surface (beside the
+          sliver's own TypewriterToggle), and both must arm the same
+          session-explicit flag so neither can be silently overridden by a
+          later Draft-open seed. */}
+      <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
   );
