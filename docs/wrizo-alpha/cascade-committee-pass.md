@@ -114,6 +114,10 @@ geometry check runs at both reference widths.
   right strip (glance), category panels (reach), survey layer;
   contents carry forward whole; supersedes A3's position-and-rest
   clause. One cascade, one sliver, one vanishing law.
+  > **Correction, Nick's word, 2026-07-17:** A8's ratified wording is
+  > "persistent **left** strip" — the side correction supersedes this
+  > passage's right-side rationale above; all other reasoning in A8
+  > stands unchanged.
 - **A9:** the ranges are glance · reach · **survey** · travel.
 - **A10:** the goal's unit is the writer's preference — words, lines,
   or time; lines the default.
@@ -132,3 +136,13 @@ geometry check runs at both reference widths.
 CD2's brief follows your words.
 
 — the committee, per Fable, 2026-07-17
+
+---
+
+**Correction, Nick's word, 2026-07-17:** the cascade lives on the
+**LEFT**, not the right — every "right edge"/"right strip" reading
+above (the Architects' review, Pass One's strip description, the
+Recommendation, T2's own lean note) is superseded by this correction;
+the pass's underlying reasoning (glance/reach/survey, layer mechanics,
+the AB4 re-scoping recommendation, the trims) otherwise stands as
+written.
