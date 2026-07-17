@@ -34,6 +34,8 @@ import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
+import { seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
+import { countLineEquivalents } from '../store/lineEquivalents';
 
 // HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
 const FIRST_RUN_WORD_TARGET = 100;
@@ -157,6 +159,25 @@ function PageEditorView({ id }: { id: string }) {
 
   // F6 — the first-line invitation on a truly empty page (entry.text.length === 0).
   const invite = useFirstLineInvite(() => textRef.current.length === 0);
+
+  // FX2 S2 — Draft-open typewriter default, captured once at mount (the
+  // same "captured once" idiom as warmRef above, and Sliver.tsx's own
+  // initialGoalTextRef). `mode` and `initialText` here are read inside the
+  // effect's OWN closure (empty deps), so they're each frozen at their
+  // FIRST-RENDER value — the effective mode AT OPEN, before any switchMode()
+  // click could change it, and the page's text as it stood at that same
+  // mount. This component remounts per page (`key={id}` below), so "once
+  // per mount" already means "once per page-open": a later Draft <-> Free
+  // Write mode switch within the SAME mount can never re-run this effect,
+  // satisfying "mid-session mode switches don't re-evaluate" for free,
+  // without a separate guard ref. Free Write is untouched — no call here
+  // when the page opens into 'journal'.
+  useEffect(() => {
+    if (mode === 'drafting') {
+      seedTypewriterDefault(countLineEquivalents(initialText) < DRAFT_TYPEWRITER_LINE_THRESHOLD);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // W2 — the way back. Scroll lives on ModeStage's internal .mode-scroll box
   // (surfaceRef is the .mode-page ancestor the host already owns); caret

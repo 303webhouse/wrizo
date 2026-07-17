@@ -1018,6 +1018,157 @@ outlive a session lives here, not in chat.
     disjointness at 1280px AND 2200px, sliver open/closed; the Draft
     threshold both sides plus explicit-toggle persistence; full suite
     green both `HARNESS_PARKED` settings.
+    **BUILT — 2026-07-17, not merged/not pushed.** Built S1-S3 on
+    `fx2-second-sitting` off `main` @ `df88ff5`, in an isolated worktree
+    per the standing ONE CHECKOUT PER AGENT rule. **S1 — empirically
+    diagnosed first (headless CDP, 1100-2200px), per the brief's own
+    "verify before fixing" instruction, and the ACTUAL bug turned out
+    narrower than the brief's working hypothesis:** the grip itself was
+    already always exactly flush with the paper (its right edge rides
+    the anchor's own right edge, which cancels out to the paper's left
+    edge by construction, at every width — confirmed to sub-pixel
+    rounding only, never a real breach). The real, measured defect: the
+    sliver anchor's flat, unconditional 200px width had no floor on
+    actual available margin — at DeskFrame's own 1100px gate its LEFT
+    edge landed ~77px INSIDE the Drawer track (and since `.wz-sliver`
+    carries no `pointer-events:none`, that invisible overlap silently ate
+    hit-testing meant for the Drawer's own pull tabs; the OPEN panel's
+    opaque background visibly painted over part of the Drawer too) —
+    "chrome overlapping chrome," not the grip touching a word. Fixed by
+    clamping the anchor's WIDTH (right edge stays pinned to the paper) to
+    the actual Drawer-to-paper margin, expressible in pure CSS (no JS
+    measurement, per CD1's own precedent) since the Drawer's own width
+    cancels out of that distance, leaving only the grid's column-gap
+    (promoted to a `--frame-gap` token so it can't drift from
+    `.desk-frame-grid`'s own value); below that margin the anchor may dip
+    into the paper's own left padding (`.mode-page`'s 38px) rather than
+    the text, hard-capped at that depth so "never covers text" is a
+    provable guarantee, not a target a font metric could blow through.
+    Verified at 1100/1150/1200/1250/1280/1400/2200px: Drawer overlap zero
+    at every width (was ~77px/53px/30px/6px at the four narrowest below
+    ~1265px); wide screens byte-identical to pre-fix geometry, so none of
+    `cd1.mjs`'s own checks needed parking (re-run, still 27/27, file
+    untouched). **S2** — `store/writingSettings.ts` gains
+    `seedTypewriterDefault`/`setTypewriterExplicit` plus a module-level,
+    in-memory-only `explicitlySetThisSession` flag (never persisted — a
+    fresh app load is a fresh session); `PageEditor.tsx`/`ScriptEditor.tsx`
+    each seed once in a mount-scoped effect (empty deps; both hosts
+    already remount per page via `key={id}`, so mid-session mode switches
+    within one mount can't re-fire it); `Sliver.tsx`'s and
+    `ModeStage.tsx`'s own hand-click toggles now route through
+    `setTypewriterExplicit` so neither can be silently overridden by a
+    later Draft-open seed. `store/writingSettings.ts`'s own stale
+    "never in Draft" comment (flagged in the brief) corrected in place,
+    no behavior change. New `apps/desktop/scripts/harness/fx2.mjs`, 24
+    checks (S1 disjointness/persistence/opacity/paper-invariance at
+    1280px+2200px closed+open; S2 both threshold sides, the explicit
+    round trip, Free Write unchanged). `tsc` + `build:web` + selftest +
+    the full 14-script suite (`ab1`/`ab2`/`ab3`/`cd1`/`fx1`/`fx2`/`j4`/
+    `j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`) green under BOTH default and
+    `HARNESS_PARKED=1`, re-run a second time on the fully committed tree
+    before reporting (`th2.mjs` hit its documented transient flake once
+    across the whole verification pass — 2/43 on an early run — cleared
+    on immediate re-runs with zero code changes, consistent with its
+    known history, and was fully green on both final passes). Visual
+    eyeball check done via a new `app.screenshot()` harness helper
+    (raw CDP, not used by any committed check) at 1280px/2200px,
+    closed/open — geometry confirmed sane by direct look, not rects
+    alone. Three commits on `fx2-second-sitting`
+    (`86edfe7`/`655576a`/`a70ab13`), **not merged, not pushed** — the
+    branch sits in an isolated worktree, ready for review. Awaits
+    Fable's/Nick's word on the merge per the brief's own zero-schema
+    pre-authorization.
+    **Independent review — 2026-07-17, in a separate worktree, own
+    checkout.** **S1's revised diagnosis holds up empirically, not just
+    on read-through:** re-measured directly (rect reads, not the
+    harness's own new `screenshot()` alone) at 1100/1150/1200/1250/1280/
+    1400/2200px, sliver both states — then the pre-fix CSS was swapped
+    back in on disk, rebuilt, and re-measured at the SAME widths for a
+    real before/after diff (not trusted from the commit's own comments).
+    Confirmed both halves: the grip's right edge tracks the paper's own
+    left edge to sub-pixel rounding in BOTH the old and new code at
+    every width 1100-2200px — it was never the problem, in either
+    version. The Drawer overlap was real and is now gone: independently
+    measured ~75.7/52.2/28.7/5.2px at 1100/1150/1200/1250px pre-fix
+    (matching the build's own ~77/53/30/6px within fixture noise),
+    ~0-1px post-fix at the same widths. **One flag, not resolved:** at
+    1280px specifically — the brief's own "laptop" checkpoint — pre-fix
+    and post-fix geometry are BYTE-IDENTICAL; the clamp is a total no-op
+    there (`--sliver-margin` already clears the 200px cap on its own).
+    The Drawer overlap this ticket fixes only ever existed below
+    ~1265px. That means the fix is real and the text-safety law holds
+    everywhere tested, but whether "1280px" is actually representative
+    of Nick's own laptop viewport — as opposed to something narrower,
+    which is where the original bug lived — is unconfirmed by anything
+    in this ticket. Not a defect; a question only Nick's own window
+    width (or Fable re-asking him) can settle.
+    **S2: one real bypass found and fixed.** Grepped every
+    `setWritingSettings({...typewriter...})` call site in
+    `apps/desktop/src` (not just the two the build's own report named).
+    `JournalEntry.tsx:885` — the unframed Journal entry's own typewriter
+    toggle (`authored && !framed` only; the sliver takes over once
+    framed) — still called the bare setter, never arming
+    `explicitlySetThisSession`. Since that flag is module-scoped (one
+    bundle, shared with every Draft-open seed), a writer's explicit
+    choice made on THAT route could be silently overwritten by a later
+    Draft-page seed elsewhere in the same session — exactly the bypass
+    S2's own rule forbids. Fixed in `de60636`: routed through
+    `setTypewriterExplicit`, matching Sliver.tsx/ModeStage.tsx's own two
+    sites.
+    **The dropped "second page" S2 check: the build's own reasoning
+    checks out, but there was a way around it.** Read
+    `store/persistence.ts`: `cache.journalEntries` hydrates once, at
+    module load — confirms a raw localStorage write made after the
+    app's first boot really is invisible to it, as the report claimed.
+    But seeding BOTH fixture pages in the SAME pre-boot write sidesteps
+    that entirely; navigating between them afterward is a bare hash
+    change, no second reload needed. Implemented as `freshTwoDraftPages`
+    in `2ab78e1` — 5 new checks proving `explicitlySetThisSession`
+    survives a genuine page/mount boundary, not just the same-page mode
+    switch the original suite covered, which is the specific claim
+    `writingSettings.ts`'s own comment makes for why the flag is
+    module-scoped rather than a page-level ref (previously asserted,
+    never actually tested).
+    **A second harness gap, found independently (not something the
+    build's report flagged):** the committed S1 loop only runs at the
+    brief's own two named widths (1280/2200) — per the flag above, ONLY
+    widths where the width-clamp fix is a byte-identical no-op. A
+    regression of the clamp mechanism itself would pass that loop
+    silently. Added a `DESKFRAME_MIN_WIDTH` (1100px) regression block in
+    `2ab78e1`: anchor-vs-Drawer disjointness (the actual mechanism)
+    closed+open, plus grip-vs-text-column at the floor width. That last
+    one needed a new `textColumnOf` helper — `.mode-pagecol`/`.mode-page`
+    share one border box (padding included), which the ORIGINAL 1280px/
+    2200px checks quietly treat as "the text column" (harmless there,
+    since the padding-dip never engages at those widths) but is the
+    wrong rect at 1100px, where the anchor legitimately dips into the
+    padding gutter by design (the brief's own allowance). `textColumnOf`
+    reads the paper's own live computed left padding instead of
+    asserting against the padding-inclusive box; first written without
+    it, the new 1100px checks failed against fully-compliant geometry,
+    caught and fixed before commit. `fx2.mjs`: 24 -> 33 checks.
+    **`--frame-gap` and `app.screenshot()`, judged:** both reasonable,
+    not scope creep. `--frame-gap` is load-bearing for the fix's own
+    correctness (the clamp math needs the SAME column-gap value
+    `.desk-frame-grid` uses; a hand-synced literal risks silent drift
+    the way the brief itself warns against elsewhere) and changes no
+    existing value. `app.screenshot()` is additive-only, explicitly
+    disclaimed as unused by any committed check, and is exactly the kind
+    of low-risk harness capability this review's own S1 empirical
+    approach leans on.
+    **Full bar re-run independently, from a clean worktree, dependencies
+    installed fresh:** `tsc --noEmit`, `build:web`, `--selftest`, and the
+    full 14-script suite all green under both `HARNESS_PARKED` settings
+    on the fully committed tree (`ab1` 37/45, `ab2` 42/52, `ab3` 34/41,
+    `cd1` 27/27 — file untouched, confirmed via `git diff`, zero lines —
+    `fx1` 25/32, `fx2` 33/33, `j4` 26, `j5` 40, `m1` 33, `s1` 87, `th1`
+    26, `th2` 43, `w1` 18, `w2` 31). `th2.mjs` hit its documented
+    transient flake once (2/43) on the default-mode pass, cleared on two
+    immediate re-runs with zero code changes — consistent with its known
+    history, not a regression. Two commits added on top of the build's
+    own three (`de60636`, `2ab78e1`) — history not rewritten. **Still
+    NOT merged, NOT pushed** — awaits the orchestrating session's own
+    final check before merge, per this ticket's instructions.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now

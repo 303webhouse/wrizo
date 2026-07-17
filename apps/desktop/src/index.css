@@ -55,6 +55,14 @@
      ticket — Drawer progressive-disclosure/resize is explicitly deferred. */
   --drawer-width: 200px;
 
+  /* FX2 S1 — the composed frame's column-gap, promoted from a bare literal
+     in .desk-frame-grid to a token: the sliver anchor's own clearance math
+     (below, `.desk-frame-sliver-anchor`) needs the SAME gap value to know
+     how far the drawer track's right edge sits from the stage's own left
+     edge, and a shared var means the two can never drift apart the way a
+     hand-synced comment could. */
+  --frame-gap: 28px;
+
   /* CD1 S5 — the composed frame's own working max width (drawer | stage |
      wall-track): caps and centers on a wide monitor so a wide desk reads as
      more wood, not more furniture — the desk-ground texture (below) owns
@@ -1802,7 +1810,7 @@ a:focus-visible,
 .desk-frame-grid{
   display:grid;
   grid-template-columns: var(--drawer-width) minmax(0,1fr) 260px;
-  column-gap:28px; align-items:start; justify-content:center;
+  column-gap:var(--frame-gap); align-items:start; justify-content:center;
   max-width:var(--frame-max); margin:0 auto;
 }
 /* CD1 S5 — the corkboard track's grid COLUMN disappears with its content
@@ -1856,20 +1864,76 @@ a:focus-visible,
 .desk-frame-stage--screenplay .mode-pagecol{ width:min(760px,60ch); max-width:100%; min-width:0; }
 
 /* CD1 S2 — the sliver's anchor: an ABSOLUTELY POSITIONED overlay inside
-   `.desk-frame-stage` (position:relative, above), left-edge flush against
-   the paper's own left edge. `left` is computed from the stage's own 50%
-   midpoint minus half the paper's canonical width minus the sliver's own
-   200px — the SAME `min(760px,60ch)` measure `.mode-pagecol` uses (nested
-   `min()` in `calc()`), so it tracks the paper without ever needing to
-   measure it in JS. Being `position:absolute` is the geometry guarantee
-   itself: this box is OUT OF FLOW, so it cannot resize/reposition
-   `.desk-frame-stage`'s in-flow child (the paper) regardless of its own
-   open/closed/dissolved state — S2's hard invariant, structural, not
-   merely visual. */
-.desk-frame-sliver-anchor{ position:absolute; top:0; z-index:5; width:200px; height:100%;
-  left:calc(50% - min(380px,30ch) - 200px); }
+   `.desk-frame-stage` (position:relative, above). Being `position:absolute`
+   is the geometry guarantee itself: this box is OUT OF FLOW, so it cannot
+   resize/reposition `.desk-frame-stage`'s in-flow child (the paper)
+   regardless of its own open/closed/dissolved state — S2's hard invariant,
+   structural, not merely visual. Untouched by FX2 S1 below.
+
+   FX2 S1 — the grip clearance law: persistent chrome (the grip) never
+   enters the paper's text measure, at any viewport. Empirically verified
+   at 1100-2200px via the headless harness (not just read off the CSS,
+   per this project's own precedent) before writing this fix — the finding
+   changed the diagnosis from the brief's own working hypothesis:
+     - The GRIP was never actually the problem. `.wz-sliver-grip` sits at
+       `right:0` INSIDE this anchor, and this anchor's own right edge
+       (`left` + `width`, below) is defined so it always lands exactly on
+       the paper's left edge — the same `min(380px,30ch)` half-measure
+       `.mode-pagecol` itself uses, so the two cancel out by construction.
+       Measured flush (to sub-pixel rounding only) at every width from
+       DESKFRAME_MIN_WIDTH (1100px) up — the grip structurally cannot
+       cross into the paper regardless of what the width math below does,
+       because it rides this anchor's right edge, never its left.
+     - The REAL bug: this anchor's WIDTH was a flat, unconditional 200px
+       with no floor on how much room actually exists to its left. At the
+       1100px gate the anchor's LEFT edge landed ~77px INSIDE the Drawer's
+       own track (measured) — and because `.wz-sliver` (this anchor's
+       child, filling it at 100%/100%) carries no `pointer-events:none`,
+       that invisible overlap silently ate hit-testing meant for the
+       Drawer's pull tabs underneath, and the OPEN panel's opaque
+       background visibly painted over part of the Drawer. That's the
+       actual "chrome overlapping chrome" Nick's laptop hit — not the grip
+       touching a word, but the sliver's own footprint outgrowing the
+       margin the Drawer left it.
+   The fix clamps this anchor's WIDTH (not its right edge, which stays
+   pinned to the paper) to whatever margin genuinely exists between the
+   Drawer's own right edge and the paper — expressible in pure CSS, no JS
+   measurement, because the Drawer's own width cancels out of "Drawer's
+   right edge, relative to the stage's left edge" (both scale together
+   with the grid), leaving only the grid's column-gap (`--frame-gap`) as
+   the fixed remainder. Below that margin, per the brief's own allowance,
+   the anchor may dip into the paper's own left PADDING — `.mode-page`'s
+   `padding:30px 38px` (hard-coded here as `--sliver-paper-pad`; CSS can't
+   read a sibling rule's declared value, so this is hand-synced the same
+   way `store/lineEquivalents.ts`'s CANONICAL_MEASURE_CH mirrors this
+   file) — rather than the text itself. The dip is HARD-CAPPED at that
+   38px pad depth (`clamp()`'s own MAX arm), not merely aimed at the
+   160px floor below — this is what keeps "never covers text" a provable
+   guarantee rather than a target an unlucky font metric could blow
+   through. 160px is the brief's own fencepost (`clamp(160px, margin +
+   paper-padding, 200px)`), tuned here to the actually-measured worst
+   case: at the 1100px gate, margin (~123px) + the full pad (38px) lands
+   at ~161px, just clearing the floor with the SAME formula that governs
+   every other width — one clamp rule serving all viewports, per the
+   brief's own "the clamp is one rule" instruction. The panel
+   (`.wz-sliver-panel`, `width:calc(100% - 16px)`) and the grip both ride
+   this anchor's width/position, so neither needs its own separate clamp. */
+.desk-frame-sliver-anchor{
+  position:absolute; top:0; z-index:5; height:100%;
+  --sliver-paper-half: min(380px,30ch);
+  --sliver-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, see comment above */
+  --sliver-margin: calc(50% - var(--sliver-paper-half) + var(--frame-gap));
+  --sliver-overflow: clamp(0px, calc(160px - var(--sliver-margin)), var(--sliver-paper-pad));
+  --sliver-anchor-w: min(200px, calc(var(--sliver-margin) + var(--sliver-overflow)));
+  width: var(--sliver-anchor-w);
+  left: calc(50% - var(--sliver-paper-half) + var(--sliver-overflow) - var(--sliver-anchor-w));
+}
+/* Prose and screenplay share the SAME canonical paper width (FX1 S2 put
+   script on `.mode-pagecol` too), so no divergence from the base rule is
+   needed — kept as a hook only (DeskFrame.tsx always applies one of these
+   modifier classes alongside the base class). */
 .desk-frame-sliver-anchor--prose,
-.desk-frame-sliver-anchor--screenplay{ left:calc(50% - min(380px,30ch) - 200px); }
+.desk-frame-sliver-anchor--screenplay{ /* intentionally empty — see comment above */ }
 
 /* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
    z-index; the paper itself paints in normal flow above it). Same
