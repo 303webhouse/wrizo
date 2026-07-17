@@ -57,9 +57,9 @@ const disjoint = (a, b, eps = 0.5) =>
 
 const freshDesk = async (app, width = 1400, height = 900) => {
   await app.goto('/');
-  await app.evalJs('localStorage.clear()');
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk before fixture' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
   await app.emulateDpr(1, width, height);
 };
 
@@ -80,7 +80,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
 // fixture for S2's own unaffected-default check.
 const freshLoosePage = async (app, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
-  await app.evalJs("document.querySelector('.wz-start-writing').click()");
+  await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(400);
 };
@@ -99,7 +99,7 @@ const freshDraftPage = async (app, text, width = 1400, height = 900) => {
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after draft seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after draft seed' });
   await app.evalJs("location.hash = '#/page/fx2-draft'");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'Draft page framed' });
   await sleep(250);
@@ -127,7 +127,7 @@ const freshTwoDraftPages = async (app, textA, textB, width = 1400, height = 900)
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-desk')", { label: 'Desk after two-page draft seed' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after two-page draft seed' });
 };
 
 const gotoPage = async (app, id) => {
