@@ -1204,6 +1204,22 @@ outlive a session lives here, not in chat.
     yet; the S1 1280px-vs-Nick's-actual-laptop-width question the
     independent review flagged is still open and unresolved by anything
     in this ticket.
+    **Fable's review: GREEN at record depth — 2026-07-17.** Read the
+    ledger's own account whole, verified the merge tip (`2b866c8`),
+    cited the suite facts recorded above — did NOT read S1's clamp or
+    S2's seeding line-by-line against the actual diff, disclosed as
+    such rather than implied as a full code review. Close conditions
+    (three, not yet all met): this review (now landed); Nick's laptop
+    check post-deploy, specifically resolving S1's own open question —
+    did the observed grip/Drawer overlap actually resolve on his
+    machine, and is his laptop's width above or below the ~1265px
+    threshold where the fix's clamp actually engages (at 1280px it's a
+    provable no-op, per the independent review); and his word. Item 26
+    stays open in parallel — his remaining sitting verdicts (the glow,
+    the journal-paper question, the drawer at rest, the wide field) are
+    served by this SAME laptop session, not a separate one. Item 27
+    (HB1) is untouched by this review — stays with its own session's
+    Fable.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
