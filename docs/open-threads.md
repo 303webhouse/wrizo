@@ -802,7 +802,8 @@ outlive a session lives here, not in chat.
     field) is not left dangling — folded forward into FX3 (item 29)
     and the Cascade committee pass (item 30), both from Nick's own
     follow-on desktop sitting. Nothing here was dropped, only re-homed.
-27. **HB1 — the Threshold.** **MERGED, NOT CLOSED — 2026-07-17.** Brief:
+27. **HB1 — the Threshold.** **MERGED, DEPLOYED (retroactively found —
+    see below), NOT CLOSED — 2026-07-17.** Brief:
     `docs/wrizo-alpha/hb1-threshold-brief.md`. Charter:
     `docs/wrizo-alpha/hb-arc-handoff.md`. Nick's direct word waived the
     committee double-pass for this ticket; R1 (Flux stands in for Machina
@@ -1049,9 +1050,37 @@ outlive a session lives here, not in chat.
     the original review's felt checks, plus the echo, the mercy, the
     glance, the Ctrl+V, and one poke at any in-app "Done" that still
     targets `/`.
-    **Standing: deploy still waits on the sitting and Nick's word.** The
-    `cd1.1 erratum WIP` stash stays held per the review's own instruction,
-    until CD1's own origin-chat close conditions clear.
+    **Retroactive finding — HB1 shipped to production already, 2026-07-17
+    — corrects the "Not deployed" claim above.** The FX2 deploy (item 28,
+    `railway up` on `main` @ `740b572`, deployment `66837d33`, Nick's
+    word "Go ahead and deploy") shipped a SHA that has `7e7d7f4` (HB1's
+    own merge commit) as an ancestor — confirmed by `git merge-base
+    --is-ancestor`, not assumed. That deploy's own ledger entry says so
+    explicitly in hindsight ("Item 27 (HB1) is untouched by this review —
+    stays with its own session's Fable") but named only FX2/CD1 in the
+    deploy word itself; HB1 rode along unnamed. **Net effect: the
+    Threshold — a first-screen surface, the boot experience for every
+    device — has been live since 2026-07-17, with NEITHER its own device
+    sitting NOR an explicit per-ticket deploy clearance ever given.** No
+    rollback taken; the code is the reviewed, fold-verified, F-3-spot-
+    checked tip, not unvetted work — this is a process-record gap, not a
+    known defect in front of writers. Flagged plainly so Nick's felt
+    checks (the sitting list above) happen against what's ACTUALLY live,
+    not a staging assumption. This is the exact failure mode the
+    deploy-manifest rule below now exists to close.
+    **Deploy-manifest rule — ratified 2026-07-17 (Fable), citing this
+    exact incident as the trigger, standing across all tracks.** A
+    deploy ships a SHA, not a ticket. Before any `railway up`, the
+    deploying session enumerates every merged-but-undeployed ticket
+    contained in the target SHA and names them ALL in the deploy
+    request; Nick's deploy word is valid only against that enumeration.
+    If any named ticket lacks its own deploy clearance, the deploy waits
+    — or ships from the last cleared SHA instead. (Recorded in full,
+    TOOLING STATUS, below.)
+    **Standing: the stash held for CD1.** The `cd1.1 erratum WIP` stash
+    stays held per the review's own instruction, until CD1's own
+    origin-chat close conditions clear — unrelated to the deploy finding
+    above.
 28. ~~**FX2 — the Second Sitting.**~~ **BRIEF COMMITTED, BUILD AUTHORIZED —
     2026-07-16.** Two findings from Nick's device-look sitting with the
     composed desk (item 26): (1) on his laptop, the sliver's grip
@@ -1508,3 +1537,18 @@ outlive a session lives here, not in chat.
   `S1/cd1.1: ...`) so its diff discloses the touch — no parking, since
   nothing about the design was ever superseded. cd1.mjs's S1 check
   (Pages/Plan toggle) is the worked example of the second case.
+- **DEPLOY-MANIFEST RULE — ratified 2026-07-17 (Fable), standing across
+  all tracks.** Trigger: the FX2 deploy (`railway up` @ `740b572`,
+  Nick's word "Go ahead and deploy") shipped a SHA that also carried
+  HB1's merged-but-not-yet-sat-with code as an unnamed rider — HB1's
+  own device sitting had not happened, and no deploy clearance was ever
+  given for it by name (see item 27's own retroactive-finding note).
+  **A deploy ships a SHA, not a ticket.** Before any `railway up`, the
+  deploying session enumerates every merged-but-undeployed ticket
+  contained in the target SHA and names them ALL in the deploy request
+  — Nick's deploy word is valid only against that enumeration. If any
+  named ticket lacks its own deploy clearance, the deploy waits, or
+  ships from the last cleared SHA instead. Practically: before typing
+  "deploy," run `git log <last-deployed-SHA>..<target-SHA> --oneline`
+  (or read the ledger's own merged-not-deployed items) and name every
+  ticket that turns up, not just the one the request was about.
