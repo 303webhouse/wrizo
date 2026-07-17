@@ -816,6 +816,66 @@ outlive a session lives here, not in chat.
     disjointness at 1280px AND 2200px, sliver open/closed; the Draft
     threshold both sides plus explicit-toggle persistence; full suite
     green both `HARNESS_PARKED` settings.
+    **BUILT — 2026-07-17, not merged/not pushed.** Built S1-S3 on
+    `fx2-second-sitting` off `main` @ `df88ff5`, in an isolated worktree
+    per the standing ONE CHECKOUT PER AGENT rule. **S1 — empirically
+    diagnosed first (headless CDP, 1100-2200px), per the brief's own
+    "verify before fixing" instruction, and the ACTUAL bug turned out
+    narrower than the brief's working hypothesis:** the grip itself was
+    already always exactly flush with the paper (its right edge rides
+    the anchor's own right edge, which cancels out to the paper's left
+    edge by construction, at every width — confirmed to sub-pixel
+    rounding only, never a real breach). The real, measured defect: the
+    sliver anchor's flat, unconditional 200px width had no floor on
+    actual available margin — at DeskFrame's own 1100px gate its LEFT
+    edge landed ~77px INSIDE the Drawer track (and since `.wz-sliver`
+    carries no `pointer-events:none`, that invisible overlap silently ate
+    hit-testing meant for the Drawer's own pull tabs; the OPEN panel's
+    opaque background visibly painted over part of the Drawer too) —
+    "chrome overlapping chrome," not the grip touching a word. Fixed by
+    clamping the anchor's WIDTH (right edge stays pinned to the paper) to
+    the actual Drawer-to-paper margin, expressible in pure CSS (no JS
+    measurement, per CD1's own precedent) since the Drawer's own width
+    cancels out of that distance, leaving only the grid's column-gap
+    (promoted to a `--frame-gap` token so it can't drift from
+    `.desk-frame-grid`'s own value); below that margin the anchor may dip
+    into the paper's own left padding (`.mode-page`'s 38px) rather than
+    the text, hard-capped at that depth so "never covers text" is a
+    provable guarantee, not a target a font metric could blow through.
+    Verified at 1100/1150/1200/1250/1280/1400/2200px: Drawer overlap zero
+    at every width (was ~77px/53px/30px/6px at the four narrowest below
+    ~1265px); wide screens byte-identical to pre-fix geometry, so none of
+    `cd1.mjs`'s own checks needed parking (re-run, still 27/27, file
+    untouched). **S2** — `store/writingSettings.ts` gains
+    `seedTypewriterDefault`/`setTypewriterExplicit` plus a module-level,
+    in-memory-only `explicitlySetThisSession` flag (never persisted — a
+    fresh app load is a fresh session); `PageEditor.tsx`/`ScriptEditor.tsx`
+    each seed once in a mount-scoped effect (empty deps; both hosts
+    already remount per page via `key={id}`, so mid-session mode switches
+    within one mount can't re-fire it); `Sliver.tsx`'s and
+    `ModeStage.tsx`'s own hand-click toggles now route through
+    `setTypewriterExplicit` so neither can be silently overridden by a
+    later Draft-open seed. `store/writingSettings.ts`'s own stale
+    "never in Draft" comment (flagged in the brief) corrected in place,
+    no behavior change. New `apps/desktop/scripts/harness/fx2.mjs`, 24
+    checks (S1 disjointness/persistence/opacity/paper-invariance at
+    1280px+2200px closed+open; S2 both threshold sides, the explicit
+    round trip, Free Write unchanged). `tsc` + `build:web` + selftest +
+    the full 14-script suite (`ab1`/`ab2`/`ab3`/`cd1`/`fx1`/`fx2`/`j4`/
+    `j5`/`m1`/`s1`/`th1`/`th2`/`w1`/`w2`) green under BOTH default and
+    `HARNESS_PARKED=1`, re-run a second time on the fully committed tree
+    before reporting (`th2.mjs` hit its documented transient flake once
+    across the whole verification pass — 2/43 on an early run — cleared
+    on immediate re-runs with zero code changes, consistent with its
+    known history, and was fully green on both final passes). Visual
+    eyeball check done via a new `app.screenshot()` harness helper
+    (raw CDP, not used by any committed check) at 1280px/2200px,
+    closed/open — geometry confirmed sane by direct look, not rects
+    alone. Three commits on `fx2-second-sitting`
+    (`86edfe7`/`655576a`/`a70ab13`), **not merged, not pushed** — the
+    branch sits in an isolated worktree, ready for review. Awaits
+    Fable's/Nick's word on the merge per the brief's own zero-schema
+    pre-authorization.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
