@@ -1877,21 +1877,90 @@ outlive a session lives here, not in chat.
     NOT yet ratified, awaits Nick's word); framework beats (from the
     progress-milestones/Plan system) surfacing as board cards (named
     as the P-arc's own doorway, not this sitting's to build).
-    **Read-backs open, unresolved by this sitting:** the exact scope
-    of "copy-out" (which surfaces, what format); whether the
-    connect-toggle (CD2/AB4's own thread-drawing gesture) retires in
-    favor of something else; and Nick's own confirm on the card-
-    editing popup supersession above — none of these are ruled yet.
-    **Mockups delivered, not yet committed:** `board-card-studies.html`
-    (card treatments A-D plus the popup editor) — lands under
-    `docs/design/` once Nick's own pick is made; not on disk yet, not
-    committed here, per his own instruction to hold it.
+    **Read-backs open, unresolved by this sitting** at the time it
+    was recorded — **all three now RULED, per FX4's own authority
+    line (item 33):** copy-out is Publish-only; handle-drag replaces
+    the connect-toggle; the card-editing popup supersession is
+    confirmed (Nick's own word, no longer pending). See item 33 for
+    the verbatim rulings and their build implications.
+    **Mockups delivered, still not committed:** `board-card-studies.html`
+    (card treatments A-D plus the popup editor) — Nick's own pick
+    landed (Stacked, variant B, per item 33/FX4's own S7), but the
+    file itself has not actually reached this session by any channel
+    yet (checked broadly, genuinely absent) — still not on disk, not
+    committed. FX4's own S7 carries enough written specification
+    (lighter stock, 1px hairline, 2px offset hard edge + soft shadow,
+    square corners) to build from without the mockup file itself, but
+    the file remains owed as the historical design reference `docs/
+    design/` is meant to hold.
     **What remains open:** item 30 (CD2) — the dock, pin/membership,
     thread round-trip, and resize-across-reload are all still
     UNVERDICTED (this sitting didn't reach them); item 31 (AB4) —
     same, still open. Item 27 (HB1)'s own full sitting list is
     entirely untouched by this pass. Neither item 30 nor 31 closes on
     this sitting alone.
+33. **FX4 — the Fourth Sitting.** **BRIEF COMMITTED, BUILD AUTHORIZED
+    — 2026-07-18.** Authority: item 32's sitting record, plus **four
+    of Nick's rulings, verbatim:** copy-out is Publish-only (no new
+    clipboard door this ticket); handle-drag (double-click the
+    card's own brass resize handle, drag, release inside a target
+    card) REPLACES the sliver's Connect toggle for thread-drawing —
+    the toggle itself retires; the card-editing popup (blurred board
+    behind, the card's own minimal strip) SUPERSEDES inline
+    contenteditable card editing — confirmed, no longer pending
+    (item 32's own read-back closed); **Stacked** (variant B of
+    `board-card-studies.html`) is the ratified card treatment —
+    lighter stock, 1px hairline, thickness told by a 2px offset hard
+    edge + soft shadow, square corners.
+    **The trash bin — recorded here as QUEUED, not this ticket's
+    build:** pages are cheap to trash (`deletedAt` already
+    soft-deletes them, a door just needs building); cards and
+    threads are NOT cheap — they need new deletion semantics of
+    their own before a bin can honestly represent them. T4's own
+    interaction pattern (disclosure, one plain confirm) is the noted
+    starting point whenever this gets its own ticket. Not FX4's to
+    build.
+    **The intro-screen table, recorded here:** item 27 (HB1) stays
+    open; hb1.2 (its own next fold) is queued; **the hammer test
+    leads its severity ranking** — whichever finding the hammer test
+    surfaces worst is what hb1.2 addresses first, when it's built.
+    **Nine slices (S0-S9):** S1 the typewriter start retunes to 25%
+    across EVERY surface including the Journal — its carve-out
+    RETIRES, the ink-coordinate risk gets SOLVED not re-skipped (a
+    seeded-stroke byte-truth fixture is the proof; if it can't be
+    proven safe, STOP and report rather than ship half); S2 the goal
+    glow gets a render-verified-first, then-retuned pass (defect vs.
+    tuning diagnosed before any value changes, FX2's own law), plus a
+    harness luminance floor so "too subtle to see" can't silently
+    regress again; S3 the strip goes flush to the screen's own left
+    edge (not the frame's), and the Board's own strip/sliver
+    anchoring — suspected defect, not yet diagnosed — gets measured
+    and fixed at the root; S4 cards AND the board canvas both gain
+    both-axis resize, canvas dimensions persisting as a new
+    `'board-meta'` array element (the `'connection'`-kind precedent
+    from AB4, still zero-schema — STOP-and-report if that shape
+    fights in practice); S5 the popup editor lands (Bold/Italic only,
+    the frozen markdown set does NOT unfreeze here), inline editing
+    retires, `ab4.mjs`'s own inline-editing check parks per A4; S6
+    the handle-drag thread gesture replaces Connect, parking
+    `ab4.mjs`'s exact-two-tools count and its connect-toggle checks;
+    S7 Stacked ships as CSS; S8 hover-restore on faded chrome gets
+    repaired as a defect fix, explicitly NOT a redesign (the staged
+    vanish itself stays the committee's). New
+    `apps/desktop/scripts/harness/fx4.mjs` required (S9) plus the
+    park sweep named above. **Zero schema, zero new deps** — merge
+    pre-authorized per the standing rule; Fable reviews post-merge,
+    gating close and redeploy; any slice wanting a column is a
+    STOP-and-report, same discipline as AB4. **Sequencing:** builds
+    after TU1's review lands, OR in parallel on Nick's explicit word
+    — the two tickets share one seam (PageEditor/DeskFrame host
+    wiring) that needs coordination if run concurrently, nowhere
+    else. Committed:
+    `docs/wrizo-alpha/fx4-fourth-sitting-brief.md`. **Not yet
+    committed: `board-card-studies.html`** — genuinely absent from
+    this session by any channel (checked), owed under `docs/design/`
+    whenever it actually lands; S7 already carries enough written
+    spec to build without it.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
