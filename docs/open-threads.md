@@ -1828,6 +1828,70 @@ outlive a session lives here, not in chat.
     or its own, his call. TU1 remains queued next, schema-flagged,
     awaiting its own brief and Nick's explicit merge go; its order
     against hb1.2 also rides his word.
+32. **Nick's desktop sitting — 2026-07-18. PARTIAL** — served items
+    30 (CD2) and 31 (AB4) in part; item 27's (HB1) own list untouched.
+    **Verdicts, feeding a future FX4** (brief follows TU1's review;
+    zero-schema): the typewriter start moves to 25% from the top of
+    the stage; scroll/fade engages within ~10 lines; the retune
+    applies to ALL surfaces including the Journal — its own
+    start-offset carve-out RETIRES (the ink-coordinate risk that
+    justified the carve-out is to be SOLVED, not skipped past); the
+    goal glow gets a verify-then-retune pass to an actually
+    perceivable state (the hard intensity-cap law itself still
+    holds, only the tuning changes); the strip sits flush to the
+    screen's own left edge (not the frame's); the Board's own
+    strip/sliver anchoring is flush too, with an ANCHORING DEFECT
+    SUSPECTED there specifically (not yet diagnosed); cards resize on
+    BOTH axes (was one); the board canvas itself resizes on both axes
+    too; and hover-restore of already-faded chrome, currently broken,
+    gets repaired.
+    **Rulings recorded (verdicts on standing questions, not FX4
+    slices):** card editing moves to a POPUP over a blurred board,
+    the popup carrying the card's own minimal strip — this SUPERSEDES
+    Nick's own prior standing rider (notecards keep inline editing,
+    no sliver interference, reaffirmed as recently as AB4's own S4) —
+    **pending his explicit confirm**, not yet final. Cards carry
+    neither a typewriter nor a progress instrument (furniture that
+    doesn't apply to arrangement, same reasoning as AB4's own
+    `goalText=""` sustain). A visible thin sheet-break line where
+    continuous scroll crosses a page boundary is ruled AB5's own
+    input, not this sitting's to solve — it amends Law 8's own
+    "silent turnover" letter, a canon touch for AB5 to carry, not a
+    ratification landed here. The sliver's "Instruments" icon
+    renames to "Progress Bar," gaining strip/disabled/bottom
+    placement options — handed to the instruments-panel's own owner
+    (the Cascade committee pass), not built here. Three typewriter
+    sub-toggles (Forward Momentum / Text Fade / Page Scroll) move
+    behind the sliver's Typewriter icon. The "Controls"/"Forward
+    lock" labels retire (superseded terminology, park the strings
+    per the usual lexicon discipline whenever code catches up).
+    **A new committee pass convened, Nick's own commission** (not yet
+    delivered — a future doc, not this entry): per-mode tool strips
+    (a formatting LIST for Draft vs. its own frozen-markdown storage
+    reality — the cost of reconciling them is to be NAMED, not
+    assumed; a schema touch here would be LOUDLY flagged, same
+    standing discipline as AB4's own; custom-font upload wakes as a
+    later question, gated behind progressive disclosure); a staged
+    vanish that includes the strip itself (a real A8 touch — the
+    strip's own "never dissolving" law softening — amendment drafted,
+    NOT yet ratified, awaits Nick's word); framework beats (from the
+    progress-milestones/Plan system) surfacing as board cards (named
+    as the P-arc's own doorway, not this sitting's to build).
+    **Read-backs open, unresolved by this sitting:** the exact scope
+    of "copy-out" (which surfaces, what format); whether the
+    connect-toggle (CD2/AB4's own thread-drawing gesture) retires in
+    favor of something else; and Nick's own confirm on the card-
+    editing popup supersession above — none of these are ruled yet.
+    **Mockups delivered, not yet committed:** `board-card-studies.html`
+    (card treatments A-D plus the popup editor) — lands under
+    `docs/design/` once Nick's own pick is made; not on disk yet, not
+    committed here, per his own instruction to hold it.
+    **What remains open:** item 30 (CD2) — the dock, pin/membership,
+    thread round-trip, and resize-across-reload are all still
+    UNVERDICTED (this sitting didn't reach them); item 31 (AB4) —
+    same, still open. Item 27 (HB1)'s own full sitting list is
+    entirely untouched by this pass. Neither item 30 nor 31 closes on
+    this sitting alone.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
