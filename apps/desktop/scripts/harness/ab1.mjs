@@ -675,10 +675,15 @@ if (process.env.HARNESS_PARKED === '1') {
     // (pageType-invariant frame)', boardToolrailRect.left ===
     // scriptToolrailRect.left && boardToolrailRect.width ===
     // scriptToolrailRect.width, ...);
-    // CD2 S1/S5 — same rename, same underlying claim (Board still passes no
-    // strip content; the empty track sits at the same structural position
-    // as Script's). Live successor: cd2.mjs's own S1/S5 section re-proves
-    // this exact Board-vs-Script comparison against .desk-frame-strip.
+    // CD2 S1/S5 — same rename, same underlying claim (at the time this was
+    // written, Board passed no strip content; the empty track sat at the
+    // same structural position as Script's). AB4 S5 later wires the
+    // cascade in here too — Board's track carries real content now, same
+    // as every other framed surface — but the geometric claim below (fixed
+    // structural position, pageType-invariant) was never about content
+    // presence, so it holds either way. Live successor: cd2.mjs's own S1/S5
+    // section re-proves this exact Board-vs-Script comparison against
+    // .desk-frame-strip.
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script seed, CD2 park' });
     await app.evalJs(`(() => {
