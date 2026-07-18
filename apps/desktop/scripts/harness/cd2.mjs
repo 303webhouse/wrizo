@@ -208,6 +208,19 @@ await withHarness(async (app) => {
       && pagePanel.hasMoveCopy && pagePanel.hasPort && pagePanel.footerAbsentOnProjectPage,
     JSON.stringify(pagePanel));
 
+  // Successor to ab3.mjs's own retired "S4/S2: the Page face's Where-it-
+  // lives names the project by title (not the Journal)" (parked there,
+  // SUPERSEDED — describePageHome() is untouched, only the doorway to
+  // reach it moved from a drawer pull to the strip's Page category).
+  // freshProsePage's own CreateProject fixture never types a title (F4's
+  // "no title required" door), so describePageHome() reads back "In
+  // Untitled" (store/pageHome.ts's own fallback) — asserting THAT exact
+  // string, not a fabricated project name, keeps this honest to the actual
+  // fixture rather than an assumed one.
+  const homeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
+  ok('S3 (successor to ab3.mjs\'s "S4/S2: the Page face\'s Where-it-lives names the project..."): the home label still names the project ("In Untitled" — this fixture never typed a title) through the cascade\'s Page panel',
+    homeLabel === 'In Untitled', String(homeLabel));
+
   // The saved-silently footer's positive case — a loose (unfiled) page.
   await freshLoosePage(app, LAPTOP_W, 900);
   await clickCategory(app, 1); // Page
@@ -215,6 +228,40 @@ await withHarness(async (app) => {
   const loosePageFooter = await app.evalJs("document.querySelector('.wz-pageface-footer')?.textContent");
   ok('S3/DoD: on a loose (unfiled) page, the Page panel carries the saved-silently footer — its only appearance anywhere once framed',
     !!loosePageFooter && loosePageFooter.includes('Saved automatically'), String(loosePageFooter));
+
+  // Successor to ab3.mjs's own retired "S2: the Page face's star toggle
+  // actually persists to entry.starred" (parked there, SUPERSEDED —
+  // PageFace.tsx itself is byte-unchanged by CD2, but the doorway to reach
+  // it moved from a click-to-flip drawer pull to the strip's Page
+  // category; re-proven fresh here through the new doorway).
+  await app.evalJs("document.querySelector('.wz-pageface-star').click()");
+  await sleep(2300); // past PageEditor's own AUTOSAVE_MS (2000ms)
+  const starredAfter = await app.evalJs("document.querySelector('.wz-pageface-star')?.dataset.starred");
+  const storedStarred = await app.evalJs(`(() => {
+    const id = location.hash.split('/page/')[1];
+    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    return entries.find(e => e.id === id)?.starred;
+  })()`);
+  ok('S3 (successor to ab3.mjs\'s "S2: the Page face\'s star toggle actually persists to entry.starred"): the star toggle still persists through the cascade\'s Page panel',
+    starredAfter === 'true' && storedStarred === true, `${starredAfter} / ${storedStarred}`);
+
+  // Successor to ab3.mjs's own retired "R3: the drawer's active pull is not
+  // brass" (parked there, SUPERSEDED — .wz-drawer-pull.active is gone; the
+  // strip's own active category is the new where-you-are marker).
+  const stripActiveColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-strip-item.active')).color");
+  ok('S1 (successor to ab3.mjs\'s "R3: the drawer\'s active pull is not brass"): the strip\'s active category is not brass either (olive/--accent-rest per the foundations)',
+    stripActiveColor !== 'rgb(255, 152, 0)', stripActiveColor);
+
+  // Successor to ab3.mjs's own retired keystroke-dissolve-back-to-page-room
+  // check, Page-panel-specific: typing while the PAGE panel itself (not
+  // Journal/Drawers/etc.) is open closes it too, same engine.
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await app.typeKeys('page panel dissolve probe');
+  await sleep(150);
+  const pagePanelGoneAfterType = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
+  ok('S3 (successor to ab3.mjs\'s own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine',
+    pagePanelGoneAfterType, String(pagePanelGoneAfterType));
+
   await freshProsePage(app, LAPTOP_W, 900);
 
   await clickCategory(app, 3); // Drawers

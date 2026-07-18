@@ -71,16 +71,19 @@ await withHarness(async (app) => {
   // check (which required it present) is parked below (SUPERSEDED), with
   // the opposite assertion live here. FX1 S5 retired the ALWAYS-empty meter
   // track's own presence assertion — see this file's PARKED section and the
-  // new live check just below. ------------------------------------------------
+  // new live check just below. CD2 S1/S5 — the drawer's own track renames
+  // .desk-frame-toolrail -> .desk-frame-strip (the cascade's strip); this
+  // check itself is PARKED below (its old selector would just read false
+  // now, not crash, but the claim is superseded all the same) — successor
+  // in cd2.mjs's own S1/S5 section. ------------------------------------------
   const zones = await app.evalJs(`({
     wayfinding: !!document.querySelector('.desk-rail'),
-    toolRail: !!document.querySelector('.desk-frame-toolrail'),
     stage: !!document.querySelector('.desk-frame-stage'),
     corkboard: !!document.querySelector('.desk-frame-corkboard'),
     meter: document.querySelectorAll('.desk-frame-meter').length,
   })`);
-  ok('CD1 S4/S1: DeskFrame\'s own tool-rail/stage tracks are present; the far-left rail (.desk-rail) does NOT mount while framed',
-    !zones.wayfinding && zones.toolRail && zones.stage,
+  ok('CD1 S4: the far-left rail (.desk-rail) does NOT mount while framed (the stage track is present)',
+    !zones.wayfinding && zones.stage,
     JSON.stringify(zones));
   // FX1 S5 — Nick's "dead bar" verdict: the meter track never had a content
   // prop (AB1 S2's own "ALWAYS empty/reserved"), so it rendered a wide,
@@ -226,7 +229,6 @@ await withHarness(async (app) => {
   await sleep(200);
   ok('Board mounts inside DeskFrame at >=1100px', await app.evalJs("!!document.querySelector('.board-canvas, .board-canvas-wrap')"));
   ok('Board never renders the mode strip (Trellis-side by design)', await app.evalJs("!document.querySelector('.desk-mode-strip')"));
-  const boardToolrailRect = await app.evalJs(rectOf('.desk-frame-toolrail'));
 
   // -- S3 on Board: committing an edit inside a text box (real keydown input,
   // even though Board has no live pen-stroke authoring — J4: ink boxes only
@@ -273,15 +275,14 @@ await withHarness(async (app) => {
   const scriptDeferred = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab.deferred')].map(b => b.textContent)");
   ok('Script: Free Write/Revise/Workshop are deferred (not silently live)', JSON.stringify(scriptDeferred) === JSON.stringify(['Free Write', 'Revise', 'Workshop']), JSON.stringify(scriptDeferred));
 
-  // -- PAGE IS PRIMARY across pageTypes: the FRAME's own tracks (toolrail)
-  // sit at the same structural position regardless of which pageType
-  // occupies the stage — the page's own measure inside the stage is allowed
-  // to differ (screenplay keeps its own courier measure, not forced to
-  // prose's 60ch), but the reserved tracks around it never move. -----------
-  const scriptToolrailRect = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  ok('PAGE IS PRIMARY: the tool-rail track sits at the same position on Board and Script (pageType-invariant frame)',
-    boardToolrailRect.left === scriptToolrailRect.left && boardToolrailRect.width === scriptToolrailRect.width,
-    `board=${JSON.stringify(boardToolrailRect)} script=${JSON.stringify(scriptToolrailRect)}`);
+  // -- PAGE IS PRIMARY across pageTypes: the FRAME's own tracks (the strip,
+  // formerly the toolrail) sit at the same structural position regardless
+  // of which pageType occupies the stage — the page's own measure inside
+  // the stage is allowed to differ (screenplay keeps its own courier
+  // measure, not forced to prose's 60ch), but the reserved tracks around it
+  // never move. CD2 S1/S5 — this Board-vs-Script comparison itself is
+  // PARKED below (its old .desk-frame-toolrail selector is gone); live
+  // successor in cd2.mjs's own S1/S5 section. -------------------------------
 
   // -- S4 finding 4: containment — the script sheet is height-capped and
   // scrolls internally; the page never extends past the frame even after
@@ -377,22 +378,19 @@ await withHarness(async (app) => {
   // (the FX1 S5 "render only with content" law, reused for this track; no
   // CD1 caller ever passes content), so its own rect no longer exists to
   // read. The ORIGINAL "never overlaps the corkboard" check is parked below
-  // (SUPERSEDED); the tool-rail overlap check is untouched (still a real
-  // track) and stays live as-is.
+  // (SUPERSEDED). CD2 S1/S5 — the tool-rail overlap check itself is ALSO
+  // now PARKED below (its old .desk-frame-toolrail selector is gone; live
+  // successor in cd2.mjs's own S1/S5 section) — only the corkboard-absence
+  // and no-horizontal-scroll claims stay live here.
   const gateFloorRects = await app.evalJs(`({
-    toolrail: ${rectOf('.desk-frame-toolrail')},
     pagecol: ${rectOf('.mode-pagecol')},
     corkboardAbsent: !document.querySelector('.desk-frame-corkboard'),
     hasHorizScroll: document.documentElement.scrollWidth > window.innerWidth,
   })`);
-  const toolrailRight = gateFloorRects.toolrail.left + gateFloorRects.toolrail.width;
   const pagecolRight = gateFloorRects.pagecol.left + gateFloorRects.pagecol.width;
-  ok('PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail',
-    gateFloorRects.pagecol.left >= toolrailRight,
-    JSON.stringify({ ...gateFloorRects, toolrailRight, pagecolRight }));
   ok('CD1 S5/S1 (was "...never overlaps the corkboard"): the corkboard track does not mount at all at the gate floor either (nothing to overlap — the FX1 S5 law, universal, not just on a wide viewport)',
     gateFloorRects.corkboardAbsent === true,
-    JSON.stringify({ ...gateFloorRects, toolrailRight, pagecolRight }));
+    JSON.stringify({ ...gateFloorRects, pagecolRight }));
   ok('PAGE IS PRIMARY at the gate floor (1100px): no horizontal scroll (nothing overflows the viewport)',
     gateFloorRects.hasHorizScroll === false, JSON.stringify(gateFloorRects));
 
@@ -429,6 +427,13 @@ console.log(JSON.stringify(checks, null, 2));
 // green under HARNESS_PARKED=1 while the checks it documents are honestly
 // obsolete. Successor assertions for the rail's real contents live in
 // ab2.mjs, not here.
+//
+// CD2 (2026-07-17) — three more entries at the foot of this block: the left
+// drawer's own retirement renames .desk-frame-toolrail -> .desk-frame-strip
+// (the cascade's own strip, S1's own "never dissolving" law); the three
+// checks below that read the old selector are re-asserted against the new
+// one (same underlying geometric claim, same truth), successors in
+// cd2.mjs's own S1/S5 section.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -627,6 +632,105 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "finding 4: the script sheet has a bounded scroll-cap height (does not grow unbounded)", asserting a flat capHeight<=660px ceiling) — FX3 S1: the cap is now bounded by the STAGE\'s own height (not the retired flat ceiling, and not literally unbounded either)',
       scriptScrollCapHeightNow.capHeight > 660 && Math.abs(scriptScrollCapHeightNow.capHeight - scriptScrollCapHeightNow.stageHeight) < 1,
       JSON.stringify(scriptScrollCapHeightNow));
+
+    // ORIGINAL (this file's own live S1 section, pre-CD2): const zones =
+    // await app.evalJs(`({ wayfinding: !!document.querySelector('.desk-
+    // rail'), toolRail: !!document.querySelector('.desk-frame-toolrail'),
+    // stage: !!document.querySelector('.desk-frame-stage'), ... })`);
+    // ok('CD1 S4/S1: DeskFrame\'s own tool-rail/stage tracks are present;
+    // the far-left rail (.desk-rail) does NOT mount while framed',
+    // !zones.wayfinding && zones.toolRail && zones.stage,
+    // JSON.stringify(zones));
+    // CD2 S1/S5 — the left drawer retires; its track is renamed
+    // .desk-frame-toolrail -> .desk-frame-strip (the cascade's own strip,
+    // never dissolving, S1's own law). The underlying claim (the track
+    // exists, the far-left rail doesn't mount framed) stays TRUE — only the
+    // selector changed. Live successor: cd2.mjs's own S1/S5 section proves
+    // the strip's presence, roster, and fixed width directly against the
+    // renamed selector.
+    await app.goto('/');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before CD2 park entries' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), CD2 park' });
+    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed, CD2 park' });
+    await sleep(200);
+    const zonesNow = await app.evalJs(`({
+      wayfinding: !!document.querySelector('.desk-rail'),
+      strip: !!document.querySelector('.desk-frame-strip'),
+      stage: !!document.querySelector('.desk-frame-stage'),
+    })`);
+    pok('PARKED (was "CD1 S4/S1: DeskFrame\'s own tool-rail/stage tracks are present; the far-left rail (.desk-rail) does NOT mount while framed", reading .desk-frame-toolrail) — CD2 S1/S5: the drawer\'s track is renamed .desk-frame-strip (the cascade\'s own strip); the far-left rail still does not mount framed, same truth',
+      !zonesNow.wayfinding && zonesNow.strip && zonesNow.stage, JSON.stringify(zonesNow));
+
+    // ORIGINAL (this file's own live section, pre-CD2): const
+    // boardToolrailRect = await app.evalJs(rectOf('.desk-frame-toolrail'));
+    // ... const scriptToolrailRect = await
+    // app.evalJs(rectOf('.desk-frame-toolrail')); ok('PAGE IS PRIMARY: the
+    // tool-rail track sits at the same position on Board and Script
+    // (pageType-invariant frame)', boardToolrailRect.left ===
+    // scriptToolrailRect.left && boardToolrailRect.width ===
+    // scriptToolrailRect.width, ...);
+    // CD2 S1/S5 — same rename, same underlying claim (Board still passes no
+    // strip content; the empty track sits at the same structural position
+    // as Script's). Live successor: cd2.mjs's own S1/S5 section re-proves
+    // this exact Board-vs-Script comparison against .desk-frame-strip.
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script seed, CD2 park' });
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab1-cd2-park-board', text: '', pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now });
+      const headingId = 'ab1-cd2-park-script-heading';
+      entries.push({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed, CD2 park' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs("location.hash = '#/page/ab1-cd2-park-board'");
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Board framed, CD2 park' });
+    await sleep(200);
+    const boardStripRectNow = await app.evalJs(rectOf('.desk-frame-strip'));
+    await app.evalJs("location.hash = '#/page/ab1-cd2-park-script'");
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Script framed, CD2 park' });
+    await sleep(200);
+    const scriptStripRectNow = await app.evalJs(rectOf('.desk-frame-strip'));
+    pok('PARKED (was "PAGE IS PRIMARY: the tool-rail track sits at the same position on Board and Script (pageType-invariant frame)", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME comparison, .desk-frame-strip now, same truth',
+      boardStripRectNow.left === scriptStripRectNow.left && boardStripRectNow.width === scriptStripRectNow.width,
+      `board=${JSON.stringify(boardStripRectNow)} script=${JSON.stringify(scriptStripRectNow)}`);
+
+    // ORIGINAL (this file's own live section, pre-CD2): const
+    // gateFloorRects = await app.evalJs(`({ toolrail: ${rectOf('.desk-
+    // frame-toolrail')}, pagecol: ${rectOf('.mode-pagecol')}, ... })`); ...
+    // ok('PAGE IS PRIMARY at the gate floor (1100px): the page column never
+    // overlaps the tool-rail', gateFloorRects.pagecol.left >=
+    // toolrailRight, ...);
+    // CD2 S1/S5 — same rename, same claim at the same 1100px floor. Live
+    // successor: cd2.mjs's own S1/S5 section re-proves this exact
+    // non-overlap against .desk-frame-strip.
+    await app.goto('/');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before gate-floor fixture, CD2 park' });
+    await app.emulateDpr(1, 1100, 900);
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), gate floor, CD2 park' });
+    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'DeskFrame at exactly 1100px, CD2 park' });
+    await sleep(200);
+    const gateFloorRectsNow = await app.evalJs(`({
+      strip: ${rectOf('.desk-frame-strip')},
+      pagecol: ${rectOf('.mode-pagecol')},
+    })`);
+    const stripRightNow = gateFloorRectsNow.strip.left + gateFloorRectsNow.strip.width;
+    pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME non-overlap claim, .desk-frame-strip now, same truth',
+      gateFloorRectsNow.pagecol.left >= stripRightNow, JSON.stringify({ ...gateFloorRectsNow, stripRightNow }));
 
     return parkedChecks;
   });

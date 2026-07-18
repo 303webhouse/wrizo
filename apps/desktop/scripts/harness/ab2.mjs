@@ -99,8 +99,10 @@ await withHarness(async (app) => {
 
   // -- PAGE IS PRIMARY across a mode switch, rail POPULATED this time (AB1
   // proved this with an empty/reserved rail; AB2 re-proves it with real
-  // content swapping in the SAME fixed-width track). -------------------------
-  const railRectBefore = await app.evalJs(rectOf('.desk-frame-toolrail'));
+  // content swapping in the SAME fixed-width track). CD2 S1/S5 — the
+  // track's own rect-invariance claim (formerly .desk-frame-toolrail) is
+  // PARKED below (renamed .desk-frame-strip); live successor in cd2.mjs's
+  // own S1/S5 section. -------------------------------------------------------
   const pageRectBefore = await app.evalJs(rectOf('.mode-pagecol'));
 
   // ab2.1 F2 — rendered-geometry sanity: presence checks prove mounting,
@@ -133,10 +135,7 @@ await withHarness(async (app) => {
       && JSON.stringify(draftRail.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
     JSON.stringify(draftRail));
 
-  const railRectAfter = await app.evalJs(rectOf('.desk-frame-toolrail'));
   const pageRectAfter = await app.evalJs(rectOf('.mode-pagecol'));
-  ok('PAGE IS PRIMARY: the tool-rail track rect is byte-identical across a mode switch, even though its CONTENTS changed',
-    JSON.stringify(railRectBefore) === JSON.stringify(railRectAfter), `${JSON.stringify(railRectBefore)} -> ${JSON.stringify(railRectAfter)}`);
   ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode switch with the rail populated',
     JSON.stringify(pageRectBefore) === JSON.stringify(pageRectAfter), `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)}`);
 
@@ -792,6 +791,29 @@ if (process.env.HARNESS_PARKED === '1') {
     const railStillGoneOnJournalNow = await app.evalJs("!document.querySelector('.desk-rail')");
     pok('PARKED (was "F3: DeskRail\'s active item is not brass (olive/--accent-rest per the foundations)") — CD1 S4: DeskRail does not mount on the framed Journal route at all (nothing to color-check)',
       railStillGoneOnJournalNow === true, String(railStillGoneOnJournalNow));
+
+    // ORIGINAL (this file's own live section, pre-CD2): const railRectBefore
+    // = await app.evalJs(rectOf('.desk-frame-toolrail')); ... const
+    // railRectAfter = await app.evalJs(rectOf('.desk-frame-toolrail'));
+    // ok('PAGE IS PRIMARY: the tool-rail track rect is byte-identical across
+    // a mode switch, even though its CONTENTS changed', JSON.stringify(
+    // railRectBefore) === JSON.stringify(railRectAfter), ...);
+    // CD2 S1/S5 — the left drawer retires; its track renames .desk-frame-
+    // toolrail -> .desk-frame-strip (the cascade's own strip). The
+    // underlying claim (the track's rect never moves across a mode switch,
+    // only its CONTENTS did — and now the strip's contents never even
+    // change with mode, since it's mode-agnostic chrome, a STRONGER form of
+    // the same invariant) stays true. Live successor: cd2.mjs's own S1/S5
+    // section re-proves this exact before/after comparison against
+    // .desk-frame-strip.
+    await freshProsePage(app);
+    const stripRectBeforeNow = await app.evalJs(rectOf('.desk-frame-strip'));
+    await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
+    await sleep(150);
+    const stripRectAfterNow = await app.evalJs(rectOf('.desk-frame-strip'));
+    pok('PARKED (was "PAGE IS PRIMARY: the tool-rail track rect is byte-identical across a mode switch, even though its CONTENTS changed", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME comparison, .desk-frame-strip now, same truth',
+      JSON.stringify(stripRectBeforeNow) === JSON.stringify(stripRectAfterNow),
+      `${JSON.stringify(stripRectBeforeNow)} -> ${JSON.stringify(stripRectAfterNow)}`);
 
     return parkedChecks;
   });
