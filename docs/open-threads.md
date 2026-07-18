@@ -1081,6 +1081,25 @@ outlive a session lives here, not in chat.
     stays held per the review's own instruction, until CD1's own
     origin-chat close conditions clear — unrelated to the deploy finding
     above.
+    **Carry for the HB1 session — Fable, via FX3's review, 2026-07-17
+    (relayed here; no direct channel to that chat exists, this ledger
+    IS the relay).** Root-causing FX3's own `hb1.mjs` PARKED-check
+    flake (this item's harness, item 29's own investigation) surfaced
+    a real product-level finding, not just a test artifact: the
+    first-run veil's mount RACES the app's own first paint on Arrival
+    after a hard reload — confirmed via direct diagnostic that the
+    gate's arming state (`location.state.firstRunGate`, Write's
+    disabled state) reads correctly in EVERY case, pass or fail, yet
+    the veil itself sometimes doesn't mount in time regardless. The
+    harness fix (an explicit settle wait before clicking Write) is
+    correct FOR THE TEST — it makes the check reliably observe the
+    eventual, correct state — but it does NOT touch the underlying
+    race. On a real first-run writer's actual device, the same race
+    means a genuine flash risk: a brief instant where the gate's own
+    chrome (gear, drawer, sliver, reveal handle) may render unveiled
+    before the gate catches up. This belongs to HB1's own ticket/owner
+    to investigate and fix at the product level — not actioned here,
+    not in FX3's or CD2's scope.
 28. ~~**FX2 — the Second Sitting.**~~ **BRIEF COMMITTED, BUILD AUTHORIZED —
     2026-07-16.** Two findings from Nick's device-look sitting with the
     composed desk (item 26): (1) on his laptop, the sliver's grip
@@ -1445,6 +1464,18 @@ outlive a session lives here, not in chat.
     flakes). Pushed to `origin/main` @ `f87295e`.
     **Not deployed** — Fable's post-merge review hasn't landed;
     redeploy is Nick's call, as always.
+    **Fable's review: GREEN at census + record depth — 2026-07-17.**
+    Merge `f87295e` census-verified (16 harness files as named, zero
+    schema surface). **Ruling on S4:** the JournalEntry divergence
+    (its top bar doesn't pick up the right-alignment trial, left as-is
+    per prior precedent) is tolerable AS A TRIAL ONLY — if Nick
+    ratifies right-alignment as permanent law rather than a working
+    trial, it unifies across all hosts at that point, JournalEntry
+    included. Not an action item now; a condition on any future
+    ratification. Nick's own FX3 device-look sitting (the laptop-width
+    question from item 28's own S1, plus a fresh look at S1-S5 here)
+    can ride the same sitting as CD2's (item 30) or come sooner — his
+    call, not scheduled by anything in this ticket.
 30. **The Cascade — committee double-pass.** **PROPOSED — 2026-07-17.**
     Commissioned by Nick from the desktop sitting: the left drawer
     becomes a pop-out cascade from a persistent vertical strip —
