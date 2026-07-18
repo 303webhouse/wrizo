@@ -1796,10 +1796,38 @@ outlive a session lives here, not in chat.
     `th2.mjs` hit its documented transient flake once during this
     final pass (2/43), cleared on 3 immediate reruns. Pushed to
     `origin/main` @ `f1ba899`.
-    **Not deployed** — Fable's post-merge review hasn't landed;
-    redeploy is Nick's call, as always. TU1 remains queued next,
-    schema-flagged, awaiting its own brief and Nick's explicit merge
-    go when the time comes.
+    **Fable's review: GREEN, zero required fixes — 2026-07-18**
+    (`docs/wrizo-alpha/ab4-review-fable.md`, census + record depth,
+    standing on the independent review's own direct testing —
+    including its delete-with-active-connections script — as the
+    deep pass). **Ruling: S3's brief sketch (a sibling-field shape)
+    was Fable's own erratum**, not the build's — the build's verified
+    zero-schema shape (connections as same-array elements) is
+    correct; no STOP was owed since the investigation found the
+    lawful shape rather than hitting a wall. Deletion cleanup, the
+    legacy-reading distinction, and the "nothing to park" audit all
+    endorsed. **Three advisories carried, none blocking:** A1 —
+    self-pin is reachable (no self-guard on `pinPageToBoard`; harmless,
+    idempotent, nonsense composition — fold candidate at next touch,
+    not now); also noted, a board-to-board pin travels correctly but
+    renders no way-back chip (the chip is prose/script-only v1,
+    acceptable). A2 — the empty-state copy implies filing is required
+    to pin when it isn't (membership ≠ filing); truthful copy is "create
+    a project first," a wording fix at next touch. A3 — `goalText=""`
+    on boards SUSTAINED (a board holds arrangement, not writing; a
+    board-native measure is a future committee question, not a fold).
+    **Deployed — 2026-07-18**, Nick's word ("deploy AB4"). Deploy-
+    manifest rule satisfied — independently re-enumerated (not just
+    trusted from the review's own claim): every commit since the last
+    deploy (`6692c00` → `HEAD`) resolves to exactly AB4's own commits
+    plus docs-only entries, no unnamed riders. `railway up` on `main`
+    @ `d1a6696` (deployment `1276bb33`, SUCCESS), confirmed live:
+    `200` on `/healthz` and `/`, `401` on `/auth/me`.
+    **Close conditions 1 and 2 met.** Condition 3 (Nick's device look
+    per the brief's DoD) remains — may ride the consolidated sitting
+    or its own, his call. TU1 remains queued next, schema-flagged,
+    awaiting its own brief and Nick's explicit merge go; its order
+    against hb1.2 also rides his word.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
