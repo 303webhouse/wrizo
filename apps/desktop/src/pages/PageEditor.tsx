@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -24,6 +24,7 @@ import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import { AddToSheet } from '../components/AddToSheet';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
+import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor } from '../store/draftDecoration';
@@ -109,6 +110,8 @@ function PageEditorView({ id }: { id: string }) {
   // the Journal's own authored surface).
   const [portOpen, setPortOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  // AB4 S2 — Pin, the fourth sending verb.
+  const [pinOpen, setPinOpen] = useState(false);
 
   const textRef = useRef(text);
   textRef.current = text;
@@ -237,6 +240,14 @@ function PageEditorView({ id }: { id: string }) {
   // NOWHERE, not the Journal (it was never nudged there) — Done returns to
   // the Desk instead.
   const backTo = project ? `/project/${project.id}` : entry.shelved ? '/shelf' : entry.origin === 'loose' ? '/' : '/journal';
+  // AB4 S4 — "way back guaranteed" for a page-pin card's double-click
+  // travel (BoardEditor.tsx). Mirrors F2's warm-start precedent (above,
+  // `location.state`) — a one-shot navigation signal, read once at render
+  // and NOT stripped (a stable navigational chip, unlike warmStart's
+  // one-time glow, is fine to persist across in-session back/forward).
+  // Framed-only, matching the invariant that legacy (<1100px) stays
+  // byte-identical — only the `if (framed)` branch below reads this.
+  const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
   // AB3 S2 — star/tag mutations, new capability on this surface (mirrors
@@ -260,7 +271,10 @@ function PageEditorView({ id }: { id: string }) {
   // persistence-change re-render every other write in this app already
   // relies on (App.tsx's reactive-screens subscription), so the face reads
   // fresh values on the next render without any extra plumbing here.
-  const { homeLabel, memberships } = describePageHome(entry, project);
+  // AB4 S2 — every board currently pinning this page, for the truthful
+  // "Also pinned to <board>." membership line(s).
+  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const { homeLabel, memberships } = describePageHome(entry, project, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
     entry,
@@ -272,6 +286,7 @@ function PageEditorView({ id }: { id: string }) {
     onRemoveTag: removeTag,
     onOpenMoveCopy: () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
+    onOpenPin: () => setPinOpen(true),
   };
 
   // CD2 S1/S5 — the cascade, replacing the Drawer whole. One hook call
@@ -468,6 +483,7 @@ function PageEditorView({ id }: { id: string }) {
           onDone={() => setAddOpen(false)}
         />
       )}
+      {pinOpen && <PinToBoardSheet entryId={entry.id} onClose={() => setPinOpen(false)} />}
     </>
   );
 
@@ -496,6 +512,11 @@ function PageEditorView({ id }: { id: string }) {
                   <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
                   <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
                 </div>
+              )}
+              {fromBoard && (
+                <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
+                  ‹ Back to the board
+                </button>
               )}
               <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
             </div>

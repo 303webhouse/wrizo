@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, getNotebookPages, createLoosePage, flushNow } from '../store/persistence';
+import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, getNotebookPages, createLoosePage, flushNow, getBoardsPinning } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke, ERASER_WIDTH } from '../store/ink';
@@ -13,6 +13,7 @@ import { copyText } from '../store/clipboard';
 import { ChromeHandle } from '../components/WritingShell';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { AddToSheet } from '../components/AddToSheet';
+import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useActionToast } from '../components/ActionToast';
 import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL } from '../components/WritingIncentives';
 import { useTypewriterFade } from '../components/useTypewriterFade';
@@ -109,6 +110,7 @@ function JournalEntryView() {
   const [picking, setPicking] = useState(false);
   const [portOpen, setPortOpen] = useState(false); // J4 — "Port to a Board…" sheet
   const [addOpen, setAddOpen] = useState(false); // J5 — "Add to…" sheet (single-page flow)
+  const [pinOpen, setPinOpen] = useState(false); // AB4 S2 — "Pin to a Board…" sheet
   const toast = useActionToast();
   const [tabPrompt, setTabPrompt] = useState(false); // B4 #11 — file-it-first prompt
   const [tagDraft, setTagDraft] = useState('');
@@ -163,6 +165,14 @@ function JournalEntryView() {
   // paragraph, released on the first forward keystroke (onInput) or after 6s.
   const location = useLocation();
   const warmRef = useRef(!!(location.state as { warmStart?: boolean } | null)?.warmStart);
+  // AB4 S4 — "way back guaranteed" for a page-pin card's double-click
+  // travel (BoardEditor.tsx). Mirrors F2's own warm-start precedent above:
+  // a one-shot signal riding `navigate(..., { state })`, read once at
+  // render (not stripped — unlike warmStart's one-time glow, a stable
+  // navigational affordance is fine to persist across in-session back/
+  // forward). Framed-only (this ticket's whole cascade/sliver system is)
+  // — legacy (<1100px) stays byte-identical, no chip there.
+  const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
   const warm = useWarmStart(warmRef.current, editRef, sheetRef);
   const warmReleaseRef = useRef<() => void>(() => {});
   warmReleaseRef.current = warm.release;
@@ -689,7 +699,10 @@ function JournalEntryView() {
   // AB4 plugs in a different subject kind without surgery here). S3: this is
   // what supersedes the below-page metadata cluster on framed surfaces.
   const homeProject = entry.projectId ? getProject(entry.projectId) : null;
-  const { homeLabel, memberships } = describePageHome(entry, homeProject);
+  // AB4 S2 — every board currently pinning this page, for the truthful
+  // "Also pinned to <board>." membership line(s).
+  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const { homeLabel, memberships } = describePageHome(entry, homeProject, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
     entry,
@@ -702,6 +715,7 @@ function JournalEntryView() {
     onRemoveTag: removeTag,
     onOpenMoveCopy: () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
+    onOpenPin: () => setPinOpen(true),
   };
 
   // CD2 S1/S5 — the cascade, replacing the Drawer whole (see Cascade.tsx's
@@ -1047,6 +1061,7 @@ function JournalEntryView() {
           }}
         />
       )}
+      {pinOpen && <PinToBoardSheet entryId={entry.id} onClose={() => setPinOpen(false)} />}
       {toast.node}
     </>
   );
@@ -1067,6 +1082,11 @@ function JournalEntryView() {
         <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
+            {fromBoard && (
+              <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flushNow(); navigate(`/page/${fromBoard}`); }}>
+                ‹ Back to the board
+              </button>
+            )}
             <ModeStrip mode="journal" onSwitch={() => setTabPrompt(true)} onPublish={() => setTabPrompt(true)} />
           </div>
           {isLoose && (

@@ -25,6 +25,10 @@ export interface PageFaceSubject {
   onRemoveTag: (tag: string) => void;
   onOpenMoveCopy: () => void;
   onOpenPortToBoard: () => void;
+  // AB4 S2 — Pin, the fourth sending verb: membership, not capture. Joins
+  // Move/Copy/Port in the same row, riding the same Add-to grammar (a board
+  // picker) — see PinToBoardSheet.tsx.
+  onOpenPin: () => void;
 }
 
 export function PageFace({ subject }: { subject: PageFaceSubject }) {
@@ -92,6 +96,9 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
         </button>
         <button type="button" className="wz-pageface-verb wz-pageface-verb-port" onClick={subject.onOpenPortToBoard}>
           {t('pageFacePortToBoard')}
+        </button>
+        <button type="button" className="wz-pageface-verb wz-pageface-verb-pin" onClick={subject.onOpenPin}>
+          {t('pageFacePin')}
         </button>
       </div>
 
