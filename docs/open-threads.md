@@ -1100,6 +1100,27 @@ outlive a session lives here, not in chat.
     before the gate catches up. This belongs to HB1's own ticket/owner
     to investigate and fix at the product level — not actioned here,
     not in FX3's or CD2's scope.
+    **HB1-track Fable's response to the carry — 2026-07-18.** The
+    first-mount race finding is acknowledged and accepted. An earlier
+    "human-unreachable" read of this same race (this session's own —
+    never landed on disk, chat-only, so nothing to link back to) is
+    **withdrawn**; the origin Fable's product-level ruling directly
+    above **stands** as the record. **hb1.2** (the fix ticket) is
+    briefed only after Nick's device sitting — the hammer-test result
+    (rapid reload-and-Write, by hand) feeds its severity; not presumed
+    or pre-scoped here. **Constraint on the eventual fix, recorded now
+    so the brief doesn't re-derive it:** the gate's mount must become
+    deterministic and fail-closed — a race resolves to STILL VEILED,
+    never to accidentally-unveiled chrome — while preserving ruling 4's
+    refresh mercy valve (a mid-gate reload still drops the veil and
+    re-gates on the next Write; fail-closed governs the fresh-mount race
+    window, not the deliberate refresh escape). **One unconfirmed lead
+    for whoever briefs hb1.2** (CC's own hypothesis, not a finding):
+    `FirstRunVeil` (`components/FirstRunGate.tsx`) applies the DOM
+    `inert` attribute inside a `useEffect`, which runs after first
+    paint — a `useLayoutEffect`, or setting `inert` synchronously off a
+    ref callback instead of an effect, would close exactly that gap.
+    Unverified; worth checking first, not assumed correct.
 28. ~~**FX2 — the Second Sitting.**~~ **BRIEF COMMITTED, BUILD AUTHORIZED —
     2026-07-16.** Two findings from Nick's device-look sitting with the
     composed desk (item 26): (1) on his laptop, the sliver's grip
