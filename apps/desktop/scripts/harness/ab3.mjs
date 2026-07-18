@@ -463,10 +463,15 @@ console.log(JSON.stringify(checks, null, 2));
 // shape, the tools-face retirement, the three Journal/Shelf/Drawers PLACE
 // faces, the active pull's color) is parked below — SUPERSEDED species,
 // quoted verbatim, several as a THIRD generation of an already-parked
-// entry (the "layered park" precedent — see fx2.mjs/hb1.mjs, and ab2.mjs's
-// own three-generation entry — extending the SAME pok() call's history
-// comment and name each time, never nesting a new park-of-park). Live
-// successors are in cd2.mjs's own S1-S4 sections throughout.
+// entry (the "layered park" precedent — see ab2.mjs's own three-generation
+// entry, and this file's own pre-existing R1(a) -> FX1 S3 -> CD1 S2/S7
+// chain above — extending the SAME pok() call's history comment and name
+// each time, never nesting a new park-of-park. Correction, independent
+// review: the prior draft of this comment also cited fx2.mjs/hb1.mjs as
+// layered-park precedent; neither supports that reading — fx2.mjs has
+// parked nothing at all this ticket, and hb1.mjs's own lone PARKED entry
+// is explicitly that file's first-ever, not a multi-generation chain).
+// Live successors are in cd2.mjs's own S1-S4 sections throughout.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
