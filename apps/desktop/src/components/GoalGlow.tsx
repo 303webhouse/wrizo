@@ -54,7 +54,24 @@ export function GoalGlow({ text }: { text: string }) {
 
   const lines = countLineEquivalents(text);
   const fraction = Math.max(0, Math.min(1, lines / target));
-  const intensity = fraction * cap;
+  // FX4 S2 — Nick's "I can't perceive it" turned out to be TWO separate
+  // things, diagnosed in order per FX2's own law (defect before tuning):
+  // (1) a real rendering defect — this component's own anchor sat behind
+  // the ENTIRE app background regardless of intensity, fixed structurally
+  // in index.css (`.desk-frame-stage{ isolation:isolate }`), proven with a
+  // live screenshot showing zero visible warmth at a non-zero
+  // `--glow-intensity` before the fix, and a clearly visible halo after;
+  // (2) once actually painting, the LINEAR fraction->opacity mapping still
+  // left early/mid progress reading faint (a fresh page's glow barely
+  // above the floor). The eased curve is the SAME `Math.pow(x, 0.55)`
+  // technique this file's own sibling instrument (WritingIncentives.tsx's
+  // AmbientGlow, JournalEntry.tsx's legacy branch) already uses for the
+  // identical "make early progress read, not just late progress" problem —
+  // reused, not invented. `cap` itself (the field-never-burns hard ceiling)
+  // is completely untouched by this — the curve only changes how much of
+  // the sub-cap range a given FRACTION reaches, never the ceiling.
+  const eased = Math.pow(fraction, 0.55);
+  const intensity = eased * cap;
 
   return (
     <div
