@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wrizo · Board card studies · Plateau</title>
+<style>
+  /* Plateau working tokens, hardcoded per the mockup convention */
+  :root{
+    --field:#171310;
+    --board:#EFE7D3;
+    --card-lift:#FBF6EA;
+    --card-press:#E6DCC2;
+    --ink:#2B2721;
+    --ink-mid:#6E6656;
+    --ink-low:#9A9082;
+    --hairline:#D9CFB6;
+    --thread:#B9AE93;
+    --olive:#96A05A;
+    --brass:#E8871E;
+    --chrome:#C9C2B4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; border-radius:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--field);
+    color:var(--chrome);
+    font-family:Georgia,'Iowan Old Style','Times New Roman',serif;
+    display:flex; flex-direction:column; align-items:center;
+    padding:34px 20px 40px;
+  }
+  .eyebrow{
+    font-family:'Gill Sans','Segoe UI',system-ui,sans-serif;
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-low);
+  }
+  header{width:min(1060px,100%); display:flex; align-items:baseline; justify-content:space-between; margin-bottom:18px;}
+  header .title{font-size:15px; color:var(--chrome); letter-spacing:.02em;}
+
+  /* Variant switcher — the mode strip's own engraved idiom */
+  .switch{display:flex; gap:26px;}
+  .switch button{
+    background:none; border:none; cursor:pointer;
+    font-family:'Gill Sans','Segoe UI',system-ui,sans-serif;
+    font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-low); padding:6px 2px 8px;
+    border-bottom:1px solid transparent;
+  }
+  .switch button:hover{color:var(--chrome);}
+  .switch button:focus-visible{outline:1px solid var(--olive); outline-offset:3px;}
+  .switch button[aria-pressed="true"]{color:var(--chrome); border-bottom:1px solid var(--olive);}
+
+  /* The board */
+  .stage{position:relative; width:min(1060px,100%);}
+  .board{
+    position:relative; background:var(--board);
+    height:560px; overflow:hidden;
+    box-shadow:0 0 0 1px rgba(0,0,0,.35);
+    transition:filter .28s ease, opacity .28s ease;
+  }
+  .stage[data-popup="open"] .board{filter:blur(6px); opacity:.55;}
+  @media (prefers-reduced-motion:reduce){ .board, .overlay{transition:none;} }
+
+  .board svg.threads{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+  .threads line{stroke:var(--thread); stroke-width:1;}
+
+  .card{
+    position:absolute; width:230px; min-height:96px;
+    padding:14px 16px 16px; color:var(--ink); cursor:pointer;
+    background:var(--card-lift); border:1px solid var(--hairline);
+  }
+  .card:focus-visible{outline:1px solid var(--olive); outline-offset:2px;}
+  .card .c-title{font-size:15px; margin-bottom:6px; color:var(--ink);}
+  .card .c-body{font-size:13px; line-height:1.5; color:var(--ink-mid);}
+  .card .c-badge{
+    font-family:'Gill Sans','Segoe UI',system-ui,sans-serif;
+    font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-low); margin-bottom:7px;
+  }
+  .card.ink .c-body{font-style:italic; color:var(--ink-low);}
+
+  /* A — Lifted stock: lighter paper, soft lift, a quiet header rule */
+  .board[data-variant="a"] .card{
+    box-shadow:0 2px 8px rgba(43,39,33,.22);
+    border-top:2px solid rgba(150,160,90,.4);
+  }
+  /* B — Stacked edge: card stock told by a hard offset edge */
+  .board[data-variant="b"] .card{
+    box-shadow:2px 2px 0 var(--hairline), 4px 5px 10px rgba(43,39,33,.16);
+  }
+  /* C — Engraved field: pressed into the board, no lift */
+  .board[data-variant="c"] .card{
+    background:var(--card-press);
+    border:1px solid rgba(43,39,33,.14);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  /* D — Marked corner: the lift of A, an olive tick for a pin */
+  .board[data-variant="d"] .card{
+    box-shadow:0 2px 8px rgba(43,39,33,.22);
+  }
+  .board[data-variant="d"] .card::before{
+    content:''; position:absolute; top:6px; left:6px;
+    width:6px; height:6px; background:var(--olive);
+  }
+
+  /* The one brass element at rest: the resize handle on the selected card */
+  .card.selected{border-color:var(--ink-mid);}
+  .card.selected .handle{
+    position:absolute; right:-5px; bottom:-5px; width:10px; height:10px;
+    background:var(--brass);
+  }
+
+  /* Popup editor */
+  .overlay{
+    position:absolute; inset:0; display:none;
+    align-items:center; justify-content:center;
+  }
+  .stage[data-popup="open"] .overlay{display:flex;}
+  .editor{
+    width:min(520px,88%); background:var(--card-lift); color:var(--ink);
+    border:1px solid var(--hairline);
+    border-top:2px solid var(--olive);
+    box-shadow:0 14px 44px rgba(0,0,0,.5);
+    padding:0 0 18px;
+  }
+  .editor .strip{
+    display:flex; align-items:center; gap:4px;
+    padding:10px 14px; border-bottom:1px solid var(--hairline);
+  }
+  .editor .strip .eyebrow{margin-right:auto; color:var(--ink-low);}
+  .tool{
+    background:none; border:1px solid transparent; cursor:pointer;
+    width:30px; height:28px; color:var(--ink-mid);
+    font-family:Georgia,serif; font-size:14px;
+  }
+  .tool:hover{border-color:var(--hairline);}
+  .tool:focus-visible{outline:1px solid var(--olive); outline-offset:1px;}
+  .tool.b{font-weight:bold;} .tool.i{font-style:italic;} .tool.s{text-decoration:line-through;}
+  .editor textarea{
+    display:block; width:100%; border:none; background:transparent; resize:none;
+    padding:18px 22px 6px; font-family:inherit; font-size:16px; line-height:1.6;
+    color:var(--ink); min-height:170px; outline:none;
+  }
+  .editor .foot{display:flex; justify-content:flex-end; padding:0 16px;}
+  .done{
+    background:var(--brass); border:none; color:#1d1712; cursor:pointer;
+    font-family:'Gill Sans','Segoe UI',system-ui,sans-serif;
+    font-size:12px; letter-spacing:.08em; padding:8px 22px;
+  }
+  .done:focus-visible{outline:1px solid var(--olive); outline-offset:2px;}
+
+  .legend{
+    width:min(1060px,100%); margin-top:16px;
+    font-family:'Gill Sans','Segoe UI',system-ui,sans-serif;
+    font-size:12px; line-height:1.7; color:var(--ink-low); letter-spacing:.02em;
+  }
+  .legend b{color:var(--chrome); font-weight:normal;}
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="eyebrow">Wrizo · Plateau · working tokens</div>
+      <div class="title">Board card studies — click any card to open the editor</div>
+    </div>
+    <nav class="switch" aria-label="Card treatment">
+      <button aria-pressed="true"  data-v="a">A · Lifted</button>
+      <button aria-pressed="false" data-v="b">B · Stacked</button>
+      <button aria-pressed="false" data-v="c">C · Engraved</button>
+      <button aria-pressed="false" data-v="d">D · Marked</button>
+    </nav>
+  </header>
+
+  <div class="stage" data-popup="closed">
+    <div class="board" data-variant="a">
+      <svg class="threads" aria-hidden="true">
+        <line x1="300" y1="150" x2="480" y2="300"></line>
+        <line x1="710" y1="180" x2="560" y2="310"></line>
+      </svg>
+
+      <div class="card selected" style="left:70px; top:90px;" tabindex="0">
+        <div class="c-title">Mara refuses the crown</div>
+        <div class="c-body">She was offered the thing she wanted and the price was the person she'd become getting it.</div>
+        <span class="handle" aria-hidden="true"></span>
+      </div>
+
+      <div class="card" style="left:480px; top:280px; width:250px;" tabindex="0">
+        <div class="c-title">Midpoint — the false victory</div>
+        <div class="c-body">The heist works. Everything after this is the cost arriving in installments.</div>
+      </div>
+
+      <div class="card" style="left:640px; top:80px;" tabindex="0">
+        <div class="c-badge">Board pin</div>
+        <div class="c-title">Ch. 7 — The ferry crossing</div>
+        <div class="c-body">Lives in Part Two · also in the Journal.</div>
+      </div>
+
+      <div class="card ink" style="left:210px; top:380px; width:200px;" tabindex="0">
+        <div class="c-body">A sketch — the harbor map, drawn in the Journal.</div>
+      </div>
+    </div>
+
+    <div class="overlay" role="dialog" aria-modal="true" aria-label="Edit card">
+      <div class="editor">
+        <div class="strip">
+          <span class="eyebrow">Card</span>
+          <button class="tool b" title="Bold">B</button>
+          <button class="tool i" title="Italic">I</button>
+          <button class="tool s" title="Strike">S</button>
+        </div>
+        <textarea aria-label="Card text">Mara refuses the crown — she was offered the thing she wanted and the price was the person she'd become getting it.</textarea>
+        <div class="foot"><button class="done">Done</button></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="legend">
+    <b>A</b> lighter stock, soft lift, a quiet olive header rule &nbsp;·&nbsp;
+    <b>B</b> thickness told by a hard offset edge — card stock, not glass &nbsp;·&nbsp;
+    <b>C</b> pressed into the board, no lift — the quietest &nbsp;·&nbsp;
+    <b>D</b> A's lift plus an olive corner tick standing in for the pin.
+    Threads are resting hairlines (brass only when selected). The brass square on the first card is the resize handle —
+    your double-click-to-connect gesture starts there. The editor opens over a blurred board and carries only the card's
+    own small strip — no typewriter, no progress, per your word. Esc or Done closes.
+  </p>
+
+<script>
+  const stage=document.querySelector('.stage');
+  const board=document.querySelector('.board');
+  document.querySelectorAll('.switch button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.switch button').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      board.dataset.variant=btn.dataset.v;
+    });
+  });
+  document.querySelectorAll('.card').forEach(c=>{
+    c.addEventListener('click',()=>{stage.dataset.popup='open';
+      document.querySelector('.editor textarea').focus();});
+    c.addEventListener('keydown',e=>{if(e.key==='Enter')c.click();});
+  });
+  const close=()=>{stage.dataset.popup='closed';};
+  document.querySelector('.done').addEventListener('click',close);
+  window.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+</script>
+</body>
+</html>
