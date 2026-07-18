@@ -1627,6 +1627,42 @@ outlive a session lives here, not in chat.
     **Not deployed** — Fable's post-merge review hasn't landed;
     redeploy is Nick's call, as always. The instruments panel (per the
     brief) remains committee-owned, untouched by this build.
+    **Fable's review: GREEN with a fold, cd2.1 — 2026-07-18**
+    (`docs/wrizo-alpha/cd2-review-fable.md`, census + record depth,
+    standing on the independent review's own direct-testing
+    verification as the deep pass). **Three rulings of record:** (1)
+    the Plan-survey erratum SUSTAINED — the brief's own DoD line
+    described AB4's eventual destination, not this ticket's floor;
+    ruled Fable's own defect (her third of the run), not the build's;
+    Nick-vetoable if he wants cards in the survey ahead of AB4. (2)
+    the park-sweep consistency fix and the `fx2.mjs` latent-bug fix
+    RATIFIED, with a fold to close the whole class. (3) the
+    independent review's own practice — writing test coverage the
+    build's harness lacked, rather than re-reading its self-report —
+    ratified as the standing review method for transition-heavy
+    tickets. **The fold does NOT gate deploy** — redeploy gate open
+    on Nick's word regardless.
+    **cd2.1 R1 folded — 2026-07-18, no code changes required.**
+    Audited all 17 harness files' own exit logic for the exact class
+    of bug `fx2.mjs` had (a `parkedChecks` array declared and
+    populated under `HARNESS_PARKED=1` but never included in the
+    final `pass` computation, so a failing parked check couldn't fail
+    the process): `ab1`/`ab2`/`ab3`/`cd1`/`fx1`/`fx2`/`hb1`/`s1` all
+    correctly use `checks.concat(parkedChecks)`; `cd2`/`fx3`/`j4`/
+    `j5`/`m1`/`th1`/`th2`/`w1`/`w2` have no `parkedChecks` array at
+    all (never parked anything — `cd2.mjs`'s and `fx3.mjs`'s own
+    PARKED sections are honest empty scaffolds, print "armed but
+    empty," claim no false pass). The one real instance of this class
+    was `fx2.mjs`, already found and fixed during CD2's own merge
+    (`a1da007`) — the audit confirms the class is now closed
+    everywhere, nothing further to fix. Full suite reconfirmed green,
+    both `HARNESS_PARKED` settings, all 17 files (`th2.mjs` hit its
+    documented flake once more, cleared on 3 immediate reruns).
+    **Close conditions: 1 and 2 now met** (review on disk, cd2.1
+    folded, suite green). **3 and 4 remain** — redeploy on Nick's
+    word, and his device-look sitting (the cascade at his left hand,
+    the dock, the strip's four sections, the theme panel with no
+    locked doors, FX3's own verdicts riding the same look).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
