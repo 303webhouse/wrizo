@@ -1956,11 +1956,37 @@ outlive a session lives here, not in chat.
     — the two tickets share one seam (PageEditor/DeskFrame host
     wiring) that needs coordination if run concurrently, nowhere
     else. Committed:
-    `docs/wrizo-alpha/fx4-fourth-sitting-brief.md`. **Not yet
-    committed: `board-card-studies.html`** — genuinely absent from
-    this session by any channel (checked), owed under `docs/design/`
-    whenever it actually lands; S7 already carries enough written
-    spec to build without it.
+    `docs/wrizo-alpha/fx4-fourth-sitting-brief.md`.
+    **`board-card-studies.html` landed and is committed** —
+    `docs/design/board-card-studies.html` (moved from where it first
+    arrived, per S0's own instruction).
+    **Build starting — 2026-07-18**, Nick's word ("Build FX4 first
+    then TU1") — sequential, not parallel, so the brief's own
+    shared-seam coordination concern doesn't apply this time.
+34. **TU1 — the Tutor.** **BRIEF COMMITTED — 2026-07-18.**
+    `docs/wrizo-alpha/tu1-tutor-brief.md`. **SCHEMA TICKET — NO MERGE
+    PRE-AUTHORIZATION**, the corrected zero-schema-vs-schema rule's
+    first real ticket to actually reach build. One nullable `tutor`
+    jsonb column on `journal_entries` (the arc's second schema
+    addition after `origin`), a right-edge sliver-mirrored panel
+    (A15, dock rider inherited whole), three offline/client-only
+    lenses (Consistency/Structure/Fragments), nudges as letters never
+    calls (A14, absolute — no badge/toast/count/dot/interruption
+    anywhere in this ticket), and the model conversation itself bound
+    by A13's ghostwriter rail (speaks about the writing, never as it;
+    no insert/apply/copy-into-page affordance of any kind — the
+    future paste rail is the mechanical backstop, not built here).
+    **Build and push only — no merge.** Report = push; Fable reviews
+    ON THE BRANCH; merge happens only on Nick's explicit go. The S1
+    schema precedent's live prod round-trip (a scratch account
+    pushes/pulls a populated thread byte-for-byte) is REQUIRED after
+    deploy, not optional.
+    **Queued behind FX4 (item 33)** per Nick's own sequencing word —
+    not started yet. S0's own deeper record-keeping (item 27's
+    HB-arc-stewardship consolidation note, dropping the `cd1.1
+    erratum WIP` stash) is this ticket's own build-time work, not
+    done here — deferred to when TU1 actually builds, matching every
+    prior ticket's own S0-at-build-time pattern.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
