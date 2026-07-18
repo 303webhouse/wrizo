@@ -166,40 +166,26 @@ await withHarness(async (app) => {
   const afterResize = (await app.evalJs('window.wrizoBoard()')).find((b) => b.id === b1.id);
   ok('resize changed the text box width', afterResize.w < beforeResize.w, `before=${beforeResize.w} after=${afterResize.w}`);
 
-  // -- text edit (session 1): double-click -> edit -> pen produces ZERO characters
+  // FX4 S5 — inline contenteditable editing (.board-text-editing) retires
+  // whole, replaced by BoardCardPopup (double-click -> popup over a
+  // blurred board). The three checks this block used to run here ("pen on
+  // an editing text box produces ZERO characters," "text edit persisted,"
+  // and review fix 1's "second edit session seeds from the saved edit")
+  // are parked verbatim below (SUPERSEDED); live successors (the SAME
+  // three claims, reached via the popup) are in fx4.mjs's own S5 section.
+  // The board is left edited via the popup here so downstream checks (the
+  // VW copy-paste proof just below) still have real, current text to work
+  // with — same mechanical outcome, new gesture.
   await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))`);
-  await app.waitFor(`!!document.querySelector('[data-box-id="${b1.id}"] .board-text-editing')`, { label: 'text box in edit mode' });
-  const textBeforePen = await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text-editing').innerText`);
-  await app.penStroke(`[data-box-id="${b1.id}"] .board-text-editing`, [{ x: 0.1, y: 0.5 }, { x: 0.9, y: 0.5 }]);
+  await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'text box popup open' });
+  await app.typeKeys(' EDITED AGAIN');
   await sleep(150);
-  const textAfterPen = await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text-editing').innerText`);
-  ok('pen on an editing text box produces ZERO characters', textAfterPen === textBeforePen, JSON.stringify({ before: textBeforePen, after: textAfterPen }));
-
-  // a real edit DOES land, and persists
-  await app.typeKeys(' EDITED');
-  await sleep(150);
-  await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text-editing').blur()`);
+  await app.evalJs("document.querySelector('.board-popup-done').click()");
   await sleep(2300); // autosave debounce
   entries = await app.localJSON('writer-studio-journal-entries');
   let boardEntry = entries.find((e) => e.boxes?.some((b) => b.id === b1.id));
   let editedBox = boardEntry?.boxes.find((b) => b.id === b1.id);
-  ok('text edit persisted to the board entry', !!editedBox?.text?.includes('EDITED'), editedBox?.text);
-
-  // -- (24) review fix 1: a SECOND edit session seeds from the saved edit, not
-  // stale mount-time text — and a keystroke preserves it (not stale+new).
-  await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))`);
-  await app.waitFor(`!!document.querySelector('[data-box-id="${b1.id}"] .board-text-editing')`, { label: 'text box in edit mode (session 2)' });
-  const seededSession2 = await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text-editing').innerText`);
-  await app.typeKeys(' AGAIN');
-  await sleep(150);
-  const afterKeystrokeSession2 = await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text-editing').innerText`);
-  ok(
-    'review fix 1: a second edit session seeds from the FIRST session\'s saved edit (not stale mount-time text), and a keystroke preserves it',
-    seededSession2.includes('EDITED') && afterKeystrokeSession2 === seededSession2 + ' AGAIN',
-    JSON.stringify({ seededSession2, afterKeystrokeSession2 }),
-  );
-  await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text-editing').blur()`);
-  await sleep(2300);
+  ok('text edit (via the popup) persisted to the board entry', !!editedBox?.text?.includes('EDITED AGAIN'), editedBox?.text);
 
   // -- (25) review fix 2: copy FROM a board text box -> paste into a Draft
   // surface is ALLOWED (no whisper); a genuinely foreign paste still blocks
@@ -275,7 +261,105 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.every((c) => c.pass);
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// FX4 S5 (2026-07-18) is the first tenant of this scaffold (j4.mjs predates
+// the A4 park-sweep convention). Three checks parked below (SUPERSEDED
+// species, quoted verbatim) — inline contenteditable text-box editing
+// (.board-text-editing) retires whole, replaced by BoardCardPopup; live
+// successors (the SAME three claims: I0 pen discipline inside the popup,
+// a real edit persisting, and a second session correctly seeding from the
+// first session's saved text) are in fx4.mjs's own S5 section.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PARKED board seed' });
+    const now = new Date().toISOString();
+    await app.evalJs(`(() => {
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'j4-parked-board', text: 'J4 Parked Board', pageType: 'board', source: 'page',
+        boxes: [{ id: 'j4-parked-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Original' }],
+        createdAt: ${JSON.stringify(now)}, updatedAt: ${JSON.stringify(now)} });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/j4-parked-board'");
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED board framed' });
+    await sleep(300);
+
+    // ORIGINAL: await app.evalJs(`document.querySelector('[data-box-id="
+    // ${b1.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))
+    // `); await app.waitFor(`!!document.querySelector('[data-box-id="${b1.
+    // id}"] .board-text-editing')`, ...); const textBeforePen = ...
+    // innerText; await app.penStroke(`[data-box-id="${b1.id}"] .board-text
+    // -editing`, [...]); ... ok('pen on an editing text box produces ZERO
+    // characters', textAfterPen === textBeforePen, ...);
+    // FX4 S5 — re-derived against BoardCardPopup's own editor instead
+    // (the SAME I0 pen-discipline guard now lives there — see
+    // components/BoardEditor.tsx's BoardCardPopup).
+    await app.evalJs("document.querySelector('[data-box-id=\"j4-parked-card\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'popup open (PARKED pen check)' });
+    const textBeforePenNow = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
+    await app.penStroke('.board-popup-editor', [{ x: 0.1, y: 0.5 }, { x: 0.9, y: 0.5 }]);
+    await sleep(150);
+    const textAfterPenNow = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
+    pok('PARKED (was "pen on an editing text box produces ZERO characters") — FX4 S5: re-derived against BoardCardPopup\'s own editor (the same I0 pen-discipline guard, moved with the mechanism)',
+      textAfterPenNow === textBeforePenNow, JSON.stringify({ before: textBeforePenNow, after: textAfterPenNow }));
+
+    // ORIGINAL: await app.typeKeys(' EDITED'); await sleep(150); await app.
+    // evalJs(`document.querySelector('[data-box-id="${b1.id}"] .board-text
+    // -editing').blur()`); await sleep(2300); ... ok('text edit persisted
+    // to the board entry', !!editedBox?.text?.includes('EDITED'), ...);
+    // FX4 S5 — re-derived via the popup's own Done button instead of blur.
+    await app.typeKeys(' EDITED');
+    await sleep(150);
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
+    await sleep(2300);
+    const boardAfterEdit = await app.localJSON('writer-studio-journal-entries');
+    const editedBoxNow = boardAfterEdit.find((e) => e.id === 'j4-parked-board')?.boxes.find((b) => b.id === 'j4-parked-card');
+    pok('PARKED (was "text edit persisted to the board entry") — FX4 S5: re-derived via the popup\'s own Done button instead of blurring the retired inline editor',
+      !!editedBoxNow?.text?.includes('EDITED'), editedBoxNow?.text);
+
+    // ORIGINAL: await app.evalJs(`document.querySelector('[data-box-id="
+    // ${b1.id}"]').dispatchEvent(new MouseEvent('dblclick', ...))`); await
+    // app.waitFor(`... .board-text-editing`); const seededSession2 = ...
+    // innerText; await app.typeKeys(' AGAIN'); ... ok('review fix 1: a
+    // second edit session seeds from the FIRST session\'s saved edit...',
+    // seededSession2.includes('EDITED') && afterKeystrokeSession2 ===
+    // seededSession2 + ' AGAIN', ...);
+    // FX4 S5 — re-derived against the popup: BoardCardPopup is a fresh
+    // component mount every time it opens (unmounted entirely while
+    // closed), reading `initialText` from the CURRENT box state each time
+    // — the same "no stale mount-time text" guarantee the original review
+    // fix demanded, now structural rather than a remount-key workaround.
+    await app.evalJs("document.querySelector('[data-box-id=\"j4-parked-card\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'popup open (PARKED session 2)' });
+    const seededSession2Now = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
+    await app.typeKeys(' AGAIN');
+    await sleep(150);
+    const afterKeystrokeSession2Now = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
+    await sleep(150);
+    pok(
+      'PARKED (was "review fix 1: a second edit session seeds from the FIRST session\'s saved edit (not stale mount-time text), and a keystroke preserves it") — FX4 S5: re-derived against BoardCardPopup, which structurally cannot carry stale mount-time text (a fresh component instance per open)',
+      seededSession2Now.includes('EDITED') && afterKeystrokeSession2Now === seededSession2Now + ' AGAIN',
+      JSON.stringify({ seededSession2Now, afterKeystrokeSession2Now }),
+    );
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nJ4 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nJ4 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
+const allChecksJ4 = checks.concat(parkedChecks);
+const pass = allChecksJ4.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nJ4 VERIFY: PASS (${checks.length} checks)` : `\nJ4 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nJ4 VERIFY: PASS (${allChecksJ4.length} checks)` : `\nJ4 VERIFY: FAIL — ${allChecksJ4.filter((c) => !c.pass).length}/${allChecksJ4.length} failed`);
 process.exit(pass ? 0 : 1);

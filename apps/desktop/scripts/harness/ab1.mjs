@@ -230,36 +230,12 @@ await withHarness(async (app) => {
   ok('Board mounts inside DeskFrame at >=1100px', await app.evalJs("!!document.querySelector('.board-canvas, .board-canvas-wrap')"));
   ok('Board never renders the mode strip (Trellis-side by design)', await app.evalJs("!document.querySelector('.desk-mode-strip')"));
 
-  // -- S3 on Board: committing an edit inside a text box (real keydown input,
-  // even though Board has no live pen-stroke authoring — J4: ink boxes only
-  // ever arrive via a port) dissolves the frame's own reserved tracks too,
-  // and the same pointer-edge dwell rule resurfaces it. -----------------------
-  await app.evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
-  await app.waitFor("!!document.querySelector('[data-box-id=\"ab1-board-box\"] .board-text-editing')", { label: 'board text box in edit mode' });
-  await app.typeKeys(' EDITED');
-  await sleep(150);
-  const boardDissolvedState = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
-  ok('S3: typing inside a Board text box dissolves the frame too (the law reaches Board, not just prose/script)', boardDissolvedState === 'true', String(boardDissolvedState));
-  // ab1.1 R1 (Fable review) — the sprint-nav row was the one piece of framed
-  // chrome that never carried chrome-fade/data-chrome-receded; it must
-  // recede with everything else, and restore on the same resurface below.
-  const boardNavReceded = await app.evalJs(`({
-    pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
-    hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
-  })`);
-  ok('S3 R1: Board\'s sprint-nav row recedes with the rest of the room (chrome-fade, not left behind)',
-    boardNavReceded.pointerEvents === 'none' && boardNavReceded.hostReceded === 'true', JSON.stringify(boardNavReceded));
-  await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 4, bubbles: true }))");
-  await sleep(500);
-  const boardResurfaced = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
-  ok('S3: Board resurfaces on the same pointer-edge dwell rule', boardResurfaced === 'false', String(boardResurfaced));
-  const boardNavRestored = await app.evalJs(`({
-    pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
-    hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
-  })`);
-  ok('S3 R1: Board\'s sprint-nav row restores on the same edge-dwell resurface',
-    boardNavRestored.pointerEvents !== 'none' && boardNavRestored.hostReceded === 'false', JSON.stringify(boardNavRestored));
-  await app.evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"] .board-text-editing')?.blur()");
+  // FX4 S5 — this whole "S3 on Board" block SUPERSEDED: inline
+  // contenteditable editing (.board-text-editing) retires whole, replaced
+  // by BoardCardPopup (double-click -> popup, over a blurred board). Parked
+  // verbatim below (SUPERSEDED); live successor (the SAME dissolve-on-edit
+  // + sprint-nav recede/restore claims, reached via the popup's own
+  // typing) is in fx4.mjs's own S5 section.
 
   // -- Script: DeskFrame mounts, mode strip present (finding 5 dies here) ---
   await app.evalJs("location.hash = '#/page/ab1-script'");
@@ -736,6 +712,63 @@ if (process.env.HARNESS_PARKED === '1') {
     const stripRightNow = gateFloorRectsNow.strip.left + gateFloorRectsNow.strip.width;
     pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME non-overlap claim, .desk-frame-strip now, same truth',
       gateFloorRectsNow.pagecol.left >= stripRightNow, JSON.stringify({ ...gateFloorRectsNow, stripRightNow }));
+
+    // ORIGINAL (this file's own live "S3 on Board" section): await app.
+    // evalJs("document.querySelector('[data-box-id=\"ab1-board-box\"]').
+    // dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))"); await
+    // app.waitFor("!!document.querySelector('[data-box-id=\"ab1-board-box
+    // \"] .board-text-editing')", ...); await app.typeKeys(' EDITED');
+    // await sleep(150); const boardDissolvedState = await app.evalJs(
+    // "document.querySelector('.desk-frame')?.dataset.writing"); ok('S3:
+    // typing inside a Board text box dissolves the frame too...',
+    // boardDissolvedState === 'true', ...); [+ the R1 sprint-nav recede/
+    // resurface/restore checks, same fixture, same gesture]
+    // FX4 S5 — inline contenteditable editing (.board-text-editing)
+    // retires whole, replaced by BoardCardPopup (double-click -> popup
+    // over a blurred board). Re-derived here with the SAME underlying
+    // claim (typing dissolves the frame; the sprint-nav row recedes and
+    // restores on the edge-dwell resurface) reached via the popup's own
+    // typing instead — full successor coverage (open/blur/focus-trap/Done)
+    // is in fx4.mjs's own S5 section.
+    await app.goto('/');
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab1-parked-board', text: '', pageType: 'board', boxes: [
+        { id: 'ab1-parked-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
+      ], createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED board seed' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs("location.hash = '#/page/ab1-parked-board'");
+    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED board framed' });
+    await sleep(200);
+    await app.evalJs("document.querySelector('[data-box-id=\"ab1-parked-board-box\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'board popup open (PARKED)' });
+    await app.typeKeys(' EDITED');
+    await sleep(150);
+    const boardDissolvedStateNow = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
+    const boardNavRecededNow = await app.evalJs(`({
+      pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
+      hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
+    })`);
+    pok('PARKED (was "S3: typing inside a Board text box dissolves the frame too" + "S3 R1: Board\'s sprint-nav row recedes with the rest of the room") — FX4 S5: re-derived via BoardCardPopup\'s own typing instead of the retired inline editor; the SAME dissolve-on-write claim holds',
+      boardDissolvedStateNow === 'true' && boardNavRecededNow.pointerEvents === 'none' && boardNavRecededNow.hostReceded === 'true',
+      JSON.stringify({ boardDissolvedStateNow, boardNavRecededNow }));
+    await app.evalJs("document.querySelector('.board-popup-done').click()");
+    await sleep(150);
+    await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 4, bubbles: true }))");
+    await sleep(500);
+    const boardResurfacedNow = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
+    const boardNavRestoredNow = await app.evalJs(`({
+      pointerEvents: getComputedStyle(document.querySelector('.desk-frame-host .sprint-nav')).pointerEvents,
+      hostReceded: document.querySelector('.sprint-nav').closest('[data-chrome-receded]')?.dataset.chromeReceded,
+    })`);
+    pok('PARKED (was "S3: Board resurfaces on the same pointer-edge dwell rule" + "S3 R1: Board\'s sprint-nav row restores on the same edge-dwell resurface") — FX4 S5: re-derived after closing BoardCardPopup (Done) instead of blurring the retired inline editor',
+      boardResurfacedNow === 'false' && boardNavRestoredNow.pointerEvents !== 'none' && boardNavRestoredNow.hostReceded === 'false',
+      JSON.stringify({ boardResurfacedNow, boardNavRestoredNow }));
 
     return parkedChecks;
   });

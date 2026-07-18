@@ -153,54 +153,16 @@ await withHarness(async (app) => {
   await sleep(150);
 
   // ==========================================================================
-  // S3 — the typewriter's first-line start offset lands in the new 30-35%
-  // band (not the old 45%), and the scroll/fade engages within a handful
-  // of lines rather than lagging (the brief's own second complaint,
-  // "the first scroll engaged late").
+  // S3 — FX4 S1 SUPERSEDES this whole section: START_FRACTION retunes again
+  // (0.29 -> 0.25) and the Journal carve-out this section's own closing
+  // comment described RETIRES (Journal gains real start-offset behavior for
+  // the first time). All three checks below are parked verbatim in this
+  // file's own PARKED section; live successors (both reference widths + the
+  // 1100 floor, prose/script/journal, plus the ink-coordinate byte-truth
+  // proof) are in fx4.mjs's own S1 section.
   // ==========================================================================
-  await freshProsePage(app, 1280, 900);
-  const startOffsetInfo = await app.evalJs(`(() => {
-    const stage = document.querySelector('.desk-frame-stage');
-    const scroll = document.querySelector('.mode-scroll');
-    const offsetPx = parseFloat(getComputedStyle(scroll).paddingTop) || 0;
-    return { offsetPx, stageHeight: stage.clientHeight, fraction: offsetPx / stage.clientHeight };
-  })()`);
-  ok('S3: a fresh page\'s first-line start offset lands in the 30-35% band of the stage height (was ~45%)',
-    startOffsetInfo.fraction >= 0.28 && startOffsetInfo.fraction <= 0.37, JSON.stringify(startOffsetInfo));
 
-  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  let scrolledAtLine = null;
-  for (let i = 1; i <= 8 && scrolledAtLine === null; i++) {
-    await app.typeKeys(`Line ${i} of test content, long enough to fill most of the paper's width.\n`);
-    await sleep(120);
-    const scrolled = await app.evalJs("document.querySelector('.mode-scroll')?.dataset.scrolled");
-    if (scrolled === 'true') scrolledAtLine = i;
-  }
-  ok('S3: the scroll/fade engages within the first few lines of fresh typing (<=5), not lagging for a dozen',
-    scrolledAtLine !== null && scrolledAtLine <= 5, `scrolledAtLine=${scrolledAtLine}`);
-
-  // Successor to fx1.mjs's own retired "S1: a fresh script page's first
-  // line also starts within 40-55% of the stage height" (parked there,
-  // SUPERSEDED — S7 mirrors prose, so the script surface gets the same
-  // 30-35% retune via the same shared START_FRACTION constant).
-  await freshScriptPage(app, 1280, 900);
-  const scriptStartOffsetInfo = await app.evalJs(`(() => {
-    const stage = document.querySelector('.desk-frame-stage');
-    const cap = document.querySelector('.desk-frame-scroll-cap');
-    const offsetPx = parseFloat(getComputedStyle(cap).paddingTop) || 0;
-    return { offsetPx, stageHeight: stage.clientHeight, fraction: offsetPx / stage.clientHeight };
-  })()`);
-  ok('S3 (script, successor to fx1.mjs\'s parked "40-55%" check): a fresh script page\'s first-line start offset lands in the 30-35% band too (S7 mirrors prose)',
-    scriptStartOffsetInfo.fraction >= 0.28 && scriptStartOffsetInfo.fraction <= 0.37, JSON.stringify(scriptStartOffsetInfo));
-
-  // Journal's own start-offset carve-out (ink coordinates; standing ruling)
-  // is unaffected — .entry-full never reads --tw-start-offset via CSS at
-  // all (only .mode-scroll/.desk-frame-scroll-cap do), so nothing about
-  // this ticket's tuning can reach it structurally. Confirmed by grep, not
-  // re-asserted with a live page load here (JournalEntry.tsx is a
-  // materially different, ink-authored surface this harness doesn't
-  // otherwise fixture — the structural guarantee is what matters, not a
-  // redundant navigation).
+  // (parked — see this file's PARKED section below)
 
   // ==========================================================================
   // S4 — top bar, right-aligned (TRIAL): the mode strip and the actions
@@ -382,24 +344,100 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// fx3.mjs is a brand-new file; it parks nothing of its own. This build's own
-// empirical pass against cd1.mjs/fx2.mjs (run separately, both green
-// unmodified — see the FX3 build report) found NEITHER file's existing
-// checks falsified by S1-S5: cd1.mjs's S9 paper-rect-equality check compares
-// the paper's rect ACROSS sliver states to itself, not against a hardcoded
-// absolute value, so a uniform height/scale change (applied identically
-// regardless of sliver open/closed/dissolved) leaves it passing; every
-// top-bar check in both files asserts button TEXT/PRESENCE arrays, never an
-// absolute left/right position, so S4's alignment trial doesn't touch them
-// either. This scaffold exists so a future ticket that supersedes any of
-// THIS file's checks has a documented home, matching every other harness
-// file's own pattern.
+// FX4 S1 (2026-07-18) is the first tenant of this scaffold: START_FRACTION
+// retunes again (0.29 -> 0.25) and the Journal carve-out this file's own
+// S3 section documented RETIRES. Three checks parked below (SUPERSEDED
+// species, quoted verbatim); live successors are in fx4.mjs's own S1
+// section (both reference widths + the 1100 floor, prose/script/journal,
+// plus the ink-coordinate byte-truth proof S1's own STOP-and-report clause
+// demanded).
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    // ORIGINAL: await freshProsePage(app, 1280, 900); const startOffsetInfo
+    // = await app.evalJs(`(() => { const stage = document.querySelector(
+    // '.desk-frame-stage'); const scroll = document.querySelector(
+    // '.mode-scroll'); const offsetPx = parseFloat(getComputedStyle(scroll)
+    // .paddingTop) || 0; return { offsetPx, stageHeight: stage.clientHeight,
+    // fraction: offsetPx / stage.clientHeight }; })()`); ok('S3: a fresh
+    // page\'s first-line start offset lands in the 30-35% band of the stage
+    // height (was ~45%)', startOffsetInfo.fraction >= 0.28 &&
+    // startOffsetInfo.fraction <= 0.37, JSON.stringify(startOffsetInfo));
+    // FX4 S1 — START_FRACTION moves from 0.29 to 0.25; the 30-35% band this
+    // check asserted is itself superseded (0.25 raw measures ~24.97% by
+    // this SAME raw-padding formula — below the old band by design). Live
+    // successor in fx4.mjs's own S1 section, using the fx1.mjs-way VISUAL
+    // rect measurement per the brief's own instruction, not this simpler
+    // raw-padding formula.
+    await freshProsePage(app, 1280, 900);
+    const startOffsetInfo = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage');
+      const scroll = document.querySelector('.mode-scroll');
+      const offsetPx = parseFloat(getComputedStyle(scroll).paddingTop) || 0;
+      return { offsetPx, stageHeight: stage.clientHeight, fraction: offsetPx / stage.clientHeight };
+    })()`);
+    pok('PARKED (was "S3: a fresh page\'s first-line start offset lands in the 30-35% band of the stage height (was ~45%)") — FX4 S1: START_FRACTION retunes to 0.25 (a lower band); live successor in fx4.mjs\'s own S1 section',
+      startOffsetInfo.fraction >= 0.20 && startOffsetInfo.fraction <= 0.30, JSON.stringify(startOffsetInfo));
+
+    // ORIGINAL: await app.evalJs("document.querySelector(
+    // '.forward-only-editor').focus()"); let scrolledAtLine = null; for
+    // (let i = 1; i <= 8 && scrolledAtLine === null; i++) { await
+    // app.typeKeys(`Line ${i} of test content...`); await sleep(120);
+    // const scrolled = await app.evalJs("document.querySelector(
+    // '.mode-scroll')?.dataset.scrolled"); if (scrolled === 'true')
+    // scrolledAtLine = i; } ok('S3: the scroll/fade engages within the
+    // first few lines of fresh typing (<=5), not lagging for a dozen',
+    // scrolledAtLine !== null && scrolledAtLine <= 5, ...);
+    // FX4 S1 — a lower start fraction means the SAME CONTAINER_HOLD_BAND
+    // (unchanged this ticket) is crossed one line later than before (was
+    // <=5, now measures at 6) — a direct, expected geometric consequence
+    // of moving the start position higher, not a regression in the
+    // engage-band tuning itself. Live successor in fx4.mjs's own S1
+    // section with the updated (still tight) line-count fence.
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    let scrolledAtLine = null;
+    for (let i = 1; i <= 8 && scrolledAtLine === null; i++) {
+      await app.typeKeys(`Line ${i} of test content, long enough to fill most of the paper's width.\n`);
+      await sleep(120);
+      const scrolled = await app.evalJs("document.querySelector('.mode-scroll')?.dataset.scrolled");
+      if (scrolled === 'true') scrolledAtLine = i;
+    }
+    pok('PARKED (was "S3: the scroll/fade engages within the first few lines of fresh typing (<=5), not lagging for a dozen") — FX4 S1: the lower start fraction pushes this to line 6; live successor in fx4.mjs\'s own S1 section',
+      scrolledAtLine !== null && scrolledAtLine <= 6, `scrolledAtLine=${scrolledAtLine}`);
+
+    // ORIGINAL: await freshScriptPage(app, 1280, 900); const
+    // scriptStartOffsetInfo = await app.evalJs(`(() => { const stage = ...
+    // const cap = document.querySelector('.desk-frame-scroll-cap'); const
+    // offsetPx = parseFloat(getComputedStyle(cap).paddingTop) || 0; return
+    // { offsetPx, stageHeight: stage.clientHeight, fraction: offsetPx /
+    // stage.clientHeight }; })()`); ok('S3 (script...): a fresh script
+    // page\'s first-line start offset lands in the 30-35% band too',
+    // scriptStartOffsetInfo.fraction >= 0.28 && <= 0.37, ...);
+    // FX4 S1 — same retune, script surface (S7's own mirroring convention).
+    await freshScriptPage(app, 1280, 900);
+    const scriptStartOffsetInfo = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage');
+      const cap = document.querySelector('.desk-frame-scroll-cap');
+      const offsetPx = parseFloat(getComputedStyle(cap).paddingTop) || 0;
+      return { offsetPx, stageHeight: stage.clientHeight, fraction: offsetPx / stage.clientHeight };
+    })()`);
+    pok('PARKED (was "S3 (script): a fresh script page\'s first-line start offset lands in the 30-35% band too") — FX4 S1: START_FRACTION retunes to 0.25; live successor in fx4.mjs\'s own S1 section',
+      scriptStartOffsetInfo.fraction >= 0.20 && scriptStartOffsetInfo.fraction <= 0.30, JSON.stringify(scriptStartOffsetInfo));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nFX3 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of fx3.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nFX3 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nFX3 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecksFx3 = checks.concat(parkedChecks);
+const pass = allChecksFx3.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nFX3 VERIFY: PASS (${checks.length} checks)` : `\nFX3 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nFX3 VERIFY: PASS (${allChecksFx3.length} checks)` : `\nFX3 VERIFY: FAIL — ${allChecksFx3.filter((c) => !c.pass).length}/${allChecksFx3.length} failed`);
 process.exit(pass ? 0 : 1);

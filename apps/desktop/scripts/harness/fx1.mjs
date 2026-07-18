@@ -511,15 +511,25 @@ if (process.env.HARNESS_PARKED === '1') {
     // ORIGINAL (S1): ok('S1: a fresh script page\'s first line also starts
     // within 40-55% of the stage height', scriptStartFrac >= 0.40 &&
     // scriptStartFrac <= 0.55, String(scriptStartFrac));
-    // FX3 S3 — same retirement, script surface (S7 mirrors prose).
+    // FX3 S3 — same retirement, script surface (S7 mirrors prose). [this
+    // generation itself now DOUBLY superseded — see immediately below]
+    // FX4 S1 — a SECOND generation: START_FRACTION retunes again (0.29 ->
+    // 0.25), moving script's own fx1-way visual fraction (script carries no
+    // extra chrome padding beyond the raw offset, unlike prose's .mode-page)
+    // to ~24.97%, below even FX3's own 30-35% band. Per the standing
+    // "double supersession" precedent (FX1's own post-merge review, Ruling
+    // 3 — an already-parked check going stale again still must pass under
+    // HARNESS_PARKED=1, generations accrete, all preserved): this
+    // generation's own value is quoted verbatim below rather than edited in
+    // place. Live successor in fx4.mjs's own S1 section.
     await freshScriptPage(app);
-    const scriptStartFracParked = await app.evalJs(`(() => {
+    const scriptStartFracParkedGen2 = await app.evalJs(`(() => {
       const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
       const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
       return (sheet.top - stage.top) / stage.height;
     })()`);
-    pok('PARKED (was "S1: a fresh script page\'s first line also starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
-      scriptStartFracParked >= 0.28 && scriptStartFracParked <= 0.37, String(scriptStartFracParked));
+    pok('PARKED, generation 2 (was PARKED-generation-1 "S1: a fresh script page\'s first line also starts within 40-55% of the stage height", itself already superseding the true original "40-55%" claim) — FX4 S1: START_FRACTION retunes to 0.25, moving script\'s own value to ~24.97%; live successor in fx4.mjs\'s own S1 section',
+      scriptStartFracParkedGen2 >= 0.20 && scriptStartFracParkedGen2 <= 0.30, String(scriptStartFracParkedGen2));
 
     // ORIGINAL (this file's own live S4 section, pre-CD2): await
     // app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
