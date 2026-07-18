@@ -31,6 +31,10 @@ import { useDeskLexicon } from '../store/deskLexicon';
 //   3. the stage          — .desk-frame-stage. Centers the page: prose
 //      min(760px,60ch) via .desk-frame-stage--prose; screenplay keeps its own
 //      courier measure via .desk-frame-stage--screenplay (no forced 60ch).
+//      AB4 S5 — board carries `.desk-frame-stage--board` too (an
+//      intentionally-empty hook, like the prose/screenplay pairing already
+//      is for the sliver anchor below): BoardEditor sizes its own canvas
+//      inline, wider than prose's measure.
 //      CD1 S2/S6 add two overlay anchors inside it (sliver, goalGlow) — see
 //      the props' own comments below; neither is a grid/flex track, so
 //      neither can ever move the paper's rect.
@@ -74,7 +78,16 @@ export function useDeskFrameViewport(): boolean {
 }
 
 export interface DeskFrameProps {
-  pageKind: 'prose' | 'screenplay';
+  // AB4 S5 — 'board' joins prose/screenplay: BoardEditor.tsx finally
+  // declares its own kind instead of the standing `pageKind="prose"`
+  // placeholder a prior ticket flagged. The stage measure class this drives
+  // (`.desk-frame-stage--board`, index.css) is an intentionally-empty hook
+  // like the prose/screenplay ones below it — Board manages its own width
+  // inline (`min(100%, 1100px)`, wider than prose's 60ch measure) rather
+  // than through `.mode-pagecol`, so no board-specific stage CSS is needed;
+  // the hook exists so every pageKind has a matching modifier class, not
+  // because one does anything yet.
+  pageKind: 'prose' | 'screenplay' | 'board';
   // CD1 S1 — the mode strip RETIRES from this track: it now lives in the
   // host's own top-line header row, above DeskFrame entirely (see
   // PageEditor.tsx/JournalEntry.tsx/ScriptEditor.tsx's own `sprint-nav`
