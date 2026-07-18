@@ -735,14 +735,16 @@ await withHarness(async (app) => {
   // ==========================================================================
   // S5/S6 park sweep — successor geometry. The strip TRACK (.desk-frame-
   // strip, formerly .desk-frame-toolrail) is DeskFrame.tsx's own grid
-  // column, unconditionally rendered regardless of whether cascade content
-  // is passed (Board still passes none — non-goal, unchanged since the
-  // drawer's own day) — these re-prove, at the new selector and the new
-  // fixed width, exactly what ab1.mjs's/ab2.mjs's own retired checks proved
-  // about the track before the drawer's retirement: fixed width, byte-
-  // identical rect across a mode switch, position-invariant across
-  // pageType (Board vs Script), and never overlapped by the page column at
-  // the 1100px gate floor.
+  // column, unconditionally rendered at a FIXED width regardless of what
+  // content it carries (AB4 later gives Board real cascade content here
+  // too — see that ticket's own S5 — but the track's own geometry law this
+  // section proves was never about content presence in the first place) —
+  // these re-prove, at the new selector and the new fixed width, exactly
+  // what ab1.mjs's/ab2.mjs's own retired checks proved about the track
+  // before the drawer's retirement: fixed width, byte-identical rect
+  // across a mode switch, position-invariant across pageType (Board vs
+  // Script), and never overlapped by the page column at the 1100px gate
+  // floor.
   // ==========================================================================
   await freshProsePage(app, LAPTOP_W, 900);
   const stripTrackRect = await app.evalJs(rectOf('.desk-frame-strip'));
@@ -757,8 +759,11 @@ await withHarness(async (app) => {
     `${JSON.stringify(stripTrackRect)} -> ${JSON.stringify(stripTrackRectAfterModeSwitch)}`);
 
   // Board vs Script — the track sits at the same structural position
-  // regardless of pageType (Board passes no strip content; the empty track
-  // still occupies the same grid column as Script's populated one).
+  // regardless of pageType, whether or not it's carrying real content (at
+  // the time this check was written, Board passed no strip content —
+  // AB4's own S5 later wires the cascade in here too; the geometry claim
+  // holds either way, which is the whole point of proving it on the empty
+  // track first).
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script seed (park-sweep successor)' });
   await app.evalJs(`(() => {
