@@ -1476,6 +1476,15 @@ outlive a session lives here, not in chat.
     question from item 28's own S1, plus a fresh look at S1-S5 here)
     can ride the same sitting as CD2's (item 30) or come sooner — his
     call, not scheduled by anything in this ticket.
+    **Deployed — 2026-07-18**, Nick's word ("Deploy," naming FX3+CD2+
+    cd2.1 together, "the whole new desk in one deploy"). Deploy-
+    manifest rule (TOOLING STATUS) satisfied: enumerated every commit
+    since the last deploy (`740b572` → `HEAD`) — resolves to exactly
+    FX3 and CD2 (HB1 was already live, an ancestor of `740b572`
+    itself; cd2.1 is docs-only, no separate deployable surface); no
+    unnamed rider this time. `railway up` on `main` @ `6692c00`
+    (deployment `1fa52774`, SUCCESS), confirmed live: `200` on
+    `/healthz` and `/`, `401` on `/auth/me`.
 30. **The Cascade — committee double-pass.** **PROPOSED — 2026-07-17.**
     Commissioned by Nick from the desktop sitting: the left drawer
     becomes a pop-out cascade from a persistent vertical strip —
@@ -1663,6 +1672,56 @@ outlive a session lives here, not in chat.
     word, and his device-look sitting (the cascade at his left hand,
     the dock, the strip's four sections, the theme panel with no
     locked doors, FX3's own verdicts riding the same look).
+    **Close condition 3 met — Deployed 2026-07-18**, Nick's word
+    ("Deploy," FX3+CD2+cd2.1 together). `railway up` on `main` @
+    `6692c00` (deployment `1fa52774`, SUCCESS), confirmed live. Full
+    enumeration/detail recorded once, against item 29 (same deploy,
+    same SHA, same word). **Close condition 4 (Nick's device-look
+    sitting) remains** — item 30 does not close until it's spent.
+31. **AB4 — the Wall.** **BRIEF COMMITTED, BUILD AUTHORIZED —
+    2026-07-18.** Authority: the Tutor committee pass
+    (`docs/wrizo-alpha/tutor-committee-pass.md`) as ratified by Nick —
+    **A12-A15 RATIFIED** (A12 the two-sides law: the cascade serves
+    known needs, the Tutor unknown ones; A13 the ghostwriter rail,
+    constitutional — the Tutor speaks about the writing, never as it,
+    reference yes/composition never, no Tutor output ever enters a
+    writing surface by any affordance; A14 the room never knocks — the
+    Tutor may write, never call, no badges/toasts/counts/dots ever;
+    A15 the Tutor inherits the vanishing law with the dock rider), the
+    composition line made LAW **with Nick's own revisit note verbatim:
+    "if it's overly restrictive later, we can always revisit"**, Wall
+    built first then TU1 (sequencing ratified), per-page Tutor threads
+    in v1. This ticket discharges CD2's own Wall-fold ruling and
+    Ruling 2's carries. Six slices: S1 the CD2 Plan-survey erratum
+    comes true — picking a board swaps the survey to that board's
+    CARDS as large thumbnails, fully dockable (the PowerPoint moment);
+    S2 Pin as a fourth sending verb (membership, not capture — home/
+    origin untouched, a page-pin card joins the board, a truthful
+    "Also pinned to X" membership line, unpinning removes the card
+    never the page); S3 threads (a connect-mode toggle draws hairlines
+    between cards, stored in `boxes`, confirm-free deletion); S4 card
+    resize (persisted) + double-click travel with a guaranteed way
+    back (text cards keep today's inline-edit behavior, untouched);
+    S5 BoardEditor finally joins the cascade system — gains the
+    sliver (Add card, Connect toggle, nothing else v1), declares
+    `pageKind='board'` (the standing prose-assumption cleanup lands),
+    completing the "every surface carries strip/sliver/top-line, no
+    pre-cascade wiring survives anywhere" claim. **Zero schema, zero
+    new deps** — everything rides the existing `boxes` jsonb; any
+    slice wanting a column is a STOP-and-report, this ticket carries
+    no schema pre-authorization. Merge pre-authorized as zero-schema;
+    Fable reviews post-merge, gating close and redeploy. New
+    `apps/desktop/scripts/harness/ab4.mjs` required (S6) plus a park
+    sweep — the cd2.1 audit now guards the whole "silently-skipped-
+    parked-checks" class for every file this falsifies.
+    **TU1 — the Tutor — queued next, SCHEMA FLAG standing.** Per the
+    Tutor committee pass's own recommendation: a right-edge panel
+    mirroring the sliver's geometry, persisted Tutor threads (the
+    arc's second schema addition after `origin`). **Carries NO merge
+    pre-authorization — Nick's explicit merge go is required** (the
+    corrected zero-schema-vs-schema rule's first scheduled real use
+    since the correction). TU1's own brief follows AB4's review, per
+    the one-brief rhythm. Not started; brief not yet written.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
