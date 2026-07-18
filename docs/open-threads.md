@@ -1540,6 +1540,93 @@ outlive a session lives here, not in chat.
     left drawer's retirement falsifies `cd1.mjs`'s drawer-track
     geometry and face checks (and likely others); every falsified check
     parks per A4, enumerated in the fold's own commit message.
+    **MERGED, PUSHED — 2026-07-18.** Built S0-S6 on `cd2-cascade` off
+    `main`, in an isolated worktree, after FX3 (item 29) had already
+    merged. **Architecture:** `DeskFrame.tsx`'s `toolRail` prop retires
+    entirely, replaced by two: `strip` (a grid track, `.desk-frame-
+    strip`, deliberately carrying NO `chrome-fade`/`desk-dissolve`
+    classes — S1's "never dissolving" law enforced structurally, not
+    just behaviorally) and `cascadeLayers` (a stage overlay, mirroring
+    the sliver's own anchor pattern but growing rightward from the
+    strip instead of leftward from the paper — same structural
+    immunity proof). Both come from one new hook, `useCascade()` in
+    `components/Cascade.tsx`. Layers 2-3 dissolve via an explicit
+    keydown listener (generalizing AB3's own pre-existing Drawer
+    keystroke-reset pattern), not the ambient fade engine — deliberate,
+    since the strip must never fade and there's no shared "this family
+    fades" class to lean on. **The dock:** a fixed 180ms collapse
+    (mounted throughout, never unmounting, so rapid dock/undock can't
+    race); layer 3 slides into layer 2's slot via ordinary flex reflow;
+    a docked survey clamps to a 120px floor. A real bug the build found
+    in its OWN code and fixed: Chromium does not resolve `calc()`/
+    `min()` inside a CSS custom property via `getComputedStyle()` — it
+    returns the literal formula string, silently `NaN`-ing the dock-
+    floor law; fixed by measuring real DOM rects instead of trusting
+    the custom property.
+    **S1-S5:** the strip (84px, `--strip-width`, replacing the 200px
+    `--drawer-width`, feeding the freed width to FX3's scaled paper),
+    A11's 4-section/7-category roster verbatim, all 7 category panels
+    (Page reuses `PageFace` whole; Drawers lists drawer *entities*, not
+    a flat page list — richer than the retired PlaceFace; Settings is
+    genuinely site-wide via a new `logoutRequest.ts` pub-sub reaching
+    App.tsx's real `handleLogout`, distinct by law from the sliver-foot
+    gear), the survey layer, Delete as Nick actually ruled it (one
+    plain confirm, no Shelf-instead offer — overriding the committee
+    pass's own softer lean). `Drawer.tsx` and `PlaceFace.tsx` deleted
+    outright.
+    **Independent review — verified the hard claims directly, not by
+    re-reading the build's own report.** Paper-rect invariance and
+    strip-never-dissolve confirmed via direct harness execution.
+    **All four dock state transitions tested directly** (the build's
+    own harness only covered two — keystroke-survives and close/
+    reopen; the review wrote and ran independent scripts for the other
+    two, Escape-dismisses-docked and category-switch-dismisses-docked
+    — both correct). The calc()/getComputedStyle claim independently
+    reproduced with a generic, app-unrelated test case — confirmed
+    general Chromium behavior, not a build assumption. Delete
+    independently traced to match Nick's actual ruling, not the pass's
+    original lean. Full 17-file suite reconfirmed from a clean install
+    with zero count discrepancies and zero flakes (including `m1`/`th2`,
+    both historically flake-prone, clean on the first try).
+    **One real, if minor, product-scope tension surfaced by the build
+    itself and independently resolved by the review:** S3's own text
+    says the Plan category's survey shows the board LIST; the brief's
+    own DoD line describes "a board's cards surveyed as thumbnails
+    beside a focused page" — Nick's original commissioning image. The
+    review's independent judgment: the DoD line describes the FULL
+    vision spanning CD2+AB4 (the committee pass's own ratified
+    reasoning explicitly re-scopes that exact posture onto AB4, "built
+    ON the cascade as the next arc ticket"; `BoardEditor.tsx` never
+    got the cascade wired in this ticket, a disclosed non-goal with
+    direct AB3-era precedent for excluding Board) — not a CD2 defect.
+    Recorded as a DoD erratum for Fable/Nick, not unbuilt scope.
+    **Park sweep — every entry individually audited against this
+    project's own A4/FX1-Ruling-5 disclosure precedent; one false
+    citation fixed, one consistency gap found and fixed.** Touched
+    `ab1.mjs` (3 parked), `ab2.mjs` (1 parked), `ab3.mjs` (7 newly
+    parked + 4 chain-extended + 7 adapted-in-place doorway checks, the
+    largest single pass), `cd1.mjs` (2 parked, its first-ever), `fx1.mjs`
+    (2 parked) — all verified verbatim-quoted, genuinely superseded
+    (`Drawer.tsx`/`PlaceFace.tsx` confirmed actually deleted), with real
+    live successors. The review fixed a false "layered park" precedent
+    citation in `ab3.mjs`'s own comment (`bc4d560`) and flagged
+    `fx2.mjs`'s two Drawer-named checks as inconsistently classified —
+    edited in place rather than parked, despite naming "the Drawer" by
+    name the same way the parked checks elsewhere in this identical
+    sweep did. **Fixed directly** (not left as a flag) — parked both
+    per A4, quoted verbatim, live successors already existed; also
+    fixed the file's own tail, which only checked `checks` and never
+    `parkedChecks`, meaning a failing parked check couldn't have failed
+    the process (`fx2.mjs`: 33/33 -> 33/35).
+    **Full suite green on the fully merged, pushed tree:** `tsc`,
+    `build:web`, selftest, all 17 harness files under both
+    `HARNESS_PARKED` settings. `th2.mjs` hit its documented transient
+    flake once during this final pass (2/43), cleared on 3 immediate
+    reruns — consistent with its known history, not a regression.
+    Pushed to `origin/main` @ `402a6ba`.
+    **Not deployed** — Fable's post-merge review hasn't landed;
+    redeploy is Nick's call, as always. The instruments panel (per the
+    brief) remains committee-owned, untouched by this build.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
