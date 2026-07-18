@@ -809,6 +809,38 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
   return getJournalEntry(boardEntryId);
 }
 
+// --- AB4 S2 — Pin: membership, not capture --------------------------------
+// A page-pin card references an entry by id; it never copies its content and
+// never touches the referenced entry's own record (origin/projectId/text all
+// stay byte-unchanged — only the BOARD's `boxes` array gains a card). Rides
+// the exact same `Box[]`/`saveBoardBoxes` recipe as every other card (zero
+// schema — see the `Box` interface's own AB4 S2/S3 comments in types/index.ts
+// for the full reasoning on why this stays inside the existing column).
+const BOARD_PIN_W = 0.28;
+const BOARD_PIN_H = 0.12;
+
+export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEntry | null {
+  const board = getJournalEntry(boardEntryId);
+  if (!board || board.pageType !== 'board') return null;
+  const existing = board.boxes ?? [];
+  if (existing.some(b => b.kind === 'page-pin' && b.entryId === entryId)) return board; // already pinned — idempotent
+  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
+  const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId };
+  saveJournalEntry({ ...board, boxes: [...existing, pin] });
+  return getJournalEntry(boardEntryId);
+}
+
+// Every board (regardless of its own home) currently pinning `entryId` —
+// feeds the Page panel's truthful "Also pinned to <board>." membership
+// line(s). A page can be pinned to more than one board; every truth is told
+// (S2's own "told truthfully like every other membership" law).
+export function getBoardsPinning(entryId: string): { id: string; title: string }[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt && e.pageType === 'board' && (e.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === entryId))
+    .map(e => ({ id: e.id, title: e.text.trim() ? e.text.trim().split('\n')[0].slice(0, 60) : 'Untitled board' }));
+}
+
 // --- S1 — the Screenplay Room's document (fragments-canon §2) -------------
 // One jsonb column, exactly the `boxes` recipe. `getScriptDoc` is a plain
 // read; `saveScriptDoc` writes the doc AND its derived `entry.text` shadow in

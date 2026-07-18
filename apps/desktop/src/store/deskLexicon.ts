@@ -53,6 +53,10 @@ export type DeskTermId =
   // AB3 S2 — the Page face (components/PageFace.tsx).
   | 'pageFaceStar' | 'pageFaceStarred' | 'pageFaceAddTag' | 'pageFaceAdd'
   | 'pageFaceMoveCopy' | 'pageFacePortToBoard'
+  // AB4 S2 — Pin, the fourth sending verb (membership, not capture) + its
+  // truthful membership-line prefix ("<prefix> <board>." — the board's own
+  // title is interpolated at the call site, store/pageHome.ts).
+  | 'pageFacePin' | 'pageFacePinnedTo'
   // AB3 S6 — the Places faces (components/PlaceFace.tsx, RETIRED whole by
   // CD2 S5 alongside Drawer.tsx, its only mount site). CD2's own ratified
   // S3 spec for Journal/Drawers/Shelf turned out simpler than PlaceFace's
@@ -80,7 +84,15 @@ export type DeskTermId =
   | 'cascadeShelfBrowse' | 'cascadeSettingsTitle' | 'cascadeSettingsSignOut'
   | 'cascadeThemeTitle'
   // CD2 S2/S4 — the survey layer + the dock.
-  | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose' | 'cascadeDockReopen';
+  | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose' | 'cascadeDockReopen'
+  // AB4 S1 — the CD2 erratum comes true: picking a board in the Plan survey
+  // swaps the column to that board's cards, with a quiet back affordance to
+  // the board list (the ONLY new survey-chrome string this ticket adds; the
+  // cards themselves reuse the existing thumbnail/title/excerpt vocabulary).
+  | 'cascadeSurveyBack'
+  // AB4 S5 — the board sliver's own two hand tools (S5's fence: "Add card,
+  // the Connect toggle, and nothing else v1").
+  | 'railBoard' | 'boardAddCard' | 'boardConnect';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -114,6 +126,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   pageFaceAdd: 'Add',
   pageFaceMoveCopy: 'Move to… / Copy to…',
   pageFacePortToBoard: 'Port to a Board…',
+  pageFacePin: 'Pin to a Board…',
+  pageFacePinnedTo: 'Also pinned to',
   placeFaceOpen: 'Open',
   placeFaceFileSend: 'File/Send',
   placeFacePeek: 'Peek',
@@ -157,6 +171,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeSurveyCurrent: 'Current',
   cascadeDockClose: 'Close, keep browsing',
   cascadeDockReopen: 'Reopen',
+  cascadeSurveyBack: 'Back',
+  railBoard: 'Board',
+  boardAddCard: 'Add card',
+  boardConnect: 'Connect',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
