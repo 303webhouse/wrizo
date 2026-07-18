@@ -685,6 +685,65 @@ await withHarness(async (app) => {
   ok('S2 @ 1100px floor: the paper rect stays byte-identical through the dock attempt too — the small-screen rule never reflows the paper, only ever overlays it',
     JSON.stringify(floorPaperClosed) === JSON.stringify(floorPaperAfterDockAttempt), JSON.stringify({ floorPaperClosed, floorPaperAfterDockAttempt }));
 
+  // ==========================================================================
+  // S5/S6 park sweep — successor geometry. The strip TRACK (.desk-frame-
+  // strip, formerly .desk-frame-toolrail) is DeskFrame.tsx's own grid
+  // column, unconditionally rendered regardless of whether cascade content
+  // is passed (Board still passes none — non-goal, unchanged since the
+  // drawer's own day) — these re-prove, at the new selector and the new
+  // fixed width, exactly what ab1.mjs's/ab2.mjs's own retired checks proved
+  // about the track before the drawer's retirement: fixed width, byte-
+  // identical rect across a mode switch, position-invariant across
+  // pageType (Board vs Script), and never overlapped by the page column at
+  // the 1100px gate floor.
+  // ==========================================================================
+  await freshProsePage(app, LAPTOP_W, 900);
+  const stripTrackRect = await app.evalJs(rectOf('.desk-frame-strip'));
+  ok('S1/S5 (successor to ab1.mjs\'s "...tool-rail/stage tracks are present"): the strip track fills its own fixed width (--strip-width, 84px)',
+    Math.abs(stripTrackRect.width - 84) < 1, JSON.stringify(stripTrackRect));
+
+  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
+  await sleep(150);
+  const stripTrackRectAfterModeSwitch = await app.evalJs(rectOf('.desk-frame-strip'));
+  ok('S1/S5 (successor to ab2.mjs\'s "...tool-rail track rect is byte-identical across a mode switch..."): the strip track rect is byte-identical across a mode switch too',
+    JSON.stringify(stripTrackRect) === JSON.stringify(stripTrackRectAfterModeSwitch),
+    `${JSON.stringify(stripTrackRect)} -> ${JSON.stringify(stripTrackRectAfterModeSwitch)}`);
+
+  // Board vs Script — the track sits at the same structural position
+  // regardless of pageType (Board passes no strip content; the empty track
+  // still occupies the same grid column as Script's populated one).
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script seed (park-sweep successor)' });
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    entries.push({ id: 'cd2-ps-board', text: '', pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now });
+    const headingId = 'cd2-ps-script-heading';
+    entries.push({ id: 'cd2-ps-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+  })()`);
+  await app.reload();
+  await app.emulateDpr(1, LAPTOP_W, 900);
+  await app.evalJs("location.hash = '#/page/cd2-ps-board'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Board framed (park-sweep successor)' });
+  await sleep(250);
+  const boardStripRect = await app.evalJs(rectOf('.desk-frame-strip'));
+  await app.evalJs("location.hash = '#/page/cd2-ps-script'");
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'Script framed (park-sweep successor)' });
+  await sleep(250);
+  const scriptStripRect = await app.evalJs(rectOf('.desk-frame-strip'));
+  ok('S1/S5 (successor to ab1.mjs\'s "...tool-rail track sits at the same position on Board and Script..."): the strip track sits at the same position regardless of pageType',
+    boardStripRect.left === scriptStripRect.left && boardStripRect.width === scriptStripRect.width,
+    `board=${JSON.stringify(boardStripRect)} script=${JSON.stringify(scriptStripRect)}`);
+
+  // Gate floor (1100px): the page column never overlaps the strip track.
+  await freshProsePage(app, 1100, 900);
+  const gateFloorStripRect = await app.evalJs(rectOf('.desk-frame-strip'));
+  const gateFloorPagecolRect = await app.evalJs(rectOf('.mode-pagecol'));
+  ok('S1/S5 (successor to ab1.mjs\'s "...at the gate floor (1100px): the page column never overlaps the tool-rail"): the page column never overlaps the strip track at the gate floor either',
+    gateFloorPagecolRect.left >= gateFloorStripRect.left + gateFloorStripRect.width,
+    JSON.stringify({ gateFloorStripRect, gateFloorPagecolRect }));
+
   return checks;
 });
 
