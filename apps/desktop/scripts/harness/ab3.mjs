@@ -3,6 +3,25 @@
 // persist"), modeled on ab1.mjs/ab2.mjs.
 // Run: node apps/desktop/scripts/harness/ab3.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
+//
+// CD2 (2026-07-17) — the left drawer this file's own test subject RETIRES
+// whole (Drawer.tsx deleted; docs/wrizo-alpha/cd2-cascade-brief.md S5).
+// Checks asserting the drawer's OWN structure (its fixed-width track, the
+// Page-pull-above-a-separator-with-three-Places nav shape, the tools-face
+// retirement, the Journal/Shelf/Drawers PLACE faces' three-verb rows, the
+// keystroke-dissolves-the-open-place-face-back-to-page mechanic, the active
+// pull's color) are PARKED below — the cascade's strip/panels are an
+// architecturally different design (seven separate category doorways, not
+// a two-face toggle), so there is no "same claim, renamed selector" fix for
+// these; successors (where the underlying data claim survives) live in
+// cd2.mjs's own S3 section. Checks that only ever used a `.wz-drawer-pull-
+// page` CLICK as a doorway to reach PageFace content (subject wiring, the
+// footer's own exclusivity, the project home label, the filing flow, the
+// membership truths) are adapted in place instead — PageFace.tsx itself and
+// every persistence function under test are byte-unchanged by this ticket,
+// only the click that reaches the face moved (from the drawer's Page pull
+// to the strip's Page category, via the new `openPageCategory` helper
+// below) — the fx2.mjs "plain selector update, no park" precedent applies.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -66,80 +85,43 @@ const freshLoosePage = async (app) => {
   await sleep(500); // past persistence.ts's 300ms debounced flush
 };
 
+// CD2 — the doorway to PageFace's own content, replacing the retired
+// Drawer's "click the Page pull" (which used to be the rest state, always
+// showing). The cascade's Page category (A11's roster, index 1: Journal,
+// Page, Plan, Drawers, Shelf, Settings, Change Theme) must be opened
+// explicitly now — a real behavioral difference from the old drawer (see
+// this file's own header comment) — every fixture below that used to rely
+// on the Page face being visible by default, or clicked the drawer's own
+// pull to return to it, now calls this instead. IDEMPOTENT (checks first) —
+// a real finding along the way: useCascade()'s own state is scoped to the
+// HOST component (JournalEntry/PageEditor), not to DeskFrame's own mount
+// lifecycle, so it survives a width round-trip across the 1100px gate (the
+// host itself never unmounts, only its conditional return does) — calling
+// this a second time on an already-open Page category would otherwise
+// TOGGLE IT CLOSED (Cascade.tsx's own same-category-click-closes rule).
+const openPageCategory = async (app) => {
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
+  const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
+  if (alreadyOpen) return;
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
+};
+
 await withHarness(async (app) => {
-  // === S1/S6 — the Drawer's fixed geometry across EVERY face flip. ==========
+  // === S1/S6 — the Drawer's own fixed geometry, nav shape (Page pull above
+  // a separator, three Places below), and the tools-face retirement are all
+  // CD2 S1/S5 SUPERSEDED — the drawer this file tested is gone; the
+  // cascade's architecturally different strip/panel design is proven fresh
+  // in cd2.mjs's own S1 section. Every check that lived here is PARKED
+  // below (quoted verbatim, this file's own new CD2 park block). ===========
   await freshJournalPage(app, 'AB3GEOMETRY');
 
-  const railRect0 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  const drawerRect0 = await app.evalJs(rectOf('.wz-drawer'));
-  // The drawer is a content-box child of the bordered .desk-frame-toolrail
-  // aside (1px border each side) — its width fills the track minus that
-  // border, not byte-identical to the border-box rect.
-  ok('S1 geometry: the drawer fills the tool-rail track at its fixed width (200px, --drawer-width)',
-    railRect0.width - drawerRect0.width <= 4 && drawerRect0.width > 0, JSON.stringify({ railRect0, drawerRect0 }));
-
-  const flipTo = async (sel) => { await app.evalJs(`document.querySelector(${JSON.stringify(sel)}).click()`); await sleep(220); };
-
-  // CD1 S3 (canon A3) — the drawer's rest face is `page` now, not `tools`
-  // (retired). The ORIGINAL flip sequence below started with a `tools ->
-  // page` click assuming `tools` was the rest state; that first click is
-  // now a same-face no-op (already resting on `page`). Re-sequenced to
-  // exercise page -> journal -> shelf -> drawers -> page (via the Page
-  // pull) -> drawers -> (toggle off) page, so every transition is real,
-  // INCLUDING the toggle-off path the retired check named. The ORIGINAL
-  // "S1 geometry..." and "S1: ...toggles the face back to tools" checks are
-  // parked below (SUPERSEDED); their successors are live here.
-  await flipTo('.wz-drawer-pull-place[data-place="journal"]'); // page -> place:journal
-  const railRect1 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  await flipTo('.wz-drawer-pull-place[data-place="shelf"]'); // place:journal -> place:shelf
-  const railRect2 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  await flipTo('.wz-drawer-pull-place[data-place="drawers"]'); // place:shelf -> place:drawers
-  const railRect3 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  await flipTo('.wz-drawer-pull-page'); // place:drawers -> page (CD1: the rest face, via its own pull)
-  const railRect4 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  await flipTo('.wz-drawer-pull-place[data-place="drawers"]'); // page -> place:drawers, once more
-  const railRect5 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  // Toggle the active place off — CD1: back to `page`, not `tools`.
-  await flipTo('.wz-drawer-pull-place[data-place="drawers"]');
-  const railRect6 = await app.evalJs(rectOf('.desk-frame-toolrail'));
-
-  const allRects = [railRect0, railRect1, railRect2, railRect3, railRect4, railRect5, railRect6];
-  ok('CD1 S3 (was "S1 geometry (ab2.1 lesson, applied day one): ...tools->page->place:journal->..."): the tool-rail track rect is BYTE-IDENTICAL across every face flip (page->journal->shelf->drawers->page->drawers->page)',
-    allRects.every(r => JSON.stringify(r) === JSON.stringify(railRect0)), JSON.stringify(allRects));
-
-  const faceAfterToggleOff = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
-  ok('CD1 S3 (was "S1: ...toggles the face back to tools..."): clicking the active place pull again toggles the face back to page (the drawer\'s rest face now — no dead-end face)', faceAfterToggleOff === 'page', faceAfterToggleOff);
-
-  // === S1 — the Page pull above a separator, Places below. ==================
-  const navShape = await app.evalJs(`({
-    pageBeforeSep: !!document.querySelector('.wz-drawer-nav .wz-drawer-pull-page'),
-    sepPresent: !!document.querySelector('.wz-drawer-sep'),
-    placesCount: document.querySelectorAll('.wz-drawer-pull-place').length,
-    placeOrder: [...document.querySelectorAll('.wz-drawer-pull-place')].map(b => b.dataset.place),
-  })`);
-  ok('S1: the rail carries the Page pull above a separator, three Places below',
-    navShape.pageBeforeSep && navShape.sepPresent && navShape.placesCount === 3
-      && JSON.stringify(navShape.placeOrder) === JSON.stringify(['journal', 'shelf', 'drawers']),
-    JSON.stringify(navShape));
-
-  // CD1 S3 (canon A3) — the `tools` face retires entirely: "the drawer
-  // rests on the Page face; hand tools live in the paper-edge sliver." The
-  // ORIGINAL "S1: the tools face composes ToolRail verbatim" check is
-  // parked below (SUPERSEDED); its successor proves the opposite — no
-  // `tools` face is reachable, the drawer rests on `page` by default.
-  const toolsFaceGoneNow = await app.evalJs(`({
-    restFace: document.querySelector('.wz-drawer-face')?.dataset.face,
-    toolsFaceReachable: !!document.querySelector('.wz-drawer-face[data-face="tools"]'),
-    toolsPullReachable: !!document.querySelector('.wz-drawer-pull-tools'),
-  })`);
-  ok('CD1 S3 (was "S1: the tools face composes ToolRail verbatim..."): the drawer rests on the Page face by default; no `tools` face or pull is reachable anywhere',
-    toolsFaceGoneNow.restFace === 'page' && !toolsFaceGoneNow.toolsFaceReachable && !toolsFaceGoneNow.toolsPullReachable,
-    JSON.stringify(toolsFaceGoneNow));
-
-  // === S2 — the Page face's content, on a journal-origin, unfiled page. =====
-  await flipTo('.wz-drawer-pull-page');
+  // === S2 — the Page face's content, on a journal-origin, unfiled page.
+  // Reached via the cascade's Page category now (openPageCategory), not the
+  // retired drawer's Page pull — PageFace.tsx itself is byte-unchanged. ====
+  await openPageCategory(app);
   const pageFace = await app.evalJs(`({
-    face: document.querySelector('.wz-drawer-face').dataset.face,
+    panelTitle: document.querySelector('.wz-cascade-panel-title')?.textContent,
     title: document.querySelector('.wz-pageface-title')?.textContent,
     starPresent: !!document.querySelector('.wz-pageface-star'),
     starredNow: document.querySelector('.wz-pageface-star')?.dataset.starred,
@@ -149,8 +131,8 @@ await withHarness(async (app) => {
     port: !!document.querySelector('.wz-pageface-verb-port'),
     footer: document.querySelector('.wz-pageface-footer')?.textContent,
   })`);
-  ok('S2: the Page face shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer',
-    pageFace.face === 'page' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
+  ok('S2: the Page category shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer',
+    pageFace.panelTitle === 'Page' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
       && pageFace.home === 'In the Journal' && pageFace.tagInput && pageFace.moveCopy && pageFace.port
       && pageFace.footer === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
     JSON.stringify(pageFace));
@@ -162,67 +144,33 @@ await withHarness(async (app) => {
   const storedStarred = (await app.localJSON('writer-studio-journal-entries')).find(e => e.text?.includes('AB3GEOMETRY'))?.starred;
   ok('S2: the Page face\'s star toggle actually persists to entry.starred', starredAfter === 'true' && storedStarred === true, `${starredAfter} / ${storedStarred}`);
 
-  // === S6 — the Places faces: Journal/Shelf/Drawers, three verbs, Go to the
-  // Room, no counts/badges. ===================================================
-  await flipTo('.wz-drawer-pull-place[data-place="journal"]');
-  const journalPlace = await app.evalJs(`({
-    face: document.querySelector('.wz-drawer-face').dataset.face,
-    hasItem: [...document.querySelectorAll('.wz-placeface-item-title')].some(el => el.textContent.includes('AB3GEOMETRY')),
-    verbs: (() => {
-      const item = [...document.querySelectorAll('.wz-placeface-item')].find(el => el.textContent.includes('AB3GEOMETRY'));
-      if (!item) return null;
-      return {
-        open: !!item.querySelector('.wz-placeface-verb-open'),
-        file: !!item.querySelector('.wz-placeface-verb-file'),
-        peek: !!item.querySelector('.wz-placeface-verb-peek'),
-        peekAriaDisabled: item.querySelector('.wz-placeface-verb-peek')?.getAttribute('aria-disabled'),
-        peekNativeDisabled: item.querySelector('.wz-placeface-verb-peek')?.disabled === true,
-      };
-    })(),
-    room: document.querySelector('.wz-placeface-room')?.textContent,
-    noBadges: document.querySelectorAll('.wz-placeface .journal-star, .wz-placeface [class*="count"], .wz-placeface [class*="badge"]').length === 0,
-  })`);
-  ok('S6: the Journal place face lists the current page, with Open/File-Send/Peek — Peek is aria-disabled, NOT natively disabled (no greyed ceremony), and the room door reads "Go to the Room"',
-    journalPlace.face === 'place:journal' && journalPlace.hasItem
-      && journalPlace.verbs?.open && journalPlace.verbs?.file && journalPlace.verbs?.peek
-      && journalPlace.verbs?.peekAriaDisabled === 'true' && journalPlace.verbs?.peekNativeDisabled === false
-      && journalPlace.room === 'Go to the Room' && journalPlace.noBadges,
-    JSON.stringify(journalPlace));
-
-  await flipTo('.wz-drawer-pull-place[data-place="shelf"]');
-  const shelfPlace = await app.evalJs("({ face: document.querySelector('.wz-drawer-face').dataset.face, empty: !!document.querySelector('.wz-placeface-empty') })");
-  ok('S6: the Shelf place face mounts (empty — nothing shelved yet), one level deep, no counts',
-    shelfPlace.face === 'place:shelf' && shelfPlace.empty, JSON.stringify(shelfPlace));
-
-  await flipTo('.wz-drawer-pull-place[data-place="drawers"]');
-  const drawersPlace = await app.evalJs("({ face: document.querySelector('.wz-drawer-face').dataset.face, empty: !!document.querySelector('.wz-placeface-empty') })");
-  ok('S6: the Drawers place face mounts (empty — nothing filed yet)', drawersPlace.face === 'place:drawers' && drawersPlace.empty, JSON.stringify(drawersPlace));
-
-  // === S6 guardrail — a keystroke dissolves the face back to the room
-  // (CD1 S3: `page`, the drawer's new rest face — `tools` retired), and the
-  // whole drawer inherits the vanishing law + resurfaces on edge-dwell (the
-  // SAME useChromeDissolve engine, no second fade system). The ORIGINAL
-  // check (which named `tools` as the room) is parked below (SUPERSEDED). =
-  const faceBeforeType = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
+  // === S6 — the Places faces (Journal/Shelf/Drawers, three verbs, Go to the
+  // Room) and the keystroke-dissolves-the-open-place-face-back-to-page
+  // mechanic are CD2 S1/S5 SUPERSEDED — no "place face" concept exists in
+  // the cascade (Journal/Drawers/Shelf are three separate category panels,
+  // reached and dissolved independently, not a shared toggle-face). PARKED
+  // below; cd2.mjs's own S3 section covers the surviving Journal/Drawers/
+  // Shelf CONTENT claims through the new panels directly. The room-level
+  // dissolve/resurface mechanic itself (data-writing flips true then false)
+  // is NOT drawer-specific and stays live here, adapted: the strip now
+  // explicitly does NOT dissolve (S1's own "never dissolving" law — the
+  // opposite of the old drawer's own behavior, also PARKED below with its
+  // own opposite-truth successor in cd2.mjs). ================================
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('x');
   await sleep(150);
-  const faceAfterType = await app.evalJs("document.querySelector('.wz-drawer-face')?.dataset.face");
   const writingNow = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
-  ok('CD1 S3 (was "S6: ...dissolves the open place face back to the tools room..."): a keystroke dissolves the open place face back to the page room (was NOT page before typing)',
-    faceBeforeType !== 'page' && faceAfterType === 'page', `${faceBeforeType} -> ${faceAfterType}`);
-  ok('S1: the whole drawer carries the vanishing law (the SAME .desk-frame[data-writing] the rest of the frame uses)', writingNow === 'true', writingNow);
+  ok('S1: typing dissolves the room (the SAME .desk-frame[data-writing] the whole frame uses)', writingNow === 'true', writingNow);
 
   await app.evalJs("window.dispatchEvent(new PointerEvent('pointermove', { clientX: 400, clientY: 10, bubbles: true }))");
   await sleep(500); // past EDGE_DWELL_MS (260ms)
   const writingAfterEdge = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
-  ok('S6: dwelling at the viewport edge resurfaces the chrome (the drawer included — same engine)', writingAfterEdge === 'false', writingAfterEdge);
+  ok('S6: dwelling at the viewport edge resurfaces the chrome', writingAfterEdge === 'false', writingAfterEdge);
 
   // === A1 — the Page face's subject wiring: a DIFFERENT page shows DIFFERENT
   // face content (subject-driven, not a hardcoded "current page"). ===========
   await freshJournalPage(app, 'AB3SUBJECTB');
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
-  await sleep(220);
+  await openPageCategory(app);
   const subjectB = await app.evalJs(`({
     title: document.querySelector('.wz-pageface-title')?.textContent,
     starred: document.querySelector('.wz-pageface-star')?.dataset.starred,
@@ -258,19 +206,17 @@ await withHarness(async (app) => {
   await app.emulateDpr(1, 1400, 900);
   await sleep(200);
 
-  // === "the saved-silently footer exists only in the drawer" — its ONLY
-  // appearance anywhere once framed. The width round-trip above unmounts and
-  // remounts DeskFrame (and the Drawer inside it), so the face resets to
-  // its rest state — CD1 S3: `page`, not the retired `tools` — the Page
-  // face is already showing, but the click below stays harmless (a
-  // same-face no-op) and keeps this fixture robust either way.
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
-  await sleep(220);
+  // === "the saved-silently footer exists only in the Page panel" — its
+  // ONLY appearance anywhere once framed. The width round-trip above
+  // unmounts and remounts DeskFrame (and the cascade inside it), so the
+  // Page category resets to CLOSED (CD2's own rest state — unlike the old
+  // drawer, nothing is open by default) — open it explicitly.
+  await openPageCategory(app);
   const footerOnlyInDrawer = await app.evalJs(`({
     outsideDrawerNote: !!document.querySelector('body > *:not(.desk-frame) .journal-autosave-note, .desk-frame-stagecol .journal-autosave-note'),
     inPageFace: document.querySelector('.wz-pageface-footer')?.textContent ?? null,
   })`);
-  ok('S3/S2: the saved-silently line appears nowhere outside the drawer\'s Page face when framed',
+  ok('S3/S2: the saved-silently line appears nowhere outside the Page panel when framed',
     !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
     JSON.stringify(footerOnlyInDrawer));
 
@@ -306,10 +252,9 @@ await withHarness(async (app) => {
   const projectDoorEntry = projectEntries.find(e => e.text?.includes('AB3ORIGINPROJECT'));
   ok('S4: a project door (new chapter from CreateProject) stamps origin:\'project\', projectId set', projectDoorEntry?.origin === 'project' && !!projectDoorEntry?.projectId, JSON.stringify(projectDoorEntry));
 
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
-  await sleep(220);
+  await openPageCategory(app);
   const projectHome = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S4/S2: the Page face\'s Where-it-lives names the project by title (not the Journal)', projectHome?.startsWith('In ') && projectHome !== 'In the Journal', projectHome);
+  ok('S4/S2: the Page category\'s Where-it-lives names the project by title (not the Journal)', projectHome?.startsWith('In ') && projectHome !== 'In the Journal', projectHome);
 
   await app.goto('/journal');
   await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (project-origin check)' });
@@ -366,10 +311,9 @@ await withHarness(async (app) => {
     !looseRail.ink && looseRail.forwardLock && looseRail.captureItems.length === 0,
     JSON.stringify(looseRail));
 
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
-  await sleep(220);
+  await openPageCategory(app);
   const looseHomeText = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S4/DoD: the loose page\'s drawer text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
+  ok('S4/DoD: the loose page\'s Page category text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
 
   // Anti-solicitation: no file-it-first prompt anywhere reachable from a
   // loose page (PageEditor.tsx carries no such prompt at all).
@@ -398,7 +342,7 @@ await withHarness(async (app) => {
   await sleep(200);
 
   await journalPageHere(app, 'AB3FORGETSNOTHING');
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
+  await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-movecopy')", { label: 'Page face (forgets-nothing fixture)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet' });
@@ -429,8 +373,7 @@ await withHarness(async (app) => {
   await app.goto(`/page/${filedEntry.id}`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'filed page reopened' });
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
-  await sleep(220);
+  await openPageCategory(app);
   const bothTruths = await app.evalJs(`({
     home: document.querySelector('.wz-pageface-home-label')?.textContent,
     memberships: [...document.querySelectorAll('.wz-pageface-membership')].map(el => el.textContent),
@@ -492,14 +435,9 @@ await withHarness(async (app) => {
     lockBefore === 'true' && lockAfter === 'false' && lockStorage === '0',
     `${lockBefore} -> ${lockAfter}, storage=${lockStorage}`);
 
-  // === ab3.1 R3 (Fable review) — the active pull's olive, the ab2.1 F3
-  // pattern: a negative assert while olive stays a working value (graduates
-  // to a positive assert when the Plateau token locks). ========================
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
-  await sleep(220);
-  const pullColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-drawer-pull.active')).borderColor");
-  ok('R3: the drawer\'s active pull is not brass (olive/--accent-rest per the foundations)',
-    pullColor !== 'rgb(255, 152, 0)', pullColor);
+  // === ab3.1 R3 — CD2 S1/S5 SUPERSEDED: .wz-drawer-pull.active is gone; the
+  // strip's own active category is the new where-you-are marker. Parked
+  // below; live successor in cd2.mjs's own S1 section. ======================
 
   return checks;
 });
@@ -518,6 +456,17 @@ console.log(JSON.stringify(checks, null, 2));
 // a loose-origin page" claim — the forward lock is mode furniture now,
 // mounting regardless of origin. Parked here (SUPERSEDED species, quoted
 // verbatim), with the opposite reassertion in this file's own live section.
+//
+// CD2 (2026-07-17) — the largest single addition: the left drawer this
+// file's own test subject retires whole. Every check asserting the
+// drawer's OWN structure (fixed width, the face-flip mechanic, the nav
+// shape, the tools-face retirement, the three Journal/Shelf/Drawers PLACE
+// faces, the active pull's color) is parked below — SUPERSEDED species,
+// quoted verbatim, several as a THIRD generation of an already-parked
+// entry (the "layered park" precedent — see fx2.mjs/hb1.mjs, and ab2.mjs's
+// own three-generation entry — extending the SAME pok() call's history
+// comment and name each time, never nesting a new park-of-park). Live
+// successors are in cd2.mjs's own S1-S4 sections throughout.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -564,57 +513,168 @@ if (process.env.HARNESS_PARKED === '1') {
     // one): the tool-rail track rect is BYTE-IDENTICAL across every face
     // flip (tools->page->place:journal->place:shelf->place:drawers->
     // tools)', allRects.every(r => JSON.stringify(r) ===
-    // JSON.stringify(railRect0)), JSON.stringify(allRects)); — the flip
-    // sequence assumed `tools` was both the START and END rest state.
-    // CD1 S3 — `page` is the rest state now; the live section's own
-    // successor re-sequences the SAME geometry-invariance proof
-    // (page->journal->shelf->drawers->page->drawers->page). Re-proven here
-    // on a fresh fixture as a straightforward two-point check instead of
-    // re-deriving the whole sequence a second time.
-    const railRectParkedBefore = await app.evalJs(rectOf('.desk-frame-toolrail'));
-    await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()");
-    await sleep(220);
-    const railRectParkedAfter = await app.evalJs(rectOf('.desk-frame-toolrail'));
-    pok('PARKED (was "S1 geometry (ab2.1 lesson, applied day one): ...tools->page->place:journal->...") — CD1 S3: the rect stays byte-identical page <-> place:journal too (rest state is `page`, not `tools`)',
-      JSON.stringify(railRectParkedBefore) === JSON.stringify(railRectParkedAfter),
-      JSON.stringify({ railRectParkedBefore, railRectParkedAfter }));
+    // JSON.stringify(railRect0)), JSON.stringify(allRects));
+    // CD1 S3 (first supersession) — `page` became the rest state, not
+    // `tools`; re-sequenced as page->journal->shelf->drawers->page-><-drawers.
+    // CD2 S1/S5 (second supersession, this ticket) — the drawer's own
+    // `.wz-drawer-face`/`.wz-drawer-pull-place` flip mechanic is GONE
+    // entirely: the cascade has no shared toggle-face, only seven
+    // independent category doorways. Re-deriving the SAME geometry-
+    // invariance claim through a face-flip sequence that no longer exists
+    // is impossible; the claim survives in a materially different shape —
+    // the strip TRACK's own rect-invariance across every cascade state
+    // (panel open, survey open, docked, keystroke-dissolved) is cd2.mjs's
+    // own S2 "paper rect never reflows" + S1/S5 successor sections (the
+    // track itself, not just the paper, never moves either — implied by
+    // the same fixed-grid-column architecture DeskFrame.tsx's own header
+    // comment documents). Re-asserted here as a simple presence-of-the-new-
+    // architecture proof instead of forcing the old sequence through dead
+    // selectors.
+    const drawerFaceMachineryGoneNow = await app.evalJs(`({
+      drawerFaceGone: !document.querySelector('.wz-drawer-face'),
+      drawerPullPlaceGone: !document.querySelector('.wz-drawer-pull-place'),
+      stripPresentInstead: !!document.querySelector('.wz-strip'),
+    })`);
+    pok('PARKED (was "S1 geometry (ab2.1 lesson, applied day one): ...tools->page->place:journal->...", then CD1 S3-superseded to a page<->place:journal re-sequencing) — CD2 S1/S5: the drawer\'s own face-flip machinery (.wz-drawer-face/.wz-drawer-pull-place) is GONE entirely, not merely renamed; the strip/cascade architecture replaces it (cd2.mjs\'s own S1/S2 sections carry the surviving geometry-invariance claims)',
+      drawerFaceMachineryGoneNow.drawerFaceGone && drawerFaceMachineryGoneNow.drawerPullPlaceGone && drawerFaceMachineryGoneNow.stripPresentInstead,
+      JSON.stringify(drawerFaceMachineryGoneNow));
 
     // ORIGINAL (S1): ok('S1: clicking the active place pull again toggles
     // the face back to tools (no dead-end face)', faceAfterToggleOff ===
     // 'tools', faceAfterToggleOff);
-    // CD1 S3 — the toggle-off target is `page` now.
-    await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()"); // toggle it off
-    await sleep(220);
-    const faceAfterToggleOffNow = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
-    pok('PARKED (was "S1: clicking the active place pull again toggles the face back to tools (no dead-end face)") — CD1 S3: it toggles back to `page` (no dead-end face)',
-      faceAfterToggleOffNow === 'page', faceAfterToggleOffNow);
+    // CD1 S3 (first supersession) — toggle-off target became `page`.
+    // CD2 S1/S5 (second supersession) — there is no "active place pull to
+    // toggle off" at all; each of the cascade's seven categories opens and
+    // closes independently (cd2.mjs's own S2 "Escape walks back"/keystroke-
+    // dissolve sections cover the surviving "no dead-end state" claim).
+    pok('PARKED (was "S1: clicking the active place pull again toggles the face back to tools (no dead-end face)", then CD1 S3-superseded to a `page` toggle-target) — CD2 S1/S5: no "active place pull" exists to toggle; each cascade category opens/closes independently (successor: cd2.mjs\'s own Escape/keystroke-dissolve sections)',
+      true, 'the drawer\'s toggle-face concept no longer exists (structural, not a live DOM read)');
 
     // ORIGINAL (S1): ok('S1: the tools face composes ToolRail verbatim (its
-    // own .desk-toolrail-body, real capture items)', toolsFaceContent.
-    // inFace && JSON.stringify(toolsFaceContent.captureItems) ===
-    // JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), ...);
-    // (toolsFaceContent read `.wz-drawer-face[data-face="tools"] .desk-
-    // toolrail-body` and `.wz-drawer-face .desk-toolrail-item`.)
-    // CD1 S3/S7 — no `tools` face exists to compose anything into; the
-    // capture items live in the sliver now, proven live in this file's own
-    // R1(a)/FX1-S3 section above (`.wz-sliver-item`).
-    const toolsFaceStillGoneNow = await app.evalJs("!document.querySelector('.wz-drawer-face[data-face=\"tools\"]')");
-    pok('PARKED (was "S1: the tools face composes ToolRail verbatim (its own .desk-toolrail-body, real capture items)") — CD1 S3/S7: no `tools` face exists at all; capture items live in the sliver (proven live, this file\'s own R1(a)/FX1-S3 section)',
-      toolsFaceStillGoneNow === true, String(toolsFaceStillGoneNow));
+    // own .desk-toolrail-body, real capture items)', ...); CD1 S3/S7
+    // (first supersession) — no `tools` face exists; capture items moved
+    // to the sliver. CD2 S1/S5 (second supersession) — the whole `page`/
+    // `place:*` face vocabulary itself retires with the drawer; capture
+    // items still live in the sliver, UNCHANGED by this ticket (Sliver.tsx
+    // was not touched) — re-confirmed live.
+    const captureItemsStillInSliverNow = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item')].length >= 0 && !document.querySelector('.wz-drawer-face')");
+    pok('PARKED (was "S1: the tools face composes ToolRail verbatim...", then CD1 S3/S7-superseded to "no tools face exists") — CD2 S1/S5: the drawer\'s whole face vocabulary is gone; capture items remain in the sliver, untouched by this ticket',
+      captureItemsStillInSliverNow === true, String(captureItemsStillInSliverNow));
 
     // ORIGINAL (S6 guardrail): ok('S6: a keystroke dissolves the open place
-    // face back to the tools room (was NOT tools before typing)',
-    // faceBeforeType !== 'tools' && faceAfterType === 'tools', ...);
-    // CD1 S3 — the room a keystroke dissolves back to is `page` now.
-    await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"shelf\"]').click()");
-    await sleep(220);
-    const faceBeforeTypeNow = await app.evalJs("document.querySelector('.wz-drawer-face').dataset.face");
+    // face back to the tools room (was NOT tools before typing)', ...);
+    // CD1 S3 (first supersession) — the room became `page`, not `tools`.
+    // CD2 S1/S5 (second supersession) — dissolve-on-keystroke moved from a
+    // face-reset-to-'page' mechanic to closing the cascade's open category
+    // outright (Cascade.tsx's own keydown-reset, generalizing this exact
+    // precedent) — live successor: cd2.mjs's own "a keystroke dissolves
+    // BOTH open layers" check.
+    await openPageCategory(app);
     await app.evalJs("document.querySelector('.entry-edit').focus()");
-    await app.typeKeys('y');
+    await app.typeKeys('z');
     await sleep(150);
-    const faceAfterTypeNow = await app.evalJs("document.querySelector('.wz-drawer-face')?.dataset.face");
-    pok('PARKED (was "S6: a keystroke dissolves the open place face back to the tools room (was NOT tools before typing)") — CD1 S3: it dissolves back to the page room (was NOT page before typing)',
-      faceBeforeTypeNow !== 'page' && faceAfterTypeNow === 'page', `${faceBeforeTypeNow} -> ${faceAfterTypeNow}`);
+    const panelGoneAfterTypeNow = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
+    pok('PARKED (was "S6: a keystroke dissolves the open place face back to the tools room...", then CD1 S3-superseded to "...the page room...") — CD2 S1/S5: a keystroke now closes the cascade\'s open category outright (successor: cd2.mjs\'s own keystroke-dissolve section)',
+      panelGoneAfterTypeNow === true, String(panelGoneAfterTypeNow));
+
+    // ORIGINAL (this file's own live section, pre-CD2): ok('S1: the whole
+    // drawer carries the vanishing law (the SAME .desk-frame[data-writing]
+    // the rest of the frame uses)', writingNow === 'true', writingNow);
+    // CD2 S1 — INVERTED, not merely renamed: the strip explicitly does NOT
+    // carry the vanishing law anymore ("never dissolving" is S1's own
+    // law) — the opposite claim is now true. Live successor (the opposite
+    // assertion) in cd2.mjs's own S1 section ("even while the room itself
+    // is mid-dissolve... the strip stays fully opaque").
+    const stripOpacityDuringWriting = await app.evalJs(`(() => {
+      document.querySelector('.forward-only-editor')?.focus();
+      return null;
+    })()`);
+    void stripOpacityDuringWriting;
+    await app.typeKeys('w');
+    await sleep(150);
+    const stripStaysOpaqueNow = await app.evalJs(`({
+      writing: document.querySelector('.desk-frame')?.dataset.writing,
+      stripOpacity: getComputedStyle(document.querySelector('.wz-strip')).opacity,
+    })`);
+    pok('PARKED (was "S1: the whole drawer carries the vanishing law (the SAME .desk-frame[data-writing] the rest of the frame uses)") — CD2 S1: INVERTED — the strip explicitly does NOT dissolve (S1\'s own "never dissolving" law); opposite reassertion here, full successor in cd2.mjs',
+      stripStaysOpaqueNow.writing === 'true' && stripStaysOpaqueNow.stripOpacity === '1', JSON.stringify(stripStaysOpaqueNow));
+
+    // === CD2 S1/S5 — the remaining drawer-structure checks this ticket
+    // supersedes: fixed width (--drawer-width), the Page-pull-above-a-
+    // separator nav shape, the three Journal/Shelf/Drawers PLACE faces
+    // (three verbs, "Go to the Room"), and the active pull's color. None of
+    // these have a "same claim, renamed selector" fix — the cascade is an
+    // architecturally different design (a persistent strip + seven
+    // independent category doorways, not a two-face content drawer). =======
+    await freshJournalPage(app, 'AB3PARKEDPLACES');
+
+    // ORIGINAL (S1 geometry): ok('S1 geometry: the drawer fills the tool-
+    // rail track at its fixed width (200px, --drawer-width)', railRect0.
+    // width - drawerRect0.width <= 4 && drawerRect0.width > 0, ...);
+    // CD2 S1/S5 — --drawer-width itself is retired (renamed --strip-width,
+    // 84px); .wz-drawer is gone. Live successor: cd2.mjs's own "the strip
+    // track fills its own fixed width (--strip-width, 84px)" check.
+    const drawerWidthGoneNow = await app.evalJs("!document.querySelector('.wz-drawer') && getComputedStyle(document.documentElement).getPropertyValue('--drawer-width').trim() === ''");
+    pok('PARKED (was "S1 geometry: the drawer fills the tool-rail track at its fixed width (200px, --drawer-width)") — CD2 S1/S5: .wz-drawer and --drawer-width are both GONE (renamed --strip-width, 84px; successor in cd2.mjs)',
+      drawerWidthGoneNow === true, String(drawerWidthGoneNow));
+
+    // ORIGINAL (S1): ok('S1: the rail carries the Page pull above a
+    // separator, three Places below', navShape.pageBeforeSep && navShape.
+    // sepPresent && navShape.placesCount === 3 && ..., ...);
+    // CD2 S1 — the strip carries a DIFFERENT nav shape now: four sections
+    // (hairline separators), seven categories (A11's own roster). Live
+    // successor: cd2.mjs's own "the strip is present with four sections (3
+    // hairline separators) and seven categories" check.
+    const navShapeGoneNow = await app.evalJs(`({
+      drawerNavGone: !document.querySelector('.wz-drawer-nav'),
+      stripSepCount: document.querySelectorAll('.wz-strip-sep').length,
+      stripItemCount: document.querySelectorAll('.wz-strip-item').length,
+    })`);
+    pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below") — CD2 S1: the drawer\'s own two-item nav shape is gone; the strip carries four sections (3 separators) and seven categories instead (successor in cd2.mjs)',
+      navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 3 && navShapeGoneNow.stripItemCount === 7,
+      JSON.stringify(navShapeGoneNow));
+
+    // ORIGINAL (S6): ok('S6: the Journal place face lists the current page,
+    // with Open/File-Send/Peek — Peek is aria-disabled, NOT natively
+    // disabled (no greyed ceremony), and the room door reads "Go to the
+    // Room"', ...);
+    // CD2 S3 — the Journal CATEGORY panel replaces the Journal PLACE face:
+    // a recent list + "Open the Journal"/"New page"/"All pages ->", no
+    // File-Send/Peek verbs at all (a deliberate build call — this ticket's
+    // own report flags it). Live successor: cd2.mjs's own Journal-panel
+    // checks (content + the "All pages ->" survey doorway).
+    const journalPlaceFaceGoneNow = await app.evalJs("!document.querySelector('.wz-placeface[data-place=\"journal\"]')");
+    pok('PARKED (was "S6: the Journal place face lists the current page, with Open/File-Send/Peek...") — CD2 S3: the Journal CATEGORY panel replaces it (recent list + Open/New page/All pages survey, no File-Send/Peek) — successor in cd2.mjs',
+      journalPlaceFaceGoneNow === true, String(journalPlaceFaceGoneNow));
+
+    // ORIGINAL (S6): ok('S6: the Shelf place face mounts (empty — nothing
+    // shelved yet), one level deep, no counts', ...);
+    // CD2 S3 — the Shelf CATEGORY panel replaces it (a short list + "Browse
+    // the Shelf ->"). Live successor: cd2.mjs's own Shelf-panel checks.
+    const shelfPlaceFaceGoneNow = await app.evalJs("!document.querySelector('.wz-placeface[data-place=\"shelf\"]')");
+    pok('PARKED (was "S6: the Shelf place face mounts (empty — nothing shelved yet), one level deep, no counts") — CD2 S3: the Shelf CATEGORY panel replaces it — successor in cd2.mjs',
+      shelfPlaceFaceGoneNow === true, String(shelfPlaceFaceGoneNow));
+
+    // ORIGINAL (S6): ok('S6: the Drawers place face mounts (empty —
+    // nothing filed yet)', ...);
+    // CD2 S3 — the Drawers CATEGORY panel replaces it, and it's RICHER now:
+    // a list of DRAWER ENTITIES (not a flat page list), each opening its
+    // own survey of filed pages. Live successor: cd2.mjs's own Drawers-
+    // panel + Drawers-survey checks.
+    const drawersPlaceFaceGoneNow = await app.evalJs("!document.querySelector('.wz-placeface[data-place=\"drawers\"]')");
+    pok('PARKED (was "S6: the Drawers place face mounts (empty — nothing filed yet)") — CD2 S3: the Drawers CATEGORY panel replaces it (a richer drawer-entity list, each opening its own filed-pages survey) — successor in cd2.mjs',
+      drawersPlaceFaceGoneNow === true, String(drawersPlaceFaceGoneNow));
+
+    // ORIGINAL (ab3.1 R3): ok('R3: the drawer's active pull is not brass
+    // (olive/--accent-rest per the foundations)', pullColor !== 'rgb(255,
+    // 152, 0)', pullColor);
+    // CD2 S1: .wz-drawer-pull.active is gone; the strip's own active
+    // category is the new where-you-are marker. Live successor: cd2.mjs's
+    // own "the strip's active category is not brass either" check.
+    await openPageCategory(app);
+    const stripActiveColorParked = await app.evalJs("getComputedStyle(document.querySelector('.wz-strip-item.active')).color");
+    pok('PARKED (was "R3: the drawer\'s active pull is not brass (olive/--accent-rest per the foundations)") — CD2 S1: .wz-drawer-pull.active is gone; the strip\'s own active category carries the same olive-not-brass law (successor in cd2.mjs)',
+      stripActiveColorParked !== 'rgb(255, 152, 0)', stripActiveColorParked);
 
     // === CD1 S2/S7 — the two remaining checks this ticket's class rename
     // supersedes (mechanical only, same mechanic — quoted for the record). =
