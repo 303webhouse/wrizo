@@ -90,9 +90,13 @@ export type DeskTermId =
   // the board list (the ONLY new survey-chrome string this ticket adds; the
   // cards themselves reuse the existing thumbnail/title/excerpt vocabulary).
   | 'cascadeSurveyBack'
-  // AB4 S5 — the board sliver's own two hand tools (S5's fence: "Add card,
-  // the Connect toggle, and nothing else v1").
-  | 'railBoard' | 'boardAddCard' | 'boardConnect';
+  // AB4 S5 — the board sliver's own hand tool(s). FX4 S6 — 'boardConnect'
+  // (the Connect toggle's own label) retires along with the toggle itself
+  // (replaced by BoardEditor.tsx's own handle-drag gesture) — removed
+  // outright rather than parked: a lexicon string isn't a check with a
+  // pass/fail history worth preserving, unlike ab4.mjs's own harness
+  // checks (see fx4.mjs's PARKED section for those).
+  | 'railBoard' | 'boardAddCard';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -174,7 +178,6 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeSurveyBack: 'Back',
   railBoard: 'Board',
   boardAddCard: 'Add card',
-  boardConnect: 'Connect',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

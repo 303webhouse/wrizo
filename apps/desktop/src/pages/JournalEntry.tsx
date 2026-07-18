@@ -16,7 +16,7 @@ import { AddToSheet } from '../components/AddToSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useActionToast } from '../components/ActionToast';
 import { AmbientGlow, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL } from '../components/WritingIncentives';
-import { useTypewriterFade } from '../components/useTypewriterFade';
+import { useTypewriterFade, JOURNAL_HOLD_BAND } from '../components/useTypewriterFade';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
 import { useWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
@@ -223,7 +223,18 @@ function JournalEntryView() {
   const glowM = Math.pow(Math.min(1, words / WORD_GOAL), 0.55);
   const { frac: lapFrac, celebrating } = useGoalProgress(words, WORD_GOAL);
   const typewriterOn = authored && writingSettings.typewriter;
-  useTypewriterFade({ enabled: typewriterOn, containerRef: sheetRef, editorSelector: '.entry-edit', useWindowScroll: true });
+  // FX4 S1 — the Journal carve-out retires: this call now passes its own
+  // tuned holdBand (JOURNAL_HOLD_BAND) instead of inheriting the shared
+  // TYPEWRITER_BAND unchanged, and the sheet (sheetRef/.entry-full) gains
+  // real start-offset behavior for the first time via index.css's new
+  // `.entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset) }`
+  // rule — see that rule's own comment, and useTypewriterFade.ts's S1
+  // comment, for the full ink-coordinate safety proof (the sheet's own
+  // getBoundingClientRect() top/left/width — the ONLY thing normPoint/
+  // paintCommitted/renderStroke ever key off — is provably unmoved by its
+  // own padding-top; only its height grows, exactly like this sheet already
+  // does at its BOTTOM edge as text is typed).
+  useTypewriterFade({ enabled: typewriterOn, containerRef: sheetRef, editorSelector: '.entry-edit', useWindowScroll: true, holdBand: JOURNAL_HOLD_BAND });
 
   // J1 — walk the notebook with the ← / → keys (loose pages only), NEVER while an
   // editable has focus or mid-IME (the F3 shortcut-guard pattern). Self-contained
@@ -1075,9 +1086,30 @@ function JournalEntryView() {
   // page-to-page navigation, not a title/orphan) — flagged for a
   // reviewer's symmetry check against PageEditor's own Pages/Plan-toggle
   // removal (see that file's own S1 comment).
+  // FX4 S1 — `desk-frame-host--journal` reverts the host's own
+  // `overflow:hidden` (index.css, added by FX3 S1 to trim the goal glow's
+  // few-pixel bleed at extreme viewport heights) for THIS surface only.
+  // Found live while implementing this ticket's own engage-at-~10-lines
+  // requirement: Journal is the one DeskFrame host whose content is
+  // SUPPOSED to grow past the viewport routinely (window-scroll mode, ink
+  // anchored to the sheet's own growing height — see this file's top
+  // comment) — prose/script never hit this because their own stage is a
+  // bounded box with INTERNAL scroll (.mode-scroll/.desk-frame-scroll-cap),
+  // so their content never actually overflows .desk-frame-host's box
+  // except by the glow's own trimmed few pixels. overflow:hidden doesn't
+  // discriminate: it clipped ANY overflow, including Journal's own
+  // legitimate page growth — confirmed empirically (a seeded page whose
+  // true content height exceeded the viewport reported a scrollHeight
+  // short of its own descendants' actual bottom edge, and window.scrollY
+  // stayed permanently 0 no matter how much was typed, since the DOCUMENT
+  // itself never grew past the viewport). Without this fix S1's own
+  // engage-at-~10-lines requirement cannot function on Journal at all for
+  // any page long enough to need it — this is not the ink-coordinate risk
+  // (ink stays byte-true either way), but a separate, blocking
+  // precondition discovered delivering this same slice.
   if (framed) {
     return (
-      <div ref={pageRef} className="desk-frame-host" data-chrome-receded={dissolved ? 'true' : 'false'}>
+      <div ref={pageRef} className="desk-frame-host desk-frame-host--journal" data-chrome-receded={dissolved ? 'true' : 'false'}>
         <ChromeHandle onReveal={() => resurface(true)} />
         <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

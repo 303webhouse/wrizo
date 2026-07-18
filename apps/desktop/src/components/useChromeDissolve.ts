@@ -121,7 +121,19 @@ export function useChromeDissolve({
       if (!atEdge) { clearDwell(); return; }
       if (inZone) return; // already lingering — dwell timer running
       inZone = true;
-      dwellTimer = setTimeout(() => { dwellTimer = null; resurface(true); }, EDGE_DWELL_MS);
+      // FX4 S8 — `inZone` was never reset once the dwell timer actually FIRED
+      // (only on a subsequent "left the edge" or "not at edge" move), so a
+      // SECOND dissolve/resurface cycle within the same mount — the writer
+      // reaches the edge again later in one long session, without the
+      // pointer ever registering a genuine "left the zone" move in between —
+      // found `inZone` still stuck `true` from the first summon and silently
+      // dropped the new dwell, never re-arming. Diagnosed live (a two-cycle
+      // harness probe on an unchanged mount): cycle 1 always resurfaced,
+      // every subsequent cycle silently failed. Resetting `inZone` the
+      // instant the timer fires — the same moment `resurface` runs — lets
+      // the very next qualifying dwell arm fresh, regardless of whether the
+      // pointer technically left the zone in between.
+      dwellTimer = setTimeout(() => { dwellTimer = null; inZone = false; resurface(true); }, EDGE_DWELL_MS);
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { clearDwell(); resurface(true); } };
     const onDown = (e: PointerEvent) => {

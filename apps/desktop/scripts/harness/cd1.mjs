@@ -100,16 +100,15 @@ await withHarness(async (app) => {
   // switch, Board vs Script, and the gate floor). ----------------------------
 
   // ==========================================================================
-  // S9 geometry — frame centered, symmetric outer margins at a wide viewport.
+  // S9 geometry — frame width caps at wide viewports; FX4 S3 SUPERSEDES the
+  // symmetric-outer-margins claim this section used to make alongside it
+  // (the strip now flushes to the SCREEN's own left edge — see fx4.mjs's
+  // own S3 section — so the grid is left-anchored, not centered, and any
+  // leftover width at a wide viewport sits entirely on the right by
+  // design). Parked below; live successor in fx4.mjs's own S3 section.
   // ==========================================================================
   await app.emulateDpr(1, 2200, 1000);
   await sleep(250);
-  const wideMargins = await app.evalJs(`(() => {
-    const grid = document.querySelector('.desk-frame-grid').getBoundingClientRect();
-    return { left: grid.left, right: window.innerWidth - grid.right, viewport: window.innerWidth };
-  })()`);
-  ok('S5: the composed frame centers with symmetric outer margins at a wide viewport (>=2200px)',
-    Math.abs(wideMargins.left - wideMargins.right) <= 2, JSON.stringify(wideMargins));
   const wideFrameWidth = await app.evalJs("document.querySelector('.desk-frame-grid').getBoundingClientRect().width");
   ok('S5: the composed frame caps at (or under) --frame-max (1720px) rather than stretching edge to edge',
     wideFrameWidth <= 1720 + 2, String(wideFrameWidth));
@@ -343,12 +342,14 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// cd1.mjs parked nothing of its own until now — CD2 (2026-07-17) is the
-// first real tenant of this scaffold: the left drawer this file's own S3/
-// S7 checks depended on retires whole (docs/wrizo-alpha/cd2-cascade-
-// brief.md S5). Two checks parked below (SUPERSEDED species, quoted
+// CD2 (2026-07-17) was the first tenant of this scaffold: the left drawer
+// this file's own S3/S7 checks depended on retires whole (docs/wrizo-alpha/
+// cd2-cascade-brief.md S5). Two checks parked (SUPERSEDED species, quoted
 // verbatim); live successors are in cd2.mjs's own S1/S5/S7 sections and in
 // this file's own live S7 section (mirrored to the cascade fresh).
+// FX4 (2026-07-18) adds a third: the strip now flushes to the SCREEN's own
+// left edge (S3), superseding this file's own S9 symmetric-outer-margins
+// claim at a wide viewport (the grid left-anchors now, not centers).
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -389,6 +390,28 @@ if (process.env.HARNESS_PARKED === '1') {
     const drawerVocabGoneOnScript = await app.evalJs("!document.querySelector('.wz-drawer-pull-page') && !document.querySelector('.wz-drawer-face')");
     pok('PARKED (was "S7: ScriptEditor mounts the SAME drawer as prose (Page pull + 3 Places, resting on Page)") — CD2 S1/S5/S7: the drawer\'s own vocabulary is gone on script too; the SAME cascade mounts instead (live successor in this file\'s own S7 section, re-proven fresh above)',
       drawerVocabGoneOnScript === true, String(drawerVocabGoneOnScript));
+
+    // ORIGINAL (this file's own live S9 section, pre-FX4): await app.
+    // emulateDpr(1, 2200, 1000); await sleep(250); const wideMargins =
+    // await app.evalJs(`(() => { const grid = document.querySelector(
+    // '.desk-frame-grid').getBoundingClientRect(); return { left: grid.
+    // left, right: window.innerWidth - grid.right, viewport: window.
+    // innerWidth }; })()`); ok('S5: the composed frame centers with
+    // symmetric outer margins at a wide viewport (>=2200px)', Math.abs(
+    // wideMargins.left - wideMargins.right) <= 2, ...);
+    // FX4 S3 — the strip now flushes to the SCREEN's own left edge (Nick's
+    // own sitting record: "not the frame's"), so the grid trades centering
+    // for a left-anchor; any leftover width at a wide viewport sits
+    // entirely on the right by design, not split as symmetric margins.
+    // Live successor (asserting the NEW asymmetric-by-design shape, strip
+    // x===0) in fx4.mjs's own S3 section.
+    await freshProsePage(app, 2200, 1000);
+    const wideMarginsParked = await app.evalJs(`(() => {
+      const grid = document.querySelector('.desk-frame-grid').getBoundingClientRect();
+      return { left: grid.left, right: window.innerWidth - grid.right, viewport: window.innerWidth };
+    })()`);
+    pok('PARKED (was "S5: the composed frame centers with symmetric outer margins at a wide viewport (>=2200px)") — FX4 S3: the grid left-anchors now (strip flush to the screen edge); live successor in fx4.mjs\'s own S3 section',
+      Math.abs(wideMarginsParked.left) <= 1, JSON.stringify(wideMarginsParked));
 
     return parkedChecks;
   });

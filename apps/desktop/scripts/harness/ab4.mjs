@@ -302,79 +302,13 @@ await withHarness(async (app) => {
       JSON.stringify(sourceAfterUnpin));
   }
 
-  // ==========================================================================
-  // S3 — threads: create via the connect-mode gesture, reload, confirm
-  // persistence; delete via select + Delete, confirm-free.
-  // ==========================================================================
-  await freshProsePage(app, LAPTOP_W, 900);
-  await sleep(400);
-  {
-    const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
-    const projectId = await currentProjectId(app, pageId);
-    const now = new Date().toISOString();
-    await seedEntries(app, [
-      { id: 'ab4-thread-board', text: 'AB4 Thread Board', projectId, pageType: 'board', source: 'page',
-        boxes: [
-          { id: 'ab4-thread-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
-          { id: 'ab4-thread-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
-        ],
-        createdAt: now, updatedAt: now },
-    ]);
-    await app.reload();
-    await app.evalJs(DRAG_HELPER);
-    await app.evalJs("location.hash = '#/page/ab4-thread-board'");
-    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'thread board framed' });
-    await sleep(250);
-    await app.emulateDpr(1, LAPTOP_W, 900);
-
-    // arm connect mode from the sliver
-    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-    await sleep(150);
-    await app.evalJs("document.querySelector('.wz-sliver-connect')?.click()");
-    await sleep(150);
-    const armed = await app.evalJs("document.querySelector('.wz-sliver-connect')?.dataset.on");
-    ok('S3: the sliver\'s Connect toggle arms connect mode', armed === 'true', armed);
-
-    await app.evalJs('__pointerSeq(\'[data-box-id="ab4-thread-a"]\', 0, 0)');
-    await sleep(100);
-    await app.evalJs('__pointerSeq(\'[data-box-id="ab4-thread-b"]\', 0, 0)');
-    await sleep(200);
-    const linesAfterConnect = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-    ok('S3: click card A then card B draws a hairline between them', linesAfterConnect === 1, String(linesAfterConnect));
-
-    const armedColor = await app.evalJs("getComputedStyle(document.querySelector('.board-connection-line')).stroke");
-    // Escape disarms
-    await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-    await sleep(150);
-    const disarmed = await app.evalJs("document.querySelector('.wz-sliver-connect')?.dataset.on");
-    ok('S3: Escape disarms connect mode', disarmed === 'false', disarmed);
-    const restColor = await app.evalJs("getComputedStyle(document.querySelector('.board-connection-line')).stroke");
-    ok('S3: the hairline is quiet (not orange) at rest, and reads differently while armed vs. at rest',
-      armedColor !== restColor, JSON.stringify({ armedColor, restColor }));
-
-    // persistence across reload
-    await sleep(2200); // clear the autosave debounce
-    await app.reload();
-    await app.evalJs(DRAG_HELPER);
-    await app.evalJs("location.hash = '#/page/ab4-thread-board'");
-    await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'thread board reloaded' });
-    await sleep(250);
-    const boxesAfterReload = await app.evalJs('window.wrizoBoard()');
-    const conn = (boxesAfterReload || []).find((b) => b.kind === 'connection' && ((b.connA === 'ab4-thread-a' && b.connB === 'ab4-thread-b') || (b.connA === 'ab4-thread-b' && b.connB === 'ab4-thread-a')));
-    ok('S3: the thread survives a reload', !!conn, JSON.stringify(boxesAfterReload?.map((b) => b.kind)));
-
-    // select the hairline, delete it — confirm-free
-    await app.evalJs("document.querySelector('.board-connection-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
-    await sleep(150);
-    const selected = await app.evalJs("document.querySelector('.board-connection-line')?.dataset.selected");
-    ok('S3: clicking the hairline selects it (brass, matching the board\'s own selection language)', selected === 'true', selected);
-    await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))");
-    await sleep(200);
-    const linesAfterDelete = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-    const boxesAfterDelete = await app.evalJs('window.wrizoBoard()');
-    ok('S3: Delete removes the selected thread immediately, no confirm',
-      linesAfterDelete === 0 && !(boxesAfterDelete || []).some((b) => b.kind === 'connection'), String(linesAfterDelete));
-  }
+  // FX4 S6 — this whole "S3 — threads" block SUPERSEDED: the sliver's own
+  // Connect toggle retires whole, replaced by the handle-drag gesture
+  // (double-click the brass resize handle, drag, release inside a target
+  // card). All six checks below (arm/click-click/Escape/color/persist/
+  // select+delete) are parked verbatim in this file's own PARKED section;
+  // live successors (the SAME six claims, reached via handle-drag) are in
+  // fx4.mjs's own S6 section.
 
   // ==========================================================================
   // S4 — resize persists across reload (a page-pin card: freeform on both
@@ -478,16 +412,11 @@ await withHarness(async (app) => {
     await sleep(250);
     await app.emulateDpr(1, LAPTOP_W, 900);
 
-    await app.evalJs('document.querySelector(\'[data-box-id="ab4-text-regress-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-    await app.waitFor('!!document.querySelector(\'[data-box-id="ab4-text-regress-card"] .board-text-editing\')', { label: 'text card edit mode (regression)' });
-    const editModeOk = await app.evalJs('!!document.querySelector(\'[data-box-id="ab4-text-regress-card"] .board-text-editing\')');
-    ok('S4 (regression): double-click on a plain text card still enters inline edit mode exactly as before AB4', editModeOk === true);
-
-    await app.evalJs('document.querySelector(\'[data-box-id="ab4-text-regress-card"] .board-text-editing\').focus()');
-    await app.typeKeys(' EDITED');
-    await sleep(200);
-    const committed = await app.evalJs("(window.wrizoBoard() || []).find(b => b.id === 'ab4-text-regress-card')?.text");
-    ok('S4 (regression): the keystrokes commit exactly as before — no sliver/cascade interference', committed === 'Before edit EDITED', committed);
+    // FX4 S5 — both checks below SUPERSEDED: inline contenteditable editing
+    // retires whole (double-click now opens BoardCardPopup, over a blurred
+    // board). Parked verbatim in this file's own PARKED section; live
+    // successors (double-click opens the popup; typed edits commit) are in
+    // fx4.mjs's own S5 section.
 
     // ==========================================================================
     // S5 — pageKind='board' asserted (the same fixture, already framed).
@@ -515,25 +444,12 @@ await withHarness(async (app) => {
     await sleep(250);
     await app.emulateDpr(1, LAPTOP_W, 900);
 
-    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-    await sleep(150);
-    const sliverShape = await app.evalJs(`(() => {
-      const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
-      const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn, .wz-sliver-connect'));
-      const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
-      return { sectionCount: sections.length, buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
-    })()`);
-    ok('S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else',
-      sliverShape.sectionCount === 1 && sliverShape.buttonCount === 2, JSON.stringify(sliverShape));
-
-    const boxesBeforeAdd = (await app.evalJs('window.wrizoBoard()')) || [];
-    await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");
-    await sleep(200);
-    const boxesAfterAdd = (await app.evalJs('window.wrizoBoard()')) || [];
-    const editingNow = await app.evalJs("!!document.querySelector('.board-text-editing')");
-    ok('S5: "Add card" adds a new blank text card and opens it straight into edit mode',
-      boxesAfterAdd.length === boxesBeforeAdd.length + 1 && editingNow === true,
-      JSON.stringify({ before: boxesBeforeAdd.length, after: boxesAfterAdd.length, editingNow }));
+    // FX4 S6/S5 — both checks below SUPERSEDED: the sliver's Connect toggle
+    // retires (S6), so it no longer carries "exactly two hand tools"; and
+    // inline contenteditable editing retires whole (S5), so "Add card"
+    // opens the POPUP now, not .board-text-editing. Parked verbatim in
+    // this file's own PARKED section; live successors are in fx4.mjs's own
+    // S5/S6 sections.
   }
 
   return checks;
@@ -543,18 +459,250 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// Intentionally empty (see this file's own header comment on the park-sweep
-// audit): no pre-existing check anywhere asserted the pre-AB4 state as a
-// pass/fail condition, so nothing needed retiring into this gate. The
-// scaffold exists (mirroring cd2.mjs's own armed-but-empty precedent) so a
-// LATER ticket that falsifies one of THIS file's own checks has a
-// documented home, matching every other harness file's own pattern.
+// FX4 (2026-07-18) is the first real tenant of this scaffold: S5 retires
+// inline contenteditable text-card editing whole (replaced by
+// BoardCardPopup, over a blurred board) and S6 retires the sliver's own
+// Connect toggle whole (replaced by a handle-drag gesture: double-click the
+// brass resize handle, drag, release inside a target card). Ten checks
+// parked below (SUPERSEDED species, quoted verbatim) — the whole "S3 —
+// threads" connect-mode block (six checks), the "S5 — exactly two hand
+// tools" + "Add card opens straight into edit mode" checks (two), and the
+// "S4 (regression) — inline editing untouched" block (two). Live successors
+// for all ten are in fx4.mjs's own S5/S6 sections.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    // ORIGINAL (this file's own live "S4 (regression)" section): await app.
+    // evalJs('document.querySelector(\'[data-box-id="ab4-text-regress-card
+    // "]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+    // await app.waitFor('!!document.querySelector(\'[data-box-id="ab4-text
+    // -regress-card"] .board-text-editing\')', ...); const editModeOk = ...;
+    // ok('S4 (regression): double-click on a plain text card still enters
+    // inline edit mode exactly as before AB4', editModeOk === true); ...
+    // ok('S4 (regression): the keystrokes commit exactly as before...',
+    // committed === 'Before edit EDITED', ...);
+    // FX4 S5 — inline contenteditable editing retires whole; double-click
+    // now opens BoardCardPopup instead. Re-derived here with the SAME
+    // underlying claim (double-click enters an edit surface; typed edits
+    // commit) reached via the popup.
+    await freshProsePage(app, LAPTOP_W, 900);
+    await sleep(400);
+    {
+      const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+      const projectId = await currentProjectId(app, pageId);
+      const now = new Date().toISOString();
+      await seedEntries(app, [
+        { id: 'ab4-parked-regress-board', text: 'AB4 Parked Regress Board', projectId, pageType: 'board', source: 'page',
+          boxes: [{ id: 'ab4-parked-regress-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Before edit' }],
+          createdAt: now, updatedAt: now },
+      ]);
+      await app.reload();
+      await app.evalJs("location.hash = '#/page/ab4-parked-regress-board'");
+      await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED text regress board framed' });
+      await sleep(250);
+      await app.emulateDpr(1, LAPTOP_W, 900);
+
+      await app.evalJs('document.querySelector(\'[data-box-id="ab4-parked-regress-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+      await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'PARKED text card popup open' });
+      const editModeOkNow = await app.evalJs("!!document.querySelector('.board-popup-editor')");
+      pok('PARKED (was "S4 (regression): double-click on a plain text card still enters inline edit mode exactly as before AB4") — FX4 S5: re-derived against BoardCardPopup instead of the retired inline editor',
+        editModeOkNow === true, String(editModeOkNow));
+
+      await app.typeKeys(' EDITED');
+      await sleep(150);
+      await app.evalJs("document.querySelector('.board-popup-done').click()");
+      await sleep(200);
+      const committedNow = await app.evalJs("(window.wrizoBoard() || []).find(b => b.id === 'ab4-parked-regress-card')?.text");
+      pok('PARKED (was "S4 (regression): the keystrokes commit exactly as before — no sliver/cascade interference") — FX4 S5: re-derived via the popup\'s own Done button',
+        committedNow === 'Before edit EDITED', committedNow);
+    }
+
+    // ORIGINAL (this file's own live "S5" sliver-shape section): const
+    // sliverShape = await app.evalJs(`(() => { const sections = document.
+    // querySelectorAll('.wz-sliver-body > .wz-sliver-section'); ... return
+    // { sectionCount: sections.length, buttonCount: buttons.length, ... };
+    // })()`); ok('S5: the board sliver carries EXACTLY its two hand tools
+    // (Add card, Connect toggle) and nothing else', sliverShape.
+    // sectionCount === 1 && sliverShape.buttonCount === 2, ...); const
+    // boxesBeforeAdd = ...; await app.evalJs("...Add card...click()"); ...
+    // const editingNow = await app.evalJs("!!document.querySelector('.board
+    // -text-editing')"); ok('S5: "Add card" adds a new blank text card and
+    // opens it straight into edit mode', boxesAfterAdd.length === ... &&
+    // editingNow === true, ...);
+    // FX4 S6 — the Connect toggle retires; the sliver carries Add card
+    // ALONE now (exactly one tool, not two). FX4 S5 — "Add card" opens the
+    // POPUP now, not inline editing.
+    await freshProsePage(app, LAPTOP_W, 900);
+    await sleep(400);
+    {
+      const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+      const projectId = await currentProjectId(app, pageId);
+      const now = new Date().toISOString();
+      await seedEntries(app, [
+        { id: 'ab4-parked-sliver-board', text: 'AB4 Parked Sliver Board', projectId, pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now },
+      ]);
+      await app.reload();
+      await app.evalJs("location.hash = '#/page/ab4-parked-sliver-board'");
+      await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED sliver board framed' });
+      await sleep(250);
+      await app.emulateDpr(1, LAPTOP_W, 900);
+
+      await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+      await sleep(150);
+      const sliverShapeNow = await app.evalJs(`(() => {
+        const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
+        const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn'));
+        const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
+        return { sectionCount: sections.length, buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
+      })()`);
+      pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else") — FX4 S6: the Connect toggle retires; re-derived as EXACTLY ONE tool now',
+        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 1 && sliverShapeNow.labels[0] === 'Add card', JSON.stringify(sliverShapeNow));
+
+      const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
+      await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");
+      await sleep(200);
+      const boxesAfterAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
+      const editingNowViaPopup = await app.evalJs("!!document.querySelector('.board-popup-editor')");
+      pok('PARKED (was "S5: \\"Add card\\" adds a new blank text card and opens it straight into edit mode") — FX4 S5: re-derived — "edit mode" now means the popup',
+        boxesAfterAddNow.length === boxesBeforeAddNow.length + 1 && editingNowViaPopup === true,
+        JSON.stringify({ before: boxesBeforeAddNow.length, after: boxesAfterAddNow.length, editingNowViaPopup }));
+    }
+
+    // ORIGINAL (this file's own live "S3 — threads" section, the WHOLE
+    // connect-mode block): arm via document.querySelector('.wz-sliver-
+    // connect')?.click(); click card A then card B; ok('S3: the sliver\'s
+    // Connect toggle arms connect mode', ...); ok('S3: click card A then
+    // card B draws a hairline between them', ...); ok('S3: Escape disarms
+    // connect mode', ...); ok('S3: the hairline is quiet (not orange) at
+    // rest, and reads differently while armed vs. at rest', ...); ok('S3:
+    // the thread survives a reload', ...); ok('S3: clicking the hairline
+    // selects it...', ...); ok('S3: Delete removes the selected thread
+    // immediately, no confirm', ...). [full six-check block, this file's
+    // own git history before this fold carries the verbatim source]
+    // FX4 S6 — the Connect toggle retires whole, replaced by the handle-
+    // drag gesture (double-click the brass resize handle, drag, release
+    // inside a target card). Re-derived here as ONE consolidated proof
+    // covering the SAME six underlying claims (arm, mint, disarm/cancel,
+    // color states, persistence, select+delete) — full, granular per-claim
+    // coverage is fx4.mjs's own S6 section (its own dedicated checks for
+    // each).
+    await freshProsePage(app, LAPTOP_W, 900);
+    await sleep(400);
+    {
+      const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+      const projectId = await currentProjectId(app, pageId);
+      const now = new Date().toISOString();
+      await seedEntries(app, [
+        { id: 'ab4-parked-thread-board', text: 'AB4 Parked Thread Board', projectId, pageType: 'board', source: 'page',
+          boxes: [
+            { id: 'ab4-parked-thread-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
+            { id: 'ab4-parked-thread-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
+          ],
+          createdAt: now, updatedAt: now },
+      ]);
+      await app.reload();
+      await app.evalJs(DRAG_HELPER);
+      await app.evalJs("location.hash = '#/page/ab4-parked-thread-board'");
+      await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED thread board framed' });
+      await sleep(250);
+      await app.emulateDpr(1, LAPTOP_W, 900);
+
+      // ORIGINAL: await app.evalJs("...wz-sliver-grip...click()"); await
+      // app.evalJs("...wz-sliver-connect...click()"); const armed = ...
+      // dataset.on; ok('S3: the sliver\'s Connect toggle arms connect
+      // mode', armed === 'true', armed);
+      // FX4 S6 — re-derived: double-clicking the handle arms a thread-drag.
+      await app.evalJs('__pointerSeq(\'[data-box-id="ab4-parked-thread-a"]\', 0, 0)');
+      await sleep(100);
+      await app.evalJs('document.querySelector(\'[data-box-id="ab4-parked-thread-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+      await sleep(150);
+      const armedNow = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+      pok('PARKED (was "S3: the sliver\'s Connect toggle arms connect mode") — FX4 S6: re-derived — double-clicking the brass resize handle arms a thread-drag instead',
+        armedNow === 'true', armedNow);
+
+      // ORIGINAL: await app.evalJs('__pointerSeq(...card A...)'); await app.
+      // evalJs('__pointerSeq(...card B...)'); const linesAfterConnect = ...;
+      // ok('S3: click card A then card B draws a hairline between them',
+      // linesAfterConnect === 1, ...);
+      // FX4 S6 — re-derived: drag from the armed handle and release inside
+      // card B mints the hairline.
+      await app.evalJs('__pointerSeq(\'[data-box-id="ab4-parked-thread-b"]\', 0, 0)');
+      await sleep(200);
+      const linesAfterConnectNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+      pok('PARKED (was "S3: click card A then card B draws a hairline between them") — FX4 S6: re-derived — dragging from the armed handle and releasing inside card B mints the hairline',
+        linesAfterConnectNow === 1, String(linesAfterConnectNow));
+
+      // ORIGINAL: ok('S3: Escape disarms connect mode', ...) + ok('S3: the
+      // hairline is quiet (not orange) at rest, and reads differently
+      // while armed vs. at rest', armedColor !== restColor, ...).
+      // FX4 S6 — the connect-mode-wide armed color state retires with the
+      // toggle; the armed state is now scoped to the ORIGIN CARD's own
+      // dashed outline (data-thread-source), not the hairline's own color,
+      // since a hairline no longer exists yet while merely armed (it's
+      // minted atomically on release). Re-derived as: arming again and
+      // Escaping cancels it (no new hairline), proving the disarm half of
+      // the original claim; the color-differs half no longer has a
+      // meaningful equivalent (there is no "armed hairline" state anymore
+      // to compare against "at rest" — a hairline exists only once minted).
+      await app.evalJs('document.querySelector(\'[data-box-id="ab4-parked-thread-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+      await sleep(150);
+      await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
+      await sleep(150);
+      const disarmedByEscapeNow = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+      const linesAfterEscapeNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+      pok('PARKED (was "S3: Escape disarms connect mode" + "S3: the hairline is quiet (not orange) at rest, and reads differently while armed vs. at rest") — FX4 S6: re-derived — Escape disarms a pending thread-drag without minting a second hairline (the armed-color comparison has no equivalent: a hairline only exists once minted, never mid-arm)',
+        disarmedByEscapeNow === 'false' && linesAfterEscapeNow === 1, JSON.stringify({ disarmedByEscapeNow, linesAfterEscapeNow }));
+
+      // ORIGINAL: await sleep(2200); await app.reload(); ... const
+      // boxesAfterReload = ...; const conn = (boxesAfterReload || []).
+      // find(b => b.kind === 'connection' && ...); ok('S3: the thread
+      // survives a reload', !!conn, ...);
+      await sleep(2200);
+      await app.reload();
+      await app.evalJs(DRAG_HELPER);
+      await app.evalJs("location.hash = '#/page/ab4-parked-thread-board'");
+      await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED thread board reloaded' });
+      await sleep(250);
+      const boxesAfterReloadNow = await app.evalJs('window.wrizoBoard()');
+      const connNow = (boxesAfterReloadNow || []).find((b) => b.kind === 'connection');
+      pok('PARKED (was "S3: the thread survives a reload") — FX4 S6: re-derived — a handle-drag-minted thread survives a reload identically',
+        !!connNow, JSON.stringify(connNow));
+
+      // ORIGINAL: await app.evalJs("...board-connection-hit...click..."); ...
+      // const selected = ...; ok('S3: clicking the hairline selects it
+      // (brass, matching the board\'s own selection language)', selected
+      // === 'true', selected); await app.evalJs("...Delete..."); ... ok(
+      // 'S3: Delete removes the selected thread immediately, no confirm',
+      // linesAfterDelete === 0 && ..., ...);
+      // FX4 S6 — selection + deletion are UNCHANGED mechanics (only the
+      // creation gesture differs) — re-derived on the SAME thread.
+      await app.evalJs("document.querySelector('.board-connection-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
+      await sleep(150);
+      const selectedNow = await app.evalJs("document.querySelector('.board-connection-line')?.dataset.selected");
+      pok('PARKED (was "S3: clicking the hairline selects it (brass, matching the board\'s own selection language)") — FX4 S6: unchanged mechanic, re-derived on a handle-drag-minted thread',
+        selectedNow === 'true', selectedNow);
+      await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))");
+      await sleep(200);
+      const linesAfterDeleteNow = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+      const boxesAfterDeleteNow = await app.evalJs('window.wrizoBoard()');
+      pok('PARKED (was "S3: Delete removes the selected thread immediately, no confirm") — FX4 S6: unchanged mechanic, re-derived on a handle-drag-minted thread',
+        linesAfterDeleteNow === 0 && !(boxesAfterDeleteNow || []).some((b) => b.kind === 'connection'), String(linesAfterDeleteNow));
+    }
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nAB4 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of ab4.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nAB4 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nAB4 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecksAb4 = checks.concat(parkedChecks);
+const pass = allChecksAb4.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nAB4 VERIFY: PASS (${checks.length} checks)` : `\nAB4 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nAB4 VERIFY: PASS (${allChecksAb4.length} checks)` : `\nAB4 VERIFY: FAIL — ${allChecksAb4.filter((c) => !c.pass).length}/${allChecksAb4.length} failed`);
 process.exit(pass ? 0 : 1);

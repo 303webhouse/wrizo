@@ -21,42 +21,54 @@ import { useEffect } from 'react';
 
 const TYPEWRITER_BAND = 0.73; // the writing zone's lower bound — hold the active line low (~73%), B2 C1
 const FADE_LINES = 3;         // the fade band's depth, in line-heights (S1)
-// FX3 S3 — Nick's desktop-sitting verdict on his own test page: the first
-// line started "too far down," read broken to a fresh eye. Lowered from
-// 0.45 into the brief's 30-35% fence. Left as a single top-level constant
-// (not parameterized) — unlike CONTAINER_HOLD_BAND below, this value never
-// actually reaches the Journal surface: JournalEntry.tsx's window-scroll
-// call never applies `--tw-start-offset` in CSS at all (only `.mode-scroll`
-// and `.desk-frame-scroll-cap` read it — see index.css; `.entry-full` does
-// not), so the Journal start-offset carve-out (ink coordinates; standing
-// ruling) already holds structurally, with nothing extra needed here.
-// Retuned once more after discovering fx1.mjs's own (more semantically
-// correct) measurement of "where the text visually starts" includes
-// .mode-page's own top padding (30px, scaled) ON TOP of this fraction's
-// own --tw-start-offset contribution — the two together are what a writer
-// actually SEES as "where the first line sits." 0.33 alone landed the
-// RAW --tw-start-offset in-band but put the true VISUAL position at ~37%,
-// just outside the fence. 0.29 puts the visual position at ~33-34% (both
-// 1280px and the S2-scaled 2200px), comfortably centered — verified
-// empirically, not just derived (see fx3.mjs's own S3 checks).
-const START_FRACTION = 0.29;
-// FX3 S3 — same verdict, second half: "the first scroll engaged late."
-// TYPEWRITER_BAND alone governs how soon the hold-scroll triggers, and it's
-// a SHARED constant read by every useTypewriterFade caller, including
-// Journal's own window-scroll call — lowering it in place would also
-// retune Journal's scroll-engage feel, which the brief's carve-out does not
-// ask for. CONTAINER_HOLD_BAND is a lower value threaded ONLY into the
-// container-mode calls this ticket actually owns (ModeStage.tsx,
-// ScriptEditor.tsx — both framed "paper" surfaces); Journal's call passes
-// no `holdBand` override and keeps the exact original TYPEWRITER_BAND
-// (0.73), untouched. Tuned empirically (typing simulated in the built app,
+// FX4 S1 — Nick's 2026-07-18 sitting: the fraction moves again, this time to
+// a "visual quarter" — and, for the FIRST time, the Journal carve-out this
+// comment used to describe RETIRES (see the new CSS rule this ticket adds:
+// `.entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset) }`
+// in index.css — Journal's window-scroll call below now passes its OWN
+// holdBand, see JOURNAL_HOLD_BAND, and reads this SAME fraction for the
+// first time ever). Measured the fx1.mjs way (a rendered rect, not the raw
+// CSS value alone — .mode-page's own top padding sits ON TOP of
+// --tw-start-offset's own contribution, so the two together are what a
+// writer actually SEES): at 0.25 raw, prose's VISUAL start lands at ~29.2%
+// of the stage height at 1280px and ~30.0% at the S2-scaled 2200px; script's
+// (no comparable extra chrome padding) lands almost exactly on the raw
+// value, ~25.0% at 1280px — all three comfortably read as "about a quarter,"
+// genuinely lower than the old 0.29 raw / ~33-34% visual FX3 shipped —
+// verified empirically via the same harness technique FX3's own S3 used
+// (fx4.mjs's own S1 section), not just derived on paper.
+const START_FRACTION = 0.25;
+// FX3 S3 — "the first scroll engaged late." TYPEWRITER_BAND alone governs
+// how soon the hold-scroll triggers, and it's a SHARED constant read by
+// every useTypewriterFade caller. CONTAINER_HOLD_BAND is threaded into the
+// container-mode calls (ModeStage.tsx, ScriptEditor.tsx — both framed
+// "paper" surfaces). Tuned empirically (typing simulated in the built app,
 // not just derived on paper) so the fade/scroll engages within the first
-// few lines of the new, lower start band rather than lagging for a dozen
-// lines the way a naive "just lower START_FRACTION" change would (S1's
-// stage-fill height increase means the OLD 0.73 paired with the NEW, lower
-// start fraction would have pushed first-engagement even later, not
-// sooner — the two constants have to move together).
+// few lines of the start band rather than lagging for a dozen lines.
 export const CONTAINER_HOLD_BAND = 0.46;
+// FX4 S1 — Journal's own tuned engage-band, now that the carve-out retires
+// and it gains real start-offset behavior for the first time. Journal is
+// the WINDOW-scroll case (readBox's `useWindowScroll` branch: `box.top=0`,
+// `box.clientHeight=window.innerHeight`), a materially different geometry
+// from CONTAINER_HOLD_BAND's fixed-height framed box — reusing that exact
+// number was never assumed to transfer (the brief's own "measure, don't
+// assume"), and it took THREE separate live-diagnosed defects (documented
+// in full in this ticket's own report; briefly: a caret-rect detection
+// fallback that silently measured the wrong element, a `minHeight` floor
+// masquerading as "the caret" on a still-empty page, and a missing bottom
+// scroll buffer prose/script already had via `.mode-scroll`'s own
+// `padding-bottom:30vh`, mirrored onto `.entry-full` below) before holdBand
+// tuning could mean anything at all here — see index.css's own
+// `.entry-full[data-typewriter='true']` rule and this file's `band()`
+// function for the fixes. Measured empirically (seeded typing line by line,
+// watching `data-scrolled` flip true — the same signal fx3.mjs's own S3
+// checks use for prose) against the brief's own "~10 line-equivalents"
+// target: 0.60 engages at line 11 of ordinary wrapped prose at a 900px-tall
+// viewport, both 1280px and 2200px widths — close enough to call "about
+// ten," and a fresh, untouched page does NOT auto-scroll on mount (also
+// verified — a real risk with the caret-fallback fix above, guarded
+// against explicitly).
+export const JOURNAL_HOLD_BAND = 0.60;
 
 interface ScrollBox {
   top: number;                 // viewport-space top of the clipping box (0 for window)
@@ -149,13 +161,71 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       let caretBottom: number | null = null;
       const sel = window.getSelection();
       if (sel && sel.rangeCount && ed && sel.anchorNode && ed.contains(sel.anchorNode)) {
-        const rects = sel.getRangeAt(0).getClientRects();
+        const liveRange = sel.getRangeAt(0);
+        const rects = liveRange.getClientRects();
         const r = rects[rects.length - 1];
         if (r && r.height) caretBottom = r.bottom;
       }
+      // FX4 S1 — a genuinely COLLAPSED range's own getClientRects() is
+      // frequently EMPTY in Chromium right at a text-node boundary (a
+      // documented engine quirk, not a caller bug) — found live while
+      // tuning Journal's own engage-band. Two compounding failures showed
+      // up on JournalEntry.tsx's plaintext-only editable specifically
+      // (unlike ForwardOnlyEditor's own per-run spans): (1) right after
+      // Enter, `sel.anchorNode` is frequently the EDITABLE ELEMENT itself
+      // (a child-index offset), not a text node at all, so a node-type
+      // guard on `anchorNode` alone still misses it; (2) even keyed off the
+      // anchor, a fresh line's own text node can be genuinely EMPTY (zero
+      // characters) with nothing adjacent to measure. Both silently fell
+      // through to the coarse `ed.lastElementChild ?? ed` fallback below —
+      // and with NO element children at all (plaintext-only has none), that
+      // resolved to the editor box's own bottom edge, pinned by its
+      // `minHeight` floor rather than tracking the caret, so the hold band
+      // fired almost immediately on every keystroke, structurally
+      // independent of any holdBand tuning (confirmed empirically: a
+      // two-cycle harness probe read the SAME editor-box-bottom value no
+      // matter how little had actually been typed). The robust fix: walk
+      // EVERY text node under `ed` (not just the anchor's own) and measure
+      // the LAST character of the last non-empty one — this reliably lands
+      // on "the end of what's actually been written" regardless of exactly
+      // where the collapsed caret's own node/offset landed, including the
+      // "just pressed Enter, new line still empty" case (which correctly
+      // falls back to the PREVIOUS line's own last character — there is
+      // nothing else to measure on a genuinely blank fresh line anyway).
+      if (caretBottom === null && ed) {
+        const walker = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+        let lastNonEmpty: Text | null = null;
+        let n: Node | null;
+        while ((n = walker.nextNode())) {
+          if ((n as Text).data.length > 0) lastNonEmpty = n as Text;
+        }
+        if (lastNonEmpty) {
+          const charRange = document.createRange();
+          charRange.setStart(lastNonEmpty, lastNonEmpty.data.length - 1);
+          charRange.setEnd(lastNonEmpty, lastNonEmpty.data.length);
+          const rects = charRange.getClientRects();
+          const r = rects[rects.length - 1];
+          if (r && r.height) caretBottom = r.bottom;
+        }
+      }
+      // FX4 S1 — a genuinely EMPTY editor (nothing typed yet — no element
+      // children, no non-empty text node found above either) must NOT
+      // resolve to `ed`'s own BOTTOM edge here: JournalEntry.tsx's
+      // `.entry-edit` carries a generous `minHeight` (54vh, room to write
+      // into from the start), so an empty box's own bottom sits far below
+      // its top — treating that inflated bottom as "the caret" scrolled
+      // the page on MOUNT, before a single keystroke, directly undoing
+      // "the writing starts a quarter down" (found live: a fresh page's
+      // own edTop moved from ~320px to ~144px with no typing at all).
+      // `ed`'s own TOP is the honest reading of "nothing written yet" —
+      // small/zero relative to the hold line, so the C2 guard below
+      // correctly recognizes fresh content and does not scroll. A REAL
+      // rendered `lastElementChild` (prose's own per-run spans) still uses
+      // its own bottom, unchanged — this only affects the "truly nothing
+      // to measure" case.
       if (caretBottom === null && ed) {
         const last = ed.lastElementChild as HTMLElement | null;
-        caretBottom = (last ?? ed).getBoundingClientRect().bottom;
+        caretBottom = last ? last.getBoundingClientRect().bottom : ed.getBoundingClientRect().top;
       }
       if (caretBottom === null) return;
       const box = readBox(!!useWindowScroll, container);
