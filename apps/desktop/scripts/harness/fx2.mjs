@@ -237,16 +237,24 @@ await withHarness(async (app) => {
   const textColFloor = await app.evalJs(textColumnOf('.mode-page'));
   ok('S1 @ 1100px (DESKFRAME_MIN_WIDTH floor, independent-review addition): the grip rect and the TRUE text column (paper inset by its own live padding) never intersect, sliver CLOSED',
     disjoint(gripFloor, textColFloor), JSON.stringify({ gripFloor, textColFloor }));
-  const drawerFloor = await app.evalJs(rectOf('.wz-drawer'));
+  // CD2 S1/S5 (2026-07-17) — .wz-drawer is retired with Drawer.tsx; .wz-
+  // strip (components/Cascade.tsx) fills the SAME track (.desk-frame-strip,
+  // renamed from .desk-frame-toolrail) the same way — a block-level child
+  // with no explicit width, filling its bordered <aside> parent at 100%
+  // minus the 1px border each side, the identical content-box relationship
+  // .wz-drawer had. The invariant this block proves (the sliver anchor
+  // never overlaps the LEFT track, at the one width band where the clamp
+  // math actually engages) is unchanged by the rename.
+  const drawerFloor = await app.evalJs(rectOf('.wz-strip'));
   const anchorFloor = await app.evalJs(rectOf('.desk-frame-sliver-anchor'));
-  ok('S1 @ 1100px (independent-review addition): the sliver anchor never overlaps the Drawer track — the actual mechanism S1\'s fix clamps, unexercised by the brief\'s own 1280px/2200px checkpoints',
+  ok('S1 @ 1100px (independent-review addition): the sliver anchor never overlaps the strip track — the actual mechanism S1\'s fix clamps, unexercised by the brief\'s own 1280px/2200px checkpoints',
     anchorFloor.left >= drawerFloor.right - 0.5, JSON.stringify({ drawerFloor, anchorFloor }));
   await openSliver(app);
   await sleep(250);
   const anchorFloorOpen = await app.evalJs(rectOf('.desk-frame-sliver-anchor'));
   const gripFloorOpen = await app.evalJs(rectOf('.wz-sliver-grip'));
   const textColFloorOpen = await app.evalJs(textColumnOf('.mode-page'));
-  ok('S1 @ 1100px (independent-review addition): the Drawer stays clear with the sliver OPEN too (the opaque panel is the visible half of the original complaint)',
+  ok('S1 @ 1100px (independent-review addition): the strip stays clear with the sliver OPEN too (the opaque panel is the visible half of the original complaint)',
     anchorFloorOpen.left >= drawerFloor.right - 0.5, JSON.stringify({ drawerFloor, anchorFloorOpen }));
   ok('S1 @ 1100px (independent-review addition): the true text-column disjointness law holds at the floor width with the sliver OPEN',
     disjoint(gripFloorOpen, textColFloorOpen), JSON.stringify({ gripFloorOpen, textColFloorOpen }));
