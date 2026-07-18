@@ -237,16 +237,24 @@ await withHarness(async (app) => {
   const textColFloor = await app.evalJs(textColumnOf('.mode-page'));
   ok('S1 @ 1100px (DESKFRAME_MIN_WIDTH floor, independent-review addition): the grip rect and the TRUE text column (paper inset by its own live padding) never intersect, sliver CLOSED',
     disjoint(gripFloor, textColFloor), JSON.stringify({ gripFloor, textColFloor }));
-  const drawerFloor = await app.evalJs(rectOf('.wz-drawer'));
+  // CD2 S1/S5 (2026-07-17) — .wz-drawer is retired with Drawer.tsx; .wz-
+  // strip (components/Cascade.tsx) fills the SAME track (.desk-frame-strip,
+  // renamed from .desk-frame-toolrail) the same way — a block-level child
+  // with no explicit width, filling its bordered <aside> parent at 100%
+  // minus the 1px border each side, the identical content-box relationship
+  // .wz-drawer had. The invariant this block proves (the sliver anchor
+  // never overlaps the LEFT track, at the one width band where the clamp
+  // math actually engages) is unchanged by the rename.
+  const drawerFloor = await app.evalJs(rectOf('.wz-strip'));
   const anchorFloor = await app.evalJs(rectOf('.desk-frame-sliver-anchor'));
-  ok('S1 @ 1100px (independent-review addition): the sliver anchor never overlaps the Drawer track — the actual mechanism S1\'s fix clamps, unexercised by the brief\'s own 1280px/2200px checkpoints',
+  ok('S1 @ 1100px (independent-review addition): the sliver anchor never overlaps the strip track — the actual mechanism S1\'s fix clamps, unexercised by the brief\'s own 1280px/2200px checkpoints',
     anchorFloor.left >= drawerFloor.right - 0.5, JSON.stringify({ drawerFloor, anchorFloor }));
   await openSliver(app);
   await sleep(250);
   const anchorFloorOpen = await app.evalJs(rectOf('.desk-frame-sliver-anchor'));
   const gripFloorOpen = await app.evalJs(rectOf('.wz-sliver-grip'));
   const textColFloorOpen = await app.evalJs(textColumnOf('.mode-page'));
-  ok('S1 @ 1100px (independent-review addition): the Drawer stays clear with the sliver OPEN too (the opaque panel is the visible half of the original complaint)',
+  ok('S1 @ 1100px (independent-review addition): the strip stays clear with the sliver OPEN too (the opaque panel is the visible half of the original complaint)',
     anchorFloorOpen.left >= drawerFloor.right - 0.5, JSON.stringify({ drawerFloor, anchorFloorOpen }));
   ok('S1 @ 1100px (independent-review addition): the true text-column disjointness law holds at the floor width with the sliver OPEN',
     disjoint(gripFloorOpen, textColFloorOpen), JSON.stringify({ gripFloorOpen, textColFloorOpen }));
@@ -379,21 +387,50 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// fx2.mjs is a brand-new file; it parks nothing of its own. S1's fix left
-// every one of cd1.mjs's own existing checks byte-identical (verified
-// empirically: at cd1.mjs's own tested widths — ~1400px default and its one
-// 2200px excursion — the sliver anchor's clamp formula never actually
-// engages; it only shrinks the anchor below DeskFrame's ~1265px breakpoint,
-// a width cd1.mjs never visits), so nothing needed parking there either.
-// This scaffold exists so a future ticket that supersedes any of THIS
-// file's checks has a documented home, matching every other harness file's
-// own pattern.
+// CD2 (2026-07-17, independent-review consistency fix) — two of this file's
+// own S1-floor checks named "the Drawer" explicitly in their own assertion
+// text (not just an incidental selector), the same category of claim CD2's
+// own park sweep parked in ab1.mjs/ab2.mjs elsewhere in this identical
+// commit — .wz-drawer is retired with Drawer.tsx, .wz-strip
+// (components/Cascade.tsx) fills the same track with the identical
+// content-box relationship. Parked verbatim per A4; the live successors
+// (this file's own S1-floor section, now testing .wz-strip) already existed
+// pre-fix, just without a park entry disclosing the touch — added here.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshProsePage(app, 1100, 900);
+    const drawerGone = await app.evalJs("!document.querySelector('.wz-drawer')");
+
+    // ORIGINAL (pre-CD2, live): ok('S1 @ 1100px (independent-review
+    // addition): the sliver anchor never overlaps the Drawer track — the
+    // actual mechanism S1's fix clamps, unexercised by the brief's own
+    // 1280px/2200px checkpoints', anchorFloor.left >= drawerFloor.right -
+    // 0.5, ...);
+    pok('PARKED (was "...the sliver anchor never overlaps the Drawer track...") — CD2 S5: .wz-drawer retired outright, .wz-strip fills the same track (live successor: this file\'s own S1-floor section)',
+      drawerGone, String(drawerGone));
+
+    // ORIGINAL (pre-CD2, live): ok('S1 @ 1100px (independent-review
+    // addition): the Drawer stays clear with the sliver OPEN too (the
+    // opaque panel is the visible half of the original complaint)',
+    // anchorFloorOpen.left >= drawerFloor.right - 0.5, ...);
+    pok('PARKED (was "...the Drawer stays clear with the sliver OPEN too...") — CD2 S5: .wz-drawer retired outright, live successor is this file\'s own S1-floor section (now .wz-strip)',
+      drawerGone, String(drawerGone));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nFX2 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of fx2.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nFX2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nFX2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecks = checks.concat(parkedChecks);
+const pass = allChecks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nFX2 VERIFY: PASS (${checks.length} checks)` : `\nFX2 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nFX2 VERIFY: PASS (${allChecks.length} checks)` : `\nFX2 VERIFY: FAIL — ${allChecks.filter((c) => !c.pass).length}/${allChecks.length} failed`);
 process.exit(pass ? 0 : 1);

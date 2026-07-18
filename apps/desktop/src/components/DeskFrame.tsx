@@ -19,10 +19,15 @@ import { useDeskLexicon } from '../store/deskLexicon';
 //      (App.tsx reads the SAME store/deskFrameActive.ts signal this
 //      component already writes, below) — the reclaimed width is what S5's
 //      composition actually has to work with.
-//   2. tool-rail track    — .desk-frame-toolrail. The Drawer (AB3, CD1 S3):
-//      Page + Places faces only — the third `tools` face retired, its
-//      estate divided between the sliver (hand tools) and nothing (the
-//      drawer itself stops hosting tools).
+//   2. strip track         — .desk-frame-strip. CD2 S1/S5: the Cascade's
+//      strip (components/Cascade.tsx) replaces the Drawer here whole — the
+//      left drawer RETIRES (Drawer.tsx deleted), not "gets a sibling."
+//      Unlike the drawer it replaces, the strip carries NO chrome-fade/
+//      desk-dissolve classes: S1's own law is "never dissolving, focusable"
+//      (the strip is glance, always one look away, like the sliver's own
+//      grip). The strip's category panels (reach) and survey (browse) are
+//      NOT this track's content — they're overlays, see `cascadeLayers`
+//      below, the same structural family as `sliver`/`goalGlow`.
 //   3. the stage          — .desk-frame-stage. Centers the page: prose
 //      min(760px,60ch) via .desk-frame-stage--prose; screenplay keeps its own
 //      courier measure via .desk-frame-stage--screenplay (no forced 60ch).
@@ -76,12 +81,25 @@ export interface DeskFrameProps {
   // composition). DeskFrame no longer accepts or renders one — a caller
   // still wiring `modeStrip` is a compile error, by design (the S1 park
   // sweep is meant to catch every stale call site, not silently no-op).
-  // AB2 S1 — the tool-rail track's real content — the Drawer (AB3),
-  // composing the Page/Places faces (CD1 S3 retires the third, `tools`,
-  // face; its hand-tool content moves to `sliver` below). Empty/reserved
-  // (desk ground, exactly as AB1 shipped it) when omitted — Board still
-  // passes nothing here.
-  toolRail?: ReactNode;
+  // CD2 S1/S5 — the strip track's real content (components/Cascade.tsx's
+  // `useCascade().strip`), replacing AB3's Drawer whole — the left drawer
+  // RETIRES, not "gets a sibling." Empty/reserved (desk ground) when
+  // omitted — Board still passes nothing here (the cascade, like the
+  // drawer before it, was never wired into BoardEditor; AB4/the Wall stays
+  // out of this ticket's scope).
+  strip?: ReactNode;
+  // CD2 S2 — the cascade's layers 2-3 (the reach panel + the survey),
+  // `useCascade().layers`. Rendered as an ABSOLUTELY POSITIONED overlay
+  // inside `.desk-frame-stage` (see `.desk-frame-cascade-anchor` in
+  // index.css) — never a grid/flex track, so the paper's rect is
+  // structurally immune to it regardless of open/closed/docked state, the
+  // same hard geometry law `sliver` below already proves out. Grows
+  // RIGHTWARD from the strip (left-anchored) where `sliver` grows LEFTWARD
+  // from the paper (right-anchored) — the two overlays share the same
+  // margin band between the strip and the paper and may transiently cross
+  // (S2's own "grip-zone" allowance) without either ever moving
+  // `children`'s box.
+  cascadeLayers?: ReactNode;
   // CD1 S2 — the sliver: the mode's hand tools + the goal block, riding the
   // paper's left edge. Rendered as an ABSOLUTELY POSITIONED overlay inside
   // `.desk-frame-stage` (see `.desk-frame-sliver-anchor` in index.css) —
@@ -114,10 +132,16 @@ export interface DeskFrameProps {
 // ref as chromeRootRef, so --fade-dur lands on an ancestor of both the
 // editor's own chrome AND this frame's tracks — CSS custom properties
 // inherit down the DOM tree, so `.desk-frame-modestrip` /
-// `.desk-frame-toolrail` / `.desk-frame-corkboard` (each carrying
-// `chrome-fade desk-dissolve`) pick up the same fast-out/slow-in curve
-// automatically, without DeskFrame needing to touch the timing itself.
-export function DeskFrame({ pageKind, toolRail, sliver, goalGlow, corkboard, meter, dissolved, children }: DeskFrameProps) {
+// `.desk-frame-corkboard` (each carrying `chrome-fade desk-dissolve`) pick
+// up the same fast-out/slow-in curve automatically, without DeskFrame
+// needing to touch the timing itself. CD2 S1 — `.desk-frame-strip` is
+// deliberately NOT in that list: the strip never dissolves (S1's own law),
+// so it carries neither class; the cascade's own layers 2-3 dissolve
+// through a DIFFERENT, more immediate mechanism (an explicit keydown reset
+// inside components/Cascade.tsx, the same precedent AB3's Drawer already
+// established for its own Place face) rather than the ambient opacity fade
+// — see that file's header comment for the full reasoning.
+export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, goalGlow, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -139,8 +163,11 @@ export function DeskFrame({ pageKind, toolRail, sliver, goalGlow, corkboard, met
   return (
     <div ref={rootRef} className="desk-frame" data-writing={dissolved ? 'true' : 'false'}>
       <div className="desk-frame-grid" data-corkboard={hasCorkboard ? 'true' : 'false'}>
-        <aside className="desk-frame-toolrail chrome-fade desk-dissolve" aria-label={t('zoneToolRail')}>
-          {toolRail}
+        {/* CD2 S1 — no chrome-fade/desk-dissolve here: "never dissolving,
+            focusable" is S1's own law, the strip persists like the sliver's
+            grip. */}
+        <aside className="desk-frame-strip" aria-label={t('zoneStrip')}>
+          {strip}
         </aside>
         <div className="desk-frame-stagecol">
           <div className={`desk-frame-stage desk-frame-stage--${pageKind}`}>
@@ -148,6 +175,12 @@ export function DeskFrame({ pageKind, toolRail, sliver, goalGlow, corkboard, met
                 negative z-index — see index.css); centered on the SAME
                 canonical paper width the sliver anchors against. */}
             {goalGlow && <div className={`desk-frame-goalglow-anchor desk-frame-goalglow-anchor--${pageKind}`}>{goalGlow}</div>}
+            {/* CD2 S2 — the cascade's panel+survey overlay the stage margin,
+                left-anchored to the strip's own edge (growing rightward,
+                toward the paper — the mirror image of the sliver's own
+                rightward-to-leftward anchor below). Absolutely positioned:
+                structurally cannot move `children`'s box below. */}
+            {cascadeLayers && <div className="desk-frame-cascade-anchor">{cascadeLayers}</div>}
             {/* CD1 S2 — the sliver overlays the stage margin, left-anchored
                 to the paper's own canonical width. Absolutely positioned:
                 structurally cannot move `children`'s box below. */}

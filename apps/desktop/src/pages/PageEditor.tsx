@@ -20,7 +20,7 @@ import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
 import { GoalGlow } from '../components/GoalGlow';
-import { Drawer } from '../components/Drawer';
+import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import { AddToSheet } from '../components/AddToSheet';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
@@ -274,6 +274,13 @@ function PageEditorView({ id }: { id: string }) {
     onOpenPortToBoard: () => setPortOpen(true),
   };
 
+  // CD2 S1/S5 — the cascade, replacing the Drawer whole. One hook call
+  // shares state between the strip (a DeskFrame grid track) and the
+  // reach/survey layers (a DeskFrame stage overlay) — see Cascade.tsx's own
+  // header comment for why a hook, not a component, is the right shape
+  // here.
+  const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
+
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
   // can't drift.
@@ -499,7 +506,8 @@ function PageEditorView({ id }: { id: string }) {
 
         <DeskFrame
           pageKind="prose"
-          toolRail={<FirstRunVeil active={gateActive}><Drawer subject={pageFaceSubject} /></FirstRunVeil>}
+          strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
+          cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
           sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} /></FirstRunVeil>}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering

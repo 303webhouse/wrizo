@@ -17,7 +17,11 @@ import { useTheme, type ThemeId } from './theme';
 // capture-tab label lives in THIS seam and not as a hardcoded string.
 export type DeskTermId =
   | 'modeFreeWrite' | 'modeDraft' | 'modeRevise' | 'modeWorkshop' | 'modePublish'
-  | 'zoneWayfinding' | 'zoneToolRail' | 'zoneStage' | 'zoneCorkboard' | 'zoneMeter'
+  // CD2 S5 — 'zoneToolRail' (the old fixed drawer track's aria-label) is
+  // renamed to 'zoneStrip' here in step with the track's own retirement:
+  // DeskFrame's first grid column now holds the cascade's strip, not a
+  // tool-rail, and no other file referenced the old id (confirmed by grep).
+  | 'zoneWayfinding' | 'zoneStrip' | 'zoneStage' | 'zoneCorkboard' | 'zoneMeter'
   | 'corkboardJournalTab' | 'deskMenuGlyph'
   // AB2 — the hand-tools' own labels, born on AB2's ToolRail.tsx (now
   // components/Sliver.tsx, CD1 S2/S7 — ToolRail itself retired, these ids
@@ -39,16 +43,44 @@ export type DeskTermId =
   // (already hardcoded inline there, pre-FX3) rather than adding a new key
   // per option.
   | 'sliverInstruments' | 'sliverInstrumentsShow' | 'sliverInstrumentsUnit'
-  // AB3 — the Drawer's own nav pulls (components/Drawer.tsx): the Page pull
-  // above the separator, the three Places below it.
+  // AB3 — the Drawer's own nav pulls (components/Drawer.tsx, RETIRED whole
+  // by CD2 S5 — the left drawer's estate moves to the cascade strip). These
+  // four term ids survive their original component: CD2's Strip.tsx reuses
+  // them VERBATIM as the strip's own Journal/Page/Shelf/Drawers section
+  // labels (canon A11's roster uses the same words), rather than mint
+  // duplicate strings for the same vocabulary.
   | 'drawerPage' | 'drawerPlaceJournal' | 'drawerPlaceShelf' | 'drawerPlaceDrawers'
   // AB3 S2 — the Page face (components/PageFace.tsx).
   | 'pageFaceStar' | 'pageFaceStarred' | 'pageFaceAddTag' | 'pageFaceAdd'
   | 'pageFaceMoveCopy' | 'pageFacePortToBoard'
-  // AB3 S6 — the Places faces (components/PlaceFace.tsx): three verbs per
-  // item, plus the honest door at the foot.
+  // AB3 S6 — the Places faces (components/PlaceFace.tsx, RETIRED whole by
+  // CD2 S5 alongside Drawer.tsx, its only mount site). CD2's own ratified
+  // S3 spec for Journal/Drawers/Shelf turned out simpler than PlaceFace's
+  // old three-verb-per-item rows (no File/Send or Peek anywhere in the
+  // cascade's panels — a documented build call, see the CD2 build report):
+  // the cascade's own list rows carry only title + click-to-travel. Only
+  // 'placeFaceEmpty' is reused (the cascade's own empty-list wording);
+  // the other three ids are orphaned vocabulary, left in place rather than
+  // pruned (house precedent: 'zoneWayfinding' similarly outlived
+  // DeskRail's own CD1 framed retirement without a lexicon cleanup pass).
   | 'placeFaceOpen' | 'placeFaceFileSend' | 'placeFacePeek' | 'placeFacePeekSoon'
-  | 'placeFaceGoToRoom' | 'placeFaceEmpty';
+  | 'placeFaceGoToRoom' | 'placeFaceEmpty'
+  // CD2 S1 — the strip's own remaining roster labels (A11): Plan joins Page
+  // in section B; Settings and Change Theme are the new foot section D.
+  | 'stripPlan' | 'stripSettings' | 'stripChangeTheme'
+  // CD2 S3 — category panel bodies (layer 2), one seam per category. Panels
+  // that carry forward whole content (Page -> PageFace, Journal/Drawers/
+  // Shelf -> PlaceFace-style rows) reuse the ids above; these are the NEW
+  // strings CD2 itself introduces.
+  | 'cascadeJournalOpen' | 'cascadeJournalNewPage' | 'cascadeJournalRecent' | 'cascadeJournalAll'
+  | 'cascadePlanCreateBoard' | 'cascadePlanPlotStory' | 'cascadePlanOpen' | 'cascadePlanEmpty'
+  | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
+  | 'cascadeBoardDeleteCancel' | 'cascadeBoardDeleteQuestion'
+  | 'cascadeDrawersChoose' | 'cascadeDrawersEmpty'
+  | 'cascadeShelfBrowse' | 'cascadeSettingsTitle' | 'cascadeSettingsSignOut'
+  | 'cascadeThemeTitle'
+  // CD2 S2/S4 — the survey layer + the dock.
+  | 'cascadeSurveyEmpty' | 'cascadeSurveyCurrent' | 'cascadeDockClose' | 'cascadeDockReopen';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -57,7 +89,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   modeWorkshop: 'Workshop',
   modePublish: 'Publish',
   zoneWayfinding: 'Wayfinding',
-  zoneToolRail: 'Tools',
+  zoneStrip: 'Strip',
   zoneStage: 'Page',
   zoneCorkboard: 'Corkboard',
   zoneMeter: 'Meter',
@@ -98,6 +130,33 @@ const CANONICAL: Record<DeskTermId, string> = {
   sliverInstruments: 'Instruments',
   sliverInstrumentsShow: 'Show',
   sliverInstrumentsUnit: 'Unit',
+  stripPlan: 'Plan',
+  stripSettings: 'Settings',
+  stripChangeTheme: 'Change Theme',
+  cascadeJournalOpen: 'Open the Journal',
+  cascadeJournalNewPage: 'New page',
+  cascadeJournalRecent: 'Recent',
+  cascadeJournalAll: 'All pages →',
+  cascadePlanCreateBoard: 'Create a Board',
+  cascadePlanPlotStory: 'Plot a Story',
+  cascadePlanOpen: 'Open…',
+  cascadePlanEmpty: 'No boards yet.',
+  cascadePlanNoProject: 'File this page to a project first to plan around it.',
+  cascadeBoardMove: 'Move to… / Copy to…',
+  cascadeBoardDelete: 'Delete',
+  cascadeBoardDeleteConfirm: 'Delete',
+  cascadeBoardDeleteCancel: 'Cancel',
+  cascadeBoardDeleteQuestion: 'Delete this board? This cannot be undone.',
+  cascadeDrawersChoose: 'Choose a drawer to see what’s filed inside.',
+  cascadeDrawersEmpty: 'No drawers yet.',
+  cascadeShelfBrowse: 'Browse the Shelf →',
+  cascadeSettingsTitle: 'Settings',
+  cascadeSettingsSignOut: 'Sign out',
+  cascadeThemeTitle: 'Theme',
+  cascadeSurveyEmpty: 'Nothing here yet.',
+  cascadeSurveyCurrent: 'Current',
+  cascadeDockClose: 'Close, keep browsing',
+  cascadeDockReopen: 'Reopen',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

@@ -11,6 +11,12 @@
 // This file carries only CD1's OWN new-surface minimum asserts (S9's own
 // list): geometry, the top line, the sliver, the glow, the loose-fixture
 // default, and ToolRail's total absence.
+//
+// CD2 (2026-07-17) — the left drawer retires whole; two of THIS file's own
+// checks (S3's drawer-track rect re-floor, S7's ScriptEditor-mounts-the-
+// drawer proof) depended on it and are now parked below, per the A4
+// convention this file's own header already names — this is the ticket
+// that first widens cd1.mjs's own PARKED scaffold.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -87,15 +93,11 @@ await withHarness(async (app) => {
     JSON.stringify(paperClosed) === JSON.stringify(paperOpen) && JSON.stringify(paperOpen) === JSON.stringify(paperDissolved),
     JSON.stringify({ paperClosed, paperOpen, paperDissolved }));
 
-  // -- S3 re-floored: the drawer track's rect is byte-identical across
-  // Page/Places (the two remaining faces only). ------------------------------
-  const trackPage = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()");
-  await sleep(220);
-  const trackPlace = await app.evalJs(rectOf('.desk-frame-toolrail'));
-  ok('S3 re-floored: the drawer track rect is byte-identical across Page <-> Places (the only two remaining faces)',
-    JSON.stringify(trackPage) === JSON.stringify(trackPlace), JSON.stringify({ trackPage, trackPlace }));
-  await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()"); // toggle back to page
+  // -- S3 re-floored: the drawer track's own rect-invariance claim is CD2
+  // S1/S5 SUPERSEDED (the drawer's Page<->Places face-flip is gone whole;
+  // the cascade has no shared toggle-face). Parked below; successor in
+  // cd2.mjs's own S1/S5 section (the strip track's rect across a mode
+  // switch, Board vs Script, and the gate floor). ----------------------------
 
   // ==========================================================================
   // S9 geometry — frame centered, symmetric outer margins at a wide viewport.
@@ -186,15 +188,22 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S7 — ScriptEditor gains the drawer too (Page + Places), mirroring prose.
+  // CD2 S1/S5/S7 SUPERSEDED: the drawer is gone; the successor claim (parked
+  // below, live reassertion here) is that ScriptEditor mounts the SAME
+  // cascade as prose (all seven categories, Page opens the SAME PageFace).
   // ==========================================================================
-  const scriptDrawer = await app.evalJs(`({
-    pagePullPresent: !!document.querySelector('.wz-drawer-pull-page'),
-    placesPresent: document.querySelectorAll('.wz-drawer-pull-place').length === 3,
-    restFace: document.querySelector('.wz-drawer-face')?.dataset.face,
+  const scriptCascade = await app.evalJs(`({
+    stripItemCount: document.querySelectorAll('.wz-strip-item').length,
+    stripLabels: [...document.querySelectorAll('.wz-strip-item')].map(b => b.querySelector('.wz-strip-label')?.textContent),
   })`);
-  ok('S7: ScriptEditor mounts the SAME drawer as prose (Page pull + 3 Places, resting on Page)',
-    scriptDrawer.pagePullPresent && scriptDrawer.placesPresent && scriptDrawer.restFace === 'page',
-    JSON.stringify(scriptDrawer));
+  ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as prose..."): ScriptEditor mounts the SAME cascade as prose (all seven categories present)',
+    scriptCascade.stripItemCount === 7
+      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Change Theme']),
+    JSON.stringify(scriptCascade));
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
+  const scriptPageFacePresent = await app.evalJs("!!document.querySelector('.wz-pageface-star') && !!document.querySelector('.wz-pageface-home')");
+  ok('S7: opening Page on script mounts the SAME PageFace prose uses (star + home present)', scriptPageFacePresent, String(scriptPageFacePresent));
 
   // ==========================================================================
   // S1/cd1.1 — ScriptEditor's header also carries the Pages/Plan flight
@@ -334,20 +343,66 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// cd1.mjs is a brand-new file; it parks nothing of its own (every check
-// above reflects this ticket's live, current design). The park sweep this
-// ticket's own S9 requires — every check ToolRail's death and the rail's
-// retirement falsified — lives in EACH superseded check's own file
-// (ab1.mjs, ab2.mjs, ab3.mjs, fx1.mjs), per the A4 convention: a file parks
-// what supersedes ITS OWN checks. This scaffold exists so a future ticket
-// that supersedes any of THIS file's checks has a documented home, matching
-// every other harness file's own pattern.
+// cd1.mjs parked nothing of its own until now — CD2 (2026-07-17) is the
+// first real tenant of this scaffold: the left drawer this file's own S3/
+// S7 checks depended on retires whole (docs/wrizo-alpha/cd2-cascade-
+// brief.md S5). Two checks parked below (SUPERSEDED species, quoted
+// verbatim); live successors are in cd2.mjs's own S1/S5/S7 sections and in
+// this file's own live S7 section (mirrored to the cascade fresh).
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshProsePage(app);
+
+    // ORIGINAL (this file's own live section, pre-CD2): const trackPage =
+    // await app.evalJs(rectOf('.desk-frame-toolrail')); await app.evalJs(
+    // "document.querySelector('.wz-drawer-pull-place[data-place=\"journal
+    // \"]').click()"); ... ok('S3 re-floored: the drawer track rect is
+    // byte-identical across Page <-> Places (the only two remaining
+    // faces)', JSON.stringify(trackPage) === JSON.stringify(trackPlace), ...);
+    // CD2 S1/S5 — the drawer's Page<->Places face-flip is gone whole (no
+    // shared toggle-face in the cascade). Re-derived here as the strip
+    // track's own rect-invariance across a REAL cascade state change
+    // (opening the Journal category, the cascade's nearest equivalent to
+    // "flip to a Place"), rather than forcing the old two-face sequence
+    // through dead selectors.
+    const trackBefore = await app.evalJs(rectOf('.desk-frame-strip'));
+    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal
+    await sleep(220);
+    const trackAfter = await app.evalJs(rectOf('.desk-frame-strip'));
+    pok('PARKED (was "S3 re-floored: the drawer track rect is byte-identical across Page <-> Places (the only two remaining faces)") — CD2 S1/S5: the SAME rect-invariance claim, re-derived across a real cascade state change (opening a category) against .desk-frame-strip; full successor coverage in cd2.mjs\'s own S1/S5 section',
+      JSON.stringify(trackBefore) === JSON.stringify(trackAfter), JSON.stringify({ trackBefore, trackAfter }));
+
+    // ORIGINAL (this file's own live section, pre-CD2): const scriptDrawer
+    // = await app.evalJs(`({ pagePullPresent: !!document.querySelector(
+    // '.wz-drawer-pull-page'), placesPresent: document.querySelectorAll(
+    // '.wz-drawer-pull-place').length === 3, restFace: document.
+    // querySelector('.wz-drawer-face')?.dataset.face, })`); ok('S7:
+    // ScriptEditor mounts the SAME drawer as prose (Page pull + 3 Places,
+    // resting on Page)', scriptDrawer.pagePullPresent && scriptDrawer.
+    // placesPresent && scriptDrawer.restFace === 'page', ...);
+    // CD2 S1/S5/S7 — the drawer's Page-pull/Places/rest-face vocabulary is
+    // gone; ScriptEditor mounts the SAME cascade as prose instead, proven
+    // live and fresh in this file's own S7 section above (all seven
+    // categories present, Page opens the same PageFace).
+    const drawerVocabGoneOnScript = await app.evalJs("!document.querySelector('.wz-drawer-pull-page') && !document.querySelector('.wz-drawer-face')");
+    pok('PARKED (was "S7: ScriptEditor mounts the SAME drawer as prose (Page pull + 3 Places, resting on Page)") — CD2 S1/S5/S7: the drawer\'s own vocabulary is gone on script too; the SAME cascade mounts instead (live successor in this file\'s own S7 section, re-proven fresh above)',
+      drawerVocabGoneOnScript === true, String(drawerVocabGoneOnScript));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nCD1 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of cd1.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nCD1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nCD1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecksCd1 = checks.concat(parkedChecks);
+const pass = allChecksCd1.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nCD1 VERIFY: PASS (${checks.length} checks)` : `\nCD1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nCD1 VERIFY: PASS (${allChecksCd1.length} checks)` : `\nCD1 VERIFY: FAIL — ${allChecksCd1.filter((c) => !c.pass).length}/${allChecksCd1.length} failed`);
 process.exit(pass ? 0 : 1);

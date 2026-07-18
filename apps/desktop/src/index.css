@@ -48,12 +48,17 @@
      selectors. Working value only. */
   --accent-rest: #96a05a;
 
-  /* AB3 S1 — the Drawer's fixed geometry, a per-theme constant (the brief's
-     own wording): the tool-rail track's width, unchanged in VALUE from AB1's
-     original bare 200px, now a token a theme CAN override without touching
-     .desk-frame-grid's structure. No theme claims a different value this
-     ticket — Drawer progressive-disclosure/resize is explicitly deferred. */
-  --drawer-width: 200px;
+  /* CD2 S1/S5 — the strip's fixed geometry, a per-theme constant, replacing
+     AB3's --drawer-width (200px) whole: the left drawer retires, and its
+     successor is a narrow icon+label rail, not a content drawer — the freed
+     width (200px - 84px = 116px) feeds FX3's scaled paper directly, per the
+     brief's own S5. 84px is a judgment call (the brief names no exact
+     figure): wide enough for two-word engraved labels to wrap onto two
+     lines at DeskRail's own 9-11px label scale (.desk-rail-label, this same
+     file, below) without truncating, narrow enough to read as a "strip,"
+     not a panel — flag at review. No theme claims a different value this
+     ticket. */
+  --strip-width: 84px;
 
   /* FX2 S1 — the composed frame's column-gap, promoted from a bare literal
      in .desk-frame-grid to a token: the sliver anchor's own clearance math
@@ -1860,7 +1865,7 @@ a:focus-visible,
 .desk-frame{ position:relative; }
 .desk-frame-grid{
   display:grid;
-  grid-template-columns: var(--drawer-width) minmax(0,1fr) 260px;
+  grid-template-columns: var(--strip-width) minmax(0,1fr) 260px;
   column-gap:var(--frame-gap); align-items:start; justify-content:center;
   max-width:var(--frame-max); margin:0 auto;
 }
@@ -1869,9 +1874,14 @@ a:focus-visible,
    ever renders the third `<aside>` when it has something to hold, and
    drops this data attribute to `false` in step — so no CD1 caller (none
    pass `corkboard` yet) ever pays for a dead 260px column + its gap. */
-.desk-frame-grid[data-corkboard='false']{ grid-template-columns: var(--drawer-width) minmax(0,1fr); }
-.desk-frame-toolrail{ min-height:70vh; background:var(--desk-ground);
-  border:1px solid var(--ink-border); border-radius:var(--radius-md); }
+.desk-frame-grid[data-corkboard='false']{ grid-template-columns: var(--strip-width) minmax(0,1fr); }
+/* CD2 S1/S5 — the strip's own track (formerly .desk-frame-toolrail, the
+   Drawer's fixed-width home). Same visual box treatment as the track it
+   replaces (desk-ground fill, 1px border) so the composed frame's overall
+   rhythm doesn't shift; the CONTENT inside is now a narrow icon+label rail
+   (.wz-strip*, below) instead of a 200px-wide content drawer. */
+.desk-frame-strip{ min-height:70vh; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md); overflow:hidden; }
 /* FX3 S1 — the one definite, non-percentage height near the top of the
    chain (a flex/grid `height:100%` further down needs an explicit height
    somewhere above it to resolve against — a naive `height:100%` on the
@@ -2251,7 +2261,7 @@ a:focus-visible,
    FX1 S6 — the active state was a solid brass fill (an evental treatment for
    a where-you-are marker); moved to the F3/mode-tab species instead
    (--accent-rest — see .desk-mode-tab.active above), the same lawful active
-   pattern .wz-drawer-pull.active already uses. */
+   pattern .wz-strip-item.active (CD2, below) now carries forward. */
 .wz-sliver-structure{ display:flex; border:1px solid var(--ink-border); }
 .wz-sliver-structure-btn{ flex:1; background:none; border:0; border-bottom:2px solid transparent; color:var(--text-mid);
   font-family:var(--font-ui); font-size:12px; padding:8px 6px 6px; cursor:pointer; transition:.15s; }
@@ -2313,24 +2323,176 @@ a:focus-visible,
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
 
-/* AB3 S1 — the Drawer (components/Drawer.tsx). Fills the toolrail track;
-   the drawer adds only its own nav row above the face content, so the
-   track's rect never moves when a face flips (fixed geometry, day one).
-   CD1 S3 — the `tools` face retires (its hand-tool content lives in the
-   sliver now, components/Sliver.tsx, .wz-sliver-*): Page + Places only. */
-.wz-drawer{ display:flex; flex-direction:column; height:100%; }
-.wz-drawer-nav{ display:flex; flex-direction:column; gap:8px; padding:14px 14px 12px; border-bottom:1px solid var(--ink-border); }
-.wz-drawer-pull{ background:none; border:1px solid transparent; color:var(--text-mid); text-align:left;
-  font-family:var(--font-ui); font-size:13px; padding:6px 8px; cursor:pointer; transition:.15s; border-radius:var(--radius-sm); }
-.wz-drawer-pull:hover{ color:var(--text-hi); background:var(--ink-800); }
-/* Two-regime orange + the olive law — the drawer's active pull wears
-   --accent-rest, never brass (brass is evental/press moments only). */
-.wz-drawer-pull.active{ color:var(--text-hi); border-color:var(--accent-rest); }
-.wz-drawer-sep{ height:1px; background:var(--ink-border); margin:2px 0; }
-.wz-drawer-places{ display:flex; flex-direction:column; gap:2px; }
-.wz-drawer-face{ flex:1; min-width:0; animation:wz-drawer-flip 180ms ease; }
-@keyframes wz-drawer-flip{ from{ opacity:0; transform:translateX(6px); } to{ opacity:1; transform:translateX(0); } }
-@media (prefers-reduced-motion:reduce){ .wz-drawer-face{ animation:none; } }
+/* CD2 S1 — the Cascade's strip (components/Cascade.tsx). Fills the strip
+   track (.desk-frame-strip, above) whole — the drawer it replaces is
+   RETIRED, not sibling'd (Drawer.tsx deleted). A narrow icon+label rail,
+   modeled closely on the retired far-left DeskRail's own .desk-rail-item
+   (icon glyph over a small engraved label) — the closest existing
+   precedent in this codebase for "vertical strip, icons + labels" — but a
+   SEPARATE class family since .desk-rail itself is position:fixed and
+   never mounts framed (CD1 S4), where this lives inside the grid track.
+   S1's own law: "never dissolving" — no chrome-fade/desk-dissolve
+   anywhere in this block; the strip is glance, always present, like the
+   sliver's own grip. */
+.wz-strip{ display:flex; flex-direction:column; height:100%; padding:8px 0; }
+.wz-strip-section{ display:flex; flex-direction:column; }
+/* Hairline separators BETWEEN the four sections (A11's own roster) — not
+   between the two items sharing one section (Page+Plan, Drawers+Shelf). */
+.wz-strip-sep{ height:1px; background:var(--ink-border); margin:8px 10px; }
+/* D (Settings/Change Theme) sits at the strip's FOOT (S1's own words) —
+   pushed down via margin-top:auto on the section wrapping it, not a
+   second flex container, so the strip stays one simple column. */
+.wz-strip-foot{ margin-top:auto; }
+.wz-strip-item{ display:flex; flex-direction:column; align-items:center; gap:3px;
+  width:100%; padding:10px 4px; background:none; border:0; border-left:2px solid transparent; cursor:pointer;
+  color:var(--text-low); font-family:var(--font-ui); transition:.15s; }
+.wz-strip-item:hover{ color:var(--text-hi); background:var(--ink-900); }
+/* Olive marks the OPEN category (S1: "olive on the open category") — the
+   same lawful --accent-rest-not-brass pattern every other where-you-are
+   marker in this app already uses (DeskRail's own .desk-rail-item.active,
+   the drawer's retired .wz-drawer-pull.active before it). A category
+   STAYS marked active while its survey is docked even though its own
+   panel isn't rendering (S2's dock rider: "the strip's category stays
+   olive throughout") — Cascade.tsx drives this by keeping `category` set
+   in that state, not by a second CSS rule here. */
+.wz-strip-item.active{ color:var(--accent-rest); border-left-color:var(--accent-rest); }
+.wz-strip-glyph{ font-size:17px; line-height:1; }
+.wz-strip-glyph svg{ display:block; width:18px; height:18px; }
+.wz-strip-label{ font-size:9px; letter-spacing:.4px; line-height:1.2; text-align:center;
+  font-family:var(--font-contentLabel); } /* canon §4 — "cache/rack item names" */
+
+/* CD2 S2 — the cascade's overlay anchor (DeskFrame.tsx's `cascadeLayers`
+   prop). Mirrors .desk-frame-sliver-anchor's own structural guarantee
+   (position:absolute inside .desk-frame-stage, which is position:relative
+   — out of flow, so it cannot resize/reposition the paper regardless of
+   state) but anchors from the STAGE'S OWN LEFT EDGE (left:0) rather than
+   the paper's right-relative offset, since layers grow RIGHTWARD from the
+   strip, not leftward from the paper (S2's own wording). display:flex so
+   the survey sliding into the panel's vacated slot when it docks (S2's
+   own "the dock") is ordinary flex reflow, animated by transitioning the
+   panel's own width to 0 rather than any manual `left` arithmetic. */
+.desk-frame-cascade-anchor{
+  position:absolute; top:0; left:0; height:100%; z-index:6;
+  display:flex; align-items:stretch; pointer-events:none;
+  font-size:calc(1rem * var(--paper-scale));
+  /* Same canonical-half-width formula .desk-frame-sliver-anchor already
+     uses (FX3 S2 taught it to scale with --paper-scale; this anchor reads
+     the identical formula so it drifts in lockstep, not independently). */
+  --cascade-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  /* The margin available between the strip's own right edge and the
+     paper's own left edge, WITHIN this stage box — the mirror twin of
+     .desk-frame-sliver-anchor's own --sliver-margin (that comment block
+     explains in full why + var(--frame-gap) belongs in this formula: the
+     anchor may safely use the grid's own empty column-gap as well as the
+     stage's own internal margin, since nothing else paints there). A
+     DOCKED survey (S2's own small-screen rider) clamps its width to this
+     value with a 120px floor; an UNDOCKED (transient) layer ignores it
+     and may overlay the paper at laptop widths — the explicit allowance
+     both the brief and the canon's own T5 record state outright. */
+  --cascade-margin: calc(50% - var(--cascade-paper-half) + var(--frame-gap));
+}
+.wz-cascade-panel, .wz-cascade-survey{ pointer-events:auto; }
+.wz-cascade-panel{
+  flex:0 0 auto; width:min(300px, 86vw); max-width:min(300px, 86vw);
+  height:100%; overflow-y:auto; background:var(--desk-ground);
+  border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  margin-right:10px;
+  opacity:1; transition:width 180ms ease, opacity 180ms ease, margin-right 180ms ease, border-width 180ms ease;
+}
+/* The dock's own close animation (T5, the canon's third ratification
+   record): collapses to nothing over the brief's own ~180ms fence rather
+   than an abrupt unmount, "closing shut like a drawer." The panel STAYS
+   MOUNTED (never removed from the DOM) while docked — collapsing its box
+   to zero plus overflow:hidden plus pointer-events:none is indistinguishable
+   from gone, and sidesteps any unmount/remount race on rapid dock/undock
+   clicks (the same "don't fight your own timing" lesson W2's own R2 fold
+   already banked for this codebase). */
+.wz-cascade-panel[data-visible='false']{
+  width:0; max-width:0; margin-right:0; border-width:0; opacity:0;
+  overflow:hidden; pointer-events:none;
+}
+@media (prefers-reduced-motion:reduce){ .wz-cascade-panel{ transition:none; } }
+.wz-cascade-panel-head{ display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
+.wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* The dock's own quiet close affordance (S2: "a quiet close affordance") —
+   text-scale, never brass (this is chrome, not an evental action). */
+.wz-cascade-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
+  font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
+.wz-cascade-dock-btn:hover{ color:var(--text-hi); }
+.wz-cascade-panel-body{ padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+.wz-cascade-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.wz-cascade-action{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  text-align:left; font-family:var(--font-ui); font-size:13px; padding:8px 10px; cursor:pointer;
+  transition:.15s; border-radius:var(--radius-sm); }
+.wz-cascade-action:hover{ color:var(--text-hi); background:var(--ink-800); }
+/* Change Theme's current selection (S3: "current marked olive") — the same
+   lawful --accent-rest-not-brass pattern every other where-you-are marker
+   in this app uses. */
+.wz-cascade-action.active{ color:var(--text-hi); border-color:var(--accent-rest); }
+.wz-cascade-list{ display:flex; flex-direction:column; gap:2px; }
+.wz-cascade-list-item{ display:flex; align-items:center; justify-content:space-between; gap:6px;
+  padding:7px 8px; border-radius:var(--radius-sm); }
+.wz-cascade-list-item:hover{ background:var(--ink-800); }
+.wz-cascade-list-title{ background:none; border:0; color:var(--text-mid); text-align:left;
+  font-family:var(--font-ui); font-size:13px; cursor:pointer; flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-cascade-list-title:hover{ color:var(--text-hi); }
+.wz-cascade-empty{ color:var(--text-low); font-size:12px; padding:6px 8px; }
+.wz-cascade-panel-footer{ padding:2px 8px; }
+.wz-cascade-link{ background:none; border:0; color:var(--text-mid); text-align:left;
+  font-family:var(--font-ui); font-size:12px; cursor:pointer; padding:6px 8px; transition:.15s; }
+.wz-cascade-link:hover{ color:var(--text-hi); }
+
+/* CD2 S4 — the survey (layer 3): large thumbnails, current item olive. */
+.wz-cascade-survey{
+  flex:0 0 auto; width:min(360px, 90vw); height:100%; overflow-y:auto;
+  background:var(--desk-ground); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  opacity:1; transform:translateX(0);
+  transition:opacity 180ms ease, transform 180ms ease, width 180ms ease;
+}
+/* A DOCKED survey (T5's own small-screen rider): clamps to the margin
+   genuinely available before the paper, floored at 120px — never occludes
+   the measure. Cascade.tsx itself decides whether the dock AFFORDANCE is
+   offered at all below that floor (a JS-measured check, not pure CSS —
+   see that file's own header comment on why). */
+.wz-cascade-survey[data-docked='true']{ width:clamp(120px, var(--cascade-margin), 360px); }
+@media (prefers-reduced-motion:reduce){ .wz-cascade-survey{ transition:none; } }
+.wz-cascade-survey-head{ display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
+.wz-cascade-survey-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+.wz-cascade-survey-grid{ display:flex; flex-direction:column; gap:10px; padding:12px; }
+.wz-cascade-thumb{ display:flex; flex-direction:column; gap:4px; text-align:left; cursor:pointer;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  padding:10px 12px; color:var(--text-mid); font-family:var(--font-ui); transition:.15s; }
+.wz-cascade-thumb:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+/* Olive marks the current item (S4: "current item olive") — never brass. */
+.wz-cascade-thumb.current{ border-color:var(--accent-rest); color:var(--text-hi); }
+.wz-cascade-thumb-title{ font-size:13px; color:var(--text-hi); font-weight:600; }
+.wz-cascade-thumb-excerpt{ font-size:11.5px; color:var(--text-mid); line-height:1.4;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.wz-cascade-thumb-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+/* Per-board Move/Delete — a quiet disclosure, never first position (S3's
+   own wording), revealed by a small "..." affordance beside the thumbnail. */
+.wz-cascade-thumb-menu-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
+  font-size:13px; cursor:pointer; padding:2px 6px; }
+.wz-cascade-thumb-menu-btn:hover{ color:var(--text-hi); }
+.wz-cascade-thumb-menu{ display:flex; flex-direction:column; gap:2px; margin-top:6px;
+  padding-top:6px; border-top:1px solid var(--ink-border); }
+.wz-cascade-thumb-menu-item{ background:none; border:0; color:var(--text-mid); text-align:left;
+  font-family:var(--font-ui); font-size:12px; cursor:pointer; padding:4px 6px; }
+.wz-cascade-thumb-menu-item:hover{ color:var(--text-hi); }
+/* Destructive color lives ONLY inside the confirm (T4's own ruling —
+   "Destructive color appears only inside the confirm, never at rest") —
+   the Delete disclosure item itself stays --text-mid like its Move
+   sibling; only .wz-cascade-confirm-danger (below) wears --brick. */
+.wz-cascade-confirm{ margin-top:6px; padding:8px; background:var(--ink-800); border-radius:var(--radius-sm); }
+.wz-cascade-confirm-q{ font-size:12px; color:var(--text-hi); margin-bottom:8px; }
+.wz-cascade-confirm-row{ display:flex; gap:8px; }
+.wz-cascade-confirm-danger{ background:var(--brick); color:var(--text-hi); border:0;
+  font-family:var(--font-ui); font-size:12px; padding:6px 10px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-cascade-confirm-cancel{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:6px 10px; cursor:pointer; border-radius:var(--radius-sm); }
 
 /* AB3 S2 — the Page face (components/PageFace.tsx). Plain, quiet metadata —
    no orange at rest (the star only wears --brass while ACTUALLY starred, an

@@ -309,25 +309,27 @@ await withHarness(async (app) => {
   ok('CD1 S2 (was "S3: the forward lock stays mounted independent of the typewriter toggle..."): the forward lock (sliver) stays mounted independent of the typewriter toggle (no coupling)', lockStillPresent);
 
   // ==========================================================================
-  // S4 — square corners. Plateau's radius tokens are 0; the sweep holds on a
-  // drawer pull, a place-face verb, and the Add-to sheet.
+  // S4 — square corners. Plateau's radius tokens are 0; the sweep holds on
+  // the cascade's strip item, a category panel's action button, and the
+  // Add-to sheet. CD2 S1/S5 (2026-07-17) — the drawer/place-face doorways
+  // this section originally used are gone (Drawer.tsx retired whole); the
+  // ORIGINAL "drawer pull"/"place-face verb" checks are PARKED below
+  // (SUPERSEDED — no "same claim, renamed selector" fix exists, since
+  // PlaceFace's own per-item-verb design retired too, not just its class
+  // names), re-asserted here against the cascade's own equivalents. The
+  // Add-to sheet check is adapted in place (same sheet, new doorway).
   // ==========================================================================
   await freshJournalPage(app, 'FX1RADIUS');
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal
   await sleep(220);
-  const drawerPullRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-drawer-pull')).borderRadius");
-  ok('S4: computed border-radius is 0px on a drawer pull', drawerPullRadius === '0px', drawerPullRadius);
+  const stripItemRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-strip-item')).borderRadius");
+  ok('S4 (successor to "...border-radius is 0px on a drawer pull"): computed border-radius is 0px on a strip item', stripItemRadius === '0px', stripItemRadius);
 
-  await app.evalJs("document.querySelector('.wz-drawer-pull-place[data-place=\"journal\"]').click()");
-  await sleep(220);
-  const placeVerbRadius = await app.evalJs(`(() => {
-    const item = [...document.querySelectorAll('.wz-placeface-item')].find(el => el.textContent.includes('FX1RADIUS'));
-    const btn = item ? item.querySelector('.wz-placeface-verb-open') : null;
-    return btn ? getComputedStyle(btn).borderRadius : null;
-  })()`);
-  ok('S4: computed border-radius is 0px on a place-face verb', placeVerbRadius === '0px', String(placeVerbRadius));
+  const cascadeActionRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-action')).borderRadius");
+  ok('S4 (successor to "...border-radius is 0px on a place-face verb"): computed border-radius is 0px on a category panel\'s action button',
+    cascadeActionRadius === '0px', cascadeActionRadius);
 
-  await app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // Page
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-movecopy')", { label: 'Page face (S4 fixture)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet' });
@@ -380,6 +382,13 @@ console.log(JSON.stringify(checks, null, 2));
 // All SUPERSEDED species (quoted verbatim from their ORIGINAL FX1 form,
 // then re-asserted against the same truth through the new class family);
 // none are DORMANT. Live successors are in this file's own S3/S6 sections.
+//
+// CD2 (2026-07-17) — two more entries at the foot of this block: the left
+// drawer retires whole, falsifying S4's own "drawer pull"/"place-face verb"
+// square-corner checks (no "same claim, renamed selector" fix exists for
+// the place-face one — PlaceFace's own per-item-verb design retired, not
+// just its class names). Live successors re-asserted fresh in this file's
+// own live S4 section, against the cascade's own equivalents.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -511,6 +520,31 @@ if (process.env.HARNESS_PARKED === '1') {
     })()`);
     pok('PARKED (was "S1: a fresh script page\'s first line also starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
       scriptStartFracParked >= 0.28 && scriptStartFracParked <= 0.37, String(scriptStartFracParked));
+
+    // ORIGINAL (this file's own live S4 section, pre-CD2): await
+    // app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");
+    // ... ok('S4: computed border-radius is 0px on a drawer pull',
+    // drawerPullRadius === '0px', drawerPullRadius);
+    // CD2 S1/S5 — .wz-drawer-pull is gone; the strip's own item is the new
+    // square-corner surface. Live successor re-asserted fresh in this
+    // file's own live S4 section above (.wz-strip-item).
+    await freshJournalPage(app, 'FX1PARKEDRADIUS');
+    const drawerPullGoneNow = await app.evalJs("!document.querySelector('.wz-drawer-pull')");
+    pok('PARKED (was "S4: computed border-radius is 0px on a drawer pull") — CD2 S1/S5: .wz-drawer-pull is gone entirely; the strip\'s own item carries the square-corner law now (successor live in this file\'s own S4 section)',
+      drawerPullGoneNow === true, String(drawerPullGoneNow));
+
+    // ORIGINAL (this file's own live S4 section, pre-CD2): await
+    // app.evalJs("document.querySelector('.wz-drawer-pull-place[data-
+    // place=\"journal\"]').click()"); ... ok('S4: computed border-radius
+    // is 0px on a place-face verb', placeVerbRadius === '0px', ...);
+    // CD2 S1/S5 — PlaceFace.tsx retires whole (its own per-item-verb
+    // design, not just its class names); no "place-face verb" concept
+    // survives to re-derive a radius from. Live successor (a category
+    // panel's own action button) re-asserted fresh in this file's own live
+    // S4 section above (.wz-cascade-action).
+    const placeFaceGoneNow = await app.evalJs("!document.querySelector('.wz-placeface-item') && !document.querySelector('.wz-placeface-verb-open')");
+    pok('PARKED (was "S4: computed border-radius is 0px on a place-face verb") — CD2 S1/S5: PlaceFace\'s own per-item-verb design is gone entirely (not just renamed); a category panel\'s action button carries the square-corner law now (successor live in this file\'s own S4 section)',
+      placeFaceGoneNow === true, String(placeFaceGoneNow));
 
     return parkedChecks;
   });

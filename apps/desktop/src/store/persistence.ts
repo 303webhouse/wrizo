@@ -1150,6 +1150,22 @@ export function getJournalEntry(id: string): JournalEntry | null {
   return entry && !entry.deletedAt ? clone(entry) : null;
 }
 
+// CD2 S3 — soft-delete a page, mirroring softDeleteDrawer's own pattern
+// exactly (a synced row must travel its deletion, never hard-delete). The
+// FIRST UI-reachable delete for a JournalEntry — `deletedAt` itself is not
+// new (every getter above already filters `!e.deletedAt`; only Drawer had a
+// live door to it before now). Zero schema: the field has existed since the
+// sync adapter's own soft-delete convention was laid down. Used by the
+// Cascade's Plan survey (T4's ruling: one plain confirm, then gone — "gone
+// from list and store" per the brief's own S6 DoD, satisfied because every
+// getJournalEntry/getBinderPages/etc. read above already excludes it).
+export function softDeleteEntry(id: string): void {
+  const entry = getJournalEntry(id);
+  if (!entry) return;
+  entry.deletedAt = new Date().toISOString();
+  saveJournalEntry(entry);
+}
+
 // --- Drawers (Drawers D1) -------------------------------------------------
 // The top of the Drawers IA — a level OVER projects. CRUD mirrors every other
 // collection (upsert → cache + dirty + debounced flush + notify); soft-delete,
