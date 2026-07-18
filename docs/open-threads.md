@@ -1743,6 +1743,63 @@ outlive a session lives here, not in chat.
     corrected zero-schema-vs-schema rule's first scheduled real use
     since the correction). TU1's own brief follows AB4's review, per
     the one-brief rhythm. Not started; brief not yet written.
+    **MERGED, PUSHED — 2026-07-18.** Built S0-S6 on `ab4-wall` off
+    `main`, in an isolated worktree. **Zero-schema independently
+    verified TRUE, twice** (build's own check + the review's own
+    separate `git diff main..ab4-wall -- apps/server/`, byte-empty —
+    `migrate.ts`/`sync.ts` untouched). **S3's design choice — the
+    ticket's real engineering call:** the brief's own framing
+    suggested a sibling jsonb field for `connections`, but the build
+    found (and the review independently re-verified by reading
+    `migrate.ts`/`sync.ts` directly) that `script`'s own existing
+    sibling-column precedent actually needs its own migration + sync
+    wiring — NOT zero-schema despite looking like one at the TS-type
+    level. Chose instead to store connections as plain elements of
+    the SAME flat `boxes` array (a new `'connection'` `Box.kind`
+    carrying endpoint ids, position always derived live from the two
+    endpoints' current rects, never stored — drag/resize moves
+    hairlines for free). Independently stress-tested: live drag
+    verified, and an orphan-on-delete scenario the brief itself
+    flagged but the build's own harness didn't cover — deleting a
+    card also cleanly removes every connection referencing it, no
+    crash, no orphan, unrelated cards/connections untouched.
+    **S4's way-back mechanism** (a one-shot `location.state`, F2's
+    own warm-start pattern reused) independently traced end-to-end
+    and confirmed it returns to the SPECIFIC originating board by id,
+    not just "a board"; reload-loses-state confirmed to degrade
+    gracefully (no chip, no crash) rather than break.
+    **S1/S2** verified; the build's own self-flagged interpolation (a
+    non-pin survey card now travels to the board on click, rather
+    than staying inert) independently judged reasonable by the review
+    — every other survey item in the app is already click-to-travel,
+    making an inert card the actual anomaly, not this choice.
+    **Legacy BoardEditor confirmed byte-identical** — not trusted from
+    a diff summary; the review extracted both branches' actual JSX
+    and ran a literal `diff`.
+    **Park sweep:** the build's own audit found nothing needing a
+    real park (structural, non-content-comparing checks throughout
+    the suite are naturally immune to Board gaining chrome for the
+    first time) — the review independently re-swept and confirmed
+    this, but caught one thing the build's own audit missed: a stale
+    comment in `ab1.mjs`'s own PARKED section still narrated "Board
+    still passes no strip content," now false. Comment-only (the
+    underlying check compares rects, never content, so nothing was
+    actually falsified) — fixed directly by the review (`6c8975c`),
+    re-verified unchanged counts.
+    **Full suite green on the fully merged, pushed tree:** `tsc`,
+    `build:web`, selftest, all 18 harness files (`ab1` 33/46, `ab2`
+    41/53, `ab3` 24/38, `cd1` 27/29, `cd2` 50/50, `fx1` 23/34, `fx2`
+    33/35, `fx3` 30/30, `hb1` 31/32, `j4` 26, `j5` 40, `m1` 33, `s1`
+    86/87, `th1` 26, `th2` 43, `w1` 18, `w2` 31, `ab4` 36/36 — new)
+    under both `HARNESS_PARKED` settings, zero count discrepancies
+    between build/review/this session's own three independent runs.
+    `th2.mjs` hit its documented transient flake once during this
+    final pass (2/43), cleared on 3 immediate reruns. Pushed to
+    `origin/main` @ `f1ba899`.
+    **Not deployed** — Fable's post-merge review hasn't landed;
+    redeploy is Nick's call, as always. TU1 remains queued next,
+    schema-flagged, awaiting its own brief and Nick's explicit merge
+    go when the time comes.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
