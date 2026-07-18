@@ -24,7 +24,7 @@ import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
 import { GoalGlow } from '../components/GoalGlow';
-import { Drawer } from '../components/Drawer';
+import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
 
@@ -704,6 +704,10 @@ function JournalEntryView() {
     onOpenPortToBoard: () => setPortOpen(true),
   };
 
+  // CD2 S1/S5 — the cascade, replacing the Drawer whole (see Cascade.tsx's
+  // own header comment for why this is a hook, not a component).
+  const cascade = useCascade({ subject: pageFaceSubject, project: homeProject, navigate });
+
   // Unified undo: one quiet step, the last action only (a typed run or a
   // stroke). Not a history stack — once consumed, nothing is undoable until a
   // new action. A text run restores the pre-run text; a stroke drops the last.
@@ -1096,7 +1100,8 @@ function JournalEntryView() {
 
         <DeskFrame
           pageKind="prose"
-          toolRail={<Drawer subject={pageFaceSubject} />}
+          strip={cascade.strip}
+          cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={dissolved}

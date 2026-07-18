@@ -21,7 +21,7 @@ import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
 import { Sliver, type SliverContent } from './Sliver';
 import { GoalGlow } from './GoalGlow';
-import { Drawer } from './Drawer';
+import { useCascade } from './Cascade';
 import type { PageFaceSubject } from './PageFace';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { AddToSheet } from './AddToSheet';
@@ -395,6 +395,10 @@ export function ScriptEditor({ id }: { id: string }) {
     onOpenPortToBoard: () => setPortOpen(true),
   };
 
+  // CD2 S1/S5/S7 — the cascade, replacing the Drawer whole; mirrors the
+  // prose wiring exactly (S7's own standing "mirror the wiring" convention).
+  const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
+
   const moveActive = (nextIndex: number, hint: CaretHint) => {
     setActiveIndex(nextIndex);
     setCaretHint(hint);
@@ -647,7 +651,8 @@ export function ScriptEditor({ id }: { id: string }) {
 
         <DeskFrame
           pageKind="screenplay"
-          toolRail={<Drawer subject={pageFaceSubject} />}
+          strip={cascade.strip}
+          cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
