@@ -4,7 +4,9 @@
 (Experts + Architects) with two amendments — see the Ratification record
 at the foot of this document. **Amended again 2026-07-16** (the
 Composed Desk committee pass): amendments A3–A7 ratified — see the
-second Ratification record, same foot. One word rules everything below: this document **absorbs and
+second Ratification record, same foot. **Amended a third time,
+2026-07-17** (the Cascade committee double-pass): amendments A8–A11
+ratified — see the third Ratification record, same foot. One word rules everything below: this document **absorbs and
 supersedes** `gaze-and-flight-canon.md` (its reach-panels, flight
 doorways, and guardrails are carried forward intact in §Laws 4–5 and
 §Ranges), so no separate word is owed on the older document.
@@ -186,7 +188,13 @@ Proposed tickets, in order (Nick rules the order with the word):
   where cheap.
 - **AB4 — the Wall.** Law 5 whole minus images: plural walls, cards,
   page-membership pins, threads, double-click travel, journal-ink
-  import, move-into-page. Law 6's card resizing.
+  import, move-into-page. Law 6's card resizing. **Re-scoped
+  2026-07-17 (the Cascade committee pass, A8 below):** the reserved
+  corkboard track retires from the plan — one right edge, one system.
+  The Wall's browsing posture (cards as large thumbnails beside a
+  focused page) becomes the cascade's own survey range (A9); pinning
+  and threads remain AB4's own scope, built ON the cascade as the next
+  arc ticket (CD2's own non-goal).
 - **AB5 — the Sheets.** Law 8 whole: derived pagination, the turn, the
   typewriter stream over silent turnover, wheel-turn, sheet nav; the
   screenplay convention.
@@ -261,4 +269,66 @@ CC-facing seeds (nothing armed until briefs land):
 > Nick sided with the cap). Build brief:
 > `docs/wrizo-alpha/cd1-composed-desk-brief.md`.
 
-— Fable, for the committees, 2026-07-15 and 2026-07-16
+## Ratification record — 2026-07-17 (the Cascade)
+
+> **Ratification record (Nick's word, 2026-07-17, the Cascade committee
+> double-pass — `docs/wrizo-alpha/cascade-committee-pass.md`).**
+> **A8–A11 RATIFIED.** **A8 (Law 4):** the drawer's estate moves to the
+> cascade — a persistent **left** strip (glance), category panels
+> (reach), a survey layer; contents carry forward whole (the Page
+> face, the Journal/Shelf/Drawers places). Supersedes A3's
+> position-and-rest clause — the drawer no longer rests in a fixed
+> tool-rail track; the strip is the new rest state, always present.
+> One cascade, one sliver, one vanishing law. *(The committee pass's
+> own working draft first proposed the strip on the right; Nick's
+> word corrected this to the **left** before this ratification —
+> `cascade-committee-pass.md` carries the correction note in full;
+> A8's wording here already reflects the corrected, ratified side.)*
+> **Vanishing-law rider, recorded beside A8 (the dock, T5 below):** a
+> **docked** survey (the writer's deliberate keep) survives keystrokes
+> — dismissed only by explicit close, category switch, or Escape; an
+> **undocked** layer dissolves on keystroke as every other reach panel
+> already does. **A9 (the four ranges, §Ranges):** the ranges are
+> glance · reach · **survey** · travel — the survey range names what
+> the absorbed canon never had a word for: seeing a container's
+> contents without traveling into it. **A10 (the goal system):** the
+> goal's unit is the writer's own preference — words, lines, or time;
+> lines stays the default. **A11 (the strip's roster):** **Nick's own
+> sectioned roster**, not the committee pass's original flat list —
+> four sections, hairline-separated: **A** Journal · **B** Page, Plan
+> · **C** Drawers, Shelf · **D** (the strip's foot) Settings
+> (site-wide), Change Theme. Expandable by ratification only.
+>
+> **Named tensions, ruled (T1–T4, the pass's own docket):** T1 — all
+> four amendments (A8–A11) ratified, as above. **T2 — the Wall folds
+> onto the cascade, RULED YES:** AB4 formally re-scopes (the survey
+> layer is how boards/walls are browsed; pinning and threads build ON
+> this system as the next arc ticket); the reserved corkboard track
+> **retires** from the plan — recorded here beside AB4's own ledger
+> line (`docs/open-threads.md`) per this ratification's own
+> instruction. T3 — **Journal first**, per A11's roster above (not
+> the pass's original Page-first draft). **T4 — Delete is Delete,
+> RULED AGAINST the pass's own PASS TWO lean:** disclosure, one plain
+> confirm, then gone — **no** "Move to the Shelf instead" soft-path
+> offer; the confirm alone is the data-safety floor. Destructive color
+> appears only inside the confirm, never at rest.
+>
+> **T5 — the dock (an addition beyond the pass's own four tensions):**
+> a deliberate-keep affordance for the survey layer — a quiet close
+> control on layer 2 that slides it shut (~180ms, reduced-motion
+> honored) while layer 3 slides left into its slot, staying open; the
+> strip's category stays olive throughout (the survey is still its
+> open reach); reopening the category slides the panel back in and
+> the survey back out one slot. Its own vanishing-law rider is
+> recorded beside A8, above. **Small-screen rider:** where the frame
+> lacks room for strip + panel + survey beside the paper, transient
+> layers open OVER the paper rather than ever pushing it (the paper's
+> rect never changes, any width); a docked survey must never
+> permanently occlude the measure — it compresses to a 120px floor,
+> or the dock affordance is simply unavailable below that floor.
+>
+> Build brief: `docs/wrizo-alpha/cd2-cascade-brief.md`, S0–S6, built on
+> `cd2-cascade` off `main` (after FX3 merged, per the standing ONE
+> CHECKOUT PER AGENT rule). Zero schema, zero new deps.
+
+— Fable, for the committees, 2026-07-15, 2026-07-16, and 2026-07-17
