@@ -6,6 +6,9 @@ import {
 } from '../store/persistence';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
+import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
+import { applyFormat, type FormatAction } from '../store/draftFormat';
+import { decorateEditorFor, readEditorPlainText } from '../store/draftDecoration';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
@@ -46,12 +49,25 @@ const TOUCH_CANCEL_THRESHOLD = 12;
 const MIN_TEXT_W = 0.15;
 const MIN_INK_W = 0.08;
 // AB4 S4 — a page-pin card resizes freeform on both axes (no aspect lock —
-// it's not a drawing; no text-reflow — it's not live prose), unlike text
-// (width-only, height reflows) or ink (aspect-locked).
+// it's not a drawing; no text-reflow — it's not live prose).
+// FX4 S4 — text now resizes freeform on both axes too (height was
+// reflow-only before this ticket): MIN_TEXT_H is the same "about one
+// line" floor persistence.ts's own BOARD_LINE_H already uses for a fresh
+// port's height estimate — a card can never be dragged shorter than that,
+// though in practice the reflow-as-minimum effect below usually grows it
+// back up to fit real content well before this floor would bite.
+const MIN_TEXT_H = 0.045;
 const MIN_PIN_W = 0.15;
 const MIN_PIN_H = 0.06;
 const MEASURE_TOLERANCE_PX = 2;
 const VIEWPORT_MIN_PX = 560;
+// FX4 S4 — the board canvas's own both-axis resize floors: "minimums =
+// content extents" (the brief's own words) — the canvas can never be
+// dragged smaller than what's needed to actually contain the current
+// layout. Width reuses VIEWPORT_MIN_PX (the same floor the canvas's own
+// auto-fit height already respects); height is computed live from
+// maxBottom(boxes), same formula the existing auto-height already uses.
+const CANVAS_MIN_W = VIEWPORT_MIN_PX;
 // AB4 S2/S5 — matches persistence.ts's own BOARD_STACK_GAP (not exported;
 // this file has never imported the port's internal layout constants, so a
 // local mirror is the established shape here, same as pageWidthPx's own
@@ -67,10 +83,6 @@ function groupMembers(boxes: Box[], groupId: string | undefined): Box[] {
 
 function maxBottom(boxes: Box[]): number {
   return boxes.reduce((m, b) => Math.max(m, b.y + b.h), 0);
-}
-
-function escHtml(s: string): string {
-  return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
 }
 
 // -- ink box: paints via the shared renderStroke, box-local (already
@@ -120,32 +132,69 @@ function BoardPinBox({ box }: { box: Box }) {
   );
 }
 
-// -- text box: read-only prose, or an uncontrolled contenteditable while
-// editing. The editing html is captured ONCE per edit session (a stable
-// React state initializer) so React never re-sets innerHTML mid-edit — the
-// same discipline ForwardOnlyEditor's Draft mode relies on. The Voice Wall
-// stands: foreign paste/drop is blocked + whispered; an allowed own-ink
-// paste proceeds natively (Draft law — this surface owns its contenteditable).
+// FX4 S5 — read-only prose ONLY now: inline contenteditable editing
+// RETIRES whole (ab4.mjs's own inline-editing check parks per A4 — see
+// fx4.mjs). Double-clicking a text card opens BoardCardPopup below instead
+// (over a blurred board) — this component no longer has an "editing"
+// branch or mode at all.
 function BoardTextBox({
-  boxId, initialText, editing, measureRef, onCommitText, onBlurEdit,
+  boxId, initialText, measureRef,
 }: {
   boxId: string;
   initialText: string;
-  editing: boolean;
   measureRef: (id: string, el: HTMLDivElement | null) => void;
-  onCommitText: (id: string, text: string) => void;
-  onBlurEdit: () => void;
 }) {
+  return (
+    <div
+      ref={el => measureRef(boxId, el)}
+      className="board-text"
+    >
+      {initialText}
+    </div>
+  );
+}
+
+// FX4 S5 — the card popup editor, over a blurred board (the mockup's
+// treatment — board-card-studies.html's own `.editor`). Bold/Italic ONLY
+// (S0's own frozen markdown set does not unfreeze in a fix ticket) —
+// reuses store/draftFormat.ts's applyFormat and store/draftDecoration.ts's
+// decorateMarkdown/decorateEditorFor verbatim, the SAME engine Draft mode
+// already uses on entry.text, applied here to box.text instead (S0's own
+// "no separate rich-text state" ruling extends naturally). No typewriter,
+// no progress, anywhere in here — Nick's own word, and there is simply no
+// code path here that could mount either (this component doesn't import
+// useTypewriterFade or any progress instrument at all).
+//
+// Focus trap: hb1.1's own UnlockCeremony.tsx pattern, reused verbatim (Tab
+// contained within the dialog's own focusable elements while it's open).
+// Voice Wall stands: foreign paste/drop is blocked + whispered; an allowed
+// own-ink paste proceeds natively (Draft's own law, unchanged here).
+function BoardCardPopup({
+  initialText, onCommit, onClose,
+}: {
+  initialText: string;
+  onCommit: (text: string) => void;
+  onClose: () => void;
+}) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const elRef = useRef<HTMLDivElement | null>(null);
-  const [html] = useState(() => escHtml(initialText));
+  const textRef = useRef(initialText);
   const { t: lex } = useLexicon();
 
   useEffect(() => {
     const el = elRef.current;
-    if (!el || !editing) return;
-    // I0 pen discipline, scoped to this element: the pen is a Board POINTER,
-    // never a typing/handwriting surface — the recognizer hazard returns
-    // exactly here (a live contenteditable) and is pre-empted the same way.
+    if (!el) return;
+    decorateEditorFor(el, initialText, initialText.length, setCaretOffset);
+    el.focus();
+
+    // I0 pen discipline (park-sweep audit finding — the retired inline
+    // BoardTextBox editing branch carried this same guard; the popup's own
+    // contenteditable is exactly as reachable by a stylus and needs the
+    // identical protection, not a weaker one just because the surface
+    // changed). The pen is a Board POINTER, never a typing/handwriting
+    // surface, everywhere on this app — j4.mjs's own "pen on an editing
+    // text box produces ZERO characters" check is the live proof, re-homed
+    // to the popup (fx4.mjs's own S5 section).
     el.style.touchAction = 'none';
     el.setAttribute('handwriting', 'false');
     const neutralizePen = (e: PointerEvent) => {
@@ -153,11 +202,52 @@ function BoardTextBox({
       e.preventDefault();
       e.stopPropagation();
     };
-    const opts = { passive: false, capture: true } as const;
-    el.addEventListener('pointerdown', neutralizePen, opts);
-    el.addEventListener('pointermove', neutralizePen, opts);
-    el.addEventListener('pointerup', neutralizePen, opts);
+    const penOpts = { passive: false, capture: true } as const;
+    el.addEventListener('pointerdown', neutralizePen, penOpts);
+    el.addEventListener('pointermove', neutralizePen, penOpts);
+    el.addEventListener('pointerup', neutralizePen, penOpts);
 
+    let composing = false;
+    const redecorate = (plain: string, caret: number | null) => decorateEditorFor(el, plain, caret, setCaretOffset);
+    const commit = (plain: string) => { textRef.current = plain; onCommit(plain); };
+
+    const onInput = () => {
+      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      commit(plain);
+      if (composing) return;
+      redecorate(plain, caret);
+    };
+    // AB2's own proven fix for the Chromium trailing-newline-at-EOF caret
+    // quirk (draftDecoration.ts's own header comment) — a literal Text-node
+    // insertion via the Range API, not execCommand, which splits into a
+    // <div> instead of inserting '\n'. Reused verbatim (ForwardOnlyEditor.
+    // tsx's own onKeyDownDraft), adapted to this popup's own commit/
+    // redecorate closures.
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault();
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (!el.contains(range.startContainer)) return;
+      range.deleteContents();
+      const textNode = document.createTextNode('\n');
+      range.insertNode(textNode);
+      range.setStart(textNode, 1);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      commit(plain);
+      redecorate(plain, caret);
+    };
+    const onCompStart = () => { composing = true; };
+    const onCompEnd = () => {
+      composing = false;
+      const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      commit(plain);
+      redecorate(plain, caret);
+    };
     const onBeforeInput = (e: InputEvent) => {
       const it = e.inputType || '';
       if (it === 'insertFromPaste' || it === 'insertFromDrop') {
@@ -171,52 +261,99 @@ function BoardTextBox({
       e.preventDefault();
       notePasteBlocked();
     };
+    el.addEventListener('input', onInput);
+    el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('compositionstart', onCompStart);
+    el.addEventListener('compositionend', onCompEnd);
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
     el.addEventListener('paste', blockForeign);
     el.addEventListener('drop', blockForeign);
-
-    el.focus();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    if (sel) { sel.removeAllRanges(); sel.addRange(range); }
-
     return () => {
-      el.removeEventListener('pointerdown', neutralizePen, opts);
-      el.removeEventListener('pointermove', neutralizePen, opts);
-      el.removeEventListener('pointerup', neutralizePen, opts);
+      el.removeEventListener('pointerdown', neutralizePen, penOpts);
+      el.removeEventListener('pointermove', neutralizePen, penOpts);
+      el.removeEventListener('pointerup', neutralizePen, penOpts);
+      el.removeEventListener('input', onInput);
+      el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('compositionstart', onCompStart);
+      el.removeEventListener('compositionend', onCompEnd);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('paste', blockForeign);
       el.removeEventListener('drop', blockForeign);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editing]);
+  }, []);
 
-  if (!editing) {
-    return (
-      <div
-        ref={el => { elRef.current = el; measureRef(boxId, el); }}
-        className="board-text"
-      >
-        {initialText}
-      </div>
-    );
-  }
+  // hb1.1's own focus-trap pattern (UnlockCeremony.tsx), reused verbatim:
+  // Tab wraps within this dialog's own focusable elements while it's open.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const dialogEl = dialogRef.current;
+      if (!dialogEl) return;
+      const focusable = [...dialogEl.querySelectorAll<HTMLElement>('button:not(:disabled), [contenteditable="true"]')];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onClose]);
+
+  const applyBoardFormat = (action: FormatAction) => {
+    const el = elRef.current;
+    if (!el) return;
+    el.focus();
+    const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
+    const result = applyFormat(textRef.current, sel.start, sel.end, action);
+    textRef.current = result.text;
+    onCommit(result.text);
+    decorateEditorFor(el, result.text, result.start, setCaretOffset);
+  };
 
   return (
-    <div
-      ref={el => { elRef.current = el; measureRef(boxId, el); }}
-      className="board-text board-text-editing"
-      contentEditable
-      suppressContentEditableWarning
-      role="textbox"
-      aria-multiline="true"
-      aria-label={`${lex('board')} text box`}
-      onInput={() => onCommitText(boxId, elRef.current?.innerText ?? '')}
-      onBlur={onBlurEdit}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className="board-popup-backdrop" role="presentation" onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className="board-popup"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Edit ${lex('board').toLowerCase()} card`}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="board-popup-strip">
+          <span className="eyebrow board-popup-eyebrow">Card</span>
+          {/* onMouseDown preventDefault — a strip button sits OUTSIDE the
+              contenteditable, so a normal click's mousedown would blur it
+              and collapse whatever text was selected (the SAME reason
+              Sliver.tsx's own Draft-format row does this). */}
+          <div onMouseDown={e => e.preventDefault()} style={{ display: 'flex', gap: 4 }}>
+            <button type="button" className="mode-tbtn board-popup-tool" title="Bold" onClick={() => applyBoardFormat('bold')}><b>B</b></button>
+            <button type="button" className="mode-tbtn board-popup-tool" title="Italic" onClick={() => applyBoardFormat('italic')}><i>I</i></button>
+          </div>
+        </div>
+        <div
+          ref={elRef}
+          className="board-popup-editor"
+          contentEditable
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline="true"
+          aria-label={`${lex('board')} text box`}
+        />
+        <div className="board-popup-foot">
+          <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Done</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -248,13 +385,29 @@ export function BoardEditor({ id }: { id: string }) {
 
   const [boxes, setBoxes] = useState<Box[]>(() => initialEntry?.boxes ?? []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // FX4 S5 — the card popup (inline contenteditable editing RETIRES whole):
+  // the id of the text card currently open in BoardCardPopup, or null. The
+  // board itself blurs+dims behind it (the mockup's own treatment) while
+  // open.
+  const [popupBoxId, setPopupBoxId] = useState<string | null>(null);
   const [canUndo, setCanUndo] = useState(false);
-  const [pageWidthPx, setPageWidthPx] = useState(700);
-  // AB4 S3 — the connect-mode gesture: armed by the sliver's own toggle;
-  // `pendingConnectFrom` is card A once picked, waiting for card B.
-  const [connectMode, setConnectMode] = useState(false);
-  const [pendingConnectFrom, setPendingConnectFrom] = useState<string | null>(null);
+  // FX4 S4 — the board canvas's own both-axis resize: a persisted override
+  // riding the 'board-meta' box (types/index.ts). null on either axis means
+  // "never resized" — auto-fit exactly as every pre-FX4 board already did
+  // (the wrapper's own measured width; a content-driven height), so an
+  // existing board with no board-meta element behaves byte-identically.
+  const boardMetaInitial = (initialEntry?.boxes ?? []).find(b => b.kind === 'board-meta');
+  const [canvasOverrideW, setCanvasOverrideW] = useState<number | null>(boardMetaInitial?.canvasW ?? null);
+  const [canvasOverrideH, setCanvasOverrideH] = useState<number | null>(boardMetaInitial?.canvasH ?? null);
+  // FX4 S6 — the handle-drag thread gesture, replacing AB4's connect-mode
+  // toggle whole: double-clicking the brass resize handle on a selected
+  // card arms a thread-drag FROM that card (threadArmedFrom); the very next
+  // pointer-down/move/up anywhere on the canvas draws a live preview line
+  // and, on release, mints a hairline if it lands inside a DIFFERENT card,
+  // or cancels on release over empty board / Escape. The underlying
+  // 'connection' Box creation/storage below is UNCHANGED from AB4 — only
+  // the gesture that triggers it is new.
+  const [threadArmedFrom, setThreadArmedFrom] = useState<string | null>(null);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
   // AB4 S2 — the Page face's sending sheets (Move/Copy, Port, Pin) — Board
   // never had these before this ticket (S5's own "every surface carries the
@@ -267,17 +420,26 @@ export function BoardEditor({ id }: { id: string }) {
   boxesRef.current = boxes;
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
-  const editingIdRef = useRef(editingId);
-  editingIdRef.current = editingId;
-  const connectModeRef = useRef(connectMode);
-  connectModeRef.current = connectMode;
-  const pendingConnectFromRef = useRef(pendingConnectFrom);
-  pendingConnectFromRef.current = pendingConnectFrom;
+  const popupBoxIdRef = useRef(popupBoxId);
+  popupBoxIdRef.current = popupBoxId;
+  const threadArmedFromRef = useRef(threadArmedFrom);
+  threadArmedFromRef.current = threadArmedFrom;
   const selectedConnectionIdRef = useRef(selectedConnectionId);
   selectedConnectionIdRef.current = selectedConnectionId;
   const lastActionRef = useRef<LastAction>(null);
   const lastSavedRef = useRef(boxes);
   const measureEls = useRef<Map<string, HTMLDivElement>>(new Map());
+  // FX4 S6 — the live thread-drag preview line's own endpoint, updated
+  // imperatively on pointermove (the same "don't trigger a React render on
+  // every move" discipline JournalEntry.tsx's own eraser ring already uses)
+  // — only the ARM/DISARM transitions (threadArmedFrom itself) go through
+  // React state, since those are rare, discrete events.
+  const previewLineRef = useRef<SVGLineElement | null>(null);
+  // FX4 S4 — the canvas resize handle's own drag-start snapshot (plain
+  // React pointer events + native setPointerCapture, not the delegated
+  // canvas pointer-effect above — a separate, independent gesture on a
+  // different element).
+  const canvasResizeStartRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -331,17 +493,27 @@ export function BoardEditor({ id }: { id: string }) {
   };
   const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
 
-  // Measure the board's rendered width so the normalized coordinate space
-  // converts to real pixels; re-measure on resize.
+  // Measure the WRAP's own natural available width (unchanged mechanism) —
+  // this feeds pageWidthPx only when the writer has never dragged the
+  // canvas resize handle (canvasOverrideW is null), preserving pre-FX4
+  // auto-fit behavior exactly. Once overridden, pageWidthPx comes from the
+  // persisted override instead (below), and the wrap's own `overflow:auto`
+  // (unchanged CSS) scrolls to it like any content wider than its box.
+  const [containerWidthPx, setContainerWidthPx] = useState(700);
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
-    const measure = () => setPageWidthPx(Math.max(320, el.clientWidth));
+    const measure = () => setContainerWidthPx(Math.max(320, el.clientWidth));
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // FX4 S4 — the effective page width every normalized box coordinate
+  // converts against: the persisted override once the writer has dragged
+  // the canvas wider/narrower, else the wrap's own natural (auto-fit)
+  // width — byte-identical to pre-FX4 in the untouched case.
+  const pageWidthPx = canvasOverrideW != null ? Math.max(canvasOverrideW, CANVAS_MIN_W) : containerWidthPx;
 
   // Autosave — debounced, like PageEditor's text; flush on hide/unmount.
   useEffect(() => {
@@ -367,11 +539,21 @@ export function BoardEditor({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Text reflow — measure each text box's actual rendered height and correct
-  // `h` when it drifts (the port-time estimate, or a width resize, or a live
-  // edit). Tolerance-gated so it never loops. page-pin/connection boxes are
-  // never measured here (kind !== 'text' short-circuits, same as ink always
-  // has).
+  // Text reflow — measure each text box's actual rendered height and grow
+  // `h` when content needs MORE room than currently allotted (the port-time
+  // estimate, a width resize shrinking the wrap and forcing more wraps, or
+  // a live edit adding text). page-pin/connection/board-meta boxes are
+  // never measured here (kind !== 'text' short-circuits, same as ink
+  // always has).
+  //
+  // FX4 S4 — reflow is now a MINIMUM floor, not a two-way dictate: `.board-
+  // text` already carries `overflow:auto` (index.css, pre-existing), so for
+  // a box the writer has deliberately made TALLER than its content needs,
+  // `el.scrollHeight` reports the BOX's own (taller) rendered height back —
+  // content that fits without scrolling never makes scrollHeight exceed
+  // clientHeight — so this only ever fires (and only ever GROWS `h`) when
+  // content genuinely overflows what's currently allotted; a manually
+  // enlarged card's own extra whitespace is never clawed back.
   useLayoutEffect(() => {
     if (pageWidthPx <= 0) return;
     let changed = false;
@@ -381,13 +563,13 @@ export function BoardEditor({ id }: { id: string }) {
       if (!el) return b;
       const measuredPx = el.scrollHeight;
       const storedPx = b.h * pageWidthPx;
-      if (Math.abs(measuredPx - storedPx) <= MEASURE_TOLERANCE_PX) return b;
+      if (measuredPx - storedPx <= MEASURE_TOLERANCE_PX) return b;
       changed = true;
       return { ...b, h: measuredPx / pageWidthPx };
     });
     if (changed) setBoxes(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxes, pageWidthPx, editingId]);
+  }, [boxes, pageWidthPx, popupBoxId]);
 
   const measureRef = (boxId: string, el: HTMLDivElement | null) => {
     if (el) measureEls.current.set(boxId, el);
@@ -453,13 +635,15 @@ export function BoardEditor({ id }: { id: string }) {
   // dropped below the current content and opened straight into edit mode
   // (the anti-Canva guard still holds — content + position only; this just
   // adds ONE new way content can start, alongside a port and a pin).
+  // FX4 S5 — "opens it straight into edit mode" now means the popup
+  // (inline editing retired whole).
   const onAddCard = () => {
     const y = maxBottom(boxesRef.current) + ADD_CARD_GAP;
     const maxZ = boxesRef.current.reduce((m, b) => Math.max(m, b.z), 0);
     const box: Box = { id: generateId(), kind: 'text', x: 0.05, y, w: NEW_CARD_W, h: NEW_CARD_H, z: maxZ + 1, text: '' };
     setBoxes(prev => [...prev, box]);
     setSelectedId(box.id);
-    setEditingId(box.id);
+    setPopupBoxId(box.id);
   };
 
   // AB4 S4 — double-click travel from a page-pin card, "the board is one
@@ -478,12 +662,12 @@ export function BoardEditor({ id }: { id: string }) {
     navigate(route, { state: { fromBoardId: id, fromBoardTitle: title } });
   };
 
-  // -- delegated pointer handling: select / move / resize -------------------
+  // -- delegated pointer handling: select / move / resize / thread-drag -----
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    let phase: 'idle' | 'pending' | 'dragging' | 'resizing' = 'idle';
+    let phase: 'idle' | 'pending' | 'dragging' | 'resizing' | 'threadDrag' = 'idle';
     let startX = 0, startY = 0, ptype = 'mouse';
     let activePointerId: number | null = null;
     let longPressTimer: ReturnType<typeof setTimeout> | null = null;
@@ -494,24 +678,47 @@ export function BoardEditor({ id }: { id: string }) {
 
     const clearTimer = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
 
-    // AB4 S3 — the connect-mode gesture's own click handler: card A, then
-    // card B mints a hairline (de-duped either order); clicking the SAME
-    // card again cancels the pending pick instead of connecting to itself.
-    const handleConnectClick = (boxId: string) => {
-      const from = pendingConnectFromRef.current;
-      if (from == null) {
-        pendingConnectFromRef.current = boxId;
-        setPendingConnectFrom(boxId);
-        return;
+    // FX4 S6 — the live preview line's endpoint, updated imperatively
+    // (previewLineRef) so a thread-drag never triggers a React render on
+    // every pointermove, matching JournalEntry.tsx's own eraser-ring
+    // discipline for the identical reason.
+    const updateThreadPreview = (x: number, y: number) => {
+      const line = previewLineRef.current;
+      if (!line) return;
+      const canvasRect = canvas.getBoundingClientRect();
+      line.setAttribute('x2', String(x - canvasRect.left));
+      line.setAttribute('y2', String(y - canvasRect.top));
+      line.style.display = 'block';
+    };
+    const hideThreadPreview = () => {
+      const line = previewLineRef.current;
+      if (line) line.style.display = 'none';
+    };
+
+    // FX4 S6 — the thread-drag's own commit: released inside a DIFFERENT
+    // card mints a hairline (de-duped either order, same as AB4's own
+    // connect-mode gesture); released on empty board, or on the SAME card
+    // it started from, cancels. The 'connection' Box shape/creation is
+    // UNCHANGED from AB4 — only this gesture triggers it now.
+    const finishThreadDrag = (e: PointerEvent) => {
+      clearTimer();
+      if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
+        try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
       }
-      pendingConnectFromRef.current = null;
-      setPendingConnectFrom(null);
-      if (from === boxId) return; // same card twice — cancel, don't self-connect
-      const a = from, b = boxId;
-      const exists = boxesRef.current.some(x => x.kind === 'connection' && ((x.connA === a && x.connB === b) || (x.connA === b && x.connB === a)));
+      hideThreadPreview();
+      phase = 'idle';
+      const from = threadArmedFromRef.current;
+      threadArmedFromRef.current = null;
+      setThreadArmedFrom(null);
+      if (!from) return;
+      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const targetBoxEl = el?.closest('.board-box') as HTMLElement | null;
+      const targetId = targetBoxEl?.dataset.boxId;
+      if (!targetId || targetId === from) return; // empty board or same card — cancel
+      const exists = boxesRef.current.some(x => x.kind === 'connection' && ((x.connA === from && x.connB === targetId) || (x.connA === targetId && x.connB === from)));
       if (exists) return;
       const maxZ = boxesRef.current.reduce((m, x) => Math.max(m, x.z), 0);
-      const conn: Box = { id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: maxZ + 1, connA: a, connB: b };
+      const conn: Box = { id: generateId(), kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: maxZ + 1, connA: from, connB: targetId };
       setBoxes(prev => [...prev, conn]);
     };
 
@@ -550,16 +757,23 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     const onDown = (e: PointerEvent) => {
-      if (editingIdRef.current) return; // interacting with live text — board gestures stand down
+      if (popupBoxIdRef.current) return; // the card popup is open — board gestures stand down
       const target = e.target as HTMLElement;
       const handleEl = target.closest('.board-handle') as HTMLElement | null;
       const boxEl = target.closest('.board-box') as HTMLElement | null;
 
-      // AB4 S3 — connect mode takes over pointer-down entirely while armed:
-      // click card A, click card B; no select/move/resize happens
-      // underneath while it's on.
-      if (connectModeRef.current) {
-        if (boxEl && !handleEl) handleConnectClick(boxEl.dataset.boxId!);
+      // FX4 S6 — a thread-drag is armed (double-clicked handle): ANY
+      // pointer-down on the canvas begins tracking the live preview line,
+      // regardless of where it lands (the brief's own "drag and release
+      // anywhere inside a target card" — the drag doesn't have to start on
+      // the origin card itself). No select/move/resize happens underneath
+      // while armed.
+      if (threadArmedFromRef.current != null) {
+        e.preventDefault();
+        activePointerId = e.pointerId;
+        phase = 'threadDrag';
+        try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
+        updateThreadPreview(e.clientX, e.clientY);
         return;
       }
 
@@ -592,6 +806,11 @@ export function BoardEditor({ id }: { id: string }) {
     };
 
     const onMove = (e: PointerEvent) => {
+      if (phase === 'threadDrag') {
+        e.preventDefault();
+        updateThreadPreview(e.clientX, e.clientY);
+        return;
+      }
       if (phase === 'pending') {
         const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
         if (ptype === 'mouse') {
@@ -618,19 +837,42 @@ export function BoardEditor({ id }: { id: string }) {
         setBoxes(startBoxes.map(b => {
           if (b.id !== resizingId) return b;
           if (b.kind === 'ink') return { ...b, w: newW, h: newW * resizeStart!.aspect };
-          if (b.kind === 'text') return { ...b, w: newW }; // text: height reflows via the measure effect
-          // AB4 S4 — page-pin (and any other non-text/ink kind): freeform
-          // resize on both axes — a fixed reference card, no aspect/reflow
-          // concept to honor.
+          // FX4 S4 — text now resizes freeform on BOTH axes too (height was
+          // reflow-only before this ticket): dragging taller sets an
+          // explicit `h` the reflow-as-minimum effect above will only ever
+          // GROW from, never shrink back — "height becomes free; reflow
+          // becomes a minimum, not a dictate" (the brief's own words).
+          // page-pin already resized both axes freeform (AB4 S4); text now
+          // shares the identical branch, MIN_TEXT_H its own floor.
           const dy = (e.clientY - startY) / pageWidthPx;
-          const newH = Math.max(MIN_PIN_H, resizeStart!.h + dy);
+          const minH = b.kind === 'text' ? MIN_TEXT_H : MIN_PIN_H;
+          const newH = Math.max(minH, resizeStart!.h + dy);
           return { ...b, w: newW, h: newH };
         }));
       }
     };
 
-    const onUp = () => { finish(true); };
-    const onCancel = () => { finish(false); };
+    const onUp = (e: PointerEvent) => {
+      if (phase === 'threadDrag') { finishThreadDrag(e); return; }
+      finish(true);
+    };
+    const onCancel = () => {
+      // A genuine pointercancel (not a plain release) always disarms
+      // without ever committing — never trust wherever the OS happened to
+      // report the pointer at cancel time.
+      if (phase === 'threadDrag') {
+        clearTimer();
+        if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
+          try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
+        }
+        hideThreadPreview();
+        phase = 'idle';
+        threadArmedFromRef.current = null;
+        setThreadArmedFrom(null);
+        return;
+      }
+      finish(false);
+    };
 
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove, { passive: false });
@@ -645,18 +887,28 @@ export function BoardEditor({ id }: { id: string }) {
     };
   }, [pageWidthPx]);
 
-  // Esc: exit edit mode, else disarm connect mode, else deselect a
-  // connection, else deselect a box. Delete/Backspace: remove a selected
-  // connection (confirm-free, S3's own words) — guarded against a stray
-  // Backspace while the writer is typing anywhere else on the page (the
-  // isEditable check), so an unrelated edit can never eat a hairline.
+  // Esc: while the card popup is open, IT owns Escape entirely (its own
+  // focus-trap effect closes it — see BoardCardPopup above); this handler
+  // stands down so the two can never double-handle the same keypress.
+  // Otherwise: disarm a thread-drag, else deselect a connection, else
+  // deselect a box. Delete/Backspace: remove a selected connection
+  // (confirm-free, S3's own words) — guarded against a stray Backspace
+  // while the writer is typing anywhere else on the page (the isEditable
+  // check), so an unrelated edit can never eat a hairline.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (popupBoxIdRef.current) return;
       if (e.key === 'Escape') {
-        if (editingIdRef.current) { setEditingId(null); return; }
-        if (connectModeRef.current) {
-          setConnectMode(false);
-          setPendingConnectFrom(null);
+        // FX4 S6 — cancels the arm itself AND, if a drag is already in
+        // progress (button held), the in-flight preview line too: the
+        // pointer-effect's own `finishThreadDrag` reads threadArmedFromRef
+        // to decide commit-vs-cancel on release, so nulling it here means
+        // the eventual pointerup can never mint a connection even if the
+        // writer releases over a card afterward.
+        if (threadArmedFromRef.current != null) {
+          threadArmedFromRef.current = null;
+          setThreadArmedFrom(null);
+          if (previewLineRef.current) previewLineRef.current.style.display = 'none';
           return;
         }
         if (selectedConnectionIdRef.current) { setSelectedConnectionId(null); return; }
@@ -684,15 +936,23 @@ export function BoardEditor({ id }: { id: string }) {
 
   if (!initialEntry) return null;
 
-  const canvasHeightPx = Math.max((maxBottom(boxes) + 0.08) * pageWidthPx, VIEWPORT_MIN_PX);
+  // FX4 S4 — "minimums = content extents": the canvas can never be dragged
+  // shorter than what the current layout actually needs; the persisted
+  // override (once set) can only make it TALLER than that floor, never
+  // shorter. contentMinHeightPx is the SAME formula the pre-FX4 auto-height
+  // always used — byte-identical when canvasOverrideH is null.
+  const contentMinHeightPx = Math.max((maxBottom(boxes) + 0.08) * pageWidthPx, VIEWPORT_MIN_PX);
+  const canvasHeightPx = canvasOverrideH != null ? Math.max(canvasOverrideH, contentMinHeightPx) : contentMinHeightPx;
   const backTo = project ? `/project/${project.id}` : '/journal';
   const title = initialEntry.text.trim() ? initialEntry.text.trim() : 'Untitled';
 
-  // AB4 S3 — connections are hairlines, not cards: filtered out of the
-  // positioned-card render loop (they never carry a real x/y/w/h) and drawn
-  // as a separate SVG layer instead, deriving their endpoints LIVE from the
-  // current boxes so a drag/resize drags the hairline with it for free.
-  const visibleBoxes = boxes.filter(b => b.kind !== 'connection');
+  // AB4 S3 / FX4 S4 — connection and board-meta boxes are never positioned
+  // cards: filtered out of the positioned-card render loop (they never
+  // carry a real x/y/w/h) — connections draw as a separate SVG layer
+  // (endpoints derived LIVE from the current boxes, so a drag/resize drags
+  // the hairline with it for free); board-meta renders nothing at all (its
+  // only job is carrying the canvas's own persisted dimensions).
+  const visibleBoxes = boxes.filter(b => b.kind !== 'connection' && b.kind !== 'board-meta');
   const connections = boxes.filter(b => b.kind === 'connection');
   const sorted = visibleBoxes.slice().sort((a, b) => a.z - b.z);
 
@@ -706,53 +966,114 @@ export function BoardEditor({ id }: { id: string }) {
   const boxCx = (b: Box) => (b.x + b.w / 2) * pageWidthPx;
   const boxCy = (b: Box) => (b.y + b.h / 2) * pageWidthPx;
 
+  // FX4 S6 — double-clicking a selected card's own resize handle arms a
+  // thread-drag FROM that card. stopPropagation keeps the canvas's own
+  // onDoubleClick (text edit / page-pin travel, below) from ALSO firing —
+  // the handle sits inside `.board-box`, so the event would otherwise
+  // bubble into that handler too.
+  const armThreadDrag = (boxId: string) => {
+    threadArmedFromRef.current = boxId;
+    setThreadArmedFrom(boxId);
+  };
+
+  // FX4 S4 — the canvas's own bottom-right resize handle: a plain pointer
+  // drag (no long-press/threshold ceremony — "a quiet bottom-right drag,"
+  // the brief's own words), committed to the SAME `boxes` array as a
+  // 'board-meta' upsert on release, riding the EXISTING autosave/undo-
+  // agnostic persistence path every other box mutation already uses (no
+  // new save mechanism).
+  const onCanvasHandleDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    canvasResizeStartRef.current = { x: e.clientX, y: e.clientY, w: pageWidthPx, h: canvasHeightPx };
+    try { (e.target as Element).setPointerCapture(e.pointerId); } catch { /* gone */ }
+  };
+  const onCanvasHandleMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = canvasResizeStartRef.current;
+    if (!start) return;
+    e.preventDefault();
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    setCanvasOverrideW(Math.max(CANVAS_MIN_W, start.w + dx));
+    setCanvasOverrideH(Math.max(VIEWPORT_MIN_PX, start.h + dy));
+  };
+  const onCanvasHandleUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = canvasResizeStartRef.current;
+    if (!start) return;
+    canvasResizeStartRef.current = null;
+    try { (e.target as Element).releasePointerCapture(e.pointerId); } catch { /* already released */ }
+    // Persist as a 'board-meta' upsert — recompute the FINAL w/h directly
+    // from this release event's own coordinates (the same math onMove just
+    // used), rather than reading back React state that may not have
+    // committed its last update yet — avoids a stale-closure race entirely.
+    const w = Math.max(CANVAS_MIN_W, start.w + (e.clientX - start.x));
+    const h = Math.max(VIEWPORT_MIN_PX, start.h + (e.clientY - start.y));
+    setBoxes(prev => {
+      const existing = prev.find(b => b.kind === 'board-meta');
+      const meta: Box = existing
+        ? { ...existing, canvasW: w, canvasH: h }
+        : { id: generateId(), kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, canvasW: w, canvasH: h };
+      return existing ? prev.map(b => (b.id === existing.id ? meta : b)) : [...prev, meta];
+    });
+  };
+
   const boardCanvas = (
-    <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: '78vh', border: '1px solid var(--ink-border)' }}>
-      <div
-        ref={canvasRef}
-        className="board-canvas"
-        data-connect-mode={connectMode ? 'true' : 'false'}
-        style={{ position: 'relative', width: '100%', height: canvasHeightPx, background: 'var(--paper)' }}
-        onDoubleClick={(e) => {
-          const boxEl = (e.target as HTMLElement).closest('.board-box') as HTMLElement | null;
-          const boxId = boxEl?.dataset.boxId;
-          if (!boxId) return;
-          const box = boxesRef.current.find(b => b.id === boxId);
-          if (box?.kind === 'text') { setSelectedId(boxId); setEditingId(boxId); }
-          else if (box?.kind === 'page-pin') { travelToPin(box); }
-        }}
-      >
-        {/* AB4 S3 — the threads layer: hairlines between cards, quiet at
-            rest, olive only while connect mode is armed (nothing orange at
-            rest anywhere new); a selected hairline goes brass, matching the
-            selection treatment every other board element already carries.
-            pointer-events:none on the group; each line opts back in via its
-            own stroke so clicking elsewhere on the canvas is unaffected. */}
-        <svg
-          className="board-connections"
-          data-connect-mode={connectMode ? 'true' : 'false'}
-          width="100%"
-          height={canvasHeightPx}
-          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-          aria-hidden="true"
+    <div style={{ position: 'relative' }}>
+      <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: '78vh', border: '1px solid var(--ink-border)' }}>
+        <div
+          ref={canvasRef}
+          className="board-canvas"
+          data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
+          style={{ position: 'relative', width: pageWidthPx, height: canvasHeightPx, background: 'var(--paper)' }}
+          onDoubleClick={(e) => {
+            const boxEl = (e.target as HTMLElement).closest('.board-box') as HTMLElement | null;
+            const boxId = boxEl?.dataset.boxId;
+            if (!boxId) return;
+            const box = boxesRef.current.find(b => b.id === boxId);
+            if (box?.kind === 'text') { setSelectedId(boxId); setPopupBoxId(boxId); }
+            else if (box?.kind === 'page-pin') { travelToPin(box); }
+          }}
         >
-          {connections.map(conn => {
-            const a = boxes.find(b => b.id === conn.connA);
-            const b = boxes.find(b => b.id === conn.connB);
-            if (!a || !b) return null;
-            const x1 = boxCx(a), y1 = boxCy(a), x2 = boxCx(b), y2 = boxCy(b);
-            const selected = conn.id === selectedConnectionId;
-            return (
-              <g key={conn.id} data-connection-id={conn.id}>
-                <line x1={x1} y1={y1} x2={x2} y2={y2} className="board-connection-hit"
-                  style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-                  onClick={() => { setSelectedConnectionId(conn.id); setSelectedId(null); }} />
-                <line x1={x1} y1={y1} x2={x2} y2={y2} className="board-connection-line" data-selected={selected ? 'true' : 'false'} />
-              </g>
-            );
-          })}
-        </svg>
-        {sorted.map(box => {
+          {/* AB4 S3 / FX4 S6 — the threads layer: hairlines between cards,
+              quiet at rest; a selected hairline goes brass, matching the
+              selection treatment every other board element already
+              carries. pointer-events:none on the group; each line opts
+              back in via its own stroke so clicking elsewhere on the
+              canvas is unaffected. The live preview line (FX4 S6) is a
+              dashed olive line, hidden until a thread-drag is in progress
+              — its own endpoint is updated imperatively (never through
+              React state) by the pointer-effect above. */}
+          <svg
+            className="board-connections"
+            data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
+            width={pageWidthPx}
+            height={canvasHeightPx}
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+            aria-hidden="true"
+          >
+            {connections.map(conn => {
+              const a = boxes.find(b => b.id === conn.connA);
+              const b = boxes.find(b => b.id === conn.connB);
+              if (!a || !b) return null;
+              const x1 = boxCx(a), y1 = boxCy(a), x2 = boxCx(b), y2 = boxCy(b);
+              const selected = conn.id === selectedConnectionId;
+              return (
+                <g key={conn.id} data-connection-id={conn.id}>
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} className="board-connection-hit"
+                    style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                    onClick={() => { setSelectedConnectionId(conn.id); setSelectedId(null); }} />
+                  <line x1={x1} y1={y1} x2={x2} y2={y2} className="board-connection-line" data-selected={selected ? 'true' : 'false'} />
+                </g>
+              );
+            })}
+            {threadArmedFrom != null && (() => {
+              const from = boxes.find(b => b.id === threadArmedFrom);
+              if (!from) return null;
+              const x1 = boxCx(from), y1 = boxCy(from);
+              return <line ref={previewLineRef} className="board-thread-preview" x1={x1} y1={y1} x2={x1} y2={y1} style={{ display: 'none' }} />;
+            })()}
+          </svg>
+          {sorted.map(box => {
           const selected = selectedIds.has(box.id);
           return (
             <div
@@ -762,7 +1083,7 @@ export function BoardEditor({ id }: { id: string }) {
               data-kind={box.kind}
               data-selected={selected ? 'true' : 'false'}
               data-grouped={box.groupId ? 'true' : 'false'}
-              data-connect-pending={box.id === pendingConnectFrom ? 'true' : 'false'}
+              data-thread-source={box.id === threadArmedFrom ? 'true' : 'false'}
               style={{
                 position: 'absolute',
                 left: box.x * pageWidthPx, top: box.y * pageWidthPx,
@@ -776,45 +1097,77 @@ export function BoardEditor({ id }: { id: string }) {
                 <BoardPinBox box={box} />
               ) : (
                 <BoardTextBox
-                  // Review fix — remount per edit session: without this key,
-                  // the SAME instance survives edit -> blur -> edit again, so
-                  // its useState(() => escHtml(initialText)) initializer never
-                  // re-runs — the second session's dangerouslySetInnerHTML
-                  // renders the FIRST session's stale html, visibly reverting
-                  // the box, and the next keystroke commits stale+new (a
-                  // data-loss class bug). A fresh key per session forces a
-                  // fresh mount, so the initializer re-seeds from current text.
-                  key={editingId === box.id ? box.id + ':edit' : box.id}
                   boxId={box.id}
                   initialText={box.text ?? ''}
-                  editing={editingId === box.id}
                   measureRef={measureRef}
-                  onCommitText={commitText}
-                  onBlurEdit={() => setEditingId(null)}
                 />
               )}
               {selected && canResize && box.id === selectedId && (
-                <div className="board-handle" data-handle="se" aria-hidden="true" />
+                <div
+                  className="board-handle"
+                  data-handle="se"
+                  aria-hidden="true"
+                  // FX4 S6 — double-click arms a thread-drag from THIS card
+                  // (replacing AB4's sliver Connect-toggle-then-click-two-
+                  // cards gesture whole). stopPropagation so the canvas's
+                  // own onDoubleClick (text edit / page-pin travel) never
+                  // ALSO fires — the handle sits inside .board-box, so the
+                  // event would otherwise bubble into that handler too.
+                  onDoubleClick={(e) => { e.stopPropagation(); armThreadDrag(box.id); }}
+                />
               )}
             </div>
           );
         })}
       </div>
+      </div>
+      {/* FX4 S4 — the board canvas's own quiet bottom-right resize handle,
+          pinned to the WRAP's own visible corner (position:absolute against
+          the outer position:relative wrapper, OUTSIDE the scrollable
+          `.board-canvas-wrap`) so it stays reachable regardless of internal
+          scroll position — a genuinely wider/taller canvas scrolls inside
+          the wrap; the handle itself never scrolls away. */}
+      <div
+        className="board-canvas-resize-handle"
+        aria-hidden="true"
+        onPointerDown={onCanvasHandleDown}
+        onPointerMove={onCanvasHandleMove}
+        onPointerUp={onCanvasHandleUp}
+        onPointerCancel={onCanvasHandleUp}
+      />
     </div>
   );
 
-  // AB4 S5 — the board's own two hand tools, fenced to exactly these
-  // (nothing else v1 — minimum options).
+  // FX4 S5 — the popup editor mounts over a BLURRED board (the mockup's own
+  // treatment) whenever a text card is open; `.board-canvas-blurred`
+  // carries the filter/dim, `.board-canvas-blur-wrap`'s own transition
+  // (index.css) honors reduced-motion. The popup itself is a fixed
+  // full-viewport overlay (the SAME z-index family `.board-sheet` already
+  // uses for Move/Copy/Pin) so it always centers regardless of scroll
+  // position within a tall/wide board.
+  const popupBox = popupBoxId ? boxes.find(b => b.id === popupBoxId) : null;
+  const boardBody = (
+    <>
+      {boardActionRow}
+      <div className={`board-canvas-blur-wrap${popupBox ? ' board-canvas-blurred' : ''}`}>
+        {boardCanvas}
+      </div>
+      {popupBox && (
+        <BoardCardPopup
+          initialText={popupBox.text ?? ''}
+          onCommit={text => commitText(popupBox.id, text)}
+          onClose={() => setPopupBoxId(null)}
+        />
+      )}
+    </>
+  );
+
+  // AB4 S5 / FX4 S6 — the board's own hand tool(s). Connect toggle RETIRES
+  // (replaced by the handle-drag gesture above) — the sliver carries Add
+  // card alone now.
   const sliverContent: SliverContent = {
     kind: 'board',
     onAddCard,
-    connect: {
-      on: connectMode,
-      onToggle: (next) => {
-        setConnectMode(next);
-        if (!next) setPendingConnectFrom(null); // Escape's own disarm law, mirrored for the toggle itself
-      },
-    },
   };
 
   const pageFaceSheets = (
@@ -872,8 +1225,7 @@ export function BoardEditor({ id }: { id: string }) {
               board-page container caps at maxWidth:1100 (board wants more
               room than prose's 720/760 measure); mirrored here. */}
           <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column' }}>
-            {boardActionRow}
-            {boardCanvas}
+            {boardBody}
           </div>
         </DeskFrame>
 
@@ -898,8 +1250,7 @@ export function BoardEditor({ id }: { id: string }) {
 
       <div style={{ height: 16 }} />
 
-      {boardActionRow}
-      {boardCanvas}
+      {boardBody}
     </div>
   );
 }

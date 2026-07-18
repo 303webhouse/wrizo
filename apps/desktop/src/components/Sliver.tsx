@@ -69,16 +69,17 @@ export type SliverContent =
       onSwitchStructure: (next: StructureKind) => void;
       format?: { onFormat: (action: FormatAction) => void };
     }
-  // AB4 S5 — the Board's own two hand tools, fenced by the brief to exactly
-  // these ("Add card, the Connect toggle, and nothing else v1 — minimum
-  // options"). Everything else in the sliver (the goal foot, the
-  // instruments row) is shared furniture every framed surface already
-  // carries — this union member only ever governs SliverToolsBody's own
-  // per-mode section, same as 'freewrite'/'draft' above.
+  // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
+  // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
+  // double-click the selected card's resize handle, drag, release inside a
+  // target card); the sliver carries Add card alone now. Everything else
+  // in the sliver (the goal foot, the instruments row) is shared furniture
+  // every framed surface already carries — this union member only ever
+  // governs SliverToolsBody's own per-mode section, same as
+  // 'freewrite'/'draft' above.
   | {
       kind: 'board';
       onAddCard: () => void;
-      connect: { on: boolean; onToggle: (next: boolean) => void };
     };
 
 export interface SliverProps {
@@ -260,20 +261,15 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
 
-      {/* AB4 S5 — the board's own two hand tools, fenced to exactly these
-          (S5: "Add card, the Connect toggle, and nothing else v1"). */}
+      {/* AB4 S5 / FX4 S6 — the board's own hand tool: Add card alone now
+          (the Connect toggle retired — see this file's own SliverContent
+          comment). */}
       {content.kind === 'board' && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railBoard')}</div>
           <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddCard}>
             {t('boardAddCard')}
           </button>
-          <SliverToggle
-            label={t('boardConnect')}
-            on={content.connect.on}
-            onToggle={() => content.connect.onToggle(!content.connect.on)}
-            className="wz-sliver-connect"
-          />
         </div>
       )}
     </div>

@@ -258,9 +258,29 @@ export interface JournalEntry {
 // of every position-based board computation (maxBottom, the pointer/box
 // hit-test, the text-reflow measure effect) by kind, the same discipline
 // that already separates 'text' from 'ink' handling below.
+//
+// FX4 S4 — 'board-meta': the SAME zero-schema precedent, one more time, for
+// the board canvas's own persisted (user-dragged) pixel dimensions.
+// Considered and rejected: a sibling field on JournalEntry (same disqualifier
+// as 'connection' — a real new column); a property on some existing box
+// (there is no natural "owner" card — canvas size isn't any one card's own
+// attribute). Follows 'connection's own shape exactly: x/y/w/h/z stay
+// unused (always 0), so it costs NOTHING extra in maxBottom/the pointer
+// hit-test/the text-reflow measure effect — those already treat an all-zero
+// box as inert, no new filtering needed there. It DOES need its own filter
+// in the POSITIONED-CARD render loop (alongside 'connection'), the same one
+// line 'connection' already required — checked against every existing
+// boxes-array consumer before committing to this shape (BoardEditor.tsx's
+// own header comment records the full audit). `canvasW`/`canvasH` are
+// deliberately NOT normalized like every other box's x/y/w/h (which are
+// fractions of the page width) — the canvas's own size is what x/y/w/h
+// normalize AGAINST, so normalizing it against itself is circular; these
+// are plain persisted CSS pixels, at most one 'board-meta' box per board
+// (BoardEditor.tsx enforces this by always updating the existing one, never
+// pushing a second).
 export interface Box {
   id: string;
-  kind: 'text' | 'ink' | 'page-pin' | 'connection';
+  kind: 'text' | 'ink' | 'page-pin' | 'connection' | 'board-meta';
   x: number;
   y: number;
   w: number;
@@ -274,6 +294,8 @@ export interface Box {
   entryId?: string;    // kind 'page-pin' — the referenced JournalEntry's id
   connA?: string;      // kind 'connection' — the first endpoint box id
   connB?: string;      // kind 'connection' — the second endpoint box id
+  canvasW?: number;    // kind 'board-meta' — the canvas's own persisted width, CSS px (NOT normalized)
+  canvasH?: number;    // kind 'board-meta' — the canvas's own persisted height, CSS px (NOT normalized)
 }
 
 // S1 — the Screenplay Room's document (fragments-under-Pages citizen #2, ruled
