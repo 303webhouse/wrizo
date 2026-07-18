@@ -26,6 +26,16 @@
   --ink-stroke: #1A1206; /* pen ink — very dark brown, almost black (J9) */
   --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
 
+  /* FX4 S7 — Stacked (board-card-studies.html variant B): the board's own
+     cards read as a lighter stock laid ON the board's --paper, not the
+     same material as the board itself. Values matched precisely from the
+     reference mockup's own working tokens (--card-lift/--hairline there),
+     not approximated. Left un-themed (inherited) like --paper-glow/
+     --ink-stroke above — the established pattern for this class of token
+     (TH2's own A4 precedent) until a theme pack needs its own override. */
+  --card-stock: #FBF6EA;
+  --card-hairline: #D9CFB6;
+
   /* Accent — the Wrizo orange, primary action (exactly one per screen).
      #ff9800 is locked and invariant — never recolor or remove. (Token name kept
      as --brass to avoid a global rename; this is a paint, not a refactor.) */
@@ -719,6 +729,47 @@ h1, h2, h3 {
   height:var(--tw-fade-band,84px); margin-bottom:calc(-1 * var(--tw-fade-band,84px));
   background:linear-gradient(to bottom, rgba(243,237,225,.85) 0%, rgba(243,237,225,0) 100%);
   opacity:0; transition:opacity .6s ease; }
+/* FX4 S1 — the Journal carve-out retires: this is the ENTIRE mechanism of
+   that carve-out reversing. Before this ticket, `.entry-full` computed and
+   set `--tw-start-offset` (useTypewriterFade.ts's own measure()) but NO
+   selector here ever consumed it on this class — the value existed, inert,
+   read by nobody. This one rule is what makes Journal gain the SAME start-
+   offset behavior `.mode-scroll`/`.desk-frame-scroll-cap` already have,
+   for the first time. Ink-coordinate safety (the brief's own required
+   proof, see fx4.mjs's own seeded-stroke byte-truth check): padding-top on
+   an element never moves that element's OWN border-box position (top/left/
+   width) — only its height grows to contain the extra padding — so
+   `.entry-full`'s own `getBoundingClientRect()` (the ONE rect JournalEntry.
+   tsx's normPoint/paintCommitted and store/ink.ts's renderStroke ALL key
+   off, at both capture time and every re-render) is completely unaffected
+   by its own padding-top value. The ink canvases are absolutely positioned
+   at top:0/left:0/100%/100% against this SAME element's padding box (CSS
+   spec: the containing block for an absolutely-positioned descendant is
+   the nearest positioned ancestor's PADDING edge, which sits right after
+   the border — unaffected by the padding VALUE itself) — so they stay
+   pinned exactly where they always were too. Net effect: existing strokes
+   render in the identical screen position before and after this rule
+   exists; only the TEXT content (a normal, non-absolutely-positioned
+   descendant) shifts down within the now-taller sheet, exactly the "starts
+   a quarter down" effect this ticket wants. */
+/* FX4 S1 — `padding-bottom:30vh` mirrors `.mode-scroll`'s OWN identical
+   bottom buffer (index.css, above) verbatim. Found live while tuning the
+   engage line-count: `.mode-scroll`/`.desk-frame-scroll-cap` are ALWAYS
+   scrollable by at least this much, even on a nearly-empty page, because
+   that fixed padding makes their own scrollHeight exceed their box
+   regardless of content — which is WHY their auto-scroll can engage within
+   a genuine handful of lines. `.entry-full` had no equivalent: its own
+   scrollability came ONLY from real content growth (plus the new start-
+   offset), so the WHOLE DOCUMENT stayed shorter than the viewport — and
+   therefore genuinely un-scrollable, `data-scrolled` structurally unable
+   to ever flip true — until content grew far past what "~10 lines" could
+   plausibly mean (confirmed empirically: un-engaged at 20 typed lines
+   before this rule existed). Adding the SAME fixed buffer prose/script
+   already rely on gives Journal the same "always has room to scroll"
+   property, letting the holdBand's own threshold (JOURNAL_HOLD_BAND,
+   useTypewriterFade.ts) govern engagement timing the way it was designed
+   to, instead of being blocked by document geometry underneath it. */
+.entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); padding-bottom:30vh; }
 .entry-full[data-typewriter='true'][data-scrolled='true'] .entry-typewriter-fade{ opacity:1; }
 @media (prefers-reduced-motion:reduce){ .entry-typewriter-fade{ transition:none; } }
 
@@ -1114,46 +1165,75 @@ a:focus-visible,
 .spread-cell[data-drop-before="true"]::before{ left:-12px; }
 .spread-cell[data-drop-after="true"]::after{ right:-12px; }
 
-/* J4 — the Board. Square corners, solid quiet borders; brass appears ONLY on
-   selection (the anti-Canva guard extends to chrome: no decoration, ever). */
+/* J4 — the Board. Square corners; brass appears ONLY on selection (the
+   anti-Canva guard extends to chrome: no decoration, ever).
+   FX4 S7 — Stacked (board-card-studies.html variant B, Nick's ratified
+   pick): lighter stock than the board itself, a 1px hairline, thickness
+   told by a 2px offset hard edge + a soft shadow — "card stock, not
+   glass." Values matched precisely from the reference file, not
+   approximated from the brief's prose alone. */
 .board-canvas{ border-radius:0; }
 .board-box{ border-radius:0; box-sizing:border-box; touch-action:none; }
 .board-box[data-selected="true"]{ outline:2px solid var(--brass); outline-offset:1px; }
 .board-text{
   width:100%; height:100%; overflow:auto; padding:6px 8px; box-sizing:border-box;
-  border:1px solid var(--ink-border); border-radius:0; background:var(--paper);
+  border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
+  box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
   color:var(--ink-on-paper); font-family:var(--font-prose); font-size:15px; line-height:1.6;
   white-space:pre-wrap; cursor:default;
 }
 .board-text-editing{ outline:none; cursor:text; border-color:var(--ink-border-strong); }
-.board-ink-canvas{ border:1px solid var(--ink-border); border-radius:0; background:var(--paper); }
+/* Page-pin and ink cards wear the SAME Stacked treatment identically (S7's
+   own words) — .board-pin already shares .board-text's class (below);
+   .board-ink-canvas gets the identical border/background/shadow directly. */
+.board-ink-canvas{
+  border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
+  box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
+}
 .board-handle{
   position:absolute; right:-7px; bottom:-7px; width:14px; height:14px;
   background:var(--brass); border:1px solid var(--ink-950); border-radius:0; cursor:nwse-resize;
 }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
-   .board-text's own look; the badge is the only decoration (quiet olive,
-   never brass — "nothing orange at rest" holds here too, matching the
-   cascade survey's own current-item olive convention). */
+   .board-text's own look (now Stacked, S7); the badge is the only
+   decoration (quiet olive, never brass — "nothing orange at rest" holds
+   here too, matching the cascade survey's own current-item olive
+   convention). */
 .board-pin{ cursor:pointer; }
 .board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-rest); margin-bottom:2px; }
 .board-pin-title{ font-weight:600; }
 .board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
 .board-pin-missing{ color:var(--text-low); font-style:italic; cursor:default; }
-/* AB4 S3 — threads: quiet hairlines at rest, olive only while connect mode
-   is armed; a selected hairline goes brass (the same selection treatment
-   .board-box[data-selected] already carries), ready for a confirm-free
-   delete. The wide transparent "hit" line exists purely for a forgiving
-   click target — it never paints. */
+/* AB4 S3 — threads: quiet hairlines at rest, a selected hairline goes
+   brass (the same selection treatment .board-box[data-selected] already
+   carries), ready for a confirm-free delete. The wide transparent "hit"
+   line exists purely for a forgiving click target — it never paints.
+   FX4 S6 — olive now marks the THREAD-DRAG armed state (handle-drag,
+   replacing AB4's Connect-toggle-mode); the "nothing orange at rest"
+   law is unchanged. */
 .board-connection-line{ stroke:var(--ink-border-strong); stroke-width:1.5; fill:none; }
-.board-connections[data-connect-mode='true'] .board-connection-line{ stroke:var(--accent-rest); }
+.board-connections[data-thread-armed='true'] .board-connection-line{ stroke:var(--accent-rest); }
 .board-connection-line[data-selected='true']{ stroke:var(--brass); stroke-width:2.5; }
 .board-connection-hit{ stroke:transparent; stroke-width:10; fill:none; }
-/* Connect mode's own cursor + the pending-pick highlight (card A, waiting
-   for card B) — dashed olive, distinct from the solid brass selection
-   outline so the two states never read as the same thing. */
-.board-canvas[data-connect-mode='true'] .board-box{ cursor:crosshair; }
-.board-box[data-connect-pending='true']{ outline:2px dashed var(--accent-rest); outline-offset:1px; }
+/* FX4 S6 — the live thread-drag preview line: dashed olive, distinct from
+   the solid hairline styles above so it never reads as an already-minted
+   connection. Hidden by default (JS toggles display on drag start/end —
+   BoardEditor.tsx's own updateThreadPreview/hideThreadPreview). */
+.board-thread-preview{ stroke:var(--accent-rest); stroke-width:1.5; stroke-dasharray:4 3; fill:none; pointer-events:none; }
+/* Thread-drag's own cursor + the origin card's own highlight — dashed
+   olive, distinct from the solid brass selection outline so the two
+   states never read as the same thing. */
+.board-canvas[data-thread-armed='true']{ cursor:crosshair; }
+.board-box[data-thread-source='true']{ outline:2px dashed var(--accent-rest); outline-offset:1px; }
+/* FX4 S4 — the board canvas's own bottom-right resize handle: quiet at
+   rest (the brief's own word), matching the corkboard-adjacent chrome's
+   restrained palette rather than the per-card brass handle (this one
+   resizes the WHOLE canvas, a different, less frequent gesture). */
+.board-canvas-resize-handle{
+  position:absolute; right:-1px; bottom:-1px; width:16px; height:16px;
+  cursor:nwse-resize; border-radius:0;
+  border-right:2px solid var(--ink-border-strong); border-bottom:2px solid var(--ink-border-strong);
+}
 .board-sheet{
   position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
   background:rgba(0,0,0,.5);
@@ -1165,6 +1245,36 @@ a:focus-visible,
 .board-sheet-title{ font-family:var(--font-display); font-size:18px; color:var(--text-hi); margin-bottom:12px; }
 .board-dest-row{ width:100%; text-align:left; background:none; border:none; cursor:pointer; }
 @media (prefers-reduced-motion:reduce){ .board-box{ transition:none; } }
+
+/* FX4 S5 — the card popup, over a blurred board (board-card-studies.html's
+   own mockup treatment, matched precisely: blur(6px) + dim to .55 opacity
+   on the board itself, reduced-motion honored). Inline contenteditable
+   editing RETIRES whole — this is the only way to edit a text card's
+   words now. */
+.board-canvas-blur-wrap{ transition:filter .28s ease, opacity .28s ease; }
+.board-canvas-blurred{ filter:blur(6px); opacity:.55; pointer-events:none; }
+@media (prefers-reduced-motion:reduce){ .board-canvas-blur-wrap{ transition:none; } }
+.board-popup-backdrop{
+  position:fixed; inset:0; z-index:210; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.35);
+}
+.board-popup{
+  width:min(520px,88vw); background:var(--card-stock); color:var(--ink-on-paper);
+  border:1px solid var(--card-hairline); border-top:2px solid var(--accent-rest);
+  box-shadow:0 14px 44px rgba(0,0,0,.5); border-radius:0;
+}
+.board-popup-strip{
+  display:flex; align-items:center; gap:4px; padding:10px 14px;
+  border-bottom:1px solid var(--card-hairline);
+}
+.board-popup-eyebrow{ margin-right:auto; color:var(--ink-on-paper-low); }
+.board-popup-tool{ width:30px; height:28px; font-family:var(--font-prose); font-size:14px; }
+.board-popup-editor{
+  display:block; width:100%; min-height:170px; padding:18px 22px 6px; box-sizing:border-box;
+  outline:none; font-family:var(--font-prose); font-size:16px; line-height:1.6;
+  white-space:pre-wrap; color:var(--ink-on-paper);
+}
+.board-popup-foot{ display:flex; justify-content:flex-end; padding:12px 16px 18px; }
 
 /* J5 — the lens row: square corners, quiet borders, brass ONLY on the
    active chip. No transitions (reduced-motion is a non-issue: none used). */
@@ -1884,13 +1994,38 @@ a:focus-visible,
    is `position:fixed`, not `absolute`, and a bare `overflow:hidden` with no
    `transform`/`filter`/`will-change` does not create a containing block for
    `position:fixed` descendants — so none of them are clipped by this. */
-.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem; background:var(--desk-ground); overflow:hidden; }
+/* FX4 S3 — the strip flushes to the SCREEN's own left edge, not merely the
+   frame's: the host's own left inset (previously `clamp(16px,3vw,40px)`,
+   symmetric with the right) is killed outright (right/top/bottom keep their
+   existing values — only left changes) and the grid itself trades its old
+   `margin:0 auto` CENTERING for a LEFT-anchor (`margin-right:auto` only) —
+   without that second change the grid would still float centered inside
+   the now-wider host box, undoing the point. Two measurable consequences,
+   both intended: (1) near the DESKFRAME_MIN_WIDTH floor, where the grid
+   isn't yet capped by --frame-max, the reclaimed ~16-40px of host padding
+   feeds straight into `minmax(0,1fr)` (the stage track — the only track
+   that isn't a fixed width), literally the "reclaimed width feeds the
+   stage" the brief names; (2) at a wide viewport where the grid IS capped
+   at --frame-max, the leftover space (viewport minus frame-max) now sits
+   entirely on the RIGHT instead of split as symmetric margins — the old
+   cd1.mjs symmetric-margins assert is SUPERSEDED by this deliberate change
+   (parked in cd1.mjs, live successor in fx4.mjs asserting strip x===0 at
+   both reference widths + the 1100 floor instead). */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem 0; background:var(--desk-ground); overflow:hidden; }
+/* FX4 S1 — Journal's own host reverts the clip (see JournalEntry.tsx's own
+   comment on `.desk-frame-host--journal` for the full defect writeup): this
+   is the ONE DeskFrame surface whose content is meant to grow past the
+   viewport in ordinary use (window-scroll, ink anchored to the sheet), so
+   the general clip (correct for prose/script's own bounded, internally-
+   scrolling stage) silently ate the bottom of any sufficiently long page
+   here specifically — confirmed live, not guessed. */
+.desk-frame-host--journal{ overflow:visible; }
 .desk-frame{ position:relative; }
 .desk-frame-grid{
   display:grid;
   grid-template-columns: var(--strip-width) minmax(0,1fr) 260px;
   column-gap:var(--frame-gap); align-items:start; justify-content:center;
-  max-width:var(--frame-max); margin:0 auto;
+  max-width:var(--frame-max); margin:0 auto 0 0;
 }
 /* CD1 S5 — the corkboard track's grid COLUMN disappears with its content
    (FX1 S5's "render only with content" law, reused): DeskFrame.tsx only
@@ -1926,8 +2061,25 @@ a:focus-visible,
    axis). min-height:0 overrides the flex default min-height:auto floor,
    which would otherwise refuse to shrink below the stage's own content
    size on a short viewport. */
+/* FX4 S2 — `isolation:isolate` gives this box its OWN stacking context.
+   Without it, `position:relative` alone does NOT create one (only
+   `position` + an explicit `z-index` does) — so the goal glow's own
+   `z-index:-1` anchor (`.desk-frame-goalglow-anchor`, below) had no local
+   context to stack negatively WITHIN, and its negative z-index bubbled all
+   the way up to the nearest ancestor that DOES form one (empirically: past
+   `.desk-frame`/`.desk-frame-grid`/`.desk-frame-host`, none of which set
+   one either, all the way to the document root) — painting the glow BEHIND
+   the entire app background, fully invisible regardless of intensity. Root-
+   caused by reading computed z-index/position live on the mounted page
+   (not guessed from the CSS alone) and confirmed with a screenshot showing
+   zero visible warmth at a non-zero `--glow-intensity`. This one property
+   is the fix: it costs nothing structurally (no new element, no layout
+   change — isolation only affects stacking, never geometry) and makes the
+   glow paint exactly where S6's own comment always said it would: behind
+   the in-flow paper (a normal descendant, unaffected) but above whatever
+   sits further out (the desk-ground texture), never behind it. */
 .desk-frame-stage{ position:relative; display:flex; justify-content:center; min-width:0;
-  flex:1 1 auto; min-height:0; }
+  flex:1 1 auto; min-height:0; isolation:isolate; }
 /* Review fix — the actual flex ITEM of .desk-frame-stage is .mode-stage
    (ModeStage's own root div; .mode-row/.mode-pagecol are further BLOCK
    descendants of it, not flex items of the stage themselves). .mode-stage
@@ -2107,13 +2259,33 @@ a:focus-visible,
 /* Prose and screenplay share the SAME canonical paper width (FX1 S2 put
    script on `.mode-pagecol` too), so no divergence from the base rule is
    needed — kept as a hook only (DeskFrame.tsx always applies one of these
-   modifier classes alongside the base class). AB4 S5 — board joins the same
-   hook (its own sliver anchors off the SAME --sliver-paper-half formula;
-   BoardEditor's wider canvas lives inside the stage, not the paper measure
-   this anchor is keyed to, so no divergence is needed here either). */
+   modifier classes alongside the base class). */
 .desk-frame-sliver-anchor--prose,
-.desk-frame-sliver-anchor--screenplay,
-.desk-frame-sliver-anchor--board{ /* intentionally empty — see comment above */ }
+.desk-frame-sliver-anchor--screenplay{ /* intentionally empty — see comment above */ }
+/* FX4 S3 — the board anchoring defect, diagnosed live (not guessed): AB4 S5's
+   own comment claimed board needed no divergence here because "BoardEditor's
+   wider canvas lives inside the stage, not the paper measure this anchor is
+   keyed to" — measured on the actual mounted page, that reasoning was
+   backwards. The base rule's `--sliver-paper-half` (~380px/30ch, prose's own
+   half-measure) governs where this anchor's RIGHT edge lands regardless of
+   what pageKind is active; Board's own content wrapper is
+   `width:min(100%, 1100px)` (BoardEditor.tsx), i.e. roughly HALF again as
+   wide as prose at any viewport with room to spare — so the anchor's right
+   edge landed ~242px INSIDE the board's own canvas (measured empirically at
+   1400px, headless), not flush to its left edge at all: the sliver/grip
+   floated over live board content instead of riding its margin. The fix
+   mirrors the board wrapper's own formula exactly (half of `min(100%,
+   1100px)` is `min(50%, 550px)` — halving a min() distributes over both
+   arms) so the anchor's right edge lands exactly where the canvas's own
+   left edge actually renders, at every viewport. `--sliver-paper-pad`
+   drops to 0 too — Board's own wrapper carries no padding of its own to dip
+   into (unlike `.mode-page`'s 30/38px prose padding the base rule borrows),
+   so honestly reflecting that keeps the same clamp formula from silently
+   over-crediting room that isn't there. */
+.desk-frame-sliver-anchor--board{
+  --sliver-paper-half: min(50%, 550px);
+  --sliver-paper-pad: 0px;
+}
 
 /* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
    z-index; the paper itself paints in normal flow above it). Same
