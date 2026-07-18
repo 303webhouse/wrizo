@@ -1131,6 +1131,29 @@ a:focus-visible,
   position:absolute; right:-7px; bottom:-7px; width:14px; height:14px;
   background:var(--brass); border:1px solid var(--ink-950); border-radius:0; cursor:nwse-resize;
 }
+/* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
+   .board-text's own look; the badge is the only decoration (quiet olive,
+   never brass — "nothing orange at rest" holds here too, matching the
+   cascade survey's own current-item olive convention). */
+.board-pin{ cursor:pointer; }
+.board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-rest); margin-bottom:2px; }
+.board-pin-title{ font-weight:600; }
+.board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
+.board-pin-missing{ color:var(--text-low); font-style:italic; cursor:default; }
+/* AB4 S3 — threads: quiet hairlines at rest, olive only while connect mode
+   is armed; a selected hairline goes brass (the same selection treatment
+   .board-box[data-selected] already carries), ready for a confirm-free
+   delete. The wide transparent "hit" line exists purely for a forgiving
+   click target — it never paints. */
+.board-connection-line{ stroke:var(--ink-border-strong); stroke-width:1.5; fill:none; }
+.board-connections[data-connect-mode='true'] .board-connection-line{ stroke:var(--accent-rest); }
+.board-connection-line[data-selected='true']{ stroke:var(--brass); stroke-width:2.5; }
+.board-connection-hit{ stroke:transparent; stroke-width:10; fill:none; }
+/* Connect mode's own cursor + the pending-pick highlight (card A, waiting
+   for card B) — dashed olive, distinct from the solid brass selection
+   outline so the two states never read as the same thing. */
+.board-canvas[data-connect-mode='true'] .board-box{ cursor:crosshair; }
+.board-box[data-connect-pending='true']{ outline:2px dashed var(--accent-rest); outline-offset:1px; }
 .board-sheet{
   position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
   background:rgba(0,0,0,.5);
@@ -2084,9 +2107,13 @@ a:focus-visible,
 /* Prose and screenplay share the SAME canonical paper width (FX1 S2 put
    script on `.mode-pagecol` too), so no divergence from the base rule is
    needed — kept as a hook only (DeskFrame.tsx always applies one of these
-   modifier classes alongside the base class). */
+   modifier classes alongside the base class). AB4 S5 — board joins the same
+   hook (its own sliver anchors off the SAME --sliver-paper-half formula;
+   BoardEditor's wider canvas lives inside the stage, not the paper measure
+   this anchor is keyed to, so no divergence is needed here either). */
 .desk-frame-sliver-anchor--prose,
-.desk-frame-sliver-anchor--screenplay{ /* intentionally empty — see comment above */ }
+.desk-frame-sliver-anchor--screenplay,
+.desk-frame-sliver-anchor--board{ /* intentionally empty — see comment above */ }
 
 /* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
    z-index; the paper itself paints in normal flow above it). Same
@@ -2237,6 +2264,13 @@ a:focus-visible,
 .wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
 .wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
 .wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
+/* AB4 S5 — "Add card," the board sliver's one non-toggle tool: a real
+   <button> sharing .wz-sliver-item's own look (this class only resets the
+   button chrome CAPTURE_ITEMS' plain <div>s never needed) + a quiet border/
+   hover, matching every other sliver control's rest state. */
+.wz-sliver-item-btn{ display:block; width:100%; text-align:left; background:none;
+  border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
+.wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
 .wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
 .wz-sliver-typewriter-label{ font-size:13px; color:var(--text-mid); }
@@ -2460,8 +2494,20 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){ .wz-cascade-survey{ transition:none; } }
 .wz-cascade-survey-head{ display:flex; align-items:center; justify-content:space-between; gap:8px;
   padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
-.wz-cascade-survey-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* AB4 S1 — the back button + title travel together as one group on the
+   head's leading edge, so a 3rd element (back) doesn't split space-between
+   into an uneven 3-way distribution; the docked-close button (when present)
+   stays alone on the trailing edge, unchanged. */
+.wz-cascade-survey-head-lead{ display:flex; align-items:center; gap:6px; min-width:0; }
+.wz-cascade-survey-back{ font-size:15px; line-height:1; padding:0 2px; }
+.wz-cascade-survey-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wz-cascade-survey-grid{ display:flex; flex-direction:column; gap:10px; padding:12px; }
+/* AB4 S1 — a board card's own image (dark today, see CascadeSurvey.tsx's
+   own comment on why AB4 doesn't populate it yet; the rule exists so a
+   future ticket lights the field without a CSS pass). */
+.wz-cascade-thumb-image{ display:block; width:100%; max-height:120px; object-fit:cover;
+  border:1px solid var(--ink-border); border-radius:var(--radius-sm); }
 .wz-cascade-thumb{ display:flex; flex-direction:column; gap:4px; text-align:left; cursor:pointer;
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
   padding:10px 12px; color:var(--text-mid); font-family:var(--font-ui); transition:.15s; }

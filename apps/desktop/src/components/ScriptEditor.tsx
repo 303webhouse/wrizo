@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject } from '../store/persistence';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsPinning } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
@@ -25,6 +25,7 @@ import { useCascade } from './Cascade';
 import type { PageFaceSubject } from './PageFace';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { AddToSheet } from './AddToSheet';
+import { PinToBoardSheet } from './PinToBoardSheet';
 import { isScriptEmpty } from '../store/structureConvert';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 
@@ -236,6 +237,7 @@ function AutocompletePopover({ state, index, indentCh }: { state: AutocompleteSt
 
 export function ScriptEditor({ id }: { id: string }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const initialEntry = getJournalEntry(id);
   const initialDoc = initialEntry?.script ?? createEmptyScriptDoc();
   // AB1 S1/S2 — DeskFrame owns the viewport at >=1100px only; below that
@@ -303,6 +305,7 @@ export function ScriptEditor({ id }: { id: string }) {
   // here, same as they were for PageEditor in AB3).
   const [portOpen, setPortOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false); // AB4 S2 — "Pin to a Board…" sheet
 
   const elementsRef = useRef(elements);
   elementsRef.current = elements;
@@ -381,7 +384,10 @@ export function ScriptEditor({ id }: { id: string }) {
     flushNow();
   };
 
-  const { homeLabel, memberships } = describePageHome(initialEntry, project);
+  // AB4 S2 — every board currently pinning this page, for the truthful
+  // "Also pinned to <board>." membership line(s).
+  const pinnedBoardTitles = getBoardsPinning(initialEntry.id).map(b => b.title);
+  const { homeLabel, memberships } = describePageHome(initialEntry, project, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
     entry: initialEntry,
@@ -393,6 +399,7 @@ export function ScriptEditor({ id }: { id: string }) {
     onRemoveTag: removeTag,
     onOpenMoveCopy: () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
+    onOpenPin: () => setPinOpen(true),
   };
 
   // CD2 S1/S5/S7 — the cascade, replacing the Drawer whole; mirrors the
@@ -581,6 +588,10 @@ export function ScriptEditor({ id }: { id: string }) {
 
   const title = elements.find(e => e.t === 'scene')?.text.trim() || 'Untitled';
   const backTo = project ? `/project/${project.id}` : '/journal';
+  // AB4 S4 — "way back guaranteed" for a page-pin card's double-click
+  // travel (BoardEditor.tsx), the same `location.state` precedent PageEditor/
+  // JournalEntry use (mirrored from F2's own warm-start signal). Framed-only.
+  const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
 
   // Draft law only (S1, still true below the AB1 gate) — the Screenplay
   // Room's forward-only mode (script Free-write) is AB2, not this ticket;
@@ -643,6 +654,11 @@ export function ScriptEditor({ id }: { id: string }) {
                 <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
               </div>
             )}
+            {fromBoard && (
+              <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flushNow(); navigate(`/page/${fromBoard}`); }}>
+                ‹ Back to the board
+              </button>
+            )}
             <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
           </div>
         </div>
@@ -670,6 +686,7 @@ export function ScriptEditor({ id }: { id: string }) {
             onDone={() => setAddOpen(false)}
           />
         )}
+        {pinOpen && <PinToBoardSheet entryId={id} onClose={() => setPinOpen(false)} />}
 
         {showPublish && (
           <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>

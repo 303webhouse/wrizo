@@ -68,6 +68,17 @@ export type SliverContent =
       structure: StructureKind;
       onSwitchStructure: (next: StructureKind) => void;
       format?: { onFormat: (action: FormatAction) => void };
+    }
+  // AB4 S5 — the Board's own two hand tools, fenced by the brief to exactly
+  // these ("Add card, the Connect toggle, and nothing else v1 — minimum
+  // options"). Everything else in the sliver (the goal foot, the
+  // instruments row) is shared furniture every framed surface already
+  // carries — this union member only ever governs SliverToolsBody's own
+  // per-mode section, same as 'freewrite'/'draft' above.
+  | {
+      kind: 'board';
+      onAddCard: () => void;
+      connect: { on: boolean; onToggle: (next: boolean) => void };
     };
 
 export interface SliverProps {
@@ -246,6 +257,23 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('corkboardJournalTab')}</div>
           {content.captureItems.map(it => <div key={it} className="wz-sliver-item">{it}</div>)}
+        </div>
+      )}
+
+      {/* AB4 S5 — the board's own two hand tools, fenced to exactly these
+          (S5: "Add card, the Connect toggle, and nothing else v1"). */}
+      {content.kind === 'board' && (
+        <div className="wz-sliver-section">
+          <div className="wz-sliver-h">{t('railBoard')}</div>
+          <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddCard}>
+            {t('boardAddCard')}
+          </button>
+          <SliverToggle
+            label={t('boardConnect')}
+            on={content.connect.on}
+            onToggle={() => content.connect.onToggle(!content.connect.on)}
+            className="wz-sliver-connect"
+          />
         </div>
       )}
     </div>

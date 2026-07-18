@@ -5,7 +5,9 @@ import { firstLine } from '../store/entryText';
 import {
   getJournalPages, getShelfPages, getDrawers, getProjects, getBinderPages,
   createJournalPage, createBoardPage, createQuickSprintProject, softDeleteEntry,
+  getJournalEntry,
 } from '../store/persistence';
+import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
@@ -35,6 +37,13 @@ export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'shelf' | 'se
 export type CascadeSurveyKind =
   | { category: 'journal' }
   | { category: 'plan'; projectId: string }
+  // AB4 S1 — the CD2 erratum comes true: picking a board in the 'plan'
+  // survey (the board list) swaps this SAME column one layer deeper, to
+  // that board's own cards. A nested kind rather than a second piece of
+  // Cascade.tsx state — `survey` already generalizes to "whatever the
+  // writer is currently browsing," and reusing it means dock/undock/
+  // Escape/keystroke-dissolve all keep working with zero new plumbing.
+  | { category: 'plan-board'; projectId: string; boardId: string; boardTitle: string }
   | { category: 'drawers'; drawerId: string; drawerName: string }
   | { category: 'shelf' };
 
@@ -306,6 +315,26 @@ export function renderCategoryPanel(category: CategoryId, ctx: CascadeContext): 
   }
 }
 
+// AB4 S1 — a board's own cards, surveyed as large thumbnails: title + a
+// two-line excerpt, or "A sketch" for an ink-only card (no synthesized
+// image — see CascadeSurvey.tsx's own comment on why `item.image` stays
+// dark this ticket, per the brief's own non-goals). A page-pin card reads
+// its title/excerpt LIVE off the referenced entry (never captured, so it
+// can never go stale) via `itemTitle`/`itemExcerpt` above; a plain text
+// card reads its own `box.text` the same way.
+function boardCardItem(box: Box, currentEntryId: string): SurveyItem {
+  if (box.kind === 'page-pin') {
+    const entry = box.entryId ? getJournalEntry(box.entryId) : null;
+    if (!entry) return { id: box.id, title: 'Missing page' };
+    return { id: box.id, title: itemTitle(entry), excerpt: itemExcerpt(entry), current: entry.id === currentEntryId };
+  }
+  if (box.kind === 'ink') return { id: box.id, title: 'A sketch' };
+  const text = (box.text ?? '').trim();
+  if (!text) return { id: box.id, title: 'Untitled' };
+  const lines = text.split('\n').filter((l) => l.trim());
+  return { id: box.id, title: lines[0].slice(0, 60), excerpt: lines.slice(1, 3).join(' ').slice(0, 140) || undefined };
+}
+
 // The survey (layer 3)'s title + items + travel handler + per-item menu,
 // recomputed fresh every render from `kind` alone (see this file's own
 // header comment on why — no snapshot staleness after a delete).
@@ -331,15 +360,47 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     const items: SurveyItem[] = pages.map((e) => ({ id: e.id, title: itemTitle(e), excerpt: itemExcerpt(e), current: e.id === currentEntryId }));
     return { title: kind.drawerName, items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeFor(e)); } };
   }
-  // 'plan' — the board list (S3's own literal wording; see PlanPanel's own
-  // comment + this ticket's build report for why a single board's own
-  // card-reorder survey is NOT built this ticket).
-  const boards = getBinderPages(kind.projectId).filter((p) => p.pageType === 'board').sort(byRecent);
-  const items: SurveyItem[] = boards.map((e) => ({ id: e.id, title: boardTitle(e) }));
+  if (kind.category === 'plan') {
+    // The board list (S3's own literal wording). AB4 S1 — the CD2 erratum
+    // comes true: picking a board no longer travels away, it swaps this
+    // SAME survey column to that board's own cards (one layer deeper) —
+    // see the 'plan-board' branch below. The board itself stays reachable
+    // one click further in (a non-pin card there opens it).
+    const boards = getBinderPages(kind.projectId).filter((p) => p.pageType === 'board').sort(byRecent);
+    const items: SurveyItem[] = boards.map((e) => ({ id: e.id, title: boardTitle(e) }));
+    return {
+      title: deskTerm('stripPlan'),
+      items,
+      onTravel: (id) => {
+        const b = boards.find((x) => x.id === id);
+        if (b) ctx.openSurvey({ category: 'plan-board', projectId: kind.projectId, boardId: id, boardTitle: boardTitle(b) });
+      },
+      renderMenu: (item) => <BoardRowMenu id={item.id} />,
+    };
+  }
+  // 'plan-board' — one board's own cards (S1: "large thumbnails — title
+  // plus a two-line excerpt... with a quiet back affordance to the board
+  // list"). Connections are hairlines, not cards — filtered out here, the
+  // same discipline BoardEditor.tsx applies when it separates them from the
+  // positioned-card render loop. A page-pin card travels to its own page; a
+  // plain text/ink card travels to the board itself (nothing else to open),
+  // so the board stays reachable from the survey exactly as the old
+  // board-list click used to be, just one layer further in.
+  const boxes = (getJournalEntry(kind.boardId)?.boxes ?? []).filter((b) => b.kind !== 'connection');
+  const cardItems: SurveyItem[] = boxes.map((b) => boardCardItem(b, currentEntryId));
   return {
-    title: deskTerm('stripPlan'),
-    items,
-    onTravel: (id) => ctx.navigate(`/page/${id}`),
-    renderMenu: (item) => <BoardRowMenu id={item.id} />,
+    title: kind.boardTitle,
+    items: cardItems,
+    onTravel: (id) => {
+      const box = boxes.find((b) => b.id === id);
+      if (!box) return;
+      if (box.kind === 'page-pin' && box.entryId) {
+        const entry = getJournalEntry(box.entryId);
+        if (entry) ctx.navigate(routeFor(entry));
+        return;
+      }
+      ctx.navigate(`/page/${kind.boardId}`);
+    },
+    onBack: () => ctx.openSurvey({ category: 'plan', projectId: kind.projectId }),
   };
 }

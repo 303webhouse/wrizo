@@ -235,9 +235,32 @@ export interface JournalEntry {
 // `groupId` links a locked text+ink pair minted by a port — Ungroup frees
 // them. Provenance (`sourceEntryId`/`portedAt`) records where a box came
 // from; the Journal original it was copied from is never touched.
+//
+// AB4 S2 — 'page-pin': a MEMBERSHIP card, not a copy. Carries `entryId`
+// (the referenced JournalEntry) and nothing else content-wise — its title/
+// excerpt are always read live from the referenced entry at render time
+// (BoardEditor's `BoardPinBox`), never captured, so the card can never go
+// stale and the source page is never touched by pin/unpin. x/y/w/h/z behave
+// exactly like a text/ink box (draggable, corner-resizable).
+//
+// AB4 S3 — 'connection': a hairline between two OTHER boxes, stored as a
+// plain element of this SAME array rather than a new top-level field or a
+// restructured `boxes` shape (see BoardEditor.tsx's own header comment for
+// the zero-schema reasoning: a sibling field on JournalEntry would need a
+// real new `alter table` column in this codebase's per-field-jsonb-column
+// architecture, disqualifying it; wrapping `boxes` itself into
+// `{items,connections}` would touch every existing box-reading call site
+// AND the sync layer's column list — this is the lowest-blast-radius
+// zero-schema shape). `connA`/`connB` are the two endpoint box ids;
+// x/y/w/h/z are unused (always 0) — a connection's on-screen position is
+// ALWAYS derived live from its endpoints' current rects, never stored, so
+// moving/resizing a card drags its hairlines with it for free. Filtered out
+// of every position-based board computation (maxBottom, the pointer/box
+// hit-test, the text-reflow measure effect) by kind, the same discipline
+// that already separates 'text' from 'ink' handling below.
 export interface Box {
   id: string;
-  kind: 'text' | 'ink';
+  kind: 'text' | 'ink' | 'page-pin' | 'connection';
   x: number;
   y: number;
   w: number;
@@ -248,6 +271,9 @@ export interface Box {
   strokes?: Stroke[];  // kind 'ink' (incl. erases) — re-normalized to the box on port
   sourceEntryId?: string;
   portedAt?: string;
+  entryId?: string;    // kind 'page-pin' — the referenced JournalEntry's id
+  connA?: string;      // kind 'connection' — the first endpoint box id
+  connB?: string;      // kind 'connection' — the second endpoint box id
 }
 
 // S1 — the Screenplay Room's document (fragments-under-Pages citizen #2, ruled

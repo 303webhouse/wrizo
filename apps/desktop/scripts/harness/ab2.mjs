@@ -473,10 +473,12 @@ await withHarness(async (app) => {
     journalLegacy.deskFrameGone && journalLegacy.legacyTabs, JSON.stringify(journalLegacy));
 
   // === ab2.1 F2 — the fourth framed surface: Board. AB2 never wired a
-  // Board fixture (it doesn't get rail content or a mode strip), but F2
-  // asks the geometry-sanity sweep to cover every framed writing surface,
-  // not just the ones that broke. Fixture pattern matches ab1.mjs's own
-  // board seed. ================================================================
+  // Board fixture (at AB2's own time it got no rail content or a mode
+  // strip — AB4's own S5 later wires the cascade/sliver in; this section's
+  // canvas-width claim is unaffected either way), but F2 asks the
+  // geometry-sanity sweep to cover every framed writing surface, not just
+  // the ones that broke. Fixture pattern matches ab1.mjs's own board seed.
+  // ================================================================
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();

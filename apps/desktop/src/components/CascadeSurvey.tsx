@@ -40,14 +40,25 @@ export interface SurveyProps {
   // report) — the prop exists so a future ticket can wire it without
   // reshaping this component.
   onReorder?: (fromId: string, toId: string) => void;
+  // AB4 S1 — the CD2 erratum comes true: picking a board in the Plan survey
+  // swaps this SAME column to that board's cards, one layer deeper. `onBack`
+  // (present only on that nested view) renders a quiet affordance back to
+  // the board list — distinct from `onDismiss` (which closes/docks the
+  // whole survey), since this walks back one step within it instead.
+  onBack?: () => void;
 }
 
-export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, renderMenu }: SurveyProps) {
+export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, renderMenu, onBack }: SurveyProps) {
   const { t } = useDeskLexicon();
   return (
     <div className="wz-cascade-survey" data-open="true" data-docked={docked ? 'true' : 'false'}>
       <div className="wz-cascade-survey-head">
-        <span className="wz-cascade-survey-title">{title}</span>
+        <span className="wz-cascade-survey-head-lead">
+          {onBack && (
+            <button type="button" className="wz-cascade-dock-btn wz-cascade-survey-back" aria-label={t('cascadeSurveyBack')} title={t('cascadeSurveyBack')} onClick={onBack}>‹</button>
+          )}
+          <span className="wz-cascade-survey-title">{title}</span>
+        </span>
         {docked && (
           <button type="button" className="wz-cascade-dock-btn" aria-label="Close" onClick={onDismiss}>×</button>
         )}
@@ -71,6 +82,13 @@ function SurveyThumb({ item, onTravel, renderMenu }: { item: SurveyItem; onTrave
         onClick={() => onTravel(item.id)} aria-current={item.current ? 'true' : undefined}>
         {item.title}
       </button>
+      {/* S4's own reserved half: a card's image where a card IS an image,
+          instead of the title+excerpt read. AB4 (the Wall) lights the
+          rendering path here; it does not itself generate new card images
+          (out of scope per the brief's own non-goals — "card images beyond
+          what boxes already carry"), so `item.image` stays unset today and
+          this branch is exercised by a future ticket without a rewrite. */}
+      {item.image && <img className="wz-cascade-thumb-image" src={item.image} alt="" />}
       {item.excerpt && <div className="wz-cascade-thumb-excerpt">{item.excerpt}</div>}
       {item.current && <div className="wz-cascade-thumb-row"><span style={{ fontSize: 10, letterSpacing: 1, color: 'var(--accent-rest)' }}>{t('cascadeSurveyCurrent')}</span></div>}
       {renderMenu && (

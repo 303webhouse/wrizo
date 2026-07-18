@@ -331,4 +331,50 @@ CC-facing seeds (nothing armed until briefs land):
 > `cd2-cascade` off `main` (after FX3 merged, per the standing ONE
 > CHECKOUT PER AGENT rule). Zero schema, zero new deps.
 
-— Fable, for the committees, 2026-07-15, 2026-07-16, and 2026-07-17
+## Ratification record — 2026-07-18 (the Tutor committee pass)
+
+> **Ratification record (Nick's word, 2026-07-18, the Tutor committee
+> pass — `docs/wrizo-alpha/tutor-committee-pass.md`).** **A12–A15
+> RATIFIED.** **A12 (the two-sides law):** the cascade serves the
+> writer's KNOWN needs (organized, named, striated — a drawer opened
+> because you know what's in it); the Tutor serves the UNKNOWN (the
+> block, the doubt, the question without a shape); the paper sits
+> between them. **A13 (the ghostwriter rail, constitutional):** the
+> Tutor speaks ABOUT the writing, never AS it — it may point, name, and
+> question, never phrase; reference (a list of period-accurate names, a
+> baby-name book on the desk) is lawful, composition (a description, a
+> line of dialogue, a sentence for the work, regardless of how small)
+> never is; no Tutor output enters a writing surface by any affordance
+> — no insert, no apply, no copy-into-page. **A14 (the room never
+> knocks):** the Tutor may WRITE but never CALL — nudges are letters
+> waiting in its own room, found on approach; no badges, toasts,
+> counts, presence dots, or interruptions, ever, no exceptions. **A15:**
+> the Tutor inherits the vanishing law with the dock rider (A8's own
+> rider, above) — transient by default, dissolving on the first
+> keystroke; dockable by the writer's deliberate word for working
+> through a block; Escape/close share the cascade's own survey grammar.
+> **The composition line, drawn as A13 states it above, is made LAW —
+> with Nick's own revisit note carried verbatim: "if it's overly
+> restrictive later, we can always revisit."** **Sequencing ratified:**
+> the Wall (AB4) first — zero-schema, completes the cascade's own
+> promise, shorter — then TU1 with undivided attention on the schema
+> and the rail; per-page Tutor threads in v1 (a project-level room is a
+> later ticket). TU1 itself is the arc's SECOND schema addition (after
+> `origin`) and carries **NO merge pre-authorization** — Nick's
+> explicit go is required before it merges, the corrected zero-schema-
+> vs-schema rule's first scheduled real use.
+>
+> **AB4 (the Wall) build brief:** `docs/wrizo-alpha/ab4-wall-brief.md`,
+> S0–S6, built on `ab4-wall` off `main` (after FX3+CD2+cd2.1 deployed,
+> per the standing ONE CHECKOUT PER AGENT rule). Zero schema, zero new
+> deps — everything rides the existing `boxes` jsonb; discharges CD2's
+> own Wall-fold ruling (T2, above) and Ruling 2's carries. **S1 erratum
+> closure:** the CD2 ratification record's own T2 line ("the survey
+> layer is how boards/walls are browsed") becomes literally true here —
+> picking a board in the Plan survey now swaps the column to that
+> board's own cards (large thumbnails, a quiet back affordance to the
+> board list), not a direct travel-away; the erratum this closes is
+> recorded in the ledger (`docs/open-threads.md`, item 31) alongside
+> this ticket's own build report.
+
+— Fable, for the committees, 2026-07-15, 2026-07-16, 2026-07-17, and 2026-07-18
