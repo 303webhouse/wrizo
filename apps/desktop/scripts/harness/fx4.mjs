@@ -383,8 +383,15 @@ await withHarness(async (app) => {
   ok('S4: the board canvas itself resizes on BOTH axes via the quiet bottom-right drag handle',
     canvasWidthAfter > canvasWidthBefore, JSON.stringify({ canvasWidthBefore, canvasWidthAfter, canvasHeightAfter }));
   const metaAfterDrag = (await app.evalJs('window.wrizoBoard()')).find((b) => b.kind === 'board-meta');
+  // Verify review fix: the original condition here was `(A && B) || A`,
+  // which simplifies to just `A` — the intended canvasW-matches-the-
+  // rendered-width comparison (B) was structurally unreachable regardless
+  // of its own truth. Fixed to an actual tolerance check (matching this
+  // file's own `<= 1`px convention used elsewhere for rendered-width
+  // comparisons) so this check can genuinely fail if the persisted value
+  // ever drifts from what's on screen.
   ok('S4: the canvas resize persists as a single \'board-meta\' element in the SAME boxes array (the \'connection\'-kind precedent)',
-    !!metaAfterDrag && metaAfterDrag.canvasW === Math.round(canvasWidthAfter * 100) / 100 || !!metaAfterDrag, JSON.stringify(metaAfterDrag));
+    !!metaAfterDrag && Math.abs(metaAfterDrag.canvasW - canvasWidthAfter) <= 1, JSON.stringify(metaAfterDrag));
   const cardCountAfterDrag = await app.evalJs("document.querySelectorAll('.board-box').length");
   ok('S4: the board-meta element never renders as a positioned card (filtered out of the render loop, same discipline \'connection\' already gets)',
     cardCountAfterDrag === 2, String(cardCountAfterDrag));
