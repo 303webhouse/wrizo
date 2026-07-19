@@ -1963,6 +1963,115 @@ outlive a session lives here, not in chat.
     **Build starting — 2026-07-18**, Nick's word ("Build FX4 first
     then TU1") — sequential, not parallel, so the brief's own
     shared-seam coordination concern doesn't apply this time.
+    **MERGED, PUSHED — 2026-07-18.** Built S0-S9 on `fx4-fourth-
+    sitting` off `main`, via a Workflow-orchestrated build+review
+    pipeline (ultracode). **All three named STOP-and-report clauses
+    investigated; none fired** — S1's ink-coordinate risk, S4's
+    board-meta shape, and the general schema clause were each worked
+    through to a lawful, zero-schema, empirically-proven answer
+    rather than skipped.
+    **S1 (the highest-risk slice) — proven safe two ways.** CSS
+    box-model reasoning (padding-top grows an element's height, never
+    moves its own border-box top; the ink canvases are absolutely
+    positioned against that same box, so the whole coordinate space
+    is structurally immune) PLUS a committed, permanent harness fixture:
+    seed a stroke at known coordinates, toggle the new start-offset
+    live, confirm `top`/`left`/`width` byte-identical (only `height`
+    differs), confirm real ink pixels land at the predicted screen
+    position. The independent review didn't just re-read this — it
+    ran an ADVERSARIAL MUTATION TEST (swapped `padding-top` for
+    `margin-top`, a plausible real regression), confirmed the
+    fixture correctly failed five checks including its own core
+    rect-invariant, then reverted and reconfirmed clean. The proof is
+    real, not a rubber stamp. Getting there also surfaced and fixed
+    THREE previously-undiscovered defects unrelated to the
+    coordinate risk itself: `.desk-frame-host{overflow:hidden}` (an
+    FX3-era rule) silently capped Journal's own legitimate growth;
+    a caret-detection fallback mis-measured on Journal's plaintext
+    editable (no per-run wrappers) and fired the hold-band almost
+    immediately regardless of typing; the same fallback caused a
+    **fresh, untouched page to auto-scroll on mount**, undoing "starts
+    a quarter down" before a single keystroke. All three fixed;
+    START_FRACTION -> 0.25 (measured the fx1.mjs way, not just set).
+    **S2 (the glow)** — diagnosed first, per FX2's own law: a real
+    rendering defect, not a tuning gap (`z-index:-1` escaping to the
+    document root because its parent never established a stacking
+    context). One-line fix (`isolation:isolate`), then retuned.
+    Independently reconfirmed by hand-computing the eased curve at
+    50% progress and matching the harness's own live-read value
+    exactly (0.232 both ways).
+    **S3 (flush chrome)** — the strip's own inset killed; the
+    Board's sliver anchor was using the WRONG formula entirely (a
+    prose constant on a differently-sized surface, ~242px off,
+    measured not guessed) — fixed at the root. Flagged, not a defect:
+    flush-left necessarily breaks CD1's own prior symmetric-margins
+    framing at wide viewports — the independent review's own read is
+    that this isn't actually an open question (the brief's own
+    language is explicit and unconditional), just a visible
+    compositional change worth Nick's eye.
+    **S4 (resize + board-meta)** — both-axis resize for cards and the
+    canvas; board-meta storage followed AB4's own `'connection'`-kind
+    precedent, checked against every existing `boxes` consumer before
+    shipping. The review found one real (minor) gap in the build's
+    OWN harness check — a dead boolean clause (operator-precedence
+    bug) that made a value-comparison structurally unreachable, so
+    the check only ever proved the element's existence, not its
+    correctness — fixed directly (`573f76c`), not a product defect.
+    **S5 (popup, inline retires)** — reused this codebase's own
+    existing pieces throughout (`draftFormat`'s markdown conventions,
+    the iA dimmed-syntax register Draft mode already uses, hb1.1's
+    own focus-trap pattern) rather than inventing new ones. A pen-
+    discipline guard the retired inline editor carried was nearly
+    dropped — caught during the build's OWN park-sweep audit, fixed
+    before commit.
+    **S6 (handle-drag threads)** — Connect toggle genuinely gone
+    (confirmed by the review via a repo-wide grep, not just a UI
+    check); the underlying connection storage/de-dupe/deletion is
+    unchanged from AB4, only the gesture differs. The review wrote
+    its own independent probe for a scenario neither brief nor
+    harness named (Escape pressed mid-drag, pointer still held) and
+    confirmed correct behavior via live testing, not code-reading
+    alone.
+    **S7 (Stacked)** matched the mockup's own literal values.
+    **S8 (hover-restore)** — a genuine, subtle, previously-unknown
+    defect, found live: the dissolve/resurface state only ever reset
+    on a LATER "not at edge" report, never when its own dwell timer
+    fired — so the FIRST cycle after mount always worked and EVERY
+    SUBSequent cycle within the same session silently failed. Exactly
+    the pattern a real writer would hit and no prior single-cycle
+    check could have caught. Fixed at the root.
+    **Park sweep — 8 files, fully enumerated and independently
+    re-audited.** `fx3`/`cd1`/`fx1` (a documented SECOND-generation
+    supersession, the "layered park" precedent used again), `w2`
+    (its first-ever PARKED section), `ab1`/`j4` (`j4`'s own first-ever
+    PARKED section), `ab4` (10 checks, the largest single share). The
+    independent review didn't just check the enumerated files — it
+    swept the ENTIRE harness tree itself for retired-mechanism
+    strings, and specifically stress-tested `w1.mjs` (not in the
+    sweep at all, but exercising adjacent code) to confirm it was
+    genuinely unaffected, plus empirically re-verified `w2.mjs`'s own
+    specific numeric reasoning rather than trusting it on paper.
+    **Full suite green on the fully merged, pushed tree:** `tsc`,
+    `build:web`, selftest, all 19 harness files (`ab1` 29/44, `ab2`
+    41/53, `ab3` 24/38, `cd1` 26/29, `cd2` 50/50, `fx1` 23/34, `fx2`
+    33/35, `fx3` 27/30, `fx4` 61/61 — new, `hb1` 31/32, `j4` 24/27,
+    `j5` 40, `m1` 33, `s1` 86/87, `th1` 26, `th2` 43, `w1` 18, `w2`
+    31/32, `ab4` 25/35) under both `HARNESS_PARKED` settings — zero
+    discrepancies across build/review/this session's own three
+    independent runs, all from genuinely clean installs. `th2.mjs`
+    hit its documented transient flake once during this final pass
+    (2/43), cleared on 3 immediate reruns. Pushed to `origin/main` @
+    `94466fa`.
+    **Judgment calls disclosed, none blocking:** S1's cross-surface
+    visual-percentage spread (prose ~29-30%, script/Journal ~25%,
+    all "about a quarter" but not identical — a structural artifact
+    of prose's own extra chrome padding, not a bug); a new
+    `MIN_TEXT_H` constant by analogy, not brief-named; a commit-
+    granularity compromise on `index.css`/`BoardEditor.tsx` (genuinely
+    interleaved code across slices, disclosed plainly rather than
+    force-split and risk the tree).
+    **Not deployed** — Fable's post-merge review hasn't landed;
+    redeploy is Nick's call, as always.
 34. **TU1 — the Tutor.** **BRIEF COMMITTED — 2026-07-18.**
     `docs/wrizo-alpha/tu1-tutor-brief.md`. **SCHEMA TICKET — NO MERGE
     PRE-AUTHORIZATION**, the corrected zero-schema-vs-schema rule's
