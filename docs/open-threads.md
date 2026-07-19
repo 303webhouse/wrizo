@@ -2105,6 +2105,17 @@ outlive a session lives here, not in chat.
     proceeds on its own branch in parallel** — Fable reviews there
     when its build reports; merge needs Nick's explicit go
     regardless of this item's own status.
+    **Close condition 2 met — Deployed 2026-07-18**, Nick's word
+    ("Yeah, deploy") — confirmed TU1's own concurrent build doesn't
+    affect this: it's a schema ticket with no merge pre-authorization,
+    building on its own separate, unmerged branch, so `main`'s own
+    state (independently re-enumerated: `d1a6696..HEAD` = FX4 + docs
+    only, matching the review's own manifest exactly) was untouched
+    by it. `railway up` on `main` @ `1dc0003` (deployment `0e1fc3b7`,
+    SUCCESS), confirmed live: `200` on `/healthz` and `/`, `401` on
+    `/auth/me`. **Close condition 3 (Nick's own FX4 DoD script + the
+    A1 wide-desk glance) remains open** — item 33 doesn't close until
+    it's spent.
 34. **TU1 — the Tutor.** **BRIEF COMMITTED — 2026-07-18.**
     `docs/wrizo-alpha/tu1-tutor-brief.md`. **SCHEMA TICKET — NO MERGE
     PRE-AUTHORIZATION**, the corrected zero-schema-vs-schema rule's
