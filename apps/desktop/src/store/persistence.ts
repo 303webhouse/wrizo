@@ -684,6 +684,18 @@ const BOARD_GROUP_GAP = 0.05;  // between a locked group's text box and its ink 
 const BOARD_STACK_GAP = 0.08;  // between successive ported pages
 const BOARD_LINE_H = 0.045;    // one text line's height, normalized to page width
 const BOARD_CHARS_PER_LINE = 70; // rough wrap estimate at BOARD_TEXT_W; Slice 3 corrects live
+// FX5 S3 (b/c) — the "content-minimum trap" fix's OTHER half (see
+// BoardEditor.tsx's own header comment on BoardTextBox for the full
+// diagnosis): the reflow-as-minimum effect only ever GROWS a card's height,
+// never shrinks it, so clamping the DISPLAY to a short excerpt alone
+// doesn't help a card that already mounted with an absurd height (measured
+// live at h=6.19 — over six page-widths tall — for a 60-line source page).
+// A ported card's INITIAL height is capped here at port time, comfortably
+// above what a title + badge + ~3-line excerpt actually needs (a small,
+// deliberate safety margin — if the real rendered excerpt needs a hair
+// more, the EXISTING reflow-as-minimum effect grows it the rest of the
+// way, same as any other card; it never needs to shrink FROM this cap).
+const MAX_PORTED_TEXT_H = 0.18;
 
 function estimateTextBoxHeight(text: string): number {
   const lines = text.split('\n').reduce((n, para) => n + Math.max(1, Math.ceil(para.length / BOARD_CHARS_PER_LINE)), 0);
@@ -767,7 +779,11 @@ function buildPortedBoxes(sourceIds: string[], includeInk: boolean, startY: numb
     if (!hasText && !hasInk) continue;
     const groupId = hasText && hasInk ? generateId() : undefined;
     if (hasText) {
-      const h = estimateTextBoxHeight(source.text);
+      // FX5 S3 — capped at MAX_PORTED_TEXT_H (see that constant's own
+      // comment): a ported card's face now shows a bounded excerpt, not
+      // the full source text, so its height should read as a notecard
+      // from the very first paint, not the OLD full-content estimate.
+      const h = Math.min(estimateTextBoxHeight(source.text), MAX_PORTED_TEXT_H);
       boxes.push({ id: generateId(), kind: 'text', x: 0.05, y, w: BOARD_TEXT_W, h, z: z++, groupId, text: source.text, sourceEntryId: source.id, portedAt: now });
       y += h + BOARD_GROUP_GAP;
     }

@@ -80,6 +80,10 @@ export type SliverContent =
   | {
       kind: 'board';
       onAddCard: () => void;
+      // FX5 S5 — the connections-footer's own per-board visibility toggle,
+      // the sliver's SECOND board control ("Add card + this, two controls"
+      // — the brief's own words).
+      footer: { on: boolean; onToggle: (on: boolean) => void };
     };
 
 export interface SliverProps {
@@ -270,6 +274,13 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddCard}>
             {t('boardAddCard')}
           </button>
+          {/* FX5 S5 — the footer toggle, the sliver's second board control. */}
+          <SliverToggle
+            label={t('boardFooterToggle')}
+            on={content.footer.on}
+            onToggle={() => content.footer.onToggle(!content.footer.on)}
+            className="wz-sliver-board-footer"
+          />
         </div>
       )}
     </div>

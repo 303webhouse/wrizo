@@ -67,30 +67,52 @@ export function getSelectionOffsets(el: HTMLElement): { start: number; end: numb
   return { start, end };
 }
 
-// Place the caret at a linear offset within `el`, clamping to the end if the
-// target exceeds the current content (e.g. the page changed elsewhere since
-// the offset was captured — never throw, just land somewhere reasonable).
-export function setCaretOffset(el: HTMLElement, target: number): void {
+// FX5 S7 — extracted from setCaretOffset's own walker below (byte-identical
+// logic, just returning the (node, localOffset) pair instead of committing
+// a selection) so a second caller (store/emDash.ts's own range-based
+// substitution) can resolve a linear offset to a live DOM position without
+// duplicating this TreeWalker — reused, not re-derived.
+function resolveOffset(el: HTMLElement, target: number): { node: Text; offset: number } | null {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   let offset = 0;
-  let node: Text | null = null;
-  let localOffset = 0;
   let n: Node | null;
   while ((n = walker.nextNode())) {
     const text = n as Text;
     const len = text.data.length;
-    if (offset + len >= target) { node = text; localOffset = target - offset; break; }
+    if (offset + len >= target) return { node: text, offset: target - offset };
     offset += len;
   }
+  return null;
+}
+
+/** Build a live DOM Range spanning plain-text offsets [start, end) within
+ * `el` (the SAME linear-offset contract getCaretOffset/setCaretOffset use),
+ * or null if either boundary can't be resolved (e.g. el has no text nodes
+ * at all). Exported for store/emDash.ts's own programmatic substitution. */
+export function rangeFromPlainOffsets(el: HTMLElement, start: number, end: number): Range | null {
+  const s = resolveOffset(el, start);
+  const e = resolveOffset(el, end);
+  if (!s || !e) return null;
+  const range = document.createRange();
+  range.setStart(s.node, Math.max(0, Math.min(s.offset, s.node.data.length)));
+  range.setEnd(e.node, Math.max(0, Math.min(e.offset, e.node.data.length)));
+  return range;
+}
+
+// Place the caret at a linear offset within `el`, clamping to the end if the
+// target exceeds the current content (e.g. the page changed elsewhere since
+// the offset was captured — never throw, just land somewhere reasonable).
+export function setCaretOffset(el: HTMLElement, target: number): void {
+  const resolved = resolveOffset(el, target);
   const sel = window.getSelection();
   if (!sel) return;
   const range = document.createRange();
-  if (node) {
-    range.setStart(node, Math.max(0, Math.min(localOffset, node.data.length)));
+  if (resolved) {
+    range.setStart(resolved.node, Math.max(0, Math.min(resolved.offset, resolved.node.data.length)));
   } else {
     range.selectNodeContents(el); // target beyond content (or el is empty) — end is the fallback
   }
-  range.collapse(node ? true : false);
+  range.collapse(!!resolved);
   sel.removeAllRanges();
   sel.addRange(range);
   el.focus();

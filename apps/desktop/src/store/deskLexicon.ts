@@ -97,6 +97,19 @@ export type DeskTermId =
   // pass/fail history worth preserving, unlike ab4.mjs's own harness
   // checks (see fx4.mjs's PARKED section for those).
   | 'railBoard' | 'boardAddCard'
+  // FX5 S3 — a ported page's card face shows a bounded notecard excerpt now
+  // (the content-minimum trap's own fix — see BoardEditor.tsx's header
+  // comment), not the full raw text; a quiet badge names what it is, and a
+  // selected one gets an explicit way to reach its own full-text editor
+  // (double-click travels to the source instead, matching page-pin).
+  | 'boardPortedBadge' | 'boardEditCopy'
+  // FX5 S4 — the quiet layer-order icon (existing z field; front/back),
+  // appearing only on a selected card that's genuinely overlapping another.
+  | 'boardLayerBringFront' | 'boardLayerSendBack'
+  // FX5 S5 — the olive pin (the connection grab, replacing the dead
+  // handle-double-click gesture whole) + the footer line/toggle threads
+  // render as.
+  | 'boardThreadGrab' | 'boardThreadPrefix' | 'boardThreadUntitled' | 'boardFooterToggle'
   // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
   // mirror on the paper's right edge. One seam, all of the Tutor's static
   // chrome — the lenses' own DYNAMIC observation text (Consistency's
@@ -194,6 +207,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeSurveyBack: 'Back',
   railBoard: 'Board',
   boardAddCard: 'Add card',
+  boardPortedBadge: 'From a page',
+  boardEditCopy: 'Edit copy',
+  boardLayerBringFront: 'Bring to front',
+  boardLayerSendBack: 'Send to back',
+  boardThreadGrab: 'Drag to connect',
+  boardThreadPrefix: 'thread',
+  boardThreadUntitled: 'Untitled',
+  boardFooterToggle: 'Show connections',
   tutorOpen: 'Open the Tutor',
   tutorClose: 'Close the Tutor',
   tutorTitle: 'The Tutor',

@@ -301,6 +301,14 @@ export interface Box {
   connB?: string;      // kind 'connection' — the second endpoint box id
   canvasW?: number;    // kind 'board-meta' — the canvas's own persisted width, CSS px (NOT normalized)
   canvasH?: number;    // kind 'board-meta' — the canvas's own persisted height, CSS px (NOT normalized)
+  // FX5 S5 — the connections-footer's own per-board visibility toggle,
+  // riding 'board-meta' the SAME way canvasW/canvasH do (the established
+  // precedent, one more time): undefined/missing means "on" (every board's
+  // default, including one that predates this field entirely) — only an
+  // explicit `false` hides the footer line. Not normalized (it's a flag,
+  // not a coordinate); costs nothing extra anywhere board-meta was already
+  // filtered out of position-based computations.
+  footerOn?: boolean;
 }
 
 // TU1 S1 — the Tutor's per-page conversation thread (fragments-under-Pages

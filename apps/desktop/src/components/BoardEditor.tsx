@@ -8,10 +8,12 @@ import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
 import { applyFormat, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
+import { applyEmDash, findEmDashTrigger, revertEmDash } from '../store/emDash';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
 import { describePageHome } from '../store/pageHome';
 import { useCascade } from './Cascade';
 import { AddToSheet } from './AddToSheet';
@@ -85,6 +87,17 @@ function maxBottom(boxes: Box[]): number {
   return boxes.reduce((m, b) => Math.max(m, b.y + b.h), 0);
 }
 
+// FX5 S4 (b/c) — plain axis-aligned rectangle overlap, in the SAME
+// normalized (page-width-fraction) coordinates every box's own x/y/w/h
+// already use. "OVERLAP IS PERMITTED" (S4's own words) was already true of
+// the move/drag logic itself (no collision-avoidance code exists anywhere
+// in this file — confirmed by reading it, not assumed); this helper is new
+// only for S4 (c)'s own layer-order icon, which needs to know WHEN two
+// cards genuinely overlap to decide whether to appear at all.
+function boxesOverlap(a: Box, b: Box): boolean {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
 // -- ink box: paints via the shared renderStroke, box-local (already
 // re-normalized at port time so sheetW = the box's own pixel width). -------
 function BoardInkBox({ box, pageWidthPx }: { box: Box; pageWidthPx: number }) {
@@ -108,6 +121,19 @@ function BoardInkBox({ box, pageWidthPx }: { box: Box; pageWidthPx: number }) {
   return <canvas ref={ref} aria-hidden="true" className="board-ink-canvas" style={{ width: '100%', height: '100%', display: 'block' }} />;
 }
 
+// FX5 S3 (b) — shared with BoardPinBox below AND BoardTextBox's own ported-
+// card face: a bounded notecard read (title + up to 3 lines, ~160 chars) of
+// a longer text — "the Board organizes ideas, it doesn't read pages" (Nick's
+// words), never a truncation of what's actually STORED, only of what's
+// DISPLAYED on the card's own quiet face.
+function notecardExcerpt(text: string): { title: string; excerpt: string } {
+  const trimmed = text.trim();
+  const lines = trimmed.split('\n').filter(l => l.trim());
+  const title = lines[0] ? lines[0].slice(0, 100) : '';
+  const excerpt = lines.slice(1, 4).join(' ').slice(0, 160);
+  return { title, excerpt };
+}
+
 // AB4 S2 — a page-pin card: MEMBERSHIP, not capture. Reads the referenced
 // entry LIVE at every render (getJournalEntry, the same "no cached
 // snapshot" discipline the cascade's own panels use) — so it can never go
@@ -119,10 +145,8 @@ function BoardPinBox({ box }: { box: Box }) {
     return <div className="board-text board-pin board-pin-missing">Missing page</div>;
   }
   const hasInk = (entry.strokes?.length ?? 0) > 0;
-  const trimmed = entry.text.trim();
-  const title = trimmed ? trimmed.split('\n')[0].slice(0, 100) : (hasInk ? 'A sketch' : 'Untitled');
-  const lines = trimmed.split('\n').filter(l => l.trim());
-  const excerpt = lines.slice(1, 4).join(' ').slice(0, 160);
+  const { title: rawTitle, excerpt } = notecardExcerpt(entry.text);
+  const title = rawTitle || (hasInk ? 'A sketch' : 'Untitled');
   return (
     <div className="board-text board-pin">
       <div className="board-pin-badge">{lex('board')} pin</div>
@@ -137,13 +161,48 @@ function BoardPinBox({ box }: { box: Box }) {
 // fx4.mjs). Double-clicking a text card opens BoardCardPopup below instead
 // (over a blurred board) — this component no longer has an "editing"
 // branch or mode at all.
+//
+// FX5 S3 (b/c) — a genuine, diagnosed defect (found live via a seeded-box
+// harness probe, not guessed): a PORTED page's box.text holds the FULL
+// source content (Port's own "COPY, never move" law — untouched, nothing
+// here ever truncates what's STORED), but rendering that full text verbatim
+// on the card's own FACE made two things true at once, both matching the
+// brief's own "content-minimum trap (full-text content inflating the
+// reflow floor)" and Nick's "the Board organizes ideas, it doesn't read
+// pages": (1) the initial estimated height (persistence.ts's
+// estimateTextBoxHeight, proportional to the WHOLE source page's own line
+// count) reached OVER SIX PAGE-WIDTHS TALL for a 60-line seed, measured
+// live; (2) the reflow-as-minimum floor (FX4 S4's own law: it only ever
+// GROWS, never shrinks) then permanently pins the card at whatever its own
+// rendered DOM content's natural scrollHeight demands — for full raw text,
+// that floor never comes down, so no amount of manual shrinking ever
+// sticks. A card carrying `sourceEntryId` (i.e. genuinely PORTED from a
+// page, not hand-typed via "Add card") now renders the SAME bounded
+// notecard excerpt BoardPinBox already uses instead of the raw text — the
+// reflow floor then measures against that SHORT excerpt's own natural
+// height, "the clamp probably frees it," proven (see fx5.mjs's own S3
+// section), not assumed. Hand-typed cards (no sourceEntryId) are
+// completely untouched — their own organic grow-as-you-type is FX4 S4's
+// intended, correct behavior, not a defect.
 function BoardTextBox({
-  boxId, initialText, measureRef,
+  boxId, initialText, measureRef, sourceEntryId,
 }: {
   boxId: string;
   initialText: string;
   measureRef: (id: string, el: HTMLDivElement | null) => void;
+  sourceEntryId?: string;
 }) {
+  const { t } = useDeskLexicon();
+  if (sourceEntryId) {
+    const { title, excerpt } = notecardExcerpt(initialText);
+    return (
+      <div ref={el => measureRef(boxId, el)} className="board-text board-ported">
+        <div className="board-pin-badge">{t('boardPortedBadge')}</div>
+        <div className="board-pin-title">{title || t('boardThreadUntitled')}</div>
+        {excerpt && <div className="board-pin-excerpt">{excerpt}</div>}
+      </div>
+    );
+  }
   return (
     <div
       ref={el => measureRef(boxId, el)}
@@ -184,7 +243,7 @@ function BoardCardPopup({
   useEffect(() => {
     const el = elRef.current;
     if (!el) return;
-    decorateEditorFor(el, initialText, initialText.length, setCaretOffset);
+    decorateEditorFor(el, initialText, initialText.length, setCaretOffset, text => decorateMarkdownForCard(text, initialText.length));
     el.focus();
 
     // I0 pen discipline (park-sweep audit finding — the retired inline
@@ -208,14 +267,64 @@ function BoardCardPopup({
     el.addEventListener('pointerup', neutralizePen, penOpts);
 
     let composing = false;
-    const redecorate = (plain: string, caret: number | null) => decorateEditorFor(el, plain, caret, setCaretOffset);
+    // FX5 S7 — the em-dash trigger flag + the applyEmDash reentrancy guard,
+    // the SAME pair ForwardOnlyEditor.tsx's own drafting branch uses (see
+    // that file's own comment for the full "why beforeinput, why the
+    // guard" reasoning — not repeated here).
+    let justTypedSpace = false;
+    let applyingEmDash = false;
+    // FX5 S7 — the one-step undo shim's own pending state, the SAME shape
+    // ForwardOnlyEditor.tsx's drafting branch uses (see store/emDash.ts's
+    // own header comment for why native undo — execCommand OR a real
+    // Ctrl/Cmd+Z — does not work here either: this popup's own redecorate
+    // rewrites the whole innerHTML on every input too).
+    let lastEmDash: { offset: number; hyphens: string } | null = null;
+    const redecorate = (plain: string, caret: number | null) =>
+      decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret));
     const commit = (plain: string) => { textRef.current = plain; onCommit(plain); };
 
     const onInput = () => {
+      if (applyingEmDash) return;
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
       commit(plain);
       if (composing) return;
+      const trigger = justTypedSpace ? findEmDashTrigger(plain, caret) : null;
+      justTypedSpace = false;
+      if (trigger) {
+        applyingEmDash = true;
+        const { applied, hyphens } = applyEmDash(el, trigger.start, trigger.end);
+        applyingEmDash = false;
+        if (applied) {
+          lastEmDash = { offset: trigger.start, hyphens };
+          const after = readEditorPlainText(el.innerText, getCaretOffset(el));
+          commit(after.plain);
+          // FX5 S7 — see ForwardOnlyEditor.tsx's own onInput comment: the
+          // post-execCommand DOM caret lands short of where the writer's
+          // own typing actually was (right after the em dash, before the
+          // untouched trailing space and anything typed past it) — the
+          // ORIGINAL caret shifted left by (hyphen count - 1) is always
+          // correct, computed directly rather than trusted from the DOM.
+          redecorate(after.plain, caret - (trigger.end - trigger.start) + 1);
+          return;
+        }
+      }
+      lastEmDash = null; // any OTHER edit invalidates a pending em-dash undo
       redecorate(plain, caret);
+    };
+    const onUndoKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z' || e.shiftKey) return;
+      if (!lastEmDash) return;
+      e.preventDefault();
+      const { offset, hyphens } = lastEmDash;
+      lastEmDash = null;
+      applyingEmDash = true;
+      const reverted = revertEmDash(el, offset, hyphens);
+      applyingEmDash = false;
+      if (reverted) {
+        const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+        commit(plain);
+        redecorate(plain, caret);
+      }
     };
     // AB2's own proven fix for the Chromium trailing-newline-at-EOF caret
     // quirk (draftDecoration.ts's own header comment) — a literal Text-node
@@ -237,6 +346,7 @@ function BoardCardPopup({
       range.collapse(true);
       sel.removeAllRanges();
       sel.addRange(range);
+      lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
       commit(plain);
       redecorate(plain, caret);
@@ -244,12 +354,17 @@ function BoardCardPopup({
     const onCompStart = () => { composing = true; };
     const onCompEnd = () => {
       composing = false;
+      lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
       commit(plain);
       redecorate(plain, caret);
     };
     const onBeforeInput = (e: InputEvent) => {
       const it = e.inputType || '';
+      // FX5 S7 — captured before the DOM mutates, same discipline as
+      // ForwardOnlyEditor.tsx's own onBeforeInputDraft: only a genuinely
+      // just-typed space arms the em-dash trigger check in onInput.
+      justTypedSpace = it === 'insertText' && e.data === ' ';
       if (it === 'insertFromPaste' || it === 'insertFromDrop') {
         if (shadowAllows(extractIncomingText(e))) return; // own ink: native paste proceeds
         e.preventDefault();
@@ -261,8 +376,25 @@ function BoardCardPopup({
       e.preventDefault();
       notePasteBlocked();
     };
+    // FX5 S6 — reveal-adjacent-to-caret only updates on a TEXT change today
+    // (every path above redecorates after committing new content). A pure
+    // caret move — an arrow key, or a click that repositions without
+    // typing — doesn't fire 'input' at all, so the reveal state would go
+    // stale (still showing the PREVIOUS run's markers, or hiding the one
+    // the caret just moved into). Re-running redecorate with the SAME text
+    // but a freshly-read caret is a no-op for content, just refreshes which
+    // markers are revealed.
+    const NAV_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
+    const onCaretMoveKey = (e: KeyboardEvent) => {
+      if (!NAV_KEYS.has(e.key)) return;
+      redecorate(textRef.current, getCaretOffset(el));
+    };
+    const onCaretMoveClick = () => { redecorate(textRef.current, getCaretOffset(el)); };
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('keydown', onUndoKey);
+    el.addEventListener('keyup', onCaretMoveKey);
+    el.addEventListener('mouseup', onCaretMoveClick);
     el.addEventListener('compositionstart', onCompStart);
     el.addEventListener('compositionend', onCompEnd);
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
@@ -274,6 +406,9 @@ function BoardCardPopup({
       el.removeEventListener('pointerup', neutralizePen, penOpts);
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('keydown', onUndoKey);
+      el.removeEventListener('keyup', onCaretMoveKey);
+      el.removeEventListener('mouseup', onCaretMoveClick);
       el.removeEventListener('compositionstart', onCompStart);
       el.removeEventListener('compositionend', onCompEnd);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
@@ -316,7 +451,7 @@ function BoardCardPopup({
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
     textRef.current = result.text;
     onCommit(result.text);
-    decorateEditorFor(el, result.text, result.start, setCaretOffset);
+    decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, result.start));
   };
 
   return (
@@ -361,6 +496,7 @@ type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup'; before: Box[
 
 export function BoardEditor({ id }: { id: string }) {
   const navigate = useNavigate();
+  const { t } = useDeskLexicon();
   const initialEntry = getJournalEntry(id);
   // AB1 S1 — DeskFrame owns the viewport at >=1100px only; below that this
   // renders its exact pre-AB1 markup. No mode strip on Board (Trellis-side
@@ -653,14 +789,22 @@ export function BoardEditor({ id }: { id: string }) {
   // precedent for a one-shot `navigate(..., { state })` signal, applied to
   // routing instead of a landing glow. Framed-only by construction (every
   // target surface's chip only renders in ITS OWN framed branch).
-  const travelToPin = (box: Box) => {
-    if (!box.entryId) return;
-    const target = getJournalEntry(box.entryId);
+  // FX5 S3 — generalized to any entryId (not just a page-pin's own
+  // `entryId` field): a PORTED text card's own `sourceEntryId` (provenance,
+  // AB4/FX4's existing field — "Provenance travels on every box") gets the
+  // SAME quiet travel affordance now, since the brief's own S3(b) asks for
+  // "a quiet 'open' affordance via the existing double-click travel" on a
+  // page-representing card's face — this is that mechanism, reused rather
+  // than reinvented, for the second box kind that also represents a page.
+  const travelToEntry = (entryId: string | undefined) => {
+    if (!entryId) return;
+    const target = getJournalEntry(entryId);
     if (!target) return;
     flushNow();
     const route = target.pageType != null ? `/page/${target.id}` : `/journal/${target.id}`;
     navigate(route, { state: { fromBoardId: id, fromBoardTitle: title } });
   };
+  const travelToPin = (box: Box) => travelToEntry(box.entryId);
 
   // -- delegated pointer handling: select / move / resize / thread-drag -----
   useEffect(() => {
@@ -759,15 +903,35 @@ export function BoardEditor({ id }: { id: string }) {
     const onDown = (e: PointerEvent) => {
       if (popupBoxIdRef.current) return; // the card popup is open — board gestures stand down
       const target = e.target as HTMLElement;
+      const pinEl = target.closest('.board-pin-grab') as HTMLElement | null;
+      const pinBoxEl = pinEl?.closest('.board-box') as HTMLElement | null;
+
+      // FX5 S5 — the olive pin is the connection grab now; the dead handle-
+      // double-click gesture (armThreadDrag on a .board-handle dblclick) is
+      // REMOVED whole, not repaired (Nick's own ruling — the DoD names the
+      // pin explicitly). Pointer-down ON the pin arms AND begins tracking
+      // in the SAME gesture — one continuous drag, no separate two-step
+      // arm-then-drag the old gesture needed (that two-step, double-click-
+      // dependent shape is very likely WHY it read as "dead": a real hand's
+      // double-click timing is far less reliable than a script's).
+      if (pinEl && pinBoxEl) {
+        e.preventDefault();
+        e.stopPropagation();
+        const boxId = pinBoxEl.dataset.boxId!;
+        armThreadDrag(boxId);
+        activePointerId = e.pointerId;
+        phase = 'threadDrag';
+        try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
+        updateThreadPreview(e.clientX, e.clientY);
+        return;
+      }
+
       const handleEl = target.closest('.board-handle') as HTMLElement | null;
       const boxEl = target.closest('.board-box') as HTMLElement | null;
 
-      // FX4 S6 — a thread-drag is armed (double-clicked handle): ANY
-      // pointer-down on the canvas begins tracking the live preview line,
-      // regardless of where it lands (the brief's own "drag and release
-      // anywhere inside a target card" — the drag doesn't have to start on
-      // the origin card itself). No select/move/resize happens underneath
-      // while armed.
+      // Retained for defense-in-depth (an already-armed thread from a prior
+      // gesture, e.g. re-pressing after Escape didn't fully clear a stale
+      // ref — the pin above is the only path that ARMS one now).
       if (threadArmedFromRef.current != null) {
         e.preventDefault();
         activePointerId = e.pointerId;
@@ -781,6 +945,7 @@ export function BoardEditor({ id }: { id: string }) {
         const boxId = boxEl.dataset.boxId!;
         if (boxId !== selectedIdRef.current) return; // handle only active on the selected box
         startX = e.clientX; startY = e.clientY; ptype = e.pointerType; activePointerId = e.pointerId;
+        try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
         beginResize(boxId);
         return;
       }
@@ -795,6 +960,28 @@ export function BoardEditor({ id }: { id: string }) {
       setSelectedConnectionId(null); // AB4 S3 — selecting a box clears any connection selection
       startX = e.clientX; startY = e.clientY; ptype = e.pointerType; activePointerId = e.pointerId;
       phase = 'pending';
+      // FX5 S4 (a) — the diagnosed drag-friction fix: capture the pointer
+      // HERE, on the very first pointerdown, not only once the drag
+      // threshold is crossed (the old code left `beginMove`/`beginResize`
+      // as the ONLY setPointerCapture callers — found live by reading the
+      // gesture state machine, not guessed). Between pointerdown and the
+      // 6px MOUSE_DRAG_THRESHOLD being crossed, an uncaptured pointer's
+      // move/up events route to whatever DOM element is actually under the
+      // cursor at that instant, not necessarily this canvas — a fast real
+      // drag can move far enough between two consecutive OS-delivered
+      // pointermove events that hit-testing lands outside `.board-canvas`
+      // (or over a DIFFERENT card, or past `.board-canvas-wrap`'s own
+      // scrollable edge) before capture ever engages, silently dropping
+      // the rest of the gesture — "cards can't easily be moved." A
+      // synthetic harness dispatch (element.dispatchEvent on the origin
+      // element for every step) can never reproduce this: it always
+      // targets the origin node directly, bypassing the very hit-testing
+      // capture exists to stabilize — this fix can only be PROVEN by
+      // asserting capture engages immediately (see fx5.mjs's own S4
+      // section), not by a synthetic full-gesture replay; real-hand
+      // reliability rests on Nick's own hand, disclosed here per this
+      // ticket's own standing discipline.
+      try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ }
       const box = boxesRef.current.find(b => b.id === boxId);
       const ids = box ? (box.groupId ? groupMembers(boxesRef.current, box.groupId).map(b => b.id) : [boxId]) : [boxId];
       if (ptype === 'touch' || ptype === 'pen') {
@@ -956,15 +1143,73 @@ export function BoardEditor({ id }: { id: string }) {
   const connections = boxes.filter(b => b.kind === 'connection');
   const sorted = visibleBoxes.slice().sort((a, b) => a.z - b.z);
 
+  // FX5 S4 (c) — the quiet layer icon: appears only on a SELECTED card that
+  // genuinely overlaps at least one sibling (boxesOverlap, module-level).
+  // A single toggle, the existing z field only (no new schema): if the
+  // selected card is already at/above the FRONT of its own overlap group,
+  // one click sends it BEHIND the whole group's back; otherwise one click
+  // brings it above the group's own front.
+  const overlapPeers = selectedBox ? visibleBoxes.filter(b => b.id !== selectedBox.id && boxesOverlap(selectedBox, b)) : [];
+  const isOverlapping = overlapPeers.length > 0;
+  const sendingToBack = isOverlapping && selectedBox!.z >= Math.max(...overlapPeers.map(p => p.z));
+  const toggleLayer = () => {
+    if (!selectedBox || overlapPeers.length === 0) return;
+    const peerZs = overlapPeers.map(p => p.z);
+    const nextZ = sendingToBack ? Math.min(...peerZs) - 1 : Math.max(...peerZs) + 1;
+    snapshot('move'); // a z-only change is still a positional edit, same undo bucket as move/resize
+    setBoxes(prev => prev.map(b => (b.id === selectedBox.id ? { ...b, z: nextZ } : b)));
+  };
+
+  // FX5 S3 — a selected, ported (sourceEntryId) text card gets an explicit
+  // "Edit copy" action row button — double-click on its face now travels to
+  // the source (below, matching page-pin's own affordance), so this is the
+  // one remaining way to reach the popup that still edits the board's own
+  // independent copy (Port's own "COPY, never move" law: the board's copy
+  // stays fully editable, just not via the same gesture as a hand-typed
+  // card anymore).
   const boardActionRow = selectedBox && (
     <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
+      {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
+        <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
+      )}
       <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
     </div>
   );
 
   const boxCx = (b: Box) => (b.x + b.w / 2) * pageWidthPx;
   const boxCy = (b: Box) => (b.y + b.h / 2) * pageWidthPx;
+
+  // FX5 S5 — the connections footer: "— thread: <card title/first words>"
+  // for every OTHER card a given box is connected to, plus a single per-
+  // board footer toggle (the board-meta 'footerOn' field — undefined/true
+  // means "on," matching every board that predates this field). boxLabel
+  // mirrors notecardExcerpt's own title logic (module scope, above) but
+  // reads whichever content source a box actually carries (its own text,
+  // or a page-pin/ported card's referenced entry).
+  const boardMeta = boxes.find(b => b.kind === 'board-meta');
+  const footerOn = boardMeta?.footerOn !== false;
+  const toggleFooter = (on: boolean) => {
+    setBoxes(prev => {
+      const existing = prev.find(b => b.kind === 'board-meta');
+      const meta: Box = existing
+        ? { ...existing, footerOn: on }
+        : { id: generateId(), kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, footerOn: on };
+      return existing ? prev.map(b => (b.id === existing.id ? meta : b)) : [...prev, meta];
+    });
+  };
+  const boxLabel = (b: Box): string => {
+    if (b.kind === 'page-pin') {
+      const entry = b.entryId ? getJournalEntry(b.entryId) : null;
+      return entry ? (notecardExcerpt(entry.text).title || t('boardThreadUntitled')) : t('boardThreadUntitled');
+    }
+    return notecardExcerpt(b.text ?? '').title || t('boardThreadUntitled');
+  };
+  const connectionsFor = (boxId: string) => connections
+    .map(c => (c.connA === boxId ? c.connB : c.connB === boxId ? c.connA : null))
+    .filter((otherId): otherId is string => !!otherId)
+    .map(otherId => boxes.find(b => b.id === otherId))
+    .filter((b): b is Box => !!b);
 
   // FX4 S6 — double-clicking a selected card's own resize handle arms a
   // thread-drag FROM that card. stopPropagation keeps the canvas's own
@@ -1030,7 +1275,13 @@ export function BoardEditor({ id }: { id: string }) {
             const boxId = boxEl?.dataset.boxId;
             if (!boxId) return;
             const box = boxesRef.current.find(b => b.id === boxId);
-            if (box?.kind === 'text') { setSelectedId(boxId); setPopupBoxId(boxId); }
+            // FX5 S3 — a PORTED text card (sourceEntryId set) travels to its
+            // own source now, matching page-pin's affordance exactly (the
+            // brief's own "quiet 'open' affordance via the existing double-
+            // click travel"); a hand-typed card (no sourceEntryId) keeps the
+            // unchanged edit-popup behavior.
+            if (box?.kind === 'text' && box.sourceEntryId) { travelToEntry(box.sourceEntryId); }
+            else if (box?.kind === 'text') { setSelectedId(boxId); setPopupBoxId(boxId); }
             else if (box?.kind === 'page-pin') { travelToPin(box); }
           }}
         >
@@ -1075,6 +1326,8 @@ export function BoardEditor({ id }: { id: string }) {
           </svg>
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
+          const boxConnections = footerOn ? connectionsFor(box.id) : [];
+          const showLayerToggle = selected && box.id === selectedId && isOverlapping;
           return (
             <div
               key={box.id}
@@ -1084,6 +1337,7 @@ export function BoardEditor({ id }: { id: string }) {
               data-selected={selected ? 'true' : 'false'}
               data-grouped={box.groupId ? 'true' : 'false'}
               data-thread-source={box.id === threadArmedFrom ? 'true' : 'false'}
+              data-overlapping={selected && box.id === selectedId && isOverlapping ? 'true' : 'false'}
               style={{
                 position: 'absolute',
                 left: box.x * pageWidthPx, top: box.y * pageWidthPx,
@@ -1100,21 +1354,45 @@ export function BoardEditor({ id }: { id: string }) {
                   boxId={box.id}
                   initialText={box.text ?? ''}
                   measureRef={measureRef}
+                  sourceEntryId={box.sourceEntryId}
                 />
+              )}
+              {/* FX5 S5 — the olive pin: the connection grab, on every card,
+                  always (not gated on selection — the dead handle-double-
+                  click gesture it replaces required a select-then-double-
+                  click two-step; one continuous drag-from-here is the whole
+                  point). Wired in the pointer-effect's own onDown above. */}
+              <div className="board-pin-grab" data-pin="true" aria-hidden="true" title={t('boardThreadGrab')} />
+              {/* FX5 S5 — the connections footer: one quiet line per thread,
+                  hidden whole when the board's own footer toggle is off. */}
+              {boxConnections.length > 0 && (
+                <div className="board-card-footer">
+                  {boxConnections.map(other => (
+                    <div key={other.id} className="board-card-footer-line">— {t('boardThreadPrefix')}: {boxLabel(other)}</div>
+                  ))}
+                </div>
               )}
               {selected && canResize && box.id === selectedId && (
                 <div
                   className="board-handle"
                   data-handle="se"
                   aria-hidden="true"
-                  // FX4 S6 — double-click arms a thread-drag from THIS card
-                  // (replacing AB4's sliver Connect-toggle-then-click-two-
-                  // cards gesture whole). stopPropagation so the canvas's
-                  // own onDoubleClick (text edit / page-pin travel) never
-                  // ALSO fires — the handle sits inside .board-box, so the
-                  // event would otherwise bubble into that handler too.
-                  onDoubleClick={(e) => { e.stopPropagation(); armThreadDrag(box.id); }}
                 />
+              )}
+              {/* FX5 S4 (c) — the quiet layer-order icon: only a selected
+                  card that's genuinely overlapping a sibling gets it. */}
+              {showLayerToggle && (
+                <button
+                  type="button"
+                  className="board-layer-toggle"
+                  data-layer-toggle="true"
+                  title={sendingToBack ? t('boardLayerSendBack') : t('boardLayerBringFront')}
+                  aria-label={sendingToBack ? t('boardLayerSendBack') : t('boardLayerBringFront')}
+                  onMouseDown={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); toggleLayer(); }}
+                >
+                  ⧉
+                </button>
               )}
             </div>
           );
@@ -1165,9 +1443,12 @@ export function BoardEditor({ id }: { id: string }) {
   // AB4 S5 / FX4 S6 — the board's own hand tool(s). Connect toggle RETIRES
   // (replaced by the handle-drag gesture above) — the sliver carries Add
   // card alone now.
+  // FX5 S5 — a second control joins it: the per-board connections-footer
+  // toggle ("Add card + this, two controls" — the brief's own words).
   const sliverContent: SliverContent = {
     kind: 'board',
     onAddCard,
+    footer: { on: footerOn, onToggle: toggleFooter },
   };
 
   const pageFaceSheets = (

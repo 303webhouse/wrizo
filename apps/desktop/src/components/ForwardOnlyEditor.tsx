@@ -4,6 +4,7 @@ import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } f
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { decorateEditorFor, decorateMarkdown, readEditorPlainText } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
+import { applyEmDash, findEmDashTrigger, revertEmDash } from '../store/emDash';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -157,6 +158,32 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // whenever the selection isn't inside the host (nothing to restore).
     if (drafting) {
       let composingDraft = false;
+      // FX5 S7 — the em-dash autocorrect's own trigger flag: only genuinely
+      // set when the JUST-PROCESSED edit was a plain typed space (checked at
+      // beforeinput, before the DOM mutates), never on a delete/paste/IME
+      // commit that happens to leave the caret sitting after an old,
+      // already-settled "--word " sequence elsewhere in the text. Without
+      // this guard, onInput's own trigger check would fire on ANY edit that
+      // exposes a matching pattern at the caret — including one the writer
+      // didn't just type (e.g. deleting forward text that had been un-
+      // corrected earlier via Undo).
+      let justTypedSpace = false;
+      // Reentrancy guard: applyEmDash's own execCommand fires a SECOND,
+      // synchronous native 'input' event on `el` (confirmed — Chromium
+      // dispatches input synchronously inside execCommand) — without this,
+      // onInput would recurse into itself mid-substitution.
+      let applyingEmDash = false;
+      // FX5 S7 — "one undo step reverts to the literal hyphens": native
+      // browser undo (execCommand('undo') AND a real Ctrl/Cmd+Z alike)
+      // does NOT work in this editor at all — confirmed live, not assumed
+      // (see store/emDash.ts's own header comment for the full root-cause
+      // diagnosis: this branch's own per-keystroke innerHTML rewrite
+      // invalidates whatever the undo manager was tracking). This tracks
+      // the most recent em-dash substitution's own position + original
+      // hyphens so a purpose-built Ctrl/Cmd+Z shim (below) can revert JUST
+      // it — cleared on every OTHER edit, so a much-later undo press never
+      // reaches back to a stale substitution.
+      let lastEmDash: { offset: number; hyphens: string } | null = null;
       // AB2 fix (post-build review) — see draftDecoration.ts's decorateEditorFor/
       // readEditorPlainText for the Chromium EOF-caret quirk this guards
       // against. Every write to el.innerHTML and every read of the live DOM
@@ -165,16 +192,75 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // the unguarded bug.
       const redecorate = (plain: string, caret: number | null) => decorateEditorFor(el, plain, caret, setPlainOffset);
       const onInput = () => {
+        if (applyingEmDash) return; // the substitution's own synthetic input event — already handled below
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
         onChangeRef.current(plain);
         onForwardRef.current?.();
         if (composingDraft) return;
+        // FX5 S7 — the em dash (Word convention): "--word " -> "—word ",
+        // via a SEPARATE execCommand substitution (store/emDash.ts) so
+        // undo reverts it as its own step, distinct from the keystroke
+        // that triggered it.
+        const trigger = justTypedSpace ? findEmDashTrigger(plain, caret) : null;
+        justTypedSpace = false;
+        if (trigger) {
+          applyingEmDash = true;
+          const { applied, hyphens } = applyEmDash(el, trigger.start, trigger.end);
+          applyingEmDash = false;
+          if (applied) {
+            lastEmDash = { offset: trigger.start, hyphens };
+            const after = readEditorPlainText(el.innerText, getPlainOffset(el));
+            onChangeRef.current(after.plain);
+            // FX5 S7 — found live, not assumed: execCommand('insertText',
+            // ...) collapses the selection to right after the INSERTED em
+            // dash — the untouched trailing space that triggered this (and
+            // anything typed after it, for a fast typist) still sits AFTER
+            // that point, unaffected by the substitution, so reading the
+            // DOM's own post-command caret here would silently leave the
+            // caret one-or-more characters short of where the writer's own
+            // typing actually was, and the very next keystroke would land
+            // mid-word instead of appending. The correct target is
+            // computable directly from the ORIGINAL (pre-substitution)
+            // caret: the hyphen run (trigger.end - trigger.start chars)
+            // collapsed to exactly one em-dash character, so the original
+            // caret simply shifts left by (hyphen count - 1).
+            redecorate(after.plain, caret - (trigger.end - trigger.start) + 1);
+            return;
+          }
+        }
+        lastEmDash = null; // any OTHER edit invalidates a pending em-dash undo
         redecorate(plain, caret);
+      };
+      // FX5 S7 — the one-step undo shim itself: Ctrl/Cmd+Z, ONLY while a
+      // substitution is still pending (immediately after, nothing else
+      // typed yet). Consumes the keystroke (preventDefault) so the
+      // browser's own (proven no-op) undo attempt never also fires.
+      // Anything ELSE — no pending substitution, Shift held (redo), a
+      // second consecutive press — falls through untouched, exactly
+      // "ONE undo step," never a repeatable toggle.
+      const onUndoKeyDraft = (e: KeyboardEvent) => {
+        if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z' || e.shiftKey) return;
+        if (!lastEmDash) return;
+        e.preventDefault();
+        const { offset, hyphens } = lastEmDash;
+        lastEmDash = null;
+        applyingEmDash = true;
+        const reverted = revertEmDash(el, offset, hyphens);
+        applyingEmDash = false;
+        if (reverted) {
+          const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+          onChangeRef.current(plain);
+          redecorate(plain, caret);
+        }
       };
       // VW Slice 4 — own ink passes silently: simply don't preventDefault, and
       // the browser's native paste/drop proceeds (Draft owns its contenteditable).
       const onBeforeInputDraft = (e: InputEvent) => {
         const it = e.inputType || '';
+        // FX5 S7 — the ONLY signal `onInput` trusts for "did the writer just
+        // type a space": captured here, at beforeinput, before the DOM
+        // mutates, so a delete/paste/IME-commit can never masquerade as one.
+        justTypedSpace = it === 'insertText' && e.data === ' ';
         if (it === 'insertFromPaste' || it === 'insertFromDrop') {
           if (shadowAllows(extractIncomingText(e))) return;
           e.preventDefault(); notePasteBlocked();
@@ -214,6 +300,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
+        lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
         onChangeRef.current(plain);
         onForwardRef.current?.();
@@ -222,6 +309,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onCompStartDraft = () => { composingDraft = true; };
       const onCompEndDraft = () => {
         composingDraft = false;
+        lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
         onChangeRef.current(plain);
         redecorate(plain, caret);
@@ -233,6 +321,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
       el.addEventListener('keydown', onKeyDownDraft);
+      el.addEventListener('keydown', onUndoKeyDraft);
       el.addEventListener('compositionstart', onCompStartDraft);
       el.addEventListener('compositionend', onCompEndDraft);
       el.addEventListener('paste', blockPaste);
@@ -241,6 +330,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         el.removeEventListener('input', onInput);
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
         el.removeEventListener('keydown', onKeyDownDraft);
+        el.removeEventListener('keydown', onUndoKeyDraft);
         el.removeEventListener('compositionstart', onCompStartDraft);
         el.removeEventListener('compositionend', onCompEndDraft);
         el.removeEventListener('paste', blockPaste);
