@@ -1081,6 +1081,10 @@ outlive a session lives here, not in chat.
     stays held per the review's own instruction, until CD1's own
     origin-chat close conditions clear — unrelated to the deploy finding
     above.
+    **Dropped — 2026-07-18** (TU1's own S0 instruction): its hold
+    condition (item 26's close) cleared 2026-07-17; content was long
+    since superseded by the actual cd1.1 fold, merged and deployed.
+    `git stash drop`, confirmed empty stash list after.
     **Carry for the HB1 session — Fable, via FX3's review, 2026-07-17
     (relayed here; no direct channel to that chat exists, this ledger
     IS the relay).** Root-causing FX3's own `hb1.mjs` PARKED-check
