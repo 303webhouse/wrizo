@@ -20,6 +20,7 @@ import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
 import { Sliver, type SliverContent } from './Sliver';
+import { Tutor } from './Tutor';
 import { GoalGlow } from './GoalGlow';
 import { useCascade } from './Cascade';
 import type { PageFaceSubject } from './PageFace';
@@ -670,6 +671,7 @@ export function ScriptEditor({ id }: { id: string }) {
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
+          tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
         >

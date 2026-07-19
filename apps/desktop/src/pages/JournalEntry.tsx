@@ -24,6 +24,7 @@ import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
+import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
@@ -1155,6 +1156,7 @@ function JournalEntryView() {
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
+          tutor={<Tutor entry={entry} project={homeProject} pageText={goalText} pageKind="prose" />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={dissolved}
         >

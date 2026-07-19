@@ -96,7 +96,23 @@ export type DeskTermId =
   // outright rather than parked: a lexicon string isn't a check with a
   // pass/fail history worth preserving, unlike ab4.mjs's own harness
   // checks (see fx4.mjs's PARKED section for those).
-  | 'railBoard' | 'boardAddCard';
+  | 'railBoard' | 'boardAddCard'
+  // TU1 S2/S3/S4/S5 — the Tutor (components/Tutor.tsx), the sliver's own
+  // mirror on the paper's right edge. One seam, all of the Tutor's static
+  // chrome — the lenses' own DYNAMIC observation text (Consistency's
+  // "X / Y both appear.", Structure's home/membership lines, nudge
+  // sentences) is composed in code from real page data and cannot be a
+  // flat lexicon lookup; only the surrounding labels/disclosures live here.
+  | 'tutorOpen' | 'tutorClose' | 'tutorTitle'
+  | 'tutorDockClose' | 'tutorDockReopen'
+  | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
+  | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
+  | 'tutorStructureNoBeat'
+  | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
+  | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
+  | 'tutorConversationEmpty' | 'tutorConversationSending'
+  | 'tutorConversationOffline' | 'tutorConversationError'
+  | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -178,6 +194,30 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeSurveyBack: 'Back',
   railBoard: 'Board',
   boardAddCard: 'Add card',
+  tutorOpen: 'Open the Tutor',
+  tutorClose: 'Close the Tutor',
+  tutorTitle: 'The Tutor',
+  tutorDockClose: 'Close, keep dock',
+  tutorDockReopen: 'Reopen',
+  tutorLensConsistency: 'Consistency',
+  tutorLensStructure: 'Structure',
+  tutorLensFragments: 'Fragments',
+  tutorLensConsistencyEmpty: 'No repeated or near-duplicate names found yet.',
+  tutorLensFragmentsEmpty: 'Nothing recent or shared-tagged to resurface yet.',
+  tutorLensFragmentsNote: 'Recency and shared tags only — nothing else.',
+  tutorStructureNoBeat: 'Not linked to a beat.',
+  tutorNudgesTitle: 'Waiting for you',
+  tutorNudgesEmpty: 'Nothing waiting right now.',
+  tutorConversationTitle: 'Talk it through',
+  tutorConversationPlaceholder: 'Ask a question…',
+  tutorConversationSend: 'Send',
+  tutorConversationEmpty: 'Nothing said yet.',
+  tutorConversationSending: 'Thinking…',
+  tutorConversationOffline: 'The Tutor is offline or not configured right now — the lenses above still work.',
+  tutorConversationError: 'The Tutor could not be reached. Try again in a moment.',
+  tutorDisclosureTitle: 'Before you ask',
+  tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
+  tutorDisclosureAck: 'Got it',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

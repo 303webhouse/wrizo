@@ -19,6 +19,7 @@ import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
+import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
@@ -530,6 +531,20 @@ function PageEditorView({ id }: { id: string }) {
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
           sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} /></FirstRunVeil>}
+          // TU1 non-goal, verbatim: "the Tutor on the threshold (first-run
+          // stays pure)" — absent outright while the gate holds, not merely
+          // veiled-but-mounted like the sliver above. This also sidesteps a
+          // real geometry hazard FirstRunVeil's own wrapper would otherwise
+          // create: `.hb1-veil[data-veiled='true']`'s `filter:blur(4px)`
+          // establishes a NEW containing block for `position:absolute`
+          // descendants (per the CSS spec, same as `transform` would), which
+          // would silently break the Tutor's two anchors' percentage math
+          // (they need `.desk-frame-stage` as their containing block, per
+          // Tutor.tsx's own header comment) — Sliver never hits this because
+          // DeskFrame.tsx provides ITS anchor div outside the veil; the
+          // Tutor provides its own anchors internally, so a veil wrapper
+          // here would swallow them both.
+          tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
           // contract exactly), fed the gate's own word fraction instead of
