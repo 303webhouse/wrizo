@@ -2139,7 +2139,108 @@ outlive a session lives here, not in chat.
     HB-arc-stewardship consolidation note, dropping the `cd1.1
     erratum WIP` stash) is this ticket's own build-time work, not
     done here — deferred to when TU1 actually builds, matching every
-    prior ticket's own S0-at-build-time pattern.
+    prior ticket's own S0-at-build-time pattern. (The stash-drop was
+    in fact done directly on `main` ahead of the build, once FX4's
+    own build had started — see this same section's own earlier
+    entry.)
+    **BUILT, INDEPENDENTLY REVIEWED, AND PUSHED — 2026-07-19. NOT
+    MERGED — this is expected and correct for a schema ticket, not
+    an incomplete state.** Built S0-S6 on `tu1-tutor` off `main` @
+    `5ed923c`, via a Workflow-orchestrated build+review pipeline
+    (ultracode) — the same two-stage discipline every zero-schema
+    ticket has gotten this session, just without the merge step this
+    ticket's own brief explicitly withholds. **Schema, exactly as
+    declared:** one nullable `tutor` jsonb column (`add column if
+    not exists`, no default, no CHECK) plus both sync-mapper
+    directions, matching the `origin`/`script` three-touch-point
+    recipe exactly — independently hand-verified by the review
+    (counted `$N` placeholders against the column list and VALUES
+    tuple, confirmed byte-identical in shape). Server surface stayed
+    within the brief's own enumeration (one column, two mapper
+    touches, one route, `POST /api/tutor/chat`) — no STOP-and-report
+    triggered, confirmed independently.
+    **A real geometry defect found and fixed mid-build, measured not
+    guessed:** a single Sliver-shaped anchor can't hold both the
+    grip's own FX2-clamped box and a genuine ~300px open panel — at
+    1280px the naive version silently clipped ~20px of the panel
+    against `.desk-frame-host`'s own `overflow:hidden` (an unrelated
+    FX3-era rule). Fixed with two separate DeskFrame overlay anchors
+    instead of one. The review independently re-measured the CSS
+    formulas byte-for-byte against the sliver's own left-edge
+    version and confirmed the FX2 clamp technique is genuinely
+    reused, not approximated.
+    **The grandfather (null⇔undefined) proof — independently traced
+    through the actual code, not just the test.** The review read
+    `persistence.ts`'s own `clone()`/`upsert()`/sync-apply paths by
+    hand and confirmed there is no "create empty thread" call site
+    anywhere — the field is born only on a page's first real sent
+    message. Server-side mapper correctness is proven by structural
+    identity with `script`/`origin`'s own already-production-proven
+    recipe, not a live database test (this environment has no test
+    DB and `apps/server` carries no test harness of its own) —
+    disclosed plainly by both build and review, not glossed over.
+    **A13's ghostwriter rail — verified as GENUINELY structural, the
+    exact discipline the brief asked for by name.** The review
+    confirmed the harness's own sweep walks the live DOM generically
+    (every button species found, not a hand-picked "known safe"
+    list) and separately read `Tutor.tsx` itself: rendered messages
+    are inert `<div>` text with no interactive children anywhere,
+    and the component's own closure holds no editor ref or text
+    setter at all — architecturally, no control in the file COULD
+    reach a writing surface regardless of intent, not merely "none
+    currently do."
+    **S5's live-model path — both build and review equally honest
+    about the same real limitation.** No `TUTOR_API_KEY` exists in
+    either agent's own environment; a genuine end-to-end model
+    round-trip was never attempted by either, and neither faked
+    verification of it. What WAS verified thoroughly, live, by both:
+    the offline/unconfigured path end-to-end (fails fast before any
+    SDK object is even constructed, degrades to one quiet status
+    line, never hangs, never crashes).
+    **S3's Consistency lens — the review hand-traced the actual
+    algorithm** against the harness's own seeded fixture and
+    reproduced its exact two observations by hand, confirming
+    determinism and correctness, not just "a check exists and
+    passes." Structure/Fragments confirmed genuinely reusing
+    pre-existing AB3/AB4-era functions, not re-derived under new
+    names.
+    **Full suite: 20 harness files (19 pre-existing + new `tu1.mjs`,
+    96 checks), both `HARNESS_PARKED` settings, `tsc` (desktop AND
+    server) + `build:web` + selftest — all green, 40/40 harness runs
+    across BOTH the build's own pass and the review's fully
+    independent, from-clean-install re-run. Zero discrepancies. Park
+    sweep genuinely empty (a purely additive ticket), armed-but-empty
+    gate matching the cd2/fx3/ab4 precedent.**
+    **The review's own verdict: GREEN, no defects found, nothing
+    fixed, nothing pushed by the review itself** — the first ticket
+    this session where independent review found nothing rising to
+    even a minor direct fix. One cosmetic-only item flagged, not
+    fixed: a dead `deskLexicon` entry (`tutorDockReopen`) that the
+    dock button doesn't actually use (a hardcoded glyph instead,
+    same idiom as the grip's own hardcoded arrows elsewhere in the
+    same file — not an accessibility gap, the aria-label routes
+    through the lexicon correctly; purely a "not worth its own commit"
+    inconsistency).
+    **Judgment calls disclosed, independently reviewed and agreed
+    with, none dissented:** the two-anchor geometry departure from a
+    literal single-anchor mirror; the model default
+    (`claude-opus-4-8`, independently confirmed current, not a stale
+    guess); PageEditor's first-run gate rendering the Tutor absent
+    outright rather than veiled-but-mounted like the sliver;
+    Consistency's stoplist-heuristic honestly documented as "v1,
+    not real NER."
+    **Pushed and confirmed on `origin/tu1-tutor` @ `3b062df`** —
+    verified independently by both agents via fresh fetches, not
+    assumed. **The S1-precedent live prod round-trip remains
+    explicitly outstanding**, owed after Nick's own merge-and-deploy
+    cycle, not attempted or faked by either agent, exactly as the
+    brief's own words require.
+    **Not merged. Fable reviews on the branch next; the merge
+    happens only on Nick's own explicit go — nothing in this record
+    changes that.** Item 27's own HB-arc-stewardship consolidation
+    note remains genuinely undone (out of any build agent's own
+    visibility/authority, honestly disclosed rather than fabricated
+    by either agent) — a human-session task, not a build task.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
