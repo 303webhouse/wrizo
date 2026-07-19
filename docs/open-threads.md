@@ -2514,9 +2514,27 @@ outlive a session lives here, not in chat.
     fast-forward, zero conflicts), pushed to `origin/main`.
     **Not deployed** — Fable's post-merge review hasn't landed yet;
     redeploy is Nick's call, as always, after that review.
-    **Fable's post-merge review landed — GREEN, 2026-07-19**
-    (`docs/wrizo-alpha/fx5-review-fable.md` — relayed, commit pending
-    on disk landing). **A1 KEPT, Nick's own word, 2026-07-19:** cards
+    **Fable's post-merge review landed and is committed — GREEN,
+    required 0, two advisories, 2026-07-19**
+    (`docs/wrizo-alpha/fx5-review-fable.md`). Census at the two widest
+    commits, record depth via the build's own diagnostic commit
+    messages, the independent review's two real catches, and CC's own
+    clean third pass (42/42). **The standing trusted-gesture
+    discipline vindicated three ways**, all ENDORSED: S8's true root
+    cause (edge-jitter cancelling the dwell clock) was physically
+    invisible to synthetic dispatch, found only under trusted CDP
+    events; the review caught the build violating the ticket's OWN
+    discipline (S5's pin-drag proven synthetic-only, undisclosed) and
+    closed it with a genuinely trusted proof, not just a disclosure
+    note; the review's second catch (the untracked rAF chain) is
+    exactly the chartered "page moves on its own" defect class.
+    Rulings: the olive pin circle's square-corners exception
+    RATIFIED with provenance (Nick's own words specified it); S6's
+    reveal-adjacent-to-caret RATIFIED with its documented spec reason;
+    S7's em-dash undo shim ACCEPTED as disclosed; S4's pointer-capture
+    root cause and the S10-regression catch (by `fx2.mjs`'s own
+    pre-existing floor check) both confirmed the estate working as
+    designed. **A1 KEPT, Nick's own word, 2026-07-19:** cards
     are not meant to be the place where writers do a lot of text
     editing — the popup's own reveal-adjacent-to-caret asterisk
     treatment and the editing model both stand as built; ported cards
@@ -2594,6 +2612,67 @@ outlive a session lives here, not in chat.
     Report = push (merge pre-authorized).
     **Build starting — 2026-07-19**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-FX5 `main`.
+38. **B1 — the Journal Reborn (+ the Trash).** **BRIEF COMMITTED —
+    2026-07-19.** `docs/wrizo-alpha/b1-journal-reborn-brief.md`.
+    **QUEUED — builds after FX6's own post-merge review lands (one
+    brief per ticket; FX6 holds the slot).** Not started.
+    **Authority — the Boards committee pass**
+    (`docs/wrizo-alpha/boards-committee-pass.md`, committed same day):
+    a double-pass triggered by item 36's own architecture note,
+    resolving the fork between two ways to make "Journal is a Board"
+    true. **R2 — the dress, not the collapse** (the Architects'
+    unanimous choice): homes/origins/projectId/deletedAt stay the
+    stored truth, A2's provenance law untouched; system Boards are
+    REAL board pages whose card sets are DERIVED from that truth
+    while arrangement stays authored — zero data migration, existing
+    pages appear correctly on day one. **R1** names the Board the
+    only arrangement primitive (Journal/Shelf/Trash/Projects all
+    become system Boards wearing dresses; Drawers contain Boards).
+    **R3** — membership is never required; keeping is never
+    conditioned on filing. **R4** — Trash is a quiet move to a
+    derived board (existing `deletedAt`, unsurfaced today), the
+    Delete-is-Delete anti-nag core preserved, only finality amended;
+    card/thread trash stays out of v1. **R5** — Drawers become the
+    large-thumbnail shelf of Boards (a canon amendment, not a silent
+    restyle), scoped against file-manager drift by keeping thumbnails
+    to the cascade's reach-range panel only. **R6** — Projects
+    convergence (seeded Boards + the wizard-cards commission) is one
+    design landing with the P-arc walkthrough as the last, biggest
+    phase (B3) — done once, done right, explicitly not rushed for the
+    onboarding story. **R7** — phase order serves Nick's own named
+    constraint (blocked constantly by the broken Journal; each phase
+    must leave the app more usable than before it), Journal-first.
+    **A16 (the Arrangement Law), A17 (the Drawer Law), A18 (the Trash
+    Amendment)** — full text in the committee-pass doc itself, quoted
+    in this brief's own preamble. **Five named tensions carried
+    honestly, not resolved by fiat** (T1 a future "remove from
+    Journal Board" gesture is design work, not plumbing; T2 whether
+    hand-removal of system cards exists at all in v1 — arrange-only
+    for now, Nick may overrule at the device; T3 the Shelf's own
+    "unconnected" definition, ruled at B2's own brief; T4 the
+    Board/Drawer/Shelf naming-legibility lexicon pass, before B2's
+    chrome; T5 first-run's no-resume fallback re-pointing, landing in
+    B1 itself). **Disclosed gap in this ledger record**: the brief's
+    own Authority line additionally cites "R2 with his concern on
+    record, resolved on merits" and "R6 as modified by his wizard
+    rulings" — Nick's own specific words for that concern and those
+    wizard rulings were not supplied verbatim to this session (only
+    referenced); not fabricated here, flagged instead. The
+    committee-pass document's own RECOMMENDATION section (above) is
+    what this record actually sources.
+    **The mechanism (S1-S6), not yet built:** system Boards as real
+    board pages, find-or-create idempotent, marked by a new optional
+    `systemKind: 'journal' | 'trash'` field on the existing
+    `board-meta` element (the FX4 board-meta precedent, zero schema);
+    derived-membership reconcile on mount (idempotent, authored
+    positions never moved); arrange-never-author on system boards (no
+    Add, inert Delete on derived cards, unpinnable); the Trash
+    surfaced with a quiet Restore action, permanent purge explicitly
+    out of v1; the old Journal module surface retired the same day
+    its replacement ships (retirement-by-replacement, capture flow
+    byte-identical, no 404 hole); `b1.mjs`. Zero schema expected,
+    STOP-and-report the moment any slice wants a column; merge
+    pre-authorized; Fable reviews post-merge.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
