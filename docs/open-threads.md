@@ -2076,6 +2076,35 @@ outlive a session lives here, not in chat.
     force-split and risk the tree).
     **Not deployed** — Fable's post-merge review hasn't landed;
     redeploy is Nick's call, as always.
+    **Fable's review: GREEN, zero required fixes — 2026-07-18**
+    (`docs/wrizo-alpha/fx4-review-fable.md`, census + record depth,
+    standing on the three independent zero-discrepancy verification
+    runs and the review's own adversarial mutation test on S1's
+    ink-coordinate proof). **All five defects found and fixed along
+    the way — the Journal overflow clip, the caret-detection
+    fallback, the fresh-page auto-scroll, the glow's stacking-context
+    escape, the hover-restore reset bug — ratified in-scope**, every
+    one inside a surface this ticket's own slices already own,
+    diagnosed before tuning per FX2's standing law. The board-meta
+    un-normalized `canvasW`/`canvasH` decision, the `fx1.mjs`
+    generation-2 double-supersession precedent, and the `w2.mjs`
+    park all explicitly ratified as correct calls.
+    **One advisory carried, not blocking (Nick's eye, first on his
+    glance list):** the desk grid now left-anchors at wide viewports
+    (S3's own flush-left requirement) rather than centering — a
+    lawful reading of the brief, but a visible departure from CD1's
+    own prior symmetric-margins framing; a one-line revert if his own
+    verdict goes the other way.
+    **Close conditions:** (1) review on disk, met. (2) redeploy on
+    Nick's word — deploy manifest already enumerated by the review
+    itself: `d1a6696..HEAD` = FX4 (the one code ticket) plus named
+    doc riders (item 32's sitting record, the FX4/TU1 briefs and
+    items 33/34, `board-card-studies.html`, the stash-drop record,
+    this review) — no unnamed code riders. (3) Nick's own FX4 DoD
+    script plus the A1 wide-desk glance — remains open. **TU1
+    proceeds on its own branch in parallel** — Fable reviews there
+    when its build reports; merge needs Nick's explicit go
+    regardless of this item's own status.
 34. **TU1 — the Tutor.** **BRIEF COMMITTED — 2026-07-18.**
     `docs/wrizo-alpha/tu1-tutor-brief.md`. **SCHEMA TICKET — NO MERGE
     PRE-AUTHORIZATION**, the corrected zero-schema-vs-schema rule's
