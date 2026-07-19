@@ -2583,6 +2583,22 @@ outlive a session lives here, not in chat.
     ticket — see item 33's own prior QUEUED note). Absorbs the
     Journal-retirement question raised across several prior sittings
     (items 25's committee docket addition, item 32).
+    **RATIFIED — 2026-07-19.** The Boards committee pass
+    (`docs/wrizo-alpha/boards-committee-pass.md`, committed) resolved
+    the collapse-vs-dress fork the note above implies: system Boards
+    (Journal/Shelf/Trash/eventually Projects) carry membership DERIVED
+    from the existing stored truth (origin/deletedAt/projectId, A2
+    untouched) while arrangement stays authored — zero data
+    migration, chosen unanimously over a literal-collapse migration
+    path. R1/R3/R4/R5/R7 approved, A16/A17/A18 ratified, B1–B3
+    confirmed as phases (Journal+Trash → Shelf+Drawers → Projects as
+    seeded Boards). R2's own concern and R6's own wizard-clarification
+    (both Nick's verbatim words, with dispositions) are recorded in
+    full at `docs/wrizo-alpha/boards-ratification-record.md`
+    (committed) — R6 in particular stands as B3's own binding design
+    authority once that brief is written, nothing builds from it
+    before then. First phase's brief committed, queued: see item 38
+    (B1).
 37. **FX6 — Undo and the Doors.** **BRIEF COMMITTED — 2026-07-19.**
     `docs/wrizo-alpha/fx6-undo-and-doors-brief.md`. Authority: item
     35's own A2 commissioning (real undo/redo in Draft's free editor
@@ -2652,14 +2668,22 @@ outlive a session lives here, not in chat.
     "unconnected" definition, ruled at B2's own brief; T4 the
     Board/Drawer/Shelf naming-legibility lexicon pass, before B2's
     chrome; T5 first-run's no-resume fallback re-pointing, landing in
-    B1 itself). **Disclosed gap in this ledger record**: the brief's
-    own Authority line additionally cites "R2 with his concern on
-    record, resolved on merits" and "R6 as modified by his wizard
-    rulings" — Nick's own specific words for that concern and those
-    wizard rulings were not supplied verbatim to this session (only
-    referenced); not fabricated here, flagged instead. The
-    committee-pass document's own RECOMMENDATION section (above) is
-    what this record actually sources.
+    B1 itself). **Authority gap CLOSED — 2026-07-19**, superseding
+    the earlier flag: `docs/wrizo-alpha/boards-ratification-record.md`
+    (committed) carries Nick's R2 concern and R6 wizard rulings
+    verbatim, with dispositions. R2's concern (a strong-bones worry,
+    not a data-safety one — dev data explicitly disposable) SUSTAINED
+    the dress on merits alone, independent of the migration-cost
+    argument; three concrete waiver effects recorded there, including
+    the vestigial `shelved` flag's own retirement landing at B2. R6's
+    wizard clarification is APPROVED AS MODIFIED and stands as **B3's
+    own binding design authority** once that brief is written — opt-in
+    pop-out wizard, click-first/text-never-required, ends on a Board
+    with plan cards laid out, a "Start Here" mark on the first card
+    that vanishes on any card's completion (an open definition,
+    flagged for B3's own brief to rule). Nothing builds from R6 before
+    B3. The flag-not-invent call itself is noted in the record as
+    correct.
     **The mechanism (S1-S6), not yet built:** system Boards as real
     board pages, find-or-create idempotent, marked by a new optional
     `systemKind: 'journal' | 'trash'` field on the existing
