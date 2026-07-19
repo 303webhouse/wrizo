@@ -76,3 +76,29 @@ export async function apiSync(payload: {
   if (!res.ok) throw new Error(`sync failed: ${res.status}`);
   return (await res.json()) as SyncResponse;
 }
+
+// TU1 S5 — the Tutor's one writer-initiated call. Fires only on an
+// explicit send (never ambient, never polled). `configured: false` is a
+// first-class response (the server has no TUTOR_API_KEY) — not an error;
+// the caller renders it as the panel's own quiet "not configured" line.
+// A network failure or a non-2xx response resolves the same way (`ok:
+// false`) rather than throwing — the conversation degrading quietly is
+// the whole point (S5: "offline... the conversation says so in one quiet
+// line"), and this file never retries on its own (no loop of any kind).
+export interface TutorChatResult {
+  ok: boolean;
+  configured: boolean;
+  reply?: string;
+}
+
+export async function apiTutorChat(messages: { role: 'writer' | 'tutor'; text: string }[]): Promise<TutorChatResult> {
+  try {
+    const res = await postJson('/api/tutor/chat', { messages });
+    if (!res.ok) return { ok: false, configured: true };
+    const data = (await res.json()) as { configured: boolean; reply?: string };
+    if (!data.configured) return { ok: true, configured: false };
+    return { ok: true, configured: true, reply: data.reply ?? '' };
+  } catch {
+    return { ok: false, configured: true };
+  }
+}

@@ -23,4 +23,18 @@ export const env = {
   get isProd() {
     return this.nodeEnv === 'production';
   },
+  // TU1 S5 — the Tutor's model plumbing. Deliberately NOT `required()`:
+  // "offline or unconfigured" is a first-class, expected state (the brief's
+  // own words) — an unset key must never crash boot, only make the /api/
+  // tutor/chat route respond with the quiet "not configured" state the
+  // client already renders as one line, same register as a real offline
+  // failure. Model/max-tokens are configurable but always default to a
+  // known value, so a deploy that sets only TUTOR_API_KEY still works.
+  tutorApiKey: process.env.TUTOR_API_KEY || null,
+  tutorModel: process.env.TUTOR_MODEL || 'claude-opus-4-8',
+  // Hard per-request token cap (the brief's own "hard per-request token
+  // cap, no retry loops" requirement) — small on purpose: the Tutor's
+  // register is a question or a short observation, never a composed
+  // passage (A13), so it never needs a long response.
+  tutorMaxTokens: Number(process.env.TUTOR_MAX_TOKENS) || 512,
 };
