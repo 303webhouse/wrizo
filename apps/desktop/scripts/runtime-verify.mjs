@@ -110,6 +110,17 @@ function startServer(dist) {
     if (p === '/api/_state') {
       return sendJson(res, { pushedJournalIds: [...pushedJournalIds], syncCount });
     }
+    // TU1 — the Tutor's one route. This test double mirrors the REAL
+    // server's own "no TUTOR_API_KEY configured" response shape exactly
+    // (`{ configured: false }`, 200 JSON) — the truthful state of this
+    // sandboxed test environment (no real Anthropic key exists here), so
+    // tu1.mjs can verify the actual "offline or unconfigured" panel copy
+    // end-to-end rather than only by code inspection. It does NOT proxy to
+    // a real model (no key to proxy with, and this double must stay
+    // dependency-free/offline like every other route here).
+    if (p === '/api/tutor/chat') {
+      return sendJson(res, { configured: false });
+    }
     if (p === '/api/sync') {
       let body = '';
       req.on('data', (c) => { body += c; });

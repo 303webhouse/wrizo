@@ -218,6 +218,11 @@ export interface JournalEntry {
   // S1 — the Screenplay Room's document, when pageType === 'script'. A JSON
   // column exactly like boxes; absent on every non-script page (no backfill).
   script?: ScriptDoc;
+  // TU1 S1 — the Tutor's per-page conversation thread. A JSON column
+  // exactly like script/boxes; absent on every page with no thread (no
+  // backfill — see the TutorThread interface above for the full
+  // grandfather reasoning). Any page can carry one, regardless of pageType.
+  tutor?: TutorThread;
   // AB3 S0 — the provenance law (canon amendment A2, the grandfather clause).
   // Which door a page was born through: 'journal' (Journal/Catch — homes in
   // the Journal), 'project' (a project door — homes in that project, the
@@ -296,6 +301,37 @@ export interface Box {
   connB?: string;      // kind 'connection' — the second endpoint box id
   canvasW?: number;    // kind 'board-meta' — the canvas's own persisted width, CSS px (NOT normalized)
   canvasH?: number;    // kind 'board-meta' — the canvas's own persisted height, CSS px (NOT normalized)
+}
+
+// TU1 S1 — the Tutor's per-page conversation thread (fragments-under-Pages
+// citizen #3, the `script`/`boxes` recipe once more: one nullable jsonb
+// column on `journal_entries`, additive only — `add column if not exists
+// tutor jsonb`, no default, no CHECK — matching the `origin`/`script`
+// precedent exactly, both sync-mapper directions (sync.ts's rowToJournalEntry
+// / upsertJournalEntries). It holds ONE thing: the writer<->Tutor exchange
+// for THIS page. Nothing else is ever persisted here — S3's lens results
+// (Consistency/Structure/Fragments observations) and S4's nudges are
+// DERIVED, recomputed fresh on every approach, never stored (the sheet
+// law's own instinct — a page's jsonb columns hold authored/generated
+// content, never a cache of a computation that can be re-run) applied to
+// the Tutor's room. Grandfather clause: null <-> undefined must be a fixed
+// point through every client mutation path (persistence.ts's
+// getTutorThread/saveTutorThread) and both sync-mapper directions — a
+// legacy page with no thread behaves byte-identically to today, forever
+// (absent, not an empty {messages:[]} — a subtly different, wrong
+// "grandfathered" state the ticket's own harness proves against). `role`
+// is 'writer' | 'tutor' (never a third value — no system-message leakage
+// into the persisted thread; the system prompt binding the Tutor to A13's
+// ghostwriter rail lives server-side only, per-request, never stored).
+export interface TutorMessage {
+  id: string;
+  role: 'writer' | 'tutor';
+  text: string;
+  at: string; // ISO timestamp
+}
+
+export interface TutorThread {
+  messages: TutorMessage[];
 }
 
 // S1 — the Screenplay Room's document (fragments-under-Pages citizen #2, ruled

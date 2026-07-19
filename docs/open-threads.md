@@ -2144,9 +2144,11 @@ outlive a session lives here, not in chat.
     own build had started — see this same section's own earlier
     entry.)
     **BUILT, INDEPENDENTLY REVIEWED, AND PUSHED — 2026-07-19. NOT
-    MERGED — this is expected and correct for a schema ticket, not
-    an incomplete state.** Built S0-S6 on `tu1-tutor` off `main` @
-    `5ed923c`, via a Workflow-orchestrated build+review pipeline
+    MERGED (at build time) — expected and correct for a schema
+    ticket, not an incomplete state; see the merge record below,
+    dated the same day.** Built S0-S6 on `tu1-tutor` off `main` @
+    `5ed923c`, in its own isolated worktree per the ONE CHECKOUT PER
+    AGENT rule, via a Workflow-orchestrated build+review pipeline
     (ultracode) — the same two-stage discipline every zero-schema
     ticket has gotten this session, just without the merge step this
     ticket's own brief explicitly withholds. **Schema, exactly as
@@ -2168,7 +2170,15 @@ outlive a session lives here, not in chat.
     instead of one. The review independently re-measured the CSS
     formulas byte-for-byte against the sliver's own left-edge
     version and confirmed the FX2 clamp technique is genuinely
-    reused, not approximated.
+    reused, not approximated. **Two further fixes landed the same
+    way, caught live not guessed:** a Consistency-lens gap where
+    ALL-CAPS/lowercase case variants of an already-known name were
+    invisible to a Title-Case-only harvest (a second, targeted
+    case-insensitive pass fixes it); and every raw-localStorage seed
+    site in `tu1.mjs` itself mutates from the Desk, never while the
+    entry's own page is mounted — a live reconfirmation of this
+    project's own documented harness-seeding-vs-flushNow race
+    (see memory).
     **The grandfather (null⇔undefined) proof — independently traced
     through the actual code, not just the test.** The review read
     `persistence.ts`'s own `clone()`/`upsert()`/sync-apply paths by
@@ -2234,13 +2244,46 @@ outlive a session lives here, not in chat.
     assumed. **The S1-precedent live prod round-trip remains
     explicitly outstanding**, owed after Nick's own merge-and-deploy
     cycle, not attempted or faked by either agent, exactly as the
-    brief's own words require.
-    **Not merged. Fable reviews on the branch next; the merge
-    happens only on Nick's own explicit go — nothing in this record
-    changes that.** Item 27's own HB-arc-stewardship consolidation
-    note remains genuinely undone (out of any build agent's own
-    visibility/authority, honestly disclosed rather than fabricated
-    by either agent) — a human-session task, not a build task.
+    brief's own words require. Item 27's own HB-arc-stewardship
+    consolidation note remains genuinely undone (out of any build
+    agent's own visibility/authority, honestly disclosed rather than
+    fabricated by either agent) — a human-session task, not a build
+    task.
+    **Fable's on-branch review landed — 2026-07-19**
+    (`docs/wrizo-alpha/tu1-review-fable.md`, committed): **GREEN on
+    the branch (`3b062df`), required 0** — the deepest depth
+    disclosed of the run where it counts (full line-by-line read of
+    the entire schema surface and the entire server route, not
+    census-level). Six rulings of record, all RATIFIED/VERIFIED/
+    ENDORSED: the grandfather is structural not guarded (no
+    empty-thread writer exists anywhere); A13 architectural at every
+    layer; privacy mechanically true to the disclosure's own wording;
+    the two-anchor geometry deviation; the server-surface enumeration
+    holds (SDK dependency accepted within the route's envelope); the
+    truthful test double (`runtime-verify.mjs`) endorsed for proving
+    the quiet-degrade path end-to-end rather than by inspection alone.
+    **A1 (condition, not defect):** the live model path stays
+    unexercised until `TUTOR_API_KEY` lands on Railway — Nick's own
+    config step, his own timing; the quiet-degrade path is the proven
+    net beneath it in the meantime.
+    **MERGED — 2026-07-19, Nick's explicit word** ("TU1: MERGE" —
+    Fable's GREEN on-branch review as the required condition, met).
+    `tu1-tutor` merged into `main` (one expected conflict in this
+    ledger's own item 34 — the branch's own build-time note
+    superseded by this section's fuller record, resolved in favor of
+    the more current text, two genuine fix details folded in above:
+    the Consistency-lens case-insensitivity fix and the flushNow-race
+    reconfirmation). `tsc` (desktop + server) + `build:web` + selftest
+    + the full 20-script harness suite green on merged `main`,
+    independently re-run by CC before push (matching both the build's
+    and the review's own from-clean-install counts exactly — zero
+    discrepancies). Pushed to `origin/main`.
+    **Not deployed — Nick's deploy word comes separately, as always.**
+    On deploy: manifest enumerated as always; AFTER deploy, the
+    REQUIRED prod round-trip (scratch account, populated tutor
+    thread, byte-for-byte both directions — the S1 precedent) before
+    this item can close. Nick's own DoD sitting follows — the
+    conversation half stays pending his own `TUTOR_API_KEY`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now

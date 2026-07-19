@@ -119,6 +119,14 @@ export interface DeskFrameProps {
   // never a grid/flex track, so the paper's rect is structurally immune to
   // it regardless of open/closed/dissolved state (S2's hard geometry law).
   sliver?: ReactNode;
+  // TU1 S2 — the Tutor: the sliver, mirrored, riding the paper's RIGHT
+  // edge (see `.desk-frame-tutor-anchor` in index.css — the FX2 clamp
+  // technique mirrored via `right:` instead of `left:`). Same overlay
+  // discipline as `sliver`: absolutely positioned inside `.desk-frame-stage`,
+  // so the paper's rect is structurally immune to it regardless of
+  // open/closed/docked state. Board never mounts this (out of scope —
+  // only the three prose/screenplay hosts named in the brief do).
+  tutor?: ReactNode;
   // CD1 S6 — the goal's warm glow, behind the paper. Same overlay
   // discipline as `sliver` (absolutely positioned, paper rect untouched),
   // centered instead of left-anchored.
@@ -154,7 +162,7 @@ export interface DeskFrameProps {
 // inside components/Cascade.tsx, the same precedent AB3's Drawer already
 // established for its own Place face) rather than the ambient opacity fade
 // — see that file's header comment for the full reasoning.
-export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, goalGlow, corkboard, meter, dissolved, children }: DeskFrameProps) {
+export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -198,6 +206,18 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, goalGlow, co
                 to the paper's own canonical width. Absolutely positioned:
                 structurally cannot move `children`'s box below. */}
             {sliver && <div className={`desk-frame-sliver-anchor desk-frame-sliver-anchor--${pageKind}`}>{sliver}</div>}
+            {/* TU1 S2 — the Tutor's own overlay. Rendered BARE (no wrapping
+                anchor div here, unlike sliver/cascade/goalGlow above):
+                Tutor.tsx owns TWO of its own sibling anchors internally (the
+                grip's FX2-clamped one, and the panel's own stage-right-edge-
+                safe one — see that file's own header comment for why one
+                anchor can't serve both jobs without either clipping the
+                open panel or letting the persistent grip breach the paper).
+                Both must be DIRECT children of this stage (position:relative)
+                for their own `position:absolute` math to resolve against
+                the correct 100%-of-stage reference box — an intervening
+                wrapper div here would break that. */}
+            {tutor}
             {children}
           </div>
           {/* FX1 S5 — render nothing instead of an empty vessel (see the

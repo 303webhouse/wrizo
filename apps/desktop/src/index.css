@@ -2287,6 +2287,71 @@ a:focus-visible,
   --sliver-paper-pad: 0px;
 }
 
+/* TU1 S2 — the Tutor's TWO anchors. Empirically verified (not just read off
+   the CSS — this project's own standing discipline): a single Sliver-shaped
+   anchor cannot serve both the grip's clearance law AND a genuinely ~300px
+   open panel at once. Measured live at 1280px: a 300px panel started 16px
+   past a 200px-capped grip anchor overflowed the actual viewport by ~20px
+   and was silently cut off by `.desk-frame-host`'s own overflow:hidden
+   (FX3 S1's rule, added for an unrelated vertical-bleed fix — see that
+   rule's own header comment). The fix mirrors this codebase's own
+   established escape for exactly this class of bug (`.sprint-modal-
+   backdrop`/`.hb1-ceremony-backdrop` etc. are `position:fixed` for the
+   same reason) — but conceptually, not literally `position:fixed` (which
+   would need JS-measured placement); instead the PANEL gets its OWN
+   separate anchor pinned to the STAGE's own right edge (`left:0; right:0`,
+   i.e. spanning the stage's full width, safely inside the host's clip
+   boundary by ordinary layout — a stage can never render past its own
+   host's content box), rather than being nested inside the grip's small
+   clamped box. Two anchors, one job each:
+
+   1. `.desk-frame-tutor-anchor` — the GRIP's own clearance (FX2's law,
+      mirrored: `right:` in place of `left:`, `--tutor-*` in place of
+      `--sliver-*`). Unchanged in spirit from the sliver's own anchor —
+      still capped small, still may dip into the paper's own padding,
+      hard-capped at that depth.
+   2. `.desk-frame-tutor-panel-anchor` — the PANEL's own home. `display:flex;
+      justify-content:flex-end` packs its one child flush against the
+      anchor's OWN right edge, which — because this anchor spans the
+      stage's full width via `left:0; right:0` — is the STAGE's right edge,
+      never the host's. The panel's width (`.wz-tutor-panel`, below) is
+      free to be a genuine ~300px, overlaying the paper at narrow widths
+      exactly as S2's own "at narrow widths the open panel overlays per
+      the CD2 small-screen law" names — because unlike the grip anchor,
+      this one is never itself clipped, so there's nothing stopping the
+      panel from growing into the paper's own space when the margin is
+      thin. Docked, it clamps back down via `--tutor-panel-margin`
+      (declared on THIS anchor, the mirror twin of Cascade's own
+      `--cascade-margin`), floored at 120px — Tutor.tsx's own
+      `availableTutorMargin()` JS measurement (mirroring
+      `availableCascadeMargin()`) is the actual gate on whether the dock
+      affordance is even offered, same division of labor as Cascade.tsx.
+   Board is out of scope for the Tutor this ticket (only the three
+   prose/screenplay hosts named in the brief mount it), so unlike the
+   sliver anchor there is no `--board` modifier on either anchor. */
+.desk-frame-tutor-anchor{
+  position:absolute; top:0; z-index:5; height:100%;
+  font-size:calc(1rem * var(--paper-scale));
+  --tutor-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --tutor-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, mirrors --sliver-paper-pad's own comment */
+  --tutor-margin: calc(50% - var(--tutor-paper-half) + var(--frame-gap));
+  --tutor-overflow: clamp(0px, calc(160px - var(--tutor-margin)), var(--tutor-paper-pad));
+  --tutor-anchor-w: min(200px, calc(var(--tutor-margin) + var(--tutor-overflow)));
+  width: var(--tutor-anchor-w);
+  right: calc(50% - var(--tutor-paper-half) + var(--tutor-overflow) - var(--tutor-anchor-w));
+}
+.desk-frame-tutor-anchor--prose,
+.desk-frame-tutor-anchor--screenplay{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
+.desk-frame-tutor-panel-anchor{
+  position:absolute; top:0; left:0; right:0; height:100%; z-index:6;
+  display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
+  font-size:calc(1rem * var(--paper-scale));
+  --tutor-panel-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
+  --tutor-panel-margin: calc(50% - var(--tutor-panel-paper-half) + var(--frame-gap));
+}
+.desk-frame-tutor-panel-anchor--prose,
+.desk-frame-tutor-panel-anchor--screenplay{ /* intentionally empty */ }
+
 /* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
    z-index; the paper itself paints in normal flow above it). Same
    canonical-width math as the sliver anchor, centered instead of offset. */
@@ -2528,6 +2593,101 @@ a:focus-visible,
    already swept under FX1 S6. Scoped the same way as the position override
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
+
+/* TU1 S2 — the Tutor (components/Tutor.tsx). The sliver's own class family,
+   mirrored (`.wz-sliver-*` -> `.wz-tutor-*`), split across the TWO anchors
+   above (`.wz-tutor-zone` is the shared marker class both anchor roots
+   carry, so Tutor.tsx's own keydown-dissolve listener can `closest()`
+   match either — see that file's own header comment). The grip sits at
+   its anchor's LEFT edge (nearest the paper — the sliver's grip sits at
+   ITS anchor's right edge, also nearest the paper; "nearest the paper" is
+   what mirrors, not the literal side). */
+.wz-tutor-grip{ position:absolute; top:16px; left:0; width:16px; height:34px;
+  display:flex; align-items:center; justify-content:center; z-index:2;
+  background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
+  color:var(--text-mid); cursor:pointer; transition:.15s; }
+.wz-tutor-grip:hover{ color:var(--text-hi); }
+/* Plateau foundations — olive marks where you are; the grip wears
+   --accent-rest only while OPEN or DOCKED (a where-you-are-now state),
+   never brass (S2: "nothing orange at rest; ... olive only for
+   open/active state"). */
+.wz-tutor-grip[data-open='true'],
+.wz-tutor-grip[data-docked='true']{ color:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-tutor-grip-glyph{ font-size:13px; line-height:1; }
+/* The panel: a flex child of `.desk-frame-tutor-panel-anchor` (packed
+   flush against THAT anchor's own right edge, which is the stage's right
+   edge — see the anchor's own header comment for why this is what keeps
+   an open ~300px panel from ever being clipped). Closed = width:0 (the
+   exact `.wz-cascade-panel[data-visible='false']` collapse technique,
+   mirrored) rather than Sliver's opacity/translateX fade — a flex-basis
+   collapse is what lets the SAME rule serve both the open-width AND the
+   docked-width without fighting a transform. */
+.wz-tutor-panel{ flex:0 0 auto; width:0; max-width:0; height:100%; overflow:hidden;
+  background:var(--desk-ground); border-width:0; border-style:solid; border-color:var(--ink-border);
+  opacity:0; pointer-events:none;
+  transition:width 180ms ease, max-width 180ms ease, opacity 180ms ease, border-width 180ms ease; }
+.wz-tutor-panel[data-open='true']{
+  width:min(300px, 86vw); max-width:min(300px, 86vw);
+  border-width:1px; opacity:1; pointer-events:auto; overflow-y:auto; }
+/* A15/S2's dock rider (CD2's exact grammar, mirrored): a docked panel
+   compresses toward the margin genuinely available, floored at 120px —
+   never occludes the measure once docked. Cascade.tsx's own
+   `availableCascadeMargin()`/`DOCK_FLOOR_PX` pattern is reused verbatim in
+   Tutor.tsx (a JS-measured gate on whether the dock affordance is even
+   offered), matching this file's own header note that the floor is a JS
+   decision, not something CSS alone can enforce safely. */
+.wz-tutor-panel[data-open='true'][data-docked='true']{
+  width:clamp(120px, var(--tutor-panel-margin), 300px);
+  max-width:clamp(120px, var(--tutor-panel-margin), 300px); }
+@media (prefers-reduced-motion:reduce){ .wz-tutor-panel{ transition:none; } }
+.wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
+.wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.wz-tutor-head-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* The dock's own quiet close/reopen affordance — text-scale, never brass
+   (chrome, not an evental action), the exact `.wz-cascade-dock-btn` look. */
+.wz-tutor-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
+  font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
+.wz-tutor-dock-btn:hover{ color:var(--text-hi); }
+.wz-tutor-section{ display:flex; flex-direction:column; gap:6px; }
+.wz-tutor-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+.wz-tutor-note{ font-size:11px; color:var(--text-low); }
+.wz-tutor-obs{ font-size:13px; color:var(--text-mid); line-height:1.4; }
+.wz-tutor-empty{ font-size:12px; color:var(--text-low); }
+.wz-tutor-frag-list{ display:flex; flex-direction:column; gap:2px; }
+.wz-tutor-frag-item{ background:none; border:0; color:var(--text-mid); text-align:left;
+  font-family:var(--font-ui); font-size:13px; cursor:pointer; padding:6px 4px; transition:.15s; }
+.wz-tutor-frag-item:hover{ color:var(--text-hi); background:var(--ink-800); }
+/* The conversation — a plain scrolling transcript + a one-line composer.
+   No insert/apply/copy-into-page affordance exists anywhere in this block
+   (A13's own mechanical backstop — see Tutor.tsx's structural walk). */
+.wz-tutor-convo{ display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--ink-border); padding-top:12px; }
+.wz-tutor-convo-log{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; }
+.wz-tutor-msg{ font-size:13px; line-height:1.4; padding:8px 10px; border-radius:var(--radius-sm); }
+.wz-tutor-msg-writer{ background:var(--ink-800); color:var(--text-hi); align-self:flex-end; max-width:88%; }
+.wz-tutor-msg-tutor{ background:none; border:1px solid var(--ink-border); color:var(--text-mid); max-width:88%; }
+.wz-tutor-convo-row{ display:flex; gap:6px; }
+.wz-tutor-convo-input{ flex:1; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:13px; padding:8px 10px; border-radius:var(--radius-sm); resize:none; }
+.wz-tutor-convo-send{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; padding:0 14px; cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
+.wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
+.wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* HB1 S4's own ceremony backdrop precedent, reused whole for the one-time
+   disclosure — position:fixed (never absolute), so it's immune to
+   `.desk-frame-host`'s own overflow:hidden the same way every other
+   route-level overlay in this app already is (this file's own header
+   comment on `.sprint-modal-backdrop`/`.hb1-ceremony-backdrop` explains
+   why). Square corners (FX1 S4 law). */
+.wz-tutor-disclosure-backdrop{ position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.5);
+  display:flex; align-items:center; justify-content:center; padding:20px; }
+.wz-tutor-disclosure{ background:var(--desk-ground); border:1px solid var(--ink-border-strong);
+  max-width:380px; padding:20px; display:flex; flex-direction:column; gap:10px; }
+.wz-tutor-disclosure-title{ font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+.wz-tutor-disclosure-body{ font-size:14px; color:var(--text-hi); line-height:1.5; }
+.wz-tutor-disclosure-ack{ align-self:flex-end; background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; padding:8px 16px; cursor:pointer; transition:.15s; }
+.wz-tutor-disclosure-ack:hover{ color:var(--text-hi); border-color:var(--accent-rest); }
 
 /* CD2 S1 — the Cascade's strip (components/Cascade.tsx). Fills the strip
    track (.desk-frame-strip, above) whole — the drawer it replaces is
