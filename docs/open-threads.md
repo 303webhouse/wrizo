@@ -2100,6 +2100,48 @@ outlive a session lives here, not in chat.
     erratum WIP` stash) is this ticket's own build-time work, not
     done here — deferred to when TU1 actually builds, matching every
     prior ticket's own S0-at-build-time pattern.
+    **BUILT + PUSHED — 2026-07-19.** Built S1-S6 on `tu1-tutor` off
+    `main` @ `5ed923c`, in its own isolated worktree per the ONE
+    CHECKOUT PER AGENT rule. The stash-drop sub-task of S0 was already
+    done directly on `main` before this build started (see this
+    commit's own note above); item 27's own HB-arc consolidation note
+    is Nick/Fable session administration this build agent has no
+    visibility into and did not attempt.
+    **Schema, exactly as declared:** one nullable `tutor` jsonb column
+    (`add column if not exists`, no default, no CHECK), both
+    sync-mapper directions (rowToJournalEntry / upsertJournalEntries,
+    the origin/script three-touch-point recipe). Server surface
+    stayed within the brief's own enumeration — one column, two
+    mapper touches, one route (`POST /api/tutor/chat`) — no
+    STOP-and-report triggered.
+    **Geometry (S2) needed a real design correction mid-build,
+    empirically caught, not guessed:** a single Sliver-shaped anchor
+    cannot hold both the grip's FX2 clearance box and a genuine
+    ~300px open panel — measured live at 1280px, the naive nesting
+    silently clipped ~20px of the panel against `.desk-frame-host`'s
+    own overflow:hidden (an unrelated FX3 fix). Fixed with two
+    DeskFrame overlay anchors instead of one — full writeup in the S2
+    commit message. Also caught and fixed along the way: a
+    Consistency-lens gap where ALL-CAPS/lowercase case variants of an
+    already-known name were invisible to a Title-Case-only harvest
+    (a second, targeted case-insensitive pass fixes it); and a live
+    re-confirmation of this project's own documented "harness seeding
+    vs. flushNow race" (MEMORY.md) — every raw-localStorage seed site
+    in tu1.mjs now mutates from the Desk, never while the entry's own
+    page is mounted.
+    `scripts/harness/tu1.mjs` — 96 checks, stable across 5+ runs, both
+    `HARNESS_PARKED` settings, park sweep genuinely empty (armed but
+    empty, per the cd2/fx3/ab4 precedent). Full suite (all 20 harness
+    files including tu1.mjs) green in both `HARNESS_PARKED` settings;
+    `tsc` (desktop + server) + `build:web` + selftest all green.
+    **Not merged — schema ticket, no pre-authorization, per the
+    brief's own words.** Fable reviews on the branch; the merge
+    happens only on Nick's explicit go. **Outstanding, by design, not
+    faked:** a real end-to-end model round-trip (no TUTOR_API_KEY
+    exists in this build environment — the offline/unconfigured path
+    is what's actually verified, thoroughly, live) and the S1-
+    precedent live prod round-trip (owed after Nick's own merge-and-
+    deploy cycle, not before).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
