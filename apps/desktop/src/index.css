@@ -78,6 +78,17 @@
      hand-synced comment could. */
   --frame-gap: 28px;
 
+  /* FX5 S10 — Nick's A1 verdict: the strip stays flush at the SCREEN's own
+     left edge (FX4 S3's win, untouched), but the PAPER goes back to
+     viewport center — two different reference frames that used to be one
+     (`.desk-frame-host`'s own left padding). A single named token, read by
+     BOTH `.desk-frame-host`'s padding (symmetric again, restoring true
+     viewport-centering for `.desk-frame-grid`'s own `margin:0 auto`) AND
+     `.desk-frame-strip`'s own negative left offset (pulling it back OUT of
+     that padding to the true x=0 edge) — so the two can never drift apart
+     the way a hand-duplicated `clamp(16px,3vw,40px)` in two rules could. */
+  --frame-host-pad-x: clamp(16px, 3vw, 40px);
+
   /* CD1 S5 — the composed frame's own working max width (drawer | stage |
      wall-track): caps and centers on a wide monitor so a wide desk reads as
      more wood, not more furniture — the desk-ground texture (below) owns
@@ -725,9 +736,20 @@ h1, h2, h3 {
    ramp across the whole band (85% paper-opaque at the very top, easing to 0)
    rather than the old two-stage "solid then clear" cutoff — closer to the
    1.0->~0.15 text-opacity ramp the container-mode mask achieves directly. */
+/* FX5 S1 (b) — "the fade band starts one line lower": the sticky overlay's
+   own height now spans --tw-fade-start (one line-height, fully transparent
+   — the topmost line reads unfaded) PLUS the existing --tw-fade-band ramp
+   depth, unchanged; the gradient's own stops move down by --tw-fade-start
+   in step (explicit px stops, not percentages, so the two pieces — the
+   flat unfaded lead-in and the ramp — stay independently sized regardless
+   of the box's own total height). */
 .entry-typewriter-fade{ position:sticky; top:0; z-index:2; pointer-events:none;
-  height:var(--tw-fade-band,84px); margin-bottom:calc(-1 * var(--tw-fade-band,84px));
-  background:linear-gradient(to bottom, rgba(243,237,225,.85) 0%, rgba(243,237,225,0) 100%);
+  height:calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px));
+  margin-bottom:calc(-1 * (var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
+  background:linear-gradient(to bottom,
+    rgba(243,237,225,0) 0, rgba(243,237,225,0) var(--tw-fade-start,28px),
+    rgba(243,237,225,.85) var(--tw-fade-start,28px),
+    rgba(243,237,225,0) calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
   opacity:0; transition:opacity .6s ease; }
 /* FX4 S1 — the Journal carve-out retires: this is the ENTIRE mechanism of
    that carve-out reversing. Before this ticket, `.entry-full` computed and
@@ -1172,6 +1194,23 @@ a:focus-visible,
    told by a 2px offset hard edge + a soft shadow — "card stock, not
    glass." Values matched precisely from the reference file, not
    approximated from the brief's prose alone. */
+/* FX5 S3 (a) — Plateau's own scrollbar treatment, everywhere the board
+   itself scrolls (`.board-canvas-wrap`, BoardEditor.tsx's own inline
+   overflow:auto): thin, low-contrast, square, no OS chrome. `scrollbar-
+   width`/`scrollbar-color` cover Firefox; the `::-webkit-scrollbar` family
+   covers Chromium/Safari (no unprefixed standard yet for thumb/track
+   colors) — the SAME two-part convention this file already uses to HIDE
+   scrollbars elsewhere (.mode-scroll, .desk-frame-scroll-cap), just tuned
+   to stay visible-but-quiet here instead, since a board that scrolls needs
+   a legible affordance that it does. */
+.board-canvas-wrap{
+  scrollbar-width:thin; scrollbar-color:var(--ink-border-strong) transparent;
+}
+.board-canvas-wrap::-webkit-scrollbar{ width:8px; height:8px; }
+.board-canvas-wrap::-webkit-scrollbar-track{ background:transparent; }
+.board-canvas-wrap::-webkit-scrollbar-thumb{ background:var(--ink-border-strong); border-radius:0; }
+.board-canvas-wrap::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
+.board-canvas-wrap::-webkit-scrollbar-corner{ background:transparent; }
 .board-canvas{ border-radius:0; }
 .board-box{ border-radius:0; box-sizing:border-box; touch-action:none; }
 .board-box[data-selected="true"]{ outline:2px solid var(--brass); outline-offset:1px; }
@@ -1204,6 +1243,49 @@ a:focus-visible,
 .board-pin-title{ font-weight:600; }
 .board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
 .board-pin-missing{ color:var(--text-low); font-style:italic; cursor:default; }
+/* FX5 S3 — a ported text card's own excerpt face (BoardEditor.tsx's
+   BoardTextBox, the sourceEntryId branch) reuses .board-pin-badge/-title/
+   -excerpt verbatim (the SAME notecard shape) and gets the SAME pointer
+   cursor as .board-pin — double-click now travels to the source, matching
+   page-pin exactly. */
+.board-ported{ cursor:pointer; }
+/* FX5 S5 — the olive pin: the connection grab, at the card's own top-left
+   corner, on every card, always (not selection-gated — see BoardEditor.tsx's
+   own onDown comment for why the two-step arm-then-drag gesture it replaces
+   is gone whole). A genuine circle — Nick's own ruling, quoted in the brief
+   — the one deliberate exception to this file's square-corners law for a
+   small state/grab indicator (matching .status-dot's own existing
+   precedent, above). Olive (--accent-rest) marks it as a STATE/connection
+   affordance, never brass (brass is reserved for actions like the resize
+   handle) — the lane law holds. */
+.board-pin-grab{
+  position:absolute; left:-6px; top:-6px; width:12px; height:12px; z-index:6;
+  border-radius:50%; background:var(--accent-rest); border:1px solid var(--ink-950);
+  cursor:grab;
+}
+.board-canvas[data-thread-armed='true'] .board-pin-grab{ cursor:grabbing; }
+/* FX5 S4 (c) — the quiet layer-order icon: square (this file's own
+   corners law, unlike the pin above — this is an ACTION button, not a
+   state dot), small, neutral (neither brass nor olive — "minimal,
+   undistracting," the brief's own words; final chrome placement may be
+   revisited by the card committee, per the brief). Sits at the OPPOSITE
+   top corner from the pin so the two never collide. */
+.board-layer-toggle{
+  position:absolute; right:-7px; top:-7px; width:16px; height:16px; z-index:6;
+  display:flex; align-items:center; justify-content:center; padding:0; line-height:1;
+  background:var(--card-stock); border:1px solid var(--ink-border-strong); border-radius:0;
+  color:var(--text-mid); font-size:10px; cursor:pointer;
+}
+/* FX5 S5 — the connections footer: one quiet line per thread, an overlay
+   strip pinned to the card's own bottom edge (never grows the card's own
+   height — a hard-capped max-height with overflow hidden instead, so a
+   card with many threads never blows past its own box). */
+.board-card-footer{
+  position:absolute; left:0; right:0; bottom:0; z-index:4; max-height:44%;
+  padding:2px 8px; background:var(--card-stock); overflow:hidden;
+  font-size:10px; line-height:1.35; color:var(--text-low); pointer-events:none;
+}
+.board-card-footer-line{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 /* AB4 S3 — threads: quiet hairlines at rest, a selected hairline goes
    brass (the same selection treatment .board-box[data-selected] already
    carries), ready for a confirm-free delete. The wide transparent "hit"
@@ -1788,9 +1870,13 @@ a:focus-visible,
    C2). FX1 S1 — the band's reach is --tw-fade-band (~3 line-heights, not a
    fixed fraction of the whole scroll box), and the ramp floors at 15%
    opacity (never a hard clip) instead of the old solid-then-clear cutoff. */
+/* FX5 S1 (b) — "the fade band starts one line lower": the mask stays fully
+   opaque (#000, i.e. fully SHOWN) through --tw-fade-start (one line-height)
+   before the SAME 15%-floor ramp begins — the topmost line reads unfaded,
+   the ramp's own depth (--tw-fade-band) is untouched. */
 .mode-scroll[data-typewriter='true'][data-scrolled='true']{
-  -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, #000 var(--tw-fade-band,84px));
-          mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, #000 var(--tw-fade-band,84px)); }
+  -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
+          mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px))); }
 .mode-wordcount{ position:absolute; bottom:10px; right:14px; z-index:2;
   font-family:var(--font-mono); font-size:13px; color:var(--ink-on-paper-low); }
 
@@ -2010,8 +2096,43 @@ a:focus-visible,
    entirely on the RIGHT instead of split as symmetric margins — the old
    cd1.mjs symmetric-margins assert is SUPERSEDED by this deliberate change
    (parked in cd1.mjs, live successor in fx4.mjs asserting strip x===0 at
-   both reference widths + the 1100 floor instead). */
-.desk-frame-host{ max-width:none; margin:0; padding:2.5rem clamp(16px,3vw,40px) 3rem 0; background:var(--desk-ground); overflow:hidden; }
+   both reference widths + the 1100 floor instead).
+
+   FX5 S10 (Nick's A1 verdict, generation 2 — cd1.mjs's own parked check
+   gains a note pointing here, the accretion precedent) — the FX4 S3 shape
+   above turned out to be the WRONG asymmetry: flushing the strip also
+   dragged the PAPER off-center at a wide viewport (all the leftover width
+   piling on the right, exactly what cd1.mjs's OLD parked check used to
+   assert as wrong the OTHER way). The composition law now: strip flush at
+   the screen's own left edge STAYS (Nick never asked to lose that), but
+   the paper returns to true viewport-center, with leftover width split
+   symmetrically around IT specifically — not the same symmetric-margins
+   claim restored (that measured the whole GRID's margins), a NEW one
+   (measures the PAPER's own gap on each side, strip's width excluded from
+   the measure per the brief's own words). Two changes make this true at
+   once: (1) `.desk-frame-strip` (below) pulls itself OUT of the grid's own
+   flow (`position:absolute`) — its DOM position inside `.desk-frame-grid`
+   is now irrelevant to layout (grid auto-placement skips out-of-flow
+   items), so `.desk-frame-grid`'s own template drops the strip's track
+   entirely and its content is JUST stage(+corkboard) again; (2) this
+   host's own padding goes back to SYMMETRIC (`--frame-host-pad-x` on both
+   sides) so the grid's restored `margin:0 auto` (below) true-centers
+   within a viewport-centered content box, not a left-biased one. The
+   strip's own negative left offset (below) exactly cancels this padding
+   to land back at x=0 — the two rules share one token, `--frame-host-pad-
+   x` (:root, above), so they can never drift out of step with each other
+   the way two independently-typed `clamp(16px,3vw,40px)` calls could.
+   Verified empirically (not derived on paper alone, this ticket's own
+   standing discipline): with the strip out of the grid's own width
+   budget, the paper's own centering math collapses to the PLAIN "centered
+   directly in the viewport" formula regardless of the stage track's own
+   width (nested centering inside centering is still just centering) —
+   confirmed the strip's own 84px + --frame-gap's 28px (112px total) never
+   overlaps the paper's own natural left margin even at the 1100px floor
+   (measured ~200px of clearance there, the tightest case — see fx5.mjs's
+   own S10 section for the live rect proof at all three reference
+   widths). */
+.desk-frame-host{ max-width:none; margin:0; padding:2.5rem var(--frame-host-pad-x) 3rem var(--frame-host-pad-x); background:var(--desk-ground); overflow:hidden; }
 /* FX4 S1 — Journal's own host reverts the clip (see JournalEntry.tsx's own
    comment on `.desk-frame-host--journal` for the full defect writeup): this
    is the ONE DeskFrame surface whose content is meant to grow past the
@@ -2021,24 +2142,45 @@ a:focus-visible,
    here specifically — confirmed live, not guessed. */
 .desk-frame-host--journal{ overflow:visible; }
 .desk-frame{ position:relative; }
+/* FX5 S10 — the strip no longer occupies a grid TRACK (it's position:
+   absolute now, see .desk-frame-strip below) — the template holds only
+   stage(+corkboard), and centering is restored (`margin:0 auto`, was FX4
+   S3's left-anchoring `0 auto 0 0`) now that the strip can't drag it off
+   viewport-center anymore. See .desk-frame-host's own S10 comment above
+   for the full before/after reasoning. */
 .desk-frame-grid{
   display:grid;
-  grid-template-columns: var(--strip-width) minmax(0,1fr) 260px;
+  grid-template-columns: minmax(0,1fr) 260px;
   column-gap:var(--frame-gap); align-items:start; justify-content:center;
-  max-width:var(--frame-max); margin:0 auto 0 0;
+  max-width:var(--frame-max); margin:0 auto;
 }
 /* CD1 S5 — the corkboard track's grid COLUMN disappears with its content
    (FX1 S5's "render only with content" law, reused): DeskFrame.tsx only
    ever renders the third `<aside>` when it has something to hold, and
    drops this data attribute to `false` in step — so no CD1 caller (none
    pass `corkboard` yet) ever pays for a dead 260px column + its gap. */
-.desk-frame-grid[data-corkboard='false']{ grid-template-columns: var(--strip-width) minmax(0,1fr); }
+.desk-frame-grid[data-corkboard='false']{ grid-template-columns: minmax(0,1fr); }
 /* CD2 S1/S5 — the strip's own track (formerly .desk-frame-toolrail, the
    Drawer's fixed-width home). Same visual box treatment as the track it
    replaces (desk-ground fill, 1px border) so the composed frame's overall
    rhythm doesn't shift; the CONTENT inside is now a narrow icon+label rail
-   (.wz-strip*, below) instead of a 200px-wide content drawer. */
-.desk-frame-strip{ min-height:70vh; background:var(--desk-ground);
+   (.wz-strip*, below) instead of a 200px-wide content drawer.
+   FX5 S10 — no longer a grid item at all: `position:absolute`, pinned to
+   the SCREEN's own left edge regardless of where the (now true-centered)
+   grid itself sits. Its containing block is `.desk-frame` (already
+   `position:relative`, unpadded, spans host's full content width) — `left:
+   calc(-1 * var(--frame-host-pad-x))` cancels the host's own (now
+   symmetric) left padding exactly, landing back at literal x=0. `top:0`
+   lands it at the SAME vertical start the grid's own `align-items:start`
+   used to give it (the grid is `.desk-frame`'s only child, no margin of
+   its own, so the two top edges always coincided anyway). Taking it out
+   of grid flow this way means its DOM position no longer matters for
+   LAYOUT (an absolutely-positioned grid item is skipped by auto-
+   placement) — left exactly where it was in the markup; only the CSS
+   changed (see .desk-frame-grid's own template above, which no longer
+   reserves a track for it). */
+.desk-frame-strip{ position:absolute; top:0; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width);
+  min-height:70vh; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); overflow:hidden; }
 /* FX3 S1 — the one definite, non-percentage height near the top of the
    chain (a flex/grid `height:100%` further down needs an explicit height
@@ -2250,7 +2392,46 @@ a:focus-visible,
   font-size:calc(1rem * var(--paper-scale));
   --sliver-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
   --sliver-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, see comment above */
-  --sliver-margin: calc(50% - var(--sliver-paper-half) + var(--frame-gap));
+  /* FX5 S10 — this formula's own "50%" is relative to `.desk-frame-stage`'s
+     own box, and `+ var(--frame-gap)` alone used to be the whole
+     correction because stage's own 0% USED TO coincide with the strip's
+     own right edge (adjacent grid columns, `--frame-gap` apart — cd1.mjs's
+     own S2 comment above documents this exact cancellation). S10 breaks
+     that coincidence: the strip is `position:absolute` now (pinned to the
+     SCREEN's own x=0, index.css's own .desk-frame-strip rule), and
+     `.desk-frame-stage` (via the grid, strip's column removed) spans
+     essentially `.desk-frame-host`'s own full content width — its 0% now
+     sits at approximately the host's own left padding
+     (`--frame-host-pad-x`), NOT at the strip's own right edge, which is a
+     viewport-INDEPENDENT `--strip-width` px from the true screen edge.
+     Diagnosed live (not guessed): fx2.mjs's own "sliver anchor never
+     overlaps the strip" floor check caught a real ~42px overlap at
+     1100px after S10 landed, exactly this stale assumption. Corrected:
+     `+ var(--frame-host-pad-x) - var(--strip-width)` replaces the old
+     bare `+ var(--frame-gap)` (which stays too, as the SAME breathing-
+     room term it always was) — this slightly UNDER-estimates the true
+     available margin at a wide, `--frame-max`-capped viewport (where the
+     grid centers with room past `--frame-host-pad-x` alone) rather than
+     over-estimating it, the safe direction for a "never overlap" floor:
+     verified empirically the anchor's own left edge clears the strip's
+     own right edge by exactly `--frame-gap` again at the 1100px floor
+     (fx5.mjs's own S10 section re-proves this at all three reference
+     widths, alongside fx2.mjs's own pre-existing floor check). */
+  /* `max(0px, ...)` floors it — found live (fx4.mjs's own board-variant S3
+     check, not guessed): the BOARD variant's own `--sliver-paper-half`
+     (`min(50%, 550px)`, below) is large enough that this formula genuinely
+     goes NEGATIVE at ordinary viewports now (subtracting a fixed --strip-
+     width/--frame-gap that didn't used to apply). A negative custom
+     property is NOT clamped the way a real `width` property is — it feeds
+     UNCLAMPED into `--sliver-anchor-w`'s own calc below, while the actual
+     rendered `width:var(--sliver-anchor-w)` DOES clamp (negative widths
+     are invalid) — the two disagreeing broke the "anchor's right edge
+     always lands exactly on the paper" cancellation the whole formula
+     depends on (measured: a ~22px drift at 1280px). Flooring at 0 keeps
+     every downstream consumer (`--sliver-overflow`, `--sliver-anchor-w`)
+     consistently non-negative, so `width` and the `left` calc that
+     references the SAME custom property never disagree. */
+  --sliver-margin: max(0px, calc(50% - var(--sliver-paper-half) + var(--frame-host-pad-x) - var(--strip-width) - var(--frame-gap)));
   --sliver-overflow: clamp(0px, calc(160px - var(--sliver-margin)), var(--sliver-paper-pad));
   --sliver-anchor-w: min(200px, calc(var(--sliver-margin) + var(--sliver-overflow)));
   width: var(--sliver-anchor-w);
@@ -2916,6 +3097,19 @@ a:focus-visible,
 /* AB2 S0/S3 — the iA register (draftDecoration.ts): syntax visible, dimmed;
    effect live. The marks show their work — honest text, no hidden state. */
 .md-mark{ opacity:.38; }
+/* FX5 S6 — the card-surface register only (draftDecoration.ts's own
+   decorateMarkdownForCard, BoardCardPopup.tsx). NEVER display:none or
+   visibility:hidden (both are excluded from Element.innerText by spec,
+   which this popup's own onInput reads to derive the stored plain text —
+   hiding markers that way would silently strip them from storage; see
+   draftDecoration.ts's own header comment on decorateInlineForCard for the
+   full reasoning). font-size:0 collapses the marker to zero visual width
+   while it stays a REAL rendered character innerText still reports
+   faithfully — combined with opacity:0 as a belt-and-suspenders visual
+   safety net (harmless once font-size is already 0). This class is only
+   ever EMITTED by decorateMarkdownForCard — Draft mode's own plain
+   `.md-mark` rule above is completely untouched. */
+.md-mark-hidden{ font-size:0; opacity:0; }
 .md-bold{ font-weight:700; }
 .md-italic{ font-style:italic; }
 .md-h1{ font-size:1.3em; font-weight:600; }
@@ -2928,9 +3122,10 @@ a:focus-visible,
    offset centers a fresh page's first line, and the band/ramp track
    --tw-fade-band/15%-floor instead of a fixed fraction + hard cutoff. */
 .desk-frame-scroll-cap[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); }
+/* FX5 S1 (b) — same one-line-lower shift as .mode-scroll's own rule above. */
 .desk-frame-scroll-cap[data-typewriter='true'][data-scrolled='true']{
-  -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, #000 var(--tw-fade-band,84px));
-          mask-image:linear-gradient(to bottom, rgba(0,0,0,.15) 0, #000 var(--tw-fade-band,84px)); }
+  -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
+          mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px))); }
 
 /* The corner-glyph collapse (S4 chrome purge) — App.tsx's GlobalHeader
    folds Fullscreen/Sync/Sign out behind one glyph while a DeskFrame is
