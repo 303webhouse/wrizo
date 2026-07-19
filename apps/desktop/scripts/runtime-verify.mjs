@@ -324,6 +324,31 @@ function makeApp(base, cdp, waitEvent) {
       await pen('mouseReleased', at(points[points.length - 1]));
     },
     /**
+     * FX5 S8 — a genuinely TRUSTED pointer-move via CDP Input (isTrusted:
+     * true, the browser's own input layer — NOT `window.dispatchEvent(new
+     * PointerEvent(...))`, which is isTrusted:false page-side JS no matter
+     * how faithfully its fields are filled in). This is "the closest-to-
+     * trusted event stream the harness can produce" the FX5 brief's own
+     * standing discipline asks for on every input-gesture claim. No button
+     * held (a plain hover-move, not a drag) — pointerType defaults to
+     * 'mouse'. Callers drive a REALISTIC incremental trajectory (several
+     * calls with small coordinate steps + real waits between them) rather
+     * than one teleport, so a "dwell" genuinely resembles a hand slowing
+     * to a stop rather than a single synthetic snap.
+     */
+    mouseMove: (x, y) => cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, pointerType: 'mouse', buttons: 0 }),
+    /**
+     * FX5 S4 — a genuinely TRUSTED mouse press/release via CDP Input, for
+     * checks that need the browser's own pointer-capture machinery to
+     * treat the pointer as truly active (a page-side `new PointerEvent()`
+     * + `dispatchEvent()` pointerdown is NOT recognized as an active
+     * pointer by `Element.setPointerCapture` in Chromium — captures on a
+     * synthetic pointer id silently fail — a real, documented fidelity
+     * gap this pair closes for the checks that specifically need it).
+     */
+    mouseDown: (x, y) => cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' }),
+    mouseUp: (x, y) => cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' }),
+    /**
      * Emulate a HiDPI device (devicePixelRatio) so canvas/backing-store sizing
      * can be verified the way real tablets/phones hit it — headless defaults to
      * dpr 1, which hides replaced-element canvas sizing bugs.

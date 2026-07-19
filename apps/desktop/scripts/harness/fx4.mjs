@@ -538,117 +538,17 @@ await withHarness(async (app) => {
     await app.evalJs("!document.querySelector('.board-text-editing')"));
 
   // ==========================================================================
-  // S6 — the thread, by hand. Double-click the brass resize handle arms a
-  // thread-drag; drag and release inside a target card mints the hairline;
-  // Escape or releasing on empty board cancels; de-dupe either order;
-  // deletion unchanged. The sliver's Connect toggle retires — Add card
-  // alone (ab4.mjs's own exact-two-tools count parks there; successor here).
-  // ==========================================================================
-  await freshBoard(app, 'fx4-s6-board', [
-    { id: 'fx4-s6-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
-    { id: 'fx4-s6-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
-  ], LAPTOP_W, 900);
-  await app.evalJs(DRAG_HELPER);
-
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-  await sleep(150);
-  const sliverShape = await app.evalJs(`(() => {
-    const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
-    const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn'));
-    const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
-    return { sectionCount: sections.length, buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()), connectTogglePresent: !!document.querySelector('.wz-sliver-connect') };
-  })()`);
-  ok('S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now (successor to ab4.mjs\'s parked exact-two-tools count)',
-    sliverShape.sectionCount === 1 && sliverShape.buttonCount === 1 && sliverShape.labels[0] === 'Add card' && !sliverShape.connectTogglePresent,
-    JSON.stringify(sliverShape));
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); // close
-
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-a"]\', 0, 0)');
-  await sleep(100);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  await sleep(150);
-  const armed = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-  ok('S6: double-clicking the brass resize handle arms a thread-drag from that card (successor to ab4.mjs\'s parked connect-toggle-gesture checks)', armed === 'true', armed);
-  const originHighlight = await app.evalJs("document.querySelector('[data-box-id=\"fx4-s6-a\"]').dataset.threadSource");
-  ok('S6: the origin card carries the dashed-olive armed highlight', originHighlight === 'true', originHighlight);
-
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-b"]\', 0, 0)');
-  await sleep(200);
-  const linesAfterConnect = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  ok('S6: dragging and releasing inside a target card mints the hairline', linesAfterConnect === 1, String(linesAfterConnect));
-  const connAfterConnect = (await app.evalJs('window.wrizoBoard()')).find((b) => b.kind === 'connection');
-  ok('S6: the underlying \'connection\' Box creation/storage is UNCHANGED from AB4 — only the gesture differs',
-    !!connAfterConnect && ((connAfterConnect.connA === 'fx4-s6-a' && connAfterConnect.connB === 'fx4-s6-b') || (connAfterConnect.connA === 'fx4-s6-b' && connAfterConnect.connB === 'fx4-s6-a')),
-    JSON.stringify(connAfterConnect));
-  const disarmedAfterConnect = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-  ok('S6: arming disarms itself once a thread is minted', disarmedAfterConnect === 'false', disarmedAfterConnect);
-
-  // Escape cancels an armed (not yet dragged) thread.
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-a"]\', 0, 0)');
-  await sleep(100);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  await sleep(150);
-  await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
-  await sleep(150);
-  const disarmedByEscape = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-  ok('S6: Escape disarms a pending thread-drag', disarmedByEscape === 'false', disarmedByEscape);
-
-  // Releasing on empty board cancels.
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-a"]\', 0, 0)');
-  await sleep(100);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  await sleep(150);
-  const linesBeforeEmptyRelease = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  await app.evalJs(`(() => {
-    const canvas = document.querySelector('.board-canvas');
-    const r = canvas.getBoundingClientRect();
-    const x0 = r.left + 10, y0 = r.top + 10;
-    const x1 = r.left + r.width - 20, y1 = r.top + r.height - 20;
-    const mk = (type, x, y) => new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse', bubbles:true, cancelable:true, isPrimary:true});
-    canvas.dispatchEvent(mk('pointerdown', x0, y0));
-    canvas.dispatchEvent(mk('pointermove', x1, y1));
-    canvas.dispatchEvent(mk('pointerup', x1, y1));
-  })()`);
-  await sleep(200);
-  const linesAfterEmptyRelease = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  ok('S6: releasing on empty board cancels — no new hairline minted',
-    linesAfterEmptyRelease === linesBeforeEmptyRelease, JSON.stringify({ linesBeforeEmptyRelease, linesAfterEmptyRelease }));
-
-  // De-dupe: attempting B->A (reverse order) after A->B already exists does
-  // not double the connection.
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-b"]\', 0, 0)');
-  await sleep(100);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6-b"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  await sleep(150);
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-a"]\', 0, 0)');
-  await sleep(200);
-  const connCountAfterDedupe = (await app.evalJs('window.wrizoBoard()')).filter((b) => b.kind === 'connection').length;
-  ok('S6: de-dupe holds either order — attempting B->A after A->B already exists does not mint a second hairline', connCountAfterDedupe === 1, String(connCountAfterDedupe));
-
-  // Deletion unchanged: select + Delete, confirm-free.
-  await app.evalJs("document.querySelector('.board-connection-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))");
-  await sleep(150);
-  const selected = await app.evalJs("document.querySelector('.board-connection-line')?.dataset.selected");
-  ok('S6: clicking the hairline selects it (brass, matching the board\'s own selection language)', selected === 'true', selected);
-  await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))");
-  await sleep(200);
-  const connCountAfterDelete = (await app.evalJs('window.wrizoBoard()')).filter((b) => b.kind === 'connection').length;
-  ok('S6: Delete removes the selected thread immediately, confirm-free', connCountAfterDelete === 0, String(connCountAfterDelete));
-
-  // Persistence across reload.
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-a"]\', 0, 0)');
-  await sleep(100);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  await sleep(150);
-  await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6-b"]\', 0, 0)');
-  await sleep(2400); // clear the autosave debounce
-  await app.reload();
-  await app.evalJs(DRAG_HELPER);
-  await app.evalJs("location.hash = '#/page/fx4-s6-board'");
-  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'S6 board reloaded' });
-  await sleep(300);
-  const connAfterReload = (await app.evalJs('window.wrizoBoard()')).find((b) => b.kind === 'connection');
-  ok('S6: a handle-drag-minted thread survives a reload', !!connAfterReload, JSON.stringify(connAfterReload));
+  // S6 — RETIRED WHOLE by FX5 S5 (A4 park sweep): the entire handle-double-
+  // click thread-drag gesture this section tested is REMOVED, not repaired
+  // (Nick's own ruling — "the dead handle-gesture... do not repair it").
+  // The underlying connection-mechanics coverage (arm/drag/mint, Escape-
+  // cancel, empty-release-cancel, de-dupe, hairline selection/deletion,
+  // reload persistence) is RE-DERIVED against the new olive-pin-drag
+  // gesture in fx5.mjs's own S5 section — not dropped, just re-triggered a
+  // different way. The sliver-shape assert (exactly one "Add card" button)
+  // is ALSO superseded there (S5 adds the footer toggle, a second control).
+  // Every check formerly here is quoted verbatim in this file's own PARKED
+  // section below (HARNESS_PARKED=1).
 
   // ==========================================================================
   // S7 — Stacked, worn. Lighter stock, 1px hairline, thickness told by the
@@ -776,15 +676,75 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// fx4.mjs is a brand-new file; it parks nothing of its own. This scaffold
-// exists so a future ticket that supersedes any of THIS file's checks has a
-// documented home, matching every other harness file's own pattern.
+// FX5 S5/S9 — the entire handle-double-click thread-drag gesture this
+// file's own S6 section tested is REMOVED WHOLE (Nick's own ruling: "the
+// dead handle-gesture... do not repair it" — an olive pin at the card's
+// top corner is the connection grab now). Quoted verbatim below (the exact
+// code that used to live in this file's own live S6 section, before this
+// park):
+//
+//   await freshBoard(app, 'fx4-s6-board', [
+//     { id: 'fx4-s6-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
+//     { id: 'fx4-s6-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
+//   ], LAPTOP_W, 900);
+//   ...
+//   await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+//   const armed = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+//   ok('S6: double-clicking the brass resize handle arms a thread-drag from that card...', armed === 'true', armed);
+//   ... (mint/cancel/de-dupe/select/delete/reload-persistence, all gated on
+//   that same handle-dblclick arm step)
+//
+// Live successor: fx5.mjs's own S5 section re-derives the IDENTICAL
+// functional coverage (arm, mint, Escape-cancel, empty-release-cancel,
+// de-dupe, hairline select/delete, reload persistence) against the NEW
+// olive-pin-drag gesture instead. The two checks below don't re-run the
+// dead code (there is nothing left to re-run it AGAINST — the .board-
+// handle element no longer carries a dblclick listener at all) — they
+// instead PROVE the retirement itself, the same "no dead surface left
+// behind" discipline ab1.mjs's own S5 park uses for inline-editing's
+// retirement.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.evalJs(DRAG_HELPER);
+    await freshBoard(app, 'fx4-s6-parked-board', [
+      { id: 'fx4-s6p-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
+      { id: 'fx4-s6p-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
+    ], LAPTOP_W, 900);
+    await app.evalJs(DRAG_HELPER);
+    await app.evalJs('__pointerSeq(\'[data-box-id="fx4-s6p-a"]\', 0, 0)');
+    await sleep(100);
+    await app.evalJs('document.querySelector(\'[data-box-id="fx4-s6p-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+    await sleep(150);
+    const armedAfterDblclick = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
+    pok('PARKED (was "S6: double-clicking the brass resize handle arms a thread-drag from that card") — FX5 S5: the gesture is retired WHOLE, proven inert (double-clicking the handle no longer arms anything); live successor (the olive-pin-drag gesture) fully re-derived in fx5.mjs\'s own S5 section',
+      armedAfterDblclick === 'false', armedAfterDblclick);
+
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+    await sleep(150);
+    const sliverShape = await app.evalJs(`(() => {
+      const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
+      const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn'));
+      const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
+      return { buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
+    })()`);
+    pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); live successor in fx5.mjs\'s own S5 section',
+      sliverShape.buttonCount === 2, JSON.stringify(sliverShape));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nFX4 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of fx4.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nFX4 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nFX4 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+const allChecksFx4 = checks.concat(parkedChecks);
+const pass = allChecksFx4.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nFX4 VERIFY: PASS (${checks.length} checks)` : `\nFX4 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nFX4 VERIFY: PASS (${allChecksFx4.length} checks)` : `\nFX4 VERIFY: FAIL — ${allChecksFx4.filter((c) => !c.pass).length}/${allChecksFx4.length} failed`);
 process.exit(pass ? 0 : 1);

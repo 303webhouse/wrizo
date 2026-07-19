@@ -395,16 +395,29 @@ if (process.env.HARNESS_PARKED === '1') {
     // of moving the start position higher, not a regression in the
     // engage-band tuning itself. Live successor in fx4.mjs's own S1
     // section with the updated (still tight) line-count fence.
+    //
+    // GENERATION 2 (FX5 S1) — the engage MOTION is rewritten whole (S1's
+    // own "never a multi-line recenter jump" law: relative, one-line-at-a-
+    // time stepping, see useTypewriterFade.ts's own header comment), and
+    // first-engage's own catch-up now applies via that SAME clamped path
+    // rather than one unconditional absolute jump. The crossing CRITERION
+    // itself (CONTAINER_HOLD_BAND, unchanged) still fires at the identical
+    // geometric moment; measured live, the visible `data-scrolled` flip
+    // lands one line later under the new stepped mechanics (6 -> 7) — a
+    // tolerance-level engage-timing observation, not a regression in
+    // WHERE the band sits (fx5.mjs's own S1 section asserts the per-line
+    // motion's own shape directly, a stronger claim than this line-count
+    // fence). Live successor there.
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     let scrolledAtLine = null;
-    for (let i = 1; i <= 8 && scrolledAtLine === null; i++) {
+    for (let i = 1; i <= 9 && scrolledAtLine === null; i++) {
       await app.typeKeys(`Line ${i} of test content, long enough to fill most of the paper's width.\n`);
       await sleep(120);
       const scrolled = await app.evalJs("document.querySelector('.mode-scroll')?.dataset.scrolled");
       if (scrolled === 'true') scrolledAtLine = i;
     }
-    pok('PARKED (was "S3: the scroll/fade engages within the first few lines of fresh typing (<=5), not lagging for a dozen") — FX4 S1: the lower start fraction pushes this to line 6; live successor in fx4.mjs\'s own S1 section',
-      scrolledAtLine !== null && scrolledAtLine <= 6, `scrolledAtLine=${scrolledAtLine}`);
+    pok('PARKED (was "S3: the scroll/fade engages within the first few lines of fresh typing (<=5), not lagging for a dozen", generation 2: was FX4 S1\'s own re-derivation at <=6) — FX5 S1: the stepped engage motion lands this at line 7; live successor in fx5.mjs\'s own S1 section',
+      scrolledAtLine !== null && scrolledAtLine <= 7, `scrolledAtLine=${scrolledAtLine}`);
 
     // ORIGINAL: await freshScriptPage(app, 1280, 900); const
     // scriptStartOffsetInfo = await app.evalJs(`(() => { const stage = ...

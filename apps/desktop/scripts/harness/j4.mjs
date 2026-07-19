@@ -173,11 +173,20 @@ await withHarness(async (app) => {
   // and review fix 1's "second edit session seeds from the saved edit")
   // are parked verbatim below (SUPERSEDED); live successors (the SAME
   // three claims, reached via the popup) are in fx4.mjs's own S5 section.
-  // The board is left edited via the popup here so downstream checks (the
-  // VW copy-paste proof just below) still have real, current text to work
-  // with — same mechanical outcome, new gesture.
-  await app.evalJs(`document.querySelector('[data-box-id="${b1.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))`);
-  await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'text box popup open' });
+  //
+  // FX5 S3 — a SECOND falsification, on the SAME line: `b1` is a PORTED
+  // card (carries sourceEntryId, per its own `find` above), and S3 makes a
+  // ported card's double-click travel to its source instead of opening the
+  // popup (matching page-pin's own affordance) — double-clicking b1 here
+  // would navigate away, never reaching a popup at all. Parked verbatim
+  // below (the ORIGINAL dblclick-based sequence); the live replacement
+  // reaches the SAME popup via S3's own new "Edit copy" action-row button
+  // instead — the board is left edited here so the downstream VW copy-
+  // paste proof still has real, current text to work with, same as before.
+  await app.evalJs(`__pointerSeq('[data-box-id="${b1.id}"]', 0, 0)`);
+  await sleep(100);
+  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit copy')?.click()");
+  await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'text box popup open (via Edit copy)' });
   await app.typeKeys(' EDITED AGAIN');
   await sleep(150);
   await app.evalJs("document.querySelector('.board-popup-done').click()");
@@ -185,7 +194,7 @@ await withHarness(async (app) => {
   entries = await app.localJSON('writer-studio-journal-entries');
   let boardEntry = entries.find((e) => e.boxes?.some((b) => b.id === b1.id));
   let editedBox = boardEntry?.boxes.find((b) => b.id === b1.id);
-  ok('text edit (via the popup) persisted to the board entry', !!editedBox?.text?.includes('EDITED AGAIN'), editedBox?.text);
+  ok('text edit (via the popup, reached through FX5 S3\'s "Edit copy" button since b1 is a ported card) persisted to the board entry', !!editedBox?.text?.includes('EDITED AGAIN'), editedBox?.text);
 
   // -- (25) review fix 2: copy FROM a board text box -> paste into a Draft
   // surface is ALLOWED (no whisper); a genuinely foreign paste still blocks
@@ -348,6 +357,45 @@ if (process.env.HARNESS_PARKED === '1') {
       seededSession2Now.includes('EDITED') && afterKeystrokeSession2Now === seededSession2Now + ' AGAIN',
       JSON.stringify({ seededSession2Now, afterKeystrokeSession2Now }),
     );
+
+    // ORIGINAL (this file's own live section, pre-FX5): await app.evalJs(
+    // `document.querySelector('[data-box-id="${b1.id}"]').dispatchEvent(new
+    // MouseEvent('dblclick', {bubbles:true}))`); await app.waitFor("!!
+    // document.querySelector('.board-popup-editor')", { label: 'text box
+    // popup open' }); await app.typeKeys(' EDITED AGAIN'); ...
+    // ok('text edit (via the popup) persisted to the board entry', ...);
+    // — where b1 is a PORTED card (carries sourceEntryId from the port
+    // fixture above). FX5 S3: double-clicking a PORTED card now travels to
+    // its source instead (matching page-pin's own affordance) — proven
+    // here directly: no popup ever opens. Live successor (editing a ported
+    // card's text via the NEW "Edit copy" action-row button) is re-derived
+    // in THIS file's own live section, just above the park boundary.
+    // Navigate away from the just-edited board FIRST (Desk) — seeding new
+    // localStorage entries while a board with a pending autosave debounce
+    // is still mounted risks that debounce firing afterward and clobbering
+    // the seed with stale in-memory boxes (the harness's own documented
+    // seeding-vs-flushNow race; MEMORY.md's own recorded lesson).
+    await app.goto('/');
+    await sleep(2300);
+    const now2 = new Date().toISOString();
+    await app.evalJs(`(() => {
+      const now = ${JSON.stringify(now2)};
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'j4-parked-source', text: 'A source page.', source: 'page', createdAt: now, updatedAt: now });
+      entries.push({ id: 'j4-parked-ported-board', text: 'J4 Parked Ported Board', pageType: 'board', source: 'page',
+        boxes: [{ id: 'j4-parked-ported-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'A source page.', sourceEntryId: 'j4-parked-source', portedAt: now }],
+        createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/j4-parked-ported-board'");
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED ported-card board framed' });
+    await sleep(300);
+    await app.evalJs("document.querySelector('[data-box-id=\"j4-parked-ported-card\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    await sleep(300);
+    const popupOpenedForPortedCard = await app.evalJs("!!document.querySelector('.board-popup-editor')");
+    pok('PARKED (was "text edit (via the popup) persisted to the board entry", reached by double-clicking a PORTED card b1) — FX5 S3: double-click on a ported card travels to its source now, proven here (no popup opens); live successor (Edit copy button) re-derived in this file\'s own live section',
+      popupOpenedForPortedCard === false, String(popupOpenedForPortedCard));
   });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));

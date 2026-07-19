@@ -405,13 +405,30 @@ if (process.env.HARNESS_PARKED === '1') {
     // entirely on the right by design, not split as symmetric margins.
     // Live successor (asserting the NEW asymmetric-by-design shape, strip
     // x===0) in fx4.mjs's own S3 section.
+    //
+    // GENERATION 2 (FX5 S10, Nick's A1 verdict) — the accretion precedent,
+    // one more layer: FX4 S3's own left-anchored claim above is ITSELF now
+    // superseded. The strip stays flush at x===0 (that part of FX4 S3
+    // survives untouched), but the PAPER goes back to true viewport
+    // center, with leftover width split SYMMETRICALLY around the paper —
+    // NOT a restoration of the ORIGINAL pre-FX4 claim this check first
+    // parked (that measured the whole GRID's own margins; the grid no
+    // longer even reserves a column for the strip, so "grid.left" isn't
+    // the meaningful measure anymore) — a genuinely NEW symmetry, measured
+    // against the PAPER specifically, strip's own width excluded. Live
+    // successor in fx5.mjs's own S10 section (both reference widths + the
+    // 1100 floor); re-derived once more here too, same accretion pattern
+    // this file's own earlier CD2/FX4 layers already established.
     await freshProsePage(app, 2200, 1000);
     const wideMarginsParked = await app.evalJs(`(() => {
-      const grid = document.querySelector('.desk-frame-grid').getBoundingClientRect();
-      return { left: grid.left, right: window.innerWidth - grid.right, viewport: window.innerWidth };
+      const strip = document.querySelector('.desk-frame-strip').getBoundingClientRect();
+      const ed = document.querySelector('.forward-only-editor');
+      const paper = (ed.closest('.mode-page') || ed).getBoundingClientRect();
+      return { stripLeft: strip.left, leftGap: paper.left, rightGap: window.innerWidth - paper.right, viewport: window.innerWidth };
     })()`);
-    pok('PARKED (was "S5: the composed frame centers with symmetric outer margins at a wide viewport (>=2200px)") — FX4 S3: the grid left-anchors now (strip flush to the screen edge); live successor in fx4.mjs\'s own S3 section',
-      Math.abs(wideMarginsParked.left) <= 1, JSON.stringify(wideMarginsParked));
+    pok('PARKED (was "S5: the composed frame centers with symmetric outer margins at a wide viewport (>=2200px)", generation 2: was FX4 S3\'s own re-derivation "the grid left-anchors now") — FX5 S10: symmetric AGAIN, but measured against the PAPER (strip excluded), not the whole grid — live successor in fx5.mjs\'s own S10 section',
+      Math.abs(wideMarginsParked.stripLeft) <= 1 && Math.abs(wideMarginsParked.leftGap - wideMarginsParked.rightGap) <= 2,
+      JSON.stringify(wideMarginsParked));
 
     return parkedChecks;
   });
