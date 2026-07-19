@@ -2116,6 +2116,39 @@ outlive a session lives here, not in chat.
     `/auth/me`. **Close condition 3 (Nick's own FX4 DoD script + the
     A1 wide-desk glance) remains open** — item 33 doesn't close until
     it's spent.
+    **Nick's FX4 DoD verdict sheet — 2026-07-19.** PASS: strip flush,
+    board chrome flush, Stacked cards ("happy for now"), popup+blur,
+    start position. FAIL: thread gesture (handle-dblclick dead under
+    real pointer; superseded by Nick's pin-circle ruling), hover-
+    restore (dead on real hardware despite the four-cycle synthetic
+    proof), glow (imperceptible), engage motion (multi-line jerk).
+    New rulings from the sitting: scroll freedom (typing never snaps
+    the page back; fade tracks the viewport top, not absolute text
+    position), fade band one line lower, em-dash autocorrect, notecard
+    clamp on ported pages, free card movement + overlap + a quiet
+    layer icon, the olive pin as the connection grab, a connection
+    footer + its own toggle, no visible asterisks on cards, Plateau-
+    styled scrollbars. Parked by Nick's own word: the momentum
+    scroller. Restated, committee-owned: staged vanish including full
+    disappearance after sustained writing. Card committee
+    COMMISSIONED by Nick: titles, tags, metadata footer fields,
+    organization/tracking. A1 wide-desk glance: still open at this
+    point (closed separately below). Item 33 **closes PARTIAL** — the
+    DoD verdict sheet is now fully recorded and answered by FX5's own
+    brief (queued behind TU1's branch review, now committed); the
+    route from here is FX5, not a further fold of FX4 itself. Lesson
+    recorded, now standing law in FX5's own preamble: synthetic-event
+    harness proofs are not the same claim as a trusted real pointer
+    gesture — every input-gesture claim from here on reproduces with
+    the closest-to-trusted event stream the harness can produce and
+    documents the residual gap honestly, in the check itself.
+    **A1 (the wide-desk glance) — CLOSED, Nick's verdict, 2026-07-19:**
+    the paper sat visibly off-center (right gap wider than left).
+    Ruled: center the paper, keep the strip flush at the screen's own
+    left edge — recorded as FX5's own S10 amendment. Nick's forward
+    note recorded for the record: the right margin is TU1's own room
+    by design; any further remainder stays unallocated by his word,
+    not silently claimed by any future ticket.
 34. **TU1 — the Tutor.** **BRIEF COMMITTED — 2026-07-18.**
     `docs/wrizo-alpha/tu1-tutor-brief.md`. **SCHEMA TICKET — NO MERGE
     PRE-AUTHORIZATION**, the corrected zero-schema-vs-schema rule's
@@ -2284,6 +2317,33 @@ outlive a session lives here, not in chat.
     thread, byte-for-byte both directions — the S1 precedent) before
     this item can close. Nick's own DoD sitting follows — the
     conversation half stays pending his own `TUTOR_API_KEY`.
+35. **FX5 — the Felt Verdicts.** **BRIEF COMMITTED — 2026-07-19.**
+    `docs/wrizo-alpha/fx5-felt-verdicts-brief.md`, S1-S9 plus the S10
+    center-the-paper amendment (item 33's own A1 close, folded in
+    before build). Authority: Nick's FX4 verdict sheet, recorded under
+    item 33 above. Zero schema (card titles/tags/metadata are
+    explicitly NOT this ticket — card-committee material;
+    STOP-and-report if any slice wants a column). Merge pre-authorized
+    per the standing zero-schema rule; Fable reviews post-merge. Nine
+    slices: the typewriter's manners (per-line engage motion, fade
+    band one line lower, scroll freedom — typing never snaps back,
+    viewport-top fade), the glow retuned to actually be perceptible by
+    mid-goal, board surface polish (Plateau scrollbars, notecard-
+    clamped page-pins, both-axis page-pin resize diagnosed and fixed),
+    free card movement with permitted overlap and a quiet layer-order
+    icon, the olive pin replacing the dead handle-gesture as the
+    connection grab (footer line + its own toggle), no visible
+    asterisks in the card popup, em-dash autocorrect, hover-restore
+    diagnosed live on real hardware (root cause, not a re-guess), plus
+    `fx5.mjs` and its own park sweep. A standing discipline born in
+    this brief's own preamble: for every input-gesture claim,
+    reproduce with the closest-to-trusted event stream the harness can
+    produce, document the residual gap honestly in the check itself —
+    FX4's own thread gesture and hover-restore both passed synthetic
+    proofs and both failed under Nick's real hand. Report = push
+    (merge pre-authorized).
+    **Build starting — 2026-07-19**, via a Workflow-orchestrated
+    build+review pipeline (ultracode), off post-TU1-merge `main`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
