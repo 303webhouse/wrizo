@@ -29,6 +29,16 @@ const FADE_OUT_S = 2.8;       // recede on write/draw — slow + near-impercepti
 const QUICK_S = 0.7;          // explicit-summon return — gentle, not a snap (was 0.4)
 const EDGE_PX = 56;           // reach this close to a viewport edge to summon
 const EDGE_DWELL_MS = 260;    // must linger at the edge this long — a deliberate reach, not a pass-through
+// FX5 S8 — a genuine, reproduced-on-trusted-events defect (see this hook's
+// own onMove comment below for the full diagnosis): a real hand resting at
+// an edge is not pixel-perfectly still, and every momentary jitter across
+// the strict EDGE_PX boundary used to cancel the dwell outright, resetting
+// the clock before it could ever accumulate an uninterrupted run. This is
+// the grace window a brief excursion OFF the edge gets before the dwell
+// actually cancels — short enough that a genuine, deliberate move away
+// still reads as "left" promptly, long enough to absorb ordinary sensor-
+// noise-scale jitter (found live at a ~3px oscillation, ~60ms apart).
+const LEAVE_GRACE_MS = 150;
 
 interface Options {
   surface?: string;                       // names the active surface in the session
@@ -110,30 +120,59 @@ export function useChromeDissolve({
   // outside the text are already unambiguous acts, so those stay instant.
   useEffect(() => {
     let dwellTimer: ReturnType<typeof setTimeout> | null = null;
+    let leaveTimer: ReturnType<typeof setTimeout> | null = null;
     let inZone = false;
     const clearDwell = () => {
       if (dwellTimer) { clearTimeout(dwellTimer); dwellTimer = null; }
+      if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
       inZone = false;
     };
     const onMove = (e: PointerEvent) => {
       if (!dissolvedRef.current) { clearDwell(); return; }
       const atEdge = e.clientX <= EDGE_PX || e.clientX >= window.innerWidth - EDGE_PX || e.clientY <= EDGE_PX;
-      if (!atEdge) { clearDwell(); return; }
-      if (inZone) return; // already lingering — dwell timer running
-      inZone = true;
-      // FX4 S8 — `inZone` was never reset once the dwell timer actually FIRED
-      // (only on a subsequent "left the edge" or "not at edge" move), so a
-      // SECOND dissolve/resurface cycle within the same mount — the writer
-      // reaches the edge again later in one long session, without the
-      // pointer ever registering a genuine "left the zone" move in between —
-      // found `inZone` still stuck `true` from the first summon and silently
-      // dropped the new dwell, never re-arming. Diagnosed live (a two-cycle
-      // harness probe on an unchanged mount): cycle 1 always resurfaced,
-      // every subsequent cycle silently failed. Resetting `inZone` the
-      // instant the timer fires — the same moment `resurface` runs — lets
-      // the very next qualifying dwell arm fresh, regardless of whether the
-      // pointer technically left the zone in between.
-      dwellTimer = setTimeout(() => { dwellTimer = null; inZone = false; resurface(true); }, EDGE_DWELL_MS);
+      if (atEdge) {
+        // Genuinely at (or back at) the edge: a pending "did they actually
+        // leave" grace timer (below) is cancelled — the dwell that was
+        // already running is UNDISTURBED, never restarted from zero.
+        if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+        if (inZone) return; // already lingering — dwell timer running
+        inZone = true;
+        // FX4 S8 — `inZone` was never reset once the dwell timer actually FIRED
+        // (only on a subsequent "left the edge" or "not at edge" move), so a
+        // SECOND dissolve/resurface cycle within the same mount — the writer
+        // reaches the edge again later in one long session, without the
+        // pointer ever registering a genuine "left the zone" move in between —
+        // found `inZone` still stuck `true` from the first summon and silently
+        // dropped the new dwell, never re-arming. Diagnosed live (a two-cycle
+        // harness probe on an unchanged mount): cycle 1 always resurfaced,
+        // every subsequent cycle silently failed. Resetting `inZone` the
+        // instant the timer fires — the same moment `resurface` runs — lets
+        // the very next qualifying dwell arm fresh, regardless of whether the
+        // pointer technically left the zone in between.
+        dwellTimer = setTimeout(() => { dwellTimer = null; inZone = false; resurface(true); }, EDGE_DWELL_MS);
+        return;
+      }
+      // FX5 S8 — a SECOND genuine defect, this one invisible to a synthetic
+      // harness proof and only found by reproducing with a genuinely
+      // TRUSTED pointer stream (CDP Input.dispatchMouseEvent, isTrusted:
+      // true — see runtime-verify.mjs's own app.mouseMove): a real hand
+      // resting near an edge is not pixel-perfectly still — mouse sensor
+      // noise / small hand tremor routinely crosses the strict EDGE_PX
+      // boundary for a single event without the writer moving away at all.
+      // The OLD code (`if (!atEdge) { clearDwell(); return; }`) treated
+      // every such flicker as "left the zone," instantly cancelling the
+      // dwell timer and resetting `inZone` — if jitter recurs faster than
+      // EDGE_DWELL_MS (confirmed live: a ~3px oscillation every ~60ms
+      // never let the timer accumulate an uninterrupted 260ms run), the
+      // writer could rest at the edge indefinitely and NEVER resurface.
+      // Four synthetic multi-cycle probes (fx4.mjs's own S8 section) never
+      // caught this because a hand-written test dispatches one clean
+      // coordinate, never noisy ones. Fix: a brief excursion off the edge
+      // gets a short grace window (LEAVE_GRACE_MS) before the dwell
+      // actually cancels — long enough to absorb realistic jitter, short
+      // enough that a genuine, deliberate move away still reads promptly.
+      if (!inZone || leaveTimer) return; // nothing dwelling, or a grace timer is already running
+      leaveTimer = setTimeout(() => { leaveTimer = null; clearDwell(); }, LEAVE_GRACE_MS);
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { clearDwell(); resurface(true); } };
     const onDown = (e: PointerEvent) => {
