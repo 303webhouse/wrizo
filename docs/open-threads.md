@@ -2344,6 +2344,153 @@ outlive a session lives here, not in chat.
     (merge pre-authorized).
     **Build starting — 2026-07-19**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-TU1-merge `main`.
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED —
+    2026-07-19.** Built S1-S9 + S10 on `fx5-felt-verdicts` off `main`
+    @ `9ddd192`, in its own worktree. S0's own ledger work was already
+    done directly on `main` before the build started (see item 33's
+    close above); the build agent began at S1.
+    **S1 (the big one) — the engage jump fixed by construction, not
+    tuning.** Rewrote the typewriter's catch-up from an absolute
+    "recenter to the band" jump to a relative, one-line-at-a-time
+    step tracked in scroll-independent "document space" — the same
+    mechanism kills both the multi-line jerk AND the snap-back-on-type
+    bug at once, since the engine only ever nudges `scrollTop` by a
+    delta on top of wherever it already sits, never recomputing an
+    absolute target. Fade band moved one line lower via a new
+    `--tw-fade-start` token.
+    **S2 (the glow)** — easing exponent 0.55→0.28; measured, not
+    guessed: computed opacity at 50% progress now reaches ~82% of the
+    untouched cap (was ~68%). Did not fight the ceiling; no
+    STOP-and-report needed.
+    **S3 — the content-minimum trap, correctly re-diagnosed.** The
+    brief's own prose named `page-pin`; empirically that was already
+    fine. The real, reproducible trap lived in PORTED text cards
+    instead — fixed there, judgment call disclosed in both code and
+    harness rather than fixing where the words pointed and the bug
+    wasn't. Plateau scrollbars added to the board canvas.
+    **S4 — drag friction root-caused.** Missing early
+    `setPointerCapture`: the old code only captured once the 6px drag
+    threshold was crossed, leaving a real gap where a fast genuine
+    drag's move/up events could route away from the canvas entirely.
+    Fixed by capturing on the first pointerdown. Overlap was already
+    permitted; a quiet layer-order icon added on selected overlapping
+    cards.
+    **S5 — the pin.** The dead handle-double-click gesture removed
+    whole; a new olive pin-circle drag-and-release mints a thread in
+    one continuous motion. Connections footer + its own toggle
+    (`board-meta.footerOn`, riding the same zero-schema precedent as
+    `canvasW`/`canvasH`).
+    **S6 — asterisks, diagnosed not assumed.** Reveal-adjacent-to-
+    caret chosen over hide-always after a real live finding:
+    `display:none`/`visibility:hidden` on markers would have silently
+    corrupted storage, since the popup's own `onInput` reads
+    `Element.innerText`, which excludes both. Markers stay real
+    characters, `font-size:0` when not adjacent to the caret.
+    **S7 — the em dash, two real defects found and fixed.** (1) Native
+    undo (`execCommand('undo')` AND a real Ctrl/Cmd+Z) turned out not
+    to work AT ALL in either editor — both rewrite their entire
+    contenteditable's `innerHTML` on every input, invalidating
+    Chromium's own undo manager, a pre-existing architectural
+    condition this ticket doesn't fix wholesale but disclosed plainly;
+    a purpose-built one-step undo shim delivers the felt result
+    honestly instead. (2) the post-substitution caret landed short of
+    the untouched trailing space — fixed by computing the target
+    position directly rather than trusting the post-`execCommand` DOM
+    caret. Ships on Draft + the card popup only; Journal/Free Write's
+    incompatible undo models are out of this ticket's scope,
+    disclosed not silently dropped.
+    **S8 — hover-restore, a SECOND real defect invisible to FX4's own
+    four-cycle synthetic proof.** Reproduced with genuinely trusted
+    CDP `Input.dispatchMouseEvent` (new `mouseMove`/`mouseDown`/
+    `mouseUp` harness primitives — `isTrusted:true`, independently
+    confirmed by the review, not synthetic `PointerEvent` dressed up).
+    A real hand's natural jitter at an edge repeatedly crosses the
+    strict `EDGE_PX` boundary, instantly cancelling the dwell every
+    time — fixed with a short leave-grace window. FX4's own multi-
+    cycle fix re-verified correct under real events, untouched.
+    **S10 — the paper re-centers.** Strip pulled out of the grid into
+    `position:absolute` (flush at screen x=0); the grid drops the
+    strip's own column and regains true `margin:0 auto` centering.
+    This exposed and required fixing a real regression in the
+    sliver's own `--sliver-margin` formula (its "adjacent grid
+    column" assumption broke) — caught by `fx2.mjs`'s own
+    **pre-existing** floor check, not guessed, not a new assertion
+    written to paper over it.
+    **S9 — `fx5.mjs`, 65→66 checks after review, park sweep across 5
+    files** (`fx4.mjs`'s whole S6 handle-gesture section parks with a
+    live successor in `fx5.mjs`'s own S5; `ab4.mjs`'s second-
+    generation park of the same lineage parks a third time —
+    generations accrete, the house pattern; `cd1.mjs`'s symmetric-
+    margins check gains a generation-2 note, S10's symmetry is a
+    successor, not a restoration; `fx3.mjs`'s engage-line-count fence
+    bumps 6→7, the documented consequence of S1's rewrite; `j4.mjs`'s
+    port-then-edit flow gets a one-line gesture swap, old sequence
+    parked). `fx2.mjs`/`cd2.mjs` needed zero check changes — confirmed
+    by the review, not assumed.
+    **Independent review — GREEN, with two real defects found and
+    fixed at the root, neither trivial.** (1) `useTypewriterFade.ts`:
+    S1's new multi-line catch-up chains a second
+    `requestAnimationFrame` call OUTSIDE the tracked `raf` variable
+    the effect's own cleanup actually cancels — a big catch-up
+    interrupted mid-chain by a live writing-settings toggle (the
+    scroll container persists across that, it's not a full unmount)
+    leaves a zombie frame chain still nudging `scrollTop` on the
+    still-mounted box: precisely the "page moves on its own" class of
+    bug this entire ticket exists to eliminate. Fixed by folding the
+    chained frame into the same tracked variable; behavior confirmed
+    unchanged (identical 29px `maxStep` before/after). (2) `fx5.mjs`'s
+    own S5 pin-drag gesture ran on synthetic `PointerEvent` dispatch
+    only, sharing the identical early-`setPointerCapture` mechanism
+    S4(a) itself proved needs a genuinely trusted press to mean
+    anything — yet carried **zero fidelity-gap disclosure**, a direct,
+    undisclosed violation of this ticket's own standing discipline
+    (the brief's own S9 text names this exact gap by name). Fixed for
+    real, not just disclosed: a genuinely trusted CDP press-drag-
+    release proof added (mirroring S4(a)/S8's own technique), plus
+    honest disclosure comments on the remaining synthetic branch-logic
+    checks.
+    **The review independently re-derived every load-bearing claim
+    rather than trusting the build's report**: zero-schema confirmed
+    via an empty `git diff` on `apps/server/` plus a full grep for any
+    new box `kind:` literal (none); the A4 park-sweep audited against
+    every harness file for anything FX5 could have falsified outside
+    the declared sweep (found two benign non-issues, confirmed by
+    hand, not just re-asserted); ink-coordinate safety confirmed via a
+    byte-identical diff on `JournalEntry.tsx`/`store/ink.ts` plus the
+    review's own live re-proof of `useTypewriterFade.ts`'s byte-truth
+    fixture, run twice; the S10 composition law re-measured live at
+    1280px/2200px/the 1100px floor, independently, not re-read from
+    the build's own numbers.
+    **Full suite, both passes.** Build: `tsc` (desktop+server) +
+    `build:web` + selftest + all 21 harness files (added `fx5.mjs`,
+    65 checks) green under both `HARNESS_PARKED` settings, re-run
+    after every commit. Review: same suite, from a genuinely clean
+    worktree install, 21/21 green both settings (one transient
+    `w1.mjs` CDP-connection flake on its first sweep — "CDP page
+    target never appeared" — confirmed non-reproducible, clean on
+    immediate retry and clean again on both full post-fix sweeps;
+    infra flake, not a code defect). CC's own third independent pass
+    on the fast-forwarded `main`: `tsc` (desktop+server) + `build:web`
+    clean, full 21-file/42-run suite green, zero discrepancies against
+    both prior runs.
+    **Judgment calls disclosed, all independently reviewed, none
+    dissented:** S3's fix landing on ported-text cards rather than
+    literal `page-pin` (the words vs. the reproducible bug); S7's
+    em-dash scope (Draft + card popup only, Journal/Free Write's
+    incompatible undo models out of scope); S7's custom undo shim (a
+    pre-existing native-undo architectural gap this ticket doesn't
+    fix wholesale, disclosed not hidden); S4(a)'s fidelity gap (a
+    trusted CDP press proves the fix; only Nick's own hand proves a
+    fast real mouse drag never breaks); the CSS commit-granularity
+    compromise (S1/S3/S4/S5/S6/S10 hunks interleaved by line range,
+    committed as one clearly-labeled commit after CRLF-blocked
+    patch-splitting attempts, every other file cleanly per-slice).
+    **Merged — 2026-07-19** (zero-schema, merge pre-authorized per the
+    standing rule — no separate Nick's-go needed for the merge
+    itself). Fast-forwarded `main` to `9c26de5` (no divergence, clean
+    fast-forward, zero conflicts), pushed to `origin/main`.
+    **Not deployed** — Fable's post-merge review hasn't landed yet;
+    redeploy is Nick's call, as always, after that review.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
