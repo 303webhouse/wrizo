@@ -17,7 +17,10 @@
 // capture), overlap permitted, the layer-order icon (S4); the olive-pin
 // gesture's full lifecycle (arm-by-drag, mint, Escape-cancel, empty-release-
 // cancel, de-dupe), the connections footer + its toggle, the dead handle-
-// gesture proven gone (S5); no visible asterisks in the card popup, reveal-
+// gesture proven gone, AND (review fix) the core mint-via-drag itself re-
+// verified on a genuinely trusted CDP press-drag-release, closing the same
+// class of fidelity gap S4(a) discloses rather than leaving it merely
+// disclosed (S5); no visible asterisks in the card popup, reveal-
 // adjacent-to-caret, storage fidelity (S6); the em dash + its one-step undo
 // (S7); hover-restore on the closest-to-trusted pointer stream the harness
 // can produce (real CDP Input.dispatchMouseEvent, isTrusted:true — see
@@ -584,10 +587,63 @@ await withHarness(async (app) => {
     soloLayerIcon === false, String(soloLayerIcon));
 
   // ==========================================================================
+  // S5 review fix — closing a residual fidelity gap, not just disclosing
+  // it. Every pin-drag check below (the brief's own S9 text: "pin-gesture
+  // lifecycle at the harness's honest fidelity ceiling, gap documented in-
+  // check") originally ran on synthetic PointerEvent dispatch
+  // (__pointerSeqTo) ONLY — the identical class of gap S4(a) above
+  // discloses explicitly (a synthetic dispatch always targets the origin
+  // element directly, bypassing the real hit-testing `setPointerCapture`
+  // exists to stabilize), on the SAME early-capture mechanism (BoardEditor.
+  // tsx's onDown, the pin branch calls the identical `canvas.
+  // setPointerCapture` S4(a) proves needs a genuinely trusted press to mean
+  // anything). This ticket's own standing discipline ("For every input-
+  // gesture claim... reproduce with the closest-to-trusted event stream")
+  // applies squarely to the pin-drag — it is a brand-new DRAG gesture this
+  // very ticket introduces. Closed here the same way S4(a)/S8 close theirs:
+  // a genuinely trusted CDP press-drag-release (isTrusted:true, several
+  // real incremental mouseMove steps, not a teleport — S8's own "a hand
+  // slowing to a stop, not a snap" discipline) from the pin to a SEPARATE
+  // pair of cards, confirmed to mint a hairline. A dedicated fixture (not
+  // fx5-s5-a/b below) so this doesn't disturb the state the rest of this
+  // section's own synthetic checks depend on.
+  // ==========================================================================
+  await freshBoard(app, 'fx5-s5-trusted-board', [
+    { id: 'fx5-s5t-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Trusted A' },
+    { id: 'fx5-s5t-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Trusted B' },
+  ], LAPTOP_W, 900);
+  {
+    const pinPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-a"] .board-pin-grab').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
+    const targetPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-b"]').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
+    await app.mouseDown(pinPt.x, pinPt.y);
+    const steps = 6;
+    for (let i = 1; i <= steps; i++) {
+      await app.mouseMove(
+        Math.round(pinPt.x + (targetPt.x - pinPt.x) * (i / steps)),
+        Math.round(pinPt.y + (targetPt.y - pinPt.y) * (i / steps)),
+      );
+      await sleep(40);
+    }
+    await app.mouseUp(targetPt.x, targetPt.y);
+    await sleep(200);
+    const linesAfterTrustedDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
+    const connAfterTrustedDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
+    ok('S5: the fidelity gap CLOSED — a genuinely trusted (isTrusted, CDP, real incremental mouseMove) drag from the olive pin to another card mints the hairline, re-verifying the mechanism the checks below only ever exercise via synthetic dispatch (mirrors S4(a)\'s own real-press proof for the identical early-setPointerCapture mechanism)',
+      linesAfterTrustedDrag === 1 && !!connAfterTrustedDrag &&
+      ((connAfterTrustedDrag.connA === 'fx5-s5t-a' && connAfterTrustedDrag.connB === 'fx5-s5t-b') || (connAfterTrustedDrag.connA === 'fx5-s5t-b' && connAfterTrustedDrag.connB === 'fx5-s5t-a')),
+      JSON.stringify(connAfterTrustedDrag));
+  }
+
+  // ==========================================================================
   // S5 — the pin, not the handle. The dead handle-double-click gesture is
   // REMOVED (proven gone); the olive pin is the connection grab now — one
   // continuous drag, no separate arm step. Preview line + cancel semantics
-  // carry over unchanged. The footer + its toggle are new.
+  // carry over unchanged. The footer + its toggle are new. The core mint-
+  // via-drag mechanism is now trusted-proven above; the checks below (all
+  // synthetic dispatch) exercise the state-machine BRANCHES on top of that
+  // same, now-verified-real entry point (Escape mid-drag, empty-board
+  // release, de-dupe order) — pure logic claims, not independent gesture
+  // claims the standing discipline's "drag, hover, scroll" list is about.
   // ==========================================================================
   await freshBoard(app, 'fx5-s5-board', [
     { id: 'fx5-s5-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },

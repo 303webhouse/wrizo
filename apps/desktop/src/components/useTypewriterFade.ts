@@ -286,7 +286,24 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         const step = Math.min(advance, lineHeight());
         box.setScrollTop(box.scrollTop + step, !reduce);
         prevDocCaretBottom = (prevDocCaretBottom as number) + step;
-        if (advance - step > 1) requestAnimationFrame(band);
+        // FX5 review fix — this chained catch-up frame MUST be tracked into
+        // the SAME `raf` variable `schedule()` uses, not fired as a raw
+        // untracked `requestAnimationFrame` call: the effect's own cleanup
+        // below only ever cancels whatever is currently held in `raf`. A
+        // bare untracked call here escapes that cancellation entirely, so a
+        // big catch-up (a long first-engage, or a multi-line paste) that's
+        // still mid-staircase at the exact moment `enabled`/`holdBand`
+        // toggles (a live writing-settings flip, not just full unmount —
+        // the scroll container itself persists across that prop change)
+        // leaves a zombie chain still calling `box.setScrollTop` against
+        // the SAME still-mounted box from a stale closure — an inexplicable
+        // extra scroll step landing AFTER the writer turned typewriter mode
+        // off, exactly the class of "the page moves on its own" defect this
+        // ticket exists to eliminate. Assigning here is safe: by the time
+        // this line runs, `schedule()`'s own last-assigned `raf` has already
+        // fired (this IS that callback), so overwriting it with the new
+        // chained id is the correct, non-destructive handoff.
+        if (advance - step > 1) raf = requestAnimationFrame(band);
       } else {
         // Caret moved to earlier content (clicked elsewhere, or a delete
         // shrank the document) — resync without scrolling; no advance is
