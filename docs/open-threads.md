@@ -2491,6 +2491,75 @@ outlive a session lives here, not in chat.
     fast-forward, zero conflicts), pushed to `origin/main`.
     **Not deployed** — Fable's post-merge review hasn't landed yet;
     redeploy is Nick's call, as always, after that review.
+    **Fable's post-merge review landed — GREEN, 2026-07-19**
+    (`docs/wrizo-alpha/fx5-review-fable.md` — relayed, commit pending
+    on disk landing). **A1 KEPT, Nick's own word, 2026-07-19:** cards
+    are not meant to be the place where writers do a lot of text
+    editing — the popup's own reveal-adjacent-to-caret asterisk
+    treatment and the editing model both stand as built; ported cards
+    keep their double-click travel to the source page, "Edit copy"
+    edits the card itself. Not a defect, not reopened. **A2
+    commissioned → FX6:** undo/redo, real Ctrl/Cmd+Z, restored in
+    Draft's free editor and the card popup ("Yeah, let's fix this.
+    It's only typewriter mode where I want to limit how much
+    backspacing/deletion occurs" — forward-lock's own deletion
+    discipline stays untouched everywhere it applies; full undo
+    freedom is the goal everywhere else).
+36. **COMMITTEE MATERIAL — Boards-all-the-way-down architecture.**
+    **RECORDED, NOT RATIFIED — 2026-07-19.** Nick, verbatim: "The
+    entire Journal module and experience is totally broken. Needs to
+    be retired until we fix it based on the new Page is Primary
+    architecture. The Journal should essentially just be a pre-built
+    custom Board that gets its own default menu link. Projects are
+    really now just Boards that have a pre-built set of cards to be
+    filled out by the user once they are walked through their
+    structure options. The Shelf is just a Board where anything that
+    hasn't been connected to another Board is placed for later
+    organization. We also need a Trash option that clears unwanted
+    docs but keeps them in memory for later retrieval. The big
+    difference between Drawers and Boards, then, is that Drawers can
+    contain multiple Boards. I'm not sure if we want to require all
+    Pages and research docs to be added to a Board to be in a Drawer,
+    but my lean is that when Drawers is selected, the cascading menu
+    shows large thumbnails with each Board and doc listed, with the
+    last-opened Board or doc displaying where our home Page is
+    anchored. The committees review this before we go further with it
+    in a future build." **NOTHING BUILDS from this block until the
+    committee pass lands and Nick ratifies it.** Absorbs and
+    supersedes the standalone Trash queue item once ratified (the
+    Trash build is now architecture-linked, not a free-standing
+    ticket — see item 33's own prior QUEUED note). Absorbs the
+    Journal-retirement question raised across several prior sittings
+    (items 25's committee docket addition, item 32).
+37. **FX6 — Undo and the Doors.** **BRIEF COMMITTED — 2026-07-19.**
+    `docs/wrizo-alpha/fx6-undo-and-doors-brief.md`. Authority: item
+    35's own A2 commissioning (real undo/redo in Draft's free editor
+    and the card popup, forward-lock's deletion discipline explicitly
+    untouched — "it's only typewriter mode where I want to limit how
+    much backspacing/deletion occurs"); a newly recorded New Page
+    discoverability gap, Nick's own word: "I often have no idea how
+    to simply start a New Page from either the Page menu or the
+    Board"; two one-line advisories carried since AB4's review
+    (self-pin, the truthful no-projects empty-state line). Zero
+    schema, merge pre-authorized; Fable reviews post-merge.
+    **S1 — undo restored**, root cause already diagnosed at FX5's own
+    S7 (both editors rewrite contenteditable innerHTML wholesale on
+    every input, invalidating the browser's native undo stack); CC
+    chooses empirically between a surgical-update path and an
+    app-level snapshot stack, disclosed. The scope law is load-bearing
+    and must not drift: forward-lock's own deletion discipline stays
+    exactly as it is everywhere it applies — undo restoration is
+    everywhere ELSE. **S2 — the doors**: an unmissable New Page action
+    at the cascade's Page section head, a board-side "New page card"
+    that creates a real page AND pins it in one act, quiet empty-state
+    pointers — doorknobs only, no architecture movement (that's
+    item 36's own gate). **S3 — the AB4 fold sweep**: self-pin closed
+    at both ends, the empty-state line corrected to "create a project
+    first." **S4 — `fx6.mjs`**, keyboard claims held to the same
+    trusted-event discipline FX5 established for pointer gestures.
+    Report = push (merge pre-authorized).
+    **Build starting — 2026-07-19**, via a Workflow-orchestrated
+    build+review pipeline (ultracode), off post-FX5 `main`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
