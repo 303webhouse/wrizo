@@ -2317,6 +2317,29 @@ outlive a session lives here, not in chat.
     thread, byte-for-byte both directions — the S1 precedent) before
     this item can close. Nick's own DoD sitting follows — the
     conversation half stays pending his own `TUTOR_API_KEY`.
+    **Deployed — 2026-07-19**, Nick's word ("DEPLOY — Nick's word is
+    given"), the manifest rule's first two-ticket deploy: `1dc0003..
+    HEAD` = TU1 + FX5 (both named), plus docs riders only,
+    independently re-enumerated before shipping — no unnamed code
+    riders. `railway up` on `main` @ `6759777` (deployment
+    `39bbe424`, SUCCESS), confirmed live (`200` on `/healthz` and `/`,
+    `401` on `/auth/me`).
+    **The REQUIRED S1-precedent prod round-trip — RUN, PASS,
+    2026-07-19.** A scratch account registered live, pushed a
+    `journal_entries` row with a populated three-message `tutor`
+    thread via `/api/sync`, then pulled it back via a second
+    `/api/sync` call simulating a second device: **the thread matched
+    byte-for-byte, key-order-insensitive** (Postgres `jsonb` storage
+    normalizes key order — array/message order itself, which carries
+    real meaning, was preserved and verified exactly). A second push
+    with no `tutor` field at all confirmed the grandfather clause live
+    in production, not just in the harness: the pulled row carried
+    **no `tutor` key whatsoever** (not `null`, not `{}`) — the
+    resulting Object.keys() list confirmed by direct inspection. Both
+    scratch entries soft-deleted after. **Item 34 does not fully close
+    yet** — Nick's own DoD sitting remains, the conversation half
+    pending his own `TUTOR_API_KEY` landing on Railway, his timing.
+    The lenses and panel work fully without it in the meantime.
 35. **FX5 — the Felt Verdicts.** **BRIEF COMMITTED — 2026-07-19.**
     `docs/wrizo-alpha/fx5-felt-verdicts-brief.md`, S1-S9 plus the S10
     center-the-paper amendment (item 33's own A1 close, folded in
@@ -2505,6 +2528,17 @@ outlive a session lives here, not in chat.
     backspacing/deletion occurs" — forward-lock's own deletion
     discipline stays untouched everywhere it applies; full undo
     freedom is the goal everywhere else).
+    **Deployed — 2026-07-19**, Nick's word, in the same two-ticket
+    deploy as item 34 above: `railway up` on `main` @ `6759777`
+    (deployment `39bbe424`, SUCCESS), confirmed live (`200` on
+    `/healthz` and `/`, `401` on `/auth/me`). Manifest `1dc0003..HEAD`
+    = TU1 + FX5 + docs riders only, independently re-enumerated
+    before shipping. **Close pending Nick's own device-look sitting**
+    against the brief's own Definition of Done (per-line engage
+    motion, scroll freedom, the glow arriving by mid-goal, free card
+    movement + overlap + the layer icon, the olive-pin thread gesture,
+    no visible asterisks, the em dash, hover-restore on real hardware,
+    the recentered paper).
 36. **COMMITTEE MATERIAL — Boards-all-the-way-down architecture.**
     **RECORDED, NOT RATIFIED — 2026-07-19.** Nick, verbatim: "The
     entire Journal module and experience is totally broken. Needs to
