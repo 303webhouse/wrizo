@@ -1,4 +1,4 @@
-import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc } from '../types';
+import type { Project, StoryPlan, SessionLog, Draft, BeatNote, JournalEntry, Fragment, FragmentLink, Drawer, Box, Stroke, ScriptDoc, TutorThread, TutorMessage } from '../types';
 import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './pageOrder';
 import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
@@ -855,6 +855,27 @@ export function saveScriptDoc(entryId: string, doc: ScriptDoc): void {
   const latest = getJournalEntry(entryId);
   if (!latest) return;
   saveJournalEntry({ ...latest, script: doc, text: serializeScriptDoc(doc) });
+}
+
+// --- TU1 S1 — the Tutor's per-page conversation thread --------------------
+// One jsonb column, the exact `script`/`boxes` recipe once more. A plain
+// read (getTutorThread); appendTutorMessage is the ONLY writer — there is
+// no "create an empty thread" call anywhere in this file, deliberately: a
+// page that has never talked to the Tutor must never gain a persisted
+// `{ messages: [] }` (a subtly different, wrong "grandfathered" state from
+// genuinely absent) — the thread is born on its first real message and not
+// one keystroke sooner. Any page can carry one, independent of pageType.
+
+export function getTutorThread(entryId: string): TutorThread | null {
+  return getJournalEntry(entryId)?.tutor ?? null;
+}
+
+export function appendTutorMessage(entryId: string, message: TutorMessage): TutorThread | null {
+  const latest = getJournalEntry(entryId);
+  if (!latest) return null;
+  const thread: TutorThread = { messages: [...(latest.tutor?.messages ?? []), message] };
+  saveJournalEntry({ ...latest, tutor: thread });
+  return thread;
 }
 
 // Create a Script page (S1 Slice 2) — a binder page with pageType:'script'

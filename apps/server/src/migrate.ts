@@ -101,4 +101,14 @@ export async function runMigrations(): Promise<void> {
   // backfill, no re-homing — the provenance law governs creation from this
   // ticket forward only. Same recipe as imported_at (plain text, not jsonb).
   await pool.query(`alter table journal_entries add column if not exists origin text`);
+
+  // TU1 S1 — the Tutor's per-page thread. jsonb, the exact `script`/`boxes`
+  // recipe: no default, no CHECK, additive-only. Holds ONE thing — the
+  // page's conversation ({ messages: [...] }); lens results and nudges are
+  // DERIVED, never stored, so nothing else ever lands in this column. Null
+  // on every existing row (no backfill) — a legacy page with no thread
+  // behaves byte-identically to today (the arc's second schema addition
+  // after `origin`; see types/index.ts's `TutorThread` for the full
+  // grandfather reasoning this column exists to satisfy).
+  await pool.query(`alter table journal_entries add column if not exists tutor jsonb`);
 }
