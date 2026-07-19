@@ -115,6 +115,12 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const scrolledEl = scrolledTarget?.current ?? container;
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
+    // FX5 S1 — engage state, kept in the effect's own closure (fresh per
+    // mount, same lifetime as `raf` above). `engaged` never resets once
+    // true within a mount; `prevDocCaretBottom` is the last-measured caret
+    // position in scroll-INDEPENDENT "document space" (see band() below).
+    let engaged = false;
+    let prevDocCaretBottom: number | null = null;
 
     const setScrolled = () => {
       // Window mode: gate on the SHEET's own top vs the viewport (has content
@@ -153,6 +159,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       const stageEl = (useWindowScroll ? null : container.closest('.desk-frame-stage') || container.closest('.mode-stage')) as HTMLElement | null;
       const stageHeight = useWindowScroll ? window.innerHeight : (stageEl ?? container).clientHeight;
       scrolledEl.style.setProperty('--tw-fade-band', `${Math.round(lineHeight() * FADE_LINES)}px`);
+      // FX5 S1 (b) — "the fade band starts one line lower": the topmost
+      // line-height now reads fully legible, unfaded; the ramp itself
+      // (same depth, --tw-fade-band above) begins at this offset instead
+      // of at the very top edge. Both CSS consumers (the container mask
+      // and the Journal sticky overlay) add this into their own gradient
+      // stops — see index.css.
+      scrolledEl.style.setProperty('--tw-fade-start', `${Math.round(lineHeight())}px`);
       scrolledEl.style.setProperty('--tw-start-offset', `${Math.round(stageHeight * START_FRACTION)}px`);
     };
     const band = () => {
@@ -230,10 +243,56 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       if (caretBottom === null) return;
       const box = readBox(!!useWindowScroll, container);
       const within = caretBottom - box.top;
-      const delta = within - box.clientHeight * holdBandValue;
-      if (delta <= 1) { setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
-      const target = box.scrollTop + delta;
-      box.setScrollTop(target, !reduce);
+      // FX5 S1 (a, c) — "document space": the caret's position independent
+      // of the CURRENT scroll offset. The OLD design recomputed an ABSOLUTE
+      // `target = box.scrollTop + delta` on every keystroke, which always
+      // tries to put the caret back at exactly holdBandValue's own fraction
+      // of the box — a real, reproducible defect (found live, not guessed):
+      // a writer who scrolls up to reread has the caret's ON-SCREEN
+      // position pushed far down (or off-screen) by their own scroll, so
+      // the very next keystroke computed a huge `delta` and snapped the
+      // whole page back down to re-align — "typing snaps the page back to
+      // the band," exactly Nick's complaint, not merely a tuning issue.
+      // docCaretBottom instead tracks the caret in a coordinate space that
+      // does NOT move when the box is merely scrolled (only when the
+      // caret's own document position genuinely changes), so comparing it
+      // against its own PREVIOUS reading isolates "how much new content did
+      // the writer just produce" from "where did the viewport happen to be
+      // sitting" — the two concerns S1 asks to be decoupled.
+      const docCaretBottom = within + box.scrollTop;
+      const thresholdPx = box.clientHeight * holdBandValue;
+
+      if (!engaged) {
+        if (within - thresholdPx <= 1) { setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
+        // First engage (S1 a: "must not lurch"): owe exactly the same delta
+        // the old absolute design would have jumped in one shot, but pay it
+        // off below via the SAME one-line-at-a-time stepping every later
+        // engaged call uses — one code path, no special-cased jump.
+        engaged = true;
+        prevDocCaretBottom = docCaretBottom - (within - thresholdPx);
+      }
+      const advance = docCaretBottom - (prevDocCaretBottom as number);
+      if (advance > 1) {
+        // Never more than one line-height per call, however large the raw
+        // advance is (a deep first-engage on a long page, or a multi-line
+        // paste) — S1 a's "never a multi-line recenter jump." Leftover
+        // owed advance is paid off by re-invoking band() on the very next
+        // frame (not waiting for another keystroke), so a big catch-up
+        // still reads as a smooth staircase of one-line steps, not a wait-
+        // then-jump. box.scrollTop is re-read fresh on every call (readBox,
+        // above), so each step composes correctly on top of wherever the
+        // writer's own scroll currently sits (S1 c: scroll freedom) — this
+        // never fights a manual scroll, it only ever adds to it.
+        const step = Math.min(advance, lineHeight());
+        box.setScrollTop(box.scrollTop + step, !reduce);
+        prevDocCaretBottom = (prevDocCaretBottom as number) + step;
+        if (advance - step > 1) requestAnimationFrame(band);
+      } else {
+        // Caret moved to earlier content (clicked elsewhere, or a delete
+        // shrank the document) — resync without scrolling; no advance is
+        // "owed" backward.
+        prevDocCaretBottom = docCaretBottom;
+      }
       setScrolled();
     };
     const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(band); };
