@@ -70,7 +70,27 @@ export function GoalGlow({ text }: { text: string }) {
   // reused, not invented. `cap` itself (the field-never-burns hard ceiling)
   // is completely untouched by this — the curve only changes how much of
   // the sub-cap range a given FRACTION reaches, never the ceiling.
-  const eased = Math.pow(fraction, 0.55);
+  //
+  // FX5 S2 — the paint fix above was real, but 0.55 still left mid-goal
+  // reading faint on Nick's own desk ("Glow — anyone, anyone? Bueller?").
+  // Re-diagnosed rather than re-guessed: the structural fix from FX4 was
+  // confirmed still in place (isolation:isolate, unchanged, verified live),
+  // so the remaining gap was genuinely the curve's own shallowness — at
+  // fraction=0.5 the old exponent only reached ~68% of the cap
+  // (eased=.684, intensity=.233 at cap=.34), and multiplied again by the
+  // gradient's own peak color-stop alpha (.55, index.css .wz-goal-glow,
+  // untouched by this ticket) the ACTUAL peak-pixel alpha at mid-goal was
+  // only ~.13 — genuinely marginal on a bright, normally-lit display.
+  // 0.28 is a materially steeper (more aggressive) exponent: fraction=0.1
+  // now reaches ~52% of cap, fraction=0.25 ~68%, fraction=0.5 ~82%
+  // (intensity=.280, comfortably clear of the raised floor below and
+  // comfortably under the untouched .34 cap — this did NOT fight the
+  // ceiling, so no STOP-and-report was needed), fraction=1 still eases to
+  // rest exactly at the cap (unchanged "field never burns" behavior at
+  // completion). Measured empirically post-change via a screenshot at
+  // fraction=0.5 (see the build report) — genuinely, visibly warmer than
+  // the FX4 screenshot at the same fraction, not just a bigger number.
+  const eased = Math.pow(fraction, 0.28);
   const intensity = eased * cap;
 
   return (
