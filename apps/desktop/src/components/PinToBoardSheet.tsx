@@ -65,7 +65,12 @@ export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose
               </div>
             )}
             {drawerGroups.length === 0 && unsorted.length === 0 && (
-              <div className="dz-empty">No projects yet — file this page into one first, then it can join a {lex('board').toLowerCase()}.</div>
+              // FX6 S3 (a2, ab4-review A2's own exact wording) — "membership
+              // ≠ filing": a loose page pins lawfully, so the old "file this
+              // page into one first" line was untrue (it implied filing is
+              // required to pin). The truthful line names the real gap: no
+              // project exists yet to hold a board at all.
+              <div className="dz-empty">No projects yet — create a project first, then this page can join a {lex('board').toLowerCase()}.</div>
             )}
           </div>
           <button type="button" className="btn-quiet" onClick={onClose}>Cancel</button>
@@ -74,7 +79,11 @@ export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose
     );
   }
 
-  const boards = getBinderPages(level.projectId).filter(p => p.pageType === 'board');
+  // FX6 S3 (a1, ab4-review's own A1 advisory) — self-pin closed at this
+  // end too: the invoking entry never lists itself as a pin destination
+  // (belt and suspenders alongside pinPageToBoard's own guard below) — a
+  // board can never pin itself to itself.
+  const boards = getBinderPages(level.projectId).filter(p => p.pageType === 'board' && p.id !== entryId);
   return (
     <div className="board-sheet" role="dialog" aria-label={`Pin to a ${lex('board')} in ${level.projectTitle}`}>
       <div className="board-sheet-inner">

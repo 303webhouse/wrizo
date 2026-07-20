@@ -836,6 +836,11 @@ const BOARD_PIN_W = 0.28;
 const BOARD_PIN_H = 0.12;
 
 export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEntry | null {
+  // FX6 S3 (a1, ab4-review's own advisory) — self-pin closed at THIS end
+  // too (belt and suspenders alongside PinToBoardSheet.tsx's own leaf
+  // exclusion): a board can never pin itself to itself, even via a direct
+  // call that bypasses the sheet's own UI.
+  if (entryId === boardEntryId) return null;
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
   const existing = board.boxes ?? [];
