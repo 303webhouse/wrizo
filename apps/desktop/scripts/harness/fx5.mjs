@@ -423,8 +423,15 @@ await withHarness(async (app) => {
     // A selection with NO ink strokes at all skips the text/ink choice step
     // entirely (nothing to choose about) and lands straight on the
     // destination picker — this fixture's source page has no strokes.
-    await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New project'))", { label: 'destination picker' });
-    await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New project')).click()");
+    // B2.1 S6 — plumbing update, not a park: PortToBoardSheet.tsx's own
+    // button text swaps "project" for the pre-existing 'binder' lexicon
+    // term (Binder-vs-Drawer judgment, see the build report); this is a
+    // selector-by-text driving the SAME flow to the SAME state, not an
+    // assertion about the copy itself, so it's simply updated (a lexicon
+    // string isn't a check with a pass/fail history worth preserving, per
+    // the FX4 S6 boardConnect precedent).
+    await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New binder'))", { label: 'destination picker' });
+    await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New binder')).click()");
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'BoardEditor mounted' });
     await sleep(400);
     await app.emulateDpr(1, LAPTOP_W, 900);

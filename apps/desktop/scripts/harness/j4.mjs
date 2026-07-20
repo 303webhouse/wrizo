@@ -80,8 +80,11 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'port sheet' });
   await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('Text + ink'))", { label: 'ink choice' });
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Text + ink')).click()");
-  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New project'))", { label: 'destination picker' });
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New project')).click()");
+  // B2.1 S6 — plumbing update, not a park: see fx5.mjs's own comment at
+  // this identical selector (PortToBoardSheet.tsx's button text swaps
+  // "project" for the pre-existing 'binder' lexicon term).
+  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New binder'))", { label: 'destination picker' });
+  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New binder')).click()");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'BoardEditor mounted' });
   await sleep(400);
 

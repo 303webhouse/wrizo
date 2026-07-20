@@ -328,8 +328,17 @@ await withHarness(async (app) => {
     pinOpenedOnShelf === false, String(pinOpenedOnShelf));
 
   // Home label truthful.
-  const shelfBoardHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S1: the Shelf Board\'s own Page face names ITS home truthfully ("no project home")', shelfBoardHomeLabel === 'The Shelf Board — has no project home', String(shelfBoardHomeLabel));
+  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
+  // by Nick's word (2026-07-20: "retire the word project as having any
+  // unique architectural purpose"): deskLexicon.ts's boardHomeLabelShelf
+  // STRING VALUE changes ("no project home" -> "no drawer home"). ORIGINAL:
+  //   const shelfBoardHomeLabel = await app.evalJs("document.querySelector
+  //   ('.wz-pageface-home-label')?.textContent");
+  //   ok('S1: the Shelf Board\'s own Page face names ITS home truthfully
+  //   ("no project home")', shelfBoardHomeLabel === 'The Shelf Board — has
+  //   no project home', ...);
+  // Re-asserted against the new copy in b2.mjs's own PARKED section (same
+  // truth: the label is honest); a fresh live check lives in b2-1.mjs.
 
   // Never appears in the Pin sheet's board leaves.
   await app.evalJs(`(() => {
@@ -806,17 +815,29 @@ await withHarness(async (app) => {
       boardsTitle: t('placesBoardsTitle'),
     };
   })()`);
-  ok('S8: every new B2 string resolves through deskLexicon (window.wrizoDeskLexicon), the canonical Plateau values',
-    lexiconTerms.shelfHome === 'The Shelf Board — has no project home'
-      && lexiconTerms.shelfEmpty === 'Nothing waiting.'
-      && lexiconTerms.shelfOpen === 'Open the Shelf'
-      && lexiconTerms.newJournalEntry === 'New Journal Entry'
-      && lexiconTerms.addExisting === 'Existing page…'
-      && lexiconTerms.placesTitle === 'Places'
-      && lexiconTerms.placesLoose === 'Loose'
-      && lexiconTerms.newDrawer === '+ New Drawer'
-      && lexiconTerms.boardsTitle === 'Boards',
-    JSON.stringify(lexiconTerms));
+  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
+  // by Nick's word (2026-07-20): `lexiconTerms.shelfHome` no longer equals
+  // its old value (deskLexicon.ts's boardHomeLabelShelf STRING VALUE
+  // changes, "no project home" -> "no drawer home"), which flips this
+  // 9-way compound assertion's overall truth even though the other 8
+  // sub-values are untouched. ORIGINAL:
+  //   ok('S8: every new B2 string resolves through deskLexicon
+  //   (window.wrizoDeskLexicon), the canonical Plateau values',
+  //     lexiconTerms.shelfHome === 'The Shelf Board — has no project home'
+  //       && lexiconTerms.shelfEmpty === 'Nothing waiting.'
+  //       && lexiconTerms.shelfOpen === 'Open the Shelf'
+  //       && lexiconTerms.newJournalEntry === 'New Journal Entry'
+  //       && lexiconTerms.addExisting === 'Existing page…'
+  //       && lexiconTerms.placesTitle === 'Places'
+  //       && lexiconTerms.placesLoose === 'Loose'
+  //       && lexiconTerms.newDrawer === '+ New Drawer'
+  //       && lexiconTerms.boardsTitle === 'Boards',
+  //     JSON.stringify(lexiconTerms));
+  // Re-asserted against the new copy (same 9-way comparison, shelfHome's
+  // new value) in b2.mjs's own PARKED section; a fresh live check lives
+  // in b2-1.mjs (which also covers this fold's OWN new lexicon terms).
+  // `lexiconTerms` itself stays fetched here (line 845 below still reads
+  // its .placesTitle field, untouched by this fold).
 
   // The live DOM actually uses these values (no hardcoded drift) — an
   // ORDINARY page (not a system board, where Places is correctly absent),
@@ -898,17 +919,70 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// b2.mjs is a brand-new file; it parks nothing of its own (this ticket's
-// OWN park sweep — the checks its own S3/S4/S7 retirements falsify — lives
-// in the FILES it superseded: ab3.mjs, ab4.mjs, cd2.mjs, fx1.mjs (plain
-// doorway swap, no park needed), fx4.mjs, fx5.mjs, j5.mjs, b1.mjs, each per
-// the A4 convention that a file parks what supersedes ITS OWN checks — see
-// this ticket's own build report for the full inventory). This scaffold
-// exists so a future ticket that supersedes any of THIS file's checks has
-// a documented home, matching every other harness file's own pattern.
+// B2.1 (2026-07-20) is this file's own first tenant: Nick's word ("retire
+// the word project as having any unique architectural purpose") falsifies
+// two of b2.mjs's own checks whole — deskLexicon.ts's boardHomeLabelShelf
+// STRING VALUE changes ("no project home" -> "no drawer home"), which
+// flips (a) the Shelf Board's own Page-face home-label DOM check and (b)
+// the S8 lexicon-discipline compound check's overall truth (one of its
+// nine conjuncts). Both are quoted verbatim below (SUPERSEDED) and
+// re-asserted against the new copy; live successors in b2-1.mjs.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshDesk(app, LAPTOP_W, 900);
+    await app.goto('/shelf');
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted (PARKED)' });
+    await sleep(250);
+    await openPageCategory(app);
+    await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Shelf board, PARKED)' });
+
+    // ORIGINAL: const shelfBoardHomeLabel = await app.evalJs("document.
+    // querySelector('.wz-pageface-home-label')?.textContent"); ok('S1: the
+    // Shelf Board's own Page face names ITS home truthfully ("no project
+    // home")', shelfBoardHomeLabel === 'The Shelf Board — has no project
+    // home', ...);
+    const shelfBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
+    pok('PARKED (was "S1: the Shelf Board\'s own Page face names ITS home truthfully (\\"no project home\\")") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+      shelfBoardHomeLabelNow === 'The Shelf Board — has no drawer home', String(shelfBoardHomeLabelNow));
+
+    // ORIGINAL (the S8 lexicon-discipline compound check, all nine
+    // conjuncts quoted verbatim in this file's own live S8 section above).
+    const lexiconTermsNow = await app.evalJs(`(() => {
+      const t = window.wrizoDeskLexicon.t;
+      return {
+        shelfHome: t('boardHomeLabelShelf'),
+        shelfEmpty: t('shelfBoardEmpty'),
+        shelfOpen: t('cascadeShelfOpen'),
+        newJournalEntry: t('cascadePageNewJournalEntry'),
+        addExisting: t('boardAddExistingPage'),
+        placesTitle: t('placesTitle'),
+        placesLoose: t('placesLoose'),
+        newDrawer: t('placesNewDrawer'),
+        boardsTitle: t('placesBoardsTitle'),
+      };
+    })()`);
+    pok('PARKED (was "S8: every new B2 string resolves through deskLexicon (window.wrizoDeskLexicon), the canonical Plateau values") — B2.1 S6: the SAME 9-way comparison, shelfHome now "The Shelf Board — has no drawer home" (the word swap changes only that one conjunct); live successor: b2-1.mjs',
+      lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
+        && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
+        && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+        && lexiconTermsNow.newJournalEntry === 'New Journal Entry'
+        && lexiconTermsNow.addExisting === 'Existing page…'
+        && lexiconTermsNow.placesTitle === 'Places'
+        && lexiconTermsNow.placesLoose === 'Loose'
+        && lexiconTermsNow.newDrawer === '+ New Drawer'
+        && lexiconTermsNow.boardsTitle === 'Boards',
+      JSON.stringify(lexiconTermsNow));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nB2 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of b2.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nB2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nB2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

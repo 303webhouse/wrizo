@@ -545,10 +545,23 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (no-project page)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (no-project page)' });
-  const emptyProjectsLine = await app.evalJs("document.querySelector('.dz-empty')?.textContent");
-  ok('S3 (b): the no-projects line is now truthful — "create a project first" (ab4-review A2\'s exact wording: membership != filing), never the old "file this page into one first" fib',
-    !!emptyProjectsLine && emptyProjectsLine.includes('create a project first') && !emptyProjectsLine.toLowerCase().includes('file this page'),
-    emptyProjectsLine);
+  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
+  // by Nick's word (2026-07-20): PinToBoardSheet.tsx's own empty-state copy
+  // swaps "project" for the pre-existing themeLexicon 'binder' term (a
+  // deliberate Binder-vs-Drawer judgment call — see the build report — NOT
+  // "Drawer": this exact sheet groups its rows under `{drawer.name}`, the
+  // OLDER stored-Drawer entity, so "Drawer" would collide on-screen).
+  // ORIGINAL:
+  //   const emptyProjectsLine = await app.evalJs("document.querySelector
+  //   ('.dz-empty')?.textContent"); ok('S3 (b): the no-projects line is now
+  //   truthful — "create a project first" (ab4-review A2\'s exact wording:
+  //   membership != filing), never the old "file this page into one first"
+  //   fib', !!emptyProjectsLine && emptyProjectsLine.includes('create a
+  //   project first') && !emptyProjectsLine.toLowerCase().includes('file
+  //   this page'), emptyProjectsLine);
+  // Re-asserted against the new copy ("create a binder first", the SAME
+  // truthful membership != filing claim, never the old fib) in this file's
+  // own PARKED section; a fresh live check lives in b2-1.mjs.
 
   return checks;
 });
@@ -557,16 +570,54 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// fx6.mjs is a brand-new file; it parks nothing of its own (this ticket's
-// OWN park sweep lives in the FILES it superseded — fx5.mjs's own S5/S7
-// sections, ab4.mjs's own generation-2 park, fx4.mjs's own PARKED proof —
-// see this file's own header comment for the full inventory). This
-// scaffold exists so a future ticket that supersedes any of THIS file's
-// checks has a documented home, matching every other harness file's own
-// pattern.
+// B2.1 (2026-07-20) is this file's own first tenant: Nick's word ("retire
+// the word project as having any unique architectural purpose") falsifies
+// this file's own S3 (b) check whole — PinToBoardSheet.tsx's empty-state
+// copy swaps "project" for the pre-existing 'binder' term (see the build
+// report's Binder-vs-Drawer section: this exact sheet groups rows under
+// the OLDER stored-Drawer entity's own name, so "Drawer" would collide).
+// Quoted verbatim below (SUPERSEDED) and re-asserted against the new
+// copy; live successor in b2-1.mjs.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshDesk(app, LAPTOP_W, 900);
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'fx6-parked-noproj-page', text: 'No project page (PARKED)', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/fx6-parked-noproj-page'");
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'no-project page framed (PARKED)' });
+    await sleep(300);
+    await app.emulateDpr(1, LAPTOP_W, 900);
+    await openPageCategory(app);
+    await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (no-project page, PARKED)' });
+    await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
+    await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (no-project page, PARKED)' });
+
+    // ORIGINAL: ok('S3 (b): the no-projects line is now truthful — "create
+    // a project first" (ab4-review A2's exact wording: membership !=
+    // filing), never the old "file this page into one first" fib',
+    //   !!emptyProjectsLine && emptyProjectsLine.includes('create a
+    //   project first') && !emptyProjectsLine.toLowerCase().includes('file
+    //   this page'), emptyProjectsLine);
+    const emptyBindersLineNow = await app.evalJs("document.querySelector('.dz-empty')?.textContent");
+    pok('PARKED (was "S3 (b): the no-projects line is now truthful — \\"create a project first\\" (ab4-review A2\'s exact wording: membership != filing), never the old \\"file this page into one first\\" fib") — B2.1 S6: the SAME truthful membership-!=-filing claim, "create a binder first" now (the word swap changes only the copy, per the Binder-vs-Drawer judgment); live successor: b2-1.mjs',
+      !!emptyBindersLineNow && emptyBindersLineNow.includes('create a binder first') && !emptyBindersLineNow.toLowerCase().includes('file this page'),
+      emptyBindersLineNow);
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nFX6 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of fx6.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nFX6 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nFX6 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

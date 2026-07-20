@@ -384,9 +384,20 @@ await withHarness(async (app) => {
   // generic else-branch and reported "In the Journal" — flatly false for
   // the Trash Board (checked immediately below) and self-referential for
   // the Journal Board itself (checked here).
-  const journalBoardHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S1/S3: the Journal Board\'s own Page face names ITS home truthfully ("no project home"), never "In the Journal" (self-referential) or a project name it doesn\'t have',
-    journalBoardHomeLabel === 'The Journal Board — has no project home', String(journalBoardHomeLabel));
+  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — this check is
+  // FALSIFIED whole by Nick's word (2026-07-20: "retire the word project
+  // as having any unique architectural purpose"): deskLexicon.ts's
+  // boardHomeLabelJournal STRING VALUE changes ("no project home" -> "no
+  // drawer home"). ORIGINAL:
+  //   const journalBoardHomeLabel = await app.evalJs("document.querySelector
+  //   ('.wz-pageface-home-label')?.textContent");
+  //   ok('S1/S3: the Journal Board\'s own Page face names ITS home
+  //   truthfully ("no project home"), never "In the Journal" (self-
+  //   referential) or a project name it doesn\'t have',
+  //     journalBoardHomeLabel === 'The Journal Board — has no project home', ...);
+  // Re-asserted against the new copy in this file's own PARKED section
+  // (same truth: the label is honest, never self-referential); a fresh
+  // live check lives in b2-1.mjs.
 
   // Pinning the system Board anywhere is impossible even bypassing the UI —
   // the belt-and-suspenders pattern this codebase already established for
@@ -471,9 +482,16 @@ await withHarness(async (app) => {
   // now asserted here.
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Trash board)' });
-  const trashBoardHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  ok('S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully ("no project home"), never "In the Journal" (flatly false)',
-    trashBoardHomeLabel === 'The Trash Board — has no project home', String(trashBoardHomeLabel));
+  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
+  // by Nick's word (2026-07-20): deskLexicon.ts's boardHomeLabelTrash
+  // STRING VALUE changes ("no project home" -> "no drawer home"). ORIGINAL:
+  //   const trashBoardHomeLabel = await app.evalJs("document.querySelector
+  //   ('.wz-pageface-home-label')?.textContent");
+  //   ok('S1/S3/S4: the Trash Board\'s own Page face names ITS home
+  //   truthfully ("no project home"), never "In the Journal" (flatly
+  //   false)', trashBoardHomeLabel === 'The Trash Board — has no project home', ...);
+  // Re-asserted against the new copy in this file's own PARKED section
+  // (same truth); a fresh live check lives in b2-1.mjs.
 
   // ==========================================================================
   // S5 (a) — the Catch flow stays byte-identical: still writes a
@@ -670,6 +688,51 @@ if (process.env.HARNESS_PARKED === '1') {
     const movecopyGone = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
     pok('PARKED (was "S3: Move/Copy is ALSO inert on the system Board\'s own Page face") — B2 S4: the Move/Copy verb (`.wz-pageface-verb-movecopy`) is GONE entirely, not merely inert — superseded by the Places panel; live successor: this file\'s own live S3 section ("Places itself is absent on a system Board\'s own Page face")',
       movecopyGone === true, String(movecopyGone));
+
+    // B2.1 S6 park sweep — Nick's word (2026-07-20): "retire the word
+    // project as having any unique architectural purpose." The two checks
+    // below are falsified whole:
+    //
+    //   ok('S1/S3: the Journal Board\'s own Page face names ITS home
+    //   truthfully ("no project home"), never "In the Journal" (self-
+    //   referential) or a project name it doesn\'t have',
+    //     journalBoardHomeLabel === 'The Journal Board — has no project home', ...);
+    //
+    //   ok('S1/S3/S4: the Trash Board\'s own Page face names ITS home
+    //   truthfully ("no project home"), never "In the Journal" (flatly
+    //   false)',
+    //     trashBoardHomeLabel === 'The Trash Board — has no project home', ...);
+    //
+    // deskLexicon.ts's boardHomeLabelJournal/boardHomeLabelTrash STRING
+    // VALUES change ("project home" -> "drawer home"); the underlying
+    // truth (the label is honest, never "In the Journal") is unchanged and
+    // re-asserted here against the new copy. Live successor: b2-1.mjs's
+    // own "S6 lexicon + DOM" section.
+    const trashBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
+    pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+      trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+
+    // A second stamped fixture for the Journal Board's own label (systemKind
+    // 'journal', the ternary's ELSE branch in BoardEditor.tsx).
+    await freshBoard(app, 'b1-parked-journal-probe', [], LAPTOP_W, 900);
+    await app.evalJs(`(() => {
+      const key = 'writer-studio-journal-entries';
+      const list = JSON.parse(localStorage.getItem(key));
+      const board = list.find(e => e.id === 'b1-parked-journal-probe');
+      board.origin = 'system';
+      board.boxes = [{ id: 'meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'journal' }];
+      localStorage.setItem(key, JSON.stringify(list));
+    })()`);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/b1-parked-journal-probe'");
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED journal system board framed' });
+    await sleep(250);
+    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED cascade strip mounted (journal)' });
+    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+    await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
+    const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
+    pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
+      journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

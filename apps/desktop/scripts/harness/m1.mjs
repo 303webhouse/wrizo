@@ -145,8 +145,16 @@ await withHarness(async (app) => {
   ok('R1: Timer:On + Progress:Project renders both the milestone circles and the session clock', circlesAndTimer.circles > 0 && circlesAndTimer.timer === true, JSON.stringify(circlesAndTimer));
 
   // -- S3: the toggle is offered once a StoryPlan exists --------------------
-  const offeredLabels = await progressOptions(app);
-  ok('S3: Progress gains a "Project" option once a StoryPlan exists', Array.isArray(offeredLabels) && offeredLabels.includes('Project'), JSON.stringify(offeredLabels));
+  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
+  // by Nick's word (2026-07-20): ModeStage.tsx's SettingsPanel option label
+  // swaps "Project" for "Drawer" (the internal ProgressMetric value
+  // 'project' stays untouched — a storage identifier). ORIGINAL:
+  //   ok('S3: Progress gains a "Project" option once a StoryPlan exists',
+  //     Array.isArray(offeredLabels) && offeredLabels.includes('Project'),
+  //     JSON.stringify(offeredLabels));
+  // Re-asserted against the new label in this file's own PARKED section
+  // (same truth: the option appears once a StoryPlan exists); a fresh live
+  // check lives in b2-1.mjs.
 
   // -- Advance a beat to terminal status Plan-side (QuickSprint's pre-
   // existing finish-checkbox — a real, silent write: it fires setBeatStatus
@@ -162,15 +170,24 @@ await withHarness(async (app) => {
   const checkboxLabel = await app.evalJs("document.querySelector('input[type=checkbox]').closest('label').textContent");
   ok('QuickSprint\'s finish checkbox names the attached (currentBeatId) beat', checkboxLabel.includes(beatNames[beats[1]]), checkboxLabel);
   await app.evalJs("document.querySelector('input[type=checkbox]').click()");
-  await app.click('Save to project');
-  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome after Save to project' });
+  // B2.1 S6 — plumbing + cosmetic-label update, not a park: QuickSprint.tsx's
+  // own button text swaps "project" for the pre-existing 'binder' lexicon
+  // term (this exact screen's own breadcrumb already shows the OLDER
+  // stored-Drawer entity's name, see the build report's Binder-vs-Drawer
+  // section — "Drawer" would collide there). The click target is plumbing
+  // (updated); the assertion below tests beat-status behavior, wholly
+  // unaffected by the copy change, so only its descriptive name is
+  // refreshed for accuracy (its pass/fail truth never moved, so this isn't
+  // an A4 park case).
+  await app.click('Save to Binder');
+  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome after Save to Binder' });
   await sleep(400); // clear the debounced flush so the raw localStorage read below is durable
   const needStatusAfterSave = await app.evalJs(`(() => {
     const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
     const plan = plans.find(p => p.id === '${planId}');
     return plan ? plan.beatNotes.find(bn => bn.beatId === 'need')?.status : 'NO-PLAN';
   })()`);
-  ok('the beat reached complete status after Save to project', needStatusAfterSave === 'complete', String(needStatusAfterSave));
+  ok('the beat reached complete status after Save to Binder', needStatusAfterSave === 'complete', String(needStatusAfterSave));
 
   await app.evalJs(`location.hash = '#/page/${pageId}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'manuscript page reopened after Plan-side advance' });
@@ -238,8 +255,15 @@ await withHarness(async (app) => {
   await sleep(400); // clear the debounced autosave window
 
   // -- S3: the toggle is absent on a plan-less project (no StoryPlan yet) ---
+  // B2.1 S6 — NOT a park case (this check's pass/fail truth never flips:
+  // it was true before the word swap and stays true after, since 'Project'
+  // never appears in the offered list either way). Fixed in place instead,
+  // because leaving the OLD string here would make the assertion silently
+  // vacuous going forward (checking for a word the app no longer uses at
+  // all, rather than genuinely proving the milestone option's continued
+  // absence) — updated to check for the actual current label, 'Drawer'.
   const planlessLabels = await progressOptions(app);
-  ok('S3: Progress omits "Project" on a plan-less project', Array.isArray(planlessLabels) && !planlessLabels.includes('Project'), JSON.stringify(planlessLabels));
+  ok('S3: Progress omits "Drawer" on a plan-less project', Array.isArray(planlessLabels) && !planlessLabels.includes('Drawer'), JSON.stringify(planlessLabels));
 
   const pageId2 = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
 
@@ -439,6 +463,74 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// B2.1 (2026-07-20) is this file's own first tenant of the A4 scaffold
+// (m1.mjs predates the convention, per AGENTS.md's own "J4 is the first
+// citizen" note — this is its first park): Nick's word ("retire the word
+// project as having any unique architectural purpose") falsifies this
+// file's own S3 "Progress gains a 'Project' option" check whole. Quoted
+// verbatim below (SUPERSEDED) and re-asserted against the new label; live
+// successor in b2-1.mjs.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.goto('/');
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PARKED fixture' });
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book), PARKED' });
+    await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PARKED manuscript page mounted' });
+    await sleep(400);
+    const pageIdParked = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+    const projectIdParked = await app.evalJs(`(() => {
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      const e = entries.find(x => x.id === '${pageIdParked}');
+      return e ? e.projectId : null;
+    })()`);
+    // Off the page before raw-localStorage seeding (the flushNow race, per
+    // AGENTS.md's own harness seeding law).
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding PARKED StoryPlan' });
+    const planIdParked = 'm1-parked-plan';
+    await app.evalJs(`(() => {
+      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
+      const pi = projects.findIndex(p => p.id === '${projectIdParked}');
+      projects[pi].storyPlanId = '${planIdParked}';
+      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+      const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
+      plans.push({
+        id: '${planIdParked}', projectId: '${projectIdParked}', frameworkId: 'story_circle',
+        currentBeatId: null, beatNotes: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      });
+      localStorage.setItem('writer-studio-story-plans', JSON.stringify(plans));
+    })()`);
+    await app.reload();
+    await app.evalJs(`location.hash = '#/page/${pageIdParked}'`);
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PARKED manuscript page reopened' });
+    await sleep(300);
+
+    // ORIGINAL: ok('S3: Progress gains a "Project" option once a StoryPlan
+    // exists', Array.isArray(offeredLabels) && offeredLabels.includes
+    // ('Project'), JSON.stringify(offeredLabels));
+    const offeredLabelsNow = await progressOptions(app);
+    pok('PARKED (was "S3: Progress gains a \\"Project\\" option once a StoryPlan exists") — B2.1 S6: the SAME toggle-appears claim, "Drawer" now (the word swap changes only the label; the internal ProgressMetric value stays \'project\', untouched); live successor: b2-1.mjs',
+      Array.isArray(offeredLabelsNow) && offeredLabelsNow.includes('Drawer'), JSON.stringify(offeredLabelsNow));
+    return parkedChecks;
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nM1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nM1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nM1 VERIFY: PASS (${checks.length} checks)` : `\nM1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
