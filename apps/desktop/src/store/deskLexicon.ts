@@ -199,17 +199,39 @@ export type DeskTermId =
   // KEY names (internal identifiers, not writer-facing — same "don't
   // rename code internals" spirit the brief applies to storage) but have
   // their STRING VALUES updated below. Files that already had their OWN
-  // established themeLexicon convention for this entity (QuickSprint.tsx,
-  // ImportDraft.tsx, DrawersTree.tsx, PinToBoardSheet.tsx,
-  // PortToBoardSheet.tsx — all reuse the pre-existing 'binder' term
-  // instead, see the build report's Binder-vs-Drawer judgment) do NOT
-  // gain new terms here — only files with no established local
-  // convention (or whose established convention is deskLexicon itself,
-  // per AB1 S5's own scoping) do.
+  // established themeLexicon convention for this entity (ImportDraft.tsx,
+  // DrawersTree.tsx, PinToBoardSheet.tsx, PortToBoardSheet.tsx — all reuse
+  // the pre-existing 'binder' term instead, see the build report's
+  // Binder-vs-Drawer judgment) do NOT gain new terms here — only files
+  // with no established local convention (or whose established
+  // convention is deskLexicon itself, per AB1 S5's own scoping) do.
+  //
+  // Review fix (independent re-verification) — QuickSprint.tsx moved from
+  // the "reuse themeLexicon 'binder'" list to THIS list: the build's own
+  // collision reasoning for that file didn't hold (its breadcrumb shows a
+  // PROPER NOUN, `drawer.name`, never the bare word "Drawer" — no actual
+  // collision), and its Save button's own destination (ProjectHome.tsx)
+  // always reads "Drawer" regardless, matching every OTHER inbound link to
+  // that screen. 'sprintSaveToDrawer'/'sprintSaveAsDrawer' restore that
+  // consistency. See QuickSprint.tsx's own updated comment at the call
+  // site and b2-1.mjs's parked S6g check for the full account.
+  //
+  // Review fix, second gap (same pass) — CreateProject.tsx: the build never
+  // noticed it's ALSO DrawersTree.tsx's own "New Binder" row's real
+  // destination (`/project/new?drawer=<id>`), so its unconditional
+  // 'createDrawerEyebrow'/'createDrawerTitleLabel' contradicted that row's
+  // own word one click later. CreateProject.tsx now reads `drawerId`
+  // (already available, the same signal DrawersTree.tsx's own button uses)
+  // and switches to inline themeLexicon 'binder' composition for THAT
+  // branch only — it does NOT gain new deskLexicon terms of its own for
+  // that branch, matching the OTHER themeLexicon-convention files' own
+  // pattern above; its deskLexicon terms below stay the top-level-only
+  // (no `drawer` param) case. See CreateProject.tsx's own comment.
   | 'createDrawerEyebrow' | 'createDrawerTitleLabel' | 'createDrawerOpensNote'
   | 'drawerHomeTitleLabel' | 'backToDrawer'
   | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
-  | 'journalRouteSendToDrawer' | 'journalRouteEmptyDrawers' | 'journalRoutePromoteDrawer';
+  | 'journalRouteSendToDrawer' | 'journalRouteEmptyDrawers' | 'journalRoutePromoteDrawer'
+  | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -361,6 +383,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   journalRouteSendToDrawer: 'Send to a Drawer',
   journalRouteEmptyDrawers: 'No Drawers yet.',
   journalRoutePromoteDrawer: 'Promote to a new Drawer',
+  sprintSaveToDrawer: 'Save to Drawer',
+  sprintSaveAsDrawer: 'Save as Drawer',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

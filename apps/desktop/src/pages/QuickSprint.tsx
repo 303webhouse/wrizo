@@ -17,6 +17,7 @@ import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
 import { milestonesForProject } from '../store/milestones';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
 
 const DRAFT_KEY_PREFIX = 'writer-studio-quick-sprint-draft';
 const AUTOSAVE_MS = 2000;
@@ -48,6 +49,7 @@ function QuickSprintView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
+  const { t: deskT } = useDeskLexicon();
   const project = id ? getProject(id) : null;
   const draftId = id ?? 'scratch';
 
@@ -553,15 +555,28 @@ function QuickSprintView() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button type="button" className="btn-brass" onClick={handleKeepWriting}>Keep writing</button>
-            {/* B2.1 S6 — "Binder", not "Drawer": the breadcrumb just above
-                (line ~414, `{drawer && ... drawer.name ...}`) already shows
-                the OLDER stored-Drawer entity's own name on this exact
-                screen, so this reuses the file's pre-existing lex('binder')
-                call (line ~433, the sprint-toggle aria-label) rather than
-                introduce a second, colliding "Drawer" — see the build
-                report's Binder-vs-Drawer section. */}
+            {/* Review fix (independent re-verification of B2.1 S6) — reverted
+                from the build's "Binder" choice back to "Drawer". The
+                build's own reasoning (avoiding a collision with the
+                breadcrumb above) doesn't actually hold: the breadcrumb
+                renders `drawer.name`, a PROPER NOUN ("Real Stored Drawer"),
+                never the bare word "Drawer" — a proper noun next to a
+                generic category word doesn't collide (same pattern as a
+                file explorer showing "My Documents" beside a "New Folder"
+                button). Meanwhile this button's own onClick always lands on
+                ProjectHome.tsx (handleSaveToProject below), whose eyebrow
+                (kindLabels.ts domainLabel) and every OTHER inbound link to
+                it (BeatWizard/StructureWizard/StructureBoard's "Back to
+                Drawer", JournalEntry's "Promote to a new Drawer") say
+                "Drawer" unconditionally — "Save to/as Binder" was the LONE
+                dissenting label into that shared destination. Matching the
+                majority restores app-wide consistency without touching
+                ProjectHome.tsx (which would only trade this mismatch for a
+                new one against the wizard pages' own "Back to Drawer").
+                Falsifies b2-1.mjs's S6g "Save to Binder" check — parked
+                there per A4, live successor added beside it. */}
             <button type="button" className="btn-ghost" onClick={handleSaveToProject}>
-              {id ? `Save to ${lex('binder')}` : `Save as ${lex('binder')}`}
+              {id ? deskT('sprintSaveToDrawer') : deskT('sprintSaveAsDrawer')}
             </button>
             <span style={{ flex: 1 }} />
             <button type="button" className="btn-brick" onClick={handleDiscard} style={{ marginLeft: 'var(--space-4)' }}>

@@ -3,6 +3,18 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createBinder, createBinderPage, createScriptPage } from '../store/persistence';
 import { KIND_META, PICKER_GROUPS } from '../store/kindLabels';
 import { useDeskLexicon } from '../store/deskLexicon';
+// Review fix (independent re-verification of B2.1 S6) — a genuine gap the
+// build's own harness never exercised: DrawersTree.tsx's own in-drawer
+// "New Binder" row (deliberately NOT "New Drawer" there, to avoid
+// colliding with that tree's own top-level "+ New Drawer" action — see
+// deskLexicon.ts's header comment) navigates HERE, to `/project/new?drawer=
+// <id>` — and this screen, unconditionally, always read "NEW DRAWER"
+// regardless. A writer clicking "New Binder" landed on a screen headlined
+// "NEW DRAWER" one click later: the exact same-word collision Q2 was
+// meant to avoid, just deferred one hop. `drawerId` (below) is the SAME
+// signal DrawersTree.tsx's own button already uses to construct this
+// exact navigation, so keying off it here is precise, not a new guess.
+import { useLexicon } from '../store/themeLexicon';
 import type { BinderKind } from '../types';
 
 // F4 — "What are you writing?" Domain enters at CREATE time, on the binder, never
@@ -16,8 +28,13 @@ import type { BinderKind } from '../types';
 export function CreateProject() {
   const navigate = useNavigate();
   const { t } = useDeskLexicon();
+  const { t: lex } = useLexicon();
   const [params] = useSearchParams();
   const drawerId = params.get('drawer') || undefined;
+  // Reached from inside an existing, named Drawer container (DrawersTree's
+  // own "New Binder" row) — this screen's chrome must say what that row
+  // said, or the click contradicts its own destination.
+  const inDrawer = !!drawerId;
   const [title, setTitle] = useState('');
   const [selected, setSelected] = useState<BinderKind | null>(null);
 
@@ -45,13 +62,21 @@ export function CreateProject() {
   const note = !selected
     ? 'Pick a form to begin — no title required.'
     : selected === 'other'
+      // NOT context-aware, unlike the eyebrow/title-label below: this
+      // specific note previews the 'other' path's own real destination,
+      // ProjectHome.tsx (see `start()` above) — which always reads
+      // "Drawer" (its own domain eyebrow is untouched by this review fix,
+      // for the same "match the majority of inbound links" reasoning
+      // QuickSprint.tsx's own updated comment explains). Varying this
+      // note by inDrawer would just relocate the same contradiction one
+      // line down instead of closing it.
       ? t('createDrawerOpensNote')
       : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
 
   return (
     <div className="create-picker">
       <button type="button" className="cp-back" onClick={() => navigate('/')}>&larr; Home</button>
-      <div className="cp-eyebrow">{t('createDrawerEyebrow')}</div>
+      <div className="cp-eyebrow">{inDrawer ? `NEW ${lex('binder').toUpperCase()}` : t('createDrawerEyebrow')}</div>
       <h1 className="cp-title">What are you writing?</h1>
       <p className="cp-sub">Books, essays, scripts — same desk underneath. The form sets your page names, and later its format conventions and support pages.</p>
 
@@ -96,7 +121,7 @@ export function CreateProject() {
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && selected) { e.preventDefault(); start(); } }}
           placeholder="Untitled — you can name it after you’ve written"
-          aria-label={t('createDrawerTitleLabel')}
+          aria-label={inDrawer ? `${lex('binder')} title (optional)` : t('createDrawerTitleLabel')}
         />
         <button type="button" className="cp-go" disabled={!selected} onClick={start}>Start writing</button>
       </div>
