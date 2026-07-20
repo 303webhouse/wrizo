@@ -1,7 +1,7 @@
 import type { Project, JournalEntry, BinderKind } from '../types';
 import {
   getProjects, getJournalEntries, getJournalEntry, getProject,
-  getBinderPages, getStoryPlanByProjectId,
+  getBinderPages, getStoryPlanByProjectId, getSystemKind,
 } from './persistence';
 import { getFramework } from './frameworks';
 
@@ -110,7 +110,14 @@ export function getResumeTarget(): ResumeTarget | null {
     cands.push({ at, build: () => fromProject(p, at) });
   }
   // Every journal entry as its own surface (binder page uses entry.updatedAt).
+  // B1 — a system Board (the Journal Board, the Trash Board) is excluded
+  // from the race: reconcile (S2) writes to it quietly on a schedule the
+  // writer never asked for, and resuming INTO one (the Trash Board, above
+  // all) on a cold open would be a genuinely surprising landing, never the
+  // writer's own most recent WRITING activity. getSystemKind is a cheap,
+  // read-only check (persistence.ts's own S1 helper).
   for (const e of entries) {
+    if (getSystemKind(e)) continue;
     const at = new Date(e.updatedAt).getTime();
     cands.push({ at, build: () => fromEntry(e, at) });
   }

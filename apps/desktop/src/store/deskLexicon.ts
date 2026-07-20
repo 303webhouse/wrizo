@@ -136,7 +136,16 @@ export type DeskTermId =
   // ('boardNewPageCard'): a real page, created AND pinned to this board in
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
-  | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty';
+  | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
+  // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
+  // Trash Board — the SAME "one term, every surface" shape
+  // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
+  // the system Board's own seeded title). 'cascadeTrashOpen' is the Trash
+  // category's own single action (the brief's own "reachable, never
+  // prominent, no count" law — one plain button, nothing else). 'boardRestore'
+  // is the Trash Board's own selected-card action (S4, the FX5 action-row
+  // precedent) — a plain button; clears deletedAt, nothing more.
+  | 'drawerPlaceTrash' | 'cascadeTrashOpen' | 'boardRestore';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -254,6 +263,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',
+  drawerPlaceTrash: 'Trash',
+  cascadeTrashOpen: 'Open the Trash',
+  boardRestore: 'Restore',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

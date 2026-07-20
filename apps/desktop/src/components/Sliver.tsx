@@ -79,11 +79,17 @@ export type SliverContent =
   // 'freewrite'/'draft' above.
   | {
       kind: 'board';
-      onAddCard: () => void;
+      // B1 S3 — both optional now: on a system Board, BoardEditor.tsx
+      // passes neither at all — "the sliver's Add action must be absent on
+      // system boards," an absence in the DOM, not merely an inert click
+      // (Delete on a derived card gets that inert-click treatment instead;
+      // Add gets this one). Undefined, never a no-op function, is the
+      // signal SliverToolsBody below reads to skip rendering each button.
+      onAddCard?: () => void;
       // FX6 S2b — "New page card": a real page, created AND pinned to this
       // board in one act (BoardEditor.tsx's own onAddPageCard) — the
       // board-side door Nick reached for and couldn't find.
-      onAddPageCard: () => void;
+      onAddPageCard?: () => void;
       // FX5 S5 — the connections-footer's own per-board visibility toggle,
       // the sliver's THIRD board control ("Add card + this, two controls"
       // — the brief's own words, now three with FX6's own addition).
@@ -271,18 +277,25 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
 
       {/* AB4 S5 / FX4 S6 — the board's own hand tool: Add card alone now
           (the Connect toggle retired — see this file's own SliverContent
-          comment). */}
+          comment).
+          B1 S3 — on a system Board, BoardEditor.tsx passes neither
+          onAddCard nor onAddPageCard at all: both buttons below are
+          genuinely absent from the DOM there, not merely disabled. */}
       {content.kind === 'board' && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railBoard')}</div>
-          <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddCard}>
-            {t('boardAddCard')}
-          </button>
+          {content.onAddCard && (
+            <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddCard}>
+              {t('boardAddCard')}
+            </button>
+          )}
           {/* FX6 S2b — the board-side New Page door: a real page, created
               AND pinned to this board in one act. */}
-          <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddPageCard}>
-            {t('boardNewPageCard')}
-          </button>
+          {content.onAddPageCard && (
+            <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddPageCard}>
+              {t('boardNewPageCard')}
+            </button>
+          )}
           {/* FX5 S5 — the footer toggle, the sliver's third board control. */}
           <SliverToggle
             label={t('boardFooterToggle')}

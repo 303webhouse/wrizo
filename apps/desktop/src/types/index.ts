@@ -230,7 +230,19 @@ export interface JournalEntry {
   // — homes nowhere, and starting there never files it). Undefined/null on
   // every existing row means "behave exactly as today" — no backfill, no
   // re-homing; this field governs creation from AB3 forward only.
-  origin?: 'journal' | 'project' | 'loose';
+  // B1 S1 — 'system' joins the union: a system Board's own origin (the
+  // Journal Board, the Trash Board). Reuses this SAME existing column (zero
+  // schema, a plain text field server-side, no CHECK constraint) rather than
+  // inventing a new provenance seam. Load-bearing, not decorative: without an
+  // explicit exclusive origin, a projectId-null/non-shelved system Board
+  // would otherwise satisfy inJournalView's own legacy fallback branch below
+  // (every board before this ticket always carried a projectId, so that
+  // fallback's blind spot never mattered until a board could exist WITHOUT
+  // one) — it would wrongly appear IN the Journal it is meant to represent,
+  // and reconcile would then try to pin the Journal Board onto itself.
+  // 'system' short-circuits inJournalView's `e.origin != null` branch to
+  // `false`, closing that hole with no change to inJournalView's own code.
+  origin?: 'journal' | 'project' | 'loose' | 'system';
 }
 
 // J4 — a Board's positioned content unit (I2/I3 realized): the first
@@ -309,6 +321,16 @@ export interface Box {
   // not a coordinate); costs nothing extra anywhere board-meta was already
   // filtered out of position-based computations.
   footerOn?: boolean;
+  // B1 S1 — A system Board is a REAL board page (pageType 'board'), created
+  // find-or-create idempotently on first approach, marked by a new optional
+  // field on the existing 'board-meta' element in its own boxes: systemKind:
+  // 'journal' | 'trash' (the FX4 board-meta precedent — additive optional
+  // Box field, zero schema). System Boards: have no project home; never
+  // appear as cards on any system Board (exclusion asserted); never appear
+  // in the Pin sheet's board leaves (no project → already excluded; assert
+  // it anyway); sync like any page (arrangement persists across devices by
+  // the existing boxes round-trip).
+  systemKind?: 'journal' | 'trash';
 }
 
 // TU1 S1 — the Tutor's per-page conversation thread (fragments-under-Pages

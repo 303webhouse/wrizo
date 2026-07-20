@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
+  getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
 } from '../store/persistence';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
@@ -136,12 +137,21 @@ function notecardExcerpt(text: string): { title: string; excerpt: string } {
 }
 
 // AB4 S2 — a page-pin card: MEMBERSHIP, not capture. Reads the referenced
-// entry LIVE at every render (getJournalEntry, the same "no cached
-// snapshot" discipline the cascade's own panels use) — so it can never go
-// stale, and pin/unpin never touches the referenced entry's own record.
+// entry LIVE at every render (getJournalEntryIncludingDeleted, the same "no
+// cached snapshot" discipline the cascade's own panels use) — so it can
+// never go stale, and pin/unpin never touches the referenced entry's own
+// record.
+// B1 S4 — deliberately the DELETED-INCLUSIVE read (not getJournalEntry):
+// the Trash Board pins every soft-deleted page on purpose (S2's own
+// reconcile), and this card must show its REAL title/excerpt — "the Trash
+// is a place, not a blank" — never the generic "Missing page" a
+// deletion-filtered read would report for every single Trash card. Travel
+// (BoardEditor's own travelToPin, below) stays on the live-only read, so a
+// deleted page can be SEEN here but not travelled into — Restore is the one
+// interactive act a Trash card offers, and this is a read-only face.
 function BoardPinBox({ box }: { box: Box }) {
   const { t: lex } = useLexicon();
-  const entry = box.entryId ? getJournalEntry(box.entryId) : null;
+  const entry = box.entryId ? getJournalEntryIncludingDeleted(box.entryId) : null;
   if (!entry) {
     return <div className="board-text board-pin board-pin-missing">Missing page</div>;
   }
@@ -534,6 +544,14 @@ export function BoardEditor({ id }: { id: string }) {
   const navigate = useNavigate();
   const { t } = useDeskLexicon();
   const initialEntry = getJournalEntry(id);
+  // B1 S1/S3 — a plain, cheap, per-render check (persistence.ts's own
+  // getSystemKind): every system-board guard in this component (S2's
+  // reconcile effect, S3's arrange-never-author restrictions, S4's Restore
+  // row) branches on this ONE value. A genuinely ordinary Board's own
+  // behavior is untouched by every one of those branches (S3's own "User
+  // Boards are untouched by this slice" law).
+  const systemKind = getSystemKind(initialEntry);
+  const isSystemBoard = !!systemKind;
   // AB1 S1 — DeskFrame owns the viewport at >=1100px only; below that this
   // renders its exact pre-AB1 markup. No mode strip on Board (Trellis-side
   // by design — matches w1.mjs's existing "board never gets mode tabs"
@@ -651,6 +669,16 @@ export function BoardEditor({ id }: { id: string }) {
     project,
     pinnedBoardTitles,
   );
+  // B1 S3 — a system Board's own home/membership is never alterable via the
+  // Page face's generic sending grammar: Move/Copy would file it into a
+  // project, breaking S1's own "no project home" invariant; Pin is
+  // explicitly named forbidden by the brief ("may NOT ... pin the system
+  // Board anywhere"). Both are inert no-ops here — the SAME "present but
+  // does nothing" treatment S3 already gives hand-delete on a derived card,
+  // applied consistently to the board's own Page face rather than hidden
+  // (PageFace.tsx itself stays completely unchanged, shared by every
+  // surface). Port to a Board is left untouched: it only ever COPIES text
+  // elsewhere, never touches this board's own home, so nothing to guard.
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
     entry: initialEntry ?? { id, text: '', projectId: null, createdAt: '', updatedAt: '' },
@@ -659,9 +687,9 @@ export function BoardEditor({ id }: { id: string }) {
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,
-    onOpenMoveCopy: () => setAddOpen(true),
+    onOpenMoveCopy: isSystemBoard ? () => {} : () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
-    onOpenPin: () => setPinOpen(true),
+    onOpenPin: isSystemBoard ? () => {} : () => setPinOpen(true),
   };
   const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
 
@@ -686,6 +714,35 @@ export function BoardEditor({ id }: { id: string }) {
   // the canvas wider/narrower, else the wrap's own natural (auto-fit)
   // width — byte-identical to pre-FX4 in the untouched case.
   const pageWidthPx = canvasOverrideW != null ? Math.max(canvasOverrideW, CANVAS_MIN_W) : containerWidthPx;
+
+  // B1 S2 — the reconcile. Runs once on mount (a system Board may have
+  // qualifying pages the writer hasn't visited it since) and again on every
+  // subsequent store change while mounted (persistence.ts's own subscribe —
+  // the SAME notify() every write in the app already fires), so a capture
+  // or a delete happening ANYWHERE reaches whichever system Board is
+  // currently open without the writer lifting a finger. Applies directly
+  // (saveBoardBoxes + setBoxes + lastSavedRef, mirroring undo()'s own
+  // apply-and-mark-saved shape above) rather than going through the
+  // debounced autosave effect below — a reconciled card set is not an
+  // in-flight edit to coalesce, it's a fact that just became true.
+  // Idempotent by construction (reconcileSystemBoard returns null when
+  // nothing changed), so the notify() this effect's OWN save fires back
+  // into itself resolves to a single further no-op check, not a loop.
+  // Completely inert for an ordinary Board (`systemKind` falsy) — S3's own
+  // "User Boards are untouched by this slice" law, held by one early return.
+  useEffect(() => {
+    if (!systemKind) return;
+    const runReconcile = () => {
+      const reconciled = reconcileSystemBoard(id);
+      if (reconciled === null) return;
+      saveBoardBoxes(id, reconciled);
+      setBoxes(reconciled);
+      lastSavedRef.current = reconciled;
+    };
+    runReconcile();
+    return subscribe(runReconcile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, systemKind]);
 
   // Autosave — debounced, like PageEditor's text; flush on hide/unmount.
   useEffect(() => {
@@ -783,8 +840,17 @@ export function BoardEditor({ id }: { id: string }) {
   // AB4 S3 — removing a card also drops any hairline that referenced it (an
   // orphaned connection would point at nothing); one snapshot covers both,
   // so Undo restores the card AND its connections together.
+  // B1 S3 — "hand-delete derived cards (Delete on one must be an inert
+  // quiet no-op, harness-asserted)": on a system Board, EVERY visible card
+  // is a derived page-pin (S3's own "may NOT Add cards" already makes any
+  // other kind unreachable there), so Delete is inert here, whole — a quiet
+  // early return, no undo snapshot, no removal. The action row's own Remove
+  // button stays visibly present (the brief's own wording: "Delete ON ONE
+  // must be an inert quiet no-op" describes the CLICK's effect, not the
+  // button's presence) — clicking it on a system Board simply does nothing.
   const removeSelected = () => {
     if (!selectedBox) return;
+    if (isSystemBoard) return;
     snapshot('remove');
     const idsToRemove = selectedIds;
     setBoxes(prev => prev.filter(b => {
@@ -801,6 +867,24 @@ export function BoardEditor({ id }: { id: string }) {
     snapshot('remove');
     setBoxes(prev => prev.filter(b => b.id !== connId));
     setSelectedConnectionId(null);
+  };
+
+  // B1 S4 — Restore, the Trash Board's own selected-card action (a plain
+  // button, the FX5 action-row precedent — "restore is a plain button, say
+  // so": no confirmation, no undo entry, no special fidelity claim beyond a
+  // click). Clears deletedAt via persistence.ts's restoreEntry and nothing
+  // else — this component never touches the underlying entry's own
+  // projectId/shelved/origin. The card's own removal from THIS board isn't
+  // done here by hand: it happens through the SAME reconcile subscription
+  // (above) that put it here in the first place — restoreEntry's own save
+  // fires notify(), which re-runs reconcileSystemBoard, which finds the
+  // restored page no longer deletedAt-bearing and drops its stale card —
+  // one mechanism, not two. Deselecting here only prevents the action row
+  // from pointing at a card that's about to disappear.
+  const restoreSelected = (entryId: string) => {
+    restoreEntry(entryId);
+    setSelectedId(null);
+    flushNow();
   };
 
   // AB4 S5 — "Add card," the sliver's other hand tool: a blank text card,
@@ -1187,7 +1271,14 @@ export function BoardEditor({ id }: { id: string }) {
   // always used — byte-identical when canvasOverrideH is null.
   const contentMinHeightPx = Math.max((maxBottom(boxes) + 0.08) * pageWidthPx, VIEWPORT_MIN_PX);
   const canvasHeightPx = canvasOverrideH != null ? Math.max(canvasOverrideH, contentMinHeightPx) : contentMinHeightPx;
-  const backTo = project ? `/project/${project.id}` : '/journal';
+  // B1 — a system Board never has a project (S1), so the pre-B1 fallback
+  // ('/journal') would send BOTH system Boards' own "Done" to the SAME
+  // place — harmlessly circular for the Journal Board itself, but genuinely
+  // WRONG for the Trash Board (it would land on the Journal Board instead
+  // of anywhere sensible). Home ('/') is the correct, uniform fallback for
+  // a page with no project and no natural "up" — the exact same reasoning
+  // PageEditor.tsx's own backTo already applies to a loose-origin page.
+  const backTo = project ? `/project/${project.id}` : isSystemBoard ? '/' : '/journal';
   const title = initialEntry.text.trim() ? initialEntry.text.trim() : 'Untitled';
 
   // AB4 S3 / FX4 S4 — connection and board-meta boxes are never positioned
@@ -1224,11 +1315,16 @@ export function BoardEditor({ id }: { id: string }) {
   // independent copy (Port's own "COPY, never move" law: the board's copy
   // stays fully editable, just not via the same gesture as a hand-typed
   // card anymore).
+  // B1 S4 — the Trash Board's own Restore, joining the row's existing
+  // conditional buttons exactly the way ungroup/Edit-copy already do.
   const boardActionRow = selectedBox && (
     <div className="board-action-row" style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
       {selectedBox.groupId && <button type="button" className="btn-quiet" onClick={ungroup}>Ungroup</button>}
       {selectedBox.kind === 'text' && selectedBox.sourceEntryId && (
         <button type="button" className="btn-quiet" onClick={() => setPopupBoxId(selectedBox.id)}>{t('boardEditCopy')}</button>
+      )}
+      {systemKind === 'trash' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
+        <button type="button" className="btn-quiet" onClick={() => restoreSelected(selectedBox.entryId!)}>{t('boardRestore')}</button>
       )}
       <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
     </div>
@@ -1257,7 +1353,10 @@ export function BoardEditor({ id }: { id: string }) {
   };
   const boxLabel = (b: Box): string => {
     if (b.kind === 'page-pin') {
-      const entry = b.entryId ? getJournalEntry(b.entryId) : null;
+      // B1 S4 — the deleted-inclusive read (see BoardPinBox's own comment):
+      // a thread naming a since-deleted card should still read its real
+      // title, not "Untitled."
+      const entry = b.entryId ? getJournalEntryIncludingDeleted(b.entryId) : null;
       return entry ? (notecardExcerpt(entry.text).title || t('boardThreadUntitled')) : t('boardThreadUntitled');
     }
     return notecardExcerpt(b.text ?? '').title || t('boardThreadUntitled');
@@ -1383,8 +1482,14 @@ export function BoardEditor({ id }: { id: string }) {
           </svg>
           {/* FX6 S2c — the empty board's own quiet one-line pointer at
               both board-side tools (this canvas carried NO empty-state
-              copy at all before this ticket). */}
-          {sorted.length === 0 && <div className="board-canvas-empty" aria-hidden="true">{t('boardCanvasEmpty')}</div>}
+              copy at all before this ticket).
+              B1 S3 — suppressed on a system Board: neither tool it names
+              exists there (Add is absent, whole), so the pointer would name
+              doors that aren't in the room. An empty system Board (the
+              Trash Board, most days) stays quiet instead — no text at all,
+              matching the anti-solicitation law's own instinct rather than
+              inventing a system-board-specific message nothing asked for. */}
+          {sorted.length === 0 && !isSystemBoard && <div className="board-canvas-empty" aria-hidden="true">{t('boardCanvasEmpty')}</div>}
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
           const boxConnections = footerOn ? connectionsFor(box.id) : [];
@@ -1507,12 +1612,18 @@ export function BoardEditor({ id }: { id: string }) {
   // FX5 S5 — a second control joins it: the per-board connections-footer
   // toggle ("Add card + this, two controls" — the brief's own words).
   // FX6 S2b — a THIRD control joins them: New page card.
-  const sliverContent: SliverContent = {
-    kind: 'board',
-    onAddCard,
-    onAddPageCard,
-    footer: { on: footerOn, onToggle: toggleFooter },
-  };
+  // B1 S3 — "Add cards (the sliver's Add action must be absent on system
+  // boards)": on a system Board, neither onAddCard NOR onAddPageCard is
+  // passed at all — Sliver.tsx's own SliverToolsBody renders each button
+  // only when its handler is present (undefined, not a no-op function), so
+  // the buttons are genuinely ABSENT from the DOM here, not merely inert
+  // (matching the brief's own distinct wording for Add vs. Delete: Add's
+  // own affordance "must be absent," Delete's own click "must be inert").
+  // The footer toggle survives — arranging (including hiding the footer) is
+  // explicitly permitted by S3's "full FX5 hand."
+  const sliverContent: SliverContent = isSystemBoard
+    ? { kind: 'board', footer: { on: footerOn, onToggle: toggleFooter } }
+    : { kind: 'board', onAddCard, onAddPageCard, footer: { on: footerOn, onToggle: toggleFooter } };
 
   const pageFaceSheets = (
     <>
