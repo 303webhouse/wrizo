@@ -16,6 +16,25 @@ interface Options {
   // neither — their own view state already persists through their own stores.
   applyScrollY?: (y: number) => void;
   applyCaret?: (offset: number) => void;
+  // B1 — a genuine defect found live while repairing this ticket's own
+  // harness (w2.mjs): the Journal Board (a real Board page, BoardEditor's
+  // own generic useWayBack call) sits BETWEEN a departure and the writer's
+  // eventual chip-click return, same as every board always could — but
+  // unlike an ordinary board (whose own chip stays hidden the whole time,
+  // isWritingRoute counting it as "writing"), B1 deliberately makes the
+  // JOURNAL Board's own chip visible on arrival (wayBack.ts's own fix).
+  // That exposed a pre-existing race no board had ever hit before: clicking
+  // the chip navigates away, unmounting the Journal Board; ITS OWN capture-
+  // on-unmount effect (below) fires and overwrites the one-slot store with
+  // the Journal Board's own entryId — clobbering the very information the
+  // chip's destination page needs to recognize a matching way-back and
+  // restore its scroll/caret. Retired Journal.tsx never called this hook at
+  // all, so this race never existed there. `false` here is the minimal fix:
+  // a system Board doesn't participate in capture/restore/tracking at all
+  // (the same "route + mount identity only" as board/script already gets,
+  // taken one step further to "no participation") — an ordinary board's
+  // own existing behavior is completely untouched (defaults to `true`).
+  participatesInWayBack?: boolean;
 }
 
 // W2 — one hook, two halves, per docs/w2-way-back-brief.md.
@@ -49,7 +68,7 @@ interface Options {
 //                       a different writing surface replaces the slot"
 //                       falls out naturally: the next departure always
 //                       overwrites whatever was here.
-export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl, applyScrollY, applyCaret }: Options): void {
+export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl, applyScrollY, applyCaret, participatesInWayBack = true }: Options): void {
   const location = useLocation();
   const lastScrollRef = useRef(0);
   const lastCaretRef = useRef<number | null>(null);
@@ -58,6 +77,7 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
 
   // Continuous tracking while mounted.
   useEffect(() => {
+    if (!participatesInWayBack) return;
     const updateScroll = () => {
       if (useWindowScroll) { lastScrollRef.current = window.scrollY; return; }
       const el = scrollEl?.();
@@ -84,7 +104,7 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
       window.clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entryId]);
+  }, [entryId, participatesInWayBack]);
 
   // Restore. The rAF + 80/200/350ms re-assert ladder wins the mount-seeding
   // race (see above) — but left unchecked it also fights the WRITER: typing
@@ -97,6 +117,7 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
   // means they've already resumed and any further correction would fight them
   // instead of helping.
   useEffect(() => {
+    if (!participatesInWayBack) return;
     const wb = getWayBack();
     if (!wb || wb.entryId !== entryId) return;
     clearWayBack(); // one-shot: consumed the instant we recognize it, regardless of arrival path
@@ -124,11 +145,12 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
       events.forEach(([type, opts]) => window.removeEventListener(type, onFirstInput, opts));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entryId]);
+  }, [entryId, participatesInWayBack]);
 
   // Capture — on unmount (a route departure while this surface was live).
   // Reads the TRACKED refs, never a fresh query (see the header comment).
   useEffect(() => {
+    if (!participatesInWayBack) return;
     return () => {
       const { entryId, mode, pathname } = liveRef.current;
       captureWayBack({
@@ -141,5 +163,5 @@ export function useWayBack({ entryId, mode, scrollEl, useWindowScroll, editorEl,
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entryId]);
+  }, [entryId, participatesInWayBack]);
 }

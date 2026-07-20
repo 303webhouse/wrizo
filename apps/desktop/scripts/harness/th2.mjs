@@ -62,16 +62,23 @@ await withHarness(async (app) => {
   ok('check 1: Page:light applies Flux\'s light pair (#EDF6F3 / #14231F)', pageLight.paper.toLowerCase() === '#edf6f3' && pageLight.ink.toLowerCase() === '#14231f', JSON.stringify(pageLight));
 
   // -- check 2: lexicon renders on key surfaces; canonical routes resolve ----
+  // B1 S5 — '/journal' now bridges to the Journal Board (pages/Journal.tsx
+  // deleted); this only ever needed DeskRail mounted to read its labels
+  // ('.desk-rail', DeskRail's own root marker — a global nav element,
+  // present on the Board exactly as it was on the old list).
   await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list under Flux' });
+  await app.waitFor("!!document.querySelector('.desk-rail')", { label: 'DeskRail mounted under Flux' });
   const railLabels = await app.evalJs("[...document.querySelectorAll('.desk-rail-item .desk-rail-label')].map(el => el.textContent)");
   // Journal/Shelf render via t() (singular — "Log"/"Cache"); only the
   // Drawers item is flagged plural and renders via tMany() ("Racks").
   ok('check 2: DeskRail renders Flux terms (Journal->Log, Shelf->Cache, Drawers->Racks)',
     railLabels.includes('Log') && railLabels.includes('Cache') && railLabels.includes('Racks'),
     JSON.stringify(railLabels));
-  ok('check 2: canonical route /journal still resolves under Flux (URL stays canonical)',
-    (await app.evalJs('location.hash')).includes('/journal'), await app.evalJs('location.hash'));
+  // B1 park sweep — "canonical route /journal still resolves ... (URL stays
+  // canonical)" is PARKED below (A4, quoted verbatim): retirement-by-
+  // replacement means the URL now bridges to the Board on purpose (App.tsx's
+  // JournalBoardGate) — live successor is b1.mjs's own retirement check
+  // (the redirect itself is the new canonical behavior, not a hole).
 
   await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.dz-pagetitle')", { label: 'Drawers route under Flux' });
@@ -330,11 +337,12 @@ await withHarness(async (app) => {
 
   // -- Firewall chip + block caret (Slice 5) ----------------------------------
   await app.evalJs("window.wrizoTheme.set('flux')");
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list for VW/caret checks' });
-  // "New page" is itself lexicon-swept under Flux ("New doc") — click by the
-  // stable class rather than a theme-varying label.
-  await app.evalJs("document.querySelector('.journal-new-page').click()");
+  // B1 — the retired Journal list's own "New page" button is gone
+  // (pages/Journal.tsx deleted, S5) — its stable-class-not-label click
+  // (chosen because the label is itself lexicon-swept under Flux) is
+  // superseded outright by persistence.ts's own new test seam
+  // (window.wrizoCreateJournalPage), which needs no label/class at all.
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page for VW/caret checks' });
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('a');
@@ -355,6 +363,50 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// B1 (2026-07-19) is the first tenant of this scaffold. Quoted verbatim
+// below (the exact code that lived in this file's own live check 2 section
+// before this park):
+//
+//   "canonical route /journal still resolves under Flux (URL stays
+//   canonical)"
+//     ok('check 2: canonical route /journal still resolves under Flux
+//       (URL stays canonical)',
+//       (await app.evalJs('location.hash')).includes('/journal'),
+//       await app.evalJs('location.hash'));
+//
+// B1 S5 — pages/Journal.tsx (the room this route used to render) is
+// deleted; '/journal' now find-or-creates the Journal Board and redirects
+// (App.tsx's JournalBoardGate) — the URL deliberately does NOT stay
+// '/journal' anymore; that IS the new canonical behavior (retirement-by-
+// replacement), not a regression. Live successor: b1.mjs's own retirement
+// check (old links re-point, no 404 hole).
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.reload();
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear (PARKED)' });
+    await app.evalJs("window.wrizoTheme.set('flux')");
+    await app.goto('/journal');
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board under Flux (PARKED)' });
+    const hashNowBridges = (await app.evalJs('location.hash')).includes('/page/');
+    pok('PARKED (was "check 2: canonical route /journal still resolves under Flux (URL stays canonical)") — B1 S5: pages/Journal.tsx is deleted; \'/journal\' now redirects to the Journal Board under Flux too — live successor: b1.mjs\'s own retirement check',
+      hashNowBridges, await app.evalJs('location.hash'));
+    return parkedChecks;
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nTH2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nTH2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nTH2 VERIFY: PASS (${checks.length} checks)` : `\nTH2 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);

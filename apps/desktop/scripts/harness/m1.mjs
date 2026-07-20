@@ -424,9 +424,10 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture 4' });
   await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'project' }))");
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone
+  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
+  // (window.wrizoCreateJournalPage) reaches the identical fresh-page state.
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored Journal page' });
 
   ok('S3: the Journal has no settings gear at all (no path to "Project")', await app.evalJs("!document.querySelector('.mode-gear')"));

@@ -86,8 +86,14 @@ await withHarness(async (app) => {
   ok('check 2 (R1): an unregistered theme id falls through to the canonical plural (tMany/many)', lexiconCheck.fallThroughMany === 'Drawers', String(lexiconCheck.fallThroughMany));
   ok('check 2 (R1): t() and tMany() resolve distinct, correct number forms for the same term', lexiconCheck.pageOne === 'Page' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
 
+  // B1 S5 — '/journal' now bridges to the Journal Board (pages/Journal.tsx
+  // deleted); this check only ever needed DeskRail mounted and visible to
+  // read its own labels, never the retired list's own content — '.desk-rail'
+  // is DeskRail's own root marker, present on the Board exactly as it was
+  // on the old list (a global nav element, unaffected by which room is
+  // currently open).
   await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (canonical route resolves)' });
+  await app.waitFor("!!document.querySelector('.desk-rail')", { label: 'DeskRail mounted (canonical route resolves)' });
   // Rail order is [Catch, Journal, Shelf, Drawers, Library] with no way-back
   // chip present (fresh state) — indices 1/3 (Catch is 0).
   const journalRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[1]?.textContent");

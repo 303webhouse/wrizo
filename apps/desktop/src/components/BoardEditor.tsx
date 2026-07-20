@@ -592,7 +592,13 @@ export function BoardEditor({ id }: { id: string }) {
   // W2 — route + mount identity only (S1: a Board's own view state — pan,
   // zoom, selection — already persists through its own store; no scroll/
   // caret to capture here).
-  useWayBack({ entryId: id });
+  // B1 — a system Board doesn't participate in the way-back mechanism at
+  // all (useWayBack.ts's own header comment carries the full race
+  // diagnosis: the Journal Board sitting between a departure and the
+  // writer's chip-click return would otherwise clobber the very
+  // information that return needed, the moment its own arrival became
+  // chip-visible). An ordinary Board's own behavior is untouched.
+  useWayBack({ entryId: id, participatesInWayBack: !isSystemBoard });
 
   const [boxes, setBoxes] = useState<Box[]>(() => initialEntry?.boxes ?? []);
   const [selectedId, setSelectedId] = useState<string | null>(null);

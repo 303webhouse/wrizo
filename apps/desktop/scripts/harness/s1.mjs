@@ -338,7 +338,9 @@ await withHarness(async (app) => {
   const scenesBeforeReload = JSON.stringify(scriptEntry.script);
   await app.goto('/journal'); // navigate off first — the same unmount-flush-clobber hazard J5 documented
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival') || !!document.querySelector('.journal-new-page')", { label: 'app after reload', timeout: 8000 });
+  // B1 S5 — '/journal' now bridges to the Journal Board (pages/Journal.tsx
+  // deleted); '.board-canvas' is the settled-post-reload marker there now.
+  await app.waitFor("!!document.querySelector('.wz-arrival') || !!document.querySelector('.board-canvas')", { label: 'app after reload', timeout: 8000 });
   await app.evalJs(HELPERS); // a hard reload wipes injected window functions — re-inject
   const entriesAfterReload = await app.localJSON('writer-studio-journal-entries');
   const scriptAfterReload = entriesAfterReload.find((e) => e.id === scriptId);

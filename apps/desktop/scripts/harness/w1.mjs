@@ -18,9 +18,11 @@ await withHarness(async (app) => {
 
   // -- structure: Journal chrome order (wayfinding + tabs above the sheet;
   // metadata below it) -----------------------------------------------------
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone
+  // (pages/Journal.tsx deleted, S5); JournalEntry.tsx itself (this check's
+  // real subject — untouched by B1) reaches the identical fresh, editable
+  // state via persistence.ts's own new test seam.
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page' });
 
   const topBeforeSheet = await app.evalJs(`(() => {
@@ -154,9 +156,9 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before R3 fixture' });
   await app.emulateDpr(1, 1024, 500); // short viewport: guarantees overflow from the below-sheet metadata cluster alone
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (R3)' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone; the
+  // seam reaches the identical fresh, editable state directly.
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page (R3)' });
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('A short line.');

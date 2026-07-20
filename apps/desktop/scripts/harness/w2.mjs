@@ -75,8 +75,12 @@ await withHarness(async (app) => {
   const pageTextBefore = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
 
   // Depart via the rail (Journal) — a real route change, not a special exit.
+  // B1 S5 — '/journal' now bridges to the Journal Board (pages/Journal.tsx
+  // deleted); this wait only ever needed a "we've arrived" rendezvous, never
+  // the retired list's own content, so it targets the Board's own mount
+  // marker now ('.board-canvas').
   await app.click('Journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (departed PageEditor)' });
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed PageEditor)' });
   await sleep(150);
   const pageChipLabel = await app.evalJs("document.querySelector('.desk-rail-wayback')?.getAttribute('aria-label')");
   ok('return chip present after departing PageEditor, accessible name is "Return to the page"', pageChipLabel === 'Return to the page', String(pageChipLabel));
@@ -132,11 +136,12 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture' });
   await app.evalJs(CARET_HELPER);
   await app.emulateDpr(1, 1024, 700);
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone
+  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
+  // reaches the identical fresh-page state directly, id known up front.
+  const journalId = await app.evalJs('window.wrizoCreateJournalPage().id');
+  await app.evalJs(`location.hash = '#/journal/${journalId}'`);
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored Journal page' });
-  const journalId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   const journalLines = Array.from({ length: 40 }, (_, i) => `Journal line ${i} — enough content to make the window scroll for real.`).join('\n');
   await app.typeKeys(journalLines);
@@ -149,7 +154,7 @@ await withHarness(async (app) => {
   ok('JournalEntry: window scrolled pre-departure', journalScrollBefore > 0, `scrollY=${journalScrollBefore}`);
 
   await app.click('Journal'); // depart via the rail
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (departed authored page)' });
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed authored page)' });
   await sleep(150);
   const journalChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
   ok('return chip present after departing an authored Journal page', journalChipPresent === true);
@@ -185,11 +190,11 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before pager fixture' });
   await app.emulateDpr(1, 1024, 700);
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (pager fixture)' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone; the
+  // seam reaches the identical fresh-page state, id known up front.
+  const pagerAId = await app.evalJs('window.wrizoCreateJournalPage().id');
+  await app.evalJs(`location.hash = '#/journal/${pagerAId}'`);
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page A' });
-  const pagerAId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys(Array.from({ length: 40 }, (_, i) => `Page A line ${i}.`).join('\n'));
   await sleep(2200);
@@ -249,7 +254,7 @@ await withHarness(async (app) => {
   ok('QuickSprint: caret + scroll + Draft mode positioned pre-departure', sprintScrollBefore > 0, `scroll=${sprintScrollBefore}`);
 
   await app.click('Journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (departed QuickSprint)' });
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed QuickSprint)' });
   await sleep(150);
   const sprintChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
   ok('return chip present after departing QuickSprint', sprintChipPresent === true);
@@ -294,7 +299,7 @@ await withHarness(async (app) => {
     await app.evalJs(`location.hash = '#/page/${id}'`);
     await sleep(400);
     await app.click('Journal');
-    await app.waitFor("!!document.querySelector('.journal-new-page')", { label: `Journal list (departed ${id})` });
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: `Journal Board (departed ${id})` });
     await sleep(150);
     const chipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
     ok(`return chip present after departing a ${id.includes('board') ? 'board' : 'script'} page`, chipPresent === true, id);
@@ -336,9 +341,9 @@ await withHarness(async (app) => {
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Add-to rect fixture' });
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list, Add-to rect check' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone; the
+  // seam reaches the identical fresh-page state directly.
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page, Add-to rect check' });
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('A page with something to add elsewhere.');
@@ -372,9 +377,9 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before pager fixture (parked)' });
     await app.emulateDpr(1, 1024, 700);
-    await app.goto('/journal');
-    await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (pager fixture, parked)' });
-    await app.click('New page');
+    // B1 — the retired Journal list's own "New page" button is gone; the
+    // seam reaches the identical fresh-page state directly.
+    await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
     await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page A (parked)' });
     await app.evalJs("document.querySelector('.entry-edit').focus()");
     await app.typeKeys(Array.from({ length: 40 }, (_, i) => `Page A line ${i}.`).join('\n'));
