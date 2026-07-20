@@ -55,6 +55,20 @@ function JournalBoardGate() {
   return <Navigate to={`/page/${board.id}`} replace state={location.state} />;
 }
 
+// B1 S4/S5 — the Trash Board's own stable, bookmark-able URL. Nothing pre-
+// existing ever pointed here (the Trash didn't exist before B1), so this
+// isn't a bridge like JournalBoardGate — it's a new door, reachable at any
+// width via a typed/bookmarked URL even though the cascade's own "Open the
+// Trash" button (its primary door, CascadePanels.tsx) is framed-only, the
+// same way every cascade category already is. DeskRail (<1100px chrome)
+// deliberately gains no matching item — the standing "legacy chrome stays
+// byte-identical" law — so this route exists for direct navigation, not a
+// second nav affordance.
+function TrashBoardGate() {
+  const board = getOrCreateSystemBoard('trash');
+  return <Navigate to={`/page/${board.id}`} replace />;
+}
+
 // CD1 S4 — `.app-main`'s reserved gutter (index.css, historically
 // `padding-left:64px` for DeskRail's fixed-position column) collapses
 // exactly when DeskRail itself stops mounting (store/deskFrameActive.ts —
@@ -238,6 +252,7 @@ export function App() {
         <Route path="/project/:id/board" element={<StructureBoard />} />
         <Route path="/sprint" element={<QuickSprint />} />
         <Route path="/journal" element={<JournalBoardGate />} />
+        <Route path="/trash" element={<TrashBoardGate />} />
         <Route path="/journal/spread" element={<Spread />} />
         <Route path="/journal/:id" element={<JournalEntry />} />
         <Route path="/page/:id" element={<PageEditor />} />

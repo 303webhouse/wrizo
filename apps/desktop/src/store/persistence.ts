@@ -856,6 +856,13 @@ export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEn
   // exclusion): a board can never pin itself to itself, even via a direct
   // call that bypasses the sheet's own UI.
   if (entryId === boardEntryId) return null;
+  // B1 S3 — "may NOT ... pin the system Board anywhere," closed at THIS end
+  // too, the SAME belt-and-suspenders shape as the self-pin guard right
+  // above: BoardEditor.tsx's own onOpenPin no-op already makes this
+  // unreachable through the UI (the sheet never opens on a system Board's
+  // own Page face), but this guard is what actually holds if some OTHER
+  // call site ever pins entryId onto a DIFFERENT board directly.
+  if (getSystemKind(getJournalEntry(entryId))) return null;
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
   const existing = board.boxes ?? [];
