@@ -42,17 +42,17 @@ await withHarness(async (app) => {
   await app.evalJs(DRAG_HELPER);
 
   // -- create page 1 (text only) --------------------------------------------
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-  await app.click('New page');
+  // B1 — the retired Journal list's own "New page" button is gone
+  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
+  // (window.wrizoCreateJournalPage) reaches the identical fresh-page state.
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page 1' });
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('Page One text.');
   await sleep(2300);
 
   // -- create page 2 (text + ink) -------------------------------------------
-  await app.goto('/journal');
-  await app.click('New page');
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page 2' });
   await app.evalJs("document.querySelector('.entry-edit').focus()");
   await app.typeKeys('Page Two text.');

@@ -40,9 +40,19 @@ import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 // find-or-create is idempotent (persistence.ts's own S1 guarantee), so
 // landing here twice, from two different old links, always resolves to the
 // SAME Board.
+//
+// A genuine defect found live while fixing this ticket's own harness suite
+// (j5.mjs): JournalEntry.tsx's single-page "Add to…" MOVES verb carries its
+// one-shot confirmation toast as router history state (`{ actionToast }`),
+// consumed by whichever component mounts next at '/journal' — Journal.tsx
+// used to read it; the Board never has. Passed through here (`state={
+// location.state}`) so BoardEditor.tsx's own new one-shot consume (this
+// ticket's own fix, mirroring Journal.tsx's exact retired pattern) still
+// sees it after the bridge.
 function JournalBoardGate() {
+  const location = useLocation();
   const board = getOrCreateSystemBoard('journal');
-  return <Navigate to={`/page/${board.id}`} replace />;
+  return <Navigate to={`/page/${board.id}`} replace state={location.state} />;
 }
 
 // CD1 S4 — `.app-main`'s reserved gutter (index.css, historically

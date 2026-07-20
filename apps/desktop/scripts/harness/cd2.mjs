@@ -163,11 +163,14 @@ await withHarness(async (app) => {
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
       focusable: [...document.querySelectorAll('.wz-strip-item')].every(b => b.tagName === 'BUTTON'),
     })`);
-    ok(`S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and seven categories, icon+label, focusable (real <button>s)`,
-      stripShape.present && stripShape.sepCount === 3 && stripShape.itemCount === 7 && stripShape.focusable,
+    // B1 S5 — the roster grows by one (Trash joins section C at the foot);
+    // the ORIGINAL "seven categories, verbatim roster" pair is PARKED below
+    // (A4, quoted verbatim) — this is the live, current truth.
+    ok(`S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)`,
+      stripShape.present && stripShape.sepCount === 3 && stripShape.itemCount === 8 && stripShape.focusable,
       JSON.stringify(stripShape));
-    ok(`S1 @ ${width}px: A11's own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme`,
-      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Change Theme']),
+    ok(`S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme`,
+      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
       JSON.stringify(stripShape.labels));
   }
 
@@ -274,7 +277,7 @@ await withHarness(async (app) => {
   const shelfPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
   ok('S3: clicking Shelf opens layer 2, titled "Shelf"', shelfPanelEmpty === 'Shelf', String(shelfPanelEmpty));
 
-  await clickCategory(app, 5); // Settings
+  await clickCategory(app, 6); // Settings (B1 S5 — index 5 is now Trash; Settings moves to 6)
   await sleep(200);
   const settingsPanel = await app.evalJs(`({
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
@@ -288,7 +291,7 @@ await withHarness(async (app) => {
   // others; current marked olive (--accent-rest, not brass); one click
   // switches and persists.
   // ==========================================================================
-  await clickCategory(app, 6); // Change Theme
+  await clickCategory(app, 7); // Change Theme (B1 S5 — Trash's insertion at 5 shifts this from 6 to 7)
   await sleep(200);
   const themeList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].map(b => b.textContent)`);
   ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
@@ -803,16 +806,42 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// cd2.mjs is a brand-new file; it parks nothing of its own (every check
-// above reflects this ticket's live, current design). The park sweep S6
-// requires (the drawer's retirement falsifying checks across ab1/ab2/ab3/
-// cd1/fx1/fx2) lives in EACH superseded check's own file, per the A4
-// convention: a file parks what supersedes ITS OWN checks. This scaffold
-// exists so a future ticket that supersedes any of THIS file's checks has
-// a documented home, matching every other harness file's own pattern.
+// B1 (2026-07-19) is the first tenant of this scaffold: the strip's own
+// "seven categories, verbatim roster" claim (S1, quoted verbatim below) is
+// falsified whole by the Trash category joining section C at the foot.
+// Live successor: this file's own live S1 section, above (now asserting
+// eight categories and the updated roster).
+//
+//   ok(`S1 @ ${width}px: the strip is present with four sections (3
+//   hairline separators) and seven categories, icon+label, focusable (real
+//   <button>s)`,
+//     stripShape.present && stripShape.sepCount === 3 &&
+//     stripShape.itemCount === 7 && stripShape.focusable, ...);
+//   ok(`S1 @ ${width}px: A11's own roster, verbatim order — Journal, Page,
+//   Plan, Drawers, Shelf, Settings, Change Theme`,
+//     JSON.stringify(stripShape.labels) === JSON.stringify(['Journal',
+//     'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Change Theme']), ...);
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshProsePage(app, LAPTOP_W, 900);
+    const stripShapeParked = await app.evalJs(`({
+      itemCount: document.querySelectorAll('.wz-strip-item').length,
+      labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
+    })`);
+    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme") — B1 S5: Trash joins section C at the foot; the strip now carries EIGHT categories in the updated order — live successor: this file\'s own live S1 section',
+      stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+      JSON.stringify(stripShapeParked));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nCD2 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of cd2.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nCD2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nCD2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

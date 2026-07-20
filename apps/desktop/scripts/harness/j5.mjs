@@ -47,12 +47,14 @@ await withHarness(async (app) => {
   // under sustained CDP load (this scenario creates 5 pages + many sheet
   // round-trips), occasionally reading localStorage before the 300ms
   // debounced flush had actually landed.
+  // B1 — the retired Journal list's own "New page" button is gone
+  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
+  // (window.wrizoCreateJournalPage) reaches the identical fresh-page state
+  // directly, known by id up front rather than parsed back off the URL.
   const makePage = async (text, withInk) => {
-    await app.goto('/journal');
-    await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-    await app.click('New page');
+    const id = await app.evalJs('window.wrizoCreateJournalPage().id');
+    await app.evalJs(`location.hash = '#/journal/${id}'`);
     await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page' });
-    const id = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
     if (text) {
       await app.evalJs("document.querySelector('.entry-edit').focus()");
       await app.typeKeys(text);
@@ -240,7 +242,10 @@ await withHarness(async (app) => {
   const entryViewToast = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
   ok('R1: single-page FILE-to-Shelf toast survives the navigate to /journal', entryViewToast === 'Filed 1 page to the Shelf — moved; it left the Journal.', entryViewToast);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.journal-row')", { label: 'Journal after reload (R1)' });
+  // B1 — '/journal' now redirects to the Journal Board (pages/Journal.tsx
+  // deleted, S5); this check only ever needed a settled-post-reload marker,
+  // never the retired list's own rows.
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board after reload (R1)' });
   const toastGoneAfterReload = await app.evalJs("!!document.querySelector('.action-toast')");
   ok('R1: the one-shot toast does not reappear on reload', toastGoneAfterReload === false, String(toastGoneAfterReload));
 
@@ -381,10 +386,22 @@ await withHarness(async (app) => {
   const eAfter = entries.find((e) => e.id === E.id);
   ok('beatId + routedProjectIds set; nothing moved (projectId still null)', eAfter.beatId === 'setup' && eAfter.routedProjectIds?.includes(standaloneBinder.id) && eAfter.projectId == null, JSON.stringify({ beatId: eAfter.beatId, routed: eAfter.routedProjectIds, projectId: eAfter.projectId }));
 
+  // B1 park sweep — "the routed crumb appears in the Journal list" read the
+  // retired Journal LIST's own per-row "· routed" text (pages/Journal.tsx,
+  // deleted S5); PARKED below (A4, quoted verbatim). The underlying data
+  // claim it stood on ("routed" status genuinely persists) already has a
+  // live, unaffected successor two lines above this comment (`beatId +
+  // routedProjectIds set`) — the visual crumb itself has no Board
+  // equivalent (card metadata fields are the committee's own second
+  // sitting, out of B1's scope per the brief's own non-goals). The
+  // navigation itself stays (a plain '/journal' visit, now bridging to the
+  // Board): this project's own "harness seeding vs flushNow race" lesson —
+  // never seed raw localStorage while a flush-on-unmount page is still
+  // mounted — is exactly why the ORIGINAL check navigated here before the
+  // next section's own seed+reload; dropping the navigation along with the
+  // dead assertion would have silently reintroduced that exact race.
   await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-row')", { label: 'Journal list' });
-  const routedCrumbShown = await app.evalJs(`[...document.querySelectorAll('.journal-row')].some(r => r.textContent.includes('routed'))`);
-  ok('the "routed" crumb appears in the Journal list', routedCrumbShown === true);
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (safe pre-seed landing)' });
 
   // -- Slice 3: board-append (append onto an EXISTING board, below content) -
   // Seed an existing board with one box so we can assert the new group lands
@@ -433,6 +450,50 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// B1 (2026-07-19) is the first tenant of this scaffold. Quoted verbatim
+// below (the exact code that lived in this file's own live section before
+// this park):
+//
+//   "the routed crumb appears in the Journal list"
+//     await app.goto('/journal');
+//     await app.waitFor("!!document.querySelector('.journal-row')", ...);
+//     const routedCrumbShown = await app.evalJs(`[...document.
+//       querySelectorAll('.journal-row')].some(r => r.textContent.
+//       includes('routed'))`);
+//     ok('the "routed" crumb appears in the Journal list', routedCrumbShown === true);
+//
+// B1 S5 — pages/Journal.tsx (the list surface this read from) is deleted;
+// '/journal' redirects to the Journal Board instead, which has no
+// per-card "routed" crumb (card metadata fields are the committee's own
+// second sitting, out of scope here). The underlying data claim this crumb
+// stood on has its own live, unaffected successor in this file's own live
+// section (`beatId + routedProjectIds set; nothing moved`).
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await app.reload();
+    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear (PARKED)' });
+    await app.goto('/journal');
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board mounted (PARKED)' });
+    const retiredRoomGone = await app.evalJs("!document.querySelector('.journal-row')");
+    pok('PARKED (was "the routed crumb appears in the Journal list") — B1 S5: the Journal LIST surface (.journal-row) is retired whole; \'/journal\' mounts the Board instead — live successor for the underlying data claim is this file\'s own live section (beatId + routedProjectIds set)',
+      retiredRoomGone === true, String(retiredRoomGone));
+    return parkedChecks;
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nJ5 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nJ5 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nJ5 VERIFY: PASS (${checks.length} checks)` : `\nJ5 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);

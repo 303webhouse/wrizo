@@ -43,10 +43,13 @@ const freshDesk = async (app) => {
 // touch existing localStorage — callers that need a clean slate call
 // freshDesk() themselves first (some S5 fixtures deliberately build on
 // state from an earlier step, e.g. a Drawer created moments before).
+// B1 — the retired Journal list's own "New page" button (.journal-new-page)
+// is gone (pages/Journal.tsx deleted, S5); this helper never tested the
+// list surface itself, only used it as scaffolding to reach a fresh,
+// editable journal-origin page — persistence.ts's own new test seam
+// (window.wrizoCreateJournalPage) reaches the identical state directly.
 const journalPageHere = async (app, marker) => {
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-  await app.evalJs("document.querySelector('.journal-new-page').click()");
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed, authored' });
   await sleep(200);
   await app.evalJs("document.querySelector('.entry-edit').focus()");
@@ -57,6 +60,20 @@ const journalPageHere = async (app, marker) => {
 const freshJournalPage = async (app, marker) => {
   await freshDesk(app);
   await journalPageHere(app, marker);
+};
+
+// B1 — the live successor for three checks parked below (this file's own
+// PARKED section, A4): "does page X belong to the Journal" is now asked of
+// the Journal BOARD's own DERIVED card set (S2's reconcile), not the
+// retired list's rows. '/journal' finds-or-creates the Board and redirects
+// (App.tsx's JournalBoardGate); window.wrizoBoard() (BoardEditor.tsx's own
+// pre-existing test seam) reads the CURRENTLY MOUNTED board's live boxes.
+const journalBoardPinnedIds = async (app) => {
+  await app.goto('/journal');
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board mounted' });
+  await sleep(200);
+  const boxes = (await app.evalJs('window.wrizoBoard()')) || [];
+  return boxes.filter((b) => b.kind === 'page-pin').map((b) => b.entryId);
 };
 
 // S4 — a project door: CreateProject (book kind) -> its first chapter page,
@@ -100,7 +117,9 @@ const freshLoosePage = async (app) => {
 // this a second time on an already-open Page category would otherwise
 // TOGGLE IT CLOSED (Cascade.tsx's own same-category-click-closes rule).
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
+  // B1 S5 — eight categories now (Trash joins section C); this is a plain
+  // mount gate, not an assertion about the roster's own shape.
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
@@ -256,18 +275,12 @@ await withHarness(async (app) => {
   const projectHome = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
   ok('S4/S2: the Page category\'s Where-it-lives names the project by title (not the Journal)', projectHome?.startsWith('In ') && projectHome !== 'In the Journal', projectHome);
 
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (project-origin check)' });
-  // Scoped to .journal-row / the page container's own text — NOT
-  // document.body, which also carries DeskRail's global resume pointer
-  // (always the last-edited page, origin-agnostic) as a false-positive risk.
-  const journalRowsProject = await app.evalJs(`({
-    rowCount: document.querySelectorAll('.journal-row').length,
-    pageText: document.querySelector('.page')?.innerText ?? '',
-  })`);
-  ok('S5: a project-origin page never appears in any Journal view — the Journal has never heard of it',
-    journalRowsProject.rowCount === 0 && !journalRowsProject.pageText.includes('AB3ORIGINPROJECT'),
-    JSON.stringify(journalRowsProject));
+  // B1 park sweep — the retired Journal LIST's own row-count read is
+  // PARKED below (A4, quoted verbatim); this is its live successor,
+  // against the Journal BOARD's own derived cards instead.
+  const projectPinnedIds = await journalBoardPinnedIds(app);
+  ok('B1 successor of "S5: a project-origin page never appears in any Journal view": it never gets a card on the Journal Board either — the Board has never heard of it',
+    !projectPinnedIds.includes(projectDoorEntry.id), JSON.stringify({ projectPinnedIds, projectDoorEntryId: projectDoorEntry.id }));
 
   // Door 3: the Desk's start-writing / home-base door -> 'loose', homes
   // nowhere; starting there never files it.
@@ -320,12 +333,11 @@ await withHarness(async (app) => {
   const looseNeverNudged = await app.evalJs("!document.querySelector('.journal-tab-prompt')");
   ok('S4: a loose page is never nudged to file (no file-it-first prompt reachable)', looseNeverNudged);
 
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (loose-origin check)' });
-  // freshLoosePage's fixture is a fresh-desk, single-entry state (the loose
-  // page itself, no text) — zero rows is the correct, unambiguous signal.
-  const journalRowCountLoose = await app.evalJs("document.querySelectorAll('.journal-row').length");
-  ok('S5/DoD: a loose page never appears in the Journal either (it homes nowhere, not there)', journalRowCountLoose === 0, String(journalRowCountLoose));
+  // B1 park sweep — live successor (see the project-origin check above for
+  // the full reasoning): asks the Journal Board's own derived cards.
+  const loosePinnedIds = await journalBoardPinnedIds(app);
+  ok('B1 successor of "S5/DoD: a loose page never appears in the Journal either": it never gets a card on the Journal Board either (it homes nowhere, not there)',
+    !loosePinnedIds.includes(looseDoorEntry.id), JSON.stringify({ loosePinnedIds, looseDoorEntryId: looseDoorEntry.id }));
 
   // === S5 — the Journal forgets nothing: file a journal-born page to a NEW
   // project, assert it lists in BOTH the Journal and that project. ===========
@@ -356,10 +368,12 @@ await withHarness(async (app) => {
   ok('S5: filing a journal-born page to a new project sets projectId, but origin stays \'journal\'',
     !!filedEntry?.projectId && filedEntry?.origin === 'journal', JSON.stringify(filedEntry));
 
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list (forgets-nothing check)' });
-  const journalStillLists = (await app.evalJs("document.querySelector('.page')?.innerText ?? ''")).includes('AB3FORGETSNOTHING');
-  ok('S5 DoD: a journal page filed to a project STILL turns up in the Journal (forgets nothing)', journalStillLists);
+  // B1 park sweep — live successor (see the project-origin check above for
+  // the full reasoning): the filed-but-journal-origin page still carries a
+  // card on the Journal Board — "forgets nothing" restated as a Board claim.
+  const filedPinnedIds = await journalBoardPinnedIds(app);
+  ok('B1 successor of "S5 DoD: a journal page filed to a project STILL turns up in the Journal (forgets nothing)": it still carries a card on the Journal Board too',
+    filedPinnedIds.includes(filedEntry.id), JSON.stringify({ filedPinnedIds, filedEntryId: filedEntry.id }));
 
   await app.goto(`/project/${filedEntry.projectId}`);
   await app.waitFor("!!document.querySelector('.page')", { label: 'ProjectHome (forgets-nothing check)' });
@@ -635,8 +649,12 @@ if (process.env.HARNESS_PARKED === '1') {
       stripSepCount: document.querySelectorAll('.wz-strip-sep').length,
       stripItemCount: document.querySelectorAll('.wz-strip-item').length,
     })`);
-    pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below") — CD2 S1: the drawer\'s own two-item nav shape is gone; the strip carries four sections (3 separators) and seven categories instead (successor in cd2.mjs)',
-      navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 3 && navShapeGoneNow.stripItemCount === 7,
+    // B1 S5 — plain count update, no re-park: this proof's own substance
+    // ("the drawer's nav is gone, replaced by the strip") is untouched by
+    // Trash joining the roster; only the incidental total (now 8, not 7)
+    // needed bumping (cd2.mjs's own file owns the canonical roster claim).
+    pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below") — CD2 S1: the drawer\'s own two-item nav shape is gone; the strip carries four sections (3 separators) and eight categories instead, B1\'s Trash included (successor in cd2.mjs)',
+      navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 3 && navShapeGoneNow.stripItemCount === 8,
       JSON.stringify(navShapeGoneNow));
 
     // ORIGINAL (S6): ok('S6: the Journal place face lists the current page,
@@ -724,6 +742,50 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "R2: clicking the forward-lock control actually flips dataset.on AND writes wrizo-forward-lock (function, not just presence)") — CD1 S2/S7: same truth, .wz-sliver-forwardlock',
       lockBeforeParked === 'true' && lockAfterParked === 'false' && lockStorageParked === '0',
       `${lockBeforeParked} -> ${lockAfterParked}, storage=${lockStorageParked}`);
+
+    // === B1 (2026-07-19) — the three "does this page appear in the
+    // Journal" checks that read the retired Journal LIST's own rows
+    // (`.journal-row`) are superseded whole: pages/Journal.tsx is deleted
+    // (S5), so there is no list left to count rows on. Quoted verbatim
+    // below (the exact code that lived in this file's own live S4/S5
+    // section before this park); live successors (asking the SAME
+    // membership question of the Journal BOARD's own derived cards
+    // instead) are this file's own live section, above (journalBoardPinnedIds).
+    //
+    //   (1) "S5: a project-origin page never appears in any Journal view —
+    //   the Journal has never heard of it"
+    //     await app.goto('/journal');
+    //     await app.waitFor("!!document.querySelector('.journal-new-page')", ...);
+    //     const journalRowsProject = await app.evalJs(`({
+    //       rowCount: document.querySelectorAll('.journal-row').length,
+    //       pageText: document.querySelector('.page')?.innerText ?? '',
+    //     })`);
+    //     ok('S5: a project-origin page never appears in any Journal view...',
+    //       journalRowsProject.rowCount === 0 && !journalRowsProject.pageText.includes('AB3ORIGINPROJECT'), ...);
+    //
+    //   (2) "S5/DoD: a loose page never appears in the Journal either (it
+    //   homes nowhere, not there)" — same `.journal-row` shape.
+    //
+    //   (3) "S5 DoD: a journal page filed to a project STILL turns up in
+    //   the Journal (forgets nothing)" — read `.page`'s own innerText on
+    //   the retired list.
+    //
+    // Proof the retirement itself holds (fx4.mjs's own "prove the
+    // retirement, not just re-derive the claim" discipline): visiting
+    // '/journal' now mounts the Board, and NEITHER retired selector exists
+    // anywhere on the page — the room is genuinely gone, not merely empty.
+    await freshDesk(app);
+    await app.goto('/journal');
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board mounted (PARKED retirement proof)' });
+    await sleep(200);
+    const retiredRoomGone = await app.evalJs(`({
+      journalNewPage: !!document.querySelector('.journal-new-page'),
+      journalRow: !!document.querySelector('.journal-row'),
+      boardCanvas: !!document.querySelector('.board-canvas'),
+    })`);
+    pok('PARKED (was "S5: a project-origin page never appears in any Journal view — the Journal has never heard of it", "S5/DoD: a loose page never appears in the Journal either", and "S5 DoD: a journal page filed to a project STILL turns up in the Journal (forgets nothing)") — B1 S5: the Journal LIST surface itself (.journal-row/.journal-new-page) is retired whole (pages/Journal.tsx deleted); \'/journal\' now mounts the Board instead — live successors for the underlying membership claims are this file\'s own live S4/S5 section (journalBoardPinnedIds, against the Board\'s derived cards)',
+      retiredRoomGone.journalNewPage === false && retiredRoomGone.journalRow === false && retiredRoomGone.boardCanvas === true,
+      JSON.stringify(retiredRoomGone));
 
     return parkedChecks;
   });

@@ -92,11 +92,14 @@ const freshLoosePage = async (app) => {
 // that reads the hand tools opens it first.
 const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
 
+// B1 — the retired Journal list's own "New page" button (.journal-new-page)
+// is gone (pages/Journal.tsx deleted, S5); this only ever used it as
+// scaffolding to reach a fresh, editable journal-origin page —
+// persistence.ts's own new test seam (window.wrizoCreateJournalPage)
+// reaches the identical state directly.
 const freshJournalPage = async (app, marker) => {
   await freshDesk(app);
-  await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.journal-new-page')", { label: 'Journal list' });
-  await app.evalJs("document.querySelector('.journal-new-page').click()");
+  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed, authored' });
   await sleep(200);
   await app.evalJs("document.querySelector('.entry-edit').focus()");

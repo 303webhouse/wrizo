@@ -92,7 +92,9 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
 // Page category would otherwise TOGGLE IT CLOSED (Cascade.tsx's own
 // same-category-click-closes rule).
 const openPageCategory = async (app) => {
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (openPageCategory)' });
+  // B1 S5 — eight categories now (Trash joins section C at the foot,
+  // after index 4/Shelf); a plain mount gate, not a roster-shape assertion.
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
@@ -471,7 +473,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page framed (Plan pointer)' });
   await sleep(300);
   await app.emulateDpr(1, LAPTOP_W, 900);
-  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'cascade strip mounted (Plan pointer)' });
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (Plan pointer)' });
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][2].click()"); // Plan category (index 2)
   await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (Plan pointer)' });
   await sleep(150);

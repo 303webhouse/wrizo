@@ -651,6 +651,20 @@ export function createJournalPage(): JournalEntry {
   return entry;
 }
 
+// B1 S6 — test/inspection seam (this file's own established pattern —
+// window.wrizoPinPageToBoard/wrizoNotebook, etc.). Every harness fixture
+// that predates this ticket reached a fresh, editable journal-origin page
+// by clicking the RETIRED Journal list's own "New page" button
+// (.journal-new-page, pages/Journal.tsx — deleted, S5) purely as
+// SCAFFOLDING for testing something else entirely (autosave, way-back, the
+// Spread console, and so on — none of it about the list surface itself).
+// This seam gives every one of those pre-existing scenarios an equally
+// direct path to the identical state, without resurrecting the retired
+// room's own UI just to keep old harness plumbing working.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage = createJournalPage;
+}
+
 // Create a typed page inside a Binder (B1) — a JournalEntry parented to the
 // project, with a pageType (manuscript chapter/scene, or a support page). New
 // Books/Stories are project + chapter Pages; this is how a chapter is born.

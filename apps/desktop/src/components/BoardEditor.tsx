@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
@@ -22,6 +22,7 @@ import { AddToSheet } from './AddToSheet';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
 import { Sliver, type SliverContent } from './Sliver';
+import { useActionToast } from './ActionToast';
 import type { PageFaceSubject } from './PageFace';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import type { Box, Project } from '../types';
@@ -542,7 +543,27 @@ type LastAction = { type: 'move' | 'resize' | 'remove' | 'ungroup'; before: Box[
 
 export function BoardEditor({ id }: { id: string }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useDeskLexicon();
+  // B1 — a genuine defect found live while repairing this ticket's own
+  // harness suite (j5.mjs): JournalEntry.tsx's single-page "Add to…" MOVES
+  // verb carries its one-shot confirmation as router history state
+  // (`{ actionToast }`) targeting '/journal', consumed by whichever
+  // component mounts there next. Journal.tsx used to read it (its own
+  // now-deleted effect); the Board never did — App.tsx's JournalBoardGate
+  // now passes the state through the bridge, and this is the ONE-SHOT
+  // consume-and-replace pattern Journal.tsx's own retired effect used,
+  // reproduced verbatim (toast.show, then replace history so a later
+  // back/refresh never re-shows it).
+  const actionToast = useActionToast();
+  useEffect(() => {
+    const state = location.state as { actionToast?: string } | null;
+    if (state?.actionToast) {
+      actionToast.show(state.actionToast);
+      navigate(location.pathname + location.search, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const initialEntry = getJournalEntry(id);
   // B1 S1/S3 — a plain, cheap, per-render check (persistence.ts's own
   // getSystemKind): every system-board guard in this component (S2's
@@ -1685,6 +1706,7 @@ export function BoardEditor({ id }: { id: string }) {
         </DeskFrame>
 
         {pageFaceSheets}
+        {actionToast.node}
       </div>
     );
   }
@@ -1706,6 +1728,7 @@ export function BoardEditor({ id }: { id: string }) {
       <div style={{ height: 16 }} />
 
       {boardBody}
+      {actionToast.node}
     </div>
   );
 }

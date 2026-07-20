@@ -195,9 +195,14 @@ await withHarness(async (app) => {
     stripItemCount: document.querySelectorAll('.wz-strip-item').length,
     stripLabels: [...document.querySelectorAll('.wz-strip-item')].map(b => b.querySelector('.wz-strip-label')?.textContent),
   })`);
-  ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as prose..."): ScriptEditor mounts the SAME cascade as prose (all seven categories present)',
-    scriptCascade.stripItemCount === 7
-      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Change Theme']),
+  // B1 S5 — plain count/roster update, no park (the fx2.mjs "same doorway,
+  // different shape" precedent — cd2.mjs's own file owns the canonical
+  // strip-roster claim and carries this ticket's own park+successor; this
+  // check's OWN substance, "ScriptEditor mounts the SAME cascade as prose,"
+  // is untouched by Trash joining the roster).
+  ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as prose..."): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)',
+    scriptCascade.stripItemCount === 8
+      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
     JSON.stringify(scriptCascade));
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
