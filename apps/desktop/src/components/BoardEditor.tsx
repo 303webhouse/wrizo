@@ -18,9 +18,9 @@ import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { describePageHome } from '../store/pageHome';
 import { useCascade } from './Cascade';
-import { AddToSheet } from './AddToSheet';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
+import { ExistingPagePicker } from './ExistingPagePicker';
 import { Sliver, type SliverContent } from './Sliver';
 import { useActionToast } from './ActionToast';
 import type { PageFaceSubject } from './PageFace';
@@ -626,12 +626,20 @@ export function BoardEditor({ id }: { id: string }) {
   // the gesture that triggers it is new.
   const [threadArmedFrom, setThreadArmedFrom] = useState<string | null>(null);
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
-  // AB4 S2 — the Page face's sending sheets (Move/Copy, Port, Pin) — Board
-  // never had these before this ticket (S5's own "every surface carries the
-  // same chrome system" closing line).
+  // AB4 S2 — the Page face's sending sheets (Port, Pin) — Board never had
+  // these before that ticket (S5's own "every surface carries the same
+  // chrome system" closing line). B2 S4 — Move/Copy (AddToSheet, `addOpen`)
+  // RETIRES here: superseded by the Places panel (PlacesPanel.tsx, mounted
+  // inside CascadePanels.tsx's PagePanel), the SAME store paths, reached
+  // through the Page category exactly as before.
   const [portOpen, setPortOpen] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false);
+  // B2 S2 — the Shelf Board's own selected-card action ("Pin to a Board"):
+  // the entryId of the card currently being pinned, or null. Reuses
+  // PinToBoardSheet verbatim (S2's own words — "nothing new invented").
+  const [shelfPinEntryId, setShelfPinEntryId] = useState<string | null>(null);
+  // B2 S5 — the board-side "Existing page…" door (ExistingPagePicker.tsx).
+  const [existingPageOpen, setExistingPageOpen] = useState(false);
 
   const boxesRef = useRef(boxes);
   boxesRef.current = boxes;
@@ -704,17 +712,24 @@ export function BoardEditor({ id }: { id: string }) {
   // system Boards only (pageHome.ts and every ordinary page's home label
   // stay byte-identical) — the SAME "told truthfully" law this function's
   // own header comment names, now honored for system Boards too.
-  const homeLabel = systemKind ? t(systemKind === 'trash' ? 'boardHomeLabelTrash' : 'boardHomeLabelJournal') : describedHomeLabel;
+  // B2 S1 — 'shelf' joins the systemKind->term lookup, the same 3-way shape
+  // B1's own journal/trash pair already established.
+  const homeLabel = systemKind
+    ? t(systemKind === 'trash' ? 'boardHomeLabelTrash' : systemKind === 'shelf' ? 'boardHomeLabelShelf' : 'boardHomeLabelJournal')
+    : describedHomeLabel;
   // B1 S3 — a system Board's own home/membership is never alterable via the
-  // Page face's generic sending grammar: Move/Copy would file it into a
-  // project, breaking S1's own "no project home" invariant; Pin is
-  // explicitly named forbidden by the brief ("may NOT ... pin the system
-  // Board anywhere"). Both are inert no-ops here — the SAME "present but
-  // does nothing" treatment S3 already gives hand-delete on a derived card,
-  // applied consistently to the board's own Page face rather than hidden
+  // Page face's generic sending grammar: filing it into a project would
+  // break S1's own "no project home" invariant; Pin is explicitly named
+  // forbidden by the brief ("may NOT ... pin the system Board anywhere").
+  // Pin stays an inert no-op here — the SAME "present but does nothing"
+  // treatment S3 already gives hand-delete on a derived card, applied
+  // consistently to the board's own Page face rather than hidden
   // (PageFace.tsx itself stays completely unchanged, shared by every
-  // surface). Port to a Board is left untouched: it only ever COPIES text
-  // elsewhere, never touches this board's own home, so nothing to guard.
+  // surface). Move/Copy retired whole (B2 S4 — superseded by the Places
+  // panel, which is a Page-category concern, not a per-host one — nothing
+  // to guard here anymore). Port to a Board is left untouched: it only
+  // ever COPIES text elsewhere, never touches this board's own home, so
+  // nothing to guard.
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
     entry: initialEntry ?? { id, text: '', projectId: null, createdAt: '', updatedAt: '' },
@@ -723,7 +738,6 @@ export function BoardEditor({ id }: { id: string }) {
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,
-    onOpenMoveCopy: isSystemBoard ? () => {} : () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
     onOpenPin: isSystemBoard ? () => {} : () => setPinOpen(true),
   };
@@ -1362,6 +1376,14 @@ export function BoardEditor({ id }: { id: string }) {
       {systemKind === 'trash' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
         <button type="button" className="btn-quiet" onClick={() => restoreSelected(selectedBox.entryId!)}>{t('boardRestore')}</button>
       )}
+      {/* B2 S2 — the Shelf's own selected-card action: Pin to a Board,
+          reusing PinToBoardSheet verbatim ("nothing new invented"); pinning
+          removes the card from the Shelf at the NEXT reconcile (T3 doing
+          its job — the SAME reconcile-subscription mechanism the Trash's
+          own Restore already rides, not a second removal path). */}
+      {systemKind === 'shelf' && selectedBox.kind === 'page-pin' && selectedBox.entryId && (
+        <button type="button" className="btn-quiet" onClick={() => setShelfPinEntryId(selectedBox.entryId!)}>{t('pageFacePin')}</button>
+      )}
       <button type="button" className="btn-quiet" onClick={removeSelected}>Remove</button>
     </div>
   );
@@ -1525,7 +1547,12 @@ export function BoardEditor({ id }: { id: string }) {
               Trash Board, most days) stays quiet instead — no text at all,
               matching the anti-solicitation law's own instinct rather than
               inventing a system-board-specific message nothing asked for. */}
+          {/* B2 S2 — the Shelf Board's own empty state is the ONE exception
+              to "an empty system Board stays quiet": "one quiet fact," per
+              S2's own words, not the ordinary board's tool-naming line
+              (which would name tools the Shelf structurally never has). */}
           {sorted.length === 0 && !isSystemBoard && <div className="board-canvas-empty" aria-hidden="true">{t('boardCanvasEmpty')}</div>}
+          {sorted.length === 0 && systemKind === 'shelf' && <div className="board-canvas-empty" aria-hidden="true">{t('shelfBoardEmpty')}</div>}
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
           const boxConnections = footerOn ? connectionsFor(box.id) : [];
@@ -1659,19 +1686,14 @@ export function BoardEditor({ id }: { id: string }) {
   // explicitly permitted by S3's "full FX5 hand."
   const sliverContent: SliverContent = isSystemBoard
     ? { kind: 'board', footer: { on: footerOn, onToggle: toggleFooter } }
-    : { kind: 'board', onAddCard, onAddPageCard, footer: { on: footerOn, onToggle: toggleFooter } };
+    : { kind: 'board', onAddCard, onAddPageCard, onAddExistingPage: () => setExistingPageOpen(true), footer: { on: footerOn, onToggle: toggleFooter } };
 
   const pageFaceSheets = (
     <>
       {portOpen && <PortToBoardSheet sourceIds={[id]} onClose={() => setPortOpen(false)} />}
-      {addOpen && (
-        <AddToSheet
-          sourceIds={[id]}
-          onClose={() => setAddOpen(false)}
-          onDone={() => setAddOpen(false)}
-        />
-      )}
       {pinOpen && <PinToBoardSheet entryId={id} onClose={() => setPinOpen(false)} />}
+      {shelfPinEntryId && <PinToBoardSheet entryId={shelfPinEntryId} onClose={() => setShelfPinEntryId(null)} />}
+      {existingPageOpen && <ExistingPagePicker boardId={id} onClose={() => setExistingPageOpen(false)} />}
     </>
   );
 

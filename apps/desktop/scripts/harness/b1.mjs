@@ -368,11 +368,14 @@ await withHarness(async (app) => {
   const pinSheetOpenedOnSystemBoard = await app.evalJs("!!document.querySelector('.board-sheet')");
   ok('S3: Pin is inert on the system Board\'s own Page face — clicking "Pin to a Board…" opens nothing (the system Board may never be pinned anywhere)',
     pinSheetOpenedOnSystemBoard === false, String(pinSheetOpenedOnSystemBoard));
-  await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
-  await sleep(250);
-  const addSheetOpenedOnSystemBoard = await app.evalJs("!!document.querySelector('.board-sheet')");
-  ok('S3: Move/Copy is ALSO inert on the system Board\'s own Page face (a judgment call, disclosed in the build report: filing the Board into a project would break S1\'s own "no project home" invariant)',
-    addSheetOpenedOnSystemBoard === false, String(addSheetOpenedOnSystemBoard));
+  // B2 S4 park sweep — live successor immediately below: the Move/Copy
+  // verb (and `.wz-pageface-verb-movecopy` itself) retires whole,
+  // superseded by the Places panel; the ORIGINAL click-and-assert-inert
+  // check is PARKED (A4, quoted verbatim) in this file's own PARKED
+  // section at the bottom.
+  const placesAbsentOnSystemBoard = await app.evalJs("!document.querySelector('.wz-places')");
+  ok('B2 S4 successor of "S3: Move/Copy is ALSO inert on the system Board\'s own Page face": the Places panel itself is genuinely ABSENT on a system Board\'s own Page face (not merely inert) — the same "no project home" invariant, held one layer up now that Places supersedes Move/Copy',
+    placesAbsentOnSystemBoard === true, String(placesAbsentOnSystemBoard));
 
   // Independent review fix (2026-07-19) — "told truthfully": the Journal
   // Board's own Page face must never claim a home describePageHome
@@ -483,9 +486,12 @@ await withHarness(async (app) => {
   // DeskRail (and its Catch button) only mounts on a genuinely non-framed
   // route (CD1 S4) — Arrival ('/') hides it unconditionally, and this ONLY
   // matters for reaching the button itself; Catch's own underlying model
-  // (createJournalPage) is width-agnostic. The Shelf is a neutral, never-
-  // framed route (untouched by this ticket) that always shows it.
-  await app.goto('/shelf');
+  // (createJournalPage) is width-agnostic. '/drawers' is a neutral, never-
+  // framed route that always shows it — swapped from '/shelf' here (B2 S1
+  // repoints '/shelf' at the framed Shelf Board, the same JournalBoardGate/
+  // TrashBoardGate shape; '/drawers' still renders the plain, untouched
+  // DrawersTree page, so it keeps this fixture's own original intent).
+  await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.desk-rail-catch')", { label: 'DeskRail reachable (S5 byte-identical check)' });
   await app.evalJs("document.querySelector('.desk-rail-catch').click()");
   await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'Catch (S5 byte-identical check)' });
@@ -517,7 +523,7 @@ await withHarness(async (app) => {
   // "← The journal" back-link all now land on the Journal Board.
   // ==========================================================================
   await freshDesk(app, 900, 900); // legacy width — DeskRail's own reach
-  await app.goto('/shelf'); // DeskRail hides unconditionally on '/' (CD1/HB1) regardless of width
+  await app.goto('/drawers'); // DeskRail hides unconditionally on '/' (CD1/HB1) regardless of width; '/shelf' now bridges to the framed Shelf Board (B2 S1), so '/drawers' (still the plain, untouched DrawersTree page) is the neutral route now
   await app.waitFor("!!document.querySelector('.desk-rail-item')", { label: 'DeskRail reachable (S5 (b) rail check)' });
   await app.evalJs("[...document.querySelectorAll('.desk-rail-item')].find(b => b.textContent.includes('Journal')).click()");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'DeskRail Journal item lands on the Board' });
@@ -624,17 +630,55 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// b1.mjs is a brand-new file; it parks nothing of its own (this ticket's
-// OWN park sweep — the checks its own S5 retirement falsifies — lives in
-// the FILES it superseded: ab3.mjs, cd1.mjs, cd2.mjs, j5.mjs, th2.mjs, each
-// per the A4 convention that a file parks what supersedes ITS OWN checks.
-// See this project's own git history / build report for the full
-// inventory). This scaffold exists so a future ticket that supersedes any
-// of THIS file's checks has a documented home, matching every other
-// harness file's own pattern.
+// B2 (2026-07-20) is the first tenant of this scaffold: this file's own S3
+// check —
+//
+//   await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
+//   ...
+//   ok('S3: Move/Copy is ALSO inert on the system Board\'s own Page face
+//   (a judgment call, disclosed in the build report: filing the Board
+//   into a project would break S1\'s own "no project home" invariant)',
+//     addSheetOpenedOnSystemBoard === false, ...);
+//
+// is falsified whole by B2 S4: `.wz-pageface-verb-movecopy` (and the
+// Move/Copy verb it fired) is GONE, superseded by the Places panel — see
+// this file's own live S3 section, above, for the re-derived claim
+// ("Places itself is absent on a system Board's own Page face").
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshBoard(app, 'b1-parked-system-probe', [], LAPTOP_W, 900);
+    // Stamp this fresh board as a system Board directly (the fixture only
+    // needs a system Board's own Page face reachable — not a real
+    // find-or-create round trip, already proven live above).
+    await app.evalJs(`(() => {
+      const key = 'writer-studio-journal-entries';
+      const list = JSON.parse(localStorage.getItem(key));
+      const board = list.find(e => e.id === 'b1-parked-system-probe');
+      board.origin = 'system';
+      board.boxes = [{ id: 'meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'trash' }];
+      localStorage.setItem(key, JSON.stringify(list));
+    })()`);
+    await app.reload();
+    await app.evalJs("location.hash = '#/page/b1-parked-system-probe'");
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED system board framed' });
+    await sleep(250);
+    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED cascade strip mounted' });
+    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // Page category
+    await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'PARKED Page face (system board)' });
+    const movecopyGone = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
+    pok('PARKED (was "S3: Move/Copy is ALSO inert on the system Board\'s own Page face") — B2 S4: the Move/Copy verb (`.wz-pageface-verb-movecopy`) is GONE entirely, not merely inert — superseded by the Places panel; live successor: this file\'s own live S3 section ("Places itself is absent on a system Board\'s own Page face")',
+      movecopyGone === true, String(movecopyGone));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nB1 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of b1.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nB1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nB1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

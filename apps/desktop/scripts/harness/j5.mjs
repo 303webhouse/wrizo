@@ -223,10 +223,20 @@ await withHarness(async (app) => {
   ok('FILE-to-Shelf toast carries the exact MOVES language', toastShelf === 'Filed 1 page to the Shelf — moved; it left the Journal.', toastShelf);
   entries = await app.localJSON('writer-studio-journal-entries');
   const aAfter = entries.find((e) => e.id === A.id);
-  ok('A is now on the Shelf (projectId null, shelved true)', aAfter.projectId == null && aAfter.shelved === true);
+  // B2 S3 park sweep — live successor immediately below: `shelved` retires
+  // from every write path (persistence.ts's setPageHome no longer sets it,
+  // true or false — the column stays dormant). A is journal-origin
+  // (makePage -> wrizoCreateJournalPage), so "File to Shelf" now just
+  // un-files it — under B2 S7's pinned law (origin 'journal' AND projectId
+  // null), an un-filed journal-origin page is STILL journal-homed; there
+  // is no separate Shelf bucket for it to land in. Quoted verbatim below,
+  // A4.
+  ok('B2 S3 successor of "A is now on the Shelf (projectId null, shelved true)": projectId is cleared, but `shelved` is never written (dormant column) — un-filing a journal-origin page returns it to the Journal, not a Shelf-flag',
+    aAfter.projectId == null && aAfter.shelved !== true, JSON.stringify(aAfter));
   await sleep(150);
   vis = await visibleIds();
-  ok('A left the Spread grid', !vis.includes(A.id), JSON.stringify(vis));
+  ok('B2 S3/S7 successor of "A left the Spread grid": A (journal-origin) STAYS in the notebook grid — un-filing it returns it to the Journal (T3\'s own "not journal-homed" clause correctly excludes it from Shelf membership), not the Shelf, so there is nothing to remove it from the grid',
+    vis.includes(A.id), JSON.stringify(vis));
 
   // -- Slice 2 / Fable R1: single-page FILE via the entry view's OWN "Add
   // to…" button (JournalEntry.tsx, not the Spread's multi-select) — the
@@ -483,6 +493,17 @@ if (process.env.HARNESS_PARKED === '1') {
     const retiredRoomGone = await app.evalJs("!document.querySelector('.journal-row')");
     pok('PARKED (was "the routed crumb appears in the Journal list") — B1 S5: the Journal LIST surface (.journal-row) is retired whole; \'/journal\' mounts the Board instead — live successor for the underlying data claim is this file\'s own live section (beatId + routedProjectIds set)',
       retiredRoomGone === true, String(retiredRoomGone));
+
+    // B2 (2026-07-20) — two more checks this file's own live section
+    // supersedes, quoted verbatim: "A is now on the Shelf (projectId
+    // null, shelved true)" and "A left the Spread grid" (both asserted
+    // right after the SAME "File to Shelf" click sequence on A, a
+    // journal-origin page). S3 retires the `shelved` write; S7's pinned
+    // law means a journal-origin page's own un-filed home IS the Journal,
+    // not a separate Shelf — live successors: this file's own live
+    // section, amended in place (both now assert the OPPOSITE).
+    pok('PARKED (was "A is now on the Shelf (projectId null, shelved true)" and "A left the Spread grid") — B2 S3/S7: `shelved` never writes true again, and a journal-origin page stays journal-homed once un-filed (no Shelf bucket to land in) — live successor: this file\'s own live section, amended',
+      true, 'see this file\'s own live section, above');
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

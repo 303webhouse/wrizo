@@ -1,7 +1,7 @@
 import type { Project, JournalEntry, BinderKind } from '../types';
 import {
   getProjects, getJournalEntries, getJournalEntry, getProject,
-  getBinderPages, getStoryPlanByProjectId, getSystemKind,
+  getBinderPages, getStoryPlanByProjectId, getSystemKind, inJournalView,
 } from './persistence';
 import { getFramework } from './frameworks';
 
@@ -39,8 +39,11 @@ function daysFrom(ms: number): number {
 // filed pages (ink!), loose + shelf pages — opens the ink-authored view.
 function fromEntry(e: JournalEntry, at: number): ResumeTarget {
   const inBinder = e.projectId != null;
-  const shelved = !inBinder && !!e.shelved;
-  const home: ResumeHome = inBinder ? 'binder' : shelved ? 'shelf' : 'journal';
+  // B2 S3 — the legacy `shelved` flag retires from this read too: T3's own
+  // "journal-homed" half (inJournalView, amended by S7's pinned law) is
+  // what actually decides Journal vs. Shelf now, matching every other
+  // consumer of the SAME one predicate.
+  const home: ResumeHome = inBinder ? 'binder' : inJournalView(e) ? 'journal' : 'shelf';
   const project = inBinder ? (getProject(e.projectId as string) ?? undefined) : undefined;
   // Route by pageType (matches JournalEntry's redirect, so no bounce): a typed page
   // is owned by the mode-aware editor wherever it lives; untyped stays the ink view.

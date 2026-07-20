@@ -1017,22 +1017,15 @@ export function importDraft(binderId: string, pageType: NonNullable<JournalEntry
   return entry;
 }
 
-// Create a blank page directly on the Shelf (D2) — a loose page awaiting a home,
-// kept out of the chronological Journal stream (projectId null AND shelved).
-export function createShelfPage(): JournalEntry {
-  const now = new Date().toISOString();
-  const entry: JournalEntry = {
-    id: generateId(),
-    text: '',
-    projectId: null,
-    source: 'page',
-    shelved: true,
-    createdAt: now,
-    updatedAt: now,
-  };
-  saveJournalEntry(entry);
-  return entry;
-}
+// B2 S3 — createShelfPage (the legacy manual "Shelve" verb's own creation
+// door: a page born pre-shelved:true) RETIRES. The Shelf is derived (T3),
+// never filed-into — there is no more "start a page ON the Shelf" act to
+// have; a loose page lands there on its own the moment it qualifies. Its
+// only call site (the retired pages/Shelf.tsx) is deleted alongside it
+// (S1 — '/shelf' now bridges to the Shelf Board, the ShelfBoardGate
+// pattern B1 established for '/journal' and '/trash'). Parked, not
+// deleted from history: see docs/wrizo-alpha's own build report and the
+// harness's A4 park sweep for the quoted-verbatim record.
 
 export function getJournalEntries(): JournalEntry[] {
   return cache.journalEntries
@@ -1054,10 +1047,24 @@ export function getJournalEntries(): JournalEntry[] {
 // rule (loose AND not shelved) — untouched by this ticket. A 'project'- or
 // 'loose'-origin page never matches, even if projectId happens to be null
 // (the loose-origin door produces exactly that shape on purpose).
+//
+// B2 S7 — the PINNED law amends the origin==='journal' branch only: dual
+// membership retires. A journal-born page that gets FILED (projectId set)
+// now LEAVES the Journal (this is the Places panel's own Home zone DoD:
+// "a journal-born page filed to a drawer leaves the Journal Board; its
+// origin never changes" — origin is provenance, untouched forever; THIS
+// function is what decides current membership, and membership now tracks
+// projectId too). The grandfather branch (null origin) and the explicit
+// 'project'/'loose' branch are BOTH untouched — this is a one-line, one-
+// branch amendment, not a rewrite. Every consumer (getJournalPages, the
+// cascade's Journal panel + survey, the Journal Board's own reconcile via
+// qualifyingPagesFor, JournalEntry.tsx's own membership line) picks up the
+// amendment uniformly — "one truth, every surface," the SAME discipline
+// qualifyingPagesFor's own header comment already names.
 export function inJournalView(e: JournalEntry): boolean {
-  if (e.origin === 'journal') return true;
+  if (e.origin === 'journal') return e.projectId == null;
   if (e.origin != null) return false; // explicit 'project' | 'loose' — never
-  return e.projectId == null && !e.shelved; // A2 — today's rule, untouched
+  return e.projectId == null && !e.shelved; // A2 grandfather — untouched (legacy null-origin rows)
 }
 
 // The Journal stream — every page that belongs there (see inJournalView).
@@ -1068,12 +1075,46 @@ export function getJournalPages(): JournalEntry[] {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-// The Shelf — loose pages set aside for filing (projectId null AND shelved).
-export function getShelfPages(): JournalEntry[] {
+// --- B2 — T3, the Shelf's law (this ticket's own brief, S1/S3) -----------
+// A page belongs on the Shelf iff ALL hold: not deleted; not a system
+// board; no project home; not journal-homed; and it appears as a page-pin
+// card on ZERO user boards (membership is connection). Starred status is
+// irrelevant — attention is not organization. This SUPERSEDES the legacy
+// `shelved`-flag definition (getShelfPages, retired below) — the flag
+// stays dormant in storage (zero schema; never dropped) but is never read
+// by this law directly; T3 is derived from truth that already exists
+// (origin, projectId, deletedAt, boxes), the same "dress, not collapse"
+// discipline every system Board already stands on.
+
+// Every board (any project, any drawer) currently carrying a page-pin card
+// for `entryId` — "zero user-board pins" in T3's own words. System boards
+// are excluded (their own cards are DERIVED, never real membership).
+function isPinnedOnAnyUserBoard(entryId: string): boolean {
+  return cache.journalEntries.some(e =>
+    !e.deletedAt && e.pageType === 'board' && getSystemKind(e) === undefined
+    && (e.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === entryId));
+}
+
+// T3 itself — a single predicate, called by BOTH the Shelf Board's own
+// reconcile (qualifyingPagesFor, below) and the Drawers panel's own "loose
+// docs" group (S7 — "one definition, two consumers").
+export function belongsOnShelf(e: JournalEntry): boolean {
+  if (e.deletedAt) return false;
+  if (getSystemKind(e) !== undefined) return false; // never a system board, including itself
+  if (e.projectId != null) return false; // no project home
+  if (inJournalView(e)) return false; // not journal-homed
+  if (isPinnedOnAnyUserBoard(e.id)) return false; // zero user-board pins
+  return true; // starred is irrelevant, per T3's own words
+}
+
+// The Shelf — every page T3 currently qualifies, most-recently-touched
+// first (the old getShelfPages' own sort, kept — a plain read-order
+// preference, not part of T3 itself).
+export function getShelfEntries(): JournalEntry[] {
   return cache.journalEntries
-    .filter(e => !e.deletedAt && e.projectId == null && !!e.shelved)
+    .filter(e => belongsOnShelf(e))
     .map(clone)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)); // most recently touched first
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 // J1 — the loose Journal in NOTEBOOK order (ascending: oldest first, like a real
@@ -1094,9 +1135,21 @@ export function getShelfPages(): JournalEntry[] {
 // system Boards would wrongly surface as notebook pages (Spread's own
 // reorder grid, JournalEntry's prev/next paging) — genuinely new territory,
 // not a pre-existing gap this ticket happens to be fixing.
+// B2 S3 — `!e.shelved` is replaced with `!belongsOnShelf(e)` (T3): the
+// legacy flag is dormant now (never written — persistence.ts's own
+// setPageHome), so a literal `!e.shelved` read would always be true and
+// this filter would stop excluding ANYTHING, regressing "filing a page
+// away removes it from the notebook grid" (J5's own harness DoD) for
+// every origin. `belongsOnShelf` is the correct replacement, not merely a
+// mechanical swap: a journal-origin page that gets un-filed CORRECTLY
+// stays in the notebook (T3 excludes it — still journal-homed, per the
+// pinned law), while a project-/loose-origin/grandfathered page that
+// becomes un-filed-and-unpinned CORRECTLY leaves (T3 includes it — heads
+// to the Shelf). Still deliberately NOT origin-aware beyond what T3 itself
+// already is — untouched from pre-B2 behavior otherwise.
 export function getNotebookPages(): JournalEntry[] {
   return sortNotebook(
-    cache.journalEntries.filter(e => !e.deletedAt && e.projectId == null && !e.shelved && e.pageType !== 'board').map(clone),
+    cache.journalEntries.filter(e => !e.deletedAt && e.projectId == null && !belongsOnShelf(e) && e.pageType !== 'board').map(clone),
   );
 }
 
@@ -1242,23 +1295,61 @@ export function getBinderPages(binderId: string): JournalEntry[] {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-// Move a page to a single home: a binderId, 'shelf', or 'journal'. Enforces
-// exactly-one-home (filing into a binder clears `shelved`; shelving clears
-// `projectId`). An ordinary record update — syncs like any edit.
+// Move a page to a single home: a binderId, 'shelf'/'loose', or 'journal'.
+// Enforces exactly-one-home (filing into a binder clears the un-filed
+// state; un-filing clears `projectId`). An ordinary record update — syncs
+// like any edit.
+//
+// B2 S3 — the legacy `shelved` flag retires from every write path,
+// INCLUDING this one: no branch below sets it true or false anymore (the
+// column stays dormant — never dropped, never touched). 'shelf' and
+// 'loose' are now plain synonyms for "un-file" — the Shelf is derived
+// (T3), never filed-into, so there is no longer a distinct "shelve" act
+// for this function to perform; whichever pool a just-un-filed page lands
+// in (the Journal, or the Shelf) is entirely a function of its own origin
+// (inJournalView/T3), never of which target string was passed. 'loose' is
+// the Places panel's own name for this (S4: "Selecting Loose un-files —
+// the page heads to the Shelf by T3"); 'shelf' is kept as an accepted
+// synonym so every pre-existing call site (AddToSheet.tsx, PageFileMenu.tsx)
+// keeps working, byte-identical in effect, with zero call-site edits forced
+// by this ticket alone.
 export function setPageHome(pageId: string, target: string): void {
   const entry = getJournalEntry(pageId);
   if (!entry) return;
-  if (target === 'shelf') {
+  if (target === 'shelf' || target === 'loose' || target === 'journal') {
     entry.projectId = null;
-    entry.shelved = true;
-  } else if (target === 'journal') {
-    entry.projectId = null;
-    entry.shelved = false;
   } else {
     entry.projectId = target; // a binder id
-    entry.shelved = false;
   }
   saveJournalEntry(entry);
+}
+
+// B2 S4 — the inverse of pinPageToBoard: uncheck in the Places panel's
+// Boards zone removes ONLY that board's own card (the page, never — A16's
+// own words, "checkboxes write ONLY membership"). Symmetric to pinPageToBoard
+// (same board-must-be-a-live-board guard); idempotent (unpinning an
+// already-absent card is a harmless no-op, matching pinPageToBoard's own
+// "already pinned — idempotent" twin).
+export function unpinPageFromBoard(entryId: string, boardEntryId: string): JournalEntry | null {
+  const board = getJournalEntry(boardEntryId);
+  if (!board || board.pageType !== 'board') return null;
+  const existing = board.boxes ?? [];
+  const next = existing.filter(b => !(b.kind === 'page-pin' && b.entryId === entryId));
+  if (next.length === existing.length) return board; // nothing to remove — idempotent
+  saveJournalEntry({ ...board, boxes: next });
+  return getJournalEntry(boardEntryId);
+}
+
+// B2 S4 — every live, non-system board the Places panel's Boards zone can
+// offer ("every board the page COULD join... per existing pin law" — the
+// SAME flat, any-project reach PinToBoardSheet.tsx's own drill-down already
+// allows, just read flat here instead of drill-down-grouped). System boards
+// are never listed (A16: their membership is derived, never a checkbox).
+export function getAllUserBoards(): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !e.deletedAt && e.pageType === 'board' && getSystemKind(e) === undefined)
+    .map(clone)
+    .sort((a, b) => a.id.localeCompare(b.id)); // stable, deterministic order
 }
 
 export function getJournalEntry(id: string): JournalEntry | null {
@@ -1336,7 +1427,10 @@ export function restoreEntry(id: string): void {
 // reconcile — this pairing (system decides WHAT, writer decides WHERE) IS
 // A16, the one law this whole ticket serves, made concrete in code.
 
-export type SystemBoardKind = 'journal' | 'trash';
+// B2 S1 — 'shelf' joins the union, by the SAME code paths (not copies):
+// idempotent find-or-create, origin 'system', derived membership (T3
+// instead of inJournalView/deletedAt), authored arrangement sacred.
+export type SystemBoardKind = 'journal' | 'trash' | 'shelf';
 
 function boardMetaOf(entry: JournalEntry | null | undefined): Box | undefined {
   return entry ? (entry.boxes ?? []).find(b => b.kind === 'board-meta') : undefined;
@@ -1364,6 +1458,7 @@ function findSystemBoard(kind: SystemBoardKind): JournalEntry | null {
 const SYSTEM_BOARD_TITLE_TERM: Record<SystemBoardKind, DeskTermId> = {
   journal: 'drawerPlaceJournal',
   trash: 'drawerPlaceTrash',
+  shelf: 'drawerPlaceShelf',
 };
 
 // Find-or-create, idempotent (S1): the first approach mints the record;
@@ -1405,7 +1500,20 @@ function qualifyingPagesFor(kind: SystemBoardKind, systemBoardId: string): Journ
     // obeys, so the Journal Board can never quietly disagree with what "the
     // Journal" means anywhere else. origin:'system' already excludes a
     // system Board from inJournalView; the id filter is belt-and-suspenders.
+    // B2 S7 — inJournalView's own pinned-law amendment (this file, above)
+    // means a filed journal-origin page now drops out of this set at the
+    // NEXT reconcile — no separate code needed here; the one shared
+    // predicate carries the amendment to every consumer uniformly.
     return getJournalPages().filter(e => e.id !== systemBoardId);
+  }
+  if (kind === 'shelf') {
+    // B2 S1 — T3, this ticket's own law (belongsOnShelf, above): "one
+    // definition, two consumers" — the SAME predicate the Drawers panel's
+    // own "loose docs" group reuses (S7). The id filter is belt-and-
+    // suspenders, matching the Journal branch's own defensive habit (T3's
+    // own getSystemKind check already excludes the Shelf Board from
+    // qualifying for itself).
+    return getShelfEntries().filter(e => e.id !== systemBoardId);
   }
   // TRASH BOARD: "the same rule over deletedAt-bearing pages (any origin)"
   // — every soft-deleted page, any origin/pageType, EXCLUDING system Boards

@@ -330,7 +330,12 @@ export interface Box {
   // in the Pin sheet's board leaves (no project → already excluded; assert
   // it anyway); sync like any page (arrangement persists across devices by
   // the existing boxes round-trip).
-  systemKind?: 'journal' | 'trash';
+  // B2 S1 — 'shelf' joins the union: the third system Board, by the SAME
+  // code paths B1 laid down (idempotent find-or-create, derived membership,
+  // authored arrangement sacred). Its own membership law is T3 (this
+  // ticket's brief), not inJournalView/deletedAt — see persistence.ts's own
+  // qualifyingPagesFor.
+  systemKind?: 'journal' | 'trash' | 'shelf';
 }
 
 // TU1 S1 — the Tutor's per-page conversation thread (fragments-under-Pages

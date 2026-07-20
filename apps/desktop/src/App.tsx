@@ -2,7 +2,6 @@ import { useEffect, useReducer, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
-import { Shelf } from './pages/Shelf';
 import { DeskRail } from './components/DeskRail';
 import { CreateProject } from './pages/CreateProject';
 import { ProjectHome } from './pages/ProjectHome';
@@ -66,6 +65,20 @@ function JournalBoardGate() {
 // second nav affordance.
 function TrashBoardGate() {
   const board = getOrCreateSystemBoard('trash');
+  return <Navigate to={`/page/${board.id}`} replace />;
+}
+
+// B2 S1/S3 — the Shelf Board's own stable, bookmark-able URL, the SAME
+// bridge shape TrashBoardGate established (find-or-create, idempotent, no
+// router state to carry through). '/shelf' pre-dates this ticket (the old
+// pages/Shelf.tsx, the `shelved`-flag list — now RETIRED whole, S3's own
+// mandate, since the Shelf is derived (T3) and never filed-into) — DeskRail
+// (<1100px chrome) keeps its own unchanged 'shelf' nav item pointing at
+// this SAME literal string, so legacy stays byte-identical and every old
+// link/bookmark still resolves, exactly as JournalBoardGate proved for
+// '/journal' in B1.
+function ShelfBoardGate() {
+  const board = getOrCreateSystemBoard('shelf');
   return <Navigate to={`/page/${board.id}`} replace />;
 }
 
@@ -241,7 +254,7 @@ export function App() {
         <Routes>
         <Route path="/" element={<Arrival authState={authState} onAuthed={handleAuthed} />} />
         <Route path="/drawers" element={<DrawersPage />} />
-        <Route path="/shelf" element={<Shelf />} />
+        <Route path="/shelf" element={<ShelfBoardGate />} />
         <Route path="/project/new" element={<CreateProject />} />
         <Route path="/project/:id" element={<ProjectHome />} />
         <Route path="/project/:id/import" element={<ImportDraft />} />
