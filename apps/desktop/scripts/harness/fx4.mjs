@@ -732,8 +732,10 @@ if (process.env.HARNESS_PARKED === '1') {
     // GENERATION 2 (FX6 S2b) — a THIRD control joins them: New page card,
     // the board-side door Nick reached for and couldn't find. Three tools
     // now — live successor in fx6.mjs's own S2 section.
-    pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card) — live successor in fx6.mjs\'s own S2 section',
-      sliverShape.buttonCount === 3, JSON.stringify(sliverShape));
+    // GENERATION 3 (B2 S5) — a FOURTH control joins them: Existing page…
+    // Four tools now — live successor in b2.mjs's own S5 section.
+    pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card); generation 3: B2 S5 adds a FOURTH (Existing page…) — live successor in b2.mjs\'s own S5 section',
+      sliverShape.buttonCount === 4, JSON.stringify(sliverShape));
 
     return parkedChecks;
   });

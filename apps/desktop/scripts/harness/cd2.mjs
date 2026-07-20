@@ -199,16 +199,20 @@ await withHarness(async (app) => {
     hasStar: !!document.querySelector('.wz-pageface-star'),
     hasHome: !!document.querySelector('.wz-pageface-home'),
     hasTags: !!document.querySelector('.wz-pageface-tags'),
-    hasMoveCopy: !!document.querySelector('.wz-pageface-verb-movecopy'),
+    moveCopyGone: !document.querySelector('.wz-pageface-verb-movecopy'),
     hasPort: !!document.querySelector('.wz-pageface-verb-port'),
+    hasPlaces: !!document.querySelector('.wz-places'),
     // The footer is conditional (PageFace.tsx: only entry.projectId==null) —
     // this fixture is a project-origin page, so its ABSENCE here is correct,
     // not a gap; the loose-page check right below proves the positive case.
     footerAbsentOnProjectPage: !document.querySelector('.wz-pageface-footer'),
   })`);
-  ok('S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port) — carried forward whole; the footer correctly stays absent on a project-origin page',
+  // B2 S4 park sweep — live successor immediately below: Move/Copy retires
+  // (superseded by Places); the ORIGINAL "...Move/Copy, Port..." combined
+  // check is PARKED (A4, quoted verbatim) in this file's own PARKED section.
+  ok('B2 S4 successor of "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
     pagePanel.title === 'Page' && pagePanel.hasTitle && pagePanel.hasStar && pagePanel.hasHome && pagePanel.hasTags
-      && pagePanel.hasMoveCopy && pagePanel.hasPort && pagePanel.footerAbsentOnProjectPage,
+      && pagePanel.moveCopyGone && pagePanel.hasPort && pagePanel.hasPlaces && pagePanel.footerAbsentOnProjectPage,
     JSON.stringify(pagePanel));
 
   // Successor to ab3.mjs's own retired "S4/S2: the Page face's Where-it-
@@ -516,23 +520,30 @@ await withHarness(async (app) => {
     JSON.stringify(afterDelete));
 
   // ==========================================================================
-  // S3/S4 — Drawers: the drawer list; choosing one opens its survey
-  // (filed pages).
+  // B2 S7 — the Drawers panel is rebuilt whole: large tiles, derived
+  // grouping by project (not the old Drawer-entity list this section used
+  // to survey). Full coverage lives in b2.mjs's own S7 section; this is a
+  // spot-check that the cascade's own 'drawers' category dispatches to it.
   // ==========================================================================
-  await freshProsePageWithDrawer(app, LAPTOP_W, 900);
+  await freshProsePageWithBoards(app, LAPTOP_W, 900);
   await clickCategory(app, 3); // Drawers
   await sleep(200);
-  const drawerRow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-list-title')].map(b => b.textContent)");
-  ok('S3: the Drawers panel lists the drawer entities (not a flat page list)', drawerRow.includes('Fiction'), JSON.stringify(drawerRow));
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-list-title')].find(b => b.textContent === 'Fiction').click()");
-  await sleep(200);
-  const drawerSurvey = await app.evalJs(`({
-    open: !!document.querySelector('.wz-cascade-survey'),
-    title: document.querySelector('.wz-cascade-survey-title')?.textContent,
-    itemCount: document.querySelectorAll('.wz-cascade-thumb').length,
+  const drawersTiles = await app.evalJs(`({
+    titles: [...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent),
+    clusterTitles: [...document.querySelectorAll('.wz-drawers-cluster-title')].map(t => t.textContent),
+    firstTile: document.querySelector('.wz-drawers-tile .wz-drawers-tile-title')?.textContent,
+    bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
   })`);
-  ok('S3/S4: choosing a drawer opens ITS survey (the filed pages inside that specific drawer)',
-    drawerSurvey.open && drawerSurvey.title === 'Fiction' && drawerSurvey.itemCount >= 1, JSON.stringify(drawerSurvey));
+  ok('B2 S7 successor of "S3: the Drawers panel lists the drawer entities (not a flat page list)" / "S3/S4: choosing a drawer opens ITS survey": the panel now shows large tiles, Shelf first, a project cluster with both board titles, and NO count/badge/timestamp anywhere in its text',
+    drawersTiles.firstTile === 'Shelf' && drawersTiles.clusterTitles.includes('Untitled')
+      && drawersTiles.titles.includes('First Board') && drawersTiles.titles.includes('Second Board')
+      && !/\d/.test(drawersTiles.bodyText),
+    JSON.stringify(drawersTiles));
+  // A tile tap travels.
+  await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].find(b => b.textContent.includes('First Board')).click()");
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Drawers tile travel (First Board)' });
+  const drawersTileRoute = await app.evalJs('location.hash');
+  ok('B2 S7: a Drawers tile tap travels — the board tile lands on that real board page', drawersTileRoute.startsWith('#/page/'), drawersTileRoute);
 
   // ==========================================================================
   // S2 — THE DOCK. Closing layer 2 slides it shut and layer 3 occupies its
@@ -833,6 +844,36 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme") — B1 S5: Trash joins section C at the foot; the strip now carries EIGHT categories in the updated order — live successor: this file\'s own live S1 section',
       stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
       JSON.stringify(stripShapeParked));
+
+    // B2 (2026-07-20) — two more checks this file's own live sections
+    // supersede, quoted verbatim:
+    //
+    //   (1) "S3/DoD: the Page panel carries the Page face's contents
+    //   (title, star, home line, tags, Move/Copy, Port) — carried forward
+    //   whole; the footer correctly stays absent on a project-origin
+    //   page" — Move/Copy (`.wz-pageface-verb-movecopy`) retires,
+    //   superseded by the Places panel. Live successor: this file's own
+    //   live S3 section, amended (moveCopyGone/hasPlaces).
+    //
+    //   (2) "S3: the Drawers panel lists the drawer entities (not a flat
+    //   page list)" + "S3/S4: choosing a drawer opens ITS survey (the
+    //   filed pages inside that specific drawer)" — the old Drawer-entity
+    //   choose-a-drawer -> survey-its-filed-pages flow is GONE whole (B2
+    //   S7): the Drawers panel is now a large-tile view, derived grouping
+    //   by project, tiles that travel directly (no nested survey column).
+    //   Live successor: this file's own live S3/S4 section, rebuilt.
+    await freshProsePage(app, LAPTOP_W, 900);
+    await clickCategory(app, 1); // Page
+    await sleep(200);
+    const movecopyGoneParked = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
+    pok('PARKED (was "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)...") — B2 S4: Move/Copy is gone, superseded by the Places panel — live successor: this file\'s own live S3 section, amended',
+      movecopyGoneParked === true, String(movecopyGoneParked));
+
+    await clickCategory(app, 3); // Drawers
+    await sleep(200);
+    const oldDrawerSurveyGone = await app.evalJs("!document.querySelector('.wz-cascade-survey') && !!document.querySelector('.wz-drawers-tiles')");
+    pok('PARKED (was "S3: the Drawers panel lists the drawer entities (not a flat page list)" + "S3/S4: choosing a drawer opens ITS survey (the filed pages inside that specific drawer)") — B2 S7: the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel — live successor: this file\'s own live S3/S4 section, rebuilt',
+      oldDrawerSurveyGone === true, String(oldDrawerSurveyGone));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

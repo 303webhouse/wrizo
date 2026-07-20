@@ -1185,8 +1185,10 @@ if (process.env.HARNESS_PARKED === '1') {
       const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
       return { count: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
     })()`);
-    pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); live successor: fx6.mjs\'s own S2 section proves its presence + function',
-      sliverBoardShape.count === 3, JSON.stringify(sliverBoardShape));
+    // GENERATION 2 (B2 S5) — a FOURTH tool joins them: Existing page…
+    // live successor: b2.mjs's own S5 section.
+    pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…) — live successor: b2.mjs\'s own S5 section proves its presence + function',
+      sliverBoardShape.count === 4, JSON.stringify(sliverBoardShape));
 
     return parkedChecks;
   });

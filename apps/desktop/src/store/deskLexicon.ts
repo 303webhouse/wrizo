@@ -158,7 +158,38 @@ export type DeskTermId =
   // post-describePageHome override, scoped to system Boards only —
   // pageHome.ts itself, and every ordinary page's home label, is untouched).
   | 'drawerPlaceTrash' | 'cascadeTrashOpen' | 'boardRestore'
-  | 'boardHomeLabelJournal' | 'boardHomeLabelTrash';
+  | 'boardHomeLabelJournal' | 'boardHomeLabelTrash'
+  // B2 S1/S2 — the Shelf Board (the third system Board, B1's own laws
+  // reused by the same code paths). 'boardHomeLabelShelf' joins the
+  // Journal/Trash pair above; 'shelfBoardEmpty' is the Shelf's own quiet
+  // one-line empty state (S2's own words — "one quiet fact," not the
+  // ordinary board's tool-naming empty line, which would name tools the
+  // Shelf structurally never has). 'boardPinToBoard' is the Shelf's own
+  // selected-card action (reuses PinToBoardSheet verbatim; the label
+  // mirrors 'pageFacePin' — same verb, a second doorway to it).
+  | 'boardHomeLabelShelf' | 'shelfBoardEmpty' | 'cascadeShelfOpen'
+  // B2 S5 — the Page pop-out's roster gains its own "New Journal Entry"
+  // action (distinct string from the Journal category's own pre-existing
+  // 'cascadeJournalNewPage' — same underlying door, a second entry point
+  // named the way Nick's own sketch named it). The Board's own Add flow
+  // gains "Existing page…" beside FX6's New page card.
+  | 'cascadePageNewJournalEntry' | 'boardAddExistingPage'
+  // B2 S4 — the Places panel: a Home zone (single-select) + a Boards zone
+  // (true checkboxes), superseding the old "Add to…" Moves flow's single-
+  // page doorway from the Page pop-out (A16 verbatim: checkboxes write
+  // ONLY membership; only the Home zone's own explicit act writes
+  // projectId; nothing ever writes origin).
+  | 'placesTitle' | 'placesHomeZoneLabel' | 'placesLoose'
+  | 'placesNewDrawer' | 'placesNewDrawerPlaceholder' | 'placesNewDrawerCreate' | 'placesNewDrawerCancel'
+  | 'placesBoardsTitle' | 'placesBoardsZoneLabel' | 'placesBoardsEmpty'
+  // B2 S7 — the Drawers panel (A17's chrome): a large-tile cascade panel,
+  // never a route. Tiles carry a title + an abstract kind mark only (no
+  // counts/badges/timestamps) — 'drawersKindBoard'/'drawersKindDoc' name
+  // the mark for assistive tech (aria-label), not visible text.
+  // 'drawersLooseGroup' labels the loose-docs cluster; the Shelf's own
+  // first tile and each project's own cluster header both read their OWN
+  // title (a proper noun — not lexicon vocabulary).
+  | 'drawersKindBoard' | 'drawersKindDoc' | 'drawersLooseGroup';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -281,6 +312,24 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardRestore: 'Restore',
   boardHomeLabelJournal: 'The Journal Board — has no project home',
   boardHomeLabelTrash: 'The Trash Board — has no project home',
+  boardHomeLabelShelf: 'The Shelf Board — has no project home',
+  shelfBoardEmpty: 'Nothing waiting.',
+  cascadeShelfOpen: 'Open the Shelf',
+  cascadePageNewJournalEntry: 'New Journal Entry',
+  boardAddExistingPage: 'Existing page…',
+  placesTitle: 'Places',
+  placesHomeZoneLabel: 'Home',
+  placesLoose: 'Loose',
+  placesNewDrawer: '+ New Drawer',
+  placesNewDrawerPlaceholder: 'Drawer name',
+  placesNewDrawerCreate: 'Create',
+  placesNewDrawerCancel: 'Cancel',
+  placesBoardsTitle: 'Boards',
+  placesBoardsZoneLabel: 'Boards this page can join',
+  placesBoardsEmpty: 'No boards yet.',
+  drawersKindBoard: 'Board',
+  drawersKindDoc: 'Document',
+  drawersLooseGroup: 'Loose',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

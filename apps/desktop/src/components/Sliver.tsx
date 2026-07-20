@@ -90,6 +90,12 @@ export type SliverContent =
       // board in one act (BoardEditor.tsx's own onAddPageCard) — the
       // board-side door Nick reached for and couldn't find.
       onAddPageCard?: () => void;
+      // B2 S5 — "Existing page…": beside FX6's New page card, a quiet
+      // picker that PINS a chosen EXISTING page onto this board (membership,
+      // never filing — see ExistingPagePicker.tsx's own header comment).
+      // Same absent-not-disabled law as the two Add controls above: on a
+      // system Board, BoardEditor.tsx passes none of the three at all.
+      onAddExistingPage?: () => void;
       // FX5 S5 — the connections-footer's own per-board visibility toggle,
       // the sliver's THIRD board control ("Add card + this, two controls"
       // — the brief's own words, now three with FX6's own addition).
@@ -294,6 +300,12 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           {content.onAddPageCard && (
             <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddPageCard}>
               {t('boardNewPageCard')}
+            </button>
+          )}
+          {/* B2 S5 — "Existing page…", beside New page card. */}
+          {content.onAddExistingPage && (
+            <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddExistingPage}>
+              {t('boardAddExistingPage')}
             </button>
           )}
           {/* FX5 S5 — the footer toggle, the sliver's third board control. */}

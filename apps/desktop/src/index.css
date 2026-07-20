@@ -3070,6 +3070,44 @@ a:focus-visible,
 .wz-cascade-confirm-cancel{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
   font-family:var(--font-ui); font-size:12px; padding:6px 10px; cursor:pointer; border-radius:var(--radius-sm); }
 
+/* B2 S7 — the Drawers panel (A17's chrome): large, quiet tiles. Square
+   corners (--radius-md resolves to 0 under Plateau, same token every other
+   cascade surface already uses — this file's own standing "square corners
+   everywhere" law, held by the SAME variable, not a hardcoded override).
+   No counts/badges/timestamps anywhere — title + the abstract kind mark
+   only. */
+.wz-drawers-tiles{ display:flex; flex-direction:column; gap:6px; }
+.wz-drawers-tile{ display:flex; align-items:center; gap:8px; text-align:left; cursor:pointer;
+  background:var(--ink-900); border:1px solid var(--ink-border); border-radius:var(--radius-md);
+  padding:10px 12px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; transition:.15s; }
+.wz-drawers-tile:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+/* The anchor slot (last-opened) reads olive, never brass — the SAME
+   "current item olive" law the survey's own thumbnails already carry. */
+.wz-drawers-tile-anchor{ border-color:var(--accent-rest); color:var(--text-hi); }
+.wz-drawers-tile-title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* An abstract, non-literal mark (square = board, round = doc) — a plain
+   shape, not a synthesized preview (genuine miniature previews are a named
+   future refinement, not built here). aria-label carries the real word. */
+.wz-drawers-tile-kind{ flex:none; width:9px; height:9px; border:1.4px solid var(--text-low); }
+.wz-drawers-tile-kind[data-kind='doc']{ border-radius:50%; }
+.wz-drawers-cluster{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+.wz-drawers-cluster-title{ font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-low); padding:0 2px; }
+
+/* B2 S4 — the Places panel (components/PlacesPanel.tsx): a Home zone
+   (single-select radios) + a Boards zone (true checkboxes), inside the
+   Page category's own panel body. Plain form controls, square corners,
+   no invented widget language. */
+.wz-places{ display:flex; flex-direction:column; gap:10px; padding:4px 14px 14px; }
+.wz-places-title{ padding:2px 0 2px !important; }
+.wz-places-home, .wz-places-boards{ display:flex; flex-direction:column; gap:6px; }
+.wz-places-radio, .wz-places-checkbox{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-mid); cursor:pointer; }
+.wz-places-newdrawer-btn{ align-self:flex-start; background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:12px; padding:6px 9px; cursor:pointer; border-radius:var(--radius-sm); }
+.wz-places-newdrawer-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-places-newdrawer{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.wz-places-newdrawer-input{ background:var(--ink-900); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:6px 8px; border-radius:var(--radius-sm); }
+
 /* AB3 S2 — the Page face (components/PageFace.tsx). Plain, quiet metadata —
    no orange at rest (the star only wears --brass while ACTUALLY starred, an
    evental toggle, matching the pre-AB3 .entry-star convention verbatim). */

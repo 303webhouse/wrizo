@@ -146,13 +146,18 @@ await withHarness(async (app) => {
     starredNow: document.querySelector('.wz-pageface-star')?.dataset.starred,
     home: document.querySelector('.wz-pageface-home-label')?.textContent,
     tagInput: !!document.querySelector('.wz-pageface-tag-input'),
-    moveCopy: !!document.querySelector('.wz-pageface-verb-movecopy'),
+    moveCopyGone: !document.querySelector('.wz-pageface-verb-movecopy'),
     port: !!document.querySelector('.wz-pageface-verb-port'),
     footer: document.querySelector('.wz-pageface-footer')?.textContent,
+    placesPresent: !!document.querySelector('.wz-places'),
   })`);
-  ok('S2: the Page category shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer',
+  // B2 S4 park sweep — live successor immediately below: Move/Copy retires
+  // (superseded by Places); the ORIGINAL "...Move/Copy + Port-to-Board..."
+  // combined check is PARKED (A4, quoted verbatim) in this file's own
+  // PARKED section.
+  ok('B2 S4 successor of "S2: the Page category shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer": the SAME facts, Move/Copy replaced by the Places panel\'s own presence',
     pageFace.panelTitle === 'Page' && pageFace.title === 'AB3GEOMETRY' && pageFace.starPresent && pageFace.starredNow === 'false'
-      && pageFace.home === 'In the Journal' && pageFace.tagInput && pageFace.moveCopy && pageFace.port
+      && pageFace.home === 'In the Journal' && pageFace.tagInput && pageFace.moveCopyGone && pageFace.port && pageFace.placesPresent
       && pageFace.footer === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
     JSON.stringify(pageFace));
 
@@ -339,51 +344,49 @@ await withHarness(async (app) => {
   ok('B1 successor of "S5/DoD: a loose page never appears in the Journal either": it never gets a card on the Journal Board either (it homes nowhere, not there)',
     !loosePinnedIds.includes(looseDoorEntry.id), JSON.stringify({ loosePinnedIds, looseDoorEntryId: looseDoorEntry.id }));
 
-  // === S5 — the Journal forgets nothing: file a journal-born page to a NEW
-  // project, assert it lists in BOTH the Journal and that project. ===========
+  // === S5 (B2-amended) — the Journal forgets provenance, not membership:
+  // file a journal-born page to a NEW project via the Places panel (S4's
+  // own successor to the retired Move/Copy verb — see this file's own
+  // park sweep for the ORIGINAL "still lists in both" claims, superseded
+  // by B2 S7's pinned law). =====================================================
   await freshDesk(app);
-  // HB1 — DrawersTree (`.dz-new`) no longer renders inline on the Desk
-  // room (retired); its persistent home was always also `/drawers`
-  // (Drawers.tsx renders the SAME <DrawersTree/> — see j5.mjs's own
-  // `.dz-new` fixture, which already navigated there explicitly).
-  await app.goto('/drawers');
-  await app.waitFor("!!document.querySelector('.dz-new')", { label: 'Drawers page' });
-  await app.evalJs("document.querySelector('.dz-new').click()");
-  await app.waitFor("!!document.querySelector('.dz-rename')", { label: 'new Drawer rename input' });
-  await app.evalJs("document.querySelector('.dz-rename').blur()");
-  await sleep(200);
-
   await journalPageHere(app, 'AB3FORGETSNOTHING');
   await openPageCategory(app);
-  await app.waitFor("!!document.querySelector('.wz-pageface-verb-movecopy')", { label: 'Page face (forgets-nothing fixture)' });
-  await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
-  await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet' });
-  await app.evalJs("[...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes('New Drawer')).click()");
-  await app.waitFor("!!document.querySelector('.add-dest-row')", { label: 'drawer level (Add to…)' });
-  await app.evalJs("[...document.querySelectorAll('.add-dest-row')].find(el => el.textContent.includes('Standalone')).click()");
+  await app.waitFor("!!document.querySelector('.wz-places-newdrawer-btn')", { label: 'Places panel (forgets-nothing fixture)' });
+  await app.evalJs("document.querySelector('.wz-places-newdrawer-btn').click()");
+  await app.waitFor("!!document.querySelector('.wz-places-newdrawer-input')", { label: 'Places New Drawer input' });
+  // Real per-character key events (typeKeys), not a direct .value= write —
+  // a controlled React input needs the genuine input event React's own
+  // onChange listens for, which only a trusted keystroke stream reliably
+  // produces (this project's own trusted-gesture discipline, applied here
+  // too).
+  await app.evalJs("document.querySelector('.wz-places-newdrawer-input').focus()");
+  await app.typeKeys('AB3 Drawer');
+  await app.evalJs("document.querySelector('.wz-places-newdrawer-create').click()");
   await sleep(400);
 
   const filedEntries = await app.localJSON('writer-studio-journal-entries');
   const filedEntry = filedEntries.find(e => e.text?.includes('AB3FORGETSNOTHING'));
-  ok('S5: filing a journal-born page to a new project sets projectId, but origin stays \'journal\'',
+  ok('S5: filing a journal-born page (via Places\' Home zone) to a new drawer sets projectId, but origin stays \'journal\'',
     !!filedEntry?.projectId && filedEntry?.origin === 'journal', JSON.stringify(filedEntry));
 
-  // B1 park sweep — live successor (see the project-origin check above for
-  // the full reasoning): the filed-but-journal-origin page still carries a
-  // card on the Journal Board — "forgets nothing" restated as a Board claim.
+  // B2 S7 park sweep — live successor (see the project-origin check above
+  // for the full reasoning): a journal-born page filed to a drawer now
+  // LEAVES the Journal Board (the pinned law: origin 'journal' AND
+  // projectId null) — "forgets nothing" restated, amended.
   const filedPinnedIds = await journalBoardPinnedIds(app);
-  ok('B1 successor of "S5 DoD: a journal page filed to a project STILL turns up in the Journal (forgets nothing)": it still carries a card on the Journal Board too',
-    filedPinnedIds.includes(filedEntry.id), JSON.stringify({ filedPinnedIds, filedEntryId: filedEntry.id }));
+  ok('B2 S7 successor of "B1: a journal page filed to a project STILL turns up in the Journal (forgets nothing)": filing now REMOVES its card from the Journal Board (S4\'s own DoD — "Journal unchecks itself and the page leaves the Journal Board")',
+    !filedPinnedIds.includes(filedEntry.id), JSON.stringify({ filedPinnedIds, filedEntryId: filedEntry.id }));
 
   await app.goto(`/project/${filedEntry.projectId}`);
   await app.waitFor("!!document.querySelector('.page')", { label: 'ProjectHome (forgets-nothing check)' });
   await sleep(200);
   const projectAlsoLists = (await app.evalJs("document.querySelector('.page')?.innerText ?? ''")).includes('AB3FORGETSNOTHING');
-  ok('S5 DoD: the SAME page also lists in its new project — it appears in both places', projectAlsoLists);
+  ok('S5 DoD: the filed page lists in its new project', projectAlsoLists);
 
-  // Where-it-lives now tells BOTH truths. /page/:id always renders
-  // PageEditor (its outer component only branches on pageType for board/
-  // script) — this untyped-but-now-filed page reopens there.
+  // Where-it-lives, amended: /page/:id always renders PageEditor (its outer
+  // component only branches on pageType for board/script) — this untyped-
+  // but-now-filed page reopens there.
   await app.goto(`/page/${filedEntry.id}`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'filed page reopened' });
   await sleep(200);
@@ -392,9 +395,21 @@ await withHarness(async (app) => {
     home: document.querySelector('.wz-pageface-home-label')?.textContent,
     memberships: [...document.querySelectorAll('.wz-pageface-membership')].map(el => el.textContent),
   })`);
-  ok('S5/S2: Where-it-lives tells BOTH truths — homed in the project, "Also in the Journal."',
-    bothTruths.home?.startsWith('In ') && bothTruths.home !== 'In the Journal' && bothTruths.memberships.includes('Also in the Journal.'),
+  ok('B2 S7 successor of "S5/S2: Where-it-lives tells BOTH truths — homed in the project, Also in the Journal.": the pinned law means dual membership no longer happens — homed in the project, NO "Also in the Journal." line (origin still \'journal\', per the check above — provenance stays, membership doesn\'t)',
+    bothTruths.home?.startsWith('In ') && bothTruths.home !== 'In the Journal' && !bothTruths.memberships.includes('Also in the Journal.'),
     JSON.stringify(bothTruths));
+
+  // The Places panel's own Home zone reflects this too: Journal unchecks
+  // itself the instant the page is filed (A16 assert: only this explicit
+  // act wrote projectId; nothing wrote origin — checked above).
+  await openPageCategory(app);
+  await app.waitFor("!!document.querySelector('.wz-places-home')", { label: 'Places panel (post-file reflection)' });
+  const homeZoneAfterFile = await app.evalJs(`({
+    journalChecked: document.querySelector('.wz-places-home input[type=radio]')?.checked,
+    projectChecked: [...document.querySelectorAll('.wz-places-home label')].some(l => l.textContent.includes('AB3 Drawer') && l.querySelector('input').checked),
+  })`);
+  ok('B2 S4: the Places panel\'s own Home zone shows Journal UNCHECKED and the new drawer CHECKED — the radio reflects the just-performed act immediately',
+    homeZoneAfterFile.journalChecked === false && homeZoneAfterFile.projectChecked === true, JSON.stringify(homeZoneAfterFile));
 
   // === S4 grandfather clause (A2) — a NULL-origin typed page (pre-AB3 data)
   // keeps EXACTLY today's Free-Write furniture. Seeded directly (no real
@@ -786,6 +801,41 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S5: a project-origin page never appears in any Journal view — the Journal has never heard of it", "S5/DoD: a loose page never appears in the Journal either", and "S5 DoD: a journal page filed to a project STILL turns up in the Journal (forgets nothing)") — B1 S5: the Journal LIST surface itself (.journal-row/.journal-new-page) is retired whole (pages/Journal.tsx deleted); \'/journal\' now mounts the Board instead — live successors for the underlying membership claims are this file\'s own live S4/S5 section (journalBoardPinnedIds, against the Board\'s derived cards)',
       retiredRoomGone.journalNewPage === false && retiredRoomGone.journalRow === false && retiredRoomGone.boardCanvas === true,
       JSON.stringify(retiredRoomGone));
+
+    // === B2 (2026-07-20) — the ORIGINAL "S5: the Journal forgets nothing"
+    // fixture + its two "still turns up" claims, quoted verbatim, both
+    // SUPERSEDED by S7's pinned law (filing now REMOVES journal membership
+    // — see this file's own live S5 section, above, for the amended
+    // fixture and the opposite assertions):
+    //
+    //   await app.goto('/drawers');
+    //   await app.waitFor("!!document.querySelector('.dz-new')", ...);
+    //   await app.evalJs("document.querySelector('.dz-new').click()");
+    //   ...
+    //   await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
+    //   await app.waitFor("!!document.querySelector('.board-sheet')", ...);
+    //   await app.evalJs("[...document.querySelectorAll('.board-dest-row')]
+    //     .find(el => el.textContent.includes('New Drawer')).click()");
+    //   ...
+    //   ok('B1 successor of "...forgets nothing": it still carries a card
+    //   on the Journal Board too', filedPinnedIds.includes(filedEntry.id), ...);
+    //   ...
+    //   ok('S5/S2: Where-it-lives tells BOTH truths — homed in the
+    //   project, "Also in the Journal."',
+    //     bothTruths.home?.startsWith('In ') && bothTruths.home !== 'In the Journal'
+    //       && bothTruths.memberships.includes('Also in the Journal.'), ...);
+    //
+    // Proof the retirement itself holds: `.wz-pageface-verb-movecopy` is
+    // gone from the DOM (the SAME B2 S4 claim b1.mjs's own PARKED section
+    // proves against a system Board; here against an ordinary, journal-
+    // origin page's own Page face).
+    await freshJournalPage(app, 'AB3PARKEDMOVECOPY');
+    await openPageCategory(app);
+    const movecopyGoneOrdinaryPage = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
+    pok('PARKED (was the "S5: the Journal forgets nothing" fixture\'s own AddToSheet/New-Drawer click sequence, plus its "still carries a card on the Journal Board too" and "Also in the Journal." dual-membership assertions) — B2 S4/S7: Move/Copy (`.wz-pageface-verb-movecopy`) is superseded by the Places panel, and filing now REMOVES Journal membership (the pinned law) — live successors: this file\'s own live S5 section, amended',
+      movecopyGoneOrdinaryPage === true, String(movecopyGoneOrdinaryPage));
+    pok('PARKED (was "S2: the Page category shows title, star (unstarred), Where-it-lives, tags, Move/Copy + Port-to-Board, and the quiet footer") — B2 S4: superseded by the same check\'s own live successor (Places\' presence replaces Move/Copy\'s own)',
+      true, 'see this file\'s own live S2 section, amended in place with moveCopyGone/placesPresent');
 
     return parkedChecks;
   });

@@ -725,7 +725,6 @@ function JournalEntryView() {
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,
-    onOpenMoveCopy: () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
     onOpenPin: () => setPinOpen(true),
   };

@@ -25,7 +25,6 @@ import { GoalGlow } from './GoalGlow';
 import { useCascade } from './Cascade';
 import type { PageFaceSubject } from './PageFace';
 import { PortToBoardSheet } from './PortToBoardSheet';
-import { AddToSheet } from './AddToSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
 import { isScriptEmpty } from '../store/structureConvert';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
@@ -303,9 +302,9 @@ export function ScriptEditor({ id }: { id: string }) {
   // CD1 S7 — the Page face's sending-verb sheets (mirrors PageEditor.tsx's
   // own wiring verbatim; the Screenplay Room never had a Page face before
   // this ticket — Move/Copy/Port-to-Board are genuinely new capability
-  // here, same as they were for PageEditor in AB3).
+  // here, same as they were for PageEditor in AB3). B2 S4 — Move/Copy
+  // (`addOpen`, AddToSheet) RETIRES: superseded by the Places panel.
   const [portOpen, setPortOpen] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false); // AB4 S2 — "Pin to a Board…" sheet
 
   const elementsRef = useRef(elements);
@@ -398,7 +397,6 @@ export function ScriptEditor({ id }: { id: string }) {
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,
-    onOpenMoveCopy: () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
     onOpenPin: () => setPinOpen(true),
   };
@@ -681,13 +679,6 @@ export function ScriptEditor({ id }: { id: string }) {
         </DeskFrame>
 
         {portOpen && <PortToBoardSheet sourceIds={[id]} onClose={() => setPortOpen(false)} />}
-        {addOpen && (
-          <AddToSheet
-            sourceIds={[id]}
-            onClose={() => setAddOpen(false)}
-            onDone={() => setAddOpen(false)}
-          />
-        )}
         {pinOpen && <PinToBoardSheet entryId={id} onClose={() => setPinOpen(false)} />}
 
         {showPublish && (

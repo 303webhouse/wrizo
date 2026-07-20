@@ -3,7 +3,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { firstLine } from '../store/entryText';
 import {
-  getJournalPages, getShelfPages, getDrawers, getProjects, getBinderPages,
+  getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createJournalPage, createLooseHomePage, createBoardPage, createQuickSprintProject, softDeleteEntry,
   getJournalEntry, getOrCreateSystemBoard,
 } from '../store/persistence';
@@ -13,6 +13,7 @@ import { requestLogout } from '../store/logoutRequest';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
+import { PlacesPanel } from './PlacesPanel';
 import { AddToSheet } from './AddToSheet';
 import type { JournalEntry, Project } from '../types';
 import type { SurveyItem, SurveyProps } from './CascadeSurvey';
@@ -41,6 +42,12 @@ function openTrashBoard(navigate: NavigateFunction): void {
   const board = getOrCreateSystemBoard('trash');
   navigate(`/page/${board.id}`);
 }
+// B2 S1 — the Shelf Board's own find-or-create + travel door, the SAME
+// shape as its journal/trash siblings.
+function openShelfBoard(navigate: NavigateFunction): void {
+  const board = getOrCreateSystemBoard('shelf');
+  navigate(`/page/${board.id}`);
+}
 
 // A survey "kind" is a small description of WHAT to browse, not a snapshot
 // of the items themselves — Cascade.tsx stores one of these as its own
@@ -57,9 +64,14 @@ export type CascadeSurveyKind =
   // Cascade.tsx state — `survey` already generalizes to "whatever the
   // writer is currently browsing," and reusing it means dock/undock/
   // Escape/keystroke-dissolve all keep working with zero new plumbing.
-  | { category: 'plan-board'; projectId: string; boardId: string; boardTitle: string }
-  | { category: 'drawers'; drawerId: string; drawerName: string }
-  | { category: 'shelf' };
+  | { category: 'plan-board'; projectId: string; boardId: string; boardTitle: string };
+// B2 S1/S3/S7 — 'shelf' and 'drawers' BOTH retire from this union: the
+// Shelf category's own panel is now a single quiet door (ShelfPanel,
+// mirroring Trash — no nested list to survey), and the Drawers panel (S7)
+// is now a large-tile view whose tiles travel directly, never opening a
+// nested survey column (the old Drawer-entity choose-a-drawer -> survey-
+// its-filed-pages flow retires whole). Park sweep note beside buildSurvey,
+// below — both branches quoted verbatim, A4.
 
 export interface CascadeContext {
   subject: PageFaceSubject;
@@ -143,8 +155,15 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 // against its plain neighbors, not urgency color — "nothing orange at
 // rest" holds.
 // ---------------------------------------------------------------------------
+// B2 S5 — the roster reorders to New Journal Entry, New Page, then Places
+// (for the page underfoot). New Journal Entry is a SECOND door to the exact
+// same act the Journal category's own 'cascadeJournalNewPage' button
+// already performs (createJournalPage) — Nick's own sketch names it here
+// too, so a writer already looking at the Page category doesn't have to
+// remember the Journal category is where journal-entry creation lives.
 function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
+  const newJournalEntry = () => { const e = createJournalPage(); navigate(`/journal/${e.id}`); };
   const newPage = () => { const e = createLooseHomePage(); navigate(`/page/${e.id}`); };
   return (
     <>
@@ -152,11 +171,18 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
           PageFace already carries its own `.wz-pageface` padding, so
           nesting a second panel-body around both would double it up. */}
       <div style={{ padding: '10px 14px 0' }}>
+        <button type="button" className="wz-cascade-action" onClick={newJournalEntry}>
+          {t('cascadePageNewJournalEntry')}
+        </button>
         <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>
           {t('cascadePageNewPage')}
         </button>
       </div>
       <PageFace subject={subject} />
+      {/* B2 S4 — Places: the Home zone (single-select) + Boards zone (true
+          checkboxes), for the page underfoot. Supersedes PageFace's own
+          retired Move/Copy verb. */}
+      <PlacesPanel entry={subject.entry} />
     </>
   );
 }
@@ -247,51 +273,131 @@ function BoardRowMenu({ id }: { id: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Drawers
+// Drawers (B2 S7, A17's chrome) — a large-tile cascade panel, never a new
+// route or full-screen surface (the anti-file-manager rule binds). Grouping
+// is DERIVED, never authored: a project's cluster IS Nick's "drawer," from
+// projectId alone (zero new entities — this reuses the SAME `Project`
+// storage row the pre-existing Drawer-entity tree does NOT touch; that
+// older, separate `/drawers` full-browse surface and its own `Drawer` row
+// — Drawers D1, unrelated ontology — are untouched by this ticket, see the
+// build report). The Shelf renders as the FIRST tile (T4's proposal);
+// loose docs reuse T3's own derivation (getShelfEntries — "one definition,
+// two consumers," the Shelf Board's own reconcile being the other). Every
+// OTHER system board keeps its own separate door (Journal/Trash/Shelf all
+// still have their own strip categories) — only the Shelf ALSO earns a
+// tile here.
 // ---------------------------------------------------------------------------
-function DrawersPanel({ openSurvey }: CascadeContext) {
+function drawersItemTitle(e: JournalEntry): string {
+  const hasInk = (e.strokes?.length ?? 0) > 0;
+  if (!e.text.trim()) return hasInk ? 'A sketch' : 'Untitled';
+  return firstLine(e.text).slice(0, 60);
+}
+
+interface DrawerTile { kind: 'board' | 'doc'; id: string; title: string; updatedAt: string; projectId?: string; entry?: JournalEntry }
+
+// A quiet, abstract kind mark — square vs. round, non-literal (the brief's
+// own words: "abstract, non-literal"). aria-label carries the real word for
+// assistive tech; nothing here is a count, a badge, or a timestamp.
+function TileKindMark({ kind }: { kind: 'board' | 'doc' }) {
   const { t } = useDeskLexicon();
-  const drawers = getDrawers();
+  return (
+    <span className="wz-drawers-tile-kind" data-kind={kind} aria-label={t(kind === 'board' ? 'drawersKindBoard' : 'drawersKindDoc')} />
+  );
+}
+
+function DrawersPanel({ navigate }: CascadeContext) {
+  const { t } = useDeskLexicon();
+  const projects = getProjects();
+  const projectTitle = (id?: string) => projects.find((p) => p.id === id)?.title || 'Untitled';
+
+  const boards: DrawerTile[] = getAllUserBoards().map((b) => ({ kind: 'board', id: b.id, title: drawersItemTitle(b), updatedAt: b.updatedAt, projectId: b.projectId ?? undefined }));
+  // T3's own derivation, reused verbatim — "one definition, two consumers".
+  const docs: DrawerTile[] = getShelfEntries().map((e) => ({ kind: 'doc', id: e.id, title: drawersItemTitle(e), updatedAt: e.updatedAt, entry: e }));
+  const all = [...boards, ...docs];
+
+  // Last-opened anchors first (Nick's word) — approximated by `updatedAt`
+  // (last touched), the SAME recency proxy this file's own `byRecent`
+  // already uses elsewhere; this app has no separate "opened-at" stamp to
+  // read, and adding one would be schema this ticket doesn't get to spend.
+  const anchor = all.length > 0 ? all.slice().sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0] : null;
+  const rest = anchor ? all.filter((tItem) => !(tItem.kind === anchor.kind && tItem.id === anchor.id)) : all;
+
+  const restBoards = rest.filter((tItem) => tItem.kind === 'board');
+  const restDocs = rest.filter((tItem) => tItem.kind === 'doc');
+  const clusterMap = new Map<string, DrawerTile[]>();
+  for (const b of restBoards) {
+    const key = b.projectId ?? '';
+    if (!clusterMap.has(key)) clusterMap.set(key, []);
+    clusterMap.get(key)!.push(b);
+  }
+  // Ordering beneath the anchor is deterministic: project name, then board title.
+  const clusters = [...clusterMap.entries()]
+    .map(([projectId, items]) => ({ projectId, title: projectTitle(projectId), items: items.slice().sort((a, b) => a.title.localeCompare(b.title)) }))
+    .sort((a, b) => a.title.localeCompare(b.title));
+  const sortedDocs = restDocs.slice().sort((a, b) => a.title.localeCompare(b.title));
+
+  const travel = (tItem: DrawerTile) => {
+    if (tItem.kind === 'board') { navigate(`/page/${tItem.id}`); return; }
+    if (tItem.entry) navigate(routeFor(tItem.entry));
+  };
+
   return (
     <div className="wz-cascade-panel-body">
-      <div className="wz-cascade-empty" style={{ padding: 0 }}>
-        {drawers.length === 0 ? t('cascadeDrawersEmpty') : t('cascadeDrawersChoose')}
-      </div>
-      <div className="wz-cascade-list">
-        {drawers.map((d) => (
-          <div key={d.id} className="wz-cascade-list-item">
-            <button type="button" className="wz-cascade-list-title" onClick={() => openSurvey({ category: 'drawers', drawerId: d.id, drawerName: d.name })}>
-              {d.name}
-            </button>
+      <div className="wz-drawers-tiles">
+        <button type="button" className="wz-drawers-tile" onClick={() => openShelfBoard(navigate)}>
+          <TileKindMark kind="board" />
+          <span className="wz-drawers-tile-title">{t('drawerPlaceShelf')}</span>
+        </button>
+        {anchor && (
+          <button type="button" className="wz-drawers-tile wz-drawers-tile-anchor" onClick={() => travel(anchor)}>
+            <TileKindMark kind={anchor.kind} />
+            <span className="wz-drawers-tile-title">{anchor.title}</span>
+          </button>
+        )}
+        {clusters.map((c) => (
+          <div key={c.projectId} className="wz-drawers-cluster">
+            <div className="wz-drawers-cluster-title">{c.title}</div>
+            {c.items.map((b) => (
+              <button key={b.id} type="button" className="wz-drawers-tile" onClick={() => travel(b)}>
+                <TileKindMark kind="board" />
+                <span className="wz-drawers-tile-title">{b.title}</span>
+              </button>
+            ))}
           </div>
         ))}
+        {sortedDocs.length > 0 && (
+          <div className="wz-drawers-cluster">
+            <div className="wz-drawers-cluster-title">{t('drawersLooseGroup')}</div>
+            {sortedDocs.map((d) => (
+              <button key={d.id} type="button" className="wz-drawers-tile" onClick={() => travel(d)}>
+                <TileKindMark kind="doc" />
+                <span className="wz-drawers-tile-title">{d.title}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+      {/* Genuine miniature board/doc previews are a named future refinement
+          (A17's own text), NOT built here — every tile above is title +
+          the abstract kind mark only. */}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Shelf
+// Shelf (B2 S1/S3) — joins Trash's own minimal shape: one plain button,
+// nothing else — no row list, no preview, no count (T3's own membership
+// list lives on the Shelf BOARD itself, reached by this one door; a
+// SEPARATE short-list preview here would be a second, competing surface
+// for the same truth). The old getShelfPages()-based list (the legacy
+// `shelved` flag's own UI) retires whole — S3's mandate — replaced by the
+// derived Shelf Board this same button opens.
 // ---------------------------------------------------------------------------
-function ShelfPanel({ navigate, openSurvey }: CascadeContext) {
+function ShelfPanel({ navigate }: CascadeContext) {
   const { t } = useDeskLexicon();
-  const items = getShelfPages().slice().sort(byRecent);
-  const short = items.slice(0, 5);
   return (
     <div className="wz-cascade-panel-body">
-      <div className="wz-cascade-list">
-        {short.length === 0 && <div className="wz-cascade-empty">{t('placeFaceEmpty')}</div>}
-        {short.map((e) => (
-          <div key={e.id} className="wz-cascade-list-item">
-            <button type="button" className="wz-cascade-list-title" onClick={() => navigate(routeFor(e))}>{itemTitle(e)}</button>
-          </div>
-        ))}
-      </div>
-      {items.length > 0 && (
-        <div className="wz-cascade-panel-footer">
-          <button type="button" className="wz-cascade-link" onClick={() => openSurvey({ category: 'shelf' })}>{t('cascadeShelfBrowse')}</button>
-        </div>
-      )}
+      <button type="button" className="wz-cascade-action" onClick={() => openShelfBoard(navigate)}>{t('cascadeShelfOpen')}</button>
     </div>
   );
 }
@@ -416,17 +522,6 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     const pages = getJournalPages().slice().sort(byRecent);
     const items: SurveyItem[] = pages.map((e) => ({ id: e.id, title: itemTitle(e), excerpt: itemExcerpt(e), current: e.id === currentEntryId }));
     return { title: deskTerm('drawerPlaceJournal'), items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeFor(e)); } };
-  }
-  if (kind.category === 'shelf') {
-    const pages = getShelfPages().slice().sort(byRecent);
-    const items: SurveyItem[] = pages.map((e) => ({ id: e.id, title: itemTitle(e), excerpt: itemExcerpt(e), current: e.id === currentEntryId }));
-    return { title: deskTerm('drawerPlaceShelf'), items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeFor(e)); } };
-  }
-  if (kind.category === 'drawers') {
-    const drawerProjectIds = new Set(getProjects().filter((p) => p.drawerId === kind.drawerId).map((p) => p.id));
-    const pages = [...drawerProjectIds].flatMap((pid) => getBinderPages(pid)).sort(byRecent);
-    const items: SurveyItem[] = pages.map((e) => ({ id: e.id, title: itemTitle(e), excerpt: itemExcerpt(e), current: e.id === currentEntryId }));
-    return { title: kind.drawerName, items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeFor(e)); } };
   }
   if (kind.category === 'plan') {
     // The board list (S3's own literal wording). AB4 S1 — the CD2 erratum

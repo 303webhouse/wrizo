@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -23,7 +23,6 @@ import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
-import { AddToSheet } from '../components/AddToSheet';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
@@ -109,9 +108,9 @@ function PageEditorView({ id }: { id: string }) {
   // AB3 S2 — the Page face's sending verbs. Genuinely new capability here
   // (PageEditor never had Move/Copy or Port-to-Board before this ticket —
   // "everything about a page" now includes typed/filed pages too, not just
-  // the Journal's own authored surface).
+  // the Journal's own authored surface). B2 S4 — Move/Copy (`addOpen`,
+  // AddToSheet) RETIRES: superseded by the Places panel.
   const [portOpen, setPortOpen] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
   // AB4 S2 — Pin, the fourth sending verb.
   const [pinOpen, setPinOpen] = useState(false);
 
@@ -236,12 +235,15 @@ function PageEditorView({ id }: { id: string }) {
 
   if (!entry) return <Navigate to="/" replace />;
 
-  // Exit lands where the page lives: its binder, the Shelf if shelved, else
-  // the Journal (F2 papercut — a shelved typed page returned to /journal
-  // before). AB3 — a loose-origin page (the Desk's home-base door) homes
+  // Exit lands where the page lives: its binder, the Journal if journal-
+  // homed, else the Shelf (B2 S3 — the legacy `shelved` flag retires from
+  // this read too: T3/inJournalView's own pinned-law verdict decides now,
+  // not the dormant flag — a project-origin page un-filed via Places, or a
+  // legacy grandfathered row, both correctly land here instead of the
+  // Journal). AB3 — a loose-origin page (the Desk's home-base door) homes
   // NOWHERE, not the Journal (it was never nudged there) — Done returns to
   // the Desk instead.
-  const backTo = project ? `/project/${project.id}` : entry.shelved ? '/shelf' : entry.origin === 'loose' ? '/' : '/journal';
+  const backTo = project ? `/project/${project.id}` : inJournalView(entry) ? '/journal' : entry.origin === 'loose' ? '/' : '/shelf';
   // AB4 S4 — "way back guaranteed" for a page-pin card's double-click
   // travel (BoardEditor.tsx). Mirrors F2's warm-start precedent (above,
   // `location.state`) — a one-shot navigation signal, read once at render
@@ -286,7 +288,6 @@ function PageEditorView({ id }: { id: string }) {
     onToggleStar: toggleStar,
     onAddTag: addTag,
     onRemoveTag: removeTag,
-    onOpenMoveCopy: () => setAddOpen(true),
     onOpenPortToBoard: () => setPortOpen(true),
     onOpenPin: () => setPinOpen(true),
   };
@@ -488,13 +489,6 @@ function PageEditorView({ id }: { id: string }) {
   const pageFaceSheets = (
     <>
       {portOpen && <PortToBoardSheet sourceIds={[entry.id]} onClose={() => setPortOpen(false)} />}
-      {addOpen && (
-        <AddToSheet
-          sourceIds={[entry.id]}
-          onClose={() => setAddOpen(false)}
-          onDone={() => setAddOpen(false)}
-        />
-      )}
       {pinOpen && <PinToBoardSheet entryId={entry.id} onClose={() => setPinOpen(false)} />}
     </>
   );

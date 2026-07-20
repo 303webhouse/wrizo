@@ -332,12 +332,18 @@ await withHarness(async (app) => {
   ok('S4 (successor to "...border-radius is 0px on a place-face verb"): computed border-radius is 0px on a category panel\'s action button',
     cascadeActionRadius === '0px', cascadeActionRadius);
 
+  // B2 S4 — plain doorway swap (fx2.mjs's own "same claim, renamed/moved
+  // doorway, no park" precedent, cited verbatim by ab3.mjs's own header
+  // comment): Move/Copy retires (superseded by Places), so this now
+  // reaches the SAME `.board-sheet-inner` class via Pin instead — the
+  // geometry claim itself (square corners on a board sheet) is completely
+  // unchanged, only unaffected by which sheet reaches it.
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // Page
-  await app.waitFor("!!document.querySelector('.wz-pageface-verb-movecopy')", { label: 'Page face (S4 fixture)' });
-  await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
-  await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet' });
+  await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (S4 fixture)' });
+  await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
+  await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet' });
   const addToSheetRadius = await app.evalJs("getComputedStyle(document.querySelector('.board-sheet-inner')).borderRadius");
-  ok('S4: computed border-radius is 0px on the Add-to sheet', addToSheetRadius === '0px', addToSheetRadius);
+  ok('S4: computed border-radius is 0px on a board sheet (Pin to a Board…)', addToSheetRadius === '0px', addToSheetRadius);
 
   // ==========================================================================
   // S5 — the dead bar dies: the meter track's host doesn't mount while

@@ -23,7 +23,11 @@ export interface PageFaceSubject {
   onToggleStar: () => void;
   onAddTag: (tag: string) => void;
   onRemoveTag: (tag: string) => void;
-  onOpenMoveCopy: () => void;
+  // B2 S4 — onOpenMoveCopy RETIRES: the Move/Copy verb (AddToSheet's single-
+  // page doorway) is superseded by the Places panel (PlacesPanel.tsx),
+  // mounted alongside this component in CascadePanels.tsx's PagePanel, not
+  // as a verb on this face. `homeLabel`/`memberships` stay — they remain a
+  // truthful, read-only summary; Places is where the writer ACTS on it now.
   onOpenPortToBoard: () => void;
   // AB4 S2 — Pin, the fourth sending verb: membership, not capture. Joins
   // Move/Copy/Port in the same row, riding the same Add-to grammar (a board
@@ -91,9 +95,6 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
       </div>
 
       <div className="wz-pageface-verbs">
-        <button type="button" className="wz-pageface-verb wz-pageface-verb-movecopy" onClick={subject.onOpenMoveCopy}>
-          {t('pageFaceMoveCopy')}
-        </button>
         <button type="button" className="wz-pageface-verb wz-pageface-verb-port" onClick={subject.onOpenPortToBoard}>
           {t('pageFacePortToBoard')}
         </button>
