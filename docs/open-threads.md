@@ -3081,6 +3081,139 @@ outlive a session lives here, not in chat.
     post-merge; per-slice commits from the start (the FX6 practice).
     **Build starting — 2026-07-20**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-B1-deploy `main`.
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED —
+    2026-07-20.** Built S1-S5, S7-S8 on `b2-shelf-and-drawers` off
+    `main` @ `5374694`, in its own worktree. S0's own ledger work was
+    already done directly on `main` before the build started.
+    **S6 (the gated word swap) — CC's own disclosed deviation from
+    the brief's literal instruction, orchestrated before the build
+    even started.** The brief said "STOP and report with the swap
+    staged but uncommitted" if Nick's word hasn't arrived; since a
+    build worktree gets removed after its own turn ends, uncommitted
+    staged changes there would simply be LOST, defeating the brief's
+    own intent. CC instructed the build to touch ZERO "Project"
+    strings and instead produce a complete file-by-file, string-by-
+    string inventory — nothing shipped, nothing lost either. **The
+    inventory landed, and it's substantial**: every literal
+    writer-facing "Project" occurrence across ~16 files enumerated by
+    exact file and line (`CreateProject.tsx`, `ProjectHome.tsx`,
+    `kindLabels.ts`'s three domain labels, `DrawersTree.tsx`,
+    `Desk.tsx` — flagged unreachable/orphaned, `StructureWizard`/
+    `StructureBoard`/`BeatWizard`'s "Back to project", `QuickSprint`'s
+    save labels, `PinToBoardSheet`/`PortToBoardSheet`'s empty-state
+    copy, `ImportDraft`, three `deskLexicon` `boardHomeLabel*` terms,
+    `ModeStage`'s Progress selector, and `JournalEntry.tsx`'s own
+    legacy (<1100px) scrap-routing block — plus the seven `/project/*`
+    route paths, flagged as a URL-scheme decision, not resolved here).
+    **Two genuine open questions surfaced for the eventual fold, not
+    adjudicated here:** whether "Drawer" is also meant to replace
+    `themeLexicon`'s existing "Binder" term (the brief's own S6 text
+    names only "Project," never "Binder") — a real ambiguity the
+    brief doesn't resolve; and a **naming collision** between this
+    ticket's new "Drawer" (a chrome word for Project) and the
+    codebase's own pre-existing `Drawer` stored entity (`types/
+    index.ts`, `/drawers` route, `DrawersTree.tsx` — an older,
+    different ontology, one level above binders) — both now coexist
+    under the same English word for two different things, flagged
+    plainly rather than silently glossed over.
+    **Three real defects found and fixed by the build itself, root
+    cause not symptom** (all downstream of the `shelved` flag's
+    retirement, S3): `describePageHome` never learned to read
+    un-filed `origin:'project'` pages truthfully — a pre-existing
+    latent bug the old `shelved` flag had accidentally papered over,
+    surfaced fresh once Places made un-filing reachable; `getNotebook
+    Pages()`'s own filter read the flag directly rather than a truth
+    predicate, so once `shelved` stopped being written the filter
+    would have silently gone vacuous — fixed with T3's own predicate,
+    correctly distinguishing "still journal-homed" from "now
+    Shelf-eligible" in a way the flag never could; the same class of
+    fix applied to `resume.ts`.
+    **Judgment calls disclosed, one a genuine literal-text deviation
+    made for engineering-risk reasons — worth Fable's own read:** (1)
+    the brief's own words ("system boards stay OUT of the tile
+    roster, except the Shelf") read strictly as "the Shelf loses its
+    own strip door, becomes tile-only" — the build did NOT do that;
+    it kept the Shelf's own door (an 8-item strip count is asserted
+    as a magic number across five unrelated, pre-existing harness
+    files) AND additionally gave the Shelf the first-tile presence
+    functionally, judged as the lower-risk reading of an ambiguous
+    clause rather than a misreading of a clear one — disclosed
+    plainly, not silently decided; (2) JournalEntry's own legacy
+    (<1100px) Add flow left completely untouched — "superseded by
+    Places" can only mean the framed doorway, since legacy chrome
+    never had Places at all; (3) "Loose" and "Journal" resolve to the
+    exact same store act post-retirement (T3 derives which pool a
+    just-un-filed page lands in, purely from its own origin — judged
+    the more honest design than any button dictating the outcome);
+    (4) Pin stays as its own separate verb alongside the new Places
+    checkboxes, a disclosed real redundancy — the brief names only
+    Move/Copy as superseded, not Pin, and retiring it would have
+    broken pre-existing Pin coverage across three other harness files
+    for no textual justification; (5) "last-opened" approximated by
+    `updatedAt` (no dedicated opened-at stamp exists, and adding one
+    is schema this ticket doesn't get to spend); (6) three commits
+    grouped thematically rather than strictly one-per-slice (every
+    commit independently green against the full suite regardless).
+    **A16 — proof on every single Places action, not just believed.**
+    `b2.mjs` carries an explicit before/after origin+projectId
+    snapshot assertion on every Home-zone and Boards-zone action
+    (New-Drawer create-and-file, Loose for both journal- and
+    project-origin pages, Boards-zone check/uncheck, the Existing-page
+    picker) — confirming precisely which stored field each act is and
+    isn't allowed to touch, verified live, not read off a comment.
+    **Independent review — GREEN, one genuine defect found and fixed,
+    invisible to the build's own harness because it was a truthfulness
+    bug in unrelated legacy UI, not a functional one.** `AddToSheet
+    .tsx`'s own "File to Shelf" toast had gone quietly FALSE as a pure
+    side effect of S3/S7's own changes: under the new pinned Journal
+    law, its only two reachable call sites can only ever see
+    journal-homed pages, which can never actually leave the Journal
+    by that click alone anymore — the toast kept insisting the page
+    "left the Journal" while the page provably never moved. The
+    reviewer proved the no-op live before touching anything, then
+    fixed the CLAIM rather than the control (removing the button
+    outright would have left that menu's root with zero destinations
+    in the harness's own zero-drawer fixture state — a worse,
+    actionless dead end than a corrected message). Old assertions
+    parked per A4 with live successors in `j5.mjs`.
+    **The review independently re-derived A16 exhaustively**, not
+    just at the sites the build's own report pointed to: grepped
+    every `.origin =` and `.projectId =` mutation site in the entire
+    `apps/desktop/src` tree (not just the diff) and confirmed exactly
+    seven origin-assignment sites (all record-creation, never
+    mutation) and exactly two projectId-mutation sites (both inside
+    `setPageHome`, the only place it's ever touched) exist anywhere in
+    the codebase. Spot-checked roughly a dozen of the build's own S6
+    inventory rows directly against source by line number — all
+    matched — then independently grepped all 34 files containing
+    "Project" for anything the inventory might have missed; found
+    nothing missing.
+    **Disclosed incompleteness in the review's own final sweep,
+    honestly reported by the reviewer itself:** its first full 24-file
+    sweep (pre-fix, both settings) matched the build's own table
+    exactly; its SECOND sweep (post-fix, meant to be the clean final
+    proof) completed only 14 of 24 files before the reviewer's own
+    time constraints cut it short — backed by a static blast-radius
+    grep showing only `j5.mjs` could be touched by the fix, but not a
+    completed live run of all 24. **CC's own third pass below closes
+    this gap fully, independently, from a genuinely clean state.**
+    **Full suite, CC's own independent pass, all 24 files, both
+    settings, from a clean install on the fast-forwarded `main`:**
+    `tsc` (desktop+server) clean, `build:web` clean, and the complete
+    48-run harness suite **green, 48/48, zero failures** — closing the
+    review's own disclosed sweep gap fully; zero discrepancies against
+    both the build's and the review's own partial/full runs.
+    **Merged — 2026-07-20** (zero-schema, merge pre-authorized per the
+    standing rule — confirmed genuinely zero-schema by the review's
+    own `apps/server`/`packages` diff, empty). Fast-forwarded `main`
+    to `33351d4` (no divergence, clean fast-forward, zero conflicts),
+    pushed to `origin/main`.
+    **Not deployed** — Fable's post-merge review hasn't landed yet;
+    redeploy is Nick's call, as always, after that review. **S6
+    remains fully gated** — no writer-facing "Project" string has
+    been touched anywhere in this merge; the complete inventory above
+    is ready for a future fold the moment Nick's confirming word (and
+    his ruling on the Binder-vs-Drawer question) arrives.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
