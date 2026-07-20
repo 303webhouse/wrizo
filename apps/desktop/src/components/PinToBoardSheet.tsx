@@ -1,5 +1,13 @@
 import { useState } from 'react';
 import { getDrawers, getProjects, getBinderPages, createBoardPage, pinPageToBoard } from '../store/persistence';
+// B2.1 S6 — "Binder", not "Drawer": this sheet's own root view groups
+// projects under `{drawer.name}` (the OLDER stored-Drawer entity) as its
+// eyebrow headers, right above the project rows this fold's strings
+// describe. Using "Drawer" for the generic word here would collide,
+// on-screen, with the group headers naming a DIFFERENT entity — so this
+// reuses the pre-existing themeLexicon 'binder' term instead (the same
+// word AddToSheet.tsx already uses for this identical drawer/project
+// drill-down). See the build report's Binder-vs-Drawer section.
 import { useLexicon } from '../store/themeLexicon';
 
 // AB4 S2 — Pin's destination-first sheet. Rides the SAME drawer/project
@@ -15,7 +23,7 @@ import { useLexicon } from '../store/themeLexicon';
 type Level = { kind: 'root' } | { kind: 'project'; projectId: string; projectTitle: string };
 
 export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose: () => void }) {
-  const { t: lex } = useLexicon();
+  const { t: lex, tMany: lexMany } = useLexicon();
   const [level, setLevel] = useState<Level>({ kind: 'root' });
 
   const choose = (boardId: string) => {
@@ -70,7 +78,7 @@ export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose
               // page into one first" line was untrue (it implied filing is
               // required to pin). The truthful line names the real gap: no
               // project exists yet to hold a board at all.
-              <div className="dz-empty">No projects yet — create a project first, then this page can join a {lex('board').toLowerCase()}.</div>
+              <div className="dz-empty">No {lexMany('binder').toLowerCase()} yet — create a {lex('binder').toLowerCase()} first, then this page can join a {lex('board').toLowerCase()}.</div>
             )}
           </div>
           <button type="button" className="btn-quiet" onClick={onClose}>Cancel</button>
@@ -92,7 +100,7 @@ export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose
           <span style={{ color: 'var(--text-low)' }}>/</span>
           <span style={{ color: 'var(--text-hi)' }}>{level.projectTitle}</span>
         </div>
-        {boards.length === 0 && <p style={{ color: 'var(--text-mid)', marginBottom: 12 }}>No {lex('board').toLowerCase()}s in this project yet.</p>}
+        {boards.length === 0 && <p style={{ color: 'var(--text-mid)', marginBottom: 12 }}>No {lex('board').toLowerCase()}s in this {lex('binder').toLowerCase()} yet.</p>}
         <div style={{ maxHeight: 220, overflow: 'auto' }}>
           {boards.map(b => (
             <button key={b.id} type="button" className="dz-row board-dest-row" onClick={() => choose(b.id)}>

@@ -6,6 +6,7 @@ import { firstLine } from '../store/entryText';
 import { domainLabel } from '../store/kindLabels';
 import { PageFileMenu } from '../components/PageFileMenu';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry } from '../types';
 
 // S1 — 'script' rides the same generic type-picker as the support types (any
@@ -31,6 +32,7 @@ export function ProjectHome() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
+  const { t: deskT } = useDeskLexicon();
   const [addingSupport, setAddingSupport] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -104,7 +106,7 @@ export function ProjectHome() {
             if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
             else if (e.key === 'Escape') { setEditingTitle(false); }
           }}
-          aria-label="Project title"
+          aria-label={deskT('drawerHomeTitleLabel')}
           style={{ marginBottom: '1.5rem', background: 'transparent', border: 'none', borderBottom: '1px solid var(--brass)', color: 'var(--text-hi)', outline: 'none', width: '100%', maxWidth: '100%', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit' }}
         />
       ) : (

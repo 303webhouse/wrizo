@@ -145,7 +145,17 @@ export function DrawersTree() {
                   {createFor === d.id ? (
                     <>
                       <button type="button" className="dz-more" onClick={() => { setCreateFor(null); const e = createJournalPage(); navigate(`/journal/${e.id}`); }}>New {lex('page')}</button>
-                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); navigate(`/project/new?drawer=${d.id}`); }}>New Project</button>
+                      {/* B2.1 S6 — deliberately "New Binder", NOT "New Drawer": this
+                          exact row sits directly under the tree's own top-level
+                          "+ New {lex('drawer')}" action (creates a NEW stored Drawer
+                          container, a different, older entity — see the build
+                          report's Q2 disambiguation). Both buttons saying "Drawer"
+                          on the same screen would be genuinely ambiguous (one makes
+                          a container, this one files a project inside it), so this
+                          row keeps the pre-existing 'binder' lexicon term instead —
+                          the SAME word AddToSheet.tsx already uses for this identical
+                          drill-down (Root -> Drawer -> Binder). */}
+                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); navigate(`/project/new?drawer=${d.id}`); }}>New {lex('binder')}</button>
                       <button type="button" className="dz-more dz-createnew-cancel" onClick={() => setCreateFor(null)}>cancel</button>
                     </>
                   ) : (

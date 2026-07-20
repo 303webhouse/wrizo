@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createBinder, createBinderPage, createScriptPage } from '../store/persistence';
 import { KIND_META, PICKER_GROUPS } from '../store/kindLabels';
+import { useDeskLexicon } from '../store/deskLexicon';
 import type { BinderKind } from '../types';
 
 // F4 — "What are you writing?" Domain enters at CREATE time, on the binder, never
@@ -14,6 +15,7 @@ import type { BinderKind } from '../types';
 
 export function CreateProject() {
   const navigate = useNavigate();
+  const { t } = useDeskLexicon();
   const [params] = useSearchParams();
   const drawerId = params.get('drawer') || undefined;
   const [title, setTitle] = useState('');
@@ -43,13 +45,13 @@ export function CreateProject() {
   const note = !selected
     ? 'Pick a form to begin — no title required.'
     : selected === 'other'
-      ? 'Opens the project home — shape it as you go.'
+      ? t('createDrawerOpensNote')
       : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
 
   return (
     <div className="create-picker">
       <button type="button" className="cp-back" onClick={() => navigate('/')}>&larr; Home</button>
-      <div className="cp-eyebrow">NEW PROJECT</div>
+      <div className="cp-eyebrow">{t('createDrawerEyebrow')}</div>
       <h1 className="cp-title">What are you writing?</h1>
       <p className="cp-sub">Books, essays, scripts — same desk underneath. The form sets your page names, and later its format conventions and support pages.</p>
 
@@ -94,7 +96,7 @@ export function CreateProject() {
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && selected) { e.preventDefault(); start(); } }}
           placeholder="Untitled — you can name it after you’ve written"
-          aria-label="Project title (optional)"
+          aria-label={t('createDrawerTitleLabel')}
         />
         <button type="button" className="cp-go" disabled={!selected} onClick={start}>Start writing</button>
       </div>

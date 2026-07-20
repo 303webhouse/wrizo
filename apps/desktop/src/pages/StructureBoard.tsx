@@ -3,11 +3,13 @@ import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { getProject, getStoryPlanByProjectId, setCurrentBeat, setBeatStatus } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { useMilestoneCelebration } from '../components/WritingIncentives';
+import { useDeskLexicon } from '../store/deskLexicon';
 import type { MilestoneBeat } from '../store/milestones';
 
 export function StructureBoard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useDeskLexicon();
   const project = id ? getProject(id) : null;
   const [storyPlan, setStoryPlan] = useState(() => id ? getStoryPlanByProjectId(id) : null);
   const framework = storyPlan ? getFramework(storyPlan.frameworkId) : null;
@@ -122,7 +124,7 @@ export function StructureBoard() {
   return (
     <div className="page" style={{ maxWidth: 1000 }}>
       <Link to={`/project/${id}`} className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
-        &larr; Back to project
+        &larr; {t('backToDrawer')}
       </Link>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: '0.5rem', flexWrap: 'wrap' }}>

@@ -66,6 +66,15 @@ export function Desk() {
               DeskRail's copy. doCatch stays wired (house law: parked, not
               deleted) though nothing on this surface calls it now. */}
           <span className="wz-dot">·</span>
+          {/* B2.1 S6 — left as "Begin project" verbatim, deliberately not
+              swapped: this whole component is PARKED (HB1, see this file's
+              header comment above) and genuinely unreachable — App.tsx no
+              longer imports Desk.tsx at all (confirmed via grep, no route,
+              no other import site). Re-verified true as of this fold.
+              Swapping cosmetic copy on dead code adds no writer-facing
+              value and only risks reviving a false signal that this file
+              is still live; the word already retired from every reachable
+              surface via CreateProject.tsx's own eyebrow. */}
           <span className="wz-link" onClick={() => navigate('/project/new')}>Begin project</span>
           <span className="wz-dot">·</span>
           {/* AB3 S4 — the Desk's start-writing / home-base door: a blank page

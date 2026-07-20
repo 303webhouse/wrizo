@@ -21,6 +21,19 @@ import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset } from '../store/caretOffset';
 import { useWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useLexicon } from '../store/themeLexicon';
+// B2.1 S6 — a deliberate SECOND lexicon import beside the file's own
+// established themeLexicon usage (lex('journal')/lex('page') below): the
+// legacy (<1100px) scrap-routing block's "Project" strings retire to
+// "Drawer" (no stored-Drawer entity is rendered anywhere in this block —
+// getProjects() here is a flat, ungrouped list, unlike PinToBoardSheet/
+// PortToBoardSheet's drawer-grouped pickers), matching the SAME word this
+// exact block already used one line above it (the pre-existing "even if
+// you never file it to a Drawer or the Shelf" autosave note, untouched —
+// not in this fold's gated list). deskLexicon, not themeLexicon, because
+// "Drawer" the chrome word is deskLexicon's own vocabulary (themeLexicon's
+// 'drawer' term names a different, older entity and has no Flux override
+// for this newer sense).
+import { useDeskLexicon } from '../store/deskLexicon';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
@@ -108,6 +121,7 @@ function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t: lex } = useLexicon();
+  const { t: deskT } = useDeskLexicon();
   const [picking, setPicking] = useState(false);
   const [portOpen, setPortOpen] = useState(false); // J4 — "Port to a Board…" sheet
   const [addOpen, setAddOpen] = useState(false); // J5 — "Add to…" sheet (single-page flow)
@@ -1000,7 +1014,7 @@ function JournalEntryView() {
         {!picking ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button type="button" className="btn-brass route-open" onClick={() => setPicking(true)}>
-              Send to a project
+              {deskT('journalRouteSendToDrawer')}
             </button>
           </div>
         ) : (
@@ -1023,10 +1037,10 @@ function JournalEntryView() {
                 );
               })}
               {projects.length === 0 && (
-                <span style={{ color: 'var(--text-low)', fontSize: 13 }}>No projects yet.</span>
+                <span style={{ color: 'var(--text-low)', fontSize: 13 }}>{deskT('journalRouteEmptyDrawers')}</span>
               )}
               <button type="button" className="btn-quiet route-new" onClick={promoteToNew} style={{ marginTop: 8 }}>
-                Promote to a new project
+                {deskT('journalRoutePromoteDrawer')}
               </button>
               <button type="button" className="btn-quiet route-cancel" onClick={() => setPicking(false)} style={{ marginTop: 4, color: 'var(--text-low)' }}>
                 Cancel

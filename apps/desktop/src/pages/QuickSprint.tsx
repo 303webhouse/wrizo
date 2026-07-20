@@ -553,8 +553,15 @@ function QuickSprintView() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button type="button" className="btn-brass" onClick={handleKeepWriting}>Keep writing</button>
+            {/* B2.1 S6 — "Binder", not "Drawer": the breadcrumb just above
+                (line ~414, `{drawer && ... drawer.name ...}`) already shows
+                the OLDER stored-Drawer entity's own name on this exact
+                screen, so this reuses the file's pre-existing lex('binder')
+                call (line ~433, the sprint-toggle aria-label) rather than
+                introduce a second, colliding "Drawer" — see the build
+                report's Binder-vs-Drawer section. */}
             <button type="button" className="btn-ghost" onClick={handleSaveToProject}>
-              {id ? 'Save to project' : 'Save as project'}
+              {id ? `Save to ${lex('binder')}` : `Save as ${lex('binder')}`}
             </button>
             <span style={{ flex: 1 }} />
             <button type="button" className="btn-brick" onClick={handleDiscard} style={{ marginLeft: 'var(--space-4)' }}>

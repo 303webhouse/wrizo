@@ -557,7 +557,15 @@ function AssistIcon() {
 // states, the option simply isn't in the list otherwise).
 export function SettingsPanel({ settings, hasMilestones }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean }; hasMilestones?: boolean }) {
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
-  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Project']);
+  // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
+  // ProgressMetric value itself ('project', the setting persisted via
+  // setWritingSettings) is a storage identifier and stays untouched, same
+  // as every other internal id this fold leaves alone. Hardcoded inline,
+  // not lexicon-routed, matching this exact Seg option family's own
+  // established precedent (deskLexicon.ts's FX3 comment: 'On'/'Off'/
+  // 'Lines'/'Words'/'Time' are deliberately inline here, not per-option
+  // lexicon keys).
+  if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
   return (
     <div className="mode-settings" role="menu">
       <h4>settings</h4>

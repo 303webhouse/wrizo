@@ -47,7 +47,12 @@ export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; 
     <div className="board-sheet" role="dialog" aria-label={`Port to a ${lex('board')} — choose a destination`}>
       <div className="board-sheet-inner">
         <div className="board-sheet-title">Choose a destination</div>
-        <button type="button" className="dz-more" onClick={() => choose('new')}>＋ New project</button>
+        {/* B2.1 S6 — "Binder", not "Drawer": this same tree groups projects
+            under `{drawer.name}` (the OLDER stored-Drawer entity) right
+            below, so this reuses the pre-existing 'binder' term instead of
+            colliding with it — see the build report's Binder-vs-Drawer
+            section. */}
+        <button type="button" className="dz-more" onClick={() => choose('new')}>＋ New {lex('binder').toLowerCase()}</button>
         <div className="dz-tree" style={{ maxWidth: '100%', margin: '10px 0 0' }}>
           {drawerGroups.map(({ drawer, projects: ps }) => (
             <div key={drawer.id} className="dz-group">
@@ -73,7 +78,7 @@ export function PortToBoardSheet({ sourceIds, onClose }: { sourceIds: string[]; 
             </div>
           )}
           {drawerGroups.length === 0 && unsorted.length === 0 && (
-            <div className="dz-empty">No projects yet — "＋ New project" births one on the spot.</div>
+            <div className="dz-empty">No {lexMany('binder').toLowerCase()} yet — "＋ New {lex('binder').toLowerCase()}" births one on the spot.</div>
           )}
         </div>
         <button type="button" className="btn-quiet" onClick={onClose} style={{ marginTop: 16 }}>Cancel</button>

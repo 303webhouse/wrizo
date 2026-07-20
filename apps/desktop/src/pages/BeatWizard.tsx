@@ -3,6 +3,15 @@ import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { getProject, getStoryPlanByProjectId, updateBeatNotes, setCurrentBeat, flushNow } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { useLexicon } from '../store/themeLexicon';
+// B2.1 S6 — a deliberate SECOND lexicon import, alongside the file's own
+// established themeLexicon usage (lex('board')/lex('page') below): the
+// "Back to project" -> "Back to Drawer" swap is NOT a themeLexicon word.
+// themeLexicon already owns a DIFFERENT 'drawer' term (the older stored
+// container entity, Rack under Flux) — routing this string through it
+// would both misname the entity AND mis-theme under Flux (Flux has no
+// override for the newer chrome word, so it must stay the deskLexicon
+// literal). See the build report's Binder-vs-Drawer section.
+import { useDeskLexicon } from '../store/deskLexicon';
 
 const AUTOSAVE_MS = 2000;
 const SAVED_STAMP_MS = 2000;
@@ -28,6 +37,7 @@ export function BeatWizard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t: lex } = useLexicon();
+  const { t: deskT } = useDeskLexicon();
   const project = id ? getProject(id) : null;
   const [storyPlan, setStoryPlan] = useState(() => id ? getStoryPlanByProjectId(id) : null);
   const framework = storyPlan ? getFramework(storyPlan.frameworkId) : null;
@@ -166,7 +176,7 @@ export function BeatWizard() {
   return (
     <div className="page">
       <Link to={`/project/${id}`} className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
-        &larr; Back to project
+        &larr; {deskT('backToDrawer')}
       </Link>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>

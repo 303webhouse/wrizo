@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { getProject, createStoryPlan } from '../store/persistence';
 import { recommendFrameworks, getAllFrameworks, getFramework } from '../store/frameworks';
+import { useDeskLexicon } from '../store/deskLexicon';
 import type { WizardAnswers, Framework } from '../types';
 
 interface Question {
@@ -53,6 +54,7 @@ type WizardStep = 'questions' | 'recommendation' | 'selection';
 export function StructureWizard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useDeskLexicon();
   const project = id ? getProject(id) : null;
 
   const [step, setStep] = useState<WizardStep>('questions');
@@ -107,7 +109,7 @@ export function StructureWizard() {
   return (
     <div className="page">
       <Link to={`/project/${id}`} className="btn-quiet" style={{ display: 'inline-block', marginBottom: '1rem', paddingLeft: 0 }}>
-        &larr; Back to project
+        &larr; {t('backToDrawer')}
       </Link>
 
       <div className="eyebrow" style={{ marginBottom: 8 }}>Structure wizard</div>

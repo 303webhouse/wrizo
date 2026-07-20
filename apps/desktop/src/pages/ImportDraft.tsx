@@ -50,7 +50,7 @@ export function ImportDraft() {
           {projects.map(p => (
             <button key={p.id} type="button" className="import-binder" onClick={() => setBinderId(p.id)}>{p.title}</button>
           ))}
-          {projects.length === 0 && <span className="import-empty">No {lexMany('binder').toLowerCase()} yet — begin a project first.</span>}
+          {projects.length === 0 && <span className="import-empty">No {lexMany('binder').toLowerCase()} yet — begin a {lex('binder').toLowerCase()} first.</span>}
         </div>
       </div>
     );

@@ -189,7 +189,27 @@ export type DeskTermId =
   // 'drawersLooseGroup' labels the loose-docs cluster; the Shelf's own
   // first tile and each project's own cluster header both read their OWN
   // title (a proper noun — not lexicon vocabulary).
-  | 'drawersKindBoard' | 'drawersKindDoc' | 'drawersLooseGroup';
+  | 'drawersKindBoard' | 'drawersKindDoc' | 'drawersLooseGroup'
+  // B2.1 S6 — the word swap (Nick's word, 2026-07-20: "retire the word
+  // project as having any unique architectural purpose"). These terms are
+  // the NEW strings this fold routes through the lexicon (every literal
+  // this fold touches that wasn't already lexicon-routed); the pre-
+  // existing 'cascadePlanNoProject'/'boardHomeLabelJournal'/
+  // 'boardHomeLabelTrash'/'boardHomeLabelShelf' entries above keep their
+  // KEY names (internal identifiers, not writer-facing — same "don't
+  // rename code internals" spirit the brief applies to storage) but have
+  // their STRING VALUES updated below. Files that already had their OWN
+  // established themeLexicon convention for this entity (QuickSprint.tsx,
+  // ImportDraft.tsx, DrawersTree.tsx, PinToBoardSheet.tsx,
+  // PortToBoardSheet.tsx — all reuse the pre-existing 'binder' term
+  // instead, see the build report's Binder-vs-Drawer judgment) do NOT
+  // gain new terms here — only files with no established local
+  // convention (or whose established convention is deskLexicon itself,
+  // per AB1 S5's own scoping) do.
+  | 'createDrawerEyebrow' | 'createDrawerTitleLabel' | 'createDrawerOpensNote'
+  | 'drawerHomeTitleLabel' | 'backToDrawer'
+  | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
+  | 'journalRouteSendToDrawer' | 'journalRouteEmptyDrawers' | 'journalRoutePromoteDrawer';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -252,7 +272,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanPlotStory: 'Plot a Story',
   cascadePlanOpen: 'Open…',
   cascadePlanEmpty: 'No boards yet.',
-  cascadePlanNoProject: 'File this page to a project first to plan around it.',
+  cascadePlanNoProject: 'File this page to a drawer first to plan around it.',
   cascadeBoardMove: 'Move to… / Copy to…',
   cascadeBoardDelete: 'Delete',
   cascadeBoardDeleteConfirm: 'Delete',
@@ -310,9 +330,9 @@ const CANONICAL: Record<DeskTermId, string> = {
   drawerPlaceTrash: 'Trash',
   cascadeTrashOpen: 'Open the Trash',
   boardRestore: 'Restore',
-  boardHomeLabelJournal: 'The Journal Board — has no project home',
-  boardHomeLabelTrash: 'The Trash Board — has no project home',
-  boardHomeLabelShelf: 'The Shelf Board — has no project home',
+  boardHomeLabelJournal: 'The Journal Board — has no drawer home',
+  boardHomeLabelTrash: 'The Trash Board — has no drawer home',
+  boardHomeLabelShelf: 'The Shelf Board — has no drawer home',
   shelfBoardEmpty: 'Nothing waiting.',
   cascadeShelfOpen: 'Open the Shelf',
   cascadePageNewJournalEntry: 'New Journal Entry',
@@ -330,6 +350,17 @@ const CANONICAL: Record<DeskTermId, string> = {
   drawersKindBoard: 'Board',
   drawersKindDoc: 'Document',
   drawersLooseGroup: 'Loose',
+  createDrawerEyebrow: 'NEW DRAWER',
+  createDrawerTitleLabel: 'Drawer title (optional)',
+  createDrawerOpensNote: 'Opens the Drawer home — shape it as you go.',
+  drawerHomeTitleLabel: 'Drawer title',
+  backToDrawer: 'Back to Drawer',
+  domainLabelCreative: 'Creative Drawer',
+  domainLabelAcademic: 'Academic Drawer',
+  domainLabelProfessional: 'Professional Drawer',
+  journalRouteSendToDrawer: 'Send to a Drawer',
+  journalRouteEmptyDrawers: 'No Drawers yet.',
+  journalRoutePromoteDrawer: 'Promote to a new Drawer',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

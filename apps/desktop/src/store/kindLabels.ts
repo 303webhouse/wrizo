@@ -1,4 +1,5 @@
 import type { BinderKind, Project } from '../types';
+import { deskTerm } from './deskLexicon';
 
 // F4 — the ONE shared kind vocabulary. Storage value → display label + uppercased
 // tag + its domain + the picker's one-line description. Consumed by BOTH the
@@ -50,9 +51,12 @@ export const PICKER_GROUPS: { domain: Domain; name: string; kinds: BinderKind[] 
   { domain: 'professional', name: 'PROFESSIONAL', kinds: ['article', 'report', 'proposal'] },
 ];
 
-// The domain label for ProjectHome's eyebrow.
+// The domain label for ProjectHome's eyebrow. A plain function, not a
+// component — deskTerm() is the established non-hook lexicon escape hatch
+// (CascadePanels.tsx's own buildSurvey precedent, deskLexicon.ts's header
+// comment).
 export function domainLabel(domain: Domain): string {
-  return domain === 'creative' ? 'Creative project'
-    : domain === 'academic' ? 'Academic project'
-    : 'Professional project';
+  return domain === 'creative' ? deskTerm('domainLabelCreative')
+    : domain === 'academic' ? deskTerm('domainLabelAcademic')
+    : deskTerm('domainLabelProfessional');
 }
