@@ -691,11 +691,20 @@ export function BoardEditor({ id }: { id: string }) {
   // since the component returns null right after this hook zone in that
   // case.
   const pinnedBoardTitles = initialEntry ? getBoardsPinning(initialEntry.id).map(b => b.title) : [];
-  const { homeLabel, memberships } = describePageHome(
+  const { homeLabel: describedHomeLabel, memberships } = describePageHome(
     initialEntry ?? { id, text: '', projectId: null, createdAt: '', updatedAt: '' },
     project,
     pinnedBoardTitles,
   );
+  // Independent review fix (2026-07-19) — describePageHome (pageHome.ts)
+  // has never heard of origin:'system'; both system Boards fell through to
+  // its generic else-branch and reported "In the Journal" as their OWN
+  // home — flatly false for the Trash Board (S1: "no project home"), and
+  // self-referential for the Journal Board. Overridden here, scoped to
+  // system Boards only (pageHome.ts and every ordinary page's home label
+  // stay byte-identical) — the SAME "told truthfully" law this function's
+  // own header comment names, now honored for system Boards too.
+  const homeLabel = systemKind ? t(systemKind === 'trash' ? 'boardHomeLabelTrash' : 'boardHomeLabelJournal') : describedHomeLabel;
   // B1 S3 — a system Board's own home/membership is never alterable via the
   // Page face's generic sending grammar: Move/Copy would file it into a
   // project, breaking S1's own "no project home" invariant; Pin is

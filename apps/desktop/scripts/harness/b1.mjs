@@ -374,6 +374,17 @@ await withHarness(async (app) => {
   ok('S3: Move/Copy is ALSO inert on the system Board\'s own Page face (a judgment call, disclosed in the build report: filing the Board into a project would break S1\'s own "no project home" invariant)',
     addSheetOpenedOnSystemBoard === false, String(addSheetOpenedOnSystemBoard));
 
+  // Independent review fix (2026-07-19) — "told truthfully": the Journal
+  // Board's own Page face must never claim a home describePageHome
+  // (pageHome.ts) never actually derived for it. A genuine defect found
+  // live: before this fix, EVERY system Board fell through describePageHome's
+  // generic else-branch and reported "In the Journal" — flatly false for
+  // the Trash Board (checked immediately below) and self-referential for
+  // the Journal Board itself (checked here).
+  const journalBoardHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
+  ok('S1/S3: the Journal Board\'s own Page face names ITS home truthfully ("no project home"), never "In the Journal" (self-referential) or a project name it doesn\'t have',
+    journalBoardHomeLabel === 'The Journal Board — has no project home', String(journalBoardHomeLabel));
+
   // Pinning the system Board anywhere is impossible even bypassing the UI —
   // the belt-and-suspenders pattern this codebase already established for
   // self-pin (FX6 S3), reused for the SAME class of guard: pinPageToBoard
@@ -449,6 +460,17 @@ await withHarness(async (app) => {
   const purgeControlAnywhere = await app.evalJs("document.body.innerText.toLowerCase().includes('purge') || document.body.innerText.toLowerCase().includes('delete forever') || document.body.innerText.toLowerCase().includes('permanently delete')");
   ok('S4: no purge / "delete forever" control exists anywhere on the Trash Board — permanent purge is explicitly out of v1',
     purgeControlAnywhere === false, String(purgeControlAnywhere));
+
+  // Independent review fix (2026-07-19) — "told truthfully," the Trash
+  // Board's own half: before this fix, opening the Trash Board's own Page
+  // category showed "In the Journal" as its home — genuinely false (it has
+  // no project home, and it certainly isn't the Journal). Verified live,
+  // now asserted here.
+  await openPageCategory(app);
+  await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Trash board)' });
+  const trashBoardHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
+  ok('S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully ("no project home"), never "In the Journal" (flatly false)',
+    trashBoardHomeLabel === 'The Trash Board — has no project home', String(trashBoardHomeLabel));
 
   // ==========================================================================
   // S5 (a) — the Catch flow stays byte-identical: still writes a

@@ -145,7 +145,20 @@ export type DeskTermId =
   // prominent, no count" law — one plain button, nothing else). 'boardRestore'
   // is the Trash Board's own selected-card action (S4, the FX5 action-row
   // precedent) — a plain button; clears deletedAt, nothing more.
-  | 'drawerPlaceTrash' | 'cascadeTrashOpen' | 'boardRestore';
+  // Independent review fix (2026-07-19) — a genuine defect: describePageHome
+  // (pageHome.ts, "'Where it lives,' told truthfully") had never heard of
+  // origin:'system', so BOTH system Boards fell through to its generic
+  // else-branch and reported "In the Journal" as their own home — flatly
+  // false for the Trash Board (S1: "System Boards ... have no project
+  // home"), and self-referential nonsense for the Journal Board. Verified
+  // live before this fix: standing on the Trash Board and opening its own
+  // Page category panel showed "In the Journal" as the home label.
+  // 'boardHomeLabelJournal'/'boardHomeLabelTrash' are the truthful
+  // replacements, named per system Board kind (BoardEditor.tsx's own
+  // post-describePageHome override, scoped to system Boards only —
+  // pageHome.ts itself, and every ordinary page's home label, is untouched).
+  | 'drawerPlaceTrash' | 'cascadeTrashOpen' | 'boardRestore'
+  | 'boardHomeLabelJournal' | 'boardHomeLabelTrash';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -266,6 +279,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   drawerPlaceTrash: 'Trash',
   cascadeTrashOpen: 'Open the Trash',
   boardRestore: 'Restore',
+  boardHomeLabelJournal: 'The Journal Board — has no project home',
+  boardHomeLabelTrash: 'The Trash Board — has no project home',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
