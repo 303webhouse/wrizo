@@ -852,6 +852,18 @@ export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEn
   return getJournalEntry(boardEntryId);
 }
 
+// FX6 S4 — test/inspection seam (this file's own established pattern —
+// see setNotebookPosition's own `window.wrizoNotebook` neighbor above):
+// PinToBoardSheet.tsx's own leaf exclusion already makes a self-pin
+// unreachable through the UI, so the ONLY way to prove pinPageToBoard's
+// OWN guard (the "belt" half of "belt and suspenders") actually holds —
+// rather than merely reading the source and trusting it — is a direct
+// call, bypassing the sheet entirely. Exposed unconditionally (module
+// load, not component-mount-scoped), the SAME shape wrizoDeskLexicon uses.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoPinPageToBoard?: unknown }).wrizoPinPageToBoard = pinPageToBoard;
+}
+
 // Every board (regardless of its own home) currently pinning `entryId` —
 // feeds the Page panel's truthful "Also pinned to <board>." membership
 // line(s). A page can be pinned to more than one board; every truth is told
