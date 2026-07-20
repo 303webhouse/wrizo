@@ -68,9 +68,14 @@ const SECTION_B: CategorySpec[] = [
   { id: 'page', labelTerm: 'drawerPage', icon: <PageIcon /> },
   { id: 'plan', labelTerm: 'stripPlan', icon: <PlanIcon /> },
 ];
+// B1 S5 — the Trash joins section C at the FOOT (after Drawers, after
+// Shelf) — "reachable, never prominent, no count anywhere near it" (the
+// brief's own wording). Same strip-item chrome as every other category;
+// nothing marks it as different in kind (no badge, no color, no size).
 const SECTION_C: CategorySpec[] = [
   { id: 'drawers', labelTerm: 'drawerPlaceDrawers', icon: <DrawersIcon /> },
   { id: 'shelf', labelTerm: 'drawerPlaceShelf', icon: <ShelfIcon /> },
+  { id: 'trash', labelTerm: 'drawerPlaceTrash', icon: <TrashIcon /> },
 ];
 const SECTION_D: CategorySpec[] = [
   { id: 'settings', labelTerm: 'stripSettings', icon: <SettingsIcon /> },
@@ -84,6 +89,7 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
     case 'plan': return 'stripPlan';
     case 'drawers': return 'drawerPlaceDrawers';
     case 'shelf': return 'drawerPlaceShelf';
+    case 'trash': return 'drawerPlaceTrash';
     case 'settings': return 'cascadeSettingsTitle';
     case 'theme': return 'cascadeThemeTitle';
   }
@@ -296,6 +302,19 @@ function ShelfIcon() {
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 4v16M20 4v16M4 12h16" />
       <path d="M7 4v8M11 4v8M15 4v8M17 4v8" />
+    </svg>
+  );
+}
+// B1 S5 — a plain outline trash can, matching the strip's own quiet-stroke
+// icon style exactly (viewBox 0 0 24 24, stroke=currentColor) — nothing
+// about it reads as an alert or a warning; it's a place, like the others.
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 7h14" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      <path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13" />
+      <path d="M10 11v6M14 11v6" />
     </svg>
   );
 }

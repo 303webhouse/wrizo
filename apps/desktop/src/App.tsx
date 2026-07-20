@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { Shelf } from './pages/Shelf';
@@ -10,7 +10,6 @@ import { StructureWizard } from './pages/StructureWizard';
 import { BeatWizard } from './pages/BeatWizard';
 import { StructureBoard } from './pages/StructureBoard';
 import { QuickSprint } from './pages/QuickSprint';
-import { Journal } from './pages/Journal';
 import { Spread } from './pages/Spread';
 import { JournalEntry } from './pages/JournalEntry';
 import { PageEditor } from './pages/PageEditor';
@@ -19,7 +18,7 @@ import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
-import { subscribe, resetLocalData } from './store/persistence';
+import { subscribe, resetLocalData, getOrCreateSystemBoard } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { startSync, stopSync, syncOnce, clearLastSyncAt } from './store/sync';
@@ -27,6 +26,24 @@ import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
+
+// B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
+// experience) RETIRES here, the same day its replacement ships
+// (retirement-by-replacement, never a hole): '/journal' now exists SOLELY
+// to bridge every existing link/bookmark/typed-URL that still points at it
+// to the Journal Board. Every caller in this codebase already navigates to
+// the literal string '/journal' (DeskRail's own nav item, the cascade's
+// "Open the Journal" button, Arrival's no-resume fallback, every writing
+// surface's own "no project" backTo) — none of THOSE call sites change;
+// only what this one route renders does, so legacy (<1100px) chrome stays
+// byte-identical (DeskRail is untouched) and every door still works.
+// find-or-create is idempotent (persistence.ts's own S1 guarantee), so
+// landing here twice, from two different old links, always resolves to the
+// SAME Board.
+function JournalBoardGate() {
+  const board = getOrCreateSystemBoard('journal');
+  return <Navigate to={`/page/${board.id}`} replace />;
+}
 
 // CD1 S4 — `.app-main`'s reserved gutter (index.css, historically
 // `padding-left:64px` for DeskRail's fixed-position column) collapses
@@ -210,7 +227,7 @@ export function App() {
         <Route path="/project/:id/beat" element={<BeatWizard />} />
         <Route path="/project/:id/board" element={<StructureBoard />} />
         <Route path="/sprint" element={<QuickSprint />} />
-        <Route path="/journal" element={<Journal />} />
+        <Route path="/journal" element={<JournalBoardGate />} />
         <Route path="/journal/spread" element={<Spread />} />
         <Route path="/journal/:id" element={<JournalEntry />} />
         <Route path="/page/:id" element={<PageEditor />} />

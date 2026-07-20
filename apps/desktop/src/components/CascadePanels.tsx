@@ -5,7 +5,7 @@ import { firstLine } from '../store/entryText';
 import {
   getJournalPages, getShelfPages, getDrawers, getProjects, getBinderPages,
   createJournalPage, createLooseHomePage, createBoardPage, createQuickSprintProject, softDeleteEntry,
-  getJournalEntry,
+  getJournalEntry, getOrCreateSystemBoard,
 } from '../store/persistence';
 import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
@@ -26,7 +26,21 @@ import type { SurveyItem, SurveyProps } from './CascadeSurvey';
 // (App.tsx's own persistence `subscribe(forceRender)` already re-renders
 // this whole subtree on every write; nothing here needs its own refresh
 // plumbing on top of that established house pattern).
-export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'shelf' | 'settings' | 'theme';
+// B1 S5 — 'trash' joins the roster: section C's own quiet foot entry.
+export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'shelf' | 'trash' | 'settings' | 'theme';
+
+// B1 S5 — find-or-create + travel, straight to the Board (no intermediate
+// hop through the '/journal' bridge route — App.tsx's own header comment
+// on JournalBoardGate explains why that bridge exists for every OTHER old
+// link; this is new code with nothing old to bridge from).
+function openJournalBoard(navigate: NavigateFunction): void {
+  const board = getOrCreateSystemBoard('journal');
+  navigate(`/page/${board.id}`);
+}
+function openTrashBoard(navigate: NavigateFunction): void {
+  const board = getOrCreateSystemBoard('trash');
+  navigate(`/page/${board.id}`);
+}
 
 // A survey "kind" is a small description of WHAT to browse, not a snapshot
 // of the items themselves — Cascade.tsx stores one of these as its own
@@ -87,7 +101,9 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
   const newPage = () => { const e = createJournalPage(); navigate(`/journal/${e.id}`); };
   return (
     <div className="wz-cascade-panel-body">
-      <button type="button" className="wz-cascade-action" onClick={() => navigate('/journal')}>{t('cascadeJournalOpen')}</button>
+      {/* B1 S5 — travels to the Journal BOARD now (the section's own
+          "Journal destination"), not the retired list surface. */}
+      <button type="button" className="wz-cascade-action" onClick={() => openJournalBoard(navigate)}>{t('cascadeJournalOpen')}</button>
       <button type="button" className="wz-cascade-action" onClick={newPage}>{t('cascadeJournalNewPage')}</button>
       <div>
         <div className="wz-cascade-panel-title" style={{ padding: '2px 0 6px' }}>{t('cascadeJournalRecent')}</div>
@@ -281,6 +297,23 @@ function ShelfPanel({ navigate, openSurvey }: CascadeContext) {
 }
 
 // ---------------------------------------------------------------------------
+// Trash (B1 S5) — joins the cascade "quietly at the foot of section C —
+// reachable, never prominent, no count anywhere near it." One plain button,
+// nothing else: no row list, no preview, no number of anything — the Trash
+// is a place, not a nag (A18's anti-solicitation core, held here the same
+// way it's held on the Board itself: Delete stays quiet everywhere, and so
+// does the door to where deleted pages wait).
+// ---------------------------------------------------------------------------
+function TrashPanel({ navigate }: { navigate: NavigateFunction }) {
+  const { t } = useDeskLexicon();
+  return (
+    <div className="wz-cascade-panel-body">
+      <button type="button" className="wz-cascade-action" onClick={() => openTrashBoard(navigate)}>{t('cascadeTrashOpen')}</button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Settings (site-wide) — "what exists today ... invent nothing" (S3's own
 // words): the SAME Sign out/Sync/Fullscreen controls GlobalHeader's corner
 // cluster already carries, reused via components/ChromeControls.tsx, not
@@ -343,6 +376,7 @@ export function renderCategoryPanel(category: CategoryId, ctx: CascadeContext): 
     case 'plan': return <PlanPanel {...ctx} />;
     case 'drawers': return <DrawersPanel {...ctx} />;
     case 'shelf': return <ShelfPanel {...ctx} />;
+    case 'trash': return <TrashPanel navigate={ctx.navigate} />;
     case 'settings': return <CascadeSettingsPanel navigate={ctx.navigate} />;
     case 'theme': return <CascadeThemePanel />;
     default: return null;
