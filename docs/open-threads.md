@@ -2742,10 +2742,50 @@ outlive a session lives here, not in chat.
     clean fast-forward, zero conflicts), pushed to `origin/main`.
     **Not deployed** — Fable's post-merge review hasn't landed yet;
     redeploy is Nick's call, as always, after that review.
+    **Fable's post-merge review landed and is committed — GREEN,
+    required 0, one advisory — 2026-07-20**
+    (`docs/wrizo-alpha/fx6-review-fable.md`). Record depth on the
+    slice messages, the independent review's own zero-defect result
+    (the first fully clean FX-arc review since TU1), and the full
+    suite green both PARKED settings. **The interrupted-then-recovered
+    build ratified as standing process** — the wedged-session
+    discipline applied correctly, on the record so it stays the
+    standard. Seven rulings: the undo mechanism (path b) RATIFIED with
+    its documented reasoning; the scope law held at three independent
+    levels (diff, live trusted proof, existing asserts); the em-dash
+    fold ENDORSED as landing better than specified (generalizes past
+    "immediately after," unlike the old shim); **a new lane-law
+    precedent named**: at-rest affordances stay OUT of the brass lane
+    (nothing-orange-at-rest holds) — a persistent door like "New Page"
+    wears olive-as-contrast, now the standing answer for every future
+    resting action-door; the `window.wrizoPinPageToBoard` inspection
+    seam ACCEPTED as established pattern; `app.keyCombo` confirmed to
+    close FX5's own disclosed keyboard-fidelity gap with no residual
+    left; the `ab4.mjs` generation-3 park and the review's own
+    retracted candidate finding both ENDORSED as the accretion
+    precedent and anti-false-positive honesty working as designed.
+    **A1 answered — no fold needed.** `store/textUndo.ts` already caps
+    stack depth: `MAX_DEPTH = 500`, enforced via `past.shift()` on
+    overflow (the build's own code, confirmed by direct read, not
+    asked-and-assumed); `future` is bounded by construction since it's
+    always cleared on a fresh edit, so it can never exceed `past`'s own
+    momentary size. Cap already shipped; the advisory closes as
+    already-satisfied, not as a new fold.
+    **Deploy state, for Nick's word whenever he gives it:** manifest
+    since `6759777` = FX6 alone (one code ticket) + docs riders,
+    enumerated and ready. FX6 may ride alone or share a deploy with B1
+    later — Nick's call, whichever ships gets its own manifest
+    enumeration at the time.
+    **Close conditions:** (1) review on disk — met, this commit;
+    (2) B1 unblocked by this review — see item 38, build starting;
+    (3) deploy on Nick's word — manifest ready, not yet given;
+    (4) Nick's own FX6 DoD script — remains open.
 38. **B1 — the Journal Reborn (+ the Trash).** **BRIEF COMMITTED —
     2026-07-19.** `docs/wrizo-alpha/b1-journal-reborn-brief.md`.
-    **QUEUED — builds after FX6's own post-merge review lands (one
-    brief per ticket; FX6 holds the slot).** Not started.
+    **UNBLOCKED — 2026-07-20**, Fable's FX6 review (item 37) was
+    B1's own gate; met. **Build starting**, via a Workflow-
+    orchestrated build+review pipeline (ultracode), off post-FX6
+    `main`.
     **Authority — the Boards committee pass**
     (`docs/wrizo-alpha/boards-committee-pass.md`, committed same day):
     a double-pass triggered by item 36's own architecture note,
