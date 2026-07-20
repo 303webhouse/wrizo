@@ -4,7 +4,7 @@ import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { firstLine } from '../store/entryText';
 import {
   getJournalPages, getShelfPages, getDrawers, getProjects, getBinderPages,
-  createJournalPage, createBoardPage, createQuickSprintProject, softDeleteEntry,
+  createJournalPage, createLooseHomePage, createBoardPage, createQuickSprintProject, softDeleteEntry,
   getJournalEntry,
 } from '../store/persistence';
 import type { Box } from '../types';
@@ -110,10 +110,39 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 }
 
 // ---------------------------------------------------------------------------
-// Page — the Page face, carried forward whole (S3's own words).
+// Page — the Page face, carried forward whole (S3's own words), now with an
+// unmissable "New Page" action at its own head (FX6 S2a — "the New Page
+// discoverability gap," Nick's own words). A SEPARATE door from
+// JournalPanel's own pre-existing New-page button above (cascadeJournalNewPage
+// — unrelated to this ticket, and a genuinely different kind of page: that
+// one homes in the Journal): a writer already looking at THIS page's own
+// face (star/tags/homing) shouldn't have to remember the Journal category
+// is where page creation lives — the door travels with the writer instead.
+// Reuses createLooseHomePage() verbatim — the SAME "give me a blank page,
+// no assumptions about where it files" door Arrival.tsx's own Write door
+// already uses (AB3 S4 — `loose` is a legitimate, permanent home, never
+// nudged to file), opening at `/page/:id` (PageEditor, mode-aware) — never
+// a bespoke creation path or a new route. Olive-lane chrome
+// (`wz-cascade-action-door`, index.css) makes it unmissable via CONTRAST
+// against its plain neighbors, not urgency color — "nothing orange at
+// rest" holds.
 // ---------------------------------------------------------------------------
-function PagePanel({ subject }: { subject: PageFaceSubject }) {
-  return <PageFace subject={subject} />;
+function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
+  const { t } = useDeskLexicon();
+  const newPage = () => { const e = createLooseHomePage(); navigate(`/page/${e.id}`); };
+  return (
+    <>
+      {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper —
+          PageFace already carries its own `.wz-pageface` padding, so
+          nesting a second panel-body around both would double it up. */}
+      <div style={{ padding: '10px 14px 0' }}>
+        <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>
+          {t('cascadePageNewPage')}
+        </button>
+      </div>
+      <PageFace subject={subject} />
+    </>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -145,6 +174,11 @@ function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
         <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>
         <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
         <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
+        {/* FX6 S2c — a quiet one-line pointer at the OTHER new door: a
+            writer who just wants a page (not a whole board/plan) currently
+            sees only project-creating buttons here — this says where the
+            plainer door actually is. */}
+        <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanJustAPage')}</div>
       </div>
     );
   }
@@ -305,7 +339,7 @@ function CascadeThemePanel() {
 export function renderCategoryPanel(category: CategoryId, ctx: CascadeContext): ReactNode {
   switch (category) {
     case 'journal': return <JournalPanel {...ctx} />;
-    case 'page': return <PagePanel subject={ctx.subject} />;
+    case 'page': return <PagePanel subject={ctx.subject} navigate={ctx.navigate} />;
     case 'plan': return <PlanPanel {...ctx} />;
     case 'drawers': return <DrawersPanel {...ctx} />;
     case 'shelf': return <ShelfPanel {...ctx} />;

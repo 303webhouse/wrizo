@@ -2,14 +2,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
-  patchJournalEntry, getBoardsPinning, generateId,
+  patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
 } from '../store/persistence';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
 import { applyFormat, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
-import { applyEmDash, findEmDashTrigger, revertEmDash } from '../store/emDash';
+import { applyEmDash, findEmDashTrigger } from '../store/emDash';
+import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
@@ -239,6 +240,14 @@ function BoardCardPopup({
   const elRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef(initialText);
   const { t: lex } = useLexicon();
+  // FX6 S1 — the real undo/redo stack (store/textUndo.ts's own header
+  // comment carries the full mechanism-choice + coalescing-granularity +
+  // em-dash-shim-fold reasoning, shared verbatim with ForwardOnlyEditor.
+  // tsx's own drafting branch — not repeated here). A plain ref (not the
+  // module's registry) since applyBoardFormat below lives in this SAME
+  // component, unlike PageEditor.tsx's applyRailFormat which needed the
+  // registry to reach across a component boundary.
+  const undoStackRef = useRef<TextUndoStack | null>(null);
 
   useEffect(() => {
     const el = elRef.current;
@@ -273,29 +282,38 @@ function BoardCardPopup({
     // guard" reasoning — not repeated here).
     let justTypedSpace = false;
     let applyingEmDash = false;
-    // FX5 S7 — the one-step undo shim's own pending state, the SAME shape
-    // ForwardOnlyEditor.tsx's drafting branch uses (see store/emDash.ts's
-    // own header comment for why native undo — execCommand OR a real
-    // Ctrl/Cmd+Z — does not work here either: this popup's own redecorate
-    // rewrites the whole innerHTML on every input too).
-    let lastEmDash: { offset: number; hyphens: string } | null = null;
+    // FX6 S1 — the real, walkable undo/redo stack (store/textUndo.ts's own
+    // header comment carries the full mechanism-choice + coalescing-
+    // granularity + em-dash-shim-fold reasoning, the SAME shape
+    // ForwardOnlyEditor.tsx's drafting branch uses — not repeated here).
+    const undoStack = createTextUndoStack({ text: initialText, caret: initialText.length });
+    undoStackRef.current = undoStack;
+    // Classified at beforeinput (before the DOM mutates — the SAME
+    // discipline `justTypedSpace` above already uses), consumed by the
+    // very next onInput call it precedes.
+    let pendingKind: EditKind = 'atomic';
     const redecorate = (plain: string, caret: number | null) =>
       decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret));
     const commit = (plain: string) => { textRef.current = plain; onCommit(plain); };
 
     const onInput = () => {
       if (applyingEmDash) return;
+      const kind = pendingKind;
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
       commit(plain);
-      if (composing) return;
+      if (composing) return; // FX6 S1 — composed text records as ONE atomic step, at compositionend below
       const trigger = justTypedSpace ? findEmDashTrigger(plain, caret) : null;
       justTypedSpace = false;
       if (trigger) {
         applyingEmDash = true;
-        const { applied, hyphens } = applyEmDash(el, trigger.start, trigger.end);
+        const { applied } = applyEmDash(el, trigger.start, trigger.end);
         applyingEmDash = false;
         if (applied) {
-          lastEmDash = { offset: trigger.start, hyphens };
+          // FX6 S1 — the em-dash shim, folded into the real stack: see
+          // ForwardOnlyEditor.tsx's own onInput comment for the full
+          // "boundary then atomic, why two record() calls" reasoning — the
+          // SAME two-step shape, verbatim.
+          undoStack.record({ text: plain, caret }, 'boundary');
           const after = readEditorPlainText(el.innerText, getCaretOffset(el));
           commit(after.plain);
           // FX5 S7 — see ForwardOnlyEditor.tsx's own onInput comment: the
@@ -304,27 +322,30 @@ function BoardCardPopup({
           // untouched trailing space and anything typed past it) — the
           // ORIGINAL caret shifted left by (hyphen count - 1) is always
           // correct, computed directly rather than trusted from the DOM.
-          redecorate(after.plain, caret - (trigger.end - trigger.start) + 1);
+          const afterCaret = caret - (trigger.end - trigger.start) + 1;
+          undoStack.record({ text: after.plain, caret: afterCaret }, 'atomic');
+          redecorate(after.plain, afterCaret);
           return;
         }
       }
-      lastEmDash = null; // any OTHER edit invalidates a pending em-dash undo
+      undoStack.record({ text: plain, caret }, kind);
       redecorate(plain, caret);
     };
-    const onUndoKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z' || e.shiftKey) return;
-      if (!lastEmDash) return;
+    // FX6 S1 — the real undo/redo keybindings, the SAME contract
+    // ForwardOnlyEditor.tsx's own onUndoRedoKeyDraft uses (see that file's
+    // own comment — not repeated here).
+    const onUndoRedoKey = (e: KeyboardEvent) => {
+      if (e.isComposing) return;
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const key = e.key.toLowerCase();
+      const wantsUndo = key === 'z' && !e.shiftKey;
+      const wantsRedo = (key === 'z' && e.shiftKey) || key === 'y';
+      if (!wantsUndo && !wantsRedo) return;
       e.preventDefault();
-      const { offset, hyphens } = lastEmDash;
-      lastEmDash = null;
-      applyingEmDash = true;
-      const reverted = revertEmDash(el, offset, hyphens);
-      applyingEmDash = false;
-      if (reverted) {
-        const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
-        commit(plain);
-        redecorate(plain, caret);
-      }
+      const snap = wantsUndo ? undoStack.undo() : undoStack.redo();
+      if (!snap) return;
+      commit(snap.text);
+      redecorate(snap.text, snap.caret);
     };
     // AB2's own proven fix for the Chromium trailing-newline-at-EOF caret
     // quirk (draftDecoration.ts's own header comment) — a literal Text-node
@@ -346,16 +367,21 @@ function BoardCardPopup({
       range.collapse(true);
       sel.removeAllRanges();
       sel.addRange(range);
-      lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      // FX6 S1 — Enter completes a line the same way a typed space
+      // completes a word: a 'boundary' step, closing whatever was open.
+      undoStack.record({ text: plain, caret }, 'boundary');
       commit(plain);
       redecorate(plain, caret);
     };
     const onCompStart = () => { composing = true; };
     const onCompEnd = () => {
       composing = false;
-      lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
       const { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      // FX6 S1 — an IME-composed insertion is one atomic undo step (no
+      // per-candidate-update recording happens above — onInput returns
+      // early while `composing` is true).
+      undoStack.record({ text: plain, caret }, 'atomic');
       commit(plain);
       redecorate(plain, caret);
     };
@@ -365,6 +391,10 @@ function BoardCardPopup({
       // ForwardOnlyEditor.tsx's own onBeforeInputDraft: only a genuinely
       // just-typed space arms the em-dash trigger check in onInput.
       justTypedSpace = it === 'insertText' && e.data === ' ';
+      // FX6 S1 — classify the upcoming edit for the undo stack (store/
+      // textUndo.ts's own classifyEditKind — shared with ForwardOnlyEditor.
+      // tsx so the two surfaces can't drift).
+      pendingKind = classifyEditKind(it, e.data ?? null);
       if (it === 'insertFromPaste' || it === 'insertFromDrop') {
         if (shadowAllows(extractIncomingText(e))) return; // own ink: native paste proceeds
         e.preventDefault();
@@ -392,7 +422,7 @@ function BoardCardPopup({
     const onCaretMoveClick = () => { redecorate(textRef.current, getCaretOffset(el)); };
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
-    el.addEventListener('keydown', onUndoKey);
+    el.addEventListener('keydown', onUndoRedoKey);
     el.addEventListener('keyup', onCaretMoveKey);
     el.addEventListener('mouseup', onCaretMoveClick);
     el.addEventListener('compositionstart', onCompStart);
@@ -406,7 +436,7 @@ function BoardCardPopup({
       el.removeEventListener('pointerup', neutralizePen, penOpts);
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
-      el.removeEventListener('keydown', onUndoKey);
+      el.removeEventListener('keydown', onUndoRedoKey);
       el.removeEventListener('keyup', onCaretMoveKey);
       el.removeEventListener('mouseup', onCaretMoveClick);
       el.removeEventListener('compositionstart', onCompStart);
@@ -414,6 +444,7 @@ function BoardCardPopup({
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('paste', blockForeign);
       el.removeEventListener('drop', blockForeign);
+      undoStackRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -449,6 +480,11 @@ function BoardCardPopup({
     el.focus();
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
+    // FX6 S1 — a Bold/Italic toolbar click is a genuine edit that bypasses
+    // the contenteditable's own input events entirely — record its own
+    // atomic step (see ForwardOnlyEditor.tsx's applyRailFormat/PageEditor.
+    // tsx for the SAME reasoning) or the click would be invisible to undo.
+    undoStackRef.current?.record({ text: result.text, caret: result.start }, 'atomic');
     textRef.current = result.text;
     onCommit(result.text);
     decorateEditorFor(el, result.text, result.start, setCaretOffset, text => decorateMarkdownForCard(text, result.start));
@@ -780,6 +816,27 @@ export function BoardEditor({ id }: { id: string }) {
     setBoxes(prev => [...prev, box]);
     setSelectedId(box.id);
     setPopupBoxId(box.id);
+  };
+
+  // FX6 S2b — "New page card": the board-side door Nick reached for and
+  // couldn't find. A blank card that starts a card is one thing (onAddCard,
+  // above); this instead creates a REAL page and pins its own card to THIS
+  // board in one act. Normal homing laws, untouched: createLooseHomePage
+  // is the SAME "give me a blank page, no assumptions about where it
+  // files" door Arrival.tsx's own Write door already uses (AB3 S4 — `loose`
+  // is a legitimate, permanent home, never nudged to file) — a pin is
+  // membership, not filing (AB4's own law, S3 below closes the self-pin
+  // gap in the SAME spirit), so the new page's OWN home is independent of
+  // the board it lands on; pinPageToBoard never touches it. Opens at
+  // `/page/:id` (PageEditor, mode-aware) — the SAME editing surface every
+  // other page in a project/board context already opens into, not the
+  // Journal's own distinct capture UI. Travels straight to the fresh page
+  // — matching Nick's own DoD wording, "makes a page-card on a board in
+  // one act."
+  const onAddPageCard = () => {
+    const page = createLooseHomePage();
+    pinPageToBoard(page.id, id);
+    navigate(`/page/${page.id}`);
   };
 
   // AB4 S4 — double-click travel from a page-pin card, "the board is one
@@ -1324,6 +1381,10 @@ export function BoardEditor({ id }: { id: string }) {
               return <line ref={previewLineRef} className="board-thread-preview" x1={x1} y1={y1} x2={x1} y2={y1} style={{ display: 'none' }} />;
             })()}
           </svg>
+          {/* FX6 S2c — the empty board's own quiet one-line pointer at
+              both board-side tools (this canvas carried NO empty-state
+              copy at all before this ticket). */}
+          {sorted.length === 0 && <div className="board-canvas-empty" aria-hidden="true">{t('boardCanvasEmpty')}</div>}
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
           const boxConnections = footerOn ? connectionsFor(box.id) : [];
@@ -1445,9 +1506,11 @@ export function BoardEditor({ id }: { id: string }) {
   // card alone now.
   // FX5 S5 — a second control joins it: the per-board connections-footer
   // toggle ("Add card + this, two controls" — the brief's own words).
+  // FX6 S2b — a THIRD control joins them: New page card.
   const sliverContent: SliverContent = {
     kind: 'board',
     onAddCard,
+    onAddPageCard,
     footer: { on: footerOn, onToggle: toggleFooter },
   };
 

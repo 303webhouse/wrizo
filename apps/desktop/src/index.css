@@ -1212,6 +1212,16 @@ a:focus-visible,
 .board-canvas-wrap::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
 .board-canvas-wrap::-webkit-scrollbar-corner{ background:transparent; }
 .board-canvas{ border-radius:0; }
+/* FX6 S2c — the empty board's own quiet one-line pointer (this canvas
+   carried NO empty-state copy at all before this ticket). Centered, quiet
+   (text-low, never brass/olive — this is chrome, not a where-you-are
+   marker), pointer-events:none so it never intercepts a click meant for the
+   canvas underneath. */
+.board-canvas-empty{
+  position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+  color:var(--text-low); font-family:var(--font-ui); font-size:13px;
+  pointer-events:none; text-align:center; white-space:nowrap;
+}
 .board-box{ border-radius:0; box-sizing:border-box; touch-action:none; }
 .board-box[data-selected="true"]{ outline:2px solid var(--brass); outline-offset:1px; }
 .board-text{
@@ -2977,6 +2987,13 @@ a:focus-visible,
    lawful --accent-rest-not-brass pattern every other where-you-are marker
    in this app uses. */
 .wz-cascade-action.active{ color:var(--text-hi); border-color:var(--accent-rest); }
+/* FX6 S2a — the New Page door: unmissable at the head of the cascade's Page
+   section. Olive (--accent-rest) at rest, not brass — "nothing orange at
+   rest" (the olive/orange lane law) still holds; this reads unmissable via
+   CONTRAST against its plain `.wz-cascade-action` neighbors (border + text
+   color + weight), not an evental color. */
+.wz-cascade-action-door{ border-color:var(--accent-rest); color:var(--accent-rest); font-weight:600; margin-bottom:2px; }
+.wz-cascade-action-door:hover{ color:var(--text-hi); background:var(--ink-800); border-color:var(--accent-rest); }
 .wz-cascade-list{ display:flex; flex-direction:column; gap:2px; }
 .wz-cascade-list-item{ display:flex; align-items:center; justify-content:space-between; gap:6px;
   padding:7px 8px; border-radius:var(--radius-sm); }

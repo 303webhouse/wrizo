@@ -561,8 +561,11 @@ if (process.env.HARNESS_PARKED === '1') {
       // brief's own words). Back to two tools, but neither one is the
       // OLD Connect toggle this check first parked — a different pair,
       // not a restoration.
-      pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else", generation 2: was FX4 S6\'s own re-derivation at exactly ONE tool) — FX5 S5: back to two controls (Add card + the footer toggle) — live successor in fx5.mjs\'s own S5 section',
-        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 2 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'Show connections', JSON.stringify(sliverShapeNow));
+      // GENERATION 3 (FX6 S2b) — a THIRD control joins them: New page
+      // card, the board-side door Nick reached for and couldn't find.
+      // Three tools now — live successor in fx6.mjs's own S2 section.
+      pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else", generation 2: was FX4 S6\'s own re-derivation at exactly ONE tool; generation 3: was FX5 S5\'s own re-derivation at exactly two, Add card + the footer toggle) — FX6 S2b: a third tool joins them (New page card) — live successor in fx6.mjs\'s own S2 section',
+        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 3 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Show connections', JSON.stringify(sliverShapeNow));
 
       const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
       await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");

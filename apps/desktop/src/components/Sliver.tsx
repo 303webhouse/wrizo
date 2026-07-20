@@ -80,9 +80,13 @@ export type SliverContent =
   | {
       kind: 'board';
       onAddCard: () => void;
+      // FX6 S2b — "New page card": a real page, created AND pinned to this
+      // board in one act (BoardEditor.tsx's own onAddPageCard) — the
+      // board-side door Nick reached for and couldn't find.
+      onAddPageCard: () => void;
       // FX5 S5 — the connections-footer's own per-board visibility toggle,
-      // the sliver's SECOND board control ("Add card + this, two controls"
-      // — the brief's own words).
+      // the sliver's THIRD board control ("Add card + this, two controls"
+      // — the brief's own words, now three with FX6's own addition).
       footer: { on: boolean; onToggle: (on: boolean) => void };
     };
 
@@ -274,7 +278,12 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddCard}>
             {t('boardAddCard')}
           </button>
-          {/* FX5 S5 — the footer toggle, the sliver's second board control. */}
+          {/* FX6 S2b — the board-side New Page door: a real page, created
+              AND pinned to this board in one act. */}
+          <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddPageCard}>
+            {t('boardNewPageCard')}
+          </button>
+          {/* FX5 S5 — the footer toggle, the sliver's third board control. */}
           <SliverToggle
             label={t('boardFooterToggle')}
             on={content.footer.on}

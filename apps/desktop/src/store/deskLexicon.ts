@@ -125,7 +125,18 @@ export type DeskTermId =
   | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
   | 'tutorConversationEmpty' | 'tutorConversationSending'
   | 'tutorConversationOffline' | 'tutorConversationError'
-  | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck';
+  | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
+  // FX6 S2 — the doors. (a) The cascade's Page section (CascadePanels.tsx's
+  // PagePanel) gains an unmissable "New Page" action at its head —
+  // 'cascadePageNewPage' — a SEPARATE door from the pre-existing Journal-
+  // category one (cascadeJournalNewPage above); 'cascadePlanJustAPage' is
+  // the quiet one-line pointer at it from the Plan panel's no-project
+  // branch (S2c). (b) The Board's own hand tools (Sliver.tsx's 'board'
+  // section) gain a second tool alongside the existing Add card
+  // ('boardNewPageCard'): a real page, created AND pinned to this board in
+  // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
+  // pointer at both board-side tools (S2c).
+  | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -239,6 +250,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
+  cascadePageNewPage: 'New Page',
+  cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
+  boardNewPageCard: 'New page card',
+  boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
