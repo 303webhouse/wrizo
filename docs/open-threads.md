@@ -2628,6 +2628,120 @@ outlive a session lives here, not in chat.
     Report = push (merge pre-authorized).
     **Build starting — 2026-07-19**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-FX5 `main`.
+    **First attempt ORPHANED, not a loop — root-caused, not
+    guessed.** The build sub-agent's own transcript shows its last
+    event was `[Request interrupted by user]` mid-file-read, at the
+    exact moment an unrelated interrupt in this session's own
+    foreground turn landed (the B1 brief paste) — the same signal
+    appears to have killed the background agent's turn too, and
+    nothing ever resumed it; the workflow's own journal recorded only
+    a `started` event, no result, no review phase ever begun. Found
+    via direct transcript/timestamp inspection (10 hours of silence
+    on a file that should have been growing), not assumed. Its
+    partial S1 work (real, uncommitted) was checkpoint-committed and
+    the branch renamed to `fx6-undo-and-doors-wip-interrupted-
+    2026-07-19` for reference only — explicitly unverified, not
+    trusted — then the worktree freed and a fresh build+review
+    launched with one process change: agents now commit incrementally
+    per slice, not in one final commit, so a future interruption loses
+    less.
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED —
+    2026-07-19.** Built S1-S4 on `fx6-undo-and-doors` off `main` @
+    `ee3907d`, in its own worktree. S0's own ledger work was already
+    done directly on `main` before the build started.
+    **S1 — real undo/redo, mechanism chosen empirically and
+    disclosed.** Both surfaces rewrite their contenteditable's
+    innerHTML wholesale on every input (required for live markdown-
+    mark decoration), confirmed live to invalidate Chromium's own
+    undo manager — the same root cause FX5 S7 diagnosed. Chose an
+    app-level coalesced snapshot stack (`store/textUndo.ts`) over
+    surgical DOM updates: the decoration engine has no cheap way to
+    know which spans elsewhere in the line an arbitrary keystroke
+    might affect, so "surgical" would mean rewriting it into an
+    incremental diff engine — larger and riskier than this ticket's
+    own invariant that Draft's dimmed-syntax register stays untouched.
+    Coalescing granularity (word-ish steps, CC's own disclosed call):
+    one real defect found and fixed during the build itself — the
+    boundary character completing a word was initially recorded as
+    its own isolated step rather than merging into the word it
+    closed, caught via the harness's own parked proof, fixed by
+    exempting that transition. The em-dash shim (FX5's own S7) is
+    retired entirely — the substitution now records as two ordinary
+    undo steps, so one Ctrl+Z reverts just the dash AND further walks
+    back keep working, unlike the old shim's narrower "immediately
+    after" case.
+    **THE SCOPE LAW — verified live, not assumed, by both agents
+    independently.** Every changed hunk in `ForwardOnlyEditor.tsx`
+    confirmed by line range to fall strictly inside the `drafting`
+    branch; `store/forwardOnly.ts`/`store/forwardLock.ts` carry zero
+    diff, confirmed with an explicit stat. Live-exercised with a
+    genuinely trusted CDP Ctrl+Z inside forward-locked Free Write:
+    complete no-op, text byte-for-byte unchanged, backspace still
+    strikes rather than erasing.
+    **S2 — the doors.** An unmissable "New Page" button heads the
+    cascade's Page section, routing through the same `
+    createLooseHomePage()` door Arrival's own "Start writing" already
+    uses (a judgment call: the build first reached for the journal-
+    homed helper matching an unrelated pre-existing button, then
+    reconsidered — `/page/:id` is the consistent landing surface for
+    a project/board-adjacent "just give me a page" ask, not
+    `/journal/:id`). The board sliver gains "New page card" — creates
+    a page through the same door and pins it in one act. Two quiet
+    one-line empty-state pointers added. **Park sweep required and
+    done:** a third sliver tool falsified three pre-existing
+    exact-tool-count assertions, parked per A4 with live successors
+    (`ab4.mjs`'s park reaches generation-3, `fx4.mjs`'s reaches
+    generation-2 — the accretion precedent holding).
+    **S3 — self-pin closed at both ends** (the Pin sheet's leaf filter
+    AND `pinPageToBoard` itself); the no-projects empty-state line
+    corrected to "create a project first," matching AB4's own review
+    A2 wording exactly.
+    **S4 — `fx6.mjs`, 39 checks.** `runtime-verify.mjs` permanently
+    gained `app.keyCombo`, a genuinely trusted CDP modifier-key
+    dispatch, closing FX5 S7's own disclosed keyboard-fidelity gap
+    rather than repeating it. Two harness-only defects found and fixed
+    while building it (not product bugs): a raw DOM node returned from
+    an eval crashed CDP's own serializer; and a board fixture seeded
+    while a page was still mounted got silently clobbered by that
+    page's own unmount flush — this project's own documented
+    seed-then-reload/flushNow race (see memory), fixed by seeding from
+    the Desk, matching every other fixture's already-proven pattern.
+    **Independent review — GREEN, no genuine defects, nothing
+    changed on the branch.** One process note: since the build's own
+    worktree still held the branch checkout (ONE CHECKOUT PER AGENT),
+    the review created a differently-named local branch tracking the
+    same pushed tip to work in its own isolated worktree without
+    colliding — same content, same commit, no shortcut taken. The
+    review independently re-verified everything by diff and live
+    exercise rather than trusting prose: zero-schema (explicit diff
+    on `apps/server`, zero lines), the full park-sweep's generation
+    numbering, THE SCOPE LAW by line-range diff inspection PLUS a
+    live trusted Ctrl+Z inside forward-lock, the em-dash fold by
+    hand-tracing the coalescing state machine AND exercising it live
+    (substitute → undo → redo → walk further back, all correct), both
+    self-pin guards via a UI-level check AND a direct function call
+    bypassing the UI entirely, and confirmed every keyboard claim in
+    `fx6.mjs` genuinely uses the new trusted dispatch (none synthetic
+    except one deliberate, correctly-disclosed exception testing the
+    old shim's own retirement). **One candidate finding chased down
+    and honestly retracted**: a bare-literal string in
+    `PinToBoardSheet.tsx` looked like a deskLexicon-discipline miss
+    until the review checked the actual file and found it already
+    uses bare literals + `themeLexicon` throughout, never importing
+    deskLexicon at all — FX6's edit matches that file's own
+    pre-existing local convention; the four genuinely new strings
+    elsewhere correctly do route through deskLexicon.
+    **Full suite, both passes.** Build: `tsc` (desktop+server) +
+    `build:web` + selftest + all 22 harness files (new `fx6.mjs`, 39
+    checks) green under both `HARNESS_PARKED` settings. Review: same
+    suite, from a genuinely clean install, 22/22 green both settings,
+    zero failures. CC's own third independent pass on the
+    fast-forwarded `main`: `tsc` (desktop+server) + `build:web` clean.
+    **Merged — 2026-07-19** (zero-schema, merge pre-authorized per the
+    standing rule). Fast-forwarded `main` to `6bdea06` (no divergence,
+    clean fast-forward, zero conflicts), pushed to `origin/main`.
+    **Not deployed** — Fable's post-merge review hasn't landed yet;
+    redeploy is Nick's call, as always, after that review.
 38. **B1 — the Journal Reborn (+ the Trash).** **BRIEF COMMITTED —
     2026-07-19.** `docs/wrizo-alpha/b1-journal-reborn-brief.md`.
     **QUEUED — builds after FX6's own post-merge review lands (one
