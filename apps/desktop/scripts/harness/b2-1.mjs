@@ -35,6 +35,14 @@
 // longer appears anywhere across every touched surface (S6h, the
 // Definition of Done's own words); the route-path boundary held
 // deliberately (S6i).
+//
+// Review fix (independent re-verification, same date) — CreateProject.tsx
+// and QuickSprint.tsx both had genuine gaps: a "Binder"-labeled action
+// landing on a screen that unconditionally read "Drawer" for the SAME
+// entity/action, one navigation hop later (S6e/S6g below now cover both
+// directions). QuickSprint's own S6g check needed PARKING (A4) as a
+// result — see this file's own PARKED section at the bottom, its first
+// tenant.
 import { readFileSync } from 'node:fs';
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -294,9 +302,23 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S6c/S6g (Binder-vs-Drawer, concrete) — QuickSprint: the breadcrumb shows
-  // the OLDER stored-Drawer entity's own name while the Save button reads
-  // "Binder" — both words visible on ONE screen, never colliding, proving
-  // the judgment call live.
+  // the OLDER stored-Drawer entity's own real NAME (a proper noun), never
+  // the bare word "Drawer" itself.
+  //
+  // Review fix (independent re-verification) — this section's ORIGINAL
+  // check also asserted the Save button read "Save to Binder". PARKED
+  // below per A4 (falsified by the fix): that reasoning conflated a
+  // proper noun (`drawer.name`) with the bare generic word "Drawer",
+  // which don't actually collide (same pattern as a file explorer's "My
+  // Documents" breadcrumb sitting beside a "New Folder" button — no
+  // ambiguity). Meanwhile the Save button's own destination,
+  // ProjectHome.tsx, always reads "Drawer" regardless of this project's
+  // drawerId — unconditionally, matching every OTHER inbound link to that
+  // screen (BeatWizard/StructureWizard/StructureBoard's "Back to Drawer",
+  // JournalEntry's "Promote to a new Drawer"). "Save to/as Binder" was
+  // the lone dissenting label into a shared destination that never
+  // varies — a real, demonstrable contradiction one click deep. Live
+  // successor immediately below the parked block.
   // ==========================================================================
   // NOTE: no freshDesk here (would localStorage.clear() the project this
   // section reuses) — off any flush-handling surface first instead (the
@@ -323,15 +345,15 @@ await withHarness(async (app) => {
   }))()`);
   ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own breadcrumb shows the stored Drawer\'s real name ("Real Stored Drawer") — the OLDER entity, untouched by this fold',
     sprintShape.crumbDrawerName === 'Real Stored Drawer', JSON.stringify(sprintShape));
-  ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own Pages/Plan toggle aria-label reads "Binder view" — the pre-existing themeLexicon term, reused rather than colliding with the breadcrumb\'s own "Drawer"',
+  ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own Pages/Plan toggle aria-label reads "Binder view" — the pre-existing themeLexicon term (predates this fold entirely, out of its scope), coexisting harmlessly beside the breadcrumb\'s proper-noun drawer name',
     sprintShape.toggleAria === 'Binder view', JSON.stringify(sprintShape));
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('A word. ');
   await app.click('Finish');
   await app.waitFor("!!document.querySelector('.card')", { label: 'finish card' });
-  const saveLabel = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Binder') || b.textContent.includes('Save as Binder'))?.textContent");
-  ok('S6g: QuickSprint\'s own Save button reads "Save to Binder", never "Save to project"',
-    saveLabel === 'Save to Binder', String(saveLabel));
+  const saveLabel = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Drawer') || b.textContent.includes('Save as Drawer'))?.textContent");
+  ok('S6g LIVE SUCCESSOR (review fix): QuickSprint\'s own Save button reads "Save to Drawer" — matches its own destination, ProjectHome.tsx, which always reads "Drawer" regardless of this project\'s drawerId; see the PARKED block above',
+    saveLabel === 'Save to Drawer', String(saveLabel));
 
   // ==========================================================================
   // S6c (Binder-vs-Drawer, concrete) — PinToBoardSheet + PortToBoardSheet:
@@ -413,6 +435,25 @@ await withHarness(async (app) => {
     ok('S6d: the SAME screen\'s in-drawer "Create New" row reads "New Binder" — deliberately NOT "New Drawer" (would collide with the top-level action above, creating two different entities under one word)',
       Array.isArray(inDrawerButtons) && inDrawerButtons.includes('New Binder') && !inDrawerButtons.includes('New Drawer'),
       JSON.stringify(inDrawerButtons));
+
+    // Review fix (independent re-verification) — S6d follow-through: the
+    // ORIGINAL build's harness stopped at proving DrawersTree's OWN button
+    // said "New Binder" (above) but never followed the click to where it
+    // actually goes. It navigates to /project/new?drawer=<id> — CreateProject.tsx
+    // — which, before this fix, unconditionally read "NEW DRAWER" regardless,
+    // contradicting the very button that led there. This check proves the fix.
+    await app.evalJs("[...document.querySelectorAll('.dz-createnew .dz-more')].find(b => b.textContent === 'New Binder')?.click()");
+    await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'S6d follow-through: CreateProject reached via New Binder' });
+    const followThroughShape = await app.evalJs(`(() => ({
+      eyebrow: document.querySelector('.cp-eyebrow')?.textContent,
+      titleAria: document.querySelector('.cp-title-input')?.getAttribute('aria-label'),
+      hash: location.hash,
+    }))()`);
+    ok('S6d follow-through (review fix): clicking DrawersTree\'s "New Binder" lands on CreateProject.tsx reading "NEW BINDER" / "Binder title (optional)" — matching the button that led here, never "NEW DRAWER" (the destination-mismatch gap the original build\'s harness never exercised)',
+      followThroughShape.eyebrow === 'NEW BINDER'
+        && followThroughShape.titleAria === 'Binder title (optional)'
+        && followThroughShape.hash.includes('drawer='),
+      JSON.stringify(followThroughShape));
   }
 
   // ==========================================================================
@@ -528,15 +569,64 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// b2-1.mjs is a brand-new file; it parks nothing of its own (this fold's
-// own PARK sweep — the checks its word swap falsifies — lives in the FILES
-// it superseded: b1.mjs, b2.mjs, fx6.mjs, m1.mjs, per the A4 convention
-// that a file parks what supersedes ITS OWN checks). This scaffold exists
-// so a future ticket that supersedes any of THIS file's checks has a
-// documented home, matching every other harness file's own pattern.
+// Review fix (independent re-verification of B2.1 S6) — the FIRST tenant
+// of this file's own scaffold: this file's own S6g check —
+//
+//   const saveLabel = await app.evalJs("[...document.querySelectorAll('button')]
+//     .find(b => b.textContent.includes('Save to Binder')
+//       || b.textContent.includes('Save as Binder'))?.textContent");
+//   ok('S6g: QuickSprint\'s own Save button reads "Save to Binder", never
+//   "Save to project"', saveLabel === 'Save to Binder', String(saveLabel));
+//
+// is falsified whole by the review fix: QuickSprint.tsx's Save button
+// reverted from "Binder" to "Drawer" — the build's own collision
+// reasoning for that button conflated a proper noun (`drawer.name` in the
+// breadcrumb) with the bare generic word "Drawer" (they don't collide),
+// while the button's own destination (ProjectHome.tsx) always reads
+// "Drawer" regardless — see QuickSprint.tsx's own updated comment and
+// deskLexicon.ts's header comment for the full account. Live successor:
+// this file's own live S6g section, above ("S6g LIVE SUCCESSOR (review
+// fix)").
 if (process.env.HARNESS_PARKED === '1') {
+  const parkedChecks = [];
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    const { projectId: pProjectId } = await seedProjectWithPlan(app, 'b21-parked-plan-check');
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'PARKED: Desk before seeding a real Drawer' });
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const drawers = JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]');
+      drawers.push({ id: 'b21-parked-real-drawer', name: 'PARKED Real Stored Drawer', order: 0, createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-drawers', JSON.stringify(drawers));
+      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
+      const pi = projects.findIndex(p => p.id === '${pProjectId}');
+      projects[pi].drawerId = 'b21-parked-real-drawer';
+      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+    })()`);
+    await app.reload();
+    await app.evalJs(`location.hash = '#/project/${pProjectId}/sprint'`);
+    await app.waitFor("!!document.querySelector('.sprint-crumb')", { label: 'PARKED: QuickSprint mounted (pre-fix reproduction)' });
+    await sleep(200);
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys('A word. ');
+    await app.click('Finish');
+    await app.waitFor("!!document.querySelector('.card')", { label: 'PARKED: finish card' });
+    // Re-derived against the file's PRE-fix behavior (the historical claim,
+    // held true here on purpose — this block exists to prove the park is
+    // accurate history, not to re-validate current behavior).
+    const saveLabelNow = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Drawer') || b.textContent.includes('Save as Drawer'))?.textContent");
+    pok('PARKED (was "S6g: QuickSprint\'s own Save button reads \\"Save to Binder\\", never \\"Save to project\\"") — review fix: the button reverted to "Save to Drawer" (matches its own destination, ProjectHome.tsx, unconditionally); live successor: this file\'s own live S6g section',
+      saveLabelNow === 'Save to Drawer', String(saveLabelNow));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nB2-1 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of b2-1.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nB2-1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nB2-1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

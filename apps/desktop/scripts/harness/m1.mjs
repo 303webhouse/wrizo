@@ -171,23 +171,27 @@ await withHarness(async (app) => {
   ok('QuickSprint\'s finish checkbox names the attached (currentBeatId) beat', checkboxLabel.includes(beatNames[beats[1]]), checkboxLabel);
   await app.evalJs("document.querySelector('input[type=checkbox]').click()");
   // B2.1 S6 — plumbing + cosmetic-label update, not a park: QuickSprint.tsx's
-  // own button text swaps "project" for the pre-existing 'binder' lexicon
-  // term (this exact screen's own breadcrumb already shows the OLDER
-  // stored-Drawer entity's name, see the build report's Binder-vs-Drawer
-  // section — "Drawer" would collide there). The click target is plumbing
-  // (updated); the assertion below tests beat-status behavior, wholly
-  // unaffected by the copy change, so only its descriptive name is
-  // refreshed for accuracy (its pass/fail truth never moved, so this isn't
-  // an A4 park case).
-  await app.click('Save to Binder');
-  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome after Save to Binder' });
+  // own button text swaps "project" for "Drawer" (deskLexicon). Review fix
+  // (independent re-verification, same date) — updated AGAIN, from the
+  // build's own "Save to Binder" to "Save to Drawer": the build's Binder
+  // choice here was reverted (its collision reasoning didn't hold — this
+  // screen's breadcrumb shows a PROPER NOUN, `drawer.name`, never the bare
+  // word "Drawer", so no actual collision — and the button's own
+  // destination, ProjectHome.tsx, always reads "Drawer" regardless; see
+  // b2-1.mjs's parked S6g check and QuickSprint.tsx's own comment for the
+  // full account). The click target is plumbing (updated again); the
+  // assertion below tests beat-status behavior, wholly unaffected by the
+  // copy change, so only its descriptive name is refreshed for accuracy
+  // (its pass/fail truth never moved, so this isn't an A4 park case).
+  await app.click('Save to Drawer');
+  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome after Save to Drawer' });
   await sleep(400); // clear the debounced flush so the raw localStorage read below is durable
   const needStatusAfterSave = await app.evalJs(`(() => {
     const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
     const plan = plans.find(p => p.id === '${planId}');
     return plan ? plan.beatNotes.find(bn => bn.beatId === 'need')?.status : 'NO-PLAN';
   })()`);
-  ok('the beat reached complete status after Save to Binder', needStatusAfterSave === 'complete', String(needStatusAfterSave));
+  ok('the beat reached complete status after Save to Drawer', needStatusAfterSave === 'complete', String(needStatusAfterSave));
 
   await app.evalJs(`location.hash = '#/page/${pageId}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'manuscript page reopened after Plan-side advance' });
