@@ -2599,6 +2599,26 @@ outlive a session lives here, not in chat.
     authority once that brief is written, nothing builds from it
     before then. First phase's brief committed, queued: see item 38
     (B1).
+    **B3's own material grows — "Card Deck," Nick's coinage, recorded
+    2026-07-20.** A deck is a preset: an optional wizard that narrows
+    choices, then deals a pre-built, fully-editable card set onto a
+    board in the writer's drawer — B3's true shape is now the deck
+    ENGINE plus the deck LIBRARY, not a bespoke wizard-per-project
+    idea. `docs/wrizo-alpha/card-deck-catalog.md` committed (the
+    Experts' pass): five structural laws binding every deck (ordinary,
+    fully-editable cards, nothing locked or mandatory; the blank board
+    stays first-class, decks are invitations never homework,
+    anti-solicitation absolute; wizards obey the already-ratified R6
+    rulings verbatim; deck DEFINITIONS are static zero-schema app
+    data, DEALING one is ordinary card creation owing nothing to its
+    template afterward; every deck names its own few, concrete,
+    clickable narrowing choices) plus 21 catalogued decks across seven
+    writer-population rooms (Fiction, the Speculative Annex, Screen,
+    the Academy, the Business Desk, the Newsroom) and a v1 ship-set
+    recommendation (six flagships, one per room, Character Study as a
+    budget-permitting seventh). **NOTHING BUILDS from the catalog
+    until B3's own brief** — Nick ratifies the ship set, cuts, or
+    promotes at that brief, not here.
 37. **FX6 — Undo and the Doors.** **BRIEF COMMITTED — 2026-07-19.**
     `docs/wrizo-alpha/fx6-undo-and-doors-brief.md`. Authority: item
     35's own A2 commissioning (real undo/redo in Draft's free editor
@@ -3209,11 +3229,20 @@ outlive a session lives here, not in chat.
     to `33351d4` (no divergence, clean fast-forward, zero conflicts),
     pushed to `origin/main`.
     **Not deployed** — Fable's post-merge review hasn't landed yet;
-    redeploy is Nick's call, as always, after that review. **S6
-    remains fully gated** — no writer-facing "Project" string has
-    been touched anywhere in this merge; the complete inventory above
-    is ready for a future fold the moment Nick's confirming word (and
-    his ruling on the Binder-vs-Drawer question) arrives.
+    redeploy is Nick's call, as always, after that review.
+    **Gate 1 CLEARED — 2026-07-20, Nick's word verbatim: "retire the
+    word project as having any unique architectural purpose."** S6
+    (the Drawer word swap) is now UNGATED — builds from the complete
+    inventory the B2 build itself already produced, storage
+    identifiers untouched as briefed. The Binder-vs-Drawer question
+    (whether "Drawer" also retires `themeLexicon`'s existing "Binder"
+    term) remains open — not resolved by this word, folded into the
+    S6 build's own scope to judge and disclose.
+    **Gate 2 CLEARED — the "Add Page" reading KEPT** as built: the
+    Existing-page picker lands on the Board's own Add flow exactly as
+    S5 already shipped it. No rebuild owed — a pure ratification of
+    work already merged.
+    **S6 folding now** — see the fold record below.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
