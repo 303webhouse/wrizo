@@ -2776,10 +2776,17 @@ outlive a session lives here, not in chat.
     enumerated and ready. FX6 may ride alone or share a deploy with B1
     later — Nick's call, whichever ships gets its own manifest
     enumeration at the time.
-    **Close conditions:** (1) review on disk — met, this commit;
-    (2) B1 unblocked by this review — see item 38, build starting;
-    (3) deploy on Nick's word — manifest ready, not yet given;
-    (4) Nick's own FX6 DoD script — remains open.
+    **Close conditions:** (1) review on disk — met; (2) B1 unblocked
+    by this review — met, see item 38; (3) deploy on Nick's word —
+    **MET, see below**; (4) Nick's own FX6 DoD script — remains open.
+    **Deployed — 2026-07-20**, Nick's word ("deploy everything that's
+    ready to go live"), in the same two-ticket deploy as item 38
+    below: manifest `6759777..HEAD` independently re-enumerated by CC
+    before shipping (FX6 + B1 code commits, docs riders only, matching
+    Fable's own manifest exactly) — `railway up` on `main` @
+    `5a2babc` (deployment `fca07345`, SUCCESS), confirmed live (`200`
+    on `/healthz` and `/`, `401` on `/auth/me`). **Item 37 stays open
+    — Nick's own FX6 DoD script remains the sole condition.**
 38. **B1 — the Journal Reborn (+ the Trash).** **BRIEF COMMITTED —
     2026-07-19.** `docs/wrizo-alpha/b1-journal-reborn-brief.md`.
     **UNBLOCKED — 2026-07-20**, Fable's FX6 review (item 37) was
@@ -3003,12 +3010,19 @@ outlive a session lives here, not in chat.
     legacy-chrome-byte-identical rule until that regime's own
     reckoning or B2's chrome pass — no writer loses data, only a
     door, on one device class, temporarily. **No fold needed.**
-    **B1's build side is closed.** Item 38 stays open pending Nick's
-    own DoD sitting (both FX6's and B1's scripts) and deploy. Next
-    brief awaits Nick's one-word queue decision (B2, already
-    authorized by the standing B1–B3 confirmation — or V1 first, if
-    he ratifies the second sitting's four points) — nothing builds
-    until it arrives.
+    **B1's build side is closed.**
+    **Deployed — 2026-07-20**, Nick's word ("deploy everything that's
+    ready to go live"), together with item 37 (FX6) in one deploy:
+    manifest `6759777..HEAD` independently re-enumerated by CC before
+    shipping — FX6 + B1 code commits, docs riders only, matching
+    Fable's own manifest exactly, no unnamed code riders. `railway up`
+    on `main` @ `5a2babc` (deployment `fca07345`, SUCCESS), confirmed
+    live (`200` on `/healthz` and `/`, `401` on `/auth/me`). **Item 38
+    stays open pending Nick's own DoD sitting** (both FX6's and B1's
+    scripts). Next brief awaits Nick's one-word queue decision (B2,
+    already authorized by the standing B1–B3 confirmation — or V1
+    first, if he ratifies the second sitting's four points) — nothing
+    builds until it arrives.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
