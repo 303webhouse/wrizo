@@ -421,6 +421,34 @@ function makeApp(base, cdp, waitEvent) {
       await cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p });
     },
     /**
+     * FX6 S4 — a genuinely TRUSTED keyboard combo (Ctrl/Cmd+<key>, optionally
+     * +Shift) via CDP Input.dispatchKeyEvent's own `modifiers` bitmask
+     * (Alt=1, Ctrl=2, Meta=4, Shift=8) — isTrusted:true, the browser's own
+     * input layer, NOT a page-side `new KeyboardEvent()` dispatch
+     * (isTrusted:false no matter how faithfully its fields are filled in,
+     * the SAME class of gap FX5 S4/S8's own mouse-fidelity checks close for
+     * pointer events — FX5 S7's own `ctrlZ` helper was exactly this kind of
+     * untrusted synthetic dispatch, disclosed there, closed here). This is
+     * what makes a Ctrl/Cmd+Z undo/redo claim provable at the harness's own
+     * honest fidelity ceiling — the standing discipline ("keyboard claims
+     * verified with trusted key events where the harness supports it")
+     * applies directly. `useMeta` sends the Meta/Command modifier instead
+     * of Ctrl (macOS convention); Ctrl is the default (Windows/Linux, and
+     * this harness's own browser).
+     */
+    keyCombo: async (key, { shift = false, useMeta = false } = {}) => {
+      const vk = { z: 90, y: 89 }[key.toLowerCase()] ?? key.toUpperCase().charCodeAt(0);
+      const code = 'Key' + key.toUpperCase();
+      let modifiers = useMeta ? 4 : 2;
+      if (shift) modifiers |= 8;
+      const p = {
+        key: shift ? key.toUpperCase() : key.toLowerCase(), // a real Shift-held press shifts the case too
+        code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers,
+      };
+      await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p });
+      await cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p });
+    },
+    /**
      * Dispatch a TOUCH drag (pointerType === 'touch') over a selector's box via
      * CDP Input — a resting palm / finger. Used to prove palm rejection: the
      * pen handler ignores it and, because the canvas is pass-through, it falls

@@ -4,7 +4,8 @@ import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } f
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { decorateEditorFor, decorateMarkdown, readEditorPlainText } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
-import { applyEmDash, findEmDashTrigger, revertEmDash } from '../store/emDash';
+import { applyEmDash, findEmDashTrigger } from '../store/emDash';
+import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 
 // CW2 — the reusable forward-only writing surface. Keyboard-only input on the
 // DM1 Run model: typing appends, backspace walks a short runway and then locks;
@@ -173,17 +174,21 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // dispatches input synchronously inside execCommand) — without this,
       // onInput would recurse into itself mid-substitution.
       let applyingEmDash = false;
-      // FX5 S7 — "one undo step reverts to the literal hyphens": native
-      // browser undo (execCommand('undo') AND a real Ctrl/Cmd+Z alike)
-      // does NOT work in this editor at all — confirmed live, not assumed
-      // (see store/emDash.ts's own header comment for the full root-cause
-      // diagnosis: this branch's own per-keystroke innerHTML rewrite
-      // invalidates whatever the undo manager was tracking). This tracks
-      // the most recent em-dash substitution's own position + original
-      // hyphens so a purpose-built Ctrl/Cmd+Z shim (below) can revert JUST
-      // it — cleared on every OTHER edit, so a much-later undo press never
-      // reaches back to a stale substitution.
-      let lastEmDash: { offset: number; hyphens: string } | null = null;
+      // FX6 S1 — the real, walkable undo/redo stack (store/textUndo.ts's
+      // own header comment carries the full root-cause diagnosis — the
+      // SAME per-keystroke innerHTML rewrite this file's own onInput does
+      // below — the (a)-vs-(b) mechanism choice, the coalescing-granularity
+      // reasoning, and how FX5 S7's own one-off `lastEmDash`/`revertEmDash`
+      // shim folds into this — not repeated here). Registered on `el`
+      // itself so PageEditor.tsx's applyRailFormat (a Bold/Italic rail
+      // click, which lives OUTSIDE this closure, in the parent component)
+      // can record an atomic step into the SAME stack a keystroke would.
+      const undoStack = createTextUndoStack({ text: initialText, caret: initialText.length });
+      registerUndoStack(el, undoStack);
+      // Classified at beforeinput (before the DOM mutates — the SAME
+      // discipline `justTypedSpace` above already uses), consumed by the
+      // very next onInput call it precedes.
+      let pendingKind: EditKind = 'atomic';
       // AB2 fix (post-build review) — see draftDecoration.ts's decorateEditorFor/
       // readEditorPlainText for the Chromium EOF-caret quirk this guards
       // against. Every write to el.innerHTML and every read of the live DOM
@@ -193,10 +198,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const redecorate = (plain: string, caret: number | null) => decorateEditorFor(el, plain, caret, setPlainOffset);
       const onInput = () => {
         if (applyingEmDash) return; // the substitution's own synthetic input event — already handled below
+        const kind = pendingKind;
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
         onChangeRef.current(plain);
         onForwardRef.current?.();
-        if (composingDraft) return;
+        if (composingDraft) return; // FX6 S1 — composed text records as ONE atomic step, at compositionend below
         // FX5 S7 — the em dash (Word convention): "--word " -> "—word ",
         // via a SEPARATE execCommand substitution (store/emDash.ts) so
         // undo reverts it as its own step, distinct from the keystroke
@@ -205,10 +211,20 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         justTypedSpace = false;
         if (trigger) {
           applyingEmDash = true;
-          const { applied, hyphens } = applyEmDash(el, trigger.start, trigger.end);
+          const { applied } = applyEmDash(el, trigger.start, trigger.end);
           applyingEmDash = false;
           if (applied) {
-            lastEmDash = { offset: trigger.start, hyphens };
+            // FX6 S1 — the em-dash shim, folded into the real stack: the
+            // word+space just typed closes as its OWN 'boundary' step
+            // first (`plain`/`caret` here are the PRE-substitution text —
+            // hyphens intact, trailing space included), then the
+            // substitution itself records as a SEPARATE 'atomic' step on
+            // top — always its own isolated group, so ONE Ctrl/Cmd+Z
+            // reverts JUST the dash (back to `plain`, hyphens + space
+            // intact), never a bigger chunk of the preceding typing, and
+            // never a double-undo seam (see store/textUndo.ts's own header
+            // comment for the full reasoning).
+            undoStack.record({ text: plain, caret }, 'boundary');
             const after = readEditorPlainText(el.innerText, getPlainOffset(el));
             onChangeRef.current(after.plain);
             // FX5 S7 — found live, not assumed: execCommand('insertText',
@@ -224,34 +240,37 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
             // caret: the hyphen run (trigger.end - trigger.start chars)
             // collapsed to exactly one em-dash character, so the original
             // caret simply shifts left by (hyphen count - 1).
-            redecorate(after.plain, caret - (trigger.end - trigger.start) + 1);
+            const afterCaret = caret - (trigger.end - trigger.start) + 1;
+            undoStack.record({ text: after.plain, caret: afterCaret }, 'atomic');
+            redecorate(after.plain, afterCaret);
             return;
           }
         }
-        lastEmDash = null; // any OTHER edit invalidates a pending em-dash undo
+        undoStack.record({ text: plain, caret }, kind);
         redecorate(plain, caret);
       };
-      // FX5 S7 — the one-step undo shim itself: Ctrl/Cmd+Z, ONLY while a
-      // substitution is still pending (immediately after, nothing else
-      // typed yet). Consumes the keystroke (preventDefault) so the
-      // browser's own (proven no-op) undo attempt never also fires.
-      // Anything ELSE — no pending substitution, Shift held (redo), a
-      // second consecutive press — falls through untouched, exactly
-      // "ONE undo step," never a repeatable toggle.
-      const onUndoKeyDraft = (e: KeyboardEvent) => {
-        if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z' || e.shiftKey) return;
-        if (!lastEmDash) return;
+      // FX6 S1 — the real undo/redo keybindings: Ctrl/Cmd+Z (undo),
+      // Ctrl/Cmd+Shift+Z or Ctrl+Y (redo, both conventions honored — the
+      // brief's own "Shift+Z or Ctrl+Y for redo"). Always preventDefault on
+      // a recognized combo (even when the stack has nothing to do): native
+      // undo is confirmed non-functional on this editor anyway (this
+      // file's own header comment / store/textUndo.ts), so there is no
+      // native behavior worth falling through to, and always owning the
+      // keystroke keeps the mechanism's behavior fully predictable. Mid-
+      // composition is left alone (isComposing) — an IME candidate window
+      // may use these same keys for its own navigation.
+      const onUndoRedoKeyDraft = (e: KeyboardEvent) => {
+        if (e.isComposing) return;
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        const key = e.key.toLowerCase();
+        const wantsUndo = key === 'z' && !e.shiftKey;
+        const wantsRedo = (key === 'z' && e.shiftKey) || key === 'y';
+        if (!wantsUndo && !wantsRedo) return;
         e.preventDefault();
-        const { offset, hyphens } = lastEmDash;
-        lastEmDash = null;
-        applyingEmDash = true;
-        const reverted = revertEmDash(el, offset, hyphens);
-        applyingEmDash = false;
-        if (reverted) {
-          const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
-          onChangeRef.current(plain);
-          redecorate(plain, caret);
-        }
+        const snap = wantsUndo ? undoStack.undo() : undoStack.redo();
+        if (!snap) return;
+        onChangeRef.current(snap.text);
+        redecorate(snap.text, snap.caret);
       };
       // VW Slice 4 — own ink passes silently: simply don't preventDefault, and
       // the browser's native paste/drop proceeds (Draft owns its contenteditable).
@@ -261,6 +280,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         // type a space": captured here, at beforeinput, before the DOM
         // mutates, so a delete/paste/IME-commit can never masquerade as one.
         justTypedSpace = it === 'insertText' && e.data === ' ';
+        // FX6 S1 — classify the upcoming edit for the undo stack, the SAME
+        // "capture before the DOM mutates" discipline as `justTypedSpace`
+        // (store/textUndo.ts's own classifyEditKind — shared with
+        // BoardEditor.tsx's BoardCardPopup so the two surfaces can't drift).
+        pendingKind = classifyEditKind(it, e.data ?? null);
         if (it === 'insertFromPaste' || it === 'insertFromDrop') {
           if (shadowAllows(extractIncomingText(e))) return;
           e.preventDefault(); notePasteBlocked();
@@ -300,8 +324,10 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
-        lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        // FX6 S1 — Enter completes a line the same way a typed space
+        // completes a word: a 'boundary' step, closing whatever was open.
+        undoStack.record({ text: plain, caret }, 'boundary');
         onChangeRef.current(plain);
         onForwardRef.current?.();
         redecorate(plain, caret);
@@ -309,8 +335,12 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       const onCompStartDraft = () => { composingDraft = true; };
       const onCompEndDraft = () => {
         composingDraft = false;
-        lastEmDash = null; // a genuine edit — invalidates a pending em-dash undo
         const { plain, caret } = readEditorPlainText(el.innerText, getPlainOffset(el));
+        // FX6 S1 — an IME-composed insertion is one atomic undo step (no
+        // per-candidate-update recording happens above — onInput returns
+        // early while composingDraft is true, so the stack's own `current`
+        // stays exactly where it was before composition began).
+        undoStack.record({ text: plain, caret }, 'atomic');
         onChangeRef.current(plain);
         redecorate(plain, caret);
       };
@@ -321,7 +351,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
       el.addEventListener('keydown', onKeyDownDraft);
-      el.addEventListener('keydown', onUndoKeyDraft);
+      el.addEventListener('keydown', onUndoRedoKeyDraft);
       el.addEventListener('compositionstart', onCompStartDraft);
       el.addEventListener('compositionend', onCompEndDraft);
       el.addEventListener('paste', blockPaste);
@@ -330,11 +360,12 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         el.removeEventListener('input', onInput);
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
         el.removeEventListener('keydown', onKeyDownDraft);
-        el.removeEventListener('keydown', onUndoKeyDraft);
+        el.removeEventListener('keydown', onUndoRedoKeyDraft);
         el.removeEventListener('compositionstart', onCompStartDraft);
         el.removeEventListener('compositionend', onCompEndDraft);
         el.removeEventListener('paste', blockPaste);
         el.removeEventListener('drop', blockPaste);
+        unregisterUndoStack(el);
       };
     }
 

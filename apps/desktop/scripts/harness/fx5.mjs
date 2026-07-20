@@ -749,15 +749,10 @@ await withHarness(async (app) => {
 
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(150);
-  const sliverBoardShape = await app.evalJs(`(() => {
-    const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
-    const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn') || s.querySelector('.wz-sliver-toggle'));
-    const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
-    return { count: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
-  })()`);
-  ok('S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle (the brief\'s own words)',
-    sliverBoardShape.count === 2, JSON.stringify(sliverBoardShape));
-
+  // FX6 S2b — the board sliver's own "EXACTLY two hand tools" count check
+  // used to live here; PARKED below (HARNESS_PARKED=1) — a third tool
+  // (New page card) joins Add card + the footer toggle. Live successor:
+  // fx6.mjs's own S2 section.
   const footerToggleBtn = "[...document.querySelectorAll('.wz-sliver-toggle')].find(b => b.textContent.includes('connections'))";
   await app.evalJs(`${footerToggleBtn}.click()`);
   await sleep(150);
@@ -946,13 +941,11 @@ await withHarness(async (app) => {
   ok('S7: ONE Ctrl/Cmd+Z reverts JUST the em-dash substitution, restoring the literal hyphens — "Second--try " again, not a bigger chunk of the preceding typing. (Native browser undo does not function in this editor at all — confirmed live — so this is a purpose-built shim, not native undo; disclosed, not hidden.)',
     afterOneUndo.includes('Second--try'), JSON.stringify(afterOneUndo));
 
-  // A second Ctrl+Z (nothing pending anymore) is a harmless no-op — proves
-  // this is genuinely "one step," not a repeatable toggle.
-  await ctrlZ('.forward-only-editor');
-  await sleep(150);
-  const afterSecondUndo = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
-  ok('S7: a SECOND Ctrl/Cmd+Z (nothing pending) is a harmless no-op — genuinely one step, not a repeatable toggle',
-    afterSecondUndo === afterOneUndo, JSON.stringify({ afterOneUndo, afterSecondUndo }));
+  // FX6 S1 — "a second Ctrl+Z (nothing pending) is a harmless no-op" used
+  // to be checked here; PARKED below (HARNESS_PARKED=1) — real, walkable
+  // undo replaces the single-shot shim, so a second Ctrl+Z now legitimately
+  // continues undoing further back. Live successor: fx6.mjs's own S1
+  // section (the full walkable chain).
 
   // The revert's own caret naturally lands back at the EDIT SITE (right
   // after the restored hyphens), not the end of the document — correct,
@@ -1130,16 +1123,80 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// fx5.mjs is a brand-new file; it parks nothing of its own (this ticket's
-// OWN park sweep lives in the FILES it superseded — fx4.mjs's own S6,
-// ab4.mjs's own second-generation park, cd1.mjs's own generation-2 note,
-// fx2.mjs's/fx3.mjs's own fixed floor checks — see this file's own header
-// comment for the full inventory). This scaffold exists so a future ticket
-// that supersedes any of THIS file's checks has a documented home,
-// matching every other harness file's own pattern.
+// FX6 S1/S2 supersede two of this file's own checks. Quoted verbatim below
+// (the exact code that used to live in this file's own live sections,
+// before this park):
+//
+//   S7 (live, before FX6): "A second Ctrl+Z (nothing pending anymore) is a
+//   harmless no-op — proves this is genuinely "one step," not a repeatable
+//   toggle."
+//     await ctrlZ('.forward-only-editor');
+//     const afterSecondUndo = await app.evalJs("...innerText");
+//     ok('S7: a SECOND Ctrl/Cmd+Z (nothing pending) is a harmless no-op —
+//       genuinely one step, not a repeatable toggle',
+//       afterSecondUndo === afterOneUndo, ...);
+//   FX6 S1 replaces the single-shot em-dash shim with a REAL, walkable
+//   undo/redo stack (store/textUndo.ts) — a second Ctrl+Z no longer a
+//   no-op: it legitimately continues undoing further back (this IS the
+//   point of real undo — "Ctrl+Z's his way back out step by step," the
+//   brief's own DoD wording). Live successor: fx6.mjs's own S1 section
+//   covers the full walkable chain; the check below proves the OLD claim
+//   ("no-op") is now false, the same "prove the retirement itself"
+//   discipline fx4.mjs's own PARKED section established.
+//
+//   S5 (live, before FX6): "the board sliver carries EXACTLY two hand
+//   tools now — Add card + the footer toggle."
+//     const sliverBoardShape = await app.evalJs(`(() => { ... })()`);
+//     ok('S5: the board sliver carries EXACTLY two hand tools now...',
+//       sliverBoardShape.count === 2, ...);
+//   FX6 S2b adds a THIRD tool (New page card) — the board-side door Nick
+//   reached for and couldn't find. Live successor: fx6.mjs's own S2
+//   section proves New page card's own presence + function; the check
+//   below proves the OLD count ("exactly two") is now three.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    const ctrlZParked = (sel) => app.evalJs(`document.querySelector('${sel}').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }))`);
+    await freshProsePage(app, LAPTOP_W, 900);
+    await app.click('Draft');
+    await sleep(200);
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys('Alpha word. Second--try ');
+    await sleep(250);
+    await ctrlZParked('.forward-only-editor');
+    await sleep(200);
+    const afterOneUndo = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+    await ctrlZParked('.forward-only-editor');
+    await sleep(200);
+    const afterSecondUndo = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+    pok('PARKED (was "S7: a SECOND Ctrl/Cmd+Z (nothing pending) is a harmless no-op — genuinely one step, not a repeatable toggle") — FX6 S1: real, walkable undo/redo replaces the single-shot em-dash shim; a second Ctrl+Z now legitimately continues undoing further back (proven here: the text changes again, further than the first undo) — live successor: fx6.mjs\'s own S1 section',
+      afterSecondUndo !== afterOneUndo, JSON.stringify({ afterOneUndo, afterSecondUndo }));
+
+    await freshBoard(app, 'fx5-parked-s5-board', [
+      { id: 'fx5p-s5-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
+      { id: 'fx5p-s5-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
+    ], LAPTOP_W, 900);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+    await sleep(150);
+    const sliverBoardShape = await app.evalJs(`(() => {
+      const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
+      const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn') || s.querySelector('.wz-sliver-toggle'));
+      const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
+      return { count: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
+    })()`);
+    pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); live successor: fx6.mjs\'s own S2 section proves its presence + function',
+      sliverBoardShape.count === 3, JSON.stringify(sliverBoardShape));
+
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nFX5 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of fx5.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nFX5 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nFX5 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

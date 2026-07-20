@@ -29,6 +29,7 @@ import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor } from '../store/draftDecoration';
+import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
 import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
@@ -364,6 +365,16 @@ function PageEditorView({ id }: { id: string }) {
     el.focus();
     const sel = getSelectionOffsets(el) ?? { start: textRef.current.length, end: textRef.current.length };
     const result = applyFormat(textRef.current, sel.start, sel.end, action);
+    // FX6 S1 — a rail Bold/Italic/Heading/Spacing click is a genuine edit
+    // that bypasses the contenteditable's own input events entirely (a
+    // direct programmatic decorate, same as this function always did) — so
+    // it must record its OWN atomic step into ForwardOnlyEditor's own undo
+    // stack (registered on this SAME `el`, store/textUndo.ts's own
+    // registry — see that file's header comment for why a click here
+    // can't just close over a local ref, unlike BoardCardPopup's own
+    // applyBoardFormat), or the click would be invisible to undo entirely.
+    // Always atomic: a format toggle never coalesces with anything else.
+    getRegisteredUndoStack(el)?.record({ text: result.text, caret: result.start }, 'atomic');
     setText(result.text);
     decorateEditorFor(el, result.text, result.start, setCaretOffset);
   };
