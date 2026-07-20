@@ -3023,6 +3023,64 @@ outlive a session lives here, not in chat.
     already authorized by the standing B1–B3 confirmation — or V1
     first, if he ratifies the second sitting's four points) — nothing
     builds until it arrives.
+39. **B2 (v2) — the Shelf, the Drawers, and the Places.** **BRIEF
+    COMMITTED — 2026-07-20.**
+    `docs/wrizo-alpha/b2-shelf-and-drawers-brief-v2.md` is the build
+    text; `docs/wrizo-alpha/b2-shelf-and-drawers-brief.md` (v1) stays
+    on disk as record per v2's own supersession note. **No in-flight
+    v1 work existed to reconcile** — checked directly (no
+    `b2-shelf-and-drawers` branch, no commits referencing it anywhere
+    in history) before concluding this, not assumed.
+    **Nick's sketch, verbatim (2026-07-20):** "the Page pop-out offers
+    kinds of pages (New Journal Entry, New Page, Add Page) with
+    toggled lists of drawers and New Drawer; pages join locations by
+    checkbox — a journal page shows Journal checked, plus checkable
+    boards/drawers." T3 (the Shelf's law) carries forward unchanged
+    from v1, Nick-ratified: not deleted, not a system board, no
+    project home, not journal-homed, zero user-board pins — starring
+    irrelevant; pinning anywhere removes it at next reconcile.
+    **The Architects' rulings on Nick's sketch, recorded:** (1) the
+    checkbox panel is TWO ZONES, not one — Boards as true many-of
+    checkboxes (pin/unpin, pure membership) vs. Home as single-select
+    (Journal / a Drawer / Loose) because the one-home law (A16, R2's
+    own dress) is stored truth, not membership — changing home is the
+    real filing act, carries its existing one-shot confirmation, and
+    no checkbox ever deletes; (2) **DRAWER SUBSUMES PROJECT IN
+    CHROME** — storage keeps `projectId` (zero schema), only the
+    writer-facing word "Project" retires app-wide in favor of
+    "Drawer"; B3's future wizard seeds "the plan board in your
+    drawer"; (3) the Journal Board's own membership law PINNED:
+    origin `'journal'` AND no project home — filing removes a page
+    from the Journal Board, origin (provenance) never changes, new
+    journal entries appear with no sorting, ever; (4) "Add Page" read
+    as the Board's own Add flow gaining an existing-page picker, the
+    Page pop-out staying creation-plus-Places — Nick may flip this
+    reading by one line, it is not a hard gate.
+    **Two pending one-word gates, both explicit in the brief's own
+    text, neither builds past its gate without Nick's word:** the
+    Drawer chrome word-swap (S6) — **GATED, build LAST, STOP before
+    it and report with the swap staged but uncommitted if the word
+    hasn't arrived by the time every other slice is done**; the
+    "Add Page" reading (S5) is NOT gated the same way — it proceeds
+    on the Architects' own reading above, flaggable/flippable by one
+    line at Nick's word, not blocking the build.
+    Eight slices: S1 the third system Board (Shelf, every B1
+    system-board law by the same code paths, not copies); S2 the
+    Shelf's own Pin-to-a-Board action; S3 the legacy `shelved` flag's
+    retirement (column dormant, never dropped, effect honestly
+    audited); S4 the Places panel (the two-zone checkbox truth,
+    superseding the old Moves "Add to..." flow entirely — its store
+    paths are exactly what Places calls, its harness checks park at
+    A4); S5 the Page pop-out's reordered roster + the board-side
+    Existing-page picker; S6 the gated word swap; S7 the Journal
+    Board's derivation pinned to the amended law + the Drawers panel
+    (A17's chrome, derived grouping, Shelf as the first tile,
+    anti-file-manager rule binding, no counts/badges/timestamps
+    anywhere); S8 `b2.mjs`. Zero schema expected, STOP-and-report if
+    any slice wants a column; merge pre-authorized; Fable reviews
+    post-merge; per-slice commits from the start (the FX6 practice).
+    **Build starting — 2026-07-20**, via a Workflow-orchestrated
+    build+review pipeline (ultracode), off post-B1-deploy `main`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
