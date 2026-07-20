@@ -212,6 +212,17 @@ await withHarness(async (app) => {
   ok('R2: the reordered position survives a reload', JSON.stringify(orderAfterReload) === JSON.stringify(orderAfterDrag), JSON.stringify(orderAfterReload));
 
   // -- Slice 2: FILE to the Shelf (single page A) ----------------------------
+  // Review fix (B2 S3, 2026-07-20) — a genuine truthfulness defect found
+  // live: A is journal-origin (makePage -> wrizoCreateJournalPage); under
+  // S7's own pinned law a journal-homed page can never leave Journal
+  // membership by un-filing alone, and T3 disqualifies it from the Shelf
+  // while it stays journal-homed — so this click was ALREADY a no-op
+  // (provable: A stays in the Spread grid AND on the Journal Board), yet
+  // the toast kept insisting "moved; it left the Journal." AddToSheet.tsx's
+  // own fileToShelf now reads the REAL post-write outcome and phrases the
+  // toast honestly either way (quoted verbatim below, the ORIGINAL always-
+  // true assertion this fix falsifies, A4 park sweep lives in this file's
+  // own PARKED section).
   await app.click('Select');
   await app.evalJs(`document.querySelector('[data-page-id="${A.id}"]').click()`);
   await app.waitFor("!!document.querySelector('.spread-add')", { label: 'Add to… button' });
@@ -220,17 +231,10 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('The Shelf')).click()");
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
   const toastShelf = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  ok('FILE-to-Shelf toast carries the exact MOVES language', toastShelf === 'Filed 1 page to the Shelf — moved; it left the Journal.', toastShelf);
+  ok('Review fix (B2 S3): the "File to Shelf" toast is now HONEST for a journal-homed page — it says nothing moved, instead of falsely claiming it left the Journal',
+    toastShelf === "1 page stays in the Journal — a journal-homed page can't be shelved directly; nothing moved.", toastShelf);
   entries = await app.localJSON('writer-studio-journal-entries');
   const aAfter = entries.find((e) => e.id === A.id);
-  // B2 S3 park sweep — live successor immediately below: `shelved` retires
-  // from every write path (persistence.ts's setPageHome no longer sets it,
-  // true or false — the column stays dormant). A is journal-origin
-  // (makePage -> wrizoCreateJournalPage), so "File to Shelf" now just
-  // un-files it — under B2 S7's pinned law (origin 'journal' AND projectId
-  // null), an un-filed journal-origin page is STILL journal-homed; there
-  // is no separate Shelf bucket for it to land in. Quoted verbatim below,
-  // A4.
   ok('B2 S3 successor of "A is now on the Shelf (projectId null, shelved true)": projectId is cleared, but `shelved` is never written (dormant column) — un-filing a journal-origin page returns it to the Journal, not a Shelf-flag',
     aAfter.projectId == null && aAfter.shelved !== true, JSON.stringify(aAfter));
   await sleep(150);
@@ -242,6 +246,9 @@ await withHarness(async (app) => {
   // to…" button (JournalEntry.tsx, not the Spread's multi-select) — the
   // toast must survive the navigate('/journal') that follows a MOVES verb.
   // Previously lost: the toast node lived inside the view being unmounted.
+  // Review fix (B2 S3) — same honesty fix as above: F is ALSO journal-
+  // origin (same makePage door), so this toast is now the "nothing moved"
+  // phrasing too, not the old always-"moved" claim.
   const idF = await makePage('Foxtrot, filed from its own entry view.', false);
   await app.goto(`/journal/${idF}`);
   await app.waitFor("!!document.querySelector('.entry-add')", { label: 'entry view (F)' });
@@ -250,7 +257,8 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('The Shelf')).click()");
   await app.waitFor("!!document.querySelector('.action-toast')", { label: 'toast on /journal after MOVE (R1)' });
   const entryViewToast = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  ok('R1: single-page FILE-to-Shelf toast survives the navigate to /journal', entryViewToast === 'Filed 1 page to the Shelf — moved; it left the Journal.', entryViewToast);
+  ok('R1: single-page FILE-to-Shelf toast (now honest — "nothing moved," F is journal-origin too) survives the navigate to /journal',
+    entryViewToast === "1 page stays in the Journal — a journal-homed page can't be shelved directly; nothing moved.", entryViewToast);
   await app.reload();
   // B1 — '/journal' now redirects to the Journal Board (pages/Journal.tsx
   // deleted, S5); this check only ever needed a settled-post-reload marker,
@@ -503,6 +511,33 @@ if (process.env.HARNESS_PARKED === '1') {
     // not a separate Shelf — live successors: this file's own live
     // section, amended in place (both now assert the OPPOSITE).
     pok('PARKED (was "A is now on the Shelf (projectId null, shelved true)" and "A left the Spread grid") — B2 S3/S7: `shelved` never writes true again, and a journal-origin page stays journal-homed once un-filed (no Shelf bucket to land in) — live successor: this file\'s own live section, amended',
+      true, 'see this file\'s own live section, above');
+
+    // Review fix (B2 S3, 2026-07-20) — the ORIGINAL "FILE-to-Shelf toast
+    // carries the exact MOVES language" assertion, quoted verbatim, plus
+    // R1's own matching assertion ("R1: single-page FILE-to-Shelf toast
+    // survives the navigate to /journal"), both asserted:
+    //
+    //   ok('FILE-to-Shelf toast carries the exact MOVES language',
+    //     toastShelf === 'Filed 1 page to the Shelf — moved; it left the
+    //     Journal.', toastShelf);
+    //   ok('R1: single-page FILE-to-Shelf toast survives the navigate to
+    //     /journal', entryViewToast === 'Filed 1 page to the Shelf — moved;
+    //     it left the Journal.', entryViewToast);
+    //
+    // SUPERSEDED — a genuine truthfulness defect the review caught live:
+    // both fixtures' own source page (A, F) is journal-origin, and under
+    // S7's own pinned law a journal-homed page can never leave Journal
+    // membership by un-filing alone (T3 also disqualifies it from the
+    // Shelf while journal-homed) — so this toast's own unconditional
+    // "moved; it left the Journal" claim had become FALSE for the only
+    // population either fixture ever reaches (provable: A/F never actually
+    // left the Spread grid or the Journal Board — the SAME live checks
+    // right above already prove this). AddToSheet.tsx's own fileToShelf now
+    // reads the real post-write outcome and phrases the toast honestly
+    // either way — live successors: this file's own live section, amended
+    // (both toast checks now assert the honest "nothing moved" phrasing).
+    pok('PARKED (was "FILE-to-Shelf toast carries the exact MOVES language" and "R1: single-page FILE-to-Shelf toast survives the navigate to /journal") — review fix (B2 S3): the toast unconditionally claimed "it left the Journal," which had become false for every page either fixture reaches (journal-origin, provably unmoved) — AddToSheet.tsx now phrases it honestly from the real outcome — live successor: this file\'s own live section, amended',
       true, 'see this file\'s own live section, above');
     return parkedChecks;
   });

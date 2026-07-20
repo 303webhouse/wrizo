@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   getDrawers, getProjects, getProject, getJournalEntry, setPageHome,
   fileToNewBinder, getBinderPages, getStoryPlanByProjectId,
-  appendToChapter, attachToPlanBeat, appendToBoard,
+  appendToChapter, attachToPlanBeat, appendToBoard, inJournalView,
 } from '../store/persistence';
 import { getFramework } from '../store/frameworks';
 import { firstLine } from '../store/entryText';
@@ -50,9 +50,34 @@ export function AddToSheet({ sourceIds, onClose, onDone }: { sourceIds: string[]
 
   const pageWord = (count: number) => (count === 1 ? lex('page') : lexMany('page')).toLowerCase();
 
+  // B2 S3 (review fix, 2026-07-20) — a genuine truthfulness defect: this
+  // toast used to unconditionally claim "moved; it left the Journal" for
+  // EVERY page sent to the Shelf. Under S7's own pinned law (origin
+  // 'journal' AND projectId null), a journal-origin page can never leave
+  // Journal membership by un-filing alone — T3 also disqualifies it from
+  // the Shelf while it stays journal-homed — so for the ONLY population
+  // this sheet's two live call sites ever reach (Spread's bulk toolbar,
+  // JournalEntry.tsx's legacy `.entry-add`, both drawn from the notebook
+  // grid, which post-S3/S7 is always journal-origin or grandfathered-
+  // journal-homed), this click became a genuine no-op that kept lying
+  // about having moved the page (provable live: the page never actually
+  // left the Spread grid or the Journal Board). The fix reads the ACTUAL
+  // outcome back after the write and phrases the toast honestly either
+  // way, rather than assuming — the same "one truth" discipline every
+  // other B2 surface already follows. (A root-level "＋ New project" isn't
+  // offered without a Drawer to file into first, so this stays the sheet's
+  // only always-available root action; removing it outright would leave a
+  // dead sheet whenever no Drawer yet exists — retiring the CLAIM, not the
+  // control, is the fix that doesn't trade one defect for another.)
   const fileToShelf = () => {
     for (const id of sourceIds) setPageHome(id, 'shelf');
-    onDone(`Filed ${n} ${pageWord(n)} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`, 'MOVES');
+    const stillJournalHomed = sourceIds
+      .map(id => getJournalEntry(id))
+      .some((e): e is JournalEntry => !!e && inJournalView(e));
+    const msg = stillJournalHomed
+      ? `${n} ${pageWord(n)} ${n === 1 ? 'stays' : 'stay'} in the ${lex('journal')} — a journal-homed page can't be shelved directly; nothing moved.`
+      : `Filed ${n} ${pageWord(n)} to the ${lex('shelf')} — moved; it left the ${lex('journal')}.`;
+    onDone(msg, 'MOVES');
   };
 
   const fileStandalone = (drawerId?: string) => {

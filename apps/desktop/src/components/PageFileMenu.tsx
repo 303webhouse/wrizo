@@ -14,7 +14,12 @@ import { useLexicon } from '../store/themeLexicon';
 // still calls setPageHome(id,'shelf') — S3 also retired that WRITE path's
 // own shelved-setting internals (persistence.ts), so this button now reads
 // as "un-file" under the hood; the Shelf is where an unfiled page lands via
-// T3, not a place this menu files INTO directly anymore.
+// T3, not a place this menu files INTO directly anymore. Unlike AddToSheet's
+// own "File to Shelf" (which the review fix, below, had to make honest —
+// see that file's own header comment), this button's own reachable
+// population (ProjectHome.tsx's project-filed pages) is never journal-
+// homed, so un-filing here always DOES land the page on the Shelf via T3 —
+// no false claim to fix, and this control carries no toast to lie in.
 export function PageFileMenu({ page, label = 'file to…' }: { page: JournalEntry; label?: string }) {
   const [open, setOpen] = useState(false);
   const { t: lex, tMany: lexMany } = useLexicon();
