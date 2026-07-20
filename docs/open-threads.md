@@ -2969,6 +2969,46 @@ outlive a session lives here, not in chat.
     since `6759777` now also carries B1 (a second code ticket) plus
     docs riders, alongside FX6 — enumerate whichever ships when Nick's
     word arrives.
+    **Fable's post-merge review landed and is committed — GREEN,
+    required 0, one advisory — 2026-07-20**
+    (`docs/wrizo-alpha/b1-review-fable.md`). **The first ticket judged
+    under A16 itself**, and every one of the law's own load-bearing
+    claims held under the strongest proof style this house has
+    produced yet: arrangement-never-alters-truth proven TWICE (the
+    build's own fixtures AND the review's from-scratch throwaway
+    harness) — the skeptical second proof named as the standing
+    A16-era review bar; idempotence proven the strong way (two mounts
+    against unchanged truth, byte-identical, `null` returned when
+    nothing changed); authored arrangement proven to survive the full
+    delete→Trash→restore→Journal round trip byte-for-byte; arrange-
+    never-author confirmed structurally absent (undefined handlers,
+    not hidden buttons — the stronger form) rather than merely hidden;
+    capture confirmed byte-identical via 0-diff files, not sampled.
+    Five rulings of record: `origin:'system'` RATIFIED as a vocabulary
+    addition, not a schema change (CHECK-free column, A2's
+    null-grandfather untouched); **the three-bug chain RATIFIED
+    in-scope** — fix-reveals-the-next, all three chased to root,
+    existing only because nothing had ever made the Journal Board a
+    real destination before; **the review's own defect AND its
+    method both matter** — "verification by inhabitation, not
+    inspection" named as the standard (the reviewer stood on the
+    Trash Board and watched the false home-label render before
+    fixing it); retirement-by-replacement executed with zero blast
+    radius, the `/trash` route accepted as consistent with the
+    letter and spirit both; the park sweep at its largest scale yet
+    (nine harness files), including `th2`'s own "canonical /journal"
+    claim correctly parked (retirement means the URL deliberately no
+    longer stays canonical). **A1 accepted with eyes open**: the
+    sub-1100px Trash reachability gap rides under the standing
+    legacy-chrome-byte-identical rule until that regime's own
+    reckoning or B2's chrome pass — no writer loses data, only a
+    door, on one device class, temporarily. **No fold needed.**
+    **B1's build side is closed.** Item 38 stays open pending Nick's
+    own DoD sitting (both FX6's and B1's scripts) and deploy. Next
+    brief awaits Nick's one-word queue decision (B2, already
+    authorized by the standing B1–B3 confirmation — or V1 first, if
+    he ratifies the second sitting's four points) — nothing builds
+    until it arrives.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
