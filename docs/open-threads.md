@@ -2851,6 +2851,124 @@ outlive a session lives here, not in chat.
     byte-identical, no 404 hole); `b1.mjs`. Zero schema expected,
     STOP-and-report the moment any slice wants a column; merge
     pre-authorized; Fable reviews post-merge.
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED —
+    2026-07-19.** Built S1-S6 on `b1-journal-reborn` off `main` @
+    `7c5124e`, in its own worktree. **Zero schema — confirmed, not
+    just claimed**: every slice lived in `origin` (a new `'system'`
+    value), the existing `board-meta` element (`systemKind:
+    'journal'|'trash'`), and `deletedAt`. No STOP-and-report
+    triggered.
+    **S1 — a latent blind spot found and closed before it could
+    bite.** Every board pre-B1 always carried a `projectId`, so
+    `inJournalView`'s own legacy fallback never had to consider a
+    project-less board — a system Journal Board without an exclusive
+    origin would have wrongly satisfied that fallback and appeared
+    inside its own derivation. Closed with the new `origin:'system'`
+    value; `getNotebookPages()` and `getResumeTarget()` hardened
+    against the same "first board with no project" blind-spot class
+    on the same pass.
+    **S2 — the reconcile reuses the canonical membership rule**
+    (`getJournalPages()`), not a re-derived one; returns `null` when
+    nothing changed, so idempotence is checkable, not just asserted.
+    Wired to `persistence.subscribe`, so a capture/delete/restore
+    anywhere reaches whichever system board is open, live.
+    **S3 — arrange-never-author, with a gap closed pre-review.** The
+    sliver's Add is genuinely absent (not disabled — an optional
+    prop, not a conditional render). While writing the harness, the
+    build itself found and closed a real gap: `pinPageToBoard` had no
+    code-level guard against pinning a system board onto a real
+    board (only the UI path was closed) — fixed to match FX6's own
+    self-pin precedent, belt-and-suspenders.
+    **S4 — Trash surfaced, deletion mechanism untouched.**
+    `restoreEntry()` clears only `deletedAt`. One deliberate exception
+    to this file's deletion-filtered reads
+    (`getJournalEntryIncludingDeleted()`) lets Trash cards show real
+    titles instead of "Missing page." Restore is a plain button, no
+    fidelity claim needed — disclosed explicitly rather than silently
+    assumed.
+    **S5 — the room retired, zero 404 holes, confirmed by direct
+    enumeration.** `pages/Journal.tsx` deleted outright; `/journal`
+    now resolves through a find-or-create gate. Every pre-existing
+    caller (`DeskRail`, `JournalEntry`'s back-links, Arrival's
+    no-resume fallback, every writing surface's own `backTo`) needed
+    **zero changes** — they all already navigated to the literal
+    string `'/journal'`. New stable `/trash` route added alongside.
+    **Three real defects surfaced by the retirement itself, found and
+    fixed, not papered over:** (1) a MOVES-verb toast that rode router
+    history state into the now-deleted list surface, silently dropped
+    — rewired through the new gate's own one-shot consume-and-replace
+    effect; (2) the way-back return chip silently suppressed on
+    arrival at the Journal Board (`isWritingRoute()` had matched every
+    `/page/:id` unconditionally, `/journal` used to be exempt) — fix
+    scoped to system boards only; (3) fixing THAT exposed a SECOND,
+    previously-unreachable race — `useWayBack`'s unconditional
+    capture-on-unmount would now clobber the very slot the visible
+    chip depends on — closed with a new `participatesInWayBack` flag,
+    defaulted true so every other caller is unaffected, system boards
+    alone opt out. A large harness-fixture repair followed across
+    `ab3`/`cd1`/`cd2`/`fx1`/`fx6`/`j4`/`j5`/`m1`/`th1`/`th2`/`w1`/`w2`
+    — the old Journal list surface's retirement rippling exactly as
+    far as it should and no further.
+    **S6 — `b1.mjs`**, 51 checks at build time, growing to 53 after
+    the review's own fix (below).
+    **A16's own law — proven two ways, not just asserted.** Code-level:
+    `reconcileSystemBoard` only ever adds/removes `page-pin` boxes,
+    never touches `origin`/`projectId`/`deletedAt`; `restoreEntry`
+    destructures away only `deletedAt`. Live: a sibling card's exact
+    authored `x/y/w/h` survives idempotent re-runs, a delete, a
+    Trash-side restore, and a full round trip byte-for-byte.
+    **Independent review — GREEN, one genuine defect found and fixed,
+    not caught by the build's own harness.** `describePageHome` never
+    learned about `origin:'system'` — both system Boards fell through
+    its generic else-branch and reported **"In the Journal"** as their
+    own home, flatly false for the Trash Board (directly contradicts
+    S1's own "no project home") and self-referential nonsense for the
+    Journal Board itself. Verified live before fixing (stood on the
+    Trash Board, opened its own Page panel, saw the false label) —
+    exactly the same "first thing with no project" blind-spot class
+    the build had already found and closed elsewhere, missed here
+    because the harness asserted Pin/Move-Copy inertness but never the
+    label text. Fixed at the `BoardEditor.tsx` call site only (every
+    ordinary page's home label stays byte-identical), two new
+    deskLexicon terms, two new regression checks added.
+    **The review independently re-derived every load-bearing claim**,
+    including writing and running its OWN throwaway harness script
+    (not reusing `b1.mjs`) that performed a genuinely trusted
+    pointerdown→multi-step-pointermove→pointerup drag, a real
+    resize-handle drag, and a real overlap, then reloaded — 9/9
+    checks confirmed the underlying pages' full record stayed
+    byte-identical while the arrangement itself genuinely persisted,
+    so the "untouched" claim is meaningful, not vacuous. The retired
+    room's absence was confirmed by enumerating every `'/journal'`
+    call site in the codebase by hand, not sampled — `DeskRail.tsx`,
+    `JournalEntry.tsx`, `Spread.tsx`, `DrawersTree.tsx` confirmed as
+    genuinely 0-diff files.
+    **Judgment calls disclosed, none dissented:** Move/Copy made inert
+    on a system board's own page face alongside Pin (the brief only
+    named Pin; filing a system board into a project would break "no
+    project home" the same way pinning would) — Port stays live,
+    harmless (copies text only); no new page-delete UI added (the
+    only pre-existing manual delete affordance, the Plan panel's
+    board-delete, carries its own T4-ruled confirm dialog, left
+    untouched as pre-existing, out-of-scope policy); legacy (<1100px)
+    DeskRail gains no Trash item — reachable via the cascade or the
+    new `/trash` URL only below the floor, a real reachability gap
+    flagged rather than silently decided, following the standing
+    "legacy chrome stays byte-identical" law.
+    **Full suite, both passes.** Build: `tsc` (desktop+server) +
+    `build:web` + selftest + all 23 harness files (new `b1.mjs`)
+    green under both `HARNESS_PARKED` settings. Review: same suite,
+    from its own clean run, all green, `b1.mjs` at 53/53 post-fix.
+    CC's own third independent pass on the fast-forwarded `main`:
+    `tsc` (desktop+server) + `build:web` clean.
+    **Merged — 2026-07-19** (zero-schema, merge pre-authorized per the
+    standing rule). Fast-forwarded `main` to `0147d8b` (no divergence,
+    clean fast-forward, zero conflicts), pushed to `origin/main`.
+    **Not deployed** — Fable's post-merge review hasn't landed yet;
+    redeploy is Nick's call, as always, after that review. Manifest
+    since `6759777` now also carries B1 (a second code ticket) plus
+    docs riders, alongside FX6 — enumerate whichever ships when Nick's
+    word arrives.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
