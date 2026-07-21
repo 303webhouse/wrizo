@@ -173,13 +173,34 @@ export interface DeskFrameProps {
 // inherit down the DOM tree, so `.desk-frame-modestrip` /
 // `.desk-frame-corkboard` (each carrying `chrome-fade desk-dissolve`) pick
 // up the same fast-out/slow-in curve automatically, without DeskFrame
-// needing to touch the timing itself. CD2 S1 — `.desk-frame-strip` is
-// deliberately NOT in that list: the strip never dissolves (S1's own law),
-// so it carries neither class; the cascade's own layers 2-3 dissolve
-// through a DIFFERENT, more immediate mechanism (an explicit keydown reset
-// inside components/Cascade.tsx, the same precedent AB3's Drawer already
-// established for its own Place face) rather than the ambient opacity fade
-// — see that file's header comment for the full reasoning.
+// needing to touch the timing itself.
+//
+// FX10 S2 — `.desk-frame-strip` JOINS that list now; CD2 S1's original
+// "never dissolving, focusable" law is overturned by Nick's own device
+// finding: "the far left menu strip is not fading out when I resume
+// writing." Root-caused live (scripts/harness/fx10.mjs's own diagnostic
+// pass, not guessed): the strip was never wired to the dissolve at all —
+// not a broken subscription, a deliberate omission (this comment's own
+// prior wording said so outright, "the strip never dissolves... it carries
+// neither class"). Nothing about `dissolved`/`--fade-dur`/`data-writing`
+// was broken; the strip simply never carried the two classes every other
+// dissolving track already does. The fix is exactly that omission, closed
+// — `chrome-fade desk-dissolve`, the SAME classes `.desk-frame-corkboard`
+// already carries below, riding the SAME one `useChromeDissolve` engine
+// every other piece of chrome obeys (the identical first-keystroke trigger,
+// the identical reduced-motion branch — no second implementation). The
+// cascade's own layers 2-3 (the reach panel/survey) are UNCHANGED by this:
+// they still dissolve through the deliberately different, more immediate
+// mechanism named below (an explicit keydown reset), which is a real, prior
+// design choice this ticket doesn't touch — only the strip's own "exempt
+// from the vanishing law entirely" status was the defect.
+//
+// CD2 S1 (historical, now superseded above) — the cascade's own layers 2-3
+// dissolve through a DIFFERENT, more immediate mechanism (an explicit
+// keydown reset inside components/Cascade.tsx, the same precedent AB3's
+// Drawer already established for its own Place face) rather than the
+// ambient opacity fade — see that file's header comment for the full
+// reasoning. This part is untouched by FX10 S2.
 export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, rhizome, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -202,10 +223,12 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   return (
     <div ref={rootRef} className="desk-frame" data-writing={dissolved ? 'true' : 'false'}>
       <div className="desk-frame-grid" data-corkboard={hasCorkboard ? 'true' : 'false'}>
-        {/* CD2 S1 — no chrome-fade/desk-dissolve here: "never dissolving,
-            focusable" is S1's own law, the strip persists like the sliver's
-            grip. */}
-        <aside className="desk-frame-strip" aria-label={t('zoneStrip')}>
+        {/* FX10 S2 — the strip is chrome, and chrome vanishes: it now
+            carries the same `chrome-fade desk-dissolve` pair every other
+            dissolving DeskFrame track carries (see this file's own header
+            comment for the root-cause diagnosis and CD2 S1's superseded
+            "never dissolving" law). */}
+        <aside className="desk-frame-strip chrome-fade desk-dissolve" aria-label={t('zoneStrip')}>
           {strip}
         </aside>
         <div className="desk-frame-stagecol">

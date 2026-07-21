@@ -6,15 +6,23 @@
 // freshly built via `pnpm run build:web`).
 //
 // S1/S5 — the strip replaces the drawer whole: present and persistent
-// (never dissolving) through every cascade state, at both reference
-// widths. S2 — layer mechanics: overlays only (paper rect byte-identical
+// through every cascade state, at both reference widths. (FX10 — the
+// PARENTHETICAL "never dissolving" is superseded: CD2 S1's original law
+// exempted the strip from the vanishing law entirely; Nick's own device
+// finding overturned that, and the strip now dissolves with the rest of
+// chrome — see this file's own PARKED section and fx10.mjs's own S2
+// section.) S2 — layer mechanics: overlays only (paper rect byte-identical
 // through every state), dissolve-on-keystroke via the keydown-reset
 // mechanism (not the ambient chrome-fade class — see Cascade.tsx's own
-// header comment), Escape walks back one layer, the dock (close/reopen,
+// header comment; this part is UNCHANGED by FX10 — only the strip's own
+// exemption from the ambient fade was retired, never the layers' own
+// keydown-reset), Escape walks back one layer, the dock (close/reopen,
 // the vanishing-law rider, the small-screen 120px floor), reduced-motion.
 // S3 — all seven category panels. S4 — the survey (current-item olive,
 // click=travel). S6's own park sweep lives in EACH superseded check's own
-// file (ab1/ab2/ab3/cd1/fx1/fx2), per the A4 convention.
+// file (ab1/ab2/ab3/cd1/fx1/fx2), per the A4 convention; FX10 later parked
+// one more check here directly (the strip's own retired "never dissolving
+// through the room's writing-recede state" assertion).
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -393,19 +401,12 @@ await withHarness(async (app) => {
     JSON.stringify(afterKeystroke));
 
   // ==========================================================================
-  // S2 — the strip persists (fully opaque) through the room's own OWN
-  // writing-recede state too (unlike the retired drawer track, which used
-  // to fade with the room) — a keystroke that dissolves the ROOM's chrome
-  // must not touch the strip either.
+  // S2 (FX10-superseded) — the strip's own "persists through the room's
+  // writing-recede state too" assertion that lived here is PARKED below
+  // (HARNESS_PARKED gate, quoted verbatim) — FX10 S2 overturns CD2 S1's
+  // "never dissolving" law whole (Nick's own device finding). Live
+  // successor: fx10.mjs's own S2 section.
   // ==========================================================================
-  const roomDissolveState = await app.evalJs(`({
-    frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
-    stripOpacity: getComputedStyle(document.querySelector('.wz-strip')).opacity,
-    stripPointerEvents: getComputedStyle(document.querySelector('.wz-strip')).pointerEvents,
-  })`);
-  ok('S1: even while the room itself is mid-dissolve (data-writing=true), the strip stays fully opaque and interactive — never dissolving',
-    roomDissolveState.frameWriting === 'true' && roomDissolveState.stripOpacity === '1' && roomDissolveState.stripPointerEvents !== 'none',
-    JSON.stringify(roomDissolveState));
 
   // ==========================================================================
   // S4 — the survey: large thumbnails (title present), current item olive,
@@ -874,6 +875,46 @@ if (process.env.HARNESS_PARKED === '1') {
     const oldDrawerSurveyGone = await app.evalJs("!document.querySelector('.wz-cascade-survey') && !!document.querySelector('.wz-drawers-tiles')");
     pok('PARKED (was "S3: the Drawers panel lists the drawer entities (not a flat page list)" + "S3/S4: choosing a drawer opens ITS survey (the filed pages inside that specific drawer)") — B2 S7: the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel — live successor: this file\'s own live S3/S4 section, rebuilt',
       oldDrawerSurveyGone === true, String(oldDrawerSurveyGone));
+
+    // FX10 (2026-07-21) — CD2 S1's own "never dissolving" law for the strip
+    // is overturned whole by Nick's own device finding ("the far left menu
+    // strip is not fading out when I resume writing"): the strip now
+    // carries `chrome-fade desk-dissolve`, the SAME classes every other
+    // dissolving DeskFrame track carries, riding the one useChromeDissolve
+    // engine. Falsifies this file's own S1 check below, quoted verbatim:
+    //
+    //   ok('S1: even while the room itself is mid-dissolve (data-writing=
+    //   true), the strip stays fully opaque and interactive — never
+    //   dissolving',
+    //     roomDissolveState.frameWriting === 'true' &&
+    //     roomDissolveState.stripOpacity === '1' &&
+    //     roomDissolveState.stripPointerEvents !== 'none', ...);
+    //
+    // (The SIBLING check just above it in this file's own live section,
+    // "a keystroke dissolves BOTH open layers... while the strip survives,
+    // fully opaque," is NOT falsified and stays live, untouched — it reads
+    // `stripOpacity` alone within ~150ms of the triggering keystroke, well
+    // inside useChromeDissolve's own ~2.8s fade-out span, so the strip's
+    // opacity genuinely hasn't visibly moved yet at that read; only
+    // `pointer-events` — a discrete property with no transition, flipping
+    // the instant the dissolve class matches — changes early enough for
+    // THIS check's own later read to catch it.) Live successor: fx10.mjs's
+    // own S2 section, which proves the strip's opacity actually reaches the
+    // ambient floor (~0.08) and pointer-events:none, at all three reference
+    // widths, with a real wait for the transition to settle.
+    await freshProsePage(app, LAPTOP_W, 900);
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys('FX10 park-sweep probe — dissolving the room');
+    await sleep(300);
+    const stripDissolvesNow = await app.evalJs(`({
+      frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
+      stripPointerEvents: getComputedStyle(document.querySelector('.wz-strip')).pointerEvents,
+      stripClasses: document.querySelector('.desk-frame-strip')?.className ?? null,
+    })`);
+    pok('PARKED (was "S1: even while the room itself is mid-dissolve (data-writing=true), the strip stays fully opaque and interactive — never dissolving") — FX10 S2: Nick\'s own device finding overturns CD2 S1\'s "never dissolving" law; the strip now genuinely dissolves (pointer-events:none while data-writing=true) — live successor: fx10.mjs\'s own S2 section',
+      stripDissolvesNow.frameWriting === 'true' && stripDissolvesNow.stripPointerEvents === 'none' && (stripDissolvesNow.stripClasses ?? '').includes('desk-dissolve'),
+      JSON.stringify(stripDissolvesNow));
+
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

@@ -394,6 +394,51 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
               </button>
             </div>
 
+            {/* FX10 S1 — the conversation is now the panel's own center of
+                gravity ("with the room this much wider, the composer and
+                the exchange must read as the main event, the lenses as
+                sections around it" — the brief's own words): moved to
+                render directly under the head, ahead of every lens. The
+                log lost its own private `max-height`/`overflow-y` (S1's
+                "no scroll-within-scroll" — see index.css's own comment on
+                `.wz-tutor-convo-log` for the full before/after) — it grows
+                with its content now, the panel's single `overflow-y:auto`
+                is the only scrollbar in this whole subtree. */}
+            <div className="wz-tutor-convo">
+              <div className="wz-tutor-h">{t('tutorConversationTitle')}</div>
+              <div className="wz-tutor-convo-log">
+                {messages.length === 0
+                  ? <div className="wz-tutor-empty">{t('tutorConversationEmpty')}</div>
+                  : messages.map((m) => (
+                      <div key={m.id} className={`wz-tutor-msg wz-tutor-msg-${m.role}`}>{m.text}</div>
+                    ))}
+              </div>
+              {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
+              {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
+              {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
+              {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
+              <div className="wz-tutor-convo-row">
+                <input
+                  className="wz-tutor-convo-input"
+                  type="text"
+                  value={composerText}
+                  placeholder={t('tutorConversationPlaceholder')}
+                  onChange={(e) => setComposerText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void send(); } }}
+                />
+                <button type="button" className="wz-tutor-convo-send" disabled={!composerText.trim() || sending} onClick={() => void send()}>
+                  {t('tutorConversationSend')}
+                </button>
+              </div>
+            </div>
+
+            {/* FX10 S1 — the lenses + nudges now read as sections AROUND
+                the conversation above, not the panel's own lead content —
+                a single wrapper (a quiet top divider, index.css) is the
+                whole demotion; no section here grows its own scrollbar
+                (S1's "no scroll-within-scroll" applies just as much to
+                these as to the conversation log). */}
+            <div className="wz-tutor-sections">
             <div className="wz-tutor-section">
               <div className="wz-tutor-h">{t('tutorLensConsistency')}</div>
               {consistencyObservations.length === 0
@@ -430,33 +475,6 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
                 ? <div className="wz-tutor-empty">{t('tutorNudgesEmpty')}</div>
                 : nudges.map((n) => <div key={n} className="wz-tutor-obs">{n}</div>)}
             </div>
-
-            <div className="wz-tutor-convo">
-              <div className="wz-tutor-h">{t('tutorConversationTitle')}</div>
-              <div className="wz-tutor-convo-log">
-                {messages.length === 0
-                  ? <div className="wz-tutor-empty">{t('tutorConversationEmpty')}</div>
-                  : messages.map((m) => (
-                      <div key={m.id} className={`wz-tutor-msg wz-tutor-msg-${m.role}`}>{m.text}</div>
-                    ))}
-              </div>
-              {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
-              {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
-              {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
-              {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
-              <div className="wz-tutor-convo-row">
-                <input
-                  className="wz-tutor-convo-input"
-                  type="text"
-                  value={composerText}
-                  placeholder={t('tutorConversationPlaceholder')}
-                  onChange={(e) => setComposerText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void send(); } }}
-                />
-                <button type="button" className="wz-tutor-convo-send" disabled={!composerText.trim() || sending} onClick={() => void send()}>
-                  {t('tutorConversationSend')}
-                </button>
-              </div>
             </div>
 
             {/* TU2 S5 — the session meter's own quiet foot line. Absent
