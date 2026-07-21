@@ -70,12 +70,40 @@ const LEAVE_GRACE_MS = 150;
 // cached: this only runs while `dissolvedRef.current` is already true (see
 // the early return below), a comparatively rare state, and the set of
 // dissolving surfaces on screen varies by route/mount.
+//
+// TWO real defects found live (fx5.mjs's own S8 "genuine departure" check,
+// re-run in full-suite context, not guessed — a zero-size check ALONE is
+// not enough):
+//
+// (1) `.wz-sliver-panel` carries `chrome-fade desk-dissolve`
+// UNCONDITIONALLY — its own width is a static `calc(100% - 16px)` whether
+// the sliver is open or closed (Sliver.tsx's own header comment), so a
+// genuinely CLOSED sliver still has a real, nonzero rect sitting in the
+// margin, and the width/height check alone let that closed rect count as
+// "reachable chrome."
+//
+// (2) A first fix (requiring nonzero opacity) was ALSO insufficient,
+// confirmed by re-running the same check against it: `.wz-sliver-panel`'s
+// own "closed" rule (`opacity:0`, ONE class, specificity 0,0,1,0) LOSES the
+// cascade to the ambient `.desk-frame[data-writing='true'] .desk-dissolve`
+// rule (TWO classes + an attribute, specificity 0,0,3,0) the instant the
+// ROOM itself is also dissolving — so a genuinely CLOSED sliver, while the
+// room dissolves, settles at the SAME small nonzero opacity (~0.04-0.08,
+// --fade-min) a genuinely OPEN-but-faded one does. Opacity alone cannot
+// tell the two apart in that state. The only signal that actually
+// distinguishes "closed" from "open" is the component's own LOCAL toggle:
+// `data-open` (Sliver.tsx/Tutor.tsx both set it). An element with
+// `data-open="false"` is genuinely closed regardless of its computed
+// opacity; an element with no `data-open` attribute at all (the strip, the
+// header, every sprint-nav bar — surfaces with no local open/closed
+// concept, only the ambient dissolve) has nothing to disqualify it.
 function overDissolvedChrome(x: number, y: number): boolean {
   if (typeof document === 'undefined') return false;
   const nodes = document.querySelectorAll<HTMLElement>('.chrome-fade, .desk-dissolve');
   for (const el of nodes) {
+    if (el.dataset.open === 'false') continue; // a genuinely CLOSED local toggle — nothing to reach for, regardless of its ambient opacity
     const r = el.getBoundingClientRect();
-    if (r.width === 0 || r.height === 0) continue; // collapsed/closed — nothing to reach for
+    if (r.width === 0 || r.height === 0) continue; // collapsed — nothing to reach for
     if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return true;
   }
   return false;
