@@ -574,6 +574,84 @@ await withHarness(async (app) => {
   const zPersisted = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e=>e.id==='fx7-s8-board')?.boxes.find(b=>b.id==='fx7-s8-card-2')?.z`);
   ok('S8: the new z-order persists to storage across a reload', zPersisted === zAfter, JSON.stringify({ zAfter, zPersisted }));
 
+  // ==========================================================================
+  // S9 — the deck wizard's own routing: which door Nick actually reached.
+  // Root-caused live (not guessed): CreateProject.tsx names exactly ONE
+  // deck-related string, "Start from a deck…" (deskLexicon's own
+  // deckWizardStartFromDeck) — there is no "Plot Structure" text anywhere in
+  // that file, or anywhere in the whole app (grepped). The nearest match is
+  // deskLexicon's own `cascadePlanPlotStory: 'Plot a Story'` — a PRE-
+  // EXISTING button in the Cascade's own Plan panel (components/
+  // CascadePanels.tsx's PlanPanel, predating B3 entirely), whose onClick
+  // navigates straight to `/project/:id/wizard` (App.tsx's own route,
+  // mounting the OLD `StructureWizard` page) — a full-page ROUTE
+  // NAVIGATION, never DeckWizard's pop-out-over-blurred-board treatment at
+  // all. Confirmed live below: clicking it lands on a page whose own body
+  // text reads "STRUCTURE WIZARD / A few quick questions / What genre best
+  // describes your story?..." — the old, deprecated wizard, verbatim,
+  // exactly matching Nick's own "it's not doing it with pop-ups over a
+  // blurred out board... leading back to the old, deprecated wizard."
+  // "Plot a Story" is the closest wording match to Nick's own "Plot
+  // Structure" paraphrase (ProjectHome.tsx's own "Choose a structure" link
+  // reaches the identical old route too, a secondary possibility, same
+  // verdict either way). BOTH of B3's own two doors are verified below to
+  // launch the GENUINE DeckWizard pop-out correctly, with no silent
+  // fallthrough to the old wizard anywhere — this is NOT a B3 routing bug.
+  // Per the brief's own explicit instruction, the old "Plot a Story"/
+  // "Choose a structure" doorway is NOT touched, retired, or redirected
+  // anywhere in this ticket — its fate is Fable/Nick's own call, deferred
+  // by B3's own brief by name.
+  // ==========================================================================
+  await freshProsePage(app, LAPTOP_W, 900);
+  await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (S9)' });
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][2].click()"); // Plan category
+  await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (S9)' });
+  await sleep(200);
+  const planButtons = await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].map(b => b.textContent.trim())");
+  ok('S9: the OLDER, pre-existing "Plot a Story" button lives in the Cascade\'s own Plan panel — a genuinely different doorway from either of B3\'s own two "…a deck…" doors',
+    planButtons.includes('Plot a Story'), JSON.stringify(planButtons));
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].find(b => b.textContent.trim() === 'Plot a Story')?.click()");
+  await sleep(400);
+  const oldWizardHash = await app.evalJs('location.hash');
+  const oldWizardBody = await app.evalJs('document.body.innerText.slice(0, 200)');
+  ok('S9 CONFIRMED: "Plot a Story" navigates to the OLD /project/:id/wizard route (StructureWizard.tsx) — a full-PAGE route change, never DeckWizard\'s own pop-out-over-blur — matching Nick\'s own "leading back to the old, deprecated wizard" verdict exactly',
+    oldWizardHash.endsWith('/wizard') && oldWizardBody.includes('STRUCTURE WIZARD'), JSON.stringify({ oldWizardHash, oldWizardBody }));
+
+  // B3's own door 1 (CreateProject.tsx, "Start from a deck…") — genuinely
+  // launches DeckWizard's own pop-out-over-blur, no bug, already proven
+  // live above (the dealtBoard() helper IS this exact door, used
+  // throughout S5-S8) — re-asserted here explicitly as S9's own door-1
+  // verdict, not merely inferred from reuse elsewhere in this file.
+  await freshDesk(app, LAPTOP_W, 900);
+  await app.goto('/project/new');
+  await app.waitFor("!!document.querySelector('button')", { label: 'CreateProject picker (S9 door 1)' });
+  await app.click('Start from a deck…');
+  await sleep(200);
+  const door1Shape = await app.evalJs(`(() => ({
+    hasBackdrop: !!document.querySelector('.deck-wizard-backdrop'),
+    hasBlurredPicker: document.querySelector('.deck-wizard-blur-wrap')?.className,
+    deckRowCount: document.querySelectorAll('[data-deck-id]').length,
+  }))()`);
+  ok('S9: B3\'s own door 1 ("Start from a deck…", CreateProject.tsx) launches the GENUINE DeckWizard pop-out-over-blur — the CORRECT B3-built experience, no silent fallthrough to the old wizard',
+    door1Shape.hasBackdrop && door1Shape.hasBlurredPicker?.includes('deck-wizard-blurred') && door1Shape.deckRowCount > 0,
+    JSON.stringify(door1Shape));
+
+  // B3's own door 2 (BoardEditor.tsx's sliver, "From a deck…") — same
+  // verdict, on an ordinary (non-system) board.
+  await freshBoard(app, 'fx7-s9-board', [], LAPTOP_W, 900);
+  await openSliver(app);
+  await sleep(200);
+  await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a deck…')?.click()");
+  await sleep(300);
+  const door2Shape = await app.evalJs(`(() => ({
+    hasBackdrop: !!document.querySelector('.deck-wizard-backdrop'),
+    hasBlurredBoard: document.querySelector('.board-canvas-blur-wrap')?.className,
+    deckRowCount: document.querySelectorAll('[data-deck-id]').length,
+  }))()`);
+  ok('S9: B3\'s own door 2 ("From a deck…", BoardEditor.tsx\'s sliver) ALSO launches the GENUINE DeckWizard pop-out-over-blur correctly — both of B3\'s own doors are sound; the routing defect Nick hit belongs to a completely different, pre-existing button',
+    door2Shape.hasBackdrop && door2Shape.hasBlurredBoard?.includes('board-canvas-blurred') && door2Shape.deckRowCount > 0,
+    JSON.stringify(door2Shape));
+
   return checks;
 });
 
