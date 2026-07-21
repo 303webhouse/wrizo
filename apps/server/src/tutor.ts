@@ -147,10 +147,21 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     // meter) so that later, client-only slice never has to re-open this
     // closed-census file. Absent on the {configured:false}/error shapes
     // below — there is nothing to report when no model call was made.
+    //
+    // TU2 S5 — `model` joins `usage` here, the one addition S5 actually
+    // needed to reopen this file for: S5's own static cost table (client-
+    // side, store/tutorCostEstimates.ts) is keyed by model id, and without
+    // SOME way to know which model produced a given turn's usage, its own
+    // "unknown provider -> tokens only, never an invented dollar figure"
+    // rule would have nothing to key off of and could never genuinely
+    // fire. `env.tutorModel` is already server-side config (S1) — echoing
+    // it back on the response is not a new secret (it names a model id,
+    // never the API key) and costs nothing extra to compute.
     res.json({
       configured: true,
       reply: text,
       usage: { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens },
+      model: env.tutorModel,
     });
   } catch (err) {
     // eslint-disable-next-line no-console

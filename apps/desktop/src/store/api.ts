@@ -89,6 +89,13 @@ export interface TutorChatResult {
   ok: boolean;
   configured: boolean;
   reply?: string;
+  // TU2 S5 — threaded through only on a successful, configured reply
+  // (tutor.ts's own success branch is the only place either field is set
+  // on the wire) so the session meter can render. Absent on offline/error
+  // results is correct, not a bug: there is nothing to meter when no model
+  // call actually completed.
+  usage?: { inputTokens: number; outputTokens: number };
+  model?: string;
 }
 
 // TU2 S2 — `delta` is optional and, when present, already fully assembled
@@ -106,9 +113,14 @@ export async function apiTutorChat(
   try {
     const res = await postJson('/api/tutor/chat', { messages, delta });
     if (!res.ok) return { ok: false, configured: true };
-    const data = (await res.json()) as { configured: boolean; reply?: string };
+    const data = (await res.json()) as {
+      configured: boolean;
+      reply?: string;
+      usage?: { inputTokens: number; outputTokens: number };
+      model?: string;
+    };
     if (!data.configured) return { ok: true, configured: false };
-    return { ok: true, configured: true, reply: data.reply ?? '' };
+    return { ok: true, configured: true, reply: data.reply ?? '', usage: data.usage, model: data.model };
   } catch {
     return { ok: false, configured: true };
   }

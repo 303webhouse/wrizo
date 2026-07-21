@@ -2963,6 +2963,20 @@ a:focus-visible,
 .wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
 .wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* TU2 S5 — the session meter's foot line. The fade itself is ordinary CSS
+   (opacity transition on the `data-fading` toggle Tutor.tsx sets), but the
+   ELEMENT'S OWN REMOVAL from the DOM is never left to CSS alone — Tutor.tsx
+   unmounts it via a real timer regardless of motion preference (see that
+   file's own `showMeterLine` comment), so this rule only ever governs how
+   the last ~400ms LOOKS, never whether the line eventually goes away.
+   Deliberately no `@media (prefers-reduced-motion)` override here: under
+   reduced motion, Tutor.tsx simply never sets `data-fading='true'` at all
+   (the line stays fully opaque until its own scheduled unmount), so this
+   transition never has anything to suppress in that case — the JS branch
+   already did the work a CSS override would otherwise have to. */
+.wz-tutor-meter{ font-size:11px; color:var(--text-low); border-top:1px solid var(--ink-border);
+  padding-top:8px; opacity:1; transition:opacity 0.4s ease; }
+.wz-tutor-meter[data-fading='true']{ opacity:0; }
 /* HB1 S4's own ceremony backdrop precedent, reused whole for the one-time
    disclosure — position:fixed (never absolute), so it's immune to
    `.desk-frame-host`'s own overflow:hidden the same way every other

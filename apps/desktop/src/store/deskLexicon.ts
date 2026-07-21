@@ -139,6 +139,16 @@ export type DeskTermId =
   // header text instead — that one is not writer-facing chrome and so
   // does NOT route through this lexicon, per the brief's own distinction).
   | 'tutorDeltaTruncated'
+  // TU2 S5 — the session meter's own foot-of-panel line (Tutor.tsx, one
+  // quiet line after each model reply, fading ~4s — see that file's own
+  // header comment). 'tutorMeterTurnCost'/'tutorMeterSessionTotal' are the
+  // two labels used when the just-used model has a cost-table entry
+  // (store/tutorCostEstimates.ts); 'tutorMeterTokensOnly' is the honest
+  // fallback label when it does not — raw token counts, never an invented
+  // dollar figure, per the brief's own words. 'tutorMeterTokensUnit'
+  // mirrors 'goalUnitLines' above (a bare, reusable unit word, not a full
+  // sentence) rather than baking "tokens" into every label string.
+  | 'tutorMeterTurnCost' | 'tutorMeterSessionTotal' | 'tutorMeterTokensOnly' | 'tutorMeterTokensUnit'
   // FX6 S2 — the doors. (a) The cascade's Page section (CascadePanels.tsx's
   // PagePanel) gains an unmissable "New Page" action at its head —
   // 'cascadePageNewPage' — a SEPARATE door from the pre-existing Journal-
@@ -477,6 +487,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDisclosureAck: 'Got it',
   tutorDisclosureBodyV2: 'When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.',
   tutorDeltaTruncated: 'Only your latest stretch of new writing was shared this time — earlier new writing since last time went unread.',
+  tutorMeterTurnCost: 'This turn, est.:',
+  tutorMeterSessionTotal: 'This session, est.:',
+  tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
+  tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',

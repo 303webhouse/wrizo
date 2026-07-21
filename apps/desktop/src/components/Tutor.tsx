@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project } from '../types';
@@ -8,6 +8,8 @@ import { apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
 import { computeStructureFacts, computeFragmentItems } from '../store/tutorLenses';
 import { computeNudges } from '../store/tutorNudges';
+import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstimates';
+import { addTutorSessionCost } from '../store/tutorMeter';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -54,6 +56,19 @@ const DOCK_FLOOR_PX = 120;
 const DELTA_TOKEN_CAP = 4000;
 const CHARS_PER_TOKEN_APPROX = 4;
 const DELTA_CHAR_CAP = DELTA_TOKEN_CAP * CHARS_PER_TOKEN_APPROX;
+
+// TU2 S5 — the session meter's own timing. Split into a fully-opaque hold
+// plus a separate fade-out span (rather than one flat 4000ms) so the
+// reduced-motion branch below has something concrete to SKIP: under
+// ordinary motion the line holds, then visibly fades over METER_FADE_MS;
+// under reduced motion it holds at full opacity for the exact same total
+// window and is then simply removed — a REAL scheduled removal each time,
+// never a CSS transition alone (which `prefers-reduced-motion` would just
+// suppress, leaving the line stuck on-screen forever under that setting —
+// the brief's own explicit "actually schedule/remove it" instruction).
+const METER_VISIBLE_MS = 3600;
+const METER_FADE_MS = 400;
+const METER_TOTAL_MS = METER_VISIBLE_MS + METER_FADE_MS; // ~4s, the brief's own figure
 
 // Plain data read by the MODEL as part of the delta block's own header —
 // deliberately NOT a deskLexicon entry (deskLexicon is for writer-facing
@@ -159,6 +174,16 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   // reason `status` isn't: it describes what just happened, not a
   // standing page property.
   const [deltaTruncated, setDeltaTruncated] = useState(false);
+  // TU2 S5 — the session meter's own display state: `null` when nothing has
+  // rendered yet (no call has been made this mount) or once the removal
+  // timer has fired; `fading` flips true only under ordinary motion, at
+  // METER_VISIBLE_MS, to trigger the CSS opacity transition below — under
+  // reduced motion it never flips, so the line holds at full opacity right
+  // up until the same removal timer unmounts it outright (see
+  // showMeterLine below).
+  const [meterState, setMeterState] = useState<{ text: string; fading: boolean } | null>(null);
+  const meterFadeTimeoutRef = useRef<number | null>(null);
+  const meterRemoveTimeoutRef = useRef<number | null>(null);
 
   // The vanishing law with the dock rider (A15), inherited whole via the
   // SAME mechanism Cascade.tsx already established (an explicit keydown
@@ -251,6 +276,41 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   const liveEntry = panelVisible ? getJournalEntry(entry.id) : null;
   const messages: DisplayMessage[] = (liveEntry?.tutor?.messages ?? entry.tutor?.messages ?? []).map((m) => ({ id: m.id, role: m.role, text: m.text }));
 
+  // TU2 S5 — shows one meter line, replacing whatever line (if any) is
+  // still showing, and restarts its own fade/removal clock from zero. Both
+  // timeouts are re-armed from scratch on every call (the stale ones are
+  // cleared first) so a second reply arriving mid-fade doesn't race its own
+  // removal against the new line's — only ever one pair of timers live at
+  // once, matching this component's own single-flight `sending` gate.
+  const showMeterLine = (text: string) => {
+    if (meterFadeTimeoutRef.current !== null) window.clearTimeout(meterFadeTimeoutRef.current);
+    if (meterRemoveTimeoutRef.current !== null) window.clearTimeout(meterRemoveTimeoutRef.current);
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setMeterState({ text, fading: false });
+    if (!reduce) {
+      meterFadeTimeoutRef.current = window.setTimeout(() => {
+        setMeterState((s) => (s ? { ...s, fading: true } : s));
+      }, METER_VISIBLE_MS);
+    }
+    // Unconditional: fires whether or not the fade timeout above was even
+    // armed, which is exactly the "actually schedule/remove it" behavior
+    // reduced-motion still needs — see METER_VISIBLE_MS's own comment.
+    meterRemoveTimeoutRef.current = window.setTimeout(() => setMeterState(null), METER_TOTAL_MS);
+  };
+
+  // Both timers are per-MOUNT, not per-render — cleared on unmount only
+  // (an empty dependency array), the same reason `showMeterLine` clears its
+  // own stale pair on every call rather than relying on a per-effect
+  // cleanup: this component can navigate away (a real route change unmounts
+  // it, per this file's own header comment on why the session total lives
+  // in tutorMeter.ts's module scope, not here) mid-fade, and a bare
+  // `setTimeout` with no cleanup would otherwise fire `setState` on an
+  // already-unmounted instance.
+  useEffect(() => () => {
+    if (meterFadeTimeoutRef.current !== null) window.clearTimeout(meterFadeTimeoutRef.current);
+    if (meterRemoveTimeoutRef.current !== null) window.clearTimeout(meterRemoveTimeoutRef.current);
+  }, []);
+
   const send = async () => {
     const text = composerText.trim();
     if (!text || sending) return;
@@ -282,6 +342,27 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
       // this render's own live prop, the same value `assembleTutorDelta`
       // just read from above.
       advanceTutorCursor(entry.id, pageText.length);
+      // TU2 S5 — the session meter. `result.usage`/`result.model` are only
+      // ever set on tutor.ts's own success branch (see api.ts's own
+      // comment), so this is naturally absent on the offline/error paths
+      // above — nothing to meter when no model call actually completed,
+      // same reasoning as the cursor advance just above it.
+      if (result.usage) {
+        const { inputTokens, outputTokens } = result.usage;
+        const totalTokens = inputTokens + outputTokens;
+        const tokensStr = `${totalTokens.toLocaleString()} ${t('tutorMeterTokensUnit')}`;
+        // `estimateTurnCostUSD` returns null for any model absent from the
+        // cost table (store/tutorCostEstimates.ts) — deepseek-v4-pro,
+        // anything TU6's later BYO-keys seam ever points this route at, or
+        // simply an env override this build's table hasn't heard of. That
+        // null is the brief's own "unknown provider" case: tokens only,
+        // never an invented dollar figure.
+        const turnCostUSD = result.model ? estimateTurnCostUSD(result.model, inputTokens, outputTokens) : null;
+        const line = turnCostUSD === null
+          ? `${t('tutorMeterTokensOnly')} ${tokensStr}`
+          : `${t('tutorMeterTurnCost')} ${tokensStr}, ${formatEstimatedUSD(turnCostUSD)} · ${t('tutorMeterSessionTotal')} ${formatEstimatedUSD(addTutorSessionCost(turnCostUSD))}`;
+        showMeterLine(line);
+      }
     }
   };
 
@@ -377,6 +458,18 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
                 </button>
               </div>
             </div>
+
+            {/* TU2 S5 — the session meter's own quiet foot line. Absent
+                (not just invisible — unmounted, `meterState === null`)
+                whenever no call has been made this mount yet, and again
+                once its own removal timer fires — see showMeterLine above
+                for why this is a real scheduled unmount, not a CSS-only
+                fade reduced-motion could leave stuck on-screen. */}
+            {meterState && (
+              <div className="wz-tutor-meter" data-fading={meterState.fading ? 'true' : 'false'}>
+                {meterState.text}
+              </div>
+            )}
             </div>
           )}
         </div>
