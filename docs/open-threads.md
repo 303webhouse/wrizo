@@ -3637,6 +3637,143 @@ outlive a session lives here, not in chat.
     for every ticket before B3.
     **Build starting — 2026-07-21**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-B3-deploy `main`.
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED —
+    2026-07-21.** Built S1-S9 on `fx7-second-sitting-fixes` off
+    `main` @ `bb6f079`, in its own worktree.
+    **S1 — the screenplay paper, root-caused as a genuine FX3
+    regression, not a TU1 wiring defect.** FX3's own `flex:1 1 auto`
+    on the stage's scroll-cap made the SCROLL-CAP itself the flex
+    item filling the stage's own full width, so the script paper
+    rendered flush-left instead of centered — exactly the "way too
+    small, and not centered" verdict, and exactly why the sliver/Tutor
+    anchors (whose math assumes a centered paper) read as floating
+    away. `ScriptEditor.tsx` itself already used both of DeskFrame's
+    own overlay anchors correctly — TU1's own two-anchor work was
+    never at fault. Fixed by mirroring `.mode-stage`'s own zero-flex-
+    grow pattern exactly.
+    **S2 — Free Write's tool rail, one real implementation defect
+    caught live before it shipped.** Bold/Italic added, reusing
+    Draft's own `draftFormat.ts` marker convention. The first
+    implementation (`execCommand('insertText', ...)`, this codebase's
+    own established technique) was found NOT to reliably fire
+    `beforeinput` in this harness's own Chromium build — silently
+    dropping the marker on the next real keystroke's re-render — fixed
+    with a new `insertMarkerRef` escape hatch calling the same
+    `handleInput()` a keystroke calls. Forward-lock's own strike-
+    never-erase discipline re-verified live, untouched. The ink
+    affordance ships as a disclosed-inert placeholder (Journal's own
+    pen/eraser icon shape, rendered disabled, tooltip: "Ink — coming
+    soon outside the Journal") — not silently assumed functional.
+    **S3 — the cascade gap, root-caused as an FX5 S10 regression.**
+    FX5 S10 pulled the strip out of the grid's own flow
+    (`position:absolute`, pinned to screen x=0) but the cascade
+    anchor's own `left:0` was never updated to match — it stayed
+    relative to the stage's own left edge, no longer adjacent to the
+    strip. Measured, not guessed: the panel actually overlapped the
+    strip by ~44-68px at ordinary widths and drifted to a ~228px gap
+    past the wide-viewport seam. Fixed with a strip-relative offset.
+    **S4 — scrollbars, a genuine inheritance bug found along the
+    way.** The existing Plateau board-canvas treatment (FX5 S3a) was
+    found LIVE to not actually inherit from its own `:root`-only
+    declaration — promoted to a systemic `*` default reaching every
+    scrollable region app-wide, with a paper-toned override for
+    light-surface regions. One disclosed, deliberate exception left
+    alone: `.beat-rail-dots`, whose own edge-fade mask depends on
+    staying invisible.
+    **S5-S8 — a single shared root cause found for two of the four
+    deck-card bugs, proven not assumed.** FX5 S4(a)'s own "capture the
+    pointer on pointerdown" drag-friction fix (still a genuinely
+    needed improvement) had a side effect: it retargets every
+    subsequent mouseup/click/dblclick to the canvas itself for the
+    rest of that gesture — confirmed with genuinely trusted CDP
+    events, and confirmed identically on both a real dealt card AND a
+    hand-typed one, ruling out any deck-specific hit-testing
+    explanation. **The diagnosis was proven experimentally, not just
+    argued**: the fix was temporarily reverted, rebuilt, and the
+    harness's own S5 check was confirmed to fail exactly as predicted
+    before being reverted back clean. S5 (edit) and S8 (layer toggle)
+    share this one cause, fixed respectively via `elementFromPoint`
+    retargeting (the same technique `finishThreadDrag` already used)
+    and an early-return guard mirroring the existing pin/handle
+    pattern. **S6 (delete) turned out not to be an independent defect
+    at all** — select reads `e.target` on the raw pointerdown, before
+    capture ever engages, so it was never touched by the S5 bug;
+    confirmed live that select-then-Remove already worked on an actual
+    dealt card — pure downstream confusion from S5's own silent
+    failure, disclosed plainly rather than a phantom fix invented to
+    match the finding. **S7 (resize one-directional)** was a
+    genuinely different mechanism: FX4/FX5's own reflow-floor effect
+    re-fires on every intermediate `setBoxes` a resize drag emits, so
+    a diagonal narrow-and-shrink drag could force an extra text-wrap
+    line that the floor then immediately re-grew from, fighting the
+    pointer in real time — fixed by standing the floor down for
+    whichever box is actively mid-resize, reconciling once on release.
+    **S9 — investigated, confirmed NOT a B3 bug.** Both of B3's own
+    doors ("Start from a deck…" in `CreateProject.tsx`, "From a
+    deck…" in the sliver) verified live to launch the genuine
+    `DeckWizard` pop-out-over-blur correctly. What Nick actually
+    reached was a DIFFERENT, PRE-EXISTING button — the Cascade's own
+    "Plot a Story" (predating B3 entirely), which has always routed
+    straight to the old `/project/:id/wizard` full-page
+    `StructureWizard` route. Confirmed live by the page's own rendered
+    body text. Per the brief's own explicit instruction, this old
+    doorway was left completely untouched — its fate stays Fable/
+    Nick's own call, exactly as B3's brief deferred it by name.
+    **Independent review — GREEN, two real defects found and fixed,
+    both in PRIOR TICKETS' OWN HARNESS FILES, not in FX7's own product
+    diff.** The build's own final report was itself a stalled
+    placeholder rather than an actual writeup (a background-monitor
+    pattern that never resolved) — the review picked up the full
+    verification load independently, from the actual git state, not
+    from the build's own prose, and additionally discovered the
+    branch had never actually reached `origin` (it existed only in a
+    sibling worktree) — pushed it there itself, first time, disclosed
+    plainly. **Gap 1**: S5's own correct `elementFromPoint` fix broke
+    coordinate-less synthetic dblclick dispatch — the exact technique
+    every prior ticket's own board-popup test has used since FX4 S5 —
+    across five live files and two parked-only checks; fixed at all
+    ~15 call sites by supplying real on-screen coordinates to the same
+    dispatch, the identical "update the reach-mechanism, keep the
+    claim" pattern FX4 S5 already established once before. **Gap 2**:
+    S2's own deliberate Free Write format addition falsified three of
+    `ab2.mjs`'s own checks asserting format's ABSENCE — a straight A4
+    miss, caught only because the review ran the FULL historic suite
+    where the build's own S10 had only run its own `fx7.mjs`. Parked
+    per A4, live successor named. **The review went further than
+    required on several claims**: took real CDP screenshots at all
+    three widths to confirm S1's centering visually, not just via
+    `getBoundingClientRect()`; found a sharper explanation than the
+    build's own hand-wave for why B3's review missed S5 entirely (a
+    fully synthetic `dispatchEvent` is structurally immune to
+    pointer-capture retargeting regardless of trust level, not merely
+    "probably tested something else").
+    **Full suite, both passes.** Build: `fx7.mjs` reached 46/46 across
+    its own four sections. Review: full historic 26-file suite
+    re-run clean from scratch after its own two fixes, both
+    `HARNESS_PARKED` settings; `fx7.mjs` unchanged, 46/46. `tsc`
+    (desktop+server), `pnpm run build`, and `build:web` all clean.
+    **A concurrent session discovered at merge time, resolved
+    cleanly, no data at risk.** While this build was running, a
+    SEPARATE, legitimate CC session opened TU2 (item 43, the
+    Listener) directly on this same primary checkout's own `main` —
+    confirmed genuinely unrelated (docs-only commits, zero file
+    overlap with FX7's own diff) before merging, not assumed safe.
+    Merged via an explicit merge commit (`git merge --no-ff`, fast-
+    forward was no longer possible) rather than force-pushing or
+    resetting anything. TU2's own worktree and branch were never
+    touched. CC's own third independent verification pass: `tsc`
+    (desktop+server) + `build:web` clean, full 27-file/54-run suite
+    **green, 54/54, zero failures** — zero discrepancies against both
+    the build's and the review's own runs.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized per the
+    standing rule — confirmed genuinely zero-schema, `apps/server`
+    diff empty). `origin/main` was still at this merge's own base
+    (`bb6f079`) when pushed — TU2's own local commits hadn't reached
+    origin yet from its own session — so this push carried both
+    TU2's opening and FX7's full merge to origin in one clean
+    fast-forward, `bb6f079..9148be0`. Pushed to `origin/main`.
+    **Not deployed — deploy was explicitly not pre-authorized for
+    this ticket.** Redeploy waits for Nick's own separate word.
 43. **TU2 — the Listener.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/tu2-listener-brief.md`. **Authority:** the Tutor
     committee pass as ratified (A12-A15 whole) and the Tutor's own
