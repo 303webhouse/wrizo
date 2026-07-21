@@ -3900,6 +3900,17 @@ outlive a session lives here, not in chat.
     shared `--ease`/`--t-state` tokens, so no real conflict existed
     once measured; Tutor's own 180ms is left untouched, matching
     Cascade's real value exactly.
+    **Width correction — 2026-07-21, per FX10's brief, spec error not
+    build error.** The `2 × --strip-width` (168px) open width above
+    was built exactly as this ticket's own brief specified, and the
+    build's own algebraic audit was sound against that spec. **The
+    spec itself was wrong** — Fable's own words, on the record: "the
+    number was wrong." Nick's device findings the same day showed the
+    resulting panel unusable at that width. FX10 (item 51) corrects
+    it to `clamp(320px, 34% of the viewport, 460px)`, further clamped
+    against the paper's own clearance law. Recorded here so this
+    item's own history reads honestly rather than silently
+    superseded.
     **S6 — the park sweep was empirically reran, not just grepped.**
     All 26 pre-existing harness files were actually re-executed
     against the TU2 diff, not just text-searched; exactly two TU1
@@ -4491,6 +4502,96 @@ outlive a session lives here, not in chat.
     `CascadePanels.tsx`, first to merge wins the base and the other
     rebases** (Nick's own sequencing rule, recorded here so whichever
     session merges second knows to check first).
+51. **E1 — Get My Words Out.** **P0 — BRIEF COMMITTED — 2026-07-21,
+    Fable-authored** (`docs/wrizo-alpha/e1-get-my-words-out-brief.md`).
+    **Outranks every ticket in the queue, including J6 and FX9 in
+    flight.** Nick departs 2026-08-04 intending to draft his own book
+    in this app; verified at his device the same day, Publish's "Copy
+    My Words"/"Copy Formatted" read as dead and there is no file
+    export of any kind. Nick's own finding, quoted: a writer who
+    cannot get his words out of Wrizo cannot safely write in Wrizo.
+    **Authority**: Nick's survival check 0.1, failed, 2026-07-21; the
+    ratified anti-slop rail's own "the writer's own text must remain
+    copyable OUT" clause. **S1** diagnoses the two Publish buttons
+    live before touching them — genuinely broken vs. working-but-
+    silent is a different fix, root cause reported first, no
+    guessing. **S2** makes both buttons work and SAY SO (a house-
+    register confirmation via `deskLexicon`, reusing the existing
+    toast/quiet-line pattern). **S3 — the ticket's reason for
+    existing**: a Download action on Publish, three scopes (this page
+    as `.md`+`.txt`; this binder as ordered per-page files or one
+    clear-separated document, builder's call, disclosed; **Everything
+    — every page the writer owns, the vacation insurance, the most
+    important item in this brief**). Non-prose kinds export honestly
+    rather than perfectly (Script via `serializeScriptDoc`; Board as
+    a plain card-text list; ink as a named placeholder line, never
+    silently dropped) — nothing a writer typed may be missing from a
+    claimed-complete export. **S4** keeps the coming-soon line but the
+    surface no longer reads as a dead end. **S5** harness (`e1.mjs`)
+    proves round-trip byte content for page/binder/Everything against
+    a seeded corpus, asserts exported-document count equals the
+    writer's own page count (no silent omissions), safe filenames on
+    Windows and macOS, and — the check this ticket exists for — every
+    export path proven **with the network fully unavailable**. Zero
+    schema, zero server files, zero new deps (client-side by
+    construction, which is also what makes it work on a plane). Merge
+    pre-authorized as zero-schema. **Deploy explicitly NOT
+    pre-authorized** — though given the P0 urgency and the 2026-08-04
+    deadline, expect Nick's own deploy word to follow close behind a
+    clean review, not to wait for a routine sitting. **Build starting
+    — 2026-07-21**, on `e1-words-out` off `main`, own worktree, IN
+    PARALLEL with J6 and FX9 (Nick's own explicit word — the brief's
+    stated priority over the in-flight tickets does not mean queued
+    behind them, it means it does not wait for them).
+52. **FX10 — the Room's Edges.** **P0 alongside E1 — BRIEF COMMITTED —
+    2026-07-21, Fable-authored**
+    (`docs/wrizo-alpha/fx10-rooms-edges-brief.md`). Nick confirmed the
+    Tutor is answering from DeepSeek — and that the panel itself is
+    unusable, so unusable a writer "wouldn't even be able to tell."
+    TU5 (the Tutor's memory) is pointless until the room it lives in
+    is habitable, so this ticket gates the rest of the Tutor arc.
+    **Authority**: Nick's device findings, 2026-07-21, quoted per
+    slice in the brief. **Fable's own error acknowledged on the
+    record** (see item 43's own new correction note above): TU2's
+    brief specified the panel's open width as "exactly 2× the tool
+    strip's width token" (~168px), the build implemented that
+    faithfully, and the number itself was wrong — this brief corrects
+    it, not the build. **S1**: the Tutor becomes a genuine horizontal
+    drawer opening rightward flush from the paper's edge, the exact
+    mirror of the tool pop-out's own motion (constants reused,
+    measured not approximated); width becomes a real reading measure,
+    `clamp(320px, 34% viewport, 460px)`, further clamped against the
+    paper's own clearance law (FX2), overlaying below that per the
+    existing CD2 law; no scroll-within-scroll — the panel scrolls as
+    one column; the conversation becomes the panel's own center of
+    gravity now that the room is wider. **S2**: the left rail's own
+    exemption from the vanishing law is a real bug — root-caused
+    before fixed, then wired to the same one vanishing engine
+    everything else obeys. **S3**: a dissolved-but-open menu must
+    restore on pointer APPROACH, not require a click — root-caused
+    first; if shared machinery, fixed at the source for every
+    dissolved surface. **S4**: the scrollbar moves flush to the
+    paper's outer right edge, zero gap, without changing the text
+    measure (FX2's clearance law). **S5** harness (`fx10.mjs`):
+    open-width-matches-clamp at 1100/1280/2200; grip flush closed and
+    open; paper rect invariant across every state; no descendant of
+    the panel owns its own scrollbar; motion duration/easing read
+    live and asserted equal to the tool pop-out's own values; rail
+    dissolves with the rest of chrome; **hover-restore proven with a
+    genuine trusted pointer move and no click** — trusted-pointer law,
+    synthetic dispatch does not count; scrollbar flush with zero gap,
+    text measure byte-identical. TU1/TU2 geometry checks superseded by
+    S1 parked per A4, live successors named. Zero schema, zero server
+    files, zero new deps. Merge pre-authorized as zero-schema.
+    **Deploy explicitly NOT pre-authorized**, same P0-urgency
+    expectation as item 51. **Build starting — 2026-07-21**, on
+    `fx10-rooms-edges` off `main`, own worktree, IN PARALLEL with E1
+    (different surfaces) and with J6/FX9 (Nick's own explicit word).
+    **Noted overlap risk, per the brief's own words: if J6 lands
+    first, FX10 rebases** — J6 and FX9 already carry the analogous
+    `CascadePanels.tsx` first-to-merge-wins rule (item 50); this is
+    the same class of risk on a different file, disclosed the same
+    way.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
