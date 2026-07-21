@@ -3510,6 +3510,14 @@ outlive a session lives here, not in chat.
     sequencing this session, where her review landed before deploy
     every time. Her review still lands and folds in normally
     afterward, same as several post-deploy folds already have.
+    **Deployed — 2026-07-21**, manifest `13d4a62..HEAD` independently
+    re-enumerated by CC before shipping (B3's own code commits, docs
+    riders only, no unnamed code riders). `railway up` on `main` @
+    `65a4fa9` (deployment `bfd3e8f2`, SUCCESS), confirmed live (`200`
+    on `/healthz` and `/`, `401` on `/auth/me`). **Item 40 stays open
+    pending Fable's post-merge review** (still owed, per the brief's
+    own gating language, even though deploy itself didn't wait for
+    it) **and Nick's own device sitting.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
