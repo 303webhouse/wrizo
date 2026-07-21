@@ -9,10 +9,13 @@ import type { DeckDefinition, DeckAnswers } from './types';
 // `{ id, kind:'text', x, y, w, h, z, text }` — the SAME shape any hand-typed
 // "Add card" box already has (BoardEditor.tsx's own onAddCard) — and owes
 // NOTHING to its template afterward: no deckId, no definition id, no back-
-// reference of any kind, on the card OR the thread. `title`/`body` resolve
-// through deskTerm() here (the established non-hook lexicon escape hatch —
-// see persistence.ts's own SYSTEM_BOARD_TITLE_TERM) so every dealt card's
-// own words route through the SAME lexicon seam as any other chrome copy.
+// reference of any kind, on the card OR the thread. `spec.title`/`spec.body`
+// arrive here ALREADY resolved (each deck's own deal() function builds them
+// by calling deskTerm() itself — the established non-hook lexicon escape
+// hatch persistence.ts's own SYSTEM_BOARD_TITLE_TERM already uses — see
+// decks/types.ts's own DealtCardSpec comment for why this lives at the deck
+// layer, not here) so every dealt card's own words still route through the
+// SAME lexicon seam as any other chrome copy, even a composed one.
 //
 // Threads dedupe either direction (the SAME rule BoardEditor.tsx's own
 // finishThreadDrag already applies to a hand-drawn thread) so two cards
