@@ -91,6 +91,21 @@ function startServer(dist) {
   // the signal the backfill triggers on.
   const pushedJournalIds = new Set();
   let syncCount = 0;
+  // TU2 S6 — the tutor-chat double's own controllable behavior, added
+  // alongside TU1's original always-unconfigured double (TU1 S6). Defaults
+  // to `{}` (every field falsy) so every PRE-EXISTING harness file's own
+  // `/api/tutor/chat` expectation (TU1's own "unconfigured" shape) is
+  // byte-identical to before this addition — a file that never POSTs to
+  // `/api/_tutor_mode` sees EXACTLY the old behavior. tu2.mjs is the one
+  // caller that sets this, to genuinely simulate a successful reply (with
+  // real usage/model fields, for the S5 session-meter checks) and a
+  // genuinely failed call (an HTTP error, not merely "never call send" —
+  // the brief's own "genuinely simulated failure" instruction for the
+  // cursor-advance-only-on-success proof) without any real network/model
+  // dependency, matching this whole harness's own dependency-free,
+  // offline discipline.
+  let tutorMode = {};
+  let lastTutorChatBody = null;
   const server = http.createServer(async (req, res) => {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
@@ -108,7 +123,23 @@ function startServer(dist) {
     }
     // Test introspection: what the client has pushed + how many syncs ran.
     if (p === '/api/_state') {
-      return sendJson(res, { pushedJournalIds: [...pushedJournalIds], syncCount });
+      return sendJson(res, { pushedJournalIds: [...pushedJournalIds], syncCount, lastTutorChatBody });
+    }
+    // TU2 S6 — arm/disarm the tutor-chat double's next response(s). Body
+    // shape: `{ configured?, fail?, reply?, usage?: {inputTokens,
+    // outputTokens}, model? }`. Posting `{}` restores the TU1-original
+    // always-unconfigured default. `fail: true` makes the NEXT (and every
+    // subsequent, until re-armed) `/api/tutor/chat` call respond 500 — a
+    // real HTTP-layer failure, so the client's own `apiTutorChat` genuinely
+    // takes its `!res.ok` branch, not a stand-in for one.
+    if (p === '/api/_tutor_mode' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (c) => { body += c; });
+      req.on('end', () => {
+        try { tutorMode = JSON.parse(body || '{}'); } catch { tutorMode = {}; }
+        sendJson(res, { ok: true });
+      });
+      return;
     }
     // TU1 — the Tutor's one route. This test double mirrors the REAL
     // server's own "no TUTOR_API_KEY configured" response shape exactly
@@ -118,8 +149,31 @@ function startServer(dist) {
     // end-to-end rather than only by code inspection. It does NOT proxy to
     // a real model (no key to proxy with, and this double must stay
     // dependency-free/offline like every other route here).
+    // TU2 S6 — `lastTutorChatBody` captures exactly what the client posted
+    // (messages + the optional `delta`), read back via `/api/_state` so
+    // tu2.mjs can assert on the wire body itself (cap tail-bias, the
+    // honesty header line, "no delta key at all when there's nothing new")
+    // rather than only on rendered UI — the SAME "prove the wire body,
+    // don't just trust the UI" discipline TU1's own review already applied
+    // to the disclosure's truthfulness.
     if (p === '/api/tutor/chat') {
-      return sendJson(res, { configured: false });
+      let body = '';
+      req.on('data', (c) => { body += c; });
+      req.on('end', () => {
+        try { lastTutorChatBody = JSON.parse(body || '{}'); } catch { lastTutorChatBody = null; }
+        if (tutorMode.fail) {
+          res.writeHead(500, { 'content-type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'TU2 S6 simulated failure' }));
+        }
+        if (!tutorMode.configured) return sendJson(res, { configured: false });
+        return sendJson(res, {
+          configured: true,
+          reply: tutorMode.reply ?? 'A stubbed reply.',
+          usage: tutorMode.usage ?? { inputTokens: 100, outputTokens: 40 },
+          model: tutorMode.model ?? 'deepseek-v4-flash',
+        });
+      });
+      return;
     }
     if (p === '/api/sync') {
       let body = '';
