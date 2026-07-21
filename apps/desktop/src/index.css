@@ -1296,7 +1296,20 @@ a:focus-visible,
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
   box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
   color:var(--ink-on-paper); font-family:var(--font-prose); font-size:15px; line-height:1.6;
-  white-space:pre-wrap; cursor:default;
+  white-space:pre-wrap;
+  /* FX8 S3 — "whenever the cursor is over the bounds of a box... the
+     cursor should change showing that the user can now move the card
+     around with one click" (Nick's own words). The drag mechanism itself
+     is untouched (BoardEditor.tsx's own onDown/onMove state machine,
+     FX5 S4(a)/FX7 S5-S8-hardened) — this is pure visual affordance,
+     replacing the old unstated `cursor:default`. `.board-pin-grab`/
+     `.board-handle`/`.board-layer-toggle` are DOM SIBLINGS of this card-
+     face element (BoardEditor.tsx's own JSX: all three sit alongside the
+     BoardInkBox/BoardPinBox/BoardTextBox that renders `.board-text`, never
+     nested inside it), so no exclusion selector is needed at all — the
+     browser's own hit-testing already resolves the cursor from whichever
+     small element is actually under the pointer, not from this class. */
+  cursor:grab;
 }
 .board-text-editing{ outline:none; cursor:text; border-color:var(--ink-border-strong); }
 /* Page-pin and ink cards wear the SAME Stacked treatment identically (S7's
@@ -1305,27 +1318,64 @@ a:focus-visible,
 .board-ink-canvas{
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
   box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
+  cursor:grab; /* FX8 S3 — an ink card's own face carried no cursor rule at
+    all before this ticket (silently fell back to the UA default via
+    `.board-box`, which sets none either) — the SAME card-body affordance
+    every other card kind now gets, "any other card-face class this file's
+    own card-kind branches use" per the brief. */
 }
+/* FX8 S2 — Nick's words: "shrink the size of the orange square... remove
+   the border from the square so it is just an orange box." Shrunk 14px ->
+   10px (a genuinely smaller footprint, not a token change — CC's own
+   judgment call, disclosed in the build report) and the 1px `--ink-950`
+   border dropped whole (solid brass fill only, matching the pin's OWN
+   border-retention decision going the other way — see .board-pin-grab's
+   own comment below for why ITS border stays). Re-centered on the card's
+   own corner (right/bottom -5px = half the new 10px size, was -7px = half
+   of 14px) so the visual anchor point doesn't drift. `cursor:nwse-resize`
+   is UNCHANGED — S2's own live investigation (disclosed in the build
+   report) found no actual inconsistency to fix: the handle only ever
+   renders on the SELECTED box (BoardEditor.tsx's own conditional render),
+   sits at the box's own bottom-right corner, and resizes freeform on BOTH
+   axes from that corner (FX4 S4) — a plain diagonal resize cursor is the
+   textually correct affordance, not a guess. */
 .board-handle{
-  position:absolute; right:-7px; bottom:-7px; width:14px; height:14px;
-  background:var(--brass); border:1px solid var(--ink-950); border-radius:0; cursor:nwse-resize;
+  position:absolute; right:-5px; bottom:-5px; width:10px; height:10px;
+  background:var(--brass); border-radius:0; cursor:nwse-resize;
 }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
    .board-text's own look (now Stacked, S7); the badge is the only
    decoration (quiet olive, never brass — "nothing orange at rest" holds
    here too, matching the cascade survey's own current-item olive
-   convention). */
-.board-pin{ cursor:pointer; }
+   convention). FX8 S3 — cursor:pointer (FX5 S3's own "quiet open
+   affordance" for the double-click-to-travel gesture) supersedes to the
+   SAME card-body grab the brief's own S3 explicitly names `.board-pin` in
+   ("a card's own body (.board-text, .board-pin, .board-ported...)") —
+   drag is now the primary cursor-communicated gesture on every card face,
+   uniformly; double-click-to-travel still works underneath (JS-driven,
+   untouched), just no longer has its own distinct cursor. No A4 park
+   needed — no committed harness check ever asserted this cursor value
+   (grepped scripts/harness/ before this change; confirmed clean). */
+.board-pin{ cursor:grab; }
 .board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-rest); margin-bottom:2px; }
 .board-pin-title{ font-weight:600; }
 .board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
+/* Deliberately UNCHANGED by FX8 S3 (still cursor:default, not grab) — a
+   missing-page-pin card (its own referenced entry genuinely gone) has no
+   live source to open, but IS still draggable like any other card via the
+   SAME onDown mechanism; leaving it `default` rather than `grab` reads as
+   "this one's broken," matching its own already-established italic/dim
+   treatment, and needs no code change here — later in source order than
+   `.board-pin` (both share equal 0,1,0 specificity), so it already wins
+   the cascade on a card carrying both classes, exactly as before. */
 .board-pin-missing{ color:var(--text-low); font-style:italic; cursor:default; }
 /* FX5 S3 — a ported text card's own excerpt face (BoardEditor.tsx's
    BoardTextBox, the sourceEntryId branch) reuses .board-pin-badge/-title/
-   -excerpt verbatim (the SAME notecard shape) and gets the SAME pointer
-   cursor as .board-pin — double-click now travels to the source, matching
-   page-pin exactly. */
-.board-ported{ cursor:pointer; }
+   -excerpt verbatim (the SAME notecard shape). FX8 S3 — cursor:pointer
+   supersedes to cursor:grab, the SAME reasoning as `.board-pin` above
+   (this file's own comment on that rule carries the full explanation, not
+   repeated here); double-click still travels to the source, untouched. */
+.board-ported{ cursor:grab; }
 /* FX5 S5 — the olive pin: the connection grab, at the card's own top-left
    corner, on every card, always (not selection-gated — see BoardEditor.tsx's
    own onDown comment for why the two-step arm-then-drag gesture it replaces
@@ -1334,13 +1384,61 @@ a:focus-visible,
    small state/grab indicator (matching .status-dot's own existing
    precedent, above). Olive (--accent-rest) marks it as a STATE/connection
    affordance, never brass (brass is reserved for actions like the resize
-   handle) — the lane law holds. */
+   handle) — the lane law holds.
+   FX8 S1 — Nick's words: "the green pins on the cards don't really look
+   like pins... Can we make the pins look a bit more like the top of a
+   green sphere instead of a 2D circle?" A flat single-color fill reads as
+   an outlined disc; a domed sphere-top needs the two things a flat fill
+   can never fake — a light source (an off-center highlight, NOT centered,
+   so it reads as reflecting light from one direction) and a rim that
+   darkens as it curves away from that light. `radial-gradient(circle at
+   35% 28%, ...)` puts the highlight upper-left (a conventional top-left
+   light source, matching the card stock's own drop-shadow direction below-
+   right — `.board-text`'s `box-shadow:2px 2px 0...4px 5px 10px...` — so
+   the pin's own implied light and the card's own implied shadow agree),
+   fading through the SAME --accent-rest hue family to a hand-darkened rim
+   tone (this codebase has no color-mix()/filter precedent anywhere in this
+   file for deriving a shade FROM a custom property at runtime — every
+   other gradient here hard-codes its own literal stops, e.g. the wz-bloom/
+   wz-cascade-thumb radial-gradients above — so #D9DEB8/#4F5730 are hand-
+   computed lighter/darker steps off --accent-rest's OWN #96a05a working
+   value, the same "olive hue family" the brief asks for, not a different
+   color). The 1px --ink-950 border stays (unlike the handle's OWN border
+   removal in S2, just above) — it's what keeps the domed gradient reading
+   as a contained sphere rather than a soft blob bleeding into the card
+   behind it. The box-shadow is a small, downward-right offset (1px 2px
+   3px) — the SAME lighting direction as the card's own shadow, "the way a
+   raised sphere would cast one against the card's own shadowed surface"
+   (the brief's own words), not a generic centered glow. Same ~12px size,
+   same border-radius:50% (fx5.mjs's own S5 check still asserts this
+   verbatim — confirmed unbroken, no A4 park needed). */
 .board-pin-grab{
   position:absolute; left:-6px; top:-6px; width:12px; height:12px; z-index:6;
-  border-radius:50%; background:var(--accent-rest); border:1px solid var(--ink-950);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 28%, #D9DEB8 0%, var(--accent-rest) 50%, #4F5730 100%);
+  border:1px solid var(--ink-950);
+  box-shadow:1px 2px 3px rgba(17,6,0,.5);
   cursor:grab;
 }
 .board-canvas[data-thread-armed='true'] .board-pin-grab{ cursor:grabbing; }
+/* FX8 S3 — Nick's own DoD line: "drags it with one continuous motion" —
+   a `grab`-family cursor throughout would already communicate "you CAN
+   drag this," but the brief explicitly invites (and CC's own build report
+   discloses the choice to take) the extra `grabbing` swap the instant a
+   real move-drag is actually held, the same closed-hand convention this
+   codebase already established for the pin's own thread-drag above (one
+   line up) and for the canvas's own `data-thread-armed` attribute pattern
+   — reused here verbatim, not reinvented: `data-dragging` is a plain
+   canvas-level flag (BoardEditor.tsx's own `isDragging` state, set true
+   only in `beginMove` — the REAL "past the 6px threshold, actually moving"
+   phase, never `pending`/`resizing`/`threadDrag` — and cleared in `finish`
+   on every gesture end) read here the identical way `data-thread-armed`
+   already is. Scoped board-wide rather than per-box: only one drag can
+   ever be in flight at a time (a single pointer), and the dragged card
+   moves WITH the pointer by construction (onMove adds the same delta to
+   both), so the cursor is never wrong about which card it's hovering. */
+.board-canvas[data-dragging='true'] .board-text,
+.board-canvas[data-dragging='true'] .board-ink-canvas{ cursor:grabbing; }
 /* FX5 S4 (c) — the quiet layer-order icon: square (this file's own
    corners law, unlike the pin above — this is an ACTION button, not a
    state dot), small, neutral (neither brass nor olive — "minimal,
