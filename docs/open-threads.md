@@ -4829,6 +4829,95 @@ outlive a session lives here, not in chat.
     `CascadePanels.tsx` first-to-merge-wins rule (item 50); this is
     the same class of risk on a different file, disclosed the same
     way.
+    **Built S1-S4 on `fx10-rooms-edges` off `main` @ `82d8917`
+    (7 commits), own worktree — 2026-07-21. A genuinely complete
+    build report this time, no placeholder.** Two of S1's own facts
+    corrected beyond the brief's own literal words, both found by
+    measuring the real code rather than assuming: TU2's own earlier
+    retrofit had mirrored the WRONG constant (Cascade's dock-panel
+    timing, not the tool sliver's own) — the panel now genuinely
+    matches the sliver's real transition property-for-property. S2's
+    root cause was NOT a broken subscription — `DeskRail` never
+    mounts on a framed surface at all; the actual element was
+    `.desk-frame-strip`, DELIBERATELY exempted from the vanishing law
+    by an earlier ticket (CD2 S1) — now wired into the same one
+    engine. S3's root cause: every dissolved surface carries
+    `pointer-events:none`, so hover could never fire in the first
+    place, and the existing edge-detection zone didn't reach a panel
+    sitting well inland — fixed at the source (a window-level
+    coordinate sweep, same dwell/jitter state machine, no second
+    implementation), confirmed shared across two independent
+    surfaces. **Two of the build's own bugs found and fixed during
+    its own park sweep, disclosed as such**: a closed sliver panel
+    twice miscounted as "reachable" (first via a width-only check,
+    then via an opacity-only check that also failed once the room
+    itself was dissolving) before landing on the only reliable
+    signal, the component's own `data-open` attribute. S4's flush fix
+    proven algebraically, not just measured to look right. Park sweep
+    found ONE MORE genuine falsification beyond the brief's own
+    anticipated `tu2.mjs` checks — `cd2.mjs`'s own "strip never
+    dissolves" check, found via the full-suite run itself, correctly
+    parked with a live successor; its own sibling check (opacity
+    within 150ms of a keystroke) was NOT falsified and correctly left
+    live, a real distinction drawn rather than parking defensively.
+    Full suite run twice — first pass found and fixed the two real
+    regressions above, plus two self-inflicted crashes from the
+    build's own concurrent `build:web` clobbering `dist-web` mid-test,
+    disclosed as such; second, undisturbed pass: 61/62 clean, the one
+    exception being the same `fx5.mjs` pre-existing flake — **applied
+    the contention-reproduction practice rigorously**: 7 isolated
+    re-runs across both passes, 4/7 failed (~57%, consistent with a
+    genuine wall-clock-sensitive timing flake), while every one of
+    the build's OWN S3 hover-restore checks passed 7/7, positively
+    confirming the flake is unrelated to this ticket's own scope
+    rather than just asserting it. `tsc`, both build paths, and
+    `build:web` all clean. One open question honestly left open
+    rather than silently assumed: S4's fix is confirmed live only for
+    prose/`.mode-scroll`; Screenplay's differently-nested scroll
+    container couldn't get a live repro this session, flagged for
+    Nick's own eye.
+    **Independent post-build review — GREEN WITH ADVISORIES,
+    2026-07-21.** All nine requested verification items, including
+    both invariants flagged high-severity if broken (the trusted-
+    pointer proof; the single-vanishing-engine rule), checked out
+    against the actual code and live harness re-runs, not the build's
+    prose. S1's motion equality verified byte-for-byte in the actual
+    CSS (identical property list, custom property, easing — only the
+    mirrored `translateX` sign differs). S3's trusted-pointer claim
+    traced all the way to `runtime-verify.mjs`'s own CDP call and
+    confirmed the harness's S3 section never calls
+    `mouseDown`/`mouseUp`/`click` anywhere in the actual restore
+    proof. **A genuine bonus check, not requested**: noticed the
+    branch's own merge-base predated J6+FX9+E1 landing on `main` and
+    the brief's own explicit rebase instruction had not been followed
+    — test-merged current `main` into the branch locally (`git merge
+    --no-commit`, nothing committed), built it, and ran `fx10.mjs`,
+    `fx9.mjs`, and `j6.mjs` against the REAL merged tree: all clean,
+    zero conflicts — lower actual risk than the staleness alone
+    implied, but correctly flagged that a real rebase or fresh
+    full-suite pass against the merged tree should still happen
+    before landing. **Three defects found, all cosmetic/low-severity,
+    none blocking**: a stale doc comment in `DeskFrame.tsx` (pre-
+    existing, untouched by this diff) now contradicts a second,
+    correctly-updated comment 150 lines later — the file
+    self-contradicts on whether the strip still "never dissolves,"
+    worth a one-line fix; the never-rebased branch itself, addressed
+    below; a minor perf note (a DOM scan per `pointermove` while
+    chrome is dissolved) — correctly gated behind a rare/short-lived
+    state, unlikely to be perceptible.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized), onto
+    `main` @ item 51's own merge tip — addressing the review's own
+    rebase advisory with a real merge rather than a spot-check.
+    `git merge --no-ff origin/fx10-rooms-edges` — clean, no
+    conflicts, `index.css` auto-resolved (matching the review's own
+    test-merge finding exactly). Re-verified at the merge HEAD: `tsc`
+    clean, `build` clean; the full historic suite re-run properly
+    across the true final combined tree (J6+FX9+E1+FX10 all
+    together) — result pending as of this writing, to be recorded
+    here on completion (any new flake findings also fold into item
+    48's own deflake-pass record).
+    **Not deployed** — though given the P0 urgency, expect Nick's own
+    deploy word to follow close behind, per the note at item 51.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
