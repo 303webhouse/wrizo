@@ -3637,6 +3637,36 @@ outlive a session lives here, not in chat.
     for every ticket before B3.
     **Build starting — 2026-07-21**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-B3-deploy `main`.
+43. **TU2 — the Listener.** **BRIEF COMMITTED — 2026-07-21.**
+    `docs/wrizo-alpha/tu2-listener-brief.md`. **Authority:** the Tutor
+    committee pass as ratified (A12-A15 whole) and the Tutor's own
+    second sitting of 2026-07-21 (Nick's six additions reviewed and
+    shaped by Fable; sequence ruled TU2->TU6: TU2 the Listener (this
+    ticket), TU3 Ledger, TU4 Mechanics+cards, TU5 Memory, TU6
+    Accounts). **This is the first record in this repo of that
+    sitting and its sequence ruling** — no prior doc names TU3-TU6
+    before this brief. **TU5 (Memory) is explicitly NOT settled by
+    this sequencing**: its memory-rules wording still awaits Nick's
+    own review; recorded here as an OPEN ratification item, not
+    assumed.
+    Five build slices: S1 provider-agnostic config (DeepSeek V4 Flash
+    default; `TUTOR_BASE_URL`/`TUTOR_MODEL`/`TUTOR_API_KEY`/
+    `TUTOR_MAX_TOKENS`, server census locked to exactly `env.ts`,
+    `tutor.ts`, `.env.example`); S2 delta reads on a persisted cursor
+    — **a charter amendment to TU1 S1's "nothing else is ever
+    persisted," made on Nick's word at this brief's ratification**:
+    `lastRead?: { at, chars }` joins the `tutor` jsonb; S3 disclosure
+    v2 (versioned, shown once per version, new wording since page
+    text now travels); S4 the panel's geometry retrofit (grip flush
+    to the page's right edge mirroring the strip; presence extends to
+    `pageKind='board'`); S5 the session meter (client-only, no
+    schema). **ZERO MIGRATION — merge pre-authorized as zero-
+    migration per the AB4 precedent**, with the three-file server
+    census as the hard boundary — anything more is STOP-and-report.
+    Report = push; Fable reviews post-push; deploy is Nick's separate
+    word, manifest enumerated as always.
+    **Build starting — 2026-07-21**, on `tu2-listener` off `main` in
+    its own worktree, per ONE CHECKOUT PER AGENT.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
