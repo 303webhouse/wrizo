@@ -16,6 +16,10 @@ import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
+import { useActionToast } from '../components/ActionToast';
+import { exportPageFiles, exportBinderDocument, exportEverythingDocument } from '../store/pageExport';
+import { triggerDownload } from '../store/download';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
@@ -64,6 +68,7 @@ function wordCount(text: string): number {
 function PageEditorView({ id }: { id: string }) {
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
+  const { t: dt } = useDeskLexicon();
   // AB1 S1 — DeskFrame owns the viewport at >=1100px only; below that this
   // component's legacy JSX (byte-identical to pre-AB1) renders instead. See
   // docs/wrizo-alpha/ab1-shell-inventory.md.
@@ -97,6 +102,9 @@ function PageEditorView({ id }: { id: string }) {
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
+  // E1 S2 — Publish's own quiet confirmation line (the existing ActionToast
+  // pattern, reused per the brief's own "don't invent a new one" instruction).
+  const publishToast = useActionToast();
   // AB2 S2 — ink color, lifted out of ModeStage so the sliver (CD1:
   // components/Sliver.tsx, a DeskFrame sibling) can control it; ModeStage
   // falls back to its own internal state when this isn't passed
@@ -530,22 +538,75 @@ function PageEditorView({ id }: { id: string }) {
     </div>
   );
 
+  // E1 S2 — both Copy buttons now AWAIT copyText's own success/failure
+  // (store/clipboard.ts's S1 fix) and say so, through the house's existing
+  // ActionToast quiet-line pattern. S1's own live diagnosis (harness
+  // reproduction, see the build report): a genuinely trusted click already
+  // lands the right text on the OS clipboard today — the defect was total
+  // silence, never brokenness — but a genuine failure (forced live too) was
+  // previously an unhandled promise rejection with zero fallback and zero
+  // surfaced message, which this fix also closes.
+  const doCopy = async (which: 'words' | 'formatted') => {
+    const payload = which === 'words' ? stripMarkdownConventions(textRef.current) : textRef.current;
+    const ok = await copyText(payload);
+    publishToast.show(ok ? dt(which === 'words' ? 'publishCopyWordsConfirm' : 'publishCopyFormattedConfirm') : dt('publishCopyFailed'));
+  };
+
+  // E1 S3 — "This Page" reads straight off the LIVE textRef (never a stale
+  // persisted copy), so a download the instant after typing can't lose the
+  // keystroke the debounced autosave hasn't flushed yet — the same
+  // discipline Copy already relies on.
+  const downloadThisPage = (format: 'md' | 'txt') => {
+    const files = exportPageFiles({ ...entry, text: textRef.current });
+    const ok = triggerDownload(`${files.base}.${format}`, format === 'md' ? files.md : files.txt, format === 'md' ? 'text/markdown' : 'text/plain');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
+  // "This Binder"/"Everything" read PERSISTED storage across many pages, not
+  // just this one — flush this page's own live text through first so a
+  // download fired right after typing can't miss it.
+  const downloadBinder = () => {
+    flush(); flushNow();
+    if (!project) return;
+    const { filename, content } = exportBinderDocument(project);
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
+  const downloadEverything = () => {
+    flush(); flushNow();
+    const { filename, content } = exportEverythingDocument();
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
   const publishDialog = showPublish && (
     <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
       <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
         <div className="card-title">{lex('publish')}</div>
-        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-          Publishing options — tailored to this work's type, destination, and format — are coming soon.
-        </p>
+        {/* E1 S4 — the download actions are real, present, and unmissable
+            ABOVE the (still true) coming-soon line — the surface no longer
+            reads as a dead end. */}
+        <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.02em', margin: '12px 0 6px' }}>{dt('publishDownloadTitle')}</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <button type="button" className="btn-quiet publish-download-page-md" onClick={() => downloadThisPage('md')}>{dt('publishDownloadPageMd')}</button>
+          <button type="button" className="btn-quiet publish-download-page-txt" onClick={() => downloadThisPage('txt')}>{dt('publishDownloadPageTxt')}</button>
+          {project && <button type="button" className="btn-quiet publish-download-binder" onClick={downloadBinder}>{dt('publishDownloadBinder')}</button>}
+          <button type="button" className="btn-quiet publish-download-everything" onClick={downloadEverything}>{dt('publishDownloadEverything')}</button>
+        </div>
         {/* AB2 S5 — copy-out comes home to Publish (findings 2/3 of record die
             here). "Copy My Words" strips the markdown conventions back to
             honest plain text; "Copy Formatted" copies entry.text as stored —
             the conventions travel, markdown is the portable format. */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <button type="button" className="btn-quiet publish-copy-words" onClick={() => copyText(stripMarkdownConventions(textRef.current))}>Copy My Words</button>
-          <button type="button" className="btn-quiet publish-copy-formatted" onClick={() => copyText(textRef.current)}>Copy Formatted</button>
+          <button type="button" className="btn-quiet publish-copy-words" onClick={() => doCopy('words')}>Copy My Words</button>
+          <button type="button" className="btn-quiet publish-copy-formatted" onClick={() => doCopy('formatted')}>Copy Formatted</button>
         </div>
+        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '0 0 16px' }}>
+          {dt('publishComingSoon')}
+        </p>
         <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+        {publishToast.node}
       </div>
     </div>
   );

@@ -385,7 +385,35 @@ export type DeskTermId =
   // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
-  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome';
+  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome'
+  // E1 S2 — Publish's copy path, working and legible. A brief confirmation
+  // (the existing ActionToast quiet-line pattern) after a genuine copy
+  // success, split by button so a writer always knows WHICH one just
+  // fired; one honest failure line, reused by both, for the genuine (if
+  // rare) case neither the Clipboard API nor the execCommand fallback
+  // actually landed the text anywhere — S1's own live finding was silence
+  // on success, not brokenness, but "failure is reported honestly, never
+  // silently swallowed" is a standing requirement regardless of how often
+  // it fires.
+  | 'publishCopyWordsConfirm' | 'publishCopyFormattedConfirm' | 'publishCopyFailed'
+  // E1 S3 — the Download action, the ticket's own reason for existing. One
+  // section label + one button label per scope; 'publishDownloadBinder'
+  // only ever renders when the open page has a binder home (no project ->
+  // no button, per the house's own no-greyed-states law — see
+  // PageEditor.tsx/ScriptEditor.tsx's own conditional). Success/failure
+  // lines are shared across every scope (the SAME toast the copy path
+  // uses) — a real file landing is its own confirmation in the OS's own
+  // download UI, but a quiet in-app line matches S2's "say so" philosophy
+  // and gives a genuine failure (e.g. nothing left to export) an honest
+  // home instead of a silent no-op.
+  | 'publishDownloadTitle' | 'publishDownloadPageMd' | 'publishDownloadPageTxt'
+  | 'publishDownloadBinder' | 'publishDownloadEverything'
+  | 'publishDownloadConfirm' | 'publishDownloadFailed'
+  // E1 S4 — the "coming soon" copy moves BELOW the (now real) download
+  // actions rather than leading the dialog; the sentence itself is
+  // unchanged verbatim (still true, per the brief), only its position and
+  // its route through this lexicon are new.
+  | 'publishComingSoon';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -755,6 +783,21 @@ const CANONICAL: Record<DeskTermId, string> = {
   progressStyleLabel: 'Progress style',
   progressStyleBar: 'Bar',
   progressStyleRhizome: 'Rhizome',
+
+  // E1 S2 — Publish's copy path.
+  publishCopyWordsConfirm: 'Copied — your plain words are on the clipboard.',
+  publishCopyFormattedConfirm: 'Copied — with formatting intact.',
+  publishCopyFailed: 'Copy didn’t go through — try again, or use Download below.',
+
+  // E1 S3 — Download.
+  publishDownloadTitle: 'Download',
+  publishDownloadPageMd: 'This Page (.md)',
+  publishDownloadPageTxt: 'This Page (.txt)',
+  publishDownloadBinder: 'This Binder',
+  publishDownloadEverything: 'Everything',
+  publishDownloadConfirm: 'Downloading — check your downloads.',
+  publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
+  publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

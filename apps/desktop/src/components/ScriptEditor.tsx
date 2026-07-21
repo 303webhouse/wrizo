@@ -10,6 +10,10 @@ import { computeAutocomplete, applyAutocomplete, type AutocompleteState } from '
 import { shouldPromoteToScene, applyAutoContd } from '../store/scriptSmartText';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { copyText } from '../store/clipboard';
+import { useDeskLexicon } from '../store/deskLexicon';
+import { useActionToast } from './ActionToast';
+import { exportPageFiles, exportBinderDocument, exportEverythingDocument } from '../store/pageExport';
+import { triggerDownload } from '../store/download';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
@@ -245,6 +249,10 @@ export function ScriptEditor({ id }: { id: string }) {
   // in the framed branch, since a <1100px script surface is untouched).
   const framed = useDeskFrameViewport();
   const [showPublish, setShowPublish] = useState(false);
+  // E1 S2 — the same quiet confirmation line PageEditor.tsx's own Publish
+  // dialog uses (ActionToast, reused — not a second pattern).
+  const publishToast = useActionToast();
+  const { t: dt } = useDeskLexicon();
   // AB2 S4 — the Structure picker's one-way warning (screenplay -> prose;
   // element types don't survive the trip). Switching an empty script is free.
   const [structureConfirm, setStructureConfirm] = useState(false);
@@ -541,16 +549,69 @@ export function ScriptEditor({ id }: { id: string }) {
     moveActive(index, hint);
   };
 
+  // copyScriptText is used by BOTH the legacy (<1100px) toolbar's own
+  // pre-existing "Copy script text" button (which has no Publish dialog and
+  // no toast mounted at all — untouched, per the "legacy unchanged"
+  // invariant) AND the framed Publish dialog's "Copy Formatted" button.
+  // Left exactly as it always was (fire-and-forget) so the legacy caller's
+  // behavior is byte-identical; the framed dialog gets its own confirming
+  // wrapper below instead of teaching this shared function about a toast
+  // node that doesn't exist on the legacy branch.
   const copyScriptText = () => {
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
     copyText(serializeScriptDoc({ v: 1, scenes }));
   };
 
-  // AB2 S5 — "Copy My Words": the writer's own lines, screenplay convention
-  // (uppercase sluglines, dialogue-block tightening) stripped back out.
-  const copyMyWords = () => {
+  // E1 S2 — the framed Publish dialog's own "Copy Formatted", which DOES
+  // have a mounted toast: awaits copyText's own success/failure and says
+  // so (the same fix/rationale as PageEditor.tsx's own doCopy).
+  const publishCopyFormatted = async () => {
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
-    copyText(plainScriptWords({ v: 1, scenes }));
+    const ok = await copyText(serializeScriptDoc({ v: 1, scenes }));
+    publishToast.show(ok ? dt('publishCopyFormattedConfirm') : dt('publishCopyFailed'));
+  };
+
+  // AB2 S5 — "Copy My Words": the writer's own lines, screenplay convention
+  // (uppercase sluglines, dialogue-block tightening) stripped back out. Only
+  // ever rendered in the framed Publish dialog (no legacy equivalent
+  // button exists), so it can safely await + confirm directly.
+  const copyMyWords = async () => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    const ok = await copyText(plainScriptWords({ v: 1, scenes }));
+    publishToast.show(ok ? dt('publishCopyWordsConfirm') : dt('publishCopyFailed'));
+  };
+
+  // E1 S3 — the LIVE reconstructed doc (elementsRef/scenesRef), never a
+  // stale persisted `entry.script` — matches what Copy already does above,
+  // so a download the instant after typing can't lose the keystroke the
+  // 2s autosave debounce hasn't flushed yet.
+  const flushScriptNow = () => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    scenesRef.current = scenes;
+    saveScriptDoc(id, { v: 1, scenes });
+    lastSavedRef.current = elementsRef.current;
+    flushNow();
+    return scenes;
+  };
+  const downloadThisPage = (format: 'md' | 'txt') => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    const liveEntry = { ...initialEntry, script: { v: 1 as const, scenes } };
+    const files = exportPageFiles(liveEntry);
+    const ok = triggerDownload(`${files.base}.${format}`, format === 'md' ? files.md : files.txt, format === 'md' ? 'text/markdown' : 'text/plain');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+  const downloadBinder = () => {
+    flushScriptNow();
+    if (!project) return;
+    const { filename, content } = exportBinderDocument(project);
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+  const downloadEverything = () => {
+    flushScriptNow();
+    const { filename, content } = exportEverythingDocument();
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
   };
 
   // AB2 S4 — Structure picker, screenplay -> prose. entry.text (the derived
@@ -685,16 +746,26 @@ export function ScriptEditor({ id }: { id: string }) {
           <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
             <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
               <div className="card-title">Publish</div>
-              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-                Publishing options — tailored to this work's type, destination, and format — are coming soon.
-              </p>
+              {/* E1 S4 — download, real and unmissable, ABOVE the (still
+                  true) coming-soon line. */}
+              <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.02em', margin: '12px 0 6px' }}>{dt('publishDownloadTitle')}</div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                <button type="button" className="btn-quiet publish-download-page-md" onClick={() => downloadThisPage('md')}>{dt('publishDownloadPageMd')}</button>
+                <button type="button" className="btn-quiet publish-download-page-txt" onClick={() => downloadThisPage('txt')}>{dt('publishDownloadPageTxt')}</button>
+                {project && <button type="button" className="btn-quiet publish-download-binder" onClick={downloadBinder}>{dt('publishDownloadBinder')}</button>}
+                <button type="button" className="btn-quiet publish-download-everything" onClick={downloadEverything}>{dt('publishDownloadEverything')}</button>
+              </div>
               {/* AB2 S5 — copy-out comes home to Publish; "the existing
                   copy-script-text rendering" is Copy Formatted verbatim. */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                 <button type="button" className="btn-quiet publish-copy-words" onClick={copyMyWords}>Copy My Words</button>
-                <button type="button" className="btn-quiet publish-copy-formatted" onClick={copyScriptText}>Copy Formatted</button>
+                <button type="button" className="btn-quiet publish-copy-formatted" onClick={publishCopyFormatted}>Copy Formatted</button>
               </div>
+              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '0 0 16px' }}>
+                {dt('publishComingSoon')}
+              </p>
               <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+              {publishToast.node}
             </div>
           </div>
         )}
