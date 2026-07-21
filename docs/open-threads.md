@@ -3807,13 +3807,13 @@ outlive a session lives here, not in chat.
     anything, an explicit merge commit, no force or reset, TU2's own
     branch/worktree never touched, full disclosure) — named as the
     THIRD occurrence of this shared-tree class (after the two CD1.1/
-    HB1 collisions on 2026-07-16). **A new "S0-push rule" PROPOSED,
-    not yet ratified**: a session's own records commits should be
-    authored on its OWN branch/worktree, parented on the current
-    `origin/main` tip, landing on `main` by a fast-forward push —
-    never by commits made directly in the primary checkout; the
-    primary checkout reserved for merge operations only. Awaits Nick's
-    own word before this becomes binding practice.
+    HB1 collisions on 2026-07-16). **The proposed "S0-push rule" —
+    RATIFIED, 2026-07-21, Nick's word ("Sure, ratify S0-push rule").**
+    Full text recorded under TOOLING STATUS, alongside ONE CHECKOUT
+    PER AGENT. Binding practice from this point forward — this
+    session's own future S0-style records commits land via a
+    fast-forward push from a differently-parented branch, never as
+    direct commits against the primary checkout's own local `main`.
     **Deployed — 2026-07-21**, Nick's word ("my go-ahead to deploy
     everything built"), manifest independently re-enumerated by CC
     before shipping: `65a4fa9..HEAD` = FX7's own four code commits +
@@ -4187,6 +4187,32 @@ outlive a session lives here, not in chat.
   `hb1-threshold`; CD1's session keeps the original checkout
   (`writer-studio`) on `main`. Any future third concurrent agent gets
   its own worktree the same way before it writes a single file.
+- **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
+  S0-push rule"), proposed by Fable's own FX7 review citing the
+  shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
+  collisions on 2026-07-16, then item 42's own concurrent-TU2 incident
+  on 2026-07-21). ONE CHECKOUT PER AGENT closed the build-time version
+  of this problem (concurrent agents never share a working TREE); this
+  closes the remaining gap — concurrent ORCHESTRATING SESSIONS sharing
+  the same primary checkout's own `main` for docs/ledger commits. **A
+  session's own S0-style records commits (a brief, a ledger open, a
+  status note) are never committed directly against the primary
+  checkout's own local `main`.** Instead: branch off the current
+  `origin/main` tip (a throwaway locally-named branch is fine, in the
+  primary checkout or a worktree, either is safe since the branch
+  itself never collides), commit there, then land it with a
+  fast-forward-only push directly to the remote ref —
+  `git push origin <local-branch-or-sha>:main` — never a plain
+  `git push origin main` from a local `main` that was committed to
+  directly. If that fast-forward is rejected (origin/main moved),
+  fetch and re-parent before retrying — never force. **The primary
+  checkout's own local `main` is reserved for MERGE operations only**
+  (a ticket branch's own code merging in), each one serialized by
+  Nick's own merge word, exactly as every ticket in this ledger
+  already does. This preserves the exact thing that let FX7's own
+  session discover TU2's concurrent work at all (an early, honest,
+  disk-first ledger) while removing the shared-tree surface that made
+  the discovery necessary in the first place.
 - **Erratum vs. supersession, for harness checks — ratified 2026-07-16
   (Fable, cd1.1 spot-check).** Two different situations, two different
   moves. A check falsified because the DESIGN changed (a surface
