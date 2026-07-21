@@ -3518,6 +3518,47 @@ outlive a session lives here, not in chat.
     pending Fable's post-merge review** (still owed, per the brief's
     own gating language, even though deploy itself didn't wait for
     it) **and Nick's own device sitting.**
+    **Fable's post-merge review landed and is committed — GREEN, no
+    fold — 2026-07-21** (`docs/wrizo-alpha/b3-review-fable.md`).
+    Census-verified on the two widest commits (S1's seven client-only
+    files including the full seven-deck lexicon load; S3's exactly
+    three files, all additive call sites into existing store
+    functions) — the zero-schema claim confirmed census-level, not
+    taken on faith. **Explicitly ratified as lawful, not just
+    accepted**: the deploy that preceded this review (Nick's standing
+    word, manifest independently re-enumerated). **Five rulings of
+    record**: (1) the two-doors persistence asymmetry SUSTAINED and
+    RATIFIED as a durable pattern — lawful specifically because it was
+    diagnosed, reasoned, and disclosed, made safe to reason about by
+    the engine's own purity (`materializeDeck` never touches
+    persistence, callers own the one mutation); (2) the sliver-tool-
+    count lineage's own structural end RATIFIED — b3.mjs's ordered-
+    labels roster check ends the magic-number generation pattern
+    outright, and the generation-4 stale-pointer catch elevates a new
+    standing rule: **a park's own live-successor pointer is now part
+    of what every fold must verify**, not just the check's own
+    content; (3) Character Study's never-one-character exclusion
+    RATIFIED as by-design, not by luck; (4) **one open item, a
+    question not a defect verdict**: "Start Here" wears brass where
+    the brief said it earns no color in the orange lane — the build's
+    own reasoning ("brass, not orange — no new color lane") sits in
+    real tension with the house's own th2 precedent (brass for
+    earned, evental moments only) — **Nick's own sitting rules it**:
+    if it reads as a quiet mark, it stands; if it reads as an at-rest
+    glow in the action lane, a b3.1 fold moves it to a muted ink tone,
+    one token; (5) **the `j4.mjs` flake tracking formally opens at
+    occurrence 1** — transient, clean twice in isolation, unrelated to
+    B3's own diff — under the standing `th2.mjs` rule: a third
+    occurrence within the tracking window triggers a scheduled
+    deflake pass, not another note.
+    **Close conditions: (1) this review on disk — met, this commit;
+    (2) Nick's own sitting — the sole remaining gate.** His DoD walk
+    (Blank first and untouched; two clicks into Three-Act's nine
+    cards; the hint dying on his own first edit; a drag and a delete,
+    no protest; no deck ever offered unasked) plus two named looks:
+    Character Study's pre-threading (three characters, four threads)
+    and the Start Here color question (Ruling 4 — his eye rules brass
+    or ink).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
