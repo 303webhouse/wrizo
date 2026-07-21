@@ -3559,9 +3559,10 @@ outlive a session lives here, not in chat.
     Character Study's pre-threading (three characters, four threads)
     and the Start Here color question (Ruling 4 — his eye rules brass
     or ink).
-41. **Nick's second desktop sitting — 2026-07-22. PARTIAL, relayed
-    directly to CC, no Fable brief yet.** Six findings, Nick's own
-    words, recorded verbatim before any triage or fix:
+41. **Nick's second desktop sitting — 2026-07-21. PARTIAL, relayed
+    directly to CC, no Fable brief.** Eleven findings across two
+    messages, Nick's own words, recorded verbatim before any triage or
+    fix:
     1. **"New Page" while in the Journal lands on an older version of
        the Journal Page** — "which now should be just a regular Free
        Write page with typewriter mode, etc. defaulted to on."
@@ -3585,13 +3586,57 @@ outlive a session lives here, not in chat.
        bulky and mostly white, which makes them dominate visually,
        distracting from what a user will actually be trying to focus
        on."
-    **Not yet triaged into a brief or built.** Finding 1 in particular
-    is a real architectural question (JournalEntry.tsx's own fate as
-    a distinct writing surface, per B1's own explicit "the paper
-    stays" ruling) not a pure bug — CC flagged this to Nick directly
-    rather than assuming a fix, per the standing Fable-brief rhythm.
-    Awaiting Nick's word on process (build directly vs. route through
-    Fable first) before anything here is touched.
+    6. **Deck-dealt cards are not editable** — "double clicking on
+       them did nothing."
+    7. **Deck-dealt cards are not deletable** — "Nor can I seem to
+       delete them."
+    8. **Card resize is one-directional** — "once a card is upsized in
+       any direction, it doesn't seem like it can be downsized."
+    9. **The card layer-arrangement feature is not working.**
+    10. **The deck wizard doesn't actually walk the user through a
+        proper wizard** — "not doing it with pop-ups over a blurred
+        out board like the way we've styled the card editor. Right
+        now, it seems like the Plot Structure option is just leading
+        back to the old, deprecated wizard."
+    11. **Long file-listing menu sections should be collapsible** —
+        "all menu sections that will have lists of previous Pages,
+        Boards, or other file types should all be on toggles so the
+        menus don't get dominated by long lists of files."
+    **Triaged, Nick's own word, 2026-07-21.** Split per his own
+    instruction: findings 2-10 build directly, no Fable brief — CC's
+    own call on each, including root-causing whether 6-9 are genuine
+    regressions or the project's own recurring synthetic-vs-real-
+    hardware gesture gap (the same class FX4/FX5's hover-restore and
+    drag-friction bugs were), and whether 10 is a genuine bug in B3's
+    own new door or Nick reaching the older, pre-existing
+    StructureWizard doorway instead. **Findings 1 and 11 held for
+    Fable**: 1 is a real architectural question (JournalEntry.tsx's
+    own fate as a distinct writing surface, per B1's explicit "the
+    paper stays" ruling); 11 is a UX pattern spanning multiple menu
+    sections needing a real spec (which sections, default state) not
+    a guess. **Building now**: `FX7`, CC-authored (no Fable brief,
+    explicit Nick authorization on record) — see item 42.
+42. **FX7 — the second sitting's fixable bugs.** **BRIEF COMMITTED —
+    2026-07-21, CC-authored, not Fable.**
+    `docs/wrizo-alpha/fx7-second-sitting-fixes-brief.md`. Covers
+    findings 2-10 of item 41's sitting (screenplay/script geometry, a
+    thorough review per Nick's own instruction; Free Write's tool rail
+    — Bold/Italic + ink affordances; the cascade submenu flush-gap;
+    a systemic theme-aware scrollbar restyle; four board-card
+    interaction bugs on deck-dealt cards — edit, delete, resize-down,
+    layer-arrangement, each root-caused rather than assumed, given
+    B3's own review just proved the same mechanisms working live
+    minutes earlier; the deck wizard's own routing, investigated to
+    determine whether Nick reached B3's genuine door or a separate,
+    pre-existing doorway). Findings 1 and 11 explicitly excluded, held
+    for Fable. Zero schema expected, STOP-and-report if any slice
+    wants a column; merge pre-authorized as zero-schema. **Deploy is
+    explicitly NOT pre-authorized** — Nick's own "deploy whenever
+    it's ready" word was scoped to B3 by name, not read as a standing
+    policy; redeploy here waits for his own word, same as the default
+    for every ticket before B3.
+    **Build starting — 2026-07-21**, via a Workflow-orchestrated
+    build+review pipeline (ultracode), off post-B3-deploy `main`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
