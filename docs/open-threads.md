@@ -4468,6 +4468,73 @@ outlive a session lives here, not in chat.
     per Nick's own word — no surface overlap (cascade menu chrome vs.
     routing/geometry substrate) — FX9's own brief landed and its build
     started the same sitting; see item 50.
+    **Built S1-S4 on `j6-one-paper` off `main` @ `b3b1cfb`, in its own
+    worktree — 2026-07-21.** **A genuine mid-build incident, disclosed
+    in full**: this build's own agent completed all four slices
+    cleanly (each its own commit) and had launched its own full
+    historic-suite verification when an UNRELATED interrupt in the
+    orchestrating session's own conversation cascaded down and killed
+    its foreground turn — the agent never wrote a final report, and
+    (per the newly-relevant half of the already-ratified
+    placeholder-report rule) that silence was treated as exactly what
+    it was: no report exists, full stop, not "probably fine." The
+    orchestrating session recovered the actual state directly rather
+    than re-building blind: confirmed all 4 commits intact with a
+    clean working tree; recovered the build's own already-running
+    background suite log, which had in fact reached completion after
+    the interrupt (the AGENT's foreground wait died; the underlying
+    suite process did not) — 30/30 files green under both
+    `HARNESS_PARKED` settings, with exactly one crash
+    (`th2_parked1`), traced to a stray Edge sync-confirmation popup
+    interrupting page navigation mid-test (every real assertion in
+    that file had already passed immediately before the crash) —
+    re-ran 3/3 clean in true isolation, confirmed transient, unrelated
+    to any code in this diff. Independently re-ran `tsc --noEmit` and
+    `build:web`, both clean. Pushed the verified branch to origin
+    (the build's own "report = push" step never happened; the
+    orchestrating session completed it).
+    **S1's real root cause, more precise than the brief's own
+    framing** (found by the independent review, not assumed from the
+    brief): `DeskFrame` and its three top-level subscribers
+    (`AppMain`/`GlobalHeader`/`DeskRail`) can race on the app's very
+    first commit (a hard reload landing directly on an already-framed
+    route) because React fires passive mount effects bottom-up — a
+    narrower mechanism than "stale across an in-app navigation," but
+    the fix (`useSyncExternalStore`, reading the snapshot synchronously
+    on every render) closes the whole class, not just the narrow repro
+    shape, and exceeds the brief's own literal ask. Item 47 CLOSES
+    here, on this fix landing — see item 47 for the full original
+    defect record.
+    **Independent post-build review — GREEN WITH ADVISORIES,
+    2026-07-21**, run fresh after the recovery above (the ticket's own
+    automated review never ran for the same reason its build never
+    finished its own report — this review carries that net alone, and
+    says so). Re-verified independently, not on the build's word: S1's
+    fix mechanism (traced by hand, cross-checked against M2's own
+    build-report observation of the same defect from a different
+    angle); S2's `routeForEntry` byte-for-byte match against every
+    migrated call site, including a bonus site the build found and
+    disclosed beyond the brief's own list (`store/resume.ts`'s
+    `fromEntry`); zero-schema/zero-server/zero-deps by direct diff
+    census; `tsc`, both build paths, and `j6.mjs` all re-run
+    independently from a cold `node_modules` install — 36/36 checks,
+    matching the commit's own claimed count. **Two real, cosmetic
+    defects found in `j6-parity-census.md`** (not in any shipped
+    code): §1.1 claims no ink import exists in `BoardEditor.tsx` —
+    one does (`renderStroke`, read-only display of an already-ported
+    ink box, not authoring; the census's actual conclusion still
+    holds, the literal sentence doesn't); §2.1 cites
+    `ForwardOnlyEditor.tsx` as 717 lines, actual is 625. Neither
+    changes any recommendation in the document. Worth a one-line fix
+    before J7 is briefed off this document — Nick's call whether it
+    waits.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized).
+    `git merge --no-ff origin/j6-one-paper` onto `main` @ `b66ad81` —
+    clean, no conflicts. Re-verified at the merge HEAD: `tsc`
+    clean, `build` clean; the full historic suite was re-run again
+    across the combined J6+FX9 tree (see item 50's own record for the
+    shared `CascadePanels.tsx` merge and that suite run's result).
+    **Not deployed** — Nick's separate word, standing default.
 50. **FX9 — the Folded Lists.** **BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/fx9-folded-lists-brief.md`).
     **Authority**: item 41 finding 11 (Nick's second sitting —
@@ -4502,6 +4569,88 @@ outlive a session lives here, not in chat.
     `CascadePanels.tsx`, first to merge wins the base and the other
     rebases** (Nick's own sequencing rule, recorded here so whichever
     session merges second knows to check first).
+    **Built S1/S2/S4 on `fx9-folded-lists` off `main` @ `2c1e18d`, in
+    its own worktree — 2026-07-21** (S3 is a design constraint, not a
+    separate code slice — verified inside S4's own harness).
+    **The same mid-build incident as item 49, disclosed the same
+    way**: this build's own agent completed its real work cleanly
+    (all commits landed, working tree clean) but its own foreground
+    verification turn was killed by the same unrelated session
+    interrupt described in item 49, mid-poll on its own background
+    suite log. The orchestrating session recovered the state
+    directly: confirmed commits + clean tree; recovered the build's
+    own already-completed `HARNESS_PARKED=0` pass (30/30 green); ran
+    the still-missing `HARNESS_PARKED=1` pass itself (properly
+    tracked the second time — the first attempt broke its own
+    background tracking by nesting a shell `&` inside the tool's own
+    backgrounding, a self-inflicted, disclosed process error, not a
+    suite result). That parked=1 pass showed three apparent failures
+    (`b2-1`, `fx5`, `j4`) — re-run in true isolation: `b2-1` and `j4`
+    came back clean (contention artifacts, other tickets' own harness
+    runs sharing the machine at the time); `fx5`'s own "S1(a):
+    per-line engage motion" check failed 3/3 times even in true
+    process isolation — **confirmed as the exact SAME pre-existing
+    flake already tracked at item 48**, not a new regression: FX9's
+    own diff (`CascadePanels.tsx`, `index.css`, `store/sectionFold.ts`,
+    its own harness) has zero overlap with the typewriter-fade/scroll
+    code that check exercises, and the ledger already carries this
+    check's own prior "confirmed pre-existing against a baseline
+    checkout" record from before this ticket existed. Independently
+    re-ran `tsc --noEmit` and `build:web`, both clean. Pushed the
+    verified branch to origin (again, the build's own "report = push"
+    step never happened; completed by the orchestrating session).
+    **Independent post-build review — GREEN, zero defects found —
+    2026-07-21**, run fresh after the recovery above for the same
+    reason as item 49 (the automated review never ran; this review
+    carries that net alone). Genuinely thorough, not a rubber stamp:
+    independently re-ran `tsc` (both invocations), `build:web`, and
+    `fx9.mjs` itself (41/41, both `HARNESS_PARKED` settings, from a
+    cold `node_modules` install); independently re-ran the TWO other
+    harness files the build's own park-sweep comment named as the
+    only other hits on the fold's touched selectors (`cd2.mjs` 50/50 +
+    3 parked, `b2.mjs` 84/84 + 2 parked) rather than trusting that
+    claim; wrote and deleted a throwaway CDP screenshot script to
+    visually confirm collapse/expand states and the total absence of
+    any numeral; confirmed the header hit-target, olive-only chevron,
+    real `aria-expanded`, id-keyed persistence, and the mandatory
+    no-badge negative assertion all by reading the actual code and
+    re-running the actual assertions, not by reading the harness's own
+    comments. **One real, honestly-handled divergence from the brief's
+    own text, not a build defect**: the brief's own "verified
+    structure" section claimed `ShelfPanel`/`TrashPanel` "render their
+    own lists" — they don't; both were already retired to single
+    door-buttons by earlier tickets (B2 S1/S3, B1 S5). The build
+    caught this live, declined to fold what doesn't exist, and the
+    harness carries two dedicated checks disclosing exactly this — the
+    same "brief's premise was stale, build's own read of the live code
+    correctly won" pattern already seen at J6's S1 and M2's S3.
+    Two advisories for Nick's own eye, non-blocking: an UNTOUCHED
+    section's fold state recomputes live from the current item count
+    on every render (a project cluster you've never manually folded
+    could visibly snap shut mid-session past its 7th item) — a
+    deliberate, correct reading of the brief, but a state change with
+    no click from you, worth a glance live; hover feedback is
+    intentionally subtle (only the title brightens, the chevron never
+    changes) per S1's own law, worth confirming it reads as
+    "responsive" rather than "inert" at a real device.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized), onto
+    `main` @ item 49's own merge tip. **The anticipated
+    `CascadePanels.tsx` overlap with J6 (item 49), handled exactly as
+    the sequencing rule above intended**: J6 merged first (its own
+    entry), FX9 merged second; git's own 3-way merge auto-resolved
+    `CascadePanels.tsx` with no conflict markers — verified directly
+    rather than trusted: read the merged file, confirmed J6's
+    `routeForEntry(entry)` calls and FX9's `FoldSection`/
+    `useSectionFold` machinery both genuinely coexist (the fold wraps
+    list items that themselves call the new routing helper on click —
+    the two tickets' own concerns compose exactly as the "different
+    surfaces" sequencing note predicted, not merely avoid colliding).
+    Re-verified at the merge HEAD: `tsc` clean, `build` clean. The
+    full historic suite was re-run a third time across the combined
+    J6+FX9 tree specifically to catch any interaction defect neither
+    ticket's own isolated testing could have — **result pending as of
+    this writing, to be recorded here on completion.**
+    **Not deployed** — Nick's separate word, standing default.
 51. **E1 — Get My Words Out.** **P0 — BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/e1-get-my-words-out-brief.md`).
     **Outranks every ticket in the queue, including J6 and FX9 in
