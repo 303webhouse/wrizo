@@ -16,3 +16,11 @@ import type { JournalEntry } from '../types';
 export function routeForEntry(entry: JournalEntry): string {
   return entry.pageType != null ? `/page/${entry.id}` : `/journal/${entry.id}`;
 }
+
+// J6 S4 — test/inspection seam (the store/deskLexicon.ts `window.wrizoDeskLexicon`
+// / store/rhizomeEngine.ts `window.__wrizoRhizomeEngine` pattern: expose a
+// seam, prove the canonical source live, rather than re-deriving the
+// predicate a second time inside the harness). Never read by app code.
+if (typeof window !== 'undefined') {
+  (window as unknown as { __wrizoRouteForEntry?: unknown }).__wrizoRouteForEntry = routeForEntry;
+}
