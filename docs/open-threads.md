@@ -4648,8 +4648,16 @@ outlive a session lives here, not in chat.
     Re-verified at the merge HEAD: `tsc` clean, `build` clean. The
     full historic suite was re-run a third time across the combined
     J6+FX9 tree specifically to catch any interaction defect neither
-    ticket's own isolated testing could have — **result pending as of
-    this writing, to be recorded here on completion.**
+    ticket's own isolated testing could have — **clean, `ALL DONE`,
+    one failure (`th2_parked1`, 2/42), re-run 3/3 clean in true
+    isolation.** This is a DIFFERENT known `th2.mjs` flake than the
+    Edge-popup crash disclosed earlier in this item (a celebration-
+    animation timing race on the goal-fill's brass flash, already
+    documented from TU2's own deploy verification) — `th2.mjs` now
+    carries two independently-confirmed pre-existing flaky failure
+    modes on record, neither touched by J6 or FX9's own diff (routing
+    and cascade-fold code, nowhere near a celebration animation). No
+    interaction defect found between J6 and FX9.
     **Not deployed** — Nick's separate word, standing default.
 51. **E1 — Get My Words Out.** **P0 — BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/e1-get-my-words-out-brief.md`).
