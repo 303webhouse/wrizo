@@ -21,6 +21,7 @@ import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
 import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
+import { RhizomeField } from '../components/RhizomeField';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
@@ -625,6 +626,15 @@ function PageEditorView({ id }: { id: string }) {
           goalGlow={(gateActive || gateReached)
             ? <FirstRunGlow fraction={gateWords / FIRST_RUN_WORD_TARGET} />
             : <GoalGlow text={text} />}
+          // M2 S2 — the Rhizome's own growth layer. Absent outright while the
+          // first-run gate holds (the SAME "the threshold stays pure" law
+          // TU1's own non-goal put on the Tutor above — an ambient, entirely
+          // optional flourish has no place competing with the one-time
+          // ceremony). RhizomeField.tsx itself no-ops (renders nothing) when
+          // the writer hasn't actually chosen Rhizome, so mounting it
+          // unconditionally past the gate costs nothing on the shipped
+          // Bar-default path.
+          rhizome={gateActive ? undefined : <RhizomeField unitCount={wordCount(text)} seedKey={entry.id} paperRef={surfaceRef} />}
           dissolved={receded}
         >
           <ModeStage

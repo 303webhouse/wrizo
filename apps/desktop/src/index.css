@@ -158,6 +158,18 @@
      edit, the same seam pattern as --chrome-surface/--rail-surface above. */
   --desk-ground: var(--chrome-surface);
 
+  /* M2 S2 — the Rhizome's rest color. Plateau default: a light brown ONE
+     STEP above the desk ground (--desk-ground/--chrome-surface = --ink-900
+     #1F1A16 here) — barely visible by design, per Nick's own words. Token-
+     driven throughout the component (RhizomeField.tsx never reads a
+     Plateau literal), so a future theme reskins the growth-form by
+     re-pointing this one slot, the same seam pattern as --chrome-surface/
+     --rail-surface/--desk-ground above (the growth-form principle's
+     mechanical half — the theme ARC itself is parked, this ticket only
+     cuts the seam). Orange/brass lane law holds: this is warm brown, never
+     orange, at rest — the flash (below) is the only evental exception. */
+  --rhizome-ink: #4A3A28;
+
   /* TH1 — the four font slots (canon §4), the theme-facing layer. Material
      names below (--font-display/--font-ui/--font-prose) are the
      component-facing layer and re-point to these — zero component edits,
@@ -2732,6 +2744,49 @@ a:focus-visible,
   background:radial-gradient(ellipse at center, rgba(224,113,44,.55) 0%, rgba(224,113,44,.22) 40%, transparent 68%);
   opacity:var(--glow-intensity,0); transition:opacity 1.4s ease; filter:blur(6px); }
 @media (prefers-reduced-motion:reduce){ .wz-goal-glow{ transition:none; } }
+
+/* M2 S2 — the Rhizome's own anchor: the STAGE's full box (unlike the
+   goalglow anchor above, which is clamped to the paper's own canonical
+   width) — the growth wanders the margin AROUND the paper, not merely
+   behind it. */
+.desk-frame-rhizome-anchor{ position:absolute; inset:0; z-index:-1; pointer-events:none; }
+
+/* M2 S2/S4 — the growth layer itself (components/RhizomeField.tsx). An SVG
+   fills its own anchor exactly (inset:0) and clips its own content to its
+   own box by default — no separate overflow:hidden wrapper needed. z-index
+   is set on the ANCHOR above (beneath paper and all chrome, per S2); this
+   inline pointer-events:none (also set as a JSX inline style, belt-and-
+   suspenders — the M1 MilestoneBar precedent for "an invariant, not a
+   style choice") plus aria-hidden makes the whole layer structurally inert. */
+.wz-rhizome-field{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.wz-rhizome-seg{
+  stroke:var(--rhizome-ink); stroke-width:1.4px; stroke-linecap:round; fill:none;
+  animation:wz-rhizome-grow 180ms ease; /* "the house timing" (S2) — the same 180ms family already used throughout this file */
+}
+@keyframes wz-rhizome-grow{ 0%{ opacity:0; } 100%{ opacity:1; } }
+/* S4 — the milestone flash: every segment's own stroke eases to the ember
+   token, holds, and returns — growth kept whole (nothing here removes or
+   re-shuffles a segment, only its paint). B4-provisional: the 400ms-hold/
+   800ms-ease-back split (33%/100% keyframe offsets below) has no existing
+   named celebration-grammar constant of its own — B4's ember-accent finish
+   is the brief's own named final authority for this exact timing. The
+   ember COLOR itself is not provisional: --ember already exists (branding
+   §4) and is reused verbatim, never a new literal. */
+.wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:wz-rhizome-flash 1200ms ease; }
+@keyframes wz-rhizome-flash{
+  0%{ stroke:var(--rhizome-ink); }
+  8%{ stroke:var(--ember); }
+  33%{ stroke:var(--ember); }
+  100%{ stroke:var(--rhizome-ink); }
+}
+@media (prefers-reduced-motion:reduce){
+  /* S2: new segments appear instantly, no transition. S4: "a single soft
+     cross-fade to ember and back, no strobe" — a plain `transition` (not a
+     multi-stop keyframe animation) on the one property that changes,
+     driven by the SAME data-flash toggle the full-motion path uses. */
+  .wz-rhizome-seg{ animation:none; opacity:1; transition:stroke 600ms ease; }
+  .wz-rhizome-field[data-flash='true'] .wz-rhizome-seg{ animation:none; stroke:var(--ember); }
+}
 
 .desk-frame-meter{ min-height:44px; margin-top:14px; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md); }
