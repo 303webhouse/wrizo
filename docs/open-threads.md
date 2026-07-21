@@ -4148,6 +4148,27 @@ outlive a session lives here, not in chat.
     the grab/grabbing feel and the pin's new dome read are explicitly
     named as device-sitting business, trusted-CDP harness proof
     notwithstanding.
+    **Deployed — 2026-07-21**, Nick's word ("Deploy everything that's
+    ready"). Manifest independently re-enumerated before shipping:
+    `git log 368fb10..HEAD` — exactly FX8's 3 code commits, M2's 5
+    code commits, the two merge commits, and 3 docs-only ledger/
+    backlog commits; zero unnamed riders. Re-verified clean at the
+    exact deploy HEAD (`7a618c8`) before shipping, not carried over
+    from the merge-time check: `tsc --noEmit` clean, `build:web`
+    clean. **One disclosed operational hiccup**: `railway up` returned
+    after upload without attaching to the log stream (non-TTY
+    context), so its actual completion wasn't visible from the first
+    call — re-ran it once to get status, which meant two separate
+    deployments were triggered (`d225ab87`, `78d1adc9`) instead of
+    one. Harmless: Railway itself superseded/removed the first
+    (`d225ab87`, still INITIALIZING) the moment the second began
+    building, so only one deployment ever reached SUCCESS and only
+    one ever served traffic — confirmed via `railway deployment list`
+    showing `d225ab87` as REMOVED and `78d1adc9` as the sole SUCCESS.
+    `railway up` on `main` @ `7a618c8` (deployment `78d1adc9`,
+    SUCCESS), confirmed live via fresh `railway logs`. **Close now
+    rests on Nick's own device sitting** (per A2 above and item 46's
+    own sitting questions).
 46. **M2 — the Rhizome.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/m2-rhizome-brief.md`. An opt-in alternate
     progress visualization — a Progress-style setting (Bar, the
@@ -4336,6 +4357,14 @@ outlive a session lives here, not in chat.
     under the paper, the ember flare on goal, the ground filling
     without ever touching the page, and the two sitting questions
     above answered by eye.
+    **Deployed — 2026-07-21**, Nick's word ("Deploy everything that's
+    ready"), same deploy as item 45 (one word, one manifest, both
+    tickets — see item 45 for the full manifest re-enumeration, the
+    fresh `tsc`/`build:web` re-check at deploy HEAD, and the disclosed
+    duplicate-deployment-trigger hiccup, harmless, resolved). `railway
+    up` on `main` @ `7a618c8` (deployment `78d1adc9`, SUCCESS),
+    confirmed live. **Close now rests on Nick's own device sitting** —
+    both close conditions above, Q1 and Q2 included.
 47. **A pre-existing geometry-measurement defect, lifted off a
     harness comment onto its own ledger item — 2026-07-21, per
     Fable's own M2 review's explicit instruction.** `store/
