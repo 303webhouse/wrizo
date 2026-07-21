@@ -385,7 +385,17 @@ export type DeskTermId =
   // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
-  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome';
+  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome'
+  // E1 S2 — Publish's copy path, working and legible. A brief confirmation
+  // (the existing ActionToast quiet-line pattern) after a genuine copy
+  // success, split by button so a writer always knows WHICH one just
+  // fired; one honest failure line, reused by both, for the genuine (if
+  // rare) case neither the Clipboard API nor the execCommand fallback
+  // actually landed the text anywhere — S1's own live finding was silence
+  // on success, not brokenness, but "failure is reported honestly, never
+  // silently swallowed" is a standing requirement regardless of how often
+  // it fires.
+  | 'publishCopyWordsConfirm' | 'publishCopyFormattedConfirm' | 'publishCopyFailed';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -755,6 +765,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   progressStyleLabel: 'Progress style',
   progressStyleBar: 'Bar',
   progressStyleRhizome: 'Rhizome',
+
+  // E1 S2 — Publish's copy path.
+  publishCopyWordsConfirm: 'Copied — your plain words are on the clipboard.',
+  publishCopyFormattedConfirm: 'Copied — with formatting intact.',
+  publishCopyFailed: 'Copy didn’t go through — try again.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

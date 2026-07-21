@@ -16,6 +16,8 @@ import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
 import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
+import { useActionToast } from '../components/ActionToast';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
@@ -64,6 +66,7 @@ function wordCount(text: string): number {
 function PageEditorView({ id }: { id: string }) {
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
+  const { t: dt } = useDeskLexicon();
   // AB1 S1 — DeskFrame owns the viewport at >=1100px only; below that this
   // component's legacy JSX (byte-identical to pre-AB1) renders instead. See
   // docs/wrizo-alpha/ab1-shell-inventory.md.
@@ -97,6 +100,9 @@ function PageEditorView({ id }: { id: string }) {
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
+  // E1 S2 — Publish's own quiet confirmation line (the existing ActionToast
+  // pattern, reused per the brief's own "don't invent a new one" instruction).
+  const publishToast = useActionToast();
   // AB2 S2 — ink color, lifted out of ModeStage so the sliver (CD1:
   // components/Sliver.tsx, a DeskFrame sibling) can control it; ModeStage
   // falls back to its own internal state when this isn't passed
@@ -530,6 +536,20 @@ function PageEditorView({ id }: { id: string }) {
     </div>
   );
 
+  // E1 S2 — both Copy buttons now AWAIT copyText's own success/failure
+  // (store/clipboard.ts's S1 fix) and say so, through the house's existing
+  // ActionToast quiet-line pattern. S1's own live diagnosis (harness
+  // reproduction, see the build report): a genuinely trusted click already
+  // lands the right text on the OS clipboard today — the defect was total
+  // silence, never brokenness — but a genuine failure (forced live too) was
+  // previously an unhandled promise rejection with zero fallback and zero
+  // surfaced message, which this fix also closes.
+  const doCopy = async (which: 'words' | 'formatted') => {
+    const payload = which === 'words' ? stripMarkdownConventions(textRef.current) : textRef.current;
+    const ok = await copyText(payload);
+    publishToast.show(ok ? dt(which === 'words' ? 'publishCopyWordsConfirm' : 'publishCopyFormattedConfirm') : dt('publishCopyFailed'));
+  };
+
   const publishDialog = showPublish && (
     <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
       <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
@@ -542,10 +562,11 @@ function PageEditorView({ id }: { id: string }) {
             honest plain text; "Copy Formatted" copies entry.text as stored —
             the conventions travel, markdown is the portable format. */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <button type="button" className="btn-quiet publish-copy-words" onClick={() => copyText(stripMarkdownConventions(textRef.current))}>Copy My Words</button>
-          <button type="button" className="btn-quiet publish-copy-formatted" onClick={() => copyText(textRef.current)}>Copy Formatted</button>
+          <button type="button" className="btn-quiet publish-copy-words" onClick={() => doCopy('words')}>Copy My Words</button>
+          <button type="button" className="btn-quiet publish-copy-formatted" onClick={() => doCopy('formatted')}>Copy Formatted</button>
         </div>
         <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
+        {publishToast.node}
       </div>
     </div>
   );
