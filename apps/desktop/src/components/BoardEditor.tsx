@@ -17,6 +17,7 @@ import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { describePageHome } from '../store/pageHome';
+import { routeForEntry } from '../store/routeForEntry';
 import { useCascade } from './Cascade';
 import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
@@ -1090,8 +1091,7 @@ export function BoardEditor({ id }: { id: string }) {
     const target = getJournalEntry(entryId);
     if (!target) return;
     flushNow();
-    const route = target.pageType != null ? `/page/${target.id}` : `/journal/${target.id}`;
-    navigate(route, { state: { fromBoardId: id, fromBoardTitle: title } });
+    navigate(routeForEntry(target), { state: { fromBoardId: id, fromBoardTitle: title } });
   };
   const travelToPin = (box: Box) => travelToEntry(box.entryId);
 

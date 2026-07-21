@@ -187,6 +187,11 @@ await withHarness(async (app) => {
     // check is free to focus purely on whether the SHAPE the seeded PRNG
     // produces is byte-identical, which is what "determinism" actually
     // means here.
+    // J6 S1 — the substrate this paragraph describes is now sound (store/
+    // deskFrameActive.ts fixed at the source, item 47 closed); this check's
+    // OWN intent (growth shape, not raw pixels) is unchanged, so per A4 it
+    // stays exactly as it is rather than being rewritten to absolute
+    // coordinates in this ticket.
     const normalize = (segs) => {
       if (segs.length === 0) return segs;
       const ox = segs[0].x1, oy = segs[0].y1;

@@ -7,6 +7,7 @@ import { domainLabel } from '../store/kindLabels';
 import { PageFileMenu } from '../components/PageFileMenu';
 import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { routeForEntry } from '../store/routeForEntry';
 import type { JournalEntry } from '../types';
 
 // S1 — 'script' rides the same generic type-picker as the support types (any
@@ -21,12 +22,6 @@ const SUPPORT_TYPES: { key: NonNullable<JournalEntry['pageType']>; label: string
   { key: 'note', label: 'Note' },
   { key: 'script', label: 'Script' },
 ];
-
-// Open a binder page: typed pages (manuscript/support, B1) use the mode-aware
-// page editor; legacy untyped filed pages keep the authored journal editor.
-function pageRoute(p: JournalEntry): string {
-  return p.pageType ? `/page/${p.id}` : `/journal/${p.id}`;
-}
 
 export function ProjectHome() {
   const { id } = useParams<{ id: string }>();
@@ -177,7 +172,7 @@ export function ProjectHome() {
               <div className="dz-items" style={{ borderTop: 'none' }}>
                 {scripts.map((p, i) => (
                   <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
-                    <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                    <Link to={routeForEntry(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
                       {p.text.trim() ? firstLine(p.text).slice(0, 80) : `Script ${i + 1}`}
                     </Link>
                     <PageFileMenu page={p} label="move…" />
@@ -199,7 +194,7 @@ export function ProjectHome() {
               {chapters.length === 0 && <div className="dz-empty">No chapters yet.</div>}
               {chapters.map((p, i) => (
                 <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
-                  <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                  <Link to={routeForEntry(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
                     {p.text.trim() ? firstLine(p.text).slice(0, 80) : `Chapter ${i + 1}`}
                   </Link>
                   <PageFileMenu page={p} label="move…" />
@@ -222,7 +217,7 @@ export function ProjectHome() {
               {support.length === 0 && <div className="dz-empty">No support {lexMany('page').toLowerCase()} yet.</div>}
               {support.map(p => (
                 <div key={p.id} className="dz-row" style={{ paddingLeft: 6 }}>
-                  <Link to={pageRoute(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
+                  <Link to={routeForEntry(p)} className="dz-rowtitle" style={{ textDecoration: 'none' }}>
                     {p.pageType && <span className="dz-count" style={{ marginRight: 8, textTransform: 'capitalize' }}>{p.pageType}</span>}
                     {p.text.trim() ? firstLine(p.text).slice(0, 70) : 'Untitled'}
                   </Link>

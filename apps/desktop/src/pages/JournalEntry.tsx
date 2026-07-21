@@ -34,6 +34,7 @@ import { useLexicon } from '../store/themeLexicon';
 // 'drawer' term names a different, older entity and has no Flux override
 // for this newer sense).
 import { useDeskLexicon } from '../store/deskLexicon';
+import { routeForEntry } from '../store/routeForEntry';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
@@ -266,7 +267,7 @@ function JournalEntryView() {
       const i = nb.findIndex(p => p.id === id);
       if (i < 0) return;
       const target = e.key === 'ArrowLeft' ? nb[i - 1] : nb[i + 1];
-      if (target) { e.preventDefault(); navigate(`/journal/${target.id}`); }
+      if (target) { e.preventDefault(); navigate(routeForEntry(target)); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -661,7 +662,7 @@ function JournalEntryView() {
   // F1 route hygiene — a TYPED page (a binder chapter/support page, B1) is owned by
   // the mode-aware editor; never open it in the ink-authored view. Legacy untyped
   // filed pages stay here (ink preservation is load-bearing).
-  if (entry.pageType != null) return <Navigate to={`/page/${entry.id}`} replace />;
+  if (entry.pageType != null) return <Navigate to={routeForEntry(entry)} replace />;
 
   const projects = getProjects();
   const routedIds = entry.routedProjectIds ?? [];
@@ -1139,11 +1140,11 @@ function JournalEntryView() {
           {isLoose && (
             <nav className="journal-nav" aria-label={lex('journal')}>
               <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
-                onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
+                onClick={() => prevPage && navigate(routeForEntry(prevPage))}>‹</button>
               <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
               {nextPage ? (
                 <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
-                  onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
+                  onClick={() => navigate(routeForEntry(nextPage))}>›</button>
               ) : (
                 <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
                   onClick={() => openLoose()}>+</button>
@@ -1222,11 +1223,11 @@ function JournalEntryView() {
         {isLoose && (
           <nav className="journal-nav" aria-label={lex('journal')}>
             <button type="button" className="journal-nav-btn" disabled={!prevPage} aria-label={`Previous ${lex('page').toLowerCase()}`}
-              onClick={() => prevPage && navigate(`/journal/${prevPage.id}`)}>‹</button>
+              onClick={() => prevPage && navigate(routeForEntry(prevPage))}>‹</button>
             <span className="journal-nav-pos">{nbIndex + 1} / {notebook.length}</span>
             {nextPage ? (
               <button type="button" className="journal-nav-btn" aria-label={`Next ${lex('page').toLowerCase()}`}
-                onClick={() => navigate(`/journal/${nextPage.id}`)}>›</button>
+                onClick={() => navigate(routeForEntry(nextPage))}>›</button>
             ) : (
               <button type="button" className="journal-nav-btn journal-nav-add" aria-label={`New ${lex('page').toLowerCase()} at the end`}
                 onClick={() => openLoose()}>+</button>

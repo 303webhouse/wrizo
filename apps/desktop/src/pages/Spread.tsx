@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getNotebookPages, setNotebookPosition, flushNow } from '../store/persistence';
+import { routeForEntry } from '../store/routeForEntry';
 import { firstLine } from '../store/entryText';
 import { renderThumbnail } from '../store/ink';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
@@ -395,7 +396,17 @@ export function Spread() {
     if (next.has(id)) next.delete(id); else next.add(id);
     return next;
   });
-  const openPage = (id: string) => navigate(`/journal/${id}`);
+  // J6 S2 — was an unconditional `/journal/${id}`. getNotebookPages() only
+  // excludes pageType:'board' (persistence.ts), so a loose page with any
+  // OTHER pageType (e.g. an un-filed manuscript/support page, reachable via
+  // the Places panel per pageHome.ts's own header comment) could reach this
+  // list — JournalEntry.tsx's own redirect guard already bounced that case
+  // straight back out to /page/:id, so this was an extra hop, not a wrong
+  // landing; routeForEntry now picks the same destination directly.
+  const openPage = (id: string) => {
+    const target = pages.find(p => p.id === id);
+    navigate(target ? routeForEntry(target) : `/journal/${id}`);
+  };
 
   return (
     <div className="page spread-page" style={{ maxWidth: 960, paddingTop: '3rem' }}>
