@@ -3955,6 +3955,35 @@ outlive a session lives here, not in chat.
     build/review/merge record for this ticket belongs to the session
     that ran it; this note exists only so the ledger doesn't sit
     stale claiming "not merged" when `main` itself already disagrees.
+    **Deployed — 2026-07-21**, Nick's word ("Deploy TU2"). Manifest
+    `e5b368e..HEAD` independently re-enumerated by CC before shipping
+    — TU2's own eight code commits plus docs riders only (including
+    FX8's own brief commit, docs-only; FX8's actual code stayed
+    unmerged, confirmed, so it rode along in none of this). **CC's
+    own full independent verification, run fresh rather than trusted
+    from the other session's own relay**: `tsc` (desktop+server) +
+    `build:web` clean; the full 28-file/56-run harness suite hit real
+    friction along the way, root-caused rather than waved through —
+    a first pass (accidentally run in parallel with an isolated
+    single-file re-check, CC's own error) produced contention noise
+    (`EBUSY`, a stray "CDP page target never appeared"); a second
+    attempt crashed outright partway through from an orphaned,
+    still-running `fx5.mjs` process left over from the first pass,
+    found and killed by process name (an accidental self-match on the
+    first kill attempt terminated the PowerShell session running it,
+    but not before the real targets were already gone — confirmed by
+    a clean process-list check immediately after); a third, fully
+    clean pass then reached its own summary cleanly: 54/56 green,
+    with `tu2.mjs` failing in BOTH `HARNESS_PARKED` settings within
+    the suite specifically. **Investigated, not dismissed**: three
+    separate isolated re-runs (twice alone, once in direct
+    tu1-then-tu2 sequence matching the suite's own order) all came
+    back 102/102 clean — meeting this project's own standing bar for
+    calling a suite-context failure a genuine transient (load/timing
+    under a long sequential CDP-browser run), not a code regression,
+    disclosed here rather than silently re-run past. `railway up` on
+    `main` @ `368fb10` (deployment `b73e35d6`, SUCCESS), confirmed
+    live (`200` on `/healthz` and `/`, `401` on `/auth/me`).
 44. **DeepSeek API account — Nick's own note, 2026-07-21.**
     "I have set up a DeepSeek v4 API account and topped it up with $10
     for testing." This is the credential TU2's own S1 (provider-
