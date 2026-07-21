@@ -3827,12 +3827,12 @@ outlive a session lives here, not in chat.
     device sitting, the S5-S8 gesture class and S1 screenplay geometry
     especially, per the trusted-pointer law) remains open. **Findings
     1 and 11 are ruled separately, briefs to follow TU2's own review**
-    — finding 1 becomes `J6 — One Paper`; finding 11 becomes `FX8 —
-    the Folded Lists`. **NAME COLLISION, flagged not resolved here**:
-    this session's own item 45 already opened and is actively building
-    a DIFFERENT ticket also named `FX8` (card affordances, Nick's
-    direct request, unrelated to the folded-lists work) — the two
-    tickets need distinct names before Fable's own FX8 brief lands.
+    — finding 1 becomes `J6 — One Paper`; finding 11 becomes `FX9 —
+    the Folded Lists` (renamed from the original `FX8` — see item 45's
+    own record: the disk wins, the number is claimed by the ticket
+    that actually opened as a ledger item, never by a review's forward
+    reference in prose; a new standing rule, recorded under TOOLING
+    STATUS).
 43. **TU2 — the Listener.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/tu2-listener-brief.md`. **Authority:** the Tutor
     committee pass as ratified (A12-A15 whole) and the Tutor's own
@@ -4007,6 +4007,16 @@ outlive a session lives here, not in chat.
     present — TU1's own established unconfigured/offline path,
     expected and by design, not a new defect. Resolves itself the
     moment TU2's own code ships; not something to chase before then.
+    **House ruling — rotate `TUTOR_API_KEY` (Fable's FX8 review,
+    2026-07-21).** The raw value was printed into a model's own
+    context during the OTHER/TU2 session's own work (the self-
+    disclosed hygiene note above) — not anything that happened in
+    this session, and not a breach, but the key now lives in at least
+    one transcript. Rotation is free and is the honest response: new
+    DeepSeek key, set on Railway in place of this one, revoke the old.
+    That session's own unprompted self-disclosure of the mistake is
+    exactly the conduct the house runs on, and is ratified as such.
+    Not yet actioned — Nick's own call on timing, no urgency implied.
 45. **FX8 — card affordances.** **BRIEF COMMITTED — 2026-07-21,
     CC-authored, not Fable.**
     `docs/wrizo-alpha/fx8-card-affordances-brief.md`. Four small
@@ -4029,6 +4039,12 @@ outlive a session lives here, not in chat.
     DIFFERENT ticket (card affordances, Nick's direct request,
     2026-07-21) that happened to claim the same short name first.
     Needs a rename on one side before the Folded Lists brief lands.
+    **RESOLVED — 2026-07-21, Fable's own FX8 review: the disk wins.**
+    This ticket holds the `FX8` number — it opened as item 45, built,
+    and merged first. Fable's own planned "the Folded Lists" becomes
+    **FX9**, spec unchanged. New standing rule recorded under TOOLING
+    STATUS: a ticket number is claimed by its own ledger item, never
+    by a review's forward reference in prose.
     **BUILT — 2026-07-21.** Built S1-S4 on `fx8-card-affordances` off
     `main` @ `6b5a20e`, in its own worktree.
     **S1 — the pin, domed via a radial gradient + shadow**, same
@@ -4091,6 +4107,47 @@ outlive a session lives here, not in chat.
     ticket; also, Fable's own post-merge review is still owed given
     the automated review never actually ran — flagged as a genuine
     open item, not silently treated as satisfied.
+    **Fable's post-merge review landed and is committed — GREEN, no
+    fold, three advisories (one a real cosmetic defect) — 2026-07-21**
+    (`docs/wrizo-alpha/fx8-review-fable.md`). **Depth deliberately
+    raised, named explicitly**: since the automated review never ran,
+    this review carries the second net ALONE — read at full patch for
+    S1-S3, the built `index.css`/`BoardEditor.tsx` fetched at the
+    merge SHA and read directly (every claim stands on the file, never
+    a commit comment). **Four claims independently re-verified, not
+    taken on the build's word**: the cursor cascade (traced source-
+    order/specificity by hand, confirmed `.board-pin-missing` still
+    wins at rest correctly); the drag-swap's own reach to pins/ported
+    cards (the exact point most likely to have a hole — confirmed by
+    specificity math, not assumed complete); the sibling-not-descendant
+    claim; the state-machine claim (walked every handler by hand, not
+    read from the comment).
+    **A1 — a real leak path found, cosmetic, narrow**: the pointer
+    effect's own cleanup never clears `isDragging`, so a viewport
+    resize mid-drag would leave the canvas stuck on `grabbing` until
+    the next drag completes — self-healing, data-safe, queued as a
+    one-liner for a future fix, Nick's call whether it waits. **A2 —
+    a real affordance trade, for Nick's own eye**: FX5's own
+    `cursor:pointer` was the only at-rest signal a page-pin/ported
+    card is a door; FX8 supersedes it with `grab`, so the door is now
+    discoverable only by trying the double-click — stands as built
+    since Nick asked for the grab directly, but the trade is real,
+    noted for the sitting. **A3 — the legacy-reach disclosure RULED,
+    not just accepted**: the byte-identical law binds the frame's own
+    CHROME, not board-card behavior, which was already shared across
+    both paths before this ticket — recorded so a future ticket
+    doesn't re-litigate it.
+    **A new pre-check practice RATIFIED**: grepping `scripts/harness/`
+    for existing assertions BEFORE changing any CSS value (done three
+    times this ticket, correctly found nothing to park each time) is
+    now the expected first move on any CSS-value change.
+    **Close conditions: (1) review on disk — met; (2) Nick's own
+    deploy word — FX8 + M2 together, plus docs riders, one word
+    lawfully carries both (manifest: TU2 already shipped at `368fb10`;
+    merged-unshipped is FX8 + M2); (3) Nick's own device sitting** —
+    the grab/grabbing feel and the pin's new dome read are explicitly
+    named as device-sitting business, trusted-CDP harness proof
+    notwithstanding.
 46. **M2 — the Rhizome.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/m2-rhizome-brief.md`. An opt-in alternate
     progress visualization — a Progress-style setting (Bar, the
@@ -4226,6 +4283,114 @@ outlive a session lives here, not in chat.
     `origin/main`.
     **Not deployed** — Fable's post-merge review still owed; redeploy
     is Nick's call, as always, after that review.
+    **Fable's post-merge review landed and is committed — GREEN, no
+    fold — 2026-07-21** (`docs/wrizo-alpha/m2-review-fable.md`).
+    **Standing on the independent review's own already-thorough
+    work** (two real defects found/fixed, 45,000 stress-tested
+    segments, the full historic suite run clean under real
+    contention) — this review does not duplicate that, it verifies
+    the shape of the decisions around it. **Five rulings of record:**
+    (1) **the S3 scope deviation ACCEPTED, and the BRIEF ruled wrong,
+    not the build** — Fable's own S2/S3 assumed an incentive row
+    exists in the framed path to anchor the rhizome to and to keep
+    intact; it doesn't (FX1 S5's own parked "meter track stays empty"
+    law, cited by both `PageEditor.tsx` and `JournalEntry.tsx`'s own
+    framed-branch comments) — the build's own substitution (the
+    paper's bottom-center), disclosed twice (component header AND at
+    the exact substitution line), and its refusal to un-park a parked
+    decision just to satisfy a brief written on a false premise, both
+    ruled correct in full — Fable's own error, on the record, not the
+    build's; (2) framed-only mounting and the offered-never-greyed
+    gating both RATIFIED, with a named consequence: the Rhizome is a
+    desk feature, not a narrow-viewport one, matching the actual
+    laptop/tablet-first target rather than fighting it; (3) the
+    boundary-avoidance fix RATIFIED as the empirical standard applied
+    to a math bug — same family as the revert-reproduce-restore proof
+    ratified at FX7; (4) the StrictMode fix independently re-verified
+    IN THE FILE (traced the ref/setState ordering by hand, confirmed
+    both effects read/write the same ref, no desync path found); (5)
+    token discipline RATIFIED — `--rhizome-ink` genuinely new, `--ember`
+    genuinely pre-existing (not a fresh literal dressed up), reduced-
+    motion verified in the stylesheet itself.
+    **Two sitting questions, Nick's own eye rules, recorded plainly as
+    open, not pre-answered**: Q1 — because the framed path carries no
+    bar at all, choosing Rhizome doesn't replace a visible line, it
+    appears where nothing was; whether the framed desk should carry a
+    visible progress row at all is FX1 S5's own parked question
+    reopening, its own future ticket, not a rhizome fix (the M1 R1
+    rightSlot guard is noted to pass vacuously in framed mode as a
+    named consequence, not a gap). Q2 — `--rhizome-ink` computes to
+    roughly 1.5:1 contrast against the desk ground, matching the
+    literal ask but close enough to the floor that a dim/glossy panel
+    may render it effectively invisible until the ember flash; one
+    token line to warm if Nick's own eye says so.
+    **One advisory**: S5's own "unit-agnostic" proof (per-event and
+    bulk growth byte-identical) is a real property but a narrower one
+    than the brief's own literal "growth on both unit settings" words
+    — honestly disclosed by the build already, low risk given the
+    engine taps the same `unitCount` the bar already consumes, noted
+    here so it isn't mistaken for coverage it doesn't actually have.
+    **Close conditions: (1) review on disk — met; (2) Nick's own
+    deploy word — FX8 + M2 together, one word lawfully carries both;
+    (3) Nick's own device sitting** — the growth wandering out from
+    under the paper, the ember flare on goal, the ground filling
+    without ever touching the page, and the two sitting questions
+    above answered by eye.
+47. **A pre-existing geometry-measurement defect, lifted off a
+    harness comment onto its own ledger item — 2026-07-21, per
+    Fable's own M2 review's explicit instruction.** `store/
+    deskFrameActive.ts`'s own `active` flag (driving `App.tsx`'s
+    `.app-main[data-desk-frame-active]` DeskRail-gutter reservation
+    switch, a 64px measure) can go transiently stale across an
+    in-app navigation that revisits a framed route WITHOUT a full
+    reload — first found and disclosed by M2's own build (item 46),
+    now formally "twice-sighted" per Fable's own review of the same
+    ticket. **Effect, precisely**: the gutter's own reserved-width
+    state can differ from what a fresh mount would compute, shifting
+    any ABSOLUTE stage/paper rect measurement taken during that
+    window by a constant horizontal offset — WITHOUT any actual
+    change to real layout, rendering, or the paper's own true
+    position; a live `getBoundingClientRect()` read during the stale
+    window would report a coordinate that doesn't match a fresh
+    mount's own read of the same visual state. **Confirmed genuinely
+    pre-existing and unrelated to M2's own code**: reproduces on
+    `main` with zero Rhizome involved, via a bare `App.tsx`/
+    `DeskFrame.tsx`-only repro (M2's own build report). **Impact
+    disclosed as narrow so far**: only M2's own determinism harness
+    check was actually affected (worked around there by comparing
+    growth SHAPE, normalized to the first segment's own start point,
+    rather than absolute coordinates — `scripts/harness/m2.mjs`'s own
+    Section A comment carries the full technical account this item
+    summarizes). No other harness file's own absolute-geometry
+    assertion is yet known to be affected, but none has been swept
+    for this specific class either — a real candidate first step for
+    whoever picks this up. **Not yet triaged into a brief; not yet
+    built.** A real candidate for a future small, focused fix ticket
+    — flagged here specifically so a future session can find it
+    without having to already know which harness file's comment
+    section to go looking in.
+48. **The deflake pass — queued, 2026-07-21, per Fable's FX8 review's
+    house ruling 4b.** Aggregate transient/contention-suspected
+    harness failures logged this session crossed the handoff's own
+    threshold for scheduling a dedicated pass rather than continuing
+    to re-confirm case-by-case. **Known members, as of this writing**:
+    `j4.mjs` (occurrence 1, `SecurityError` reading `localStorage`,
+    class later repeated by `w2.mjs`); `fx5.mjs`'s own per-line engage
+    motion (confirmed pre-existing against a baseline checkout, not a
+    regression); `tu2.mjs` (suite-context-only, never isolated —
+    4 total clean isolated confirmations across the session); `w2.mjs`
+    (parked check, one suite-context failure, one clean isolated
+    32/32 re-run). **Common factor across all four**: every failure
+    surfaced only inside a full historic-suite run under genuine CDP/
+    browser resource contention, several coinciding with a concurrent
+    session's own build — never in true isolation. **Scope for the
+    eventual ticket**: sweep all four (plus whatever the item 47
+    geometry-defect investigation turns up) under the newly-ratified
+    contention-reproduction practice (see TOOLING STATUS), and decide
+    per-check whether each is genuinely transient-under-load-only or
+    hiding a real defect the contention just makes more likely to
+    surface. **Not yet triaged into a brief; not yet built; not yet
+    sequenced** — Nick's own call on timing.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -4394,6 +4559,28 @@ outlive a session lives here, not in chat.
   session discover TU2's concurrent work at all (an early, honest,
   disk-first ledger) while removing the shared-tree surface that made
   the discovery necessary in the first place.
+- **THE PLACEHOLDER-REPORT RULE — ratified 2026-07-21 (Fable's FX8
+  review), occurrence 2 in one day** (FX7's own build report, then
+  FX8's own review report — both ended their turn on a stalled
+  background-monitor placeholder instead of an actual completed
+  report). **A stalled or placeholder report is a report that does
+  not exist.** No close condition is ever satisfied by a report that
+  was never written, and no agent may record a verification whose
+  output it did not itself read. A ticket whose build or review
+  stalls this way may still merge/close only when (a) the gap is
+  named plainly in the ledger and (b) the merging agent performs its
+  own compensating verification and discloses it — never silently
+  treated as netted just because an agent was dispatched.
+- **CONTENTION-SUSPECTED FAILURES MUST BE RE-RUN IN ISOLATION —
+  ratified 2026-07-21 (Fable's FX8 review, Ruling 4a).** A harness
+  check failing only inside a full-suite run, never in isolation, is
+  not to be called transient on the strength of that pattern alone —
+  re-run it 2-3+ times in genuine isolation first, and disclose the
+  actual pattern (isolated-clean count vs. suite-failure count)
+  either way. Practice note from the same ruling: a sweep whose
+  result gates a merge should not itself be run alongside another
+  session's own build — that is what manufactures the contention this
+  rule exists to catch.
 - **Erratum vs. supersession, for harness checks — ratified 2026-07-16
   (Fable, cd1.1 spot-check).** Two different situations, two different
   moves. A check falsified because the DESIGN changed (a surface
