@@ -4045,6 +4045,10 @@ outlive a session lives here, not in chat.
     **FX9**, spec unchanged. New standing rule recorded under TOOLING
     STATUS: a ticket number is claimed by its own ledger item, never
     by a review's forward reference in prose.
+    **FX9 — the Folded Lists is now item 50** (brief committed
+    2026-07-21) — see there for the actual ticket; this note is the
+    rename's own history, kept here so a future reader who only knows
+    "FX8" as the Folded Lists can trace how the number moved.
     **BUILT — 2026-07-21.** Built S1-S4 on `fx8-card-affordances` off
     `main` @ `6b5a20e`, in its own worktree.
     **S1 — the pin, domed via a radial gradient + shadow**, same
@@ -4451,8 +4455,42 @@ outlive a session lives here, not in chat.
     post-FX8/M2-deploy `main`, own worktree per ONE CHECKOUT PER AGENT.
     **FX9 (the Folded Lists) may run in parallel** in its own worktree
     per Nick's own word — no surface overlap (cascade menu chrome vs.
-    routing/geometry substrate) — though FX9 itself has no brief
-    committed yet as of this writing.
+    routing/geometry substrate) — FX9's own brief landed and its build
+    started the same sitting; see item 50.
+50. **FX9 — the Folded Lists.** **BRIEF COMMITTED — 2026-07-21,
+    Fable-authored** (`docs/wrizo-alpha/fx9-folded-lists-brief.md`).
+    **Authority**: item 41 finding 11 (Nick's second sitting —
+    collapsible list menus), Fable's ruling naming it FX9 (renamed
+    from the FX8 collision per the ledger-item-claims-the-number rule
+    — see item 45 for the rename's own history). **Scope**: every
+    list-bearing section in the cascade's panels
+    (`DrawersPanel`'s per-project clusters + its documents list,
+    `JournalPanel`'s recent list, `ShelfPanel`, `TrashPanel`) gains a
+    header disclosure toggle — the whole header is the hit target, an
+    olive (never brass/orange) chevron per the lane law, ~180ms house
+    timing with a reduced-motion instant-toggle branch, proper button
+    semantics (`aria-expanded`, keyboard-operable, focus-visible).
+    **S2** persists open/closed state per-section, client-local only
+    (`firstRun.ts`/`tutorDisclosure.ts` shape, zero schema), keyed by
+    stable id never title; **first-ever default**: sections with more
+    than six items open collapsed, six or fewer open expanded, and any
+    explicit writer toggle is sovereign thereafter. **S3 — a design
+    law, not a preference**: a folded header may carry its own name
+    and chevron and NOTHING else — no counts, no badges, no dots; a
+    build that adds one is STOP-and-report (A14's spirit; M1's
+    coverage-never-verdicts, extended here). **S4** harness
+    (`fx9.mjs`) including a mandatory negative assertion (no collapsed
+    header anywhere renders a numeral or badge) and the geometry
+    invariant that folding a list must never move the paper. **Zero
+    schema, zero server files, zero new deps** — merge pre-authorized
+    as zero-schema per the AB4 precedent. **Deploy explicitly NOT
+    pre-authorized.** **Build starting — 2026-07-21**, on
+    `fx9-folded-lists` off `main`, own worktree per ONE CHECKOUT PER
+    AGENT, in parallel with J6 (item 49) per Nick's own word — J6 owns
+    routing/geometry, FX9 owns cascade panel chrome; **if both touch
+    `CascadePanels.tsx`, first to merge wins the base and the other
+    rebases** (Nick's own sequencing rule, recorded here so whichever
+    session merges second knows to check first).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
