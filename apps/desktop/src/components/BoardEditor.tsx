@@ -632,6 +632,18 @@ export function BoardEditor({ id }: { id: string }) {
   // DIFFERENT board is a genuine remount, not a stale carry-over).
   const [startHereCardId, setStartHereCardId] = useState<string | null>(() => getStartHereCardId(id));
   const [canUndo, setCanUndo] = useState(false);
+  // FX8 S3 — a small, read-only flag for the card-body cursor's own
+  // `grab` -> `grabbing` swap during an actual active move-drag (CC's own
+  // disclosed call, not required by the ticket — a static `grab` throughout
+  // would have been acceptable too). Set true ONLY in `beginMove` below
+  // (the real "past the 6px threshold, genuinely moving" phase — never
+  // `pending`/`resizing`/`threadDrag`) and cleared in `finish` on every
+  // gesture end (commit OR cancel alike). This does NOT touch the
+  // selection/drag/threshold state machine itself — `phase` and its
+  // transitions are completely unchanged; this is purely an additional,
+  // read-only mirror of one of its existing transitions, the same shape
+  // `threadArmedFrom` already uses to drive `data-thread-armed` in the JSX.
+  const [isDragging, setIsDragging] = useState(false);
   // FX4 S4 — the board canvas's own both-axis resize: a persisted override
   // riding the 'board-meta' box (types/index.ts). null on either axis means
   // "never resized" — auto-fit exactly as every pre-FX4 board already did
@@ -1147,6 +1159,7 @@ export function BoardEditor({ id }: { id: string }) {
       movingIds = ids;
       startBoxes = boxesRef.current;
       if (activePointerId != null) { try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ } }
+      setIsDragging(true); // FX8 S3 — see the state's own header comment above
     };
 
     const beginResize = (boxId: string) => {
@@ -1168,6 +1181,13 @@ export function BoardEditor({ id }: { id: string }) {
       if (activePointerId != null && canvas.hasPointerCapture(activePointerId)) {
         try { canvas.releasePointerCapture(activePointerId); } catch { /* already released */ }
       }
+      // FX8 S3 — `finish` is the ONE shared exit for every gesture this
+      // effect drives (a plain click that never crossed the drag threshold,
+      // a committed move, a committed resize, or a cancel/revert of either)
+      // — clearing here unconditionally is safe and correct: it's already
+      // false for a plain click (beginMove was never called), and a no-op
+      // React state set when already false costs nothing.
+      setIsDragging(false);
       if (commit && (phase === 'dragging' || phase === 'resizing') && boxesRef.current !== startBoxes) {
         lastActionRef.current = { type: phase === 'dragging' ? 'move' : 'resize', before: startBoxes };
         setCanUndo(true);
@@ -1609,6 +1629,7 @@ export function BoardEditor({ id }: { id: string }) {
           ref={canvasRef}
           className="board-canvas"
           data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
+          data-dragging={isDragging ? 'true' : 'false'}
           style={{ position: 'relative', width: pageWidthPx, height: canvasHeightPx, background: 'var(--paper)' }}
           onDoubleClick={(e) => {
             // FX7 S5 — root-caused live (not guessed): `e.target` here is
