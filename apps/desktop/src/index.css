@@ -1306,9 +1306,24 @@ a:focus-visible,
   border:1px solid var(--card-hairline); border-radius:0; background:var(--card-stock);
   box-shadow:2px 2px 0 var(--card-hairline), 4px 5px 10px rgba(43,39,33,.16);
 }
+/* FX8 S2 — Nick's words: "shrink the size of the orange square... remove
+   the border from the square so it is just an orange box." Shrunk 14px ->
+   10px (a genuinely smaller footprint, not a token change — CC's own
+   judgment call, disclosed in the build report) and the 1px `--ink-950`
+   border dropped whole (solid brass fill only, matching the pin's OWN
+   border-retention decision going the other way — see .board-pin-grab's
+   own comment below for why ITS border stays). Re-centered on the card's
+   own corner (right/bottom -5px = half the new 10px size, was -7px = half
+   of 14px) so the visual anchor point doesn't drift. `cursor:nwse-resize`
+   is UNCHANGED — S2's own live investigation (disclosed in the build
+   report) found no actual inconsistency to fix: the handle only ever
+   renders on the SELECTED box (BoardEditor.tsx's own conditional render),
+   sits at the box's own bottom-right corner, and resizes freeform on BOTH
+   axes from that corner (FX4 S4) — a plain diagonal resize cursor is the
+   textually correct affordance, not a guess. */
 .board-handle{
-  position:absolute; right:-7px; bottom:-7px; width:14px; height:14px;
-  background:var(--brass); border:1px solid var(--ink-950); border-radius:0; cursor:nwse-resize;
+  position:absolute; right:-5px; bottom:-5px; width:10px; height:10px;
+  background:var(--brass); border-radius:0; cursor:nwse-resize;
 }
 /* AB4 S2 — a page-pin card: a MEMBERSHIP card, not a copy. Shares
    .board-text's own look (now Stacked, S7); the badge is the only
@@ -1334,10 +1349,40 @@ a:focus-visible,
    small state/grab indicator (matching .status-dot's own existing
    precedent, above). Olive (--accent-rest) marks it as a STATE/connection
    affordance, never brass (brass is reserved for actions like the resize
-   handle) — the lane law holds. */
+   handle) — the lane law holds.
+   FX8 S1 — Nick's words: "the green pins on the cards don't really look
+   like pins... Can we make the pins look a bit more like the top of a
+   green sphere instead of a 2D circle?" A flat single-color fill reads as
+   an outlined disc; a domed sphere-top needs the two things a flat fill
+   can never fake — a light source (an off-center highlight, NOT centered,
+   so it reads as reflecting light from one direction) and a rim that
+   darkens as it curves away from that light. `radial-gradient(circle at
+   35% 28%, ...)` puts the highlight upper-left (a conventional top-left
+   light source, matching the card stock's own drop-shadow direction below-
+   right — `.board-text`'s `box-shadow:2px 2px 0...4px 5px 10px...` — so
+   the pin's own implied light and the card's own implied shadow agree),
+   fading through the SAME --accent-rest hue family to a hand-darkened rim
+   tone (this codebase has no color-mix()/filter precedent anywhere in this
+   file for deriving a shade FROM a custom property at runtime — every
+   other gradient here hard-codes its own literal stops, e.g. the wz-bloom/
+   wz-cascade-thumb radial-gradients above — so #D9DEB8/#4F5730 are hand-
+   computed lighter/darker steps off --accent-rest's OWN #96a05a working
+   value, the same "olive hue family" the brief asks for, not a different
+   color). The 1px --ink-950 border stays (unlike the handle's OWN border
+   removal in S2, just above) — it's what keeps the domed gradient reading
+   as a contained sphere rather than a soft blob bleeding into the card
+   behind it. The box-shadow is a small, downward-right offset (1px 2px
+   3px) — the SAME lighting direction as the card's own shadow, "the way a
+   raised sphere would cast one against the card's own shadowed surface"
+   (the brief's own words), not a generic centered glow. Same ~12px size,
+   same border-radius:50% (fx5.mjs's own S5 check still asserts this
+   verbatim — confirmed unbroken, no A4 park needed). */
 .board-pin-grab{
   position:absolute; left:-6px; top:-6px; width:12px; height:12px; z-index:6;
-  border-radius:50%; background:var(--accent-rest); border:1px solid var(--ink-950);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 28%, #D9DEB8 0%, var(--accent-rest) 50%, #4F5730 100%);
+  border:1px solid var(--ink-950);
+  box-shadow:1px 2px 3px rgba(17,6,0,.5);
   cursor:grab;
 }
 .board-canvas[data-thread-armed='true'] .board-pin-grab{ cursor:grabbing; }
