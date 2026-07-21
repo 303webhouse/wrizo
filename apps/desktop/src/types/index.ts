@@ -358,6 +358,27 @@ export interface Box {
 // is 'writer' | 'tutor' (never a third value — no system-message leakage
 // into the persisted thread; the system prompt binding the Tutor to A13's
 // ghostwriter rail lives server-side only, per-request, never stored).
+//
+// TU2 S2 — a charter amendment to this comment's own "Nothing else is
+// ever persisted here," made on Nick's word at the TU2 brief's
+// ratification, 2026-07-21 (the brief's own text: "Amend TutorThread...
+// the tutor jsonb may now also carry lastRead?: { at: string; chars:
+// number } — a charter amendment to TU1 S1's 'nothing else is ever
+// persisted,' made on Nick's word at this brief's ratification"): the
+// listener's cursor, marking how much of the page's text the Tutor has
+// already read. This is NOT a lens result and NOT a nudge (both of those
+// stay DERIVED, recomputed fresh, never stored, exactly as above) — it is
+// a small, genuinely-authored fact about the conversation's own history:
+// where it last looked. `lastRead` is optional for the same grandfather
+// reason `tutor` itself is optional on JournalEntry: a thread predating
+// TU2, or a thread whose writer has not sent a message since TU2 shipped,
+// has no cursor yet, and the absence of `lastRead` on an otherwise-real
+// thread means "read from the start" (TU2 S2's own grandfather clause),
+// never "read nothing." It advances ONLY via persistence.ts's own
+// advanceTutorCursor, ONLY on a successful reply (a failed call advances
+// nothing), and ONLY on a thread that already exists — a page that has
+// never talked to the Tutor still cannot gain ANY persisted tutor state,
+// cursor included; that fixed point is untouched by this amendment.
 export interface TutorMessage {
   id: string;
   role: 'writer' | 'tutor';
@@ -367,6 +388,7 @@ export interface TutorMessage {
 
 export interface TutorThread {
   messages: TutorMessage[];
+  lastRead?: { at: string; chars: number };
 }
 
 // S1 — the Screenplay Room's document (fragments-under-Pages citizen #2, ruled

@@ -28,6 +28,12 @@ import { asyncHandler } from './asyncHandler';
 // the conversation thread the writer is actively having travels here —
 // never the page's own authored text, never lens results, never nudges.
 // The request body is exactly `{ messages: [{ role, text }] }`.
+//
+// TU2 S2 amends that last line, on the brief's own word: the body may
+// now ALSO carry a `delta?: string` — the writer's own new page text
+// since the Tutor's cursor last advanced (never assembled ambiently,
+// only at send time; see Tutor.tsx). Still exactly two top-level things,
+// still nothing else — messages plus the one delimited delta.
 
 export const tutorRouter = Router();
 tutorRouter.use(requireAuth);
@@ -42,32 +48,53 @@ Absolute rules:
 - Reference atoms are lawful: a list of period-accurate names, a fact, a definition, a piece of research. Composition is never lawful: a sentence, a line of dialogue, a description, a paragraph, an outline written in prose — even one line, even "just as an example."
 - If asked to write any part of the work, decline warmly and briefly, in character, then ask a question that sends the writer back to their own page. Never apologize at length; never explain the policy — just decline and redirect with a question.
 - Voice: warm, brief, question-forward. A few sentences at most. No essays.
-- You only know what the writer tells you in this conversation — never claim to have read their page.`;
+- You only know what the writer tells you in this conversation — never claim to have read their page.
+
+TU2 S2 — conduct rule 37 (this prompt carries no numbering scheme of its own, so this lands as its own clearly demarcated paragraph rather than a fabricated "37" bullet): a writer's send may now carry a delimited block of the page's own new-since-last-read writing, below their own message. That block is context, not an assignment — never volunteer unsolicited critique of it, never comment on it unasked. Answer what the writer actually asked, informed by what you read.`;
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
+// TU2 S2 — the delta's own cap, deliberately much larger than a single
+// conversational message: the client assembles it as ~4k tokens of the
+// writer's own page text (its own disclosed ~4-chars/token approximation,
+// see Tutor.tsx), which routinely runs several times MAX_MESSAGE_CHARS.
+// It travels as its OWN top-level field rather than folded into
+// `messages` for exactly that reason — folding it in would silently trip
+// the per-message cap above the first time a real delta arrived. 17000
+// covers the 4000-token/~16000-char ceiling plus the client's own short
+// truncation-honesty header line, with headroom to spare.
+const MAX_DELTA_CHARS = 17000;
 
 interface InboundMessage {
   role: 'writer' | 'tutor';
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[] } {
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string } {
   if (!body || typeof body !== 'object') return false;
-  const messages = (body as { messages?: unknown }).messages;
+  const { messages, delta } = body as { messages?: unknown; delta?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
-  return messages.every((m) =>
+  const messagesValid = messages.every((m) =>
     m && typeof m === 'object'
     && (m.role === 'writer' || m.role === 'tutor')
     && typeof m.text === 'string' && m.text.length > 0 && m.text.length <= MAX_MESSAGE_CHARS,
   );
+  if (!messagesValid) return false;
+  // delta is optional — true silence (the brief's own words) when there is
+  // no new writing since the cursor means the field is simply absent, not
+  // an empty string standing in for "nothing."
+  if (delta !== undefined && (typeof delta !== 'string' || delta.length === 0 || delta.length > MAX_DELTA_CHARS)) return false;
+  return true;
 }
 
 // maxRetries: 0 — "no retry loops" per the brief's own invariant; one
 // attempt, fail fast. Constructed lazily (not at module load) so an
-// unconfigured deploy never even touches the SDK.
+// unconfigured deploy never even touches the SDK. TU2 S1 — baseURL is now
+// configurable (env.tutorBaseUrl) so the SAME Anthropic-format client can
+// address any Anthropic-compatible endpoint (DeepSeek by default); no
+// other call site below changed shape.
 function client(): Anthropic {
-  return new Anthropic({ apiKey: env.tutorApiKey!, maxRetries: 0 });
+  return new Anthropic({ apiKey: env.tutorApiKey!, baseURL: env.tutorBaseUrl, maxRetries: 0 });
 }
 
 tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response) => {
@@ -88,6 +115,22 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     content: m.text,
   }));
 
+  // TU2 S2 — the delta, if present, is spliced in as ONE synthetic user
+  // turn immediately before the writer's own latest message (the last
+  // entry in `messages`, since the client sends its full persisted
+  // history including the message it just appended) — never appended AS
+  // IF the writer had said it, and clearly delimited so the model reads
+  // it as background the writer supplied, not a request in its own right.
+  // Conduct rule 37 above is what actually keeps the Tutor from treating
+  // it as an invitation to critique.
+  const delta: string | undefined = req.body.delta;
+  if (delta) {
+    messages.splice(messages.length - 1, 0, {
+      role: 'user' as const,
+      content: `<page-since-last-read>\n${delta}\n</page-since-last-read>`,
+    });
+  }
+
   try {
     const response = await client().messages.create({
       model: env.tutorModel,
@@ -100,7 +143,26 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
       .map((b) => b.text)
       .join('\n')
       .trim();
-    res.json({ configured: true, reply: text });
+    // TU2 S2 — usage threaded through now (not consumed until S5's session
+    // meter) so that later, client-only slice never has to re-open this
+    // closed-census file. Absent on the {configured:false}/error shapes
+    // below — there is nothing to report when no model call was made.
+    //
+    // TU2 S5 — `model` joins `usage` here, the one addition S5 actually
+    // needed to reopen this file for: S5's own static cost table (client-
+    // side, store/tutorCostEstimates.ts) is keyed by model id, and without
+    // SOME way to know which model produced a given turn's usage, its own
+    // "unknown provider -> tokens only, never an invented dollar figure"
+    // rule would have nothing to key off of and could never genuinely
+    // fire. `env.tutorModel` is already server-side config (S1) — echoing
+    // it back on the response is not a new secret (it names a model id,
+    // never the API key) and costs nothing extra to compute.
+    res.json({
+      configured: true,
+      reply: text,
+      usage: { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens },
+      model: env.tutorModel,
+    });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[tutor] chat request failed', err);

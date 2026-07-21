@@ -928,9 +928,32 @@ export function getTutorThread(entryId: string): TutorThread | null {
 export function appendTutorMessage(entryId: string, message: TutorMessage): TutorThread | null {
   const latest = getJournalEntry(entryId);
   if (!latest) return null;
-  const thread: TutorThread = { messages: [...(latest.tutor?.messages ?? []), message] };
+  // TU2 S2 — spread the existing thread first, THEN override `messages`:
+  // this function predates the `lastRead` cursor field, and the original
+  // `{ messages: [...] }` reconstruction here would silently zero the
+  // cursor on every append (writer AND tutor replies both call this) —
+  // the exact opposite of "advances only on a successful send." Spreading
+  // `latest.tutor` (a no-op when it's undefined) is the whole fix.
+  const thread: TutorThread = { ...latest.tutor, messages: [...(latest.tutor?.messages ?? []), message] };
   saveJournalEntry({ ...latest, tutor: thread });
   return thread;
+}
+
+// TU2 S2 — the listener's cursor. Advances `lastRead` ONLY (never touches
+// `messages`) and ONLY on a thread that already exists: a cursor can only
+// ever advance after at least one message has already been sent (this
+// file's own getTutorThread/appendTutorMessage invariant that a thread is
+// born on its first real message, never sooner), so there is no "create a
+// thread just to seed a cursor" path here — a no-op on a never-messaged
+// page, mirroring appendTutorMessage's own refusal to conjure a thread
+// out of nothing. `at` is an ordinary `new Date()` read — real wall-clock
+// time, no fixture/harness indirection needed here (this runs only from
+// live application code, on a real successful reply).
+export function advanceTutorCursor(entryId: string, chars: number): void {
+  const latest = getJournalEntry(entryId);
+  if (!latest?.tutor) return;
+  const thread: TutorThread = { ...latest.tutor, lastRead: { at: new Date().toISOString(), chars } };
+  saveJournalEntry({ ...latest, tutor: thread });
 }
 
 // Create a Script page (S1 Slice 2) — a binder page with pageType:'script'

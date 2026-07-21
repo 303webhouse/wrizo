@@ -31,15 +31,25 @@
 // instruction). The real prod round-trip is owed after deploy, per S1's own
 // precedent — see the build report, not this file.
 //
-// Park sweep (S6's own instruction): investigated in full — TU1 is a purely
-// additive ticket (one new jsonb column, one new route, new components/CSS
-// classes, one new DeskFrame prop consumed only by the three hosts that
-// explicitly opt in). Grepped every one of the other 19 harness files for
-// any assertion TU1's changes could falsify (child-count assertions on
-// `.desk-frame-stage`, exact sibling counts, anything keyed to the sliver's
-// own unchanged anchor rule) — none found. This file's own PARKED gate
-// below is therefore intentionally empty, mirroring cd2.mjs's/fx3.mjs's own
-// precedent for an armed-but-empty gate.
+// Park sweep, TU1's own build (S6's instruction at the time): investigated
+// in full — TU1 is a purely additive ticket (one new jsonb column, one new
+// route, new components/CSS classes, one new DeskFrame prop consumed only
+// by the three hosts that explicitly opt in). Grepped every one of the
+// other 19 harness files for any assertion TU1's changes could falsify
+// (child-count assertions on `.desk-frame-stage`, exact sibling counts,
+// anything keyed to the sliver's own unchanged anchor rule) — none found.
+//
+// TU2 S6's OWN park sweep (2026-07-21, a later build, re-reading this
+// comment for what it's worth): re-ran this file against the TU2 build and
+// found TWO of THIS file's own checks now false — TU2 S4's narrower
+// panel-width cap, and TU2 S3's versioned disclosure flag. Both are parked
+// in this file's own PARKED gate below (A4, quoted verbatim), live
+// successors in tu2.mjs. TU2 also required updating THIS file's own
+// `freshDesk` helper (skipDisclosure seeding) to keep writing a device TU2
+// S3's versioned disclosure code actually recognizes as "already seen" —
+// see that helper's own header comment for the crash this prevented; that
+// is a fixture-setup fix, not a parked assertion (no check's own intent
+// changed).
 import { withHarness } from '../runtime-verify.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -70,11 +80,32 @@ const BEAT_NAME = THREE_ACT.beats[0].name; // 'Setup'
 // disclosure itself) pre-seeds the seen-flag in that same pre-reload window;
 // the disclosure's own dedicated test passes `skipDisclosure: false` to get
 // a genuinely fresh device.
+//
+// TU2 S6 (park sweep) — this helper's own seeding now writes BOTH keys, not
+// just the pre-TU2 boolean one. store/tutorDisclosure.ts's v1->v2 versioning
+// (TU2 S3) means the legacy 'wrizo-tutor-disclosure-seen'==='1' flag ALONE
+// can no longer suppress the disclosure at all (v2 shows once per version,
+// "the v1 flag does not suppress it" is the brief's own explicit words) —
+// every fixture below this point that calls openTutor() and expects a
+// device that has already dismissed the disclosure would otherwise see it
+// pop on the FIRST grip click of every section, which in turn blocks the
+// A15 keydown-dissolve handler (`if (showDisclosure) return;`, Tutor.tsx)
+// and desyncs `open` state from what each section's own click sequence
+// assumes — confirmed live: without this fix, node scripts/harness/tu1.mjs
+// crashes outright (TypeError: Cannot read properties of null (reading
+// 'click')) at the S2 dock-rider section's own `.wz-tutor-dock-btn` click,
+// several sections past the first accidental disclosure pop. Seeding the
+// NEW version key ('wrizo-tutor-disclosure-seen-version', '2' —
+// CURRENT_DISCLOSURE_VERSION at TU2's own ratification) alongside the old
+// one keeps this helper doing exactly what its own name and header comment
+// already promised ("every fixture that isn't testing the disclosure
+// itself" gets a device that has already seen it) — no check below this
+// line changes intent or behavior; they simply become reachable again.
 const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = true } = {}) => {
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '2');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -168,13 +199,21 @@ await withHarness(async (app) => {
       JSON.stringify(paperClosed) === JSON.stringify(paperDocked), JSON.stringify({ paperClosed, paperDocked }));
 
     if (width === 1100) {
+      // TU2 S4 dropped the open/docked cap from a hardcoded 300px to
+      // `calc(var(--strip-width) * 2)` (168px today) — this floor check's
+      // OWN literal condition (< 299) still holds true under the new,
+      // smaller cap (168 < 299 trivially), so it is not a park-sweep hit:
+      // it keeps passing, just less discriminating than before. Left as-is.
       ok('S6 geometry: the docked-width clamp genuinely engages at the 1100 floor (< the full 300px)',
         panelDocked.width < 299, String(panelDocked.width));
     }
-    if (width === 2200) {
-      ok('S6 geometry: at a wide viewport the docked width comfortably reaches the ~300px cap',
-        panelDocked.width >= 250, String(panelDocked.width));
-    }
+    // TU2 S6 park sweep — the `width === 2200` "...comfortably reaches the
+    // ~300px cap" check that lived here is PARKED below (A4, quoted
+    // verbatim): TU2 S4's `calc(var(--strip-width) * 2)` cap (168px) makes
+    // "reaches 250+" impossible now, live and confirmed by rerunning this
+    // exact file against the TU2 build (168, not >=250). Live successor —
+    // the new cap's own value, read from the token rather than hardcoded —
+    // is tu2.mjs's own geometry section.
   }
 
   // ==========================================================================
@@ -240,9 +279,18 @@ await withHarness(async (app) => {
     (await app.evalJs("!!document.querySelector('.wz-tutor-disclosure')")) === true);
   await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
   await sleep(250);
-  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists',
+  // TU2 S6 park sweep — the "...and the seen flag persists" half of this
+  // check that lived here read the legacy boolean key
+  // ('wrizo-tutor-disclosure-seen'), which TU2 S3's versioned
+  // store/tutorDisclosure.ts (setTutorDisclosureSeen) no longer writes at
+  // all (it writes 'wrizo-tutor-disclosure-seen-version' instead) — PARKED
+  // below (A4, quoted verbatim), confirmed false live against the TU2
+  // build. The dismissal half of the original intent ("ack closes the
+  // dialog") is re-asserted fresh below against the CURRENT key, rather
+  // than silently rewriting the retired assertion in place.
+  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v2 key)',
     (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen')")) === '1');
+    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '2');
   // Close, then open a SECOND time — the brief's own "exactly once across two opens".
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
   await sleep(200);
@@ -626,16 +674,42 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// tu1.mjs is a brand-new file; it parks nothing of its own (every check
-// above reflects this ticket's live, current design). The park sweep S6
-// requires (does TU1's own addition falsify any EXISTING check in the other
-// 19 harness files?) was investigated in full and found empty — see this
-// file's own header comment for the grep-based audit. This scaffold exists
-// so a future ticket that supersedes any of THIS file's checks has a
-// documented home, matching every other harness file's own pattern.
+// TU1 shipped with nothing parked (a brand-new file at the time — see the
+// scaffold's own original comment, superseded here). TU2's own build
+// falsified two of THIS file's checks — both confirmed live (re-ran the
+// full file against the TU2 build, both node.js's own real output, not
+// guessed) — parked here per A4, quoted verbatim, rather than silently
+// edited or deleted in place.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
+  // TU2 S4 replaced the docked/open panel's hardcoded 300px cap with
+  // `calc(var(--strip-width) * 2)` (168px today, --strip-width:84px) — a
+  // wide viewport's docked width can never again reach the old ~300px
+  // ballpark this check named. Live successor: tu2.mjs's own geometry
+  // section asserts the NEW cap directly against the token (2x
+  // --strip-width, read not hardcoded), at all three reference widths, on
+  // both page and board surfaces.
+  pok('PARKED (was "S6 geometry: at a wide viewport the docked width comfortably reaches the ~300px cap") — TU2 S4: the docked/open cap is now calc(var(--strip-width) * 2) = 168px, not ~300px; a wide viewport can never reach 250+ again — live successor in tu2.mjs\'s own geometry section',
+    true, 'superseded by TU2 S4\'s narrower, token-derived cap');
+
+  // TU2 S3 versioned the disclosure's seen-flag (store/tutorDisclosure.ts):
+  // setTutorDisclosureSeen now writes ONLY 'wrizo-tutor-disclosure-seen-
+  // version', never the pre-TU2 boolean 'wrizo-tutor-disclosure-seen' this
+  // check read — confirmed false live (an unconditional localStorage miss)
+  // against the TU2 build. Live successor: tu2.mjs's own disclosure-v2
+  // section, including the seeded-v1-flag device case this ticket adds.
+  pok('PARKED (was "S5 disclosure: dismissed by its own explicit ack, and the seen flag persists") — TU2 S3: the seen-flag is now versioned (wrizo-tutor-disclosure-seen-version); the legacy boolean key this check read is never written by the new code — live successor in tu2.mjs\'s own disclosure-v2 section',
+    true, 'superseded by TU2 S3\'s versioned disclosure flag');
+
   // eslint-disable-next-line no-console
-  console.log('\nTU1 PARKED: gate is armed (HARNESS_PARKED=1) but empty — nothing has been parked out of tu1.mjs. See this file\'s header comment.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nTU1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, both TU2-superseded checks documented with live successors in tu2.mjs`
+    : `\nTU1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

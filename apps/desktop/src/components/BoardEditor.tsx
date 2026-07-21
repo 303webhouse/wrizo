@@ -22,6 +22,7 @@ import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
 import { ExistingPagePicker } from './ExistingPagePicker';
 import { Sliver, type SliverContent } from './Sliver';
+import { Tutor } from './Tutor';
 import { useActionToast } from './ActionToast';
 import type { PageFaceSubject } from './PageFace';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
@@ -1895,6 +1896,20 @@ export function BoardEditor({ id }: { id: string }) {
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText="" />}
+          // TU2 S4 — "Presence on Boards": the same room, following the same
+          // prop pattern every other framed host already uses (entry/
+          // project/pageText/pageKind — see PageEditor.tsx/JournalEntry.tsx/
+          // ScriptEditor.tsx's own call sites). `initialEntry` is guaranteed
+          // non-null here (the `if (!initialEntry) return null` guard above
+          // already ran). `pageText` is `initialEntry.text` — a Board's own
+          // text field is real (BoardEditor.tsx derives this very page's
+          // `title` from it, above), just a single title line rather than a
+          // running prose page; passing it (not a hardcoded `""`, unlike
+          // `Sliver`'s own `goalText` above, which is genuinely N/A for
+          // Board) keeps the Consistency lens's own scope and the listener's
+          // delta assembly both honest about what "this page's text" means
+          // here, without fabricating content that doesn't exist.
+          tutor={<Tutor entry={initialEntry} project={project} pageText={initialEntry.text} pageKind="board" />}
           dissolved={boardDissolve.dissolved}
         >
           {/* ab2.1 F2 (geometry-sanity sweep) caught the same class of bug

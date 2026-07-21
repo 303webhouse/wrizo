@@ -124,8 +124,14 @@ export interface DeskFrameProps {
   // technique mirrored via `right:` instead of `left:`). Same overlay
   // discipline as `sliver`: absolutely positioned inside `.desk-frame-stage`,
   // so the paper's rect is structurally immune to it regardless of
-  // open/closed/docked state. Board never mounts this (out of scope —
-  // only the three prose/screenplay hosts named in the brief do).
+  // open/closed/docked state. TU2 S4 — Board now mounts this too
+  // (BoardEditor.tsx): the sentence this comment used to carry here ("Board
+  // never mounts this... only the three prose/screenplay hosts named in the
+  // brief do") is now false and superseded — the `--board` anchor
+  // overrides index.css added (mirroring `.desk-frame-sliver-anchor--
+  // board`'s own precedent) are what makes this safe; DeskFrame itself
+  // needed no change; it already rendered `{tutor}` bare regardless of
+  // `pageKind`.
   tutor?: ReactNode;
   // CD1 S6 — the goal's warm glow, behind the paper. Same overlay
   // discipline as `sliver` (absolutely positioned, paper rect untouched),
