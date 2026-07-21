@@ -3303,11 +3303,28 @@ outlive a session lives here, not in chat.
     both agents independently). Fast-forwarded `main` to `4817ca1` (no
     divergence, clean fast-forward, zero conflicts), pushed to
     `origin/main`.
-    **Not deployed** — Fable's post-merge review hasn't landed yet;
-    redeploy is Nick's call, as always. Deploy manifest since the last
-    deploy SHA (`5a2babc`, which shipped FX6+B1) now carries B2 and
-    the S6 fold as new code, unshipped — enumerate fresh at deploy
-    time, don't reuse the earlier `6759777` reference point.
+    **Fable's B2.1/S6 fold spot-check — DONE, GREEN, 2026-07-20.**
+    Census-verified against `7bcebb7`: 15 files, all client chrome +
+    lexicon, zero storage/route/server surface — the harness proof and
+    the `m1.mjs` third-signal confirmation both noted. **Spot-check
+    close condition satisfied.** Ruling recorded, now the standing
+    disambiguation law for this whole naming space: "Binder" only
+    where a bare "Drawer" would collide with another bare "Drawer" on
+    one screen; a proper noun never collides with a generic. The
+    `QuickSprint.tsx` reversion (Binder→Drawer, restoring the majority
+    convention) SUSTAINED; the `/project/*` routes deferral
+    acknowledged, still awaiting a future explicit ruling if Nick ever
+    wants them renamed too.
+    **Deployed — 2026-07-20**, Nick's word ("Deploy approved"),
+    manifest independently re-enumerated by CC before shipping:
+    `5a2babc..HEAD` = B2 + B2.1/S6 code commits, docs riders only —
+    matching Fable's own manifest exactly (`main @ 13d4a62`), no
+    unnamed code riders. `railway up` on `main` @ `13d4a62` (deployment
+    `b101a08f`, SUCCESS), confirmed live (`200` on `/healthz` and `/`,
+    `401` on `/auth/me`). **Item 39 closes on Nick's own device
+    sitting** (the brief's own Definition of Done — Places panel,
+    Journal-uncheck-on-file, the Shelf, Drawers, and the "Project"
+    word gone from the desk) — remains open.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
