@@ -268,7 +268,13 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx6-s1-popup-board', [
     { id: 'fx6-s1-popup-card', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: '' },
   ], LAPTOP_W, 900);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx6-s1-popup-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — BoardEditor.tsx's own onDoubleClick now resolves its target
+  // via document.elementFromPoint(e.clientX, e.clientY) rather than
+  // e.target (a genuine pointer-capture retargeting fix, fx7.mjs's own S5
+  // section) — a coordinate-less synthetic dblclick defaults to (0,0),
+  // which elementFromPoint no longer forgives; supply the card's own real
+  // on-screen center.
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx6-s1-popup-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup')", { label: 'fx6 S1 popup open' });
   await sleep(200);
   await app.typeKeys('Card--words ');

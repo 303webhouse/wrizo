@@ -457,7 +457,13 @@ await withHarness(async (app) => {
     { id: 'fx4-s5-card', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'Before edit' },
   ], LAPTOP_W, 900);
 
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s5-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — BoardEditor.tsx's own onDoubleClick now resolves its target
+  // via document.elementFromPoint(e.clientX, e.clientY) rather than
+  // e.target (a genuine pointer-capture retargeting fix, fx7.mjs's own S5
+  // section) — a coordinate-less synthetic dblclick defaults to (0,0),
+  // which elementFromPoint no longer forgives; supply the card's own real
+  // on-screen center.
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx4-s5-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup')", { label: 'S5 popup open' });
   await sleep(400); // clear the .28s blur/dim transition fully
   const openState = await app.evalJs(`(() => {
@@ -526,7 +532,8 @@ await withHarness(async (app) => {
     afterDone.popupGone && afterDone.blurGone && afterDone.committedText === '**Before edit**', JSON.stringify(afterDone));
 
   // Escape also closes.
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s5-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — same coordinate-carrying fix (see above).
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx4-s5-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup')", { label: 'S5 popup reopen' });
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))");
   await sleep(200);
@@ -640,7 +647,9 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx4-s8-board', [
     { id: 'fx4-s8-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Card' },
   ], LAPTOP_W, 900);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s8-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — coordinate-carrying dblclick dispatch (see the S5 section
+  // above, this same file, for the full root-cause writeup).
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx4-s8-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'S8 board popup' });
   await app.typeKeys(' one');
   await sleep(150);
@@ -653,7 +662,8 @@ await withHarness(async (app) => {
     if (boardAfter1 === 'false') break;
     await sleep(100);
   }
-  await app.evalJs('document.querySelector(\'[data-box-id="fx4-s8-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — same coordinate-carrying fix (see above).
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx4-s8-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'S8 board popup 2' });
   await app.typeKeys(' two');
   await sleep(150);

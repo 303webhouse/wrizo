@@ -376,7 +376,13 @@ await withHarness(async (app) => {
     await sleep(250);
     await app.emulateDpr(1, LAPTOP_W, 900);
 
-    await app.evalJs('document.querySelector(\'[data-box-id="ab4-travel-pin"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+    // FX7 S5 — BoardEditor.tsx's own onDoubleClick now resolves its target
+    // via document.elementFromPoint(e.clientX, e.clientY) rather than
+    // e.target (a genuine pointer-capture retargeting fix, fx7.mjs's own S5
+    // section) — a coordinate-less synthetic dblclick defaults to (0,0),
+    // which elementFromPoint no longer forgives; supply the card's own real
+    // on-screen center.
+    await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="ab4-travel-pin"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
     await sleep(300);
     const afterTravel = await app.evalJs('location.hash');
     ok('S4: double-clicking a page-pin card travels to its own page', afterTravel.includes('ab4-travel-target'), afterTravel);
@@ -503,7 +509,9 @@ if (process.env.HARNESS_PARKED === '1') {
       await sleep(250);
       await app.emulateDpr(1, LAPTOP_W, 900);
 
-      await app.evalJs('document.querySelector(\'[data-box-id="ab4-parked-regress-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+      // FX7 S5 — same coordinate-carrying fix (this file's own "travel" S4
+      // block above has the full writeup).
+      await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="ab4-parked-regress-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
       await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'PARKED text card popup open' });
       const editModeOkNow = await app.evalJs("!!document.querySelector('.board-popup-editor')");
       pok('PARKED (was "S4 (regression): double-click on a plain text card still enters inline edit mode exactly as before AB4") — FX4 S5: re-derived against BoardCardPopup instead of the retired inline editor',

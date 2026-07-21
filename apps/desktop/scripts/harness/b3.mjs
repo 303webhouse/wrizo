@@ -243,7 +243,13 @@ await withHarness(async (app) => {
 
     // Edit a DIFFERENT dealt card's content (Climax, not Hook) — dismisses
     // the hint whole ("not just that one card").
-    await app.evalJs(`document.querySelector('[data-box-id="${climaxBox.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))`);
+    // FX7 S5 — BoardEditor.tsx's own onDoubleClick now resolves its target
+    // via document.elementFromPoint(e.clientX, e.clientY) rather than
+    // e.target (a genuine pointer-capture retargeting fix, fx7.mjs's own S5
+    // section) — a coordinate-less synthetic dblclick defaults to (0,0),
+    // which elementFromPoint no longer forgives; supply the card's own real
+    // on-screen center.
+    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${climaxBox.id}"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: `card popup open @${width}px` });
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' Rewritten by the writer.');
@@ -256,7 +262,8 @@ await withHarness(async (app) => {
 
     // Edit yet ANOTHER dealt card — proves the hint never returns.
     const resolutionBox = dealtTextBoxes.find(b => (b.text || '').startsWith('Resolution\n'));
-    await app.evalJs(`document.querySelector('[data-box-id="${resolutionBox.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))`);
+    // FX7 S5 — same coordinate-carrying fix (see above).
+    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${resolutionBox.id}"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: `second card popup open @${width}px` });
     await app.evalJs("document.querySelector('.board-popup-editor').focus()");
     await app.typeKeys(' A second edit.');
