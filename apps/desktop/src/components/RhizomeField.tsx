@@ -100,6 +100,26 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
   const prevCelebratingRef = useRef(false);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // `stateRef` mirrors `state` synchronously (written by `updateState`
+  // below, never independently) so the growth effect and the burst effect
+  // — two SEPARATE effects that can both fire from the SAME commit (a
+  // single word crossing the goal on the very event that also roots the
+  // first-ever shoot) — always compose against each other's latest write,
+  // in declaration order, rather than each closing over a possibly-stale
+  // `state` from the last completed render. `updateState` calls `setState`
+  // with a plain VALUE, never a function, so React 18 StrictMode's own
+  // double-invoke-to-check-purity behavior (main.tsx wraps the app in
+  // `<React.StrictMode>`) can never run the PRNG-consuming computation
+  // twice — that would have silently burned extra `rng()` draws only in
+  // dev, a real (if dev-only) determinism hazard the plain-value form
+  // avoids by construction rather than by care.
+  const stateRef = useRef<RhizomeState>(state);
+  const updateState = useCallback((updater: (s: RhizomeState) => RhizomeState) => {
+    const next = updater(stateRef.current);
+    stateRef.current = next;
+    setState(next);
+  }, []);
+
   // Re-seed whenever the entry changes (a fresh page => a fresh field —
   // S2's own seed key is entry id + session start; SESSION_START itself is
   // fixed for the whole app-load, so revisiting the SAME entry within the
@@ -108,7 +128,9 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
   useEffect(() => {
     rngRef.current = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
     lastUnitRef.current = null;
-    setState(createRhizomeState());
+    const fresh = createRhizomeState();
+    stateRef.current = fresh;
+    setState(fresh);
     setBurstOrder(new Map());
   }, [seedKey]);
 
@@ -134,8 +156,8 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
     if (delta <= 0 || !rngRef.current) return;
     const m = measureNow();
     if (!m) return;
-    setState(s => growMany(s, rngRef.current!, m.geo, m.origin, delta));
-  }, [unitCount, active, measureNow]);
+    updateState(s => growMany(s, rngRef.current!, m.geo, m.origin, delta));
+  }, [unitCount, active, measureNow, updateState]);
 
   // S4 — the milestone burst + flash, on the SAME `celebrating` transition
   // the bar itself already fires on (nothing new invented). Decoupled from
@@ -146,17 +168,16 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
     if (active && celebrating && !prevCelebratingRef.current) {
       const m = measureNow();
       if (m && rngRef.current) {
-        setState(s => {
-          const { state: next, added } = burstSegments(s, rngRef.current!, m.geo, BURST_COUNT);
-          if (added.length > 0) {
-            setBurstOrder(prev => {
-              const map = new Map(prev);
-              added.forEach((seg, i) => map.set(seg.id, i));
-              return map;
-            });
-          }
-          return next;
-        });
+        const { state: next, added } = burstSegments(stateRef.current, rngRef.current, m.geo, BURST_COUNT);
+        stateRef.current = next;
+        setState(next);
+        if (added.length > 0) {
+          setBurstOrder(prev => {
+            const map = new Map(prev);
+            added.forEach((seg, i) => map.set(seg.id, i));
+            return map;
+          });
+        }
       }
       setFlash(true);
       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
