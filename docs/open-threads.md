@@ -4393,11 +4393,14 @@ outlive a session lives here, not in chat.
     summarizes). No other harness file's own absolute-geometry
     assertion is yet known to be affected, but none has been swept
     for this specific class either — a real candidate first step for
-    whoever picks this up. **Not yet triaged into a brief; not yet
-    built.** A real candidate for a future small, focused fix ticket
-    — flagged here specifically so a future session can find it
-    without having to already know which harness file's comment
-    section to go looking in.
+    whoever picks this up. ~~**Not yet triaged into a brief; not yet
+    built.**~~ **FOLDED IN — 2026-07-21.** Triaged into item 49 (J6 —
+    One Paper) as S1, the fix that must land first since J6's own S2
+    is navigation across framed routes and cannot honestly prove
+    geometry on a substrate that goes stale on exactly the transitions
+    it touches. This item stays open as the historical record of the
+    find (M2's build, then Fable's review) and **closes on J6's own
+    merge**, not before — see item 49 for the actual fix scope.
 48. **The deflake pass — queued, 2026-07-21, per Fable's FX8 review's
     house ruling 4b.** Aggregate transient/contention-suspected
     harness failures logged this session crossed the handoff's own
@@ -4420,6 +4423,36 @@ outlive a session lives here, not in chat.
     hiding a real defect the contention just makes more likely to
     surface. **Not yet triaged into a brief; not yet built; not yet
     sequenced** — Nick's own call on timing.
+49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
+    (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
+    finding 1 (Nick's second sitting — the Journal's "New Page" routing
+    finding, held for Fable rather than built directly with FX7), and
+    Fable's own ruling that it becomes J6. **Scope, in her own words**:
+    the literal finding is one `navigate()` call; the real finding is
+    that the app has no single source of routing truth, and fixing
+    that properly first requires evidence this ticket doesn't yet
+    have — so this ticket deliberately does NOT flip the
+    `JournalEntry.tsx`/`PageEditor.tsx` routing predicate. Four slices:
+    **S1** fixes item 47's own geometry substrate (folded in here,
+    cross-referenced above — lands first because S2's whole subject is
+    navigation across framed routes); **S2** extracts today's
+    duplicated-in-four-places routing predicate into one
+    `routeForEntry` call, behavior-identical, STOP-and-report on any
+    landing-surface diff; **S3** authors
+    `docs/wrizo-alpha/j6-parity-census.md` from the code — every
+    capability each of the two surfaces has that the other lacks, with
+    a port-now/port-later/retire/needs-its-own-ticket recommendation
+    per item — the ticket's real deliverable, and what J7 gets briefed
+    from; **S4** harness (`j6.mjs`) plus the full historic suite.
+    **Zero schema, zero server files, zero new deps** — merge
+    pre-authorized as zero-schema per the AB4 precedent. **Deploy
+    explicitly NOT pre-authorized** — Nick's separate word, standing
+    default. **Build starting — 2026-07-21**, on `j6-one-paper` off
+    post-FX8/M2-deploy `main`, own worktree per ONE CHECKOUT PER AGENT.
+    **FX9 (the Folded Lists) may run in parallel** in its own worktree
+    per Nick's own word — no surface overlap (cascade menu chrome vs.
+    routing/geometry substrate) — though FX9 itself has no brief
+    committed yet as of this writing.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
