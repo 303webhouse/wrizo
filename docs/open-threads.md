@@ -3955,15 +3955,29 @@ outlive a session lives here, not in chat.
     build/review/merge record for this ticket belongs to the session
     that ran it; this note exists only so the ledger doesn't sit
     stale claiming "not merged" when `main` itself already disagrees.
-44. **DeepSeek API account — Nick's own note, 2026-07-21, not yet
-    connected.** "I have set up a DeepSeek v4 API account and topped
-    it up with $10 for testing." This is the credential TU2's own S1
-    (provider-agnostic seat, DeepSeek V4 Flash default) is built to
-    consume via `TUTOR_API_KEY`/`TUTOR_BASE_URL`/`TUTOR_MODEL` — but
-    TU2 itself is pushed, not merged (item 43), so there is nothing on
-    `main` yet for this key to connect to. Nick's own word: "whenever
-    you're ready" — not an immediate action item, recorded for when
-    TU2 actually merges and Railway's own env config is Nick's to set.
+44. **DeepSeek API account — Nick's own note, 2026-07-21.**
+    "I have set up a DeepSeek v4 API account and topped it up with $10
+    for testing." This is the credential TU2's own S1 (provider-
+    agnostic seat, DeepSeek V4 Flash default) is built to consume via
+    `TUTOR_API_KEY`/`TUTOR_BASE_URL`/`TUTOR_MODEL`.
+    **`TUTOR_API_KEY` now SET on Railway — 2026-07-21**, confirmed by
+    that session directly (a minor self-disclosed hygiene note there:
+    a check command printed the raw key into that session's own
+    context once, caught and not repeated — noted here as project
+    history, not a live exposure, key not repeated in this record
+    either). `TUTOR_BASE_URL`/`TUTOR_MODEL` deliberately left UNSET —
+    TU2's own `env.ts` already defaults to exactly the right values
+    (`https://api.deepseek.com/anthropic` / `deepseek-v4-flash`) once
+    TU2's code actually deploys, so an explicit override would only
+    risk drifting stale later. Open for Nick's own word if he'd rather
+    have them explicit anyway.
+    **Currently deployed code predates TU2** — no `TUTOR_BASE_URL`
+    support yet, so this DeepSeek-shaped key would fail auth against
+    Anthropic's own real endpoint if actually invoked right now. The
+    live Tutor is therefore showing its own quiet-degrade line at
+    present — TU1's own established unconfigured/offline path,
+    expected and by design, not a new defect. Resolves itself the
+    moment TU2's own code ships; not something to chase before then.
 45. **FX8 — card affordances.** **BRIEF COMMITTED — 2026-07-21,
     CC-authored, not Fable.**
     `docs/wrizo-alpha/fx8-card-affordances-brief.md`. Four small
