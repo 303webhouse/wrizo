@@ -139,6 +139,27 @@ await withHarness(async (app) => {
     await openSliver(app);
     const fromDeckPresent = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === 'From a deck…')");
     ok(`@${width}px: door 2 — the Board's own Add flow carries "From a deck…" beside its existing options`, fromDeckPresent === true, String(fromDeckPresent));
+
+    // ab4.mjs's own PARKED lineage (its "S5: the board sliver carries
+    // EXACTLY its N hand tools" check, five generations deep) names THIS
+    // section as generation 5's own live successor — an ORDERED-LABELS
+    // check (not a bare count, the more maintainable shape this ticket
+    // settles the lineage on) of the sliver's full board-tools roster.
+    if (width === LAPTOP_W) {
+      const sliverShape = await app.evalJs(`(() => {
+        const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
+        const boardSection = [...sections].find(s => s.querySelector('.wz-sliver-item-btn'));
+        const buttons = boardSection ? boardSection.querySelectorAll('button') : [];
+        return { buttonCount: buttons.length, labels: [...buttons].map(b => b.textContent.trim()) };
+      })()`);
+      ok('ab4.mjs S5 lineage, generation 5: the board sliver carries its five hand tools, in order — Add card, New page card, Existing page…, From a deck…, Show connections',
+        sliverShape.buttonCount === 5
+          && sliverShape.labels[0] === 'Add card' && sliverShape.labels[1] === 'New page card'
+          && sliverShape.labels[2] === 'Existing page…' && sliverShape.labels[3] === 'From a deck…'
+          && sliverShape.labels[4] === 'Show connections',
+        JSON.stringify(sliverShape));
+    }
+
     await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a deck…').click()");
     await app.waitFor("!!document.querySelector('.deck-wizard-backdrop')", { label: `deck wizard open @${width}px` });
     await sleep(400); // clear the .28s blur/dim transition fully, same discipline fx4.mjs's own S5 section uses

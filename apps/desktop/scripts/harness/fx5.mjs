@@ -1194,8 +1194,11 @@ if (process.env.HARNESS_PARKED === '1') {
     })()`);
     // GENERATION 2 (B2 S5) — a FOURTH tool joins them: Existing page…
     // live successor: b2.mjs's own S5 section.
-    pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…) — live successor: b2.mjs\'s own S5 section proves its presence + function',
-      sliverBoardShape.count === 4, JSON.stringify(sliverBoardShape));
+    // GENERATION 3 (B3 S3) — a FIFTH tool joins them: "From a deck…",
+    // door 2's own affordance — live successor: b3.mjs's own S4 section
+    // (an ordered-labels check, the shape this lineage settled on).
+    pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…); generation 3: B3 S3 adds a FIFTH (From a deck…) — live successor: b3.mjs\'s own S4 section',
+      sliverBoardShape.count === 5, JSON.stringify(sliverBoardShape));
 
     return parkedChecks;
   });

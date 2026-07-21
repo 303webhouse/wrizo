@@ -569,8 +569,15 @@ if (process.env.HARNESS_PARKED === '1') {
       // this board. Four tools now — live successor in b2.mjs's own S5
       // section (fx6.mjs's own S2 check uses `.includes(...)`, not an
       // exact count, so it needed no re-derivation of its own).
-      pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else", generation 2: was FX4 S6\'s own re-derivation at exactly ONE tool; generation 3: was FX5 S5\'s own re-derivation at exactly two, Add card + the footer toggle; generation 4: was FX6 S2b\'s own re-derivation at exactly three, Add card + New page card + the footer toggle) — B2 S5: a fourth tool joins them (Existing page…) — live successor in b2.mjs\'s own S5 section',
-        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 4 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'Show connections', JSON.stringify(sliverShapeNow));
+      // GENERATION 5 (B3 S3) — a FIFTH control joins them: "From a
+      // deck…", door 2's own affordance (Sliver.tsx), landing between
+      // Existing page… and the footer toggle. Five tools now — live
+      // successor in b3.mjs's own S4 section (an ordered-labels check,
+      // not a bare count — the more maintainable shape every subsequent
+      // ticket in this lineage actually settled on, per that file's own
+      // comment).
+      pok('PARKED (was "S5: the board sliver carries EXACTLY its two hand tools (Add card, Connect toggle) and nothing else", generation 2: was FX4 S6\'s own re-derivation at exactly ONE tool; generation 3: was FX5 S5\'s own re-derivation at exactly two, Add card + the footer toggle; generation 4: was FX6 S2b\'s own re-derivation at exactly three, Add card + New page card + the footer toggle; generation 5: was B2 S5\'s own re-derivation at exactly four, Add card + New page card + Existing page… + the footer toggle) — B3 S3: a fifth tool joins them (From a deck…) — live successor in b3.mjs\'s own S4 section',
+        sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show connections', JSON.stringify(sliverShapeNow));
 
       const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
       await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')?.click()");
