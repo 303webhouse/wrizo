@@ -3542,6 +3542,56 @@ a:focus-visible,
 .wz-drawers-cluster{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
 .wz-drawers-cluster-title{ font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-low); padding:0 2px; }
 
+/* FX9 S1 — the fold: a header disclosure toggle shared by every
+   list-bearing section this ticket touches (CascadePanels.tsx's own
+   FoldSection — DrawersPanel's per-project clusters + its "Loose" documents
+   group, both reusing `.wz-drawers-cluster`/`.wz-drawers-cluster-title`
+   above unchanged for their inner content/title typography; JournalPanel's
+   "Recent" list via the `--journal` variant below).
+   The WHOLE header is a real, full-width <button> — the hit target is the
+   entire row, never the chevron alone (S1's own ruling). The chevron reads
+   quiet olive (--accent-rest) at rest AND on hover — "a persistent door,"
+   never brass/orange at either state. Keyboard FOCUS still wears the
+   site-wide brass ring (button:focus-visible, above) — that law is about
+   RESTING/HOVERED chrome specifically ("nothing brass... at rest or on
+   hover"), and focus is this app's own established EVENTAL state, not a
+   where-you-are marker (see this file's own "olive marks where you are,
+   orange marks what you do" comments elsewhere) — so it is deliberately
+   left alone here, not overridden to olive. */
+.wz-fold{ display:flex; flex-direction:column; }
+.wz-fold-header{ display:flex; align-items:center; justify-content:space-between; gap:6px;
+  width:100%; background:none; border:0; margin:0; padding:0; font-family:var(--font-ui);
+  cursor:pointer; text-align:left; }
+.wz-fold-header:hover{ color:var(--text-hi); }
+.wz-fold-header:hover .wz-drawers-cluster-title{ color:var(--text-hi); }
+/* The journal variant carries `.wz-cascade-panel-title`'s own typography
+   verbatim (font-size/letter-spacing/uppercase/color) plus the "Recent"
+   heading's own old inline padding — applied directly to the button rather
+   than reusing that class name outright, so `.wz-cascade-panel-title` stays
+   a query that unambiguously means "the cascade panel's OWN category
+   title" (Cascade.tsx's layer-2 heading), never this nested sub-heading. */
+.wz-fold-header--journal{ font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text-mid); padding:2px 0 6px; }
+/* The drawers variant carries no typography of its own — the inner
+   `.wz-drawers-cluster-title` SPAN (not the button) keeps that class, so a
+   fold header's OWN textContent stays exactly the title text (no chevron
+   glyph folded in) for every pre-existing harness query that reads it. */
+.wz-fold-chevron{ flex:none; display:inline-block; font-size:11px; line-height:1;
+  color:var(--accent-rest); text-transform:none; letter-spacing:normal;
+  transition:transform .18s ease; }
+.wz-fold-header[aria-expanded='true'] .wz-fold-chevron{ transform:rotate(90deg); }
+@media (prefers-reduced-motion:reduce){ .wz-fold-chevron{ transition:none; } }
+/* The body's own height animates via the grid 0fr/1fr technique — a smooth
+   transition to/from the content's own real natural height, no JS
+   measurement and no approximated max-height guess. `overflow:hidden` on
+   the inner wrapper is what makes the 0fr row genuinely clip to zero rather
+   than just squash its content. ~180ms, the house timing (S1); reduced
+   motion drops straight to the open/closed edge, no animated frame. */
+.wz-fold-body-wrap{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .18s ease; }
+.wz-fold-body-wrap[data-open='true']{ grid-template-rows:1fr; }
+.wz-fold-body-inner{ overflow:hidden; min-height:0; }
+@media (prefers-reduced-motion:reduce){ .wz-fold-body-wrap{ transition:none; } }
+
 /* B2 S4 — the Places panel (components/PlacesPanel.tsx): a Home zone
    (single-select radios) + a Boards zone (true checkboxes), inside the
    Page category's own panel body. Plain form controls, square corners,

@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { firstLine } from '../store/entryText';
+import { useSectionFold } from '../store/sectionFold';
 import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createJournalPage, createLooseHomePage, createBoardPage, createQuickSprintProject, softDeleteEntry,
@@ -104,6 +105,74 @@ function byRecent(a: JournalEntry, b: JournalEntry): number {
 }
 
 // ---------------------------------------------------------------------------
+// FX9 S1/S2 — the fold: a header disclosure toggle shared by every
+// list-bearing section this ticket touches (DrawersPanel's per-project
+// clusters + its documents list, JournalPanel's recent list). ONE component,
+// not a per-panel reimplementation — S1's own grammar (whole-header hit
+// target, quiet olive chevron, ~180ms/instant-under-reduced-motion, proper
+// button semantics) is a single law, not a per-surface judgment call.
+//
+// `sectionKey` is the S2-ruled stable, content-independent identity (a
+// project cluster passes its project id, never its title — callers below
+// build the key, this component just stores under whatever it's handed).
+// `itemCount` feeds the count-based first-ever default (sectionFold.ts);
+// once the writer has ever touched THIS key's toggle, useSectionFold makes
+// their choice sovereign and itemCount stops mattering for it.
+//
+// The collapsed body stays MOUNTED (not conditionally rendered) so the
+// height transition below has something real to animate between 0 and its
+// content's own natural height — but goes genuinely `inert` (FirstRunGate's
+// own established pattern for the same React/TS JSX-typing gap: `inert`
+// isn't in this project's @types/react version, so it's set imperatively
+// via a ref) plus `aria-hidden` while collapsed, so a collapsed section's
+// rows are neither keyboard-focusable nor announced — S3's "the header
+// carries its own name and its chevron, that is all it carries" holds for
+// the accessibility tree too, not just the paint.
+function FoldSection({
+  sectionKey, title, itemCount, headerVariant, titleClassName, children,
+}: {
+  sectionKey: string;
+  title: string;
+  itemCount: number;
+  headerVariant: 'drawers' | 'journal';
+  titleClassName?: string;
+  children: ReactNode;
+}) {
+  const [collapsed, toggle] = useSectionFold(sectionKey, itemCount);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    if (collapsed) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+  }, [collapsed]);
+  return (
+    // FX9 S4 harness note: `data-collapsed`/`data-open` are written as
+    // explicit 'true'/'false' STRINGS (not passed-through booleans) — the
+    // SAME defensive convention Cascade.tsx's own `data-visible` already
+    // uses for a data-* attribute, rather than relying on React's own
+    // boolean-to-data-attribute stringification. `aria-expanded`/
+    // `aria-hidden` stay raw booleans, matching this file's/Sliver.tsx's/
+    // CascadeSurvey.tsx's own existing `aria-expanded={open}` precedent.
+    <div className="wz-fold" data-collapsed={collapsed ? 'true' : 'false'}>
+      <button
+        type="button"
+        className={`wz-fold-header wz-fold-header--${headerVariant}`}
+        aria-expanded={!collapsed}
+        onClick={toggle}
+      >
+        <span className={titleClassName}>{title}</span>
+        <span className="wz-fold-chevron" aria-hidden="true">▸</span>
+      </button>
+      <div className="wz-fold-body-wrap" data-open={collapsed ? 'false' : 'true'}>
+        <div className="wz-fold-body-inner" ref={bodyRef} aria-hidden={collapsed}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Journal
 // ---------------------------------------------------------------------------
 function JournalPanel({ navigate, openSurvey }: CascadeContext) {
@@ -117,8 +186,14 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
           "Journal destination"), not the retired list surface. */}
       <button type="button" className="wz-cascade-action" onClick={() => openJournalBoard(navigate)}>{t('cascadeJournalOpen')}</button>
       <button type="button" className="wz-cascade-action" onClick={newPage}>{t('cascadeJournalNewPage')}</button>
-      <div>
-        <div className="wz-cascade-panel-title" style={{ padding: '2px 0 6px' }}>{t('cascadeJournalRecent')}</div>
+      {/* FX9 S1 — "Recent" gains the fold. Keyed by a fixed, content-
+          independent literal (there's only ever one Recent list here, no
+          per-entity identity to ride). `recent` is capped at 5 (line above),
+          so this section can never itself exercise S2's ">6 collapses"
+          default in practice — it still gets the SAME toggle, per the
+          brief's own explicit S1 roster, and still remembers a writer's own
+          explicit choice once made. */}
+      <FoldSection sectionKey="journalRecent" title={t('cascadeJournalRecent')} itemCount={recent.length} headerVariant="journal">
         <div className="wz-cascade-list">
           {recent.length === 0 && <div className="wz-cascade-empty">{t('placeFaceEmpty')}</div>}
           {recent.map((e) => (
@@ -127,7 +202,7 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
             </div>
           ))}
         </div>
-      </div>
+      </FoldSection>
       {pages.length > 0 && (
         <div className="wz-cascade-panel-footer">
           <button type="button" className="wz-cascade-link" onClick={() => openSurvey({ category: 'journal' })}>{t('cascadeJournalAll')}</button>
@@ -354,27 +429,51 @@ function DrawersPanel({ navigate }: CascadeContext) {
             <span className="wz-drawers-tile-title">{anchor.title}</span>
           </button>
         )}
+        {/* FX9 S1/S2 — each project cluster gains the fold. Keyed by
+            `drawersProject:<id>` — the project's OWN id, never its title
+            (S2's own explicit ruling: a rename must not forget the fold).
+            `c.projectId` is already the stable identity DrawerTile's own
+            clusterMap grouped by, above — this reuses it verbatim rather
+            than deriving a second one from `c.title`. */}
         {clusters.map((c) => (
-          <div key={c.projectId} className="wz-drawers-cluster">
-            <div className="wz-drawers-cluster-title">{c.title}</div>
-            {c.items.map((b) => (
-              <button key={b.id} type="button" className="wz-drawers-tile" onClick={() => travel(b)}>
-                <TileKindMark kind="board" />
-                <span className="wz-drawers-tile-title">{b.title}</span>
-              </button>
-            ))}
-          </div>
+          <FoldSection
+            key={c.projectId}
+            sectionKey={`drawersProject:${c.projectId}`}
+            title={c.title}
+            itemCount={c.items.length}
+            headerVariant="drawers"
+            titleClassName="wz-drawers-cluster-title"
+          >
+            <div className="wz-drawers-cluster">
+              {c.items.map((b) => (
+                <button key={b.id} type="button" className="wz-drawers-tile" onClick={() => travel(b)}>
+                  <TileKindMark kind="board" />
+                  <span className="wz-drawers-tile-title">{b.title}</span>
+                </button>
+              ))}
+            </div>
+          </FoldSection>
         ))}
+        {/* FX9 S1/S2 — the Loose docs group gains the fold too. A single,
+            content-independent fixed key ('drawersLoose') — there is only
+            ever one such group, no per-entity identity to ride. */}
         {sortedDocs.length > 0 && (
-          <div className="wz-drawers-cluster">
-            <div className="wz-drawers-cluster-title">{t('drawersLooseGroup')}</div>
-            {sortedDocs.map((d) => (
-              <button key={d.id} type="button" className="wz-drawers-tile" onClick={() => travel(d)}>
-                <TileKindMark kind="doc" />
-                <span className="wz-drawers-tile-title">{d.title}</span>
-              </button>
-            ))}
-          </div>
+          <FoldSection
+            sectionKey="drawersLoose"
+            title={t('drawersLooseGroup')}
+            itemCount={sortedDocs.length}
+            headerVariant="drawers"
+            titleClassName="wz-drawers-cluster-title"
+          >
+            <div className="wz-drawers-cluster">
+              {sortedDocs.map((d) => (
+                <button key={d.id} type="button" className="wz-drawers-tile" onClick={() => travel(d)}>
+                  <TileKindMark kind="doc" />
+                  <span className="wz-drawers-tile-title">{d.title}</span>
+                </button>
+              ))}
+            </div>
+          </FoldSection>
         )}
       </div>
       {/* Genuine miniature board/doc previews are a named future refinement
