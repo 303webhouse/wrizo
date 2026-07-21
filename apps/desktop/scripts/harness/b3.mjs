@@ -263,6 +263,22 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
+  // S3 — "From a deck…" is genuinely ABSENT on a system Board, the SAME
+  // absent-not-disabled law the other three Add-family doors already
+  // carry (b1.mjs's/b2.mjs's own re-verified checks for those three stayed
+  // green against this ticket's own build — see the build report — this
+  // is the dedicated, explicit proof for the fourth).
+  // ==========================================================================
+  await freshDesk(app, LAPTOP_W, 900);
+  await app.goto('/shelf');
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board (system-board absence probe)' });
+  await sleep(250);
+  await openSliver(app);
+  const systemBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
+  ok('S3: "From a deck…" is genuinely ABSENT from a system Board\'s own sliver — the SAME absent-not-disabled law every other Add door already carries',
+    !systemBoardSliverButtons.includes('From a deck…'), JSON.stringify(systemBoardSliverButtons));
+
+  // ==========================================================================
   // S4 — the blank path through CreateProject, proven COMPLETELY unchanged
   // (the SAME flow every pre-B3 harness file already exercises this exact
   // way — fx5.mjs's own freshProsePage, copied verbatim above).
