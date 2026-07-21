@@ -3242,7 +3242,72 @@ outlive a session lives here, not in chat.
     Existing-page picker lands on the Board's own Add flow exactly as
     S5 already shipped it. No rebuild owed — a pure ratification of
     work already merged.
-    **S6 folding now** — see the fold record below.
+    **S6 folded, built, independently reviewed, merged, and pushed —
+    2026-07-20.** Built on `b2-1-drawer-word-swap` off `main` @
+    `b257344`, in its own worktree, using the B2 build agent's own
+    inventory as its precise starting map (re-verified fresh via the
+    same greps before executing, not assumed stale-safe). **A genuine
+    omission the original inventory missed, found and fixed**:
+    `CreateProject.tsx`'s own "Something else" note ("Opens the
+    project home…") — caught via re-grep, not carried over blind.
+    **Both open questions judged and disclosed, not silently
+    resolved:** Q1 (Binder vs. Drawer) kept genuinely distinct where
+    the older stored-Drawer entity's own name shares a screen with
+    the generic word — those sites reuse the pre-existing `themeLexicon`
+    "Binder" term instead of colliding with it, a literal reading of
+    Nick's own word (he named "project" specifically); Q2
+    (`DrawersTree.tsx`'s own "New Project" button, sitting directly
+    under its own "+ New Drawer") swapped to "New Binder" to resolve
+    the same-screen collision. Storage identifiers, `/project/*`
+    routes (a disclosed, deliberate scope boundary — bigger structural
+    call than the word itself commissioned, flagged for a future
+    explicit ruling if routes are wanted too), the pre-existing Drawer
+    stored-entity system, and `Desk.tsx`'s confirmed-still-unreachable
+    "Begin project" were all left genuinely untouched, confirmed by
+    re-grep, not assumed.
+    **Independent review — GREEN, two real defects found and fixed,
+    not theoretical.** The build's own Q1/Q2 reasoning was sound
+    *per screen* but never traced *through navigation*: two buttons
+    deliberately labeled "Binder" to avoid an on-screen collision each
+    navigated one click later to a screen that unconditionally said
+    "Drawer" for the exact same entity — deferring the same collision
+    Q2 claimed to resolve, not preventing it. `DrawersTree.tsx`'s own
+    "New Binder" row landed on `CreateProject.tsx` headlined "NEW
+    DRAWER" regardless of context — fixed by threading the same
+    `drawerId` query param the button already constructs, so Binder
+    context now composes only when it applies. `QuickSprint.tsx`'s own
+    "Save to/as Binder" landed on `ProjectHome.tsx`, which unconditionally
+    read "Drawer" — but deeper investigation found the build's own
+    collision justification for THIS one didn't actually hold (the
+    breadcrumb it cited renders a proper noun, `drawer.name`, never
+    the bare word "Drawer" — a proper noun beside a generic word
+    doesn't collide, the same reason "My Documents" beside a "New
+    Folder" button doesn't) — reverted to "Save to/as Drawer",
+    restoring the majority, consistent convention rather than trading
+    one mismatch for another. **Independent, load-bearing
+    confirmation the gap was real, not theoretical**: fixing the
+    second one broke `m1.mjs` — a harness file the ORIGINAL BUILD
+    ITSELF had edited at this exact spot as "plumbing, not a park" —
+    crashing outright on the stale button text, a third, independent
+    signal the destination-mismatch was genuinely live.
+    **Full suite, both passes, CC's own third independent run
+    included.** Build: `tsc` (desktop+server) + `build:web` + selftest
+    + all 25 harness files (new `b2-1.mjs`, 30→31 checks post-review)
+    green under both `HARNESS_PARKED` settings. Review: same suite,
+    its own clean run, 100% green, zero crashes. CC's own pass on the
+    fast-forwarded `main`: `tsc` (desktop+server) + `build:web` clean,
+    full 25-file/50-run suite **green, 50/50, zero failures** — zero
+    discrepancies against both prior runs.
+    **Merged — 2026-07-20** (zero-schema, matching B2's own standing
+    authorization — pure chrome swap, storage untouched, confirmed by
+    both agents independently). Fast-forwarded `main` to `4817ca1` (no
+    divergence, clean fast-forward, zero conflicts), pushed to
+    `origin/main`.
+    **Not deployed** — Fable's post-merge review hasn't landed yet;
+    redeploy is Nick's call, as always. Deploy manifest since the last
+    deploy SHA (`5a2babc`, which shipped FX6+B1) now carries B2 and
+    the S6 fold as new code, unshipped — enumerate fresh at deploy
+    time, don't reuse the earlier `6759777` reference point.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
