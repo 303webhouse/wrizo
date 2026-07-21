@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project } from '../types';
-import { generateId, getBinderPages, getJournalEntry, appendTutorMessage } from '../store/persistence';
+import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor } from '../store/persistence';
 import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDisclosure';
 import { apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
@@ -43,6 +43,49 @@ import { computeNudges } from '../store/tutorNudges';
 // open-panel branch.
 const DOCK_FLOOR_PX = 120;
 
+// TU2 S2 — the listener's delta assembly. No real tokenizer is available
+// client-side, so the cap is a disclosed, documented character-based
+// approximation: ~4 characters per token, the commonly-cited ballpark for
+// English prose (both Anthropic's and OpenAI's own docs use figures in
+// this neighborhood). 4000 tokens * 4 chars/token = 16000 chars is the
+// hard ceiling on the WRITING itself; the honesty header line below rides
+// on top of that, inside tutor.ts's own separate, more generous
+// MAX_DELTA_CHARS wire cap (see that file's comment for the arithmetic).
+const DELTA_TOKEN_CAP = 4000;
+const CHARS_PER_TOKEN_APPROX = 4;
+const DELTA_CHAR_CAP = DELTA_TOKEN_CAP * CHARS_PER_TOKEN_APPROX;
+
+// Plain data read by the MODEL as part of the delta block's own header —
+// deliberately NOT a deskLexicon entry (deskLexicon is for writer-facing
+// chrome; the writer never sees this exact string — see
+// `tutorDeltaTruncated` in deskLexicon.ts for this same honesty's
+// writer-facing twin, rendered in the panel instead).
+const DELTA_TRUNCATION_HEADER = 'latest stretch only; earlier additions unread';
+
+interface TutorDelta {
+  delta: string | null;
+  truncated: boolean;
+}
+
+// Writer-initiated, send-time only (never a timer, never on mount) — the
+// ONE call site below (send()) is the only place this ever runs, per the
+// brief's own invariant that the delta is assembled at send time, never
+// before. `lastRead` absent covers BOTH grandfather cases the brief names
+// as one: no thread yet (this page's very first-ever Tutor message) and a
+// thread that predates TU2 (no cursor was ever persisted onto it) — both
+// read the WHOLE page from the start, cap still applies, same code path
+// either way. No new writing since the cursor (`newText` empty) returns
+// `delta: null` — the caller sends no delta field at all and renders no
+// "nothing new" UI, true silence per the brief's own words.
+function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: number } | undefined): TutorDelta {
+  const newText = lastRead ? pageText.slice(lastRead.chars) : pageText;
+  if (newText.length === 0) return { delta: null, truncated: false };
+  const truncated = newText.length > DELTA_CHAR_CAP;
+  const kept = truncated ? newText.slice(newText.length - DELTA_CHAR_CAP) : newText; // tail bias: keep the most recent writing
+  const delta = truncated ? `[${DELTA_TRUNCATION_HEADER}]\n${kept}` : kept;
+  return { delta, truncated };
+}
+
 // The margin genuinely available past the paper's right edge — the exact
 // mirror of Cascade.tsx's own `availableCascadeMargin()` (see that file's
 // header comment for the full "why measured geometry, not getComputedStyle
@@ -66,9 +109,12 @@ export interface TutorProps {
   project: Project | null;
   // The host's own live text state — mirrors Sliver's `goalText` prop
   // exactly (the page's current raw text, computed fresh every render;
-  // cheap). Used ONLY by the Consistency lens's own scope; never sent
-  // anywhere (S5's own disclosure: "your pages stay yours" — only what the
-  // writer types INTO the Tutor's composer ever leaves the device).
+  // cheap). Used by the Consistency lens's own scope, and — as of TU2 S2 —
+  // also read by `assembleTutorDelta` at send time ONLY, never on mount,
+  // never on a timer: this is the one narrow, disclosed exception to TU1's
+  // "only what the writer types into the composer ever leaves the device"
+  // (see the v2 disclosure wording, S3). Still never touched by anything
+  // that could WRITE through this prop — it is read-only here, always.
   pageText: string;
   // Selects the `--prose`/`--screenplay` anchor modifier — mirrors how
   // DeskFrame.tsx itself applies `pageKind` to the sliver/goalGlow anchors;
@@ -92,6 +138,11 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   const [composerText, setComposerText] = useState('');
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<'idle' | 'offline' | 'error'>('idle');
+  // TU2 S2 — set per-send, alongside `status`; true only when THIS send's
+  // delta had to be tail-capped. Not sticky across turns for the same
+  // reason `status` isn't: it describes what just happened, not a
+  // standing page property.
+  const [deltaTruncated, setDeltaTruncated] = useState(false);
 
   // The vanishing law with the dock rider (A15), inherited whole via the
   // SAME mechanism Cascade.tsx already established (an explicit keydown
@@ -167,16 +218,32 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
     if (!text || sending) return;
     setComposerText('');
     setStatus('idle');
+    setDeltaTruncated(false);
+    // TU2 S2 — read the cursor BEFORE this send's own appendTutorMessage
+    // call below (which, via its lastRead-preserving spread, wouldn't
+    // disturb it anyway — but reading it first keeps the delta's
+    // provenance obviously tied to "what the Tutor had read as of the
+    // moment the writer hit send," not an incidental side effect of
+    // append ordering).
+    const lastRead = getJournalEntry(entry.id)?.tutor?.lastRead;
+    const { delta, truncated } = assembleTutorDelta(pageText, lastRead);
+    if (truncated) setDeltaTruncated(true);
     const writerMsg = { id: generateId(), role: 'writer' as const, text, at: new Date().toISOString() };
     appendTutorMessage(entry.id, writerMsg);
     setSending(true);
     const history = [...(getJournalEntry(entry.id)?.tutor?.messages ?? [])].map((m) => ({ role: m.role, text: m.text }));
-    const result = await apiTutorChat(history);
+    const result = await apiTutorChat(history, delta ?? undefined);
     setSending(false);
     if (!result.ok) { setStatus('error'); return; }
     if (!result.configured) { setStatus('offline'); return; }
     if (result.reply) {
       appendTutorMessage(entry.id, { id: generateId(), role: 'tutor', text: result.reply, at: new Date().toISOString() });
+      // Cursor advances to the page's current length ONLY here — a
+      // successful reply received — never on the offline/error branches
+      // above, and never pre-emptively before the call. `pageText` is
+      // this render's own live prop, the same value `assembleTutorDelta`
+      // just read from above.
+      advanceTutorCursor(entry.id, pageText.length);
     }
   };
 
@@ -257,6 +324,7 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
               {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
               {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
+              {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
               <div className="wz-tutor-convo-row">
                 <input
                   className="wz-tutor-convo-input"

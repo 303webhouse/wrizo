@@ -126,6 +126,12 @@ export type DeskTermId =
   | 'tutorConversationEmpty' | 'tutorConversationSending'
   | 'tutorConversationOffline' | 'tutorConversationError'
   | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
+  // TU2 S2 — the listener's own honesty line: shown in the panel's quiet
+  // UI copy whenever a send's delta had to be tail-capped (the model's
+  // own copy of that same honesty travels in the delta block's plain-data
+  // header text instead — that one is not writer-facing chrome and so
+  // does NOT route through this lexicon, per the brief's own distinction).
+  | 'tutorDeltaTruncated'
   // FX6 S2 — the doors. (a) The cascade's Page section (CascadePanels.tsx's
   // PagePanel) gains an unmissable "New Page" action at its head —
   // 'cascadePageNewPage' — a SEPARATE door from the pre-existing Journal-
@@ -462,6 +468,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
+  tutorDeltaTruncated: 'Only your latest stretch of new writing was shared this time — earlier new writing since last time went unread.',
   cascadePageNewPage: 'New Page',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',

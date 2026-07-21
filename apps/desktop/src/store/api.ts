@@ -91,9 +91,20 @@ export interface TutorChatResult {
   reply?: string;
 }
 
-export async function apiTutorChat(messages: { role: 'writer' | 'tutor'; text: string }[]): Promise<TutorChatResult> {
+// TU2 S2 — `delta` is optional and, when present, already fully assembled
+// by Tutor.tsx (sliced from the persisted cursor, tail-capped, honesty
+// line baked in if truncated) — this file does no delta logic of its
+// own, only carries it. `JSON.stringify` drops an `undefined`-valued key
+// entirely, so an omitted delta really does leave the wire body as just
+// `{ messages }` — true silence when there is no new writing to report,
+// per the brief's own invariant that the body carries exactly messages
+// plus the one delimited delta, nothing else.
+export async function apiTutorChat(
+  messages: { role: 'writer' | 'tutor'; text: string }[],
+  delta?: string,
+): Promise<TutorChatResult> {
   try {
-    const res = await postJson('/api/tutor/chat', { messages });
+    const res = await postJson('/api/tutor/chat', { messages, delta });
     if (!res.ok) return { ok: false, configured: true };
     const data = (await res.json()) as { configured: boolean; reply?: string };
     if (!data.configured) return { ok: true, configured: false };
