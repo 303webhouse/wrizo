@@ -65,9 +65,12 @@ function isValidBody(body: unknown): body is { messages: InboundMessage[] } {
 
 // maxRetries: 0 — "no retry loops" per the brief's own invariant; one
 // attempt, fail fast. Constructed lazily (not at module load) so an
-// unconfigured deploy never even touches the SDK.
+// unconfigured deploy never even touches the SDK. TU2 S1 — baseURL is now
+// configurable (env.tutorBaseUrl) so the SAME Anthropic-format client can
+// address any Anthropic-compatible endpoint (DeepSeek by default); no
+// other call site below changed shape.
 function client(): Anthropic {
-  return new Anthropic({ apiKey: env.tutorApiKey!, maxRetries: 0 });
+  return new Anthropic({ apiKey: env.tutorApiKey!, baseURL: env.tutorBaseUrl, maxRetries: 0 });
 }
 
 tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response) => {
