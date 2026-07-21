@@ -4692,6 +4692,86 @@ outlive a session lives here, not in chat.
     PARALLEL with J6 and FX9 (Nick's own explicit word — the brief's
     stated priority over the in-flight tickets does not mean queued
     behind them, it means it does not wait for them).
+    **Built S1-S5 on `e1-words-out` off `main` @ `30961fc`, in its own
+    worktree — 2026-07-21.** **A separate, independent occurrence of
+    the already-ratified placeholder-report class**: this build's own
+    agent completed all five slices cleanly (4 commits, clean working
+    tree) but its own final message was a stalled status line ("I'll
+    end this turn now... then proceed with verification...") rather
+    than an actual completion report — NOT caused by the session
+    interrupt that hit J6/FX9 (this build finished on its own timeline,
+    unrelated), a genuinely separate instance of the same bug class.
+    Treated the same way regardless of cause: no report exists, no
+    close condition rests on one. The orchestrating session pushed the
+    branch itself (the build's own "report = push" step never ran).
+    **Independent post-build review — GREEN WITH ADVISORIES,
+    2026-07-21**, dispatched because the automated review's own build
+    handoff claimed a push that hadn't happened — the review caught
+    this itself (`git ls-remote origin` showed no `e1-words-out`) and
+    disclosed it plainly rather than silently working around it.
+    Genuinely thorough: fresh `pnpm install`, `tsc` ×2 and `build:web`
+    re-run clean; `e1.mjs` re-run fresh, 32/32; the S1 diagnosis
+    checked against the actual pre-image code (confirmed accurate —
+    a discarded promise with an unreachable fallback on the failure
+    path, not just "silent"); the Everything export exercised against
+    a real seeded corpus with the counting logic traced to its actual
+    source functions, not taken on faith; the offline proof
+    independently re-tested beyond the harness's own claim (a
+    standalone script confirming real `fetch()` calls genuinely fail
+    with the network cut, both external and same-origin); the
+    `safeFilenameBase` function copied verbatim into ~25 adversarial
+    inputs, all sanitized safely; Windows reserved device names
+    (`CON`, `NUL`, etc.) traced all the way to an actual CDP download,
+    confirmed Chromium's own download manager auto-renames them,
+    non-issue in practice, verified not assumed.
+    **One real, moderate defect found, and fixed before merge — a
+    judgment call, disclosed as such.** The review reproduced, via
+    the identical CDP download mechanism the harness itself relies on
+    for every other byte-level claim in this ticket: two different
+    pages sharing a first line, downloaded individually via "This
+    Page," computed the same filename and the second download
+    silently overwrote the first on disk — no error, no warning, one
+    page's words gone. Root cause: `dateStampFallback()` has no time
+    component, and no id-based disambiguator existed at all, so any
+    two same-titled (or two same-day-blank) pages collided
+    deterministically. Given this ticket exists specifically so Nick
+    can trust his words are safe before his 2026-08-04 departure, and
+    the reviewer characterized the fix as cheap, the orchestrating
+    session implemented it directly rather than deferring to a
+    follow-up ticket: `exportPageFiles` now always appends a short,
+    stable suffix from the entry's own id, so re-downloading the SAME
+    page stays idempotent while two DIFFERENT pages can never collide
+    regardless of title or date. Added a new harness check proving two
+    same-titled entries now produce two distinct files with BOTH
+    pages' own distinct words intact (caught and fixed one bug in the
+    check's own test fixture along the way — two contrived entry ids
+    that happened to share their own first 6 characters, defeating the
+    very disambiguator under test; not a real-world risk, since
+    production ids are opaque random tokens, but disclosed since it's
+    exactly the kind of self-inflicted false-negative this house's
+    own harness discipline exists to catch). Re-verified clean: 34/34,
+    both `HARNESS_PARKED` settings, `tsc` clean.
+    **Two cosmetic advisories from the review, not actioned, low
+    priority**: `MultiDocResult.count` is computed but never consumed
+    by any caller (the harness verifies count independently via the
+    file's own bytes instead — arguably the stronger test regardless);
+    "Copy My Words"/"Copy Formatted" button labels remain hardcoded
+    strings, pre-existing from AB2, not introduced by this ticket.
+    **Full historic suite: clean except the already-tracked item 48
+    flake, re-confirmed with zero code-path overlap.** One failure
+    (`fx5.mjs`'s own "S1(a): per-line engage motion" check) — E1's own
+    diff to `PageEditor.tsx` was read line-by-line and confirmed
+    confined entirely to the Publish dialog (the new download/copy
+    wiring); it touches no scroll or typewriter-fade code at all, so
+    this is the same pre-existing, already-ledgered flake reproducing
+    again, not a regression.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized), onto
+    `main` @ item 50's own merge tip. Clean, no conflicts (zero file
+    overlap with J6/FX9). Re-verified at the merge HEAD: `tsc` clean,
+    `build` clean.
+    **Not deployed** — though given the P0 urgency, expect Nick's own
+    deploy word to follow close behind, not wait for a routine
+    sitting, per the note above.
 52. **FX10 — the Room's Edges.** **P0 alongside E1 — BRIEF COMMITTED —
     2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/fx10-rooms-edges-brief.md`). Nick confirmed the
