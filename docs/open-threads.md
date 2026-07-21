@@ -4029,6 +4029,68 @@ outlive a session lives here, not in chat.
     DIFFERENT ticket (card affordances, Nick's direct request,
     2026-07-21) that happened to claim the same short name first.
     Needs a rename on one side before the Folded Lists brief lands.
+    **BUILT — 2026-07-21.** Built S1-S4 on `fx8-card-affordances` off
+    `main` @ `6b5a20e`, in its own worktree.
+    **S1 — the pin, domed via a radial gradient + shadow**, same
+    ~12px size, same one recorded circular exception, highlight
+    upper-left matching the card's own drop-shadow's own light
+    direction. Verified with a real screenshot, cropped/zoomed.
+    **S2 — the handle shrunk 14px→10px, border dropped whole.**
+    **Live cursor investigation, not a guess**: `nwse-resize` left
+    unchanged — the handle only ever renders on the selected box, at
+    its own bottom-right corner, resizing freeform on both axes from
+    there (FX4 S4), so a plain diagonal cursor is textually correct;
+    no fix invented for a problem that wasn't real.
+    **S3 — the card-body grab cursor, with a genuine structural
+    finding**: no exclusion selector was needed at all — reading the
+    actual JSX showed `.board-pin-grab`/`.board-handle`/
+    `.board-layer-toggle` are DOM SIBLINGS of the card-face element,
+    never descendants, so the browser's own hit-testing already
+    resolves each one's own cursor correctly with zero CSS
+    interaction — confirmed live via `getComputedStyle` on each
+    element individually. **A disclosed, optional judgment call
+    taken**: a small read-only `isDragging` flag added (set only in
+    `beginMove`, cleared in `finish` on every gesture end) driving a
+    `cursor:grabbing` swap during an actual active drag — the state
+    machine's own `phase` transitions themselves untouched.
+    **S4 — `fx8.mjs`, 25 checks.** Both drag-still-works and double-
+    click-still-opens re-proven live with genuinely trusted CDP
+    events, given this exact file's own recent history of pointer-
+    capture bugs. **One real finding on a stated assumption**: the
+    board editor is NOT entirely framed-only as the brief's own
+    context note assumed — the legacy (<1100px) branch renders the
+    identical card-canvas tree, only the surrounding chrome differs
+    — so this ticket's pure-CSS changes correctly reach the legacy
+    view too (verified, asserted), while legacy CHROME (what "byte-
+    identical" actually protects) stays untouched.
+    **Full historic suite run by the build itself**, all green except
+    one already-known pre-existing `fx5.mjs` flake (confirmed
+    unrelated by checking out the pre-ticket baseline and reproducing
+    the identical failure there, then confirming clean on a later
+    re-run).
+    **Independent review never completed — a real process gap, not a
+    silent one.** The review agent's own final report was a stalled
+    placeholder ("I'll stop polling now and wait for the Monitor's
+    notification…") — the same background-monitor-stall class this
+    session has now hit three times (FX7's build, this review). Zero
+    review-fix commits landed on the branch; only the build's own
+    three commits exist. **CC's own merge-time verification therefore
+    stood in for the missing second pass**, more thoroughly than a
+    routine merge check: `tsc` (desktop+server) + `build:web` clean;
+    both merges (FX8 then M2, see item 46) auto-resolved cleanly by
+    git's own 3-way merge against `index.css`/`BoardEditor.tsx` (TU2's
+    own prior changes sat nearby but never on the same lines,
+    confirmed by inspecting both conflict hunks directly before
+    trusting the auto-resolve); full 30-file/60-run suite — see this
+    session's own next ledger commit for exact figures.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized per the
+    standing rule). Merge commit (not fast-forward — `main` had
+    advanced past FX8's own base via TU2's merge), pushed to
+    `origin/main`.
+    **Not deployed** — deploy was never pre-authorized for this
+    ticket; also, Fable's own post-merge review is still owed given
+    the automated review never actually ran — flagged as a genuine
+    open item, not silently treated as satisfied.
 46. **M2 — the Rhizome.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/m2-rhizome-brief.md`. An opt-in alternate
     progress visualization — a Progress-style setting (Bar, the
@@ -4066,14 +4128,104 @@ outlive a session lives here, not in chat.
     either; merge pre-authorized as zero-schema per the AB4 precedent;
     Fable reviews post-merge.
     **Gate cleared — 2026-07-21.** TU2 merged (item 43, `c04a1f1`);
-    M2's own stated start condition is met. Lawfully parallel with
-    FX8/item 45 (confirmed no surface overlap between M2's own new
-    `RhizomeField` component and FX8's card-visual CSS); must
-    serialize against J6 (item 41's finding 1, not yet briefed) on any
-    `PageEditor.tsx` overlap — first to merge wins the base, the other
-    rebases. **Build starting — 2026-07-21**, via a Workflow-
-    orchestrated build+review pipeline (ultracode), off post-TU2-merge
-    `main`.
+    M2's own stated start condition is met. **"No surface overlap"
+    with FX8 — CORRECTED at merge time**: both tickets DID touch
+    `index.css` (M2's own new `--rhizome-ink` token and stage-anchor
+    rules landed near the root CSS variables / goal-glow section;
+    FX8's own card-visual rules landed in the board-card section
+    entirely elsewhere in the same file) — genuinely non-overlapping
+    LINES, not non-overlapping FILES as the earlier note implied;
+    git's own 3-way merge auto-resolved both cleanly, confirmed by
+    reading each conflict hunk directly rather than trusting the
+    auto-resolve blind. **Build starting — 2026-07-21**, via a
+    Workflow-orchestrated build+review pipeline (ultracode), off
+    post-TU2-merge `main`.
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED —
+    2026-07-21.** Built S1-S5 on `m2-rhizome` off `main` @ `f53a413`,
+    in its own worktree.
+    **S1 — the setting**, stored on the existing writing-settings
+    object, offered via a new `Seg` in the shared settings panel.
+    **A disclosed scope-narrowing beyond the brief's own literal
+    words**: the control (and the whole growth engine) is gated on
+    `framed` in addition to `progress==='words'` — because the framed
+    desk stage (≥1100px) has NO incentive row / rightSlot at all in
+    either style (a pre-existing AB1-era gate, confirmed by tracing
+    `ModeStage.tsx`'s own `{!framed && ...}` condition, not invented
+    for this ticket) — building a second, cramped legacy mount point
+    for a feature the brief's own reference widths (1100/1280/2200)
+    never actually exercise below the frame gate would have meant
+    either untestable proofs or reviving a law (`FX1 S5`'s "meter
+    track stays empty" below the gate) the brief never asked reopened.
+    Legacy stays byte-identical regardless of stored style —
+    STRICTER than the brief's own literal wording, matching its own
+    higher-order invariant.
+    **S2 — the engine**: a pure, framework-free ~10-line PRNG plus a
+    reflection-based paper/stage-avoidance algorithm with a
+    mathematically-guaranteed convexity-based escape fallback (never a
+    silent clip). **One real defect caught by the build's own
+    empirical testing before it ever reached the harness**: the
+    boundary-avoidance check re-flagged a shoot's own already-valid
+    origin tip as "touching" the paper (since the origin sits exactly
+    on the paper's own edge by definition) — a from-scratch Node run
+    producing zero segments is what surfaced it; fixed by starting the
+    avoidance sample one step past the tip, re-verified with a
+    40-seed/250-event stress sweep, zero violations.
+    **S4 — the milestone burst**, reusing the real `--ember` token and
+    the real `CELEBRATE_MS` constant (only its own module-private-ness
+    removed, value untouched) — confirmed by the review as genuinely
+    pre-existing, not newly introduced to look reused.
+    **A second real defect, a React StrictMode hazard**: the growth/
+    burst effects' own functional `setState` updaters would have
+    double-invoked under StrictMode's dev-only double-render,
+    silently burning extra PRNG draws — caught and fixed with a
+    `stateRef`-mirrored plain-value `setState`, preserving the same
+    cross-effect ordering guarantee without the hazard (dev-only
+    exposure, never shipped, still fixed at the root rather than left).
+    **A pre-existing, unrelated defect found and plainly NOT fixed,
+    named for the record**: `store/deskFrameActive.ts`'s own `active`
+    flag can go stale after certain in-app navigation sequences
+    revisit a framed route without a reload — reproduces on `main`
+    with zero Rhizome code involved, confirmed via a bare repro; only
+    affected the build's own harness methodology (worked around by
+    comparing growth shape rather than absolute coordinates), never
+    any invariant this ticket owns. Out of file scope, flagged not
+    fixed — a real candidate for a future small ticket.
+    **Independent review — GREEN, no fold, zero genuine defects.**
+    Went well past the build's own proof depth: 180 runs (60 seeds ×
+    300 events × 3 deliberately hostile geometries — paper covering
+    90%+ of a small stage, a paper pinned into a stage corner, a
+    thin-sliver stage) generating 45,000 segments with zero paper/
+    stage violations, specifically targeting the origin-on-boundary
+    edge case the build's own fix addressed; independently hand-
+    derived the decay/cap schedule from the brief's own prose alone
+    (without reading the implementation first) and matched every
+    checkpoint from 50 to 1500 events; traced the M1 R1 regression
+    guard to where it actually matters (the legacy 900px width, since
+    the framed width has no rightSlot to protect either way — a
+    clarification of the build's own claim, not a contradiction of
+    it). **The review ran the ENTIRE 30-file/60-run historic suite
+    itself**, in one continuous pass, achieving zero FAIL/ERROR
+    anywhere — including on the two files (`fx5.mjs`, `fx7.mjs`) the
+    build's own report had flagged as flaky under contention, both
+    clean this time — DESPITE confirmed genuine concurrent resource
+    contention from other active sessions' own harness processes
+    running in parallel on the same shared machine at the time.
+    **Full suite, CC's own third independent pass on the combined
+    (FX8+M2) merged `main`**: `tsc` (desktop+server) + `build:web`
+    clean; full 30-file/60-run suite — 57/60 green on the first pass,
+    3 confirmed transient on isolated re-checks (`tu2.mjs` default+
+    parked, unrelated to this merge since neither FX8 nor M2 touch any
+    Tutor file, its 4th clean isolated confirmation this session;
+    `w2.mjs` parked, a `SecurityError: localStorage access denied`
+    matching the same environmental class already seen with `j4.mjs`
+    earlier, clean on its own single re-check). All 60 accounted for.
+    **Merged — 2026-07-21** (zero-schema, zero-deps, merge pre-
+    authorized per the standing rule — confirmed by both build and
+    review independently, `apps/server`/`package.json`/lockfiles all
+    empty-diff). Merge commit on top of FX8's own merge, pushed to
+    `origin/main`.
+    **Not deployed** — Fable's post-merge review still owed; redeploy
+    is Nick's call, as always, after that review.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
