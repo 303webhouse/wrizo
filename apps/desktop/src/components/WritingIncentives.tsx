@@ -23,7 +23,12 @@ const SPARK_ANGLES = Array.from({ length: SPARK_COUNT }, (_, i) => (360 / SPARK_
 
 export const WORD_GOAL = 250;
 export const TIME_GOAL_MS = 25 * 60 * 1000;
-const CELEBRATE_MS = 1100;
+// M2 S4 — exported (was module-private) so RhizomeField.tsx can read the
+// SAME celebration-grammar duration constant rather than inventing a
+// parallel one ("Timing... read from the celebration grammar's existing
+// constants/tokens wherever they exist" — the brief's own words). Purely
+// additive; every existing consumer inside this file is unaffected.
+export const CELEBRATE_MS = 1100;
 
 // Tracks a value against a repeating goal (a "lap"): returns the fraction
 // within the current lap (0..1) and a `celebrating` flag that pulses true for

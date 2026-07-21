@@ -377,7 +377,15 @@ export type DeskTermId =
   | 'deckCharacterStudyWoundTitle' | 'deckCharacterStudyWoundBody'
   | 'deckCharacterStudyContradictionTitle' | 'deckCharacterStudyContradictionBody'
   | 'deckCharacterStudyVoiceTitle' | 'deckCharacterStudyVoiceBody'
-  | 'deckCharacterStudyRelationshipTitle' | 'deckCharacterStudyRelationshipBody';
+  | 'deckCharacterStudyRelationshipTitle' | 'deckCharacterStudyRelationshipBody'
+  // M2 S1 — the Progress-style setting (Bar | Rhizome), offered only when
+  // Progress is Words (M1 R1's own precedent). Every string this ticket
+  // introduces routes through this seam per the brief's own instruction,
+  // even though the neighboring pre-existing Seg calls in ModeStage.tsx's
+  // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
+  // option strings inline (the FX3 S5 precedent, left as-is — this ticket
+  // adds a new control, it does not retrofit its neighbors).
+  | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -742,6 +750,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   deckCharacterStudyVoiceBody: 'How they talk that no one else in the story does.',
   deckCharacterStudyRelationshipTitle: 'Relationship',
   deckCharacterStudyRelationshipBody: 'What do they want from each other — and what’s unresolved between them?',
+
+  // M2 S1 — the Progress-style setting.
+  progressStyleLabel: 'Progress style',
+  progressStyleBar: 'Bar',
+  progressStyleRhizome: 'Rhizome',
 };
 
 // Flux registers its own capture-module name (the app's other live theme

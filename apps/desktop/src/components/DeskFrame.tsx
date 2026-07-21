@@ -137,6 +137,18 @@ export interface DeskFrameProps {
   // discipline as `sliver` (absolutely positioned, paper rect untouched),
   // centered instead of left-anchored.
   goalGlow?: ReactNode;
+  // M2 S2 — the Rhizome's own ambient growth layer (components/
+  // RhizomeField.tsx). SAME overlay discipline as `goalGlow` (absolutely
+  // positioned inside `.desk-frame-stage`, paper rect structurally
+  // untouched regardless of state) — but sized to the STAGE's own full box
+  // (`.desk-frame-rhizome-anchor`, index.css), not clamped to the paper's
+  // own canonical width the way `.desk-frame-goalglow-anchor` is, since the
+  // growth is meant to wander the margin AROUND the paper, never just glow
+  // behind it. Rendered immediately after `goalGlow` (same DOM-order-first,
+  // z-index:-1 discipline FX4 S2's `isolation:isolate` fix already proved
+  // out for that layer) so both ambient layers paint behind the in-flow
+  // paper without needing a second stacking-context fix of their own.
+  rhizome?: ReactNode;
   // CD1 S5 — the corkboard track adopts the FX1 S5 law ("render only with
   // content"): omitted (as every CD1 caller does — nothing passes content
   // yet) means the whole track — including its grid column — disappears,
@@ -168,7 +180,7 @@ export interface DeskFrameProps {
 // inside components/Cascade.tsx, the same precedent AB3's Drawer already
 // established for its own Place face) rather than the ambient opacity fade
 // — see that file's header comment for the full reasoning.
-export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, corkboard, meter, dissolved, children }: DeskFrameProps) {
+export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, rhizome, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -202,6 +214,10 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
                 negative z-index — see index.css); centered on the SAME
                 canonical paper width the sliver anchors against. */}
             {goalGlow && <div className={`desk-frame-goalglow-anchor desk-frame-goalglow-anchor--${pageKind}`}>{goalGlow}</div>}
+            {/* M2 S2 — the Rhizome's own growth layer; see the `rhizome`
+                prop's own comment above for why its anchor spans the
+                stage's full box rather than the paper's own width. */}
+            {rhizome && <div className="desk-frame-rhizome-anchor">{rhizome}</div>}
             {/* CD2 S2 — the cascade's panel+survey overlay the stage margin,
                 left-anchored to the strip's own edge (growing rightward,
                 toward the paper — the mirror image of the sliver's own

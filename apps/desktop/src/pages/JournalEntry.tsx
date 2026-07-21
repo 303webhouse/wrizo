@@ -39,6 +39,7 @@ import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
 import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
+import { RhizomeField } from '../components/RhizomeField';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
@@ -1171,6 +1172,12 @@ function JournalEntryView() {
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
           tutor={<Tutor entry={entry} project={homeProject} pageText={goalText} pageKind="prose" />}
           goalGlow={<GoalGlow text={goalText} />}
+          // M2 S2 — the Rhizome's own growth layer. Authored pages only (a
+          // read-only capture isn't a session in progress — the SAME gate
+          // the legacy incentive row below already applies to ProgressBar);
+          // RhizomeField.tsx itself no-ops when the writer hasn't chosen
+          // Rhizome, so this costs nothing on the shipped Bar-default path.
+          rhizome={authored ? <RhizomeField unitCount={words} seedKey={entry.id} paperRef={sheetRef} /> : undefined}
           dissolved={dissolved}
         >
           {/* .desk-frame-stage is a `display:flex` row expecting ONE child

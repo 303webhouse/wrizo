@@ -554,8 +554,9 @@ function SliverInstrumentRow({ hasMilestones, target }: { hasMilestones?: boolea
       </div>
       {gearOpen && (
         <SettingsPanel
-          settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }}
+          settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
           hasMilestones={hasMilestones}
+          framed
         />
       )}
       {gearOpen && <ThemePanel />}
