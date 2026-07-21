@@ -746,11 +746,8 @@ export function ScriptEditor({ id }: { id: string }) {
           <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
             <div className="sprint-modal card" role="dialog" aria-label="Publish" onClick={e => e.stopPropagation()}>
               <div className="card-title">Publish</div>
-              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-                Publishing options — tailored to this work's type, destination, and format — are coming soon.
-              </p>
-              {/* E1 S3 — the Download action (layout reorder above the
-                  coming-soon line is S4, a follow-up commit). */}
+              {/* E1 S4 — download, real and unmissable, ABOVE the (still
+                  true) coming-soon line. */}
               <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.02em', margin: '12px 0 6px' }}>{dt('publishDownloadTitle')}</div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
                 <button type="button" className="btn-quiet publish-download-page-md" onClick={() => downloadThisPage('md')}>{dt('publishDownloadPageMd')}</button>
@@ -764,6 +761,9 @@ export function ScriptEditor({ id }: { id: string }) {
                 <button type="button" className="btn-quiet publish-copy-words" onClick={copyMyWords}>Copy My Words</button>
                 <button type="button" className="btn-quiet publish-copy-formatted" onClick={publishCopyFormatted}>Copy Formatted</button>
               </div>
+              <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '0 0 16px' }}>
+                {dt('publishComingSoon')}
+              </p>
               <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
               {publishToast.node}
             </div>

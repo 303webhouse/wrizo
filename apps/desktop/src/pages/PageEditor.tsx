@@ -584,13 +584,9 @@ function PageEditorView({ id }: { id: string }) {
     <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
       <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
         <div className="card-title">{lex('publish')}</div>
-        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
-          Publishing options — tailored to this work's type, destination, and format — are coming soon.
-        </p>
-        {/* E1 S3 — the Download action. S4 (a follow-up commit) moves this
-            section, and the paragraph above, so Download reads unmissable
-            ABOVE the coming-soon line — left in its original reading order
-            here, this slice's own scope is the mechanism, not the layout. */}
+        {/* E1 S4 — the download actions are real, present, and unmissable
+            ABOVE the (still true) coming-soon line — the surface no longer
+            reads as a dead end. */}
         <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.02em', margin: '12px 0 6px' }}>{dt('publishDownloadTitle')}</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <button type="button" className="btn-quiet publish-download-page-md" onClick={() => downloadThisPage('md')}>{dt('publishDownloadPageMd')}</button>
@@ -606,6 +602,9 @@ function PageEditorView({ id }: { id: string }) {
           <button type="button" className="btn-quiet publish-copy-words" onClick={() => doCopy('words')}>Copy My Words</button>
           <button type="button" className="btn-quiet publish-copy-formatted" onClick={() => doCopy('formatted')}>Copy Formatted</button>
         </div>
+        <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '0 0 16px' }}>
+          {dt('publishComingSoon')}
+        </p>
         <button type="button" className="btn-quiet" onClick={() => setShowPublish(false)}>Close</button>
         {publishToast.node}
       </div>

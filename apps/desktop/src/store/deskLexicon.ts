@@ -408,7 +408,12 @@ export type DeskTermId =
   // home instead of a silent no-op.
   | 'publishDownloadTitle' | 'publishDownloadPageMd' | 'publishDownloadPageTxt'
   | 'publishDownloadBinder' | 'publishDownloadEverything'
-  | 'publishDownloadConfirm' | 'publishDownloadFailed';
+  | 'publishDownloadConfirm' | 'publishDownloadFailed'
+  // E1 S4 — the "coming soon" copy moves BELOW the (now real) download
+  // actions rather than leading the dialog; the sentence itself is
+  // unchanged verbatim (still true, per the brief), only its position and
+  // its route through this lexicon are new.
+  | 'publishComingSoon';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -792,6 +797,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadEverything: 'Everything',
   publishDownloadConfirm: 'Downloading — check your downloads.',
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
+  publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
