@@ -227,6 +227,78 @@
 }
 
 /* ============================================================================
+   FX7 S4 — the systemic scrollbar restyle, app-wide. Nick's own second-
+   sitting verdict: "all scroll bars need to be restyled to be much more
+   minimal and consistent with the colors and mood of each unique theme.
+   Right now, they are bulky and most white, which makes them dominate
+   visually." Born as a one-off tuned to `.board-canvas-wrap` alone
+   (FX5 S3(a)); promoted HERE to a single systemic default reaching every
+   scrollable region app-wide at once (the notebook/spread grid, the
+   Drawers panel, cascade panels, the sliver/Tutor panels, page/script
+   editor content areas, board cards, dialog sheets — anywhere native
+   scroll can appear, including any future one, with no separate opt-in
+   required) — thin, low-contrast, square (no border-radius — the anti-
+   Canva "square corners everywhere" law extends to chrome), no OS chrome.
+   `scrollbar-width`/`scrollbar-color` are genuinely INHERITED CSS
+   properties (unlike most), so ONE declaration on `:root` reaches every
+   scrollable descendant in Firefox; `::-webkit-scrollbar` (no selector
+   prefix) is Chromium/Safari's own "every element's own scrollbar" reach
+   — together the SAME two-part convention `.board-canvas-wrap` already
+   established, just promoted from one class to the whole app. Both tokens
+   (`--ink-border-strong`/`--text-low`) are already theme-scoped (Plateau's
+   own `:root` values above; Flux's own `:root[data-theme='flux']`
+   override, TH2) — so this single rule is automatically "consistent with
+   the colors and mood of each unique theme," Nick's own words, with zero
+   theme-specific duplication needed, now or for any future theme pack.
+   Declared on `*` (every element), not merely `:root` — found live (not
+   assumed): `scrollbar-width` did NOT actually resolve as "thin" on a
+   descendant when only declared on `:root` in this project's own
+   Chromium build (getComputedStyle reported "auto" on `.mode-scroll`/
+   `.wz-cascade-panel` despite a `:root`-only rule, even though
+   `scrollbar-color` DID correctly inherit down the same way) — `*` is the
+   robust fix regardless of that inheritance quirk, and costs nothing
+   beyond a one-time style-rule match (not a per-frame cost).
+   ============================================================================ */
+*{
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-border-strong) transparent;
+}
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:var(--ink-border-strong); border-radius:0; }
+::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
+::-webkit-scrollbar-corner{ background:transparent; }
+/* FX7 S4 — the systemic default's dark-chrome tokens read poorly against
+   the LIGHT paper (a scrollbar tuned for `--ink-950`-family surfaces,
+   painted over `--paper`'s cream tone, would sit closer to invisible than
+   quiet). The three paper/card-toned scroll regions get the paper family's
+   own "subdued but legible" pair instead (--ink-on-paper-low/--paper-
+   border — the exact tokens .mode-page's own italic title / border
+   already use, so the scrollbar reads as the SAME surface's own chrome,
+   not a borrowed dark one) — genuinely "consistent with the colors and
+   mood" of the surface it actually scrolls, matching Nick's own words,
+   for BOTH Plateau's single paper and Flux's own light/dark paper variants
+   (--ink-on-paper-low/--paper-border are already theme-scoped, TH2).
+   `.mode-scroll`/`.desk-frame-scroll-cap` are prose/script's own page
+   content areas (used to hide their scrollbar entirely — see each rule's
+   own updated comment); `.board-text` is a card's own overflowing body
+   text (`--card-stock`, the SAME light-paper family, one shade lighter). */
+.mode-scroll, .desk-frame-scroll-cap, .board-text{
+  scrollbar-color: var(--ink-on-paper-low) transparent;
+}
+.mode-scroll::-webkit-scrollbar-thumb,
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb,
+.board-text::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); }
+/* Hover darkens toward the paper's own primary ink (--ink-on-paper), the
+   mirror of the dark-chrome default's own rest-dark/hover-light relationship
+   — a LIGHT surface needs MORE contrast (darker), not less, to read as
+   "more visible" on hover; --paper-border would have gone the wrong way
+   (lighter, closer to the paper itself, i.e. LESS visible). */
+.mode-scroll::-webkit-scrollbar-thumb:hover,
+.desk-frame-scroll-cap::-webkit-scrollbar-thumb:hover,
+.board-text::-webkit-scrollbar-thumb:hover{ background:var(--ink-on-paper); }
+
+/* ============================================================================
    TH1 — the theme seam (docs/th1-theme-seam-brief.md, docs/flux-theme-canon.md).
    Slice 0 token audit: Plateau's existing material-named vars mapped to the
    canon's semantic slots (canon §3). No component reads a slot name directly —
@@ -1194,23 +1266,18 @@ a:focus-visible,
    told by a 2px offset hard edge + a soft shadow — "card stock, not
    glass." Values matched precisely from the reference file, not
    approximated from the brief's prose alone. */
-/* FX5 S3 (a) — Plateau's own scrollbar treatment, everywhere the board
-   itself scrolls (`.board-canvas-wrap`, BoardEditor.tsx's own inline
-   overflow:auto): thin, low-contrast, square, no OS chrome. `scrollbar-
-   width`/`scrollbar-color` cover Firefox; the `::-webkit-scrollbar` family
-   covers Chromium/Safari (no unprefixed standard yet for thumb/track
-   colors) — the SAME two-part convention this file already uses to HIDE
-   scrollbars elsewhere (.mode-scroll, .desk-frame-scroll-cap), just tuned
-   to stay visible-but-quiet here instead, since a board that scrolls needs
-   a legible affordance that it does. */
-.board-canvas-wrap{
-  scrollbar-width:thin; scrollbar-color:var(--ink-border-strong) transparent;
-}
-.board-canvas-wrap::-webkit-scrollbar{ width:8px; height:8px; }
-.board-canvas-wrap::-webkit-scrollbar-track{ background:transparent; }
-.board-canvas-wrap::-webkit-scrollbar-thumb{ background:var(--ink-border-strong); border-radius:0; }
-.board-canvas-wrap::-webkit-scrollbar-thumb:hover{ background:var(--text-low); }
-.board-canvas-wrap::-webkit-scrollbar-corner{ background:transparent; }
+/* FX5 S3 (a) — Plateau's own scrollbar treatment, born here for
+   `.board-canvas-wrap` (BoardEditor.tsx's own inline overflow:auto): thin,
+   low-contrast, square, no OS chrome — visible-but-quiet, since a board
+   that scrolls needs a legible affordance that it does.
+   FX7 S4 — promoted to a SYSTEMIC, app-wide default (see the `:root`
+   scrollbar rule near the top of this file, right after the reset) rather
+   than staying a one-off tuned to this class alone — Nick's own "bulky and
+   most white... dominate visually" verdict named EVERY scrollable region,
+   not just the board. `.board-canvas-wrap` no longer needs its own copy of
+   these six rules: the systemic default already produces byte-identical
+   values (the SAME two tokens), so this comment is what's left here —
+   removing the duplicate keeps the two from ever silently drifting apart. */
 .board-canvas{ border-radius:0; }
 /* FX6 S2c — the empty board's own quiet one-line pointer (this canvas
    carried NO empty-state copy at all before this ticket). Centered, quiet
@@ -1877,9 +1944,15 @@ a:focus-visible,
 .mode-page.focused{ box-shadow:0 0 0 1px rgba(243,237,225,0.10), 0 6px 40px rgba(212,162,78,0.18), 0 2px 12px rgba(0,0,0,0.45); }
 .mode-page-title{ position:relative; z-index:1; font-family:var(--font-prose); font-size:15px;
   color:var(--ink-on-paper-low); font-style:italic; margin-bottom:14px; }
+/* FX7 S4 — used to hide its own scrollbar entirely (scrollbar-width:none);
+   folded into the systemic visible-but-quiet treatment instead (the
+   brief's own explicit "page/script editor content areas" naming) — its
+   own PAPER-toned color override lives with the systemic rule near the
+   top of this file (`.mode-scroll, .desk-frame-scroll-cap, .board-text`),
+   not here, since the dark-chrome default would read poorly against the
+   light paper underneath this scroll region specifically. */
 .mode-scroll{ position:relative; z-index:1; flex:1; min-height:0; overflow-y:auto; padding-bottom:30vh;
-  background:transparent; scrollbar-width:none; }
-.mode-scroll::-webkit-scrollbar{ width:0; height:0; }
+  background:transparent; }
 /* FX1 S1 — a fresh page's first line starts near the stage's vertical center
    (working value ~45%, --tw-start-offset, set by useTypewriterFade.ts's
    measure()) so the fade band below has room to engage early. Typewriter
@@ -2327,17 +2400,49 @@ a:focus-visible,
 }
 /* The script sheet has no bounded height of its own by design (see
    .desk-frame-scroll-cap's own comment below — it wraps content that grows
-   with the document); FX3 S1 replaces the SCROLL-CAP's old fixed
-   height:min(64vh,620px) with the same stage-fill flex-grow prose's stage
-   link gets, and gives .mode-pagecol (script's own copy of the same class)
-   min-height:100% so a short script's sheet still fills down. The sheet
-   ITSELF (the visible paper — background/border) then needs its own
-   flex-grow to actually stretch to that floor, or the extra space would sit
-   empty inside .mode-pagecol below an unstretched sheet. flex-shrink stays
-   at its default (0 via the shorthand's third value) so a long script's
-   sheet is never compressed — .desk-frame-scroll-cap's overflow-y:auto
-   handles that overflow exactly as it already did pre-FX3. */
-.desk-frame-stage > .desk-frame-scroll-cap{ height:auto; flex:1 1 auto; min-height:0; }
+   with the document); FX3 S1 replaced the SCROLL-CAP's old fixed
+   height:min(64vh,620px) with a stage-fill treatment, and gives
+   .mode-pagecol (script's own copy of the same class) min-height:100% so a
+   short script's sheet still fills down. The sheet ITSELF (the visible
+   paper — background/border) then needs its own flex-grow to actually
+   stretch to that floor, or the extra space would sit empty inside
+   .mode-pagecol below an unstretched sheet. flex-shrink stays at its
+   default (0 via the shorthand's third value) so a long script's sheet is
+   never compressed — .desk-frame-scroll-cap's overflow-y:auto handles that
+   overflow exactly as it already did pre-FX3.
+
+   FX7 S1 — root-caused live (not guessed): FX3's own `flex:1 1 auto` here
+   was NOT actually "the same stage-fill flex-grow prose's stage link gets"
+   as its comment claimed — `.desk-frame-stage > .mode-stage` (prose's own
+   direct flex-item counterpart, immediately above) carries NO flex-grow at
+   all; its height-fill comes for free from `.desk-frame-stage`'s default
+   `align-items:stretch` (a row-flex CROSS-axis behavior, independent of
+   flex-grow), while its WIDTH stays content-sized (`.mode-pagecol`'s own
+   forced measure) so `.desk-frame-stage{ justify-content:center }` — the
+   stage's MAIN-axis property — can actually center it. Giving the
+   scroll-cap `flex-grow:1` instead made IT (not `.mode-pagecol`) the flex
+   item that fills the stage's full MAIN-axis (horizontal) width — so the
+   scroll-cap stretched edge-to-edge across the whole stage, and
+   `.mode-pagecol` (an ordinary block child with no margin:auto of its own)
+   rendered flush against the scroll-cap's own LEFT edge instead of
+   centered within it: exactly Nick's "the page itself is in a different
+   location, way too small, and not centered" verdict, and exactly why the
+   sliver/tutor anchors then "float away from the page" — both anchors'
+   own CSS math (`--sliver-margin`/`--tutor-margin`, above/below) assumes
+   `.mode-pagecol` sits centered at the stage's own 50%, which it hadn't
+   been. This is a genuine FX3-introduced regression (its own comment
+   mis-stated the parity with prose's path), not a TU1 anchor defect — the
+   two-anchor Tutor wiring itself (DeskFrame.tsx/ScriptEditor.tsx) was
+   already correct; confirmed by measuring the mounted page's own rects
+   (scripts/harness/fx7.mjs's own S1 section), not by reasoning on the CSS
+   alone. Fix: drop the main-axis flex-grow (mirrors `.mode-stage`'s own
+   zero-flex-grow default exactly — `flex:0 1 auto`, spelled out here
+   rather than left implicit, so the parity with the rule above is visible
+   in the source) and add the SAME `min-width:0; max-width:100%;` anti-
+   overflow guard `.mode-stage` already carries for the identical near-
+   floor reason (the "Review fix" comment above) — height-fill is
+   untouched (cross-axis stretch never depended on flex-grow). */
+.desk-frame-stage > .desk-frame-scroll-cap{ height:auto; flex:0 1 auto; min-width:0; max-width:100%; min-height:0; }
 .desk-frame-stage .script-sheet{
   flex:1 0 auto; margin:0 auto var(--fx3-paper-fence);
   font-size:calc(1rem * var(--paper-scale));
@@ -2648,8 +2753,12 @@ a:focus-visible,
    Deliberately NOT reusing .mode-page's paper styling: the wrapped content
    (e.g. .script-sheet) already carries its own paper look, so this only
    supplies the missing height cap + internal scroll. */
-.desk-frame-scroll-cap{ height:min(64vh,620px); overflow-y:auto; scrollbar-width:none; }
-.desk-frame-scroll-cap::-webkit-scrollbar{ width:0; height:0; }
+/* FX7 S4 — used to hide its own scrollbar entirely (scrollbar-width:none);
+   folded into the systemic visible-but-quiet treatment instead, with its
+   own paper-toned color override living alongside the systemic rule near
+   the top of this file (`.mode-scroll, .desk-frame-scroll-cap,
+   .board-text`) — see that rule's own comment for the full reasoning. */
+.desk-frame-scroll-cap{ height:min(64vh,620px); overflow-y:auto; }
 
 /* The unified mode strip (S2) — five ratified strings, title case. Visually
    modeled on .mode-tab/.mode-tabs (the strip it supersedes inside the
@@ -2711,6 +2820,19 @@ a:focus-visible,
   border:1px solid var(--ink-border); font-family:var(--font-ui); cursor:pointer; transition:.15s; }
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+/* FX7 S2 — Free Write's own Bold/Italic two-press bracket: the mark is
+   "open" (leading marker inserted, awaiting its close) for exactly the same
+   reason a toggle switch reads "on" — olive marks where-you-are, matching
+   the sliver's own established rest-state law (FX1 S6, above), never brass
+   (brass stays reserved for an evental action, not a held state). */
+.mode-tbtn[data-on='true']{ border-color:var(--accent-rest); color:var(--accent-rest); }
+/* FX7 S2 — Journal's own ink-tool toggle, mirrored as a disclosed-inert
+   placeholder (Sliver.tsx's own `inkToolPlaceholder`): same small icon-
+   button footprint as the sliver's other controls, visibly disabled
+   (dimmed, not-allowed cursor) rather than styled as if it worked. */
+.wz-sliver-ink-tool-toggle{ width:28px; height:28px; padding:0; background:none;
+  border:1px solid var(--ink-border); color:var(--text-low); font-size:14px;
+  cursor:not-allowed; opacity:.55; }
 .wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
 .wz-sliver-typewriter-label{ font-size:13px; color:var(--text-mid); }
 
@@ -2933,14 +3055,75 @@ a:focus-visible,
    prop). Mirrors .desk-frame-sliver-anchor's own structural guarantee
    (position:absolute inside .desk-frame-stage, which is position:relative
    — out of flow, so it cannot resize/reposition the paper regardless of
-   state) but anchors from the STAGE'S OWN LEFT EDGE (left:0) rather than
-   the paper's right-relative offset, since layers grow RIGHTWARD from the
+   state) but anchors from the STRIP'S OWN RIGHT EDGE rather than the
+   paper's right-relative offset, since layers grow RIGHTWARD from the
    strip, not leftward from the paper (S2's own wording). display:flex so
    the survey sliding into the panel's vacated slot when it docks (S2's
    own "the dock") is ordinary flex reflow, animated by transitioning the
-   panel's own width to 0 rather than any manual `left` arithmetic. */
+   panel's own width to 0 rather than any manual `left` arithmetic.
+
+   FX7 S3 — root-caused live (not guessed): this anchor's own `left` used
+   to be a bare `0`, i.e. flush against `.desk-frame-stage`'s OWN left
+   edge — true back when CD2 shipped (the strip still occupied the grid's
+   own first column then, immediately adjacent to the stage). FX5 S10 (a
+   LATER ticket, "the composition law now") pulled the strip clean OUT of
+   the grid's flow — `position:absolute`, pinned to the SCREEN's own
+   left edge (`--frame-host-pad-x` cancelled out, see .desk-frame-strip
+   below) — and gave `.desk-frame-stage` back the FULL reclaimed width,
+   so the stage's own left edge no longer coincides with the strip's own
+   right edge at all: it sits `--frame-host-pad-x` (a 16-40px, 3vw-scaled
+   clamp) from the true screen edge, while the strip's own right edge sits
+   a FIXED `--strip-width` (84px) out — at every viewport, host-pad-x is
+   well under 84px, so `left:0` here landed the whole cascade panel
+   40-70px to the LEFT of the strip's own right border: not a literal
+   empty gap (confirmed by measuring the mounted page, this project's own
+   "verify, don't assume" discipline: the panel actually OVERLAPPED and
+   partly occluded the strip's own icons by ~44-68px) but exactly the
+   underlying defect Nick's "float away from it... not flush" verdict
+   names — the panel floats at an offset that has nothing to do with the
+   strip's own true edge, rather than genuinely emerging flush from it.
+   FX5 S10 already solved this EXACT class of drift for the sliver anchor
+   (`--sliver-margin`'s own `+ var(--frame-host-pad-x) - var(--strip-width)`
+   correction, above) — the cascade anchor never received the same fix
+   because it doesn't share that formula (it anchors from the LEFT via a
+   literal `left`, not from center via a paper-half-width subtraction), so
+   the drift went unnoticed there (S10 fixed the sliver's, not this one).
+
+   This mirrors that same correction in this anchor's own left-anchored
+   terms, with ONE extra term the sliver's centered formula never needed:
+   the strip's own screen-left is always 0 (`.desk-frame-strip`'s own
+   `-1 * --frame-host-pad-x` cancels the host's padding exactly), so its
+   screen-right is always `--strip-width` — but `.desk-frame-grid` itself
+   (the stage's own ancestor) is CENTERED via `margin:0 auto` once the
+   viewport grows wide enough for its content (100vw minus the host's own
+   2x --frame-host-pad-x padding) to exceed `--frame-max`, which pushes the
+   stage's OWN screen-left past `--frame-host-pad-x` by however much extra
+   margin the centering adds on each side — found live, not assumed:
+   fixing only the `--frame-host-pad-x` term (mirroring the sliver
+   verbatim) reproduced the sliver's own known-good gap at every width up
+   to ~1720px combined-available-width, then silently DRIFTED to a ~200px
+   gap at 2200px specifically — measured, not guessed, via fx7.mjs's own
+   S3 section (which is why BOTH reference widths AND the 1720px --frame-
+   max seam are asserted there, not just the 1100px floor). The extra term
+   below (`--fx7-cascade-grid-margin`) reproduces the grid's OWN centering
+   math exactly (`max(0px, (100vw - 2*pad - frame-max) / 2)`) so this
+   anchor's `left`, relative to the STAGE, correctly cancels however much
+   the grid's own centering pushed the stage away from the strip's fixed
+   screen position, at every viewport — verified flush, zero-gap, at both
+   reference widths, the 1100px floor, AND a wide (2200px) viewport past
+   the --frame-max seam. */
 .desk-frame-cascade-anchor{
-  position:absolute; top:0; left:0; height:100%; z-index:6;
+  position:absolute; top:0; height:100%; z-index:6;
+  /* FX7 S3 — see this rule's own header comment above for the full
+     root-cause + derivation. `--fx7-cascade-grid-margin` mirrors
+     `.desk-frame-grid`'s own `margin:0 auto` centering math exactly (zero
+     below `--frame-max`'s own combined-width seam, growing past it) so
+     this anchor's `left` correctly cancels however far the grid's own
+     centering has pushed the stage away from the strip's fixed screen
+     position, landing this anchor's screen-left exactly on the strip's
+     own screen-right + one --frame-gap, at every viewport. */
+  --fx7-cascade-grid-margin: max(0px, calc((100vw - 2 * var(--frame-host-pad-x) - var(--frame-max)) / 2));
+  left: calc(var(--strip-width) + var(--frame-gap) - var(--frame-host-pad-x) - var(--fx7-cascade-grid-margin));
   display:flex; align-items:stretch; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
   /* Same canonical-half-width formula .desk-frame-sliver-anchor already

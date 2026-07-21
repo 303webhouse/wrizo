@@ -29,6 +29,12 @@ export type DeskTermId =
   // seam per the AB1 review's ratified naming, not a second lexicon file.
   | 'railInk' | 'railControls' | 'railForwardLock' | 'railReading' | 'railTypewriter'
   | 'railFormat' | 'railStructure' | 'railStructureProse' | 'railStructureScreenplay'
+  // FX7 S2 — Journal's own ink-tool toggle, mirrored onto Free Write's rail
+  // as a disclosed-inert placeholder (components/Sliver.tsx's own
+  // `inkToolPlaceholder` — see that file's header comment for the full
+  // "why disabled" reasoning). The tooltip is the one place this ticket
+  // discloses the inert state directly to the writer.
+  | 'railInkTool' | 'railInkToolInert'
   // CD1 S2/S6 — the sliver's goal block (components/Sliver.tsx's foot). The
   // sliver's own keyboard shortcut (Ctrl/Cmd+/, SLIVER_SHORTCUT_LABEL in
   // that file) is a chord constant, not user-facing prose, so it does NOT
@@ -369,6 +375,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   railReading: 'Reading',
   railTypewriter: 'Typewriter',
   railFormat: 'Format',
+  railInkTool: 'Ink tool',
+  railInkToolInert: 'Ink — coming soon outside the Journal',
   railStructure: 'Structure',
   railStructureProse: 'Prose',
   railStructureScreenplay: 'Screenplay',

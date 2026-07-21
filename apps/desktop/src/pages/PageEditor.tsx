@@ -26,7 +26,7 @@ import type { PageFaceSubject } from '../components/PageFace';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { applyFormat, stripMarkdownConventions, FORMAT_MARK, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
@@ -102,6 +102,11 @@ function PageEditorView({ id }: { id: string }) {
   // (unframed/below-the-gate, untouched).
   const [penColor, setPenColor] = useState(PEN_INKS[0]);
   const forwardLock = useForwardLock();
+  // FX7 S2 — Free Write's own Bold/Italic two-press bracket state (open =
+  // the leading marker has been inserted, awaiting its closing press). See
+  // applyFreeWriteFormat below for why this can't just reuse Draft's
+  // selection-wrap (`applyRailFormat`) — forward-only has no mid-text caret.
+  const [freeWriteMarks, setFreeWriteMarks] = useState({ bold: false, italic: false });
   // AB2 S4 — the Structure picker's one-time confirmation (prose page with
   // words -> screenplay). Switching an empty page is free (no modal).
   const [structureConfirm, setStructureConfirm] = useState(false);
@@ -118,6 +123,10 @@ function PageEditorView({ id }: { id: string }) {
   textRef.current = text;
   const lastSavedRef = useRef(initialText);
   const editorRef = useRef<HTMLDivElement>(null);
+  // FX7 S2 — Free Write's own rail-driven marker insertion escape hatch
+  // (ForwardOnlyEditor.tsx's own Props comment has the full "why not
+  // execCommand" writeup).
+  const freeWriteInsertRef = useRef<((text: string) => void) | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -318,6 +327,7 @@ function PageEditorView({ id }: { id: string }) {
         ariaLabel="Page writing surface"
         penColor={penColor}
         forwardLock={mode === 'journal' ? forwardLock : true}
+        insertMarkerRef={freeWriteInsertRef}
         style={{
           width: '100%', minHeight: '100%', color: 'var(--ink-on-paper)',
           fontFamily: 'var(--font-prose)',
@@ -380,6 +390,54 @@ function PageEditorView({ id }: { id: string }) {
     decorateEditorFor(el, result.text, result.start, setCaretOffset);
   };
 
+  // FX7 S2 — Free Write's own Bold/Italic. Forward-only's data model
+  // (ForwardOnlyEditor.tsx's Run[], always-append-at-the-tail — see that
+  // file's own header comment) has no arbitrary selection/replace concept
+  // the way Draft's applyRailFormat above does, so wrapSelection's
+  // "replace the selected range" approach doesn't fit here. Instead this
+  // reuses draftFormat.ts's OWN marker convention (FORMAT_MARK) as a literal
+  // INSERTION at the tail, via document.execCommand('insertText', ...) —
+  // the SAME programmatic-contenteditable-edit technique already
+  // established in this codebase (store/emDash.ts's own applyEmDash). That
+  // fires a genuine 'beforeinput' (inputType: insertText) event, which
+  // ForwardOnlyEditor's own journal-mode listener (its `onBeforeInput`)
+  // routes through its OWN handleInput() — the EXACT SAME path a real
+  // keystroke takes. This is why it's structurally safe with respect to
+  // forward-lock's deletion discipline (verified live, not merely assumed —
+  // scripts/harness/fx7.mjs's own S2 section): nothing here ever calls
+  // handleBackspace/eraseTail/strikeStep, and the inserted marker
+  // characters become ordinary Runs — struck (never erased) by a later
+  // backspace, exactly like any other typed character.
+  //
+  // Toggle behavior: forward-only can't place a caret mid-text to wrap a
+  // selection after the fact, so Bold/Italic behave as a two-press bracket
+  // instead — press once to open (insert the leading marker, arm the rail
+  // button), press again to close (insert the trailing marker, disarm). The
+  // writer's own typing lands between the two clicks — the same "type **
+  // yourself" markdown-by-hand convention, just a rail shortcut for the
+  // same literal characters a keystroke would produce.
+  //
+  // Root-caused live (not assumed): the first implementation called
+  // `document.execCommand('insertText', ...)` — this codebase's own
+  // established technique for a programmatic contenteditable edit
+  // (store/emDash.ts's applyEmDash) — but execCommand turned out NOT to
+  // reliably fire a `beforeinput` event ForwardOnlyEditor's own journal-
+  // mode listener could intercept in this harness's own Chromium build; it
+  // mutated the DOM directly instead, leaving the Run model unaware, so the
+  // very next real keystroke's own re-render (built from the still-stale
+  // model) silently wiped the inserted marker. Fixed by calling
+  // ForwardOnlyEditor's own `insertMarkerRef` escape hatch instead — the
+  // component's own `handleInput`, the EXACT function a real keystroke
+  // calls, with no event-dispatch reliability gap at all.
+  const applyFreeWriteFormat = (action: 'bold' | 'italic') => {
+    if (mode !== 'journal') return;
+    const insert = freeWriteInsertRef.current;
+    if (!insert) return;
+    editorRef.current?.focus();
+    insert(FORMAT_MARK[action]);
+    setFreeWriteMarks(prev => ({ ...prev, [action]: !prev[action] }));
+  };
+
   // AB2 S4 — the Structure picker. Prose -> Screenplay: free on an empty
   // page, one plain confirmation otherwise (mechanical mapping only, no AI —
   // store/structureConvert.ts). Screenplay -> Prose has no code path here
@@ -433,6 +491,14 @@ function PageEditorView({ id }: { id: string }) {
           kind: 'freewrite',
           ink: journalFurniture ? { penColor, inks: PEN_INKS, onChoosePen: setPenColor } : undefined,
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
+          // FX7 S2 — Bold/Italic + the ink-tool placeholder, unconditional
+          // on origin (like forwardLock above, per FX1 S3's own "belongs to
+          // Free Write the POSTURE, not the Journal the PLACE" precedent) —
+          // this is exactly the sparse-rail complaint (Nick's own words) on
+          // an ordinary (project/loose-origin) Free Write page, where
+          // journalFurniture is false and the rail carried almost nothing.
+          format: { onFormat: applyFreeWriteFormat, boldOn: freeWriteMarks.bold, italicOn: freeWriteMarks.italic },
+          inkToolPlaceholder: true,
           captureItems: journalFurniture ? CAPTURE_ITEMS : [],
         }
       : {
