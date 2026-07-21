@@ -3559,6 +3559,39 @@ outlive a session lives here, not in chat.
     Character Study's pre-threading (three characters, four threads)
     and the Start Here color question (Ruling 4 — his eye rules brass
     or ink).
+41. **Nick's second desktop sitting — 2026-07-22. PARTIAL, relayed
+    directly to CC, no Fable brief yet.** Six findings, Nick's own
+    words, recorded verbatim before any triage or fix:
+    1. **"New Page" while in the Journal lands on an older version of
+       the Journal Page** — "which now should be just a regular Free
+       Write page with typewriter mode, etc. defaulted to on."
+    2. **Screenplay/script pages are broken**: "the tool and tutor
+       menus are floating away from the page; the page itself is in
+       a different location, way too small, and not centered. There
+       are probably a number of other problems with how the
+       screenplay/script page type is currently working" — Nick's own
+       instruction: "do a thorough review there."
+    3. **Free Write's own tool set is too sparse** — "the user should
+       still be able to bold/italicize, bare minimum, and there
+       should also be ink options for when we reinstate the ink
+       feature."
+    4. **The cascade's own submenus float away from the main strip**
+       — "not rolling out from the edge and flush against the main
+       menu... they float away from it, leaving a gap between the
+       main strip and the sub-menu."
+    5. **Scrollbars need a systemic pass** — "all scroll bars need to
+       be restyled to be much more minimal and consistent with the
+       colors and mood of each unique theme. Right now, they are
+       bulky and mostly white, which makes them dominate visually,
+       distracting from what a user will actually be trying to focus
+       on."
+    **Not yet triaged into a brief or built.** Finding 1 in particular
+    is a real architectural question (JournalEntry.tsx's own fate as
+    a distinct writing surface, per B1's own explicit "the paper
+    stays" ruling) not a pure bug — CC flagged this to Nick directly
+    rather than assuming a fix, per the standing Fable-brief rhythm.
+    Awaiting Nick's word on process (build directly vs. route through
+    Fable first) before anything here is touched.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
