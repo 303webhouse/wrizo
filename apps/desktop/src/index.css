@@ -1694,6 +1694,17 @@ a:focus-visible,
 .cp-else:hover{ border-color:var(--cp-tan-mid); }
 .cp-else.sel{ border-color:var(--cp-accent); color:var(--cp-accent); }
 
+/* B3 S3 — door 1's own "Start from a deck…", quieter than .cp-else (no
+   border at rest — this is an invitation ONE step further from Blank, not
+   a third co-equal top-level choice). */
+.cp-start-from-deck{
+  display:block; width:100%; text-align:left; background:none; border:none;
+  color:var(--cp-tan-faint); font-family:var(--cp-ui); font-size:.78rem;
+  padding:.3rem 0 1.6rem; cursor:pointer;
+}
+.cp-start-from-deck:hover{ color:var(--cp-tan-mid); }
+.cp-start-from-deck:focus-visible{ outline:2px solid var(--cp-accent); outline-offset:2px; }
+
 .cp-titlerow{ display:flex; gap:.75rem; align-items:center; border-top:1px solid var(--cp-line); padding-top:1.4rem; }
 .cp-title-input{ flex:1; background:var(--cp-panel); border:1px solid var(--cp-line); color:var(--cp-light);
   font-family:var(--cp-prose); font-style:italic; font-size:1rem; padding:.75rem .9rem; border-radius:0; }
@@ -3450,4 +3461,75 @@ a:focus-visible,
   .sprint-crumb, .sprint-nav .btn-quiet, .sprint-toggle-btn{ font-size:15px; }
   .mode-pmeta{ font-size:13px; }
   .mode-pmetric{ font-size:10px; }
+}
+
+/* B3 S1 — the deck engine's own pop-out (components/DeckWizard.tsx). R6's
+   own ruling, verbatim: "as a pop-out with a faded background like the
+   Card pop-outs now" — the backdrop/dialog pair below is DELIBERATELY the
+   SAME shape as .board-popup-backdrop/.board-popup (FX4 S5) rather than
+   .board-sheet's plain solid-black overlay (Pin/Port/Existing-page's own
+   dialog): same centered-fixed-overlay geometry, same card-stock dialog
+   with the accent top rule, so the wizard reads as "the same kind of
+   pop-out" the writer has already seen on this board. On BoardEditor.tsx,
+   the underlying board reuses .board-canvas-blurred VERBATIM (the
+   pre-existing card-popup blur) rather than a second copy of the same
+   rule; CreateProject.tsx (which has no board underneath it at all) uses
+   the .deck-wizard-blur-wrap/.deck-wizard-blurred pair below instead —
+   identical values, a fresh name since it's a different, non-board host. */
+.deck-wizard-backdrop{
+  position:fixed; inset:0; z-index:220; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.35);
+}
+.deck-wizard-dialog{
+  width:min(480px,90vw); max-height:82vh; display:flex; flex-direction:column;
+  background:var(--card-stock); color:var(--ink-on-paper);
+  border:1px solid var(--card-hairline); border-top:2px solid var(--accent-rest);
+  box-shadow:0 14px 44px rgba(0,0,0,.5); border-radius:0;
+}
+.deck-wizard-strip{
+  display:flex; align-items:center; gap:4px; padding:10px 14px;
+  border-bottom:1px solid var(--card-hairline);
+}
+.deck-wizard-eyebrow{ margin-right:auto; color:var(--ink-on-paper-low); }
+.deck-wizard-close{ font-size:18px; line-height:1; padding:2px 8px; }
+.deck-wizard-body{ padding:18px 22px; overflow:auto; }
+.deck-wizard-room-group + .deck-wizard-room-group{ margin-top:16px; }
+.deck-wizard-room-heading{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-on-paper-low); margin-bottom:6px;
+}
+.deck-wizard-deck-row{
+  display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer;
+  padding:8px 4px; font-family:var(--font-prose); font-size:15px; color:var(--ink-on-paper);
+}
+.deck-wizard-deck-row:hover{ color:var(--accent-rest); }
+.deck-wizard-question{ font-family:var(--font-display); font-size:16px; margin-bottom:14px; }
+.deck-wizard-options{ display:flex; flex-direction:column; gap:8px; }
+.deck-wizard-option-btn{
+  text-align:left; padding:10px 14px; font-family:var(--font-prose); font-size:15px;
+  color:var(--ink-on-paper); background:none; border:1px solid var(--card-hairline); border-radius:0; cursor:pointer;
+}
+.deck-wizard-option-btn:hover{ border-color:var(--accent-rest); }
+.deck-wizard-option-btn[aria-pressed="true"]{ border-color:var(--accent-rest); color:var(--accent-rest); }
+.deck-wizard-note{ margin-top:14px; }
+.deck-wizard-note p{ color:var(--ink-on-paper-low); font-size:14px; margin-bottom:10px; }
+.deck-wizard-foot{ display:flex; justify-content:space-between; padding:12px 16px 18px; }
+
+/* CreateProject.tsx's own analog of .board-canvas-blur-wrap/.board-canvas-
+   blurred (FX4 S5) — identical values, a distinct name since this host has
+   no board canvas at all. */
+.deck-wizard-blur-wrap{ transition:filter .28s ease, opacity .28s ease; }
+.deck-wizard-blurred{ filter:blur(6px); opacity:.55; pointer-events:none; }
+@media (prefers-reduced-motion:reduce){ .deck-wizard-blur-wrap{ transition:none; } }
+
+/* B3 S1 — the "Start Here" hint (R6's own quiet wayfinding mark, dissolves
+   on the writer's first edit to ANY dealt card — store/deckHint.ts). Brass,
+   not orange (this ticket's own invariant: "nothing orange at rest") — the
+   SAME quiet accent every other selection/hover affordance on a card
+   already uses, never a new color lane. */
+.board-start-here-hint{
+  position:absolute; top:-11px; left:8px; z-index:2;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--brass); background:var(--paper); border:1px solid var(--brass);
+  padding:1px 7px; pointer-events:none;
 }

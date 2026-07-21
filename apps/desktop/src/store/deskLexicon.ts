@@ -231,7 +231,124 @@ export type DeskTermId =
   | 'drawerHomeTitleLabel' | 'backToDrawer'
   | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
   | 'journalRouteSendToDrawer' | 'journalRouteEmptyDrawers' | 'journalRoutePromoteDrawer'
-  | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer';
+  | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer'
+  // B3 S1 — the deck engine's own chrome (components/DeckWizard.tsx): the
+  // two doors' own labels, the library step, the room headings, and the
+  // "Start Here" hint (R6's own wayfinding mark). Every deck NAME/prompt/
+  // option/card string lives in its own dedicated block below (one per
+  // deck, in catalog order) — this block is only the engine's shared frame.
+  | 'deckWizardStartFromDeck' | 'deckWizardFromDeck' | 'deckWizardChooseTitle'
+  | 'deckWizardBack' | 'deckWizardCancel' | 'deckWizardContinue' | 'deckWizardClose'
+  | 'deckStartHereLabel'
+  | 'deckRoomFiction' | 'deckRoomSpeculative' | 'deckRoomScreen'
+  | 'deckRoomAcademy' | 'deckRoomBusiness' | 'deckRoomNewsroom'
+  // B3 S2 — the seven decks' own names (the library's one-line-each roster).
+  | 'deckNameThreeAct' | 'deckNameWorldbuilding' | 'deckNameFeatureScreenplay'
+  | 'deckNameThesis' | 'deckNameGrant' | 'deckNameFeatureStory' | 'deckNameCharacterStudy'
+  // B3 S2 — Three-Act Structure (decks/library/threeAct.ts): wizard (novel/
+  // novella/short story, dealing proportionately per that file's own
+  // header comment) + the nine beat cards' own title/one-line-prompt pairs.
+  | 'deckThreeActQPrompt' | 'deckThreeActOptNovel' | 'deckThreeActOptNovella' | 'deckThreeActOptShortStory'
+  | 'deckThreeActHookTitle' | 'deckThreeActHookBody'
+  | 'deckThreeActIncitingTitle' | 'deckThreeActIncitingBody'
+  | 'deckThreeActThresholdTitle' | 'deckThreeActThresholdBody'
+  | 'deckThreeActComplicationsTitle' | 'deckThreeActComplicationsBody'
+  | 'deckThreeActMidpointTitle' | 'deckThreeActMidpointBody'
+  | 'deckThreeActDarkestTitle' | 'deckThreeActDarkestBody'
+  | 'deckThreeActClimaxTitle' | 'deckThreeActClimaxBody'
+  | 'deckThreeActResolutionTitle' | 'deckThreeActResolutionBody'
+  | 'deckThreeActFinalImageTitle' | 'deckThreeActFinalImageBody'
+  // B3 S2 — Worldbuilding (decks/library/worldbuilding.ts): wizard (fantasy/
+  // SF/other) tunes the Rules card's own prompt only (catalog's own
+  // wording) — the other six cards' prompts are genre-agnostic.
+  | 'deckWorldbuildingQPrompt' | 'deckWorldbuildingOptFantasy' | 'deckWorldbuildingOptSF' | 'deckWorldbuildingOptOther'
+  | 'deckWorldbuildingRulesTitle'
+  | 'deckWorldbuildingRulesBodyFantasy' | 'deckWorldbuildingRulesBodySF' | 'deckWorldbuildingRulesBodyOther'
+  | 'deckWorldbuildingHistoryTitle' | 'deckWorldbuildingHistoryBody'
+  | 'deckWorldbuildingPlacesTitle' | 'deckWorldbuildingPlacesBody'
+  | 'deckWorldbuildingCulturesTitle' | 'deckWorldbuildingCulturesBody'
+  | 'deckWorldbuildingPowerTitle' | 'deckWorldbuildingPowerBody'
+  | 'deckWorldbuildingLanguageTitle' | 'deckWorldbuildingLanguageBody'
+  | 'deckWorldbuildingIcebergTitle' | 'deckWorldbuildingIcebergBody'
+  // B3 S2 — Feature Screenplay (decks/library/featureScreenplay.ts): Save
+  // the Cat's 15, always dealt regardless of the wizard's own feature/pilot
+  // answer — picking Pilot only surfaces `deckScreenplayPilotNote` inline
+  // (routes pilot-seekers onward in COPY ONLY, per this ticket's brief; the
+  // TV Pilot deck itself is a second-wave non-goal).
+  | 'deckScreenplayQPrompt' | 'deckScreenplayOptFeature' | 'deckScreenplayOptPilot' | 'deckScreenplayPilotNote'
+  | 'deckScreenplayOpeningImageTitle' | 'deckScreenplayOpeningImageBody'
+  | 'deckScreenplayThemeStatedTitle' | 'deckScreenplayThemeStatedBody'
+  | 'deckScreenplaySetupTitle' | 'deckScreenplaySetupBody'
+  | 'deckScreenplayCatalystTitle' | 'deckScreenplayCatalystBody'
+  | 'deckScreenplayDebateTitle' | 'deckScreenplayDebateBody'
+  | 'deckScreenplayBreakTwoTitle' | 'deckScreenplayBreakTwoBody'
+  | 'deckScreenplayBStoryTitle' | 'deckScreenplayBStoryBody'
+  | 'deckScreenplayFunGamesTitle' | 'deckScreenplayFunGamesBody'
+  | 'deckScreenplayMidpointTitle' | 'deckScreenplayMidpointBody'
+  | 'deckScreenplayBadGuysTitle' | 'deckScreenplayBadGuysBody'
+  | 'deckScreenplayAllIsLostTitle' | 'deckScreenplayAllIsLostBody'
+  | 'deckScreenplayDarkNightTitle' | 'deckScreenplayDarkNightBody'
+  | 'deckScreenplayBreakThreeTitle' | 'deckScreenplayBreakThreeBody'
+  | 'deckScreenplayFinaleTitle' | 'deckScreenplayFinaleBody'
+  | 'deckScreenplayFinalImageTitle' | 'deckScreenplayFinalImageBody'
+  // B3 S2 — Thesis / Dissertation (decks/library/thesis.ts): wizard
+  // (humanities/sciences) — five base cards always deal; the sciences
+  // branch swaps the four generic chapter cards for IMRaD chapter shapes
+  // (catalog's own wording), same total count either way.
+  | 'deckThesisQPrompt' | 'deckThesisOptHumanities' | 'deckThesisOptSciences'
+  | 'deckThesisQuestionTitle' | 'deckThesisQuestionBody'
+  | 'deckThesisLitReviewTitle' | 'deckThesisLitReviewBody'
+  | 'deckThesisMethodologyTitle' | 'deckThesisMethodologyBody'
+  | 'deckThesisEvidenceTitle' | 'deckThesisEvidenceBody'
+  | 'deckThesisCitationTitle' | 'deckThesisCitationBody'
+  | 'deckThesisChapterOneTitle' | 'deckThesisChapterOneBody'
+  | 'deckThesisChapterTwoTitle' | 'deckThesisChapterTwoBody'
+  | 'deckThesisChapterThreeTitle' | 'deckThesisChapterThreeBody'
+  | 'deckThesisConclusionTitle' | 'deckThesisConclusionBody'
+  | 'deckThesisIntroTitle' | 'deckThesisIntroBody'
+  | 'deckThesisMethodsTitle' | 'deckThesisMethodsBody'
+  | 'deckThesisResultsTitle' | 'deckThesisResultsBody'
+  | 'deckThesisDiscussionTitle' | 'deckThesisDiscussionBody'
+  // B3 S2 — Grant Application (decks/library/grant.ts): the catalog names
+  // no wizard for this deck (Law 5 still requires one) — a light funder-
+  // type question tunes only the Funder Alignment card's own prompt.
+  | 'deckGrantQPrompt' | 'deckGrantOptFoundation' | 'deckGrantOptGovernment' | 'deckGrantOptCorporate'
+  | 'deckGrantNeedTitle' | 'deckGrantNeedBody'
+  | 'deckGrantObjectivesTitle' | 'deckGrantObjectivesBody'
+  | 'deckGrantMethodsTitle' | 'deckGrantMethodsBody'
+  | 'deckGrantEvaluationTitle' | 'deckGrantEvaluationBody'
+  | 'deckGrantBudgetTitle' | 'deckGrantBudgetBody'
+  | 'deckGrantAlignmentTitle'
+  | 'deckGrantAlignmentBodyFoundation' | 'deckGrantAlignmentBodyGovernment' | 'deckGrantAlignmentBodyCorporate'
+  // B3 S2 — Feature Story (decks/library/featureStory.ts): same pattern as
+  // Grant — a light feature-type question tunes only the Nut Graf prompt.
+  | 'deckFeatureStoryQPrompt' | 'deckFeatureStoryOptProfile' | 'deckFeatureStoryOptTrend' | 'deckFeatureStoryOptInvestigative'
+  | 'deckFeatureStoryNutGrafTitle'
+  | 'deckFeatureStoryNutGrafBodyProfile' | 'deckFeatureStoryNutGrafBodyTrend' | 'deckFeatureStoryNutGrafBodyInvestigative'
+  | 'deckFeatureStoryLedeATitle' | 'deckFeatureStoryLedeABody'
+  | 'deckFeatureStoryLedeBTitle' | 'deckFeatureStoryLedeBBody'
+  | 'deckFeatureStoryLedeCTitle' | 'deckFeatureStoryLedeCBody'
+  | 'deckFeatureStorySourceOneTitle' | 'deckFeatureStorySourceOneBody'
+  | 'deckFeatureStorySourceTwoTitle' | 'deckFeatureStorySourceTwoBody'
+  | 'deckFeatureStorySceneOneTitle' | 'deckFeatureStorySceneOneBody'
+  | 'deckFeatureStorySceneTwoTitle' | 'deckFeatureStorySceneTwoBody'
+  | 'deckFeatureStoryKickerATitle' | 'deckFeatureStoryKickerABody'
+  | 'deckFeatureStoryKickerBTitle' | 'deckFeatureStoryKickerBBody'
+  // B3 S2 — Character Study (decks/library/characterStudy.ts): promoted on
+  // Fable's call as the threads demonstration (item 36) — dealt PRE-
+  // THREADED, its relationship cards wired via the SAME 'connection' Box
+  // kind BoardEditor.tsx's own thread-drag gesture already mints. Wizard:
+  // how many characters (two/three/four) — each gets the same four self-
+  // card types (composed titles: "<Label> <letter>: <type title>"); each
+  // adjacent pair gets one Relationship card, threaded to both sides' own
+  // Want vs. Need card.
+  | 'deckCharacterStudyQPrompt' | 'deckCharacterStudyOptTwo' | 'deckCharacterStudyOptThree' | 'deckCharacterStudyOptFour'
+  | 'deckCharacterStudyLabel'
+  | 'deckCharacterStudyWantNeedTitle' | 'deckCharacterStudyWantNeedBody'
+  | 'deckCharacterStudyWoundTitle' | 'deckCharacterStudyWoundBody'
+  | 'deckCharacterStudyContradictionTitle' | 'deckCharacterStudyContradictionBody'
+  | 'deckCharacterStudyVoiceTitle' | 'deckCharacterStudyVoiceBody'
+  | 'deckCharacterStudyRelationshipTitle' | 'deckCharacterStudyRelationshipBody';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -385,6 +502,209 @@ const CANONICAL: Record<DeskTermId, string> = {
   journalRoutePromoteDrawer: 'Promote to a new Drawer',
   sprintSaveToDrawer: 'Save to Drawer',
   sprintSaveAsDrawer: 'Save as Drawer',
+
+  // B3 S1 — the deck engine's own chrome.
+  deckWizardStartFromDeck: 'Start from a deck…',
+  deckWizardFromDeck: 'From a deck…',
+  deckWizardChooseTitle: 'Choose a deck',
+  deckWizardBack: 'Back',
+  deckWizardCancel: 'Cancel',
+  deckWizardContinue: 'Continue',
+  deckWizardClose: 'Close',
+  deckStartHereLabel: 'Start Here',
+  deckRoomFiction: 'The Fiction Room',
+  deckRoomSpeculative: 'The Speculative Annex',
+  deckRoomScreen: 'The Screen Room',
+  deckRoomAcademy: 'The Academy',
+  deckRoomBusiness: 'The Business Desk',
+  deckRoomNewsroom: 'The Newsroom',
+
+  // B3 S2 — the seven deck names.
+  deckNameThreeAct: 'Three-Act Structure',
+  deckNameWorldbuilding: 'Worldbuilding',
+  deckNameFeatureScreenplay: 'Feature Screenplay',
+  deckNameThesis: 'Thesis / Dissertation',
+  deckNameGrant: 'Grant Application',
+  deckNameFeatureStory: 'Feature Story',
+  deckNameCharacterStudy: 'Character Study',
+
+  // Three-Act Structure.
+  deckThreeActQPrompt: 'What are you writing?',
+  deckThreeActOptNovel: 'Novel',
+  deckThreeActOptNovella: 'Novella',
+  deckThreeActOptShortStory: 'Short story',
+  deckThreeActHookTitle: 'Hook',
+  deckThreeActHookBody: 'The first image or line that pulls a reader in — what starts this story?',
+  deckThreeActIncitingTitle: 'Inciting Incident',
+  deckThreeActIncitingBody: 'The event that knocks the ordinary world off balance.',
+  deckThreeActThresholdTitle: 'First Threshold',
+  deckThreeActThresholdBody: 'The point of no return — what commits your protagonist to the journey?',
+  deckThreeActComplicationsTitle: 'Rising Complications',
+  deckThreeActComplicationsBody: 'What keeps getting harder, and why can’t they just walk away?',
+  deckThreeActMidpointTitle: 'Midpoint Reversal',
+  deckThreeActMidpointBody: 'The moment everything the protagonist believed gets flipped.',
+  deckThreeActDarkestTitle: 'Darkest Point',
+  deckThreeActDarkestBody: 'The lowest moment — what does defeat look like here?',
+  deckThreeActClimaxTitle: 'Climax',
+  deckThreeActClimaxBody: 'The final confrontation — what’s actually being decided?',
+  deckThreeActResolutionTitle: 'Resolution',
+  deckThreeActResolutionBody: 'What settles, and what’s different now?',
+  deckThreeActFinalImageTitle: 'Final Image',
+  deckThreeActFinalImageBody: 'The mirror of the hook — how has the world (or the reader’s view of it) changed?',
+
+  // Worldbuilding.
+  deckWorldbuildingQPrompt: 'What kind of world?',
+  deckWorldbuildingOptFantasy: 'Fantasy',
+  deckWorldbuildingOptSF: 'Science fiction',
+  deckWorldbuildingOptOther: 'Other',
+  deckWorldbuildingRulesTitle: 'Rules of the World',
+  deckWorldbuildingRulesBodyFantasy: 'What can magic do, and what does it cost?',
+  deckWorldbuildingRulesBodySF: 'What can the technology do, and what does it cost?',
+  deckWorldbuildingRulesBodyOther: 'What are this world’s own rules, and what do they cost?',
+  deckWorldbuildingHistoryTitle: 'Deep History',
+  deckWorldbuildingHistoryBody: 'What happened long before page one that still shapes it?',
+  deckWorldbuildingPlacesTitle: 'Places & Maps',
+  deckWorldbuildingPlacesBody: 'Where does this story happen, and what does the shape of the land demand?',
+  deckWorldbuildingCulturesTitle: 'Cultures & Factions',
+  deckWorldbuildingCulturesBody: 'Who are the groups, and what does each one want?',
+  deckWorldbuildingPowerTitle: 'Power & Economy',
+  deckWorldbuildingPowerBody: 'Who has power, who wants it, and what does it run on?',
+  deckWorldbuildingLanguageTitle: 'Language Notes',
+  deckWorldbuildingLanguageBody: 'Words, names, and turns of phrase that belong only to this world.',
+  deckWorldbuildingIcebergTitle: 'The Iceberg',
+  deckWorldbuildingIcebergBody: 'What do you know that the reader never sees — but that makes everything else true?',
+
+  // Feature Screenplay (Save the Cat's 15).
+  deckScreenplayQPrompt: 'Feature or pilot?',
+  deckScreenplayOptFeature: 'Feature',
+  deckScreenplayOptPilot: 'Pilot',
+  deckScreenplayPilotNote: 'TV Pilot decks are coming in a future release — this deals Save the Cat’s 15 for a feature.',
+  deckScreenplayOpeningImageTitle: 'Opening Image',
+  deckScreenplayOpeningImageBody: 'The first snapshot of your protagonist’s world, before anything changes.',
+  deckScreenplayThemeStatedTitle: 'Theme Stated',
+  deckScreenplayThemeStatedBody: 'Someone says, almost in passing, what this story is really about.',
+  deckScreenplaySetupTitle: 'Set-Up',
+  deckScreenplaySetupBody: 'The world, the stakes, and what’s missing from the protagonist’s life.',
+  deckScreenplayCatalystTitle: 'Catalyst',
+  deckScreenplayCatalystBody: 'The event that sets the story in motion — there’s no going back after this.',
+  deckScreenplayDebateTitle: 'Debate',
+  deckScreenplayDebateBody: 'Should they go? The protagonist’s last hesitation before committing.',
+  deckScreenplayBreakTwoTitle: 'Break into Two',
+  deckScreenplayBreakTwoBody: 'The protagonist chooses — and steps into the upside-down version of their world.',
+  deckScreenplayBStoryTitle: 'B Story',
+  deckScreenplayBStoryBody: 'The relationship that carries the story’s theme.',
+  deckScreenplayFunGamesTitle: 'Fun and Games',
+  deckScreenplayFunGamesBody: 'The promise of the premise — the trailer moments.',
+  deckScreenplayMidpointTitle: 'Midpoint',
+  deckScreenplayMidpointBody: 'A false victory or false defeat that raises the stakes as the clock starts ticking.',
+  deckScreenplayBadGuysTitle: 'Bad Guys Close In',
+  deckScreenplayBadGuysBody: 'External and internal pressure both tighten.',
+  deckScreenplayAllIsLostTitle: 'All Is Lost',
+  deckScreenplayAllIsLostBody: 'The lowest point — something (or someone) dies, literally or symbolically.',
+  deckScreenplayDarkNightTitle: 'Dark Night of the Soul',
+  deckScreenplayDarkNightBody: 'The protagonist, alone, before they find the way through.',
+  deckScreenplayBreakThreeTitle: 'Break into Three',
+  deckScreenplayBreakThreeBody: 'The solution arrives, born from the A and B stories combining.',
+  deckScreenplayFinaleTitle: 'Finale',
+  deckScreenplayFinaleBody: 'The protagonist proves they’ve changed by taking down the bad guys their own new way.',
+  deckScreenplayFinalImageTitle: 'Final Image',
+  deckScreenplayFinalImageBody: 'The mirror of the opening image — proof of the change.',
+
+  // Thesis / Dissertation.
+  deckThesisQPrompt: 'Humanities or sciences?',
+  deckThesisOptHumanities: 'Humanities',
+  deckThesisOptSciences: 'Sciences',
+  deckThesisQuestionTitle: 'Research Question',
+  deckThesisQuestionBody: 'The single question this whole thesis exists to answer.',
+  deckThesisLitReviewTitle: 'Lit-Review Clusters',
+  deckThesisLitReviewBody: 'Group the existing work into conversations, not just a list.',
+  deckThesisMethodologyTitle: 'Methodology',
+  deckThesisMethodologyBody: 'How you’ll actually answer the question — and why this method fits it.',
+  deckThesisEvidenceTitle: 'Evidence Parking Lot',
+  deckThesisEvidenceBody: 'Findings, quotes, and data waiting for a home in the argument.',
+  deckThesisCitationTitle: 'Citation Ledger',
+  deckThesisCitationBody: 'Every source you’ll need to cite, tracked as you go.',
+  deckThesisChapterOneTitle: 'Chapter One',
+  deckThesisChapterOneBody: 'What does this chapter need to establish before the next can build on it?',
+  deckThesisChapterTwoTitle: 'Chapter Two',
+  deckThesisChapterTwoBody: 'Where does the argument deepen or complicate itself?',
+  deckThesisChapterThreeTitle: 'Chapter Three',
+  deckThesisChapterThreeBody: 'Where does the argument turn toward its own implications?',
+  deckThesisConclusionTitle: 'Conclusion',
+  deckThesisConclusionBody: 'What have you actually shown, and what does it change?',
+  deckThesisIntroTitle: 'Introduction',
+  deckThesisIntroBody: 'The gap in the existing literature this work fills.',
+  deckThesisMethodsTitle: 'Methods',
+  deckThesisMethodsBody: 'Exactly what you did, in enough detail to be repeated.',
+  deckThesisResultsTitle: 'Results',
+  deckThesisResultsBody: 'What you found — reported straight, before any interpretation.',
+  deckThesisDiscussionTitle: 'Discussion',
+  deckThesisDiscussionBody: 'What the results mean, and what they don’t.',
+
+  // Grant Application.
+  deckGrantQPrompt: 'What kind of funder?',
+  deckGrantOptFoundation: 'Foundation',
+  deckGrantOptGovernment: 'Government',
+  deckGrantOptCorporate: 'Corporate',
+  deckGrantNeedTitle: 'Need Statement',
+  deckGrantNeedBody: 'The problem, stated plainly, with the evidence that it’s real.',
+  deckGrantObjectivesTitle: 'Objectives',
+  deckGrantObjectivesBody: 'What will be different, specifically, if this is funded?',
+  deckGrantMethodsTitle: 'Methods',
+  deckGrantMethodsBody: 'How the work actually gets done, step by step.',
+  deckGrantEvaluationTitle: 'Evaluation Plan',
+  deckGrantEvaluationBody: 'How you’ll know it worked — and how you’ll show it.',
+  deckGrantBudgetTitle: 'Budget Justification',
+  deckGrantBudgetBody: 'Every line, tied back to a specific piece of the work.',
+  deckGrantAlignmentTitle: 'Funder Alignment',
+  deckGrantAlignmentBodyFoundation: 'Their mission, in their own words — and where this work meets it.',
+  deckGrantAlignmentBodyGovernment: 'The program’s own stated priorities — and where this work meets them.',
+  deckGrantAlignmentBodyCorporate: 'Their stated giving priorities — and where this work meets them.',
+
+  // Feature Story.
+  deckFeatureStoryQPrompt: 'What kind of feature?',
+  deckFeatureStoryOptProfile: 'Profile',
+  deckFeatureStoryOptTrend: 'Trend',
+  deckFeatureStoryOptInvestigative: 'Investigative-lite',
+  deckFeatureStoryNutGrafTitle: 'Nut Graf',
+  deckFeatureStoryNutGrafBodyProfile: 'In one paragraph: who is this person, and why does this story matter now?',
+  deckFeatureStoryNutGrafBodyTrend: 'In one paragraph: what’s the trend, and why does it matter now?',
+  deckFeatureStoryNutGrafBodyInvestigative: 'In one paragraph: what did you find, and why does it matter now?',
+  deckFeatureStoryLedeATitle: 'Lede Candidate A',
+  deckFeatureStoryLedeABody: 'A scene-first opening — drop the reader into a moment.',
+  deckFeatureStoryLedeBTitle: 'Lede Candidate B',
+  deckFeatureStoryLedeBBody: 'A voice-first opening — let a quote or a line of dialogue lead.',
+  deckFeatureStoryLedeCTitle: 'Lede Candidate C',
+  deckFeatureStoryLedeCBody: 'A fact-first opening — the single detail that earns the whole story.',
+  deckFeatureStorySourceOneTitle: 'Source & Quote',
+  deckFeatureStorySourceOneBody: 'Who said what — and why they’re the right person to say it.',
+  deckFeatureStorySourceTwoTitle: 'Source & Quote',
+  deckFeatureStorySourceTwoBody: 'A second voice — ideally one that complicates the first.',
+  deckFeatureStorySceneOneTitle: 'Scene Card',
+  deckFeatureStorySceneOneBody: 'A moment you can actually show, not summarize.',
+  deckFeatureStorySceneTwoTitle: 'Scene Card',
+  deckFeatureStorySceneTwoBody: 'A second moment, from later in the reporting.',
+  deckFeatureStoryKickerATitle: 'Kicker Candidate A',
+  deckFeatureStoryKickerABody: 'A closing line that echoes the lede.',
+  deckFeatureStoryKickerBTitle: 'Kicker Candidate B',
+  deckFeatureStoryKickerBBody: 'A closing line that opens back out to the wider point.',
+
+  // Character Study.
+  deckCharacterStudyQPrompt: 'How many characters in this study?',
+  deckCharacterStudyOptTwo: 'Two',
+  deckCharacterStudyOptThree: 'Three',
+  deckCharacterStudyOptFour: 'Four',
+  deckCharacterStudyLabel: 'Character',
+  deckCharacterStudyWantNeedTitle: 'Want vs. Need',
+  deckCharacterStudyWantNeedBody: 'What they think they want — and what they actually need.',
+  deckCharacterStudyWoundTitle: 'The Wound',
+  deckCharacterStudyWoundBody: 'The old injury that still runs the show.',
+  deckCharacterStudyContradictionTitle: 'The Contradiction',
+  deckCharacterStudyContradictionBody: 'The thing about them that doesn’t add up — on purpose.',
+  deckCharacterStudyVoiceTitle: 'Voice Notes',
+  deckCharacterStudyVoiceBody: 'How they talk that no one else in the story does.',
+  deckCharacterStudyRelationshipTitle: 'Relationship',
+  deckCharacterStudyRelationshipBody: 'What do they want from each other — and what’s unresolved between them?',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
