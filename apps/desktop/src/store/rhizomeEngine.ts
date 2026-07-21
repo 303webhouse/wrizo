@@ -120,10 +120,19 @@ function inRect(x: number, y: number, r: RhizomeRect): boolean {
 
 // Sample a handful of points along the candidate segment (not just its
 // endpoint) so a short stroke can never tunnel THROUGH a corner of the
-// paper's rect between two clean endpoints.
+// paper's rect between two clean endpoints. Deliberately starts at i=1, NOT
+// i=0: (x1,y1) is the shoot's own EXISTING tip — either the origin (defined
+// as sitting exactly ON the paper's own bottom edge — S2's own origin is
+// literally the paper's boundary) or a previously-accepted endpoint, which
+// by this same function's own invariant is never strictly inside the paper,
+// only ever possibly touching its boundary. Re-testing that already-valid
+// start point on every subsequent call would flag EVERY segment growing
+// from a boundary-sitting tip as "touching" regardless of which way it
+// travels — the bug an earlier version of this file had, caught empirically
+// (a from-scratch run produced zero segments) before this comment/fix.
 function segmentTouchesRect(x1: number, y1: number, x2: number, y2: number, r: RhizomeRect): boolean {
   const STEPS = 6;
-  for (let i = 0; i <= STEPS; i++) {
+  for (let i = 1; i <= STEPS; i++) {
     const t = i / STEPS;
     if (inRect(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, r)) return true;
   }
