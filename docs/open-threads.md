@@ -3772,8 +3772,23 @@ outlive a session lives here, not in chat.
     origin yet from its own session — so this push carried both
     TU2's opening and FX7's full merge to origin in one clean
     fast-forward, `bb6f079..9148be0`. Pushed to `origin/main`.
-    **Not deployed — deploy was explicitly not pre-authorized for
-    this ticket.** Redeploy waits for Nick's own separate word.
+    **Fable's post-merge review — GREEN, no fold, one advisory
+    (relayed verbatim, full file not yet landed on disk — see the
+    disclosed gap below, not fabricated).** Ink placeholder flagged
+    for Nick's own eye; an "S0-push rule" proposed (not yet adopted —
+    awaiting the actual review text before recording its details).
+    **Deployed — 2026-07-21**, Nick's word ("my go-ahead to deploy
+    everything built"), manifest independently re-enumerated by CC
+    before shipping: `65a4fa9..HEAD` = FX7's own four code commits +
+    docs riders only (including TU2's own docs-only brief/ledger
+    commits — TU2's actual code stayed unmerged, confirmed, so it
+    rode along in none of this). `railway up` on `main` @ `e5b368e`
+    (deployment `80b8f872`, SUCCESS), confirmed live (`200` on
+    `/healthz` and `/`, `401` on `/auth/me`). **Close now rests on
+    Nick's own device sitting** (his own re-test of everything FX7
+    touched) — the review's own file is owed on disk before this
+    record is complete; flagged to Nick directly rather than
+    fabricated from the relay text alone.
 43. **TU2 — the Listener.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/tu2-listener-brief.md`. **Authority:** the Tutor
     committee pass as ratified (A12-A15 whole) and the Tutor's own
@@ -3889,6 +3904,15 @@ outlive a session lives here, not in chat.
     **Pushed to `origin/tu2-listener` — NOT merged.** Per this
     ticket's own explicit instruction: report is the push; Fable
     reviews post-push; no merge without Nick's own word.
+44. **DeepSeek API account — Nick's own note, 2026-07-21, not yet
+    connected.** "I have set up a DeepSeek v4 API account and topped
+    it up with $10 for testing." This is the credential TU2's own S1
+    (provider-agnostic seat, DeepSeek V4 Flash default) is built to
+    consume via `TUTOR_API_KEY`/`TUTOR_BASE_URL`/`TUTOR_MODEL` — but
+    TU2 itself is pushed, not merged (item 43), so there is nothing on
+    `main` yet for this key to connect to. Nick's own word: "whenever
+    you're ready" — not an immediate action item, recorded for when
+    TU2 actually merges and Railway's own env config is Nick's to set.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
