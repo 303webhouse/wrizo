@@ -2807,6 +2807,17 @@ a:focus-visible,
   font-size:calc(1rem * var(--paper-scale));
   --tutor-panel-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
   --tutor-panel-margin: calc(50% - var(--tutor-panel-paper-half) + var(--frame-gap));
+  /* FX10 S1 — Fable's own corrected ruling, replacing TU2 S4's "exactly 2x
+     --strip-width" spec (~168px — the brief's own acknowledged error, not a
+     build defect: TU2 built that spec faithfully). "A genuine reading
+     measure, not a multiple of the strip": `clamp(320px, 34vw, 460px)`,
+     literally — `vw` is the CSS unit for "% of the viewport," so this needs
+     no JS measurement, unlike --tutor-panel-margin above (a calc()/percent
+     custom property, per Cascade.tsx's own documented getComputedStyle
+     resolution gap). Declared ONCE here so both the open rule and the
+     docked rule's own ceiling (below) read the identical value — never two
+     copies of the formula to drift apart. */
+  --tutor-panel-open-w: clamp(320px, 34vw, 460px);
 }
 .desk-frame-tutor-panel-anchor--prose,
 .desk-frame-tutor-panel-anchor--screenplay{ /* intentionally empty */ }
@@ -3146,45 +3157,41 @@ a:focus-visible,
 /* The panel: a flex child of `.desk-frame-tutor-panel-anchor` (packed
    flush against THAT anchor's own right edge, which is the stage's right
    edge — see the anchor's own header comment for why this is what keeps
-   an open panel from ever being clipped). Closed = width:0 (the exact
-   `.wz-cascade-panel[data-visible='false']` collapse technique, mirrored)
-   rather than Sliver's opacity/translateX fade — a flex-basis collapse is
-   what lets the SAME rule serve both the open-width AND the docked-width
-   without fighting a transform.
-   TU2 S4 — the easing tension, named rather than silently resolved (per
-   this project's own CD2 Plan-survey-scope precedent for exactly this
-   situation): the brief asks this transition to "reuse the strip's actual
-   open/close constants, easing... measured from the strip's implementation,
-   not approximated," which reads as an instruction to switch onto the
-   app-wide `--ease`/`--t-state` tokens (:root, above: `--t-state: 220ms`,
-   `--ease: cubic-bezier(0.2,0.8,0.2,1)`). Reading Cascade.tsx's OWN real,
-   live transition first (`.wz-cascade-panel`, below in this file) rather
-   than assuming: it does NOT use either shared token — its own rule reads
-   `transition:width 180ms ease, opacity 180ms ease, margin-right 180ms
-   ease, border-width 180ms ease`, the same bare `180ms ease` literal this
-   rule already carried. So "reuse the strip's actual constant" and "keep
-   A15's own ~180ms" are NOT actually in conflict once measured — Cascade
-   itself never adopted the shared tokens either, so matching it exactly
-   means leaving this value alone. Had Cascade genuinely used `--t-state`
-   (220ms), this WOULD have been a real conflict with A15's "~180ms"
-   invariant, and this comment would need to say which side won and why;
-   measured instead of assumed, no such conflict exists to resolve. */
-.wz-tutor-panel{ flex:0 0 auto; width:0; max-width:0; height:100%; overflow:hidden;
-  background:var(--desk-ground); border-width:0; border-style:solid; border-color:var(--ink-border);
-  opacity:0; pointer-events:none;
-  transition:width 180ms ease, max-width 180ms ease, opacity 180ms ease, border-width 180ms ease; }
-/* TU2 S4 — open width = exactly 2x the strip's own width TOKEN
-   (`--strip-width`, :root above: 84px today), not the old hardcoded
-   `min(300px, 86vw)` guess: referencing the token means this panel tracks
-   `--strip-width` automatically if that token ever changes, per the
-   brief's own "reference the token; hardcode nothing." `86vw` is dropped
-   outright, not folded into the calc — at 84px `--strip-width`, 2x is
-   168px, far under 86vw at any width this app supports (DESKFRAME_MIN_
-   WIDTH's own 1100px floor alone puts 86vw at ~946px), so the vw clamp
-   never engaged and carrying it forward would just be dead weight. */
-.wz-tutor-panel[data-open='true']{
-  width:calc(var(--strip-width) * 2); max-width:calc(var(--strip-width) * 2);
-  border-width:1px; opacity:1; pointer-events:auto; overflow-y:auto; }
+   an open panel from ever being clipped).
+   FX10 S1 — the motion SHAPE, corrected. TU2's own retrofit (superseded
+   below) reused a bare `180ms ease` literal — Cascade.tsx's own dock-panel
+   constant, NOT the tool pop-out's — via a width/max-width/border-width
+   COLLAPSE (0 -> open, mirroring `.wz-cascade-panel[data-visible=false]`'s
+   own technique). Nick's own words name a different reference entirely:
+   "fade-in and come out of the page... exactly the same way as the tools
+   pop-out to the left" — the tool pop-out IS the sliver (Tutor.tsx's own
+   header comment already calls this component "the sliver, mirrored"; see
+   `.wz-sliver-panel` above). Read LIVE (not assumed) before writing this
+   rule: `.wz-sliver-panel`'s own real, mounted transition is
+   `opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease`
+   — a STATIC width, `transform:translateX(6px)` closed -> `translateX(0)`
+   open — never a width collapse at all. TU2 matched neither this shape nor
+   even this duration (200ms, not 180ms). Mirrored here exactly: same
+   property list, same `--fade-dur` custom property (so an ancestor's
+   useChromeDissolve write ever affects both surfaces identically), same
+   `.2s` fallback, same `ease` curve — only the sign of the horizontal
+   nudge flips (the tutor panel sits on the paper's RIGHT and settles in
+   from a few px further right, toward its own resting spot — the mirror
+   image of the sliver's own leftward settle). Width is now STATIC too
+   (the FX10-ruled clamp, below — a custom property so the open and docked
+   rules can't drift apart), matching `.wz-sliver-panel`'s own unconditional
+   `width:calc(100% - 16px)` precedent: never itself part of the
+   transition, whether open or closed — a closed panel is invisible
+   (opacity:0) and inert (pointer-events:none) regardless of its own
+   footprint, exactly like the sliver's already does today. */
+.wz-tutor-panel{
+  flex:0 0 auto; height:100%; overflow-y:auto; overflow-x:hidden;
+  width:var(--tutor-panel-open-w); max-width:var(--tutor-panel-open-w);
+  background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
+  opacity:0; pointer-events:none; transform:translateX(-6px);
+  transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
+}
+.wz-tutor-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
 /* A15/S2's dock rider (CD2's exact grammar, mirrored): a docked panel
    compresses toward the margin genuinely available, floored at 120px —
    never occludes the measure once docked. Cascade.tsx's own
@@ -3192,18 +3199,15 @@ a:focus-visible,
    Tutor.tsx (a JS-measured gate on whether the dock affordance is even
    offered), matching this file's own header note that the floor is a JS
    decision, not something CSS alone can enforce safely.
-   TU2 S4 — the docked ceiling drops from the old hardcoded `300px` to the
-   SAME `calc(var(--strip-width) * 2)` the open state now uses (not asked
-   for verbatim by S4's own enumerated steps, but required for the two
-   rules to stay coherent: a docked panel is a COMPRESSED open panel, so
-   its own cap can never legitimately exceed the open width's own cap —
-   leaving `300px` here after shrinking the open cap to 168px would just be
-   a stale, never-engaging ceiling, the exact kind of silent drift this
-   ticket's own "reference the token, hardcode nothing" line exists to
-   prevent). */
+   FX10 S1 — the docked ceiling now reads `--tutor-panel-open-w` (the SAME
+   custom property the open rule above uses, declared once on the anchor)
+   instead of TU2's own `calc(var(--strip-width) * 2)` — kept coherent for
+   the identical reason TU2 S4's own comment already named: a docked panel
+   is a COMPRESSED open panel, so its own cap can never legitimately exceed
+   the open width's own cap. */
 .wz-tutor-panel[data-open='true'][data-docked='true']{
-  width:clamp(120px, var(--tutor-panel-margin), calc(var(--strip-width) * 2));
-  max-width:clamp(120px, var(--tutor-panel-margin), calc(var(--strip-width) * 2)); }
+  width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
+  max-width:clamp(120px, var(--tutor-panel-margin), var(--tutor-panel-open-w)); }
 @media (prefers-reduced-motion:reduce){ .wz-tutor-panel{ transition:none; } }
 .wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
 .wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
@@ -3225,19 +3229,38 @@ a:focus-visible,
 /* The conversation — a plain scrolling transcript + a one-line composer.
    No insert/apply/copy-into-page affordance exists anywhere in this block
    (A13's own mechanical backstop — see Tutor.tsx's structural walk). */
-.wz-tutor-convo{ display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--ink-border); padding-top:12px; }
-.wz-tutor-convo-log{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; }
-.wz-tutor-msg{ font-size:13px; line-height:1.4; padding:8px 10px; border-radius:var(--radius-sm); }
+/* FX10 S1 — the conversation is now the panel's own center of gravity (the
+   room is wide enough, per Nick's own words, for the composer and the
+   exchange to "read as the main event"): moved to render right under the
+   head (Tutor.tsx), and its own message log LOSES its private nested
+   scrollbox here — `max-height:220px; overflow-y:auto` (superseded) was
+   exactly the "conversation trapped in its own tiny nested scrollbox"
+   defect Nick's screenshot showed. The panel scrolls as ONE column now
+   (`.wz-tutor-panel`'s own `overflow-y:auto`, above) — a message bubble
+   grows to its content and the log grows with it; there is no second
+   scrollbar anywhere inside this subtree (fx10.mjs's own S1 section
+   asserts computed overflow across every panel descendant, not just this
+   one previously-offending element). */
+.wz-tutor-convo{ display:flex; flex-direction:column; gap:8px; }
+.wz-tutor-convo-log{ display:flex; flex-direction:column; gap:10px; }
+.wz-tutor-msg{ font-size:14px; line-height:1.5; padding:9px 12px; border-radius:var(--radius-sm); }
 .wz-tutor-msg-writer{ background:var(--ink-800); color:var(--text-hi); align-self:flex-end; max-width:88%; }
 .wz-tutor-msg-tutor{ background:none; border:1px solid var(--ink-border); color:var(--text-mid); max-width:88%; }
 .wz-tutor-convo-row{ display:flex; gap:6px; }
 .wz-tutor-convo-input{ flex:1; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
-  font-family:var(--font-ui); font-size:13px; padding:8px 10px; border-radius:var(--radius-sm); resize:none; }
+  font-family:var(--font-ui); font-size:14px; padding:9px 11px; border-radius:var(--radius-sm); resize:none; }
 .wz-tutor-convo-send{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
   font-family:var(--font-ui); font-size:13px; padding:0 14px; cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
 .wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
 .wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* FX10 S1 — the lens/nudge sections now read as furniture AROUND the
+   conversation (below it in DOM order, Tutor.tsx) rather than the panel's
+   own lead content: a quiet divider + slightly tighter rhythm than the
+   convo block above is the whole visual demotion needed — no new
+   grouping wrapper, no second heading, nothing that could itself grow a
+   private scroll region. */
+.wz-tutor-sections{ display:flex; flex-direction:column; gap:14px; border-top:1px solid var(--ink-border); padding-top:14px; }
 /* TU2 S5 — the session meter's foot line. The fade itself is ordinary CSS
    (opacity transition on the `data-fading` toggle Tutor.tsx sets), but the
    ELEMENT'S OWN REMOVAL from the DOM is never left to CSS alone — Tutor.tsx
