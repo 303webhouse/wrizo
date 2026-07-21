@@ -3325,6 +3325,64 @@ outlive a session lives here, not in chat.
     sitting** (the brief's own Definition of Done — Places panel,
     Journal-uncheck-on-file, the Shelf, Drawers, and the "Project"
     word gone from the desk) — remains open.
+40. **B3 — Projects as Seeded Boards.** **BRIEF COMMITTED —
+    2026-07-21.** `docs/wrizo-alpha/b3-seeded-boards-brief.md`.
+    **Authority — item 36's own B3 pointer** (B3's true shape is the
+    deck ENGINE plus the deck LIBRARY, Nick's "Card Deck" coinage,
+    recorded 2026-07-20) **and the catalog**
+    (`docs/wrizo-alpha/card-deck-catalog.md`, the Experts' pass: five
+    structural laws, 21 catalogued decks, a v1 ship-set
+    recommendation). The catalog is this brief's own material; the
+    brief is the ticket — nothing beyond this brief builds from the
+    catalog.
+    **The ship-set decision, recorded as Fable's own call, explicitly
+    Nick-vetoable at any point before merge:** seven decks ship, not
+    six — the committee's own six flagships (Three-Act Structure,
+    Worldbuilding, Feature Screenplay, Thesis/Dissertation, Grant
+    Application, Feature Story) plus Character Study, promoted by
+    Fable's own reasoning that once the engine exists a deck's
+    marginal cost is a definition file, and Character Study is the
+    threads mechanism's own best demonstration.
+    **Zero schema is this ticket's constitution, not just a rule**:
+    the catalog's own Law 4 — deck definitions are static app data,
+    dealing a deck is ordinary card creation on an ordinary board
+    (`boxes` jsonb only), dealt cards owe nothing to their template
+    afterward (no back-reference, no deck identity persisted beyond
+    ordinary card data — asserted directly in the harness). STOP-and-
+    report the instant any slice wants a column.
+    **The R6 wizard rulings (already ratified,
+    `boards-ratification-record.md`) bind the engine verbatim, per
+    catalog Law 3**: opt-in always, appearing only behind two
+    deliberate doors, never suggested; a step-by-step pop-out over the
+    faded board, never reflowing what's underneath; clickable-first
+    narrowing questions, text permitted where a deck allows it,
+    required never; ending on the dealt board, wizard gone; a quiet
+    "Start Here" hint on the first dealt card that vanishes on the
+    writer's first edit to ANY dealt card and never returns — ruled
+    lawful orientation on an artifact the writer just asked for,
+    earning no color in the orange lane.
+    **Two doors only, both places the writer already deliberately
+    went**: drawer creation (Blank stays first-class and first-listed,
+    byte-identical to today; "Start from a deck…" sits beneath it) and
+    any board's own existing Add flow ("From a deck…" beside its
+    current options). No third door, no strip presence, no Tutor
+    mention — anti-solicitation absolute.
+    **Named non-goals, explicit boundaries not oversights**: the
+    fourteen second-wave decks; cross-deck threading (a delight
+    deferred with its own decks); the Résumé deck entirely (its
+    tailoring card entangles the future paste-rail design, the
+    catalog's own flag honored); the fate of the pre-existing
+    `StructureWizard`/`BeatWizard`/`StructureBoard` trio (a future
+    explicit ruling once the engine stands — this ticket adds beside
+    them, touches them not at all, the `/project/*` deferral's own
+    sibling); user-authored decks; deck editing after dealing (nothing
+    to edit — a dealt card is just a card).
+    Zero schema, zero new deps; merge pre-authorized; Fable reviews
+    post-merge, gating close and redeploy.
+    **Build starting — 2026-07-21**, via a Workflow-orchestrated
+    build+review pipeline (ultracode), off post-B2/S6-deploy `main`
+    (the gate condition — "once the B2+S6 deploy lands" — already
+    satisfied).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
