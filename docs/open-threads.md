@@ -3804,6 +3804,91 @@ outlive a session lives here, not in chat.
     word, manifest enumerated as always.
     **Build starting — 2026-07-21**, on `tu2-listener` off `main` in
     its own worktree, per ONE CHECKOUT PER AGENT.
+    **BUILT, INDEPENDENTLY REVIEWED, AND PUSHED — 2026-07-21.** Built
+    S1-S6 on `tu2-listener` off `main` @ `00bdc2e`, in its own
+    worktree, via a Workflow-orchestrated build+review pipeline
+    (ultracode).
+    **S1 — the model id independently verified live, not carried over
+    from training data.** Before the build started, the orchestrating
+    session ran a live web search plus a direct fetch of
+    api-docs.deepseek.com/quick_start/pricing and confirmed
+    `deepseek-v4-flash` is DeepSeek's current V4 Flash id (alongside
+    `deepseek-v4-pro`) and that `deepseek-chat`/`deepseek-reasoner`
+    deprecate 2026-07-24 15:59 UTC — matching the brief's own claim
+    exactly. `TUTOR_BASE_URL` (default DeepSeek's own
+    Anthropic-compatible endpoint), `TUTOR_MODEL` (default
+    `deepseek-v4-flash`), `TUTOR_MAX_TOKENS` (700) land in `env.ts`;
+    the base URL wires into the SDK client's own option, no other
+    route logic changes.
+    **S2 — a real design call, disclosed, not buried.** The delta
+    rides as its own capped top-level body field (not folded into the
+    existing `messages` array), because the pre-existing 4000-char
+    per-message validation would otherwise silently reject any real
+    ~4k-token delta the first time one was actually sent — found and
+    designed around rather than discovered later as a break. Conduct
+    rule 37 lands in the system prompt; `usage`/`model` now ride the
+    chat response so S5's meter needs no further server touch.
+    **S4 — a "fix" that turned out to already be true, disclosed as
+    such.** The grip-flush requirement was algebraically audited
+    rather than assumed broken: the FX2-clamp formula already
+    resolves to zero overflow at all three reference widths, so no
+    CSS change was needed there — recorded as a verification, not
+    invented as a fix. The open width now genuinely computes to `2 ×
+    --strip-width` (168px) instead of a hardcoded guess. The
+    A15-vs-strip-easing tension the brief anticipated was checked by
+    reading Cascade's own live CSS rather than assumed — Cascade's
+    own transition is itself a bare hardcoded 180ms literal, not the
+    shared `--ease`/`--t-state` tokens, so no real conflict existed
+    once measured; Tutor's own 180ms is left untouched, matching
+    Cascade's real value exactly.
+    **S6 — the park sweep was empirically reran, not just grepped.**
+    All 26 pre-existing harness files were actually re-executed
+    against the TU2 diff, not just text-searched; exactly two TU1
+    assertions came up genuinely stale (the old unversioned
+    disclosure-seen check; the old ~300px docked-width-reaches-cap
+    check) and were parked per A4 with live successors in the new
+    `tu2.mjs` (102 checks). One harness fixture (`tu1.mjs`'s
+    `freshDesk`) needed a seed-key fix to keep working under the new
+    versioned disclosure flag — a fixture repair, not a parked
+    assertion, disclosed as such.
+    **Independent review — four parallel lenses (server census +
+    zero-migration, listener invariants, geometry/A13/A15, fresh-eyes
+    defect hunt), all GREEN or GREEN WITH ADVISORIES, zero STOP
+    conditions.** One real defect found and fixed: `env.ts`'s own
+    comment had claimed the model-id verification as settled fact
+    while a sibling file's comment (`tutorCostEstimates.ts`, same
+    build, same date) admitted the *build agent's own* live-search
+    attempt had hit repeated tool errors — an unexplained
+    inconsistency on the brief's single most consequential
+    requirement. Corrected to accurately attribute the verification
+    to the orchestrating session's own successful check (above),
+    rather than leave either a false claim or a falsely-uncertain one.
+    Advisories carried forward, none blocking: an empty/whitespace
+    model reply silently no-ops with no writer-facing status line; the
+    cost-estimate table's dollar figures are explicitly disclosed
+    placeholders (the review's own live pricing search also hit
+    repeated errors); Tutor's and Cascade's 180ms transitions are two
+    independently-hardcoded literals that happen to match, not a
+    shared token; Cascade's own pre-existing (not this ticket's)
+    dock-floor gate is still vacuously permissive on Board surfaces, the
+    identical defect class TU2 S4 just fixed for Tutor; the
+    tokens-only meter line's "est." label reads as a minor
+    self-contradiction next to "no cost estimate."
+    **Zero migration and the three-file server census independently
+    reconfirmed a third time**, by the orchestrating session itself
+    after the workflow finished, by direct `git diff` against
+    `apps/server` (exactly `env.ts`/`tutor.ts`/`.env.example`, nothing
+    else) and a full-diff grep for any `package.json`/lockfile/
+    migration/schema touch (none, anywhere in the 17-file diff).
+    **Full suite green**: `tsc` ×2, `build:web`, selftest, all 27
+    harness files (new `tu2.mjs`) under both `HARNESS_PARKED`
+    settings — one documented pre-existing `th2.mjs` flake (its own
+    known celebration-animation timing race, unrelated to this diff)
+    cleared 42/42 on three immediate reruns, exactly per this
+    project's own standing practice.
+    **Pushed to `origin/tu2-listener` — NOT merged.** Per this
+    ticket's own explicit instruction: report is the push; Fable
+    reviews post-push; no merge without Nick's own word.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
