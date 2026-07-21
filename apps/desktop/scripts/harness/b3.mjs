@@ -37,6 +37,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const LAPTOP_W = 1280;
 const WIDE_W = 2200;
+const LEGACY_W = 1099; // one px below DESKFRAME_MIN_WIDTH (1100) — the floor
 
 const freshDesk = async (app, width = 1400, height = 900) => {
   await app.goto('/');
@@ -277,6 +278,32 @@ await withHarness(async (app) => {
   const systemBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
   ok('S3: "From a deck…" is genuinely ABSENT from a system Board\'s own sliver — the SAME absent-not-disabled law every other Add door already carries',
     !systemBoardSliverButtons.includes('From a deck…'), JSON.stringify(systemBoardSliverButtons));
+
+  // ==========================================================================
+  // The both-reference-widths law's own floor companion: at LEGACY_W (one
+  // px below the 1100 DeskFrame floor), a board with dealt cards on it
+  // renders via the LEGACY branch (no DeskFrame, no strip, no sliver AT
+  // ALL) — the two doors are structurally unreachable there (door 2 lives
+  // entirely inside the sliver, which BoardEditor.tsx never mounts below
+  // the floor), and DeskRail's own roster stays byte-identical, the SAME
+  // proof b1.mjs's/b2.mjs's own LEGACY_W sections already established.
+  // ==========================================================================
+  await freshBoard(app, 'b3-legacy-floor', [
+    { id: 'b3-legacy-card', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'Ordinary legacy card' },
+  ], LEGACY_W, 900);
+  const legacyFloorShape = await app.evalJs(`({
+    deskFrameGone: !document.querySelector('.desk-frame'),
+    sliverGone: !document.querySelector('.wz-sliver'),
+    wizardGone: !document.querySelector('.deck-wizard-backdrop'),
+    boardCanvasPresent: !!document.querySelector('.board-canvas'),
+    ordinaryCardPresent: !!document.querySelector('[data-box-id="b3-legacy-card"]'),
+    railLabels: [...document.querySelectorAll('.desk-rail-item .desk-rail-label')].map(el => el.textContent),
+  })`);
+  ok(`@${LEGACY_W}px (one below the 1100 floor): the board renders via its LEGACY branch — no DeskFrame, no sliver, so door 2 is structurally UNREACHABLE (not merely hidden)`,
+    legacyFloorShape.deskFrameGone && legacyFloorShape.sliverGone && legacyFloorShape.wizardGone && legacyFloorShape.boardCanvasPresent && legacyFloorShape.ordinaryCardPresent,
+    JSON.stringify(legacyFloorShape));
+  ok(`@${LEGACY_W}px: DeskRail's own roster stays BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
+    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']), JSON.stringify(legacyFloorShape.railLabels));
 
   // ==========================================================================
   // S4 — the blank path through CreateProject, proven COMPLETELY unchanged
