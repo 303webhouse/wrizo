@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
-import type { ProgressMetric, FadeDepth } from '../store/writingSettings';
+import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
+import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
 import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
@@ -362,7 +363,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
             <GearIcon />
           </button>
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -555,7 +556,17 @@ function AssistIcon() {
 // gates the Progress:Project option — offered ONLY when the current page
 // belongs to a project with a StoryPlan (the canon's Q3 rule; no greyed
 // states, the option simply isn't in the list otherwise).
-export function SettingsPanel({ settings, hasMilestones }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean }; hasMilestones?: boolean }) {
+// M2 S1 — `framed` gates the NEW Progress-style (Bar|Rhizome) option the
+// same "offered only when it exists" way: the growth engine itself (S2)
+// only ever mounts on the framed (>=1100px) desk stage (this build's own
+// judgment call — see RhizomeField.tsx's header comment for the full
+// reasoning), so offering the control below that width would let a writer
+// toggle a setting with no visible effect on their current device. The
+// STORED value is untouched either way (same silent-degrade law as
+// Progress:Project) — it simply resumes the instant the writer is back on
+// a framed session.
+export function SettingsPanel({ settings, hasMilestones, framed }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean }) {
+  const { t: deskLex } = useDeskLexicon();
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
   // ProgressMetric value itself ('project', the setting persisted via
@@ -566,10 +577,22 @@ export function SettingsPanel({ settings, hasMilestones }: { settings: { progres
   // 'Lines'/'Words'/'Time' are deliberately inline here, not per-option
   // lexicon keys).
   if (hasMilestones) progressOpts.splice(2, 0, ['project', 'Drawer']);
+  const showProgressStyle = !!framed && settings.progress === 'words';
   return (
     <div className="mode-settings" role="menu">
       <h4>settings</h4>
       <Seg label="Progress" value={settings.progress} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
+      {/* M2 S1 — the Rhizome's own setting. Every string here routes through
+          deskLexicon (the brief's own instruction for this ticket), unlike
+          the neighboring Seg calls' inline option strings above/below. */}
+      {showProgressStyle && (
+        <Seg
+          label={deskLex('progressStyleLabel')}
+          value={settings.progressStyle}
+          opts={[['bar', deskLex('progressStyleBar')], ['rhizome', deskLex('progressStyleRhizome')]]}
+          onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })}
+        />
+      )}
       <Seg label="Recede depth" value={settings.fadeDepth} opts={[['partial', 'Partial'], ['full', 'Full']]} onPick={v => setWritingSettings({ fadeDepth: v as FadeDepth })} />
       <Seg label="Timer" value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* FX2 S2 — routes through setTypewriterExplicit, not the bare

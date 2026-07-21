@@ -22,12 +22,22 @@ import { useEffect, useState } from 'react';
 // writer is on a plan-linked page).
 export type ProgressMetric = 'words' | 'time' | 'project' | 'off';
 export type FadeDepth = 'partial' | 'full';
+// M2 — the Rhizome (docs/wrizo-alpha/m2-rhizome-brief.md, S1). Bar (the
+// shipped default) | Rhizome. Stored exactly like every other axis on this
+// same object (client settings store, no schema, no new field kind). The
+// CONTROL that sets this is offered only when `progress === 'words'` (the
+// M1 R1 "offered only when it exists" precedent) — the stored value itself
+// is untouched outside that context, so it resumes the moment the writer is
+// back on Progress:Words, the same silent-degrade law M1 established for
+// 'project'.
+export type ProgressStyle = 'bar' | 'rhizome';
 
 export interface WritingSettings {
   progress: ProgressMetric;
   fadeDepth: FadeDepth;
   timer: boolean;
   typewriter: boolean;
+  progressStyle: ProgressStyle;
   // FX3 S5 — the sliver foot's new instruments panel (components/Sliver.tsx's
   // SliverInstrumentRow): a master on/off for the goal instruments (the
   // sliver's progress hairline + GoalGlow.tsx's paper glow), independent of
@@ -56,6 +66,11 @@ const DEFAULTS: WritingSettings = {
   // keeps relying on this bare default.
   typewriter: true,
   instrumentsOn: true,
+  // M2 S1 — Bar is the shipped default; a legacy device with no stored
+  // style value falls through to this, byte-identical to pre-M2 in every
+  // mode (the `{ ...DEFAULTS, ...parsed }` merge in `load()` below means a
+  // pre-M2 stored blob, which never had this key, resolves here too).
+  progressStyle: 'bar',
 };
 
 function load(): WritingSettings {
