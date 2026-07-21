@@ -349,6 +349,21 @@ function makeApp(base, cdp, waitEvent) {
     mouseDown: (x, y) => cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' }),
     mouseUp: (x, y) => cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' }),
     /**
+     * FX7 S5-S8 — a genuinely TRUSTED double-click via CDP Input
+     * (isTrusted:true), for claims like "double-clicking a dealt card does
+     * nothing" that specifically need the browser's own native `dblclick`
+     * event (not a page-side `new MouseEvent('dblclick')` dispatch, nor two
+     * independent single clicks — Chromium only synthesizes a native
+     * `dblclick` when the SECOND `Input.dispatchMouseEvent` press/release
+     * pair carries `clickCount: 2`, per CDP's own documented contract).
+     */
+    doubleClick: async (x, y) => {
+      await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' });
+      await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+      await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 2, pointerType: 'mouse' });
+      await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 2, pointerType: 'mouse' });
+    },
+    /**
      * Emulate a HiDPI device (devicePixelRatio) so canvas/backing-store sizing
      * can be verified the way real tablets/phones hit it — headless defaults to
      * dpr 1, which hides replaced-element canvas sizing bugs.

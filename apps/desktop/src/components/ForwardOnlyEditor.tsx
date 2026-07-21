@@ -49,10 +49,27 @@ interface Props {
   // select-then-replace, still never touches already-struck history.
   forwardLock?: boolean;
   style?: React.CSSProperties;
+  // FX7 S2 — Free Write's own rail-driven marker insertion (Bold/Italic,
+  // PageEditor.tsx's applyFreeWriteFormat). A plain ref escape hatch,
+  // populated with THIS component's own `handleInput` below — the EXACT
+  // function a real keystroke calls — so a rail click is genuinely
+  // indistinguishable from typing those characters into the runway.
+  // Deliberately NOT `document.execCommand('insertText', ...)`: found LIVE
+  // (not assumed — this project's own "verify, don't assume" discipline)
+  // that execCommand does NOT reliably fire a `beforeinput` event this
+  // editor's own listener can intercept in this harness's own Chromium
+  // build — it mutates the DOM directly instead, silently bypassing the
+  // Run model entirely (contentRef/wordRef never learn about the inserted
+  // text) — so the marker visibly appears for a moment, then the very NEXT
+  // real keystroke's own re-render (built from the still-stale model)
+  // silently wipes it. This ref sidesteps event dispatch altogether. Set
+  // only outside `drafting` mode (Draft's own rail already has its own,
+  // separate `applyRailFormat` mechanism, PageEditor.tsx).
+  insertMarkerRef?: React.MutableRefObject<((text: string) => void) | null>;
 }
 
 export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function ForwardOnlyEditor(
-  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style },
+  { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style, insertMarkerRef },
   ref,
 ) {
   const drafting = mode === 'drafting';
@@ -102,6 +119,21 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     onForwardRef.current?.();
     changed();
   };
+
+  // FX7 S2 — populate the rail's own insertion escape hatch (see this
+  // file's own Props comment for the full "why not execCommand" writeup).
+  // `handleInput` only ever touches refs/the stable `force` dispatch/ref-
+  // held callbacks, so a closure captured once at mount stays correct
+  // forever — no dependency on `mode`/`drafting` being current at CALL
+  // time needed, only at mount (drafting never calls this ref at all,
+  // PageEditor.tsx's own applyFreeWriteFormat guards on its own `mode`
+  // state before ever touching it).
+  useEffect(() => {
+    if (!insertMarkerRef) return;
+    insertMarkerRef.current = drafting ? null : handleInput;
+    return () => { insertMarkerRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // The revised forward-only runway — every backspace STRIKES (never deletes),
   // escalating with consecutive presses (typing resets via resetRunway):

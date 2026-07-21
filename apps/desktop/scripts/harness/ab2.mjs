@@ -83,7 +83,16 @@ await withHarness(async (app) => {
   // unchanged law and stays live.
   // CD1 S2/S7 — the ORIGINAL "FX1 S3" check (below, `.desk-toolrail-*`) is
   // parked below (SUPERSEDED — the class family renamed with the sliver);
-  // this is its direct successor, same fixture, same truth, `.wz-sliver-*`.
+  // this was its direct successor, same fixture, same truth, `.wz-sliver-*`.
+  // FX7 S2 — that successor's own "format/structure stay absent too" half
+  // is now SUPERSEDED IN TURN: Nick's own "the tools options on a Free
+  // Write Page are way too sparse" verdict adds Bold/Italic to Free
+  // Write's own rail unconditionally on origin (PageEditor.tsx's own
+  // applyFreeWriteFormat), the SAME "mode furniture, not Journal furniture"
+  // precedent FX1 S3 already established for the forward lock above —
+  // quoted verbatim + parked below (SUPERSEDED); this is FX7 S2's own
+  // direct successor, same fixture, format now asserted PRESENT (structure
+  // stays absent — Draft-only, untouched).
   const freeWriteRail = await app.evalJs(`({
     ink: !!document.querySelector('.wz-sliver-inks'),
     forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
@@ -91,10 +100,10 @@ await withHarness(async (app) => {
     format: !!document.querySelector('.wz-sliver-format'),
     structure: !!document.querySelector('.wz-sliver-structure'),
   })`);
-  ok('CD1 S2 (was "FX1 S3: ..."): Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture now) but still none of the Journal-only furniture (ink/capture items absent); format/structure stay absent too (Free Write, not Draft)',
+  ok('FX7 S2 (was "CD1 S2 (was \\"FX1 S3: ...\\")"): Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture) and NOW Bold/Italic format too (mode furniture too, FX7 S2) — still none of the Journal-only furniture (ink/capture items absent); structure stays absent (Draft, not Free Write)',
     !freeWriteRail.ink && freeWriteRail.forwardLock
       && freeWriteRail.captureItems.length === 0
-      && !freeWriteRail.format && !freeWriteRail.structure,
+      && freeWriteRail.format && !freeWriteRail.structure,
     JSON.stringify(freeWriteRail));
 
   // -- PAGE IS PRIMARY across a mode switch, rail POPULATED this time (AB1
@@ -575,9 +584,14 @@ if (process.env.HARNESS_PARKED === '1') {
       format: !!document.querySelector('.wz-sliver-format'),
       structure: !!document.querySelector('.wz-sliver-structure'),
     })`);
-    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)") — FX1 S3: the forward lock is present (mode furniture); ink/capture items and format/structure stay absent (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
+    // FX7 S2 re-supersedes this entry's own "format/structure stay absent"
+    // half in turn — Bold/Italic joins the forward lock as mode furniture
+    // (present regardless of origin); ink/capture items and structure stay
+    // unchanged law. Live successor: this file's own unparked S1 block
+    // (named "FX7 S2 (was ...)"), same fixture.
+    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)", then FX1-S3-superseded to "...forward lock present, format/structure still absent") — FX7 S2 re-supersedes: format is present too now (mode furniture); ink/capture items stay absent, structure stays absent (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
       !freeWriteRailFull.ink && freeWriteRailFull.forwardLock && freeWriteRailFull.captureItems.length === 0
-        && !freeWriteRailFull.format && !freeWriteRailFull.structure,
+        && freeWriteRailFull.format && !freeWriteRailFull.structure,
       JSON.stringify(freeWriteRailFull));
 
     // ORIGINAL (AB2 S2): ok('S2: the rail toggle flips to off',
@@ -664,10 +678,14 @@ if (process.env.HARNESS_PARKED === '1') {
       format: !!document.querySelector('.wz-sliver-format'),
       structure: !!document.querySelector('.wz-sliver-structure'),
     })`);
-    pok('PARKED (was "FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT...") — CD1 S2/S7: same truth, .wz-sliver-* selectors (ToolRail\'s class family renamed with its retirement)',
+    // FX7 S2 re-supersedes this entry's own "format/structure stay absent"
+    // half too — format joins the forward lock as mode furniture (present
+    // regardless of origin). Live successor: this file's own unparked S1
+    // block (named "FX7 S2 (was ...)"), same fixture.
+    pok('PARKED (was "FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT...", then CD1-S2/S7-superseded to the .wz-sliver-* selector rename) — FX7 S2 re-supersedes: format is present too now (mode furniture); structure stays absent',
       !freeWriteRailClassRenameCheck.ink && freeWriteRailClassRenameCheck.forwardLock
         && freeWriteRailClassRenameCheck.captureItems.length === 0
-        && !freeWriteRailClassRenameCheck.format && !freeWriteRailClassRenameCheck.structure,
+        && freeWriteRailClassRenameCheck.format && !freeWriteRailClassRenameCheck.structure,
       JSON.stringify(freeWriteRailClassRenameCheck));
 
     // ORIGINAL (S1/S3/S4): ok('S1/S3/S4: Draft rail shows Bold/Italic/

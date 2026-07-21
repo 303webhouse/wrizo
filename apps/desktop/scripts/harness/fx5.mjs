@@ -465,7 +465,13 @@ await withHarness(async (app) => {
 
     // Double-click travels to source now (S3's own "quiet open affordance
     // via the existing double-click travel").
-    await app.evalJs(`document.querySelector('[data-box-id="${portedBox.id}"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))`);
+    // FX7 S5 — BoardEditor.tsx's own onDoubleClick now resolves its target
+    // via document.elementFromPoint(e.clientX, e.clientY) rather than
+    // e.target (a genuine pointer-capture retargeting fix, fx7.mjs's own S5
+    // section) — a coordinate-less synthetic dblclick defaults to (0,0),
+    // which elementFromPoint no longer forgives; supply the card's own real
+    // on-screen center.
+    await app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${portedBox.id}"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()`);
     await sleep(300);
     const hashAfterDblclick = await app.evalJs('location.hash');
     ok('S3 (b): double-clicking a ported card travels to its own source page now (the quiet open affordance, matching page-pin)',
@@ -797,7 +803,9 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx5-s6-board', [
     { id: 'fx5-s6-card', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'Start BOLD end' },
   ], LAPTOP_W, 900);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx5-s6-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — coordinate-carrying dblclick dispatch (this file's own S3
+  // section, above, has the full root-cause writeup).
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx5-s6-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup')", { label: 'S6 popup open' });
   await sleep(200);
   // Select just the middle word ("BOLD", offsets 6-10) so there's genuine
@@ -997,7 +1005,9 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx5-s7-board', [
     { id: 'fx5-s7-card', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: '' },
   ], LAPTOP_W, 900);
-  await app.evalJs('document.querySelector(\'[data-box-id="fx5-s7-card"]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
+  // FX7 S5 — coordinate-carrying dblclick dispatch (this file's own S3
+  // section has the full root-cause writeup).
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="fx5-s7-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
   await app.waitFor("!!document.querySelector('.board-popup')", { label: 'S7 popup open' });
   await sleep(200);
   await app.typeKeys('card--popup ');

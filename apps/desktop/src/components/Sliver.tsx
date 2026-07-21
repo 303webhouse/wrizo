@@ -61,6 +61,32 @@ export type SliverContent =
         on: boolean;
         onToggle: (next: boolean) => void;
       };
+      // FX7 S2 — Bold/Italic, reused from Draft's own draftFormat.ts marker
+      // convention (FORMAT_MARK) rather than a second mechanism. Restricted
+      // to the two marks a forward-only, append-only surface can support via
+      // pure INSERTION alone — see PageEditor.tsx's own applyFreeWriteFormat
+      // for why Heading/Spacing's line-rewrite semantics don't fit here.
+      // boldOn/italicOn reflect whether that mark is currently OPEN (the
+      // leading marker inserted, awaiting its closing press) — a forward-
+      // only surface can't wrap a selection after the fact, so the rail
+      // button doubles as a two-press bracket instead.
+      format?: {
+        onFormat: (action: 'bold' | 'italic') => void;
+        boldOn: boolean;
+        italicOn: boolean;
+      };
+      // FX7 S2 — Journal's own ink-tool toggle (the pen/eraser glyph,
+      // JournalEntry.tsx's own on-sheet `.ink-tool-toggle`), mirrored here
+      // as an always-present rail affordance so a Free Write page's tool
+      // rail is never left ink-less. Disclosed, not silently assumed: the
+      // underlying draw-ink feature is still fully inert on THIS surface
+      // (ForwardOnlyEditor's own I0 pen discipline neutralizes every pen
+      // pointer event here, and no ink canvas is mounted on a Page at all)
+      // — so this renders disabled/present, never functional, until ink is
+      // reinstated app-wide. JournalEntry.tsx's own sliverContent omits
+      // this flag entirely (its real tool already lives on the sheet, so a
+      // second, inert copy in ITS OWN sliver would be actively misleading).
+      inkToolPlaceholder?: boolean;
       captureItems: readonly string[];
     }
   | {
@@ -197,22 +223,73 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
 
   return (
     <div className="wz-sliver-body">
-      {content.kind === 'freewrite' && content.ink && (
+      {content.kind === 'freewrite' && (content.ink || content.inkToolPlaceholder) && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railInk')}</div>
-          <div className="wz-sliver-inks">
-            {content.ink.inks.map(ink => (
-              <button
-                key={ink}
-                type="button"
-                className={`mode-swatch${content.ink!.penColor === ink ? ' active' : ''}`}
-                style={{ background: ink }}
-                aria-label={`Ink ${ink}`}
-                aria-pressed={content.ink!.penColor === ink}
-                onClick={() => content.ink!.onChoosePen(ink)}
-              />
-            ))}
-            <button type="button" className="mode-nib wz-sliver-nib" title="Nib styles — coming soon">nib · fine ▾</button>
+          {/* FX7 S2 — Journal's own pen/eraser toggle SHAPE, mirrored here.
+              Always disabled on this surface (see this file's own
+              SliverContent comment for the full disclosed-inert reasoning)
+              — present so the affordance is discoverable ahead of ink's
+              app-wide reinstatement, never pretending to be functional. */}
+          {content.inkToolPlaceholder && (
+            <button
+              type="button"
+              className="wz-sliver-ink-tool-toggle"
+              disabled
+              aria-disabled="true"
+              aria-label={t('railInkTool')}
+              title={t('railInkToolInert')}
+            >
+              <span aria-hidden="true">✎</span>
+            </button>
+          )}
+          {content.ink && (
+            <div className="wz-sliver-inks">
+              {content.ink.inks.map(ink => (
+                <button
+                  key={ink}
+                  type="button"
+                  className={`mode-swatch${content.ink!.penColor === ink ? ' active' : ''}`}
+                  style={{ background: ink }}
+                  aria-label={`Ink ${ink}`}
+                  aria-pressed={content.ink!.penColor === ink}
+                  onClick={() => content.ink!.onChoosePen(ink)}
+                />
+              ))}
+              <button type="button" className="mode-nib wz-sliver-nib" title="Nib styles — coming soon">nib · fine ▾</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* FX7 S2 — Bold/Italic on Free Write's own rail (Nick's "the tools
+          options on a Free Write Page are way too sparse" verdict): reuses
+          Draft's own `.wz-sliver-format`/`.mode-tbtn` markup verbatim (the
+          same visual family, just two buttons instead of four — see this
+          file's own SliverContent comment for why Heading/Spacing are
+          excluded), so a writer sees the identical control shape in either
+          mode. data-on reflects the two-press bracket's own open/closed
+          state (see the SliverContent comment above). */}
+      {content.kind === 'freewrite' && content.format && (
+        <div className="wz-sliver-section">
+          <div className="wz-sliver-h">{t('railFormat')}</div>
+          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+            <button
+              type="button"
+              className="mode-tbtn"
+              data-on={content.format.boldOn ? 'true' : 'false'}
+              aria-pressed={content.format.boldOn}
+              title="Bold"
+              onClick={() => content.format!.onFormat('bold')}
+            ><b>B</b></button>
+            <button
+              type="button"
+              className="mode-tbtn"
+              data-on={content.format.italicOn ? 'true' : 'false'}
+              aria-pressed={content.format.italicOn}
+              title="Italic"
+              onClick={() => content.format!.onFormat('italic')}
+            ><i>I</i></button>
           </div>
         </div>
       )}

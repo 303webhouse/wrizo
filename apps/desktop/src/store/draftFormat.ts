@@ -7,6 +7,12 @@
 export type FormatAction = 'bold' | 'italic' | 'heading' | 'spacing';
 export type StructureKind = 'prose' | 'screenplay';
 
+// FX7 S2 — the two markdown marks Free Write's own forward-only rail can
+// ALSO reuse (PageEditor.tsx's applyFreeWriteFormat) — a single source of
+// truth for the literal marker characters, so a forward-only insertion and
+// a Draft-mode selection-wrap can never drift onto different conventions.
+export const FORMAT_MARK: Record<'bold' | 'italic', string> = { bold: '**', italic: '*' };
+
 export interface FormatResult {
   text: string;
   start: number; // caret/selection to restore after the DOM is re-decorated
@@ -63,8 +69,8 @@ function insertSpacing(text: string, start: number, end: number): FormatResult {
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
   const start = Math.min(selStart, selEnd);
   const end = Math.max(selStart, selEnd);
-  if (action === 'bold') return wrapSelection(text, start, end, '**');
-  if (action === 'italic') return wrapSelection(text, start, end, '*');
+  if (action === 'bold') return wrapSelection(text, start, end, FORMAT_MARK.bold);
+  if (action === 'italic') return wrapSelection(text, start, end, FORMAT_MARK.italic);
   if (action === 'heading') return cycleHeading(text, start);
   return insertSpacing(text, start, end);
 }

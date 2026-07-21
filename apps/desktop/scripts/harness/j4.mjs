@@ -312,7 +312,13 @@ if (process.env.HARNESS_PARKED === '1') {
     // FX4 S5 — re-derived against BoardCardPopup's own editor instead
     // (the SAME I0 pen-discipline guard now lives there — see
     // components/BoardEditor.tsx's BoardCardPopup).
-    await app.evalJs("document.querySelector('[data-box-id=\"j4-parked-card\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    // FX7 S5 — BoardEditor.tsx's own onDoubleClick now resolves its target
+    // via document.elementFromPoint(e.clientX, e.clientY) rather than
+    // e.target (a genuine pointer-capture retargeting fix, fx7.mjs's own S5
+    // section) — a coordinate-less synthetic dblclick defaults to (0,0),
+    // which elementFromPoint no longer forgives; supply the card's own real
+    // on-screen center.
+    await app.evalJs("(() => { const el = document.querySelector('[data-box-id=\"j4-parked-card\"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()");
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'popup open (PARKED pen check)' });
     const textBeforePenNow = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
     await app.penStroke('.board-popup-editor', [{ x: 0.1, y: 0.5 }, { x: 0.9, y: 0.5 }]);
@@ -347,7 +353,8 @@ if (process.env.HARNESS_PARKED === '1') {
     // closed), reading `initialText` from the CURRENT box state each time
     // — the same "no stale mount-time text" guarantee the original review
     // fix demanded, now structural rather than a remount-key workaround.
-    await app.evalJs("document.querySelector('[data-box-id=\"j4-parked-card\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    // FX7 S5 — same coordinate-carrying fix (see above).
+    await app.evalJs("(() => { const el = document.querySelector('[data-box-id=\"j4-parked-card\"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()");
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'popup open (PARKED session 2)' });
     const seededSession2Now = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
     await app.typeKeys(' AGAIN');
@@ -394,7 +401,12 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("location.hash = '#/page/j4-parked-ported-board'");
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED ported-card board framed' });
     await sleep(300);
-    await app.evalJs("document.querySelector('[data-box-id=\"j4-parked-ported-card\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    // FX7 S5 — same coordinate-carrying fix (see above) — load-bearing here
+    // too, even though the assertion below reads as "popup absent" either
+    // way: without real coordinates, elementFromPoint(0,0) would make this
+    // pass for the WRONG reason (a failed hit-test, not a genuine travel),
+    // silently weakening the claim.
+    await app.evalJs("(() => { const el = document.querySelector('[data-box-id=\"j4-parked-ported-card\"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()");
     await sleep(300);
     const popupOpenedForPortedCard = await app.evalJs("!!document.querySelector('.board-popup-editor')");
     pok('PARKED (was "text edit (via the popup) persisted to the board entry", reached by double-clicking a PORTED card b1) — FX5 S3: double-click on a ported card travels to its source now, proven here (no popup opens); live successor (Edit copy button) re-derived in this file\'s own live section',

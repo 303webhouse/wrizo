@@ -745,7 +745,16 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("location.hash = '#/page/ab1-parked-board'");
     await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'PARKED board framed' });
     await sleep(200);
-    await app.evalJs("document.querySelector('[data-box-id=\"ab1-parked-board-box\"]').dispatchEvent(new MouseEvent('dblclick', {bubbles:true}))");
+    // FX7 S5 — root-caused live: BoardEditor.tsx's own onDoubleClick now
+    // resolves its target via document.elementFromPoint(e.clientX,
+    // e.clientY) rather than e.target (fixing a genuine pointer-capture
+    // retargeting regression against REAL trusted double-clicks — see
+    // fx7.mjs's own S5 section). A synthetic dblclick with no clientX/
+    // clientY defaults to (0,0), which elementFromPoint no longer forgives
+    // the way a bare e.target read always did — this dispatch now supplies
+    // the card's own real on-screen center, same technique, genuinely
+    // hit-testable coordinates.
+    await app.evalJs("(() => { const el = document.querySelector('[data-box-id=\"ab1-parked-board-box\"]'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()");
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'board popup open (PARKED)' });
     await app.typeKeys(' EDITED');
     await sleep(150);
