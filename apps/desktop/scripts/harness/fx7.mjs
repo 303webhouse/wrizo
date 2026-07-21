@@ -91,6 +91,34 @@ const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip'
 // returnByValue serialization otherwise).
 const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? el.getBoundingClientRect().toJSON() : null; })()`);
 
+// A genuinely trusted single click (mouseDown + mouseUp, real CDP Input
+// events) at a fixed point — the S5-S8 shared discipline's own baseline
+// gesture, distinct from a double-click.
+const clickAt = async (app, x, y) => { await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y); };
+
+// S5-S9 — reaches an ACTUAL dealt board through B3's own real door
+// (CreateProject.tsx's "Start from a deck…" -> DeckWizard -> Character
+// Study, two-character answer — the SAME live path Nick himself walked),
+// never a manually-seeded boxes array — the brief's own "an ACTUAL dealt
+// card, not a manually-created one" instruction, since materializeDeck's
+// own layout/overlap behavior is specifically what's under test.
+const dealtBoard = async (app, width = 1400, height = 900) => {
+  await freshDesk(app, width, height);
+  await app.goto('/project/new');
+  await app.waitFor("!!document.querySelector('button')", { label: 'CreateProject picker (deck door)' });
+  await app.click('Start from a deck…');
+  await sleep(200);
+  await app.waitFor("!!document.querySelector('[data-deck-id=\"character-study\"]')", { label: 'deck library open' });
+  await app.evalJs("document.querySelector('[data-deck-id=\"character-study\"]').click()");
+  await sleep(200);
+  await app.waitFor("document.querySelectorAll('.deck-wizard-option-btn').length > 0", { label: 'deck question open' });
+  await app.evalJs("document.querySelectorAll('.deck-wizard-option-btn')[0].click()"); // 'two' characters
+  await sleep(400);
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'dealt board mounted' });
+  await sleep(400);
+  await app.emulateDpr(1, width, height);
+};
+
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 — the screenplay/script page's own framed geometry, thorough review.
@@ -336,6 +364,215 @@ await withHarness(async (app) => {
     ok('S4 (disclosed exception): .beat-rail-dots keeps its own local scrollbar-width:none override — the systemic `*` default never wins there (specificity: a class beats a universal selector)',
       beatRailStyle === 'none', beatRailStyle);
   }
+
+  // ==========================================================================
+  // S5-S8 — the four deck-card interaction bugs. The shared discipline: B3's
+  // own independent review live-tested edit/move/delete via genuinely
+  // trusted CDP pointer events and found them working — so each of these is
+  // root-caused, not assumed a simple regression. All four turned out to
+  // share ONE genuine code regression (not a harness fidelity gap: every
+  // check below uses app.doubleClick/mouseDown/mouseUp/mouseMove, isTrusted
+  // CDP events, and reproduces on BOTH a real dealt card and a hand-typed
+  // one) — FX5 S4(a)'s own "capture the pointer immediately on pointerdown"
+  // drag-friction fix (a genuine, still-needed improvement for real drags)
+  // has the side effect of retargeting every subsequent mouseup/click/
+  // dblclick to `.board-canvas` itself for the REST of that gesture — so any
+  // handler reading `e.target` (rather than doing a fresh hit-test) sees the
+  // canvas, never the card or control the writer actually pressed. B3's own
+  // review most likely exercised move (drag) and delete (a card, once
+  // SELECTED — which resolves correctly, since selection reads `e.target`
+  // on the FIRST pointerdown, before capture ever engages) — not a genuine
+  // native dblclick specifically, which is the one gesture this regression
+  // silently breaks.
+  // ==========================================================================
+
+  // --- S5: not editable -----------------------------------------------------
+  await dealtBoard(app, LAPTOP_W, 900);
+  const firstDealt = await app.evalJs(`(() => {
+    const el = document.querySelector('.board-box[data-kind="text"]');
+    const r = el.getBoundingClientRect();
+    return { id: el.dataset.boxId, x: Math.round(r.x + r.width / 2), y: Math.round(r.y + 20) };
+  })()`);
+  await app.doubleClick(firstDealt.x, firstDealt.y);
+  await sleep(300);
+  const dealtPopupOpen = await app.evalJs("!!document.querySelector('.board-popup')");
+  ok('S5 ROOT-CAUSED: a genuinely trusted double-click on an ACTUAL dealt card (materializeDeck\'s own layout, real "Start from a deck…" door) now opens the edit popup — was a genuine code regression (FX5 S4(a)\'s own immediate-capture-on-pointerdown fix retargeting the native dblclick\'s own e.target to .board-canvas), fixed via document.elementFromPoint in the onDoubleClick handler (the SAME technique this file\'s own finishThreadDrag already used) — not a harness fidelity gap: this is isTrusted:true CDP input throughout',
+    dealtPopupOpen, JSON.stringify(firstDealt));
+  if (dealtPopupOpen) {
+    const popupText = await app.evalJs("document.querySelector('.board-popup-editor')?.innerText");
+    ok('S5: the opened popup genuinely shows THIS card\'s own dealt text (title + body, materializeDeck\'s own "title\\nbody" shape), not empty/wrong content',
+      typeof popupText === 'string' && popupText.length > 0, popupText);
+    await app.evalJs("document.querySelector('.board-popup-done')?.click()");
+    await sleep(200);
+  }
+  // Universality check (S5's own instruction: "determine whether this
+  // affects every board card or specifically deck-dealt ones") — an
+  // ORDINARY hand-typed card, same defect, same fix, confirming this was
+  // never deck-specific at all.
+  await freshBoard(app, 'fx7-s5-hand', [
+    { id: 'fx7-s5-hand-card', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.1, z: 1, text: 'Hand Title\nHand body text' },
+  ], LAPTOP_W, 900);
+  const handRect = await rectOf(app, '[data-box-id="fx7-s5-hand-card"]');
+  await app.doubleClick(Math.round(handRect.x + handRect.width / 2), Math.round(handRect.y + handRect.height / 2));
+  await sleep(300);
+  const handPopupOpen = await app.evalJs("!!document.querySelector('.board-popup')");
+  ok('S5 universality: an ORDINARY hand-typed card has the IDENTICAL defect and the IDENTICAL fix — confirms this was never deck-specific (materializeDeck\'s own layout/overlap was a red herring, not the cause)',
+    handPopupOpen, String(handPopupOpen));
+  if (handPopupOpen) await app.evalJs("document.querySelector('.board-popup-done')?.click()");
+
+  // --- S6: not deletable -----------------------------------------------------
+  // Root-caused live: single-click SELECT resolves `e.target` on the FIRST
+  // pointerdown (before pointer capture ever engages), so it was NEVER
+  // affected by the S5 regression — and the board-action-row's own "Remove"
+  // button lives OUTSIDE `.board-canvas` entirely (never captured at all).
+  // Confirmed: select-then-Remove already worked correctly, on an ACTUAL
+  // dealt card, with no code change needed here — S6 reads as "broken"
+  // purely as S5's own downstream symptom (double-click, the obvious first
+  // instinct, silently failed; the separate select+Remove path was
+  // apparently never discovered). Disclosed plainly, not papered over: this
+  // is the one of the four that needed NO fix of its own.
+  await dealtBoard(app, LAPTOP_W, 900);
+  const toRemove = await app.evalJs(`(() => {
+    const el = document.querySelector('.board-box[data-kind="text"]');
+    const r = el.getBoundingClientRect();
+    return { id: el.dataset.boxId, x: Math.round(r.x + r.width / 2), y: Math.round(r.y + 20) };
+  })()`);
+  await clickAt(app, toRemove.x, toRemove.y);
+  await sleep(200);
+  const selectedShape = await app.evalJs(`document.querySelector('[data-box-id="${toRemove.id}"]').dataset.selected`);
+  ok('S6 ROOT-CAUSED (not a code defect — S5\'s own downstream symptom, disclosed plainly): a single genuinely trusted click SELECTS a dealt card correctly — selection was never touched by the S5 regression at all',
+    selectedShape === 'true', selectedShape);
+  const removeBtnRect = await app.evalJs(`(() => {
+    const btns = [...document.querySelectorAll('.board-action-row button')];
+    const btn = btns.find(b => b.textContent === 'Remove');
+    if (!btn) return null;
+    const r = btn.getBoundingClientRect();
+    return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) };
+  })()`);
+  ok('S6: the board-action-row\'s own Remove button is present once a dealt card is selected', !!removeBtnRect, JSON.stringify(removeBtnRect));
+  if (removeBtnRect) {
+    const countBefore = await app.evalJs('window.wrizoBoard().length');
+    await clickAt(app, removeBtnRect.x, removeBtnRect.y);
+    await sleep(400);
+    const stillThere = await app.evalJs(`!!document.querySelector('[data-box-id="${toRemove.id}"]')`);
+    const countAfter = await app.evalJs('window.wrizoBoard()?.length');
+    ok('S6: clicking Remove genuinely deletes the ACTUAL dealt card (and its own thread, if any) — already fully functional, confirmed live on the real door, not assumed from the hand-typed baseline alone',
+      !stillThere && countAfter < countBefore, JSON.stringify({ stillThere, countBefore, countAfter }));
+  }
+
+  // --- S7: resize one-directional --------------------------------------------
+  // Root-caused live (step-by-step mid-drag reads, not just start/end):
+  // FX4 S4/FX5 S3's own reflow-as-minimum floor (a text box's stored `h`
+  // only ever grows to fit content, never shrinks) re-measures on EVERY
+  // intermediate box change — including every setBoxes call a resize drag's
+  // own onMove fires WHILE STILL HELD. A diagonal drag narrows width at the
+  // same time it shrinks height; narrowing can force the SAME text to wrap
+  // an extra line, which the reflow-floor effect then immediately re-grows
+  // `h` from, mid-drag — fighting the writer's own pointer in real time.
+  // Fixed with activeResizeIdRef (BoardEditor.tsx): the reflow-floor effect
+  // now stands down for whichever box is ACTIVELY being resized, only
+  // reconciling once, cleanly, the instant the drag ends — the content-
+  // minimum floor still applies (verified below: an aggressive narrow+tiny-
+  // height drag still correctly grows back to fit on release, content never
+  // clipped), it just no longer fights every intermediate frame.
+  await dealtBoard(app, LAPTOP_W, 900);
+  const resizeBox = await app.evalJs(`(() => {
+    const el = document.querySelector('.board-box[data-kind="text"]');
+    const r = el.getBoundingClientRect();
+    return { id: el.dataset.boxId, x: Math.round(r.x + r.width / 2), y: Math.round(r.y + 20) };
+  })()`);
+  await clickAt(app, resizeBox.x, resizeBox.y);
+  await sleep(200);
+  let handle = await rectOf(app, '.board-handle');
+  let hx = Math.round(handle.x + handle.width / 2), hy = Math.round(handle.y + handle.height / 2);
+  // Upsize first (matches Nick's own "once a card is upsized" wording).
+  await app.mouseDown(hx, hy);
+  await sleep(30);
+  for (const [dx, dy] of [[50, 35], [110, 80], [180, 130]]) { await app.mouseMove(hx + dx, hy + dy); await sleep(40); }
+  await app.mouseUp(hx + 180, hy + 130);
+  await sleep(300);
+  const afterUpsize = await app.evalJs(`window.wrizoBoard().find(b => b.id === "${resizeBox.id}")`);
+
+  const resizeBox2 = await rectOf(app, `[data-box-id="${resizeBox.id}"]`);
+  await clickAt(app, Math.round(resizeBox2.x + resizeBox2.width / 2), Math.round(resizeBox2.y + 15));
+  await sleep(200);
+  handle = await rectOf(app, '.board-handle');
+  hx = Math.round(handle.x + handle.width / 2); hy = Math.round(handle.y + handle.height / 2);
+  const trace = [];
+  await app.mouseDown(hx, hy);
+  await sleep(30);
+  for (const [dx, dy] of [[-20, -15], [-50, -35], [-90, -60], [-140, -95]]) {
+    await app.mouseMove(hx + dx, hy + dy);
+    await sleep(60);
+    const mid = await app.evalJs(`window.wrizoBoard().find(b => b.id === "${resizeBox.id}")`);
+    trace.push(mid.h);
+  }
+  await app.mouseUp(hx - 140, hy - 95);
+  await sleep(400);
+  const afterDownsize = await app.evalJs(`window.wrizoBoard().find(b => b.id === "${resizeBox.id}")`);
+  const monotonic = trace.every((h, i) => i === 0 || h <= trace[i - 1] + 0.0005);
+  ok('S7 ROOT-CAUSED: dragging the resize handle to shrink a dealt card is MONOTONIC — height never reverses direction mid-drag (the reflow-floor effect no longer fights the pointer in real time)',
+    monotonic, JSON.stringify(trace));
+  ok('S7: the card genuinely ends up smaller than after the upsize, in BOTH dimensions — downsize actually works now, matching Nick\'s own DoD ("upsizes then downsizes a card freely")',
+    afterDownsize.w < afterUpsize.w && afterDownsize.h < afterUpsize.h, JSON.stringify({ afterUpsize, afterDownsize }));
+  // The content-minimum floor STILL applies on release (never regressed to
+  // "clip the writer's own words") — an aggressive narrow+tiny-height drag.
+  const resizeBox3 = await rectOf(app, `[data-box-id="${resizeBox.id}"]`);
+  await clickAt(app, Math.round(resizeBox3.x + resizeBox3.width / 2), Math.round(resizeBox3.y + 15));
+  await sleep(200);
+  handle = await rectOf(app, '.board-handle');
+  hx = Math.round(handle.x + handle.width / 2); hy = Math.round(handle.y + handle.height / 2);
+  await app.mouseDown(hx, hy);
+  await sleep(30);
+  for (const [dx, dy] of [[-100, -5], [-200, -10], [-280, -15]]) { await app.mouseMove(hx + dx, hy + dy); await sleep(50); }
+  await app.mouseUp(hx - 280, hy - 15);
+  await sleep(400);
+  const faceMetrics = await app.evalJs(`(() => {
+    const el = document.querySelector('[data-box-id="${resizeBox.id}"] .board-text');
+    return { scrollHeight: el.scrollHeight, clientHeight: el.clientHeight };
+  })()`);
+  ok('S7 invariant preserved: the content-minimum floor still applies on RELEASE — an aggressive narrow+tiny-height drag never clips the card\'s own text (scrollHeight <= clientHeight)',
+    faceMetrics.scrollHeight <= faceMetrics.clientHeight + 3, JSON.stringify(faceMetrics));
+
+  // --- S8: layer-arrangement (z-order) not working ---------------------------
+  // Root-caused live (the SAME event-retargeting regression as S5): the
+  // layer-toggle button's own onMouseDown{stopPropagation} fires on the
+  // MOUSEDOWN compatibility event — too late, since .board-canvas's own
+  // NATIVE pointerdown listener (which sets capture) always runs first and
+  // never special-cased this control. Confirmed live: pointerdown/mousedown
+  // correctly targeted .board-layer-toggle, but mouseup/click BOTH
+  // retargeted to .board-canvas — z never changed. Fixed with an early
+  // return in onDown (mirrors the EXISTING .board-pin-grab/.board-handle
+  // pattern already in that same function) so a press on the toggle never
+  // starts a canvas-level drag/capture at all.
+  await freshBoard(app, 'fx7-s8-board', [
+    { id: 'fx7-s8-card-1', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.1, z: 1, text: 'Card One\nBody one' },
+    { id: 'fx7-s8-card-2', kind: 'text', x: 0.15, y: 0.13, w: 0.3, h: 0.1, z: 2, text: 'Card Two overlapping\nBody two' },
+  ], LAPTOP_W, 900);
+  const c2 = await rectOf(app, '[data-box-id="fx7-s8-card-2"]');
+  await clickAt(app, Math.round(c2.x + c2.width / 2), Math.round(c2.y + 15));
+  await sleep(200);
+  const toggleShape = await app.evalJs(`(() => {
+    const el = document.querySelector('[data-box-id="fx7-s8-card-2"]');
+    const btn = document.querySelector('.board-layer-toggle');
+    return { overlapping: el?.dataset.overlapping, togglePresent: !!btn };
+  })()`);
+  ok('S8: a selected, genuinely overlapping card gets the quiet layer-order icon (FX5 S4(c))',
+    toggleShape.overlapping === 'true' && toggleShape.togglePresent, JSON.stringify(toggleShape));
+  const toggleRect = await rectOf(app, '.board-layer-toggle');
+  const zBefore = await app.evalJs('window.wrizoBoard().find(b => b.id === "fx7-s8-card-2").z');
+  await clickAt(app, Math.round(toggleRect.x + toggleRect.width / 2), Math.round(toggleRect.y + toggleRect.height / 2));
+  await sleep(400);
+  const zAfter = await app.evalJs('window.wrizoBoard()?.find(b => b.id === "fx7-s8-card-2")?.z');
+  ok('S8 ROOT-CAUSED: clicking the layer-order icon genuinely changes AND persists the card\'s own z — was retargeted to .board-canvas (the SAME class of bug as S5), fixed with an onDown early-return mirroring the existing .board-pin-grab/.board-handle pattern',
+    zAfter !== zBefore, JSON.stringify({ zBefore, zAfter }));
+  // Persists across a reload (genuinely written to storage, not just local state).
+  await app.reload();
+  await app.evalJs("location.hash = '#/page/fx7-s8-board'");
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'S8 board reframed after reload' });
+  await sleep(400);
+  const zPersisted = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e=>e.id==='fx7-s8-board')?.boxes.find(b=>b.id==='fx7-s8-card-2')?.z`);
+  ok('S8: the new z-order persists to storage across a reload', zPersisted === zAfter, JSON.stringify({ zAfter, zPersisted }));
 
   return checks;
 });

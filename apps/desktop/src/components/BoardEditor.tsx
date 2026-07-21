@@ -678,6 +678,28 @@ export function BoardEditor({ id }: { id: string }) {
   const lastActionRef = useRef<LastAction>(null);
   const lastSavedRef = useRef(boxes);
   const measureEls = useRef<Map<string, HTMLDivElement>>(new Map());
+  // FX7 S7 — root-caused live (not guessed): the auto-grow effect below
+  // (the "reflow floor" FX4 S4/FX5 S3 established — it only ever GROWS a
+  // box's stored h, never shrinks it) re-runs on EVERY box change,
+  // including every intermediate `setBoxes` call `onMove` (below) fires
+  // WHILE a resize drag is still held. Dragging a corner handle changes
+  // width AND height together, and narrowing the width can force the SAME
+  // text to wrap into an extra line — which the auto-grow effect then
+  // immediately measures and grows `h` right back up, mid-drag, fighting
+  // the writer's own shrink in real time. Confirmed live with a genuinely
+  // trusted step-by-step drag (intermediate reads, not just start/end):
+  // `h` visibly reversed direction (shrank, then grew back) partway
+  // through a single continuous downsize gesture on a card whose body
+  // text needs more than one line at the narrower width — exactly Nick's
+  // "once a card is upsized... it doesn't seem like it can be downsized."
+  // This ref tracks whichever box id is ACTIVELY being resized right now
+  // (set in beginResize, cleared in finish, below) so the effect can skip
+  // touching it mid-drag — the writer's own pointer position is the ONLY
+  // authority over w/h while a resize is held; the content-minimum floor
+  // still applies (this ticket's own invariant: text is never clipped),
+  // just reconciled ONCE, cleanly, the instant the drag ends, rather than
+  // fighting every intermediate frame.
+  const activeResizeIdRef = useRef<string | null>(null);
   // FX4 S6 — the live thread-drag preview line's own endpoint, updated
   // imperatively on pointermove (the same "don't trigger a React render on
   // every move" discipline JournalEntry.tsx's own eraser ring already uses)
@@ -862,6 +884,16 @@ export function BoardEditor({ id }: { id: string }) {
     let changed = false;
     const next = boxes.map(b => {
       if (b.kind !== 'text') return b;
+      // FX7 S7 — skip whichever box is ACTIVELY being resized right now
+      // (activeResizeIdRef, above) — see that ref's own header comment for
+      // the full root-cause writeup (a diagonal drag narrows width while
+      // shrinking height, which can force an extra text-wrap line that
+      // this effect would otherwise measure and grow `h` back from, mid-
+      // drag, fighting the writer's own pointer in real time). The floor
+      // still applies — this box gets ONE final reconciliation pass the
+      // instant `activeResizeIdRef` clears (finish(), below), since `boxes`
+      // itself changes then too and re-triggers this same effect.
+      if (b.id === activeResizeIdRef.current) return b;
       const el = measureEls.current.get(b.id);
       if (!el) return b;
       const measuredPx = el.scrollHeight;
@@ -1124,6 +1156,10 @@ export function BoardEditor({ id }: { id: string }) {
       resizingId = boxId;
       startBoxes = boxesRef.current;
       resizeStart = { w: box.w, h: box.h, aspect: box.h / box.w, kind: box.kind };
+      // FX7 S7 — see activeResizeIdRef's own header comment (above, near
+      // measureEls): the auto-grow reflow-floor effect stands down for
+      // THIS box id until the drag ends (finish(), below).
+      activeResizeIdRef.current = boxId;
       if (activePointerId != null) { try { canvas.setPointerCapture(activePointerId); } catch { /* gone */ } }
     };
 
@@ -1138,15 +1174,52 @@ export function BoardEditor({ id }: { id: string }) {
       } else if (!commit && (phase === 'dragging' || phase === 'resizing')) {
         setBoxes(startBoxes); // release outside canvas / cancel: revert to the pre-gesture snapshot
       }
+      // FX7 S7 — re-arm the reflow-floor effect for this box. Its own
+      // useLayoutEffect deps are `[boxes, pageWidthPx, popupBoxId]` — a
+      // bare ref clear does NOT retrigger it (refs are invisible to a deps
+      // array), and the COMMIT path above never itself calls setBoxes (the
+      // box's own final position/size was already committed incrementally
+      // by onMove, before this ever runs) — so without an explicit nudge
+      // here, a box resized right up against its own content floor would
+      // never get its one final reconciliation pass at all. A shallow
+      // clone is enough: same content, new array reference, so the effect
+      // re-evaluates this box (now that activeResizeIdRef no longer skips
+      // it) on the very next render.
+      const wasResizing = phase === 'resizing';
       phase = 'idle';
       movingIds = [];
       resizingId = null;
       resizeStart = null;
+      activeResizeIdRef.current = null;
+      if (wasResizing) setBoxes(prev => prev.slice());
     };
 
     const onDown = (e: PointerEvent) => {
       if (popupBoxIdRef.current) return; // the card popup is open — board gestures stand down
       const target = e.target as HTMLElement;
+
+      // FX7 S8 — root-caused live (not guessed): the layer-toggle button's
+      // own `onMouseDown={e => e.stopPropagation()}` (below, in the card's
+      // JSX) fires on the MOUSEDOWN compatibility event, which is too late
+      // to matter — this native `pointerdown` listener (capture-phase on
+      // the canvas itself) always runs FIRST, and previously fell straight
+      // through into the general "select + arm a pending drag + capture
+      // the pointer immediately" branch below with no knowledge the press
+      // actually landed on the toggle. Once capture engages, the SAME
+      // retargeting S5's own fix addresses (above) also swallows the
+      // button's own subsequent `click` — Chromium never even invokes the
+      // button's onClick, because the retargeted event's propagation path
+      // no longer passes through it at all. Confirmed live: a genuinely
+      // trusted press-then-click on the toggle produced pointerdown/
+      // mousedown correctly targeting `.board-layer-toggle`, then mouseup/
+      // click BOTH retargeted to `.board-canvas` — the card's own z never
+      // changed. This mirrors the EXISTING `.board-pin-grab` early-return
+      // immediately below (the established pattern in this exact function
+      // for "a control inside a card needs its own untouched click, not
+      // the canvas's own select/drag machinery") — stand down whole, let
+      // the click proceed natively to the button's own onClick.
+      if (target.closest('.board-layer-toggle')) return;
+
       const pinEl = target.closest('.board-pin-grab') as HTMLElement | null;
       const pinBoxEl = pinEl?.closest('.board-box') as HTMLElement | null;
 
@@ -1538,7 +1611,25 @@ export function BoardEditor({ id }: { id: string }) {
           data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
           style={{ position: 'relative', width: pageWidthPx, height: canvasHeightPx, background: 'var(--paper)' }}
           onDoubleClick={(e) => {
-            const boxEl = (e.target as HTMLElement).closest('.board-box') as HTMLElement | null;
+            // FX7 S5 — root-caused live (not guessed): `e.target` here is
+            // NOT reliable — `onDown` below (FX5 S4(a)'s own drag-friction
+            // fix) calls `canvas.setPointerCapture()` on the VERY FIRST
+            // pointerdown of ANY card click, so by the time the second
+            // click's native `dblclick` fires, the browser has already
+            // retargeted it (and its own `mouseup`/`click` predecessors) to
+            // THIS canvas element — never the card the writer actually
+            // double-clicked. Confirmed with a genuinely trusted CDP
+            // double-click (isTrusted:true): `e.target.closest('.board-box')`
+            // resolved to null every time, on EVERY card (dealt or
+            // hand-typed alike — not a deck-specific defect at all), which
+            // is exactly Nick's "double clicking on them did nothing."
+            // `document.elementFromPoint` sidesteps the retargeting
+            // entirely with a fresh hit-test at the event's own
+            // coordinates — the SAME technique this file's own
+            // `finishThreadDrag` (above) already uses for the identical
+            // reason.
+            const hitEl = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+            const boxEl = hitEl?.closest('.board-box') as HTMLElement | null;
             const boxId = boxEl?.dataset.boxId;
             if (!boxId) return;
             const box = boxesRef.current.find(b => b.id === boxId);
