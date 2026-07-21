@@ -2,6 +2,9 @@
 
 Reverse-chronological log of shipped tickets (newest first). One line per ticket; link the brief where one exists.
 
+## FX8 — card affordances — build starting
+Brief: [wrizo-alpha/fx8-card-affordances-brief.md](wrizo-alpha/fx8-card-affordances-brief.md) (CC-authored, no Fable brief, Nick's direct request). The olive pin restyled as a dimensional sphere-top; the brass resize handle shrunk and borderless; a grab-family cursor on card-body hover (excluding the pin/handle/layer-toggle). The underlying drag mechanism already works (FX5/FX7) — this is cursor/CSS polish only. Zero schema; merge pre-authorized; deploy explicitly not pre-authorized. Building via a Workflow-orchestrated pipeline on `fx8-card-affordances` off post-FX7-deploy `main`. See `docs/open-threads.md` item 45.
+
 ## FX7 — the second sitting's fixable bugs — merged, pushed, deployed, reviewed GREEN — close pending Nick's own re-test
 Brief: [wrizo-alpha/fx7-second-sitting-fixes-brief.md](wrizo-alpha/fx7-second-sitting-fixes-brief.md) (CC-authored, no Fable brief, Nick's explicit authorization). Nine slices from item 41's sitting findings 2-10. Built via a Workflow-orchestrated pipeline on `fx7-second-sitting-fixes` off `main`.
 - **S1 (screenplay paper)** — root-caused as a genuine FX3 regression (the scroll-cap, not the page column, was absorbing the stage's own flex-grow), not a TU1 anchor-wiring defect as first suspected.

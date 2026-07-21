@@ -3913,6 +3913,22 @@ outlive a session lives here, not in chat.
     `main` yet for this key to connect to. Nick's own word: "whenever
     you're ready" — not an immediate action item, recorded for when
     TU2 actually merges and Railway's own env config is Nick's to set.
+45. **FX8 — card affordances.** **BRIEF COMMITTED — 2026-07-21,
+    CC-authored, not Fable.**
+    `docs/wrizo-alpha/fx8-card-affordances-brief.md`. Four small
+    UI/interaction fixes from Nick's direct feedback (relayed while
+    FX7's own review file was still pending, same standing
+    authorization): the olive pin restyled as a dimensional sphere-top
+    rather than a flat outlined circle; the brass resize handle
+    shrunk, its border removed; a `grab`-family cursor added on card-
+    body hover (excluding the pin/handle/layer-toggle, each keeping
+    their own cursor) — **CC confirmed by reading the code first that
+    the drag-anywhere mechanism itself already works** (FX5 S4(a) +
+    FX7 S5-S8's own fixes), so this slice is cursor/CSS-only, not a
+    new interaction. Zero schema; merge pre-authorized as zero-schema.
+    **Deploy explicitly NOT pre-authorized**, same default as FX7.
+    **Build starting — 2026-07-21**, via a Workflow-orchestrated
+    build+review pipeline (ultracode), off post-FX7-deploy `main`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
