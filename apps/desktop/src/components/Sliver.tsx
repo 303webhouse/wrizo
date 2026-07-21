@@ -96,6 +96,10 @@ export type SliverContent =
       // Same absent-not-disabled law as the two Add controls above: on a
       // system Board, BoardEditor.tsx passes none of the three at all.
       onAddExistingPage?: () => void;
+      // B3 S3 — door 2: "From a deck…", beside the Board's own existing Add
+      // options. Same absent-not-disabled law: BoardEditor.tsx passes this
+      // only on an ordinary (non-system) Board.
+      onAddFromDeck?: () => void;
       // FX5 S5 — the connections-footer's own per-board visibility toggle,
       // the sliver's THIRD board control ("Add card + this, two controls"
       // — the brief's own words, now three with FX6's own addition).
@@ -306,6 +310,13 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           {content.onAddExistingPage && (
             <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddExistingPage}>
               {t('boardAddExistingPage')}
+            </button>
+          )}
+          {/* B3 S3 — door 2: "From a deck…", opening the deck library as a
+              pop-out over this board (DeckWizard.tsx). */}
+          {content.onAddFromDeck && (
+            <button type="button" className="wz-sliver-item wz-sliver-item-btn" onClick={content.onAddFromDeck}>
+              {t('deckWizardFromDeck')}
             </button>
           )}
           {/* FX5 S5 — the footer toggle, the sliver's third board control. */}

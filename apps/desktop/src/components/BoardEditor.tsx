@@ -25,6 +25,11 @@ import { Sliver, type SliverContent } from './Sliver';
 import { useActionToast } from './ActionToast';
 import type { PageFaceSubject } from './PageFace';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
+import { DeckWizard } from './DeckWizard';
+import { DECKS } from '../decks/library';
+import { materializeDeck } from '../decks/engine';
+import type { DeckDefinition, DeckAnswers } from '../decks/types';
+import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
 import type { Box, Project } from '../types';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
@@ -607,6 +612,25 @@ export function BoardEditor({ id }: { id: string }) {
   // board itself blurs+dims behind it (the mockup's own treatment) while
   // open.
   const [popupBoxId, setPopupBoxId] = useState<string | null>(null);
+  // B3 S3 — door 2: the Board's own Add flow gains "From a deck…" beside
+  // its existing options. `deckWizardOpen` mounts DeckWizard.tsx (opt-in,
+  // ONLY on this click — the anti-solicitation law S1 binds); the wizard's
+  // own last act (onDeal) materializes the chosen deck's cards PURELY
+  // in-memory (materializeDeck, decks/engine.ts) against this component's
+  // own live `boxes` (boxesRef.current, not a fresh store read) and appends
+  // them via the SAME setBoxes path any other card creation already uses —
+  // BoardEditor's own existing debounced autosave effect persists them,
+  // exactly like onAddCard above. A direct saveBoardBoxes call here instead
+  // would race that same debounced autosave (the harness seeding/flushNow
+  // race this project has already diagnosed once, generalized) — see
+  // decks/engine.ts's own header comment for the full reasoning.
+  const [deckWizardOpen, setDeckWizardOpen] = useState(false);
+  // B3 S1 — the "Start Here" hint's own id (store/deckHint.ts, keyed per
+  // board, never schema). Read fresh on every mount of THIS board (the
+  // lazy initializer re-runs whenever `id` changes — PageEditor.tsx's own
+  // delegation already keys BoardEditor by id, so navigating to a
+  // DIFFERENT board is a genuine remount, not a stale carry-over).
+  const [startHereCardId, setStartHereCardId] = useState<string | null>(() => getStartHereCardId(id));
   const [canUndo, setCanUndo] = useState(false);
   // FX4 S4 — the board canvas's own both-axis resize: a persisted override
   // riding the 'board-meta' box (types/index.ts). null on either axis means
@@ -858,6 +882,15 @@ export function BoardEditor({ id }: { id: string }) {
   const commitText = (boxId: string, text: string) => {
     if (framed) boardDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, text } : b)));
+    // B3 S1 — "vanishes the FIRST time the writer edits ANY dealt card's
+    // content" (R6, as this brief's own S1 fences it): a genuine text
+    // commit is exactly that edit. noteDealtCardEdited itself no-ops
+    // unless a hint is currently active AND boxId is part of the deal it
+    // was armed for, so this is safe to call on every commit, dealt card
+    // or not. Re-reading (rather than unconditionally clearing local
+    // state) keeps this component honest about storage's own truth.
+    noteDealtCardEdited(id, boxId);
+    setStartHereCardId(getStartHereCardId(id));
   };
 
   const snapshot = (type: NonNullable<LastAction>['type']) => {
@@ -971,6 +1004,26 @@ export function BoardEditor({ id }: { id: string }) {
     const page = createLooseHomePage();
     pinPageToBoard(page.id, id);
     navigate(`/page/${page.id}`);
+  };
+
+  // B3 S3 — door 2's own click: opt-in, only ever reached by the writer's
+  // own click on the sliver's "From a deck…" row (see sliverContent below —
+  // absent whole on a system Board, the same law onAddCard/onAddPageCard/
+  // onAddExistingPage already carry).
+  const onAddFromDeck = () => setDeckWizardOpen(true);
+
+  // B3 S1 — the wizard's own last act, landed here: materialize purely
+  // in-memory against the LIVE boxes (boxesRef.current), append via the
+  // same setBoxes path every other card creation already uses, arm the
+  // Start Here hint on the freshly dealt set's own first card. No
+  // navigation — "ends on the dealt board" and the writer is already on
+  // it (door 2's whole point: dealing onto THIS board, alongside whatever
+  // already lives there).
+  const onDeckDealt = (deck: DeckDefinition, answers: DeckAnswers) => {
+    const result = materializeDeck(deck, answers, boxesRef.current);
+    setBoxes(prev => [...prev, ...result.boxes]);
+    armStartHere(id, result.firstCardId, result.dealtIds);
+    setStartHereCardId(result.firstCardId);
   };
 
   // AB4 S4 — double-click travel from a page-pin card, "the board is one
@@ -1592,6 +1645,16 @@ export function BoardEditor({ id }: { id: string }) {
                   click two-step; one continuous drag-from-here is the whole
                   point). Wired in the pointer-effect's own onDown above. */}
               <div className="board-pin-grab" data-pin="true" aria-hidden="true" title={t('boardThreadGrab')} />
+              {/* B3 S1 — "Start Here" (R6's own hint): quiet, brass, present
+                  only on the currently-armed deal's own first card, and
+                  only until the writer's first genuine edit to ANY dealt
+                  card (store/deckHint.ts owns the whole lifecycle; this is
+                  a pure read). Never affects the card's own
+                  editable/movable/deletable/taggable-ness (M1) — an
+                  overlay, not a lock. */}
+              {box.id === startHereCardId && (
+                <div className="board-start-here-hint" data-start-here="true" aria-hidden="true">{t('deckStartHereLabel')}</div>
+              )}
               {/* FX5 S5 — the connections footer: one quiet line per thread,
                   hidden whole when the board's own footer toggle is off. */}
               {boxConnections.length > 0 && (
@@ -1653,10 +1716,17 @@ export function BoardEditor({ id }: { id: string }) {
   // uses for Move/Copy/Pin) so it always centers regardless of scroll
   // position within a tall/wide board.
   const popupBox = popupBoxId ? boxes.find(b => b.id === popupBoxId) : null;
+  // B3 S1 — the deck wizard's own pop-out reuses this SAME blur condition
+  // (`.board-canvas-blurred`, FX4 S5's existing rule, untouched): "a
+  // pop-out over the faded board" applies identically whether the pop-out
+  // is a card's own editor or the deck engine's own wizard — one blur
+  // mechanism, not two. The board's own geometry (pageWidthPx,
+  // canvasHeightPx, every box's x/y/w/h) never reads `deckWizardOpen`
+  // anywhere — b3.mjs asserts this explicitly, not merely by omission.
   const boardBody = (
     <>
       {boardActionRow}
-      <div className={`board-canvas-blur-wrap${popupBox ? ' board-canvas-blurred' : ''}`}>
+      <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
       </div>
       {popupBox && (
@@ -1665,6 +1735,9 @@ export function BoardEditor({ id }: { id: string }) {
           onCommit={text => commitText(popupBox.id, text)}
           onClose={() => setPopupBoxId(null)}
         />
+      )}
+      {deckWizardOpen && (
+        <DeckWizard decks={DECKS} onDeal={onDeckDealt} onClose={() => setDeckWizardOpen(false)} />
       )}
     </>
   );
@@ -1684,9 +1757,15 @@ export function BoardEditor({ id }: { id: string }) {
   // own affordance "must be absent," Delete's own click "must be inert").
   // The footer toggle survives — arranging (including hiding the footer) is
   // explicitly permitted by S3's "full FX5 hand."
+  // B3 S3 — "From a deck…" joins the sliver's own board tools, the SAME
+  // absent-not-disabled law every other Add-family control here already
+  // carries: on a system Board, onAddFromDeck is never passed at all.
   const sliverContent: SliverContent = isSystemBoard
     ? { kind: 'board', footer: { on: footerOn, onToggle: toggleFooter } }
-    : { kind: 'board', onAddCard, onAddPageCard, onAddExistingPage: () => setExistingPageOpen(true), footer: { on: footerOn, onToggle: toggleFooter } };
+    : {
+        kind: 'board', onAddCard, onAddPageCard, onAddExistingPage: () => setExistingPageOpen(true),
+        onAddFromDeck, footer: { on: footerOn, onToggle: toggleFooter },
+      };
 
   const pageFaceSheets = (
     <>
