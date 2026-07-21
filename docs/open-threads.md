@@ -3772,11 +3772,48 @@ outlive a session lives here, not in chat.
     origin yet from its own session — so this push carried both
     TU2's opening and FX7's full merge to origin in one clean
     fast-forward, `bb6f079..9148be0`. Pushed to `origin/main`.
-    **Fable's post-merge review — GREEN, no fold, one advisory
-    (relayed verbatim, full file not yet landed on disk — see the
-    disclosed gap below, not fabricated).** Ink placeholder flagged
-    for Nick's own eye; an "S0-push rule" proposed (not yet adopted —
-    awaiting the actual review text before recording its details).
+    **Fable's post-merge review landed and is committed — GREEN, no
+    fold, one advisory — 2026-07-21**
+    (`docs/wrizo-alpha/fx7-review-fable.md`). Census-verified, not
+    taken on faith: the widest product commit confirmed at exactly
+    seven `apps/desktop`-only files, zero server; depth resting on
+    three upstream layers (`fx7.mjs`'s own 46 checks, the independent
+    review's from-scratch verification including real screenshots and
+    the full historic suite the build itself never ran, and CC's own
+    54/54 third pass). **Seven rulings of record:** (1) **the revert-
+    reproduce-restore proof RATIFIED as the standard** for any "prior
+    ticket X caused this" claim going forward — diagnosis as
+    experiment, not argument; (2) S6's own honest non-fix RATIFIED —
+    "delete was never broken," said plainly rather than inventing a
+    phantom fix to match the finding; (3) S9's untouched door
+    RATIFIED — both of B3's own doors confirmed live-correct, the old
+    wizard's own fate still parked, taken up with J6 or on its own;
+    (4) **Gap 1's fix pattern promoted to standing practice**: a
+    harness technique used across many files is itself a shared
+    dependency — any change to input synthesis or hit-testing now
+    runs the FULL historic suite before push, not just the ticket's
+    own file, named directly as the lesson FX7's own build skipped and
+    the review's own second net caught; (5) Gap 2's A4 parking
+    verified at record depth; (6) **ADVISORY, for Nick's own eye**:
+    the ink placeholder's visibly-disabled state sits in tension with
+    M1's own "offered only when it exists, no greyed states" pattern —
+    but item 41's own finding 3 asked for exactly this in Nick's own
+    words, so his word outranks the generalization; standing as built,
+    one word at the sitting settles it either way; (7) a commit-
+    message imprecision noted without consequence (fe67f1a said "six
+    findings," the record correctly holds eleven).
+    **The concurrent-session collision — CC's own handling explicitly
+    RATIFIED as exemplary** (verified non-overlap before touching
+    anything, an explicit merge commit, no force or reset, TU2's own
+    branch/worktree never touched, full disclosure) — named as the
+    THIRD occurrence of this shared-tree class (after the two CD1.1/
+    HB1 collisions on 2026-07-16). **A new "S0-push rule" PROPOSED,
+    not yet ratified**: a session's own records commits should be
+    authored on its OWN branch/worktree, parented on the current
+    `origin/main` tip, landing on `main` by a fast-forward push —
+    never by commits made directly in the primary checkout; the
+    primary checkout reserved for merge operations only. Awaits Nick's
+    own word before this becomes binding practice.
     **Deployed — 2026-07-21**, Nick's word ("my go-ahead to deploy
     everything built"), manifest independently re-enumerated by CC
     before shipping: `65a4fa9..HEAD` = FX7's own four code commits +
@@ -3784,11 +3821,18 @@ outlive a session lives here, not in chat.
     commits — TU2's actual code stayed unmerged, confirmed, so it
     rode along in none of this). `railway up` on `main` @ `e5b368e`
     (deployment `80b8f872`, SUCCESS), confirmed live (`200` on
-    `/healthz` and `/`, `401` on `/auth/me`). **Close now rests on
-    Nick's own device sitting** (his own re-test of everything FX7
-    touched) — the review's own file is owed on disk before this
-    record is complete; flagged to Nick directly rather than
-    fabricated from the relay text alone.
+    `/healthz` and `/`, `401` on `/auth/me`). **Close condition 2
+    (Nick's deploy word) — MET, satisfied by the above, matching the
+    review's own manifest exactly.** Close condition 3 (Nick's own
+    device sitting, the S5-S8 gesture class and S1 screenplay geometry
+    especially, per the trusted-pointer law) remains open. **Findings
+    1 and 11 are ruled separately, briefs to follow TU2's own review**
+    — finding 1 becomes `J6 — One Paper`; finding 11 becomes `FX8 —
+    the Folded Lists`. **NAME COLLISION, flagged not resolved here**:
+    this session's own item 45 already opened and is actively building
+    a DIFFERENT ticket also named `FX8` (card affordances, Nick's
+    direct request, unrelated to the folded-lists work) — the two
+    tickets need distinct names before Fable's own FX8 brief lands.
 43. **TU2 — the Listener.** **BRIEF COMMITTED — 2026-07-21.**
     `docs/wrizo-alpha/tu2-listener-brief.md`. **Authority:** the Tutor
     committee pass as ratified (A12-A15 whole) and the Tutor's own
@@ -3929,6 +3973,53 @@ outlive a session lives here, not in chat.
     **Deploy explicitly NOT pre-authorized**, same default as FX7.
     **Build starting — 2026-07-21**, via a Workflow-orchestrated
     build+review pipeline (ultracode), off post-FX7-deploy `main`.
+    **NAME COLLISION with Fable's own upcoming brief for item 41's
+    finding 11 ("FX8 — the Folded Lists," per her FX7 review's own
+    close conditions) — flagged, not resolved.** This item is a
+    DIFFERENT ticket (card affordances, Nick's direct request,
+    2026-07-21) that happened to claim the same short name first.
+    Needs a rename on one side before the Folded Lists brief lands.
+46. **M2 — the Rhizome.** **BRIEF COMMITTED — 2026-07-21.**
+    `docs/wrizo-alpha/m2-rhizome-brief.md`. An opt-in alternate
+    progress visualization — a Progress-style setting (Bar, the
+    shipped default | Rhizome), offered only under Progress:Words per
+    M1's own precedent, never greyed. **Authority — Nick's commission
+    plus eight of Fable's own design rulings**, recorded here: session-
+    scoped forward-only growth (never persisted across sessions, its
+    own future ticket if ever wanted); seeded determinism (a tiny
+    in-repo PRNG, no dependency — same session, same seed, identical
+    growth, re-renders never reshuffle); ground never paper (the
+    paper's own rect is inviolate — a growing segment that would enter
+    it turns away by reflection instead); the rightSlot and the
+    background glow's own progress coupling both survive untouched in
+    either style (the M1 R1 regression guarded by name); milestones
+    are the EXISTING celebration grammar's own events only — nothing
+    new invented; offered-never-greyed (the control itself follows the
+    same M1 pattern as every other conditional setting); decaying
+    growth (per-event caps that shrink the visual load over a long
+    session: 200/400/600 segments, 600/24 hard caps, never removing a
+    segment — forward-only is the app's own thesis carried into the
+    ground itself); and **the growth-form principle recorded as
+    PROPOSED CANON, awaiting Nick's own ratification** — every visual
+    token-driven (a new `--rhizome-ink` term), zero Plateau literals in
+    the engine itself, so a future theme reskins the growth-form
+    without touching the mechanism.
+    **The milestone burst directly exercises the orange/brass lane
+    law** (item 39's own B3 review Ruling 4 territory, now answered in
+    the brief's own text): a flash from the rest-state `--rhizome-ink`
+    (barely visible, a light brown one step above ground) into the
+    theme's own ember/orange token, held ~400ms, eased back over
+    ~800ms — ruled EVENTAL, not at-rest, so the lane law holds; B4
+    named as the ember treatment's own final authority, literals used
+    only where no token yet exists, each commented as B4-provisional.
+    **Zero schema, zero new deps** — STOP-and-report if any slice wants
+    either; merge pre-authorized as zero-schema per the AB4 precedent;
+    Fable reviews post-merge.
+    **Sequencing — not building yet.** Queued behind TU2's own merge
+    (item 43, still pushed-only); lawfully parallel with FX8/item 45
+    (confirmed no surface overlap); must serialize against J6 (item
+    41's finding 1, not yet briefed) on any `PageEditor.tsx` overlap —
+    first to merge wins the base, the other rebases.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
