@@ -60,6 +60,16 @@
 // (narrower) open/docked width cap. Both parked IN tu1.mjs, A4-style, quoted
 // verbatim, with live successors HERE. See tu1.mjs's own header + PARKED
 // section for the full writeup.
+//
+// FX10's OWN park sweep (docs/wrizo-alpha/fx10-rooms-edges-brief.md) later
+// found SIX of THIS file's own checks falsified in turn — Fable's corrected
+// width ruling (`clamp(320px, 34vw, 460px)`, replacing TU2 S4's own "2x
+// --strip-width" spec, a disclosed spec error, not a build defect) breaks
+// the "EXACTLY 2x --strip-width" geometry assertion at all three reference
+// widths on both the page and board surfaces. All six parked HERE (this
+// file's own PARKED section, below), A4-style, quoted verbatim, live
+// successors in fx10.mjs's own S1 geometry section. Every other check in
+// this file (96 of 102) re-ran byte-identical against FX10's build.
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
@@ -429,8 +439,14 @@ await withHarness(async (app) => {
       const paperOpen = await rectOf(app, paperSel);
       ok(`Geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
         JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
-      ok(`Geometry @${width}px/${surface}: the OPEN panel's own width is EXACTLY 2x --strip-width (${stripWidthPx}px), read live — not 300px, not hardcoded`,
-        Math.abs(panelOpen.width - stripWidthPx * 2) < 1, JSON.stringify({ panelOpenWidth: panelOpen.width, expected: stripWidthPx * 2 }));
+      // FX10 S1/A4 — the "EXACTLY 2x --strip-width" assertion that lived
+      // here is PARKED below (HARNESS_PARKED gate, quoted verbatim) — Fable's
+      // own corrected width ruling (docs/wrizo-alpha/fx10-rooms-edges-brief.md)
+      // replaces the ~168px spec this check proved with
+      // `clamp(320px, 34vw, 460px)`; the number itself was a spec error, not
+      // a build defect. Live successor: fx10.mjs's own S1 geometry section,
+      // asserting the NEW ruled clamp directly, at all three reference
+      // widths, on both page and board surfaces.
 
       await app.evalJs("document.querySelector('.wz-tutor-dock-btn')?.click()");
       await sleep(250);
@@ -642,25 +658,40 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// tu2.mjs is a brand-new file; it parks nothing of its own (every check
-// above reflects this ticket's live, current design). The park sweep S6
-// requires (does TU2's own diff falsify any assertion in the other 26
-// harness files?) was investigated in full — a grep-based sweep, THEN an
-// empirical re-run of all 26 pre-existing files against this ticket's own
-// build, both HARNESS_PARKED settings. 25 came back byte-identical; the
-// one exception (tu1.mjs, two checks) is parked IN tu1.mjs itself, per A4,
-// with its own live successors pointing back here — see this file's own
-// header comment and tu1.mjs's own PARKED section for the full writeup.
-// This gate is therefore intentionally empty, mirroring b3.mjs's/tu1.mjs's
-// own precedent for an armed-but-empty gate on a brand-new file.
+// tu2.mjs originally shipped with nothing parked of its own (every check at
+// the time reflected TU2's own live, current design). FX10's own park sweep
+// (grep across scripts/harness/, then an empirical re-run of every file,
+// both HARNESS_PARKED settings, against FX10's build) found exactly ONE
+// falsified assertion shape in this file — genuinely a design change, not
+// an erratum: Fable's own corrected width ruling
+// (docs/wrizo-alpha/fx10-rooms-edges-brief.md) replaces TU2 S4's "exactly
+// 2x --strip-width" (~168px) spec with `clamp(320px, 34vw, 460px)` — the
+// brief's own words: "the number itself was simply wrong... not a build
+// error." All SIX instances (page + board surfaces, at each of the three
+// reference widths) are parked here per A4, quoted verbatim; the live
+// successor for all six is fx10.mjs's own S1 geometry section, which
+// asserts the NEW ruled clamp directly at all three widths on both
+// surfaces. Every other tu2.mjs check (96 of the original 102) still
+// passes byte-identical against FX10's build — cursor/delta, disclosure
+// v2, the A13 board walk, the session meter, and the quiet-degrade path are
+// all untouched by this ticket's own diff.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
+  for (const surface of ['page', 'board']) {
+    for (const width of [FLOOR_W, LAPTOP_W, WIDE_W]) {
+      pok(`PARKED (was "Geometry @${width}px/${surface}: the OPEN panel's own width is EXACTLY 2x --strip-width (84px), read live — not 300px, not hardcoded") — FX10 S1: Fable's own corrected ruling replaces the ~168px "2x --strip-width" spec with clamp(320px, 34vw, 460px) — a spec error, not a build defect (the brief's own words, verbatim, on the record). Live successor: fx10.mjs's own S1 geometry section, same surface, same width.`,
+        true, 'superseded by FX10 S1\'s corrected width ruling');
+    }
+  }
+
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, nothing parked out of tu2.mjs itself`
+    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all six FX10-superseded width checks documented with live successors in fx10.mjs`
     : `\nTU2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
