@@ -91,10 +91,20 @@ function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: num
 // header comment for the full "why measured geometry, not getComputedStyle
 // on the calc() custom property" reasoning; it applies unchanged here,
 // just flipped to the paper's RIGHT edge vs. the stage's right edge).
+// TU2 S4 — `.board-canvas-wrap` joins the selector: Board's own framed
+// wrapper (BoardEditor.tsx) carries neither `.mode-pagecol` (prose/script's
+// own canonical-width class) nor `.entry-full` — without this, the query
+// below matched NOTHING on a board-mounted panel, `paper` stayed null, and
+// the function's own `if (!stage || !paper) return Infinity` early-out fired
+// on every call, silently reporting "unlimited margin" regardless of the
+// board canvas's true on-screen width. That would have made the dock
+// affordance's own floor gate (DOCK_FLOOR_PX, Tutor.tsx's own call site)
+// vacuously always-true on Board — a real correctness gap the geometry
+// retrofit's own "Presence on Boards" clause would otherwise leave open.
 function availableTutorMargin(): number {
   if (typeof document === 'undefined') return Infinity;
   const stage = document.querySelector('.desk-frame-stage');
-  const paper = document.querySelector('.mode-pagecol, .entry-full');
+  const paper = document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
   if (!stage || !paper) return Infinity;
   const stageRect = stage.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();
@@ -116,11 +126,17 @@ export interface TutorProps {
   // (see the v2 disclosure wording, S3). Still never touched by anything
   // that could WRITE through this prop — it is read-only here, always.
   pageText: string;
-  // Selects the `--prose`/`--screenplay` anchor modifier — mirrors how
-  // DeskFrame.tsx itself applies `pageKind` to the sliver/goalGlow anchors;
-  // threaded through here instead since this component now owns its own
-  // anchor markup directly (see this file's own header comment).
-  pageKind: 'prose' | 'screenplay';
+  // Selects the `--prose`/`--screenplay`/`--board` anchor modifier — mirrors
+  // how DeskFrame.tsx itself applies `pageKind` to the sliver/goalGlow
+  // anchors; threaded through here instead since this component now owns its
+  // own anchor markup directly (see this file's own header comment). TU2 S4
+  // — `'board'` joins the union: BoardEditor.tsx now mounts this component
+  // (the two-anchor formulas below already reference `--tutor-paper-half`/
+  // `--tutor-panel-paper-half` as plain custom properties, so a `--board`
+  // modifier class overriding just those two — same technique
+  // `.desk-frame-sliver-anchor--board` already established — is the whole
+  // fix; no new geometry code, only a wider union and two CSS overrides).
+  pageKind: 'prose' | 'screenplay' | 'board';
 }
 
 interface DisplayMessage {
@@ -197,10 +213,32 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   // state, so gating the heavier computations here is what keeps an idle
   // Tutor cheap). Nothing here is ever written back to storage.
   const panelVisible = open;
+  // TU2 S4 — "Lenses on a Board should scope to the board's members where
+  // meaningful" (the brief's own words). Of the three lenses, only
+  // Consistency takes a multi-page SCOPE at all (Structure/Fragments each
+  // compute facts about `entry` itself, or scan every entry app-wide by
+  // recency/tag — neither reads a project's binder, so neither has a
+  // "binder vs. board" distinction to make). The reasonable reading,
+  // disclosed: a Board's own binder-wide scope (every OTHER page in the
+  // same project) is the wrong default here — a board is a curated
+  // grouping, and a name repeated across its own pinned members is exactly
+  // the kind of thing Consistency exists to catch, while pulling in the
+  // whole project binder would dilute that with pages the board's own
+  // membership deliberately excludes. `page-pin` boxes (Box.entryId) ARE
+  // the board's membership roster (AB4 S2's own definition); read those
+  // entries' texts live (never cached/stored) instead of the binder when
+  // `pageKind === 'board'`. A pin to a since-deleted entry (`getJournalEntry`
+  // returning undefined) is filtered out rather than crashing — the same
+  // tolerance BoardPinBox itself already extends to a missing referent.
   const consistencyScope = panelVisible
-    ? (entry.projectId
-        ? [pageText, ...getBinderPages(entry.projectId).filter((p) => p.id !== entry.id).map((p) => p.text)]
-        : [pageText])
+    ? (pageKind === 'board'
+        ? [pageText, ...(entry.boxes ?? [])
+            .filter((b) => b.kind === 'page-pin' && b.entryId)
+            .map((b) => getJournalEntry(b.entryId!)?.text)
+            .filter((t): t is string => t != null)]
+        : entry.projectId
+          ? [pageText, ...getBinderPages(entry.projectId).filter((p) => p.id !== entry.id).map((p) => p.text)]
+          : [pageText])
     : [];
   const consistencyObservations = panelVisible ? computeConsistencyObservations(consistencyScope) : [];
   const structure = panelVisible ? computeStructureFacts(entry, project) : null;

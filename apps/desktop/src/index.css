@@ -2528,9 +2528,16 @@ a:focus-visible,
       `availableTutorMargin()` JS measurement (mirroring
       `availableCascadeMargin()`) is the actual gate on whether the dock
       affordance is even offered, same division of labor as Cascade.tsx.
-   Board is out of scope for the Tutor this ticket (only the three
-   prose/screenplay hosts named in the brief mount it), so unlike the
-   sliver anchor there is no `--board` modifier on either anchor. */
+   TU2 S4 — Board joins prose/screenplay (BoardEditor.tsx now mounts this
+   component too; the sentence this comment used to carry — "Board is out
+   of scope... no --board modifier on either anchor" — is superseded by
+   the two `--board` overrides below, mirroring `.desk-frame-sliver-
+   anchor--board`'s own precedent exactly (same `min(50%, 550px)` half-
+   measure, same reasoning: Board's own content wrapper is `width:min(100%,
+   1100px)` — BoardEditor.tsx — genuinely wider than prose's 60ch/760px
+   measure, so the base rule's prose-sized `--tutor-paper-half` would land
+   the grip ~242px inside the board canvas instead of flush to its edge,
+   the identical defect FX4 S3 diagnosed for the sliver). */
 .desk-frame-tutor-anchor{
   position:absolute; top:0; z-index:5; height:100%;
   font-size:calc(1rem * var(--paper-scale));
@@ -2542,8 +2549,43 @@ a:focus-visible,
   width: var(--tutor-anchor-w);
   right: calc(50% - var(--tutor-paper-half) + var(--tutor-overflow) - var(--tutor-anchor-w));
 }
+/* TU2 S4 — the grip-flush audit, worked algebraically (not approximated):
+   this anchor's own physical LEFT edge (the edge nearest the paper — where
+   `.wz-tutor-grip` sits, `left:0` on itself, below) resolves to
+   `paper-right-edge - var(--tutor-overflow)` at every viewport — the
+   `--tutor-anchor-w` term cancels exactly between the `width` and `right`
+   declarations above (both reference the SAME custom property, so they
+   always agree). `--tutor-overflow` is `clamp(0px, ..., --tutor-paper-pad)`
+   — it is NEVER negative, so this anchor's near edge can never sit to the
+   RIGHT of (past) the paper's own edge; a genuine gap is mathematically
+   impossible here. At every one of tu1.mjs's own three reference widths
+   (1100/1280/2200) the natural margin comfortably clears 160px, so
+   `--tutor-overflow` computes to exactly 0px and the grip already sits
+   flush (zero gap) against the paper's right edge today — confirmed with
+   concrete numbers before touching anything, per this file's own "measured,
+   not approximated" discipline. (Below 160px of margin, overflow rises
+   toward its 38px pad ceiling, dipping the grip INTO the paper's own
+   padding — the same FX2 clearance-law allowance the sliver's mirror twin
+   already makes; it never uncovers the text measure itself.) No CSS change
+   was needed to satisfy TU2 S4's "grip flush, no gap" clause — it already
+   held, by construction, since TU1. */
 .desk-frame-tutor-anchor--prose,
 .desk-frame-tutor-anchor--screenplay{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
+/* TU2 S4 — the board variant, the exact mirror of `.desk-frame-sliver-
+   anchor--board` (see that rule's own FX4 S3 comment for the full defect
+   writeup this pattern fixes): Board's content wrapper is `width:min(100%,
+   1100px)` (BoardEditor.tsx), not the prose/screenplay 60ch/760px measure
+   this base rule's `--tutor-paper-half` assumes — halving `min(100%,
+   1100px)` distributes over both arms to `min(50%, 550px)`, landing the
+   grip flush to the board canvas's own right edge instead of ~242px inside
+   it. `--tutor-paper-pad` drops to 0 for the same reason the sliver's own
+   board variant does: Board's wrapper carries no padding of its own to dip
+   into, so the FX2 clearance term above would otherwise credit room that
+   isn't there. */
+.desk-frame-tutor-anchor--board{
+  --tutor-paper-half: min(50%, 550px);
+  --tutor-paper-pad: 0px;
+}
 .desk-frame-tutor-panel-anchor{
   position:absolute; top:0; left:0; right:0; height:100%; z-index:6;
   display:flex; align-items:stretch; justify-content:flex-end; pointer-events:none;
@@ -2553,6 +2595,16 @@ a:focus-visible,
 }
 .desk-frame-tutor-panel-anchor--prose,
 .desk-frame-tutor-panel-anchor--screenplay{ /* intentionally empty */ }
+/* TU2 S4 — the board variant's other half: this anchor governs the DOCKED
+   panel's own margin clamp (`--tutor-panel-margin`, consumed by
+   `.wz-tutor-panel[data-open='true'][data-docked='true']` below), not the
+   grip — same `min(50%, 550px)` half-measure as the grip anchor's own
+   `--board` override above, for the identical reason. No `-pad` variable
+   exists on this anchor to zero out (docked margin never had a padding
+   term of its own — only the grip anchor's FX2 overflow clamp does). */
+.desk-frame-tutor-panel-anchor--board{
+  --tutor-panel-paper-half: min(50%, 550px);
+}
 
 /* CD1 S6 — the goal glow's anchor: centered BEHIND the paper (negative
    z-index; the paper itself paints in normal flow above it). Same
@@ -2819,17 +2871,44 @@ a:focus-visible,
 /* The panel: a flex child of `.desk-frame-tutor-panel-anchor` (packed
    flush against THAT anchor's own right edge, which is the stage's right
    edge — see the anchor's own header comment for why this is what keeps
-   an open ~300px panel from ever being clipped). Closed = width:0 (the
-   exact `.wz-cascade-panel[data-visible='false']` collapse technique,
-   mirrored) rather than Sliver's opacity/translateX fade — a flex-basis
-   collapse is what lets the SAME rule serve both the open-width AND the
-   docked-width without fighting a transform. */
+   an open panel from ever being clipped). Closed = width:0 (the exact
+   `.wz-cascade-panel[data-visible='false']` collapse technique, mirrored)
+   rather than Sliver's opacity/translateX fade — a flex-basis collapse is
+   what lets the SAME rule serve both the open-width AND the docked-width
+   without fighting a transform.
+   TU2 S4 — the easing tension, named rather than silently resolved (per
+   this project's own CD2 Plan-survey-scope precedent for exactly this
+   situation): the brief asks this transition to "reuse the strip's actual
+   open/close constants, easing... measured from the strip's implementation,
+   not approximated," which reads as an instruction to switch onto the
+   app-wide `--ease`/`--t-state` tokens (:root, above: `--t-state: 220ms`,
+   `--ease: cubic-bezier(0.2,0.8,0.2,1)`). Reading Cascade.tsx's OWN real,
+   live transition first (`.wz-cascade-panel`, below in this file) rather
+   than assuming: it does NOT use either shared token — its own rule reads
+   `transition:width 180ms ease, opacity 180ms ease, margin-right 180ms
+   ease, border-width 180ms ease`, the same bare `180ms ease` literal this
+   rule already carried. So "reuse the strip's actual constant" and "keep
+   A15's own ~180ms" are NOT actually in conflict once measured — Cascade
+   itself never adopted the shared tokens either, so matching it exactly
+   means leaving this value alone. Had Cascade genuinely used `--t-state`
+   (220ms), this WOULD have been a real conflict with A15's "~180ms"
+   invariant, and this comment would need to say which side won and why;
+   measured instead of assumed, no such conflict exists to resolve. */
 .wz-tutor-panel{ flex:0 0 auto; width:0; max-width:0; height:100%; overflow:hidden;
   background:var(--desk-ground); border-width:0; border-style:solid; border-color:var(--ink-border);
   opacity:0; pointer-events:none;
   transition:width 180ms ease, max-width 180ms ease, opacity 180ms ease, border-width 180ms ease; }
+/* TU2 S4 — open width = exactly 2x the strip's own width TOKEN
+   (`--strip-width`, :root above: 84px today), not the old hardcoded
+   `min(300px, 86vw)` guess: referencing the token means this panel tracks
+   `--strip-width` automatically if that token ever changes, per the
+   brief's own "reference the token; hardcode nothing." `86vw` is dropped
+   outright, not folded into the calc — at 84px `--strip-width`, 2x is
+   168px, far under 86vw at any width this app supports (DESKFRAME_MIN_
+   WIDTH's own 1100px floor alone puts 86vw at ~946px), so the vw clamp
+   never engaged and carrying it forward would just be dead weight. */
 .wz-tutor-panel[data-open='true']{
-  width:min(300px, 86vw); max-width:min(300px, 86vw);
+  width:calc(var(--strip-width) * 2); max-width:calc(var(--strip-width) * 2);
   border-width:1px; opacity:1; pointer-events:auto; overflow-y:auto; }
 /* A15/S2's dock rider (CD2's exact grammar, mirrored): a docked panel
    compresses toward the margin genuinely available, floored at 120px —
@@ -2837,10 +2916,19 @@ a:focus-visible,
    `availableCascadeMargin()`/`DOCK_FLOOR_PX` pattern is reused verbatim in
    Tutor.tsx (a JS-measured gate on whether the dock affordance is even
    offered), matching this file's own header note that the floor is a JS
-   decision, not something CSS alone can enforce safely. */
+   decision, not something CSS alone can enforce safely.
+   TU2 S4 — the docked ceiling drops from the old hardcoded `300px` to the
+   SAME `calc(var(--strip-width) * 2)` the open state now uses (not asked
+   for verbatim by S4's own enumerated steps, but required for the two
+   rules to stay coherent: a docked panel is a COMPRESSED open panel, so
+   its own cap can never legitimately exceed the open width's own cap —
+   leaving `300px` here after shrinking the open cap to 168px would just be
+   a stale, never-engaging ceiling, the exact kind of silent drift this
+   ticket's own "reference the token, hardcode nothing" line exists to
+   prevent). */
 .wz-tutor-panel[data-open='true'][data-docked='true']{
-  width:clamp(120px, var(--tutor-panel-margin), 300px);
-  max-width:clamp(120px, var(--tutor-panel-margin), 300px); }
+  width:clamp(120px, var(--tutor-panel-margin), calc(var(--strip-width) * 2));
+  max-width:clamp(120px, var(--tutor-panel-margin), calc(var(--strip-width) * 2)); }
 @media (prefers-reduced-motion:reduce){ .wz-tutor-panel{ transition:none; } }
 .wz-tutor-body{ display:flex; flex-direction:column; gap:16px; padding:16px 14px; }
 .wz-tutor-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
