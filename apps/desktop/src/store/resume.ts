@@ -4,6 +4,7 @@ import {
   getBinderPages, getStoryPlanByProjectId, getSystemKind, inJournalView,
 } from './persistence';
 import { getFramework } from './frameworks';
+import { routeForEntry } from './routeForEntry';
 
 // Resume data layer (A3 → F1). The typed resume pointer: the target is the most
 // recently edited writing surface, whatever it is — a binder Page (any pageType),
@@ -45,9 +46,10 @@ function fromEntry(e: JournalEntry, at: number): ResumeTarget {
   // consumer of the SAME one predicate.
   const home: ResumeHome = inBinder ? 'binder' : inJournalView(e) ? 'journal' : 'shelf';
   const project = inBinder ? (getProject(e.projectId as string) ?? undefined) : undefined;
-  // Route by pageType (matches JournalEntry's redirect, so no bounce): a typed page
-  // is owned by the mode-aware editor wherever it lives; untyped stays the ink view.
-  const route = e.pageType != null ? `/page/${e.id}` : `/journal/${e.id}`;
+  // J6 S2 — routed via the one shared predicate now (was its own inline
+  // copy of the same `pageType != null` check; matches JournalEntry's own
+  // redirect, so still no bounce).
+  const route = routeForEntry(e);
   return {
     route,
     home,

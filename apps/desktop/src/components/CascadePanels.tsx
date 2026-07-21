@@ -15,6 +15,7 @@ import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
 import { PlacesPanel } from './PlacesPanel';
 import { AddToSheet } from './AddToSheet';
+import { routeForEntry } from '../store/routeForEntry';
 import type { JournalEntry, Project } from '../types';
 import type { SurveyItem, SurveyProps } from './CascadeSurvey';
 
@@ -80,14 +81,6 @@ export interface CascadeContext {
   openSurvey: (kind: CascadeSurveyKind) => void;
 }
 
-// Open (travel): an untyped page reads at /journal/:id (JournalEntry owns
-// every pageType-less page); a typed page reads at /page/:id (PageEditor
-// and its delegates) — the SAME split PlaceFace.tsx's own retired
-// `routeFor` used (copied here since that file is retired alongside
-// Drawer.tsx, its only mount site — see this ticket's build report).
-function routeFor(entry: JournalEntry): string {
-  return entry.pageType != null ? `/page/${entry.id}` : `/journal/${entry.id}`;
-}
 function itemTitle(entry: JournalEntry): string {
   const hasInk = (entry.strokes?.length ?? 0) > 0;
   if (!entry.text.trim()) return hasInk ? 'A sketch' : 'Untitled';
@@ -123,7 +116,7 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
           {recent.length === 0 && <div className="wz-cascade-empty">{t('placeFaceEmpty')}</div>}
           {recent.map((e) => (
             <div key={e.id} className="wz-cascade-list-item">
-              <button type="button" className="wz-cascade-list-title" onClick={() => navigate(routeFor(e))}>{itemTitle(e)}</button>
+              <button type="button" className="wz-cascade-list-title" onClick={() => navigate(routeForEntry(e))}>{itemTitle(e)}</button>
             </div>
           ))}
         </div>
@@ -338,7 +331,7 @@ function DrawersPanel({ navigate }: CascadeContext) {
 
   const travel = (tItem: DrawerTile) => {
     if (tItem.kind === 'board') { navigate(`/page/${tItem.id}`); return; }
-    if (tItem.entry) navigate(routeFor(tItem.entry));
+    if (tItem.entry) navigate(routeForEntry(tItem.entry));
   };
 
   return (
@@ -521,7 +514,7 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   if (kind.category === 'journal') {
     const pages = getJournalPages().slice().sort(byRecent);
     const items: SurveyItem[] = pages.map((e) => ({ id: e.id, title: itemTitle(e), excerpt: itemExcerpt(e), current: e.id === currentEntryId }));
-    return { title: deskTerm('drawerPlaceJournal'), items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeFor(e)); } };
+    return { title: deskTerm('drawerPlaceJournal'), items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeForEntry(e)); } };
   }
   if (kind.category === 'plan') {
     // The board list (S3's own literal wording). AB4 S1 — the CD2 erratum
@@ -559,7 +552,7 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
       if (!box) return;
       if (box.kind === 'page-pin' && box.entryId) {
         const entry = getJournalEntry(box.entryId);
-        if (entry) ctx.navigate(routeFor(entry));
+        if (entry) ctx.navigate(routeForEntry(entry));
         return;
       }
       ctx.navigate(`/page/${kind.boardId}`);
