@@ -3383,6 +3383,133 @@ outlive a session lives here, not in chat.
     build+review pipeline (ultracode), off post-B2/S6-deploy `main`
     (the gate condition — "once the B2+S6 deploy lands" — already
     satisfied).
+    **BUILT, INDEPENDENTLY REVIEWED, MERGED, AND PUSHED — 2026-07-21.**
+    Built S1-S4 on `b3-seeded-boards` off `main` @ `317c2cb`, in its
+    own worktree. S0's own ledger work was already done directly on
+    `main` before the build started.
+    **S1 — the engine, proven genuinely generic, not asserted.** A
+    `DeckDefinition` is a plain static object (id, room, nameTerm,
+    questions, a `deal(answers)` function); `DeckWizard.tsx` renders
+    whatever the definitions declare and names no deck/card/room
+    anywhere in its own code — the review independently read the
+    engine's own source specifically hunting for hidden per-deck
+    branching and found none. `materializeDeck` is pure (no I/O),
+    minting real ids and deduped connection threads from a deck's own
+    declared card list. "Start Here" (`store/deckHint.ts`) uses this
+    project's own established per-entity-scoped local-flag shape
+    (`firstRun.ts`/`tutorDisclosure.ts`'s pattern) — its full lifecycle
+    independently live-verified against the brief's own exact fence:
+    dealt a deck, edited a DIFFERENT card than the hinted one, hint
+    still died; edited a third card after, hint stayed dead; moving
+    (not editing) a card does not dismiss it.
+    **A genuine architectural finding, not a stylistic choice**: the
+    two doors use different persistence calls on purpose — door 2
+    (Board's own Add flow) uses the existing debounced `setBoxes`
+    autosave since a live BoardEditor is mounted; door 1 (drawer
+    creation) calls `saveBoardBoxes` directly since its board has no
+    live mounted component yet to race against. Diagnosed as a real
+    race, not discovered and quietly worked around.
+    **S2 — all seven decks, verbatim from the catalog.** Three-Act
+    Structure, Worldbuilding, Feature Screenplay, Thesis/Dissertation,
+    Grant Application, Feature Story, Character Study. **One real
+    defect caught by the build's own pre-run counting, before the
+    harness ever ran**: Feature Story was missing its own declared
+    Kicker B card (the lexicon term existed, the deal function never
+    used it) — fixed before first execution.
+    **Judgment calls disclosed, all independently reviewed and
+    sustained:** Three-Act's own proportional card counts (9/8/6 for
+    novel/novella/short story — the catalog says "proportionately,"
+    gives no numbers); Grant Application and Feature Story each
+    invented one light wizard question the catalog names none for,
+    since catalog Law 5 requires every deck to have narrowing
+    questions; Character Study drops a single-character option
+    outright, since a lone character can carry no relationship card,
+    which would falsify the deck's own reason for promotion ("dealt
+    pre-threaded"); relationship cards thread hub-and-spoke to BOTH
+    sides separately rather than one line per pair, read as the more
+    literal match to "wire the cast together" — independently
+    live-verified by the review (3 characters, 14 cards, 4 real
+    connection boxes, every endpoint traced to real ids from that
+    exact deal).
+    **S3 — the two doors, and only these two, structurally absent
+    everywhere else.** Door 2 is genuinely absent on system boards
+    (same law as the sliver's other three tools); Blank's own path
+    through `CreateProject.tsx` confirmed line-by-line unchanged by
+    the review — the only diff is an additive, CSS-inert-when-closed
+    wrapper around the pre-existing picker, nothing touched inside it.
+    **S4 — `b3.mjs`, 63 checks.** Board geometry proven byte-identical
+    with the wizard open vs. closed (canvas pixel dimensions AND a
+    pre-existing card's own rect, JSON-equal, at both reference
+    widths) — not eyeballed. **A maintenance trap surfaced and
+    disclosed, not silently absorbed**: adding a fifth sliver control
+    falsified three separately-parked "sliver carries EXACTLY N tools"
+    checks across `ab4.mjs`/`fx4.mjs`/`fx5.mjs` — an established
+    re-derive-in-place lineage (distinct from a verbatim-park), each
+    extended to its own next generation (5/4/3 respectively); one
+    prior generation's own pointer to a "live successor in `b2.mjs`"
+    turned out to name a check that never actually existed there
+    (`b2.mjs` uses presence-only `.includes()`, never an exact count)
+    — caught and corrected, not perpetuated. **Flagged plainly for a
+    future ticket**: this three-copy lineage is real ongoing
+    maintenance debt; every future sliver-tool addition must hunt down
+    and re-derive all three copies by hand.
+    **Two harness-methodology bugs found and fixed by the build
+    itself** (not product bugs): an anti-solicitation check scanning
+    `document.body.innerText` for "deck" false-flagged the sliver's
+    own *closed* panel (DOM always present, CSS-hidden — true of every
+    pre-existing Add door); an assertion expected 2 connections from
+    Character Study's 3-character deal, when the deck's own real
+    hub-and-spoke design mints 4 — both fixed to assert the actual
+    intent, not the wrong number.
+    **Independent review — GREEN, no defects found, nothing changed
+    on the branch.** The review specifically hunted for six failure
+    classes and found none: hidden deck-id branching in the "generic"
+    engine; a smuggled-in `Box` field; a special-cased dealt-card
+    type; a hint listening only to its own card; any UI reachable
+    without a click; drift in the blank path. Zero-schema confirmed
+    two ways: `apps/server` diff empty, AND `types/index.ts` (the
+    `Box` interface itself) doesn't even appear in the changed-files
+    list — no field was added anywhere, not even an optional one.
+    Zero back-reference confirmed live, not just by grep: dealt every
+    deck through the harness, read the resulting boxes directly,
+    cross-checked every key against the real `Box` interface's own
+    field set — zero foreign keys, both plain and threaded cards.
+    Ordinary-card-ness confirmed live: dragged, edited, and deleted a
+    dealt card through the real UI, no special-cased code path exists
+    anywhere in `BoardEditor.tsx` for one. One imprecise number in the
+    build's own prose caught and corrected (it said "22-file suite,"
+    the actual pre-existing count was 25) — noted as a documentation
+    slip, not a code defect.
+    **Full suite, both passes.** Build: `tsc` (desktop+server) +
+    `build:web` + selftest + all 26 harness files (new `b3.mjs`, 63
+    checks) green under both `HARNESS_PARKED` settings. Review: same
+    suite, its own clean run, 26/26 green both settings — including
+    independently confirming the new sliver-count generations 5/4/3
+    all pass live. CC's own third independent pass on the
+    fast-forwarded `main`: `tsc` (desktop+server) + `build:web` clean,
+    full 26-file/52-run suite **51/52 green on the first pass** — one
+    transient failure, `j4.mjs` under `HARNESS_PARKED=1`, a CDP-level
+    `SecurityError: localStorage access denied` unrelated to any
+    assertion in the file (which B3's own diff never touches at all).
+    Re-ran `j4.mjs`'s parked pass in isolation TWICE, both clean
+    (28/28 both times, all four PARKED successors green) — confirmed
+    a genuine transient browser-state flake, not a regression, and
+    recorded honestly rather than silently re-run into a clean summary.
+    **Merged — 2026-07-21** (zero-schema, merge pre-authorized per the
+    standing rule — confirmed genuinely zero-schema by the review's
+    own two-way check). Fast-forwarded `main` to `5f64194` (no
+    divergence, clean fast-forward, zero conflicts), pushed to
+    `origin/main`.
+    **Deploy authorization on record, standing, given ahead of the
+    usual per-instance word:** Nick, 2026-07-21 — "Review and deploy
+    B3 whenever it's ready. I need to get eyes on these builds to
+    know what's working/what isn't anyway." Per this explicit advance
+    word, deploy proceeds on CC's own merge+verify pass completing,
+    WITHOUT waiting for a separate Fable post-merge review first — a
+    deliberate, disclosed departure from every prior ticket's own
+    sequencing this session, where her review landed before deploy
+    every time. Her review still lands and folds in normally
+    afterward, same as several post-deploy folds already have.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
