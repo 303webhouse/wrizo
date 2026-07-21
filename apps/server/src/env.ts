@@ -38,10 +38,15 @@ export const env = {
   // slots in without a route change. Default is DeepSeek's own
   // Anthropic-compatible surface.
   tutorBaseUrl: process.env.TUTOR_BASE_URL || 'https://api.deepseek.com/anthropic',
-  // Default verified against api-docs.deepseek.com at TU2 build time,
-  // 2026-07-21: DeepSeek V4 Flash's current model id. Never the legacy
-  // `deepseek-chat`/`deepseek-reasoner` aliases — both retire 2026-07-24
-  // and must never be a shipped default again.
+  // VERIFICATION STATUS — honestly, not verified: this build attempted a
+  // live check against api-docs.deepseek.com at TU2 build time (2026-07-21)
+  // and the web-search tool returned only server errors ("529 Overloaded" —
+  // same outage recorded in tutorCostEstimates.ts's header). This id is
+  // carried over from pre-cutoff knowledge as the plausible current name
+  // for DeepSeek's V4 Flash model — NOT confirmed against a live source
+  // this session. Re-verify against api-docs.deepseek.com before deploy.
+  // Never the legacy `deepseek-chat`/`deepseek-reasoner` aliases — both
+  // retire 2026-07-24 and must never be a shipped default again.
   tutorModel: process.env.TUTOR_MODEL || 'deepseek-v4-flash',
   // Hard per-request token cap (the brief's own "hard per-request token
   // cap, no retry loops" requirement) — small on purpose: the Tutor's
