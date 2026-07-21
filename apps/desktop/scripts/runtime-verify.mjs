@@ -432,6 +432,22 @@ function makeApp(base, cdp, waitEvent) {
      */
     emulateMedia: (features) => cdp('Emulation.setEmulatedMedia', { features }),
     /**
+     * E1 — redirect the browser's own download manager to write real files
+     * to `dir` on disk, with no save-dialog prompt (headless already has
+     * none). This is what makes a client-side Blob-download export feature
+     * (an `<a download>` click, never a server response) verifiable
+     * end-to-end: the SAME mechanism a real click in a real browser window
+     * uses, not a page-side interception of the click that would only prove
+     * the handler ran, not that a file actually reached disk.
+     */
+    enableDownloads: (dir) => cdp('Page.setDownloadBehavior', { behavior: 'allow', downloadPath: dir }),
+    /**
+     * Raw CDP passthrough, for a scenario that needs a command this facade
+     * doesn't already wrap (E1 uses this for Network.emulateNetworkConditions
+     * — the offline-proof check).
+     */
+    cdp,
+    /**
      * FX2 — capture a PNG screenshot of the current viewport (base64), for
      * an actual eyeball look at geometry a rect-reading assert can't fully
      * convey (e.g. this project's own "look at what you built" verification

@@ -12,6 +12,8 @@ import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/vo
 import { copyText } from '../store/clipboard';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useActionToast } from './ActionToast';
+import { exportPageFiles, exportBinderDocument, exportEverythingDocument } from '../store/pageExport';
+import { triggerDownload } from '../store/download';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
@@ -579,6 +581,39 @@ export function ScriptEditor({ id }: { id: string }) {
     publishToast.show(ok ? dt('publishCopyWordsConfirm') : dt('publishCopyFailed'));
   };
 
+  // E1 S3 — the LIVE reconstructed doc (elementsRef/scenesRef), never a
+  // stale persisted `entry.script` — matches what Copy already does above,
+  // so a download the instant after typing can't lose the keystroke the
+  // 2s autosave debounce hasn't flushed yet.
+  const flushScriptNow = () => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    scenesRef.current = scenes;
+    saveScriptDoc(id, { v: 1, scenes });
+    lastSavedRef.current = elementsRef.current;
+    flushNow();
+    return scenes;
+  };
+  const downloadThisPage = (format: 'md' | 'txt') => {
+    const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
+    const liveEntry = { ...initialEntry, script: { v: 1 as const, scenes } };
+    const files = exportPageFiles(liveEntry);
+    const ok = triggerDownload(`${files.base}.${format}`, format === 'md' ? files.md : files.txt, format === 'md' ? 'text/markdown' : 'text/plain');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+  const downloadBinder = () => {
+    flushScriptNow();
+    if (!project) return;
+    const { filename, content } = exportBinderDocument(project);
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+  const downloadEverything = () => {
+    flushScriptNow();
+    const { filename, content } = exportEverythingDocument();
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
   // AB2 S4 — Structure picker, screenplay -> prose. entry.text (the derived
   // shadow, kept current by every autosave above) IS the prose rendering;
   // adopt it verbatim. Element types do not survive — the one-way warning
@@ -714,6 +749,15 @@ export function ScriptEditor({ id }: { id: string }) {
               <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
                 Publishing options — tailored to this work's type, destination, and format — are coming soon.
               </p>
+              {/* E1 S3 — the Download action (layout reorder above the
+                  coming-soon line is S4, a follow-up commit). */}
+              <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.02em', margin: '12px 0 6px' }}>{dt('publishDownloadTitle')}</div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                <button type="button" className="btn-quiet publish-download-page-md" onClick={() => downloadThisPage('md')}>{dt('publishDownloadPageMd')}</button>
+                <button type="button" className="btn-quiet publish-download-page-txt" onClick={() => downloadThisPage('txt')}>{dt('publishDownloadPageTxt')}</button>
+                {project && <button type="button" className="btn-quiet publish-download-binder" onClick={downloadBinder}>{dt('publishDownloadBinder')}</button>}
+                <button type="button" className="btn-quiet publish-download-everything" onClick={downloadEverything}>{dt('publishDownloadEverything')}</button>
+              </div>
               {/* AB2 S5 — copy-out comes home to Publish; "the existing
                   copy-script-text rendering" is Copy Formatted verbatim. */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>

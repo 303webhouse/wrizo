@@ -18,6 +18,8 @@ import { ScriptEditor } from '../components/ScriptEditor';
 import { useLexicon } from '../store/themeLexicon';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useActionToast } from '../components/ActionToast';
+import { exportPageFiles, exportBinderDocument, exportEverythingDocument } from '../store/pageExport';
+import { triggerDownload } from '../store/download';
 import { DeskFrame, useDeskFrameViewport } from '../components/DeskFrame';
 import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
@@ -550,6 +552,34 @@ function PageEditorView({ id }: { id: string }) {
     publishToast.show(ok ? dt(which === 'words' ? 'publishCopyWordsConfirm' : 'publishCopyFormattedConfirm') : dt('publishCopyFailed'));
   };
 
+  // E1 S3 — "This Page" reads straight off the LIVE textRef (never a stale
+  // persisted copy), so a download the instant after typing can't lose the
+  // keystroke the debounced autosave hasn't flushed yet — the same
+  // discipline Copy already relies on.
+  const downloadThisPage = (format: 'md' | 'txt') => {
+    const files = exportPageFiles({ ...entry, text: textRef.current });
+    const ok = triggerDownload(`${files.base}.${format}`, format === 'md' ? files.md : files.txt, format === 'md' ? 'text/markdown' : 'text/plain');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
+  // "This Binder"/"Everything" read PERSISTED storage across many pages, not
+  // just this one — flush this page's own live text through first so a
+  // download fired right after typing can't miss it.
+  const downloadBinder = () => {
+    flush(); flushNow();
+    if (!project) return;
+    const { filename, content } = exportBinderDocument(project);
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
+  const downloadEverything = () => {
+    flush(); flushNow();
+    const { filename, content } = exportEverythingDocument();
+    const ok = triggerDownload(filename, content, 'text/markdown');
+    publishToast.show(ok ? dt('publishDownloadConfirm') : dt('publishDownloadFailed'));
+  };
+
   const publishDialog = showPublish && (
     <div className="sprint-modal-backdrop" onClick={() => setShowPublish(false)}>
       <div className="sprint-modal card" role="dialog" aria-label={lex('publish')} onClick={e => e.stopPropagation()}>
@@ -557,6 +587,17 @@ function PageEditorView({ id }: { id: string }) {
         <p style={{ color: 'var(--text-mid)', fontSize: 14, margin: '8px 0 16px' }}>
           Publishing options — tailored to this work's type, destination, and format — are coming soon.
         </p>
+        {/* E1 S3 — the Download action. S4 (a follow-up commit) moves this
+            section, and the paragraph above, so Download reads unmissable
+            ABOVE the coming-soon line — left in its original reading order
+            here, this slice's own scope is the mechanism, not the layout. */}
+        <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.02em', margin: '12px 0 6px' }}>{dt('publishDownloadTitle')}</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <button type="button" className="btn-quiet publish-download-page-md" onClick={() => downloadThisPage('md')}>{dt('publishDownloadPageMd')}</button>
+          <button type="button" className="btn-quiet publish-download-page-txt" onClick={() => downloadThisPage('txt')}>{dt('publishDownloadPageTxt')}</button>
+          {project && <button type="button" className="btn-quiet publish-download-binder" onClick={downloadBinder}>{dt('publishDownloadBinder')}</button>}
+          <button type="button" className="btn-quiet publish-download-everything" onClick={downloadEverything}>{dt('publishDownloadEverything')}</button>
+        </div>
         {/* AB2 S5 — copy-out comes home to Publish (findings 2/3 of record die
             here). "Copy My Words" strips the markdown conventions back to
             honest plain text; "Copy Formatted" copies entry.text as stored —

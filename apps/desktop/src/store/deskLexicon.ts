@@ -395,7 +395,20 @@ export type DeskTermId =
   // on success, not brokenness, but "failure is reported honestly, never
   // silently swallowed" is a standing requirement regardless of how often
   // it fires.
-  | 'publishCopyWordsConfirm' | 'publishCopyFormattedConfirm' | 'publishCopyFailed';
+  | 'publishCopyWordsConfirm' | 'publishCopyFormattedConfirm' | 'publishCopyFailed'
+  // E1 S3 — the Download action, the ticket's own reason for existing. One
+  // section label + one button label per scope; 'publishDownloadBinder'
+  // only ever renders when the open page has a binder home (no project ->
+  // no button, per the house's own no-greyed-states law — see
+  // PageEditor.tsx/ScriptEditor.tsx's own conditional). Success/failure
+  // lines are shared across every scope (the SAME toast the copy path
+  // uses) — a real file landing is its own confirmation in the OS's own
+  // download UI, but a quiet in-app line matches S2's "say so" philosophy
+  // and gives a genuine failure (e.g. nothing left to export) an honest
+  // home instead of a silent no-op.
+  | 'publishDownloadTitle' | 'publishDownloadPageMd' | 'publishDownloadPageTxt'
+  | 'publishDownloadBinder' | 'publishDownloadEverything'
+  | 'publishDownloadConfirm' | 'publishDownloadFailed';
 
 const CANONICAL: Record<DeskTermId, string> = {
   modeFreeWrite: 'Free Write',
@@ -769,7 +782,16 @@ const CANONICAL: Record<DeskTermId, string> = {
   // E1 S2 — Publish's copy path.
   publishCopyWordsConfirm: 'Copied — your plain words are on the clipboard.',
   publishCopyFormattedConfirm: 'Copied — with formatting intact.',
-  publishCopyFailed: 'Copy didn’t go through — try again.',
+  publishCopyFailed: 'Copy didn’t go through — try again, or use Download below.',
+
+  // E1 S3 — Download.
+  publishDownloadTitle: 'Download',
+  publishDownloadPageMd: 'This Page (.md)',
+  publishDownloadPageTxt: 'This Page (.txt)',
+  publishDownloadBinder: 'This Binder',
+  publishDownloadEverything: 'Everything',
+  publishDownloadConfirm: 'Downloading — check your downloads.',
+  publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
