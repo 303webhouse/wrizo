@@ -3945,9 +3945,16 @@ outlive a session lives here, not in chat.
     known celebration-animation timing race, unrelated to this diff)
     cleared 42/42 on three immediate reruns, exactly per this
     project's own standing practice.
-    **Pushed to `origin/tu2-listener` — NOT merged.** Per this
-    ticket's own explicit instruction: report is the push; Fable
-    reviews post-push; no merge without Nick's own word.
+    **Pushed to `origin/tu2-listener`, then MERGED — 2026-07-21.**
+    Fable's own on-branch review landed GREEN, required 0
+    (`docs/wrizo-alpha/tu2-review-fable.md`, committed by that
+    session); Nick's own merge word followed in that same session's
+    own conversation, not this one. Merge commit `c04a1f1` (parents
+    `d45f7f7`/`45ea10e`) confirms it directly. **Correction, sourced
+    from git truth, not this session's own narrative** — the fuller
+    build/review/merge record for this ticket belongs to the session
+    that ran it; this note exists only so the ledger doesn't sit
+    stale claiming "not merged" when `main` itself already disagrees.
 44. **DeepSeek API account — Nick's own note, 2026-07-21, not yet
     connected.** "I have set up a DeepSeek v4 API account and topped
     it up with $10 for testing." This is the credential TU2's own S1
@@ -4015,11 +4022,15 @@ outlive a session lives here, not in chat.
     **Zero schema, zero new deps** — STOP-and-report if any slice wants
     either; merge pre-authorized as zero-schema per the AB4 precedent;
     Fable reviews post-merge.
-    **Sequencing — not building yet.** Queued behind TU2's own merge
-    (item 43, still pushed-only); lawfully parallel with FX8/item 45
-    (confirmed no surface overlap); must serialize against J6 (item
-    41's finding 1, not yet briefed) on any `PageEditor.tsx` overlap —
-    first to merge wins the base, the other rebases.
+    **Gate cleared — 2026-07-21.** TU2 merged (item 43, `c04a1f1`);
+    M2's own stated start condition is met. Lawfully parallel with
+    FX8/item 45 (confirmed no surface overlap between M2's own new
+    `RhizomeField` component and FX8's card-visual CSS); must
+    serialize against J6 (item 41's finding 1, not yet briefed) on any
+    `PageEditor.tsx` overlap — first to merge wins the base, the other
+    rebases. **Build starting — 2026-07-21**, via a Workflow-
+    orchestrated build+review pipeline (ultracode), off post-TU2-merge
+    `main`.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
