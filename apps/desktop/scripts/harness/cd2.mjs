@@ -814,6 +814,108 @@ await withHarness(async (app) => {
     gateFloorPagecolRect.left >= gateFloorStripRect.left + gateFloorStripRect.width,
     JSON.stringify({ gateFloorStripRect, gateFloorPagecolRect }));
 
+  // ==========================================================================
+  // CD3 (2026-07-22) — two new canon checks, homed here (not fx9.mjs):
+  // this file already owns the canonical strip-roster/geometry claims (its
+  // own header, "cd2.mjs's own file owns the canonical strip-roster
+  // claim"), and both checks below are strip/paper GEOMETRY, the same
+  // family as this file's own S1/S2 sections just above.
+  //
+  // (a) Nothing brass at rest, across the WHOLE reordered strip — the
+  // independent audit only forced-hover-verified ONE item (Journal); this
+  // is a real sweep of all eight, using the SAME genuinely-trusted
+  // pointer-move discipline fx9.mjs's own S1 section already established
+  // (app.mouseMove, not a synthesized event).
+  // ==========================================================================
+  await freshProsePage(app, LAPTOP_W, 900);
+  await app.evalJs("document.activeElement && document.activeElement.blur && document.activeElement.blur()");
+  await app.mouseMove(5, 5); // pointer well away from the strip — genuinely at rest
+  await sleep(150);
+  const stripRestSweep = await app.evalJs(`(() => {
+    const probe = document.createElement('div');
+    probe.style.color = 'var(--text-hi)';
+    document.body.appendChild(probe);
+    const textHi = getComputedStyle(probe).color;
+    probe.style.color = 'var(--brass)';
+    const brass = getComputedStyle(probe).color;
+    probe.remove();
+    const items = [...document.querySelectorAll('.wz-strip-item')].map(el => ({
+      label: el.querySelector('.wz-strip-label')?.textContent,
+      color: getComputedStyle(el).color,
+      active: el.classList.contains('active'),
+    }));
+    return { textHi, brass, items };
+  })()`);
+  ok('CD3 canon (a): every one of the EIGHT strip items reads its resting color as --text-hi (never --brass), no hover/force applied — a real sweep, not the audit\'s own single-item (Journal) spot check',
+    stripRestSweep.items.length === 8
+      && stripRestSweep.items.every((it) => !it.active && it.color === stripRestSweep.textHi && it.color !== stripRestSweep.brass),
+    JSON.stringify(stripRestSweep));
+
+  // ==========================================================================
+  // (b) "The paper has not moved." A 20% strip enlargement plus the
+  // flush-to-topbar reposition is exactly the class of change that can
+  // shift the stage without anyone noticing. Measured directly against
+  // main @ 8884d49 (pre-CD3) at both reference widths (1100px floor,
+  // 2200px wide) via a real build-and-measure pass in this same isolated
+  // worktree (git checkout 8884d49 -- ., pnpm run build:web, measure
+  // .mode-pagecol/.mode-page/.forward-only-editor, git checkout HEAD --
+  // ., rebuild) — the baseline numbers below are that measurement's own
+  // output, not an inference from the breathing-room number.
+  //
+  // FINDING: the paper's own rect (.mode-pagecol, .mode-page) and the
+  // text measure (.forward-only-editor's own computed width — the line
+  // length available to the writer, plus .mode-pagecol's own computed
+  // width) are BYTE-IDENTICAL to main @ 8884d49 in left/width/right/
+  // height at both widths — the strip's own 20% growth and the flush
+  // reposition cost the paper NOTHING horizontally, and its own height is
+  // untouched. The paper's Y position DOES shift up by exactly 10px at
+  // both widths — not a silent stage drift: index.css's own diff
+  // (099a035) shows .desk-mode-strip dropping its 1px border + 4px
+  // padding box (top AND bottom — Nick's own "redundant separator...
+  // under the Writing Modes tabs" cleanup), (1+1+4+4)px = 10px shorter
+  // top bar, matching the measured shift exactly. Asserted as an exact,
+  // bounded delta below (not merely "unchanged") — any FUTURE drift
+  // beyond this one disclosed, accounted-for 10px would fail this check.
+  // ==========================================================================
+  const PAPER_BASELINE_8884D49 = {
+    1100: {
+      pagecol: { left: 242.3125, top: 119, width: 615.359375, height: 733, right: 857.671875 },
+      page: { left: 242.3125, top: 119, width: 615.359375, height: 693, right: 857.671875 },
+      editorWidth: '537.359px', pagecolWidth: '615.359px',
+    },
+    2200: {
+      pagecol: { left: 730.78125, top: 119, width: 738.421875, height: 733, right: 1469.203125 },
+      page: { left: 730.78125, top: 119, width: 738.421875, height: 693, right: 1469.203125 },
+      editorWidth: '645.234px', pagecolWidth: '738.422px',
+    },
+  };
+  const CHROME_SHRINK_PX = 10; // .desk-mode-strip's own dropped border+padding box (index.css, 099a035)
+  for (const width of [1100, 2200]) {
+    await freshProsePage(app, width, 900);
+    const paperNow = await app.evalJs(`(() => {
+      const rect = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height, right: r.right }; };
+      return {
+        pagecol: rect(document.querySelector('.mode-pagecol')),
+        page: rect(document.querySelector('.mode-page')),
+        editorWidth: getComputedStyle(document.querySelector('.forward-only-editor')).width,
+        pagecolWidth: getComputedStyle(document.querySelector('.mode-pagecol')).width,
+      };
+    })()`);
+    const baseline = PAPER_BASELINE_8884D49[width];
+    ok(`CD3 canon (b) @ ${width}px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height`,
+      paperNow.pagecol.left === baseline.pagecol.left && paperNow.pagecol.width === baseline.pagecol.width
+        && paperNow.pagecol.right === baseline.pagecol.right && paperNow.pagecol.height === baseline.pagecol.height
+        && paperNow.page.left === baseline.page.left && paperNow.page.width === baseline.page.width
+        && paperNow.page.right === baseline.page.right && paperNow.page.height === baseline.page.height,
+      JSON.stringify({ paperNow, baseline }));
+    ok(`CD3 canon (b) @ ${width}px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)`,
+      paperNow.editorWidth === baseline.editorWidth && paperNow.pagecolWidth === baseline.pagecolWidth,
+      JSON.stringify({ paperNow, baseline }));
+    ok(`CD3 canon (b) @ ${width}px: the paper's Y position moves by EXACTLY the disclosed ${CHROME_SHRINK_PX}px (the mode-strip box's own dropped border+padding) — not a silent additional drift`,
+      baseline.pagecol.top - paperNow.pagecol.top === CHROME_SHRINK_PX,
+      JSON.stringify({ baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top }));
+  }
+
   return checks;
 });
 
