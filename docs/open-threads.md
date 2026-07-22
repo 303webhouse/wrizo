@@ -4438,6 +4438,24 @@ outlive a session lives here, not in chat.
     hiding a real defect the contention just makes more likely to
     surface. **Not yet triaged into a brief; not yet built; not yet
     sequenced** — Nick's own call on timing.
+    **RIDER — parked-entry history audit (added on Fable's word,
+    2026-07-22, from the CD3 incident, item 53).** When the CD3 fix
+    pass's own independent review traced one parked `ab3.mjs` entry
+    through its FULL history, it found the entry had been silently
+    mutated in-place once BEFORE CD3 ever existed (by B1, `9ce8f6b`) —
+    a pre-law violation of the now-ratified parked-entries-immutable
+    rule, undetected until that deep trace. B1's specific instance is
+    closed (ruled a violation, pre-law, no further action). But the
+    systematic question stands: **are there OTHER undetected in-place
+    mutations of parked entries anywhere across `scripts/harness/`?**
+    This rider queues a one-time systematic sweep — for every parked
+    (`pok()` / `HARNESS_PARKED`-gated) entry in every harness file,
+    trace it to the commit that FIRST parked it and diff its own
+    recorded original text against that commit's text; flag any that
+    were later rewritten in place rather than layered. Practice note
+    the review raised: "sweep all parked entries" must mean
+    full-lineage-to-origin, not just since a ticket's own base commit.
+    Folds into this pass's own scheduling — Nick's call on timing.
 49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
     finding 1 (Nick's second sitting — the Journal's "New Page" routing
@@ -5069,14 +5087,33 @@ outlive a session lives here, not in chat.
     precedent style B1 itself invoked, arguably exempt) or a genuine
     immutability violation needing retroactive cleanup? **Open for
     Fable's/Nick's ruling — not actioned.**
-    **NOT MERGED. Awaiting Fable's own review + Nick's merge word.**
-    Per Fable's explicit condition ("Fable reviews before merge"),
-    CD3's normal zero-schema merge pre-authorization is SUSPENDED for
-    this ticket — the independent review clears the "not on the fix
-    pass's own word" bar, but Fable's own review before merge is a
-    distinct gate this session will not self-satisfy. Branch tip:
-    `bc2767c` on `cd3-strip-and-chrome`, pushed. **BM1 (item 54)
-    stays gated until this merges.**
+    **MERGED — 2026-07-22, on Fable's own explicit word** (her
+    required "before merge" review gate met by her direct ruling,
+    after seeing the fix + review outcome and the B1 finding).
+    `git merge --no-ff origin/cd3-strip-and-chrome` onto `main` @
+    `4780193` — clean, no conflicts (everything on `main` since CD3's
+    own `8884d49` merge-base was docs-only, so zero code overlap
+    despite touching shared chrome). Re-verified at the merge HEAD:
+    `tsc` clean, `build` clean; the full historic suite across the
+    true final combined tree (J6+FX9+E1+FX10+CD3) re-run — result
+    recorded at item 48's own rider (see below) on completion.
+    **Fable's rulings of record at merge, 2026-07-22**:
+    — **The paper's 10px rise is ACCEPTED as intended** (the
+    `.desk-mode-strip` border/padding removal, Nick's own "redundant
+    separator" cleanup), **flagged for Nick's own eye** at a sitting —
+    the canon check now binds it as an exact bounded delta, so any
+    FURTHER drift fails, but this specific 10px is lawful, not a
+    regression.
+    — **The Board's own Done button is INTERIM and CONDEMNED.** Nick's
+    ruling stands whole: Done is deprecated dead EVERYWHERE, the Board
+    included. CD3 correctly LEFT the Board's Done in place, because
+    it is the Board's only exit today (no rail, no Pages/Plan toggle
+    there) — but it survives ONLY until FX10's named return reaches
+    the Board (BM1's own PAGE → door is that successor, item 54 S3).
+    Recorded as a standing condemnation, not a present action: do NOT
+    remove the Board's Done before its replacement lands, and do NOT
+    treat its continued presence as permanent.
+    **BM1 (item 54) is now UNGATED — CD3 has merged.**
 54. **BM1 — the Board's Own Modes.** **BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/bm1-board-modes-brief.md`).
     From the Board Modes second pass as ruled by Nick, 2026-07-21.
@@ -5109,15 +5146,16 @@ outlive a session lives here, not in chat.
     BM1.1, never ships flat — "the Grammarian's floor"); the paper's
     own rect and text measure on the page side stay inviolate (PLAN →
     is bar chrome only).
-    **BUILD IS GATED — NOT STARTED.** The brief makes it explicit:
-    `bm1-board-modes` branches from `main` ONLY AFTER FX10's fix pass
-    (CD3, item 53) has merged — both tickets rewrite the board's top
-    bar, and BM1 inherits FX10's named return as the PAGE → door's
-    own ancestor. **Branching before that merge is STOP-and-report.**
-    As of this writing CD3's fix pass is mid-review (see item 53), so
-    BM1's build is deliberately held. **E1 (item 51) outranks BM1 if
-    capacity contends** — Nick's own priority. Report = push; Fable
-    reviews before a merge recommendation; deploy is Nick's own
+    **GATE CLEARED — CD3 (item 53) merged 2026-07-22.** The brief's
+    gate (`bm1-board-modes` branches from `main` ONLY after FX10's fix
+    pass / CD3 merged — both rewrite the board's top bar, and BM1
+    inherits FX10's named return as the PAGE → door's own ancestor)
+    is now satisfied; BM1 branches from post-CD3 `main`. **E1 (item
+    51) outranks BM1 if capacity contends** — but E1 is already
+    merged, so no live contention. **Build starting — 2026-07-22**, on
+    `bm1-board-modes` off post-CD3 `main`, own worktree. Report =
+    push; Fable reviews before a merge recommendation; **schema merge
+    on Nick's own explicit word only** (T5); deploy is Nick's own
     separate word after that.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
@@ -5309,20 +5347,30 @@ outlive a session lives here, not in chat.
   result gates a merge should not itself be run alongside another
   session's own build — that is what manufactures the contention this
   rule exists to catch.
-- **PARKED ENTRIES ARE IMMUTABLE — PROPOSED 2026-07-22 (Fable, the
-  CD3 incident, item 53), Nick's own ratification still pending, NOT
-  yet in force.** A parked assertion may be superseded again (its own
-  new park cycle, with its own fresh SUPERSEDED marker and successor),
-  re-pointed at a different successor, or annotated with a comment —
-  but a parked entry's own recorded ORIGINAL text, once parked, is
-  never rewritten. Touching a parked entry's original text is never a
-  fix. Trigger: a concurrent session's own harness edits mutated an
-  already-parked historical entry in-place rather than starting a new
-  park cycle, discovered by an independent audit. Recorded here as
-  proposed, per this house's own standing practice (see the S0-push
-  rule's own history) of never marking a rule ratified without Nick's
-  explicit word in the same turn — update this entry to "ratified"
-  only on that word, not before.
+- **PARKED ENTRIES ARE IMMUTABLE — RATIFIED 2026-07-22 (Fable's word,
+  the CD3 incident, item 53), NO incidental exemption.** A parked
+  assertion may be superseded again (its own new park cycle, with its
+  own fresh SUPERSEDED marker and successor), re-pointed at a different
+  successor, or annotated with a comment — but a parked entry's own
+  recorded ORIGINAL text, once parked, is never rewritten. Touching a
+  parked entry's original text is never a fix. **No "plain incidental
+  count bump" exemption** — the question was raised (B1's own
+  `9ce8f6b` in-place edit of an already-parked `ab3.mjs` entry,
+  `stripItemCount 7→8`, invoking an `fx2.mjs`-style incidental-bump
+  precedent) and RULED against: a change to a parked entry's own
+  tested condition is a violation regardless of how small, because the
+  whole point of the frozen record is that it stays byte-true. **B1's
+  count bump ruled a violation — but pre-law, already remediated (the
+  CD3 fix pass restored the parked text and added a fresh generation
+  rather than mutating further), no further action on that specific
+  instance.** Trigger: a concurrent session's own harness edits
+  mutated an already-parked historical entry in-place rather than
+  starting a new park cycle (CD3), discovered by an independent audit;
+  the review then found the same class had ALREADY happened once
+  before, undetected (B1). The systematic question — are there OTHER
+  undetected pre-law mutations across the harness tree? — becomes a
+  parked-entry history-audit rider on item 48 (not this specific
+  entry's concern).
 - **Erratum vs. supersession, for harness checks — ratified 2026-07-16
   (Fable, cd1.1 spot-check).** Two different situations, two different
   moves. A check falsified because the DESIGN changed (a surface
