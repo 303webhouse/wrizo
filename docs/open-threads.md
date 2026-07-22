@@ -4427,11 +4427,19 @@ outlive a session lives here, not in chat.
     regression); `tu2.mjs` (suite-context-only, never isolated —
     4 total clean isolated confirmations across the session); `w2.mjs`
     (parked check, one suite-context failure, one clean isolated
-    32/32 re-run). **Common factor across all four**: every failure
+    32/32 re-run); **`th2.mjs`** (a celebration-animation timing race
+    on the goal-fill's brass flash — two flaky modes seen this
+    session, an Edge sync-popup crash and this flash-timing wait);
+    **`m2.mjs`** (added 2026-07-22 — the SAME celebration/milestone-
+    flash timing wait as `th2`, "flash engaged on goal crossing"
+    `waitFor` timeout; clean 4/5 in isolation, only fails under
+    full-suite/concurrent-build contention on `HARNESS_PARKED=1`,
+    never a logic assertion — a timing race, not a regression).
+    **Common factor across all**: every failure
     surfaced only inside a full historic-suite run under genuine CDP/
     browser resource contention, several coinciding with a concurrent
     session's own build — never in true isolation. **Scope for the
-    eventual ticket**: sweep all four (plus whatever the item 47
+    eventual ticket**: sweep all (plus whatever the item 47
     geometry-defect investigation turns up) under the newly-ratified
     contention-reproduction practice (see TOOLING STATUS), and decide
     per-check whether each is genuinely transient-under-load-only or
@@ -5095,8 +5103,21 @@ outlive a session lives here, not in chat.
     own `8884d49` merge-base was docs-only, so zero code overlap
     despite touching shared chrome). Re-verified at the merge HEAD:
     `tsc` clean, `build` clean; the full historic suite across the
-    true final combined tree (J6+FX9+E1+FX10+CD3) re-run — result
-    recorded at item 48's own rider (see below) on completion.
+    true final combined tree (J6+FX9+E1+FX10+CD3) re-run, both
+    settings — **34/34 files, only two failures, both confirmed
+    transient contention flakes, neither a CD3 regression**: `j4`
+    (`HARNESS_PARKED=1`, "CDP page target never appeared" — a browser
+    that couldn't even spin up; clean 3/3 in isolation) and `m2`
+    (`HARNESS_PARKED=1`, the milestone-flash `waitFor` timeout — the
+    same celebration-animation timing race already on record for
+    `th2`; clean 4/5 in isolation, the one re-fail while BM1's build
+    was still contending). Both passed clean on the OTHER setting in
+    the same run, and CD3's own diff (strip chrome, Done removal, top
+    bar) has zero code-path overlap with either `j4`'s box-undo or
+    `m2`'s Rhizome/flash code. Note: this suite ran alongside BM1's
+    own build starting up — exactly the "sweep alongside another
+    session's build" the contention practice warns manufactures this
+    class. `m2` folds into item 48's flake set (see below).
     **Fable's rulings of record at merge, 2026-07-22**:
     — **The paper's 10px rise is ACCEPTED as intended** (the
     `.desk-mode-strip` border/padding removal, Nick's own "redundant
