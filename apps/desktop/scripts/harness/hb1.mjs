@@ -199,8 +199,34 @@ await withHarness(async (app) => {
   ok('S4: the veil actually lifts — no element is still data-veiled=true, the gate banner is gone',
     afterChoice.veilCount === 0 && afterChoice.bannerGone, JSON.stringify(afterChoice));
 
-  const chromeLive = await app.evalJs("(() => { const btn = [...document.querySelectorAll('.sprint-actions button')].find(b => b.textContent === 'Done'); return !!btn && !btn.closest('[inert]'); })()");
-  ok('S4: post-unlock chrome (Done) is reachable again — not still wrapped in an inert ancestor', chromeLive);
+  // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL
+  // check (quoted verbatim, PARKED below, A4): Done is scrapped from the
+  // Page/Script top bars (Nick's own ruling — Publish, the rail, and free
+  // navigation cover every exit now); this fixture's own page is a LOOSE
+  // page (Arrival's "Write" door, no project), so `.sprint-actions` itself
+  // is empty here (the Pages/Plan toggle only mounts when `project` is
+  // truthy — verified live) — the one control this specific fixture CAN
+  // prove reachable is the mode strip's own "Publish" tab, present on
+  // every framed surface regardless of project. Scoped to Page/Script
+  // ONLY — the Board face KEEPS its own Done button (no rail, no Pages/
+  // Plan toggle there; Done is its only exit) and is untouched by this
+  // check or this file (this fixture never mounts a Board at all).
+  const chromeLive = await app.evalJs(`(() => {
+    const publishTab = [...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish');
+    return { publishPresent: !!publishTab, publishInert: !!publishTab?.closest('[inert]'), publishAriaDisabled: publishTab?.getAttribute('aria-disabled') };
+  })()`);
+  ok('CD3 successor of "S4: post-unlock chrome (Done) is reachable again — not still wrapped in an inert ancestor" (Page/Script only — the Board keeps its own Done, untouched, see cd1.mjs/b2.mjs): post-unlock chrome (the mode strip\'s Publish tab, Done\'s replacement doorway here) is reachable again — present, not aria-disabled, not wrapped in an inert ancestor',
+    chromeLive.publishPresent && !chromeLive.publishInert && chromeLive.publishAriaDisabled === 'false', JSON.stringify(chromeLive));
+
+  // Function, not just presence (this file's own hb1.1 R1/F-1 discipline,
+  // applied here too): actually click Publish and confirm the dialog
+  // mounts — proves the control is genuinely wired, not just unwrapped.
+  await app.evalJs("[...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish').click()");
+  await sleep(150);
+  const publishDialogMounted = await app.evalJs("!!document.querySelector('.sprint-modal-backdrop')");
+  ok('S4 (Page): clicking the post-unlock Publish tab actually opens the Publish dialog (function, not just presence)', publishDialogMounted);
+  await app.evalJs("document.querySelector('.sprint-modal-backdrop')?.click()");
+  await sleep(150);
 
   // ==========================================================================
   // F3 — the rite runs once per device: a later boot shows Arrival (it is
@@ -300,9 +326,16 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// This file's first-ever PARKED entry (no scaffold existed before FX3) —
-// one check, the A4 convention applied fresh: quoted verbatim, SUPERSEDED
-// species, re-asserted against the new truth.
+// FX3 was this file's first-ever PARKED entry (no scaffold existed before
+// it) — one check, the A4 convention applied fresh: quoted verbatim,
+// SUPERSEDED species, re-asserted against the new truth.
+// CD3 (2026-07-2X) adds a second: Done is scrapped from the Page/Script
+// top bars whole (Nick's own ruling); the S4 post-unlock-chrome check's
+// own subject (a Done button in .sprint-actions) no longer exists on this
+// fixture's loose page. Live successor (the mode strip's Publish tab) is
+// in this file's own live S4 section. SCOPE: Page/Script only — this file
+// never mounts a Board fixture, and the Board's own Done button is
+// untouched (see cd1.mjs/b2.mjs, out of this file's scope).
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -325,6 +358,39 @@ if (process.env.HARNESS_PARKED === '1') {
     // section, not duplicated here.
     pok('PARKED (was "S3: the veil wraps... the settings gear — all inert", counting >=5 wrappers) — FX3 S5: only 4 named wrappers exist now (the gear\'s own wrapper is gone; it lives in the sliver, already counted)',
       veilParked >= 4, String(veilParked));
+
+    // CD3 harness-discipline fix (2026-07-22) — a second tenant. ORIGINAL
+    // (this file's own live S4 section, pre-CD3, last unmodified since
+    // 2200302 on 2026-07-16), quoted verbatim:
+    //
+    //   const chromeLive = await app.evalJs("(() => { const btn =
+    //   [...document.querySelectorAll('.sprint-actions button')].find(b
+    //   => b.textContent === 'Done'); return !!btn &&
+    //   !btn.closest('[inert]'); })()");
+    //   ok('S4: post-unlock chrome (Done) is reachable again — not still
+    //   wrapped in an inert ancestor', chromeLive);
+    //
+    // CD3 — Done is scrapped from the Page/Script top bars whole (Nick's
+    // own ruling); `.sprint-actions` carries no Done button to find at all
+    // on this fixture's own loose page. Re-proven here as the retirement
+    // itself (no Done button exists in .sprint-actions anymore) — the
+    // surviving "chrome is reachable post-unlock" claim is carried by the
+    // Publish-tab proof in this file's own live S4 section, above. SCOPE:
+    // Page/Script only — the Board face keeps Done (untouched, out of
+    // this file's own fixture entirely).
+    await freshArrival(app, { anon: true });
+    await app.click('Write');
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed, first run (PARKED, CD3)' });
+    await sleep(300);
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys(words(100));
+    await sleep(300);
+    await app.evalJs("[...document.querySelectorAll('.hb1-territory-offered')].find(b => b.textContent === 'Flux')?.click()");
+    await app.waitFor("!document.querySelector('.hb1-ceremony')", { label: 'ceremony closes (PARKED, CD3)', timeout: 3000 });
+    await sleep(200);
+    const doneGoneParked = await app.evalJs("!([...document.querySelectorAll('.sprint-actions button')].find(b => b.textContent === 'Done'))");
+    pok('PARKED (was "S4: post-unlock chrome (Done) is reachable again — not still wrapped in an inert ancestor") — CD3: Done is scrapped from the Page/Script top bars whole (no button left to find); live successor: this file\'s own live S4 section (the Publish tab, present + not inert + function-tested)',
+      doneGoneParked === true, String(doneGoneParked));
 
     return parkedChecks;
   });
