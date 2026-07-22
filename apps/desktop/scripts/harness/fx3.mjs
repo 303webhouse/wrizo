@@ -166,29 +166,27 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S4 — top bar, right-aligned (TRIAL): the mode strip and the actions
-  // cluster (ending in Done) both sit toward .sprint-nav's right edge, with
-  // a visible gap between them — computed rects, not a class-presence
-  // check. REVERT: index.css's own `.desk-frame-host .sprint-nav`/
-  // `.desk-frame-host .sprint-actions` block names its one-block revert.
+  // cluster (Done scrapped — now ending in the Pages/Plan toggle) both sit
+  // toward .sprint-nav's right edge, with a visible gap between them —
+  // computed rects, not a class-presence check. REVERT: index.css's own
+  // `.desk-frame-host .sprint-nav`/`.desk-frame-host .sprint-actions` block
+  // names its one-block revert.
   // ==========================================================================
   const topBar = await app.evalJs(`(() => {
     const nav = document.querySelector('.chrome-top.sprint-nav');
     const strip = document.querySelector('.desk-mode-strip');
     const actions = document.querySelector('.sprint-actions');
-    const buttons = [...actions.querySelectorAll('button')];
-    const doneBtn = buttons.find(b => b.textContent.trim() === 'Done');
     const navRect = nav.getBoundingClientRect();
     const stripRect = strip.getBoundingClientRect();
     const actionsRect = actions.getBoundingClientRect();
-    const doneRect = doneBtn.getBoundingClientRect();
     return {
       navRight: navRect.right, stripRight: stripRect.right, actionsLeft: actionsRect.left,
-      actionsRight: actionsRect.right, doneRight: doneRect.right, doneLeft: doneRect.left,
+      actionsRight: actionsRect.right,
       gapBetweenStripAndActions: actionsRect.left - stripRect.right,
     };
   })()`);
-  ok('S4: Done is the rightmost element in the top bar (computed rect, not class presence)',
-    Math.abs(topBar.doneRight - topBar.actionsRight) < 1, JSON.stringify(topBar));
+  ok('S4: the actions cluster hugs the nav\'s right edge, right-aligned (computed rect; Done scrapped, the Pages/Plan toggle is now the rightmost control)',
+    topBar.navRight - topBar.actionsRight < 20, JSON.stringify(topBar));
   ok('S4: the mode strip sits toward the RIGHT of the top bar (close to the nav\'s own right edge), not flush left',
     topBar.navRight - topBar.stripRight < 260, JSON.stringify(topBar));
   ok('S4: there is a clear, visible gap between the mode strip and the actions cluster (not glued together)',

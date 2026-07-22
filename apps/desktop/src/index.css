@@ -2409,9 +2409,14 @@ a:focus-visible,
    placement) — left exactly where it was in the markup; only the CSS
    changed (see .desk-frame-grid's own template above, which no longer
    reserves a track for it). */
-.desk-frame-strip{ position:absolute; top:0; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width);
+/* Nick's own call — the strip rides FLUSH up to the top bar's own dividing
+   line: `top:-16px` cancels the 16px spacer between the top bar and the
+   frame (PageEditor/ScriptEditor/JournalEntry all render that same spacer),
+   and the strip drops its own top border + top corner-rounding so it hangs
+   straight off that line instead of drawing a second one just below it. */
+.desk-frame-strip{ position:absolute; top:-16px; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width);
   min-height:70vh; background:var(--desk-ground);
-  border:1px solid var(--ink-border); border-radius:var(--radius-md); overflow:hidden; }
+  border:1px solid var(--ink-border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); overflow:hidden; }
 /* FX3 S1 — the one definite, non-percentage height near the top of the
    chain (a flex/grid `height:100%` further down needs an explicit height
    somewhere above it to resolve against — a naive `height:100%` on the
@@ -3014,8 +3019,12 @@ a:focus-visible,
    title case in the DOM (ModeStrip.tsx / store/deskLexicon.ts untouched;
    ab1.mjs's exact-string .textContent assertions untouched) — this is a
    paint, not a rewrite. */
-.desk-mode-strip{ display:flex; align-items:center; gap:2px; background:var(--chrome-surface);
-  border:1px solid var(--ink-border); padding:4px; }
+/* The mode tabs sit DIRECTLY in the sprint-nav now — no inner box of their
+   own. Their old container border drew a second line just under the tabs,
+   redundant with the sprint-nav's own bottom line (Nick's "redundant
+   separator just underneath the Writing Modes tabs"); dropped here. */
+.desk-mode-strip{ display:flex; align-items:center; gap:2px; background:none;
+  border:none; padding:0; }
 .desk-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
   font-family:var(--font-ui); font-size:13px; padding:9px 16px; cursor:pointer; transition:.15s;
   text-transform:uppercase; letter-spacing:.08em; }
@@ -3337,10 +3346,14 @@ a:focus-visible,
    pushed down via margin-top:auto on the section wrapping it, not a
    second flex container, so the strip stays one simple column. */
 .wz-strip-foot{ margin-top:auto; }
+/* Resting register lifted to the old mouse-over brightness (--text-hi), so
+   the whole strip reads bright at rest; mouse-over now LIGHTS UP brass (the
+   icons + label take the warm accent) — Nick's own call. The open-category
+   marker below (olive) still wins on an active item. */
 .wz-strip-item{ display:flex; flex-direction:column; align-items:center; gap:3px;
   width:100%; padding:10px 4px; background:none; border:0; border-left:2px solid transparent; cursor:pointer;
-  color:var(--text-low); font-family:var(--font-ui); transition:.15s; }
-.wz-strip-item:hover{ color:var(--text-hi); background:var(--ink-900); }
+  color:var(--text-hi); font-family:var(--font-ui); transition:.15s; }
+.wz-strip-item:hover{ color:var(--brass); background:var(--ink-900); }
 /* Olive marks the OPEN category (S1: "olive on the open category") — the
    same lawful --accent-rest-not-brass pattern every other where-you-are
    marker in this app already uses (DeskRail's own .desk-rail-item.active,
@@ -3350,9 +3363,10 @@ a:focus-visible,
    olive throughout") — Cascade.tsx drives this by keeping `category` set
    in that state, not by a second CSS rule here. */
 .wz-strip-item.active{ color:var(--accent-rest); border-left-color:var(--accent-rest); }
-.wz-strip-glyph{ font-size:17px; line-height:1; }
-.wz-strip-glyph svg{ display:block; width:18px; height:18px; }
-.wz-strip-label{ font-size:9px; letter-spacing:.4px; line-height:1.2; text-align:center;
+/* Icons + labels 20% larger (Nick's own call): 17->20.4, 18->21.6, 9->10.8. */
+.wz-strip-glyph{ font-size:20.4px; line-height:1; }
+.wz-strip-glyph svg{ display:block; width:21.6px; height:21.6px; }
+.wz-strip-label{ font-size:10.8px; letter-spacing:.4px; line-height:1.2; text-align:center;
   font-family:var(--font-contentLabel); } /* canon §4 — "cache/rack item names" */
 
 /* CD2 S2 — the cascade's overlay anchor (DeskFrame.tsx's `cascadeLayers`

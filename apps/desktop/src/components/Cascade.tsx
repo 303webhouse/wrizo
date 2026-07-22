@@ -68,18 +68,25 @@ const SECTION_B: CategorySpec[] = [
   { id: 'page', labelTerm: 'drawerPage', icon: <PageIcon /> },
   { id: 'plan', labelTerm: 'stripPlan', icon: <PlanIcon /> },
 ];
-// B1 S5 — the Trash joins section C at the FOOT (after Drawers, after
-// Shelf) — "reachable, never prominent, no count anywhere near it" (the
-// brief's own wording). Same strip-item chrome as every other category;
-// nothing marks it as different in kind (no badge, no color, no size).
+// B1 S5 (superseded by Nick's own placement) — the Trash NO LONGER lives in
+// section C; it now sits at the very foot of the strip (SECTION_TRASH below),
+// the last place of all, a thin line above it. Section C keeps the two
+// browsing places (Drawers, Shelf), a separator below Shelf closing them off.
 const SECTION_C: CategorySpec[] = [
   { id: 'drawers', labelTerm: 'drawerPlaceDrawers', icon: <DrawersIcon /> },
   { id: 'shelf', labelTerm: 'drawerPlaceShelf', icon: <ShelfIcon /> },
-  { id: 'trash', labelTerm: 'drawerPlaceTrash', icon: <TrashIcon /> },
 ];
 const SECTION_D: CategorySpec[] = [
   { id: 'settings', labelTerm: 'stripSettings', icon: <SettingsIcon /> },
   { id: 'theme', labelTerm: 'stripChangeTheme', icon: <ThemeIcon /> },
+];
+// The Trash is the very last place: pinned to the strip's foot, below
+// Settings/Themes and a thin dividing line — "reachable, never prominent"
+// (B1's own wording), now literally out of the way at the bottom of the
+// screen. Same strip-item chrome as every other category (no badge, no
+// color, no size marking it out).
+const SECTION_TRASH: CategorySpec[] = [
+  { id: 'trash', labelTerm: 'drawerPlaceTrash', icon: <TrashIcon /> },
 ];
 
 function panelTitleTerm(category: CategoryId): DeskTermId {
@@ -196,9 +203,13 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       {renderSection(SECTION_B, state, toggleCategory, t)}
       <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
       {renderSection(SECTION_C, state, toggleCategory, t)}
+      {/* the separator below Shelf, closing off the browsing places */}
+      <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
       <div className="wz-strip-foot">
-        <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
         {renderSection(SECTION_D, state, toggleCategory, t)}
+        {/* the thin line just above the Trash at the very foot */}
+        <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
+        {renderSection(SECTION_TRASH, state, toggleCategory, t)}
       </div>
     </div>
   );

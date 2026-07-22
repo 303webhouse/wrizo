@@ -102,8 +102,8 @@ const pinIds = (boxes) => boxes.filter((b) => b.kind === 'page-pin').map((b) => 
 
 // ab3.mjs's own openPageCategory helper, copied verbatim in spirit: index 1
 // in the strip is the Page category (SECTION_A: journal[0]; SECTION_B:
-// page[1], plan[2]) — B1's own Trash addition lands in section C (index
-// 5), AFTER Page/Plan, so this index is untouched by B1.
+// page[1], plan[2]) — Trash now sits at the strip's foot (index 7), AFTER
+// Page/Plan, so this index is untouched.
 const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
@@ -454,10 +454,10 @@ await withHarness(async (app) => {
     const items = [...document.querySelectorAll('.wz-strip-item')];
     return { count: items.length, labels: items.map(b => b.querySelector('.wz-strip-label')?.textContent) };
   })()`);
-  ok('S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section',
-    stripShape.labels[5] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[6] === 'Settings',
+  ok('S4/S5: the Trash sits at the very FOOT of the strip — below Drawers, Shelf, Settings and Themes (Nick\'s own placement, a thin line above it)',
+    stripShape.labels[7] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[5] === 'Settings',
     JSON.stringify(stripShape));
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][5].click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][7].click()");
   await sleep(200);
   const trashPanelBody = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.textContent ?? ''");
   ok('S4: the Trash panel carries EXACTLY one plain action ("Open the Trash") — reachable, never prominent, no count, no badge, no list, no preview',

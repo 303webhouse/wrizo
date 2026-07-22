@@ -652,7 +652,6 @@ function PageEditorView({ id }: { id: string }) {
                   ‹ Back to the board
                 </button>
               )}
-              <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
             </div>
           </div>
         </FirstRunVeil>
@@ -751,7 +750,6 @@ function PageEditorView({ id }: { id: string }) {
             </div>
           )}
           <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title={`Copy the clean ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
-          <button type="button" className="btn-quiet" onClick={() => { flush(); flushNow(); navigate(backTo); }}>Done</button>
         </div>
       </div>
 

@@ -469,7 +469,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   sliverInstrumentsUnit: 'Unit',
   stripPlan: 'Plan',
   stripSettings: 'Settings',
-  stripChangeTheme: 'Change Theme',
+  stripChangeTheme: 'Themes',
   cascadeJournalOpen: 'Open the Journal',
   cascadeJournalNewPage: 'New page',
   cascadeJournalRecent: 'Recent',

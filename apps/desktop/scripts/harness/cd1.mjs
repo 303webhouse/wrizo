@@ -130,7 +130,7 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S1 — the top line: exact engraved labels, left-set; no title node; Done
-  // present alone; no Catch affordance anywhere framed.
+  // scrapped (pages autosave, Publish exports); no Catch affordance anywhere framed.
   // ==========================================================================
   const topLine = await app.evalJs(`({
     stripLabels: [...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].map(b => b.textContent),
@@ -144,8 +144,8 @@ await withHarness(async (app) => {
     JSON.stringify(topLine.stripLabels));
   ok('S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)',
     topLine.noCrumb, JSON.stringify(topLine));
-  ok('S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface',
-    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Done']) && !topLine.catchAnywhere,
+  ok('S1/cd1.1: the right corner holds the Pages/Plan flight doorway on a project-origin page — Done scrapped (pages autosave), no Catch anywhere on this framed surface',
+    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan']) && !topLine.catchAnywhere,
     JSON.stringify(topLine));
 
   // ==========================================================================
@@ -200,9 +200,9 @@ await withHarness(async (app) => {
   // strip-roster claim and carries this ticket's own park+successor; this
   // check's OWN substance, "ScriptEditor mounts the SAME cascade as prose,"
   // is untouched by Trash joining the roster).
-  ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as prose..."): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)',
+  ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as prose..."): ScriptEditor mounts the SAME cascade as prose (all eight categories present, Trash now pinned to the foot)',
     scriptCascade.stripItemCount === 8
-      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     JSON.stringify(scriptCascade));
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
@@ -211,8 +211,8 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S1/cd1.1 — ScriptEditor's header also carries the Pages/Plan flight
-  // toggle beside Done, on a real project-origin screenplay (the actual
-  // screenplay-creation door, not the script fixture above, which is loose).
+  // toggle, on a real project-origin screenplay (the actual screenplay-
+  // creation door, not the script fixture above, which is loose). Done scrapped.
   // ==========================================================================
   await freshDesk(app);
   await app.goto('/project/new');
@@ -222,8 +222,8 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'screenplay project lands' });
   await sleep(200);
   const scriptActionButtons = await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
-  ok('S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay',
-    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages', 'Plan', 'Done']), JSON.stringify(scriptActionButtons));
+  ok('S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle on a project-origin screenplay (Done scrapped)',
+    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages', 'Plan']), JSON.stringify(scriptActionButtons));
 
   // ==========================================================================
   // S8 (A7) — a loose page opens in Free Write on first mount, no explicit

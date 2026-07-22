@@ -171,14 +171,16 @@ await withHarness(async (app) => {
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
       focusable: [...document.querySelectorAll('.wz-strip-item')].every(b => b.tagName === 'BUTTON'),
     })`);
-    // B1 S5 — the roster grows by one (Trash joins section C at the foot);
-    // the ORIGINAL "seven categories, verbatim roster" pair is PARKED below
+    // Nick's own placement — Trash left section C for the very foot (below
+    // Settings/Themes, a thin line above it); a separator now closes off
+    // Drawers/Shelf too. Eight categories still, five groups / 4 separators.
+    // The ORIGINAL "seven categories, verbatim roster" pair is PARKED below
     // (A4, quoted verbatim) — this is the live, current truth.
-    ok(`S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)`,
-      stripShape.present && stripShape.sepCount === 3 && stripShape.itemCount === 8 && stripShape.focusable,
+    ok(`S1 @ ${width}px: the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
+      stripShape.present && stripShape.sepCount === 4 && stripShape.itemCount === 8 && stripShape.focusable,
       JSON.stringify(stripShape));
-    ok(`S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme`,
-      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+    ok(`S1 @ ${width}px: the updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Themes, Trash`,
+      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
       JSON.stringify(stripShape.labels));
   }
 
@@ -289,7 +291,7 @@ await withHarness(async (app) => {
   const shelfPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
   ok('S3: clicking Shelf opens layer 2, titled "Shelf"', shelfPanelEmpty === 'Shelf', String(shelfPanelEmpty));
 
-  await clickCategory(app, 6); // Settings (B1 S5 — index 5 is now Trash; Settings moves to 6)
+  await clickCategory(app, 5); // Settings (Trash left for the foot; Settings is now index 5)
   await sleep(200);
   const settingsPanel = await app.evalJs(`({
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
@@ -299,11 +301,11 @@ await withHarness(async (app) => {
     settingsPanel.title === 'Settings' && settingsPanel.hasFullscreen, JSON.stringify(settingsPanel));
 
   // ==========================================================================
-  // S3 — Change Theme: EXACTLY the available themes (Plateau, Flux), no
+  // S3 — Themes: EXACTLY the available themes (Plateau, Flux), no
   // others; current marked olive (--accent-rest, not brass); one click
   // switches and persists.
   // ==========================================================================
-  await clickCategory(app, 7); // Change Theme (B1 S5 — Trash's insertion at 5 shifts this from 6 to 7)
+  await clickCategory(app, 6); // Themes (Trash left for the foot; Themes is now index 6)
   await sleep(200);
   const themeList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].map(b => b.textContent)`);
   ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
@@ -842,8 +844,8 @@ if (process.env.HARNESS_PARKED === '1') {
       itemCount: document.querySelectorAll('.wz-strip-item').length,
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
     })`);
-    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme") — B1 S5: Trash joins section C at the foot; the strip now carries EIGHT categories in the updated order — live successor: this file\'s own live S1 section',
-      stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme") — superseded: the strip now carries EIGHT categories, Trash pinned to the foot, Change Theme renamed Themes — live successor: this file\'s own live S1 section',
+      stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
       JSON.stringify(stripShapeParked));
 
     // B2 (2026-07-20) — two more checks this file's own live sections
