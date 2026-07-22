@@ -4911,13 +4911,111 @@ outlive a session lives here, not in chat.
     `git merge --no-ff origin/fx10-rooms-edges` — clean, no
     conflicts, `index.css` auto-resolved (matching the review's own
     test-merge finding exactly). Re-verified at the merge HEAD: `tsc`
-    clean, `build` clean; the full historic suite re-run properly
-    across the true final combined tree (J6+FX9+E1+FX10 all
-    together) — result pending as of this writing, to be recorded
-    here on completion (any new flake findings also fold into item
-    48's own deflake-pass record).
+    clean, `build` clean.
+    **The attempted full-suite re-run across the combined tree was
+    contaminated and its own result is void — see item 53 for the
+    full account.** In short: while chasing two apparent failures
+    (`fx9`, `hb1`) in that run, this session discovered a SEPARATE,
+    concurrent session had been editing 11 files directly in this
+    same shared primary checkout, uncommitted — a real
+    ONE-CHECKOUT-PER-AGENT violation on that other session's part.
+    The `build:web` this suite run used had silently picked up that
+    session's own in-progress edits (including a since-ruled-correct
+    removal of PageEditor's "Done" button), which is what produced
+    the apparent failures — neither was a real FX10 defect. FX10
+    itself remains fully verified clean on its own terms: its own
+    build ran the full 30-file suite twice pre-merge (61/62 clean,
+    one already-tracked flake), its own independent review
+    additionally test-merged current `main` and re-ran `fx10`/`fx9`/
+    `j6` clean, and this session's own `tsc`/`build` checks at the
+    actual merge HEAD were clean throughout. **A true full-suite run
+    across the final combined tree (J6+FX9+E1+FX10+CD3) is deferred
+    to CD3's own merge** (item 53), rather than run twice.
     **Not deployed** — though given the P0 urgency, expect Nick's own
     deploy word to follow close behind, per the note at item 51.
+53. **CD3 — the Strip's Order.** **P0-adjacent — a genuine cross-
+    session collision, disclosed in full, 2026-07-21/22.** A second,
+    concurrent Claude session — working directly with Nick and Fable,
+    outside this ledger's own conversation — did real, Nick-approved
+    work on the left menu strip and top-bar chrome DIRECTLY in this
+    shared primary checkout, uncommitted: a ONE-CHECKOUT-PER-AGENT
+    violation on that session's part (its own later brief explicitly
+    names the rule it broke: "own worktree — never the primary
+    checkout"). Independently, Fable wrote a revised "FX10" brief to
+    absorb this same chrome work — **not knowing this session had
+    already built, reviewed, and merged the real FX10 (item 52)
+    earlier the same sitting.** Two genuine misses compounding, not
+    bad faith on any side. **Discovered** when this session's own
+    post-merge full-suite verification (see item 52) picked up the
+    other session's uncommitted edits and produced two apparent
+    failures that traced back to a stray, unrelated working tree, not
+    a real defect.
+    **Handling, in order**: (1) the 11 files of uncommitted work were
+    committed verbatim to a new branch, `cd3-strip-and-chrome`, and
+    pushed, protecting them from loss — the code itself (left-strip
+    reorder/recolor/resize, Trash-to-foot, "Themes" rename, a
+    separator, flush-to-topbar, the Done-button removal from Page and
+    Script) was never touched or altered. (2) Fable's own revised
+    brief was preserved verbatim under a new filename,
+    `docs/wrizo-alpha/cd3-strip-and-chrome-brief.md` (NOT left at
+    `fx10-rooms-edges-brief.md`, which is the path the REAL, merged
+    FX10 was actually built from — overwriting it there would have
+    corrupted that build's own historical record), with a clearly-
+    separated editorial note explaining the collision. (3) An
+    independent audit (Workflow, isolated worktree) ran Fable's own
+    S1 audit methodology from that brief against the actual committed
+    diff.
+    **Audit findings, 2026-07-21**: the underlying visual/functional
+    work verified genuinely sound (DOM queries, computed styles, live
+    geometry, forced-hover rendering, a real trusted-pointer click
+    proving a legacy-width exit exists via `DeskRail` — a separate,
+    pre-existing rail, distinct from the framed-only strip — so the
+    Done-button removal's own safety premise holds). **But two real
+    defects found, both process, not product**: (a) a SYSTEMIC A4
+    violation — of 9 harness assertions the strip's changes falsified
+    across 5 files (`ab3.mjs`, `b1.mjs`, `cd1.mjs` ×3, `cd2.mjs` ×3,
+    `fx3.mjs`), **zero** were properly parked; every one was edited in
+    place to agree with the new code, including one case of directly
+    mutating an ALREADY-parked historical entry in `cd2.mjs` — exactly
+    the failure mode Fable's own brief named and told the audit to
+    catch. (`fx9.mjs`'s own edit — index renumbering only, no
+    assertion content changed — was legitimate, not a violation.)
+    (b) `hb1.mjs` was left untouched entirely despite asserting the
+    Done button's own presence — now genuinely, deterministically
+    failing (3/3), a real live gap, not a false alarm.
+    **Fix authorized directly by Fable, 2026-07-22**: "fix it
+    yourself [not the other session] — sending it back costs days and
+    the other session doesn't hold the audit." Scope: recover each of
+    the 9 original assertions' exact text from git history (never
+    reconstructed from context — `main` @ `8884d49` is the only
+    acceptable source), park each properly (SUPERSEDED marker,
+    one-line reason, live successor), sweep ALL parked entries across
+    all six touched files for additional mutations beyond the one(s)
+    already found (the two sessions' own reports disagreed on which
+    file held the mutated entry — `cd2.mjs` per this session's audit,
+    `ab3.mjs` per the other session's own report — both being checked,
+    plus every other parked entry in all six files), fix `hb1.mjs`
+    with a live successor scoped to Page and Script ONLY (the Board
+    face keeps its own Done button by explicit ruling — it has no
+    rail and no Pages/Plan toggle, Done is its only exit there), and
+    add two new canon checks the audit didn't cover: nothing brass at
+    rest across the WHOLE reordered strip (not a single spot-check),
+    and the paper's own rect + text measure genuinely unchanged at
+    1100/2200 (a real equality proof against `main`'s own pre-CD3
+    geometry, not an inference from the breathing-room number).
+    **New standing law proposed by Fable, Nick's own ratification
+    still pending, NOT yet in force as of this writing**: parked
+    entries are immutable — may be superseded again, re-pointed at a
+    new successor, or annotated, but a parked entry's own recorded
+    original text is never rewritten. Recorded here as PROPOSED per
+    the house's own standing practice of never marking a rule ratified
+    without Nick's own explicit word in the same turn — see the
+    S0-push rule's own history for the same discipline applied
+    before.
+    **Fix pass launched, independent review to follow before any
+    merge — Fable's own explicit condition: "this doesn't merge on
+    the fix pass's own word."** Results pending as of this writing, to
+    be recorded here on completion.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
@@ -5108,6 +5206,20 @@ outlive a session lives here, not in chat.
   result gates a merge should not itself be run alongside another
   session's own build — that is what manufactures the contention this
   rule exists to catch.
+- **PARKED ENTRIES ARE IMMUTABLE — PROPOSED 2026-07-22 (Fable, the
+  CD3 incident, item 53), Nick's own ratification still pending, NOT
+  yet in force.** A parked assertion may be superseded again (its own
+  new park cycle, with its own fresh SUPERSEDED marker and successor),
+  re-pointed at a different successor, or annotated with a comment —
+  but a parked entry's own recorded ORIGINAL text, once parked, is
+  never rewritten. Touching a parked entry's original text is never a
+  fix. Trigger: a concurrent session's own harness edits mutated an
+  already-parked historical entry in-place rather than starting a new
+  park cycle, discovered by an independent audit. Recorded here as
+  proposed, per this house's own standing practice (see the S0-push
+  rule's own history) of never marking a rule ratified without Nick's
+  explicit word in the same turn — update this entry to "ratified"
+  only on that word, not before.
 - **Erratum vs. supersession, for harness checks — ratified 2026-07-16
   (Fable, cd1.1 spot-check).** Two different situations, two different
   moves. A check falsified because the DESIGN changed (a surface
