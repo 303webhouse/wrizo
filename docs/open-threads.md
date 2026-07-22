@@ -5016,6 +5016,48 @@ outlive a session lives here, not in chat.
     merge — Fable's own explicit condition: "this doesn't merge on
     the fix pass's own word."** Results pending as of this writing, to
     be recorded here on completion.
+54. **BM1 — the Board's Own Modes.** **BRIEF COMMITTED — 2026-07-21,
+    Fable-authored** (`docs/wrizo-alpha/bm1-board-modes-brief.md`).
+    From the Board Modes second pass as ruled by Nick, 2026-07-21.
+    **THIS IS A SCHEMA TICKET — merge requires Nick's own explicit
+    word, no standing pre-authorization** (S2 adds a 1:1 page⇄board
+    pairing relation, `planBoardId`). Everything else client-side,
+    zero new deps. **Nick's rulings, T1-T5, recorded verbatim from
+    the brief's own authority line**: **T1** — three modes
+    OPEN/STORYBOARD/OUTLINE plus the PAGE → door; the fourth
+    ("Commonplace") mode SCRAPPED, card-linking absorbed into Open.
+    **T2** — the arrow is the door's dress (resolved by T1). **T3** —
+    build-it-all tempo (all three modes this ticket, not staged);
+    side-by-side held as BM2 by Fable's own sequencing call,
+    vetoable. **T4** — StoryPlan fold-in authorized (S1 reconciles
+    whether StoryPlan's own shape can serve as the Storyboard
+    projection's data, or whether that fold becomes its own later
+    ticket — reported before S4+ builds, never silently a second plan
+    system). **T5** — schema pre-cleared for flagging, **explicit go
+    still required at merge.** Also recorded per the brief's own S0:
+    Commonplace's scrapping (linking absorbed into Open); the
+    menus/toolbars rethink DEFERRED by Nick's own word as
+    non-loadbearing; **BM2 (side-by-side) queued for its own brief
+    after BM1's review.**
+    **The projection seam is the ticket's non-negotiable core**: decks
+    are DATA (one structure description per deck), modes are
+    PROJECTIONS (renderers of that description) — a deck never knows
+    which projection draws it; any slice that pressures a per-mode
+    deck fork is STOP-and-report. Two hard floors: OUTLINE must render
+    AND edit genuine nesting or it does not ship this ticket (becomes
+    BM1.1, never ships flat — "the Grammarian's floor"); the paper's
+    own rect and text measure on the page side stay inviolate (PLAN →
+    is bar chrome only).
+    **BUILD IS GATED — NOT STARTED.** The brief makes it explicit:
+    `bm1-board-modes` branches from `main` ONLY AFTER FX10's fix pass
+    (CD3, item 53) has merged — both tickets rewrite the board's top
+    bar, and BM1 inherits FX10's named return as the PAGE → door's
+    own ancestor. **Branching before that merge is STOP-and-report.**
+    As of this writing CD3's fix pass is mid-review (see item 53), so
+    BM1's build is deliberately held. **E1 (item 51) outranks BM1 if
+    capacity contends** — Nick's own priority. Report = push; Fable
+    reviews before a merge recommendation; deploy is Nick's own
+    separate word after that.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
