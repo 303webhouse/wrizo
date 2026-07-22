@@ -5014,8 +5014,69 @@ outlive a session lives here, not in chat.
     before.
     **Fix pass launched, independent review to follow before any
     merge — Fable's own explicit condition: "this doesn't merge on
-    the fix pass's own word."** Results pending as of this writing, to
-    be recorded here on completion.
+    the fix pass's own word."**
+    **Fix pass + independent review both COMPLETE — 2026-07-22,
+    verdict GREEN WITH ADVISORIES, no STOP.** Fix pass (isolated
+    worktree, primary checkout never touched): all 9 falsified
+    assertions recovered VERBATIM from `main` @ `8884d49` (never
+    reconstructed from context) and parked properly — original quoted,
+    SUPERSEDED marker + one-line reason, a NEW live successor
+    asserting the current truth, each verified live. The two
+    already-parked entries that had been mutated in place (ab3.mjs's
+    nav-shape `pok()` and cd2.mjs's roster `pok()` — the audit's own
+    "most serious" finding, now confirmed as TWO of the nine, both
+    `HARNESS_PARKED`-gated) restored to their own prior-generation
+    text verbatim, with a fresh third-generation `pok()` added for
+    CD3's truth rather than any further in-place edit — honoring the
+    proposed immutability law. `hb1.mjs`'s own Done-reachability check
+    parked verbatim (original from commit `2200302`, 2026-07-16) with
+    a live successor **scoped to Page/Script only** (asserts the
+    Publish tab is reachable post-unlock, function-tested by an actual
+    click) — the Board's own Done button left entirely untouched
+    (verified: `BoardEditor.tsx` keeps all three Done instances,
+    `b2.mjs`'s Board-Done checks byte-identical and green). Two new
+    canon checks added to `cd2.mjs`: nothing-brass-at-rest swept
+    across ALL 8 strip items under a genuine trusted pointer-away, and
+    the paper's own rect + text measure proven byte-identical to a
+    real rebuild of `main` @ `8884d49` at 1100/2200 (a 10px Y-shift
+    found, traced exactly to the `.desk-mode-strip` border/padding
+    removal, asserted as a bounded delta so any further drift fails).
+    Full suite: 34/34 files, both settings, 68/68 runs green (1539
+    unparked / 1625 parked checks, zero failures); `tsc`/`build:web`
+    clean. The independent review re-derived every claim itself
+    (its own `git show 8884d49` diffs, its own from-scratch paper-
+    geometry baseline rebuild, its own full-suite run) — nothing
+    taken on the fix pass's word.
+    **ONE MATERIAL NEW FINDING from the review, non-blocking but
+    Fable's/Nick's to rule on** — directly bears on the immutability
+    law now up for ratification: tracing `ab3.mjs`'s nav-shape
+    `pok()` through its ENTIRE history (not just since CD3's base),
+    the review found it had **already been mutated once before CD3
+    ever existed — by ticket B1** (`commit 9ce8f6b`, 2026-07-19): the
+    CD2-generation entry's own tested CONDITION was changed in place
+    (`stripItemCount === 7` → `=== 8`, "seven categories" → "eight...
+    B1's Trash included") without the quote-old-generation/add-new
+    layering this same file uses correctly elsewhere. No comment
+    anywhere preserves CD2's true original "seven categories" text; a
+    stale orphaned comment at ab3.mjs ~655-661 still says "seven" and
+    now contradicts the `pok()`'s own "GENERATION 2 (CD2, as B1 left
+    it)" label. **This predates CD3, is outside the fix pass's own
+    authorized scope** (Fable named `8884d49` as the sole source), so
+    it is NOT a CD3 defect — but it means the "parked entries are
+    immutable" premise had already silently failed once, undetected,
+    and it raises a real question the pending law should answer:
+    was B1's change a "plain incidental count bump" (the `fx2.mjs`-
+    precedent style B1 itself invoked, arguably exempt) or a genuine
+    immutability violation needing retroactive cleanup? **Open for
+    Fable's/Nick's ruling — not actioned.**
+    **NOT MERGED. Awaiting Fable's own review + Nick's merge word.**
+    Per Fable's explicit condition ("Fable reviews before merge"),
+    CD3's normal zero-schema merge pre-authorization is SUSPENDED for
+    this ticket — the independent review clears the "not on the fix
+    pass's own word" bar, but Fable's own review before merge is a
+    distinct gate this session will not self-satisfy. Branch tip:
+    `bc2767c` on `cd3-strip-and-chrome`, pushed. **BM1 (item 54)
+    stays gated until this merges.**
 54. **BM1 — the Board's Own Modes.** **BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/bm1-board-modes-brief.md`).
     From the Board Modes second pass as ruled by Nick, 2026-07-21.
