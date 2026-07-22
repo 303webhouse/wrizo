@@ -54,7 +54,8 @@ const freshDesk = async (app, width = 1400, height = 900) => {
 };
 
 // Strip category indices (cd2.mjs's own verbatim roster/order): Journal=0,
-// Page=1, Plan=2, Drawers=3, Shelf=4, Trash=5, Settings=6, Change Theme=7.
+// Page=1, Plan=2, Drawers=3, Shelf=4, Settings=5, Themes=6, Trash=7 (Trash
+// now pinned to the strip's foot, below Settings/Themes).
 const clickCategory = async (app, idx) => {
   await app.evalJs(`(() => {
     const items = [...document.querySelectorAll('.wz-strip-item')];
@@ -294,11 +295,11 @@ await withHarness(async (app) => {
   await sleep(200);
   const planHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: PlanPanel never grows a fold', planHasFold === false, String(planHasFold));
-  await clickCategory(app, 6); // Settings
+  await clickCategory(app, 5); // Settings
   await sleep(200);
   const settingsHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: CascadeSettingsPanel never grows a fold', settingsHasFold === false, String(settingsHasFold));
-  await clickCategory(app, 7); // Change Theme
+  await clickCategory(app, 6); // Themes
   await sleep(200);
   const themeHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: CascadeThemePanel never grows a fold', themeHasFold === false, String(themeHasFold));
@@ -314,7 +315,7 @@ await withHarness(async (app) => {
   const shelfShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
   ok('DISCLOSED DISCREPANCY: ShelfPanel currently renders no list at all (one plain door button, B2 S1/S3) — no fold was added; the brief\'s own "ShelfPanel... render[s] ... lists" premise does not match current source',
     shelfShape.hasFold === false && shelfShape.buttonCount === 1, JSON.stringify(shelfShape));
-  await clickCategory(app, 5); // Trash
+  await clickCategory(app, 7); // Trash
   await sleep(200);
   const trashShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
   ok('DISCLOSED DISCREPANCY: TrashPanel currently renders no list at all (one plain door button, B1 S5) — no fold was added; same premise gap as ShelfPanel',

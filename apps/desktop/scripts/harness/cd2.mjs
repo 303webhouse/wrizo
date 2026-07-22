@@ -171,14 +171,17 @@ await withHarness(async (app) => {
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
       focusable: [...document.querySelectorAll('.wz-strip-item')].every(b => b.tagName === 'BUTTON'),
     })`);
-    // B1 S5 — the roster grows by one (Trash joins section C at the foot);
-    // the ORIGINAL "seven categories, verbatim roster" pair is PARKED below
-    // (A4, quoted verbatim) — this is the live, current truth.
-    ok(`S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)`,
-      stripShape.present && stripShape.sepCount === 3 && stripShape.itemCount === 8 && stripShape.focusable,
+    // CD3 harness-discipline fix (2026-07-22) — successors of the B1-era
+    // pair (quoted verbatim, PARKED below, A4, layered THIRD generation):
+    // Nick's own placement moves Trash off section C to the strip's own
+    // foot (below Settings/Themes, a thin line above it); a separator now
+    // closes off Drawers/Shelf too (five groups, 4 separators, still eight
+    // categories); "Change Theme" is renamed "Themes".
+    ok(`CD3 successor of "S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)": the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
+      stripShape.present && stripShape.sepCount === 4 && stripShape.itemCount === 8 && stripShape.focusable,
       JSON.stringify(stripShape));
-    ok(`S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme`,
-      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+    ok(`CD3 successor of "S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme": the updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Themes, Trash`,
+      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
       JSON.stringify(stripShape.labels));
   }
 
@@ -289,7 +292,7 @@ await withHarness(async (app) => {
   const shelfPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
   ok('S3: clicking Shelf opens layer 2, titled "Shelf"', shelfPanelEmpty === 'Shelf', String(shelfPanelEmpty));
 
-  await clickCategory(app, 6); // Settings (B1 S5 — index 5 is now Trash; Settings moves to 6)
+  await clickCategory(app, 5); // Settings (Trash left for the foot; Settings is now index 5)
   await sleep(200);
   const settingsPanel = await app.evalJs(`({
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
@@ -299,11 +302,11 @@ await withHarness(async (app) => {
     settingsPanel.title === 'Settings' && settingsPanel.hasFullscreen, JSON.stringify(settingsPanel));
 
   // ==========================================================================
-  // S3 — Change Theme: EXACTLY the available themes (Plateau, Flux), no
+  // S3 — Themes: EXACTLY the available themes (Plateau, Flux), no
   // others; current marked olive (--accent-rest, not brass); one click
   // switches and persists.
   // ==========================================================================
-  await clickCategory(app, 7); // Change Theme (B1 S5 — Trash's insertion at 5 shifts this from 6 to 7)
+  await clickCategory(app, 6); // Themes (Trash left for the foot; Themes is now index 6)
   await sleep(200);
   const themeList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].map(b => b.textContent)`);
   ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
@@ -811,6 +814,108 @@ await withHarness(async (app) => {
     gateFloorPagecolRect.left >= gateFloorStripRect.left + gateFloorStripRect.width,
     JSON.stringify({ gateFloorStripRect, gateFloorPagecolRect }));
 
+  // ==========================================================================
+  // CD3 (2026-07-22) — two new canon checks, homed here (not fx9.mjs):
+  // this file already owns the canonical strip-roster/geometry claims (its
+  // own header, "cd2.mjs's own file owns the canonical strip-roster
+  // claim"), and both checks below are strip/paper GEOMETRY, the same
+  // family as this file's own S1/S2 sections just above.
+  //
+  // (a) Nothing brass at rest, across the WHOLE reordered strip — the
+  // independent audit only forced-hover-verified ONE item (Journal); this
+  // is a real sweep of all eight, using the SAME genuinely-trusted
+  // pointer-move discipline fx9.mjs's own S1 section already established
+  // (app.mouseMove, not a synthesized event).
+  // ==========================================================================
+  await freshProsePage(app, LAPTOP_W, 900);
+  await app.evalJs("document.activeElement && document.activeElement.blur && document.activeElement.blur()");
+  await app.mouseMove(5, 5); // pointer well away from the strip — genuinely at rest
+  await sleep(150);
+  const stripRestSweep = await app.evalJs(`(() => {
+    const probe = document.createElement('div');
+    probe.style.color = 'var(--text-hi)';
+    document.body.appendChild(probe);
+    const textHi = getComputedStyle(probe).color;
+    probe.style.color = 'var(--brass)';
+    const brass = getComputedStyle(probe).color;
+    probe.remove();
+    const items = [...document.querySelectorAll('.wz-strip-item')].map(el => ({
+      label: el.querySelector('.wz-strip-label')?.textContent,
+      color: getComputedStyle(el).color,
+      active: el.classList.contains('active'),
+    }));
+    return { textHi, brass, items };
+  })()`);
+  ok('CD3 canon (a): every one of the EIGHT strip items reads its resting color as --text-hi (never --brass), no hover/force applied — a real sweep, not the audit\'s own single-item (Journal) spot check',
+    stripRestSweep.items.length === 8
+      && stripRestSweep.items.every((it) => !it.active && it.color === stripRestSweep.textHi && it.color !== stripRestSweep.brass),
+    JSON.stringify(stripRestSweep));
+
+  // ==========================================================================
+  // (b) "The paper has not moved." A 20% strip enlargement plus the
+  // flush-to-topbar reposition is exactly the class of change that can
+  // shift the stage without anyone noticing. Measured directly against
+  // main @ 8884d49 (pre-CD3) at both reference widths (1100px floor,
+  // 2200px wide) via a real build-and-measure pass in this same isolated
+  // worktree (git checkout 8884d49 -- ., pnpm run build:web, measure
+  // .mode-pagecol/.mode-page/.forward-only-editor, git checkout HEAD --
+  // ., rebuild) — the baseline numbers below are that measurement's own
+  // output, not an inference from the breathing-room number.
+  //
+  // FINDING: the paper's own rect (.mode-pagecol, .mode-page) and the
+  // text measure (.forward-only-editor's own computed width — the line
+  // length available to the writer, plus .mode-pagecol's own computed
+  // width) are BYTE-IDENTICAL to main @ 8884d49 in left/width/right/
+  // height at both widths — the strip's own 20% growth and the flush
+  // reposition cost the paper NOTHING horizontally, and its own height is
+  // untouched. The paper's Y position DOES shift up by exactly 10px at
+  // both widths — not a silent stage drift: index.css's own diff
+  // (099a035) shows .desk-mode-strip dropping its 1px border + 4px
+  // padding box (top AND bottom — Nick's own "redundant separator...
+  // under the Writing Modes tabs" cleanup), (1+1+4+4)px = 10px shorter
+  // top bar, matching the measured shift exactly. Asserted as an exact,
+  // bounded delta below (not merely "unchanged") — any FUTURE drift
+  // beyond this one disclosed, accounted-for 10px would fail this check.
+  // ==========================================================================
+  const PAPER_BASELINE_8884D49 = {
+    1100: {
+      pagecol: { left: 242.3125, top: 119, width: 615.359375, height: 733, right: 857.671875 },
+      page: { left: 242.3125, top: 119, width: 615.359375, height: 693, right: 857.671875 },
+      editorWidth: '537.359px', pagecolWidth: '615.359px',
+    },
+    2200: {
+      pagecol: { left: 730.78125, top: 119, width: 738.421875, height: 733, right: 1469.203125 },
+      page: { left: 730.78125, top: 119, width: 738.421875, height: 693, right: 1469.203125 },
+      editorWidth: '645.234px', pagecolWidth: '738.422px',
+    },
+  };
+  const CHROME_SHRINK_PX = 10; // .desk-mode-strip's own dropped border+padding box (index.css, 099a035)
+  for (const width of [1100, 2200]) {
+    await freshProsePage(app, width, 900);
+    const paperNow = await app.evalJs(`(() => {
+      const rect = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height, right: r.right }; };
+      return {
+        pagecol: rect(document.querySelector('.mode-pagecol')),
+        page: rect(document.querySelector('.mode-page')),
+        editorWidth: getComputedStyle(document.querySelector('.forward-only-editor')).width,
+        pagecolWidth: getComputedStyle(document.querySelector('.mode-pagecol')).width,
+      };
+    })()`);
+    const baseline = PAPER_BASELINE_8884D49[width];
+    ok(`CD3 canon (b) @ ${width}px: the paper's own rect (.mode-pagecol/.mode-page) is byte-identical to main @ 8884d49 in left/width/right/height`,
+      paperNow.pagecol.left === baseline.pagecol.left && paperNow.pagecol.width === baseline.pagecol.width
+        && paperNow.pagecol.right === baseline.pagecol.right && paperNow.pagecol.height === baseline.pagecol.height
+        && paperNow.page.left === baseline.page.left && paperNow.page.width === baseline.page.width
+        && paperNow.page.right === baseline.page.right && paperNow.page.height === baseline.page.height,
+      JSON.stringify({ paperNow, baseline }));
+    ok(`CD3 canon (b) @ ${width}px: the text measure is byte-identical to main @ 8884d49 — .forward-only-editor's own computed width (line length) and .mode-pagecol's own computed width (column width)`,
+      paperNow.editorWidth === baseline.editorWidth && paperNow.pagecolWidth === baseline.pagecolWidth,
+      JSON.stringify({ paperNow, baseline }));
+    ok(`CD3 canon (b) @ ${width}px: the paper's Y position moves by EXACTLY the disclosed ${CHROME_SHRINK_PX}px (the mode-strip box's own dropped border+padding) — not a silent additional drift`,
+      baseline.pagecol.top - paperNow.pagecol.top === CHROME_SHRINK_PX,
+      JSON.stringify({ baselineTop: baseline.pagecol.top, nowTop: paperNow.pagecol.top, delta: baseline.pagecol.top - paperNow.pagecol.top }));
+  }
+
   return checks;
 });
 
@@ -842,8 +947,31 @@ if (process.env.HARNESS_PARKED === '1') {
       itemCount: document.querySelectorAll('.wz-strip-item').length,
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
     })`);
-    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme") — B1 S5: Trash joins section C at the foot; the strip now carries EIGHT categories in the updated order — live successor: this file\'s own live S1 section',
-      stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+    // GENERATION 2 (B1, quoted verbatim — no longer executed as its own
+    // pok(), per this file's own accretion pattern below): pok('PARKED
+    // (was "S1: the strip is present with four sections (3 hairline
+    // separators) and seven categories..." + "A11's own roster, verbatim
+    // order — Journal, Page, Plan, Drawers, Shelf, Settings, Change
+    // Theme") — B1 S5: Trash joins section C at the foot; the strip now
+    // carries EIGHT categories in the updated order — live successor:
+    // this file's own live S1 section', stripShapeParked.itemCount === 8
+    // && JSON.stringify(stripShapeParked.labels) ===
+    // JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf',
+    // 'Trash', 'Settings', 'Change Theme']), ...);
+    //
+    // CD3 harness-discipline fix (2026-07-22) — GENERATION 3: superseded
+    // again. Generation 2's own condition (Trash inside section C at
+    // index 5, "Change Theme") was true from B1 through FX10 but is FALSE
+    // today (Nick moved Trash to the strip's OWN foot and renamed Change
+    // Theme to Themes) — a condition re-executed live on every run cannot
+    // stay "parked" at a now-false value and still pass, so per this
+    // file's own established convention (quote the superseded
+    // generation's own text in a comment, execute only the CURRENT
+    // generation's own condition), generation 2's own text is preserved
+    // verbatim above, unexecuted; this is the only live pok() for this
+    // claim now. Re-uses the SAME stripShapeParked read above.
+    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme", then B1 S5-superseded to "EIGHT categories... Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme") — CD3: Trash leaves section C for the strip\'s own foot; Change Theme renamed Themes — live successor: this file\'s own live S1 section',
+      stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
       JSON.stringify(stripShapeParked));
 
     // B2 (2026-07-20) — two more checks this file's own live sections

@@ -166,29 +166,33 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S4 — top bar, right-aligned (TRIAL): the mode strip and the actions
-  // cluster (ending in Done) both sit toward .sprint-nav's right edge, with
-  // a visible gap between them — computed rects, not a class-presence
-  // check. REVERT: index.css's own `.desk-frame-host .sprint-nav`/
-  // `.desk-frame-host .sprint-actions` block names its one-block revert.
+  // cluster (Done scrapped — now ending in the Pages/Plan toggle) both sit
+  // toward .sprint-nav's right edge, with a visible gap between them —
+  // computed rects, not a class-presence check. REVERT: index.css's own
+  // `.desk-frame-host .sprint-nav`/`.desk-frame-host .sprint-actions` block
+  // names its one-block revert.
   // ==========================================================================
   const topBar = await app.evalJs(`(() => {
     const nav = document.querySelector('.chrome-top.sprint-nav');
     const strip = document.querySelector('.desk-mode-strip');
     const actions = document.querySelector('.sprint-actions');
-    const buttons = [...actions.querySelectorAll('button')];
-    const doneBtn = buttons.find(b => b.textContent.trim() === 'Done');
     const navRect = nav.getBoundingClientRect();
     const stripRect = strip.getBoundingClientRect();
     const actionsRect = actions.getBoundingClientRect();
-    const doneRect = doneBtn.getBoundingClientRect();
     return {
       navRight: navRect.right, stripRight: stripRect.right, actionsLeft: actionsRect.left,
-      actionsRight: actionsRect.right, doneRight: doneRect.right, doneLeft: doneRect.left,
+      actionsRight: actionsRect.right,
       gapBetweenStripAndActions: actionsRect.left - stripRect.right,
     };
   })()`);
-  ok('S4: Done is the rightmost element in the top bar (computed rect, not class presence)',
-    Math.abs(topBar.doneRight - topBar.actionsRight) < 1, JSON.stringify(topBar));
+  // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL
+  // check (quoted verbatim, PARKED below, A4): Done is scrapped from the
+  // top bar (Nick's own ruling), so there is no more Done rect to measure
+  // against — the actions cluster's own right edge is the new rightmost-
+  // element proof instead (the Pages/Plan toggle, when present, is now the
+  // rightmost control inside it).
+  ok('CD3 successor of "S4: Done is the rightmost element in the top bar (computed rect, not class presence)": the actions cluster hugs the nav\'s own right edge, right-aligned (computed rect; Done scrapped, the Pages/Plan toggle is now the rightmost control)',
+    topBar.navRight - topBar.actionsRight < 20, JSON.stringify(topBar));
   ok('S4: the mode strip sits toward the RIGHT of the top bar (close to the nav\'s own right edge), not flush left',
     topBar.navRight - topBar.stripRight < 260, JSON.stringify(topBar));
   ok('S4: there is a clear, visible gap between the mode strip and the actions cluster (not glued together)',
@@ -351,6 +355,10 @@ console.log(JSON.stringify(checks, null, 2));
 // section (both reference widths + the 1100 floor, prose/script/journal,
 // plus the ink-coordinate byte-truth proof S1's own STOP-and-report clause
 // demanded).
+// CD3 (2026-07-2X) adds a fourth: Done is scrapped from the top bar whole
+// (Nick's own ruling) — the S4 "Done is the rightmost element" check's own
+// subject no longer exists; live successor stays in this file's own live
+// S4 section.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -437,6 +445,45 @@ if (process.env.HARNESS_PARKED === '1') {
     })()`);
     pok('PARKED (was "S3 (script): a fresh script page\'s first-line start offset lands in the 30-35% band too") — FX4 S1: START_FRACTION retunes to 0.25; live successor in fx4.mjs\'s own S1 section',
       scriptStartOffsetInfo.fraction >= 0.20 && scriptStartOffsetInfo.fraction <= 0.30, JSON.stringify(scriptStartOffsetInfo));
+
+    // CD3 harness-discipline fix (2026-07-22) — a fourth tenant. ORIGINAL
+    // (this file's own live S4 section, pre-CD3), quoted verbatim:
+    //
+    //   const topBarParked = await app.evalJs(`(() => {
+    //     const nav = document.querySelector('.chrome-top.sprint-nav');
+    //     const strip = document.querySelector('.desk-mode-strip');
+    //     const actions = document.querySelector('.sprint-actions');
+    //     const buttons = [...actions.querySelectorAll('button')];
+    //     const doneBtn = buttons.find(b => b.textContent.trim() === 'Done');
+    //     const navRect = nav.getBoundingClientRect();
+    //     const stripRect = strip.getBoundingClientRect();
+    //     const actionsRect = actions.getBoundingClientRect();
+    //     const doneRect = doneBtn.getBoundingClientRect();
+    //     return {
+    //       navRight: navRect.right, stripRight: stripRect.right, actionsLeft: actionsRect.left,
+    //       actionsRight: actionsRect.right, doneRight: doneRect.right, doneLeft: doneRect.left,
+    //       gapBetweenStripAndActions: actionsRect.left - stripRect.right,
+    //     };
+    //   })()`);
+    //   ok('S4: Done is the rightmost element in the top bar (computed
+    //   rect, not class presence)', Math.abs(topBarParked.doneRight -
+    //   topBarParked.actionsRight) < 1, JSON.stringify(topBarParked));
+    //
+    // CD3 — Done scrapped from the top bar whole (Nick's own ruling); there
+    // is no Done rect left to measure at all — the check's own SUBJECT is
+    // gone, not merely relocated. Re-proven here as "no Done button exists
+    // in the actions cluster anymore" (the retirement itself), with the
+    // surviving "rightmost element" claim carried by the actions cluster's
+    // own right edge instead — live successor: this file's own live S4
+    // section, above.
+    await freshProsePage(app, 1280, 900);
+    const topBarGoneParked = await app.evalJs(`(() => {
+      const actions = document.querySelector('.sprint-actions');
+      const doneBtn = [...actions.querySelectorAll('button')].find(b => b.textContent.trim() === 'Done');
+      return { doneGone: !doneBtn };
+    })()`);
+    pok('PARKED (was "S4: Done is the rightmost element in the top bar (computed rect, not class presence)") — CD3: Done is scrapped from the top bar whole (no rect left to measure); live successor: this file\'s own live S4 section ("the actions cluster hugs the nav\'s own right edge")',
+      topBarGoneParked.doneGone === true, JSON.stringify(topBarGoneParked));
 
     return parkedChecks;
   });

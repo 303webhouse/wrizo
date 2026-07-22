@@ -102,8 +102,8 @@ const pinIds = (boxes) => boxes.filter((b) => b.kind === 'page-pin').map((b) => 
 
 // ab3.mjs's own openPageCategory helper, copied verbatim in spirit: index 1
 // in the strip is the Page category (SECTION_A: journal[0]; SECTION_B:
-// page[1], plan[2]) — B1's own Trash addition lands in section C (index
-// 5), AFTER Page/Plan, so this index is untouched by B1.
+// page[1], plan[2]) — Trash now sits at the strip's foot (index 7), AFTER
+// Page/Plan, so this index is untouched.
 const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
@@ -454,10 +454,15 @@ await withHarness(async (app) => {
     const items = [...document.querySelectorAll('.wz-strip-item')];
     return { count: items.length, labels: items.map(b => b.querySelector('.wz-strip-label')?.textContent) };
   })()`);
-  ok('S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section',
-    stripShape.labels[5] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[6] === 'Settings',
+  // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL B1
+  // check (quoted verbatim, PARKED below, A4): Nick's own placement moved
+  // Trash off section C's own foot to the strip's OWN foot entirely (below
+  // Settings/Themes, a thin line above it), so the index this check reads
+  // moved from 5 to 7.
+  ok('CD3 successor of "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section": the Trash sits at the very FOOT of the strip now — below Drawers, Shelf, Settings and Themes (Nick\'s own placement, a thin line above it)',
+    stripShape.labels[7] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[5] === 'Settings',
     JSON.stringify(stripShape));
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][5].click()");
+  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][7].click()");
   await sleep(200);
   const trashPanelBody = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.textContent ?? ''");
   ok('S4: the Trash panel carries EXACTLY one plain action ("Open the Trash") — reachable, never prominent, no count, no badge, no list, no preview',
@@ -662,6 +667,12 @@ console.log(JSON.stringify(checks, null, 2));
 // Move/Copy verb it fired) is GONE, superseded by the Places panel — see
 // this file's own live S3 section, above, for the re-derived claim
 // ("Places itself is absent on a system Board's own Page face").
+//
+// CD3 harness-discipline fix (2026-07-22) — a second tenant: this file's
+// own live "Trash joins the cascade at the FOOT of section C" check
+// (index 5) is superseded whole by Nick's own placement (Trash moved to
+// the strip's OWN foot, index 7) — parked verbatim below; live successor
+// stays in this file's own live S4 section.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -733,6 +744,30 @@ if (process.env.HARNESS_PARKED === '1') {
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
     pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
       journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+
+    // CD3 harness-discipline fix (2026-07-22) — this file's own live S4/S5
+    // check (Trash at section C's own foot, index 5) is SUPERSEDED whole:
+    // Nick moved Trash off section C entirely, to the strip's own foot
+    // (index 7, below Settings/Themes). ORIGINAL, quoted verbatim from
+    // main @ 8884d49 (pre-CD3):
+    //
+    //   ok('S4/S5: the Trash joins the cascade at the FOOT of section C —
+    //   after Drawers and Shelf, before the Settings/Change Theme foot
+    //   section', stripShape.labels[5] === 'Trash' && stripShape.labels[3]
+    //   === 'Drawers' && stripShape.labels[4] === 'Shelf' &&
+    //   stripShape.labels[6] === 'Settings', JSON.stringify(stripShape));
+    //
+    // Live successor: this file's own live S4 section, above.
+    await journalBoardBoxes(app); // any framed page carries the same strip
+    await sleep(150);
+    await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED strip mounted (Trash-position sweep)' });
+    const stripShapeParkedTrash = await app.evalJs(`(() => {
+      const items = [...document.querySelectorAll('.wz-strip-item')];
+      return { count: items.length, labels: items.map(b => b.querySelector('.wz-strip-label')?.textContent) };
+    })()`);
+    pok('PARKED (was "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section") — CD3: Trash left section C for the strip\'s OWN foot (index 7, below Settings/Themes) — live successor: this file\'s own live S4 section',
+      stripShapeParkedTrash.labels[7] === 'Trash' && stripShapeParkedTrash.labels[3] === 'Drawers' && stripShapeParkedTrash.labels[4] === 'Shelf' && stripShapeParkedTrash.labels[5] === 'Settings',
+      JSON.stringify(stripShapeParkedTrash));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

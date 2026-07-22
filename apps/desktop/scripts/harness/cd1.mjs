@@ -130,7 +130,7 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S1 — the top line: exact engraved labels, left-set; no title node; Done
-  // present alone; no Catch affordance anywhere framed.
+  // scrapped (pages autosave, Publish exports); no Catch affordance anywhere framed.
   // ==========================================================================
   const topLine = await app.evalJs(`({
     stripLabels: [...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].map(b => b.textContent),
@@ -144,8 +144,13 @@ await withHarness(async (app) => {
     JSON.stringify(topLine.stripLabels));
   ok('S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)',
     topLine.noCrumb, JSON.stringify(topLine));
-  ok('S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface',
-    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Done']) && !topLine.catchAnywhere,
+  // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL
+  // check (quoted verbatim, PARKED below, A4): Nick's own ruling scraps
+  // Done from the Page/Script top bars (Publish, the rail, and free
+  // navigation cover every exit now) — verified live, the right corner
+  // holds ONLY the Pages/Plan flight doorway.
+  ok('CD3 successor of "S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface": the right corner holds ONLY the Pages/Plan flight doorway — Done scrapped (pages autosave; Publish/rail/free navigation cover every exit), no Catch anywhere on this framed surface',
+    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan']) && !topLine.catchAnywhere,
     JSON.stringify(topLine));
 
   // ==========================================================================
@@ -195,14 +200,14 @@ await withHarness(async (app) => {
     stripItemCount: document.querySelectorAll('.wz-strip-item').length,
     stripLabels: [...document.querySelectorAll('.wz-strip-item')].map(b => b.querySelector('.wz-strip-label')?.textContent),
   })`);
-  // B1 S5 — plain count/roster update, no park (the fx2.mjs "same doorway,
-  // different shape" precedent — cd2.mjs's own file owns the canonical
-  // strip-roster claim and carries this ticket's own park+successor; this
-  // check's OWN substance, "ScriptEditor mounts the SAME cascade as prose,"
-  // is untouched by Trash joining the roster).
-  ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as prose..."): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)',
+  // CD3 harness-discipline fix (2026-07-22) — this GENERATION-2 check
+  // ("S7 (successor to ...)") is itself now superseded: its own B1-era
+  // roster (Trash inside section C, "Change Theme") is parked verbatim
+  // below (A4), SUPERSEDED-by-CD3 (Trash moved to the strip's own foot;
+  // "Change Theme" renamed "Themes") — this is generation 3.
+  ok('CD3 successor of "S7 (successor to \'...ScriptEditor mounts the SAME drawer as prose...\'): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)": ScriptEditor mounts the SAME cascade as prose (all eight categories present, Trash now pinned to the foot, Themes renamed)',
     scriptCascade.stripItemCount === 8
-      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Trash', 'Settings', 'Change Theme']),
+      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     JSON.stringify(scriptCascade));
   await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
@@ -211,8 +216,8 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S1/cd1.1 — ScriptEditor's header also carries the Pages/Plan flight
-  // toggle beside Done, on a real project-origin screenplay (the actual
-  // screenplay-creation door, not the script fixture above, which is loose).
+  // toggle, on a real project-origin screenplay (the actual screenplay-
+  // creation door, not the script fixture above, which is loose). Done scrapped.
   // ==========================================================================
   await freshDesk(app);
   await app.goto('/project/new');
@@ -222,8 +227,10 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'screenplay project lands' });
   await sleep(200);
   const scriptActionButtons = await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
-  ok('S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay',
-    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages', 'Plan', 'Done']), JSON.stringify(scriptActionButtons));
+  // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL
+  // check (quoted verbatim, PARKED below, A4): Done scrapped here too.
+  ok('CD3 successor of "S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay": ScriptEditor\'s header carries ONLY the Pages/Plan flight toggle on a project-origin screenplay (Done scrapped)',
+    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages', 'Plan']), JSON.stringify(scriptActionButtons));
 
   // ==========================================================================
   // S8 (A7) — a loose page opens in Free Write on first mount, no explicit
@@ -355,6 +362,10 @@ console.log(JSON.stringify(checks, null, 2));
 // FX4 (2026-07-18) adds a third: the strip now flushes to the SCREEN's own
 // left edge (S3), superseding this file's own S9 symmetric-outer-margins
 // claim at a wide viewport (the grid left-anchors now, not centers).
+// CD3 (2026-07-2X) adds three more: Done is scrapped from the Page/Script
+// top bars (Nick's own ruling), and the strip's own roster order changes
+// again (Trash to the foot, Change Theme renamed Themes) — this file's own
+// live S1/S1-cd1.1/S7 sections carry the fresh successors.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -434,6 +445,73 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S5: the composed frame centers with symmetric outer margins at a wide viewport (>=2200px)", generation 2: was FX4 S3\'s own re-derivation "the grid left-anchors now") — FX5 S10: symmetric AGAIN, but measured against the PAPER (strip excluded), not the whole grid — live successor in fx5.mjs\'s own S10 section',
       Math.abs(wideMarginsParked.stripLeft) <= 1 && Math.abs(wideMarginsParked.leftGap - wideMarginsParked.rightGap) <= 2,
       JSON.stringify(wideMarginsParked));
+
+    // CD3 harness-discipline fix (2026-07-22) — three more checks this
+    // ticket's Done-button deprecation and strip reorder supersede.
+    // ORIGINAL (this file's own live S1 section, pre-CD3):
+    //
+    //   ok('S1/cd1.1: the right corner holds Done plus the Pages/Plan
+    //   flight doorway on a project-origin page — no Catch anywhere on
+    //   this framed surface', JSON.stringify(topLine.actionButtons) ===
+    //   JSON.stringify(['Pages', 'Plan', 'Done']) && !topLine.catchAnywhere,
+    //   JSON.stringify(topLine));
+    //
+    // Nick's own ruling (CD3): Done is deprecated on Page/Script top bars
+    // (framed + legacy) — Publish, the rail, and free navigation cover
+    // every exit; Done stays on the Board face only (no rail, no Pages/
+    // Plan toggle there — its only exit). Live successor: this file's own
+    // live S1 section, above.
+    await freshProsePage(app);
+    const topLineParked = await app.evalJs(`({
+      actionButtons: [...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim()),
+      catchAnywhere: !!document.querySelector('.desk-rail-catch, .wz-catch') || document.body.innerText.includes('Catch a thought'),
+    })`);
+    pok('PARKED (was "S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface") — CD3: Done scrapped (Nick\'s ruling — Publish/rail/free navigation cover every exit); the right corner holds ONLY the Pages/Plan flight doorway now — live successor: this file\'s own live S1 section',
+      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan']) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked));
+
+    // ORIGINAL (this file's own live S7 section, generation 2, B1-era):
+    //
+    //   ok('S7 (successor to "...ScriptEditor mounts the SAME drawer as
+    //   prose..."): ScriptEditor mounts the SAME cascade as prose (all
+    //   eight categories present, B1's Trash included)', scriptCascade.
+    //   stripItemCount === 8 && JSON.stringify(scriptCascade.stripLabels)
+    //   === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf',
+    //   'Trash', 'Settings', 'Change Theme']), JSON.stringify(scriptCascade));
+    //
+    // CD3: Trash leaves section C for the strip's own foot; "Change Theme"
+    // renamed "Themes" — the roster's own verbatim order changes, the
+    // underlying claim ("ScriptEditor mounts the SAME cascade as prose")
+    // does not. Live successor (generation 3): this file's own live S7
+    // section, above.
+    await freshDesk(app);
+    await app.goto('/project/new');
+    await app.waitFor("!!document.querySelector('[data-kind=\"screenplay\"]')", { label: 'PARKED CreateProject picker (screenplay)' });
+    await app.evalJs("document.querySelector('[data-kind=\"screenplay\"]').click()");
+    await app.click('Start writing');
+    await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'PARKED screenplay project lands' });
+    await sleep(200);
+    const scriptCascadeParked = await app.evalJs(`({
+      stripItemCount: document.querySelectorAll('.wz-strip-item').length,
+      stripLabels: [...document.querySelectorAll('.wz-strip-item')].map(b => b.querySelector('.wz-strip-label')?.textContent),
+    })`);
+    pok('PARKED (was "S7 (successor to \'...ScriptEditor mounts the SAME drawer as prose...\'): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)") — CD3: Trash pinned to the strip\'s own foot, Change Theme renamed Themes — live successor (generation 3): this file\'s own live S7 section',
+      scriptCascadeParked.stripItemCount === 8
+        && JSON.stringify(scriptCascadeParked.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+      JSON.stringify(scriptCascadeParked));
+
+    // ORIGINAL (this file's own live S1/cd1.1 section, pre-CD3):
+    //
+    //   ok('S1/cd1.1: ScriptEditor's header also carries the Pages/Plan
+    //   flight toggle beside Done on a project-origin screenplay',
+    //   JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages',
+    //   'Plan', 'Done']), JSON.stringify(scriptActionButtons));
+    //
+    // CD3: Done scrapped here too (the same ruling as the prose top line
+    // above). Live successor: this file's own live S1/cd1.1 section, above.
+    const scriptActionButtonsParked = await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
+    pok('PARKED (was "S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay") — CD3: Done scrapped; the header carries ONLY the Pages/Plan flight toggle now — live successor: this file\'s own live S1/cd1.1 section',
+      JSON.stringify(scriptActionButtonsParked) === JSON.stringify(['Pages', 'Plan']), JSON.stringify(scriptActionButtonsParked));
 
     return parkedChecks;
   });

@@ -719,7 +719,6 @@ export function ScriptEditor({ id }: { id: string }) {
                 ‹ Back to the board
               </button>
             )}
-            <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
           </div>
         </div>
 
@@ -805,7 +804,6 @@ export function ScriptEditor({ id }: { id: string }) {
         </div>
         <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button type="button" className="btn-quiet script-copy" onClick={copyScriptText} title="Copy the script's plain text">Copy script text</button>
-          <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
         </div>
       </div>
 
