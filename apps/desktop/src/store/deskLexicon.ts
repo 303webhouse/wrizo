@@ -413,9 +413,31 @@ export type DeskTermId =
   // actions rather than leading the dialog; the sentence itself is
   // unchanged verbatim (still true, per the brief), only its position and
   // its route through this lexicon are new.
-  | 'publishComingSoon';
+  | 'publishComingSoon'
+  // BM1 — the Board's Own Modes. The three mode tabs (in the page-bar's own
+  // tab grammar), the two doors (PAGE →/PLAN →, the arrow is a decorative
+  // glyph rendered in the component — never translated prose), the telos line
+  // (one muted static line in the board's top region: chrome, not a toast —
+  // it never animates, counts, or nags), the default/empty lane copy, and the
+  // board-side explicit pairing entry. "The plan serves the page." travels
+  // verbatim from the brief (Nick did not edit the proposed string).
+  | 'boardModeOpen' | 'boardModeStoryboard' | 'boardModeOutline'
+  | 'boardPageDoor' | 'pagePlanDoor' | 'boardTelos'
+  | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
+  | 'boardPairWithPage';
 
 const CANONICAL: Record<DeskTermId, string> = {
+  // BM1 — the Board's Own Modes.
+  boardModeOpen: 'Open',
+  boardModeStoryboard: 'Storyboard',
+  boardModeOutline: 'Outline',
+  boardPageDoor: 'Page',
+  pagePlanDoor: 'Plan',
+  boardTelos: 'The plan serves the page.',
+  boardLaneDefault: 'Cards',
+  boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
+  boardOutlineEmpty: 'No cards yet. Add cards in Open, then shape them into an outline here.',
+  boardPairWithPage: 'Pair with a page…',
   modeFreeWrite: 'Free Write',
   modeDraft: 'Draft',
   modeRevise: 'Revise',
