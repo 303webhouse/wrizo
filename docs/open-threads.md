@@ -5204,24 +5204,93 @@ outlive a session lives here, not in chat.
     the build flagged for review: the Board's own Done left in place
     alongside PAGE →; the page's project-level Page/Plan toggle
     coexisting with the new per-page PLAN → door.
-    **INDEPENDENT REVIEW STALLED — a placeholder-report-class failure,
-    named plainly per the ratified rule.** The first review agent ran
-    ~22 min of real STATIC analysis (its own notes: membership
-    structurally unaffected via `belongsOnShelf`'s no-op guard,
-    implementation consistent with the brief) but then got stuck in a
-    background-monitor polling loop — it kept deferring to "wait for
-    the monitor's completion event," never ran its own DYNAMIC
-    verification (its own full-suite probe), and never wrote a
-    verdict. **Per the ratified rule, a stalled/placeholder report is
-    a report that does not exist** — BM1 is NOT reviewed, and no close
-    condition rests on that stalled pass. **Compensating action: a
-    fresh independent review re-dispatched 2026-07-22, explicitly
-    forbidding the background-monitor pattern (all verification
-    synchronous, verdict as the final message).** Results pending.
-    **NOT MERGED — schema, Nick's own explicit word only (T5), and not
-    until a real independent review lands.** Report = push; Fable
-    reviews before a merge recommendation; deploy is Nick's own
-    separate word after that.
+    **BOTH AUTOMATED REVIEWS STALLED — the placeholder-report class,
+    TWICE, named plainly per the ratified rule.** The first review
+    agent did ~22 min of real STATIC analysis then got stuck in a
+    background-monitor polling loop ("wait for the monitor's
+    completion event"), never running its own dynamic verification or
+    writing a verdict. A second review was re-dispatched with the
+    monitor pattern EXPLICITLY forbidden — and it stalled the SAME
+    way (it did complete its own independent 10-check schema/
+    grandfather verifier — all derived memberships identical — and got
+    27/35 suite files green, but again ended on "I'll wait for the
+    completion notification" with an explicit "(Interim checkpoint —
+    not the verdict.)"). **Diagnosis: these workflow sub-agents cannot
+    reliably self-drive a long suite to a verdict — they background it
+    and their own turn ends, which the harness captures as a
+    placeholder result.** Per the ratified rule, neither stalled pass
+    counts as a review.
+    **COMPENSATING INDEPENDENT VERIFICATION performed by the
+    orchestrating session directly (the main loop does not stall),
+    2026-07-22 — VERDICT: GREEN WITH ADVISORIES.** All 9 review items
+    verified against the actual committed code in an isolated worktree
+    (`git status` clean throughout), nothing on the build's word:
+    (1) **Schema** — placeholder count hand-counted 23/23/23, aligned
+    at position 23, `null↔undefined` recipe, additive `if not exists`
+    migration, board row untouched; grandfather byte-identity
+    confirmed by `bm1.mjs` AND the redo-review's own 10-check
+    verifier. (2) **Projection seam** — `boardStructure.ts` genuinely
+    mode-agnostic (the "mode" mentions are all comments), OPEN doesn't
+    read it (byte-identity proven), decks untouched by the diff,
+    order single-sourced by construction — NO per-mode fork.
+    (3) **OUTLINE nesting floor MET** — genuine recursive tree render
+    PLUS real indent/outdent (`withParent`: indent → child of
+    preceding sibling, outdent → sibling of parent) PLUS text-edit
+    round-trip; not a flat list, ships not BM1.1. (4) **Ordering
+    single-sourced** — shared tree/comparator + `bm1.mjs` proves
+    reorder-in-OUTLINE reflects in STORYBOARD. (5) **Doors/flip** —
+    `trustedClick` uses genuine CDP `mouseMove/Down/Up`; both doors
+    travel (paired + unpaired fallback); lazy birth proven; door-
+    never-selected asserted; flip preserves mode. (6) **No knocks,
+    nothing orange** — no badge/dot/count on the doors; every BM1
+    board CSS rule is `--text-*`/olive `--accent-rest` at rest, zero
+    brass/ember. (7) **A4/immutability — see the ADVISORY below.**
+    (8) **Zero new deps** confirmed by diff census. (9) **Full
+    historic suite 70/70 green both settings** (all 34 files +
+    `bm1.mjs`, zero failures — cleaner than any sweep this session,
+    `fx5` included); `tsc` ×2 and `build:web` clean.
+    **ADVISORY A1 — an immutability-law GRAY AREA, Fable's/Nick's to
+    rule, arising ironically on the very next ticket after
+    ratification.** BM1's `cd1.mjs` A4 park kept the parked entry's
+    recorded-original NAME byte-identical AND added a proper new park
+    cycle for the actual supersession — but it also UPDATED that
+    parked entry's live-reverification CONDITION in place
+    (`['Pages','Plan']` → `['Pages','Plan','Plan →']`), following the
+    exact "parked live-probe" pattern **CD3 itself established** (CD3
+    set that same probe's condition to live reality `['Pages','Plan']`
+    while its NAME quotes the frozen original — verified in `main`).
+    Under the strictest reading of the just-ratified law (Fable's B1
+    ruling: a change to a parked entry's own tested CONDITION is a
+    violation "regardless of how small"), this is a gray area needing
+    an explicit ruling: **does the immutable record cover only a
+    parked entry's frozen NAME/quote, or also its live-reverification
+    CONDITION?** Leans lawful here (name frozen, condition is a
+    designed live-probe CD3 itself blessed at the same merge the law
+    was ratified), but the law as written carved out no such category.
+    **ADVISORY A2 (Nick's eye)** — the Board's own Done now coexists
+    with PAGE →, its own intended named-return successor. Leaving Done
+    was correct (the brief's S3 didn't remove it) — but the CD3
+    condemnation's precondition (the named return reaching the board)
+    is now MET, so Done is ready to retire; Nick may want to schedule
+    that (a one-liner, its own tiny follow-up or a BM1 addendum).
+    **ADVISORY A3 (Nick's eye)** — two "Plan" controls now sit on the
+    page bar: the pre-existing project-level Pages/Plan toggle (to the
+    project's StoryPlan board) and the new per-page PLAN → door (to
+    THIS page's paired plan board) — different destinations, same
+    word. A real clarity question for a sitting, not a defect.
+    **ADVISORY A4 (device sitting)** — the flip's feel, the telos
+    line's read, the linking curves.
+    **MERGE-TIME NOTE**: BM1's branch predates the CD3-era ledger
+    commits, so `git diff main..bm1` shows an apparent `docs/
+    open-threads.md` regression — pure branch-age skew, NOT BM1
+    touching the ledger; the merge must take `main`'s newer ledger
+    (reconcile the docs conflict in main's favor).
+    **NOT MERGED — schema, Nick's own explicit word only (T5).** The
+    compensating verification stands in for the automated review that
+    twice failed to complete (disclosed as such, per the placeholder-
+    report rule's own conduct clause); Fable may still want her own
+    eye before recommending merge. Deploy is Nick's separate word
+    after that.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
