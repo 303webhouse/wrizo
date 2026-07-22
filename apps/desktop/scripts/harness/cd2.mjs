@@ -171,15 +171,16 @@ await withHarness(async (app) => {
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
       focusable: [...document.querySelectorAll('.wz-strip-item')].every(b => b.tagName === 'BUTTON'),
     })`);
-    // Nick's own placement — Trash left section C for the very foot (below
-    // Settings/Themes, a thin line above it); a separator now closes off
-    // Drawers/Shelf too. Eight categories still, five groups / 4 separators.
-    // The ORIGINAL "seven categories, verbatim roster" pair is PARKED below
-    // (A4, quoted verbatim) — this is the live, current truth.
-    ok(`S1 @ ${width}px: the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
+    // CD3 harness-discipline fix (2026-07-22) — successors of the B1-era
+    // pair (quoted verbatim, PARKED below, A4, layered THIRD generation):
+    // Nick's own placement moves Trash off section C to the strip's own
+    // foot (below Settings/Themes, a thin line above it); a separator now
+    // closes off Drawers/Shelf too (five groups, 4 separators, still eight
+    // categories); "Change Theme" is renamed "Themes".
+    ok(`CD3 successor of "S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)": the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
       stripShape.present && stripShape.sepCount === 4 && stripShape.itemCount === 8 && stripShape.focusable,
       JSON.stringify(stripShape));
-    ok(`S1 @ ${width}px: the updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Themes, Trash`,
+    ok(`CD3 successor of "S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme": the updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Themes, Trash`,
       JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
       JSON.stringify(stripShape.labels));
   }
@@ -844,7 +845,30 @@ if (process.env.HARNESS_PARKED === '1') {
       itemCount: document.querySelectorAll('.wz-strip-item').length,
       labels: [...document.querySelectorAll('.wz-strip-item .wz-strip-label')].map(l => l.textContent),
     })`);
-    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme") — superseded: the strip now carries EIGHT categories, Trash pinned to the foot, Change Theme renamed Themes — live successor: this file\'s own live S1 section',
+    // GENERATION 2 (B1, quoted verbatim — no longer executed as its own
+    // pok(), per this file's own accretion pattern below): pok('PARKED
+    // (was "S1: the strip is present with four sections (3 hairline
+    // separators) and seven categories..." + "A11's own roster, verbatim
+    // order — Journal, Page, Plan, Drawers, Shelf, Settings, Change
+    // Theme") — B1 S5: Trash joins section C at the foot; the strip now
+    // carries EIGHT categories in the updated order — live successor:
+    // this file's own live S1 section', stripShapeParked.itemCount === 8
+    // && JSON.stringify(stripShapeParked.labels) ===
+    // JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf',
+    // 'Trash', 'Settings', 'Change Theme']), ...);
+    //
+    // CD3 harness-discipline fix (2026-07-22) — GENERATION 3: superseded
+    // again. Generation 2's own condition (Trash inside section C at
+    // index 5, "Change Theme") was true from B1 through FX10 but is FALSE
+    // today (Nick moved Trash to the strip's OWN foot and renamed Change
+    // Theme to Themes) — a condition re-executed live on every run cannot
+    // stay "parked" at a now-false value and still pass, so per this
+    // file's own established convention (quote the superseded
+    // generation's own text in a comment, execute only the CURRENT
+    // generation's own condition), generation 2's own text is preserved
+    // verbatim above, unexecuted; this is the only live pok() for this
+    // claim now. Re-uses the SAME stripShapeParked read above.
+    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme", then B1 S5-superseded to "EIGHT categories... Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme") — CD3: Trash leaves section C for the strip\'s own foot; Change Theme renamed Themes — live successor: this file\'s own live S1 section',
       stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
       JSON.stringify(stripShapeParked));
 
