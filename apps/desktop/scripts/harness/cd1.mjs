@@ -149,8 +149,13 @@ await withHarness(async (app) => {
   // Done from the Page/Script top bars (Publish, the rail, and free
   // navigation cover every exit now) — verified live, the right corner
   // holds ONLY the Pages/Plan flight doorway.
-  ok('CD3 successor of "S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface": the right corner holds ONLY the Pages/Plan flight doorway — Done scrapped (pages autosave; Publish/rail/free navigation cover every exit), no Catch anywhere on this framed surface',
-    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan']) && !topLine.catchAnywhere,
+  // BM1 S3 (2026-07-22) — successor of the CD3 check (moved VERBATIM into the
+  // PARKED section below, A4 + the immutability law): the page's bar gains the
+  // PLAN → door at its end (S3's mirror of the board's PAGE →), so the right
+  // corner now holds the Pages/Plan flight doorway PLUS PLAN →. Done stays
+  // scrapped (CD3); still no Catch anywhere framed.
+  ok('BM1 S3 successor: the right corner holds the Pages/Plan flight doorway PLUS the PLAN → door on a project-origin page — Done still scrapped, no Catch anywhere on this framed surface',
+    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Plan →']) && !topLine.catchAnywhere,
     JSON.stringify(topLine));
 
   // ==========================================================================
@@ -466,8 +471,24 @@ if (process.env.HARNESS_PARKED === '1') {
       actionButtons: [...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim()),
       catchAnywhere: !!document.querySelector('.desk-rail-catch, .wz-catch') || document.body.innerText.includes('Catch a thought'),
     })`);
+    // BM1 S3 (2026-07-22) — this parked entry's recorded-original NAME is kept
+    // BYTE-IDENTICAL (immutability law). Only its LIVE re-verification of
+    // CURRENT reality follows the new truth — exactly the pattern CD3 itself
+    // used here (it set this probe to ['Pages','Plan'], not the quoted
+    // original's ['Pages','Plan','Done']): the prose bar now also carries the
+    // PLAN → door (BM1 S3). The gen-2 CD3 successor whose text this probe used
+    // to match (['Pages','Plan']) is parked verbatim in its OWN fresh entry
+    // immediately below (a new park cycle, never an edit-in-place of it).
     pok('PARKED (was "S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface") — CD3: Done scrapped (Nick\'s ruling — Publish/rail/free navigation cover every exit); the right corner holds ONLY the Pages/Plan flight doorway now — live successor: this file\'s own live S1 section',
-      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan']) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Plan →']) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked));
+    // BM1 S3 — a NEW park cycle for the now-obsolete CD3 successor (quoted
+    // VERBATIM; the prior generation's text is never edited in place): the
+    // page's bar gains the PLAN → door (S3's mirror of the board's PAGE →), so
+    // "ONLY the Pages/Plan flight doorway" no longer holds. Live successor:
+    // this file's own live BM1 S3 successor in the S1 section.
+    pok('PARKED (was "CD3 successor ...: the right corner holds ONLY the Pages/Plan flight doorway — Done scrapped (pages autosave; Publish/rail/free navigation cover every exit), no Catch anywhere on this framed surface") — BM1 S3: the PLAN → door joins the bar; the right corner now holds the Pages/Plan flight doorway PLUS PLAN → — live successor: this file\'s own live BM1 S3 successor (S1 section)',
+      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Plan →']) && !topLineParked.catchAnywhere,
       JSON.stringify(topLineParked));
 
     // ORIGINAL (this file's own live S7 section, generation 2, B1-era):
