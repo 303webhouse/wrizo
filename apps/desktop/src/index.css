@@ -4084,3 +4084,48 @@ a:focus-visible,
   color:var(--brass); background:var(--paper); border:1px solid var(--brass);
   padding:1px 7px; pointer-events:none;
 }
+
+/* ── BM1 — the Board's Own Modes ─────────────────────────────────────────────
+   The board's mode strip mirrors .desk-mode-tab's ratified grammar (no brass
+   fill; an olive --accent-rest hairline under the active tab — ab2.mjs S7's own
+   law) but is its OWN control class, deliberately distinct from the page's
+   writing-posture .mode-tabs/.desk-mode-strip (so w1.mjs's "a board never
+   renders the mode tabs" and ab1.mjs's ".desk-mode-strip absent on board" stay
+   literally true). The PAGE →/PLAN → doors carry NO active/selected state —
+   a door always travels. The telos line is muted, static chrome. */
+.board-mode-strip{ display:flex; align-items:center; gap:4px; }
+.board-mode-tab{ background:none; border:1px solid transparent; color:var(--text-mid);
+  cursor:pointer; padding:5px 12px; font-family:var(--font-contentLabel); font-size:13px; }
+.board-mode-tab:hover{ color:var(--text-hi); background:var(--ink-800); }
+.board-mode-tab.active{ background:none; color:var(--text-hi); border-bottom:1px solid var(--accent-rest); }
+.board-door,.page-plan-door{ background:none; border:0; color:var(--text-mid); cursor:pointer;
+  font-family:var(--font-contentLabel); font-size:13px; padding:5px 10px; }
+.board-door:hover,.page-plan-door:hover{ color:var(--text-hi); }
+.board-telos{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:12px;
+  letter-spacing:.02em; margin:2px 0 0; user-select:none; }
+
+.board-projection{ padding:8px 2px; }
+.board-projection-empty{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:13px; }
+.board-lanes{ display:flex; gap:16px; align-items:flex-start; overflow-x:auto; }
+.board-lane{ flex:0 0 240px; min-width:220px; border:1px solid var(--ink-border); border-radius:6px; padding:8px; }
+.board-lane-title{ font-family:var(--font-contentLabel); font-size:12px; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--text-mid); margin-bottom:6px; }
+.board-sb-card{ display:flex; align-items:center; justify-content:space-between; gap:6px;
+  border:1px solid var(--ink-border); border-radius:4px; padding:6px 8px; margin-bottom:6px; }
+.board-sb-card-label{ font-size:13px; color:var(--text-hi); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.board-sb-card-ctl{ display:flex; align-items:center; gap:2px; flex:0 0 auto; }
+.board-sb-card-ctl button, .board-outline-ctl button{ padding:1px 5px; font-size:12px; }
+.board-add-lane{ margin-top:10px; }
+
+.board-outline-section{ margin-bottom:14px; }
+.board-outline-section-title{ font-family:var(--font-contentLabel); font-size:13px; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--text-mid); margin:0 0 6px; }
+.board-outline-list,.board-outline-children{ list-style:none; margin:0; padding:0; }
+.board-outline-children{ margin-left:4px; }
+.board-outline-row{ display:flex; align-items:center; gap:6px; padding:2px 0; flex-wrap:wrap; }
+.board-outline-bullet{ color:var(--text-low); }
+.board-outline-text{ flex:1 1 200px; background:none; border:0; border-bottom:1px solid transparent;
+  color:var(--text-hi); font-family:var(--font-contentLabel); font-size:14px; padding:2px 0; }
+.board-outline-text:focus{ outline:none; border-bottom:1px solid var(--accent-rest); }
+.board-outline-readonly{ color:var(--text-mid); }
+.board-outline-ctl{ display:flex; gap:2px; flex:0 0 auto; }

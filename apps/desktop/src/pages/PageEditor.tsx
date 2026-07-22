@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -750,6 +750,17 @@ function PageEditorView({ id }: { id: string }) {
             </div>
           )}
           <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title={`Copy the clean ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
+          {/* BM1 S3 — the PLAN → door, the mirror of the board's PAGE → door, at
+              the end of the page's bar (same arrow grammar). First click on an
+              unpaired page BIRTHS the plan board (S2's lazy rule — never before,
+              never automatically) and flips to it; later clicks resolve to the
+              same board. No knock, no badge, no dot (A14). Bar chrome only — the
+              paper's rect and text measure are never touched (S8). */}
+          <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={() => {
+            flush(); flushNow();
+            const board = getOrCreatePlanBoard(id);
+            if (board) navigate(`/page/${board.id}`);
+          }}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
         </div>
       </div>
 
