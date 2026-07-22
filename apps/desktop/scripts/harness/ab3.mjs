@@ -668,7 +668,28 @@ if (process.env.HARNESS_PARKED === '1') {
     // ("the drawer's nav is gone, replaced by the strip") is untouched by
     // Trash joining the roster; only the incidental total (now 8, not 7)
     // needed bumping (cd2.mjs's own file owns the canonical roster claim).
-    pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below") — CD2 S1: the drawer\'s own two-item nav shape is gone; the strip carries five groups (4 separators) and eight categories instead, Trash pinned to the foot (successor in cd2.mjs)',
+    //
+    // GENERATION 2 (CD2, as B1 left it — quoted verbatim, no longer
+    // executed as its own pok(), per this file's own accretion pattern
+    // above): pok('PARKED (was "S1: the rail carries the Page pull above a
+    // separator, three Places below") — CD2 S1: the drawer's own two-item
+    // nav shape is gone; the strip carries four sections (3 separators)
+    // and eight categories instead, B1's Trash included (successor in
+    // cd2.mjs)', navShapeGoneNow.drawerNavGone &&
+    // navShapeGoneNow.stripSepCount === 3 && navShapeGoneNow.stripItemCount
+    // === 8, ...);
+    //
+    // CD3 harness-discipline fix (2026-07-22) — GENERATION 3: superseded
+    // again. navShapeGoneNow.stripSepCount === 3 was true from CD2 through
+    // B1 but is FALSE today (Nick moved Trash off section C to the strip's
+    // own foot, closing a fifth group behind a fourth separator) — a
+    // condition that's re-executed live on every run cannot stay "parked"
+    // at a now-false value and still pass, so per this file's own
+    // established convention (quote the superseded generation's own text
+    // in a comment, execute only the CURRENT generation's own condition),
+    // generation 2's own text is preserved verbatim above, unexecuted; this
+    // is the only live pok() for this claim now.
+    pok('PARKED (was "S1: the rail carries the Page pull above a separator, three Places below", then CD2 S1-superseded to "the drawer\'s own two-item nav shape is gone; the strip carries four sections (3 separators) and eight categories instead, B1\'s Trash included") — CD3: the strip reorganizes into five groups (4 separators) — Trash leaves section C for the strip\'s own foot, below Settings/Themes (successor in cd2.mjs)',
       navShapeGoneNow.drawerNavGone && navShapeGoneNow.stripSepCount === 4 && navShapeGoneNow.stripItemCount === 8,
       JSON.stringify(navShapeGoneNow));
 
