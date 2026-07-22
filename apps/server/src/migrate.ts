@@ -111,4 +111,14 @@ export async function runMigrations(): Promise<void> {
   // after `origin`; see types/index.ts's `TutorThread` for the full
   // grandfather reasoning this column exists to satisfy).
   await pool.query(`alter table journal_entries add column if not exists tutor jsonb`);
+
+  // BM1 S2 — the page⇄board pairing (THE schema addition of this ticket). One
+  // nullable text column, the EXACT `origin`/`imported_at` recipe (plain text,
+  // not jsonb): the page side stores its 1:1 plan Board's id; the Board's own
+  // row is untouched (no back-column — the reverse lookup is a scan). Null on
+  // every existing row (no backfill) — an unpaired page reads null → JS
+  // undefined → byte-identical to today. Grandfather clause matches every
+  // additive column before it: this column governs pairing from BM1 forward
+  // only.
+  await pool.query(`alter table journal_entries add column if not exists plan_board_id text`);
 }

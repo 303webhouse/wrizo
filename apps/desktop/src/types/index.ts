@@ -243,6 +243,25 @@ export interface JournalEntry {
   // 'system' short-circuits inJournalView's `e.origin != null` branch to
   // `false`, closing that hole with no change to inJournalView's own code.
   origin?: 'journal' | 'project' | 'loose' | 'system';
+  // BM1 S2 — the page⇄board pairing (THE schema addition of this ticket). A
+  // page (this entry) points at its 1:1 plan Board by id; the Board's own
+  // record — origin, boxes, everything — is UNTOUCHED (the back-reference is
+  // derived by scan, never stored on the board), so derived Journal/Shelf/
+  // Trash membership is provably unaffected by pairing. Additive, optional,
+  // one nullable text column (`plan_board_id`) — the EXACT `origin`/`beatId`/
+  // `script` recipe: SQL null ↔ JS undefined, absent (not `null`) on every
+  // grandfathered row, so an unpaired entry is BYTE-IDENTICAL to today in
+  // every non-BM1 load/edit/save/sync path (bm1.mjs proves it). The brief's
+  // "reads planBoardId: null" is the logical/nullable-column reading —
+  // consumers read `entry.planBoardId ?? null`; the field itself stays
+  // absent-not-falsy (this file's own TutorThread grandfather discipline).
+  // Lazy birth: set ONLY on a page's FIRST flip (persistence.getOrCreatePlanBoard);
+  // unpair/orphan DELETE the key entirely (never set it to null), restoring
+  // full byte-identity — "the page is untouched." Chosen over a `pairs` table
+  // deliberately: a table would be a whole new synced collection (cache slot,
+  // dirty set, server table, both mappers) — strictly MORE blast radius, not
+  // cleaner (see the build report's S2 shape decision).
+  planBoardId?: string;
 }
 
 // J4 — a Board's positioned content unit (I2/I3 realized): the first
@@ -336,6 +355,42 @@ export interface Box {
   // ticket's brief), not inJournalView/deletedAt — see persistence.ts's own
   // qualifyingPagesFor.
   systemKind?: 'journal' | 'trash' | 'shelf';
+  // BM1 S4 — the projection seam's persisted structure. Decks are DATA, modes
+  // are PROJECTIONS: one board, three views (OPEN/STORYBOARD/OUTLINE). The
+  // ORDER and the SECTIONING are the board's own truth, single-sourced across
+  // all three modes — so they live HERE, on the shared box data, never per
+  // mode and never on a per-mode fork (S4's non-negotiable). All three are the
+  // established additive-optional-Box-field precedent (FX4 'board-meta',
+  // AB4 'connection'): absent on every existing box, so OPEN renders and
+  // serializes BYTE-IDENTICALLY (the OPEN renderer never reads these — it
+  // draws by x/y/z exactly as today), and the seven-deck library is untouched.
+  //   `seq`     — cross-mode sequential order among siblings (sparse float, the
+  //               `spineOrder`/`orderIndex` pattern). Absent → fall back to the
+  //               box array's own order. STORYBOARD/OUTLINE drag WRITES this;
+  //               all three modes READ it. This is what "one ordering, three
+  //               views" means concretely.
+  //   `laneId`  — which STORYBOARD lane / OUTLINE top-level section a card
+  //               belongs to. Absent → the default (single) lane, so a
+  //               structureless board gets exactly one lane (S6's floor).
+  //   `parentId`— OUTLINE nesting: the card this one nests UNDER (a point under
+  //               a section, a sub-point under a point). Absent → top-level in
+  //               its lane. Genuine, unbounded nesting (cycle-guarded in
+  //               store/boardStructure.ts) — the Grammarian's floor, S7.
+  seq?: number;
+  laneId?: string;
+  parentId?: string;
+  // BM1 S4 — the lane registry, riding 'board-meta' the SAME way canvasW/
+  // canvasH/footerOn/systemKind already do (the FX4 precedent, once more):
+  // ordered {id,title} pairs naming a board's STORYBOARD lanes / OUTLINE
+  // sections. Absent/empty → the board is structureless (one default lane).
+  // Titles route through deskLexicon at the call site, never raw here.
+  lanes?: { id: string; title: string }[];
+  // BM1 S5 — linking is NOT a new shape: a card→card link is the EXISTING
+  // 'connection' box (AB4 S3 — connA/connB, drawn as an olive hairline BENEATH
+  // card faces, deletable, zero-migration jsonb-in-`boxes`). FragmentLink is
+  // the rhizome ancestor; 'connection' is its board-side descendant, already
+  // shipped. "Linking absorbed into Open" (Nick's scrapping of Commonplace)
+  // means: OPEN's existing thread gesture IS v1 linking — no field added here.
 }
 
 // TU1 S1 — the Tutor's per-page conversation thread (fragments-under-Pages
