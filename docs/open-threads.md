@@ -5173,10 +5173,54 @@ outlive a session lives here, not in chat.
     inherits FX10's named return as the PAGE → door's own ancestor)
     is now satisfied; BM1 branches from post-CD3 `main`. **E1 (item
     51) outranks BM1 if capacity contends** — but E1 is already
-    merged, so no live contention. **Build starting — 2026-07-22**, on
-    `bm1-board-modes` off post-CD3 `main`, own worktree. Report =
-    push; Fable reviews before a merge recommendation; **schema merge
-    on Nick's own explicit word only** (T5); deploy is Nick's own
+    merged, so no live contention. Built on `bm1-board-modes` off
+    post-CD3 `main`, own worktree.
+    **BUILT — 2026-07-22, all 9 slices, pushed to `origin/
+    bm1-board-modes` @ `06d0291` (5 commits), NOT merged (schema).**
+    **S1 reconciliation reported choice (b), with reasoning**:
+    StoryPlan CANNOT fold in as Storyboard's data in v1 without
+    breaking M1 or building a second plan system — a board pairs to a
+    PAGE but StoryPlan is per-PROJECT (scope mismatch), `beatNotes`
+    are note-strings+status vs. positioned boxes (model mismatch), and
+    frameworks have no add/reorder/delete-beat API (M1 would break on
+    a draggable beat-lane). So Storyboard v1 projects the board's own
+    deck/box structure; the StoryPlan fold becomes its own later
+    ticket; the cascade Plan panel stays a door to the paired face.
+    BM1 claims to touch ZERO StoryPlan code, so M1's consumers are
+    unaffected by construction. **S2 schema** kept the briefed nullable
+    `planBoardId` (not a pairs table): one `plan_board_id text` column,
+    absent on grandfathered rows, migration + both sync mappers
+    (placeholder count 22→23), the board's own record untouched
+    (back-reference derived by scan). Lazy birth on first flip;
+    unpair/orphan by derivation. **S4 projection seam**: a pure
+    `boardStructure.ts` selector, additive optional Box fields
+    (`seq`/`laneId`/`parentId`), OPEN never reads them (claims
+    seven-deck library byte-identical, `materializeDeck` + all 7 deck
+    defs untouched). **S7 OUTLINE claims the nesting floor MET**
+    (renders AND edits genuine `parentId` nesting, ships not BM1.1).
+    Build claims `bm1.mjs` 36 checks + full historic suite all green
+    both settings, one A4 park (cd1.mjs's prose-bar check, PLAN → adds
+    a third button) handled per the immutability law. Two overlaps
+    the build flagged for review: the Board's own Done left in place
+    alongside PAGE →; the page's project-level Page/Plan toggle
+    coexisting with the new per-page PLAN → door.
+    **INDEPENDENT REVIEW STALLED — a placeholder-report-class failure,
+    named plainly per the ratified rule.** The first review agent ran
+    ~22 min of real STATIC analysis (its own notes: membership
+    structurally unaffected via `belongsOnShelf`'s no-op guard,
+    implementation consistent with the brief) but then got stuck in a
+    background-monitor polling loop — it kept deferring to "wait for
+    the monitor's completion event," never ran its own DYNAMIC
+    verification (its own full-suite probe), and never wrote a
+    verdict. **Per the ratified rule, a stalled/placeholder report is
+    a report that does not exist** — BM1 is NOT reviewed, and no close
+    condition rests on that stalled pass. **Compensating action: a
+    fresh independent review re-dispatched 2026-07-22, explicitly
+    forbidding the background-monitor pattern (all verification
+    synchronous, verdict as the final message).** Results pending.
+    **NOT MERGED — schema, Nick's own explicit word only (T5), and not
+    until a real independent review lands.** Report = push; Fable
+    reviews before a merge recommendation; deploy is Nick's own
     separate word after that.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
