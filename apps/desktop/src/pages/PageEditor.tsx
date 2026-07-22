@@ -652,6 +652,16 @@ function PageEditorView({ id }: { id: string }) {
                   ‹ Back to the board
                 </button>
               )}
+              {/* BM1 S3 — the PLAN → door, at the end of the page's bar (same
+                  arrow grammar as the board's PAGE →). First click on an
+                  unpaired page births the plan board (S2's lazy rule) and flips;
+                  later clicks resolve to it. No knock/badge/dot (A14). Bar chrome
+                  only — the paper's rect and text measure are never touched (S8). */}
+              <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={() => {
+                flush(); flushNow();
+                const board = getOrCreatePlanBoard(id);
+                if (board) navigate(`/page/${board.id}`);
+              }}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
             </div>
           </div>
         </FirstRunVeil>

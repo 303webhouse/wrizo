@@ -1515,6 +1515,15 @@ if (typeof window !== 'undefined') {
     pair: pairBoardWithPage,
     unpair: unpairPlanBoard,
   };
+  // Derived-membership read seam (the wrizoNotebook precedent) — lets bm1.mjs
+  // assert Journal/Shelf counts are unaffected by pairing, and that a plan
+  // board stays off the Shelf while paired and orphans onto it once its page
+  // is deleted.
+  (window as unknown as { wrizoDerived?: unknown }).wrizoDerived = {
+    journal: () => getJournalPages().map((e) => e.id),
+    shelf: () => getShelfEntries().map((e) => e.id),
+    notebook: () => getNotebookPages().map((e) => e.id),
+  };
 }
 
 // B1 S4 — read a JournalEntry INCLUDING a soft-deleted one. Every other read
