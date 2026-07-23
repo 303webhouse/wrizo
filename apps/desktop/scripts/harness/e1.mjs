@@ -79,6 +79,52 @@ const read = (dir, name) => fs.readFileSync(path.join(dir, name), 'utf8');
 
 const NOW = '2026-07-21T12:00:00.000Z';
 
+// E1.1 — fixtures shared between the LIVE run and the PARKED re-verification
+// block below, so the parked successors re-prove the SAME reality with the
+// SAME numbers (5 live + 1 trashed), never a drifted copy.
+const ROUNDTRIP_ENTRY = {
+  id: 'e1-roundtrip', projectId: null, source: 'page', origin: 'loose', pageType: 'note',
+  text: 'Round Trip Title\n\nThe writer\'s **exact** words, *unaltered*, in order.\n\nA third line, never dropped.',
+  createdAt: NOW, updatedAt: NOW,
+};
+const CORPUS_PROJECTS = [{ id: 'e1-corpus-binder', title: 'Corpus Binder', type: 'creative', storyPlanId: null, createdAt: NOW, updatedAt: NOW }];
+const CORPUS_ENTRIES = [
+  { id: 'e1-corpus-binder-page', projectId: 'e1-corpus-binder', source: 'page', origin: 'project', pageType: 'manuscript', text: 'Binder Page\n\nBinder content.', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: NOW },
+  { id: 'e1-corpus-journal-page', projectId: null, source: 'page', origin: 'journal', text: 'Journal Page\n\nJournal content.', createdAt: '2026-01-02T00:00:00.000Z', updatedAt: NOW },
+  { id: 'e1-corpus-loose-page', projectId: null, source: 'page', origin: 'loose', text: 'Loose Page\n\nLoose content.', createdAt: '2026-01-03T00:00:00.000Z', updatedAt: NOW },
+  {
+    id: 'e1-corpus-board', projectId: null, source: 'page', origin: 'loose', pageType: 'board', text: 'Corpus Board',
+    boxes: [
+      { id: 'cb-text', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.1, z: 1, text: 'Board Card\nBoard card body.' },
+      { id: 'cb-ink', kind: 'ink', x: 0.5, y: 0.1, w: 0.3, h: 0.1, z: 2, strokes: [{ points: [{ x: 0, y: 0 }, { x: 1, y: 1 }] }] },
+      { id: 'cb-pin', kind: 'page-pin', x: 0.1, y: 0.4, w: 0.3, h: 0.1, z: 3, entryId: 'e1-corpus-journal-page' },
+      // S4 (E1.1) — a 'connection' card: skipped BY NAME (a link between two
+      // cards, no writer text), so it must add NO placeholder line.
+      { id: 'cb-conn', kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: 4, connA: 'cb-text', connB: 'cb-ink' },
+      // S4 (E1.1) — a fabricated UNKNOWN box kind (a future card species this
+      // exporter predates): must export the named placeholder, never vanish.
+      { id: 'cb-unknown', kind: 'sculpture', x: 0.1, y: 0.7, w: 0.3, h: 0.1, z: 5, text: 'a future card species' },
+    ],
+    createdAt: '2026-01-04T00:00:00.000Z', updatedAt: NOW,
+  },
+  {
+    id: 'e1-corpus-script', projectId: null, source: 'page', origin: 'loose', pageType: 'script', text: 'INT. CORPUS ROOM - DAY',
+    script: { v: 1, scenes: [{ id: 'sc1', heading: { id: 'h1', t: 'scene', text: 'INT. CORPUS ROOM - DAY' }, body: [{ id: 'a1', t: 'action', text: 'The writer leaves for vacation.' }] }] },
+    createdAt: '2026-01-05T00:00:00.000Z', updatedAt: NOW,
+  },
+  // MUST be excluded from BOTH sections: a system Board (derived membership
+  // mirror, not authored content — zero unique words).
+  {
+    id: 'e1-corpus-system-board', projectId: null, source: 'page', origin: 'system', pageType: 'board', text: 'Journal',
+    boxes: [{ id: 'sb-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'journal' }],
+    createdAt: NOW, updatedAt: NOW,
+  },
+  // S3 (E1.1) — soft-deleted: now RIDES ALONG under the "## From the Trash"
+  // marked section (was: must-be-absent). Read-only — the export never clears
+  // deletedAt; this row stays trashed.
+  { id: 'e1-corpus-deleted', projectId: null, source: 'page', origin: 'loose', text: 'Deleted Page\n\nWords the writer trashed but did not lose.', createdAt: '2026-01-06T00:00:00.000Z', updatedAt: NOW, deletedAt: NOW },
+];
+
 await withHarness(async (app) => {
   // ==========================================================================
   // S1 (re-proven live, as regression coverage) + S2 — the copy path, working
@@ -143,11 +189,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   const pageDl = mkDlDir('page');
   await seedAndOpen(app, {
-    entries: [{
-      id: 'e1-roundtrip', projectId: null, source: 'page', origin: 'loose', pageType: 'note',
-      text: 'Round Trip Title\n\nThe writer\'s **exact** words, *unaltered*, in order.\n\nA third line, never dropped.',
-      createdAt: NOW, updatedAt: NOW,
-    }],
+    entries: [ROUNDTRIP_ENTRY],
     waitSel: '.forward-only-editor, textarea, [contenteditable]',
     hash: '#/page/e1-roundtrip',
     dlDir: pageDl,
@@ -169,15 +211,69 @@ await withHarness(async (app) => {
   await sleep(700);
 
   const pageFiles = filesIn(pageDl);
-  ok('S3 OFFLINE: "This Page" produced exactly two files (.md + .txt), network fully unavailable throughout',
-    pageFiles.length === 2 && pageFiles.includes('Round Trip Title.md') && pageFiles.includes('Round Trip Title.txt'),
+  // S1 (E1.1) — the "This Page" base filename now carries a stable id-suffix
+  // drawn from the id's random TAIL ('e1-roundtrip'.slice(-6) === 'ndtrip'),
+  // so the pre-suffix filename assertion ('Round Trip Title.md'/'.txt') is
+  // FALSIFIED. It is PARKED verbatim below (HARNESS_PARKED=1) per A4 + the
+  // immutability law; this is its LIVE SUCCESSOR, asserting the suffixed form.
+  // The file BODY text is unchanged (the suffix lives in the filename only), so
+  // the two byte checks that follow keep their original claims verbatim — they
+  // merely read whichever .md/.txt now exist rather than a hard-coded old name.
+  ok('S3/E1.1 OFFLINE: "This Page" produced exactly two files (.md + .txt) named with the stable id-suffix — "Round Trip Title (ndtrip).md/.txt" — network fully unavailable throughout',
+    pageFiles.length === 2 && pageFiles.includes('Round Trip Title (ndtrip).md') && pageFiles.includes('Round Trip Title (ndtrip).txt'),
     JSON.stringify(pageFiles));
-  const mdBytes = pageFiles.includes('Round Trip Title.md') ? read(pageDl, 'Round Trip Title.md') : '';
-  const txtBytes = pageFiles.includes('Round Trip Title.txt') ? read(pageDl, 'Round Trip Title.txt') : '';
+  const mdName = pageFiles.find((f) => f.endsWith('.md'));
+  const txtName = pageFiles.find((f) => f.endsWith('.txt'));
+  const mdBytes = mdName ? read(pageDl, mdName) : '';
+  const txtBytes = txtName ? read(pageDl, txtName) : '';
   ok('S3 OFFLINE: the .md file\'s ACTUAL bytes on disk carry the writer\'s exact words, formatting conventions intact, nothing altered/truncated/reordered',
     mdBytes === 'Round Trip Title\n\nThe writer\'s **exact** words, *unaltered*, in order.\n\nA third line, never dropped.', mdBytes);
   ok('S3 OFFLINE: the .txt file\'s ACTUAL bytes carry the same words with conventions stripped to honest plain text',
     txtBytes === 'Round Trip Title\n\nThe writer\'s exact words, unaltered, in order.\n\nA third line, never dropped.', txtBytes);
+
+  // ==========================================================================
+  // S1/S2 (E1.1) — the collision fix of record. Two DIFFERENT pages sharing an
+  // identical first line ("Same Title") must download as TWO DISTINCT files,
+  // each carrying its OWN words — neither clobbers the other on disk.
+  //
+  // The two ids here are the WORST realistic case, on purpose: they share their
+  // whole HEAD ('dupehead') and differ only in their last chars — the exact
+  // shape `generateId()` produces for two pages born in the SAME tick (a bulk
+  // import, a template expansion, a rapid duplicate), where the 8-char
+  // timestamp prefix is identical and only the random tail differs. A
+  // head-slice suffix ('dupehe' for both) would STILL collide here; the fix
+  // draws from the tail (slice(-6): 'alpha6' vs 'beta66'), so it holds. This
+  // fixture is what closes the hole the pre-hardening slice(0,6) left open.
+  // ==========================================================================
+  const collisionDl = mkDlDir('collision');
+  const twoSameTitle = [
+    { id: 'dupehead-alpha6', projectId: null, source: 'page', origin: 'loose', pageType: 'note', text: 'Same Title\n\nAlpha body — the first page\'s own words.', createdAt: NOW, updatedAt: NOW },
+    { id: 'dupehead-beta66', projectId: null, source: 'page', origin: 'loose', pageType: 'note', text: 'Same Title\n\nBeta body — the second page\'s own words.', createdAt: NOW, updatedAt: NOW },
+  ];
+  await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/dupehead-alpha6', dlDir: collisionDl });
+  await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
+  await trustedClick(app, 'Publish');
+  await sleep(250);
+  await trustedClick(app, 'This Page (.md)');
+  await sleep(700);
+  await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/dupehead-beta66', dlDir: collisionDl });
+  await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
+  await trustedClick(app, 'Publish');
+  await sleep(250);
+  await trustedClick(app, 'This Page (.md)');
+  await sleep(700);
+  const collisionFiles = filesIn(collisionDl);
+  ok('S1/S2 OFFLINE: two same-first-line pages whose ids share their head and differ only in the tail (the same-tick case) download as TWO DISTINCT files ("Same Title (alpha6).md" + "Same Title (beta66).md") — the tail-drawn id-suffix disambiguates; neither overwrites the other on disk',
+    collisionFiles.length === 2 && collisionFiles.includes('Same Title (alpha6).md') && collisionFiles.includes('Same Title (beta66).md'),
+    JSON.stringify(collisionFiles));
+  const aBytes = collisionFiles.includes('Same Title (alpha6).md') ? read(collisionDl, 'Same Title (alpha6).md') : '';
+  const bBytes = collisionFiles.includes('Same Title (beta66).md') ? read(collisionDl, 'Same Title (beta66).md') : '';
+  ok('S1/S2 OFFLINE: each same-titled file carries its OWN page\'s words intact — both pages\' words survive, neither truncated nor overwritten',
+    aBytes.includes('Alpha body — the first page\'s own words.') && bBytes.includes('Beta body — the second page\'s own words.'),
+    JSON.stringify({ aBytes, bBytes }));
+  await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
 
   // A page carrying hand-drawn ink alongside its text: the ink is never
   // silently dropped from a claimed-complete export — a named placeholder
@@ -267,46 +363,19 @@ await withHarness(async (app) => {
     binderText.includes('First chapter body.') && binderText.includes('Second chapter body.') && binderText.includes('Third chapter body.'), '');
 
   // ==========================================================================
-  // S3/S5 — "Everything," the vacation insurance. A seeded corpus with a
-  // binder page, a journal page, a loose page, a board (text + ink +
-  // page-pin cards), and a script — PLUS a system Board and a soft-deleted
-  // page, both of which must be EXCLUDED (system Boards are derived
-  // membership mirrors, already counted via the real pages they mirror;
-  // deleted pages are not live pages the writer currently owns). Asserts
-  // the exported document COUNT equals the writer's own LIVE page count —
-  // no silent omissions.
+  // S3/S5 — "Everything," the vacation insurance. The shared corpus (module
+  // scope): a binder page, a journal page, a loose page, a board (text + ink +
+  // page-pin cards, PLUS an E1.1 'connection' card and a fabricated unknown
+  // kind), and a script — PLUS a system Board (still EXCLUDED — derived mirror)
+  // and a soft-deleted page (E1.1: now RIDES ALONG under "## From the Trash",
+  // no longer excluded). Asserts LIVE + TRASHED counts explicitly, the trash
+  // section's honesty, and the S4 unknown-kind placeholder.
   // ==========================================================================
   const everythingDl = mkDlDir('everything');
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await seedAndOpen(app, {
-    projects: [{ id: 'e1-corpus-binder', title: 'Corpus Binder', type: 'creative', storyPlanId: null, createdAt: NOW, updatedAt: NOW }],
-    entries: [
-      { id: 'e1-corpus-binder-page', projectId: 'e1-corpus-binder', source: 'page', origin: 'project', pageType: 'manuscript', text: 'Binder Page\n\nBinder content.', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: NOW },
-      { id: 'e1-corpus-journal-page', projectId: null, source: 'page', origin: 'journal', text: 'Journal Page\n\nJournal content.', createdAt: '2026-01-02T00:00:00.000Z', updatedAt: NOW },
-      { id: 'e1-corpus-loose-page', projectId: null, source: 'page', origin: 'loose', text: 'Loose Page\n\nLoose content.', createdAt: '2026-01-03T00:00:00.000Z', updatedAt: NOW },
-      {
-        id: 'e1-corpus-board', projectId: null, source: 'page', origin: 'loose', pageType: 'board', text: 'Corpus Board',
-        boxes: [
-          { id: 'cb-text', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.1, z: 1, text: 'Board Card\nBoard card body.' },
-          { id: 'cb-ink', kind: 'ink', x: 0.5, y: 0.1, w: 0.3, h: 0.1, z: 2, strokes: [{ points: [{ x: 0, y: 0 }, { x: 1, y: 1 }] }] },
-          { id: 'cb-pin', kind: 'page-pin', x: 0.1, y: 0.4, w: 0.3, h: 0.1, z: 3, entryId: 'e1-corpus-journal-page' },
-        ],
-        createdAt: '2026-01-04T00:00:00.000Z', updatedAt: NOW,
-      },
-      {
-        id: 'e1-corpus-script', projectId: null, source: 'page', origin: 'loose', pageType: 'script', text: 'INT. CORPUS ROOM - DAY',
-        script: { v: 1, scenes: [{ id: 'sc1', heading: { id: 'h1', t: 'scene', text: 'INT. CORPUS ROOM - DAY' }, body: [{ id: 'a1', t: 'action', text: 'The writer leaves for vacation.' }] }] },
-        createdAt: '2026-01-05T00:00:00.000Z', updatedAt: NOW,
-      },
-      // MUST be excluded: a system Board (derived membership mirror, not authored content).
-      {
-        id: 'e1-corpus-system-board', projectId: null, source: 'page', origin: 'system', pageType: 'board', text: 'Journal',
-        boxes: [{ id: 'sb-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'journal' }],
-        createdAt: NOW, updatedAt: NOW,
-      },
-      // MUST be excluded: soft-deleted — not a live page the writer currently owns.
-      { id: 'e1-corpus-deleted', projectId: null, source: 'page', origin: 'loose', text: 'Deleted Page', createdAt: NOW, updatedAt: NOW, deletedAt: NOW },
-    ],
+    projects: CORPUS_PROJECTS,
+    entries: CORPUS_ENTRIES,
     waitSel: '.forward-only-editor, textarea, [contenteditable]',
     hash: '#/page/e1-corpus-loose-page',
     dlDir: everythingDl,
@@ -318,21 +387,43 @@ await withHarness(async (app) => {
   await sleep(900);
   const everythingFiles = filesIn(everythingDl);
   const everythingText = everythingFiles.length ? read(everythingDl, everythingFiles[0]) : '';
-  const docCount = (everythingText.match(/^# /gm) || []).length;
+  // Split at the "## From the Trash" marker: live pages above, trashed below.
+  const trashIdx = everythingText.indexOf('## From the Trash');
+  const liveSection = trashIdx >= 0 ? everythingText.slice(0, trashIdx) : everythingText;
+  const trashSection = trashIdx >= 0 ? everythingText.slice(trashIdx) : '';
+  const liveDocCount = (liveSection.match(/^# /gm) || []).length;
+  const trashDocCount = (trashSection.match(/^# /gm) || []).length;
   ok('S3 OFFLINE: "Everything" wrote exactly one document',
     everythingFiles.length === 1, JSON.stringify(everythingFiles));
-  ok('S5: the exported document COUNT (5, counting each page\'s own "# " header) equals the writer\'s own LIVE page count — binder + journal + loose + board + script — the system Board and the soft-deleted page correctly excluded, no silent omissions AND no phantom inclusions',
-    docCount === 5, `docCount=${docCount}`);
+  // S3/E1.1 — LIVE + TRASHED counted EXPLICITLY (both numbers named), not one
+  // blended total. Live successor to the parked "docCount === 5" assertion
+  // (below): 5 live page headers above the marker + 1 trashed header below it.
+  ok('S3/E1.1 OFFLINE: "Everything" counts LIVE and TRASHED explicitly — 5 live page headers above the "## From the Trash" marker (binder + journal + loose + board + script) and 1 trashed page header below it (6 total), not one blended count',
+    liveDocCount === 5 && trashDocCount === 1, JSON.stringify({ liveDocCount, trashDocCount }));
   ok('S3 OFFLINE: the binder/journal/loose pages\' own bodies are present verbatim',
     everythingText.includes('Binder content.') && everythingText.includes('Journal content.') && everythingText.includes('Loose content.'), '');
   ok('S3 OFFLINE: the Board exports honestly — its text card\'s own title+body, the ink card as a NAMED placeholder (never silently dropped), and the page-pin card as a named membership reference',
     everythingText.includes('Board card body.') && everythingText.includes('[Hand-drawn ink — not exported as text.]') && everythingText.includes('Pinned: Journal Page'), '');
+  // S4/E1.1 — the inverted whitelist: a fabricated unknown-kind card exports
+  // the named placeholder (never silently dropped), and it appears EXACTLY
+  // ONCE — proving the by-name-skipped 'connection' card produced no placeholder.
+  ok('S4/E1.1 OFFLINE: a fabricated unknown-kind board card exports the named placeholder line — never silence — and it appears exactly once (the by-name-skipped "connection" card adds no placeholder)',
+    everythingText.includes('[A card of an unrecognized kind — not exported as text.]')
+      && (everythingText.match(/A card of an unrecognized kind/g) || []).length === 1,
+    JSON.stringify({ placeholderCount: (everythingText.match(/A card of an unrecognized kind/g) || []).length }));
   ok('S3 OFFLINE: the Script page exports via the existing serializeScriptDoc rendering (uppercase slugline, the action line verbatim)',
     everythingText.includes('INT. CORPUS ROOM - DAY') && everythingText.includes('The writer leaves for vacation.'), '');
   ok('S3 OFFLINE: the system Board\'s own title ("Journal," the seeded systemKind text) never appears as its own exported page',
     !new RegExp('^# Journal$', 'm').test(everythingText), '');
-  ok('S3 OFFLINE: the soft-deleted page\'s own title never appears — not a live page the writer currently owns',
-    !everythingText.includes('Deleted Page'), '');
+  // S3/E1.1 — the "## From the Trash" marker is EXPORTED BODY TEXT (not routed
+  // through deskLexicon), present exactly once.
+  ok('S3/E1.1 OFFLINE: the honest "## From the Trash" marker is present exactly once as exported body text (deliberately NOT routed through deskLexicon)',
+    (everythingText.match(/^## From the Trash$/gm) || []).length === 1, JSON.stringify({ trashIdx }));
+  // S3/E1.1 — live successor to the parked trash-EXCLUSION assertion (below):
+  // the soft-deleted page RIDES ALONG under the marker and is ABSENT above it.
+  ok('S3/E1.1 OFFLINE: the soft-deleted page RIDES ALONG — its title "Deleted Page" and its words appear UNDER the "## From the Trash" marked section, and NEVER in the live section above it (read-only: still soft-deleted, never resurrected)',
+    trashIdx >= 0 && trashSection.includes('Deleted Page') && trashSection.includes('Words the writer trashed but did not lose.') && !liveSection.includes('Deleted Page'),
+    JSON.stringify({ inTrash: trashSection.includes('Deleted Page'), inLive: liveSection.includes('Deleted Page') }));
 
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
 
@@ -448,7 +539,107 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-const pass = checks.every((c) => c.pass);
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// E1.1 (2026-07-23) establishes this file's PARKED scaffold (the cd1.mjs/
+// ab3.mjs convention: SUPERSEDED species, ORIGINAL quoted verbatim, live
+// successor named — the recorded original text is NEVER rewritten in place,
+// per the immutability law ratified 2026-07-22). Three checks are parked, all
+// SUPERSEDED by the E1.1 fix (Fable's E1 post-merge review + the E1.1 brief):
+//   1. the "This Page" pre-suffix filename assertion — S1 gave every "This
+//      Page" file a stable id-suffix, so the bare-title name no longer holds.
+//   2. the "Everything" docCount === 5 assertion — S3 makes the soft-deleted
+//      page ride along under "## From the Trash," so the file now carries live
+//      + trashed headers (5 + 1), counted explicitly, not one blended 5.
+//   3. the "Everything" trash-EXCLUSION assertion — same S3: the soft-deleted
+//      page now APPEARS (under the marker), the exact inverse of the old claim.
+// Each successor is proven fresh in this file's own LIVE section above, and
+// re-proven here against a fresh re-drive.
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    // ---- Park 1: the round-trip "This Page" filename, pre-suffix. ----------
+    // ORIGINAL (this file's own live S3 section, pre-E1.1):
+    //   ok('S3 OFFLINE: "This Page" produced exactly two files (.md + .txt),
+    //   network fully unavailable throughout', pageFiles.length === 2 &&
+    //   pageFiles.includes('Round Trip Title.md') && pageFiles.includes(
+    //   'Round Trip Title.txt'), JSON.stringify(pageFiles));
+    // S1 (E1.1): every "This Page" base filename now carries a stable id-suffix
+    // (Title + " (" + entry.id.slice(-6) + ")" — the id's random TAIL, so
+    // same-tick pages stay distinct), so two pages sharing a first line can no
+    // longer clobber each other on disk. The bare-title name is superseded by
+    // the suffixed form. Live successor: this file's own live S3 round-trip
+    // section (asserting "Round Trip Title (ndtrip).md/.txt").
+    const parkPageDl = mkDlDir('parked-page');
+    await seedAndOpen(app, { entries: [ROUNDTRIP_ENTRY], waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-roundtrip', dlDir: parkPageDl });
+    await trustedClick(app, 'Publish');
+    await sleep(250);
+    await trustedClick(app, 'This Page (.md)');
+    await sleep(700);
+    await trustedClick(app, 'This Page (.txt)');
+    await sleep(700);
+    const parkPageFiles = filesIn(parkPageDl);
+    pok('PARKED (was "S3 OFFLINE: \'This Page\' produced exactly two files (.md + .txt), network fully unavailable throughout" — asserting the bare-title names "Round Trip Title.md/.txt") — S1/E1.1: every "This Page" filename now carries the stable id-suffix; the suffixed form "Round Trip Title (ndtrip).md/.txt" supersedes it — live successor: this file\'s own live S3 round-trip section',
+      parkPageFiles.length === 2 && parkPageFiles.includes('Round Trip Title (ndtrip).md') && parkPageFiles.includes('Round Trip Title (ndtrip).txt')
+        && !parkPageFiles.includes('Round Trip Title.md') && !parkPageFiles.includes('Round Trip Title.txt'),
+      JSON.stringify(parkPageFiles));
+
+    // ---- Parks 2 & 3: the "Everything" corpus, pre-Trash. -----------------
+    // Both re-verified off ONE fresh corpus export.
+    const parkEvDl = mkDlDir('parked-everything');
+    await seedAndOpen(app, { projects: CORPUS_PROJECTS, entries: CORPUS_ENTRIES, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-corpus-loose-page', dlDir: parkEvDl });
+    await trustedClick(app, 'Publish');
+    await sleep(250);
+    await trustedClick(app, 'Everything');
+    await sleep(900);
+    const parkEvFiles = filesIn(parkEvDl);
+    const parkEvText = parkEvFiles.length ? read(parkEvDl, parkEvFiles[0]) : '';
+    const parkTrashIdx = parkEvText.indexOf('## From the Trash');
+    const parkLiveSection = parkTrashIdx >= 0 ? parkEvText.slice(0, parkTrashIdx) : parkEvText;
+    const parkTrashSection = parkTrashIdx >= 0 ? parkEvText.slice(parkTrashIdx) : '';
+    const parkLiveDocCount = (parkLiveSection.match(/^# /gm) || []).length;
+    const parkTrashDocCount = (parkTrashSection.match(/^# /gm) || []).length;
+
+    // ORIGINAL (this file's own live S3/S5 section, pre-E1.1):
+    //   ok('S5: the exported document COUNT (5, counting each page\'s own "# "
+    //   header) equals the writer\'s own LIVE page count — binder + journal +
+    //   loose + board + script — the system Board and the soft-deleted page
+    //   correctly excluded, no silent omissions AND no phantom inclusions',
+    //   docCount === 5, `docCount=${docCount}`);
+    // S3 (E1.1): the soft-deleted page now rides along under "## From the
+    // Trash," so the file carries 5 live + 1 trashed headers, counted
+    // explicitly (both numbers named), not one blended 5. Live successor: this
+    // file's own live "counts LIVE and TRASHED explicitly" check above.
+    pok('PARKED (was "S5: the exported document COUNT (5, counting each page\'s own \'# \' header) equals the writer\'s own LIVE page count — binder + journal + loose + board + script — the system Board and the soft-deleted page correctly excluded, no silent omissions AND no phantom inclusions" — asserting docCount === 5) — S3/E1.1: the soft-deleted page rides along under "## From the Trash"; the count is now 5 live + 1 trashed, named explicitly — live successor: this file\'s own live LIVE-and-TRASHED count check',
+      parkLiveDocCount === 5 && parkTrashDocCount === 1, JSON.stringify({ parkLiveDocCount, parkTrashDocCount }));
+
+    // ORIGINAL (this file's own live S3 section, pre-E1.1):
+    //   ok('S3 OFFLINE: the soft-deleted page\'s own title never appears — not
+    //   a live page the writer currently owns', !everythingText.includes(
+    //   'Deleted Page'), '');
+    // S3 (E1.1, Nick's ratified word): the Trash RIDES ALONG — the soft-deleted
+    // page now appears under the "## From the Trash" marked section (and only
+    // there, never in the live section above), the exact inverse of the old
+    // exclusion claim. Read-only: still soft-deleted, never resurrected. Live
+    // successor: this file's own live "RIDES ALONG" check above.
+    pok('PARKED (was "S3 OFFLINE: the soft-deleted page\'s own title never appears — not a live page the writer currently owns" — asserting !everythingText.includes(\'Deleted Page\')) — S3/E1.1: the Trash rides along; the soft-deleted page now APPEARS under "## From the Trash" (and never in the live section above) — live successor: this file\'s own live "RIDES ALONG" check',
+      parkTrashIdx >= 0 && parkTrashSection.includes('Deleted Page') && !parkLiveSection.includes('Deleted Page'),
+      JSON.stringify({ parkTrashIdx, inTrash: parkTrashSection.includes('Deleted Page'), inLive: parkLiveSection.includes('Deleted Page') }));
+
+    return parkedChecks;
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nE1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all superseded-check successors green`
+    : `\nE1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+}
+
+const allChecksE1 = checks.concat(parkedChecks);
+const pass = allChecksE1.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nE1 VERIFY: PASS (${checks.length} checks)` : `\nE1 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nE1 VERIFY: PASS (${allChecksE1.length} checks)` : `\nE1 VERIFY: FAIL — ${allChecksE1.filter((c) => !c.pass).length}/${allChecksE1.length} failed`);
 process.exit(pass ? 0 : 1);
