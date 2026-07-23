@@ -5488,6 +5488,56 @@ outlive a session lives here, not in chat.
     **Items 51 and 55 close together on Nick's own device sitting** —
     agenda now includes the Trash spot-check (a known trashed page's
     words present under the marker, wifi off).
+56. **TU5 — the Tutor's Memory (the Book's Bible).** **BRIEF COMMITTED
+    — 2026-07-23, Fable-authored** (`docs/wrizo-alpha/
+    tu5-tutors-memory-brief.md`). **SCHEMA TICKET — NO merge
+    pre-authorization.** Nick's explicit word at merge, which in the
+    same breath ratifies (a) the S6 disclosure-v3 string verbatim and
+    (b) the two S5 prompt paragraphs; deploy is his separate word.
+    **Authority**: the Listener-day queue (TU5 confirmed over TU4 as
+    THE pre-vacation Tutor ticket); TU2 review ruling 3 ("the Tutor
+    has ears as of TU2; memory of the book is TU5's charter").
+    **Sequencing gates — ALL MET as of this writing, so the build is
+    authorized to start**: (1) E1.1 merged (item 55 — the A1 ruling
+    file on disk, the standing gate); (2) E1.1's post-merge review
+    landed (item 55, GREEN, committed). Fable's own E1.1 review names
+    it: "With this review on disk, TU5's build gate is fully met."
+    **Scope — L4 of the Tutor's five-layer memory, alone**: L1 the
+    constitution (TU1), L2 the ears/page-delta (TU2), L3 the page
+    thread (TU1/TU2) — all shipped; **L4 the book's Bible — durable,
+    writer-owned facts of the project — THIS ticket**; L5 the writer's
+    profile deferred. The bible is the BOOK's memory: it rides the
+    project, so loose/journal pages keep ears + thread only and show
+    NO Bible section (quiet absence, not a disabled door). **Three
+    decisive calls (Fable's, vetoable at the schema word)**: (1)
+    per-project, ONE additive nullable `projects.tutor` jsonb column —
+    never a new table (the BM1 charter's own reasoning); (2)
+    **writer-authored ONLY — the Tutor cannot write to the bible, not
+    even by proposal** (structured model output becoming app state is
+    a cousin of the A13-forbidden affordance; the prompt may suggest
+    in plain words that the writer note something, the hands stay the
+    writer's); (3) no Voice Wall on the bible input (a reasoned
+    exclusion — the wall guards writing surfaces, the bible is desk
+    furniture, and A13 already seals the only dangerous direction).
+    **S1 schema**: `alter table projects add column if not exists
+    tutor jsonb` (additive, idempotent, no backfill, the exact
+    `origin`/`journal_entries.tutor` recipe); both project mappers;
+    `upsertProjects` 14→15 columns, `$15::jsonb`, placeholder count
+    **15/15/15 — Fable hand-verifies at review, per the house rule**;
+    grandfather fixed point (a project never touched by the bible is
+    byte-identical, absent never null). Shape `{ v:1, facts: Fact[] }`,
+    per-fact text cap 300. **S6 ships disclosure v3** (the mechanism
+    exists per TU2 review ruling 4). **Server surface touched is
+    exactly `tutor.ts` + `migrate.ts`/`sync.ts` (S1); zero new deps;
+    key presence-never-value at deploy.** **The Aug 1 freeze is named
+    honestly**: TU5 merges before it or waits for post-vacation — E1.1
+    merged 2026-07-23 (well ahead of the ~July 29 slip line), so the
+    gate is clear. **Build starting — 2026-07-23**, on
+    `tu5-tutors-memory` off `main`, own worktree per ONE CHECKOUT PER
+    AGENT. Report = push; Fable reviews before a merge recommendation;
+    **schema merge on Nick's own explicit word only.**
+
+## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
