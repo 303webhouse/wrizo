@@ -5464,8 +5464,30 @@ outlive a session lives here, not in chat.
     once falsely claimed is now genuinely live** — same-titled and
     same-tick pages export as distinct files, both sets of words
     intact; trashed words ride along in "Everything"; no box kind
-    silently vanishes. **Close now rests on Nick's own device
-    sitting** (and Fable's same-day post-merge review).
+    silently vanishes.
+    **Fable's post-merge review landed and is committed — GREEN —
+    2026-07-23** (`docs/wrizo-alpha/e1-1-review-fable.md`). Read at
+    house depth (full-patch line-by-line on all three files; the
+    park-quoted originals compared against the deleted live text IN
+    THE SAME DIFF — verbatim identity confirmed by direct comparison,
+    not the commit's claim). "The record is true, the words are whole,
+    and the immutability law was honored under conditions that would
+    have excused sloppiness." Named a new standing PRACTICE: the live
+    section and the parked probes share module-scope fixtures, so
+    successors re-prove the same reality with the same numbers, never
+    a drifted copy. **Three non-blocking advisories, dispositions:**
+    (A1) the 80-char cap now governs the TITLE component; the full
+    base can reach ~89 with the ≤9-char suffix — endorsed, disclosed
+    in-code, no action. (A2) `board-meta`'s "zero writer text" comment
+    is already stale (BM1's lanes carry writer-authored titles) — the
+    FX11 rider corrects that comment in the same pass it renders the
+    titles. (A3) the harness's `^# `/`## From the Trash` anchors are
+    writer-text-fragile (a page whose own first line is `## From the
+    Trash` would confuse the split) — pathological, harness-only, no
+    product defect; folded into item 48's deflake-pass rider territory.
+    **Items 51 and 55 close together on Nick's own device sitting** —
+    agenda now includes the Trash spot-check (a known trashed page's
+    words present under the marker, wifi off).
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
