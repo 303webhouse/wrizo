@@ -5332,6 +5332,43 @@ outlive a session lives here, not in chat.
     **Close now rests on Nick's own device sitting** — the three
     modes, both doors, the flip, the telos line, the linking curves,
     and the two overlap questions (A2/A3) answered by eye.
+55. **E1.1 — Words Out, Made Whole.** **BRIEF COMMITTED — 2026-07-23,
+    Fable-authored** (`docs/wrizo-alpha/e1-1-words-out-fix-brief.md`).
+    **P0-adjacent — lands before the Aug 1 freeze.** A fix ticket off
+    E1 (item 51), from Fable's own E1 post-merge review + Nick's
+    2026-07-23 ratifications. **THREE things to make whole**: (S1) the
+    filename-collision fix — **and a hard, self-disclosed correction
+    of record**: E1's own merge record (item 51) claimed the
+    collision fix was "fixed by the orchestrating session post-review"
+    — **it is NOT on `main`.** Verified 2026-07-23: `exportPageFiles`
+    carries no id-suffix on `main`, `e1.mjs` carries no collision
+    check on `main`. The fix was real but ORPHANED — this session made
+    it in the E1 build worktree (`wf_ae92f9fa-728-1`, still present)
+    and merged `origin/e1-words-out`, which never carried it; the
+    merge record wrongly claimed it landed. **The orphaned fix is
+    still uncommitted in that worktree** (`pageExport.ts`'s `${title}
+    (${entry.id.slice(0,6)})` + `e1.mjs`'s collision checks) — E1.1's
+    S0 finds and ADOPTS it rather than re-deriving, disclosed, with
+    the harness change redone per A4 + the ratified immutability law
+    (park the original round-trip assertion, add the suffixed
+    successor — never edit in place, unlike the orphaned worktree's
+    own in-place edit). (S3) **the Trash rides along** (Nick's word,
+    2026-07-23): "Everything" gains an honest `## From the Trash`
+    section — every soft-deleted page's block via the same `pageBlock`
+    machinery, marked and separated after the live pages, read-only
+    (never resurrect/mutate a deleted row), system Boards still
+    excluded; the doc-count assertion names live + trashed as two
+    numbers. (S4) **the whitelist inverted**: `boardBody()` currently
+    silently drops any non-text/ink/page-pin box kind — E1.1 makes an
+    unrecognized kind export a named placeholder (`[A card of an
+    unrecognized kind — not exported as text.]`), never silence
+    (`connection` explicitly skipped by name — a link, no writer
+    text). (S5) **the record corrected**: E1.1's own records commit on
+    item 51 states plainly the claimed fix didn't land, per the
+    stalled-report law — no euphemism. **ZERO SCHEMA, zero server,
+    zero new deps** — merge pre-authorized as zero-schema; deploy is
+    Nick's separate word. **Build starting — 2026-07-23**, on
+    `e1-1-words-out-fix` off `main`, own worktree.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
