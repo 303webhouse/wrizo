@@ -4560,7 +4560,10 @@ outlive a session lives here, not in chat.
     clean, `build` clean; the full historic suite was re-run again
     across the combined J6+FX9 tree (see item 50's own record for the
     shared `CascadePanels.tsx` merge and that suite run's result).
-    **Not deployed** — Nick's separate word, standing default.
+    **DEPLOYED — 2026-07-22** (Nick's word "Deploy everything"), in the
+    all-six-ticket deploy — `railway up` @ `b936f67`, deployment
+    `70181bfe`, SUCCESS; see item 54 for the full manifest. **Close
+    now rests on Nick's own device sitting.**
 50. **FX9 — the Folded Lists.** **BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/fx9-folded-lists-brief.md`).
     **Authority**: item 41 finding 11 (Nick's second sitting —
@@ -4684,7 +4687,10 @@ outlive a session lives here, not in chat.
     modes on record, neither touched by J6 or FX9's own diff (routing
     and cascade-fold code, nowhere near a celebration animation). No
     interaction defect found between J6 and FX9.
-    **Not deployed** — Nick's separate word, standing default.
+    **DEPLOYED — 2026-07-22** (Nick's word "Deploy everything"), in the
+    all-six-ticket deploy — deployment `70181bfe`, SUCCESS; see item
+    54 for the manifest. **Close now rests on Nick's own device
+    sitting.**
 51. **E1 — Get My Words Out.** **P0 — BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/e1-get-my-words-out-brief.md`).
     **Outranks every ticket in the queue, including J6 and FX9 in
@@ -4803,9 +4809,11 @@ outlive a session lives here, not in chat.
     `main` @ item 50's own merge tip. Clean, no conflicts (zero file
     overlap with J6/FX9). Re-verified at the merge HEAD: `tsc` clean,
     `build` clean.
-    **Not deployed** — though given the P0 urgency, expect Nick's own
-    deploy word to follow close behind, not wait for a routine
-    sitting, per the note above.
+    **DEPLOYED — 2026-07-22** (Nick's word "Deploy everything"), in the
+    all-six-ticket deploy — deployment `70181bfe`, SUCCESS; see item
+    54 for the manifest. The P0 "vacation insurance" (the offline
+    export path) is now live ahead of Nick's 2026-08-04 departure.
+    **Close now rests on Nick's own device sitting.**
 52. **FX10 — the Room's Edges.** **P0 alongside E1 — BRIEF COMMITTED —
     2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/fx10-rooms-edges-brief.md`). Nick confirmed the
@@ -4957,8 +4965,11 @@ outlive a session lives here, not in chat.
     actual merge HEAD were clean throughout. **A true full-suite run
     across the final combined tree (J6+FX9+E1+FX10+CD3) is deferred
     to CD3's own merge** (item 53), rather than run twice.
-    **Not deployed** — though given the P0 urgency, expect Nick's own
-    deploy word to follow close behind, per the note at item 51.
+    **DEPLOYED — 2026-07-22** (Nick's word "Deploy everything"), in the
+    all-six-ticket deploy — deployment `70181bfe`, SUCCESS; see item
+    54 for the manifest. **Close now rests on Nick's own device
+    sitting** (the Tutor drawer, the rail dissolve, hover-restore, the
+    scrollbar flush).
 53. **CD3 — the Strip's Order.** **P0-adjacent — a genuine cross-
     session collision, disclosed in full, 2026-07-21/22.** A second,
     concurrent Claude session — working directly with Nick and Fable,
@@ -5135,6 +5146,12 @@ outlive a session lives here, not in chat.
     remove the Board's Done before its replacement lands, and do NOT
     treat its continued presence as permanent.
     **BM1 (item 54) is now UNGATED — CD3 has merged.**
+    **DEPLOYED — 2026-07-22** (Nick's word "Deploy everything"), in the
+    all-six-ticket deploy — deployment `70181bfe`, SUCCESS; see item
+    54 for the manifest. **Close now rests on Nick's own device
+    sitting** (the strip's new colors/order/size, the flush top bar,
+    the Done-button removal from Page/Script — plus A1's own
+    still-open immutability-law question).
 54. **BM1 — the Board's Own Modes.** **BRIEF COMMITTED — 2026-07-21,
     Fable-authored** (`docs/wrizo-alpha/bm1-board-modes-brief.md`).
     From the Board Modes second pass as ruled by Nick, 2026-07-21.
@@ -5285,12 +5302,36 @@ outlive a session lives here, not in chat.
     open-threads.md` regression — pure branch-age skew, NOT BM1
     touching the ledger; the merge must take `main`'s newer ledger
     (reconcile the docs conflict in main's favor).
-    **NOT MERGED — schema, Nick's own explicit word only (T5).** The
-    compensating verification stands in for the automated review that
-    twice failed to complete (disclosed as such, per the placeholder-
-    report rule's own conduct clause); Fable may still want her own
-    eye before recommending merge. Deploy is Nick's separate word
-    after that.
+    **MERGED — 2026-07-22, on Nick's own explicit word ("Merge and
+    push live / Deploy everything")** — the schema-merge authorization
+    T5 required. `git merge --no-ff origin/bm1-board-modes` onto
+    `main` @ `49e27ba` — auto-resolved cleanly (BM1's branch never
+    touched the ledger files, so `main`'s newer ledger was kept with
+    no conflict — the merge-time note above proved moot in practice).
+    Re-verified at the merge HEAD: `tsc` (desktop AND server) clean,
+    `build` clean. Merge commit `b936f67`, pushed.
+    **DEPLOYED — 2026-07-22, same word ("Deploy everything").** This
+    shipped the whole merged-but-unshipped backlog at once — J6
+    (49) + FX9 (50) + E1 (51) + FX10 (52) + CD3 (53) + BM1 (54) —
+    the first deploy since FX8+M2 (`7a618c8`). Manifest independently
+    enumerated (`git log 7a618c8..HEAD`): exactly those six tickets'
+    own code plus docs riders, every code file attributable, zero
+    unnamed riders. **BM1's additive schema migration ran on the
+    production boot** (`add column if not exists plan_board_id text` —
+    grandfathered, null→undefined) — the server came up clean and the
+    healthcheck passed, so the migration applied without incident.
+    `railway up` on `main` @ `b936f67` (deployment `70181bfe`,
+    SUCCESS, healthcheck `/healthz` passed), confirmed live
+    (`Writer Studio server listening on :8080`).
+    **ADVISORY A1 remains OPEN and is explicitly NOT resolved by this
+    merge/deploy** — the immutability-law gray area (BM1's `cd1.mjs`
+    parked-condition update following CD3's own pattern) is carried
+    forward for Fable's/Nick's ruling; if ruled against, it is a cheap
+    harness re-park, no product/schema impact. A2/A3/A4 remain Nick's
+    device-sitting eye.
+    **Close now rests on Nick's own device sitting** — the three
+    modes, both doors, the flip, the telos line, the linking curves,
+    and the two overlap questions (A2/A3) answered by eye.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
