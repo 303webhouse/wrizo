@@ -212,15 +212,15 @@ await withHarness(async (app) => {
 
   const pageFiles = filesIn(pageDl);
   // S1 (E1.1) — the "This Page" base filename now carries a stable id-suffix
-  // ('e1-roundtrip'.slice(0,6) === 'e1-rou'), so the pre-suffix filename
-  // assertion ('Round Trip Title.md'/'.txt') is FALSIFIED. It is PARKED
-  // verbatim below (HARNESS_PARKED=1) per A4 + the immutability law; this is
-  // its LIVE SUCCESSOR, asserting the suffixed form. The file BODY text is
-  // unchanged (the suffix lives in the filename only), so the two byte checks
-  // that follow keep their original claims verbatim — they merely read
-  // whichever .md/.txt now exist rather than a hard-coded old name.
-  ok('S3/E1.1 OFFLINE: "This Page" produced exactly two files (.md + .txt) named with the stable id-suffix — "Round Trip Title (e1-rou).md/.txt" — network fully unavailable throughout',
-    pageFiles.length === 2 && pageFiles.includes('Round Trip Title (e1-rou).md') && pageFiles.includes('Round Trip Title (e1-rou).txt'),
+  // drawn from the id's random TAIL ('e1-roundtrip'.slice(-6) === 'ndtrip'),
+  // so the pre-suffix filename assertion ('Round Trip Title.md'/'.txt') is
+  // FALSIFIED. It is PARKED verbatim below (HARNESS_PARKED=1) per A4 + the
+  // immutability law; this is its LIVE SUCCESSOR, asserting the suffixed form.
+  // The file BODY text is unchanged (the suffix lives in the filename only), so
+  // the two byte checks that follow keep their original claims verbatim — they
+  // merely read whichever .md/.txt now exist rather than a hard-coded old name.
+  ok('S3/E1.1 OFFLINE: "This Page" produced exactly two files (.md + .txt) named with the stable id-suffix — "Round Trip Title (ndtrip).md/.txt" — network fully unavailable throughout',
+    pageFiles.length === 2 && pageFiles.includes('Round Trip Title (ndtrip).md') && pageFiles.includes('Round Trip Title (ndtrip).txt'),
     JSON.stringify(pageFiles));
   const mdName = pageFiles.find((f) => f.endsWith('.md'));
   const txtName = pageFiles.find((f) => f.endsWith('.txt'));
@@ -233,38 +233,43 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S1/S2 (E1.1) — the collision fix of record. Two DIFFERENT pages sharing an
-  // identical first line ("Same Title") but with distinct ids must download as
-  // TWO DISTINCT files, each carrying its OWN words — neither clobbers the
-  // other on disk. The two pages are seeded TOGETHER (they genuinely coexist in
-  // storage) for each download, so this proves the id-suffix disambiguation in
-  // the real shape a writer would hit. Adopted from E1's orphaned fix (S0),
-  // done here as its own scenario. Runs offline like every export above.
+  // identical first line ("Same Title") must download as TWO DISTINCT files,
+  // each carrying its OWN words — neither clobbers the other on disk.
+  //
+  // The two ids here are the WORST realistic case, on purpose: they share their
+  // whole HEAD ('dupehead') and differ only in their last chars — the exact
+  // shape `generateId()` produces for two pages born in the SAME tick (a bulk
+  // import, a template expansion, a rapid duplicate), where the 8-char
+  // timestamp prefix is identical and only the random tail differs. A
+  // head-slice suffix ('dupehe' for both) would STILL collide here; the fix
+  // draws from the tail (slice(-6): 'alpha6' vs 'beta66'), so it holds. This
+  // fixture is what closes the hole the pre-hardening slice(0,6) left open.
   // ==========================================================================
   const collisionDl = mkDlDir('collision');
   const twoSameTitle = [
-    { id: 'e1-aaa-111', projectId: null, source: 'page', origin: 'loose', pageType: 'note', text: 'Same Title\n\nAlpha body — the first page\'s own words.', createdAt: NOW, updatedAt: NOW },
-    { id: 'e1-bbb-222', projectId: null, source: 'page', origin: 'loose', pageType: 'note', text: 'Same Title\n\nBeta body — the second page\'s own words.', createdAt: NOW, updatedAt: NOW },
+    { id: 'dupehead-alpha6', projectId: null, source: 'page', origin: 'loose', pageType: 'note', text: 'Same Title\n\nAlpha body — the first page\'s own words.', createdAt: NOW, updatedAt: NOW },
+    { id: 'dupehead-beta66', projectId: null, source: 'page', origin: 'loose', pageType: 'note', text: 'Same Title\n\nBeta body — the second page\'s own words.', createdAt: NOW, updatedAt: NOW },
   ];
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
-  await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-aaa-111', dlDir: collisionDl });
+  await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/dupehead-alpha6', dlDir: collisionDl });
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'This Page (.md)');
   await sleep(700);
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
-  await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-bbb-222', dlDir: collisionDl });
+  await seedAndOpen(app, { entries: twoSameTitle, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/dupehead-beta66', dlDir: collisionDl });
   await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
   await trustedClick(app, 'Publish');
   await sleep(250);
   await trustedClick(app, 'This Page (.md)');
   await sleep(700);
   const collisionFiles = filesIn(collisionDl);
-  ok('S1/S2 OFFLINE: two pages sharing the first line "Same Title" but with distinct ids download as TWO DISTINCT files ("Same Title (e1-aaa).md" + "Same Title (e1-bbb).md") — the id-suffix disambiguates; neither overwrites the other on disk',
-    collisionFiles.length === 2 && collisionFiles.includes('Same Title (e1-aaa).md') && collisionFiles.includes('Same Title (e1-bbb).md'),
+  ok('S1/S2 OFFLINE: two same-first-line pages whose ids share their head and differ only in the tail (the same-tick case) download as TWO DISTINCT files ("Same Title (alpha6).md" + "Same Title (beta66).md") — the tail-drawn id-suffix disambiguates; neither overwrites the other on disk',
+    collisionFiles.length === 2 && collisionFiles.includes('Same Title (alpha6).md') && collisionFiles.includes('Same Title (beta66).md'),
     JSON.stringify(collisionFiles));
-  const aBytes = collisionFiles.includes('Same Title (e1-aaa).md') ? read(collisionDl, 'Same Title (e1-aaa).md') : '';
-  const bBytes = collisionFiles.includes('Same Title (e1-bbb).md') ? read(collisionDl, 'Same Title (e1-bbb).md') : '';
+  const aBytes = collisionFiles.includes('Same Title (alpha6).md') ? read(collisionDl, 'Same Title (alpha6).md') : '';
+  const bBytes = collisionFiles.includes('Same Title (beta66).md') ? read(collisionDl, 'Same Title (beta66).md') : '';
   ok('S1/S2 OFFLINE: each same-titled file carries its OWN page\'s words intact — both pages\' words survive, neither truncated nor overwritten',
     aBytes.includes('Alpha body — the first page\'s own words.') && bBytes.includes('Beta body — the second page\'s own words.'),
     JSON.stringify({ aBytes, bBytes }));
@@ -561,10 +566,11 @@ if (process.env.HARNESS_PARKED === '1') {
     //   pageFiles.includes('Round Trip Title.md') && pageFiles.includes(
     //   'Round Trip Title.txt'), JSON.stringify(pageFiles));
     // S1 (E1.1): every "This Page" base filename now carries a stable id-suffix
-    // (Title + " (" + entry.id.slice(0,6) + ")"), so two pages sharing a first
-    // line can no longer clobber each other on disk. The bare-title name is
-    // superseded by the suffixed form. Live successor: this file's own live S3
-    // round-trip section (asserting "Round Trip Title (e1-rou).md/.txt").
+    // (Title + " (" + entry.id.slice(-6) + ")" — the id's random TAIL, so
+    // same-tick pages stay distinct), so two pages sharing a first line can no
+    // longer clobber each other on disk. The bare-title name is superseded by
+    // the suffixed form. Live successor: this file's own live S3 round-trip
+    // section (asserting "Round Trip Title (ndtrip).md/.txt").
     const parkPageDl = mkDlDir('parked-page');
     await seedAndOpen(app, { entries: [ROUNDTRIP_ENTRY], waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-roundtrip', dlDir: parkPageDl });
     await trustedClick(app, 'Publish');
@@ -574,8 +580,8 @@ if (process.env.HARNESS_PARKED === '1') {
     await trustedClick(app, 'This Page (.txt)');
     await sleep(700);
     const parkPageFiles = filesIn(parkPageDl);
-    pok('PARKED (was "S3 OFFLINE: \'This Page\' produced exactly two files (.md + .txt), network fully unavailable throughout" — asserting the bare-title names "Round Trip Title.md/.txt") — S1/E1.1: every "This Page" filename now carries the stable id-suffix; the suffixed form "Round Trip Title (e1-rou).md/.txt" supersedes it — live successor: this file\'s own live S3 round-trip section',
-      parkPageFiles.length === 2 && parkPageFiles.includes('Round Trip Title (e1-rou).md') && parkPageFiles.includes('Round Trip Title (e1-rou).txt')
+    pok('PARKED (was "S3 OFFLINE: \'This Page\' produced exactly two files (.md + .txt), network fully unavailable throughout" — asserting the bare-title names "Round Trip Title.md/.txt") — S1/E1.1: every "This Page" filename now carries the stable id-suffix; the suffixed form "Round Trip Title (ndtrip).md/.txt" supersedes it — live successor: this file\'s own live S3 round-trip section',
+      parkPageFiles.length === 2 && parkPageFiles.includes('Round Trip Title (ndtrip).md') && parkPageFiles.includes('Round Trip Title (ndtrip).txt')
         && !parkPageFiles.includes('Round Trip Title.md') && !parkPageFiles.includes('Round Trip Title.txt'),
       JSON.stringify(parkPageFiles));
 

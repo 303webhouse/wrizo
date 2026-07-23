@@ -155,8 +155,17 @@ export function exportPageFiles(entry: JournalEntry): PageExportFiles {
   // inherit it for free. `safeFilenameBase` still scrubs illegal characters
   // and caps the TITLE at 80 chars; the id-suffix is a short, legal,
   // deterministic addition after that cap.
+  //
+  // Take the TAIL of the id, not its head: `generateId()` is
+  // `Date.now().toString(36)` (an 8-char TIMESTAMP prefix) + 9 random base36
+  // chars. The head is the clock, so two pages born in the SAME tick (a bulk
+  // import, a template expansion, a rapid duplicate) share their first chars
+  // and a head-slice suffix would still collide — the very loss this fix
+  // exists to prevent. `slice(-6)` draws from the random tail (36^6 ≈ 2.2B),
+  // so same-first-line pages stay distinct even when created in the same
+  // instant. All id chars are base36 ([0-9a-z]), filename-legal by construction.
   const title = safeFilenameBase(firstLine(entry.text ?? ''), dateStampFallback());
-  const base = `${title} (${entry.id.slice(0, 6)})`;
+  const base = `${title} (${entry.id.slice(-6)})`;
   return {
     base,
     md: withInkNote(pageBodyFormatted(entry), entry),
