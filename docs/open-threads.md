@@ -5454,6 +5454,18 @@ outlive a session lives here, not in chat.
     HEAD. Merge commit **`0c472c2`**. **Item 51's record corrected**
     above (the false collision-fix claim, made true here). Fable's
     post-merge review follows same-day.
+    **DEPLOYED — 2026-07-23, Nick's word** (same message as the merge).
+    Manifest re-enumerated since the last deploy (`b936f67`): the only
+    code is E1.1's own three files (`pageExport.ts`, `persistence.ts`,
+    `e1.mjs`) plus docs riders — zero schema, no server/migration
+    change, no unnamed riders. `railway up` on `main` @ `0afebcf`
+    (deployment `35207e0a`, SUCCESS), confirmed live (`Writer Studio
+    server listening on :8080`). **The collision fix E1's own record
+    once falsely claimed is now genuinely live** — same-titled and
+    same-tick pages export as distinct files, both sets of words
+    intact; trashed words ride along in "Everything"; no box kind
+    silently vanishes. **Close now rests on Nick's own device
+    sitting** (and Fable's same-day post-merge review).
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
