@@ -4791,6 +4791,31 @@ outlive a session lives here, not in chat.
     exactly the kind of self-inflicted false-negative this house's
     own harness discipline exists to catch). Re-verified clean: 34/34,
     both `HARNESS_PARKED` settings, `tsc` clean.
+    **CORRECTION OF RECORD — 2026-07-23, per Fable's E1 post-merge
+    review + E1.1's own S5 (item 55). THE CLAIM ABOVE IS FALSE: that
+    filename-collision fix never landed on `main`.** The fix WAS made
+    — but in the E1 build worktree only, uncommitted; the branch
+    (`origin/e1-words-out`) never carried it, and E1's own merge
+    pulled the branch, so `main` shipped WITHOUT it. The paragraph
+    above wrongly recorded a worktree edit as a merged fix. Verified
+    2026-07-23: `exportPageFiles` carried no id-suffix on `main`,
+    `e1.mjs` carried no collision check on `main`. **E1.1 (item 55)
+    lands the fix for real** — adopting the orphaned worktree change,
+    then hardening it (the orphaned `slice(0,6)` drew from the id's
+    TIMESTAMP head and would still collide same-tick pages; E1.1 uses
+    `slice(-6)`, the random tail) and doing the harness parking
+    lawfully (the orphaned version had edited the original assertion
+    in place — an immutability violation E1.1 did not repeat). No
+    euphemism: the record was wrong, and this is what actually
+    happened. See item 55.
+    **The self-inflicted test-fixture bug the false paragraph
+    describes ("two contrived entry ids that happened to share their
+    first 6 characters") was, ironically, the true tell** — those
+    shared-prefix ids only collided under `slice(0,6)` (the head), the
+    exact bug E1's own fix carried; the "fix" to the fixture (making
+    the ids differ) masked the algorithm's own head-slice hole rather
+    than exposing it. E1.1's harness deliberately restores shared-head
+    ids to prove `slice(-6)` closes it.
     **Two cosmetic advisories from the review, not actioned, low
     priority**: `MultiDocResult.count` is computed but never consumed
     by any caller (the harness verifies count independently via the
@@ -5323,12 +5348,17 @@ outlive a session lives here, not in chat.
     `railway up` on `main` @ `b936f67` (deployment `70181bfe`,
     SUCCESS, healthcheck `/healthz` passed), confirmed live
     (`Writer Studio server listening on :8080`).
-    **ADVISORY A1 remains OPEN and is explicitly NOT resolved by this
-    merge/deploy** — the immutability-law gray area (BM1's `cd1.mjs`
-    parked-condition update following CD3's own pattern) is carried
-    forward for Fable's/Nick's ruling; if ruled against, it is a cheap
-    harness re-park, no product/schema impact. A2/A3/A4 remain Nick's
-    device-sitting eye.
+    **ADVISORY A1 — RESOLVED 2026-07-22 (Fable's ruling, committed at
+    `docs/wrizo-alpha/a1-immutability-ruling-2026-07-22.md`): LEGAL,
+    no remediation.** The BM1 (and the CD3) parked-probe condition
+    updates are lawful — the record is the quoted non-executing text
+    (byte-identical); the probe is the live re-verification instrument
+    (it never matched the frozen text, tracking current reality by
+    construction). Ratified codicil: a parked probe may update in
+    place only in a commit that ALSO records the supersession event
+    (new park cycle + live successor), disclosed by name in the
+    message — see TOOLING STATUS. A2/A3/A4 remain Nick's device-sitting
+    eye.
     **Close now rests on Nick's own device sitting** — the three
     modes, both doors, the flip, the telos line, the linking curves,
     and the two overlap questions (A2/A3) answered by eye.
@@ -5369,8 +5399,61 @@ outlive a session lives here, not in chat.
     zero new deps** — merge pre-authorized as zero-schema; deploy is
     Nick's separate word. **Build starting — 2026-07-23**, on
     `e1-1-words-out-fix` off `main`, own worktree.
-
-## CANON DEBTS — Fable's, actionable after the gate session
+    **BUILT + INDEPENDENTLY REVIEWED — GREEN WITH ADVISORIES —
+    2026-07-23.** S0 found the orphaned fix still uncommitted in the E1
+    worktree and ADOPTED it (disclosed). Immutability discipline done
+    right this time (verified by the review, diffing against `git show
+    main`): the three assertions E1.1's changes falsified (the
+    round-trip filename, the doc-count, the trash-exclusion) were each
+    parked VERBATIM with SUPERSEDED markers + named authority + live
+    successors — NOT edited in place (the exact thing the orphaned
+    e1.mjs had done wrong). Read-only Trash seam (`getDeletedEntries`,
+    clones only, never mutates `deletedAt`); `## From the Trash`
+    header is body text, not lexicon-routed; whitelist inversion with
+    `connection`/`board-meta` skipped by name.
+    **Both review advisories RULED BY FABLE, 2026-07-23:**
+    — **A1 (the real one) — endorsed, and FIXED before merge.** The
+    adopted orphaned suffix used `entry.id.slice(0,6)` — but
+    `generateId()` is `Date.now().toString(36)` (an 8-char timestamp)
+    + random, so the head-slice is 100% clock: two pages born the same
+    tick (bulk import, template, rapid duplicate) share it and would
+    STILL collide — a hole in S1's own "must produce two distinct
+    filenames." Hardened to `slice(-6)` (the random tail, 36^6 ≈ 2.2B,
+    collision-safe same-tick); the harness fixture rebuilt to prove it
+    (two ids sharing head `dupehe`, differing only in tail
+    `alpha6`/`beta66` — the same-tick shape the old fixture never
+    exercised). Fable's own words: a genuine catch; the immutability
+    handling lawful on both counts (frozen parked originals
+    byte-identical; the never-shipped `e1-rou`→`ndtrip` successor
+    references on an unmerged branch are "construction, not records —
+    edit them freely," per the A1 codicil).
+    — **A2 (lane/section titles) — ruled a RIDER to FX11, not an E1.1
+    reopen.** BM1's `board-meta` now carries writer-authored lane/
+    section titles; E1.1 skips `board-meta` by name, so those words
+    stay out of a "complete" export. Fable: lane and section titles
+    ARE writer words and the never-missing law reaches them — but a
+    gated build does not grow scope mid-suite, and this is no
+    regression (the old whitelist dropped `board-meta` too). **FX11
+    carries it**: board blocks render writer-authored lane titles when
+    present (minimal form — one `Lanes:` line per board; per-lane
+    grouping only if trivially cheap), harness seeds a titled lane and
+    asserts presence. Logged here as FX11's own rider.
+    **Suite read to completion, synchronously, per the ratified law**
+    (a merge may follow only a suite verdict the main loop read in
+    full): 70/70 runs both settings, all green except the known
+    E1.1-unrelated `fx5` per-line-engage flake (item 48), confirmed
+    intermittent (2/3 clean isolated); `e1.mjs` green both settings;
+    `tsc` (desktop + server) + `build` clean.
+    **MERGED — 2026-07-23, on Nick's word ("permission to merge and
+    deploy whenever you're finished")**, zero-schema. TRUE 3-way onto
+    `main` @ `31f652f` (E1.1's base `5c5f720` predated the A1 ruling
+    doc + the 9 review-brief commits; verified at the merge HEAD that
+    `a1-immutability-ruling-2026-07-22.md` and all nine briefs SURVIVED
+    — zero docs deleted by the merge, per Fable's mechanics
+    condition). `tsc` (desktop + server) + `build` clean at the merge
+    HEAD. Merge commit **`0c472c2`**. **Item 51's record corrected**
+    above (the false collision-fix claim, made true here). Fable's
+    post-merge review follows same-day.
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
    gate language ("merge+deploy is the test; verdicts close tickets"), the
@@ -5583,6 +5666,24 @@ outlive a session lives here, not in chat.
   undetected pre-law mutations across the harness tree? — becomes a
   parked-entry history-audit rider on item 48 (not this specific
   entry's concern).
+  **CODICIL — ratified 2026-07-22 (Fable's A1 ruling, items 53/54;
+  `docs/wrizo-alpha/a1-immutability-ruling-2026-07-22.md`), the
+  RECORD-vs-PROBE distinction.** A parked check is two parts: the
+  RECORD (the quoted, non-executing name/original text — frozen) and
+  the PROBE (the boolean that runs, re-verifying that current reality
+  still justifies the park — an instrument, never part of the record;
+  it has never had to match the frozen text). **A parked entry's
+  probe MAY update in place — but ONLY in a commit that also records
+  the supersession event that moved reality (a fresh park cycle for
+  the superseded generation + a live successor), with the probe
+  update disclosed by name in the commit message.** A probe update
+  arriving WITHOUT that same-commit supersession record is treated as
+  a record mutation and remediated as one. The bright line: the
+  record is the quoted non-executing text; the probe is what runs; a
+  probe may move only when reality moved, and the record of reality
+  moving must travel in the same commit. (CD3's and BM1's instances
+  both satisfy it; E1.1's own `e1-rou→ndtrip` probe update rode the
+  same commit that hardened the suffix, disclosed.)
 - **Erratum vs. supersession, for harness checks — ratified 2026-07-16
   (Fable, cd1.1 spot-check).** Two different situations, two different
   moves. A check falsified because the DESIGN changed (a surface
