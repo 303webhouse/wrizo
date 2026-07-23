@@ -4,7 +4,10 @@ import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
+  getPairedPageId, pairBoardWithPage,
 } from '../store/persistence';
+import { useBoardMode } from '../store/boardMode';
+import { StoryboardProjection, OutlineProjection } from './BoardProjection';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
@@ -606,6 +609,16 @@ export function BoardEditor({ id }: { id: string }) {
   // information that return needed, the moment its own arrival became
   // chip-visible). An ordinary Board's own behavior is untouched.
   useWayBack({ entryId: id, participatesInWayBack: !isSystemBoard });
+
+  // BM1 S3/S8 — the board's own mode, persisted per board (client-local, zero
+  // schema, the FX9 family). A system Board is never a projection surface —
+  // its cards are DERIVED, not a writer's plan — so it stays forced OPEN and
+  // never shows the mode bar (keeping every system-board harness byte-identical,
+  // and the bar's PAGE → door meaningless there). The flip preserves this: the
+  // mode is read back from the store on every mount, so a round trip lands on
+  // the same face (S8's "mode survives a round trip").
+  const [boardModeRaw, setBoardMode] = useBoardMode(id);
+  const boardMode = isSystemBoard ? 'open' : boardModeRaw;
 
   const [boxes, setBoxes] = useState<Box[]>(() => initialEntry?.boxes ?? []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -1873,6 +1886,82 @@ export function BoardEditor({ id }: { id: string }) {
   // B3 S3 — "From a deck…" joins the sliver's own board tools, the SAME
   // absent-not-disabled law every other Add-family control here already
   // carries: on a system Board, onAddFromDeck is never passed at all.
+  // BM1 S3 — the board's own mode bar + the PAGE → door + the telos line.
+  // Three tabs in the page-bar's tab grammar, but a DISTINCT `.board-mode-*`
+  // class (never the page's writing-posture `.mode-tabs`/`.desk-mode-strip` —
+  // the projection axis is a genuinely different control from Free Write/Draft,
+  // so w1.mjs's "a board page never renders the mode tabs" and ab1.mjs's
+  // ".desk-mode-strip absent on board" both stay literally true; bm1.mjs adds
+  // the successor asserting THIS new control). Non-system boards only. The
+  // PAGE → door is never role=tab / aria-selected — a door has no current
+  // state; clicking always travels (paired → the paired page via routeForEntry;
+  // unpaired → the FX10 named return `backTo`, unchanged). The Board's own
+  // "Done" is left in place per this ticket's instructions (the brief's S3 bar
+  // spec does not remove it) — PAGE → is its intended named-return successor;
+  // the overlap is flagged for review, not resolved here.
+  const pairedPageId = isSystemBoard ? null : getPairedPageId(id);
+  const travelToPage = () => {
+    flushNow();
+    if (pairedPageId) {
+      const page = getJournalEntry(pairedPageId);
+      navigate(page ? routeForEntry(page) : backTo);
+    } else {
+      navigate(backTo);
+    }
+  };
+  // Board-side explicit pairing (S2 — "an existing board gains a Write face
+  // only by explicit pairing from its side"): v1 uses the brief's create-new
+  // branch (a fresh loose page becomes this board's page face). A full page
+  // chooser is a follow-up; the 1:1 guard lives in pairBoardWithPage.
+  const pairWithNewPage = () => {
+    const page = createLooseHomePage();
+    pairBoardWithPage(id, page.id);
+    setBoxes(prev => prev.slice()); // nudge a re-render so the PAGE → door resolves
+  };
+  const boardModeTabs: { key: 'open' | 'storyboard' | 'outline'; label: string }[] = [
+    { key: 'open', label: t('boardModeOpen') },
+    { key: 'storyboard', label: t('boardModeStoryboard') },
+    { key: 'outline', label: t('boardModeOutline') },
+  ];
+  const boardModeBar = !isSystemBoard ? (
+    <div className="board-mode-strip" role="tablist" aria-label="Board mode" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      {boardModeTabs.map(tab => (
+        <button
+          key={tab.key}
+          type="button"
+          role="tab"
+          aria-selected={boardMode === tab.key}
+          className={`board-mode-tab${boardMode === tab.key ? ' active' : ''}`}
+          data-board-mode-tab={tab.key}
+          onClick={() => setBoardMode(tab.key)}
+        >
+          {tab.label}
+        </button>
+      ))}
+      <button
+        type="button"
+        className="board-door"
+        data-board-door="page"
+        onClick={travelToPage}
+      >
+        {t('boardPageDoor')} <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  ) : null;
+  const boardTelos = !isSystemBoard ? (
+    <div className="board-telos" data-board-telos>{t('boardTelos')}</div>
+  ) : null;
+
+  // The three views of one board. OPEN is the existing canvas (byte-identical);
+  // STORYBOARD/OUTLINE render the ONE structure description (store/
+  // boardStructure.ts). Order is single-sourced (seq on the shared boxes), so a
+  // reorder in one projection is the board's truth in all three.
+  const boardContent = boardMode === 'open'
+    ? boardBody
+    : boardMode === 'storyboard'
+      ? <StoryboardProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText} />
+      : <OutlineProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText} />;
+
   const sliverContent: SliverContent = isSystemBoard
     ? { kind: 'board', footer: { on: footerOn, onToggle: toggleFooter } }
     : {
@@ -1904,11 +1993,15 @@ export function BoardEditor({ id }: { id: string }) {
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
             <span className="crumb-here">{title}</span>
           </div>
+          {boardModeBar}
           <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {!isSystemBoard && !pairedPageId && <button type="button" className="btn-quiet board-pair" onClick={pairWithNewPage}>{t('boardPairWithPage')}</button>}
             {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}
             <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
           </div>
         </div>
+
+        {boardTelos}
 
         <div style={{ height: 16 }} />
 
@@ -1944,7 +2037,7 @@ export function BoardEditor({ id }: { id: string }) {
               board-page container caps at maxWidth:1100 (board wants more
               room than prose's 720/760 measure); mirrored here. */}
           <div style={{ width: 'min(100%, 1100px)', display: 'flex', flexDirection: 'column' }}>
-            {boardBody}
+            {boardContent}
           </div>
         </DeskFrame>
 
@@ -1962,15 +2055,19 @@ export function BoardEditor({ id }: { id: string }) {
           {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
           <span className="crumb-here">{title}</span>
         </div>
+        {boardModeBar}
         <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {!isSystemBoard && !pairedPageId && <button type="button" className="btn-quiet board-pair" onClick={pairWithNewPage}>{t('boardPairWithPage')}</button>}
           {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}
           <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
         </div>
       </div>
 
+      {boardTelos}
+
       <div style={{ height: 16 }} />
 
-      {boardBody}
+      {boardContent}
       {actionToast.node}
     </div>
   );
