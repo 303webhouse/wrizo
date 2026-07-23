@@ -1057,6 +1057,23 @@ export function getJournalEntries(): JournalEntry[] {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // newest first
 }
 
+// E1.1 S3 — the READ-ONLY enumeration seam for soft-deleted pages, the one the
+// "Everything" export's "## From the Trash" section reads. Every getter above
+// is deletion-FILTERED on purpose ("gone means gone" everywhere in the live
+// app); this is a deliberate, named exception — the same shape
+// getJournalEntryIncludingDeleted (below) already established for the Trash
+// Board's own cards, widened here to the whole soft-deleted set. It mirrors,
+// EXACTLY, the Trash Board's own membership rule (qualifyingPagesFor's 'trash'
+// branch, further below): every soft-deleted page, ANY origin/pageType,
+// EXCLUDING system Boards (derived mirrors, never authored content). READ-ONLY
+// in the strongest sense — it returns CLONES and never touches deletedAt or any
+// row, so nothing on this path can resurrect or mutate a trashed page.
+export function getDeletedEntries(): JournalEntry[] {
+  return cache.journalEntries
+    .filter(e => !!e.deletedAt && getSystemKind(e) === undefined)
+    .map(clone);
+}
+
 // --- Pages & the Shelf (D2) -----------------------------------------------
 // A page is a JournalEntry; its home is exactly one of three pools. These read
 // the same cache, partitioned by (projectId, shelved). `setPageHome` is the one
