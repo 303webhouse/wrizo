@@ -78,7 +78,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '2');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });

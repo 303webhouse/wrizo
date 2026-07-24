@@ -95,7 +95,7 @@ const BEAT_NAME = THREE_ACT.beats[0].name; // 'Setup'
 // crashes outright (TypeError: Cannot read properties of null (reading
 // 'click')) at the S2 dock-rider section's own `.wz-tutor-dock-btn` click,
 // several sections past the first accidental disclosure pop. Seeding the
-// NEW version key ('wrizo-tutor-disclosure-seen-version', '2' —
+// NEW version key ('wrizo-tutor-disclosure-seen-version', '3' —
 // CURRENT_DISCLOSURE_VERSION at TU2's own ratification) alongside the old
 // one keeps this helper doing exactly what its own name and header comment
 // already promised ("every fixture that isn't testing the disclosure
@@ -105,7 +105,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '2');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -279,18 +279,16 @@ await withHarness(async (app) => {
     (await app.evalJs("!!document.querySelector('.wz-tutor-disclosure')")) === true);
   await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
   await sleep(250);
-  // TU2 S6 park sweep — the "...and the seen flag persists" half of this
-  // check that lived here read the legacy boolean key
-  // ('wrizo-tutor-disclosure-seen'), which TU2 S3's versioned
-  // store/tutorDisclosure.ts (setTutorDisclosureSeen) no longer writes at
-  // all (it writes 'wrizo-tutor-disclosure-seen-version' instead) — PARKED
-  // below (A4, quoted verbatim), confirmed false live against the TU2
-  // build. The dismissal half of the original intent ("ack closes the
-  // dialog") is re-asserted fresh below against the CURRENT key, rather
-  // than silently rewriting the retired assertion in place.
-  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v2 key)',
+  // TU2 S6 park sweep parked the original legacy-boolean form of this check and
+  // re-asserted it fresh against the '2' version key.
+  // TU5 S6 park sweep — that '2'-key re-assertion is itself now superseded:
+  // CURRENT_DISCLOSURE_VERSION is 3, so the ack writes '3', not '2'. Parked
+  // below (A4, quoted verbatim, confirmed false live against the TU5 build) and
+  // re-asserted fresh here against the CURRENT ('3') key — never rewritten in
+  // place. Live successor also in tu5.mjs's own disclosure v3 section.
+  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v3 key)',
     (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '2');
+    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '3');
   // Close, then open a SECOND time — the brief's own "exactly once across two opens".
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
   await sleep(200);
@@ -703,12 +701,19 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S5 disclosure: dismissed by its own explicit ack, and the seen flag persists") — TU2 S3: the seen-flag is now versioned (wrizo-tutor-disclosure-seen-version); the legacy boolean key this check read is never written by the new code — live successor in tu2.mjs\'s own disclosure-v2 section',
     true, 'superseded by TU2 S3\'s versioned disclosure flag');
 
+  // TU5 S6 bumped CURRENT_DISCLOSURE_VERSION 2 -> 3 (the Bible joined the named
+  // travelers). The '2'-key re-assertion TU2 left live here now reads false (the
+  // ack writes '3') — confirmed live against the TU5 build. Re-asserted fresh
+  // above against the '3' key; the owning live successor is tu5.mjs.
+  pok('PARKED (was "S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v2 key)") — TU5 S6: CURRENT_DISCLOSURE_VERSION is 3 now, so the ack writes version 3, not 2 — live successor in tu5.mjs\'s own disclosure v3 section (and re-asserted fresh here against the v3 key)',
+    true, 'superseded by TU5 S6\'s disclosure v3');
+
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nTU1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, both TU2-superseded checks documented with live successors in tu2.mjs`
+    ? `\nTU1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; TU2- and TU5-superseded checks documented with live successors in tu2.mjs / tu5.mjs`
     : `\nTU1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
