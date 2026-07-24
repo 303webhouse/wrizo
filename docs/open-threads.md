@@ -5532,10 +5532,48 @@ outlive a session lives here, not in chat.
     key presence-never-value at deploy.** **The Aug 1 freeze is named
     honestly**: TU5 merges before it or waits for post-vacation — E1.1
     merged 2026-07-23 (well ahead of the ~July 29 slip line), so the
-    gate is clear. **Build starting — 2026-07-23**, on
-    `tu5-tutors-memory` off `main`, own worktree per ONE CHECKOUT PER
-    AGENT. Report = push; Fable reviews before a merge recommendation;
-    **schema merge on Nick's own explicit word only.**
+    gate is clear.
+    **BUILT + PUSHED — 2026-07-23, on `tu5-bible`** (re-founded — see the
+    anomaly below), all eight slices S0-S7, on `origin/tu5-bible`. S0 the
+    tutor-rules.md living-document disk home (shipped `SYSTEM_PROMPT` verbatim
+    + tentative-ratification header); S1 `projects.tutor` jsonb (both mappers,
+    upsert 14->15, `$15::jsonb`, 15/15/15 hand-verified, grandfather
+    byte-identity — a project never touched by the bible is absent-not-null);
+    S2 `store/tutorBible.ts` (read/add/edit/delete, the advanceTutorCursor
+    conjure-refusal, wrizoBible seam); S3 the Bible section (LAST in the FX10
+    cluster per Fable's ruling, `projectId`-gated so loose/journal pages show
+    nothing, no counts, A13-clean); S4 the wire (`bible?` field, `<book-bible>`
+    spliced BEFORE the delta, the persisted thread byte-free of any bible turn,
+    roles still writer|tutor); S5 the prompt (the Bible-conduct paragraph + the
+    fifth-bullet truth-repair, mirrored BYTE-IDENTICAL into `tutor-rules.md` in
+    the same commit); S6 disclosure v3 (Candidate A minimal-insertion). `tsc`
+    x2 + `build:web` clean; S7 `tu5.mjs` PASS 91 both HARNESS_PARKED settings;
+    the disclosure-v3 park sweep landed empirically (skipDisclosure seed
+    '2'->'3' in tu1/tu2/fx10/m2 fixtures; tu1's "(v2 key)" ack check + tu2's
+    three disclosure-v2 checks parked A4-style, verbatim, with live successors
+    in tu5.mjs; full historic suite re-run GREEN — 36 harnesses, 0 failures).
+    **NOT merged — schema ticket: awaiting Fable's review + Nick's explicit
+    schema word, which in the same breath ratifies the S6 v3 disclosure string
+    and the two S5 prompt paragraphs. Deploy is Nick's separate word. The
+    server's own `<book-bible>` wrapping (tutor.ts) owes a prod round-trip
+    after deploy, the TU2 precedent.**
+    **ANOMALY — two claimants, branch re-founded.** The brief named
+    `tu5-tutors-memory`; a second CC session (chat 1) started a parallel build
+    on that name off Fable's mis-traveled phrasing, then removed its worktree
+    mid-flight. A `cd` into the orphaned (now `.git`-less) directory walked git
+    UP to the main repo and put a stray 4-doc commit on LOCAL `main` (the four
+    pre-existing untracked docs; unpushed; `reset --mixed` to origin/main,
+    nothing lost, nothing ever pushed). Fable ruled a distinct name to end the
+    contention structurally: **re-founded as `tu5-bible`** off fresh `main` @
+    309ab78, every slice re-authored from session history (the orphaned dir's
+    work files were confirmed deleted — raw `find` — nothing recovered from
+    disk; the reconstruction validated by `tsc` x2 + the 15/15/15 recount +
+    tu5.mjs). **New standing law, ratified by Fable: before ANY commit,
+    `git rev-parse --show-toplevel` must confirm the expected worktree root** —
+    the exact check whose absence caused the stray commit. `tu5-tutors-memory`
+    is the contested name that died unreferenced; `tu5-bible` is the clean,
+    single-author line. **Report = push; Fable reviews before a merge
+    recommendation; schema merge on Nick's own explicit word only.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
