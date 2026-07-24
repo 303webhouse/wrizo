@@ -5574,6 +5574,44 @@ outlive a session lives here, not in chat.
     is the contested name that died unreferenced; `tu5-bible` is the clean,
     single-author line. **Report = push; Fable reviews before a merge
     recommendation; schema merge on Nick's own explicit word only.**
+    **MERGED — 2026-07-24, on Nick's own explicit schema word, quoted
+    verbatim: "Ratified".** Its scope, named by Nick: (1) the merge itself;
+    (2) the S6 disclosure-v3 string as shipped (Candidate A); (3) the two S5
+    prompt texts as shipped (the Bible-conduct paragraph + the repaired fifth
+    bullet) — all three verbatim in place on the branch, quoted in Fable's
+    review (`tu5-review-fable.md`, its "What Nick's word ratifies" section).
+    Fable's pre-merge schema review landed GREEN and rode `main` into the
+    merge (committed `9eb8d8f`). **Executed in the primary checkout by the
+    orchestrating (chat 1) session per Fable's close directive** — guard-rail
+    (`git rev-parse --show-toplevel`) confirmed before every commit. TRUE
+    3-way `git merge --no-ff origin/tu5-bible` (`ba364b8`) onto `main` @
+    `9eb8d8f` (merge-base `309ab78`) — auto-resolved clean, zero conflicts.
+    At the merge HEAD: `tu5-review-fable.md`, `tutor-rules.md`, the A1 ruling
+    doc, and every prior review/brief verified SURVIVING (zero docs deleted);
+    `tsc` (desktop + server) + `build:web` clean; **`tu5.mjs` re-proven at
+    the exact shipped SHA — PASS 91 both `HARNESS_PARKED` settings, verdict
+    read to completion in the main loop** (it parks nothing of its own; the
+    superseded disclosure-v2 checks live in `tu2.mjs`'s parked section).
+    Merge commit **`a079c27`**, pushed. Server surface exactly `tutor.ts` +
+    `migrate.ts` + `sync.ts`; zero new deps.
+    **DEPLOY HELD — NOT covered by the "Ratified" word** (Nick's own scope);
+    awaits his separate say. When given: the manifest names everything in the
+    target SHA beyond the last deploy (`35207e0a`) — TU5's eight slices plus
+    the docs records commits, nothing unnamed; and AFTER deploy SUCCESS, the
+    one-time production round-trip proof of the server's own `<book-bible>`
+    splice is owed and on the checklist by name (advisory 3 below; the TU2
+    server-route precedent — the client harness captures the client body
+    only).
+    **CLOSE-PENDING: Nick's own device sitting** (his eye on the Bible
+    section) **+ the post-deploy `<book-bible>` round-trip check.** Then item
+    56 closes.
+    **NEXT-TOUCH NOTES (Fable's review advisories 1 & 2, non-blocking,
+    logged for whoever next touches these files)**: (1) `tu2.mjs`'s surviving
+    fresh-device check still carries a "Disclosure v2:" label while asserting
+    a version-agnostic truth (the key is null) — a stale label on a live
+    check, rename on next touch; (2) `addFact` re-stamps `{ v: 1, ... }`
+    while `editFact` spreads the existing bible — no live effect (`v` is
+    literally type `1`), harmonize on next touch.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
