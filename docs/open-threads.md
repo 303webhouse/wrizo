@@ -5807,6 +5807,32 @@ outlive a session lives here, not in chat.
     — all in the same commit. Zero schema, zero server; rides the batched deploy
     with FX11 + CD4 + M3. Build + merge this session (E1.1 pattern); SHA on close.
     If either word reads wrong under Nick's hand, it's one string at the sitting.
+    **MERGED — 2026-07-24, merge commit `f1be3dd`** (build `a48f445`), built +
+    merged in this session (E1.1 pattern), guard-rail confirmed before every
+    commit. TRUE 3-way `--no-ff` onto `main` @ `8a8ce85`; docs survived (zero
+    deleted); `tsc` ×2 EXIT 0; `build:web` clean. Zero schema, zero server, zero
+    deps. Both strings landed: the card-edit popup's close button (`board-popup-
+    done` class + `onClose` behavior unchanged) and Spread's select-mode exit
+    toggle now read **"Close"** — the Spread pair is Select/Close.
+    **Park cycle (immutability, same commit):** `fx4.mjs` — the "S5: Done closes
+    the popup…" check parked VERBATIM in the house pok-record form (fx4 has a
+    parked section), its probe re-verifying the CURRENT label directly (a fresh
+    card's popup carries a close button reading exactly "Close"), with the live
+    successor asserting the "Close" button still closes/un-blurs/commits; `j5.mjs`
+    — the Spread `app.click('Done')` exit ACTION → `'Close'` (fixture maintenance,
+    not an assertion); `j4`/`ab4`/`ab1`'s frozen records that MENTION the popup's
+    "Done" button left as-is (they close by CLASS, probes pass, history accurate —
+    no park manufactured). `cd4.mjs` gained the **no-"Done"-anywhere structural
+    sweep** as the standing guard (the popup reads "Close", the Spread reads
+    Select/Close, and no control reads exactly "Done" on the popup, the Spread, a
+    system board, a prose page, or a script page).
+    **Full historic suite re-run to completion in the main loop: 38/38
+    deterministic GREEN** (zero flakes this run). cd4.mjs 27 both settings; fx4.mjs
+    49 / PARKED 3 (the CD4.1 pok re-verifies).
+    **DEPLOY HELD — CD4.1 rides the batched word with FX11 + CD4 + M3** (Nick's
+    word). **CLOSE-PENDING Nick's sitting** — his eye on the two "Close" words
+    (one string each if either reads wrong). **This also satisfies CD4's (item 59)
+    remaining gate: item 59 now close-pends ONLY Nick's device sitting.**
 58. **M3 — the Rhizome Roams.** **BRIEF COMMITTED — 2026-07-24,
     Fable-authored** (`docs/wrizo-alpha/m3-rhizome-roams-brief.md`).
     **ZERO SCHEMA, zero server files, zero new deps; merge pre-authorized as
