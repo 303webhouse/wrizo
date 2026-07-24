@@ -312,6 +312,23 @@ function distToRect(x: number, y: number, r: RhizomeRect): number {
   return Math.hypot(dx, dy);
 }
 
+// Project a point that lands INSIDE the paper out to just past its nearest
+// edge. An origin must never sit in the writer's words: a shoot rooted inside
+// the paper would emit start points inside it (segmentTouchesRect skips the
+// tip by design), a violation the wall can't catch. On a tight ground (the
+// paper filling most of a narrow stage) best-candidate can occasionally pick an
+// interior point; this guarantees it never survives. A point already outside is
+// returned unchanged.
+function outsidePaper(x: number, y: number, r: RhizomeRect, margin: number): RhizomePoint {
+  if (!inRect(x, y, r)) return { x, y };
+  const dL = x - r.left, dR = r.right - x, dT = y - r.top, dB = r.bottom - y;
+  const m = Math.min(dL, dR, dT, dB);
+  if (m === dL) return { x: r.left - margin, y };
+  if (m === dR) return { x: r.right + margin, y };
+  if (m === dT) return { x, y: r.top - margin };
+  return { x, y: r.bottom + margin };
+}
+
 // M3 S2 — SEVEN seeded origins, blue-noise via best-candidate sampling. Origin
 // ONE is the paper's bottom-center (continuity with every ground grown so far —
 // the M2 origin). Each of the other six is the farthest of ORIGIN_CANDIDATES
@@ -345,7 +362,10 @@ export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: numb
       for (const o of origins) score = Math.min(score, Math.hypot(x - o.x, y - o.y));
       if (score > bestScore) { bestScore = score; best = { x, y }; }
     }
-    origins.push(best);
+    // Guarantee the origin is outside the paper (the tight-ground case), then
+    // keep it inside the stage — a shoot never roots in the writer's words.
+    const nudged = outsidePaper(best.x, best.y, geo.paper, STAGE_PAD);
+    origins.push(clampToStage(nudged, geo));
   }
   return origins;
 }

@@ -166,8 +166,18 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'rhizome page revisited (in-app nav)' });
     await sleep(300);
     const beforeRetype = await readSegments(app);
-    ok('Determinism (live): revisiting the SAME entry (no new writing yet) remounts EMPTY — forward-only growth is per-mount, never replayed from stored word count',
-      beforeRetype.length === 0, String(beforeRetype.length));
+    // SUPERSEDED by M3 (docs/wrizo-alpha/m3-rhizome-roams-brief.md, S3). M3's
+    // total-word driver REVERSES this M2 law: coverage tracks TOTAL words, so
+    // revisiting a written entry now shows a ground alive to the essay's length
+    // (the DoD) rather than remounting empty. Original kept verbatim per the A4
+    // park law (memory: harness-assertions-park-never-edit):
+    //   ok('Determinism (live): revisiting the SAME entry (no new writing yet) remounts EMPTY — forward-only growth is per-mount, never replayed from stored word count',
+    //     beforeRetype.length === 0, String(beforeRetype.length));
+    // Successor (positive proof of the reversed, current truth): m3.mjs
+    // 'Determinism (live, M3): revisiting a WRITTEN entry reproduces the SAME
+    // saturated ground, byte-identical'.
+    ok('SUPERSEDED->M3: revisiting the SAME written entry no longer remounts empty — the total-word driver grows a ground to saturationTarget(total words) on mount (M3 DoD)',
+      beforeRetype.length > 0, String(beforeRetype.length));
     await focusEditorAndType(app, 'alpha beta gamma delta epsilon ');
     await sleep(500);
     const second = await readSegments(app);
@@ -197,9 +207,21 @@ await withHarness(async (app) => {
       const ox = segs[0].x1, oy = segs[0].y1;
       return segs.map(s => ({ x1: s.x1 - ox, y1: s.y1 - oy, x2: s.x2 - ox, y2: s.y2 - oy }));
     };
-    ok('Determinism (live): the SAME typed sequence replayed on the SAME entry, SAME session, reproduces a BYTE-IDENTICAL growth SHAPE (every coordinate normalized to the first segment’s own start point)',
-      JSON.stringify(normalize(first)) === JSON.stringify(normalize(second)) && second.length === first.length,
-      JSON.stringify({ first, second }));
+    // SUPERSEDED by M3 (m3-rhizome-roams-brief.md, S3). The original relied on
+    // the M2 remount-empty law (both replays typed from empty to the SAME 5
+    // words). Under M3's total-word driver the revisit does NOT remount empty —
+    // `second` here is the entry retyped to 10 TOTAL words, not 5 — so the
+    // premise (equal totals) is gone, not determinism. Original kept verbatim
+    // per A4 (memory: harness-assertions-park-never-edit):
+    //   ok('Determinism (live): the SAME typed sequence replayed on the SAME entry, SAME session, reproduces a BYTE-IDENTICAL growth SHAPE (every coordinate normalized to the first segment’s own start point)',
+    //     JSON.stringify(normalize(first)) === JSON.stringify(normalize(second)) && second.length === first.length,
+    //     JSON.stringify({ first, second }));
+    // Successor (M3's actual determinism — same entry/session/geo/word-count):
+    // the in-app REVISIT (before any retyping) re-fits to a BYTE-IDENTICAL
+    // normalized ground; m3.mjs proves the same positively at essay scale.
+    ok('SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground (same seed+geo+total-words => same scatter); the retyped `second` legitimately reaches a LARGER total (forward-only), no longer equal to `first`',
+      JSON.stringify(normalize(first)) === JSON.stringify(normalize(beforeRetype)) && beforeRetype.length === first.length && second.length >= first.length,
+      JSON.stringify({ first, beforeRetype, second }));
   }
 
   // ==========================================================================
@@ -366,16 +388,34 @@ await withHarness(async (app) => {
     await sleep(300);
     const duringBurst = await readSegments(app);
     const delta = duringBurst.length - beforeBurst.length;
-    ok('Burst: adds segments after the goal crossing (up to +12, staggered — not necessarily all landed within this short window, but strictly more than before)',
-      delta > 0 && delta <= 13, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
+    // SUPERSEDED by M3 (m3-rhizome-roams-brief.md, S3). This fixture seeds 245
+    // words then types six (245+5 = 250) BEFORE the "seven" keystroke, so under
+    // M3's total-word driver the goal (WORD_GOAL 250) is already crossed during
+    // "one two three four five six" — the burst fires THEN, and `beforeBurst`
+    // (snapshot after "six") already contains it. The "seven" keystroke adds no
+    // NEW burst: the milestone is a one-time event. Original kept verbatim (A4):
+    //   ok('Burst: adds segments after the goal crossing (up to +12, staggered — not necessarily all landed within this short window, but strictly more than before)',
+    //     delta > 0 && delta <= 13, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
+    // Successor (positive proof the burst DOES land +12 on the crossing, with a
+    // boundary that brackets it correctly): m3.mjs 'Burst (M3): crossing the
+    // goal lands up to +12 burst-flagged segments, growth kept whole'.
+    ok('SUPERSEDED->M3: the milestone burst is one-time — a further keystroke after the goal is already crossed adds NO new burst (delta 0); the burst fired earlier, when the total-word count crossed the goal',
+      delta === 0, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
     // Wait past the full stagger + flash window, then confirm the burst
     // finished landing and growth was kept whole (every pre-burst segment
     // still present, byte-identical, at the SAME array indices).
     await sleep(1200);
     const afterBurst = await readSegments(app);
     const addedCount = afterBurst.length - beforeBurst.length;
-    ok('Burst: settles at up to +12 new segments total (the cap this event applies, never fewer than one, given live shoots existed)',
-      addedCount >= 1 && addedCount <= 12, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
+    // SUPERSEDED by M3 (same reason as the delta check above — the burst is a
+    // one-time event that fired during "one..six", so it does not fire AGAIN
+    // across "seven"; the count is stable). Original kept verbatim (A4):
+    //   ok('Burst: settles at up to +12 new segments total (the cap this event applies, never fewer than one, given live shoots existed)',
+    //     addedCount >= 1 && addedCount <= 12, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
+    // Successor (the +12 landing itself): m3.mjs 'Burst (M3): crossing the goal
+    // lands up to +12 burst-flagged segments, growth kept whole'.
+    ok('SUPERSEDED->M3: the burst count is STABLE after the one-time crossing — no second burst fires across a further keystroke (addedCount 0); the earlier crossing already landed the burst',
+      addedCount === 0, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
     ok('Burst: growth kept whole — every segment present BEFORE the burst is still present, unchanged, at the same index',
       JSON.stringify(afterBurst.slice(0, beforeBurst.length)) === JSON.stringify(beforeBurst),
       JSON.stringify({ beforeBurst, afterHead: afterBurst.slice(0, beforeBurst.length) }));

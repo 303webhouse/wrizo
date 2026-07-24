@@ -81,6 +81,26 @@ function measure(svg: SVGSVGElement, paper: HTMLElement): { geo: RhizomeGeometry
   };
 }
 
+// M3 — a MATERIAL change (> 1px on any stage dimension or paper edge) in the
+// measured geometry: the trigger to re-fit the ground to the paper's new place.
+// The paper is NOT still at mount — on a fresh load into an already-written
+// page (S3's own DoD scenario) the chrome above it recedes over ~500ms, so the
+// paper settles up by a few tens of px AFTER the field first measured+grew. A
+// ground grown against the boot-time paper would then sit under the settled
+// paper's top band (invisible — the field is z-beneath the paper — but a real
+// gap in "the roam avoids the paper"). 1px, not 0, so sub-pixel measurement
+// jitter can never thrash a rebuild.
+function geoChanged(a: RhizomeGeometry, b: RhizomeGeometry): boolean {
+  return (
+    Math.abs(a.width - b.width) > 1 ||
+    Math.abs(a.height - b.height) > 1 ||
+    Math.abs(a.paper.left - b.paper.left) > 1 ||
+    Math.abs(a.paper.top - b.paper.top) > 1 ||
+    Math.abs(a.paper.right - b.paper.right) > 1 ||
+    Math.abs(a.paper.bottom - b.paper.bottom) > 1
+  );
+}
+
 export function RhizomeField({ unitCount, seedKey, paperRef }: {
   unitCount: number;
   seedKey: string;
@@ -104,6 +124,17 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
   // page scatters the same way and the rng stream stays deterministic across
   // every growTo call.
   const originsRef = useRef<RhizomePoint[] | null>(null);
+  // M3 — the geometry the current ground was BUILT against (null until first
+  // build), and the high-water word count it has been grown to. The high-water
+  // makes the forward-only law survive a geometry re-fit: a rebuild regrows to
+  // the largest count ever seen, so re-fitting to a moved paper never shrinks
+  // the ground (just as deleting words never does). `unitCountRef` mirrors the
+  // prop so the ResizeObserver's refit can read the live count without making
+  // its own effect re-subscribe on every keystroke.
+  const builtGeoRef = useRef<RhizomeGeometry | null>(null);
+  const highWaterRef = useRef(0);
+  const unitCountRef = useRef(unitCount);
+  unitCountRef.current = unitCount;
 
   // `stateRef` mirrors `state` synchronously (written by `updateState`
   // below, never independently) so the growth effect and the burst effect
@@ -134,6 +165,8 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
     rngRef.current = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
     lastUnitRef.current = null;
     originsRef.current = null; // M3 — a fresh entry re-scatters its own ground
+    builtGeoRef.current = null; // and re-fits from empty against its own paper
+    highWaterRef.current = 0;
     const fresh = createRhizomeState();
     stateRef.current = fresh;
     setState(fresh);
@@ -147,33 +180,71 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
     return measure(svg, paper);
   }, [paperRef]);
 
-  // The growth loop — one PRNG-driven step per unit the host's own word
-  // count advanced by since the last observed value. Mount-seeds to the
-  // CURRENT count (the useGoalProgress/W1-R1 "seed on mount, never
-  // retroactively celebrate/grow the past" law) rather than ever catching
-  // up — a page opened with 600 words already written shows an EMPTY field
-  // until NEW words are written this session, matching the milestone
-  // celebration's own established precedent exactly.
-  // M3 S2/S3 — the growth loop. Coverage tracks TOTAL word count (not M2's
-  // session delta) through the saturation curve, so opening a page already
+  // M3 S2/S3 — the growth/re-fit loop. Coverage tracks TOTAL word count (not
+  // M2's session delta) through the saturation curve, so opening a page already
   // written shows a ground alive to the essay's length (the DoD) rather than
-  // M2's empty-until-you-type. The 7 blue-noise origins (S2) are computed ONCE,
-  // from the seeded rng + the first successful measure, BEFORE any growth — so
-  // the same page scatters the same way and the growth stream stays
-  // deterministic across every call. growTo is forward-only (deleting words is a
-  // no-op, never a shrink — the M2 law) and idempotent for a given target, so a
-  // React 18 StrictMode double-invoke of this effect adds no segments and burns
-  // no extra rng (the origins seed once behind the ref guard; growTo no-ops when
-  // already at target) — the same dev-only determinism hazard updateState's
-  // plain-value form already guards, closed here by construction too.
-  useEffect(() => {
+  // M2's empty-until-you-type. `syncField` is the single path that brings the
+  // ground into agreement with both the current word count AND the current
+  // measured geometry:
+  //   • same paper, more words -> grow FORWARD (M2's incremental, idempotent,
+  //     StrictMode-safe growTo — a no-op, never a shrink, when words drop);
+  //   • paper moved/resized     -> RE-FIT: reset the PRNG to this entry's seed
+  //     and regrow from empty against the new paper, so the rebuilt ground is
+  //     the deterministic image of this seed AT this geometry (same seed + same
+  //     geo => identical scatter), grown to the high-water target so a re-fit
+  //     never shrinks the ground.
+  // The 7 blue-noise origins (S2) are seeded from the rng + the measured geo at
+  // build time; a re-fit re-seeds them for the new geo. growTo is forward-only
+  // and idempotent per target, and a rebuild resets the rng from the seed first,
+  // so a React 18 StrictMode double-invoke adds no segments and burns no extra
+  // rng — the same dev-only determinism hazard updateState's plain-value form
+  // already guards, closed here by construction too.
+  const syncField = useCallback(() => {
     if (!active || !rngRef.current) return;
     const m = measureNow();
     if (!m) return;
-    if (!originsRef.current) originsRef.current = seedOrigins(rngRef.current, m.geo);
-    lastUnitRef.current = unitCount;
-    updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, saturationTarget(unitCount)));
-  }, [unitCount, active, measureNow, updateState]);
+    highWaterRef.current = Math.max(highWaterRef.current, unitCountRef.current);
+    const target = saturationTarget(highWaterRef.current);
+    if (!builtGeoRef.current || geoChanged(m.geo, builtGeoRef.current)) {
+      const rng = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
+      rngRef.current = rng;
+      originsRef.current = seedOrigins(rng, m.geo);
+      builtGeoRef.current = m.geo;
+      const rebuilt = growTo(createRhizomeState(), rng, m.geo, originsRef.current, target);
+      stateRef.current = rebuilt;
+      setState(rebuilt);
+      setBurstOrder(new Map());
+    } else {
+      updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, target));
+    }
+    lastUnitRef.current = unitCountRef.current;
+  }, [active, seedKey, measureNow, updateState]);
+
+  // Grow forward whenever the word count advances (and on first mount).
+  useEffect(() => { syncField(); }, [unitCount, syncField]);
+
+  // Re-fit when the paper or stage geometry changes — the boot-time chrome
+  // recede (the paper settles up over ~500ms after first paint, S3's DoD path)
+  // and any later window resize. A ResizeObserver catches size changes; a
+  // single deferred re-sync catches a position-only settle tail (the paper can
+  // finish translating a frame or two after its size stabilizes). Both coalesce
+  // through one rAF so a burst of callbacks becomes a single measure+refit.
+  useEffect(() => {
+    if (!active) return;
+    const svg = svgRef.current;
+    const paper = paperRef.current;
+    if (!svg || !paper || typeof ResizeObserver === 'undefined') return;
+    let raf = 0;
+    const schedule = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; syncField(); });
+    };
+    const ro = new ResizeObserver(schedule);
+    ro.observe(svg);
+    ro.observe(paper);
+    const settleTail = setTimeout(schedule, 600);
+    return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(settleTail); ro.disconnect(); };
+  }, [active, paperRef, syncField]);
 
   // S4 — the milestone burst + flash, on the SAME `celebrating` transition
   // the bar itself already fires on (nothing new invented). Decoupled from
