@@ -30,6 +30,9 @@ function rowToProject(r: any) {
     lastActivityType: r.last_activity_type ?? undefined,
     lastActivePageId: r.last_active_page_id ?? undefined,
     deletedAt: iso(r.deleted_at) ?? undefined,
+    // TU5 S1 — the book's Bible: SQL null → JS undefined, never a literal null
+    // (the grandfather byte-identity fixed point, the origin/tutor recipe).
+    tutor: r.tutor ?? undefined,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
   };
@@ -120,8 +123,8 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
       await pool.query(
         `insert into projects
            (id, user_id, title, type, sprint_text, story_plan_id, drawer_id, kind,
-            last_activity_at, last_activity_type, last_active_page_id, deleted_at, created_at, updated_at)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+            last_activity_at, last_activity_type, last_active_page_id, deleted_at, created_at, updated_at, tutor)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15::jsonb)
          on conflict (id) do update set
            title = excluded.title, type = excluded.type,
            sprint_text = excluded.sprint_text, story_plan_id = excluded.story_plan_id,
@@ -129,12 +132,16 @@ async function upsertProjects(userId: string, records: any[]): Promise<void> {
            last_activity_at = excluded.last_activity_at,
            last_activity_type = excluded.last_activity_type,
            last_active_page_id = excluded.last_active_page_id,
-           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at
+           deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
+           tutor = excluded.tutor
          where projects.user_id = excluded.user_id
            and excluded.updated_at > projects.updated_at`,
+        // TU5 S1 — tutor rides as the 15th param, `JSON.stringify(p.tutor ?? null)`
+        // ($15::jsonb): a project with no bible sends SQL null, so the column
+        // stays null and the row is byte-identical to today (grandfather).
         [p.id, userId, p.title ?? '', p.type ?? 'creative', p.sprintText ?? null,
          p.storyPlanId ?? null, p.drawerId ?? null, p.kind ?? null, p.lastActivityAt ?? null, p.lastActivityType ?? null,
-         p.lastActivePageId ?? null, p.deletedAt ?? null, p.createdAt, p.updatedAt],
+         p.lastActivePageId ?? null, p.deletedAt ?? null, p.createdAt, p.updatedAt, JSON.stringify(p.tutor ?? null)],
       );
     } catch (err) {
       console.error('[sync] project upsert failed', p.id, err);

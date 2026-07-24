@@ -86,7 +86,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '2');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -359,19 +359,23 @@ await withHarness(async (app) => {
   {
     // (a) Fresh device, no flags at all.
     await freshProsePage(app, LAPTOP_W, 900, { skipDisclosure: false });
-    const v2Body = await lex(app, 'tutorDisclosureBodyV2');
+    // TU5 S6 — the disclosure is v3 now; read v3's body. The three v2-wording /
+    // v2-version assertions this section originally made are parked below (A4,
+    // verbatim), superseded, with the owning successors in tu5.mjs; re-asserted
+    // fresh here against v3.
+    const v3Body = await lex(app, 'tutorDisclosureBodyV3');
     ok('Disclosure v2: not yet seen on a genuinely fresh device (neither key set)',
       (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === null);
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
     await sleep(300);
     const shownText = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v2: shown on the first-ever open, carrying the v2 wording exactly (lexicon-routed, not hand-copied here)',
-      shownText === v2Body, shownText);
+    ok('Disclosure v3: shown on the first-ever open, carrying the CURRENT (v3) wording exactly (lexicon-routed) — the v2-wording assertion this replaces is parked below, superseded by TU5 S6',
+      shownText === v3Body, shownText);
     await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
     await sleep(250);
-    ok('Disclosure v2: the ack dismisses it and writes the CURRENT version (2) under the new key',
+    ok('Disclosure v3: the ack dismisses it and writes the CURRENT version (3) under the version key — the "(2)" assertion this replaces is parked below, superseded by TU5 S6',
       (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '2');
+      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '3');
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
     await sleep(200);
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // open #2
@@ -398,8 +402,8 @@ await withHarness(async (app) => {
     await sleep(300);
     const v1SeededShown = await app.evalJs("!!document.querySelector('.wz-tutor-disclosure')");
     const v1SeededText = await app.evalJs("document.querySelector('.wz-tutor-disclosure-body')?.textContent ?? ''");
-    ok('Disclosure v2 (v1-seeded device) — THE single most important disclosure check: the OLD v1 flag does NOT suppress v2 — it still shows, once, with v2\'s own wording',
-      v1SeededShown === true && v1SeededText === v2Body, JSON.stringify({ v1SeededShown, v1SeededText }));
+    ok('Disclosure v3 (v1-seeded device) — the OLD v1 flag does NOT suppress the disclosure — it still shows, once, now with v3\'s own wording (the v2-wording form is parked below, superseded by TU5 S6)',
+      v1SeededShown === true && v1SeededText === v3Body, JSON.stringify({ v1SeededShown, v1SeededText }));
     await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
     await sleep(250);
     // Close, reopen — a v1-seeded device that has now ALSO acked v2 does not see it a third time.
@@ -686,12 +690,24 @@ if (process.env.HARNESS_PARKED === '1') {
     }
   }
 
+  // TU5 S6 bumped CURRENT_DISCLOSURE_VERSION 2 -> 3 (the Bible joined the named
+  // travelers), superseding this file's three v2-wording / v2-version disclosure
+  // assertions. Each quoted verbatim (A4); re-asserted fresh above against v3;
+  // the owning live successors are tu5.mjs's own disclosure v3 section (fresh
+  // device, v2-seeded, and v1-boolean-seeded — v3 shows exactly once in all).
+  pok('PARKED (was "Disclosure v2: shown on the first-ever open, carrying the v2 wording exactly (lexicon-routed, not hand-copied here)") — TU5 S6: a fresh device sees v3, not v2 — live successor in tu5.mjs\'s disclosure v3 section',
+    true, 'superseded by TU5 S6 disclosure v3');
+  pok('PARKED (was "Disclosure v2: the ack dismisses it and writes the CURRENT version (2) under the new key") — TU5 S6: the ack writes version 3 now — live successor in tu5.mjs\'s disclosure v3 section',
+    true, 'superseded by TU5 S6 disclosure v3');
+  pok('PARKED (was "Disclosure v2 (v1-seeded device) — THE single most important disclosure check: the OLD v1 flag does NOT suppress v2 — it still shows, once, with v2\'s own wording") — TU5 S6: the v1 flag still does not suppress it, but the wording shown is now v3 — live successor in tu5.mjs\'s disclosure v3 section',
+    true, 'superseded by TU5 S6 disclosure v3');
+
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all six FX10-superseded width checks documented with live successors in fx10.mjs`
+    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: six FX10-superseded width checks (successors in fx10.mjs) + three TU5-superseded disclosure-v2 checks (successors in tu5.mjs)`
     : `\nTU2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 

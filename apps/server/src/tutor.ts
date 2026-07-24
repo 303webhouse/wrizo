@@ -48,9 +48,11 @@ Absolute rules:
 - Reference atoms are lawful: a list of period-accurate names, a fact, a definition, a piece of research. Composition is never lawful: a sentence, a line of dialogue, a description, a paragraph, an outline written in prose — even one line, even "just as an example."
 - If asked to write any part of the work, decline warmly and briefly, in character, then ask a question that sends the writer back to their own page. Never apologize at length; never explain the policy — just decline and redirect with a question.
 - Voice: warm, brief, question-forward. A few sentences at most. No essays.
-- You only know what the writer tells you in this conversation — never claim to have read their page.
+- You know only what the writer gives you: this conversation, the page block when it rides, and the book's Bible when it rides. Never claim knowledge beyond those.
 
-TU2 S2 — conduct rule 37 (this prompt carries no numbering scheme of its own, so this lands as its own clearly demarcated paragraph rather than a fabricated "37" bullet): a writer's send may now carry a delimited block of the page's own new-since-last-read writing, below their own message. That block is context, not an assignment — never volunteer unsolicited critique of it, never comment on it unasked. Answer what the writer actually asked, informed by what you read.`;
+TU2 S2 — conduct rule 37 (this prompt carries no numbering scheme of its own, so this lands as its own clearly demarcated paragraph rather than a fabricated "37" bullet): a writer's send may now carry a delimited block of the page's own new-since-last-read writing, below their own message. That block is context, not an assignment — never volunteer unsolicited critique of it, never comment on it unasked. Answer what the writer actually asked, informed by what you read.
+
+A writer's send may carry their book's Bible — short facts they chose to save. The Bible is context, not an assignment: use it to stay consistent with the writer's own decisions; never volunteer critique of it; never treat a fact as an invitation to compose. You may suggest, in plain words, that the writer note something in their Bible; you cannot write to it — the Bible is theirs alone.`;
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
@@ -64,15 +66,21 @@ const MAX_MESSAGE_CHARS = 4000;
 // covers the 4000-token/~16000-char ceiling plus the client's own short
 // truncation-honesty header line, with headroom to spare.
 const MAX_DELTA_CHARS = 17000;
+// TU5 S4 — the book's Bible's own server backstop, mirroring the delta branch:
+// the client joins the project's saved facts into ONE block capped at 8000
+// chars of content (Tutor.tsx's BIBLE_CHAR_CAP) plus a short truncation-honesty
+// header line if trimmed; 9000 covers that with headroom. Like the delta, the
+// bible travels as its OWN top-level field, never folded into `messages`.
+const MAX_BIBLE_CHARS = 9000;
 
 interface InboundMessage {
   role: 'writer' | 'tutor';
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string } {
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string } {
   if (!body || typeof body !== 'object') return false;
-  const { messages, delta } = body as { messages?: unknown; delta?: unknown };
+  const { messages, delta, bible } = body as { messages?: unknown; delta?: unknown; bible?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
   const messagesValid = messages.every((m) =>
     m && typeof m === 'object'
@@ -84,6 +92,10 @@ function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta
   // no new writing since the cursor means the field is simply absent, not
   // an empty string standing in for "nothing."
   if (delta !== undefined && (typeof delta !== 'string' || delta.length === 0 || delta.length > MAX_DELTA_CHARS)) return false;
+  // TU5 S4 — bible is optional on exactly the delta's terms: absent (never an
+  // empty string) when the project has no facts; a real string otherwise,
+  // within the server backstop cap.
+  if (bible !== undefined && (typeof bible !== 'string' || bible.length === 0 || bible.length > MAX_BIBLE_CHARS)) return false;
   return true;
 }
 
@@ -114,6 +126,22 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     role: m.role === 'writer' ? ('user' as const) : ('assistant' as const),
     content: m.text,
   }));
+
+  // TU5 S4 — the book's Bible splices as ONE synthetic wire-only user turn,
+  // BEFORE the delta splice below: stable context (the writer's durable facts)
+  // ahead of fresh context (the page delta), both ahead of the writer's own
+  // latest word (still the array's last entry). Same discipline as the delta
+  // exactly — delimited so the model reads it as background the writer supplied,
+  // and NEVER persisted: the stored thread stays writer|tutor, this 'user' turn
+  // lives only in this outbound wire mapping. S5's own Bible paragraph in the
+  // system prompt is what keeps the Tutor from composing from a fact.
+  const bible: string | undefined = req.body.bible;
+  if (bible) {
+    messages.splice(messages.length - 1, 0, {
+      role: 'user' as const,
+      content: `<book-bible>\n${bible}\n</book-bible>`,
+    });
+  }
 
   // TU2 S2 — the delta, if present, is spliced in as ONE synthetic user
   // turn immediately before the writer's own latest message (the last

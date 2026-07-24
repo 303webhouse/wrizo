@@ -121,4 +121,12 @@ export async function runMigrations(): Promise<void> {
   // additive column before it: this column governs pairing from BM1 forward
   // only.
   await pool.query(`alter table journal_entries add column if not exists plan_board_id text`);
+
+  // TU5 S1 — the book's Bible (L4 of the Tutor's memory). ONE additive nullable
+  // jsonb column on `projects`, the exact `journal_entries.tutor` recipe above
+  // (`add column if not exists ... jsonb`, project-side this time): no default,
+  // no CHECK, no backfill. Null on every existing project — a project never
+  // touched by the bible reads null → JS undefined → byte-identical to today
+  // (the grandfather fixed point). Never a new table; the bible rides its project.
+  await pool.query(`alter table projects add column if not exists tutor jsonb`);
 }

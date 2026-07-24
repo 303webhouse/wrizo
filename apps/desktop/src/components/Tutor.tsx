@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
-import type { JournalEntry, Project } from '../types';
+import type { JournalEntry, Project, Fact } from '../types';
 import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor } from '../store/persistence';
 import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDisclosure';
 import { apiTutorChat } from '../store/api';
@@ -10,6 +10,7 @@ import { computeStructureFacts, computeFragmentItems } from '../store/tutorLense
 import { computeNudges } from '../store/tutorNudges';
 import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstimates';
 import { addTutorSessionCost } from '../store/tutorMeter';
+import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -101,6 +102,31 @@ function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: num
   return { delta, truncated };
 }
 
+// TU5 S4 — the book's Bible's own send-time assembly, mirroring the delta's
+// two-tier cap. The writer's saved facts (of THIS page's project) are joined
+// into ONE block — a fact is a line — assembled ONLY here, at send time, never
+// ambiently. Returns null (a true absent key, never an empty string) when the
+// project has no facts. Client cap 8000 chars of CONTENT (server backstop 9000,
+// tutor.ts's MAX_BIBLE_CHARS), with an honest truncation header line prepended
+// when some facts don't fit; whole facts only — never a fact sliced mid-line
+// (except the pathological case of a single fact somehow over the cap, which
+// the 300-char per-fact store cap makes unreachable in practice).
+const BIBLE_CHAR_CAP = 8000;
+const BIBLE_TRUNCATION_HEADER = 'partial: some saved facts were not included this time';
+
+function assembleBible(facts: Fact[]): string | null {
+  if (facts.length === 0) return null;
+  let body = '';
+  let truncated = false;
+  for (const f of facts) {
+    const next = body ? `${body}\n${f.text}` : f.text;
+    if (next.length > BIBLE_CHAR_CAP) { truncated = true; break; }
+    body = next;
+  }
+  if (!body) { body = facts[0].text.slice(0, BIBLE_CHAR_CAP); truncated = true; }
+  return truncated ? `[${BIBLE_TRUNCATION_HEADER}]\n${body}` : body;
+}
+
 // The margin genuinely available past the paper's right edge — the exact
 // mirror of Cascade.tsx's own `availableCascadeMargin()` (see that file's
 // header comment for the full "why measured geometry, not getComputedStyle
@@ -174,6 +200,14 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   // reason `status` isn't: it describes what just happened, not a
   // standing page property.
   const [deltaTruncated, setDeltaTruncated] = useState(false);
+  // TU5 S3 — the book's Bible: writer-authored facts read off the project
+  // record (reactive via the store's own subscribe seam). The gate is
+  // `entry.projectId` — a loose/journal page has none, so the section below
+  // never mounts (quiet absence, not a disabled door).
+  const bibleFacts = useBibleFacts(entry.projectId);
+  const [bibleInput, setBibleInput] = useState('');
+  const [bibleEditingId, setBibleEditingId] = useState<string | null>(null);
+  const [bibleEditText, setBibleEditText] = useState('');
   // TU2 S5 — the session meter's own display state: `null` when nothing has
   // rendered yet (no call has been made this mount) or once the removal
   // timer has fired; `fading` flips true only under ordinary motion, at
@@ -230,6 +264,33 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   const acknowledgeDisclosure = () => {
     setTutorDisclosureSeen(true);
     setShowDisclosure(false);
+  };
+
+  // TU5 S3 — the writer's own Bible edits. These handlers ONLY ever call the
+  // writer-authored store functions (addFact/editFact/deleteFact) — never
+  // anything that could place a byte on a page. A13 holds structurally: no
+  // editorRef, no setText, nothing outside the store; the Tutor never calls
+  // any of these — they fire only on the writer's own click/Enter.
+  const addBibleFact = () => {
+    if (!entry.projectId) return;
+    const text = bibleInput.trim();
+    if (!text) return;
+    addFact(entry.projectId, text);
+    setBibleInput('');
+  };
+  const startBibleEdit = (f: Fact) => { setBibleEditingId(f.id); setBibleEditText(f.text); };
+  const cancelBibleEdit = () => { setBibleEditingId(null); setBibleEditText(''); };
+  const commitBibleEdit = (id: string) => {
+    if (!entry.projectId) return;
+    const text = bibleEditText.trim();
+    if (text) editFact(entry.projectId, id, text);
+    setBibleEditingId(null);
+    setBibleEditText('');
+  };
+  const removeBibleFact = (id: string) => {
+    if (!entry.projectId) return;
+    deleteFact(entry.projectId, id);
+    if (bibleEditingId === id) cancelBibleEdit();
   };
 
   // --- S3/S4 — lenses + nudges, DERIVED, computed only while the panel is
@@ -330,7 +391,11 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
     appendTutorMessage(entry.id, writerMsg);
     setSending(true);
     const history = [...(getJournalEntry(entry.id)?.tutor?.messages ?? [])].map((m) => ({ role: m.role, text: m.text }));
-    const result = await apiTutorChat(history, delta ?? undefined);
+    // TU5 S4 — assemble the Bible at send time only (never ambiently): read the
+    // project's saved facts fresh and join them; absent when there are none, so
+    // JSON.stringify drops the key and the wire stays byte-free of any bible.
+    const bible = entry.projectId ? assembleBible(getBibleFacts(entry.projectId)) : null;
+    const result = await apiTutorChat(history, delta ?? undefined, bible ?? undefined);
     setSending(false);
     if (!result.ok) { setStatus('error'); return; }
     if (!result.configured) { setStatus('offline'); return; }
@@ -475,6 +540,70 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
                 ? <div className="wz-tutor-empty">{t('tutorNudgesEmpty')}</div>
                 : nudges.map((n) => <div key={n} className="wz-tutor-obs">{n}</div>)}
             </div>
+
+            {/* TU5 S3 — the book's Bible, LAST in the cluster (Fable's ruling:
+                the most at-rest thing sits deepest — lenses are verbs, nudges
+                are letters on approach, the Bible is the shelf at the back).
+                Only when the page rides a project (`entry.projectId`); a
+                loose/journal page shows nothing here — quiet absence, not a
+                disabled door. Writer-authored only; no control here can place
+                text on a page (A13). No counts (the FX9 law travels). */}
+            {entry.projectId && (
+              <div className="wz-tutor-section">
+                <div className="wz-tutor-h">{t('tutorBibleTitle')}</div>
+                <div className="wz-tutor-note">{t('tutorBibleNote')}</div>
+                {bibleFacts.length === 0
+                  ? <div className="wz-tutor-empty">{t('tutorBibleEmpty')}</div>
+                  : (
+                    <div className="wz-tutor-bible-list">
+                      {bibleFacts.map((f) => (
+                        <div key={f.id} className="wz-tutor-bible-fact">
+                          {bibleEditingId === f.id ? (
+                            <div className="wz-tutor-bible-edit">
+                              <input
+                                className="wz-tutor-bible-input"
+                                type="text"
+                                value={bibleEditText}
+                                maxLength={FACT_TEXT_CAP}
+                                onChange={(e) => setBibleEditText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') { e.preventDefault(); commitBibleEdit(f.id); }
+                                  if (e.key === 'Escape') { e.preventDefault(); cancelBibleEdit(); }
+                                }}
+                                autoFocus
+                              />
+                              <button type="button" className="wz-tutor-bible-btn" onClick={() => commitBibleEdit(f.id)}>{t('tutorBibleSave')}</button>
+                              <button type="button" className="wz-tutor-bible-btn" onClick={cancelBibleEdit}>{t('tutorBibleCancel')}</button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="wz-tutor-bible-text">{f.text}</span>
+                              <span className="wz-tutor-bible-actions">
+                                <button type="button" className="wz-tutor-bible-btn" onClick={() => startBibleEdit(f)}>{t('tutorBibleEdit')}</button>
+                                <button type="button" className="wz-tutor-bible-btn" onClick={() => removeBibleFact(f.id)}>{t('tutorBibleDelete')}</button>
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                <div className="wz-tutor-bible-row">
+                  <input
+                    className="wz-tutor-bible-input"
+                    type="text"
+                    value={bibleInput}
+                    maxLength={FACT_TEXT_CAP}
+                    placeholder={t('tutorBibleAddPlaceholder')}
+                    onChange={(e) => setBibleInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addBibleFact(); } }}
+                  />
+                  <button type="button" className="wz-tutor-bible-add" disabled={!bibleInput.trim()} onClick={addBibleFact}>
+                    {t('tutorBibleAdd')}
+                  </button>
+                </div>
+              </div>
+            )}
             </div>
 
             {/* TU2 S5 — the session meter's own quiet foot line. Absent
@@ -497,12 +626,12 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
         <div className="wz-tutor-disclosure-backdrop wz-tutor-zone">
           <div className="wz-tutor-disclosure" role="dialog" aria-modal="true" aria-label={t('tutorDisclosureTitle')}>
             <div className="wz-tutor-disclosure-title">{t('tutorDisclosureTitle')}</div>
-            {/* TU2 S3 — v2 body (deskLexicon's tutorDisclosureBodyV2), not
-                the v1 tutorDisclosureBody string it supersedes: the panel
-                always shows CURRENT_DISCLOSURE_VERSION's own copy, never an
-                older version's — see store/tutorDisclosure.ts's header
-                comment for why a v1-acknowledged device still sees this. */}
-            <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV2')}</div>
+            {/* TU5 S6 — v3 body (deskLexicon's tutorDisclosureBodyV3), not the
+                v2/v1 strings it supersedes: the panel always shows
+                CURRENT_DISCLOSURE_VERSION's own copy, never an older version's —
+                see store/tutorDisclosure.ts's header comment for why a
+                v1/v2-acknowledged device still sees this exactly once. */}
+            <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV3')}</div>
             <button type="button" className="wz-tutor-disclosure-ack" onClick={acknowledgeDisclosure} autoFocus>
               {t('tutorDisclosureAck')}
             </button>

@@ -37,13 +37,18 @@ const KEY = 'wrizo-tutor-disclosure-seen-version';
 // only `KEY`.
 const LEGACY_BOOLEAN_KEY = 'wrizo-tutor-disclosure-seen';
 
-// Bump this — and add a new deskLexicon body id (`tutorDisclosureBodyV3`,
-// etc.), per `tutorDisclosureBodyV2`'s own precedent — the day the
+// Bump this — and add a new deskLexicon body id (`tutorDisclosureBodyV4`,
+// etc.), per `tutorDisclosureBodyV3`'s own precedent — the day the
 // disclosure's wording next changes. Nothing else in this file needs to
 // change: every existing device's stored seenVersion is already less than
 // whatever the new constant becomes, so the "show once more" behavior
 // falls out of the comparison for free.
-export const CURRENT_DISCLOSURE_VERSION = 2;
+// TU5 S6 — bumped 2 -> 3 the day the Bible joined the travelers: v3's body
+// (deskLexicon's `tutorDisclosureBodyV3`) names the writer's saved Bible facts
+// alongside the question and the page delta. Every device with seenVersion < 3
+// sees v3 exactly once — a v2-acknowledged device included — with no bespoke
+// branch (the integer compare in `load()`/needsShowing below does it all).
+export const CURRENT_DISCLOSURE_VERSION = 3;
 
 function load(): number {
   try {
