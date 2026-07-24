@@ -5746,6 +5746,45 @@ outlive a session lives here, not in chat.
     quoted), live successors (S2's gen-4 asserting `['Pages','Plan →']`) — in
     the SAME commits as the removals. **Build + merge in progress this
     session (E1.1 pattern); SHA reported on close.**
+    **MERGED — 2026-07-24, merge commit `4777d19`** (build `1fdd6f4` on
+    `cd4-two-retirements`), built + merged in this session per the E1.1 pattern,
+    guard-rail (`git rev-parse --show-toplevel`) confirmed before every commit.
+    TRUE 3-way `--no-ff` onto `main` @ `d9f0800`; docs survived (zero deleted);
+    `tsc` ×2 EXIT 0; `build:web` clean. Zero schema, zero server files, zero deps.
+    **S1 — Fable's ruling amended the brief (drift I caught pre-build):** removing
+    the Board's Done would have STRANDED framed system boards (Shelf/Trash/Journal
+    ≥1100px) — PAGE → was `!isSystemBoard`, the rail is null when framed, the crumb
+    inert. Fable ruled (relayed by Nick): system boards mount the SAME PAGE → door
+    (its existing unpaired branch → `backTo`, which for a system board is already
+    `'/'` — the cold-load fallback lands at Arrival, itself a page, HB1); no new
+    door/relabel/crumb change; the label stays exactly "Page →". Built exactly so.
+    **S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) retired** from
+    PageEditor (prose framed + legacy) and ScriptEditor (script): prose bar now
+    `['Pages','Plan →']`, script `['Pages']`. The beats system is dormant-not-dead
+    (route + StructureBoard + `beat_id`/`story_plan_id` untouched, grandfathered).
+    **Park cycles (immutability codicil — RECORD names byte-frozen, PROBEs follow
+    reality, all in THIS commit with the removals):** b2.mjs (Shelf-Board Done →
+    PAGE → door + door→'/'); cd1.mjs (gen-3 prose bar + script check → CD4 gen-4,
+    prior gens parked verbatim, three parked probes updated); **th1.mjs** (its
+    "Plan toggle reads exactly 'Plan'" check read the retired `.sprint-toggle-btn:
+    nth-child(2)` — CAUGHT BY THE FULL-SUITE RE-RUN, not the grep sweep; parked
+    verbatim, successor verifies the lexicon "plan" term directly); hb1.mjs/bm1.mjs
+    (cross-reference disclosures only — their "Board keeps Done" mentions are in
+    still-passing checks). New `cd4.mjs` (purely additive, PASS 20 both settings).
+    **Full historic suite read to completion in the main loop: 37/38 deterministic
+    GREEN** — the only failure the known `fx5` per-line-engage-motion transient
+    flake (item 48 deflake set; confirmed PASS 2/2 in isolation, unrelated to CD4).
+    **DISCLOSED RESIDUALS for Fable's post-merge review:** (a) StructureBoard stays
+    reachable via its secondary access — ProjectHome "View board" / BeatWizard /
+    QuickSprint's toggle — left dormant-not-dead (the StructureWizard precedent the
+    brief cites); full unreachability would retire those too, flagged not assumed.
+    (b) Two literal "Done" labels remain OUT of scope — the card-edit popup's close
+    button (fx4-proven) and Spread's select-mode toggle — transient
+    action-completion affordances, not the Board's exit Done; retiring them needs
+    replacement labels (a design call), flagged for Fable's DoD ruling.
+    **DEPLOY HELD — CD4 rides the batched word with FX11 + M3** (Nick's word).
+    **CLOSE-PENDING** Fable's post-merge review + Nick's device sitting (his hand
+    walks all three system-board doors, per Fable's ruling). Then item 59 closes.
 58. **M3 — the Rhizome Roams.** **BRIEF COMMITTED — 2026-07-24,
     Fable-authored** (`docs/wrizo-alpha/m3-rhizome-roams-brief.md`).
     **ZERO SCHEMA, zero server files, zero new deps; merge pre-authorized as
