@@ -834,6 +834,34 @@ export function BoardEditor({ id }: { id: string }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // FX13 S2 (the board fits the room) — the WRAP's height is the DeskFrame
+  // stage's ACTUAL available height, not a magic viewport ratio. The old
+  // `maxHeight: 78vh` was the width-only-geometry law showing through: a fixed
+  // fraction of the viewport that ignored the room the flex stage
+  // (`.desk-frame-stage`, `flex:1; min-height:0`) actually leaves after the
+  // board's own chrome, so on a short viewport (the 1366x768 leg) the wrap
+  // overflowed the stage (measured: wrap bottom past the stage bottom below
+  // ~700px) and left a page overflow at 768. Filling to the stage's own bottom
+  // keeps every piece of the board's chrome in the room and reserves scrolling
+  // for the CONTENT (the canvas) alone — the height floor the law was missing.
+  // Legacy (<1100, no DeskFrame): stage is null, the 78vh fallback is kept, so
+  // that path stays byte-identical.
+  const [availHeightPx, setAvailHeightPx] = useState<number | null>(null);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const stage = el.closest('.desk-frame-stage');
+    if (!stage) { setAvailHeightPx(null); return; }
+    const measure = () => {
+      const avail = Math.round(stage.getBoundingClientRect().bottom - el.getBoundingClientRect().top - 2);
+      setAvailHeightPx(avail > 160 ? avail : null);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(stage);
+    window.addEventListener('resize', measure);
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure); };
+  }, []);
   // FX4 S4 — the effective page width every normalized box coordinate
   // converts against: the persisted override once the writer has dragged
   // the canvas wider/narrower, else the wrap's own natural (auto-fit)
@@ -1649,7 +1677,7 @@ export function BoardEditor({ id }: { id: string }) {
 
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
-      <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: '78vh', border: '1px solid var(--ink-border)' }}>
+      <div ref={wrapRef} className="board-canvas-wrap" style={{ overflow: 'auto', maxHeight: availHeightPx != null ? availHeightPx : '78vh', border: '1px solid var(--ink-border)' }}>
         <div
           ref={canvasRef}
           className="board-canvas"
