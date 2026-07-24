@@ -5642,6 +5642,39 @@ outlive a session lives here, not in chat.
     **ITEM 56 NOW CLOSES ON NICK'S OWN DEVICE SITTING ALONE** — his eye on
     the Bible section (the last remaining condition; every other gate —
     schema word, merge, deploy, the server round-trip proof — is met).
+57. **FX11 — the Board's Hands.** **BRIEF COMMITTED — 2026-07-24,
+    Fable-authored** (`docs/wrizo-alpha/fx11-boards-hands-brief.md`, at
+    `e6431ac`). **A fix ticket — ZERO SCHEMA, zero server files, zero new
+    deps; merge pre-authorized as zero-schema, Fable reviews post-merge,
+    deploy is Nick's separate word.** One ticket retires FIVE accrued
+    board-hand debts, cargo enumerated by source: **(S1)** the `isDragging`
+    cleanup leak — FX8 review A1: the delegated pointer effect (deps
+    `[pageWidthPx]`) tears down its listeners without clearing `isDragging`,
+    so a viewport resize mid-drag leaves `data-dragging='true'` and every
+    face stuck `cursor:grabbing`; the fix clears the flag in the cleanup.
+    **(S2)** resize-then-can't-move — Nick's device glitch: reproduce under
+    trusted pointer FIRST, NAME the root cause in the commit, fix at that
+    root, and diagnose the kinship with S1 explicitly (related-or-distinct
+    until shown). **(S3)** lane titles ride the export — E1.1 review advisory
+    2, ruled a RIDER to FX11 (BM1's writer-authored lane titles are real
+    writer words; E1.1 skipped `board-meta` by name): `boardBody()` emits a
+    `Lanes:` line when named lanes exist, and the now-stale "zero writer
+    text" comment is corrected in the same touch. **(S4)** the rootless-cycle
+    guard, both layers — BM1 review advisory 1: `withParent` walks the
+    ancestor chain and refuses a cycle (clean no-op, boxes unchanged);
+    `buildNodes` promotes orphan-cycle members to roots instead of dropping
+    them (the never-silently-missing law for projections, defending
+    already-cyclic sync data from an older client). **(S5)** FX10's missing
+    leg — FX10 review advisory 2: `fx10.mjs`'s S4 scrollbar-flush /
+    text-measure asserts gain the 2200 width. **Sequencing: FX11 builds
+    first; M3 (the Rhizome Roams) builds only after FX11's post-merge
+    review lands** — both zero-schema, both before the Aug 1 freeze.
+    **Build starting — 2026-07-24, on `fx11-boards-hands` off `main` @
+    `4839858`, own worktree, guard-rail (`git rev-parse --show-toplevel`)
+    before every commit; ledger edits on `main` only.** Trusted CDP pointer
+    for every gesture claim (S1/S2); both HARNESS_PARKED settings; `tsc` x2
+    + `build:web`; report = push. A verify-before-build drift-check against
+    live code returned ZERO drift across all five slices.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
