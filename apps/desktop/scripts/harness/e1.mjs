@@ -104,6 +104,11 @@ const CORPUS_ENTRIES = [
       // S4 (E1.1) — a fabricated UNKNOWN box kind (a future card species this
       // exporter predates): must export the named placeholder, never vanish.
       { id: 'cb-unknown', kind: 'sculpture', x: 0.1, y: 0.7, w: 0.3, h: 0.1, z: 5, text: 'a future card species' },
+      // FX11 S3 (E1.1 review advisory 2) — board-meta with writer-authored lane
+      // titles (BM1). Two named + one EMPTY-named (must be filtered from the
+      // exported "Lanes:" line): proves both that the titles ride the export and
+      // that the empty one is dropped (no phantom hinge).
+      { id: 'cb-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 6, lanes: [{ id: 'l1', title: 'Act One' }, { id: 'l-empty', title: '' }, { id: 'l3', title: 'Act Two' }] },
     ],
     createdAt: '2026-01-04T00:00:00.000Z', updatedAt: NOW,
   },
@@ -419,6 +424,15 @@ await withHarness(async (app) => {
   // through deskLexicon), present exactly once.
   ok('S3/E1.1 OFFLINE: the honest "## From the Trash" marker is present exactly once as exported body text (deliberately NOT routed through deskLexicon)',
     (everythingText.match(/^## From the Trash$/gm) || []).length === 1, JSON.stringify({ trashIdx }));
+  // FX11 S3 (E1.1 review advisory 2) — writer-authored lane titles ride the
+  // export. The corpus board carries board-meta lanes [Act One, (empty), Act
+  // Two]; the export emits ONE "Lanes:" line, the named titles in lane order,
+  // the empty-named lane filtered — exported BODY text, deliberately OUTSIDE
+  // deskLexicon (the ratified E1 boundary, same as the card headers).
+  ok('FX11 S3 OFFLINE: a board with named lanes shows both titles in "Everything" as one "Lanes:" line in lane order, the empty-named lane filtered',
+    everythingText.includes('Lanes: Act One, Act Two'), JSON.stringify({ has: everythingText.includes('Lanes: Act One, Act Two'), noEmpty: !everythingText.includes('Lanes: Act One, , Act Two') }));
+  ok('FX11 S3 OFFLINE: exactly ONE "Lanes:" line in the whole export — boards without named lanes (and the excluded system board) emit none (no empty hinge)',
+    (everythingText.match(/^Lanes: /gm) || []).length === 1, JSON.stringify({ laneLines: (everythingText.match(/^Lanes: /gm) || []).length }));
   // S3/E1.1 — live successor to the parked trash-EXCLUSION assertion (below):
   // the soft-deleted page RIDES ALONG under the marker and is ABSENT above it.
   ok('S3/E1.1 OFFLINE: the soft-deleted page RIDES ALONG — its title "Deleted Page" and its words appear UNDER the "## From the Trash" marked section, and NEVER in the live section above it (read-only: still soft-deleted, never resurrected)',
