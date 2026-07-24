@@ -88,10 +88,21 @@ function boardBody(entry: JournalEntry): string {
   //   • 'connection' — a link BETWEEN two cards (connA/connB), not a card; it
   //     holds none of the writer's own words.
   //   • 'board-meta' — the board's own structural metadata (canvas size,
-  //     system kind, footer toggle); zero writer text, at most one per board.
+  //     system kind, footer toggle). FX11 S3 (E1.1 review advisory 2): its
+  //     `lanes[]` DO carry writer-authored titles (BM1) — real writer words —
+  //     which now ride the export as the `Lanes:` header below, in lane order,
+  //     empty-named lanes filtered. The box itself stays skipped as a card (at
+  //     most one per board; its remaining fields are not writer text).
   const parts: string[] = [];
+  // FX11 S3 — lane titles ride the export. Minimal form: one `Lanes:` line per
+  // board block, the named lanes in their declared order; a board with no named
+  // lanes emits nothing (no empty hinge). Exported BODY text, deliberately
+  // OUTSIDE deskLexicon (the ratified E1 boundary — same as the card headers).
+  const meta = (entry.boxes ?? []).find((b) => b.kind === 'board-meta');
+  const laneTitles = (meta?.lanes ?? []).map((l) => l.title?.trim()).filter((t): t is string => !!t);
+  const laneHeader = laneTitles.length > 0 ? `Lanes: ${laneTitles.join(', ')}\n\n` : '';
   for (const box of entry.boxes ?? []) {
-    if (box.kind === 'connection' || box.kind === 'board-meta') continue; // no writer text — skipped by name
+    if (box.kind === 'connection' || box.kind === 'board-meta') continue; // not cards — skipped by name (lane titles ride the header above)
     if (box.kind === 'text') {
       const title = firstLine(box.text ?? '');
       parts.push(`## ${title}\n\n${box.text ?? ''}`);
@@ -107,8 +118,8 @@ function boardBody(entry: JournalEntry): string {
       parts.push(UNKNOWN_KIND_PLACEHOLDER);
     }
   }
-  if (parts.length === 0) return '(No cards on this board.)';
-  return parts.join('\n\n---\n\n');
+  if (parts.length === 0) return laneHeader + '(No cards on this board.)';
+  return laneHeader + parts.join('\n\n---\n\n');
 }
 
 // "Copy Formatted"'s own payload, reused: the page's text with its
