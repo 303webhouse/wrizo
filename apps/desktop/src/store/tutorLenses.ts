@@ -6,34 +6,26 @@
 // stored (S1's own law).
 import type { JournalEntry, Project } from '../types';
 import { describePageHome } from './pageHome';
-import { getBoardsPinning, getStoryPlanByProjectId, getJournalEntries } from './persistence';
-import { getFramework } from './frameworks';
+import { getBoardsPinning, getJournalEntries } from './persistence';
 
 // --- Structure --------------------------------------------------------
-// "Where this page sits: its home, its memberships (getBoardsPinning), its
-// linked beat if any. Read-only, M1's coverage-never-verdicts" — every
-// fact here is read straight off existing helpers (describePageHome,
-// getBoardsPinning, the StoryPlan/Framework pair already used by the Plan
-// surface), never a verdict on whether the page's placement is "good."
+// "Where this page sits: its home and its memberships (getBoardsPinning).
+// Read-only, M1's coverage-never-verdicts" — every fact here is read straight
+// off existing helpers (describePageHome, getBoardsPinning), never a verdict on
+// whether the page's placement is "good."
+// FX12 S2 — the linked-beat field is retired: the beats system is dormant (CD4),
+// so the Structure lens no longer reads or speaks beat language (the StoryPlan/
+// Framework read + the entry.beatId lookup are gone). The Thread arc gives
+// Structure its true linked-language later.
 export interface StructureFacts {
   homeLabel: string;
   memberships: string[];
-  linkedBeatName: string | null;
 }
 
 export function computeStructureFacts(entry: JournalEntry, project: Project | null): StructureFacts {
   const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(entry, project, pinnedBoardTitles);
-
-  let linkedBeatName: string | null = null;
-  if (entry.beatId && project) {
-    const plan = getStoryPlanByProjectId(project.id);
-    const framework = plan ? getFramework(plan.frameworkId) : null;
-    const beat = framework?.beats.find(b => b.id === entry.beatId);
-    if (beat) linkedBeatName = beat.name;
-  }
-
-  return { homeLabel, memberships, linkedBeatName };
+  return { homeLabel, memberships };
 }
 
 // --- Fragments ----------------------------------------------------------

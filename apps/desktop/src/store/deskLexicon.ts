@@ -126,7 +126,6 @@ export type DeskTermId =
   | 'tutorDockClose' | 'tutorDockReopen'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
-  | 'tutorStructureNoBeat'
   | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
   // TU5 S3 — the book's Bible (L4): section header, a one-line note, empty
   // state, the add-input placeholder + button, and the per-fact
@@ -550,7 +549,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorLensConsistencyEmpty: 'No repeated or near-duplicate names found yet.',
   tutorLensFragmentsEmpty: 'Nothing recent or shared-tagged to resurface yet.',
   tutorLensFragmentsNote: 'Recency and shared tags only — nothing else.',
-  tutorStructureNoBeat: 'Not linked to a beat.',
+  // FX12 S2 — tutorStructureNoBeat ("Not linked to a beat.") retired: the beats system
+  // is dormant (CD4); the Structure lens no longer speaks that dead language.
   tutorNudgesTitle: 'Waiting for you',
   tutorNudgesEmpty: 'Nothing waiting right now.',
   tutorBibleTitle: "The book's Bible",
