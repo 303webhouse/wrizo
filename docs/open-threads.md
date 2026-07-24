@@ -5669,12 +5669,25 @@ outlive a session lives here, not in chat.
     text-measure asserts gain the 2200 width. **Sequencing: FX11 builds
     first; M3 (the Rhizome Roams) builds only after FX11's post-merge
     review lands** — both zero-schema, both before the Aug 1 freeze.
-    **Build starting — 2026-07-24, on `fx11-boards-hands` off `main` @
-    `4839858`, own worktree, guard-rail (`git rev-parse --show-toplevel`)
-    before every commit; ledger edits on `main` only.** Trusted CDP pointer
-    for every gesture claim (S1/S2); both HARNESS_PARKED settings; `tsc` x2
-    + `build:web`; report = push. A verify-before-build drift-check against
-    live code returned ZERO drift across all five slices.
+    **BUILT + PUSHED — 2026-07-24, on `fx11-boards-hands`** (off `main` @
+    `4839858`, own worktree, guard-rail before every commit; ledger edits on
+    `main` only), all six commits on `origin/fx11-boards-hands`. A verify-
+    before-build drift-check returned ZERO drift across all five slices.
+    S1/S3/S4/S5 as briefed; **S2 shipped as a regression GUARD + documented
+    investigation on Nick's own word** — the glitch could not be reproduced
+    under trusted MOUSE pointer across every condition (grow both axes, shrink,
+    an immediate move, a viewport-resize between), root-caused PROVABLY
+    DISTINCT from S1 (a card resize never changes `pageWidthPx`, so the pointer
+    effect never re-runs on a card resize), the sole residual the S-Pen
+    long-press path for Nick's device sitting; no blind patch. `tsc` x2 +
+    `build:web` clean. Harnesses: `fx11.mjs` PASS 19 both HARNESS_PARKED
+    settings (S1 fix, the S2 DoD guard, S4 both layers); `e1.mjs` 36→38 (S3
+    lane titles); `fx10.mjs` 119→122 (S5's 2200 leg). Full historic suite
+    re-run: 36/37 deterministic GREEN, only the known pre-existing `fx5`
+    timing flake (a typing-scroll check, unrelated to FX11; passes 2/3).
+    **Merge rides the zero-schema pre-authorization; Fable reviews post-merge;
+    deploy is Nick's separate word. M3 (item 58) unblocks when FX11's
+    post-merge review lands.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
