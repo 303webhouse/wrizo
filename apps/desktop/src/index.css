@@ -168,7 +168,12 @@
      mechanical half — the theme ARC itself is parked, this ticket only
      cuts the seam). Orange/brass lane law holds: this is warm brown, never
      orange, at rest — the flash (below) is the only evental exception. */
-  --rhizome-ink: #4A3A28;
+  /* M3 S1 (Nick's device verdict: too dark) — warmed from #4A3A28 (~1.5:1)
+     to #7A6242 (~2.9:1 against the #1F1A16 ground): a visible ambient
+     presence, still far below the paper's voice. Bounded delta — Nick's eye
+     at the sitting confirms or nudges the final value; the token seam itself
+     is unchanged (the exact purpose M2 cut it for). */
+  --rhizome-ink: #7A6242;
 
   /* TH1 — the four font slots (canon §4), the theme-facing layer. Material
      names below (--font-display/--font-ui/--font-prose) are the

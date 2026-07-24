@@ -290,6 +290,169 @@ export function growMany(state: RhizomeState, rng: () => number, geo: RhizomeGeo
   return s;
 }
 
+// ---- M3: the roam (S2) + essay-length saturation (S3) --------------------
+// M3 supersedes M2's single-origin, event-decay-band driver. The field already
+// spans the whole ground; M2's growth was "too confined" (one origin near the
+// paper) and "too dark/sparse" for an essay. M3: SEVEN blue-noise origins
+// scattered across the ground (S2), and coverage driven by TOTAL word count
+// through a saturating exponential (S3) instead of the decay bands. growOne/
+// growMany/bandRate above are UNTOUCHED (the M2 engine, still exercised by
+// m2.mjs's pure-engine determinism checks); only the live COMPONENT switches
+// drivers, which is why m2.mjs's component-observing checks (mount-empty,
+// origin-at-paper-bottom) are the ones M3's park sweep supersedes.
+
+export const ORIGIN_COUNT = 7;      // M3 S2 — bounded delta (Nick's eye at the sitting)
+export const ORIGIN_CANDIDATES = 10; // best-candidate samples per placed origin
+export const SAT_K = 834;           // M3 S3 — saturation constant: 95% of CAP at ~2500 words (2500/ln 20 ≈ 834.4). Bounded delta — the sitting's one knob.
+
+// Euclidean distance from a point to an axis-aligned rect (0 if inside).
+function distToRect(x: number, y: number, r: RhizomeRect): number {
+  const dx = Math.max(r.left - x, 0, x - r.right);
+  const dy = Math.max(r.top - y, 0, y - r.bottom);
+  return Math.hypot(dx, dy);
+}
+
+// Project a point that lands INSIDE the paper out to just past its nearest
+// edge. An origin must never sit in the writer's words: a shoot rooted inside
+// the paper would emit start points inside it (segmentTouchesRect skips the
+// tip by design), a violation the wall can't catch. On a tight ground (the
+// paper filling most of a narrow stage) best-candidate can occasionally pick an
+// interior point; this guarantees it never survives. A point already outside is
+// returned unchanged.
+function outsidePaper(x: number, y: number, r: RhizomeRect, margin: number): RhizomePoint {
+  if (!inRect(x, y, r)) return { x, y };
+  const dL = x - r.left, dR = r.right - x, dT = y - r.top, dB = r.bottom - y;
+  const m = Math.min(dL, dR, dT, dB);
+  if (m === dL) return { x: r.left - margin, y };
+  if (m === dR) return { x: r.right + margin, y };
+  if (m === dT) return { x, y: r.top - margin };
+  return { x, y: r.bottom + margin };
+}
+
+// M3 S2 — SEVEN seeded origins, blue-noise via best-candidate sampling. Origin
+// ONE is the paper's bottom-center (continuity with every ground grown so far —
+// the M2 origin). Each of the other six is the farthest of ORIGIN_CANDIDATES
+// random candidates from every already-placed origin AND the paper rect — the
+// one distribution that is organic AND evenly spread at once (grids are the
+// State; a rhizome on graph paper apologizes). Every draw is from the entry-id
+// PRNG, so the same page scatters the same way. Candidates are rejected inside
+// the paper (an origin never sits in the writer's words); the growth wall
+// (segmentTouchesRect) is unchanged and re-proven at full scale by m3.mjs.
+export function seedOrigins(rng: () => number, geo: RhizomeGeometry, count: number = ORIGIN_COUNT): RhizomePoint[] {
+  const origins: RhizomePoint[] = [{
+    x: (geo.paper.left + geo.paper.right) / 2,
+    y: geo.paper.bottom,
+  }];
+  const loX = STAGE_PAD, hiX = geo.width - STAGE_PAD;
+  const loY = STAGE_PAD, hiY = geo.height - STAGE_PAD;
+  while (origins.length < count) {
+    let best: RhizomePoint = { x: (loX + hiX) / 2, y: (loY + hiY) / 2 };
+    let bestScore = -1;
+    for (let c = 0; c < ORIGIN_CANDIDATES; c++) {
+      let x = loX + rng() * (hiX - loX);
+      let y = loY + rng() * (hiY - loY);
+      // Prefer a candidate strictly outside the paper; a few retries suffice
+      // (the page never fills the whole ground). An in-paper candidate scores
+      // 0 anyway and loses, so this is belt-and-suspenders, not correctness.
+      for (let tries = 0; tries < 6 && inRect(x, y, geo.paper); tries++) {
+        x = loX + rng() * (hiX - loX);
+        y = loY + rng() * (hiY - loY);
+      }
+      let score = distToRect(x, y, geo.paper);
+      for (const o of origins) score = Math.min(score, Math.hypot(x - o.x, y - o.y));
+      if (score > bestScore) { bestScore = score; best = { x, y }; }
+    }
+    // Guarantee the origin is outside the paper (the tight-ground case), then
+    // keep it inside the stage — a shoot never roots in the writer's words.
+    const nudged = outsidePaper(best.x, best.y, geo.paper, STAGE_PAD);
+    origins.push(clampToStage(nudged, geo));
+  }
+  return origins;
+}
+
+// M3 S3 — the target segment count for a TOTAL word count: the saturating
+// exponential CAP·(1 − e^(−words/K)). Fast when young, asymptotic when mature
+// — the organic law, so "stable thereafter" is a property, not a promise.
+// Monotone in words; saturationTarget(2500) ≥ 0.95·CAP; ≤ CAP for any input.
+export function saturationTarget(words: number): number {
+  const w = Math.max(0, words);
+  return Math.round(CAP_SEGMENTS * (1 - Math.exp(-w / SAT_K)));
+}
+
+// Add exactly ONE segment. The first `origins.length` segments each ROOT a
+// distinct origin shoot (the blue-noise scatter); after all origins are rooted,
+// growth branches (~BRANCH_CHANCE) or extends a live shoot exactly as M2's
+// growOne does. Returns the SAME state reference on an honest skip (the
+// resolveSegment paper-corner case) so growTo can retry with fresh draws.
+function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[]): RhizomeState {
+  const rootingPhase = state.shoots.length < origins.length;
+  const branch = !rootingPhase && state.shoots.length < CAP_SHOOTS && rng() < BRANCH_CHANCE;
+
+  let tip: RhizomePoint;
+  let angle: number;
+  let shootId: number;
+  let nextShootId = state.nextShootId;
+  let newShoot: ShootTip | null = null;
+
+  if (rootingPhase) {
+    tip = origins[state.shoots.length];
+    angle = rng() * 360;
+    shootId = nextShootId++;
+  } else if (branch) {
+    const from = state.segments[Math.floor(rng() * state.segments.length)];
+    tip = { x: from.x2, y: from.y2 };
+    angle = rng() * 360;
+    shootId = nextShootId++;
+  } else {
+    const sh = state.shoots[Math.floor(rng() * state.shoots.length)];
+    tip = { x: sh.x, y: sh.y };
+    angle = sh.angle + (rng() * 2 - 1) * DRIFT_DEG;
+    shootId = sh.id;
+  }
+
+  const len = SEG_MIN + rng() * (SEG_MAX - SEG_MIN);
+  const resolved = resolveSegment(tip, angle, len, geo);
+  if (!resolved) return state; // honest skip
+
+  const segment: RhizomeSegment = {
+    id: state.nextSegmentId, shootId,
+    x1: tip.x, y1: tip.y, x2: resolved.point.x, y2: resolved.point.y,
+  };
+  if (rootingPhase || branch) {
+    newShoot = { id: shootId, x: resolved.point.x, y: resolved.point.y, angle: resolved.angle };
+  }
+  const shoots = newShoot
+    ? [...state.shoots, newShoot]
+    : state.shoots.map(sh => (sh.id === shootId ? { ...sh, x: resolved.point.x, y: resolved.point.y, angle: resolved.angle } : sh));
+
+  return {
+    segments: [...state.segments, segment],
+    shoots,
+    nextSegmentId: state.nextSegmentId + 1,
+    nextShootId,
+    eventIndex: state.eventIndex + 1,
+  };
+}
+
+// M3 S2/S3 — grow the field until it holds `target` segments (hard-capped at
+// CAP_SEGMENTS), forward-only. The caller passes target = saturationTarget(total
+// words), so coverage tracks the writing and this is monotone in words: a lower
+// target (words deleted) is a no-op, never a shrink — the M2 forward-only law.
+// Unit-agnostic by construction: one segment at a time to target, so typing
+// word-by-word and pasting an essay reach the byte-identical shape.
+export function growTo(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], target: number): RhizomeState {
+  const cap = Math.min(Math.max(0, Math.round(target)), CAP_SEGMENTS);
+  let s = state;
+  let skips = 0;
+  while (s.segments.length < cap) {
+    const next = growSegment(s, rng, geo, origins);
+    if (next === s) { if (++skips > 200) break; continue; } // pinned — stop rather than spin
+    skips = 0;
+    s = next;
+  }
+  return s;
+}
+
 // S4 — the milestone burst: +COUNT segments, extending random LIVE shoots
 // only (never branching new ones — "staggered across live shoots," the
 // brief's own words), still honoring the hard 600-segment cap, bypassing the
@@ -331,5 +494,8 @@ if (typeof window !== 'undefined') {
   (window as unknown as { __wrizoRhizomeEngine?: unknown }).__wrizoRhizomeEngine = {
     mulberry32, hashSeed, createRhizomeState, growOne, growMany, burstSegments,
     CAP_SEGMENTS, CAP_SHOOTS, BAND_1, BAND_2,
+    // M3 — the roam + saturation, exposed so m3.mjs proves them against the
+    // real algorithm (the same seam discipline as above).
+    seedOrigins, saturationTarget, growTo, SAT_K, ORIGIN_COUNT,
   };
 }
