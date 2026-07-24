@@ -4464,6 +4464,35 @@ outlive a session lives here, not in chat.
     the review raised: "sweep all parked entries" must mean
     full-lineage-to-origin, not just since a ticket's own base commit.
     Folds into this pass's own scheduling — Nick's call on timing.
+    **BRIEFED + BUILD STARTING — 2026-07-24 (chat 3), as DF1 — the
+    Deflake Pass** (`docs/wrizo-alpha/df1-deflake-brief.md`,
+    Fable-authored, from this item + the review riders). **HARNESS-ONLY**
+    (zero `src/`/schema/server/deps); if a flake's root cause is a real
+    product bug, STOP that slice and report — product fixes do not ride a
+    deflake ticket. Founded off `main` (M3 `7ebe703` + CD4 already landed;
+    disjoint from everything in flight), own worktree, guard-rail before
+    every commit, ledger on `main` only; the brief-commit + this ledger
+    entry go straight to `main` via the fast-forward records push (the
+    S0-push law's own provision — chat 1's lane is for merges, untouched).
+    Merge rides the zero-schema pre-auth through chat 1's lane; Fable
+    reviews post-merge; harness files ship nothing (no deploy). Slices:
+    **S1** `fx5` per-line-engage/scrollTop flake root-caused + the
+    isolation-rerun crutch retired (wait-for-condition on the observable,
+    never a longer sleep; the assertion must not weaken — else a proper A4
+    park); **S2** `th2`+`j4` verified mid-suite ×5 (fix per S1 or record
+    CLEARED with evidence — the list shrinks only on evidence); **S3** `e1`
+    anchor hardening (parser-side ONLY — the exported bytes never change —
+    corpus-aware count/split with the anchors as cross-checks + one hostile
+    `# `/marker fixture); **S4** the parked-entry history audit (a reusable
+    `scripts/audit-parked-records.mjs` + `docs/wrizo-alpha/parked-records-
+    audit-2026-07.md`, corroborating — not rediscovering — B1's `9ce8f6b`
+    pre-law bump). **DoD is empirical: THREE consecutive full-suite runs,
+    both settings, deterministic, zero isolation reruns** — the crutch
+    formally retired for every file cleared, the known-flake list updated
+    to the truth, the audit report on disk. After DF1, a red suite means
+    something is wrong — nothing else. Drift-check: ZERO structural drift;
+    the only delta is the suite count — **39 files now** (`cd4.mjs` landed
+    since the brief's "38"), the DoD reads "the full suite" against that.
 49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
     finding 1 (Nick's second sitting — the Journal's "New Page" routing
@@ -5704,8 +5733,12 @@ outlive a session lives here, not in chat.
     up green (`e1.mjs` 38/41, the S3 lane titles; `fx10.mjs` 122, the S5
     2200 leg). Merge commit **`7f8e943`**. Zero schema, zero server files,
     zero new deps.
-    **DEPLOY HELD — FX11 merges and deploys together with M3** (Nick's word),
-    NOT with this merge.
+    **DEPLOYED — 2026-07-24, at `375c10f`, on Nick's one batched word ("Deploy
+    375c10f").** The whole batch shipped together: FX11 + CD4 + CD4.1 + M3 + all
+    docs records (manifest `57f56d5..375c10f`, nothing unnamed). `railway up --ci`
+    to writer-studio-app / production; **verified live** — HTTP 200, the new build
+    (`index-Bvs9khZ7.js` / `index-DFzjCY9E.css`) serving, server healthy (401 on
+    `/auth/me`). Client-only batch, zero server/schema change.
     **CLOSE-PENDING Nick's own device sitting**: his eye on the five retired
     debts, AND — the one thing no harness can reach — the S2 **S-Pen
     resize-then-move attempt on his actual device** (the mouse/CDP trusted-
@@ -5782,7 +5815,7 @@ outlive a session lives here, not in chat.
     button (fx4-proven) and Spread's select-mode toggle — transient
     action-completion affordances, not the Board's exit Done; retiring them needs
     replacement labels (a design call), flagged for Fable's DoD ruling.
-    **DEPLOY HELD — CD4 rides the batched word with FX11 + M3** (Nick's word).
+    **DEPLOYED — 2026-07-24 (`375c10f`), with the batch** (FX11 + CD4 + CD4.1 + M3 + docs) — see item 57's deploy record. Verified live.
     **REVIEW LANDED GREEN — 2026-07-24** (`docs/wrizo-alpha/cd4-review-fable.md`):
     both retirements verified at their sources, the ruling implemented exactly as
     amended, the four-generation `cd1.mjs` park chain and the three lawful park
@@ -5829,8 +5862,8 @@ outlive a session lives here, not in chat.
     **Full historic suite re-run to completion in the main loop: 38/38
     deterministic GREEN** (zero flakes this run). cd4.mjs 27 both settings; fx4.mjs
     49 / PARKED 3 (the CD4.1 pok re-verifies).
-    **DEPLOY HELD — CD4.1 rides the batched word with FX11 + CD4 + M3** (Nick's
-    word). **CLOSE-PENDING Nick's sitting** — his eye on the two "Close" words
+    **DEPLOYED — 2026-07-24 (`375c10f`), with the batch** — see item 57's deploy
+    record. Verified live. **CLOSE-PENDING Nick's sitting** — his eye on the two "Close" words
     (one string each if either reads wrong). **This also satisfies CD4's (item 59)
     remaining gate: item 59 now close-pends ONLY Nick's device sitting.**
     **REVIEW LANDED GREEN — 2026-07-24** (`docs/wrizo-alpha/cd4-1-review-fable.md`):
@@ -5928,8 +5961,8 @@ outlive a session lives here, not in chat.
     avoidance verdict real against the paper's settled place). **Item 60 STAYS
     OPEN** for the revisit-determinism (revisit-raw-coordinate) question proper —
     the re-fit addresses only the boot-settle manifestation of item 60's root.
-    **DEPLOY HELD — M3 rides the batched word with FX11 + CD4 + CD4.1 + docs.**
-    Merge rides the zero-schema pre-authorization; Fable reviews post-merge.
+    **DEPLOYED — 2026-07-24 (`375c10f`), with the batch** — see item 57's deploy
+    record. Verified live. Merge rode the zero-schema pre-authorization; Fable reviewed post-merge (GREEN).
     **CLOSE-PENDING** Fable's post-merge review + Nick's device sitting (his eye
     on the ground roaming warm to the edges, an essay's worth of fill, never
     touching his words). Then item 58 closes.
