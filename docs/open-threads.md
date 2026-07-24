@@ -5933,6 +5933,21 @@ outlive a session lives here, not in chat.
     **CLOSE-PENDING** Fable's post-merge review + Nick's device sitting (his eye
     on the ground roaming warm to the edges, an essay's worth of fill, never
     touching his words). Then item 58 closes.
+    **REVIEW LANDED GREEN — 2026-07-24** (`docs/wrizo-alpha/m3-review-fable.md`):
+    the three device verdicts real (ink `#7A6242` with contrast arithmetic; seven
+    blue-noise origins, paper double-walled, 40-seed sweep zero violations at full
+    saturation; `SAT_K=834` curve — coverage/monotonicity/bounded-tail proven); the
+    geometry-drift RE-FIT ratified IN FULL ("the mandate holding, the implementation
+    better than the flag suggested" — the ground the deterministic image of (seed,
+    geometry, total words), forward-only preserved by the high-water mechanism); the
+    park sweep "lighter than briefed and correct" (only four component-observing
+    checks falsified, all quoted verbatim). Non-blocking advisories: (1) the four m2
+    parks use the comment-record form (th1 precedent, lawful) — migrate to the
+    pok-record form at next touch (m2 has a parked block); (2) `growTo`'s 200-skip
+    bailout (liveness over completeness) named for a future "ground came up short"
+    report; (3) item 60's scope refined below. **Item 58 close-pends Nick's sitting
+    alone; with this review the whole batch is merged AND reviewed — the deploy word
+    is unblocked.**
 60. **The Rhizome revisit-geometry defect** (lifted from `m2.mjs`'s Section A
     comment per the M2 review's standing ask + M3 S0 — its RECORD is M3's
     scope, its FIX is not). On revisiting the SAME entry within a session the
@@ -5949,6 +5964,14 @@ outlive a session lives here, not in chat.
     surfaces so the next session finds it OUTSIDE a code comment. **Fix
     deferred — not any ticket's scope until claimed; M3 only lifted the
     record.**
+    **REFINED by the M3 review (advisory 3, 2026-07-24):** the boot-settle
+    manifestation is now closed at its root by M3's refit (`syncField` resets the
+    PRNG to the entry's seed and regrows deterministically on a >1px geometry
+    change). What remains is the ABSOLUTE-OFFSET question proper — live determinism
+    is proven under normalization to the first segment's start; whether that
+    normalization can be dropped (absolute determinism) or the frame-offset variance
+    is inherent-and-benign is a small post-vacation investigation. Item 60 closes
+    when that's answered either way.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
