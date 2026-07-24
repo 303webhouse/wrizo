@@ -5635,6 +5635,10 @@ outlive a session lives here, not in chat.
     the prod `users` table (a `@wrizo-test.invalid` email, no data, cannot
     receive mail/log in) — left in place rather than risk an unprompted
     prod-DB delete; trivially removable on Nick's word if wanted.
+    **That throwaway row was DELETED — 2026-07-24, on Nick's ruling**,
+    scoped precisely to that one identity (id `61019985-…`, guarded on
+    the `@wrizo-test.invalid` email suffix): 1 row deleted, confirmed 0
+    remaining. The prod `users` table carries no test residue.
     **ITEM 56 NOW CLOSES ON NICK'S OWN DEVICE SITTING ALONE** — his eye on
     the Bible section (the last remaining condition; every other gate —
     schema word, merge, deploy, the server round-trip proof — is met).
