@@ -10,7 +10,7 @@ import { computeStructureFacts, computeFragmentItems } from '../store/tutorLense
 import { computeNudges } from '../store/tutorNudges';
 import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstimates';
 import { addTutorSessionCost } from '../store/tutorMeter';
-import { useBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
+import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -100,6 +100,31 @@ function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: num
   const kept = truncated ? newText.slice(newText.length - DELTA_CHAR_CAP) : newText; // tail bias: keep the most recent writing
   const delta = truncated ? `[${DELTA_TRUNCATION_HEADER}]\n${kept}` : kept;
   return { delta, truncated };
+}
+
+// TU5 S4 — the book's Bible's own send-time assembly, mirroring the delta's
+// two-tier cap. The writer's saved facts (of THIS page's project) are joined
+// into ONE block — a fact is a line — assembled ONLY here, at send time, never
+// ambiently. Returns null (a true absent key, never an empty string) when the
+// project has no facts. Client cap 8000 chars of CONTENT (server backstop 9000,
+// tutor.ts's MAX_BIBLE_CHARS), with an honest truncation header line prepended
+// when some facts don't fit; whole facts only — never a fact sliced mid-line
+// (except the pathological case of a single fact somehow over the cap, which
+// the 300-char per-fact store cap makes unreachable in practice).
+const BIBLE_CHAR_CAP = 8000;
+const BIBLE_TRUNCATION_HEADER = 'partial: some saved facts were not included this time';
+
+function assembleBible(facts: Fact[]): string | null {
+  if (facts.length === 0) return null;
+  let body = '';
+  let truncated = false;
+  for (const f of facts) {
+    const next = body ? `${body}\n${f.text}` : f.text;
+    if (next.length > BIBLE_CHAR_CAP) { truncated = true; break; }
+    body = next;
+  }
+  if (!body) { body = facts[0].text.slice(0, BIBLE_CHAR_CAP); truncated = true; }
+  return truncated ? `[${BIBLE_TRUNCATION_HEADER}]\n${body}` : body;
 }
 
 // The margin genuinely available past the paper's right edge — the exact
@@ -366,7 +391,11 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
     appendTutorMessage(entry.id, writerMsg);
     setSending(true);
     const history = [...(getJournalEntry(entry.id)?.tutor?.messages ?? [])].map((m) => ({ role: m.role, text: m.text }));
-    const result = await apiTutorChat(history, delta ?? undefined);
+    // TU5 S4 — assemble the Bible at send time only (never ambiently): read the
+    // project's saved facts fresh and join them; absent when there are none, so
+    // JSON.stringify drops the key and the wire stays byte-free of any bible.
+    const bible = entry.projectId ? assembleBible(getBibleFacts(entry.projectId)) : null;
+    const result = await apiTutorChat(history, delta ?? undefined, bible ?? undefined);
     setSending(false);
     if (!result.ok) { setStatus('error'); return; }
     if (!result.configured) { setStatus('offline'); return; }

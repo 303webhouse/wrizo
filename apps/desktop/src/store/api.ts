@@ -98,20 +98,23 @@ export interface TutorChatResult {
   model?: string;
 }
 
-// TU2 S2 — `delta` is optional and, when present, already fully assembled
-// by Tutor.tsx (sliced from the persisted cursor, tail-capped, honesty
-// line baked in if truncated) — this file does no delta logic of its
-// own, only carries it. `JSON.stringify` drops an `undefined`-valued key
-// entirely, so an omitted delta really does leave the wire body as just
-// `{ messages }` — true silence when there is no new writing to report,
-// per the brief's own invariant that the body carries exactly messages
-// plus the one delimited delta, nothing else.
+// TU2 S2 / TU5 S4 — `delta` and `bible` are BOTH optional and, when present,
+// already fully assembled by Tutor.tsx (delta: sliced from the persisted
+// cursor, tail-capped, honesty line baked in if truncated; bible: the project's
+// saved facts joined into one capped block, absent when there are none) — this
+// file does no assembly logic of its own, only carries them. `JSON.stringify`
+// drops any `undefined`-valued key entirely, so an omitted delta/bible really
+// does leave the wire body as just `{ messages }` — true silence when there is
+// nothing extra to report, per the brief's own invariant that the body carries
+// exactly messages plus the optional delta and the optional book-bible, nothing
+// else.
 export async function apiTutorChat(
   messages: { role: 'writer' | 'tutor'; text: string }[],
   delta?: string,
+  bible?: string,
 ): Promise<TutorChatResult> {
   try {
-    const res = await postJson('/api/tutor/chat', { messages, delta });
+    const res = await postJson('/api/tutor/chat', { messages, delta, bible });
     if (!res.ok) return { ok: false, configured: true };
     const data = (await res.json()) as {
       configured: boolean;
