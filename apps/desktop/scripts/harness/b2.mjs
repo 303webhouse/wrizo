@@ -375,15 +375,24 @@ await withHarness(async (app) => {
     resumeTargetAfterShelfVisit === null, JSON.stringify(resumeTargetAfterShelfVisit));
 
   // Way-back non-participation + backTo '/'.
-  const shelfDoneRoute = await app.evalJs(`(() => {
-    const btns = [...document.querySelectorAll('.sprint-actions button')];
-    return btns.find(b => b.textContent.trim() === 'Done') ? 'has-done' : 'no-done';
+  // CD4 S1 (2026-07-24, Fable's ruling amending the brief) — the Shelf Board's
+  // own "Done" is REMOVED; it mounts the SAME PAGE → door every board carries.
+  // A system board is a permanently-unpaired board, so the door's own unpaired
+  // branch → backTo, which for a system board is '/' (the cold-load fallback
+  // lands at Arrival, itself a page — HB1). The two original Done checks
+  // (precondition + backTo) are parked VERBATIM in this file's PARKED section
+  // below (A4 + the immutability law), re-verified against the new truth; these
+  // are their live successors.
+  const shelfExit = await app.evalJs(`(() => {
+    const door = document.querySelector('.board-door[data-board-door="page"]');
+    const done = [...document.querySelectorAll('.sprint-actions button, .board-mode-strip button')].find(b => b.textContent.trim() === 'Done');
+    return { hasDoor: !!door, hasDone: !!done };
   })()`);
-  ok('S1 precondition: the Shelf Board carries a Done button (backTo check follows)', shelfDoneRoute === 'has-done', shelfDoneRoute);
-  await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].find(b => b.textContent.trim() === 'Done').click()");
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Shelf Board Done -> backTo' });
+  ok('S1 (CD4 successor): the Shelf Board carries the PAGE → door and NO "Done" button — the same door every board carries, the system board\'s exit', shelfExit.hasDoor === true && shelfExit.hasDone === false, JSON.stringify(shelfExit));
+  await app.evalJs("document.querySelector('.board-door[data-board-door=\"page\"]').click()");
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Shelf Board PAGE -> door -> backTo' });
   const shelfBackToRoute = await app.evalJs('location.hash');
-  ok('S1: the Shelf Board\'s own Done button lands backTo \'/\' — the SAME system-board law B1 already proved, inherited by the same `isSystemBoard` branch',
+  ok('S1 (CD4 successor): the Shelf Board\'s PAGE → door lands backTo \'/\' — the FX10 named return / cold-load fallback, the SAME system-board law B1 already proved, now via the door instead of Done',
     shelfBackToRoute === '' || shelfBackToRoute === '#/', shelfBackToRoute);
 
   // ==========================================================================
@@ -974,6 +983,29 @@ if (process.env.HARNESS_PARKED === '1') {
         && lexiconTermsNow.newDrawer === '+ New Drawer'
         && lexiconTermsNow.boardsTitle === 'Boards',
       JSON.stringify(lexiconTermsNow));
+
+    // CD4 S1 (2026-07-24) — the Shelf Board's own "Done" is REMOVED and replaced
+    // by the SAME PAGE → door every board carries (Fable's ruling; a system board
+    // is a permanently-unpaired board, so the door → backTo → '/'). The two
+    // original Done checks below are parked VERBATIM (record names byte-frozen);
+    // their probes re-verify the NEW truth (door present, no Done; door lands
+    // backTo '/'). Live successors: this file's own live S1 section above.
+    await freshDesk(app, LAPTOP_W, 900);
+    await app.goto('/shelf');
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board mounted (CD4 park re-verify)' });
+    await sleep(200);
+    const shelfDoorNow = await app.evalJs(`(() => {
+      const door = document.querySelector('.board-door[data-board-door="page"]');
+      const done = [...document.querySelectorAll('.sprint-actions button, .board-mode-strip button')].find(b => b.textContent.trim() === 'Done');
+      return { hasDoor: !!door, hasDone: !!done };
+    })()`);
+    pok('PARKED (was "S1 precondition: the Shelf Board carries a Done button (backTo check follows)") — CD4 S1: the Shelf Board carries the PAGE → door now, NO Done — the door is its exit; live successor: this file\'s own live S1 section',
+      shelfDoorNow.hasDoor === true && shelfDoorNow.hasDone === false, JSON.stringify(shelfDoorNow));
+    await app.evalJs("document.querySelector('.board-door[data-board-door=\"page\"]').click()");
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Shelf Board PAGE -> door -> backTo (CD4 park)' });
+    const shelfBackToNow = await app.evalJs('location.hash');
+    pok('PARKED (was "S1: the Shelf Board\'s own Done button lands backTo \'/\' — the SAME system-board law B1 already proved, inherited by the same `isSystemBoard` branch") — CD4 S1: the Shelf Board\'s PAGE → door lands backTo \'/\' (the FX10 named return / cold-load fallback), the SAME system-board law, now via the door; live successor: this file\'s own live S1 section',
+      shelfBackToNow === '' || shelfBackToNow === '#/', shelfBackToNow);
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

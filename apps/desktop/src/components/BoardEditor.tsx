@@ -1901,13 +1901,19 @@ export function BoardEditor({ id }: { id: string }) {
   // the projection axis is a genuinely different control from Free Write/Draft,
   // so w1.mjs's "a board page never renders the mode tabs" and ab1.mjs's
   // ".desk-mode-strip absent on board" both stay literally true; bm1.mjs adds
-  // the successor asserting THIS new control). Non-system boards only. The
-  // PAGE → door is never role=tab / aria-selected — a door has no current
-  // state; clicking always travels (paired → the paired page via routeForEntry;
-  // unpaired → the FX10 named return `backTo`, unchanged). The Board's own
-  // "Done" is left in place per this ticket's instructions (the brief's S3 bar
-  // spec does not remove it) — PAGE → is its intended named-return successor;
-  // the overlap is flagged for review, not resolved here.
+  // the successor asserting THIS new control). Tabs + telos: non-system boards
+  // only. The PAGE → door is never role=tab / aria-selected — a door has no
+  // current state; clicking always travels (paired → the paired page via
+  // routeForEntry; unpaired → the FX10 named return `backTo`, unchanged).
+  // CD4 S1 (2026-07-24, Fable's ruling amending the brief) resolves the overlap
+  // the BM1 line below flagged: the Board's own "Done" is REMOVED (both render
+  // paths further down), and PAGE → becomes the Board's only exit — on EVERY
+  // board now, system boards included. A system board is a permanently-unpaired
+  // board, so travelToPage's own unpaired branch (navigate `backTo`, which for
+  // a system board is already '/' — see the backTo line above) IS its exit: the
+  // cold-load fallback lands at Arrival, itself a page (HB1's "Page is home").
+  // No new navigation logic — the existing unpaired branch, trusted-pointer
+  // proven in bm1.mjs, is reused as-is.
   const pairedPageId = isSystemBoard ? null : getPairedPageId(id);
   const travelToPage = () => {
     flushNow();
@@ -1932,9 +1938,19 @@ export function BoardEditor({ id }: { id: string }) {
     { key: 'storyboard', label: t('boardModeStoryboard') },
     { key: 'outline', label: t('boardModeOutline') },
   ];
-  const boardModeBar = !isSystemBoard ? (
-    <div className="board-mode-strip" role="tablist" aria-label="Board mode" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      {boardModeTabs.map(tab => (
+  // CD4 S1 — renders for EVERY board now (was `!isSystemBoard ? … : null`). The
+  // mode TABS stay non-system only (a system board has no projections); the
+  // PAGE → door is the one universal control (Fable's ruling: system boards
+  // mount the same door, its unpaired branch IS their exit). role=tablist /
+  // aria-label apply only when the tabs are present — a lone door is no tablist.
+  const boardModeBar = (
+    <div
+      className="board-mode-strip"
+      role={isSystemBoard ? undefined : 'tablist'}
+      aria-label={isSystemBoard ? undefined : 'Board mode'}
+      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+    >
+      {!isSystemBoard && boardModeTabs.map(tab => (
         <button
           key={tab.key}
           type="button"
@@ -1956,7 +1972,7 @@ export function BoardEditor({ id }: { id: string }) {
         {t('boardPageDoor')} <span aria-hidden="true">→</span>
       </button>
     </div>
-  ) : null;
+  );
   const boardTelos = !isSystemBoard ? (
     <div className="board-telos" data-board-telos>{t('boardTelos')}</div>
   ) : null;
@@ -2006,7 +2022,7 @@ export function BoardEditor({ id }: { id: string }) {
           <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {!isSystemBoard && !pairedPageId && <button type="button" className="btn-quiet board-pair" onClick={pairWithNewPage}>{t('boardPairWithPage')}</button>}
             {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}
-            <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
+            {/* CD4 S1 — "Done" removed; PAGE → (boardModeBar) is the Board's only exit now. */}
           </div>
         </div>
 
@@ -2068,7 +2084,7 @@ export function BoardEditor({ id }: { id: string }) {
         <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {!isSystemBoard && !pairedPageId && <button type="button" className="btn-quiet board-pair" onClick={pairWithNewPage}>{t('boardPairWithPage')}</button>}
           {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}
-          <button type="button" className="btn-quiet" onClick={() => { flushNow(); navigate(backTo); }}>Done</button>
+          {/* CD4 S1 — "Done" removed; PAGE → (boardModeBar) is the Board's only exit now. */}
         </div>
       </div>
 

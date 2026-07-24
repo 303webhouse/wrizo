@@ -342,6 +342,13 @@ if (process.env.HARNESS_PARKED === '1') {
   // board carries the NEW .board-mode-strip while still lacking .mode-tabs /
   // .mode-tab--action / .desk-mode-strip, so w1.mjs's A5 and ab1.mjs's board
   // check both remain literally green against this build.
+  // CD4 S1 (2026-07-24) — the "Done left in place per instructions" clause in the
+  // frozen record below is now HISTORICAL: CD4 removed the Board's Done and made
+  // the same PAGE → door (this very .board-mode-strip control) the Board's only
+  // exit, on system boards too. The record stays byte-frozen; the removal's own
+  // park cycle + live successors are in b2.mjs and cd4.mjs. BM1's own claim here
+  // — that BM1 added its controls without falsifying a historic check — is still
+  // true, so the probe stays `true`.
   pok('BM1 A4 sweep: no historic check falsified — board bar is additive + distinctly-classed (Done left in place per instructions)', true, 'empty park section by design');
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
