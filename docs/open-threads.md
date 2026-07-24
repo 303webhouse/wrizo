@@ -5746,6 +5746,58 @@ outlive a session lives here, not in chat.
     quoted), live successors (S2's gen-4 asserting `['Pages','Plan →']`) — in
     the SAME commits as the removals. **Build + merge in progress this
     session (E1.1 pattern); SHA reported on close.**
+58. **M3 — the Rhizome Roams.** **BRIEF COMMITTED — 2026-07-24,
+    Fable-authored** (`docs/wrizo-alpha/m3-rhizome-roams-brief.md`).
+    **ZERO SCHEMA, zero server files, zero new deps; merge pre-authorized as
+    zero-schema, Fable reviews post-merge, deploy is Nick's separate word;
+    before the Aug 1 freeze.** M2 shipped the rhizome GREEN; Nick's device eye
+    ruled three verdicts and M3 is those made real, nothing else: **(S1)** the
+    ink warmed — `--rhizome-ink` `#4A3A28`→`#7A6242` (~2.9:1, a bounded delta
+    for the sitting). **(S2)** the roam — the field already spans the whole
+    ground, so the single paper-bottom-center origin becomes SEVEN, blue-noise
+    scattered via best-candidate sampling (~10 candidates/point, farthest from
+    every placed origin + the paper rect), paper's bottom-center kept as origin
+    one, all from the entry-id PRNG (deterministic); the paper-avoidance law
+    (`segmentTouchesRect`) unmoved and re-proven at full scale (40-seed stress
+    sweep, zero paper violations the only acceptable number); the 7 is a
+    bounded delta. **(S3)** essay-length saturation — coverage driven by TOTAL
+    word count through `CAP·(1−e^(−words/K))`, K≈834 so 95% of CAP at ≈2,500
+    words, grow toward the target each event, hard-stop at CAP (the exponential
+    IS the organic law); replaces M2's event-decay bands; NO
+    numbers/percentages/counts/meters anywhere (the anti-gamification frame
+    binds absolutely); K a bounded delta. **(S4)** determinism (seeded by entry
+    id + session, M2's discipline) + reduced-motion extended. The DoD ("Nick
+    opens a page he has truly written, and the ground is alive to the edges")
+    settles the driver as TOTAL words, so M3 supersedes M2's mount-empty
+    behavior. **The M2 review is the foundation document; its rulings stand
+    except where a verdict supersedes.** S5: `m3.mjs` + the M2 park sweep (the
+    paper-bottom-center origin anchor, the mount-empty/no-catch-up behavior the
+    total-word driver supersedes, the decay-band schedule — parked A4-style with
+    live successors); **Q1 stays parked** (assert the framed desk still has NO
+    progress row — no answering a parked question by the back door). Owner
+    chat 3; CD4 (item 59, chat 1) builds in parallel, files disjoint, both
+    merges serialize through chat 1's lane. **Build starting — 2026-07-24, on
+    `m3-rhizome-roams` off the FX11-review-carrying `main`, own worktree,
+    guard-rail before every commit; ledger edits on `main` only.** `tsc` x2 +
+    `build:web`; both HARNESS_PARKED settings; report = push. Drift-check: ZERO
+    structural drift; the S2/S3 design (7, K) Fable-ruled, vetoable at the
+    sitting.
+60. **The Rhizome revisit-geometry defect** (lifted from `m2.mjs`'s Section A
+    comment per the M2 review's standing ask + M3 S0 — its RECORD is M3's
+    scope, its FIX is not). On revisiting the SAME entry within a session the
+    measured ABSOLUTE stage/paper rect can shift by a constant offset, so raw
+    growth coordinates differ across an in-app revisit even though the seeded
+    PRNG's SHAPE is byte-identical; `m2.mjs`'s determinism check sidesteps this
+    by shape-normalizing every coordinate to the first segment's own start
+    point (intent: growth SHAPE not raw pixels — kept per A4). The primary
+    known cause — App.tsx's `.app-main[data-desk-frame-active]` DeskRail-gutter
+    switch leaving the 64px reservation transiently mis-stated — was **fixed at
+    source by J6 S1 (`store/deskFrameActive.ts`, item 47 closed)**; whether a
+    residual absolute-shift remains, and whether the normalization sidestep can
+    now retire to a raw-coordinate assertion, is the open question this item
+    surfaces so the next session finds it OUTSIDE a code comment. **Fix
+    deferred — not any ticket's scope until claimed; M3 only lifted the
+    record.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
