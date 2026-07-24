@@ -6005,6 +6005,86 @@ outlive a session lives here, not in chat.
     normalization can be dropped (absolute determinism) or the frame-offset variance
     is inherent-and-benign is a small post-vacation investigation. Item 60 closes
     when that's answered either way.
+62. **The SC arc — the Script's Own Room.** **FOUNDED — 2026-07-24 (S0 records
+    push).** Nick's first screenplay sitting (laptop-class ~2560px framed, Flux
+    theme, a Page converted to Screenplay, DRAFT on the mode strip) produced
+    seven verdicts, recorded in his words as the spec per the M3 precedent —
+    `docs/wrizo-alpha/sc-defect-verdicts.md`. **SC-V1** the room's placement
+    ("the page is in a weird spot, the side menus are floating in space");
+    **SC-V2** the type ("the font is too big"); **SC-V3** the arc's
+    constitutional verdict — the page is not a page ("1 page roughly equals 1
+    minute of screen time … our screenplay page needs to comport to those
+    standards"); **SC-V4** the caret's home ("the cursor starts by floating in
+    the middle of the page"); **SC-V5** the trade's tools, a verdict of absence
+    (Fable's census attached: `retype()` is reachable ONLY by keyboard —
+    **no pointer path to an element type exists**, a usability defect on a
+    laptop/tablet-first product, not a missing feature); **SC-V6** the Tutor's
+    ear; **SC-V7** the storyboard one gesture away. Evidence screenshot belongs
+    alongside at `docs/wrizo-alpha/sc-evidence/screenplay-1-flux.png` — **not yet
+    in the tree; rides the next records push when Nick drops the file.** The
+    committee sat a double pass (`docs/wrizo-alpha/sc-committee-pass.md`) with a
+    guest bench of working screenwriters by Nick's word — Feature Dramatist,
+    Room Writer, Half-Hour Writer, Genre Spec Writer — and pinned the standard
+    for the record: US Letter, Courier 12pt at 10 cpi / 6 lpi, margins
+    1.5/1/1/1, ~55 lines, the element grid, page numbers top-right from page
+    two. Its diagnosis of V2+V3+V4 as one defect wearing three faces stands as
+    the arc's frame: **the room was furnished with prose furniture.** Marketing's
+    five objections (runway, the first number, the BM1 flip-flop,
+    storyboard-by-default, scope gravity) all resolved in session; the line
+    drawn on the record — **Wrizo's screenplay room is a writing room, not a
+    production office** (deferred + named: SC2.1 `(MORE)`/`(CONT'D)`, dual
+    dialogue, title page; out of alpha entirely: revision colors, locked pages,
+    production numbering).
+    **RULINGS LANDED — 2026-07-24** (`docs/wrizo-alpha/sc-ratification-record.md`,
+    the R4-ruled version). **R1 APPROVED** — page numbers as document furniture,
+    top-right from page two, page one bare; the bright line travels with it (the
+    number lives on the page artifact only, no aggregate of it ever surfaces
+    anywhere; the anti-gamification frame amended by exactly this one line).
+    **R2 APPROVED** — the script page's door, amending BM1's script-bar ruling on
+    the record: the arrow-dressed **PLAN →** door, a board first born from a
+    script page wakes in STORYBOARD, remembered mode governs thereafter (lands in
+    SC3). **R3 HELD** — TS1 (the committee's Second Sitting, chamber 1, the PROSE
+    page's per-mode strips) awaits ratification; Nick's word: wait and note it for
+    revisit → a post-vacation agenda item. Fable's ruling under the hold: SC3's
+    script strip rides the AB2 strip system that already exists as its own
+    surface — SC3 is unblocked. **R4 RULED** (Nick: "I agree with you about R4",
+    ratifying Fable's split) — (a) the **craft ear** ships pre-vacation as **SC4 —
+    the Tutor's Script Ear**, the arc's final micro-ticket after SC3
+    (server-touching prompt work, zero schema, disclosed at brief); (b) the
+    **FORMAT lens** (a fourth programmatic offline lens, mechanical format linting
+    against the grid) is a feature under the freeze and queues as **the first
+    post-vacation TU ticket**, on the horizon for the Write/TU line to claim and
+    number. **R5 RATIFIED** — `scriptKeys.ts` stands exactly as shipped; the bench
+    confirmed both AMENDABLE cells match the trade's muscle memory (Enter after
+    dialogue → action; Tab from character → transition); the 2026-07-11 loop
+    closes, the in-file AMENDABLE comments update to RATIFIED as a rider on SC3.
+    **R6 — Nick's word, overruling the committee's recommendation:** "I want to
+    get this fixed before I go so I can start working on a screenplay." The arc
+    builds **pre-vacation**; his condition (no architectural conflict with the
+    pending device sitting) cleared by Fable on the record, and the
+    deploy-manifest recommendation is already satisfied — the batch shipped at
+    `375c10f` before any SC merge, so SC earns its own deploy word separately.
+    **Sequencing ruled: SC1 → SC2 → SC3 (+ the door + the R5 comment rider) →
+    SC4.** All fixes, all zero schema, all freeze-lawful.
+    **SC1 BRIEFED — 2026-07-24, Fable-authored**
+    (`docs/wrizo-alpha/sc1-true-geometry-brief.md`): the Room's True Geometry, the
+    arc's heart — S1 the true page (Letter proportions, bundled Courier Prime
+    under SIL OFL as an asset with its license, the whole-sheet scaling law), S2
+    the element grid (single-sourced, replacing `elementStyle()`'s
+    approximations), S3 the caret's home (reproduce-then-root-cause; the
+    typewriter yields until the natural position passes the stage's center), S4
+    the seated room (reproduced on default chrome + two themes including Flux,
+    with any Flux-ONLY residue recorded to the parked theme arc and never
+    chased), S5 the `sc1.mjs` geometry floor (aspect + grid ratios at full and
+    scaled widths, display-uppercase vs. unchanged storage, S3 under genuine
+    trusted CDP pointer + real keystrokes, both `HARNESS_PARKED` settings,
+    grep-first `scripts/harness/` with lawful park cycles in the same commits).
+    Owner CC (SC line), one worktree off `main` at or after the M3 merge
+    (`7ebe703`); merge rides the zero-schema pre-authorization through chat 1's
+    serialized lane; Fable reviews post-merge; deploy is Nick's separate word.
+    **The arc seed** (`docs/wrizo-alpha/sc-arc-seed.md`) is already on `main` at
+    `375c10f`. **Item 62 tracks the whole arc: SC1 building, SC2/SC3/SC4 queued
+    behind it in that order.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
