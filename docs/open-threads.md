@@ -5833,6 +5833,16 @@ outlive a session lives here, not in chat.
     word). **CLOSE-PENDING Nick's sitting** — his eye on the two "Close" words
     (one string each if either reads wrong). **This also satisfies CD4's (item 59)
     remaining gate: item 59 now close-pends ONLY Nick's device sitting.**
+    **REVIEW LANDED GREEN — 2026-07-24** (`docs/wrizo-alpha/cd4-1-review-fable.md`):
+    the two strings landed exactly as directed; all three park modes applied
+    correctly again; the no-"Done" sweep is the DoD's regression tripwire. Three
+    non-blocking advisories: (1) "Close"/"Select" are literals (as "Done" was) —
+    the popup foot, the Spread toggle, and the neighboring "Undo" migrate to
+    `deskLexicon` together at next touch (parity today, debt named); (2) the
+    sweep's surface list extends opportunistically as new surfaces mount; (3) a
+    frozen record gains a cross-reference annotation only if it ever makes a
+    present-tense structural Done claim (none does today). **Item 61 close-pends
+    Nick's sitting alone.**
 58. **M3 — the Rhizome Roams.** **BRIEF COMMITTED — 2026-07-24,
     Fable-authored** (`docs/wrizo-alpha/m3-rhizome-roams-brief.md`).
     **ZERO SCHEMA, zero server files, zero new deps; merge pre-authorized as
