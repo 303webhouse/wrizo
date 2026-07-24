@@ -209,5 +209,6 @@ if (typeof window !== 'undefined') {
     of: boardStructure,
     flattenLane,
     isCardBox,
+    withParent, // FX11 S4 — exposed so fx11.mjs can prove the cycle-refusal (A↔B) directly through the seam
   };
 }
