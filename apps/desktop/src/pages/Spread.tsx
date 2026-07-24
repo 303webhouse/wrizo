@@ -437,8 +437,10 @@ export function Spread() {
               Add to…
             </button>
           )}
+          {/* CD4.1 — Select/Close: enter the mode, leave the mode — a door word,
+              never a completion word ("Done" retired everywhere a writer can see). */}
           <button type="button" className="btn-quiet spread-select-toggle" onClick={toggleSelectMode}>
-            {selectMode ? 'Done' : 'Select'}
+            {selectMode ? 'Close' : 'Select'}
           </button>
         </div>
       </div>

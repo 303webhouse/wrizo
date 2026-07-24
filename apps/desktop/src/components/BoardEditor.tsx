@@ -542,7 +542,9 @@ function BoardCardPopup({
           aria-label={`${lex('board')} text box`}
         />
         <div className="board-popup-foot">
-          <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Done</button>
+          {/* CD4.1 — "Done" retired: the card-edit popup's close control is a door
+              word now, not a completion word (the class board-popup-done is kept). */}
+          <button type="button" className="btn-brass board-popup-done" onClick={onClose}>Close</button>
         </div>
       </div>
     </div>

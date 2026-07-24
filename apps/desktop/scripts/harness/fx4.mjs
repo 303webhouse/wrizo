@@ -520,7 +520,13 @@ await withHarness(async (app) => {
   ok('S5: Tab is contained within the popup\'s own focusable elements (hb1.1\'s UnlockCeremony pattern, reused) — from the last element, Tab wraps to the first',
     focusTrapProof.focusableCount === 4 && focusTrapProof.wrappedToFirst, JSON.stringify(focusTrapProof));
 
-  // Done closes and commits.
+  // CD4.1 (2026-07-24) — the card-edit popup's close button is relabeled "Done"
+  // -> "Close" (Fable's ruling; the DoD says no surface says Done). Read the label
+  // before the click; the ORIGINAL "S5: Done closes the popup..." check is parked
+  // VERBATIM in this file's parked section (a CD4.1 pok re-verifying the label),
+  // and THIS is its live successor — the button reads "Close" and still closes,
+  // un-blurs, and commits (class board-popup-done + behavior all unchanged).
+  const closeBtnLabel = await app.evalJs("document.querySelector('.board-popup-done')?.textContent.trim()");
   await app.evalJs("document.querySelector('.board-popup-done').click()");
   await sleep(300);
   const afterDone = await app.evalJs(`(() => ({
@@ -528,8 +534,8 @@ await withHarness(async (app) => {
     blurGone: !document.querySelector('.board-canvas-blur-wrap').classList.contains('board-canvas-blurred'),
     committedText: (window.wrizoBoard() || []).find(b => b.id === 'fx4-s5-card')?.text,
   }))()`);
-  ok('S5: Done closes the popup, un-blurs the board, and commits the edit',
-    afterDone.popupGone && afterDone.blurGone && afterDone.committedText === '**Before edit**', JSON.stringify(afterDone));
+  ok('S5 (CD4.1 successor): the "Close" button closes the popup, un-blurs the board, and commits the edit — the card-edit popup close control relabeled Close (class board-popup-done + behavior unchanged)',
+    afterDone.popupGone && afterDone.blurGone && afterDone.committedText === '**Before edit**' && closeBtnLabel === 'Close', JSON.stringify({ ...afterDone, closeBtnLabel }));
 
   // Escape also closes.
   // FX7 S5 — same coordinate-carrying fix (see above).
@@ -750,6 +756,28 @@ if (process.env.HARNESS_PARKED === '1') {
     // lineage settled on).
     pok('PARKED (was "S6: the sliver\'s Connect toggle RETIRES — the board sliver carries Add card alone now") — FX5 S5: a SECOND control joins it (the connections-footer toggle, "Add card + this, two controls" — the brief\'s own words); generation 2: FX6 S2b adds a THIRD (New page card); generation 3: B2 S5 adds a FOURTH (Existing page…); generation 4: B3 S3 adds a FIFTH (From a deck…) — live successor in b3.mjs\'s own S4 section',
       sliverShape.buttonCount === 5, JSON.stringify(sliverShape));
+
+    // CD4.1 (2026-07-24) — the card-edit popup's close button is relabeled
+    // "Done" -> "Close" (Fable's ruling; the DoD says no surface says Done). The
+    // ORIGINAL S5 check's NAME (parked below, VERBATIM) said "Done closes the
+    // popup"; this pok-record form (the house preference — fx4 has a parked
+    // section) freezes that name and re-verifies the CURRENT label directly: a
+    // fresh card's popup, opened by double-click, carries a close button reading
+    // exactly "Close". The live successor is this file's own live S5 section.
+    await freshBoard(app, 'cd41-popup-board', [
+      { id: 'cd41-popup-card', kind: 'text', x: 0.1, y: 0.1, w: 0.25, h: 0.1, z: 1, text: 'Edit me' },
+    ], LAPTOP_W, 900);
+    // FX7 S5 — onDoubleClick resolves via elementFromPoint(clientX,clientY), so a
+    // coordinate-less dblclick hits (0,0) and misses; supply the card's real center.
+    await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="cd41-popup-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
+    await app.waitFor("!!document.querySelector('.board-popup')", { label: 'CD4.1 popup open (parked)' });
+    await sleep(200);
+    const popupCloseNow = await app.evalJs(`(() => {
+      const btn = document.querySelector('.board-popup-done');
+      return { present: !!btn, label: btn ? btn.textContent.trim() : null };
+    })()`);
+    pok('PARKED (was "S5: Done closes the popup, un-blurs the board, and commits the edit") — CD4.1: the card-edit popup close button is relabeled "Close" (class board-popup-done + behavior unchanged); live successor: this file\'s own live S5 section',
+      popupCloseNow.present === true && popupCloseNow.label === 'Close', JSON.stringify(popupCloseNow));
 
     return parkedChecks;
   });

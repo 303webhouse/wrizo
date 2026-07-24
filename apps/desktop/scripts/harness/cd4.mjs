@@ -235,6 +235,60 @@ await withHarness(async (app) => {
   })()`);
   ok('Publish untouched: a framed prose page still carries a reachable Publish tab (Done\'s removal did not disturb it)',
     publish.present === true && publish.inert === false && publish.ariaDisabled === 'false', JSON.stringify(publish));
+
+  // ======================================================================
+  // CD4.1 (the Last Two Words) — the no-"Done"-anywhere structural sweep, the
+  // standing guard: after the card-edit popup close and the Spread select-mode
+  // exit both became "Close", NO control a writer can reach reads exactly "Done".
+  // ======================================================================
+  const doneCount = async () => app.evalJs(`(() => [...document.querySelectorAll('button, [role="button"], [role="tab"], a')].filter(el => el.textContent.trim() === 'Done').length)()`);
+
+  // (a) the card-edit popup's close button reads "Close", never "Done".
+  await freshDesk(app, LAPTOP_W);
+  await seedEntries(app, [{ id: 'cd41-sweep-board', text: 'sweep board', projectId: null, pageType: 'board', source: 'page', origin: 'loose', boxes: [{ id: 'cd41-sweep-card', kind: 'text', x: 0.1, y: 0.1, w: 0.25, h: 0.1, z: 1, text: 'Edit me' }], createdAt: '2026-07-03T00:00:00.000Z', updatedAt: '2026-07-03T00:00:00.000Z' }]);
+  await openBoard(app, 'cd41-sweep-board');
+  // FX7 S5 — onDoubleClick resolves via elementFromPoint(clientX,clientY); supply
+  // the card's real center (a coordinate-less dblclick hits (0,0) and misses).
+  await app.evalJs('(() => { const el = document.querySelector(\'[data-box-id="cd41-sweep-card"]\'); const r = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); })()');
+  await app.waitFor("!!document.querySelector('.board-popup')", { label: 'CD4.1 sweep popup open' });
+  await sleep(220);
+  const popupClose = await app.evalJs(`(() => ({
+    label: document.querySelector('.board-popup-done')?.textContent.trim(),
+    popupNoDone: [...document.querySelectorAll('.board-popup button')].every(b => b.textContent.trim() !== 'Done'),
+  }))()`);
+  ok('CD4.1: the card-edit popup\'s close button reads exactly "Close" (never "Done"), and no button in the popup says "Done"',
+    popupClose.label === 'Close' && popupClose.popupNoDone === true, JSON.stringify(popupClose));
+  ok('CD4.1 sweep: no control reads exactly "Done" on a board with its card-edit popup open', (await doneCount()) === 0, `doneControls=${await doneCount()}`);
+
+  // (b) the Spread's select-mode exit toggle reads "Close", never "Done".
+  await freshDesk(app, LAPTOP_W);
+  await seedEntries(app, [
+    { id: 'cd41-sp-1', text: 'page one', projectId: null, source: 'page', origin: 'journal', createdAt: '2026-07-04T00:00:00.000Z', updatedAt: '2026-07-04T00:00:00.000Z' },
+    { id: 'cd41-sp-2', text: 'page two', projectId: null, source: 'page', origin: 'journal', createdAt: '2026-07-05T00:00:00.000Z', updatedAt: '2026-07-05T00:00:00.000Z' },
+  ]);
+  await app.evalJs("location.hash = '#/journal/spread'");
+  await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (sweep)' });
+  await sleep(150);
+  const beforeSelect = await app.evalJs("document.querySelector('.spread-select-toggle')?.textContent.trim()");
+  await app.click('Select');
+  await sleep(180);
+  const inSelect = await app.evalJs("document.querySelector('.spread-select-toggle')?.textContent.trim()");
+  ok('CD4.1: the Spread select-mode toggle reads Select -> Close (never "Done") — enter the mode, leave the mode; a door word',
+    beforeSelect === 'Select' && inSelect === 'Close', JSON.stringify({ beforeSelect, inSelect }));
+  ok('CD4.1 sweep: no control reads exactly "Done" on the Spread in select mode', (await doneCount()) === 0, `doneControls=${await doneCount()}`);
+
+  // (c) the surfaces CD4 already cleared stay clear.
+  const sweepSurfaces = [
+    ['a system board (Shelf)', async () => { await freshDesk(app, LAPTOP_W); await app.evalJs("location.hash = '#/shelf'"); await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf (sweep)' }); }],
+    ['a prose project page', async () => { await freshProject(app, 'book', LAPTOP_W); }],
+    ['a script project page', async () => { await freshProject(app, 'screenplay', LAPTOP_W); }],
+  ];
+  for (const [name, setup] of sweepSurfaces) {
+    await setup();
+    await sleep(140);
+    const n = await doneCount();
+    ok(`CD4.1 sweep: no control reads exactly "Done" on ${name}`, n === 0, `doneControls=${n}`);
+  }
 });
 
 // === PARKED — gated behind HARNESS_PARKED=1. CD4's own park cycles do NOT live
@@ -242,7 +296,7 @@ await withHarness(async (app) => {
 // (b2.mjs, cd1.mjs, hb1.mjs, bm1.mjs). This file is purely additive. ==========
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
-  console.log('\nCD4 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; CD4\'s own A4 park cycles travel in b2.mjs (S1 Board-Done → PAGE → door), cd1.mjs (S2 gen-3 bar → gen-4 ["Pages","Plan →"] + the script gen + probe updates), and the hb1.mjs/bm1.mjs cross-reference disclosures — all in the SAME commit as the removals. This file is purely additive (new positive truths), so its own park section is an empty no-op.');
+  console.log('\nCD4 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; CD4\'s own A4 park cycles travel in b2.mjs (S1 Board-Done → PAGE → door), cd1.mjs (S2 gen-3 bar → gen-4 ["Pages","Plan →"] + the script gen + probe updates), and the hb1.mjs/bm1.mjs cross-reference disclosures — all in the SAME commit as the removals. CD4.1 (the Last Two Words) adds the "Done"→"Close" relabels: its own park cycle lives in fx4.mjs (the board-popup-done check), the Spread click fixture in j5.mjs, and this file gained the no-"Done"-anywhere sweep as the standing guard. All still additive here — this file\'s own park section is an empty no-op.');
 }
 
 // eslint-disable-next-line no-console
