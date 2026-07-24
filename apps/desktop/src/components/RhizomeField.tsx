@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useWritingSettings } from '../store/writingSettings';
 import { useGoalProgress, WORD_GOAL, CELEBRATE_MS } from './WritingIncentives';
 import {
-  mulberry32, hashSeed, createRhizomeState, growMany, burstSegments,
+  mulberry32, hashSeed, createRhizomeState, seedOrigins, saturationTarget, growTo, burstSegments,
   type RhizomeState, type RhizomeGeometry, type RhizomePoint, type RhizomeSegment,
 } from '../store/rhizomeEngine';
 
@@ -99,6 +99,11 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
   const lastUnitRef = useRef<number | null>(null);
   const prevCelebratingRef = useRef(false);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // M3 S2 — the 7 blue-noise origins, computed ONCE per entry (in the growth
+  // effect, from the seeded rng + the first successful measure) so the same
+  // page scatters the same way and the rng stream stays deterministic across
+  // every growTo call.
+  const originsRef = useRef<RhizomePoint[] | null>(null);
 
   // `stateRef` mirrors `state` synchronously (written by `updateState`
   // below, never independently) so the growth effect and the burst effect
@@ -128,6 +133,7 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
   useEffect(() => {
     rngRef.current = mulberry32(hashSeed(`${seedKey}:${SESSION_START}`));
     lastUnitRef.current = null;
+    originsRef.current = null; // M3 — a fresh entry re-scatters its own ground
     const fresh = createRhizomeState();
     stateRef.current = fresh;
     setState(fresh);
@@ -148,15 +154,25 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
   // up — a page opened with 600 words already written shows an EMPTY field
   // until NEW words are written this session, matching the milestone
   // celebration's own established precedent exactly.
+  // M3 S2/S3 — the growth loop. Coverage tracks TOTAL word count (not M2's
+  // session delta) through the saturation curve, so opening a page already
+  // written shows a ground alive to the essay's length (the DoD) rather than
+  // M2's empty-until-you-type. The 7 blue-noise origins (S2) are computed ONCE,
+  // from the seeded rng + the first successful measure, BEFORE any growth — so
+  // the same page scatters the same way and the growth stream stays
+  // deterministic across every call. growTo is forward-only (deleting words is a
+  // no-op, never a shrink — the M2 law) and idempotent for a given target, so a
+  // React 18 StrictMode double-invoke of this effect adds no segments and burns
+  // no extra rng (the origins seed once behind the ref guard; growTo no-ops when
+  // already at target) — the same dev-only determinism hazard updateState's
+  // plain-value form already guards, closed here by construction too.
   useEffect(() => {
-    if (!active) return;
-    if (lastUnitRef.current === null) { lastUnitRef.current = unitCount; return; }
-    const delta = unitCount - lastUnitRef.current;
-    lastUnitRef.current = unitCount;
-    if (delta <= 0 || !rngRef.current) return;
+    if (!active || !rngRef.current) return;
     const m = measureNow();
     if (!m) return;
-    updateState(s => growMany(s, rngRef.current!, m.geo, m.origin, delta));
+    if (!originsRef.current) originsRef.current = seedOrigins(rngRef.current, m.geo);
+    lastUnitRef.current = unitCount;
+    updateState(s => growTo(s, rngRef.current!, m.geo, originsRef.current!, saturationTarget(unitCount)));
   }, [unitCount, active, measureNow, updateState]);
 
   // S4 — the milestone burst + flash, on the SAME `celebrating` transition
