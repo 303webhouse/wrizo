@@ -148,24 +148,47 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   {
     const lineHeightPx = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || 28");
-    let maxStep = 0;
-    let prevScrollTop = 0;
-    let sawAnyScroll = false;
+    // DF1 S1 (deflaked — item 48's ~1/3 suite-contention flake). The measurement
+    // is the max delta between consecutive scroll EVENTS (each one animation frame
+    // of the typewriter's scroll), captured by an IN-PAGE recorder — NOT a
+    // wall-clock poll of scrollTop. The mechanism (band()) clamps every scroll
+    // step to <=1 line-height, so a smooth per-line scroll registers small
+    // per-frame deltas and only a real INSTANT multi-line recenter would register
+    // a >1-line event delta. (Note these 14 lines each WRAP to ~2 rows, so the
+    // per-LINE total scroll is ~2 line-heights — which is why the honest unit is
+    // the per-STEP event delta, not a per-line settle delta.) The recorder runs
+    // on the browser's own frame clock, so its max is immune to how slowly a
+    // contended harness polls — the old `6x sleep(30) + CDP scrollTop read`
+    // sampler measured the advance BETWEEN samples, which under contention
+    // straddled multiple line-heights of an in-flight smooth scroll. A per-line
+    // settle-wait paces the loop (one line at a time, as before). Assertion
+    // unchanged: the largest single scroll step stays <= lineHeightPx * 1.6.
+    const settleScrollTop = () => app.evalJs(`new Promise((res) => {
+      const el = document.querySelector('.mode-scroll');
+      let last = el ? el.scrollTop : 0, stable = 0, frames = 0;
+      const tick = () => {
+        const cur = el ? el.scrollTop : 0;
+        if (cur === last) stable++; else { stable = 0; last = cur; }
+        if (stable >= 3 || ++frames > 180) return res(cur);
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })`);
+    await app.evalJs(`(() => {
+      const el = document.querySelector('.mode-scroll');
+      const fx = window.__fx5a = { max: 0, last: el ? el.scrollTop : 0, moved: false };
+      const onScroll = () => { const st = el.scrollTop; const d = Math.abs(st - fx.last); if (d > fx.max) fx.max = d; if (st > fx.last) fx.moved = true; fx.last = st; };
+      if (el) el.addEventListener('scroll', onScroll, { passive: true });
+      window.__fx5aStop = () => { if (el) el.removeEventListener('scroll', onScroll); };
+    })()`);
+    await settleScrollTop();
     for (let i = 1; i <= 14; i++) {
       await app.typeKeys(`Engage line ${i} of the per-line motion proof, long enough to occupy its own row.\n`);
-      // Sample frequently across the settle window so an in-flight smooth
-      // scroll's own biggest single jump between samples is caught.
-      for (let s = 0; s < 6; s++) {
-        await sleep(30);
-        const st = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
-        const step = Math.abs(st - prevScrollTop);
-        if (st > prevScrollTop) sawAnyScroll = true;
-        if (step > maxStep) maxStep = step;
-        prevScrollTop = st;
-      }
+      await settleScrollTop();
     }
-    ok('S1 (a): per-line engage motion — every sampled scrollTop step across a 14-line typing run stays within one line-height (+ a generous sampling/rounding margin), never a multi-line recenter jump',
-      sawAnyScroll && maxStep <= lineHeightPx * 1.6, JSON.stringify({ lineHeightPx, maxStep }));
+    const stepInfo = await app.evalJs("(() => { window.__fx5aStop(); return { max: window.__fx5a.max, moved: window.__fx5a.moved }; })()");
+    ok('S1 (a): per-line engage motion — every single scroll step across a 14-line typing run stays within one line-height (+ a generous rounding margin), never a multi-line recenter jump',
+      stepInfo.moved && stepInfo.max <= lineHeightPx * 1.6, JSON.stringify({ lineHeightPx, maxStep: stepInfo.max, moved: stepInfo.moved }));
   }
 
   // (a, first-engage) — a page that ALREADY has substantial content past
@@ -189,29 +212,42 @@ await withHarness(async (app) => {
     await app.reload();
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'first-engage page framed' });
-    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-    await sleep(80);
+    // DF1 S1 — install an IN-PAGE scroll recorder BEFORE the focus that drives
+    // the mount catch-up, capturing the max delta between consecutive scroll
+    // EVENTS (each rAF-chained band() step, <=1 line-height by the mechanism).
+    // Scroll events + rAF run on the browser's own frame clock, so the recorded
+    // per-step max is immune to how slowly a contended harness can poll — the
+    // same flake (a) above carried. The old `30x sleep(30)` sampler measured the
+    // advance BETWEEN samples, and its own comment already confessed the straddle
+    // (why its ceiling had been pre-loosened to 2.5 lines); the recorder measures
+    // the true per-step delta, so 2.5*lineHeight is now generous headroom.
+    await app.evalJs(`(() => {
+      const el = document.querySelector('.mode-scroll');
+      const fx = window.__fx5first = { max: 0, last: el ? el.scrollTop : 0, watchLast: el ? el.scrollTop : 0, quiet: 0, frames: 0, moved: false, done: false };
+      const onScroll = () => { const st = el.scrollTop; const d = Math.abs(st - fx.last); if (d > fx.max) fx.max = d; fx.last = st; };
+      if (el) el.addEventListener('scroll', onScroll, { passive: true });
+      const watch = () => {
+        const st = el ? el.scrollTop : 0;
+        if (st !== fx.watchLast) { fx.moved = true; fx.quiet = 0; fx.watchLast = st; } else fx.quiet++;
+        if ((fx.moved && fx.quiet >= 6) || ++fx.frames > 300) { if (el) el.removeEventListener('scroll', onScroll); fx.done = true; return; }
+        requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    })()`);
     const lineHeightPx = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || 28");
     const preInfo = await app.evalJs("({ scrollHeight: document.querySelector('.mode-scroll')?.scrollHeight, clientHeight: document.querySelector('.mode-scroll')?.clientHeight, textLen: document.querySelector('.forward-only-editor')?.innerText?.length })");
     ok('S1 (a, first-engage) precondition: the reloaded page genuinely mounted with substantial pre-existing content, past the hold band', preInfo.textLen > 500 && preInfo.scrollHeight > preInfo.clientHeight, JSON.stringify(preInfo));
-    let maxStep = 0, prevScrollTop = 0;
-    for (let s = 0; s < 30; s++) {
-      await sleep(30);
-      const st = await app.evalJs("document.querySelector('.mode-scroll')?.scrollTop ?? 0");
-      const step = Math.abs(st - prevScrollTop);
-      if (step > maxStep) maxStep = step;
-      prevScrollTop = st;
-    }
-    // A generous-but-still-tight ceiling: the underlying mechanism clamps
-    // EVERY individual band() call to <=1 line-height (verified directly
-    // in (a) above and by reading useTypewriterFade.ts's own band()); this
-    // 30ms poll can occasionally straddle two back-to-back rAF-chained
-    // catch-up steps in one sample, so the ceiling allows ~2 lines, not 1
-    // — still overwhelmingly tighter than the OLD bug's signature (a
-    // single, many-lines-tall instant jump for a 20-line backlog, which
-    // would read as several HUNDRED px here, not merely 2 line-heights).
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.waitFor("window.__fx5first && window.__fx5first.done === true", { label: 'first-engage catch-up settled' });
+    const feResult = await app.evalJs("({ max: window.__fx5first.max, moved: window.__fx5first.moved, finalScrollTop: window.__fx5first.last })");
+    const maxStep = feResult.max;
+    // The mechanism clamps EVERY band() call to <=1 line-height (verified in (a)
+    // above and by reading useTypewriterFade.ts's own band()); the OLD bug's
+    // signature was a single many-lines-tall instant jump for the 20-line
+    // backlog (hundreds of px). `moved` guards that the catch-up was actually
+    // observed (a false 0-step pass is impossible); 2.5*lineHeight is the ceiling.
     ok('S1 (a, first-engage): a page that mounts already deep past the hold band settles via the SAME one-line-at-a-time steps, never one big instant jump — "first-engage especially must not lurch"',
-      maxStep <= lineHeightPx * 2.5, JSON.stringify({ lineHeightPx, maxStep, finalScrollTop: prevScrollTop }));
+      feResult.moved && maxStep <= lineHeightPx * 2.5, JSON.stringify({ lineHeightPx, maxStep, moved: feResult.moved, finalScrollTop: feResult.finalScrollTop }));
   }
 
   // (b) the fade band starts one line lower — --tw-fade-start is set to
