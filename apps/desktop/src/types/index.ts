@@ -117,6 +117,13 @@ export interface Project {
   lastActivityAt?: string;
   lastActivityType?: 'sprint' | 'beat' | 'page';
   lastActivePageId?: string;
+  // TU5 S1 — the book's Bible (L4 of the Tutor's memory): durable writer-owned
+  // facts, ONE additive nullable jsonb column on `projects` (the exact
+  // `journal_entries.tutor` recipe, project-side). Optional for the grandfather
+  // fixed point — a project never touched by the bible has no `tutor` at all
+  // (absent, never null) and syncs byte-identically to today. Writer-authored
+  // only; see TutorBible / Fact below.
+  tutor?: TutorBible;
   // Soft delete — rows that must sync are never hard-deleted (see storage adapter / sync).
   deletedAt?: string;
 }
@@ -444,6 +451,33 @@ export interface TutorMessage {
 export interface TutorThread {
   messages: TutorMessage[];
   lastRead?: { at: string; chars: number };
+}
+
+// TU5 S1 — the book's Bible (L4 of the Tutor's five-layer memory): durable,
+// writer-owned facts of the project. Rides `projects` as ONE additive nullable
+// jsonb column (`add column if not exists tutor jsonb` — the exact
+// `origin`/`journal_entries.tutor` recipe, project-side this time), never a new
+// table (a table is a whole new synced collection — the BM1 charter's own
+// reasoning). WRITER-AUTHORED ONLY: the Tutor cannot write here, not even by
+// proposal (structured model output becoming app state is a cousin of the
+// affordance A13 forbids). `source` is an enum of one today so L5-era
+// provenance never needs a migration. Grandfather clause, identical to
+// TutorThread's above: null <-> undefined is a fixed point through every store
+// mutation and both sync mappers — a project never touched by the bible is
+// byte-identical to today (absent, never a literal null or an empty
+// { v:1, facts:[] }). A fact is a line, not a page: its 300-char cap is the
+// store's policy (tutorBible.ts), never enforced in this shape.
+export interface Fact {
+  id: string;
+  text: string;
+  source: 'writer';
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+}
+
+export interface TutorBible {
+  v: 1;
+  facts: Fact[];
 }
 
 // S1 — the Screenplay Room's document (fragments-under-Pages citizen #2, ruled
