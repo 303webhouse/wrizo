@@ -211,6 +211,14 @@ await withHarness(async (app) => {
   // ONLY — the Board face KEEPS its own Done button (no rail, no Pages/
   // Plan toggle there; Done is its only exit) and is untouched by this
   // check or this file (this fixture never mounts a Board at all).
+  // CD4 S1 (2026-07-24) — the parenthetical "the Board face KEEPS its own Done
+  // button … Done is its only exit" above is now HISTORICAL: CD4 removed the
+  // Board's Done too and mounted the PAGE → door on EVERY board (system boards
+  // included) as its exit. This check's OWN subject — Publish reachability on a
+  // loose Page/Script surface — is untouched and still passes, so the frozen
+  // label below stays byte-identical (no falsified assertion here to park); the
+  // Board-Done supersession's own park cycle + live successors live in b2.mjs
+  // and cd4.mjs. Cross-reference disclosure only, per the immutability codicil.
   const chromeLive = await app.evalJs(`(() => {
     const publishTab = [...document.querySelectorAll('.desk-mode-strip .desk-mode-tab')].find(b => b.textContent === 'Publish');
     return { publishPresent: !!publishTab, publishInert: !!publishTab?.closest('[inert]'), publishAriaDisabled: publishTab?.getAttribute('aria-disabled') };

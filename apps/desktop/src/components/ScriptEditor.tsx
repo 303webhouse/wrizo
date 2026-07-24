@@ -710,8 +710,12 @@ export function ScriptEditor({ id }: { id: string }) {
                 view (PageEditor.tsx's own toggle carries the same semantics). */}
             {project && (
               <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
+                {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
+                    retired on the script page bar too, same as PageEditor's — the legacy
+                    beats control is dormant everywhere (secondary access stays; data
+                    grandfathered). The script bar carries no PLAN → door, so it now holds
+                    just "Pages". */}
                 <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
-                <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
               </div>
             )}
             {fromBoard && (

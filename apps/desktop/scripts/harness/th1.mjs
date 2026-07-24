@@ -197,10 +197,21 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted' });
-  const planLabel = await app.evalJs("document.querySelector('.sprint-toggle-btn:nth-child(2)')?.textContent");
   const pagesLabel = await app.evalJs("document.querySelector('.sprint-toggle-btn:nth-child(1)')?.textContent");
   const pagesLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('page')");
-  ok('check 2/6: the Plan toggle still reads exactly "Plan" on Plateau', planLabel === 'Plan', String(planLabel));
+  // CD4 S2 (2026-07-24) — successor of the ORIGINAL check below (quoted VERBATIM,
+  // PARKED, A4 + the immutability law): the elder "Plan" flight tab
+  // (.sprint-toggle-btn:nth-child(2)) is retired, so its DOM no longer exists to
+  // read (planLabel came back undefined). The check's REAL intent — the theme
+  // lexicon's "plan" term renders exactly "Plan" on the Plateau (default) theme —
+  // is preserved, verified DIRECTLY against the lexicon (the term is untouched by
+  // CD4; only the toggle that displayed it is gone). The word "Plan" also still
+  // renders live in the PLAN → door (dt('pagePlanDoor')), unchanged.
+  // ORIGINAL:
+  //   const planLabel = await app.evalJs("document.querySelector('.sprint-toggle-btn:nth-child(2)')?.textContent");
+  //   ok('check 2/6: the Plan toggle still reads exactly "Plan" on Plateau', planLabel === 'Plan', String(planLabel));
+  const planLexiconDirect = await app.evalJs("window.wrizoLexicon.t('plan')");
+  ok('check 2/6 (CD4 S2 successor): the theme lexicon "plan" term still renders exactly "Plan" on Plateau (verified directly — the elder Plan flight tab that displayed it is retired)', planLexiconDirect === 'Plan', String(planLexiconDirect));
   ok('check 2/6 (R1): the Pages toggle now renders via tMany(\'page\') — matches the lexicon projection and stays byte-equal to "Pages"', pagesLabel === 'Pages' && pagesLabel === pagesLexiconMany, `${pagesLabel} vs ${pagesLexiconMany}`);
 
   // -- check 6: Plateau default-theme regression — byte-equal to pre-TH1 values --

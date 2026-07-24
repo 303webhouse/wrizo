@@ -154,8 +154,13 @@ await withHarness(async (app) => {
   // PLAN → door at its end (S3's mirror of the board's PAGE →), so the right
   // corner now holds the Pages/Plan flight doorway PLUS PLAN →. Done stays
   // scrapped (CD3); still no Catch anywhere framed.
-  ok('BM1 S3 successor: the right corner holds the Pages/Plan flight doorway PLUS the PLAN → door on a project-origin page — Done still scrapped, no Catch anywhere on this framed surface',
-    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Plan →']) && !topLine.catchAnywhere,
+  // CD4 S2 (2026-07-24) — successor of the BM1 S3 check (moved VERBATIM into the
+  // PARKED section below, A4 + the immutability law): Nick's ruling retires the
+  // elder "Plan" flight tab (→ the legacy StructureBoard, /project/:id/board),
+  // so the arrow-dressed PLAN → door is now the bar's ONLY Plan word — the right
+  // corner holds ['Pages', 'Plan →']. Done still scrapped; still no Catch framed.
+  ok('CD4 S2 successor: the right corner holds Pages + the PLAN → door ONLY on a project-origin page (the elder Plan flight tab retired) — Done still scrapped, no Catch anywhere on this framed surface',
+    JSON.stringify(topLine.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLine.catchAnywhere,
     JSON.stringify(topLine));
 
   // ==========================================================================
@@ -234,8 +239,13 @@ await withHarness(async (app) => {
   const scriptActionButtons = await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
   // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL
   // check (quoted verbatim, PARKED below, A4): Done scrapped here too.
-  ok('CD3 successor of "S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay": ScriptEditor\'s header carries ONLY the Pages/Plan flight toggle on a project-origin screenplay (Done scrapped)',
-    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages', 'Plan']), JSON.stringify(scriptActionButtons));
+  // CD4 S2 (2026-07-24) — successor of the CD3 check (moved VERBATIM into the
+  // PARKED section below, A4 + the immutability law): the elder "Plan" flight
+  // tab retires on the script page bar too (the same legacy beats control as
+  // the prose bar's). The script bar carries no PLAN → door, so it now holds
+  // ONLY ['Pages']. Done still scrapped.
+  ok('CD4 S2 successor: ScriptEditor\'s header carries ONLY the Pages flight door on a project-origin screenplay (the elder Plan flight tab retired, Done still scrapped)',
+    JSON.stringify(scriptActionButtons) === JSON.stringify(['Pages']), JSON.stringify(scriptActionButtons));
 
   // ==========================================================================
   // S8 (A7) — a loose page opens in Free Write on first mount, no explicit
@@ -466,6 +476,11 @@ if (process.env.HARNESS_PARKED === '1') {
     // every exit; Done stays on the Board face only (no rail, no Pages/
     // Plan toggle there — its only exit). Live successor: this file's own
     // live S1 section, above.
+    // CD4 S1 (2026-07-24) — the "Done stays on the Board face only" clause above
+    // is now HISTORICAL: CD4 removed the Board's own Done too, and mounted the
+    // PAGE → door on EVERY board (system boards included) as its exit. The
+    // supersession's own park cycle + live successors live in b2.mjs (the Shelf
+    // Board's exit) and cd4.mjs (the sweep). This CD3 record stays byte-frozen.
     await freshProsePage(app);
     const topLineParked = await app.evalJs(`({
       actionButtons: [...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim()),
@@ -479,8 +494,14 @@ if (process.env.HARNESS_PARKED === '1') {
     // PLAN → door (BM1 S3). The gen-2 CD3 successor whose text this probe used
     // to match (['Pages','Plan']) is parked verbatim in its OWN fresh entry
     // immediately below (a new park cycle, never an edit-in-place of it).
+    // CD4 S2 (2026-07-24) — the SAME probe-follows-reality discipline: the elder
+    // "Plan" flight tab retires, so both parked probes below re-verify against
+    // the new truth ['Pages','Plan →'] (their RECORD names stay byte-identical).
+    // The gen-3 BM1 S3 successor text a probe used to match
+    // (['Pages','Plan','Plan →']) is parked verbatim in its OWN fresh entry
+    // immediately below the two (a new park cycle, never an edit-in-place).
     pok('PARKED (was "S1/cd1.1: the right corner holds Done plus the Pages/Plan flight doorway on a project-origin page — no Catch anywhere on this framed surface") — CD3: Done scrapped (Nick\'s ruling — Publish/rail/free navigation cover every exit); the right corner holds ONLY the Pages/Plan flight doorway now — live successor: this file\'s own live S1 section',
-      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Plan →']) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLineParked.catchAnywhere,
       JSON.stringify(topLineParked));
     // BM1 S3 — a NEW park cycle for the now-obsolete CD3 successor (quoted
     // VERBATIM; the prior generation's text is never edited in place): the
@@ -488,7 +509,15 @@ if (process.env.HARNESS_PARKED === '1') {
     // "ONLY the Pages/Plan flight doorway" no longer holds. Live successor:
     // this file's own live BM1 S3 successor in the S1 section.
     pok('PARKED (was "CD3 successor ...: the right corner holds ONLY the Pages/Plan flight doorway — Done scrapped (pages autosave; Publish/rail/free navigation cover every exit), no Catch anywhere on this framed surface") — BM1 S3: the PLAN → door joins the bar; the right corner now holds the Pages/Plan flight doorway PLUS PLAN → — live successor: this file\'s own live BM1 S3 successor (S1 section)',
-      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan', 'Plan →']) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLineParked.catchAnywhere,
+      JSON.stringify(topLineParked));
+    // CD4 S2 — a NEW park cycle for the now-obsolete BM1 S3 successor (quoted
+    // VERBATIM; the prior generation's text is never edited in place): the elder
+    // "Plan" flight tab retires, so "the Pages/Plan flight doorway PLUS PLAN →"
+    // no longer holds — the bar now carries ['Pages','Plan →']. Live successor:
+    // this file's own live CD4 S2 successor in the S1 section.
+    pok('PARKED (was "BM1 S3 successor: the right corner holds the Pages/Plan flight doorway PLUS the PLAN → door on a project-origin page — Done still scrapped, no Catch anywhere on this framed surface") — CD4 S2: the elder Plan flight tab retires; the right corner now holds Pages + the PLAN → door ONLY ([\'Pages\',\'Plan →\']) — live successor: this file\'s own live CD4 S2 successor (S1 section)',
+      JSON.stringify(topLineParked.actionButtons) === JSON.stringify(['Pages', 'Plan →']) && !topLineParked.catchAnywhere,
       JSON.stringify(topLineParked));
 
     // ORIGINAL (this file's own live S7 section, generation 2, B1-era):
@@ -530,9 +559,21 @@ if (process.env.HARNESS_PARKED === '1') {
     //
     // CD3: Done scrapped here too (the same ruling as the prose top line
     // above). Live successor: this file's own live S1/cd1.1 section, above.
+    // CD4 S2 (2026-07-24) — probe-follows-reality again: the elder "Plan" flight
+    // tab retires on the script bar too, so this parked probe re-verifies the
+    // new truth ['Pages'] (its RECORD name stays byte-identical). The gen-2 CD3
+    // successor text (['Pages','Plan']) is parked verbatim in its OWN fresh
+    // entry immediately below (a new park cycle, never an edit-in-place).
     const scriptActionButtonsParked = await app.evalJs("[...document.querySelectorAll('.sprint-actions button')].map(b => b.textContent.trim())");
     pok('PARKED (was "S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay") — CD3: Done scrapped; the header carries ONLY the Pages/Plan flight toggle now — live successor: this file\'s own live S1/cd1.1 section',
-      JSON.stringify(scriptActionButtonsParked) === JSON.stringify(['Pages', 'Plan']), JSON.stringify(scriptActionButtonsParked));
+      JSON.stringify(scriptActionButtonsParked) === JSON.stringify(['Pages']), JSON.stringify(scriptActionButtonsParked));
+    // CD4 S2 — a NEW park cycle for the now-obsolete CD3 script successor (quoted
+    // VERBATIM; the prior generation's text is never edited in place): the elder
+    // "Plan" flight tab retires, so "ONLY the Pages/Plan flight toggle" no longer
+    // holds — the script bar carries just ['Pages'] (it has no PLAN → door).
+    // Live successor: this file's own live CD4 S2 successor (S1/cd1.1 section).
+    pok('PARKED (was "CD3 successor of \\"S1/cd1.1: ScriptEditor\'s header also carries the Pages/Plan flight toggle beside Done on a project-origin screenplay\\": ScriptEditor\'s header carries ONLY the Pages/Plan flight toggle on a project-origin screenplay (Done scrapped)") — CD4 S2: the elder Plan flight tab retires; the script header carries ONLY [\'Pages\'] now — live successor: this file\'s own live CD4 S2 successor (S1/cd1.1 section)',
+      JSON.stringify(scriptActionButtonsParked) === JSON.stringify(['Pages']), JSON.stringify(scriptActionButtonsParked));
 
     return parkedChecks;
   });

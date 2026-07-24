@@ -643,8 +643,12 @@ function PageEditorView({ id }: { id: string }) {
             <div className="sprint-actions">
               {project && (
                 <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
+                  {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
+                      retired; the arrow-dressed PLAN → door below is the bar's only Plan
+                      word now. The legacy board stays reachable via its secondary access
+                      (ProjectHome "View board" / BeatWizard / QuickSprint) — dormant-not-
+                      dead, the StructureWizard precedent; beat_id/story_plan_id grandfathered. */}
                   <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
-                  <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
                 </div>
               )}
               {fromBoard && (
@@ -755,8 +759,9 @@ function PageEditorView({ id }: { id: string }) {
         <div className="sprint-actions">
           {project && (
             <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
+              {/* CD4 S2 — elder "Plan" flight tab (→ legacy StructureBoard) retired; the
+                  PLAN → door below is the bar's only Plan word now (legacy path mirror). */}
               <button type="button" role="tab" aria-selected="true" className="sprint-toggle-btn active" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}`); }}>{lexMany('page')}</button>
-              <button type="button" role="tab" aria-selected="false" className="sprint-toggle-btn" onClick={() => { flush(); flushNow(); navigate(`/project/${project.id}/board`); }}>{lex('plan')}</button>
             </div>
           )}
           <button type="button" className="btn-quiet page-copy" onClick={() => copyText(textRef.current)} title={`Copy the clean ${lex('page').toLowerCase()} text`}>Copy {lex('page').toLowerCase()} text</button>
