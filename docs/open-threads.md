@@ -5912,6 +5912,27 @@ outlive a session lives here, not in chat.
     boot-settle manifestation, item 60's revisit-raw-coordinate question still
     open. Touch: `RhizomeField.tsx`, `rhizomeEngine.ts`, `m2.mjs`, `m3.mjs`
     (new); guard-rail before the commit; this ledger edit on `main`.
+    **MERGED — 2026-07-24, merge commit `7ebe703`.** Built by chat 3
+    (`m3-rhizome-roams` @ `ccf643b`); merged by chat 1 in the serialized lane,
+    the standard sequence, guard-rail confirmed. TRUE 3-way `--no-ff` onto `main`
+    @ `a896923` (merge-base `541f435`; `main` advanced with all of CD4/CD4.1 +
+    records since) — **auto-resolved CLEAN, zero conflicts**: M3 touched only
+    `RhizomeField.tsx`, `rhizomeEngine.ts` (new), `index.css`, `m2.mjs`, `m3.mjs`
+    (new), no overlap with the CD4/CD4.1 files. At the merge HEAD: docs survived
+    (zero deleted); `tsc` ×2 EXIT 0; `build:web` clean; **`m3.mjs` PASS 33 and
+    `m2.mjs` PASS 54, both `HARNESS_PARKED` settings, read to completion in the
+    main loop**; integration spot-check `cd4`/`cd1`/`m1` GREEN (the M3 + CD4/CD4.1
+    union is clean). Zero schema, zero server files, zero deps.
+    **Fable's ruling on the geometry-drift RE-FIT: ENDORSED — within M3's own
+    mandate** (the boot-settle + window-resize re-sync that makes S2's paper-
+    avoidance verdict real against the paper's settled place). **Item 60 STAYS
+    OPEN** for the revisit-determinism (revisit-raw-coordinate) question proper —
+    the re-fit addresses only the boot-settle manifestation of item 60's root.
+    **DEPLOY HELD — M3 rides the batched word with FX11 + CD4 + CD4.1 + docs.**
+    Merge rides the zero-schema pre-authorization; Fable reviews post-merge.
+    **CLOSE-PENDING** Fable's post-merge review + Nick's device sitting (his eye
+    on the ground roaming warm to the edges, an essay's worth of fill, never
+    touching his words). Then item 58 closes.
 60. **The Rhizome revisit-geometry defect** (lifted from `m2.mjs`'s Section A
     comment per the M2 review's standing ask + M3 S0 — its RECORD is M3's
     scope, its FIX is not). On revisiting the SAME entry within a session the
