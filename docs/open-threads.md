@@ -5714,6 +5714,39 @@ outlive a session lives here, not in chat.
     blind patch). Then item 57 closes. Fable's post-merge review follows;
     M3 (item 58) unblocks when it lands.
 
+59. **CD4 — the Two Retirements.** **OPENED — 2026-07-24 (S0).**
+    **OWNER REASSIGNED chat 1 by Nick's word of 2026-07-24** (Nick's
+    parallelization word, Fable's ruling — this ticket was briefed to chat 3
+    and is now built and merged in this, the orchestrating, session). Brief:
+    `docs/wrizo-alpha/cd4-two-retirements-brief.md` (committed `541f435`).
+    Zero schema, zero server files; merge pre-authorized as zero-schema;
+    Fable reviews post-merge; deploy rides the batched word with FX11 + M3.
+    Runs between FX11's post-merge review (landed on `main` `541f435`) and M3.
+    **Authority — Nick's words of 2026-07-24, quoted:** "Done should die
+    everywhere. A writer is never Done — they may choose to finally share a
+    piece they've written, but that option lives under Publish or Workshop."
+    And on the old beats control: "I'm not really sure how this fits in with
+    the new architecture" — ruled by Fable as retirement of the control, the
+    system dormant beneath it.
+    **S1 — Done dies everywhere:** the Board's Done (the last one standing) is
+    removed; PAGE → becomes the Board's only exit (its unpaired fallback
+    already proven under trusted pointer in `bm1.mjs`). Grep-first for every
+    "Done" control across surfaces; stragglers die in the same pass.
+    **S2 — the old Plan control retires:** the page bar's legacy beats control
+    (the elder "Plan") is removed; the arrow-dressed PLAN → door becomes the
+    bar's only Plan word (resolving the A3 collision by retirement, not
+    rename). The beats system goes DORMANT, not dead — `beat_id` and
+    `story_plan_id` stay in the schema untouched and grandfathered; no data
+    migration, no deletion. Successor is the Thread arc (`thread-arc-seed.md`,
+    post-vacation).
+    **Park obligation, per the immutability codicil:** the b2/hb1 Board-Done
+    checks and cd1's successors falsified by S1, and the live gen-3 bar check
+    (`['Pages','Plan','Plan →']`) falsified by BOTH slices, carry their full
+    A4 park cycles — verbatim originals, superseding authority (Nick's word,
+    quoted), live successors (S2's gen-4 asserting `['Pages','Plan →']`) — in
+    the SAME commits as the removals. **Build + merge in progress this
+    session (E1.1 pattern); SHA reported on close.**
+
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
