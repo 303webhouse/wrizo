@@ -49,8 +49,9 @@
 //   the PRE-FIX markup already guaranteed by construction (zero padding on
 //   `.mode-scroll` meant its content box WAS `.mode-page`'s content box),
 //   so this proves the measure never moved rather than merely matching a
-//   number that happens to look right today. Checked at the 1100 floor and
-//   the 1280 reference width.
+//   number that happens to look right today. Checked at the 1100 floor, the
+//   1280 reference width, and the 2200 wide viewport (FX11 S5 — FX10 review
+//   advisory 2's missing leg).
 //
 // Park sweep (S5's own instruction): a full, independent grep-based sweep
 // of scripts/harness/, THEN an empirical re-run of every pre-existing file
@@ -583,8 +584,11 @@ await withHarness(async (app) => {
   // ==========================================================================
   // S4 — the scrollbar sits flush at the paper's own outer right edge; the
   // text measure is proven unchanged via structural equivalence.
+  // FX11 S5 (FX10 review advisory 2) — the 2200 leg added: WIDE_W joins the
+  // width list so this section proves the flush + the measure at every width
+  // the header names, not just the floor and the laptop reference.
   // ==========================================================================
-  for (const width of [FLOOR_W, LAPTOP_W]) {
+  for (const width of [FLOOR_W, LAPTOP_W, WIDE_W]) {
     await freshProsePage(app, width, 900);
     const info = await app.evalJs(`(() => {
       const scroll = document.querySelector('.mode-scroll');

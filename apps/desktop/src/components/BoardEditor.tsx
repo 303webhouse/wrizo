@@ -1422,6 +1422,15 @@ export function BoardEditor({ id }: { id: string }) {
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onCancel);
+      // FX11 S1 (FX8 review A1) — a viewport resize changes pageWidthPx, which
+      // re-runs this effect: the old listeners are torn down here and fresh ones
+      // (a new closure, phase='idle') re-attached. Without clearing the flag, a
+      // resize MID-DRAG left the React `isDragging` state true with no live
+      // gesture to ever call finish() and clear it — leaving data-dragging='true'
+      // on the canvas and every face stuck cursor:grabbing until the next drag
+      // completed. Clearing it in the cleanup makes the re-attach start at rest.
+      // (A no-op when no drag is in flight — React bails on an unchanged value.)
+      setIsDragging(false);
     };
   }, [pageWidthPx]);
 
