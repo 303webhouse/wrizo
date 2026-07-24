@@ -5612,6 +5612,32 @@ outlive a session lives here, not in chat.
     check, rename on next touch; (2) `addFact` re-stamps `{ v: 1, ... }`
     while `editFact` spreads the existing bible — no live effect (`v` is
     literally type `1`), harmonize on next touch.
+    **DEPLOYED — 2026-07-24, on Nick's own separate word ("Deploy").**
+    Manifest independently re-enumerated since the last deploy (`0afebcf`,
+    deployment `35207e0a`): TU5's eight slices (S0-S7) + the merge + the
+    docs records commits — nothing unnamed; the only NEW code is TU5's
+    (server surface exactly `tutor.ts`/`migrate.ts`/`sync.ts`, zero new
+    deps). **The `projects.tutor` migration ran on the production boot**
+    (additive `if not exists` — server came up clean, healthcheck passed).
+    `railway up` on `main` @ `5dfdcc8` (deployment `08676e48`, SUCCESS),
+    confirmed live at `writer-studio-app-production.up.railway.app`.
+    **ADVISORY 3 DISCHARGED — the post-deploy `<book-bible>` server-splice
+    round-trip proof PASSED (2026-07-24).** One production round-trip
+    (open-registration throwaway account → authed `POST /api/tutor/chat`
+    with a `bible` field carrying a distinctive seeded fact, "Hero name:
+    Quillon Vane"): the server returned `HTTP 200
+    {configured:true, reply:"Quillon Vane", model:"deepseek-v4-flash"}` —
+    the model echoed the exact seeded fact, proving end-to-end that the
+    PRODUCTION server accepted the `bible` field, spliced it as the
+    `<book-bible>` wire turn, and it reached the model (the gap the client
+    harness could not cover — the TU2 server-route precedent, satisfied).
+    Footprint disclosed: the proof created one inert throwaway user row in
+    the prod `users` table (a `@wrizo-test.invalid` email, no data, cannot
+    receive mail/log in) — left in place rather than risk an unprompted
+    prod-DB delete; trivially removable on Nick's word if wanted.
+    **ITEM 56 NOW CLOSES ON NICK'S OWN DEVICE SITTING ALONE** — his eye on
+    the Bible section (the last remaining condition; every other gate —
+    schema word, merge, deploy, the server round-trip proof — is met).
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
