@@ -626,12 +626,12 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
         <div className="wz-tutor-disclosure-backdrop wz-tutor-zone">
           <div className="wz-tutor-disclosure" role="dialog" aria-modal="true" aria-label={t('tutorDisclosureTitle')}>
             <div className="wz-tutor-disclosure-title">{t('tutorDisclosureTitle')}</div>
-            {/* TU2 S3 — v2 body (deskLexicon's tutorDisclosureBodyV2), not
-                the v1 tutorDisclosureBody string it supersedes: the panel
-                always shows CURRENT_DISCLOSURE_VERSION's own copy, never an
-                older version's — see store/tutorDisclosure.ts's header
-                comment for why a v1-acknowledged device still sees this. */}
-            <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV2')}</div>
+            {/* TU5 S6 — v3 body (deskLexicon's tutorDisclosureBodyV3), not the
+                v2/v1 strings it supersedes: the panel always shows
+                CURRENT_DISCLOSURE_VERSION's own copy, never an older version's —
+                see store/tutorDisclosure.ts's header comment for why a
+                v1/v2-acknowledged device still sees this exactly once. */}
+            <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV3')}</div>
             <button type="button" className="wz-tutor-disclosure-ack" onClick={acknowledgeDisclosure} autoFocus>
               {t('tutorDisclosureAck')}
             </button>

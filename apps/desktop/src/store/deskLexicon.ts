@@ -145,6 +145,12 @@ export type DeskTermId =
   // mechanism this string is paired with). Title/ack are unchanged by the
   // brief's own wording and are reused as-is; only the body differs.
   | 'tutorDisclosureBodyV2'
+  // TU5 S6 — the disclosure's v3 body: v2's ratified sentence with ONE clause
+  // added naming the writer's saved Bible facts as a third traveler, every
+  // other word preserved (Candidate A). v2 kept above as legible version
+  // history. Nick ratifies this string verbatim (or swaps the alternate) at
+  // the schema word — see docs scratchpad's s6-disclosure-candidates.md.
+  | 'tutorDisclosureBodyV3'
   // TU2 S2 — the listener's own honesty line: shown in the panel's quiet
   // UI copy whenever a send's delta had to be tail-capped (the model's
   // own copy of that same honesty travels in the delta block's plain-data
@@ -567,6 +573,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
   tutorDisclosureBodyV2: 'When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.',
+  tutorDisclosureBodyV3: "When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it, and any facts you've saved in this book's Bible — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.",
   tutorDeltaTruncated: 'Only your latest stretch of new writing was shared this time — earlier new writing since last time went unread.',
   tutorMeterTurnCost: 'This turn, est.:',
   tutorMeterSessionTotal: 'This session, est.:',
