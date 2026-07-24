@@ -128,6 +128,12 @@ export type DeskTermId =
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
   | 'tutorStructureNoBeat'
   | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
+  // TU5 S3 — the book's Bible (L4): section header, a one-line note, empty
+  // state, the add-input placeholder + button, and the per-fact
+  // edit/delete/save/cancel affordances. All writer-facing chrome, all here.
+  | 'tutorBibleTitle' | 'tutorBibleNote' | 'tutorBibleEmpty'
+  | 'tutorBibleAddPlaceholder' | 'tutorBibleAdd'
+  | 'tutorBibleEdit' | 'tutorBibleDelete' | 'tutorBibleSave' | 'tutorBibleCancel'
   | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
   | 'tutorConversationEmpty' | 'tutorConversationSending'
   | 'tutorConversationOffline' | 'tutorConversationError'
@@ -541,6 +547,15 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorStructureNoBeat: 'Not linked to a beat.',
   tutorNudgesTitle: 'Waiting for you',
   tutorNudgesEmpty: 'Nothing waiting right now.',
+  tutorBibleTitle: "The book's Bible",
+  tutorBibleNote: 'Facts you save travel with the book — the Tutor keeps them in mind.',
+  tutorBibleEmpty: 'Nothing saved yet.',
+  tutorBibleAddPlaceholder: 'Note a fact to remember…',
+  tutorBibleAdd: 'Add',
+  tutorBibleEdit: 'Edit',
+  tutorBibleDelete: 'Delete',
+  tutorBibleSave: 'Save',
+  tutorBibleCancel: 'Cancel',
   tutorConversationTitle: 'Talk it through',
   tutorConversationPlaceholder: 'Ask a question…',
   tutorConversationSend: 'Send',

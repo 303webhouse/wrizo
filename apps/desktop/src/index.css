@@ -3261,6 +3261,29 @@ a:focus-visible,
 .wz-tutor-frag-item{ background:none; border:0; color:var(--text-mid); text-align:left;
   font-family:var(--font-ui); font-size:13px; cursor:pointer; padding:6px 4px; transition:.15s; }
 .wz-tutor-frag-item:hover{ color:var(--text-hi); background:var(--ink-800); }
+/* TU5 S3 — the book's Bible section. Writer-authored facts, a plain add input,
+   per-fact edit/delete. Nothing brass at rest: the edit/delete controls are
+   text-scale quiet buttons (the .wz-tutor-dock-btn look), always legible (never
+   hover-hidden, so touch reaches them too), brightening on hover only. No count
+   anywhere (the FX9 law). No private scroll region — the list grows with its
+   content; the panel's own overflow is the single scroller. */
+.wz-tutor-bible-list{ display:flex; flex-direction:column; gap:2px; }
+.wz-tutor-bible-fact{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+  padding:6px 4px; border-radius:var(--radius-sm); }
+.wz-tutor-bible-fact:hover{ background:var(--ink-800); }
+.wz-tutor-bible-text{ flex:1; font-size:13px; color:var(--text-mid); line-height:1.4; overflow-wrap:anywhere; }
+.wz-tutor-bible-actions{ display:flex; gap:4px; flex-shrink:0; }
+.wz-tutor-bible-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
+  font-size:11px; cursor:pointer; padding:2px 4px; transition:.15s; }
+.wz-tutor-bible-btn:hover{ color:var(--text-hi); }
+.wz-tutor-bible-edit{ display:flex; flex:1; gap:6px; align-items:center; }
+.wz-tutor-bible-row{ display:flex; gap:6px; margin-top:2px; }
+.wz-tutor-bible-input{ flex:1; background:var(--ink-800); border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:13px; padding:8px 10px; border-radius:var(--radius-sm); }
+.wz-tutor-bible-add{ background:none; border:1px solid var(--ink-border); color:var(--text-mid);
+  font-family:var(--font-ui); font-size:13px; padding:0 14px; cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
+.wz-tutor-bible-add:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-tutor-bible-add:disabled{ color:var(--text-low); cursor:default; }
 /* The conversation — a plain scrolling transcript + a one-line composer.
    No insert/apply/copy-into-page affordance exists anywhere in this block
    (A13's own mechanical backstop — see Tutor.tsx's structural walk). */
