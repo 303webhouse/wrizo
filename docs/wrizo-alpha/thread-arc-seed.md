@@ -85,4 +85,17 @@ Read arc's own floor. The arcs are converging in his vocabulary; the
 Publish door's eventual far side is the Workshop's intake. Recorded,
 not actioned.
 
+## Inherited agenda (from CD4's post-merge review, 2026-07-24)
+
+**Retire the legacy StructureBoard's remaining doors.** CD4 retired the
+bar's duplicate "Plan" word; the legacy beats board (`/project/:id/board`
+→ `StructureBoard`) still lives dormant-not-dead, reachable via three
+secondary doors CD4 deliberately left untouched (out of its bar-word
+scope): ProjectHome's "View board" link, BeatWizard's completion
+redirect, and QuickSprint's own Pages/Plan toggle. Fable's CD4 review
+endorsed that scoping and ruled the doors' sentencing belongs to this
+committee — retire them with W1, or earlier at the committee's call
+(the Thread arc supersedes the beats system entirely; `beat_id`/
+`story_plan_id` sleep grandfathered until then).
+
 — Fable, capturing Nick's rulings the day they were spoken

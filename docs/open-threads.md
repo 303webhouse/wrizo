@@ -5783,8 +5783,30 @@ outlive a session lives here, not in chat.
     action-completion affordances, not the Board's exit Done; retiring them needs
     replacement labels (a design call), flagged for Fable's DoD ruling.
     **DEPLOY HELD — CD4 rides the batched word with FX11 + M3** (Nick's word).
-    **CLOSE-PENDING** Fable's post-merge review + Nick's device sitting (his hand
-    walks all three system-board doors, per Fable's ruling). Then item 59 closes.
+    **REVIEW LANDED GREEN — 2026-07-24** (`docs/wrizo-alpha/cd4-review-fable.md`):
+    both retirements verified at their sources, the ruling implemented exactly as
+    amended, the four-generation `cd1.mjs` park chain and the three lawful park
+    modes all sound. **Residual (a) — StructureBoard's secondary access — ENDORSED
+    as correctly scoped** (ProjectHome "View board" / BeatWizard / QuickSprint are
+    the legacy system's remaining doors; their sentencing is the Thread committee's,
+    with W1 or earlier — recorded as a Thread-committee agenda item, `thread-arc-
+    seed.md` inherits it). **Residual (b) — the two transient "Done" labels — RULED:
+    they die → CD4.1 (item 61), directed to chat 1.**
+    **CLOSE-PENDING CD4.1 merged + Nick's device sitting** (his hand through all
+    three system-board doors, his eye on the bar that finally holds one Plan). Then
+    item 59 closes — and no completion verb remains anywhere a writer can see.
+61. **CD4.1 — the Last Two Words.** **OPENED — 2026-07-24 (S0), owner chat 1**
+    (directed by Fable's CD4 post-merge review, `cd4-review-fable.md`). The last
+    two literal "Done" labels a writer can see — the card-edit popup's close button
+    (`board-popup-done`) and Spread's select-mode exit toggle — both become
+    **"Close"** (Nick's word categorical; the DoD says no surface says Done; the
+    Spread pair reads Select/Close — a door word, never a completion word). Micro:
+    two strings; the fx4 `board-popup-done` check gets its park cycle + successor,
+    the Spread `app.click('Done')` action becomes `'Close'` (fixture maintenance),
+    and `cd4.mjs` gains a no-"Done"-anywhere structural sweep as the standing guard
+    — all in the same commit. Zero schema, zero server; rides the batched deploy
+    with FX11 + CD4 + M3. Build + merge this session (E1.1 pattern); SHA on close.
+    If either word reads wrong under Nick's hand, it's one string at the sitting.
 58. **M3 — the Rhizome Roams.** **BRIEF COMMITTED — 2026-07-24,
     Fable-authored** (`docs/wrizo-alpha/m3-rhizome-roams-brief.md`).
     **ZERO SCHEMA, zero server files, zero new deps; merge pre-authorized as
