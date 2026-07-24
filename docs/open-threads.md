@@ -6086,6 +6086,31 @@ outlive a session lives here, not in chat.
     `375c10f`. **Item 62 tracks the whole arc: SC1 building, SC2/SC3/SC4 queued
     behind it in that order.**
 
+63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
+    (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
+    (already on `main`), authority **SV2**. DF1 held at a clean commit
+    (`24c6173`, branch `df1-deflake`) — P0 outranks the deflake; DF1 resumes
+    after. Branch `fx13-board-in-the-room` off `main`, own worktree, guard-rail,
+    ledger on `main`; **ZERO SCHEMA, ZERO SERVER FILES**; zero-schema pre-auth,
+    Fable reviews post-merge, deploys batch with the P0 wave. **S1 root cause
+    (named, no clamp-first):** the Board's geometry law is WIDTH-ONLY — the
+    canvas content height is `(maxBottom(boxes)+0.08) x pageWidthPx` floored at
+    `VIEWPORT_MIN_PX=560` (`BoardEditor.tsx:1493`), never viewport-height-aware;
+    the short-screen fit today rests on `.board-canvas-wrap`'s magic
+    `maxHeight: 78vh` clamp (a symptom-patch) which overflows the DeskFrame
+    stage below ~700px (measured: wrap bot 605 > stage bot 574 at 1366x620) and
+    leaves a 2px page overflow at 1366x768 (the wrap's 1px borders). The chrome
+    stays reachable on the current build (the SV2 blocker predates the DeskFrame
+    flex layout), but the law has NO height floor. **S2:** replace the magic
+    clamp with a principled fill of the flex stage's ACTUAL available height.
+    **S3 (constitutional, SV2-ratified):** geometry assertions get a height
+    floor of 768 — the canonical small-laptop leg **1366x768** joins
+    1100/1280/2200; this ticket adds the leg to the Board's harness (`fx13.mjs`)
+    + re-proves FX11's board gesture checks at it; A4-parks any falsified sizing
+    checks; other surfaces adopt the leg as touched (standing law). **DoD:** the
+    board is wholly in the room at 1366x768 — bar, telos, tools, ground — and
+    Add card is one visible click. The law now remembers screens have height.
+
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
