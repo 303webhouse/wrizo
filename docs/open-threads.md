@@ -5821,6 +5821,39 @@ outlive a session lives here, not in chat.
     `build:web`; both HARNESS_PARKED settings; report = push. Drift-check: ZERO
     structural drift; the S2/S3 design (7, K) Fable-ruled, vetoable at the
     sitting.
+    **BUILT — 2026-07-24 (chat 3), on `m3-rhizome-roams` (`ccf643b`); pushed,
+    merge rides the zero-schema pre-auth through chat 1's lane, Fable reviews
+    post-merge, deploy is Nick's word.** All five slices landed — S1 ink
+    `#7A6242`; S2 seven blue-noise origins; S3 saturation `CAP·(1−e^(−words/K))`
+    K=834 (total-word driver, no numbers); S4 determinism + reduced-motion.
+    `m3.mjs` 33/33, `m2.mjs` 54/54, both HARNESS_PARKED settings; `tsc` x2 +
+    `build:web` clean; full historic suite green (fx5's known per-line flake
+    passes on re-run). **M2 park sweep** found only the mount-empty behavior
+    falsified (NOT the anticipated origin-anchor or decay-band checks — M3 keeps
+    origin one = paper bottom-center, and the M2 engine primitives
+    `growMany`/`bandRate` coexist untouched): four `m2.mjs` checks (the two
+    remount-EMPTY / replay-same-shape determinism checks; the two goal-crossing
+    burst checks — the 245+6=251 fixture crosses the goal during "…six", not on
+    the "seven" they bracket) kept verbatim + SUPERSEDED + successor-pointer
+    A4-style, live successors in `m3.mjs` (revisit reproduces the byte-identical
+    saturated ground; crossing the goal lands ≤+12 burst-flagged segments, growth
+    kept whole). Q1 stays parked. **ONE JUDGMENT CALL for review — a
+    geometry-drift refit** (`outsidePaper` origin nudge + a `RhizomeField`
+    re-fit): the harness surfaced that the field grows against the boot-time
+    paper, then the chrome-recede settle raises the paper ~30–40px into the
+    now-static ground (worst at narrow widths; invisible — the field is
+    z-beneath the paper — but a real gap in "the roam avoids the paper", and it
+    IS the DoD path: open an already-written page). S2's verdict is only real if
+    the live roam avoids the paper's SETTLED place, so the field now RE-FITS —
+    rebuilds its ground from the same seed (deterministic; same seed+geo ⇒ same
+    scatter) to a high-water target (forward-only preserved) whenever the
+    measured geometry materially changes (boot-settle + window resize), via a
+    ResizeObserver + one deferred settle-tail re-sync. A behavioral addition to
+    the shipped M2 component beyond the three verdicts, flagged against "nothing
+    else" for Fable to ratify/veto; it partially addresses item 60's root at the
+    boot-settle manifestation, item 60's revisit-raw-coordinate question still
+    open. Touch: `RhizomeField.tsx`, `rhizomeEngine.ts`, `m2.mjs`, `m3.mjs`
+    (new); guard-rail before the commit; this ledger edit on `main`.
 60. **The Rhizome revisit-geometry defect** (lifted from `m2.mjs`'s Section A
     comment per the M2 review's standing ask + M3 S0 — its RECORD is M3's
     scope, its FIX is not). On revisiting the SAME entry within a session the
