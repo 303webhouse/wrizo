@@ -163,7 +163,7 @@ await withHarness(async (app) => {
   await sleep(100);
   const cSelected = await app.evalJs(`document.querySelector('[data-page-id="${C.id}"]').dataset.selected`);
   ok('a hidden-then-reshown selected cell is still marked selected', cSelected === 'true', cSelected);
-  await app.click('Done'); // exit select mode, clears selection
+  await app.click('Close'); // CD4.1 — exit select mode (the toggle reads Select/Close now, not Select/Done); clears selection
   await clickChip('Your order');
   await sleep(100);
 
