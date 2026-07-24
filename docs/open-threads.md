@@ -5688,6 +5688,31 @@ outlive a session lives here, not in chat.
     **Merge rides the zero-schema pre-authorization; Fable reviews post-merge;
     deploy is Nick's separate word. M3 (item 58) unblocks when FX11's
     post-merge review lands.**
+    **MERGED — 2026-07-24, under the zero-schema merge pre-authorization**
+    (the brief's own standing rule — no explicit word needed for the merge;
+    Fable reviews post-merge). Executed in the primary checkout by the
+    orchestrating (chat 1) session per Nick's directive, the TU5 close
+    pattern exactly — guard-rail (`git rev-parse --show-toplevel`) confirmed
+    before every commit. TRUE 3-way `git merge --no-ff origin/fx11-boards-hands`
+    (`fe3ce82`) onto `main` @ `76d6342` (merge-base `48398585`, `main`
+    docs-only since) — auto-resolved clean, zero conflicts. At the merge
+    HEAD: all prior docs verified SURVIVING (reviews, briefs, the A1 ruling,
+    `tutor-rules.md` — zero docs deleted); `tsc` (desktop + server) +
+    `build:web` clean; **`fx11.mjs` re-proven PASS 19 both `HARNESS_PARKED`
+    settings, verdict read to completion in the main loop** (it parks
+    nothing — mostly additive), and the two harnesses FX11 also touched came
+    up green (`e1.mjs` 38/41, the S3 lane titles; `fx10.mjs` 122, the S5
+    2200 leg). Merge commit **`7f8e943`**. Zero schema, zero server files,
+    zero new deps.
+    **DEPLOY HELD — FX11 merges and deploys together with M3** (Nick's word),
+    NOT with this merge.
+    **CLOSE-PENDING Nick's own device sitting**: his eye on the five retired
+    debts, AND — the one thing no harness can reach — the S2 **S-Pen
+    resize-then-move attempt on his actual device** (the mouse/CDP trusted-
+    pointer harness proves the gesture chain structurally, but the stylus
+    long-press path is his to try; the build named it the sole residual, no
+    blind patch). Then item 57 closes. Fable's post-merge review follows;
+    M3 (item 58) unblocks when it lands.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
