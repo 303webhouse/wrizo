@@ -1582,16 +1582,90 @@ a:focus-visible,
    never a writer choice. Square corners, solid borders; accent spent ONLY on
    the active element's hairline + caret (the caret itself is the browser's
    native caret, already brass via caret-color below). */
-.script-page{ font-family:var(--font-script); }
+/* SC1 S1 — the legacy (<1100px) branch's own paper container. The sheet's
+   whole geometry is derived from ONE font-size (see `.script-sheet` below),
+   and that font-size is derived from the room actually available — which
+   means the sheet's PARENT has to be a query container on both branches.
+   This is legacy's; `.desk-frame-stage--screenplay .mode-pagecol` is the
+   framed one. */
+.script-page{ font-family:var(--font-script); container-type:inline-size; }
 /* FX1 S2 — font-family lives on the sheet itself now, not just the legacy
    `.script-page` wrapper: the framed branch (DeskFrame's `.desk-frame-host`)
    never carried that class, so the courier convention was silently missing
    there (part of Nick's "collapsed, wrong-dimension box with misaligned
    text" verdict — courier's fixed advance width is what the WIDTH_CH/ch
    measures in store/scriptMetrics.ts assume). Legacy stays byte-identical
-   (still inherits the same value from .script-page either way). */
-.script-sheet{ color:var(--ink-on-paper); background:var(--paper); border:1px solid var(--ink-border); padding:1in 1in 1in 1.5in; margin:0 auto; font-family:var(--font-script); }
-.script-el{ white-space:pre-wrap; min-height:1.2em; }
+   (still inherits the same value from .script-page either way).
+
+   SC1 S1 (Nick's first screenplay sitting, SC-V2/SC-V3) — the page becomes a
+   PAGE. Root cause, measured before anything was touched (not read off the
+   CSS): this rule set margins in real inches but never set a page, so the
+   sheet had no width of its own — inside `.mode-pagecol` (a flex COLUMN) its
+   `margin:0 auto` turns off cross-axis stretch, and the paper shrink-wrapped
+   its own content. Measured at 1280px: a fresh page's sheet rendered 424px
+   wide, and typing ONE long slugline grew it to 615px — the paper physically
+   changed size as the writer typed (Law 1's own inverse). The 1in/1.5in
+   paddings, being real inches, then ate 240px of those 424px and left a
+   184px text column: ~19 characters per line where the trade's page carries
+   60. That single defect is what Nick saw three ways — "the page is in a
+   weird spot" (SC-V1), "the font is too big" (SC-V2, type that is correct at
+   12pt reading as enormous against a 19-character measure), and "the size of
+   the page is not commiserate to one page of screenwriting" (SC-V3).
+
+   The standard, pinned by the SC committee (docs/wrizo-alpha/
+   sc-committee-pass.md): US Letter 8.5 x 11in; Courier 12pt = 10 characters
+   per inch, 6 lines per inch; margins left 1.5in, right 1in, top 1in,
+   bottom 1in; text measure 6.0in = 60 characters.
+
+   ONE derivation makes all of that fall out, so nothing here can drift:
+   at 12pt, 1em = 16px = 1/6in, so **1in = 6em** exactly, and Courier's 0.6em
+   advance makes **1ch = 0.6em** exactly. Every dimension below is therefore
+   the trade's own inch measure written in em —
+     8.5in page = 51em     11in page = 66em
+     1in margin = 6em      1.5in margin = 9em
+     6.0in measure = 51 - 9 - 6 = 36em = 60ch  (the grid in
+     store/scriptMetrics.ts is stated in ch and lands on it by construction)
+     6 lines/inch = 1em per line = `line-height:1`
+   — so the page, the margins, the measure, the metric and the leading are
+   all one number's consequences. THE SCALING LAW is that number's own
+   definition, below: 1rem (12pt, the page at its true size) until the room is
+   genuinely narrower than a page, and `100cqw / 51` — the container's own
+   inline size divided by the page's width in em — from there down. Because
+   every dimension is em, changing that one number scales the WHOLE sheet as a
+   single object: every inch shrinks by the identical ratio, no inch ever
+   compresses independently, and the grid never reflows.
+   `box-sizing:border-box` (this file's line 4) is load-bearing: `width:51em`
+   is the page INCLUDING its margins, exactly as a sheet of paper is.
+
+   Height is `min-height`, not `height`: until SC2 derives page breaks, a
+   script that overflows 11in simply grows taller — the lawful interim,
+   disclosed in the SC1 brief. */
+.script-sheet{
+  color:var(--ink-on-paper); background:var(--paper); border:1px solid var(--ink-border);
+  font-family:var(--font-script);
+  /* The scaling law is one-directional, exactly as the SC1 brief states it:
+     the sheet keeps true proportions "below its natural width," and its
+     natural width is a US Letter page at 12pt — 816px — full stop. This is
+     deliberately NOT multiplied by `--paper-scale` the way prose's measure is:
+     prose has no true size, so a wide monitor may lawfully enlarge its paper,
+     but a screenplay page IS a physical reference (the whole point of SC-V3),
+     and 12pt is the trade's own number. Nick's "the font is too big" verdict
+     was recorded at a ~2560px sitting, where `--paper-scale` is 1.2 — type
+     rendering at an effective 14.4pt. Below 816px of room the min() arm takes
+     over and the WHOLE page scales as one object (every inch by the identical
+     ratio, no inch compressing on its own, the grid never reflowing). */
+  font-size:min(1rem, calc(100cqw / 51));
+  line-height:1;                    /* exactly 6 lines/inch at 12pt */
+  width:51em;                       /* 8.5in */
+  min-height:66em;                  /* 11in */
+  max-width:100%;
+  padding:6em 6em 6em 9em;          /* 1in top/right/bottom, 1.5in left */
+  margin:0 auto;
+}
+/* SC1 S1 — an empty element occupies exactly ONE line of the 6-lpi grid
+   (was 1.2em, a prose-ish floor that put every blank element 20% off the
+   grid the paginator will read in SC2). */
+.script-el{ white-space:pre-wrap; min-height:1em; }
 .script-el-active{
   outline:none; cursor:text; caret-color:var(--brass);
   border-bottom:1px solid var(--brass);
@@ -2507,10 +2581,26 @@ a:focus-visible,
    (character count) never changes, only its pixel width does (Law 1). The
    760px cap is scaled too so it can never clamp the ch-derived width once
    the scale grows it past the old flat cap. */
-.desk-frame-stage--prose .mode-pagecol,
-.desk-frame-stage--screenplay .mode-pagecol{
+.desk-frame-stage--prose .mode-pagecol{
   width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%; min-width:0;
   font-size:calc(1rem * var(--paper-scale));
+}
+/* SC1 S1/S4 — the screenplay column STOPS sharing prose's measure. FX1 S2 put
+   script on `.mode-pagecol` to end a worse defect (the stage sizing itself,
+   with no paper inside it) and that class is still right; what was wrong is
+   the WIDTH it inherited here. `60ch` resolves against THIS element's own
+   font — the UI font, not Courier — so the screenplay column measured ~615px
+   at the 1280px reference (measured, not derived): not the prose measure it
+   was aiming at, and nowhere near a US Letter page. A screenplay page is
+   8.5in wide by law (docs/wrizo-alpha/sc-committee-pass.md), so this column
+   IS the page's width, full stop, and the sheet fills it exactly.
+   `container-type:inline-size` makes this the query container the sheet's
+   own one-number derivation reads (`100cqw / 51` — see `.script-sheet`);
+   `max-width:100%` is what hands the sheet a smaller number to scale by when
+   the stage genuinely has less room than a page needs. */
+.desk-frame-stage--screenplay .mode-pagecol{
+  width:8.5in; max-width:100%; min-width:0;
+  container-type:inline-size;
 }
 
 /* FX3 S1 — the fill-down chain's remaining links, both surfaces (S7's
@@ -2588,12 +2678,30 @@ a:focus-visible,
    overflow guard `.mode-stage` already carries for the identical near-
    floor reason (the "Review fix" comment above) — height-fill is
    untouched (cross-axis stretch never depended on flex-grow). */
-.desk-frame-stage > .desk-frame-scroll-cap{ height:auto; flex:0 1 auto; min-width:0; max-width:100%; min-height:0; }
+/* SC1 S4 — `scrollbar-gutter:stable both-edges` is the last piece of "the room
+   is seated." A true 11in page is taller than the stage at every ordinary
+   viewport, so this box now carries a PERMANENT vertical scrollbar where
+   before it only sometimes did. A one-sided scrollbar makes the box 10px wider
+   than its own content box, and `.mode-pagecol` (an ordinary block child) sits
+   at the content box's left edge — which put the paper 5px left of the stage's
+   centre at every width (measured). Reserving the gutter on BOTH edges keeps
+   the page centred on the stage, which is what the sliver and Tutor anchors'
+   own math assumes (fx7.mjs S1 asserts it to within 1px). */
+.desk-frame-stage > .desk-frame-scroll-cap{ height:auto; flex:0 1 auto; min-width:0; max-width:100%; min-height:0; scrollbar-gutter:stable both-edges; }
+/* SC1 S1 — the framed sheet fills its column (which IS the page's 8.5in
+   width, above) instead of shrink-wrapping inside it: `width:100%` is the
+   whole fix for "the paper grew 191px when I typed a long slugline."
+   `flex:0 0 auto` replaces FX3's `flex:1 0 auto` — a true page has a true
+   height (11in, `min-height` on the base rule) and must never be stretched
+   to a stage's leftover space, which is what the old flex-grow did. The
+   sheet is now taller than the stage at ordinary viewports, so it scrolls
+   inside `.desk-frame-scroll-cap` exactly as a long script always did.
+   Padding and font-size are NOT restated here — the base `.script-sheet`
+   rule owns every dimension through its one em derivation, and a second
+   `--paper-scale` copy here is precisely the drift that rule exists to
+   prevent. */
 .desk-frame-stage .script-sheet{
-  flex:1 0 auto; margin:0 auto var(--fx3-paper-fence);
-  font-size:calc(1rem * var(--paper-scale));
-  padding:calc(1in * var(--paper-scale)) calc(1in * var(--paper-scale))
-          calc(1in * var(--paper-scale)) calc(1.5in * var(--paper-scale));
+  flex:0 0 auto; width:100%; margin:0 auto var(--fx3-paper-fence);
 }
 
 /* CD1 S2 — the sliver's anchor: an ABSOLUTELY POSITIONED overlay inside
@@ -2709,12 +2817,28 @@ a:focus-visible,
   width: var(--sliver-anchor-w);
   left: calc(50% - var(--sliver-paper-half) + var(--sliver-overflow) - var(--sliver-anchor-w));
 }
-/* Prose and screenplay share the SAME canonical paper width (FX1 S2 put
-   script on `.mode-pagecol` too), so no divergence from the base rule is
-   needed — kept as a hook only (DeskFrame.tsx always applies one of these
-   modifier classes alongside the base class). */
-.desk-frame-sliver-anchor--prose,
-.desk-frame-sliver-anchor--screenplay{ /* intentionally empty — see comment above */ }
+/* Prose keeps the base rule's own half-measure (FX1 S2's "both surfaces share
+   `.mode-pagecol`" is still true of the CLASS) — kept as a hook only
+   (DeskFrame.tsx always applies one of these modifier classes alongside the
+   base class). */
+.desk-frame-sliver-anchor--prose{ /* intentionally empty — see comment above */ }
+/* SC1 S4 (SC-V1, "the side menus are floating in space") — root-caused live,
+   and it is NOT an anchor defect: fx7.mjs's own S1 checks are green today and
+   stay green, because they measure this anchor against `.mode-pagecol` and it
+   IS flush against it (measured: 0px, every reference width). What Nick saw
+   is that the PAPER wasn't the column — the sheet shrink-wrapped its content
+   INSIDE the column, so the anchors rode the column's edges while the paper
+   floated 66-115px away inside them (measured at 1100/1280/2200 on plateau;
+   37-45px on Flux, whose stage tracks differ — the same defect, not a
+   Flux-only one). S1's `width:100%` closes that gap by construction, and this
+   rule keeps the anchor's own math honest now that the screenplay column
+   carries a page's width rather than prose's: half of 8.5in, scaled by the
+   same token the column is, floored at the stage's own half so a clamped
+   (max-width:100%) page can't push the anchor off the stage — the same
+   `min(50%, ...)` idiom `--board` uses just below, for the same reason. */
+.desk-frame-sliver-anchor--screenplay{
+  --sliver-paper-half: min(50%, 4.25in);
+}
 /* FX4 S3 — the board anchoring defect, diagnosed live (not guessed): AB4 S5's
    own comment claimed board needed no divergence here because "BoardEditor's
    wider canvas lives inside the stage, not the paper measure this anchor is
@@ -2820,8 +2944,13 @@ a:focus-visible,
    already makes; it never uncovers the text measure itself.) No CSS change
    was needed to satisfy TU2 S4's "grip flush, no gap" clause — it already
    held, by construction, since TU1. */
-.desk-frame-tutor-anchor--prose,
-.desk-frame-tutor-anchor--screenplay{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
+.desk-frame-tutor-anchor--prose{ /* intentionally empty — mirrors the sliver anchor's own hook */ }
+/* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see
+   that rule for the full SC-V1 derivation): the screenplay page is 8.5in
+   wide, so the Tutor's grip rides half of that, not prose's half-measure. */
+.desk-frame-tutor-anchor--screenplay{
+  --tutor-paper-half: min(50%, 4.25in);
+}
 /* TU2 S4 — the board variant, the exact mirror of `.desk-frame-sliver-
    anchor--board` (see that rule's own FX4 S3 comment for the full defect
    writeup this pattern fixes): Board's content wrapper is `width:min(100%,
@@ -3766,11 +3895,37 @@ a:focus-visible,
    own fixed-viewport variant just above. FX1 S1 — same rewrite: the start
    offset centers a fresh page's first line, and the band/ramp track
    --tw-fade-band/15%-floor instead of a fixed fraction + hard cutoff. */
-.desk-frame-scroll-cap[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); }
-/* FX5 S1 (b) — same one-line-lower shift as .mode-scroll's own rule above. */
-.desk-frame-scroll-cap[data-typewriter='true'][data-scrolled='true']{
-  -webkit-mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px)));
-          mask-image:linear-gradient(to bottom, #000 0, #000 var(--tw-fade-start,28px), rgba(0,0,0,.15) var(--tw-fade-start,28px), #000 calc(var(--tw-fade-start,28px) + var(--tw-fade-band,84px))); }
+/* AB2 S2 DoD gave the SCRIPT surface the typewriter's hold-band in
+   container mode (the sheet lives inside the bounded .desk-frame-scroll-cap
+   — AB1 finding 4's containment fix — not the window), with the same fade
+   recipe .mode-scroll's fixed-viewport variant above uses, and FX1 S1's start
+   offset centring a fresh page's first line.
+
+   SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — BOTH rules retire
+   from this surface, because **the screenplay surface no longer runs the
+   typewriter at all**, interim, pending his own revision of typewriter mode
+   in a separate build.
+
+   The start-offset rule was the measured root of SC-V4 ("the cursor starts by
+   floating in the middle of the page"): a static `padding-top` of
+   `--tw-start-offset` — 25% of the stage, 183px at the 1280px reference —
+   applied unconditionally the moment a script page mounted, pushing the whole
+   sheet down the scroll box before a single keystroke, and landing a
+   brand-new page's caret at 38.2% of the visible box. Reproduced before it
+   was touched; notably the typewriter HOOK was innocent (band()'s C2 guard
+   correctly refuses to scroll fresh content, and the first element already
+   rendered 1px below the sheet's own top margin) — this declaration was the
+   whole defect. The fade mask goes with it: it is the typewriter's own
+   visual, and with the engine unwired `data-typewriter` is never 'true' here,
+   so leaving a rule keyed on it would be dead CSS that silently reanimates if
+   the attribute ever returns.
+
+   `.mode-scroll` (prose) and `.entry-full` (Journal) are UNTOUCHED and keep
+   the FX4-tuned quarter-down start and their fades exactly as shipped —
+   `--tw-start-offset` is still measured and published by useTypewriterFade.ts
+   for them. The scroll cap itself also stays exactly as it is: its bounded
+   height and internal scroll are AB1's containment fix, which never had
+   anything to do with the typewriter. SC3 owns the option's return. */
 
 /* The corner-glyph collapse (S4 chrome purge) — App.tsx's GlobalHeader
    folds Fullscreen/Sync/Sign out behind one glyph while a DeskFrame is

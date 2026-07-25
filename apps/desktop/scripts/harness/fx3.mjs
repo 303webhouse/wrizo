@@ -94,12 +94,30 @@ await withHarness(async (app) => {
     ok(`S1 @ ${width}px (prose): no dead band below the frame — the stage itself reaches near the viewport's own bottom`,
       900 - stage.bottom < 60, `stage.bottom=${stage.bottom} viewportHeight=900`);
 
+    // SC1 S1 (2026-07-24) — the ORIGINAL check ("the sheet's bottom edge sits
+    // within the same 32-48px fence") is SUPERSEDED and parked verbatim in
+    // this file's own PARKED section. Its whole premise was a script sheet
+    // SHORTER than the stage, which FX3 then made fill down to a fence. A
+    // screenplay page is 11 inches tall by law (docs/wrizo-alpha/
+    // sc-committee-pass.md) — 1056px, taller than this 733px stage at every
+    // ordinary viewport — so it deliberately OVERFLOWS and scrolls inside
+    // `.desk-frame-scroll-cap`, and a fence between the paper's bottom and
+    // the stage's cannot exist. Prose's own fence checks above are untouched.
+    // The live successor asserts the law that replaced it: the page's height
+    // is exactly 11in, and the `--fx3-paper-fence` margin FX3 established
+    // still rides below the paper inside the scrolled column.
     await freshScriptPage(app, width, 900);
     const stageScript = await app.evalJs(rectOf('.desk-frame-stage'));
     const sheet = await app.evalJs(rectOf('.script-sheet'));
-    const fenceScript = stageScript.bottom - sheet.bottom;
-    ok(`S1 @ ${width}px (script, S7 mirrors prose): the sheet's bottom edge sits within the same 32-48px fence`,
-      fenceScript >= 30 && fenceScript <= 50, JSON.stringify({ stageBottom: stageScript.bottom, sheetBottom: sheet.bottom, fence: fenceScript }));
+    const scriptPage = await app.evalJs(`(() => {
+      const sh = document.querySelector('.script-sheet');
+      const col = document.querySelector('.mode-pagecol');
+      const r = sh.getBoundingClientRect(), c = col.getBoundingClientRect();
+      return { heightPx: Math.round(r.height * 100) / 100, heightIn: Math.round((r.height / 96) * 1000) / 1000, fenceBelowPaper: Math.round(c.bottom - r.bottom) };
+    })()`);
+    ok(`SC1 S1 @ ${width}px (was "S1 (script): the sheet's bottom edge sits within the 32-48px fence"): the script sheet is a true 11in page — taller than the stage, scrolling inside the cap — with FX3's own fence still riding below it`,
+      Math.abs(scriptPage.heightIn - 11) <= 0.02 && scriptPage.fenceBelowPaper >= 30 && scriptPage.fenceBelowPaper <= 50,
+      JSON.stringify({ ...scriptPage, stageBottom: stageScript.bottom, sheetBottom: sheet.bottom }));
   }
 
   // ==========================================================================
@@ -252,12 +270,20 @@ await withHarness(async (app) => {
       typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]'),
     };
   })()`);
-  ok('S5 (script): the sliver foot row is present with exactly THREE icons',
-    footRow.iconCount === 3, JSON.stringify(footRow));
+  // SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — two of these three
+  // are SUPERSEDED on the SCRIPT surface and parked verbatim in this file's
+  // own PARKED section: the screenplay page does not run the typewriter, so
+  // its option does not present itself, so the foot row carries TWO icons
+  // there (gear, instruments) and there is no typewriter aria-label to find.
+  // The middle check (no literal "Typewriter" text node) is untouched — it was
+  // true before and is more true now. Prose keeps all three; the prose block
+  // just below is where the surviving aria-label claim now lives.
+  ok('SC1 S3 (was "S5 (script): the sliver foot row is present with exactly THREE icons"): the script sliver\'s foot row carries exactly TWO icons — the typewriter\'s is withdrawn with the option itself; gear and instruments remain',
+    footRow.iconCount === 2, JSON.stringify(footRow));
   ok('S5 (script): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRow.hasTypewriterTextNode, JSON.stringify(footRow));
-  ok('S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech',
-    footRow.typewriterAriaLabelPresent, JSON.stringify(footRow));
+  ok('SC1 S3 (was "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech"): there is no typewriter aria-label on a script page because there is no toggle — the affordance is absent to assistive tech exactly as it is to the eye, never merely hidden from one of them',
+    !footRow.typewriterAriaLabelPresent, JSON.stringify(footRow));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -270,12 +296,17 @@ await withHarness(async (app) => {
     const walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
     let hasTypewriterTextNode = false;
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterTextNode = true; }
-    return { iconCount: row ? row.querySelectorAll('button').length : -1, hasTypewriterTextNode };
+    return { iconCount: row ? row.querySelectorAll('button').length : -1, hasTypewriterTextNode, typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]') };
   })()`);
   ok('S5 (prose): the sliver foot row is present with exactly THREE icons',
     footRowProse.iconCount === 3, JSON.stringify(footRowProse));
   ok('S5 (prose): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRowProse.hasTypewriterTextNode, JSON.stringify(footRowProse));
+  // SC1 S3 — FX3 S5's aria-label claim survives whole; it just lives on the
+  // surface that still HAS the toggle. Asserting it here is what keeps the
+  // withdrawal script-only rather than an app-wide accessibility regression.
+  ok('S5 (prose): the typewriter toggle\'s aria-label still carries the word, for assistive tech (unchanged by SC1 — prose keeps the option)',
+    footRowProse.typewriterAriaLabelPresent, JSON.stringify(footRowProse));
 
   // -- The instruments panel: opens, carries the three controls (on/off,
   // unit preference, target value), and closes on a keystroke through the
@@ -443,8 +474,19 @@ if (process.env.HARNESS_PARKED === '1') {
       const offsetPx = parseFloat(getComputedStyle(cap).paddingTop) || 0;
       return { offsetPx, stageHeight: stage.clientHeight, fraction: offsetPx / stage.clientHeight };
     })()`);
-    pok('PARKED (was "S3 (script): a fresh script page\'s first-line start offset lands in the 30-35% band too") — FX4 S1: START_FRACTION retunes to 0.25; live successor in fx4.mjs\'s own S1 section',
-      scriptStartOffsetInfo.fraction >= 0.20 && scriptStartOffsetInfo.fraction <= 0.30, JSON.stringify(scriptStartOffsetInfo));
+    // SC1 S3 (2026-07-24) — GENERATION 2 of this park, by the standing
+    // "double supersession" precedent (FX1's own post-merge review, Ruling 3:
+    // an already-parked check going stale again still must pass under
+    // HARNESS_PARKED=1; generations accrete, all preserved, the previous
+    // generation's text quoted verbatim rather than edited in place). Nick's
+    // SC-V4 verdict retires the premise entirely FOR SCRIPT: a screenplay
+    // begins at the top of page one, so `.desk-frame-scroll-cap` stops
+    // consuming `--tw-start-offset` and this padding is 0 by law, not tuning.
+    // Prose keeps FX4's quarter (this file's own sibling park above, on
+    // `.mode-scroll`, is untouched and still green). Live successor in
+    // fx4.mjs's own S1 section.
+    pok('PARKED, generation 2 (was "PARKED (was \'S3 (script): a fresh script page\'s first-line start offset lands in the 30-35% band too\') — FX4 S1: START_FRACTION retunes to 0.25") — SC1 S3: the script surface stops consuming --tw-start-offset altogether; page one begins at its top margin (SC-V4), so the offset is 0; live successor in fx4.mjs\'s own S1 section',
+      scriptStartOffsetInfo.fraction >= 0 && scriptStartOffsetInfo.fraction <= 0.02, JSON.stringify(scriptStartOffsetInfo));
 
     // CD3 harness-discipline fix (2026-07-22) — a fourth tenant. ORIGINAL
     // (this file's own live S4 section, pre-CD3), quoted verbatim:
@@ -484,6 +526,82 @@ if (process.env.HARNESS_PARKED === '1') {
     })()`);
     pok('PARKED (was "S4: Done is the rightmost element in the top bar (computed rect, not class presence)") — CD3: Done is scrapped from the top bar whole (no rect left to measure); live successor: this file\'s own live S4 section ("the actions cluster hugs the nav\'s own right edge")',
       topBarGoneParked.doneGone === true, JSON.stringify(topBarGoneParked));
+
+    // ORIGINAL (this file's own live S1 section, pre-SC1, run once per
+    // reference width): await freshScriptPage(app, width, 900); const
+    // stageScript = await app.evalJs(rectOf('.desk-frame-stage')); const
+    // sheet = await app.evalJs(rectOf('.script-sheet')); const fenceScript =
+    // stageScript.bottom - sheet.bottom; ok(`S1 @ ${width}px (script, S7
+    // mirrors prose): the sheet's bottom edge sits within the same 32-48px
+    // fence`, fenceScript >= 30 && fenceScript <= 50, JSON.stringify({
+    // stageBottom: stageScript.bottom, sheetBottom: sheet.bottom, fence:
+    // fenceScript }));
+    // SC1 S1 — SUPERSEDED, and this one is a retirement rather than a
+    // retune: the check's SUBJECT is gone. It measured a script sheet that
+    // fell SHORT of the stage's bottom and asserted FX3's fill-down brought
+    // it to a 32-48px fence. A true screenplay page is 11in — taller than
+    // the stage — so it overflows and scrolls, and there is no longer any
+    // "distance from the sheet's bottom to the stage's bottom" that could be
+    // a fence at all (the value is now ~-323px, i.e. the paper's bottom is
+    // BELOW the fold, exactly as a real page in a small window is). What FX3
+    // was really guarding — that the paper is not left floating short of its
+    // room, with `--fx3-paper-fence` of breathing space below it — survives
+    // against the COLUMN instead, and is what the live successor asserts.
+    // Prose keeps the original fence check unchanged. Live successor in this
+    // file's own live S1 section above.
+    await freshScriptPage(app, 1280, 900);
+    const scriptFenceParked = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
+      const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
+      const col = document.querySelector('.mode-pagecol').getBoundingClientRect();
+      return {
+        staleFence: Math.round(stage.bottom - sheet.bottom),
+        sheetHeightIn: Math.round((sheet.height / 96) * 1000) / 1000,
+        fenceBelowPaper: Math.round(col.bottom - sheet.bottom),
+        overflowsStage: sheet.height > stage.height,
+      };
+    })()`);
+    pok('PARKED (was "S1 (script, S7 mirrors prose): the sheet\'s bottom edge sits within the same 32-48px fence") — SC1 S1: an 11in page is TALLER than the stage and scrolls inside the cap, so a paper-bottom-to-stage-bottom fence no longer exists; the fence FX3 guarded now rides below the paper inside the column; live successor in this file\'s own live S1 section',
+      scriptFenceParked.overflowsStage === true
+        && Math.abs(scriptFenceParked.sheetHeightIn - 11) <= 0.02
+        && scriptFenceParked.fenceBelowPaper >= 30 && scriptFenceParked.fenceBelowPaper <= 50,
+      JSON.stringify(scriptFenceParked));
+
+    // ORIGINAL (this file's own live S5 section, pre-SC1), both quoted
+    // verbatim: ok('S5 (script): the sliver foot row is present with exactly
+    // THREE icons', footRow.iconCount === 3, JSON.stringify(footRow)); and
+    // ok('S5 (script): the typewriter toggle\'s aria-label still carries the
+    // word, for assistive tech', footRow.typewriterAriaLabelPresent,
+    // JSON.stringify(footRow));
+    // SC1 S3, AMENDED 2026-07-24 (Nick's word) — SUPERSEDED by removal, on the
+    // SCRIPT surface only: with the typewriter withdrawn from a screenplay
+    // page its icon goes with it (three icons become two) and there is no
+    // aria-label left to carry the word. FX3 S5's own intent — the option is
+    // an ICON, never a visible text label, but assistive tech still hears the
+    // word — is unchanged and now asserted on prose, where the toggle lives.
+    // This probe re-proves both halves at once, so it doubles as the guard
+    // that the withdrawal did not become an app-wide accessibility
+    // regression. Live successors in this file's own live S5 section.
+    await freshScriptPage(app, 1400, 900);
+    await openSliver(app);
+    await sleep(250);
+    const scriptFootParked = await app.evalJs(`(() => {
+      const row = document.querySelector('.wz-sliver-instruments-row');
+      const panel = document.querySelector('.wz-sliver-panel');
+      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
+    })()`);
+    await freshProsePage(app, 1400, 900);
+    await openSliver(app);
+    await sleep(250);
+    const proseFootParked = await app.evalJs(`(() => {
+      const row = document.querySelector('.wz-sliver-instruments-row');
+      const panel = document.querySelector('.wz-sliver-panel');
+      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
+    })()`);
+    pok('PARKED (was "S5 (script): the sliver foot row is present with exactly THREE icons" + "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech") — SC1 S3, Nick\'s word: the option is withdrawn from the screenplay surface, so script carries TWO icons and no aria-label; prose keeps three and the label',
+      scriptFootParked.iconCount === 2 && scriptFootParked.aria === false
+        && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
+      JSON.stringify({ scriptFootParked, proseFootParked }));
 
     return parkedChecks;
   });

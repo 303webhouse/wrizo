@@ -205,21 +205,28 @@ await withHarness(async (app) => {
     rows[0].scrolled === false && rows[0].firstOpacity === 1, JSON.stringify(rows[0]));
 
   // -- Same fixture, once on a script page. ----------------------------------
+  // SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — the screenplay
+  // surface does NOT run the typewriter, interim, pending his own revision of
+  // typewriter mode in a separate build. Both of this block's original checks
+  // are SUPERSEDED and parked verbatim in this file's own PARKED section:
+  // "S2 (fixture check): a fresh script page has typewriter ON by default"
+  // and "S1: the script surface shares the SAME no-pop engine — per-line
+  // scroll delta <= 1.25x line-height there too". The second is retired
+  // OUTRIGHT rather than retuned — with no engine on this surface there are
+  // no scrolling rows at all, and `[].every()` is vacuously true, so leaving
+  // it live would have it PASS while proving nothing. That is exactly the
+  // silent pass the amendment forbids. Prose keeps the whole engine and every
+  // check above this block is untouched.
   await freshScriptPage(app);
-  ok('S2 (fixture check): a fresh script page has typewriter ON by default',
-    await app.evalJs("document.querySelector('.desk-frame-scroll-cap')?.dataset.typewriter") === 'true');
-
-  const scriptStartFrac = await app.evalJs(`(() => {
-    const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
-    const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
-    return (sheet.top - stage.top) / stage.height;
+  const scriptNoTypewriter = await app.evalJs(`(() => {
+    const cap = document.querySelector('.desk-frame-scroll-cap');
+    return { dataTypewriter: cap.dataset.typewriter, capPaddingTop: parseFloat(getComputedStyle(cap).paddingTop) };
   })()`);
-  // FX3 S3 — same retirement as the prose check above (SUPERSEDED, parked
-  // below); live successor in fx3.mjs's own S3 section.
-  void scriptStartFrac;
+  ok('SC1 S3 (was "S2 (fixture check): a fresh script page has typewriter ON by default"): a fresh script page runs NO typewriter — the cap never claims it, and no start-offset padding is applied',
+    scriptNoTypewriter.dataTypewriter === 'false' && Math.abs(scriptNoTypewriter.capPaddingTop) < 0.5,
+    JSON.stringify(scriptNoTypewriter));
 
   await app.evalJs("document.querySelector('.script-el-active').focus()");
-  const scriptLineHeight = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.script-el-active')).lineHeight) || 28");
   const scriptRows = [];
   for (let i = 0; i < 8; i++) {
     await app.typeKeys(`Some action here ${i}.`);
@@ -227,16 +234,12 @@ await withHarness(async (app) => {
     await sleep(150);
     const m = await app.evalJs(`(() => {
       const scroll = document.querySelector('.desk-frame-scroll-cap');
-      const sheet = document.querySelector('.script-sheet');
-      const last = sheet.lastElementChild;
-      return { caretBottom: last ? last.getBoundingClientRect().bottom : null, scrollTop: scroll.scrollTop, scrolled: scroll.dataset.scrolled === 'true' };
+      return { scrollTop: scroll.scrollTop, scrolled: scroll.dataset.scrolled === 'true' };
     })()`);
     scriptRows.push(m);
   }
-  const scriptScrollingRows = scriptRows.filter(r => r.scrollTop > 0);
-  const scriptScrollDeltas = scriptScrollingRows.slice(1).map((r, i) => r.scrollTop - scriptScrollingRows[i].scrollTop);
-  ok('S1: the script surface shares the SAME no-pop engine — per-line scroll delta <= 1.25x line-height there too',
-    scriptScrollDeltas.every(d => d <= scriptLineHeight * 1.25 + 0.5), JSON.stringify({ scriptScrollDeltas, scriptLineHeight }));
+  ok('SC1 S3 (was "S1: the script surface shares the SAME no-pop engine — per-line scroll delta <= 1.25x line-height there too"): the script box never auto-scrolls while typing — no engine runs here, and the page stays where the writer put it',
+    scriptRows.every(r => r.scrollTop === 0 && r.scrolled === false), JSON.stringify(scriptRows));
 
   // ==========================================================================
   // S2 — the screenplay paper obeys Law 1 (same geometry class/width band as
@@ -250,9 +253,17 @@ await withHarness(async (app) => {
   const scriptGeomRect = await app.evalJs(rectOf('.mode-pagecol'));
   ok('S2 (Law 1): the script page mounts .mode-pagecol — the SAME paper geometry class the harness already asserts for prose',
     !!scriptGeomRect, JSON.stringify(scriptGeomRect));
-  ok('S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value',
-    scriptGeomRect.width >= 600 && scriptGeomRect.width <= 800 && Math.abs(scriptGeomRect.width - proseGeomRect.width) <= 2,
-    JSON.stringify({ proseGeomRect, scriptGeomRect }));
+  // SC1 S1 (2026-07-24) — the ORIGINAL check ("the script paper's rect
+  // matches the prose paper's asserted width band [600,800], within 2px of
+  // the prose value") is SUPERSEDED and parked verbatim below. FX1 S2 was
+  // right that the script page needed A paper measure and right to give it
+  // `.mode-pagecol`; it was wrong to give it PROSE'S measure. A screenplay
+  // page is US Letter by law (docs/wrizo-alpha/sc-committee-pass.md), so
+  // script's column is now 8.5in and deliberately does NOT track prose's.
+  // The live successor asserts the law that replaced it.
+  ok('SC1 S1 (was "S2: the script paper\'s rect matches the prose paper\'s width band"): the script paper is a TRUE US Letter page — 8.5in wide — and no longer tracks prose\'s measure at all',
+    Math.abs(scriptGeomRect.width - 816) <= 1,
+    JSON.stringify({ proseGeomRect, scriptGeomRect, expectedIn: 8.5, expectedPx: 816 }));
 
   const sceneAlign = await app.evalJs("(() => { const el = document.querySelector('.script-el[data-type=\"scene\"]'); return el ? getComputedStyle(el).textAlign : null; })()");
   ok('S2: a scene heading\'s computed text-align is left (Courier convention, S-arc margin rules)', sceneAlign === 'left', String(sceneAlign));
@@ -380,8 +391,20 @@ await withHarness(async (app) => {
   const eyebrowColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-h')).color");
   ok('CD1 S2 (was "S6: an eyebrow label\'s computed color is not brass"): an eyebrow label (in the sliver) is not brass', eyebrowColor !== 'rgb(255, 152, 0)', eyebrowColor);
 
+  // SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — this S6 sweep ran on
+  // a SCRIPT page (freshScriptPage above), and the screenplay surface no
+  // longer carries a typewriter glyph at all, so the ORIGINAL check
+  // ("S6: the Typewriter glyph's computed color is not brass (typewriter
+  // defaults ON, so this is the common resting state)", quoted verbatim in
+  // this file's PARKED section) has no element left to read a colour from.
+  // S6's law — nothing sits at brass while at rest, brass is for the act of
+  // writing alone — is untouched and unchanged; the glyph it applies to now
+  // lives on prose, which is where the live successor asserts it.
+  await freshProsePage(app);
+  await openSliver(app);
+  await sleep(200);
   const typewriterGlyphColor = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
-  ok('S6: the Typewriter glyph\'s computed color is not brass (typewriter defaults ON, so this is the common resting state)',
+  ok('SC1 S3 (was "S6: the Typewriter glyph\'s computed color is not brass", measured on a script page): the Typewriter glyph is not brass at rest — asserted on PROSE now, the surface that still carries it; S6\'s law is unchanged, only its address moved',
     typewriterGlyphColor !== 'rgb(255, 152, 0)', typewriterGlyphColor);
 
   return checks;
@@ -544,8 +567,114 @@ if (process.env.HARNESS_PARKED === '1') {
       const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
       return (sheet.top - stage.top) / stage.height;
     })()`);
-    pok('PARKED, generation 2 (was PARKED-generation-1 "S1: a fresh script page\'s first line also starts within 40-55% of the stage height", itself already superseding the true original "40-55%" claim) — FX4 S1: START_FRACTION retunes to 0.25, moving script\'s own value to ~24.97%; live successor in fx4.mjs\'s own S1 section',
-      scriptStartFracParkedGen2 >= 0.20 && scriptStartFracParkedGen2 <= 0.30, String(scriptStartFracParkedGen2));
+    // SC1 S3 (2026-07-24) — GENERATION 3, by the same "double supersession"
+    // precedent quoted above (generations accrete, all preserved; the
+    // gen-2 text is kept verbatim in the pok label below rather than edited
+    // in place). Nick's SC-V4 verdict — "the cursor starts by floating in
+    // the middle of the page" — retires the whole premise that a SCRIPT page
+    // starts a fraction of the way down. A screenplay begins at the top of
+    // page one, so `--tw-start-offset` no longer reaches the script surface
+    // at all and this fraction is now ~0 by law, not by tuning. Prose and
+    // Journal keep the FX4 quarter (fx4.mjs's own S1 section still asserts
+    // it for both). Live successor in fx4.mjs's own S1 section.
+    pok('PARKED, generation 3 (was gen-2 "PARKED, generation 2 (was PARKED-generation-1 \'S1: a fresh script page\'s first line also starts within 40-55% of the stage height\') — FX4 S1: START_FRACTION retunes to 0.25, moving script\'s own value to ~24.97%") — SC1 S3: the script page starts at the TOP of page one (SC-V4); the fraction is ~0 now, by law; live successor in fx4.mjs\'s own S1 section',
+      scriptStartFracParkedGen2 >= 0 && scriptStartFracParkedGen2 <= 0.02, String(scriptStartFracParkedGen2));
+
+    // ORIGINAL (this file's own live S2 section, pre-SC1): await
+    // freshProsePage(app); const proseGeomRect = await app.evalJs(rectOf(
+    // '.mode-pagecol')); await freshScriptPage(app); const scriptGeomRect =
+    // await app.evalJs(rectOf('.mode-pagecol')); ok('S2: the script paper\'s
+    // rect matches the prose paper\'s asserted width band [600,800], within
+    // 2px of the prose value', scriptGeomRect.width >= 600 &&
+    // scriptGeomRect.width <= 800 && Math.abs(scriptGeomRect.width -
+    // proseGeomRect.width) <= 2, JSON.stringify({ proseGeomRect,
+    // scriptGeomRect }));
+    // SC1 S1 — SUPERSEDED. FX1 S2's insight (the script page needs a real
+    // paper measure, mounted on `.mode-pagecol` like prose) survives whole;
+    // what retires is the claim that the measure is the SAME as prose's. A
+    // screenplay page is US Letter — 8.5in — by the trade's own standard, so
+    // the two surfaces' widths now diverge on purpose and can never again be
+    // asserted equal. The probe below re-verifies the SUPERSEDING truth, and
+    // that prose itself is untouched by SC1 (its band is still [600,800]).
+    // Live successor in this file's own live S2 section above.
+    await freshProsePage(app);
+    const proseGeomRectParked = await app.evalJs(rectOf('.mode-pagecol'));
+    await freshScriptPage(app);
+    const scriptGeomRectParked = await app.evalJs(rectOf('.mode-pagecol'));
+    pok('PARKED (was "S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value") — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose\'s measure; prose\'s own band is unchanged',
+      Math.abs(scriptGeomRectParked.width - 816) <= 1
+        && proseGeomRectParked.width >= 600 && proseGeomRectParked.width <= 800,
+      JSON.stringify({ proseGeomRectParked, scriptGeomRectParked }));
+
+    // ORIGINAL (this file's own live "same fixture, once on a script page"
+    // block, pre-SC1), both checks quoted verbatim:
+    //   await freshScriptPage(app);
+    //   ok('S2 (fixture check): a fresh script page has typewriter ON by
+    //   default', await app.evalJs("document.querySelector(
+    //   '.desk-frame-scroll-cap')?.dataset.typewriter") === 'true');
+    //   ...
+    //   const scriptScrollingRows = scriptRows.filter(r => r.scrollTop > 0);
+    //   const scriptScrollDeltas = scriptScrollingRows.slice(1).map((r, i) =>
+    //   r.scrollTop - scriptScrollingRows[i].scrollTop);
+    //   ok('S1: the script surface shares the SAME no-pop engine — per-line
+    //   scroll delta <= 1.25x line-height there too', scriptScrollDeltas
+    //   .every(d => d <= scriptLineHeight * 1.25 + 0.5), JSON.stringify({
+    //   scriptScrollDeltas, scriptLineHeight }));
+    // SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable) — SUPERSEDED by
+    // removal, not by retuning: the screenplay surface does not run the
+    // typewriter at all now, interim, pending his own revision of typewriter
+    // mode in a separate build. The first check's subject (a script page with
+    // the typewriter on) cannot exist; the second's ("the same no-pop
+    // engine") has no engine to share. Note the second was ALSO at risk of
+    // passing vacuously — with no scrolling rows, `[].every()` is true — so
+    // parking it is what keeps it from becoming a silent green. The probe
+    // below proves the RETIREMENT itself (the same "no dead surface left
+    // behind" discipline ab1.mjs's own S5 park uses), and re-proves that
+    // PROSE still runs the engine, so this park doubles as the guard that the
+    // amendment did not leak off the script surface. Live successors in this
+    // file's own live script block above.
+    await freshScriptPage(app);
+    const scriptEngineGoneParked = await app.evalJs(`(() => {
+      const cap = document.querySelector('.desk-frame-scroll-cap');
+      return { dataTypewriter: cap.dataset.typewriter, capPaddingTop: parseFloat(getComputedStyle(cap).paddingTop), toggleInSliver: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle') };
+    })()`);
+    await freshProsePage(app);
+    const proseEngineStillThereParked = await app.evalJs(`(() => {
+      const scroll = document.querySelector('.mode-scroll');
+      return { dataTypewriter: scroll.dataset.typewriter, padTop: parseFloat(getComputedStyle(scroll).paddingTop) };
+    })()`);
+    pok('PARKED (was "S2 (fixture check): a fresh script page has typewriter ON by default" + "S1: the script surface shares the SAME no-pop engine — per-line scroll delta <= 1.25x line-height there too") — SC1 S3 (Nick\'s word): the screenplay surface runs NO typewriter, so both subjects are gone; prose still runs the whole engine, unchanged',
+      scriptEngineGoneParked.dataTypewriter === 'false'
+        && Math.abs(scriptEngineGoneParked.capPaddingTop) < 0.5
+        && scriptEngineGoneParked.toggleInSliver === false
+        && proseEngineStillThereParked.dataTypewriter === 'true'
+        && proseEngineStillThereParked.padTop > 100,
+      JSON.stringify({ scriptEngineGoneParked, proseEngineStillThereParked }));
+
+    // ORIGINAL (this file's own live S6 sweep, pre-SC1, measured on a script
+    // page): const typewriterGlyphColor = await app.evalJs("getComputedStyle(
+    // document.querySelector('.typewriter-toggle')).color"); ok('S6: the
+    // Typewriter glyph\'s computed color is not brass (typewriter defaults
+    // ON, so this is the common resting state)', typewriterGlyphColor !==
+    // 'rgb(255, 152, 0)', typewriterGlyphColor);
+    // SC1 S3, AMENDED (Nick's word) — SUPERSEDED by removal on the script
+    // surface: there is no typewriter glyph on a screenplay page to read a
+    // colour from (the querySelector returns null, which is how this was
+    // caught — it threw rather than failed). S6's law is untouched and its
+    // live successor asserts the identical claim on prose. This probe proves
+    // the retirement itself: no glyph on script, and the glyph on prose still
+    // resting olive rather than brass.
+    await freshScriptPage(app);
+    await openSliver(app);
+    await sleep(200);
+    const glyphGoneOnScript = await app.evalJs("!document.querySelector('.typewriter-toggle')");
+    await freshProsePage(app);
+    await openSliver(app);
+    await sleep(200);
+    const glyphColorOnProse = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
+    pok('PARKED (was "S6: the Typewriter glyph\'s computed color is not brass (typewriter defaults ON, so this is the common resting state)", measured on a script page) — SC1 S3: no glyph exists on a screenplay page now; the law holds unchanged on prose, where the glyph lives',
+      glyphGoneOnScript === true && glyphColorOnProse !== 'rgb(255, 152, 0)',
+      JSON.stringify({ glyphGoneOnScript, glyphColorOnProse }));
 
     // ORIGINAL (this file's own live S4 section, pre-CD2): await
     // app.evalJs("document.querySelector('.wz-drawer-pull-page').click()");

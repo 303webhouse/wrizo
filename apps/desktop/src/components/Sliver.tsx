@@ -210,7 +210,22 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
             separate close-on-keystroke logic of its own (S6's "one
             vanishing engine" requirement — see the panel's own header
             comment on the dissolve law). */}
-        <SliverInstrumentRow hasMilestones={hasMilestones} target={target} />
+        {/* SC1 S3 (Nick's word, 2026-07-24) — the typewriter OPTION does not
+            present itself on a screenplay page. The surface no longer runs
+            the typewriter (ScriptEditor.tsx), and a live switch that does
+            nothing is a lying affordance: worse than a missing one, because
+            the writer flips it, sees no change, and learns the app lies. This
+            gate reaches BOTH of the option's surfaces in this row — the icon
+            toggle itself and the Typewriter row inside the gear's
+            SettingsPanel — so neither can be the one that gets forgotten.
+            Interim, pending Nick's own revision of typewriter mode in a
+            separate build; SC3 owns the option's return. Every other surface
+            (prose Draft, Free Write, Journal, Board) is untouched. */}
+        <SliverInstrumentRow
+          hasMilestones={hasMilestones}
+          target={target}
+          typewriterAvailable={!(content.kind === 'draft' && content.structure === 'screenplay')}
+        />
       </div>
     </div>
   );
@@ -522,7 +537,7 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
 // pass refines this" caveat in full). All three buttons are `--text-mid`/
 // olive at rest (`.wz-sliver-instruments-btn`, index.css) — brass appears
 // only on hover, matching the sliver's own pre-existing law elsewhere.
-function SliverInstrumentRow({ hasMilestones, target }: { hasMilestones?: boolean; target: number | null }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const [gearOpen, setGearOpen] = useState(false);
@@ -531,7 +546,7 @@ function SliverInstrumentRow({ hasMilestones, target }: { hasMilestones?: boolea
   return (
     <div className="wz-sliver-instruments">
       <div className="wz-sliver-instruments-row">
-        <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
+        {typewriterAvailable && <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />}
         <button
           type="button"
           className="wz-sliver-instruments-btn"
@@ -557,6 +572,7 @@ function SliverInstrumentRow({ hasMilestones, target }: { hasMilestones?: boolea
           settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
           hasMilestones={hasMilestones}
           framed
+          typewriterAvailable={typewriterAvailable}
         />
       )}
       {gearOpen && <ThemePanel />}

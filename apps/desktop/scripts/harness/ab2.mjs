@@ -349,9 +349,45 @@ await withHarness(async (app) => {
   // `.classList` read crashed this whole file. Same underlying truth (the
   // toggle is present on the script surface and reflects the persisted
   // setting), asserted fresh against the CURRENT selector.
-  ok('FX3 S5 (was "CD1 S2: ...in the sliver..."): the typewriter toggle is present on the script surface (now icon-only, sliver foot)', await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')"));
-  const scriptTypewriterOn = await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle').classList.contains('on')");
-  ok('S2 DoD: the typewriter defaults on (the persisted setting, honored on the script surface too)', scriptTypewriterOn === true);
+  // SC1 S3, AMENDED 2026-07-24 — **AB2 S2's own DEFINITION OF DONE is amended
+  // by Nick's word** (relayed via Fable): the screenplay surface does not run
+  // the typewriter, interim, pending his own revision of typewriter mode in a
+  // separate build. Both checks above are SUPERSEDED and parked verbatim in
+  // this file's PARKED section. This is recorded loudly here, in the ledger,
+  // and in the SC1 report precisely so a DoD does not quietly evaporate: AB2
+  // S2 shipped "the typewriter option reaches the script surface's Draft
+  // posture," it was built and it worked, and it is being WITHDRAWN by the
+  // writer's own judgement rather than found wrong.
+  //
+  // The successors assert the amendment's actual requirement — that the
+  // option does not PRESENT itself here. A live switch that does nothing is a
+  // lying affordance, so both of its surfaces are checked: the icon toggle in
+  // the sliver's instruments row, and the "Typewriter" Seg one click deeper
+  // behind the same row's gear.
+  const scriptTypewriterOption = await app.evalJs(`(() => {
+    const row = document.querySelector('.wz-sliver-instruments-row');
+    const btns = row ? [...row.querySelectorAll('button')] : [];
+    const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');
+    if (gear) gear.click();
+    return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length, gearFound: !!gear };
+  })()`);
+  await sleep(200);
+  const scriptGearTypewriterRow = await app.evalJs(`(() => {
+    const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
+    if (!panel) return { panelOpen: false, hasTypewriterRow: null };
+    const walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
+    let hasTypewriterRow = false;
+    while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterRow = true; }
+    return { panelOpen: true, hasTypewriterRow };
+  })()`);
+  ok('SC1 S3 (was "FX3 S5: the typewriter toggle is present on the script surface"): the typewriter toggle does NOT present itself on a screenplay page — AB2 S2\'s DoD amended by Nick\'s word, not silently dropped',
+    scriptTypewriterOption.toggle === false, JSON.stringify(scriptTypewriterOption));
+  ok('SC1 S3 (was "S2 DoD: the typewriter defaults on ... on the script surface too"): the option is gone from BOTH its surfaces — no "Typewriter" row behind the script sliver\'s gear either, so there is no live switch that does nothing one click deeper',
+    scriptGearTypewriterRow.panelOpen === true && scriptGearTypewriterRow.hasTypewriterRow === false,
+    JSON.stringify(scriptGearTypewriterRow));
+  // close the gear again — hygiene for the typing run below
+  await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
+  await sleep(150);
 
   const longScene = Array.from({ length: 18 }, (_, i) => `Action line ${i} overflows the sheet, respecting the cap.`);
   for (const line of longScene) {
@@ -378,9 +414,16 @@ await withHarness(async (app) => {
   // INSIDE it, typewriter is still engaged, and the document itself still
   // never grows to swallow the overflow — is untouched and still asserted
   // live here.
-  ok('S2 DoD: the typewriter and the containment fix do not fight — the cap still scrolls content inside it (not the whole page), typewriter engaged',
+  // SC1 S3, AMENDED — the "typewriter engaged" clause is SUPERSEDED and parked
+  // verbatim below; the CONTAINMENT truth this check exists for is untouched
+  // and stays live. AB1 finding 4's containment fix (a bounded cap with
+  // internal scroll for a sheet that grows with the document) never had
+  // anything to do with the typewriter, and it still holds with the engine
+  // gone: content overflows INSIDE the cap and the document itself never
+  // grows to swallow it.
+  ok('SC1 S3 (was "S2 DoD: the typewriter and the containment fix do not fight ... typewriter engaged"): the containment fix stands on its own — the cap still scrolls content inside it, not the whole page, with no typewriter running at all',
     typewriterVsContainment.overflowed === true
-      && typewriterVsContainment.typewriter === 'true'
+      && typewriterVsContainment.typewriter === 'false'
       && typewriterVsContainment.bodyScrollHeight <= typewriterVsContainment.viewportHeight + 40,
     JSON.stringify(typewriterVsContainment));
 
@@ -708,9 +751,71 @@ if (process.env.HARNESS_PARKED === '1') {
     await sleep(200);
     await openSliver(app);
     await sleep(150);
-    const typewriterInSliverNow = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')");
-    pok('PARKED (was "S2 DoD: the typewriter toggle is present in the rail on the script surface") — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now',
-      typewriterInSliverNow === true, String(typewriterInSliverNow));
+    // SC1 S3 (2026-07-24) — GENERATION 2 of this park, by the standing
+    // "double supersession" precedent (FX1's post-merge review, Ruling 3:
+    // generations accrete, all preserved, the previous generation quoted
+    // verbatim rather than edited in place). The first three generations were
+    // all the SAME truth moving house (rail -> sliver -> instruments row).
+    // This one is different in kind: **AB2 S2's DoD is amended by Nick's
+    // word** — the screenplay surface does not run the typewriter, interim,
+    // pending his own revision of typewriter mode in a separate build, so the
+    // option must not present itself here at all. The check is superseded by
+    // REMOVAL, and the probe below proves the retirement rather than
+    // re-locating the affordance: absent from the instruments row, absent
+    // from the gear's settings panel behind it, and — the guard that matters
+    // — still fully present on PROSE, so the withdrawal is script-only.
+    const typewriterGoneOnScript = await app.evalJs(`(() => {
+      const row = document.querySelector('.wz-sliver-instruments-row');
+      const btns = row ? [...row.querySelectorAll('button')] : [];
+      const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');
+      if (gear) gear.click();
+      return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length };
+    })()`);
+    await sleep(200);
+    const gearRowGone = await app.evalJs(`(() => {
+      const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
+      if (!panel) return null;
+      const walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
+      let hasTypewriterRow = false;
+      while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterRow = true; }
+      return { hasTypewriterRow };
+    })()`);
+    await freshProsePage(app);
+    await openSliver(app);
+    await sleep(200);
+    const typewriterStillOnProse = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')");
+    pok('PARKED, generation 2 (was "PARKED (was \'S2 DoD: the typewriter toggle is present in the rail on the script surface\') — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now") — SC1 S3, Nick\'s word: AB2 S2\'s DoD is AMENDED, the option is withdrawn from the screenplay surface entirely (both the toggle and the gear\'s Typewriter row), and remains untouched on prose',
+      typewriterGoneOnScript.toggle === false
+        && gearRowGone !== null && gearRowGone.hasTypewriterRow === false
+        && typewriterStillOnProse === true,
+      JSON.stringify({ typewriterGoneOnScript, gearRowGone, typewriterStillOnProse }));
+
+    // Re-seed the parked SCRIPT fixture. The prose half of the probe above is
+    // the whole point — it proves the withdrawal is script-only — but
+    // `freshProsePage` clears localStorage on its way in, taking this
+    // section's own seeded script entry with it, and the parked steps below
+    // still need that page. So this rebuilds it exactly as the block's own
+    // setup did, rather than leaving the following steps to land on the Desk.
+    // AGENTS.md's harness seeding law, load-bearing here: leave the prose page
+    // FIRST and seed from the Desk. A raw localStorage write made while a
+    // surface with a flush-on-unmount handler is still mounted gets silently
+    // clobbered when the reload's teardown fires it (persistence.ts's
+    // flushNow() re-serializes every collection from the in-memory cache,
+    // pending write or not — the defect M1 discovered).
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before re-seed (PARKED typewriter)' });
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: 'ab2-script-parked-typewriter', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after re-seed (PARKED typewriter)' });
+    await app.emulateDpr(1, 1400, 900);
+    await app.evalJs("location.hash = '#/page/ab2-script-parked-typewriter'");
+    await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'Script restored after the prose probe (PARKED)' });
+    await sleep(250);
 
     // ORIGINAL (S2 DoD, live section): ok('S2 DoD: the typewriter and the
     // containment fix do not fight — the cap stays bounded, content
