@@ -50,16 +50,38 @@
 // with no regression whatsoever — a gate that cries wolf gets switched off, and
 // then it is not a gate.
 //
-// Five pages puts the denominator near 2ms, clear of the floor, and the ratio's
-// spread falls from 3.3x to about 1.4x (1.84-2.63 over four runs). Stated
-// precisely because an earlier draft of this very comment claimed "+/-10%" on
-// three runs and the fourth run broke it: 1.4x is the honest figure, and a 2x
-// secondary gate has real but NOT generous margin against it. If the tip's
-// ratio ever lands between 1x and 2x of baseline, that is inside the noise and
-// must be re-run rather than read — the gate catches a doubling, not a drift.
-// Raising n from 49 to 240 was necessary and did tighten the absolute; it could
-// not fix the ratio, because the ratio's problem was never the sample size — it
-// was the denominator.
+// Five pages puts the denominator near 2ms, clear of the floor. Raising n from
+// 49 to 240 was necessary and did tighten the absolute; it could not fix the
+// ratio, because the ratio's problem was never the sample size — it was the
+// denominator. Median-of-three then collapses the WITHIN-session spread to
+// about 1.4-1.5x on each side (measured: 20-page [4.4, 5.4, 3.6], control
+// [1.7, 1.2, 1.3]).
+//
+// THE RESIDUAL PROBLEM, MEASURED AND NOT YET SOLVED — the ratio does NOT
+// survive BETWEEN sessions, so its "no checkout needed" property is unsafe.
+// Every 5-page-control ratio observed so far: 1.84, 2.00, 2.25, 2.63, 3.38 —
+// a 1.84x spread ACROSS sessions, LARGER than the ~1.45x spread within one.
+// The control's own p95 read 1.9-2.4ms one session and 1.2-1.7ms the next; the
+// machine's thermal and load state moves the small denominator more than it
+// moves the large numerator, and the quotient inherits the difference. A tip
+// whose ratio is compared against a ratio RECORDED ON ANOTHER DAY can therefore
+// fail a 2x gate on drift alone — the same cry-wolf failure the 1-page control
+// had, one level up.
+//
+// So the secondary gate is subject to the SAME same-session discipline as the
+// absolute: re-derive the baseline ratio from the baseline SHA in the session
+// that judges the tip, interleaved. It loses the "no checkout" convenience and
+// keeps its discriminating power, which is the right trade — a cheap gate that
+// misfires is worth less than an expensive one that does not. The recorded
+// ratio below is a REFERENCE OBSERVATION for orientation, NOT a value to gate
+// against across sessions. The re-run rule stands beneath both gates: a tip
+// landing between 1x and 2x of baseline is inside the noise and must be re-run
+// rather than read. Flagged to Fable rather than decided here — this narrows a
+// ruling, and narrowing one is not the builder's call.
+//
+// (Stated this precisely because an earlier draft of this comment claimed
+// "+/-10%" on three runs and the fourth broke it. This file's whole subject is
+// not believing a number too easily; that has to include its own.)
 //
 // THE BASELINE SHA IS THIS COMMIT, NOT 57bc9f9. The first cut of this fixture
 // (57bc9f9) sampled only 49 keystrokes. At n=49 a p95 is essentially the
@@ -262,6 +284,31 @@ async function measure(app, sceneCount, typed) {
   };
 }
 
+/**
+ * Run `measure` three times and return the run whose 20-page/control p95 is the
+ * MEDIAN, carrying its own gate and geometry with it — so every figure reported
+ * belongs to one real run rather than being an average of three that never
+ * happened. The three p95s are attached as `spread` so the run-to-run variance
+ * stays visible instead of being hidden by the median that tamed it.
+ *
+ * The gate is asserted on EVERY run, not only the median: a run whose keystrokes
+ * missed is not eligible to be anybody's median.
+ */
+async function measureMedian(app, sceneCount, typed, label) {
+  const runs = [];
+  for (let i = 0; i < 3; i++) runs.push(await measure(app, sceneCount, typed));
+  const bad = runs.filter((r) => !r.gate.focused || r.gate.landed !== r.gate.expected || !r.input);
+  const sorted = [...runs].sort((a, b) => a.input.p95 - b.input.p95);
+  const median = sorted[1];
+  return {
+    ...median,
+    label,
+    allGated: bad.length === 0,
+    spread: runs.map((r) => r.input.p95),
+    spreadFactor: +(sorted[2].input.p95 / sorted[0].input.p95).toFixed(2),
+  };
+}
+
 await withHarness(async (app) => {
   // 240 keystrokes, not 49. At n=49 the 95th percentile IS the second-worst
   // sample, so a single GC pause owns it; 240 puts a dozen samples above the
@@ -270,7 +317,13 @@ await withHarness(async (app) => {
   const TYPED = 'the quick brown fox jumps over the lazy dog again and again '.repeat(4).slice(0, 240);
 
   // -- S0 baseline: the 20-page document ----------------------------------
-  const big = await measure(app, SCENES_20_PAGES, TYPED);
+  // MEDIAN OF THREE PER SIDE (Fable, 2026-07-25). One outlier cannot move a
+  // median, and the ratio is a ratio-of-ratios: it compounds BOTH sides'
+  // spread, so a 1.4x spread per side leaves a 2x gate almost no room. Three
+  // runs per document collapse that to where the gate can actually
+  // discriminate a regression from a noisy afternoon. The re-run rule stays as
+  // the floor beneath it, not as a substitute for it.
+  const big = await measureMedian(app, SCENES_20_PAGES, TYPED, '20-page');
 
   // THE CORRECTNESS GATE, asserted BEFORE any timing claim is made.
   ok('S0 gate: the caret was genuinely in the script element when the keys were sent (a contenteditable that is not focused sends every keystroke to <body>, where the timings still look plausible)',
@@ -279,6 +332,8 @@ await withHarness(async (app) => {
     big.gate.landed === big.gate.expected, JSON.stringify(big.gate));
   ok('S0 gate: the input event fired once per keystroke — the React work was genuinely sampled, not inferred',
     big.input !== null && big.input.n >= TYPED.length - 2, JSON.stringify({ samples: big.input && big.input.n, typed: TYPED.length }));
+  ok('S0 gate: ALL THREE 20-page runs passed the correctness gate — a run whose keystrokes missed is not eligible to be anybody\'s median, so the gate is asserted per run and not only on the survivor',
+    big.allGated === true, JSON.stringify({ spread: big.spread, spreadFactor: big.spreadFactor }));
 
   // THE FIXTURE IS THE SIZE IT CLAIMS. A fixture that quietly drifted to three
   // pages would leave the bound anchored to nothing.
@@ -308,10 +363,11 @@ await withHarness(async (app) => {
   // 1-page control is sub-millisecond, sits on the timer's noise floor, and made
   // the ratio the least stable number in the file (a 3.3x spread across three
   // runs, enough to fail the secondary gate on noise alone).
-  const small = await measure(app, SCENES_CONTROL, TYPED);
+  const small = await measureMedian(app, SCENES_CONTROL, TYPED, 'control');
 
-  ok('S0 control gate: the control run\'s keystrokes landed too — the ratio is only meaningful if BOTH of its terms were really measured',
-    small.gate.focused === true && small.gate.landed === small.gate.expected, JSON.stringify(small.gate));
+  ok('S0 control gate: the control run\'s keystrokes landed too, on ALL THREE runs — the ratio is only meaningful if BOTH of its terms were really measured',
+    small.gate.focused === true && small.gate.landed === small.gate.expected && small.allGated === true,
+    JSON.stringify({ gate: small.gate, spread: small.spread, spreadFactor: small.spreadFactor }));
   ok(`S0 control: the control document is ~5 pages — ${small.geo.pages} pages, ${small.geo.els} elements`,
     small.geo.pages >= 4 && small.geo.pages <= 6, JSON.stringify(small.geo));
 
@@ -333,12 +389,17 @@ await withHarness(async (app) => {
     `\n  20-page: ${big.geo.pages}pp / ${big.geo.els} els  input mean=${big.input.mean}ms p50=${big.input.p50}ms p95=${big.input.p95}ms max=${big.input.max}ms` +
     `\n   1-page: ${small.geo.pages}pp / ${small.geo.els} els  input mean=${small.input.mean}ms p50=${small.input.p50}ms p95=${small.input.p95}ms max=${small.input.max}ms` +
     `\n  scaling ratio (20pp p95 / control p95) = ${ratio}` +
-    `\n  samples: ${big.input.n} keystrokes per document (n>=200, so the p95 is not one GC pause)` +
+    `\n  samples: ${big.input.n} keystrokes per run, MEDIAN OF 3 RUNS per document` +
+    `\n  run-to-run p95 spread — 20-page ${JSON.stringify(big.spread)} (${big.spreadFactor}x), control ${JSON.stringify(small.spread)} (${small.spreadFactor}x)` +
     '\n  HOW TO JUDGE THE TIP: check out THIS COMMIT on the judging machine and' +
     '\n  measure; measure the tip in the SAME session, interleaved rather than' +
     '\n  back to back; the tip\'s 20-page p95 must be <= 2x the baseline p95 THAT' +
-    '\n  MACHINE just re-derived. Secondary gate, no checkout needed: the tip\'s' +
-    `\n  scaling ratio must be <= 2x ${ratio}. Both hold, every run — the absolute` +
+    '\n  MACHINE just re-derived. SECONDARY GATE — the scaling ratio, and it needs' +
+    '\n  the SAME same-session re-derivation, not the recorded number: the ratio' +
+    `\n  drifts ~1.84x BETWEEN sessions (observed 1.84/2.00/2.25/2.63/${ratio}), more` +
+    '\n  than it does within one, so gating against a ratio recorded on another' +
+    '\n  day would fail on drift alone. Recorded for orientation, not to gate' +
+    '\n  across sessions. Both gates hold, every run — the absolute' +
     '\n  catches "typing got slower generally", the ratio catches "cost now scales' +
     '\n  with document length", and a change can regress either one alone.');
 
