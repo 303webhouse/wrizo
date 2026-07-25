@@ -206,3 +206,22 @@ may ride a shared deploy PROVIDED the manifest enumerates both arcs'
 contents by name. One word from Nick, one manifest, everything named.
 
 — Fable, from Nick's verdicts and the committee, for the three lanes
+
+## AMENDMENT 2 — BG1's S2 page-row doors (recorded by CC on Nick's word, 2026-07-25)
+
+**BG1's S2 page row ships as three single-word doors: Screenplay · Sprout · Plan.**
+"Start from a Spark" (named in the committee pass above and in FX15 S1) is
+**SUPERSEDED by "Sprout"** — one word; its glyph is a node on a lateral runner
+throwing a shoot (the rhizome figure, as drawn). "Plan this first" ships likewise as
+the single word **Plan**. Door behavior is unchanged (Screenplay flips structure;
+Sprout draws from the deck — deck-drawn, never model-drawn; Plan opens the paired
+plan board); only the labels and the Sprout glyph are fixed here. The original brief
+text above is left intact; this note supersedes its door labels.
+- **Carry to chat 3 (BG1 owner):** S2's line is **Screenplay · Sprout · Plan** — the
+  three start-words — and the Sprout glyph ships as drawn (node on a lateral runner
+  throwing a shoot).
+- **Chat 1 (FX15 S1):** the opt-in door it names is **"Sprout,"** not "Start from a
+  Spark"; FX15's own scope (invite default-silent + rails) is otherwise unchanged.
+
+(Note: `p1-wave.md`'s base was committed to `main` by chat 3 at `00d6b6f` — this is
+chat 1's amendment on top, per Nick's word; not a fresh commit of the doc.)

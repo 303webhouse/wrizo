@@ -6690,7 +6690,8 @@ outlive a session lives here, not in chat.
     reviews post-merge in the P1 batch, deploy held (one word covers the wave + the SC
     arc, one named manifest). **S1 — the invite sleeps:** the first-line spark invite
     does not render on a fresh page by default (the deck survives, the OFFER retires);
-    reachable on request via the page tools / BG1's "Start from a Spark" door. **S2 —
+    reachable on request via the page tools / BG1's "Sprout" door (P1 amendment 2,
+    2026-07-25 — "Start from a Spark" superseded by the single word "Sprout"). **S2 —
     the rails verified, not assumed** (opt-in path, in code + harness): deck-drawn
     NEVER model-drawn (no send on page load — the ratified disclosure sentence forbids
     it), never becomes the writer's text (no accept / tab-fill / insertion, A13),
