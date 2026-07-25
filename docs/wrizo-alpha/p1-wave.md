@@ -222,6 +222,20 @@ text above is left intact; this note supersedes its door labels.
   throwing a shoot).
 - **Chat 1 (FX15 S1):** the opt-in door it names is **"Sprout,"** not "Start from a
   Spark"; FX15's own scope (invite default-silent + rails) is otherwise unchanged.
+- **Deck finding (resolved, Nick's word 2026-07-25):** "deck" names TWO different
+  instruments and the word was overloaded. **DeckWizard** loads card decks onto
+  boards. The **spark deck** draws a single first line onto a page — that is the
+  existing **first-line-invite** mechanism, the very path FX15 converts from
+  on-by-default to on-request. **Sprout is the spark deck**, NOT DeckWizard. So no
+  page-side entry is invented: **BG1's Sprout door becomes one of FX15's sanctioned
+  "on-request" callers** of the first-line-invite. (BG1: wire Sprout to the
+  first-line-invite, not to DeckWizard.)
+- **Merge coordination (both lanes):** FX15 flips the invite's default (on → off)
+  and BG1 adds a caller (Sprout) to that same mechanism — the two tickets touch one
+  seam from opposite sides. Therefore **whichever of FX15 / BG1 merges SECOND re-runs
+  the other's harness on the combined tree before its own merge verdict** (the
+  FX14×SC1 merge-hazard discipline). First-in merges normally; second-in owns the
+  interaction proof.
 
 (Note: `p1-wave.md`'s base was committed to `main` by chat 3 at `00d6b6f` — this is
 chat 1's amendment on top, per Nick's word; not a fresh commit of the doc.)
