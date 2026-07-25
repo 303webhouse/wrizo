@@ -6278,6 +6278,8 @@ outlive a session lives here, not in chat.
     constellation) never shrinks to fit the furniture — surfaces adopt the leg as
     touched. 2 non-blocking advisories (unobserved above-wrap reflow, theoretical
     today; Nick's sitting is the close — his 17" laptop the original witness).
+    **DEPLOYED — 2026-07-25 (git `c13182b`), with the P0 wave — see item 65's
+    canonical deploy record. Verified live.**
 64. **FX12 — the Quiet House.** **P0 — MERGED, 2026-07-24, merge commit `8d7a340`**
     (build `7cad7f2`). Owner chat 1; built + merged this session (E1.1 pattern),
     guard-rail throughout. P0 fix ratified under "P0 Go" (SV1 + sitting findings V3,
@@ -6314,6 +6316,8 @@ outlive a session lives here, not in chat.
     **DEPLOY HELD — FX12 ships with the P0 wave** (FX12 + FX13 + FX14) on Nick's one
     batched word when all three are merged + reviewed. **CLOSE-PENDING** Fable's
     post-merge review + Nick's device sitting.
+    **DEPLOYED — 2026-07-25 (git `c13182b`), with the P0 wave — see item 65's
+    canonical deploy record. Verified live.**
 65. **FX14 — One Page.** **P0 — MERGED, 2026-07-25, merge commit `a348027`**
     (feature tip `0e9e127`). Owner chat 1; built + merged this session (E1.1
     pattern), guard-rail throughout. Ratified under "P0 Go" (authority SV6 +
@@ -6398,6 +6402,17 @@ outlive a session lives here, not in chat.
     record depth, its route update re-proven live by fx14.mjs. **With this review, all
     three P0 tickets AND the rider are merged and reviewed — the deploy word is
     UNBLOCKED** (awaits Nick's one batched word + his sitting eye).
+
+    **DEPLOYED — 2026-07-25, git `c13182b` · railway `cf99e5a8-f21d-48f6-968d-485bc59d2e21`, on Nick's one batched word ("Deploy c13182b").**
+    The whole P0 wave shipped together: FX12 + FX13 + FX14 + the DF1 rider
+    (harness-only) + all docs records/reviews (manifest `375c10f..c13182b`, nothing
+    unnamed). `railway up --ci` to writer-studio-app / production; **verified live** —
+    HTTP 200, the new build (`index-7PXjtdzV.js`; CSS `index-DFzjCY9E.css` unchanged
+    from the prior deploy) serving, server healthy (401 on `/auth/me`). Client-only
+    wave, zero server/schema change. This is the P0 wave's canonical deploy record;
+    items 63 (FX13) + 64 (FX12) ride it. **CLOSE-PENDING** Nick's sitting eye — a New
+    Page under his own hand landing on THE Page, an old journal link redirecting
+    right — and the Untitled-detritus wipe.
 66. **DF1.1 — the tu2 root-cause + the audit's two edges.** **OPENED — 2026-07-25**,
     on Fable's DF1 post-merge review. Harness-only, like its parent (zero src/schema/
     server), rides the same lane, no deploy of its own. **S1 (the field test's debt):**
