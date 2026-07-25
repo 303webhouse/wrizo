@@ -6597,6 +6597,25 @@ outlive a session lives here, not in chat.
     form; teach the audit the comment convention, or migrate comment-form records to
     pok-form at next touch, so the audit's coverage statement stays honest. **Item 48
     closes when DF1.1 lands.** Not yet briefed/sequenced — Nick's call on timing.
+67. **BG1 — the Beginnings (board + page).** **OPENED + BUILDING — 2026-07-25
+    (chat 3)**, from the P1 wave (`docs/wrizo-alpha/p1-wave.md` — Chamber A / SV3
+    + SV17 + the committee pass). Branch `bg1-beginnings` off `main`, own
+    worktree, guard-rail, ledger on `main`; **ZERO SCHEMA, ZERO SERVER FILES**;
+    merges through chat 1's lane, Fable reviews post-merge in the P1 batch,
+    deploy held (one word covers the wave + the SC arc, one named manifest). S1
+    the board's empty-state row — centered quiet-olive icon+label doors, no grid,
+    only while boxes==0, gone the instant there's furniture; per mode (OPEN: New
+    Card / New Page Card / Load a Deck / Connect a Page; STORYBOARD: Load a Deck /
+    New Lane / New Card; OUTLINE: New Card / Load a Deck); system boards
+    (Journal/Shelf/Trash) keep their declarative empty lines; no Import/Upload
+    (Reference Seal pending). S2 the page's row — Screenplay / Start from a Spark
+    (deck-drawn) / Plan this first, beside a LIVE caret on a zero-word page;
+    dismissed by the first keystroke (A19), any door taken, or Esc; never blocks
+    typing (a harness check proves immediate typing + the row's vanish). S3 one
+    component + one vanish rule for both; doors not tasks, nothing counted, no
+    "get started" language. DoD: a fresh board is never a dead end, a fresh page
+    never asks permission, both rows vanish the moment work exists. M4 follows.
+
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
