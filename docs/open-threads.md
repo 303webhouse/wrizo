@@ -6122,6 +6122,80 @@ outlive a session lives here, not in chat.
     **The arc seed** (`docs/wrizo-alpha/sc-arc-seed.md`) is already on `main` at
     `375c10f`. **Item 62 tracks the whole arc: SC1 building, SC2/SC3/SC4 queued
     behind it in that order.**
+    **SC1 BUILT + VERIFIED — 2026-07-24/25 (chat SC), branch `sc1-true-geometry`
+    (`e86d016`), parented at `66b2674`, pushed.** One defect wore three faces:
+    `.script-sheet` had margins in real inches but no page, so inside
+    `.mode-pagecol` it shrink-wrapped its own content (424px at 1280px, growing
+    to 615px as a slugline was typed) — SC-V1, SC-V2 and SC-V3 all root there.
+    The fix derives the whole page from one font-size (`min(1rem, calc(100cqw /
+    51))`; 1in = 6em, 8.5in = 51em, 11in = 66em, measure 36em = 60ch,
+    `line-height:1` = 6 lpi), so no inch can drift from another. SC-V4's floating
+    caret root-caused NOT to the typewriter hook (whose C2 guard was refusing
+    correctly all along) but to a static 183px `--tw-start-offset` padding; per
+    **Nick's word of 2026-07-24 (via Fable) the screenplay surface no longer runs
+    the typewriter at all**, interim, pending his own revision in a separate
+    build — which **AMENDS AB2 S2's shipped DoD** (parked to generation 2 in
+    `ab2.mjs`) and puts the option's return in SC3. Two of the brief's own
+    hypotheses were corrected by measurement and recorded as such:
+    `scriptMetrics.ts` was already exact (the offsets only looked wrong applied
+    to a 184px column), and Courier Prime was already a dependency — **the
+    brief's one disclosed new font asset turned out to be no asset at all** (no
+    `package.json` in the diff). Ten files, +1336/−113; **zero schema, zero
+    server, zero new deps**; the prose blast radius is two files and 28 lines,
+    all behind `typewriterAvailable` (default `true`, passed `false` only on
+    `content.kind === 'draft' && content.structure === 'screenplay'`). Park
+    cycles (A4, all in the SAME commit): `fx1` (prose-width band + a
+    generation-3 start-fraction park + both script typewriter checks, one of
+    which was also at risk of passing vacuously — `[].every()` is true), `fx3`
+    (the script paper-to-stage fence RETIRED outright, its subject gone; the
+    start-offset park to generation 2; S5's icon-count + aria, the aria claim
+    re-asserted on prose), `fx4` (the script "about a quarter", whose parked
+    probe now stands as the prose-leak detector), `fx7` (the 30px sliver fence,
+    superseded on its NUMBER not its law), `ab2` (the S2 DoD itself).
+    **VERIFICATION — 41/41 harness files, BOTH `HARNESS_PARKED` settings,
+    serially, every verdict read to completion in the main loop: 1824 VERIFY
+    unset; 139 PARKED + 1926 VERIFY = 2065 at `=1`; zero failures, zero
+    isolation re-runs, asserted against the raw JSON rather than the verdict
+    lines.** `sc1.mjs` 66/66 both settings; `tsc` ×2 EXIT 0; `build:web` clean.
+    **fx5 did not fail** (the pre-DF1 sampler, green in-suite both passes) and
+    the requested clean-`main` baseline is moot — DF1 root-caused the historic
+    flake independently and is merged at `c566875`; the structural exoneration
+    stands in its place (SC1 cannot reach fx5's subject —
+    `useTypewriterFade.ts` untouched, `.desk-frame-scroll-cap` rendered by
+    `ScriptEditor.tsx` alone, the prose selector split byte-identical).
+    **fx9's `rc=127` is confirmed an invocation artifact** — the file exits
+    through a single `process.exit(pass ? 0 : 1)` and has no path emitting 127.
+    Six orphaned `--headless` browsers were swept before and between passes,
+    four leaked by the dead SC session — the same leak DF1's build note names as
+    what had been failing runs; **sweeping before a suite run now has two
+    independent witnesses.**
+    **SC1 REVIEWED GREEN — 2026-07-25** (`docs/wrizo-alpha/sc1-review-fable.md`,
+    Fable-authored, committed verbatim). Census read from the commit, the
+    geometry derivation checked independently against the CSS and the
+    arithmetic, park cycles spot-read on the branch (`fx3`, `ab2`) rather than
+    taken on trust. **Clear to merge** through chat 1's serialized lane on the
+    zero-schema pre-authorization. **Deploy is Nick's separate word on SC's OWN
+    manifest — never folded into the P0 wave.**
+    **MERGE-ORDER HAZARD — RECORDED, AND NOW BINDING ON SC1.** FX14's harness
+    sweep and SC1's park cycles collide on **four files — `fx1`, `fx4`, `fx7`,
+    `ab2`**. Read-only `merge-tree` trials come back conflict-free (SC1 × FX14,
+    SC1 × `main`, SC1 × `df1-deflake`), but a clean auto-merge is not a safe
+    merge when both tickets rewrite park-bearing files: git will interleave two
+    sets of frozen records without either side failing. The rule as reviewed:
+    **whoever merges second re-runs the full suite on the COMBINED tree and
+    verifies SC1's frozen park records survived BYTE-IDENTICAL** — the
+    immutability law asserting itself at merge time rather than at review time,
+    and not optional. **The P0 wave landed first** (FX13 `ba70279`, DF1
+    `c566875`, FX14 `a348027`, records `a2ec42a`), so **SC1 is the second merger
+    and that obligation is SC1's.** SC1's 41/41 verification above was run on a
+    tree parented at `66b2674` — it predates FX14's rewrite of the collision
+    zone (`ab2` −247 lines, `fx4` heavily rewritten) and **does not carry
+    forward to the combined tree unre-run.** Held for Nick's/Fable's word before
+    `main` is brought into `sc1-true-geometry`. Third carry-back, now resolved
+    by the wave: `fx5.mjs`'s three claimants sequenced themselves — DF1's
+    rewrite and FX14's sweep are both on `main`; SC1 never touched the file.
+    **SC2 is NOT open** — its brief is next from Fable; nothing starts without
+    one.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
