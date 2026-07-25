@@ -6465,6 +6465,88 @@ outlive a session lives here, not in chat.
     depending on it for PB1: an unowned document three lanes depend on is not
     one lane's to claim. Nick holds the authored artifact and Fable can reissue
     it, so the exposure was versioning delay, never loss.
+    **SC2 S1 BUILT — 2026-07-25, `1a759c4` on `sc2-the-clock`** (branched off
+    `main` at `3e83f4c`, SC1's merge). The line ledger
+    (`src/store/scriptLedger.ts`, new) is pure and synchronous — no DOM, no
+    font, no measurement — consuming DECLARED constants from `scriptMetrics.ts`
+    rather than runtime `ch` units, which resolve against whatever font is
+    loaded and compute against a fallback advance if taken before Courier Prime
+    arrives. It returns a STRUCTURE per element (`{id, t, lines, spaceBefore,
+    mayBreak}`), never a scalar: a total paginates naively, and refusing an
+    orphaned scene heading, keeping a cue with its dialogue, and SC2.1's
+    `(MORE)`/`(CONT'D)` all need element identity. **`spaceBefore` is reported
+    for EVERY element including the first** — it is a property of the TYPE, not
+    of position — and "the first element of a page contributes zero" belongs to
+    the CONSUMER (CSS at document start, S2's paginator at every page top);
+    baking it in would make the same element ledger differently depending on
+    where a break landed, a circularity a paginator cannot resolve.
+    **TWO DORMANT CONSTANTS WERE WRONG.** (1) `PAGE_LINES` shipped as **55** —
+    the folklore — declared "so both S1 and S2 read the same constants from day
+    one (no re-derivation, no drift)" and never referenced. Now DERIVED
+    (66−6−6 = 54) with the original quoted verbatim above it. The trade's 55 is
+    a rule of thumb whose variance is bottom margins that differ in practice.
+    *Consequence recorded, not acted on: a 120-page script counts ~2 pages
+    shorter than folklore-55 software; if trade-parity ever matters at export it
+    is a bottom-margin question, not a line-count one.* (2) **`SPACE_BEFORE` was
+    dormant and the render had NO vertical rhythm at all** — every element
+    flush against the next. Activated in the SAME commit as the ledger that
+    counts it (a ledger counting spacing the render does not apply is the exact
+    divergence the amendments exist to prevent), in LINE UNITS
+    (`calc(var(--script-line) * N)`), never px or em that could drift off the
+    12pt box. **Not a taste call awaiting Nick's eye: inter-element spacing is
+    the format, and a screenplay without it is incorrect on its face.**
+    **PARK CYCLE (A4, same commit): `sc1.mjs` S3 "the page never scrolls
+    itself"** — superseded on its NUMBER, not its law. Root-caused before
+    anything was written: not the typewriter (`dataTypewriter` still 'false',
+    `capPaddingTop` still 0) but `ActiveScriptElement`'s `node.focus()`, which
+    scrolls a below-the-fold element into view; every Enter mounts and focuses a
+    new one. Unchanged behaviour — the assertion was only ever true because the
+    page was pathologically short, and real rhythm makes a document ~1.54×
+    taller. Original verbatim; successor asserts the surviving law plus the new
+    truth (the box holds still while the caret is visible, moving only to keep
+    it so). **THE DEEPER FINDING, charged to S2 rather than patched: the script
+    page's vertical behaviour is EMERGENT, not designed** — the scroll is a side
+    effect of `focus()`, which nobody ever decided, and that is why it broke on
+    a change that had nothing to do with scrolling. **S2's paginator owns the
+    page's vertical policy deliberately** (`preventScroll` plus a stated
+    caret-visibility rule, which it needs for page breaks regardless).
+    **SITTING QUESTION FOR NICK — awaiting his word, not yet asked at a
+    sitting:** *does the caret sitting flush at the bottom edge want breathing
+    room?* Fable folds it into the sitting agenda at the next revision.
+    **It is recorded HERE and deliberately NOT appended to
+    `sc-defect-verdicts.md`. GENERAL FORM, ON THE RECORD (Fable, 2026-07-25):
+    questions for a person live BESIDE their record, never inside it.** That
+    file is a record of Nick's own words; appending a question he never asked
+    would make it a mixed artifact, and a record of someone's words admits only
+    their words.
+    **A LAW FROM THE SELF-CAUGHT BUGS (Fable, 2026-07-25): A CHECK THAT CANNOT
+    FAIL IS NOT A CHECK.** SC2 S1's first park successor asserted that the
+    content "fits" before overflow — but SC1 made the sheet a true 1056px page
+    inside a shorter cap, so it NEVER fits and `scrollHeight > clientHeight` is
+    true from the first frame: a constant wearing an assertion's clothes. Same
+    family as FX11's precondition guard and SC2's own keydown-vs-input
+    instrument assert. Rewritten to measure caret visibility, which is the real
+    distinction, **with the error recorded in the file rather than quietly
+    fixed** — the discipline binding its own work. **Smaller sibling: a flag
+    adds a code path, so exercise BOTH sides of it** — `sc2.mjs`'s new
+    `SC2_TIMING` fast path (`RUNS=1`) crashed on `sorted[1]` because only the
+    default had ever been run.
+    **SUITE CITIZENSHIP:** `sc2.mjs` starved `fx1.mjs` in a batch (fx1 timed out
+    at 480s after it, passes cleanly alone — the known leak/contention class,
+    **exonerated, not a hang**). The file now splits: correctness gates and
+    geometry assertions run ALWAYS and fast; the three-run timing measurement
+    runs only under `SC2_TIMING=1`, with DF1's inter-pass cleanup applied WITHIN
+    the median loop. **Fixtures are pinned by ELEMENT COUNT, not page count** — a
+    controlled experiment holds its INPUT constant, and page count is an OUTPUT
+    of the code under test (S1's rhythm took the same 928 elements from 20 pages
+    to 30; pinning to pages would have had the baseline measure 928 elements
+    while the tip measured ~600, reporting a ~35% "improvement" caused entirely
+    by handing the tip less work). The control is pinned the same way or its
+    denominator drifts identically. **FULL HISTORIC SUITE IS OWED BEFORE S2** —
+    S1 changed rendered geometry for every screenplay element, so the blast
+    radius is any file that mounts a script page or asserts its geometry;
+    `tu2` is the one known flake by the rescission, everything else red is real,
+    and isolation re-run is NOT available as a first move.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
