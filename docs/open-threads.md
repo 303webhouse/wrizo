@@ -6386,6 +6386,34 @@ outlive a session lives here, not in chat.
     `scriptKeys.ts`, `scriptMetrics.ts`, `sc*.mjs`. Prose, Journal, the Tutor's
     rails (A12–A15, constitutional) and any schema are OUTSIDE it — a task that
     reaches there stops and says so.
+    **THE SC DEPLOY RULE IS AMENDED — governs every earlier statement of it in
+    this item.** Several statements above (and chat 1's own merge record) read
+    the rule as absolute: SC's deploy "never folded into another arc's batch."
+    They were correct as written and stand as written; this amendment governs
+    from here. In Fable's words: *"Amended 2026-07-25 (Fable, the P1 wave): SC
+    content may ride a shared deploy provided the manifest enumerates both arcs'
+    contents by name. The rule was always about manifest clarity, never about
+    separate deploy runs. Superseded: 'never folded into another arc's batch.'"*
+    **Nothing retroactive changes** — the P0 deploy (`c13182b` / railway
+    `cf99e5a8`) carried no SC ticket, which remains correct. The deploy word
+    itself is still Nick's, and the manifest must still name everything.
+    **PB1 — the lane is WIDENED, for PB1 only.** Fable's word of 2026-07-25: the
+    SC lane gains PB1's named files on the page/board birth path **for the
+    duration of PB1**, and **the widening EXPIRES when PB1 merges**. Everything
+    else in the standing boundary holds untouched — the prose surface, the
+    Journal, the Tutor's rails (A12–A15, constitutional) and any schema remain
+    outside it. **To be recorded in PB1's own S0 so the boundary reads as
+    GRANTED, not eroded.** Also of record: **"chat 4" and "the SC lane" are one
+    lane under two labels** (Fable's chat-number habit vs. the seed's name) — an
+    assignment addressed either way is this lane's, and a third party ever
+    answering to the same label is to be flagged, not assumed.
+    **`p1-wave.md` belongs to chat 1 — the SC lane stood down.** It is the
+    records lane and cannot open its own two ledger items (68, 69) without the
+    brief on disk, so the document lands there by necessity rather than by
+    claim. Recorded because the SC lane deliberately did NOT commit it despite
+    depending on it for PB1: an unowned document three lanes depend on is not
+    one lane's to claim. Nick holds the authored artifact and Fable can reissue
+    it, so the exposure was versioning delay, never loss.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
