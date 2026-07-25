@@ -184,109 +184,51 @@ await withHarness(async (app) => {
   ok('SC1 S3 @ 1280px (was "S1 (script): the visual start position also reads as \'about a quarter\'"): a script page starts at the TOP of the stage — page one begins at its top margin (SC-V4), no start-offset on this surface',
     scriptInfo.fraction >= 0 && scriptInfo.fraction <= 0.02, JSON.stringify(scriptInfo));
 
-  // Journal: the carve-out retires — .entry-full now reads --tw-start-offset
-  // for the first time. Raw fraction (paddingTop / window.innerHeight, the
-  // basis Journal's own window-scroll measure() actually uses) should land
-  // at ~START_FRACTION (0.25) directly — Journal has no extra chrome padding
-  // ON TOP of the offset the way prose's .mode-page does.
-  const jid1 = 'fx4-journal-offset';
-  await freshJournalPage(app, jid1, LAPTOP_W, 900);
-  await sleep(500); // settle any mount-time band() runs before reading "at rest"
-  const journalOffsetInfo = await app.evalJs(`(() => {
-    const sheet = document.querySelector('.entry-full');
-    const offsetPx = parseFloat(getComputedStyle(sheet).paddingTop) || 0;
-    return { offsetPx, innerHeight: window.innerHeight, fraction: offsetPx / window.innerHeight, dataTypewriter: sheet.dataset.typewriter, restScrollY: window.scrollY };
-  })()`);
-  ok('S1: Journal\'s carve-out retires — .entry-full now reads --tw-start-offset (padding-top), landing at ~25% of the window height',
-    journalOffsetInfo.dataTypewriter === 'true' && Math.abs(journalOffsetInfo.fraction - 0.25) < 0.02, JSON.stringify(journalOffsetInfo));
-  ok('S1: a fresh, untouched Journal page does NOT auto-scroll on mount (the caret-detection fallback fix\'s own guard against a false "caret at the box\'s min-height floor" read)',
-    journalOffsetInfo.restScrollY === 0, JSON.stringify(journalOffsetInfo));
+  // --- S1 Journal start-offset [PARKED WHOLE — FX14 S2] ---------------------
+  // Proved the Journal carve-out's retirement: .entry-full reading
+  // --tw-start-offset (padding-top) at ~25% of window height, and a fresh
+  // untouched Journal page NOT auto-scrolling on mount. FX14 S2 unroutes the
+  // JournalEntry surface entirely — /journal/:id is now a permanent redirect to
+  // /page/:id (App.tsx's JournalIdRedirect), so .entry-full / data-typewriter
+  // never mount. Both checks PARKED (A4) as FALSIFIED — the surface they
+  // measured is retired from routing. SV6, quoted: "Journal Pages no longer
+  // exist. The Journal is now just a board that contains certain pages."
+  // Successor: THE Page's own start-offset is proven live ABOVE (the S1 prose
+  // .forward-only-editor 20-32% checks) and in fx14.mjs; the Journal surface's
+  // own carve-out, if it survives at all, is J7's behavior-parity census (every
+  // Journal-unique behavior becomes a setting or dies there, per the FX14
+  // brief). Originals, byte-for-byte:
+  //   PARKED (was "S1: Journal's carve-out retires — .entry-full now reads --tw-start-offset (padding-top), landing at ~25% of the window height")
+  //   PARKED (was "S1: a fresh, untouched Journal page does NOT auto-scroll on mount (the caret-detection fallback fix's own guard against a false \"caret at the box's min-height floor\" read)")
 
-  // Journal engage-at-~10-lines, both reference widths + the floor.
-  for (const [width, height] of [[LAPTOP_W, 900], [WIDE_W, 1000], [FLOOR_W, 900]]) {
-    const jid = `fx4-journal-engage-${width}`;
-    await freshJournalPage(app, jid, width, height);
-    await app.evalJs("document.querySelector('.entry-edit').focus()");
-    let scrolledAtLine = null;
-    for (let i = 1; i <= 20 && scrolledAtLine === null; i++) {
-      await app.typeKeys(`Line ${i} of journal test content, long enough to wrap the paper's own measure a bit.\n`);
-      await sleep(80);
-      const scrolled = await app.evalJs("document.querySelector('.entry-full')?.dataset.scrolled");
-      if (scrolled === 'true') scrolledAtLine = i;
-    }
-    ok(`S1 @ ${width}x${height} (Journal): the scroll/fade engages at ~10 line-equivalents (8-13), not lagging for a dozen-plus`,
-      scrolledAtLine !== null && scrolledAtLine >= 8 && scrolledAtLine <= 13, `scrolledAtLine=${scrolledAtLine}`);
-  }
+  // --- S1 Journal engage-at-~10-lines [PARKED WHOLE — FX14 S2] --------------
+  // Ran 3× (1280x900, 2200x1000, 1100x900), proving the typewriter scroll/fade
+  // engages at ~10 line-equivalents on the Journal surface. The engage behavior
+  // is universal (THE Page's shared typewriter engine has it), but this instance
+  // measured it via .entry-edit/.entry-full on the now-unrouted JournalEntry
+  // surface (freshJournalPage -> #/journal/:id -> redirect -> PageEditor, no
+  // .entry-full). PARKED (A4) as FALSIFIED. SV6: "Journal Pages no longer exist.
+  // The Journal is now just a board that contains certain pages." Successor: the
+  // shared typewriter engine is exercised on THE Page elsewhere in the suite; a
+  // Page-surface engage re-proof, if wanted, is J7's parity work. Original
+  // template, byte-for-byte (ran at 1280x900, 2200x1000, 1100x900):
+  //   PARKED (was `S1 @ ${width}x${height} (Journal): the scroll/fade engages at ~10 line-equivalents (8-13), not lagging for a dozen-plus`)
 
-  // ==========================================================================
-  // S1 — the ink-coordinate byte-truth proof (the STOP-and-report clause's
-  // own required evidence). A seeded stroke at KNOWN normalized coordinates:
-  // (1) the sheet's own rect (top/left/width — the ONLY thing normPoint/
-  // paintCommitted/renderStroke ever key off) is IDENTICAL whether
-  // data-typewriter is 'true' or 'false' (the padding-top/bottom toggle);
-  // (2) the rendered ink pixel lands exactly where the normalized
-  // coordinates + that rect predict.
-  // ==========================================================================
-  {
-    const jid = 'fx4-ink-proof';
-    const stroke = { points: [{ x: 0.2, y: 0.1 }, { x: 0.3, y: 0.15 }, { x: 0.4, y: 0.2 }] };
-    await freshDesk(app, LAPTOP_W, 900);
-    await app.evalJs(`(() => {
-      const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: ${JSON.stringify(jid)}, text: 'ink coordinate proof page\\nsecond line of text here', source: 'page', strokes: [${JSON.stringify(stroke)}], createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    })()`);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/journal/' + ${JSON.stringify(jid)}`);
-    await app.waitFor("!!document.querySelector('.entry-full')", { label: 'journal page with seeded ink' });
-    await sleep(400);
-    await app.emulateDpr(1, LAPTOP_W, 900);
-
-    const toggleProof = await app.evalJs(`(() => {
-      const sheet = document.querySelector('.entry-full');
-      const before = sheet.getBoundingClientRect();
-      const beforeAttr = sheet.dataset.typewriter;
-      sheet.setAttribute('data-typewriter', beforeAttr === 'true' ? 'false' : 'true');
-      const after = sheet.getBoundingClientRect();
-      sheet.setAttribute('data-typewriter', beforeAttr);
-      const restored = sheet.getBoundingClientRect();
-      return {
-        before: { top: before.top, left: before.left, width: before.width, height: before.height },
-        after: { top: after.top, left: after.left, width: after.width, height: after.height },
-        restored: { top: restored.top, left: restored.left, width: restored.width, height: restored.height },
-      };
-    })()`);
-    const rectInvariant =
-      Math.abs(toggleProof.before.top - toggleProof.after.top) < 0.01 &&
-      Math.abs(toggleProof.before.left - toggleProof.after.left) < 0.01 &&
-      Math.abs(toggleProof.before.width - toggleProof.after.width) < 0.01 &&
-      Math.abs(toggleProof.before.top - toggleProof.restored.top) < 0.01 &&
-      Math.abs(toggleProof.before.left - toggleProof.restored.left) < 0.01 &&
-      Math.abs(toggleProof.before.width - toggleProof.restored.width) < 0.01;
-    ok('S1 ink-coordinate proof: the sheet\'s own rect (top/left/width) is BYTE-IDENTICAL whether the start-offset padding is applied or not (height alone differs) — the invariant "the paper never moves" that makes stroke placement safe',
-      rectInvariant, JSON.stringify(toggleProof));
-
-    const pixelProof = await app.evalJs(`(() => {
-      const sheet = document.querySelector('.entry-full');
-      const canvas = document.querySelector('.ink-committed');
-      const rect = sheet.getBoundingClientRect();
-      const canvasRect = canvas.getBoundingClientRect();
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const expectedScreenX = rect.left + 0.2 * rect.width;
-      const expectedScreenY = rect.top + 0.1 * rect.width;
-      const localX = expectedScreenX - canvasRect.left;
-      const localY = expectedScreenY - canvasRect.top;
-      const px = Math.round(localX * dpr), py = Math.round(localY * dpr);
-      const data = ctx.getImageData(Math.max(0, px - 3), Math.max(0, py - 3), 7, 7).data;
-      let anyInk = false;
-      for (let i = 3; i < data.length; i += 4) { if (data[i] > 0) anyInk = true; }
-      return { anyInk, expectedScreenX, expectedScreenY };
-    })()`);
-    ok('S1 ink-coordinate proof: a stroke seeded at normalized (0.2, 0.1) renders REAL ink pixels at the exact screen position the sheet\'s own rect + normalized coordinates predict — byte-true placement, with the start-offset ACTIVE',
-      pixelProof.anyInk === true, JSON.stringify(pixelProof));
-  }
+  // --- S1 ink-coordinate byte-truth proof [PARKED WHOLE — FX14 S2] ----------
+  // Proved journal ink placement: the .entry-full sheet's rect is byte-identical
+  // across the data-typewriter padding toggle, and a stroke seeded at normalized
+  // (0.2,0.1) renders real .ink-committed pixels where the rect predicts. The
+  // entire ink model (.entry-full + .ink-committed stroke canvas) is
+  // JournalEntry-only — PageEditor has NO stroke-capture canvas (an ink-color
+  // swatch placeholder only). FX14 S2 unroutes JournalEntry (/journal/:id ->
+  // /page/:id redirect), so this surface never mounts. Both checks PARKED (A4)
+  // as FALSIFIED. SV6: "Journal Pages no longer exist. The Journal is now just a
+  // board that contains certain pages." Successor: the fate of journal ink is
+  // J7's behavior-parity census (every Journal-unique behavior becomes a setting
+  // or dies there, per the FX14 brief); the routing redirect that retires this
+  // surface is proven live in fx14.mjs. Originals, byte-for-byte:
+  //   PARKED (was "S1 ink-coordinate proof: the sheet's own rect (top/left/width) is BYTE-IDENTICAL whether the start-offset padding is applied or not (height alone differs) — the invariant \"the paper never moves\" that makes stroke placement safe")
+  //   PARKED (was "S1 ink-coordinate proof: a stroke seeded at normalized (0.2, 0.1) renders REAL ink pixels at the exact screen position the sheet's own rect + normalized coordinates predict — byte-true placement, with the start-offset ACTIVE")
 
   // ==========================================================================
   // S2 — the glow, actually felt. Render-verified-first (structural: the

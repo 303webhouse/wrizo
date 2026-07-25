@@ -451,78 +451,36 @@ await withHarness(async (app) => {
     JSON.stringify(allStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
     JSON.stringify(allStripLabels));
 
-  // === S6 — the Journal's page enters the frame (the R2 ruling). ============
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture' });
-  await app.emulateDpr(1, 1400, 900);
-  await app.evalJs(`(() => {
-    const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'ab2-journal', text: '', projectId: null, source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-  })()`);
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Journal seed' });
-  await app.evalJs("location.hash = '#/journal/ab2-journal'");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed' });
-  await sleep(200);
-  // CD1 S2 — a fresh JournalEntry mount, fresh (closed) sliver.
-  await openSliver(app);
-  await sleep(150);
-
-  const journalFramed = await app.evalJs(`({
-    deskFrame: !!document.querySelector('.desk-frame'),
-    strip: [...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent),
-    legacyTabsGone: !document.querySelector('.journal-modes'),
-    captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
-    corkboardItems: document.querySelectorAll('.desk-corkboard-item').length,
-    inkPresent: !!document.querySelector('.entry-full .ink-canvas'),
-    // AB3 S3 — the below-page metadata cluster (the <h1> title among it)
-    // unmounts entirely when framed, superseded by the Page face. The
-    // retired "keeps its below-the-page position" claim is parked below
-    // (HARNESS_PARKED=1); ab3.mjs asserts the Page face's own presence.
-    metadataAbsent: !document.querySelector('.entry-full ~ h1, h1'),
-  })`);
-  ok('S6: JournalEntry mounts inside DeskFrame at >=1100px', journalFramed.deskFrame);
-  ok('S6: the unified mode strip is present, five ratified strings', JSON.stringify(journalFramed.strip) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']), JSON.stringify(journalFramed.strip));
-  ok('S6: the legacy tab row does NOT mount when framed (superseded, not deleted)', journalFramed.legacyTabsGone);
-  ok('CD1 S2 (was "S6: capture items are in the rail..."): capture items are in the sliver now (their ruled final home, post-CD1)', JSON.stringify(journalFramed.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']), JSON.stringify(journalFramed.captureItems));
-  ok('S6: the interim corkboard Journal tab is retired (no .desk-corkboard-item anywhere)', journalFramed.corkboardItems === 0);
-  ok('S6: the ink layer (canvas) is present — the sheet mounts editor core untouched', journalFramed.inkPresent);
-  ok('AB3 S3: the below-page metadata cluster (title/star/tags) is entirely absent when framed — no <h1> anywhere (superseded by the Page face)', journalFramed.metadataAbsent);
-
-  // ab2.1 F1/F2 — the paper lost its width source in the original S6 patch
-  // (a lone `alignItems:'center'` collapsed it to an ~80px fit-content
-  // sliver on an empty page). Fixed in F1; this is the permanent regression
-  // guard for that exact class of bug.
-  const journalPaperRect = await app.evalJs(rectOf('.paper-page.entry-full'));
-  ok('F2 geometry: framed Journal paper renders a sane width [600,760]',
-    journalPaperRect.width >= 600 && journalPaperRect.width <= 760, JSON.stringify(journalPaperRect));
-
-  // ab2.1 F3 — Plateau foundations §3/§5 (olive marks where you are; orange
-  // marks what you do): DeskRail's active-place indicator used to be a
-  // where-you-are-at-rest marker here. CD1 S4 — DeskRail no longer mounts
-  // on this (framed) route at all, so there is no active rail item's color
-  // left to read (getComputedStyle on a null selector would throw, not
-  // fail gracefully). The ORIGINAL check is parked below (SUPERSEDED); its
-  // successor reinforces S4 directly on this same fixture — the drawer's
-  // own olive-active-pull law is ab3.mjs's territory (R3), not re-proven
-  // here.
-  const railGoneOnJournal = await app.evalJs("!document.querySelector('.desk-rail')");
-  ok('CD1 S4 (was "F3: DeskRail\'s active item is not brass..."): DeskRail (.desk-rail) does not mount on the framed Journal route either',
-    railGoneOnJournal === true, String(railGoneOnJournal));
-
-  // -- S6: below the gate, legacy JSX is untouched (byte-identical). --------
-  await app.emulateDpr(1, 900, 900);
-  await sleep(200);
-  const journalLegacy = await app.evalJs(`({
-    deskFrameGone: !document.querySelector('.desk-frame'),
-    legacyTabs: !!document.querySelector('.journal-modes'),
-  })`);
-  ok('S6: below 1100px, DeskFrame does not mount and the legacy tab row is back (non-goal — mobile untouched)',
-    journalLegacy.deskFrameGone && journalLegacy.legacyTabs, JSON.stringify(journalLegacy));
+  // === S6 — the Journal's page enters the frame [PARKED WHOLE — FX14 S2] =====
+  // Drove the JournalEntry surface (#/journal/ab2-journal -> .entry-edit) and
+  // asserted its framed chrome at >=1100px (mounts inside DeskFrame; the unified
+  // five-string mode strip; the legacy tab row gone; capture items in the sliver;
+  // corkboard tab retired; ink layer present; metadata band absent; sane paper
+  // width; DeskRail absent) and, below the gate at 900px, that DeskFrame is gone
+  // and the legacy tab row returns. FX14 S2 unroutes the JournalEntry surface
+  // entirely (/journal/:id -> /page/:id redirect, App.tsx's JournalIdRedirect), so
+  // .entry-edit / .journal-modes / the JournalEntry-specific chrome never mount.
+  // ALL of these checks are PARKED (A4) as FALSIFIED. SV6, quoted: "Journal Pages
+  // no longer exist. The Journal is now just a board that contains certain pages."
+  // (Multi-generational: 448/451/471 already carried CD1/AB3 supersession records;
+  // FX14 is the next-generation supersession — the frozen names below are quoted
+  // verbatim INCLUDING their prior `(was ...)` records.)
+  // Successor: the UNIVERSAL framing claim (a writing surface mounts inside
+  // DeskFrame at >=1100px, gone below) is proven LIVE on THE Page's Board fixture
+  // immediately below ("F2 geometry: framed board canvas..." + its .desk-frame
+  // wait) and across ab3/ab4; the JournalEntry-SPECIFIC chrome (its mode strip,
+  // its legacy tab row, its ink layer, its metadata-absence) retires to J7's
+  // behavior-parity census. Originals, byte-for-byte:
+  //   PARKED (was "S6: JournalEntry mounts inside DeskFrame at >=1100px")
+  //   PARKED (was "S6: the unified mode strip is present, five ratified strings")
+  //   PARKED (was "S6: the legacy tab row does NOT mount when framed (superseded, not deleted)")
+  //   PARKED (was "CD1 S2 (was \"S6: capture items are in the rail...\"): capture items are in the sliver now (their ruled final home, post-CD1)")
+  //   PARKED (was "S6: the interim corkboard Journal tab is retired (no .desk-corkboard-item anywhere)")
+  //   PARKED (was "S6: the ink layer (canvas) is present — the sheet mounts editor core untouched")
+  //   PARKED (was "AB3 S3: the below-page metadata cluster (title/star/tags) is entirely absent when framed — no <h1> anywhere (superseded by the Page face)")
+  //   PARKED (was "F2 geometry: framed Journal paper renders a sane width [600,760]")
+  //   PARKED (was "CD1 S4 (was \"F3: DeskRail's active item is not brass...\"): DeskRail (.desk-rail) does not mount on the framed Journal route either")
+  //   PARKED (was "S6: below 1100px, DeskFrame does not mount and the legacy tab row is back (non-goal — mobile untouched)")
 
   // === ab2.1 F2 — the fourth framed surface: Board. AB2 never wired a
   // Board fixture (at AB2's own time it got no rail content or a mode
@@ -652,37 +610,24 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S2: the rail toggle flips to off" + "...is honored on reload", then AB3-superseded to "...control does not mount at all") — FX1 S3 re-supersedes AB3\'s own re-assertion: the forward-lock rail control mounts again for a project-origin page (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
       forwardLockRailPresent === true);
 
-    // === S6 fixture — a fresh Journal entry, framed. =========================
-    await app.goto('/');
-    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-    await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture (PARKED)' });
-    await app.emulateDpr(1, 1400, 900);
-    await app.evalJs(`(() => {
-      const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'ab2-journal-parked', text: '', projectId: null, source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    })()`);
-    await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Journal seed (PARKED)' });
-    await app.evalJs("location.hash = '#/journal/ab2-journal-parked'");
-    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (PARKED)' });
-    await sleep(200);
-
-    // ORIGINAL (AB2 S6): ok('S6: the metadata/star band keeps its below-
-    // the-page position inside the stage column', metadataBelow.ok, ...);
-    // (metadataBelow computed h1Rect.top > sheetRect.bottom - 5 — the title
-    // rendered BELOW the paper, inside the frame.)
-    // AB3 S3 — the whole cluster (including that <h1>) unmounts entirely
-    // when framed, superseded by the Page face; there is no h1 to measure.
-    const metadataGoneNow = await app.evalJs(`(() => {
-      const sheet = document.querySelector('.entry-full');
-      return { hasSheet: !!sheet, hasH1: !!document.querySelector('h1') };
-    })()`);
+    // === S6 metadata-band fixture [FX14 S2: probe retired, cd1-chain] ========
+    // MULTI-GENERATIONAL chain: this parked check re-verified AB3 S3's
+    // supersession by RE-MOUNTING the JournalEntry surface
+    // (#/journal/ab2-journal-parked -> .entry-edit) and reading its framed <h1>.
+    // FX14 S2 unroutes that surface (/journal/:id -> /page/:id redirect, App.tsx's
+    // JournalIdRedirect), so it can no longer mount. Per the immutability codicil,
+    // the RECORD name below is FROZEN byte-identical (it already carries the
+    // AB2->AB3 supersession); only its PROBE is updated in this FX14 commit —
+    // retired to the documented-supersession form (probe `true`), with the journal
+    // navigation REMOVED so an armed HARNESS_PARKED=1 run does not time out.
+    // ORIGINAL (AB2 S6), preserved in the frozen name below: "S6: the metadata/star
+    // band keeps its below-the-page position inside the stage column" (metadataBelow
+    // computed h1Rect.top > sheetRect.bottom - 5). SV6: "Journal Pages no longer
+    // exist. The Journal is now just a board that contains certain pages."
+    // Successor: the metadata-band-absence claim retires to J7's behavior-parity
+    // census (THE Page's own face is asserted in ab3.mjs).
     pok('PARKED (was "S6: the metadata/star band keeps its below-the-page position inside the stage column") — AB3 S3: the sheet mounts, but the metadata band (and its <h1>) is gone entirely when framed',
-      metadataGoneNow.hasSheet === true && metadataGoneNow.hasH1 === false,
-      JSON.stringify(metadataGoneNow));
+      true, 'FX14 S2: probe retired — the JournalEntry surface this re-verified on is unrouted (/journal/:id -> /page/:id); successor J7');
 
     // === CD1 S7 — ToolRail.tsx itself retires whole; the sliver
     // (components/Sliver.tsx) hosts its content now. Six checks this
@@ -764,28 +709,20 @@ if (process.env.HARNESS_PARKED === '1') {
     // CD1 S2/S7 — capture items' "ruled final home" moves again, from
     // ToolRail's rail track to the sliver. Live successor in this file's
     // own S6 section.
-    await app.goto('/');
-    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-    await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture (PARKED capture items)' });
-    await app.emulateDpr(1, 1400, 900);
-    await app.evalJs(`(() => {
-      const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'ab2-journal-parked-capture', text: '', projectId: null, source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    })()`);
-    await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Journal seed (PARKED capture items)' });
-    await app.evalJs("location.hash = '#/journal/ab2-journal-parked-capture'");
-    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (PARKED capture items)' });
-    await sleep(200);
-    await openSliver(app);
-    await sleep(150);
-    const captureItemsInSliverNow = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent)");
+    // FX14 S2 (cd1-chain, next generation): this parked check re-verified CD1
+    // S2/S7's supersession by RE-MOUNTING the JournalEntry surface
+    // (#/journal/ab2-journal-parked-capture -> .entry-edit) and reading the sliver's
+    // capture items. FX14 S2 unroutes that surface (/journal/:id -> /page/:id
+    // redirect, App.tsx's JournalIdRedirect), so it can no longer mount. The RECORD
+    // name below is FROZEN byte-identical (it carries the S6->CD1 supersession); only
+    // its PROBE is retired to `true` (documented supersession), journal navigation
+    // REMOVED so an armed HARNESS_PARKED=1 run does not time out. SV6: "Journal Pages
+    // no longer exist. The Journal is now just a board that contains certain pages."
+    // Successor: the capture-items-in-the-sliver claim, on a writing surface, is
+    // proven live on THE Page across the AB/CD sliver harnesses; the Journal
+    // surface's own instance retires to J7's behavior-parity census.
     pok('PARKED (was "S6: capture items are in the rail (their ruled final home)") — CD1 S2/S7: capture items are in the sliver now, same three items',
-      JSON.stringify(captureItemsInSliverNow) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
-      JSON.stringify(captureItemsInSliverNow));
+      true, 'FX14 S2: probe retired — the JournalEntry surface this re-verified on is unrouted (/journal/:id -> /page/:id); successor J7');
 
     // ORIGINAL (S2 DoD): ok('S2 DoD: the typewriter toggle is present in
     // the rail on the script surface', await app.evalJs("!!document.

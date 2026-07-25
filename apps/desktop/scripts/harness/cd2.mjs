@@ -413,22 +413,29 @@ await withHarness(async (app) => {
 
   // ==========================================================================
   // S4 — the survey: large thumbnails (title present), current item olive,
-  // click = travel. Two real journal-origin entries, opened directly on the
-  // FIRST one (JournalEntry.tsx also mounts the cascade, S7-style mirrored
-  // wiring), so "current item olive" has a genuine subject to mark.
+  // click = travel. Two real entries, opened directly on the FIRST one so
+  // "current item olive" has a genuine subject to mark.
+  // FIXTURE RE-POINT [FX14 S2]: the cascade survey is a HOST-AGNOSTIC component
+  // (JournalEntry AND THE Page both mount it, S7-style mirrored wiring). FX14
+  // unroutes the JournalEntry host (/journal/:id -> /page/:id redirect, App.tsx's
+  // JournalIdRedirect), so this fixture now opens the current page on THE Page
+  // (#/page/:id -> .forward-only-editor) instead. The survey's own behavior —
+  // thumbnails, current-olive, click-travel — is unchanged; only the host surface
+  // moved. Not a park: the cascade survey is untouched by FX14. Seeds carry
+  // source:'page' so they mount as editable pages on the new host.
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-journal-a', text: 'Journal page A — the current one', createdAt: now, updatedAt: now });
-    entries.push({ id: 'cd2-journal-b', text: 'Journal page B — a sibling', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
+    entries.push({ id: 'cd2-journal-a', text: 'Journal page A — the current one', source: 'page', createdAt: now, updatedAt: now });
+    entries.push({ id: 'cd2-journal-b', text: 'Journal page B — a sibling', source: 'page', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after journal-pair seed' });
-  await app.evalJs("location.hash = '#/journal/cd2-journal-a'");
-  await app.waitFor("!!document.querySelector('.entry-edit, .entry-full')", { label: 'JournalEntry mounted on entry A' });
+  await app.evalJs("location.hash = '#/page/cd2-journal-a'"); // FX14 S2 re-point: was #/journal/:id (unrouted)
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page mounted on entry A (host for the cascade survey)' });
   await sleep(300);
   await clickCategory(app, 0); // Journal
   await sleep(150);
@@ -557,17 +564,22 @@ await withHarness(async (app) => {
   // survey persists through a keystroke while an UNDOCKED layer still
   // dissolves as before.
   // ==========================================================================
+  // FIXTURE RE-POINT [FX14 S2]: the cascade DOCK is host-agnostic (this block's
+  // own focus calls already fall back to [contenteditable="true"], which is THE
+  // Page's own editor). FX14 unroutes the JournalEntry host (/journal/:id ->
+  // /page/:id redirect), so the dock fixture now opens on THE Page. The dock's
+  // own behavior is unchanged; only the host surface moved. Not a park.
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-dock-a', text: 'Dock fixture A', createdAt: now, updatedAt: now });
-    entries.push({ id: 'cd2-dock-b', text: 'Dock fixture B', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
+    entries.push({ id: 'cd2-dock-a', text: 'Dock fixture A', source: 'page', createdAt: now, updatedAt: now });
+    entries.push({ id: 'cd2-dock-b', text: 'Dock fixture B', source: 'page', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
   await app.reload();
-  await app.evalJs("location.hash = '#/journal/cd2-dock-a'");
-  await app.waitFor("!!document.querySelector('.entry-edit, .entry-full')", { label: 'JournalEntry mounted for the dock fixture' });
+  await app.evalJs("location.hash = '#/page/cd2-dock-a'"); // FX14 S2 re-point: was #/journal/:id (unrouted)
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page mounted for the dock fixture' });
   await sleep(300);
 
   await clickCategory(app, 0); // Journal

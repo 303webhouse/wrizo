@@ -405,7 +405,7 @@ export function Spread() {
   // landing; routeForEntry now picks the same destination directly.
   const openPage = (id: string) => {
     const target = pages.find(p => p.id === id);
-    navigate(target ? routeForEntry(target) : `/journal/${id}`);
+    navigate(target ? routeForEntry(target) : `/page/${id}`); // FX14 S1/S2 — both branches land on THE Page now (routeForEntry is unconditional)
   };
 
   return (

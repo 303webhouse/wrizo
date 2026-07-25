@@ -266,23 +266,21 @@ await withHarness(async (app) => {
   ok('S2: forward-lock\'s deletion discipline is UNTOUCHED by the rail-driven marker insertion — a real Backspace still STRIKES (struck span present, text unchanged), never erases',
     afterBackspace === italicText && struckPresent === true, JSON.stringify({ afterBackspace, struckPresent }));
 
-  // Journal's OWN sliver stays exactly as it was — no leaked Format/ink-
-  // tool-placeholder section (this new capability is opt-in per host, and
-  // JournalEntry.tsx's own sliverContent deliberately never sets it, since
-  // its own real ink tool already lives on the sheet).
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed (S2 regression)' });
-  await sleep(250);
-  await openSliver(app);
-  await sleep(150);
-  const journalRail = await app.evalJs(`(() => ({
-    sections: [...document.querySelectorAll('.wz-sliver-h')].map(h => h.textContent),
-    inkToolPresent: !!document.querySelector('.wz-sliver-ink-tool-toggle'),
-    realOnSheetToggle: !!document.querySelector('.ink-tool-toggle'),
-  }))()`);
-  ok('S2 regression: the TRUE Journal surface\'s own sliver is untouched — no Format section, no ink-tool placeholder leaked in, and its own REAL on-sheet pen/eraser toggle is still present',
-    !journalRail.sections.includes('Format') && !journalRail.inkToolPresent && journalRail.realOnSheetToggle,
-    JSON.stringify(journalRail));
+  // Journal's OWN sliver regression [PARKED WHOLE — FX14 S2] -----------------
+  // Asserted the TRUE Journal surface's OWN sliver is untouched by the opt-in
+  // Format/ink-tool-placeholder this ticket adds to PageEditor's sliver — no
+  // Format section, no .wz-sliver-ink-tool-toggle leaked in, and JournalEntry's own
+  // REAL on-sheet pen/eraser .ink-tool-toggle still present. FX14 S2 unroutes the
+  // JournalEntry surface (/journal/:id -> /page/:id redirect, App.tsx's
+  // JournalIdRedirect), so .entry-edit / .ink-tool-toggle never mount — and this
+  // check is NOT re-pointable: re-pointing to THE Page would INVERT every clause
+  // (PageEditor's sliver SHOULD carry Format + the ink-tool placeholder and has NO
+  // on-sheet .ink-tool-toggle). PARKED (A4) as FALSIFIED. SV6, quoted: "Journal
+  // Pages no longer exist. The Journal is now just a board that contains certain
+  // pages." Successor: PageEditor's sliver Format/ink-tool-placeholder is proven
+  // POSITIVELY above in this same S2 block; the Journal's own on-sheet ink tool
+  // retires to J7's behavior-parity census. Original, byte-for-byte:
+  //   PARKED (was "S2 regression: the TRUE Journal surface's own sliver is untouched — no Format section, no ink-tool placeholder leaked in, and its own REAL on-sheet pen/eraser toggle is still present")
 
   // ==========================================================================
   // S3 — the cascade's own submenus, flush against the strip. Root-caused

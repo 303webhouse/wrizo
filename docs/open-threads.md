@@ -4493,6 +4493,43 @@ outlive a session lives here, not in chat.
     something is wrong — nothing else. Drift-check: ZERO structural drift;
     the only delta is the suite count — **39 files now** (`cd4.mjs` landed
     since the brief's "38"), the DoD reads "the full suite" against that.
+    **BUILT — 2026-07-24 (chat 3), branch `df1-deflake` (`24c6173`), pushed;
+    merge rides the zero-schema pre-auth through chat 1's lane, Fable reviews
+    post-merge, harness ships nothing (no deploy). DoD MET and read to completion
+    in the main loop (not a notification, per Fable's ruling): THREE consecutive
+    full-suite runs, BOTH HARNESS_PARKED settings, all 39 files `exit=0` + PASS
+    every pass — 234/234 green, zero isolation reruns.** **S1:** `fx5`'s
+    per-line-engage/scrollTop flake root-caused (a `sleep(30)+CDP` sampler whose
+    interval stretches under contention and straddles multiple line-heights of an
+    in-flight smooth scroll) and fixed with an in-page scroll-event recorder on
+    the browser's own frame clock — the ~1/3 flake is gone (6/6 clean in the DoD,
+    plus clean under induced contention). **S2 / the known-flake list -> TRUTH:**
+    `th2`, `j4`, `m2`, `tu2`, `w2` all CLEARED — none reproduced across x5
+    mid-contention runs + the 6-pass DoD; the SecurityError/celebration-flash/
+    meter races never surfaced once the environment was clean (a leaked-headless-
+    browser resource crash, NOT the harness, had been failing runs — fixed with
+    inter-pass cleanup). **S3:** `e1` anchor hardening (split on the exporter's
+    own marker BLOCK + structural per-block header count, parser-side only — the
+    export bytes are unchanged) + a hostile `# `/marker fixture proving the parse
+    is unconfused while the writer's lines ride verbatim. **S4:**
+    `scripts/audit-parked-records.mjs` (122 records traced to verbatim git
+    lineage) + `docs/wrizo-alpha/parked-records-audit-2026-07.md`; B1's pre-law
+    bump (`9ce8f6b`, ab3 note "seven"->"eight") corroborated directly and cited,
+    not re-flagged. The M2 park sweep (4 checks A4-parked verbatim + live
+    successors in `m3.mjs`) already recorded above. **The isolation-rerun crutch
+    is formally RETIRED for every file this pass cleared (fx5/th2/j4/m2/tu2/w2) —
+    after DF1 a red suite means something is wrong, nothing else.** (P0 note: FX13
+    pre-empted DF1 mid-DoD on Fable's word; DF1 held clean at `24c6173` and
+    resumed after — the DoD above is the complete post-resume run.)
+
+    **MERGED — 2026-07-25, merge `c566875`** (`24c6173`), the P0 manifest's named
+    de-flake rider. Merged in chat 1's lane SECOND in Nick's ruled P0 sequence,
+    before FX14 ("it retires the flake crutch before FX14's verification needs it").
+    Harness-only (audit tool + `e1.mjs` + `fx5.mjs` + audit doc; zero src/schema/
+    server). Verified at the merge HEAD: `e1.mjs` PASS 41, `fx5.mjs` PASS 64, and
+    `scripts/audit-parked-records.mjs` runs clean (125 records; only the 4 hand-ruled
+    benign extraction edges — ab3/cd2/ab4/fx1 — no un-remediated mutation). Fable's
+    review follows this merge. Ships with the P0 wave; no deploy of its own.
 49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
     finding 1 (Nick's second sitting — the Journal's "New Page" routing
@@ -6085,6 +6122,80 @@ outlive a session lives here, not in chat.
     **The arc seed** (`docs/wrizo-alpha/sc-arc-seed.md`) is already on `main` at
     `375c10f`. **Item 62 tracks the whole arc: SC1 building, SC2/SC3/SC4 queued
     behind it in that order.**
+    **SC1 BUILT + VERIFIED — 2026-07-24/25 (chat SC), branch `sc1-true-geometry`
+    (`e86d016`), parented at `66b2674`, pushed.** One defect wore three faces:
+    `.script-sheet` had margins in real inches but no page, so inside
+    `.mode-pagecol` it shrink-wrapped its own content (424px at 1280px, growing
+    to 615px as a slugline was typed) — SC-V1, SC-V2 and SC-V3 all root there.
+    The fix derives the whole page from one font-size (`min(1rem, calc(100cqw /
+    51))`; 1in = 6em, 8.5in = 51em, 11in = 66em, measure 36em = 60ch,
+    `line-height:1` = 6 lpi), so no inch can drift from another. SC-V4's floating
+    caret root-caused NOT to the typewriter hook (whose C2 guard was refusing
+    correctly all along) but to a static 183px `--tw-start-offset` padding; per
+    **Nick's word of 2026-07-24 (via Fable) the screenplay surface no longer runs
+    the typewriter at all**, interim, pending his own revision in a separate
+    build — which **AMENDS AB2 S2's shipped DoD** (parked to generation 2 in
+    `ab2.mjs`) and puts the option's return in SC3. Two of the brief's own
+    hypotheses were corrected by measurement and recorded as such:
+    `scriptMetrics.ts` was already exact (the offsets only looked wrong applied
+    to a 184px column), and Courier Prime was already a dependency — **the
+    brief's one disclosed new font asset turned out to be no asset at all** (no
+    `package.json` in the diff). Ten files, +1336/−113; **zero schema, zero
+    server, zero new deps**; the prose blast radius is two files and 28 lines,
+    all behind `typewriterAvailable` (default `true`, passed `false` only on
+    `content.kind === 'draft' && content.structure === 'screenplay'`). Park
+    cycles (A4, all in the SAME commit): `fx1` (prose-width band + a
+    generation-3 start-fraction park + both script typewriter checks, one of
+    which was also at risk of passing vacuously — `[].every()` is true), `fx3`
+    (the script paper-to-stage fence RETIRED outright, its subject gone; the
+    start-offset park to generation 2; S5's icon-count + aria, the aria claim
+    re-asserted on prose), `fx4` (the script "about a quarter", whose parked
+    probe now stands as the prose-leak detector), `fx7` (the 30px sliver fence,
+    superseded on its NUMBER not its law), `ab2` (the S2 DoD itself).
+    **VERIFICATION — 41/41 harness files, BOTH `HARNESS_PARKED` settings,
+    serially, every verdict read to completion in the main loop: 1824 VERIFY
+    unset; 139 PARKED + 1926 VERIFY = 2065 at `=1`; zero failures, zero
+    isolation re-runs, asserted against the raw JSON rather than the verdict
+    lines.** `sc1.mjs` 66/66 both settings; `tsc` ×2 EXIT 0; `build:web` clean.
+    **fx5 did not fail** (the pre-DF1 sampler, green in-suite both passes) and
+    the requested clean-`main` baseline is moot — DF1 root-caused the historic
+    flake independently and is merged at `c566875`; the structural exoneration
+    stands in its place (SC1 cannot reach fx5's subject —
+    `useTypewriterFade.ts` untouched, `.desk-frame-scroll-cap` rendered by
+    `ScriptEditor.tsx` alone, the prose selector split byte-identical).
+    **fx9's `rc=127` is confirmed an invocation artifact** — the file exits
+    through a single `process.exit(pass ? 0 : 1)` and has no path emitting 127.
+    Six orphaned `--headless` browsers were swept before and between passes,
+    four leaked by the dead SC session — the same leak DF1's build note names as
+    what had been failing runs; **sweeping before a suite run now has two
+    independent witnesses.**
+    **SC1 REVIEWED GREEN — 2026-07-25** (`docs/wrizo-alpha/sc1-review-fable.md`,
+    Fable-authored, committed verbatim). Census read from the commit, the
+    geometry derivation checked independently against the CSS and the
+    arithmetic, park cycles spot-read on the branch (`fx3`, `ab2`) rather than
+    taken on trust. **Clear to merge** through chat 1's serialized lane on the
+    zero-schema pre-authorization. **Deploy is Nick's separate word on SC's OWN
+    manifest — never folded into the P0 wave.**
+    **MERGE-ORDER HAZARD — RECORDED, AND NOW BINDING ON SC1.** FX14's harness
+    sweep and SC1's park cycles collide on **four files — `fx1`, `fx4`, `fx7`,
+    `ab2`**. Read-only `merge-tree` trials come back conflict-free (SC1 × FX14,
+    SC1 × `main`, SC1 × `df1-deflake`), but a clean auto-merge is not a safe
+    merge when both tickets rewrite park-bearing files: git will interleave two
+    sets of frozen records without either side failing. The rule as reviewed:
+    **whoever merges second re-runs the full suite on the COMBINED tree and
+    verifies SC1's frozen park records survived BYTE-IDENTICAL** — the
+    immutability law asserting itself at merge time rather than at review time,
+    and not optional. **The P0 wave landed first** (FX13 `ba70279`, DF1
+    `c566875`, FX14 `a348027`, records `a2ec42a`), so **SC1 is the second merger
+    and that obligation is SC1's.** SC1's 41/41 verification above was run on a
+    tree parented at `66b2674` — it predates FX14's rewrite of the collision
+    zone (`ab2` −247 lines, `fx4` heavily rewritten) and **does not carry
+    forward to the combined tree unre-run.** Held for Nick's/Fable's word before
+    `main` is brought into `sc1-true-geometry`. Third carry-back, now resolved
+    by the wave: `fx5.mjs`'s three claimants sequenced themselves — DF1's
+    rewrite and FX14's sweep are both on `main`; SC1 never touched the file.
+    **SC2 is NOT open** — its brief is next from Fable; nothing starts without
+    one.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
@@ -6123,6 +6234,14 @@ outlive a session lives here, not in chat.
     re-proven at the leg; both HARNESS_PARKED settings; parks nothing. Regression
     green across the board/geometry harnesses (fx10/fx11/bm1/ab4/e1/cd4/w1/ab1/
     ab2/b1); no falsified sizing checks. DoD met. **DF1 resumes now.**
+
+    **MERGED — 2026-07-25, merge `ba70279`, tip `acbabbe`** (BUILT `8dbc336` + the
+    S2-harden `acbabbe`: thrash guard + rAF-debounce + cleanup on the height
+    measure). Merged in chat 1's serialized lane, FIRST in Nick's ruled P0 sequence
+    (FX13 → DF1 → FX14). Disjoint from FX14 (`fx13.mjs` + `BoardEditor.tsx` only).
+    Tip verified: `tsc` ×2 EXIT 0, `build:web` clean, `fx13.mjs` PASS 10 +
+    board-sensitive smoke green (fx7/cd4/j4/b3/ab1). Fable's review follows this
+    merge. Ships with the P0 wave; deploy held for Nick's one word.
 64. **FX12 — the Quiet House.** **P0 — MERGED, 2026-07-24, merge commit `8d7a340`**
     (build `7cad7f2`). Owner chat 1; built + merged this session (E1.1 pattern),
     guard-rail throughout. P0 fix ratified under "P0 Go" (SV1 + sitting findings V3,
@@ -6159,6 +6278,57 @@ outlive a session lives here, not in chat.
     **DEPLOY HELD — FX12 ships with the P0 wave** (FX12 + FX13 + FX14) on Nick's one
     batched word when all three are merged + reviewed. **CLOSE-PENDING** Fable's
     post-merge review + Nick's device sitting.
+65. **FX14 — One Page.** **P0 — MERGED, 2026-07-25, merge commit `a348027`**
+    (feature tip `0e9e127`). Owner chat 1; built + merged this session (E1.1
+    pattern), guard-rail throughout. Ratified under "P0 Go" (authority SV6 +
+    sitting finding V2). Merged LAST in Nick's ruled P0 sequence — fx12-review
+    `5ca77f9` → FX13 `ba70279` → DF1 `c566875` → FX14 — and verified against the
+    post-DF1 de-flaked harness. TRUE 3-way `--no-ff` onto `main`; docs survived;
+    `tsc` ×2 EXIT 0; `build:web` clean. Zero schema, zero server files, zero deps.
+    **S1 — every New Page is THE Page.** Every creation nav flipped to `/page/:id`:
+    CascadePanels (newPage + newJournalEntry), DrawersTree, useCatch (Catch),
+    Spread's openPage. Origin semantics unchanged (origin still records the door —
+    journal/project/loose; a "New Journal Entry" door still stamps origin:'journal',
+    it just opens THE Page). **S2 — the journal route retires.** `routeForEntry`
+    returns `/page/:id` for EVERY entry, unconditionally (the J6 substrate doing
+    exactly what it was built for); App.tsx's new `JournalIdRedirect` makes
+    `/journal/:id` a permanent redirect to `/page/:id` (old links, resume via
+    getResumeTarget→fromEntry→routeForEntry, muscle memory all land right). The
+    JournalEntry surface unmounts from routing; component deletion + behavior-parity
+    remain J7's. **S3 — the Journal board is just a board** (untouched, verified).
+    **The harness sweep — the ticket's weight (SV6: "Journal Pages no longer exist.
+    The Journal is now just a board that contains certain pages."): 18 harnesses
+    touched + new `fx14.mjs`.** Three lawful treatments, per "knowing when NOT to
+    park is part of the law":
+    (a) **PARKED as falsified** (A4, verbatim originals, SV6 quoted, successor = a
+    live twin or J7): `j6` (destination checks + Journal-'+' door; B5/legacy
+    annotate; legacy-geometry re-point), `fx4` (×3 ink/typewriter), `fx5` (×1 ink —
+    auto-merged cleanly with DF1's own fx5 scroll-flake fix), `w1` (×4), `w2` (×3
+    live + a parked-CHAIN probe retired to `true`, cd1-chain), `ab2` (S6 ×10 live +
+    2 multi-gen CD1/AB3 parked chains retired), `b2-1` (S6f ×3), `fx7` (Journal's own
+    sliver regression), `m1` (Fixture-4 inverse), `b1` (JournalEntry back-link +
+    Catch route), `b2` (New-Journal-Entry route), `ab3` (legacy metadata-present).
+    (b) **FIXTURE RE-POINTED** (the journal page was ONLY a mount vehicle — the
+    subject is the Board reconcile / Spread lenses+filing / square corners / Flux
+    caret / cascade survey+dock / Places / resume, all shared chrome THE Page renders
+    too; re-pointed to `/page/:id` to preserve coverage FX14 does NOT invalidate):
+    `j4`, `j5` (+ .entry-add slice parked; makePage re-seeded from the Desk per the
+    flushNow race), `cd2` (survey + dock), `fx1`, `th2` (Flux caret), `b2` (Places
+    ×2), `b1` (reconcile ×2), `ab3` (helper + S1 dissolve + parked focus).
+    (c) **ROUTE UPDATED** (assertion followed FX14's routing, check intent unchanged):
+    `hb1` (F2 Open/resume lands on `/page/:id` directly via routeForEntry now).
+    **New `fx14.mjs` (both settings, 12 checks):** `/journal/:id` redirects
+    universally (loose/journal-origin/typed); a journal-origin AND a loose entry both
+    open in THE Page (`.forward-only-editor`) with the correct Places home
+    (Journal / Loose); every creation door (Catch, New Page, New Journal Entry) lands
+    on THE Page, origin preserved.
+    **Full historic suite read to completion in the main loop: 42/42 files GREEN,
+    both settings** (84 runs; the lone non-green was `tu2` 1/96, the DF1-documented
+    suite-context flake — isolated PASS 96/96 ×2 confirmed, a 5th clean isolated
+    read, NOT an FX14 regression). Parked-records audit (DF1's tool) clean — no new
+    un-traceable records; only DF1's own 4 hand-ruled benign extraction edges.
+    **DEPLOY HELD — FX14 ships with the P0 wave** (FX12 + FX13 + FX14 + DF1 rider) on
+    Nick's one batched word. **CLOSE-PENDING** Fable's post-merge review.
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed

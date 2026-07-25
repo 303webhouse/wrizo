@@ -318,15 +318,18 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival, seeded resume target' });
   await app.click('Open');
-  // A seeded loose entry with no pageType resumes into JournalEntry.tsx,
-  // same as the pre-existing resume-routing rule (getResumeTarget: pageType
-  // != null -> /page/:id, else -> /journal/:id) — untouched by this ticket,
-  // just exercised through Open now instead of the Desk's own ReturnCard.
-  await app.waitFor("location.hash === '#/journal/hb1-resume'", { label: 'Open lands on the resume target' });
+  // A seeded loose entry with no pageType resumes into THE Page. [FX14 S2] The
+  // resume route comes from getResumeTarget -> fromEntry -> routeForEntry (J6 S2
+  // migrated it to the one shared predicate), which FX14 makes return /page/:id
+  // for EVERY entry — so Open lands DIRECTLY on /page/:id (no /journal hop; the
+  // JournalEntry surface is unrouted). Route updated, not parked: the check's own
+  // intent (Open lands directly on the resume target) is unchanged; only the
+  // target's route moved from /journal/:id to /page/:id with the rest of the app.
+  await app.waitFor("location.hash === '#/page/hb1-resume'", { label: 'Open lands on the resume target (THE Page)' });
   await sleep(200);
   const landed = await app.evalJs("location.hash");
   ok('F2/S5: Open, authed with a resume target — lands directly on it (the Desk’s resume pointer, rehomed)',
-    landed === '#/journal/hb1-resume', landed);
+    landed === '#/page/hb1-resume', landed);
   return checks;
 });
 

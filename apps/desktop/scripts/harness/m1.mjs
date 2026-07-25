@@ -445,22 +445,24 @@ await withHarness(async (app) => {
   const sawGenuineCelebration = await pollTrue(app, "document.querySelectorAll('.status-dot.celebrate').length === 1", 2000);
   ok('fixture 3: Project B\'s genuine live completion of midpoint still celebrates (not swallowed by A\'s identical bare id)', sawGenuineCelebration);
 
-  // === Fixture 4 — the Journal: no gear at all, and Progress:project (if
-  // ever forced via the shared setting) silently degrades to the words bar. =
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture 4' });
-  await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'project' }))");
-  // B1 — the retired Journal list's own "New page" button is gone
-  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
-  // (window.wrizoCreateJournalPage) reaches the identical fresh-page state.
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored Journal page' });
-
-  ok('S3: the Journal has no settings gear at all (no path to "Project")', await app.evalJs("!document.querySelector('.mode-gear')"));
-  ok('S3: Progress:project silently degrades to the words bar on the Journal', await app.evalJs("!!document.querySelector('.journal-page .mode-ptrack')"));
-  ok('S3: no milestone circle ever renders on the Journal', await app.evalJs("!document.querySelector('.mode-milestone')"));
+  // === Fixture 4 — the Journal: no gear, no milestone (inverse) [PARKED WHOLE
+  //     — FX14 S2] ==============================================================
+  // Asserted the JournalEntry ROOM omits milestone/gear furniture: no settings
+  // gear, Progress:project silently degrades to the words bar, no milestone circle
+  // — the inverse of the positive milestone behavior proven on THE Page elsewhere
+  // in this file. FX14 S2 unroutes the JournalEntry surface (/journal/:id ->
+  // /page/:id redirect, App.tsx's JournalIdRedirect), so .entry-edit / .journal-page
+  // never mount — there is no Journal room left to lack the furniture. All three
+  // checks PARKED (A4) as FALSIFIED. SV6, quoted: "Journal Pages no longer exist.
+  // The Journal is now just a board that contains certain pages." Successor: the
+  // POSITIVE milestone/celebration behavior is proven LIVE on THE Page throughout
+  // this file (the .forward-only-editor S2 + fixtures 2-3 blocks); the "Journal
+  // room has none" inverse retires — a journal-origin page now opens ON the Page
+  // and simply gets the Page's furniture like any other (see fx14.mjs). Originals,
+  // byte-for-byte:
+  //   PARKED (was "S3: the Journal has no settings gear at all (no path to \"Project\")")
+  //   PARKED (was "S3: Progress:project silently degrades to the words bar on the Journal")
+  //   PARKED (was "S3: no milestone circle ever renders on the Journal")
 
   return checks;
 });

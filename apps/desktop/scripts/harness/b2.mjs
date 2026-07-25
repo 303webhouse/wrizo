@@ -461,12 +461,18 @@ await withHarness(async (app) => {
   // A16 assert on EVERY action (checkboxes write ONLY membership; only the
   // Home zone's own explicit act writes projectId; nothing EVER writes
   // origin).
+  // FIXTURE RE-POINT [FX14 S2]: the journal-origin page is only a fixture — the
+  // subject is the Places panel (.wz-places-*, host-agnostic) + persistence + the
+  // Journal Board. FX14 unroutes the JournalEntry host (/journal/:id -> /page/:id
+  // redirect, App.tsx's JournalIdRedirect), so the fixture now opens on THE Page.
+  // wrizoCreateJournalPage still stamps origin:'journal', so "Journal checked as
+  // current fact" and the pinned-law Board checks read identically. Not a park.
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
   const journalOriginId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/journal/${journalOriginId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'fresh journal-origin page framed' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.evalJs(`location.hash = '#/page/${journalOriginId}'`); // FX14 S2 re-point: was #/journal/:id
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'fresh journal-origin page on THE Page' });
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('B2S4 Places probe.');
   await sleep(2400);
   await app.emulateDpr(1, LAPTOP_W, 900);
@@ -503,8 +509,8 @@ await withHarness(async (app) => {
     !pinIds(journalBoxesAfterFile).includes(journalOriginId), JSON.stringify(pinIds(journalBoxesAfterFile)));
 
   // Selecting Loose un-files. A16 assert: origin still untouched.
-  await app.evalJs(`location.hash = '#/journal/${journalOriginId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'refiled page reopened' });
+  await app.evalJs(`location.hash = '#/page/${journalOriginId}'`); // FX14 S2 re-point: was #/journal/:id
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'refiled page reopened on THE Page' });
   await sleep(200);
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-places-home')", { label: 'Places Home zone (before Loose)' });
@@ -669,10 +675,16 @@ await withHarness(async (app) => {
   // "New Journal Entry" genuinely creates a journal-origin page (the SAME
   // act the Journal category's own button performs).
   await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => b.textContent.trim() === 'New Journal Entry').click()");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'New Journal Entry door lands on JournalEntry' });
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'New Journal Entry door lands on THE Page' }); // FX14 S1 re-point: the door now opens /page/:id
   const newJournalEntryRoute = await app.evalJs('location.hash');
-  ok('S5: "New Journal Entry" travels to a fresh untyped page (/journal/:id)', /^#\/journal\/[^/]+$/.test(newJournalEntryRoute), newJournalEntryRoute);
-  const newJournalEntryId = newJournalEntryRoute.replace(/^#\/journal\//, '');
+  // S5 New-Journal-Entry-route check [PARKED — FX14 S1]: this door still creates a
+  // journal-ORIGIN page (proven below, unchanged), but FX14 S1 makes EVERY New Page
+  // door open THE Page — so it travels to /page/:id now, not /journal/:id. FALSIFIED
+  // on the route only. Successor: fx14.mjs proves every creation door lands on THE
+  // Page. SV6: "Journal Pages no longer exist. The Journal is now just a board that
+  // contains certain pages." Original, byte-for-byte:
+  //   PARKED (was "S5: \"New Journal Entry\" travels to a fresh untyped page (/journal/:id)")
+  const newJournalEntryId = newJournalEntryRoute.replace(/^#\/page\//, ''); // FX14: /page/:id now
   const newJournalEntryRow = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(newJournalEntryId)})`);
   ok('S5: "New Journal Entry" stamps origin:\'journal\' — the same door as Catch/the Journal category\'s own button',
     newJournalEntryRow?.origin === 'journal' && newJournalEntryRow?.projectId == null, JSON.stringify(newJournalEntryRow));

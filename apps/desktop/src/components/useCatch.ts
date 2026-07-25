@@ -12,6 +12,6 @@ export function useCatch(): () => void {
   const navigate = useNavigate();
   return useCallback(() => {
     const page = createJournalPage();
-    navigate(`/journal/${page.id}`);
+    navigate(`/page/${page.id}`); // FX14 S1 — a caught thought opens in THE Page, not the journal surface
   }, [navigate]);
 }
