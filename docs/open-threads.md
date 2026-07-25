@@ -6247,6 +6247,20 @@ outlive a session lives here, not in chat.
     chat 1's lane and deploy remains Nick's separate word on SC's OWN
     manifest** — the P0 deploy of 2026-07-25 (`c13182b` / railway `cf99e5a8`)
     correctly carries no SC ticket.
+    **SC1 MERGED — 2026-07-25, merge `3e83f4c`** (tip `22dc1c7`), through chat 1's
+    serialized lane on the zero-schema pre-authorization + Nick's "Go." E1.1 3-way
+    --no-ff onto `main`; origin's advance since SC1's base was docs-only (SC2
+    amendment, BG1's item-67/P1-wave records), so the merge was disjoint/clean. **The
+    merge-order obligation (SC1 = second merger) is DISCHARGED at the LANDED HEAD:**
+    the merged `apps/` tree is byte-identical to SC1's own hazard-discharged tip
+    `22dc1c7`; the full historic suite was re-run on the combined tree, read to
+    completion in the main loop — **43/43 files GREEN, both settings (86 runs, zero
+    failures)**; `tsc` ×2 EXIT 0, `build:web` clean; and DF1's
+    `audit-parked-records.mjs`, re-run at the landed HEAD, reproduces the SC-lane's
+    exact result (43 files / 131 records; TRACED 102+23; B1-touched 2; the same 4
+    hand-verified REVIEW edges, none new) — SC1's frozen park records survived
+    BYTE-IDENTICAL. Fable reviews post-merge; **deploy HELD — SC's own separate word
+    on SC's own manifest**, never folded into a wave. SC2 is next in sequence.
     **Canon note for chat 1: the shared house-laws file moved.** The Relay Law
     was appended to `docs/wrizo-alpha/fable-session-handoff-v3.md` as **law 6**
     — landed by chat 1 at `cc2d971`, verified faithful from this lane (the
