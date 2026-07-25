@@ -6878,7 +6878,32 @@ outlive a session lives here, not in chat.
     surface for other old-vocabulary survivors. Both HARNESS_PARKED settings; A4 parks
     (verbatim originals, vehicle/subject distinction) for anything falsified; full
     suite read to completion before merge. **DoD: a new page says nothing until the
-    writer does.** HB2-lite follows.
+    writer does.**
+    **MERGED — 2026-07-25, merge `f64230d`**, through chat 1's serialized lane on the
+    zero-schema pre-authorization. Built: **S1** (useFirstLineInvite default-silent;
+    `optIn()` exposed as the on-request entry for BG1's Sprout door — the spark deck IS
+    this same first-line-invite, per the deck finding, so no page entry is invented; a
+    `wrizoFirstLineInvite` test seam exposes the deck), **S2** (new `fx15.mjs`, 13 checks:
+    default-silent; deck-drawn NEVER model-drawn / no send on load; A13 no-accept/
+    tab-fill/insertion; vanish-on-first-keystroke; pointer-events:none overlay;
+    "don't offer again" persists), **S3** (the "New Journal Entry" door +
+    `cascadePageNewJournalEntry` string retired; grep found no other user-facing
+    survivor; A4 parks in b2.mjs [roster + door-click + origin + the B2.1 lexicon
+    conjunct] and fx14.mjs [the door-loop iteration], successors named — Catch still
+    stamps origin:'journal'). **Verified at merge HEAD:** `tsc` ×3 EXIT 0; `build:web`
+    clean; DF1's `audit-parked-records.mjs` at its known baseline (131 records; the same
+    4 hand-verified edges, NONE new — comment-form parks are audit-invisible by design);
+    **full historic suite BOTH settings, read to completion in the main loop — 44/44
+    UNARMED, 43/44 ARMED**. The one red (`th2.mjs` armed) is classified from the full log
+    (no isolation re-run — DF1's retired crutch): th2 is the documented known flake
+    (fx5/th2/j4 contention class), it PASSED unarmed on this exact tree, FX15 touches no
+    theme code, and it TIMED OUT (not a check failure) late in the armed pass — the
+    sc2-6-browser-neighbor contention shape Nick pre-flagged; NOT an FX15 finding.
+    **Deploy HELD** — rides the single P1+SC deploy word, one named manifest.
+    **FX15×BG1 coordination:** FX15 merged FIRST, so BG1 (last of the four) re-runs
+    `fx15.mjs` on the combined tree — discharged by chat 5 (BG1 `6140d92`: one-file
+    conflict resolves to FX15's version, both harnesses green). Fable's post-merge review
+    owed in the P1 batch. HB2-lite follows.
 69. **HB2-lite — the Landing.** **OPENED — 2026-07-25 (chat 1, after FX15)**, from the
     P1 wave (`docs/wrizo-alpha/p1-wave.md`), authority SV11 (ratified). Scope is the
     landing RULE only — the full loading-screen rebuild (SV12a–e) is post-vacation.
