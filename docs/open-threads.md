@@ -6196,6 +6196,7 @@ outlive a session lives here, not in chat.
     taken on trust. **Clear to merge** through chat 1's serialized lane on the
     zero-schema pre-authorization. **Deploy is Nick's separate word on SC's OWN
     manifest — never folded into the P0 wave.**
+    *(superseded 2026-07-25 — see amendment below)*
     **MERGE-ORDER HAZARD — RECORDED, AND NOW BINDING ON SC1.** FX14's harness
     sweep and SC1's park cycles collide on **four files — `fx1`, `fx4`, `fx7`,
     `ab2`**. Read-only `merge-tree` trials come back conflict-free (SC1 × FX14,
@@ -6247,6 +6248,7 @@ outlive a session lives here, not in chat.
     chat 1's lane and deploy remains Nick's separate word on SC's OWN
     manifest** — the P0 deploy of 2026-07-25 (`c13182b` / railway `cf99e5a8`)
     correctly carries no SC ticket.
+    *(superseded 2026-07-25 — see amendment below)*
     **SC1 MERGED — 2026-07-25, merge `3e83f4c`** (tip `22dc1c7`), through chat 1's
     serialized lane on the zero-schema pre-authorization + Nick's "Go." E1.1 3-way
     --no-ff onto `main`; origin's advance since SC1's base was docs-only (SC2
@@ -6390,13 +6392,36 @@ outlive a session lives here, not in chat.
     this item.** Several statements above (and chat 1's own merge record) read
     the rule as absolute: SC's deploy "never folded into another arc's batch."
     They were correct as written and stand as written; this amendment governs
-    from here. In Fable's words: *"Amended 2026-07-25 (Fable, the P1 wave): SC
+    from here. **Each stale site now carries a cross-reference annotation**
+    — *(superseded 2026-07-25 — see amendment below)* — the third lawful mode
+    ratified in the CD4 review: no assertion touched, no record mutated, and a
+    future session reading top-down can no longer hit the absolute rule first
+    and enforce a superseded one. **THE GENERAL FORM, ON THE RECORD (Fable,
+    2026-07-25): the immutability discipline extends to LEDGER PROSE —
+    corrections APPEND and ANNOTATE; they never rewrite.** Rewriting a ledger
+    entry makes the ledger lie about its own history, the same failure as the E1
+    phantom fix, and the house already ruled on it when item 51's false claim
+    was left standing beside its correction. In Fable's words: *"Amended 2026-07-25 (Fable, the P1 wave): SC
     content may ride a shared deploy provided the manifest enumerates both arcs'
     contents by name. The rule was always about manifest clarity, never about
     separate deploy runs. Superseded: 'never folded into another arc's batch.'"*
     **Nothing retroactive changes** — the P0 deploy (`c13182b` / railway
     `cf99e5a8`) carried no SC ticket, which remains correct. The deploy word
     itself is still Nick's, and the manifest must still name everything.
+    **ANNOTATION OWNERSHIP, and a count corrected.** Fable's ruling assigned the
+    SC lane "its own three" stale sites. On enumeration the lane found **TWO**
+    that state the superseded absolute — the two annotated above — and has
+    annotated exactly those. The candidates for a third, examined and judged NOT
+    superseded rather than silently skipped: R6's "SC earns its own deploy word
+    separately" (about earning a WORD, which the amendment expressly preserves —
+    "the deploy word itself is still Nick's") and the SC1-BRIEFED line's "deploy
+    is Nick's separate word" (same, and it never stated the absolute). Neither is
+    falsified by the amendment, so annotating them would misrecord them as stale.
+    **One site remains unannotated and is NOT this lane's to touch: chat 1's own
+    SC1 merge record** ("deploy HELD — SC's own separate word on SC's own
+    manifest, never folded into a wave"). **Flagged to chat 1 to annotate in its
+    own hand** — reaching into another lane's record to correct it would be the
+    very rewrite this discipline forbids.
     **PB1 — the lane is WIDENED, for PB1 only.** Fable's word of 2026-07-25: the
     SC lane gains PB1's named files on the page/board birth path **for the
     duration of PB1**, and **the widening EXPIRES when PB1 merges**. Everything
