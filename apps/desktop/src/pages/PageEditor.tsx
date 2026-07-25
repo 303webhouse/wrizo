@@ -345,9 +345,12 @@ function PageEditorView({ id }: { id: string }) {
     // Structure, surfaced at the moment it is cheapest to choose: on an empty
     // page the existing Structure path converts free, with no modal (AB2 S4).
     { key: 'screenplay', label: dt('beginScreenplay'), onOpen: takeBeginning(() => requestScreenplay()) },
-    // Deck-drawn, never model-drawn, and never insertable — the F6 invitation,
-    // asked for rather than offered (useFirstLineInvite's own `request`).
-    { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.request()) },
+    // Sprout IS the spark deck, and the spark deck IS the first-line invitation
+    // (P1 amendment 2's addendum: "deck" was overloaded — DeckWizard loads card
+    // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
+    // So the door calls FX15's own on-request seam rather than inventing a
+    // page-side deck entry: deck-drawn, never model-drawn, never insertable.
+    { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) },
     // The page's own PLAN → door, offered at birth: the Page→Plan pipeline's
     // on-ramp. Identical act to the bar's door (lazy-born board, then travel).
     { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(() => {

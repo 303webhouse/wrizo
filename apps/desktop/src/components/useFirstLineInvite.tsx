@@ -31,38 +31,34 @@ export interface FirstLineInvite {
   node: React.ReactNode; // the affordance / invitation / null, positioned by the surface
   dismiss: () => void;   // first-keystroke seam — hide for this page (pref untouched)
   visible: boolean;      // whether something is showing (surfaces suppress their own chrome)
-  request: () => void;   // BG1 — asked for, on this page only (see below)
+  // BG1 S2 / FX15 — the ON-REQUEST entry, for a door the writer actually pressed.
+  // The "spark deck" turns out to be THIS mechanism, not DeckWizard (which loads
+  // card decks onto boards): the spark deck draws one first line onto a page, and
+  // that is the first-line invitation. BG1's "Sprout" door is one of FX15's
+  // sanctioned on-request callers — no page-side deck entry is invented here.
+  //
+  // Named `optIn` deliberately: FX15 (the Quiet Page) owns this seam and ships the
+  // same name with the same act — show a fresh prompt now and persist 'on'. BG1
+  // adds only the CALLER. This is the same function the affordance already tapped;
+  // exposing it is the whole delta, so the two lanes meet on one mechanism rather
+  // than two, on either merge order.
+  optIn: () => void;
 }
 
 export function useFirstLineInvite(isEmpty: () => boolean): FirstLineInvite {
   const [pref, setPref] = useState<InvitePref>(readPref);
   const [dismissed, setDismissed] = useState(false);
   const [prompt, setPrompt] = useState<string>(pickPrompt);
-  // BG1 S2 — the Sprout door's own state. An invitation the writer ASKED for,
-  // scoped to this page and this mount, deliberately NOT written to the pref:
-  // FX15's law is that a new page says nothing until the writer does, and one
-  // tap on a door is a request for a line here, not a standing consent to be
-  // offered one forever. (Opting IN permanently is still the affordance's job,
-  // `tapAffordance` below — one act, one meaning.)
-  const [requested, setRequested] = useState(false);
 
   const dismiss = useCallback(() => setDismissed(true), []);
 
-  // BG1 S2 — the Sprout door: draw a line NOW, for this page. Deck-drawn and
-  // nothing else (NUDGE_POOL, a static local pool — no request leaves the
-  // machine, on page load or on this click), and it can never become the
-  // writer's text: the node below is render-only, outside the editable DOM,
-  // with no accept, no tab-fill, no insertion (A13). An explicit request wins
-  // over a 'never' pref by design — 'never' retires the unbidden OFFER, and a
-  // door the writer just pressed is not an offer.
-  const request = useCallback(() => {
-    setPrompt(pickPrompt());
-    setRequested(true);
-  }, []);
-
-  const tapAffordance = useCallback(() => {
-    // The setting, discovered exactly where it matters: opting in shows the first
-    // invitation immediately (a fresh prompt).
+  // The setting, discovered exactly where it matters: opting in shows the first
+  // invitation immediately (a fresh prompt).
+  // BG1 S2 — renamed from `tapAffordance` to FX15's own name for it, `optIn`: the
+  // act is no longer reached only by tapping the affordance (the Sprout door
+  // reaches it too, and FX15 retires the affordance outright), so the name now
+  // describes the act rather than the gesture that used to be its only route.
+  const optIn = useCallback(() => {
     setPrompt(pickPrompt());
     setPref('on');
     try { localStorage.setItem(PREF_KEY, 'on'); } catch { /* device-local best-effort */ }
@@ -73,25 +69,23 @@ export function useFirstLineInvite(isEmpty: () => boolean): FirstLineInvite {
     try { localStorage.setItem(PREF_KEY, 'never'); } catch { /* device-local best-effort */ }
   }, []);
 
-  // BG1 S2 — a requested line shows even under 'never' (see `request` above);
-  // the first keystroke still wins over both, unchanged.
-  const visible = !dismissed && (requested || pref !== 'never') && isEmpty();
+  const visible = !dismissed && pref !== 'never' && isEmpty();
 
   let node: React.ReactNode = null;
-  if (visible && (requested || pref === 'on')) {
+  if (visible && pref === 'off') {
+    node = (
+      <div className="fl-invite">
+        <button type="button" className="fl-affordance" onClick={optIn}>invite a first line?</button>
+      </div>
+    );
+  } else if (visible && pref === 'on') {
     node = (
       <div className="fl-invite">
         <span className="fl-prompt" aria-hidden="true">{prompt}</span>
         <button type="button" className="fl-never" onClick={neverAgain}>don’t offer again</button>
       </div>
     );
-  } else if (visible && pref === 'off') {
-    node = (
-      <div className="fl-invite">
-        <button type="button" className="fl-affordance" onClick={tapAffordance}>invite a first line?</button>
-      </div>
-    );
   }
 
-  return { node, dismiss, visible, request };
+  return { node, dismiss, visible, optIn };
 }
