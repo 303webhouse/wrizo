@@ -4493,6 +4493,34 @@ outlive a session lives here, not in chat.
     something is wrong — nothing else. Drift-check: ZERO structural drift;
     the only delta is the suite count — **39 files now** (`cd4.mjs` landed
     since the brief's "38"), the DoD reads "the full suite" against that.
+    **BUILT — 2026-07-24 (chat 3), branch `df1-deflake` (`24c6173`), pushed;
+    merge rides the zero-schema pre-auth through chat 1's lane, Fable reviews
+    post-merge, harness ships nothing (no deploy). DoD MET and read to completion
+    in the main loop (not a notification, per Fable's ruling): THREE consecutive
+    full-suite runs, BOTH HARNESS_PARKED settings, all 39 files `exit=0` + PASS
+    every pass — 234/234 green, zero isolation reruns.** **S1:** `fx5`'s
+    per-line-engage/scrollTop flake root-caused (a `sleep(30)+CDP` sampler whose
+    interval stretches under contention and straddles multiple line-heights of an
+    in-flight smooth scroll) and fixed with an in-page scroll-event recorder on
+    the browser's own frame clock — the ~1/3 flake is gone (6/6 clean in the DoD,
+    plus clean under induced contention). **S2 / the known-flake list -> TRUTH:**
+    `th2`, `j4`, `m2`, `tu2`, `w2` all CLEARED — none reproduced across x5
+    mid-contention runs + the 6-pass DoD; the SecurityError/celebration-flash/
+    meter races never surfaced once the environment was clean (a leaked-headless-
+    browser resource crash, NOT the harness, had been failing runs — fixed with
+    inter-pass cleanup). **S3:** `e1` anchor hardening (split on the exporter's
+    own marker BLOCK + structural per-block header count, parser-side only — the
+    export bytes are unchanged) + a hostile `# `/marker fixture proving the parse
+    is unconfused while the writer's lines ride verbatim. **S4:**
+    `scripts/audit-parked-records.mjs` (122 records traced to verbatim git
+    lineage) + `docs/wrizo-alpha/parked-records-audit-2026-07.md`; B1's pre-law
+    bump (`9ce8f6b`, ab3 note "seven"->"eight") corroborated directly and cited,
+    not re-flagged. The M2 park sweep (4 checks A4-parked verbatim + live
+    successors in `m3.mjs`) already recorded above. **The isolation-rerun crutch
+    is formally RETIRED for every file this pass cleared (fx5/th2/j4/m2/tu2/w2) —
+    after DF1 a red suite means something is wrong, nothing else.** (P0 note: FX13
+    pre-empted DF1 mid-DoD on Fable's word; DF1 held clean at `24c6173` and
+    resumed after — the DoD above is the complete post-resume run.)
 49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
     finding 1 (Nick's second sitting — the Journal's "New Page" routing
