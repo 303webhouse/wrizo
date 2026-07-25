@@ -4521,6 +4521,15 @@ outlive a session lives here, not in chat.
     after DF1 a red suite means something is wrong, nothing else.** (P0 note: FX13
     pre-empted DF1 mid-DoD on Fable's word; DF1 held clean at `24c6173` and
     resumed after — the DoD above is the complete post-resume run.)
+
+    **MERGED — 2026-07-25, merge `c566875`** (`24c6173`), the P0 manifest's named
+    de-flake rider. Merged in chat 1's lane SECOND in Nick's ruled P0 sequence,
+    before FX14 ("it retires the flake crutch before FX14's verification needs it").
+    Harness-only (audit tool + `e1.mjs` + `fx5.mjs` + audit doc; zero src/schema/
+    server). Verified at the merge HEAD: `e1.mjs` PASS 41, `fx5.mjs` PASS 64, and
+    `scripts/audit-parked-records.mjs` runs clean (125 records; only the 4 hand-ruled
+    benign extraction edges — ab3/cd2/ab4/fx1 — no un-remediated mutation). Fable's
+    review follows this merge. Ships with the P0 wave; no deploy of its own.
 49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
     finding 1 (Nick's second sitting — the Journal's "New Page" routing
@@ -6151,6 +6160,14 @@ outlive a session lives here, not in chat.
     re-proven at the leg; both HARNESS_PARKED settings; parks nothing. Regression
     green across the board/geometry harnesses (fx10/fx11/bm1/ab4/e1/cd4/w1/ab1/
     ab2/b1); no falsified sizing checks. DoD met. **DF1 resumes now.**
+
+    **MERGED — 2026-07-25, merge `ba70279`, tip `acbabbe`** (BUILT `8dbc336` + the
+    S2-harden `acbabbe`: thrash guard + rAF-debounce + cleanup on the height
+    measure). Merged in chat 1's serialized lane, FIRST in Nick's ruled P0 sequence
+    (FX13 → DF1 → FX14). Disjoint from FX14 (`fx13.mjs` + `BoardEditor.tsx` only).
+    Tip verified: `tsc` ×2 EXIT 0, `build:web` clean, `fx13.mjs` PASS 10 +
+    board-sensitive smoke green (fx7/cd4/j4/b3/ab1). Fable's review follows this
+    merge. Ships with the P0 wave; deploy held for Nick's one word.
 64. **FX12 — the Quiet House.** **P0 — MERGED, 2026-07-24, merge commit `8d7a340`**
     (build `7cad7f2`). Owner chat 1; built + merged this session (E1.1 pattern),
     guard-rail throughout. P0 fix ratified under "P0 Go" (SV1 + sitting findings V3,
@@ -6187,6 +6204,57 @@ outlive a session lives here, not in chat.
     **DEPLOY HELD — FX12 ships with the P0 wave** (FX12 + FX13 + FX14) on Nick's one
     batched word when all three are merged + reviewed. **CLOSE-PENDING** Fable's
     post-merge review + Nick's device sitting.
+65. **FX14 — One Page.** **P0 — MERGED, 2026-07-25, merge commit `a348027`**
+    (feature tip `0e9e127`). Owner chat 1; built + merged this session (E1.1
+    pattern), guard-rail throughout. Ratified under "P0 Go" (authority SV6 +
+    sitting finding V2). Merged LAST in Nick's ruled P0 sequence — fx12-review
+    `5ca77f9` → FX13 `ba70279` → DF1 `c566875` → FX14 — and verified against the
+    post-DF1 de-flaked harness. TRUE 3-way `--no-ff` onto `main`; docs survived;
+    `tsc` ×2 EXIT 0; `build:web` clean. Zero schema, zero server files, zero deps.
+    **S1 — every New Page is THE Page.** Every creation nav flipped to `/page/:id`:
+    CascadePanels (newPage + newJournalEntry), DrawersTree, useCatch (Catch),
+    Spread's openPage. Origin semantics unchanged (origin still records the door —
+    journal/project/loose; a "New Journal Entry" door still stamps origin:'journal',
+    it just opens THE Page). **S2 — the journal route retires.** `routeForEntry`
+    returns `/page/:id` for EVERY entry, unconditionally (the J6 substrate doing
+    exactly what it was built for); App.tsx's new `JournalIdRedirect` makes
+    `/journal/:id` a permanent redirect to `/page/:id` (old links, resume via
+    getResumeTarget→fromEntry→routeForEntry, muscle memory all land right). The
+    JournalEntry surface unmounts from routing; component deletion + behavior-parity
+    remain J7's. **S3 — the Journal board is just a board** (untouched, verified).
+    **The harness sweep — the ticket's weight (SV6: "Journal Pages no longer exist.
+    The Journal is now just a board that contains certain pages."): 18 harnesses
+    touched + new `fx14.mjs`.** Three lawful treatments, per "knowing when NOT to
+    park is part of the law":
+    (a) **PARKED as falsified** (A4, verbatim originals, SV6 quoted, successor = a
+    live twin or J7): `j6` (destination checks + Journal-'+' door; B5/legacy
+    annotate; legacy-geometry re-point), `fx4` (×3 ink/typewriter), `fx5` (×1 ink —
+    auto-merged cleanly with DF1's own fx5 scroll-flake fix), `w1` (×4), `w2` (×3
+    live + a parked-CHAIN probe retired to `true`, cd1-chain), `ab2` (S6 ×10 live +
+    2 multi-gen CD1/AB3 parked chains retired), `b2-1` (S6f ×3), `fx7` (Journal's own
+    sliver regression), `m1` (Fixture-4 inverse), `b1` (JournalEntry back-link +
+    Catch route), `b2` (New-Journal-Entry route), `ab3` (legacy metadata-present).
+    (b) **FIXTURE RE-POINTED** (the journal page was ONLY a mount vehicle — the
+    subject is the Board reconcile / Spread lenses+filing / square corners / Flux
+    caret / cascade survey+dock / Places / resume, all shared chrome THE Page renders
+    too; re-pointed to `/page/:id` to preserve coverage FX14 does NOT invalidate):
+    `j4`, `j5` (+ .entry-add slice parked; makePage re-seeded from the Desk per the
+    flushNow race), `cd2` (survey + dock), `fx1`, `th2` (Flux caret), `b2` (Places
+    ×2), `b1` (reconcile ×2), `ab3` (helper + S1 dissolve + parked focus).
+    (c) **ROUTE UPDATED** (assertion followed FX14's routing, check intent unchanged):
+    `hb1` (F2 Open/resume lands on `/page/:id` directly via routeForEntry now).
+    **New `fx14.mjs` (both settings, 12 checks):** `/journal/:id` redirects
+    universally (loose/journal-origin/typed); a journal-origin AND a loose entry both
+    open in THE Page (`.forward-only-editor`) with the correct Places home
+    (Journal / Loose); every creation door (Catch, New Page, New Journal Entry) lands
+    on THE Page, origin preserved.
+    **Full historic suite read to completion in the main loop: 42/42 files GREEN,
+    both settings** (84 runs; the lone non-green was `tu2` 1/96, the DF1-documented
+    suite-context flake — isolated PASS 96/96 ×2 confirmed, a 5th clean isolated
+    read, NOT an FX14 regression). Parked-records audit (DF1's tool) clean — no new
+    un-traceable records; only DF1's own 4 hand-ruled benign extraction edges.
+    **DEPLOY HELD — FX14 ships with the P0 wave** (FX12 + FX13 + FX14 + DF1 rider) on
+    Nick's one batched word. **CLOSE-PENDING** Fable's post-merge review.
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
