@@ -6269,6 +6269,59 @@ outlive a session lives here, not in chat.
     proof — **the same document must paginate identically at 1100px, 2200px and
     in a 700px room; a page count that moves with the window is a clock that
     lies.** **SC2 is NOT started and does not branch until SC1's merge lands.**
+    **SC2 AMENDMENT 1 — 2026-07-25, Fable-authored, committed verbatim**
+    (`docs/wrizo-alpha/sc2-brief-amendment-1.md`; travels with the brief, which
+    stands except where amended). **S5's founding premise is WITHDRAWN on
+    measurement.** The brief asserted "pagination recomputes on every keystroke
+    in the current architecture"; it does not. `AUTOSAVE_MS = 2000` and
+    `groupIntoScenes` runs inside the DEBOUNCED autosave effect (plus
+    flush/visibility-change, the publish/copy paths and `liveScriptText`) — **it
+    is not on the keystroke path at all.** The real per-keystroke cost is React
+    reconciling every `StaticScriptElement`: a plain function component with **no
+    `React.memo`**, taking **a fresh `onActivate` closure** and **a fresh
+    `elementStyle()` object** on every render, so memoizing the component alone
+    would not bite. **Fable's S5 conditional is DISCHARGED: the flatten/regroup
+    is not the bottleneck, there is no pre-existing performance defect to name,
+    and SC2 absorbs nothing hidden** — the pre-build baseline was run before any
+    SC2 code existed, exactly as ruled (reproduce first).
+    **The measured baseline, now of record** (caret in the FIRST element — worst
+    case; 49 real CDP keystrokes per size, every one gated as landed in the doc
+    before any number was believed; measured at the SC1 merge HEAD `22dc1c7`,
+    fast desktop, headless, DPR 1): 1.0pp/40els 0.73ms mean · 1.5 p95 —
+    3.5pp/160 1.04 · 1.6 — 9.9pp/464 1.57 · 2.1 — **19.5pp/928 2.79 · 5.0** —
+    29.2pp/1392 4.46 · 6.2. **Linear: ~0.6ms fixed + ~2.8µs per element**; at 20
+    pages that is 2.8ms mean / 5.0ms p95 against a 16.7ms frame, **~11.7ms of
+    p95 headroom** for SC2's ledger.
+    **S5 as amended:** build the **memoized per-page render from the start**
+    (not retrofitted) paired with an **incremental ledger recomputed from the
+    edited element forward**; deferring distant-page reflow is HELD IN RESERVE
+    (least bought, most correctness risk) — CC's recommendation, ratified.
+    Memoization requires **both** props stabilised or it does nothing:
+    `elementStyle(el.t)` becomes one frozen per-type object at module level, and
+    `onActivate` stops being a per-index arrow closure; neither alters behavior
+    and both belong in S5. **The latency ceiling is REDEFINED as a regression
+    bound, not an absolute** — an absolute millisecond gate is false on varied
+    hardware; `sc2.mjs` measures the pre-SC2 baseline and the post-SC2 figure
+    **in the same run on the same machine**, and **SC2's p95 at 20 pages must
+    not exceed 2× the baseline p95.** The absolute figures above are the
+    reference observation, never the gate. Hardware margin is a real caution: a
+    laptop 2–3× slower puts today's 20-page p95 at 10–15ms, at the frame edge
+    before SC2 adds anything — **the harness proves the regression bound; the
+    verdict on FEEL remains Nick's at a device sitting.**
+    **Two practices earned here.** (1) **Instrument the right event** — measuring
+    `keydown` on a contenteditable produced a flat 0.1ms curve across a 35× size
+    sweep, an artifact (the browser inserts the glyph natively; the React work
+    rides the subsequent `input` event). A flat curve across a large size sweep
+    is a signal to distrust the instrument. (2) **A timing claim carries a
+    correctness gate** — an earlier run recorded plausible latencies while the
+    keystrokes were landing on `<body>`; numbers that look right while nothing
+    happened are the measurement form of *presence is not composition*. Any
+    timing or performance claim must assert the measured work actually occurred
+    (keystrokes landed, focus held, the document changed) before the number is
+    believed. **Practice (2) is RECOMMENDED FOR ELEVATION to the house laws —
+    PENDING NICK'S WORD, not taken.** `fable-session-handoff-v3.md` is NOT
+    edited by this commit; the house laws stand at law 6 (the Relay Law) until
+    he rules.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
