@@ -1720,7 +1720,44 @@ a:focus-visible,
 /* SC1 S1 — an empty element occupies exactly ONE line of the 6-lpi grid
    (was 1.2em, a prose-ish floor that put every blank element 20% off the
    grid the paginator will read in SC2). */
-.script-el{ white-space:pre-wrap; min-height:1em; }
+/* SC2 S1 — the line unit, and the three rules that keep the RENDER wrapping
+   exactly the way store/scriptLedger.ts's arithmetic says it does. The ledger
+   is the truth and this is what is checked against it (sc2.mjs compares an
+   over-measure element's rendered line count against the ledger's), so any
+   divergence here is a defect, not a difference.
+
+   --script-line is ONE LINE BOX. `.script-sheet` sets line-height:1 at 12pt, so
+   a line is exactly 1em of the sheet's own font-size and scales with it under
+   SC1's scaling law. Vertical spacing is expressed in THIS unit and never in px
+   or em, so N blank lines of arithmetic render as exactly N line-heights.
+
+   overflow-wrap:anywhere — a word longer than its measure must break AT the
+   measure (a 70-character URL in an action line occupies ceil(70/60) lines).
+   Without it the word would overflow the measure while claiming one line, and
+   the paginator would place a break the page contradicts.
+
+   hyphens:none — screenplays do not hyphenate, and a browser that decided to
+   would break every count by one, silently. */
+.script-sheet{ --script-line:1em; }
+.script-el{
+  white-space:pre-wrap;      /* trailing spaces hang; internal runs are preserved */
+  overflow-wrap:anywhere;
+  hyphens:none; -webkit-hyphens:none;
+  min-height:1em;            /* an empty element is exactly one line */
+}
+/* SC2 S1 — "the first element of a page contributes no space above it." At
+   document start that is this rule; S2's paginator applies the identical rule
+   at every page top. It lives in the CONSUMER, never in the ledger, which
+   reports each element's INTRINSIC spaceBefore so it stays position-independent
+   (and so elementStyle() stays a pure function of the type, which is what lets
+   S5 freeze one style object per type).
+
+   It is also geometry protection: a first child's margin-top would otherwise
+   push the whole sheet down, re-opening the very defect SC1 closed — SC-V4,
+   "the cursor starts by floating in the middle of the page." The screenplay
+   begins at the top margin, and this is one of the two things keeping it
+   there. */
+.script-sheet > *:first-child{ margin-top:0 !important; }
 .script-el-active{
   outline:none; cursor:text; caret-color:var(--brass);
   border-bottom:1px solid var(--brass);

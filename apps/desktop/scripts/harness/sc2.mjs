@@ -148,12 +148,39 @@ const BODY_EM = PAGE_H_EM - MARGIN_EM - MARGIN_EM;          // 54em = 9in of tex
 const LINE_BOX_EM = 1;                                      // 12pt at 12pt type = 6 lpi
 const BODY_LINES_PER_PAGE = BODY_EM / LINE_BOX_EM;          // 54, derived
 
-// Scene shape below is calibrated, not guessed: measured at 5.94 pages per 10
-// scenes at the 1280px reference, so 116 scenes renders ~20 pages. The fixture
-// ASSERTS the page count it got rather than trusting this constant — a fixture
-// that silently drifts to three pages would make the whole bound a lie.
-const SCENES_20_PAGES = 116;
-const SCENES_CONTROL = 29;   // ~5 pages — see the control note below
+// THE FIXTURES ARE PINNED BY ELEMENT COUNT, NOT PAGE COUNT (Fable, 2026-07-25).
+// A controlled experiment holds its INPUT constant, and page count is an OUTPUT
+// of the code under test: S1 gave the page vertical rhythm and the same 928
+// elements went from 20 pages to 30. Pinning to pages would have made the
+// baseline checkout measure a 928-element document while the tip measured a
+// ~600-element one, and the gate would have reported a ~35% improvement caused
+// entirely by handing the tip less work (per-keystroke cost is linear in
+// element count, ~2.8us each). Element count is the only pinning that keeps both
+// sides running the same document.
+//
+// The control is pinned the same way and for the same reason — it has the
+// identical defect otherwise, and the denominator would drift exactly as the
+// numerator would have.
+//
+// Page counts ride as OBSERVATIONS at both SHAs, never as gates:
+//   928 elements — 20 pages before S1 gave the page its rhythm, 30 after.
+//   232 elements —  5 pages before,                            7.6 after.
+const EL_PER_SCENE = 8;              // 1 scene heading + 7 body elements
+const ELEMENTS_BIG = 928;
+const ELEMENTS_CONTROL = 232;
+const SCENES_BIG = ELEMENTS_BIG / EL_PER_SCENE;         // 116
+const SCENES_CONTROL = ELEMENTS_CONTROL / EL_PER_SCENE; // 29
+
+// SUITE CITIZENSHIP (Fable, 2026-07-25). The three-run timing measurement holds
+// a browser for minutes and starved the next file in the suite — fx1 timed out
+// at 480s immediately after it and passed cleanly alone. So the file splits:
+// the CORRECTNESS gates and the fixture/geometry assertions run ALWAYS and run
+// fast; the three-run timing measurement runs only under SC2_TIMING=1, which is
+// what the DoD and any baseline-vs-tip judgement use. The suite stays fast and
+// honest; the measurement stays rigorous.
+const TIMING = process.env.SC2_TIMING === '1';
+const RUNS = TIMING ? 3 : 1;
+const TYPED_LEN = TIMING ? 240 : 40;
 
 const freshDesk = async (app, width = LAPTOP_W, height = 900) => {
   await app.goto('/');
@@ -296,16 +323,24 @@ async function measure(app, sceneCount, typed) {
  */
 async function measureMedian(app, sceneCount, typed, label) {
   const runs = [];
-  for (let i = 0; i < 3; i++) runs.push(await measure(app, sceneCount, typed));
+  for (let i = 0; i < RUNS; i++) {
+    runs.push(await measure(app, sceneCount, typed));
+    // DF1's inter-pass cleanup, applied WITHIN the median loop: drop the heavy
+    // document before the next run so 928 elements' worth of DOM and detached
+    // nodes are not still resident while the next measurement starts. Without
+    // it the later runs measure a dirtier machine than the first, which is the
+    // same contention that starved fx1 in the suite.
+    if (i < RUNS - 1) { await app.goto('/'); await sleep(400); }
+  }
   const bad = runs.filter((r) => !r.gate.focused || r.gate.landed !== r.gate.expected || !r.input);
   const sorted = [...runs].sort((a, b) => a.input.p95 - b.input.p95);
-  const median = sorted[1];
+  const median = sorted[Math.floor(sorted.length / 2)];   // RUNS=1 -> [0]; RUNS=3 -> [1]
   return {
     ...median,
     label,
     allGated: bad.length === 0,
     spread: runs.map((r) => r.input.p95),
-    spreadFactor: +(sorted[2].input.p95 / sorted[0].input.p95).toFixed(2),
+    spreadFactor: +(sorted[sorted.length - 1].input.p95 / sorted[0].input.p95).toFixed(2),
   };
 }
 
@@ -314,7 +349,7 @@ await withHarness(async (app) => {
   // sample, so a single GC pause owns it; 240 puts a dozen samples above the
   // p95 line and makes the figure a property of the architecture rather than of
   // one unlucky frame.
-  const TYPED = 'the quick brown fox jumps over the lazy dog again and again '.repeat(4).slice(0, 240);
+  const TYPED = 'the quick brown fox jumps over the lazy dog again and again '.repeat(5).slice(0, TYPED_LEN);
 
   // -- S0 baseline: the 20-page document ----------------------------------
   // MEDIAN OF THREE PER SIDE (Fable, 2026-07-25). One outlier cannot move a
@@ -323,7 +358,7 @@ await withHarness(async (app) => {
   // runs per document collapse that to where the gate can actually
   // discriminate a regression from a noisy afternoon. The re-run rule stays as
   // the floor beneath it, not as a substitute for it.
-  const big = await measureMedian(app, SCENES_20_PAGES, TYPED, '20-page');
+  const big = await measureMedian(app, SCENES_BIG, TYPED, 'big');
 
   // THE CORRECTNESS GATE, asserted BEFORE any timing claim is made.
   ok('S0 gate: the caret was genuinely in the script element when the keys were sent (a contenteditable that is not focused sends every keystroke to <body>, where the timings still look plausible)',
@@ -337,8 +372,8 @@ await withHarness(async (app) => {
 
   // THE FIXTURE IS THE SIZE IT CLAIMS. A fixture that quietly drifted to three
   // pages would leave the bound anchored to nothing.
-  ok(`S0 fixture: the baseline document is genuinely ~20 pages — ${big.geo.pages} pages, ${big.geo.els} elements, ${big.geo.lines} lines at ${BODY_LINES_PER_PAGE} body lines/page`,
-    big.geo.pages >= 18 && big.geo.pages <= 22, JSON.stringify(big.geo));
+  ok(`S0 fixture: the baseline document is exactly ${ELEMENTS_BIG} ELEMENTS — the pinned input, held constant so both sides of the bound run the same document. Page count is an OUTPUT of the code under test and rides as an observation only: ${big.geo.pages} pages here, ${big.geo.lines} lines at ${BODY_LINES_PER_PAGE} body lines/page (20 pages before S1 gave the page its vertical rhythm, ~30 after)`,
+    big.geo.els === ELEMENTS_BIG, JSON.stringify(big.geo));
   ok('S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em sheet at 12pt (SC2 has not yet paginated; this is the pre-SC2 state the bound is measured against)',
     Math.abs(big.geo.fontPx - EM) < 0.01, JSON.stringify({ fontPx: big.geo.fontPx, expected: EM }));
 
@@ -368,8 +403,8 @@ await withHarness(async (app) => {
   ok('S0 control gate: the control run\'s keystrokes landed too, on ALL THREE runs — the ratio is only meaningful if BOTH of its terms were really measured',
     small.gate.focused === true && small.gate.landed === small.gate.expected && small.allGated === true,
     JSON.stringify({ gate: small.gate, spread: small.spread, spreadFactor: small.spreadFactor }));
-  ok(`S0 control: the control document is ~5 pages — ${small.geo.pages} pages, ${small.geo.els} elements`,
-    small.geo.pages >= 4 && small.geo.pages <= 6, JSON.stringify(small.geo));
+  ok(`S0 control: the control is exactly ${ELEMENTS_CONTROL} ELEMENTS — pinned the same way and for the same reason, or the denominator would drift exactly as the numerator would have. Observation only: ${small.geo.pages} pages (5 before S1's rhythm, ~7.6 after)`,
+    small.geo.els === ELEMENTS_CONTROL, JSON.stringify(small.geo));
 
   const ratio = small.input && big.input ? +(big.input.p95 / small.input.p95).toFixed(2) : null;
 
@@ -406,6 +441,98 @@ await withHarness(async (app) => {
   ok(`S0 baseline recorded: 20-page p95 = ${big.input.p95}ms, 5-page control p95 = ${small.input.p95}ms, scaling ratio = ${ratio} — the reference observation Amendment 1's 2x bound will be measured against, in the same run on the same machine`,
     big.input.p95 > 0 && small.input.p95 > 0 && ratio !== null,
     JSON.stringify({ big: big.input, small: small.input, ratio }));
+
+  // == S1 — THE LINE LEDGER ================================================
+  // The arithmetic is the truth; the render is what gets checked against it.
+  // Every assertion below compares a RENDERED line count to the ledger's, so a
+  // divergence is reported as a defect rather than absorbed as a difference.
+  await freshDesk(app);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const hid = 's1-h';
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([{
+      id: 's1-ledger', text: '', pageType: 'script', createdAt: now, updatedAt: now,
+      script: { v: 1, scenes: [{ id: hid, heading: { id: hid, t: 'scene', text: 'INT. THE MEASURE - DAY' }, body: [
+        { id: 's1-a', t: 'action', text: 'Short line.' },
+        { id: 's1-b', t: 'action', text: 'x'.repeat(70) },
+        { id: 's1-c', t: 'action', text: 'a'.repeat(125) },
+        { id: 's1-d', t: 'action', text: 'Two words here.   ' },
+        { id: 's1-e', t: 'dialogue', text: 'This dialogue line is deliberately long enough to wrap across its own thirty-five character measure.' },
+        { id: 's1-f', t: 'action', text: '' },
+      ] }] },
+    }]));
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after S1 seed' });
+  await app.emulateDpr(1, LAPTOP_W, 900);
+  await app.evalJs("location.hash = '#/page/s1-ledger'");
+  await app.waitFor("!!document.querySelector('.script-sheet')", { label: 'S1 script surface' });
+  await sleep(500);
+
+  // The CSS contract the ledger's arithmetic depends on. Asserted, never
+  // assumed: under plain `pre` nothing wraps and wrappedLines() changes shape
+  // entirely; without overflow-wrap an over-measure word overflows while
+  // claiming one line; a browser that hyphenated would break every count by one.
+  const css = await app.evalJs(`(() => {
+    const el = document.querySelector('.script-el, .script-el-active');
+    const sheet = document.querySelector('.script-sheet');
+    const cs = getComputedStyle(el), sh = getComputedStyle(sheet);
+    return { whiteSpace: cs.whiteSpace, overflowWrap: cs.overflowWrap, hyphens: cs.hyphens || cs.webkitHyphens,
+             lineVar: sh.getPropertyValue('--script-line').trim(), lineHeightPx: parseFloat(sh.lineHeight) };
+  })()`);
+  ok('S1 CSS contract: `.script-el` is white-space:pre-wrap — trailing spaces hang and internal runs are preserved, which is exactly what the ledger assumes (under plain `pre` nothing wraps and the arithmetic would change shape entirely)',
+    css.whiteSpace === 'pre-wrap', JSON.stringify(css));
+  ok('S1 CSS contract: overflow-wrap:anywhere — the render breaks an over-measure word AT the measure, the same way the ledger counts it',
+    css.overflowWrap === 'anywhere', JSON.stringify(css));
+  ok('S1 CSS contract: hyphens:none — screenplays do not hyphenate, and a browser that did would break every count by one, silently',
+    css.hyphens === 'none', JSON.stringify(css));
+
+  // Rendered line counts, read off client rects, against the ledger's numbers.
+  const rows = await app.evalJs(`(() => {
+    const els = [...document.querySelectorAll('.script-el, .script-el-active')];
+    const sheet = document.querySelector('.script-sheet');
+    const line = parseFloat(getComputedStyle(sheet).lineHeight);
+    return els.map((e) => {
+      const cs = getComputedStyle(e);
+      return { type: e.getAttribute('data-type'), text: e.textContent,
+               renderedLines: Math.round(e.getBoundingClientRect().height / line),
+               marginTopLines: +(parseFloat(cs.marginTop) / line).toFixed(2),
+               top: +e.getBoundingClientRect().top.toFixed(1) };
+    });
+  })()`);
+
+  // The ledger's own arithmetic, recomputed here from the SAME declared
+  // constants the module uses — WIDTH_CH action 60, dialogue 35.
+  const expect = [
+    { t: 'scene', lines: 1, space: 2 },      // first element — space SUPPRESSED by the consumer
+    { t: 'action', lines: 1, space: 1 },     // "Short line."
+    { t: 'action', lines: 2, space: 1 },     // 70 chars at a 60ch measure -> 2
+    { t: 'action', lines: 3, space: 1 },     // 125 chars -> 3
+    { t: 'action', lines: 1, space: 1 },     // trailing whitespace hangs, costs nothing
+    { t: 'dialogue', lines: 3, space: 0 },   // wraps at its own 35ch measure
+    { t: 'action', lines: 1, space: 1 },     // an empty element is one line
+  ];
+  const mismatches = rows.map((r, i) => ({ i, type: r.type, rendered: r.renderedLines, ledger: expect[i] && expect[i].lines }))
+    .filter((m) => m.ledger !== undefined && m.rendered !== m.ledger);
+  ok('S1 wrap: every element\'s RENDERED line count equals the ledger\'s arithmetic — the over-measure word breaking at the measure (70ch -> 2 lines, 125ch -> 3), the trailing-whitespace line costing nothing, the empty element costing exactly one, and dialogue wrapping at its OWN 35ch measure rather than the page\'s 60',
+    mismatches.length === 0, JSON.stringify({ mismatches, rows: rows.map((r) => ({ t: r.type, rendered: r.renderedLines })) }));
+
+  // Vertical rhythm, in line units.
+  const spaceMismatch = rows.map((r, i) => ({ i, type: r.type, rendered: r.marginTopLines, expected: i === 0 ? 0 : (expect[i] && expect[i].space) }))
+    .filter((m) => m.expected !== undefined && Math.abs(m.rendered - m.expected) > 0.02);
+  ok('S1 rhythm: the page has vertical rhythm at last, and it is expressed in LINE UNITS — every element\'s rendered margin-top is exactly its type\'s SPACE_BEFORE in line-heights (scene 2, action/character/transition/shot/general 1, paren/dialogue 0), so N blank lines of arithmetic render as exactly N line-heights and cannot drift off the 12pt box',
+    spaceMismatch.length === 0, JSON.stringify({ spaceMismatch, rows: rows.map((r) => ({ t: r.type, marginTopLines: r.marginTopLines })) }));
+
+  // The suppression rule, and the SC-V4 protection it doubles as.
+  const firstTop = await app.evalJs(`(() => {
+    const sheet = document.querySelector('.script-sheet');
+    const first = sheet.firstElementChild;
+    const sr = sheet.getBoundingClientRect(), fr = first.getBoundingClientRect();
+    const pad = parseFloat(getComputedStyle(sheet).paddingTop);
+    return { gap: +(fr.top - sr.top - pad).toFixed(2), marginTop: getComputedStyle(first).marginTop };
+  })()`);
+  ok('S1 suppression: the FIRST element of the document contributes no space above it — it sits flush on the top margin despite its type calling for 2 blank lines. This is the consumer\'s rule (CSS at document start, S2\'s paginator at every page top), never the ledger\'s, so the ledger stays position-independent — and it is also what keeps SC1\'s SC-V4 fix intact: a first child\'s margin-top would push the whole sheet down and float the caret off the top margin again',
+    Math.abs(firstTop.gap) < 1.5, JSON.stringify(firstTop));
 });
 
 // === PARKED — gated behind HARNESS_PARKED=1. This commit is purely ADDITIVE:
@@ -418,7 +545,7 @@ await withHarness(async (app) => {
 // supersede them.
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
-  console.log('\nSC2 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; the baseline-fixture commit is purely additive and falsifies nothing. SC2\'s park cycles land with S2 (the sheet sequence), in the files they falsify — sc1.mjs\'s single-sheet height assertion first among them.');
+  console.log('\nSC2 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; SC2\'s park cycles do NOT live here, they travel VERBATIM in the files they falsify. S1 (the line ledger + the page\'s vertical rhythm) parks ONE check: sc1.mjs\'s S3 "the page never scrolls itself", superseded on its NUMBER and not its law — the engine is still gone, but a document with real vertical rhythm is ~1.54x taller and now overflows the cap, so the box scrolls to keep the caret visible (root cause: ActiveScriptElement\'s node.focus(), not the typewriter). Its successor is live in sc1.mjs. S2 (the sheet sequence) will park sc1.mjs\'s single-sheet height assertion next.');
 }
 
 // eslint-disable-next-line no-console
