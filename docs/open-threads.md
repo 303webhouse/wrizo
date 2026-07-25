@@ -6121,6 +6121,9 @@ outlive a session lives here, not in chat.
     pending device sitting) cleared by Fable on the record, and the
     deploy-manifest recommendation is already satisfied — the batch shipped at
     `375c10f` before any SC merge, so SC earns its own deploy word separately.
+    *(residue superseded 2026-07-25 — the EARNING stands exactly as written; only
+    "separately" is superseded, since one word may now cover both arcs when the
+    manifest names their contents. See the amendment below.)*
     **Sequencing ruled: SC1 → SC2 → SC3 (+ the door + the R5 comment rider) →
     SC4.** All fixes, all zero schema, all freeze-lawful.
     **SC1 BRIEFED — 2026-07-24, Fable-authored**
@@ -6422,6 +6425,19 @@ outlive a session lives here, not in chat.
     manifest, never folded into a wave"). **Flagged to chat 1 to annotate in its
     own hand** — reaching into another lane's record to correct it would be the
     very rewrite this discipline forbids.
+    **CORRECTED BY APPEND, 2026-07-25 (Fable), and NOT by editing the paragraph
+    above** — the discipline binds this lane's own records too. The method was
+    right and the scope was too coarse. **R6's entry carries a RESIDUE**: the
+    *earning* of a deploy word survives exactly as written, but **"separately"
+    is the single token the amendment moved**, since one word may now cover both
+    arcs when the manifest names their contents. R6 is therefore annotated with
+    a SCOPED note naming that one word, rather than being marked stale entire or
+    left bare. The SC1-BRIEFED line's "deploy is Nick's separate word" stands
+    unannotated — it carries no residue, only the earning. **THE GENERAL FORM,
+    ON THE RECORD: annotate the RESIDUE, not the entry.** An entry is rarely
+    wholly superseded; marking it so discards the true part, and leaving it bare
+    because it is mostly true keeps the false part enforceable. The annotation
+    names exactly what moved.
     **PB1 — the lane is WIDENED, for PB1 only.** Fable's word of 2026-07-25: the
     SC lane gains PB1's named files on the page/board birth path **for the
     duration of PB1**, and **the widening EXPIRES when PB1 merges**. Everything
