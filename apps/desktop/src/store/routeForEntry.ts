@@ -14,7 +14,14 @@ import type { JournalEntry } from '../types';
 // docs/wrizo-alpha/j6-parity-census.md for what that would cost) becomes a
 // one-line change here instead of a hunt through six files.
 export function routeForEntry(entry: JournalEntry): string {
-  return entry.pageType != null ? `/page/${entry.id}` : `/journal/${entry.id}`;
+  // FX14 S2 (SV6, ratified: "Journal Pages no longer exist. The Journal is now
+  // just a board that contains certain pages."): EVERY entry opens in THE Page
+  // interface, unconditionally — the one line J6 S2 built this seam for. The
+  // /journal/:id route is now a permanent redirect to /page/:id (App.tsx), and
+  // the JournalEntry surface unmounts from routing (its component deletion +
+  // behavior-parity are J7's). `origin` still records the door the writer came
+  // through (journal / project / loose) — a HOME, not a surface.
+  return `/page/${entry.id}`;
 }
 
 // J6 S4 — test/inspection seam (the store/deskLexicon.ts `window.wrizoDeskLexicon`

@@ -323,67 +323,21 @@ await withHarness(async (app) => {
       proseInfo.fraction >= 0.20 && proseInfo.fraction <= 0.32, JSON.stringify(proseInfo));
   }
 
-  // Ink-coordinate byte-truth re-proof (the STOP-clause's own required
-  // evidence, re-run post-S1 since S1 touches the SAME shared typewriter
-  // engine every ink-bearing Journal page depends on) — fx4.mjs's own
-  // technique, re-applied.
-  {
-    const jid = 'fx5-ink-proof';
-    const stroke = { points: [{ x: 0.25, y: 0.12 }, { x: 0.35, y: 0.18 }, { x: 0.45, y: 0.22 }] };
-    await freshDesk(app, LAPTOP_W, 900);
-    await app.evalJs(`(() => {
-      const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: ${JSON.stringify(jid)}, text: 'fx5 ink coordinate proof\\nsecond line', source: 'page', strokes: [${JSON.stringify(stroke)}], createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    })()`);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/journal/' + ${JSON.stringify(jid)}`);
-    await app.waitFor("!!document.querySelector('.entry-full')", { label: 'journal page with seeded ink' });
-    await sleep(400);
-    await app.emulateDpr(1, LAPTOP_W, 900);
-    const toggleProof = await app.evalJs(`(() => {
-      const sheet = document.querySelector('.entry-full');
-      const before = sheet.getBoundingClientRect();
-      const beforeAttr = sheet.dataset.typewriter;
-      sheet.setAttribute('data-typewriter', beforeAttr === 'true' ? 'false' : 'true');
-      const after = sheet.getBoundingClientRect();
-      sheet.setAttribute('data-typewriter', beforeAttr);
-      const restored = sheet.getBoundingClientRect();
-      return {
-        before: { top: before.top, left: before.left, width: before.width },
-        after: { top: after.top, left: after.left, width: after.width },
-        restored: { top: restored.top, left: restored.left, width: restored.width },
-      };
-    })()`);
-    const rectInvariant =
-      Math.abs(toggleProof.before.top - toggleProof.after.top) < 0.01 &&
-      Math.abs(toggleProof.before.left - toggleProof.after.left) < 0.01 &&
-      Math.abs(toggleProof.before.width - toggleProof.after.width) < 0.01 &&
-      Math.abs(toggleProof.before.top - toggleProof.restored.top) < 0.01;
-    ok('S1 STOP-clause: post-S1, the sheet\'s own rect (top/left/width) is STILL byte-identical whether the start-offset padding is applied or not — "paper never moves" re-proven after touching the shared typewriter engine',
-      rectInvariant, JSON.stringify(toggleProof));
-
-    const pixelProof = await app.evalJs(`(() => {
-      const sheet = document.querySelector('.entry-full');
-      const canvas = document.querySelector('.ink-committed');
-      const rect = sheet.getBoundingClientRect();
-      const canvasRect = canvas.getBoundingClientRect();
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const expectedScreenX = rect.left + 0.25 * rect.width;
-      const expectedScreenY = rect.top + 0.12 * rect.width;
-      const localX = expectedScreenX - canvasRect.left;
-      const localY = expectedScreenY - canvasRect.top;
-      const px = Math.round(localX * dpr), py = Math.round(localY * dpr);
-      const data = ctx.getImageData(Math.max(0, px - 3), Math.max(0, py - 3), 7, 7).data;
-      let anyInk = false;
-      for (let i = 3; i < data.length; i += 4) { if (data[i] > 0) anyInk = true; }
-      return { anyInk };
-    })()`);
-    ok('S1 STOP-clause: the seeded stroke still renders at the exact byte-true screen position the sheet\'s own rect predicts, post-S1',
-      pixelProof.anyInk === true, JSON.stringify(pixelProof));
-  }
+  // --- S1 STOP-clause ink-coordinate re-proof [PARKED WHOLE — FX14 S2] ------
+  // Re-ran fx4.mjs's journal ink byte-truth proof post-S1 (the shared typewriter
+  // engine having been touched): the .entry-full sheet's rect stays byte-
+  // identical across the data-typewriter toggle, and the seeded stroke still
+  // renders real .ink-committed pixels where the rect predicts. Same JournalEntry-
+  // only ink model as fx4 (PageEditor has no stroke-capture canvas). FX14 S2
+  // unroutes JournalEntry (/journal/:id -> /page/:id redirect, App.tsx's
+  // JournalIdRedirect), so .entry-full / .ink-committed never mount. Both checks
+  // PARKED (A4) as FALSIFIED. SV6, quoted: "Journal Pages no longer exist. The
+  // Journal is now just a board that contains certain pages." Successor: the fate
+  // of journal ink is J7's behavior-parity census (setting-or-dies, per the FX14
+  // brief); the routing redirect that retires this surface is proven live in
+  // fx14.mjs. Originals, byte-for-byte:
+  //   PARKED (was "S1 STOP-clause: post-S1, the sheet's own rect (top/left/width) is STILL byte-identical whether the start-offset padding is applied or not — \"paper never moves\" re-proven after touching the shared typewriter engine")
+  //   PARKED (was "S1 STOP-clause: the seeded stroke still renders at the exact byte-true screen position the sheet's own rect predicts, post-S1")
 
   // ==========================================================================
   // S2 — the glow, felt this time. A steeper curve (0.28, was 0.55) — same

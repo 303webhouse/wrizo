@@ -194,11 +194,30 @@ await withHarness(async (app) => {
   // test seam (store/routeForEntry.ts's own header comment) -- proving the
   // CANONICAL SOURCE live, not a second hand re-derivation of the same
   // rule inside this harness. ------------------------------------------------
+  // === FX14 S2 (SV6) — the SECTION B /journal/:id destination assertions are
+  // SUPERSEDED. SV6, quoted: "Journal Pages no longer exist. The Journal is now
+  // just a board that contains certain pages. Nothing about it should be unique
+  // other than what settings happened to be turned on/off." routeForEntry now
+  // returns /page/:id UNCONDITIONALLY, and /journal/:id is a permanent redirect to
+  // /page/:id (App.tsx). The SIX originals are parked VERBATIM here (A4); their live
+  // successors are these same checks flipped to the /page/:id truth in place (the
+  // check NAME auto-updates via the interpolated `expected`/label), and the redirect
+  // itself is proven live in fx14.mjs. Originals, byte-for-byte:
+  //   PARKED (was "S2 (function-level): plain prose (loose, no pageType, no origin) -> routeForEntry returns exactly what today's inline predicate returns ("/journal/k-plain-prose")")
+  //   PARKED (was "S2 (function-level): journal-homed loose (origin:journal, no pageType) -> routeForEntry returns exactly what today's inline predicate returns ("/journal/k-journal-loose")")
+  //   PARKED (was "S2/FX7 S5 board-pin travel (unregressed): a page-pin to a LOOSE journal entry double-click-travels to /journal/:id")
+  //   PARKED (was "S2 CascadePanels.tsx (migrated routeFor -> routeForEntry): the Journal category's own 'recent' list travels an UNTYPED entry to /journal/:id")
+  //   PARKED (was "S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a LEGACY UNTYPED filed-page row (reachable today via the "support" filter's own "not manuscript, not script" catch-all) travels to /journal/:id, not /page/:id")
+  //   PARKED (was "S2 Spread.tsx (migrated openPage -> routeForEntry): an ordinary loose-untyped cell still travels to /journal/:id")
+  // supersession = SV6 (quoted above); live successors = the /page/:id assertions in place below + fx14.mjs's redirect proof.
+  // (The JournalEntry-SURFACE checks — B6's neighbour-nav, the Journal '+' door, and
+  // SECTION C's legacy-page tests — are parked SEPARATELY in place below: their
+  // surface is unrouted, not merely re-destined, so they have no in-file successor.)
   await freshDesk(app, LAPTOP_W, 900);
   {
     const kinds = [
-      { label: 'plain prose (loose, no pageType, no origin)', entry: { id: 'k-plain-prose' }, expected: '/journal/k-plain-prose' },
-      { label: 'journal-homed loose (origin:journal, no pageType)', entry: { id: 'k-journal-loose', origin: 'journal' }, expected: '/journal/k-journal-loose' },
+      { label: 'plain prose (loose, no pageType, no origin) [FX14 S2: routeForEntry now unconditional /page]', entry: { id: 'k-plain-prose' }, expected: '/page/k-plain-prose' },
+      { label: 'journal-homed loose (origin:journal, no pageType) [FX14 S2: routeForEntry now unconditional /page]', entry: { id: 'k-journal-loose', origin: 'journal' }, expected: '/page/k-journal-loose' },
       { label: 'binder manuscript (pageType:manuscript, filed)', entry: { id: 'k-manuscript', pageType: 'manuscript', projectId: 'some-project' }, expected: '/page/k-manuscript' },
       { label: 'board (pageType:board)', entry: { id: 'k-board', pageType: 'board' }, expected: '/page/k-board' },
       { label: 'script (pageType:script)', entry: { id: 'k-script', pageType: 'script' }, expected: '/page/k-script' },
@@ -244,7 +263,7 @@ await withHarness(async (app) => {
 
     const travelCases = [
       { box: 'pin-manuscript', expectHash: '#/page/j6-b2-manuscript', label: "S2/FX7 S5 board-pin travel (unregressed): a page-pin to a MANUSCRIPT entry double-click-travels to /page/:id" },
-      { box: 'pin-loose', expectHash: '#/journal/j6-b2-loose', label: 'S2/FX7 S5 board-pin travel (unregressed): a page-pin to a LOOSE journal entry double-click-travels to /journal/:id' },
+      { box: 'pin-loose', expectHash: '#/page/j6-b2-loose', label: 'S2/FX14 successor board-pin travel: a page-pin to a LOOSE journal entry double-click-travels to /page/:id now (routeForEntry unconditional; original parked in SECTION B)' },
       { box: 'pin-board', expectHash: '#/page/j6-b2-boardtarget', label: 'S2/FX7 S5 board-pin travel (unregressed): a page-pin to a BOARD entry double-click-travels to /page/:id' },
       { box: 'ported-script', expectHash: '#/page/j6-b2-script', label: 'S2/FX5 S3 ported-card travel (unregressed): a ported (sourceEntryId) card to a SCRIPT entry double-click-travels to /page/:id' },
     ];
@@ -281,7 +300,7 @@ await withHarness(async (app) => {
   // proves the MIGRATED call still produces the SAME correct result via
   // real navigation) and an untyped entry. --------------------------------
   for (const [id, entryText, expectHash, label] of [
-    ['j6-b3-untyped', 'An Untyped Recent Page', '#/journal/j6-b3-untyped', "S2 CascadePanels.tsx (migrated routeFor -> routeForEntry): the Journal category's own 'recent' list travels an UNTYPED entry to /journal/:id"],
+    ['j6-b3-untyped', 'An Untyped Recent Page', '#/page/j6-b3-untyped', "S2/FX14 successor CascadePanels.tsx: the Journal category's own 'recent' list travels an UNTYPED entry to /page/:id now (routeForEntry unconditional; original parked in SECTION B)"],
     ['j6-b3-typed', 'A Typed Recent Page', '#/page/j6-b3-typed', "S2 CascadePanels.tsx (migrated routeFor -> routeForEntry): the Journal category's own 'recent' list travels a TYPED entry to /page/:id"],
   ]) {
     // A fully fresh setup per entry (rather than reusing one session across
@@ -338,7 +357,7 @@ await withHarness(async (app) => {
     for (const [text, expectHash, label] of [
       ['Chapter One', '#/page/j6-b4-chapter', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a Manuscript chapter row travels to /page/:id'],
       ['A Character', '#/page/j6-b4-support-typed', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a TYPED support-page row travels to /page/:id'],
-      ['A Legacy Filed Page', '#/journal/j6-b4-support-legacy', 'S2 ProjectHome.tsx (migrated pageRoute -> routeForEntry): a LEGACY UNTYPED filed-page row (reachable today via the "support" filter\'s own "not manuscript, not script" catch-all) travels to /journal/:id, not /page/:id'],
+      ['A Legacy Filed Page', '#/page/j6-b4-support-legacy', 'S2/FX14 successor ProjectHome.tsx: a LEGACY UNTYPED filed-page row travels to /page/:id now (routeForEntry unconditional; every entry opens in THE Page; original parked in SECTION B)'],
     ]) {
       const idx = await app.evalJs(`[...document.querySelectorAll('.dz-rowtitle')].findIndex(el => el.textContent.includes(${JSON.stringify(text)}))`);
       if (idx < 0) { ok(label, false, 'row not found'); continue; }
@@ -352,9 +371,15 @@ await withHarness(async (app) => {
     }
   }
 
-  // --- B5: JournalEntry.tsx's own pageType redirect guard (now routed
-  // through routeForEntry) -- re-proven unregressed: a typed entry opened
-  // at /journal/:id still bounces straight to /page/:id. -------------------
+  // --- B5: the /journal/:id redirect. FX14 S2 note: this used to be
+  // JournalEntry.tsx's own pageType (typed-only) redirect guard; FX14 unroutes
+  // JournalEntry and makes /journal/:id a PERMANENT, UNIVERSAL redirect to
+  // /page/:id (App.tsx's JournalIdRedirect). The check below STILL PASSES — a
+  // typed entry at /journal/:id bounces to /page/:id — and now witnesses the
+  // universal redirect for the typed case; the LOOSE/untyped case is proven in
+  // fx14.mjs. The frozen check name's "own pageType redirect guard" wording is a
+  // passing historical mention now, not a falsified assertion (kept per the
+  // load-bearing/passing-mention line). -----------------------------------------
   {
     await freshDesk(app, LAPTOP_W, 900);
     await seedFromDesk(app, `(() => {
@@ -371,42 +396,18 @@ await withHarness(async (app) => {
       hash === '#/page/j6-b5-typed', hash);
   }
 
-  // --- B6: JournalEntry.tsx's own neighbour navigation (keyboard walk +
-  // both '<'/'>' chip pairs, now routed through routeForEntry) -- the
-  // typical loose-untyped case stays /journal/:id, both framed and legacy. ---
-  {
-    await freshDesk(app, LAPTOP_W, 900);
-    await seedFromDesk(app, `(() => {
-      const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-b6-a', text: 'Notebook A', origin: 'journal', orderIndex: 1000, source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-b6-b', text: 'Notebook B', origin: 'journal', orderIndex: 2000, source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    })()`);
-    await app.reload();
-    await app.evalJs("location.hash = '#/journal/j6-b6-a'");
-    await app.waitFor("!!document.querySelector('.entry-full')", { label: 'J6 B6 notebook page A mounted' });
-    await sleep(300);
-    // Framed chip.
-    await app.evalJs("document.querySelector('.journal-nav-btn:not(.journal-nav-add):not([disabled])').click()");
-    await sleep(300);
-    const hashAfterChip = await app.evalJs('location.hash');
-    ok("S2 JournalEntry.tsx's own neighbour-navigation chip (framed, migrated navigate(`/journal/${...}`) -> routeForEntry): still travels to /journal/:id for an ordinary loose-untyped neighbour",
-      hashAfterChip === '#/journal/j6-b6-b', hashAfterChip);
-
-    // Keyboard walk (ArrowLeft, same A/B pair) -- JournalEntry.tsx's own
-    // guard bails when an editable is focused (`t.isContentEditable`), and
-    // page B's own authored sheet auto-focuses on mount, so the editable
-    // must be blurred first to reach the SAME real-user posture (arrow
-    // keys pressed while not mid-caret).
-    await app.evalJs("document.activeElement && document.activeElement.blur && document.activeElement.blur()");
-    await sleep(100);
-    await app.key('ArrowLeft');
-    await sleep(300);
-    const hashAfterArrow = await app.evalJs('location.hash');
-    ok("S2 JournalEntry.tsx's own neighbour-navigation keyboard walk (migrated navigate(`/journal/${...}`) -> routeForEntry): ArrowLeft still travels back to /journal/:id for an ordinary loose-untyped neighbour",
-      hashAfterArrow === '#/journal/j6-b6-a', hashAfterArrow);
-  }
+  // --- B6 [PARKED WHOLE — FX14 S2] — JournalEntry.tsx's own neighbour navigation ---
+  // FX14 S2 UNROUTES the JournalEntry surface: /journal/:id is now a permanent
+  // redirect to /page/:id (App.tsx's JournalIdRedirect), so the .entry-full sheet and
+  // its .journal-nav chips never mount. This whole block (its two checks) is PARKED
+  // (A4) — the surface it exercised is retired from routing, so there is NO in-file
+  // successor (the surface is gone, not merely re-destined); JournalEntry's
+  // neighbour-navigation parity, if kept at all, is J7's per SV6 + the FX14 brief.
+  // SV6, quoted: "Journal Pages no longer exist. The Journal is now just a board that
+  // contains certain pages." The redirect that replaces this surface is proven live
+  // in fx14.mjs. Originals, byte-for-byte:
+  //   PARKED (was "S2 JournalEntry.tsx's own neighbour-navigation chip (framed, migrated navigate(`/journal/${...}`) -> routeForEntry): still travels to /journal/:id for an ordinary loose-untyped neighbour")
+  //   PARKED (was "S2 JournalEntry.tsx's own neighbour-navigation keyboard walk (migrated navigate(`/journal/${...}`) -> routeForEntry): ArrowLeft still travels back to /journal/:id for an ordinary loose-untyped neighbour")
 
   // --- B7: Spread.tsx's openPage (migrated from an unconditional
   // /journal/${id} to routeForEntry via the already-fetched `pages` list)
@@ -432,7 +433,7 @@ await withHarness(async (app) => {
     await app.waitFor("document.querySelectorAll('.spread-page button').length > 0", { label: 'Spread mounted' });
     await sleep(300);
     for (const [text, expectHash, label] of [
-      ['Spread Plain', '#/journal/j6-b7-plain', "S2 Spread.tsx (migrated openPage -> routeForEntry): an ordinary loose-untyped cell still travels to /journal/:id"],
+      ['Spread Plain', '#/page/j6-b7-plain', "S2/FX14 successor Spread.tsx: an ordinary loose-untyped cell travels to /page/:id now (routeForEntry unconditional; original parked in SECTION B)"],
       ['Spread Unfiled Manuscript', '#/page/j6-b7-unfiled-manuscript', "S2 Spread.tsx (migrated openPage -> routeForEntry): a loose page with a non-board pageType now lands DIRECTLY on /page/:id -- no more bounce through JournalEntry's own redirect guard first"],
     ]) {
       const idx = await app.evalJs(`[...document.querySelectorAll('.spread-page button')].findIndex(el => el.textContent.includes(${JSON.stringify(text)}))`);
@@ -451,24 +452,14 @@ await withHarness(async (app) => {
   // S2 -- a freshly-created page navigating to its own known route is not
   // a predicate). -----------------------------------------------------------
   {
-    // The Journal's own door: JournalEntry.tsx's own '+' append chip
-    // (createLoosePage -> /journal/:id).
-    await freshDesk(app, LAPTOP_W, 900);
-    await seedFromDesk(app, `(() => {
-      const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-journal-new-page-seed', text: 'Seed', origin: 'journal', orderIndex: 1000, source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    })()`);
-    await app.reload();
-    await app.evalJs("location.hash = '#/journal/j6-journal-new-page-seed'");
-    await app.waitFor("!!document.querySelector('.journal-nav-add')", { label: "Journal's own '+' door present" });
-    await sleep(300);
-    await app.evalJs("document.querySelector('.journal-nav-add').click()");
-    await sleep(400);
-    const hashAfterJournalNewPage = await app.evalJs('location.hash');
-    ok("Door re-proof: the Journal's own New Page door ('+' append, createLoosePage) still lands on /journal/:id, unregressed",
-      hashAfterJournalNewPage.startsWith('#/journal/') && hashAfterJournalNewPage !== '#/journal/j6-journal-new-page-seed', hashAfterJournalNewPage);
+    // The Journal's own '+' door [PARKED WHOLE — FX14 S2]: JournalEntry.tsx's own
+    // '+' append chip (createLoosePage) lived on the JournalEntry SURFACE, which FX14
+    // unroutes (/journal/:id now redirects to /page/:id) — the chip never mounts. This
+    // door check is PARKED (A4): no in-file successor (the surface is gone). The live
+    // New-Page doors that remain — the cascade's (below) and CascadePanels/DrawersTree/
+    // useCatch (now flipped to /page/:id, FX14 S1) — are proven in fx14.mjs's
+    // creation-door sweep. SV6: "Journal Pages no longer exist." Original, byte-for-byte:
+    //   PARKED (was "Door re-proof: the Journal's own New Page door ('+' append, createLoosePage) still lands on /journal/:id, unregressed")
 
     // The cascade's Page-section door (createLooseHomePage -> /page/:id).
     await freshProsePage(app, LAPTOP_W, 900);
@@ -495,16 +486,32 @@ await withHarness(async (app) => {
       localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
     })()`);
     await app.reload();
-    await app.evalJs("location.hash = '#/journal/j6-legacy-untyped'");
-    await app.waitFor("!!document.querySelector('.entry-full')", { label: 'legacy untyped entry mounted' });
+    // FIXTURE RE-POINT [FX14 S2] — this legacy GEOMETRY check is item 47's own
+    // substrate (no DeskFrame below the gate, gutter untouched), NOT an FX14
+    // predicate. It formerly mounted its fixture on the JournalEntry surface
+    // (`#/journal/:id` -> `.entry-full`); FX14 unroutes that surface, so the
+    // fixture now loads the SAME loose entry on THE Page (`#/page/:id` ->
+    // `.forward-only-editor`). The ASSERTION is byte-unchanged and still holds:
+    // `data-desk-frame-active` is width-gated in store/deskFrameActive.ts (NOT
+    // surface-gated), so ANY routed surface at <1100px reads no-frame / 64px
+    // gutter. This is fixture maintenance, not a park — nothing here is
+    // falsified; re-pointing keeps legacy-geometry coverage FX14 never touched.
+    await app.evalJs("location.hash = '#/page/j6-legacy-untyped'");
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'legacy loose entry mounted on THE Page' });
     await sleep(300);
     const legacyGeom = await readGeometry(app);
     ok('Legacy (<1100px): no DeskFrame ever mounts, and the gutter stays at its own untouched default (data-desk-frame-active="false", padding-left:64px) -- S1\'s fix never engages below the gate',
       !legacyGeom.hasDeskFrame && legacyGeom.deskFrameActive === 'false' && legacyGeom.mainPaddingLeft === '64px', JSON.stringify(legacyGeom));
 
-    // S2's redirect guard still fires below the gate too (JournalEntry.tsx
-    // renders its OWN legacy JSX branch, but the guard itself runs before
-    // either branch, framed or not).
+    // PREMISE BROADENED, CHECK STILL PASSES [FX14 S2] — this once proved the
+    // pageType-SPECIFIC (typed-only) redirect guard below the gate. FX14 makes
+    // the redirect UNIVERSAL: /journal/:id -> /page/:id for EVERY id via
+    // App.tsx's JournalIdRedirect (JournalEntry.tsx no longer renders its own
+    // legacy branch at all — it is unrouted). The assertion (a typed entry at
+    // /journal lands on /page below the gate) is unchanged and still true, so
+    // the check stays live and executable and its frozen name's "pageType
+    // redirect guard" wording is a passing historical mention now, not a
+    // falsified assertion (same treatment as B5). No park.
     await app.evalJs("location.hash = '#/journal/j6-legacy-typed'");
     await sleep(400);
     const legacyRedirectHash = await app.evalJs('location.hash');

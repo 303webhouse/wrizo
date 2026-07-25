@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
@@ -10,7 +10,8 @@ import { BeatWizard } from './pages/BeatWizard';
 import { StructureBoard } from './pages/StructureBoard';
 import { QuickSprint } from './pages/QuickSprint';
 import { Spread } from './pages/Spread';
-import { JournalEntry } from './pages/JournalEntry';
+// FX14 S2 — JournalEntry no longer routed (the /journal/:id redirect below replaces
+// it); the component + behavior-parity are J7's, so the file is left in place, unimported.
 import { PageEditor } from './pages/PageEditor';
 import { ImportDraft } from './pages/ImportDraft';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
@@ -80,6 +81,18 @@ function TrashBoardGate() {
 function ShelfBoardGate() {
   const board = getOrCreateSystemBoard('shelf');
   return <Navigate to={`/page/${board.id}`} replace />;
+}
+
+// FX14 S2 (SV6, ratified: "Journal Pages no longer exist. The Journal is now just a
+// board that contains certain pages.") — the /journal/:id route retires to a
+// PERMANENT redirect: every entry opens in THE Page interface now (routeForEntry
+// returns /page/:id for all). Old links, resume paths, and muscle memory (any
+// /journal/:id) all land right at /page/:id. The JournalEntry surface unmounts from
+// routing; its component deletion + the behavior-parity work are J7's (accelerated,
+// next after the P0 wave). The same bridge shape the system-board gates use.
+function JournalIdRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/page/${id}`} replace />;
 }
 
 // CD1 S4 — `.app-main`'s reserved gutter (index.css, historically
@@ -267,7 +280,7 @@ export function App() {
         <Route path="/journal" element={<JournalBoardGate />} />
         <Route path="/trash" element={<TrashBoardGate />} />
         <Route path="/journal/spread" element={<Spread />} />
-        <Route path="/journal/:id" element={<JournalEntry />} />
+        <Route path="/journal/:id" element={<JournalIdRedirect />} />
         <Route path="/page/:id" element={<PageEditor />} />
         </Routes>
         </AppMain>

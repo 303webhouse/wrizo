@@ -99,12 +99,19 @@ const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip'
 // reaches the identical state directly.
 const freshJournalPage = async (app, marker) => {
   await freshDesk(app);
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed, authored' });
+  // FIXTURE RE-POINT [FX14 S2]: the S4 square-corner sweep only needs a mounted
+  // writing surface — nothing downstream reads JournalEntry DOM (it reads shared
+  // chrome: .wz-strip-item, .wz-cascade-action, .board-sheet-inner). FX14 unroutes
+  // the JournalEntry host (/journal/:id -> /page/:id redirect, App.tsx's
+  // JournalIdRedirect); wrizoCreateJournalPage still authors a journal-ORIGIN page,
+  // now opened on THE Page (.forward-only-editor). Not a park — the corner tokens
+  // are host-agnostic; only the mount vehicle moved off the retired surface.
+  await app.evalJs("location.hash = '#/page/' + window.wrizoCreateJournalPage().id");
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page framed, authored' });
   await sleep(200);
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys(marker);
-  await sleep(3000); // past JournalEntry's AUTOSAVE_MS (2000)
+  await sleep(3000); // past the autosave debounce
 };
 
 await withHarness(async (app) => {

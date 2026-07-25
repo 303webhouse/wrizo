@@ -144,7 +144,7 @@ export function DrawersTree() {
                 <div className="dz-createnew">
                   {createFor === d.id ? (
                     <>
-                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); const e = createJournalPage(); navigate(`/journal/${e.id}`); }}>New {lex('page')}</button>
+                      <button type="button" className="dz-more" onClick={() => { setCreateFor(null); const e = createJournalPage(); navigate(`/page/${e.id}`); }}>New {lex('page')}</button>{/* FX14 S1 — every New Page opens in THE Page */}
                       {/* B2.1 S6 — deliberately "New Binder", NOT "New Drawer": this
                           exact row sits directly under the tree's own top-level
                           "+ New {lex('drawer')}" action (creates a NEW stored Drawer

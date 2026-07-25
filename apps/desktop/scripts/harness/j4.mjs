@@ -41,25 +41,33 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
   await app.evalJs(DRAG_HELPER);
 
-  // -- create page 1 (text only) --------------------------------------------
-  // B1 — the retired Journal list's own "New page" button is gone
-  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
-  // (window.wrizoCreateJournalPage) reaches the identical fresh-page state.
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page 1' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  await app.typeKeys('Page One text.');
-  await sleep(2300);
-
-  // -- create page 2 (text + ink) -------------------------------------------
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page 2' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  await app.typeKeys('Page Two text.');
-  // A deliberately narrow stroke (bbox width ~0.2 of the sheet) so bbox-fit
-  // sizing (review fix 3) is distinguishable from the old flat-max-0.5 bug.
-  await app.penStroke('.entry-full', [{ x: 0.3, y: 0.3 }, { x: 0.4, y: 0.35 }, { x: 0.5, y: 0.3 }]);
-  await sleep(2300);
+  // -- create the two source pages (page 1 text; page 2 text + ink) [FIXTURE
+  //    RE-POINT — FX14 S2] -----------------------------------------------------
+  // B1 already re-pointed this scaffolding off the RETIRED Journal LIST to the
+  // wrizoCreateJournalPage seam (see persistence.ts:654's own seam comment). FX14
+  // S2 now unroutes the JournalEntry EDITOR surface too (/journal/:id -> /page/:id
+  // redirect, App.tsx's JournalIdRedirect), so a page's CONTENT — the text the
+  // editor typed and the ink the pen drew — is supplied by seeding persistence
+  // DIRECTLY (from the Desk, per the seeding law: seed, then reload to hydrate).
+  // This is FIXTURE MAINTENANCE, not a park: J4's subject is the Board + the port
+  // (below), which FX14 does not touch — only the page-creation vehicle moved off
+  // the retired surface, exactly as B1's seam comment anticipates ("reach the
+  // identical state without resurrecting a retired room's UI just to keep old
+  // plumbing working"). Seed shape matches createJournalPage (persistence.ts:638:
+  // source:'page', origin:'journal'); the ink is the SAME narrow bbox (~0.2 wide)
+  // the old penStroke('.entry-full', ...) drew, in the persisted Stroke shape
+  // ({ points: [{x,y}] }, src/types) so the port's bbox-fit renormalization
+  // (renormalizeStrokesForBox) reads identically.
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    entries.push({ id: 'j4-src-p1', text: 'Page One text.', projectId: null, source: 'page', origin: 'journal', createdAt: now, updatedAt: now });
+    entries.push({ id: 'j4-src-p2', text: 'Page Two text.', projectId: null, source: 'page', origin: 'journal', strokes: [{ points: [{ x: 0.3, y: 0.3 }, { x: 0.4, y: 0.35 }, { x: 0.5, y: 0.3 }] }], createdAt: now, updatedAt: now });
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seeding the two source pages' });
+  await app.evalJs(DRAG_HELPER); // re-inject: window helpers don't survive the reload
 
   let entries = await app.localJSON('writer-studio-journal-entries');
   const p1 = entries.find((e) => e.text === 'Page One text.');

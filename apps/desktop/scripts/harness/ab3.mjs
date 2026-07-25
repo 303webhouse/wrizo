@@ -49,12 +49,21 @@ const freshDesk = async (app) => {
 // editable journal-origin page — persistence.ts's own new test seam
 // (window.wrizoCreateJournalPage) reaches the identical state directly.
 const journalPageHere = async (app, marker) => {
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'JournalEntry framed, authored' });
+  // FIXTURE RE-POINT [FX14 S2]: this helper reaches a fresh, editable journal-ORIGIN
+  // page as scaffolding for testing the cascade Page-face / origin-stamping / shared
+  // chrome — NOT the JournalEntry surface itself. FX14 unroutes that surface
+  // (/journal/:id -> /page/:id redirect, App.tsx's JournalIdRedirect), so the page
+  // now mounts on THE Page (.forward-only-editor). wrizoCreateJournalPage still
+  // stamps origin:'journal' (the S4 door-origin checks depend on that), so every
+  // origin/Places/Page-face assertion reads identically. Not a park — only the mount
+  // vehicle moved. (The one JournalEntry-legacy-specific check that this exposed —
+  // "legacy metadata cluster present below the gate" — is parked in S3 below.)
+  await app.evalJs("location.hash = '#/page/' + window.wrizoCreateJournalPage().id");
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'journal-origin page on THE Page, authored' });
   await sleep(200);
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys(marker);
-  await sleep(3000); // past JournalEntry's AUTOSAVE_MS (2000) with real margin for typeKeys' own dispatch time
+  await sleep(3000); // past the autosave debounce with real margin for typeKeys' own dispatch time
 };
 
 const freshJournalPage = async (app, marker) => {
@@ -180,7 +189,7 @@ await withHarness(async (app) => {
   // explicitly does NOT dissolve (S1's own "never dissolving" law — the
   // opposite of the old drawer's own behavior, also PARKED below with its
   // own opposite-truth successor in cd2.mjs). ================================
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()"); // FX14 S2 re-point: was .entry-edit; the dissolve mechanic (.desk-frame[data-writing]) is host-shared
   await app.typeKeys('x');
   await sleep(150);
   const writingNow = await app.evalJs("document.querySelector('.desk-frame')?.dataset.writing");
@@ -216,17 +225,22 @@ await withHarness(async (app) => {
 
   await app.emulateDpr(1, 900, 900); // below DESKFRAME_MIN_WIDTH (1100)
   await sleep(200);
-  const legacyMetadata = await app.evalJs(`({
-    deskFrameGone: !document.querySelector('.desk-frame'),
-    h1: !!document.querySelector('h1'),
-    star: !!document.querySelector('.entry-star'),
-    tags: !!document.querySelector('.entry-tags'),
-    autosaveNote: document.querySelector('.journal-autosave-note')?.textContent,
-  })`);
-  ok('S3: below the gate — the legacy metadata cluster is byte-identical (title/star/tags/autosave note all present, unchanged)',
-    legacyMetadata.deskFrameGone && legacyMetadata.h1 && legacyMetadata.star && legacyMetadata.tags
-      && legacyMetadata.autosaveNote === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
-    JSON.stringify(legacyMetadata));
+  // S3 legacy-metadata-PRESENT check [PARKED — FX14 S2]: this asserted the legacy
+  // (<1100px) JournalEntry metadata cluster (h1/star/tags/.journal-autosave-note) is
+  // byte-identical and PRESENT below the gate. FX14 S2 unroutes the JournalEntry
+  // surface (/journal/:id -> /page/:id redirect, App.tsx's JournalIdRedirect), so at
+  // legacy width the page mounts PageEditor's own legacy face (.page), which carries
+  // NO .entry-star/.entry-tags/.journal-autosave-note cluster. FALSIFIED — the legacy
+  // JournalEntry metadata band retires WITH the surface. Its framed-ABSENCE twin (just
+  // above, "S3: framed — ...entirely absent") still passes on THE Page, and the Page
+  // face's own footer is proven at the "saved-silently" check just below. PARKED (A4).
+  // SV6, quoted: "Journal Pages no longer exist. The Journal is now just a board that
+  // contains certain pages." Successor: J7's behavior-parity census. Original,
+  // byte-for-byte:
+  //   PARKED (was "S3: below the gate — the legacy metadata cluster is byte-identical (title/star/tags/autosave note all present, unchanged)")
+  // NOTE: the emulateDpr(900) above + emulateDpr(1400) below are RETAINED — the
+  // "saved-silently footer" check that follows relies on the 900->1400 width
+  // round-trip to reset the cascade to its closed rest state (see its own comment).
   await app.emulateDpr(1, 1400, 900);
   await sleep(200);
 
@@ -604,7 +618,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // precedent) — live successor: cd2.mjs's own "a keystroke dissolves
     // BOTH open layers" check.
     await openPageCategory(app);
-    await app.evalJs("document.querySelector('.entry-edit').focus()");
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()"); // FX14 S2 re-point: was .entry-edit (parked block now mounts on THE Page via the re-pointed freshJournalPage helper)
     await app.typeKeys('z');
     await sleep(150);
     const panelGoneAfterTypeNow = await app.evalJs("!document.querySelector('.wz-cascade-panel')");

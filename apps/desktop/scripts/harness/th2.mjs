@@ -337,21 +337,24 @@ await withHarness(async (app) => {
 
   // -- Firewall chip + block caret (Slice 5) ----------------------------------
   await app.evalJs("window.wrizoTheme.set('flux')");
-  // B1 — the retired Journal list's own "New page" button is gone
-  // (pages/Journal.tsx deleted, S5) — its stable-class-not-label click
-  // (chosen because the label is itself lexicon-swept under Flux) is
-  // superseded outright by persistence.ts's own new test seam
-  // (window.wrizoCreateJournalPage), which needs no label/class at all.
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page for VW/caret checks' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  // FIXTURE RE-POINT [FX14 S2]: the Flux block-caret + Firewall paste-block are
+  // HOST-AGNOSTIC editor features (they mark whatever contenteditable host they're
+  // on). FX14 unroutes the JournalEntry host (/journal/:id -> /page/:id redirect,
+  // App.tsx's JournalIdRedirect), so this check now mounts on THE Page
+  // (.forward-only-editor, contenteditable) instead. The feature's own behavior is
+  // unchanged; only the mount vehicle moved. Not a park. wrizoCreateJournalPage
+  // still authors a journal-origin page; opened on THE Page it renders the same
+  // contenteditable the block caret and firewall attach to.
+  await app.evalJs("location.hash = '#/page/' + window.wrizoCreateJournalPage().id");
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'authored page for VW/caret checks (THE Page)' });
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('a');
   await sleep(150);
-  const caretActive = await app.evalJs("!!document.querySelector('.flux-block-caret') && document.querySelector('.entry-edit')?.dataset.fluxCaretActive === 'true'");
+  const caretActive = await app.evalJs("!!document.querySelector('.flux-block-caret') && document.querySelector('.forward-only-editor')?.dataset.fluxCaretActive === 'true'");
   ok('check 5 slice: the Flux block caret renders and marks its host element data-flux-caret-active', caretActive === true, String(caretActive));
 
   await app.evalJs(`(() => {
-    const el = document.querySelector('.entry-edit');
+    const el = document.querySelector('.forward-only-editor');
     el.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true }));
   })()`);
   await sleep(150);

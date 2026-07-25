@@ -129,107 +129,44 @@ await withHarness(async (app) => {
   })()`);
   ok('R2: a real input cancels the later restore re-asserts (caret stays where the writer moved it, not snapped back)', pageCaretAfterInput === 10, `caret=${pageCaretAfterInput}`);
 
-  // === 2. JournalEntry authored page (window-scroll): mid-scroll + mid-caret
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Journal fixture' });
-  await app.evalJs(CARET_HELPER);
-  await app.emulateDpr(1, 1024, 700);
-  // B1 — the retired Journal list's own "New page" button is gone
-  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
-  // reaches the identical fresh-page state directly, id known up front.
-  const journalId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/journal/${journalId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored Journal page' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  const journalLines = Array.from({ length: 40 }, (_, i) => `Journal line ${i} — enough content to make the window scroll for real.`).join('\n');
-  await app.typeKeys(journalLines);
-  await sleep(2200);
-  await app.evalJs('window.scrollTo(0, 150)');
-  await sleep(150);
-  const journalScrollBefore = await app.evalJs('window.scrollY');
-  await app.evalJs("window.__setCaretAt('.entry-edit', 30)");
-  const journalTextBefore = await app.evalJs("document.querySelector('.entry-edit').innerText");
-  ok('JournalEntry: window scrolled pre-departure', journalScrollBefore > 0, `scrollY=${journalScrollBefore}`);
+  // === 2. JournalEntry authored page (window-scroll) [PARKED WHOLE — FX14 S2]
+  // Drove the JournalEntry surface (window.wrizoCreateJournalPage() ->
+  // #/journal/:id -> .entry-edit): typed 40 lines, scrolled the window, set a
+  // mid-caret, departed via the rail to the Journal Board, returned via the
+  // way-back chip, and asserted route + window-scrollY + caret + text all
+  // restored. FX14 S2 unroutes JournalEntry (/journal/:id -> /page/:id redirect,
+  // App.tsx's JournalIdRedirect), so .entry-edit never mounts. All six checks
+  // PARKED (A4) as FALSIFIED. SV6, quoted: "Journal Pages no longer exist. The
+  // Journal is now just a board that contains certain pages."
+  // Successors: the depart/return way-back (scroll + caret + text) is proven LIVE
+  // on THE Page in this same file's PageEditor block (section 1, above) and its
+  // QuickSprint block (section 4, below); the journal-WINDOW-scroll variant (vs.
+  // THE Page's internal .mode-scroll) is J7's behavior-parity census. (The
+  // "Journal route restored to the exact page" check also asserted the
+  // #/journal/:id form, which FX14 redirects to #/page/:id — falsified on that
+  // axis too.) Originals, byte-for-byte:
+  //   PARKED (was "JournalEntry: window scrolled pre-departure")
+  //   PARKED (was "return chip present after departing an authored Journal page")
+  //   PARKED (was "Journal route restored to the exact page")
+  //   PARKED (was "Journal window scrollY restored within +/-4px")
+  //   PARKED (was "Journal caret offset restored exactly")
+  //   PARKED (was "Journal text byte-identical across the departure/return")
 
-  await app.click('Journal'); // depart via the rail
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed authored page)' });
-  await sleep(150);
-  const journalChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
-  ok('return chip present after departing an authored Journal page', journalChipPresent === true);
-
-  await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'Journal page restored via chip' });
-  await sleep(500); // let the multi-write restore settle (up to 350ms + margin)
-  const journalRouteAfter = await app.evalJs('location.hash');
-  const journalScrollAfter = await app.evalJs('window.scrollY');
-  const journalCaretAfter = await app.evalJs(`(() => {
-    const sel = window.getSelection();
-    const el = document.querySelector('.entry-edit');
-    if (!el.contains(sel.anchorNode)) return null;
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    let offset = 0, n;
-    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
-    return null;
-  })()`);
-  const journalTextAfter = await app.evalJs("document.querySelector('.entry-edit').innerText");
-  ok('Journal route restored to the exact page', journalRouteAfter === `#/journal/${journalId}`, journalRouteAfter);
-  ok('Journal window scrollY restored within +/-4px', Math.abs(journalScrollAfter - journalScrollBefore) <= 4, `before=${journalScrollBefore} after=${journalScrollAfter}`);
-  ok('Journal caret offset restored exactly', journalCaretAfter === 30, `caret=${journalCaretAfter}`);
-  ok('Journal text byte-identical across the departure/return', journalTextAfter === journalTextBefore);
-
-  // === R1(c): the notebook pager A -> B never leaks A's state onto B, and
-  // A's capture (if it fired) is correctly labeled A, not mislabeled B — the
-  // exact failure mode an unkeyed surface would produce (see the QuickSprint
-  // fix above). JournalEntry is already keyed (`key={id ?? 'new'}`), so this
-  // is a proving/regression test, not a live bug — but it's the "live path"
-  // Fable named, so it gets its own explicit check.
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before pager fixture' });
-  await app.emulateDpr(1, 1024, 700);
-  // B1 — the retired Journal list's own "New page" button is gone; the
-  // seam reaches the identical fresh-page state, id known up front.
-  const pagerAId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/journal/${pagerAId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page A' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  await app.typeKeys(Array.from({ length: 40 }, (_, i) => `Page A line ${i}.`).join('\n'));
-  await sleep(2200);
-  const pagerACaretAtDeparture = await app.evalJs("document.querySelector('.entry-edit').innerText.length");
-  await app.evalJs('window.scrollTo(0, 200)');
-  await sleep(150);
-
-  await app.evalJs("document.querySelector('.journal-nav-add').click()"); // the pager's "+": create + navigate to B
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page B' });
-  await sleep(500); // past the 350ms re-assert window, so a leak would have fully applied by now
-  const pagerBId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
-  // FX4 S1 — the raw-scrollY check this line used to run is SUPERSEDED
-  // (parked verbatim in this file's own new PARKED section, below): Journal
-  // now always carries a bottom scroll buffer once typewriter is on
-  // (padding-bottom:30vh, index.css — mirrors .mode-scroll's own pre-
-  // existing identical buffer), so a fresh, empty page B is now genuinely
-  // tall enough to hold a raw scrollY of 200 inherited from this SPA's own
-  // pre-existing "never resets window.scrollY on route change" behavior —
-  // not a leak via the way-back mechanism (the next check below already
-  // proves that directly). Replaced with a caret-based check instead,
-  // which isn't sensitive to page height at all.
-  const pagerBCaret = await app.evalJs(`(() => {
-    const sel = window.getSelection();
-    const el = document.querySelector('.entry-edit');
-    if (!el || !el.contains(sel.anchorNode)) return 0;
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    let offset = 0, n;
-    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
-    return 0;
-  })()`);
-  ok('pager: B\'s own caret was never set to A\'s captured offset (a page-height-independent proof no state leaked via the way-back mechanism)',
-    pagerBCaret !== pagerACaretAtDeparture && pagerBCaret === 0, `B caret=${pagerBCaret} (A had captured ${pagerACaretAtDeparture})`);
-  const pagerWayBack = await app.evalJs("sessionStorage.getItem('wrizo-way-back')");
-  const pagerWb = pagerWayBack ? JSON.parse(pagerWayBack) : null;
-  ok('pager: if A\'s departure captured a way back, it names A, not B', !pagerWb || pagerWb.entryId === pagerAId, JSON.stringify({ pagerWb, pagerAId, pagerBId }));
+  // === R1(c): notebook pager A -> B state-leak proof [PARKED WHOLE — FX14 S2]
+  // Drove the JournalEntry surface (window.wrizoCreateJournalPage() ->
+  // #/journal/:id -> .entry-edit) and used the Journal pager's own "+" chip
+  // (.journal-nav-add) to create + travel to page B, proving no A-state leaked
+  // onto B (caret) and that any captured way-back names A, not B. FX14 S2
+  // unroutes JournalEntry (/journal/:id -> /page/:id redirect), so .entry-edit
+  // and the .journal-nav-add pager chip never mount — the pager is a
+  // JournalEntry-only affordance that retires with the surface. Both checks
+  // PARKED (A4) as FALSIFIED. SV6: "Journal Pages no longer exist. The Journal is
+  // now just a board that contains certain pages." Successor: the journal pager
+  // and its way-back leak proof are J7's behavior-parity census (the way-back
+  // mechanism itself stays proven live on THE Page / QuickSprint in this file).
+  // Originals, byte-for-byte:
+  //   PARKED (was "pager: B's own caret was never set to A's captured offset (a page-height-independent proof no state leaked via the way-back mechanism)")
+  //   PARKED (was "pager: if A's departure captured a way back, it names A, not B")
 
   // === R1: QuickSprint depart/return (scroll + caret + mode) — same shape
   // as PageEditor's, now that QuickSprint is correctly keyed by draftId. ===
@@ -335,26 +272,20 @@ await withHarness(async (app) => {
     ok('assist-collapse button found for the rect-invariant check', false);
   }
 
-  // 4b — the Add to... sheet (a loose Journal page) leaves the page rect
-  // byte-identical while open, and after closing.
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before Add-to rect fixture' });
-  // B1 — the retired Journal list's own "New page" button is gone; the
-  // seam reaches the identical fresh-page state directly.
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page, Add-to rect check' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  await app.typeKeys('A page with something to add elsewhere.');
-  await sleep(2200);
-  const sheetPageRectBefore = await app.evalJs("(() => { const r = document.querySelector('.entry-full').getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()");
-  await app.click('Add to…');
-  await app.waitFor("!!document.querySelector('[aria-label=\"Add to…\"]')", { label: 'Add to… sheet open' });
-  const sheetPageRectDuring = await app.evalJs("(() => { const r = document.querySelector('.entry-full').getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height}; })()");
-  ok('PAGE IS PRIMARY: the Add to… sheet leaves the page rect byte-identical while open', JSON.stringify(sheetPageRectBefore) === JSON.stringify(sheetPageRectDuring), `${JSON.stringify(sheetPageRectBefore)} -> ${JSON.stringify(sheetPageRectDuring)}`);
-  const stillMounted = await app.evalJs("!!document.querySelector('.entry-edit')");
-  ok('PAGE IS PRIMARY: the editor never unmounts while the Add to… sheet is open', stillMounted === true);
+  // 4b — the Add to... sheet rect invariant on a loose Journal page [PARKED
+  //      WHOLE — FX14 S2] ---------------------------------------------------
+  // Drove the JournalEntry surface (window.wrizoCreateJournalPage() ->
+  // #/journal/:id -> .entry-edit) and asserted the .entry-full page rect stays
+  // byte-identical while the "Add to…" sheet is open, and that the editor never
+  // unmounts. FX14 S2 unroutes JournalEntry (/journal/:id -> /page/:id redirect),
+  // so .entry-edit / .entry-full never mount. Both checks PARKED (A4) as
+  // FALSIFIED. SV6: "Journal Pages no longer exist. The Journal is now just a
+  // board that contains certain pages." Successor: the "PAGE IS PRIMARY" rect
+  // invariant is surface-agnostic (THE Page holds it too); a Page-surface
+  // re-proof, and the fate of the journal "Add to…" action, are J7's behavior-
+  // parity census. Originals, byte-for-byte:
+  //   PARKED (was "PAGE IS PRIMARY: the Add to… sheet leaves the page rect byte-identical while open")
+  //   PARKED (was "PAGE IS PRIMARY: the editor never unmounts while the Add to… sheet is open")
 
   return checks;
 });
@@ -372,43 +303,22 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
-  await withHarness(async (app) => {
-    await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-    await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before pager fixture (parked)' });
-    await app.emulateDpr(1, 1024, 700);
-    // B1 — the retired Journal list's own "New page" button is gone; the
-    // seam reaches the identical fresh-page state directly.
-    await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page A (parked)' });
-    await app.evalJs("document.querySelector('.entry-edit').focus()");
-    await app.typeKeys(Array.from({ length: 40 }, (_, i) => `Page A line ${i}.`).join('\n'));
-    await sleep(2200);
-    await app.evalJs('window.scrollTo(0, 200)');
-    await sleep(150);
-    await app.evalJs("document.querySelector('.journal-nav-add').click()");
-    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'page B (parked)' });
-    await sleep(500);
-    const pagerBScroll = await app.evalJs('window.scrollY');
-
-    // ORIGINAL: const pagerBScroll = await app.evalJs('window.scrollY');
-    // ok('pager: B\'s scroll was never set BY the way-back mechanism (not
-    // A\'s captured 200)', pagerBScroll !== 200, `B scrollY=${pagerBScroll}
-    // (A had captured 200)`);
-    // FX4 S1 — Journal now always carries a bottom scroll buffer once
-    // typewriter is on (padding-bottom:30vh, index.css), so a fresh empty
-    // page B is genuinely tall enough to hold a raw scrollY of 200
-    // inherited from this SPA's own pre-existing "never resets
-    // window.scrollY on route change" behavior — not a real leak (the
-    // file's own live pager section still separately proves the way-back
-    // mechanism itself correctly names A, never B). Live successor (a
-    // caret-based, page-height-independent version of the same claim) is
-    // this file's own live pager section, above.
-    pok('PARKED (was "pager: B\'s scroll was never set BY the way-back mechanism (not A\'s captured 200)") — FX4 S1: Journal\'s new bottom scroll buffer makes B tall enough to genuinely hold the inherited (unrelated, pre-existing) scrollY=200; live successor (caret-based) in this file\'s own live pager section',
-      pagerBScroll === 200, `B scrollY=${pagerBScroll} (now expected — see comment)`);
-
-    return parkedChecks;
-  });
+  // FX14 S2 (2026-07-24) — SECOND-generation supersession (the cd1-chain
+  // discipline for a multi-generational park). This parked check re-verified
+  // FX4 S1 by RE-RUNNING the Journal pager (window.wrizoCreateJournalPage() ->
+  // #/journal/:id -> .entry-edit -> .journal-nav-add). FX14 S2 unroutes the
+  // JournalEntry surface entirely (/journal/:id -> /page/:id redirect, App.tsx's
+  // JournalIdRedirect), so that navigation can no longer mount. Per the
+  // immutability codicil, the RECORD name below is FROZEN byte-identical; only
+  // its PROBE is updated in this FX14 commit — retired to the documented-
+  // supersession form (probe `true`), with the journal navigation REMOVED so an
+  // armed HARNESS_PARKED=1 run does not time out. SV6: "Journal Pages no longer
+  // exist. The Journal is now just a board that contains certain pages." The
+  // FX4-S1 record's named live successor ("this file's own live pager section")
+  // is itself now parked under FX14 above; the journal pager and its way-back
+  // proof retire to J7's behavior-parity census.
+  pok('PARKED (was "pager: B\'s scroll was never set BY the way-back mechanism (not A\'s captured 200)") — FX4 S1: Journal\'s new bottom scroll buffer makes B tall enough to genuinely hold the inherited (unrelated, pre-existing) scrollY=200; live successor (caret-based) in this file\'s own live pager section',
+    true, 'FX14 S2: probe retired — the JournalEntry surface this re-verified on is unrouted (/journal/:id -> /page/:id); successor is J7 (journal pager retires with the surface)');
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

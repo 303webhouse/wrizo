@@ -172,7 +172,7 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
   const { t } = useDeskLexicon();
   const pages = getJournalPages().slice().sort(byRecent);
   const recent = pages.slice(0, 5);
-  const newPage = () => { const e = createJournalPage(); navigate(`/journal/${e.id}`); };
+  const newPage = () => { const e = createJournalPage(); navigate(`/page/${e.id}`); }; // FX14 S1 — every New Page opens in THE Page
   return (
     <div className="wz-cascade-panel-body">
       {/* B1 S5 — travels to the Journal BOARD now (the section's own
@@ -231,7 +231,7 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 // remember the Journal category is where journal-entry creation lives.
 function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
-  const newJournalEntry = () => { const e = createJournalPage(); navigate(`/journal/${e.id}`); };
+  const newJournalEntry = () => { const e = createJournalPage(); navigate(`/page/${e.id}`); }; // FX14 S1 — every New Page opens in THE Page
   const newPage = () => { const e = createLooseHomePage(); navigate(`/page/${e.id}`); };
   return (
     <>
