@@ -168,12 +168,15 @@
      mechanical half — the theme ARC itself is parked, this ticket only
      cuts the seam). Orange/brass lane law holds: this is warm brown, never
      orange, at rest — the flash (below) is the only evental exception. */
-  /* M3 S1 (Nick's device verdict: too dark) — warmed from #4A3A28 (~1.5:1)
-     to #7A6242 (~2.9:1 against the #1F1A16 ground): a visible ambient
-     presence, still far below the paper's voice. Bounded delta — Nick's eye
-     at the sitting confirms or nudges the final value; the token seam itself
-     is unchanged (the exact purpose M2 cut it for). */
-  --rhizome-ink: #7A6242;
+  /* M4 S2 (SV14) — the ground turns green. From M3's warm brown #7A6242 to a
+     deep, low-yellow green stepped DOWN in weight (Nick's "a bit too noticeable"
+     is partly VALUE, not hue): #3F4A37 — G is the dominant channel by a clear
+     margin, so it reads as a living root, NOT the house olive (olive = "this is
+     a door", a touchable; the ground is not). Lower luminance than the brown, so
+     it recedes further below the paper's voice while staying an ambient presence
+     (~2:1 against the #1F1A16 ground). Bounded delta — Nick's eye at the sitting
+     confirms or nudges the exact value; the token seam is unchanged. */
+  --rhizome-ink: #3F4A37;
 
   /* TH1 — the four font slots (canon §4), the theme-facing layer. Material
      names below (--font-display/--font-ui/--font-prose) are the
