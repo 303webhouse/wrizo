@@ -67,7 +67,15 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     if (!ready) return;
     if (authState === 'authed') {
       const target = getResumeTarget();
-      navigate(target ? target.route : '/journal', target ? { state: { warmStart: true } } : undefined);
+      // HB2-lite S1 (SV11 — the landing rule): Open resumes the last Page or Board.
+      // getResumeTarget already routes EVERY surface to /page/:id or /project/:id
+      // (routeForEntry, FX14) and excludes system boards, so a resumed target is never
+      // a journal surface — a stale legacy journal-origin pointer lands on THE Page via
+      // FX14's redirect. With NO last surface, Open degrades to a fresh Free Write page
+      // (the SAME door as Write, typewriter on), NEVER the Journal Board — "the app
+      // opens where the writing is, and never on a journal surface."
+      if (target) { navigate(target.route, { state: { warmStart: true } }); }
+      else { handleWrite(); }
       return;
     }
     setError('');

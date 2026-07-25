@@ -584,8 +584,12 @@ await withHarness(async (app) => {
     cascadeJournalRoute.startsWith('#/page/'), cascadeJournalRoute);
 
   // Open's own no-resume fallback: authed, genuinely nothing to resume
-  // (zero projects, zero journal entries) — lands on the Journal Board,
-  // not a blank/broken room.
+  // (zero projects, zero journal entries). [HB2-lite S1, 2026-07-25] This fallback was
+  // RE-POINTED from the Journal Board to a fresh Free Write page (SV11 landing rule: the
+  // app opens where the writing is, never on a journal surface). The precondition
+  // (nothing to resume) still holds and is asserted live below; the OUTCOME assertion is
+  // PARKED (A4) with its successor named, and the original navigation is REMOVED (Open
+  // now lands on .forward-only-editor, never .board-canvas — a Board waitFor would hang).
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
@@ -594,11 +598,16 @@ await withHarness(async (app) => {
   const preOpenProjects = (await app.localJSON('writer-studio-projects')) || [];
   ok('S5 (c) precondition: genuinely nothing to resume — zero projects, zero journal entries',
     preOpenEntries.length === 0 && preOpenProjects.length === 0, JSON.stringify({ entries: preOpenEntries.length, projects: preOpenProjects.length }));
-  await app.click('Open');
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Open\'s no-resume fallback lands on the Board', timeout: 5000 });
-  const noResumeRoute = await app.evalJs('location.hash');
-  ok('S5 (c): Open\'s own no-resume fallback re-points to the Journal Board — opens the app cold with nothing to resume and lands on the Journal Board, not the old broken room',
-    noResumeRoute.startsWith('#/page/'), noResumeRoute);
+  // S5 (c) outcome check [PARKED — HB2-lite S1]: navigation REMOVED (Open with nothing
+  // to resume now lands on THE Page / Free Write, never .board-canvas). Successor:
+  // hb2.mjs proves Open-with-no-resume lands on a fresh Free Write page (typewriter on),
+  // never a journal surface. CHAIN NOTE: the FX14 back-link park immediately below names
+  // THIS S5 (c) check as one of its two live successors ("proven LIVE just above ... and
+  // universally in fx14.mjs's redirect proof"); with S5 (c) now itself parked, that
+  // park's routing-continuity claim still holds via its OTHER, surviving successor —
+  // fx14.mjs's universal redirect proof — plus hb2.mjs's new no-resume + stale-journal
+  // checks. The FX14 record below stays byte-identical. Original ok, quoted verbatim:
+  //   PARKED (was "S5 (c): Open's own no-resume fallback re-points to the Journal Board — opens the app cold with nothing to resume and lands on the Journal Board, not the old broken room")
 
   // JournalEntry.tsx's own "← The journal" back-link [PARKED WHOLE — FX14 S2] -
   // Drove JournalEntry.tsx's own "← The journal" back-link (#/journal/:id ->
