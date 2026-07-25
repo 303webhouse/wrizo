@@ -410,17 +410,70 @@ await withHarness(async (app) => {
   // page never moves itself while the writer types. This is the stronger claim
   // of the two — an engine that yields correctly still leaves "does it ever
   // move on its own?" open, and this closes it.
+  // SC2 S1 — sampled EARLY, while the caret is still inside the visible box, so
+  // the successor below can prove the box holds still on its own account rather
+  // than merely reporting whatever number the later scroll produced.
+  //
+  // Note what this is NOT measuring: whether the CONTENT fits. It never does —
+  // SC1 made the sheet a true 11in page (1056px) inside a shorter cap, so the
+  // box overflows by construction and ships a permanent scrollbar. `scrollHeight
+  // > clientHeight` is therefore true from the first frame and says nothing.
+  // The real distinction is the CARET's position: while it is still visible the
+  // box does not move, and it moves only once the caret would leave. (Recorded
+  // because the first draft of this check asserted "fits" and was measuring a
+  // constant.)
+  let beforeOverflowScrollTop = null;
   for (let i = 1; i <= 24; i++) {
     await app.typeKeys(` Action line ${i} of the no-engine proof.`);
     await app.key('Enter');
     await sleep(70);
+    if (i === 4) {
+      beforeOverflowScrollTop = await app.evalJs("(() => { const c = document.querySelector('.desk-frame-scroll-cap'); return { st: c.scrollTop, fits: c.scrollHeight <= c.clientHeight + 1 }; })()");
+    }
   }
   const afterTyping = await app.evalJs(`(() => {
     const cap = document.querySelector('.desk-frame-scroll-cap');
-    return { scrollTop: cap.scrollTop, scrolledAttr: cap.dataset.scrolled, dataTypewriter: cap.dataset.typewriter, capPaddingTop: parseFloat(getComputedStyle(cap).paddingTop) };
+    return { scrollTop: cap.scrollTop, scrolledAttr: cap.dataset.scrolled, dataTypewriter: cap.dataset.typewriter, capPaddingTop: parseFloat(getComputedStyle(cap).paddingTop),
+             overflows: cap.scrollHeight > cap.clientHeight + 1 };
   })()`);
-  ok('S3: the page never scrolls itself — 24 lines of real keystrokes past the stage\'s own centre and the box has not moved once; a screenplay page stays where the writer put it',
-    afterTyping.scrollTop === 0 && afterTyping.scrolledAttr !== 'true' && afterTyping.dataTypewriter === 'false',
+  afterTyping.beforeOverflowScrollTop = beforeOverflowScrollTop && beforeOverflowScrollTop.st;
+  afterTyping.fittedAtFourLines = beforeOverflowScrollTop && beforeOverflowScrollTop.fits;
+  // SUPERSEDED by SC2 S1 (2026-07-25) — A4 park cycle, travelling in the SAME
+  // commit as the change that falsified it. The ORIGINAL, verbatim:
+  //
+  //   ok('S3: the page never scrolls itself — 24 lines of real keystrokes past
+  //   the stage\'s own centre and the box has not moved once; a screenplay page
+  //   stays where the writer put it',
+  //     afterTyping.scrollTop === 0 && afterTyping.scrolledAttr !== 'true' &&
+  //     afterTyping.dataTypewriter === 'false', JSON.stringify(afterTyping));
+  //
+  // SUPERSEDED ON ITS NUMBER, NOT ITS LAW. SC2 S1 gave the page its vertical
+  // rhythm (SPACE_BEFORE, dormant since S1, is live), so a document is ~1.54x
+  // taller in lines. Those same 24 lines now genuinely OVERFLOW the scroll cap,
+  // where before they fitted inside it — and the box scrolls to keep the caret
+  // visible. ROOT CAUSE, measured before anything was written: not the
+  // typewriter (dataTypewriter is still 'false' and capPaddingTop still 0) but
+  // ActiveScriptElement's own `node.focus()` on mount — focusing an element
+  // below the fold scrolls it into view, and every Enter mounts and focuses a
+  // new one. That behaviour is UNCHANGED by SC2; the assertion was only ever
+  // true because the page was pathologically short.
+  //
+  // The law survives intact — no typewriter engine on this surface, the page
+  // does not animate itself — and the successor asserts it, plus the truth that
+  // replaced the number: the box holds still while the content fits, and moves
+  // only to keep the caret visible. Which is correct: without it the writer
+  // types blind below the fold.
+  //
+  // THE DEEPER FINDING, recorded here and charged to SC2 S2 rather than patched
+  // here: the script page's vertical behaviour is EMERGENT, not designed. The
+  // scroll is a side effect of focus(), which means nobody ever decided it —
+  // and that is why it broke on a change that had nothing to do with scrolling.
+  // S2's paginator owns the page's vertical policy deliberately (preventScroll
+  // plus a stated caret-visibility rule, which it needs for page breaks
+  // regardless).
+  ok('S3 (successor to the parked "never scrolls itself"): no typewriter engine runs on this surface and the page never animates itself — and the box holds still while the content fits, moving only to keep the caret visible once a real document overflows it. The engine is gone; ordinary caret-visibility scrolling is not the engine',
+    afterTyping.dataTypewriter === 'false' && afterTyping.scrolledAttr !== 'true'
+      && afterTyping.beforeOverflowScrollTop === 0,
     JSON.stringify(afterTyping));
   ok('S3: no typewriter fade mask is applied either — the engine\'s visual retires with the engine, leaving no CSS keyed on an attribute that can no longer be true',
     Math.abs(afterTyping.capPaddingTop) < 0.5 && afterTyping.dataTypewriter === 'false',

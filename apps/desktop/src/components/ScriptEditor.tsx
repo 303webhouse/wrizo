@@ -4,7 +4,7 @@ import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, fl
 import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
-import { WIDTH_CH, INDENT_CH, RIGHT_ALIGN_TYPES, UPPERCASE_TYPES } from '../store/scriptMetrics';
+import { WIDTH_CH, INDENT_CH, RIGHT_ALIGN_TYPES, UPPERCASE_TYPES, SPACE_BEFORE } from '../store/scriptMetrics';
 import { ENTER_MAP, TAB_MAP, TYPE_CYCLE, cycleBackward } from '../store/scriptKeys';
 import { computeAutocomplete, applyAutocomplete, type AutocompleteState } from '../store/scriptAutocomplete';
 import { shouldPromoteToScene, applyAutoContd } from '../store/scriptSmartText';
@@ -73,12 +73,31 @@ function wordCount(text: string): number {
 
 // Shared geometry for both the active and static renders of an element — one
 // function so the two can never drift from each other visually.
+// SC2 S1 — the page gains its vertical rhythm. Until now `elementStyle` set no
+// vertical margin at all and `SPACE_BEFORE` sat dormant beside `PAGE_LINES`, so
+// every element rendered flush against the next: a screenplay with no vertical
+// rhythm, which is incorrect on its face rather than a matter of taste.
+//
+// THE SPACING IS IN LINE UNITS, NEVER px OR em (Fable, 2026-07-25). N blank
+// lines of arithmetic must render as exactly N line-heights, so the margin is
+// `calc(var(--script-line) * N)` where `--script-line` is the sheet's own line
+// box (index.css). A px or em value could drift off the 12pt box and the
+// ledger's count would stop matching the page.
+//
+// SUPPRESSION IS NOT HERE, DELIBERATELY. "The first element of a page
+// contributes zero space" is the CONSUMER's rule, not the type's — this
+// function stays a pure function of the element type, which is also what lets
+// S5 freeze one style object per type for memoization. Document start is
+// handled in CSS (`.script-sheet > *:first-child`); S2's paginator will apply
+// the identical rule at every page top.
 function elementStyle(t: ScriptElType): React.CSSProperties {
   const rightAlign = RIGHT_ALIGN_TYPES.has(t);
+  const space = SPACE_BEFORE[t];
   return {
     maxWidth: `${WIDTH_CH[t]}ch`,
     marginLeft: rightAlign ? 'auto' : `${INDENT_CH[t]}ch`,
     marginRight: rightAlign ? 0 : undefined,
+    marginTop: space > 0 ? `calc(var(--script-line) * ${space})` : 0,
     textAlign: rightAlign ? 'right' : 'left',
     textTransform: UPPERCASE_TYPES.has(t) ? 'uppercase' : 'none',
   };
