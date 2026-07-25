@@ -6739,7 +6739,7 @@ outlive a session lives here, not in chat.
     theme key; nothing visual changes. Both HARNESS_PARKED settings; full suite before
     merge. **DoD: the app opens where the writing is.**
 
-68. **M4 — the Root That Shows.** **OPENED 2026-07-25 (chat 3), P1 wave
+70. **M4 — the Root That Shows.** *(renumbered from 68 — collision with FX15, first-to-open; commits before this reference it as 68.)* **OPENED 2026-07-25 (chat 3), P1 wave
     (`p1-wave.md` §M4, SV13–SV16). S1+S2 BUILT + verified; S3+S4 ROOT-CAUSED
     (below). Branch `m4-root-that-shows` (`b6dc55e`), own worktree; ZERO
     SCHEMA/SERVER; merges through chat 1's lane, deploy held (P1 + SC, one named
