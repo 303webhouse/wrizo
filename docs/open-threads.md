@@ -4530,6 +4530,26 @@ outlive a session lives here, not in chat.
     `scripts/audit-parked-records.mjs` runs clean (125 records; only the 4 hand-ruled
     benign extraction edges — ab3/cd2/ab4/fx1 — no un-remediated mutation). Fable's
     review follows this merge. Ships with the P0 wave; no deploy of its own.
+
+    **Fable's post-merge review: GREEN — 2026-07-25**
+    ([wrizo-alpha/df1-review-fable.md](wrizo-alpha/df1-review-fable.md)): "after DF1,
+    red means wrong — and the one red that arrived on day one is ruled as the law
+    demands, not waved away." Verified whole (4 files, 191 lines of the audit
+    checker): S1 fx5 converted to in-page scroll-EVENT recorders (frame-clock, immune
+    to poll speed; `moved` guards make a vacuous zero-step pass impossible); S3 e1's
+    marker-BLOCK grammar with a hostile fixture proving necessity/unconfusion/
+    format-unchanged; S4 the audit's limits stated plainly + the B1 corroboration
+    SHARPENED (B1 rewrote the supersession NOTE, not the quoted original — the ruling
+    and remediation stand, the record now more precise).
+    **THE FIELD TEST — tu2, RULED.** The first post-DF1 full suite (chat 1's FX14
+    verification) ran red on tu2 (1/96) and was answered with an isolation re-run —
+    the retired crutch. Per DF1's own law, **tu2's CLEARED verdict is RESCINDED on
+    first-contact evidence: tu2 returns to the known-flake list as the one named
+    exception.** Standing practice recorded: **clearance evidence must scale to a
+    flake's observed rarity** — ×5 + one DoD does NOT clear a ~1% flake; the
+    known-flake list shrinks only on evidence proportioned to what it clears. The
+    crutch stays retired for everything else. **DF1.1 (item 66)** root-causes tu2 +
+    carries the two audit advisories; **item 48 closes when DF1.1 lands.**
 49. **J6 — One Paper.** **BRIEF COMMITTED — 2026-07-21, Fable-authored**
     (`docs/wrizo-alpha/j6-one-paper-brief.md`). **Authority**: item 41
     finding 1 (Nick's second sitting — the Journal's "New Page" routing
@@ -6242,6 +6262,22 @@ outlive a session lives here, not in chat.
     Tip verified: `tsc` ×2 EXIT 0, `build:web` clean, `fx13.mjs` PASS 10 +
     board-sensitive smoke green (fx7/cd4/j4/b3/ab1). Fable's review follows this
     merge. Ships with the P0 wave; deploy held for Nick's one word.
+
+    **Fable's post-merge review: GREEN — 2026-07-25**
+    ([wrizo-alpha/fx13-review-fable.md](wrizo-alpha/fx13-review-fable.md)): "the root
+    was named before the patch, the fix measures the room instead of guessing at it,
+    and the law now remembers screens have height." Verified whole (both files, 156
+    lines of fx13.mjs): the stage-measured ResizeObserver fix (>1px commit guard,
+    rAF-debounced with cleanup-disconnect, 160px floor, legacy <1100 byte-identical
+    via the preserved 78vh fallback); the 1366×768 constitutional leg proven twice
+    (in-room + below the floor at 1366×640 where the old clamp overflowed ~31px),
+    FX11's drag re-proven under trusted pointer; parks nothing (new coverage
+    falsifies nothing). **CANON codified** (incorporating the SC1 cross-arc ruling):
+    at the height floor every surface's chrome/tools/frame stay in-viewport, content
+    scrolls within its wrap, fixed-truth content (a US-Letter page, a board's
+    constellation) never shrinks to fit the furniture — surfaces adopt the leg as
+    touched. 2 non-blocking advisories (unobserved above-wrap reflow, theoretical
+    today; Nick's sitting is the close — his 17" laptop the original witness).
 64. **FX12 — the Quiet House.** **P0 — MERGED, 2026-07-24, merge commit `8d7a340`**
     (build `7cad7f2`). Owner chat 1; built + merged this session (E1.1 pattern),
     guard-rail throughout. P0 fix ratified under "P0 Go" (SV1 + sitting findings V3,
@@ -6329,6 +6365,56 @@ outlive a session lives here, not in chat.
     un-traceable records; only DF1's own 4 hand-ruled benign extraction edges.
     **DEPLOY HELD — FX14 ships with the P0 wave** (FX12 + FX13 + FX14 + DF1 rider) on
     Nick's one batched word. **CLOSE-PENDING** Fable's post-merge review.
+
+    **Fable's post-merge review: GREEN — 2026-07-25**
+    ([wrizo-alpha/fx14-review-fable.md](wrizo-alpha/fx14-review-fable.md)): "one place
+    where writing happens, every door leads to it, and the largest park sweep in the
+    house's history executed three lawful modes without one record harmed." Method
+    disclosed: 25 files, whole-read of all 6 product files (the one-line routeForEntry
+    law, App.tsx's JournalIdRedirect, the five creation doors) + all 152 lines of
+    fx14.mjs + each split category's HEAVIEST instance (ab2's 10-check section park +
+    2 multi-gen probe retirements, w2's 3 parks + the 2nd-gen FX4-chain retirement,
+    j5's heaviest re-point); remainder at diff-scan backed by the clean parked-records
+    audit + the 42/42 both-settings suite; park-quoted originals spot-verified
+    byte-identical against the deleted lines. The JournalEntry surface is unrouted AND
+    unimported (tree-shaken), the file left in place as J7's inheritance.
+    **RATIFIED AS LAW — the vehicle/subject distinction.** Mode (2) FIXTURE
+    RE-POINTED — where the journal page was merely the VEHICLE, subject untouched,
+    the seed reproducing the identical persisted state (same shape / stroke form /
+    STEPPED timestamps preserving lens determinism, seeded from the Desk per the
+    flush-race law, hydration reloads added where the old path was cache-live) — is
+    hereby house law alongside (1) PARK-as-falsified and (3) ROUTE-UPDATED: ~50 checks
+    of real coverage preserved instead of discarded. Multi-generational chain-keeping
+    reached a new high-water mark (w2's retired probe annotates that its OWN record's
+    named successor is itself now parked — legible even folding back on itself; probes
+    retired to the documented-supersession form with dead navigation REMOVED so armed
+    runs cannot hang). **The parks' successor pointers ARE J7's work order:** ~15
+    JournalEntry behavioral claims (window-scroll way-back, the pager, the entry-view
+    Add-to door, ink layer, metadata absence, undo generosity, and kin) now name J7's
+    behavior-parity census as successor — J7's brief inherits that enumerated list
+    (settings-or-death per SV6, the census's own undo finding honored). Advisories
+    non-blocking: comment-form parks invisible to DF1's audit (carried as DF1.1's
+    advisory 2); tu2 ruled in DF1's review (provably NOT an FX14 regression); hb1 at
+    record depth, its route update re-proven live by fx14.mjs. **With this review, all
+    three P0 tickets AND the rider are merged and reviewed — the deploy word is
+    UNBLOCKED** (awaits Nick's one batched word + his sitting eye).
+66. **DF1.1 — the tu2 root-cause + the audit's two edges.** **OPENED — 2026-07-25**,
+    on Fable's DF1 post-merge review. Harness-only, like its parent (zero src/schema/
+    server), rides the same lane, no deploy of its own. **S1 (the field test's debt):**
+    root-cause `tu2.mjs`'s ~1% suite-context flake with DF1's own S1 recorder
+    discipline — observe the observable on the browser's frame clock, never a
+    wall-clock sampler; the assertion must not weaken (else a proper A4 park). tu2
+    rides the known-flake list as the one named exception until this lands. **S2
+    (audit advisory 1):** the checker's exit code cries wolf on its own four
+    hand-ruled edges (two comment false-positives, one nested-escape record, one
+    generation-2 framing) — teach the keyer the lawful framings + skip comment
+    occurrences, or allowlist the hand-ruled set, so a clean audited state exits 0 (a
+    tool that reds on known-benign carries the disease this arc cured elsewhere).
+    **S3 (audit advisory 2):** comment-form park records are invisible to the tracer
+    (it extracts `pok()` calls only) — and FX14 just parked ~30 originals in that
+    form; teach the audit the comment convention, or migrate comment-form records to
+    pok-form at next touch, so the audit's coverage statement stays honest. **Item 48
+    closes when DF1.1 lands.** Not yet briefed/sequenced — Nick's call on timing.
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
