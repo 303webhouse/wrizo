@@ -6123,6 +6123,42 @@ outlive a session lives here, not in chat.
     re-proven at the leg; both HARNESS_PARKED settings; parks nothing. Regression
     green across the board/geometry harnesses (fx10/fx11/bm1/ab4/e1/cd4/w1/ab1/
     ab2/b1); no falsified sizing checks. DoD met. **DF1 resumes now.**
+64. **FX12 — the Quiet House.** **P0 — MERGED, 2026-07-24, merge commit `8d7a340`**
+    (build `7cad7f2`). Owner chat 1; built + merged this session (E1.1 pattern),
+    guard-rail throughout. P0 fix ratified under "P0 Go" (SV1 + sitting findings V3,
+    V5). TRUE 3-way `--no-ff` onto `main`; docs survived; `tsc` ×2 EXIT 0;
+    `build:web` clean. Zero schema, zero server files, zero deps.
+    **S1 — the nudges sleep, whole.** The "Waiting for you" section (the 4th
+    tutor-section) unrenders everywhere and the nudge-generation engine sleeps
+    entire — `computeNudges` is no longer called (its only call site removed with
+    its import); no computation, no injection, on any surface. The engine
+    (`tutorNudges.ts`) + its data are DORMANT, not deleted. A14's letters-frame
+    survives as ratified law — this retires the implementation, not the principle.
+    **RETURN GATE (the sleep must not become the grave):** the nudges return ONLY
+    via a later Tutor-panel ticket under CONTENT LAW — no guilt-language, no counts,
+    no repeats, deduplicated. Recorded here and in-code so the next session finds it.
+    **S2 — the beats sentence dies (V3).** The Structure lens's "Not linked to a
+    beat." line is retired (the render + the `tutorStructureNoBeat` lexicon term +
+    the `linkedBeatName` field/read in `tutorLenses.ts`): the beats system is
+    dormant (CD4), so the lens may not speak a dead language. Home + memberships
+    (true, home-derived) survive; the Thread arc gives Structure its linked language
+    later.
+    **S3 — Fragments dedupe (V5).** The source (`computeFragmentItems`) ALREADY
+    dedupes by entry id (its own `seen` set, present since TU1's `dbbe353`) — so no
+    code change was owed; the deliverable is the regression guard, disclosed as such.
+    `fx12.mjs` proves the real V5 case (an entry qualifying for BOTH fragment groups
+    lists exactly once).
+    **Park cycles (codicil, same commit):** `tu1.mjs` — the two S4 nudges-content
+    checks + the S3 Structure "names the beat" check parked VERBATIM (pok-record
+    form, the file's own `true`-probe + successor-pointer convention); live
+    successors: the nudges-absent structural sweep + the fragments-unique guard in
+    the new `fx12.mjs`, and the beats-line-absent successor in tu1's own live S3. The
+    A14 grip-identical + no-badge/no-knock checks survive.
+    **Full historic suite read to completion in the main loop: 38/38 GREEN** (zero
+    flakes). `fx12.mjs` PASS 5 both settings; `tu1.mjs` 93 live / 6 parked.
+    **DEPLOY HELD — FX12 ships with the P0 wave** (FX12 + FX13 + FX14) on Nick's one
+    batched word when all three are merged + reviewed. **CLOSE-PENDING** Fable's
+    post-merge review + Nick's device sitting.
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
