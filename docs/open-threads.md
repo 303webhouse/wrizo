@@ -6629,6 +6629,37 @@ outlive a session lives here, not in chat.
     component + one vanish rule for both; doors not tasks, nothing counted, no
     "get started" language. DoD: a fresh board is never a dead end, a fresh page
     never asks permission, both rows vanish the moment work exists. M4 follows.
+68. **FX15 — the Quiet Page.** **OPENED — 2026-07-25 (chat 1)**, from the P1 wave
+    (`docs/wrizo-alpha/p1-wave.md`), authority Nick's word of 2026-07-25 (the unbidden
+    first-line invite is not wanted by default; + the stale-language sighting). Branch
+    `fx15-quiet-page` off `main`, own worktree, guard-rail, ledger on `main`; **ZERO
+    SCHEMA, ZERO SERVER FILES**; merges through chat 1's own serialized lane, Fable
+    reviews post-merge in the P1 batch, deploy held (one word covers the wave + the SC
+    arc, one named manifest). **S1 — the invite sleeps:** the first-line spark invite
+    does not render on a fresh page by default (the deck survives, the OFFER retires);
+    reachable on request via the page tools / BG1's "Start from a Spark" door. **S2 —
+    the rails verified, not assumed** (opt-in path, in code + harness): deck-drawn
+    NEVER model-drawn (no send on page load — the ratified disclosure sentence forbids
+    it), never becomes the writer's text (no accept / tab-fill / insertion, A13),
+    vanishes on first keystroke + cannot overlap typed text (Nick's collision
+    sighting), "don't offer again" persists. **S3 — dead language dies:** the Page
+    panel's "New Journal Entry" button + any sibling strings retire (SV6); grep the
+    surface for other old-vocabulary survivors. Both HARNESS_PARKED settings; A4 parks
+    (verbatim originals, vehicle/subject distinction) for anything falsified; full
+    suite read to completion before merge. **DoD: a new page says nothing until the
+    writer does.** HB2-lite follows.
+69. **HB2-lite — the Landing.** **OPENED — 2026-07-25 (chat 1, after FX15)**, from the
+    P1 wave (`docs/wrizo-alpha/p1-wave.md`), authority SV11 (ratified). Scope is the
+    landing RULE only — the full loading-screen rebuild (SV12a–e) is post-vacation.
+    Branch `hb2-lite-landing` off `main`, own worktree, guard-rail, ledger on `main`;
+    **ZERO SCHEMA, ZERO SERVER FILES**; merges through chat 1's lane, Fable reviews
+    post-merge in the P1 batch, deploy held (shared word, one named manifest). **S1 —**
+    after load the writer lands in **Free Write with Typewriter on**, or (if a last
+    surface exists) **that Page or Board** (Resume semantics); **NEVER a journal
+    surface** (FX14's redirect makes this structural — assert it anyway). **S2 —** one
+    line of preparation for the deferred work: the loading screen reads the persisted
+    theme key; nothing visual changes. Both HARNESS_PARKED settings; full suite before
+    merge. **DoD: the app opens where the writing is.**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
