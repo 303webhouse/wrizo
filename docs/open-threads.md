@@ -6682,6 +6682,14 @@ outlive a session lives here, not in chat.
     component + one vanish rule for both; doors not tasks, nothing counted, no
     "get started" language. DoD: a fresh board is never a dead end, a fresh page
     never asks permission, both rows vanish the moment work exists. M4 follows.
+    **RELEASED unbuilt — 2026-07-25 (chat 3), for reassignment.** Per Fable's
+    ruling M4 took chat 3's rhizome-engine context first; BG1's worktree/branch
+    were disposed and item 67 left OPEN for its successor. The full integration
+    map is committed at `docs/wrizo-alpha/bg1-build-notes.md` (the four board
+    handlers, the missing `onAddLane`, the three empty-state sites, the
+    `useChromeDissolve` A19 page-vanish signal, and the deck-mechanism finding) —
+    the successor builds from that map, not from scratch. Current page doors:
+    Screenplay · Sprout · Plan (P1 amendment 2, `c26b85e`).
 68. **FX15 — the Quiet Page.** **OPENED — 2026-07-25 (chat 1)**, from the P1 wave
     (`docs/wrizo-alpha/p1-wave.md`), authority Nick's word of 2026-07-25 (the unbidden
     first-line invite is not wanted by default; + the stale-language sighting). Branch
