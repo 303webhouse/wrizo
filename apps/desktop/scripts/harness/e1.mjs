@@ -392,12 +392,26 @@ await withHarness(async (app) => {
   await sleep(900);
   const everythingFiles = filesIn(everythingDl);
   const everythingText = everythingFiles.length ? read(everythingDl, everythingFiles[0]) : '';
-  // Split at the "## From the Trash" marker: live pages above, trashed below.
-  const trashIdx = everythingText.indexOf('## From the Trash');
-  const liveSection = trashIdx >= 0 ? everythingText.slice(0, trashIdx) : everythingText;
-  const trashSection = trashIdx >= 0 ? everythingText.slice(trashIdx) : '';
-  const liveDocCount = (liveSection.match(/^# /gm) || []).length;
-  const trashDocCount = (trashSection.match(/^# /gm) || []).length;
+  // DF1 S3 (E1 advisory 3) — anchor hardening, PARSER-SIDE ONLY (the exported
+  // bytes never change; the artifact is the writer's). Split on the exporter's
+  // OWN marker BLOCK — pageExport.ts joins pages with PAGE_SEPARATOR
+  // ('\n\n---\n\n') and emits the marker as its own block
+  // (`${liveBody}${SEP}## From the Trash${SEP}${trashBody}`) — not a bare
+  // substring scan, so a page BODY that contains the literal "## From the Trash"
+  // can never move the boundary. Count page headers STRUCTURALLY (the first line
+  // of each separator-delimited block), not `/^# /gm`, so a body line beginning
+  // "# " can never inflate the count. The bare `/^# /gm` anchor survives as a
+  // cross-check for this non-hostile corpus; the dedicated hostile fixture below
+  // proves the hardening on a page built to defeat the old anchors.
+  const PAGE_SEP = '\n\n---\n\n';
+  const TRASH_MARKER = `${PAGE_SEP}## From the Trash${PAGE_SEP}`;
+  const markerIdx = everythingText.indexOf(TRASH_MARKER);
+  const trashIdx = markerIdx; // alias: the marker-block boundary (used by the cross-check assertions below)
+  const liveSection = markerIdx >= 0 ? everythingText.slice(0, markerIdx) : everythingText;
+  const trashSection = markerIdx >= 0 ? everythingText.slice(markerIdx + TRASH_MARKER.length) : '';
+  const countPageHeaders = (section) => section.split(PAGE_SEP).filter(b => /^# /.test(b)).length;
+  const liveDocCount = countPageHeaders(liveSection);
+  const trashDocCount = countPageHeaders(trashSection);
   ok('S3 OFFLINE: "Everything" wrote exactly one document',
     everythingFiles.length === 1, JSON.stringify(everythingFiles));
   // S3/E1.1 — LIVE + TRASHED counted EXPLICITLY (both numbers named), not one
@@ -440,6 +454,75 @@ await withHarness(async (app) => {
     JSON.stringify({ inTrash: trashSection.includes('Deleted Page'), inLive: liveSection.includes('Deleted Page') }));
 
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+
+  // ==========================================================================
+  // DF1 S3 — the anchor-hardening HOSTILE FIXTURE (E1 advisory 3). A live page
+  // whose BODY deliberately begins a line with "# " AND carries the literal
+  // "## From the Trash" marker text, plus one genuinely trashed page. This is
+  // exactly the writer-text fragility the old bare `indexOf('## From the Trash')`
+  // split and `/^# /gm` count could not survive. The EXPORT FORMAT is unchanged
+  // — the writer's hostile bytes ride verbatim; only the harness PARSE was
+  // hardened (marker-BLOCK split + structural per-block header count, above).
+  // ==========================================================================
+  {
+    const hostileDl = mkDlDir('hostile');
+    const HOSTILE_ENTRIES = [
+      { id: 'e1-hostile-live', projectId: null, source: 'page', origin: 'loose',
+        text: "Innocent Title\n\nA perfectly normal opening paragraph.\n\n# Not a real page header — just the writer's own words at the start of a line\n\nAnd the writer even quotes the export in their prose, on its own line:\n## From the Trash\n\nStill the same single live page.",
+        createdAt: '2026-02-01T00:00:00.000Z', updatedAt: NOW },
+      { id: 'e1-hostile-deleted', projectId: null, source: 'page', origin: 'loose',
+        text: 'Real Trashed Page\n\nThe genuinely deleted words.',
+        createdAt: '2026-02-02T00:00:00.000Z', updatedAt: NOW, deletedAt: NOW },
+    ];
+    await seedAndOpen(app, { projects: [], entries: HOSTILE_ENTRIES, waitSel: '.forward-only-editor, textarea, [contenteditable]', hash: '#/page/e1-hostile-live', dlDir: hostileDl });
+    await app.cdp('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
+    await trustedClick(app, 'Publish');
+    await sleep(250);
+    await trustedClick(app, 'Everything');
+    // Deterministic download wait (S1's discipline for new code): poll until one
+    // file exists and its size is stable across two reads, not a fixed sleep.
+    let hostileName = '';
+    for (let t = 0; t < 120; t++) {
+      await sleep(50);
+      // Ignore Chrome's in-progress ".crdownload" temp; only the finalized .md
+      // counts, and guard the stat against the temp->final rename race.
+      const fsIn = filesIn(hostileDl).filter(n => !n.endsWith('.crdownload'));
+      if (fsIn.length === 1) {
+        try {
+          const p = path.join(hostileDl, fsIn[0]);
+          const s1 = fs.statSync(p).size; await sleep(40); const s2 = fs.statSync(p).size;
+          if (s1 > 0 && s1 === s2) { hostileName = fsIn[0]; break; }
+        } catch { /* mid-rename; retry next tick */ }
+      }
+    }
+    const hostileText = hostileName ? read(hostileDl, hostileName) : '';
+    const H_SEP = '\n\n---\n\n';
+    const H_MARKER = `${H_SEP}## From the Trash${H_SEP}`;
+    const hMarkerIdx = hostileText.indexOf(H_MARKER);
+    const hLive = hMarkerIdx >= 0 ? hostileText.slice(0, hMarkerIdx) : hostileText;
+    const hTrash = hMarkerIdx >= 0 ? hostileText.slice(hMarkerIdx + H_MARKER.length) : '';
+    const hCount = (s) => s.split(H_SEP).filter(b => /^# /.test(b)).length;
+    // (1) The hardening was NECESSARY: the bare substring the OLD parse used
+    //     occurs in the writer's body BEFORE the real marker block, so the old
+    //     split would have cut the boundary in the wrong place.
+    ok('DF1 S3: hardening necessary — the bare "## From the Trash" substring appears in the writer\'s BODY before the real marker block (the old naive split would have mis-cut the boundary here)',
+      hostileText.indexOf('## From the Trash') >= 0 && hostileText.indexOf('## From the Trash') < hMarkerIdx,
+      JSON.stringify({ firstBareIdx: hostileText.indexOf('## From the Trash'), realMarkerBlockIdx: hMarkerIdx }));
+    // (2) The hardened parse is UNCONFUSED: marker-block split + structural count
+    //     find exactly 1 live page above and 1 trashed page below, and the
+    //     trashed page's title is below the boundary, never above it.
+    ok('DF1 S3: the hardened parse is unconfused by the hostile page — marker-BLOCK split + structural per-block header count give exactly 1 live above and 1 trashed below; the real trashed page sits below the boundary, never above',
+      hCount(hLive) === 1 && hCount(hTrash) === 1 && hTrash.includes('Real Trashed Page') && !hLive.includes('Real Trashed Page'),
+      JSON.stringify({ live: hCount(hLive), trash: hCount(hTrash) }));
+    // (3) The writer's hostile bytes ride the export VERBATIM (format unchanged):
+    //     the body "# " line is present, and "## From the Trash" appears more
+    //     than once (the writer's prose copy AND the real marker).
+    ok('DF1 S3: the writer\'s hostile lines ride the export verbatim (format unchanged) — the body "# Not a real page header…" line is present, and "## From the Trash" appears more than once (the writer\'s prose copy plus the real marker)',
+      hostileText.includes("# Not a real page header — just the writer's own words at the start of a line")
+        && (hostileText.split('## From the Trash').length - 1) >= 2,
+      JSON.stringify({ bodyHeaderPresent: hostileText.includes('# Not a real page header'), markerOccurrences: hostileText.split('## From the Trash').length - 1 }));
+    await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  }
 
   // ==========================================================================
   // S4 — the "coming soon" line survives, verbatim, but now sits BELOW the
