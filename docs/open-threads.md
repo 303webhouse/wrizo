@@ -6519,6 +6519,17 @@ outlive a session lives here, not in chat.
     items 63 (FX13) + 64 (FX12) ride it. **CLOSE-PENDING** Nick's sitting eye — a New
     Page under his own hand landing on THE Page, an old journal link redirecting
     right — and the Untitled-detritus wipe.
+    **SV8 WIPE EXECUTED — 2026-07-25**, on Nick's word ("Clean slate" → the SV8
+    data wipe, "execute it now, per protocol"), backup = his verified "Everything"
+    export (cited per his word, a client-side file). Scoped to Nick's user only
+    (`nickhrtzg@gmail.com`, 1 of 12 users; account + schema + the other 11 users
+    untouched): 125 rows deleted across 5 writing-content tables (journal_entries 92,
+    projects 19, story_plans 7, drafts 3, drawers 4 → all 0), in one self-verifying
+    transaction. `sessions_log` (51 rows, Nick's TTFK telemetry) PRESERVED per Nick's
+    gate — verified no user-visible surface reads it (getSessions uncalled, the
+    testament read-model orphaned), keeping item 8's TTFK analysis alive. Full record:
+    `docs/wrizo-alpha/sv8-data-wipe-2026-07-25.md`. (localStorage first-run keys
+    listed to Nick; CC cleared nothing client-side.)
 66. **DF1.1 — the tu2 root-cause + the audit's two edges.** **OPENED — 2026-07-25**,
     on Fable's DF1 post-merge review. Harness-only, like its parent (zero src/schema/
     server), rides the same lane, no deploy of its own. **S1 (the field test's debt):**
