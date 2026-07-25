@@ -8,6 +8,8 @@ import {
 } from '../store/persistence';
 import { useBoardMode } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
+import { withLanes } from '../store/boardStructure';
+import { BeginningsRow, type BeginningDoor } from './BeginningsRow';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
@@ -1087,7 +1089,14 @@ export function BoardEditor({ id }: { id: string }) {
     const box: Box = { id: generateId(), kind: 'text', x: 0.05, y, w: NEW_CARD_W, h: NEW_CARD_H, z: maxZ + 1, text: '' };
     setBoxes(prev => [...prev, box]);
     setSelectedId(box.id);
-    setPopupBoxId(box.id);
+    // BG1 S1 — "opens it straight into edit mode" is an OPEN-canvas fact: the
+    // popup (BoardCardPopup) is mounted inside `boardBody`, which only the OPEN
+    // projection renders. BG1's row puts New Card in STORYBOARD and OUTLINE too,
+    // where arming the popup would set a state nothing can render and then spring
+    // it open on the next flip back to OPEN. Those two projections have their own
+    // card affordances (OUTLINE edits text inline; STORYBOARD orders), so the card
+    // simply arrives there.
+    if (boardMode === 'open') setPopupBoxId(box.id);
   };
 
   // FX6 S2b — "New page card": the board-side door Nick reached for and
@@ -1116,6 +1125,22 @@ export function BoardEditor({ id }: { id: string }) {
   // absent whole on a system Board, the same law onAddCard/onAddPageCard/
   // onAddExistingPage already carry).
   const onAddFromDeck = () => setDeckWizardOpen(true);
+
+  // BG1 S1 — "New Lane," STORYBOARD's own door. The lane-append mechanism
+  // already existed (BoardProjection.tsx's own `addLane`) but was unreachable
+  // from an EMPTY storyboard: that projection returns its empty line before it
+  // renders the add-lane button, so a board with no cards had no way to lay a
+  // lane at all. Lifted here, unchanged in substance (the board-meta `lanes[]`
+  // registry via withLanes — the FX4 board-meta precedent, zero schema), and
+  // passed DOWN to the projection so exactly one lane-append exists in the
+  // codebase rather than two that can drift. Written through the functional
+  // updater so it reads the live boxes, matching every other mutation here.
+  const onAddLane = () => {
+    setBoxes(prev => {
+      const lanes = prev.find(b => b.kind === 'board-meta')?.lanes ?? [];
+      return withLanes(prev, [...lanes, { id: generateId(), title: `${t('boardLaneDefault')} ${lanes.length + 1}` }], generateId);
+    });
+  };
 
   // B3 S1 — the wizard's own last act, landed here: materialize purely
   // in-memory against the LIVE boxes (boxesRef.current), append via the
@@ -1556,6 +1581,39 @@ export function BoardEditor({ id }: { id: string }) {
   const connections = boxes.filter(b => b.kind === 'connection');
   const sorted = visibleBoxes.slice().sort((a, b) => a.z - b.z);
 
+  // BG1 S1 — the board's beginnings. One door table, read per mode; the row
+  // itself is BeginningsRow.tsx, shared with the page (S3's "one grammar").
+  //
+  // System boards (Journal/Shelf/Trash) render NO row — the same absent-not-
+  // disabled law every Add-family control on this surface already carries (a
+  // system board's cards are DERIVED; there is nothing here for a writer to
+  // begin). Their declarative empty lines stay exactly as they were.
+  //
+  // A paired plan board is an ordinary board and takes OPEN's row through this
+  // same table — no plan-board branch exists or should.
+  //
+  // No Import/Upload door: the Reference Seal doesn't exist yet, and a door
+  // that opens on nothing is the dead end this ticket removes.
+  const beginningDoors: BeginningDoor[] = isSystemBoard ? [] : (
+    boardMode === 'storyboard'
+      ? [
+          { key: 'loadDeck', label: t('beginLoadDeck'), onOpen: onAddFromDeck },
+          { key: 'newLane', label: t('beginNewLane'), onOpen: onAddLane },
+          { key: 'newCard', label: t('beginNewCard'), onOpen: onAddCard },
+        ]
+      : boardMode === 'outline'
+        ? [
+            { key: 'newCard', label: t('beginNewCard'), onOpen: onAddCard },
+            { key: 'loadDeck', label: t('beginLoadDeck'), onOpen: onAddFromDeck },
+          ]
+        : [
+            { key: 'newCard', label: t('beginNewCard'), onOpen: onAddCard },
+            { key: 'newPageCard', label: t('beginNewPageCard'), onOpen: onAddPageCard },
+            { key: 'loadDeck', label: t('beginLoadDeck'), onOpen: onAddFromDeck },
+            { key: 'connectPage', label: t('beginConnectPage'), onOpen: () => setExistingPageOpen(true) },
+          ]
+  );
+
   // FX5 S4 (c) — the quiet layer icon: appears only on a SELECTED card that
   // genuinely overlaps at least one sibling (boxesOverlap, module-level).
   // A single toggle, the existing z field only (no new schema): if the
@@ -1785,7 +1843,16 @@ export function BoardEditor({ id }: { id: string }) {
               to "an empty system Board stays quiet": "one quiet fact," per
               S2's own words, not the ordinary board's tool-naming line
               (which would name tools the Shelf structurally never has). */}
-          {sorted.length === 0 && !isSystemBoard && <div className="board-canvas-empty" aria-hidden="true">{t('boardCanvasEmpty')}</div>}
+          {/* BG1 S1 — the row REPLACES FX6 S2c's one-line pointer on an ordinary
+              board: that line named two tools and pointed at the sliver; these are
+              the doors themselves, in the room. Same gate (`sorted.length === 0`
+              — the render list, so a lone board-meta/connection box never counts
+              as furniture), same centered placement, same "gone the instant there
+              is furniture." The fx6 check it falsifies is PARKED verbatim in
+              fx6.mjs with its successor named in bg1.mjs (A4).
+              B1 S3/B2 S2 are untouched: a system Board still shows no row at all,
+              and the Shelf still carries its own one quiet fact. */}
+          {sorted.length === 0 && !isSystemBoard && <BeginningsRow surface="board" doors={beginningDoors} />}
           {sorted.length === 0 && systemKind === 'shelf' && <div className="board-canvas-empty" aria-hidden="true">{t('shelfBoardEmpty')}</div>}
           {sorted.map(box => {
           const selected = selectedIds.has(box.id);
@@ -2030,8 +2097,11 @@ export function BoardEditor({ id }: { id: string }) {
   const boardContent = boardMode === 'open'
     ? boardBody
     : boardMode === 'storyboard'
-      ? <StoryboardProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText} />
-      : <OutlineProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText} />;
+      ? <StoryboardProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText}
+          onAddLane={onAddLane}
+          beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />
+      : <OutlineProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText}
+          beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />;
 
   const sliverContent: SliverContent = isSystemBoard
     ? { kind: 'board', footer: { on: footerOn, onToggle: toggleFooter } }

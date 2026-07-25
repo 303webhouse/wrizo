@@ -435,7 +435,15 @@ export type DeskTermId =
   | 'boardModeOpen' | 'boardModeStoryboard' | 'boardModeOutline'
   | 'boardPageDoor' | 'pagePlanDoor' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
-  | 'boardPairWithPage';
+  | 'boardPairWithPage'
+  // BG1 — the Beginnings. The empty board's doors (per mode) and the empty
+  // page's three start-words. Door NAMES, not tasks: no verb-object
+  // instruction, no "get started", nothing that could be read as a checklist
+  // item. The page's three travel verbatim from P1 amendment 2 (Nick's word,
+  // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
+  | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
+  | 'beginNewLane'
+  | 'beginScreenplay' | 'beginSprout' | 'beginPlan';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -449,6 +457,18 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
   boardOutlineEmpty: 'No cards yet. Add cards in Open, then shape them into an outline here.',
   boardPairWithPage: 'Pair with a page…',
+  // BG1 — the Beginnings. Title-cased as door names (the brief's own wording,
+  // verbatim), which is what sets them apart from the sliver's sentence-case
+  // tool labels a few rows away: a tool is something you use, a door is
+  // somewhere you go.
+  beginNewCard: 'New Card',
+  beginNewPageCard: 'New Page Card',
+  beginLoadDeck: 'Load a Deck',
+  beginConnectPage: 'Connect a Page',
+  beginNewLane: 'New Lane',
+  beginScreenplay: 'Screenplay',
+  beginSprout: 'Sprout',
+  beginPlan: 'Plan',
   modeFreeWrite: 'Free Write',
   modeDraft: 'Draft',
   modeRevise: 'Revise',
