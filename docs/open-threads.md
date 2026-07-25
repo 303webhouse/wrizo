@@ -6266,6 +6266,16 @@ outlive a session lives here, not in chat.
     hand-verified REVIEW edges, none new) — SC1's frozen park records survived
     BYTE-IDENTICAL. Fable reviews post-merge; **deploy HELD — SC's own separate word
     on SC's own manifest**, never folded into a wave. SC2 is next in sequence.
+    **RESIDUE ANNOTATED — 2026-07-25 (chat 1, in its own hand, per the flag at this
+    item's SC-lane amendment below and Nick's word; cross-reference form, CD4 mode 3).**
+    The residue this record carries is the SEPARATENESS — the phrase **"never folded
+    into a wave"** (and "SC's own separate word … on SC's own manifest" read as
+    *apartness*). The P1-wave amendment moved exactly that: SC content MAY now ride a
+    shared deploy when the manifest enumerates both arcs' contents by name (Fable,
+    2026-07-25 — the amendment below). What did NOT move is the EARNING — the deploy is
+    still HELD, Nick's word is still required, and the manifest must still name
+    everything. Per the general form, the RESIDUE is annotated, not the entry: this
+    record stands byte-identical; only the separateness is superseded, not the earning.
     **Canon note for chat 1: the shared house-laws file moved.** The Relay Law
     was appended to `docs/wrizo-alpha/fable-session-handoff-v3.md` as **law 6**
     — landed by chat 1 at `cc2d971`, verified faithful from this lane (the
