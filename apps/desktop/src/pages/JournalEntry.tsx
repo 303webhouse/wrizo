@@ -40,7 +40,7 @@ import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
 import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
-import { RhizomeField } from '../components/RhizomeField';
+import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import type { JournalEntry as JournalEntryType, Stroke, StrokePoint } from '../types';
@@ -1178,7 +1178,12 @@ function JournalEntryView() {
           // the legacy incentive row below already applies to ProgressBar);
           // RhizomeField.tsx itself no-ops when the writer hasn't chosen
           // Rhizome, so this costs nothing on the shipped Bar-default path.
-          rhizome={authored ? <RhizomeField unitCount={words} seedKey={entry.id} paperRef={sheetRef} /> : undefined}
+          // M4 S3/S4 — the lane now carries the whole instrument (rhizome OR
+          // bar, plus the goal flare): DeskInstrument.tsx. The authored-only
+          // gate above is unchanged and now covers both styles — it is the
+          // same gate the legacy row applies to the bar, so the framed and
+          // legacy surfaces still agree on WHEN a capture gets an instrument.
+          rhizome={authored ? <DeskInstrument unitCount={words} seedKey={entry.id} paperRef={sheetRef} /> : undefined}
           dissolved={dissolved}
         >
           {/* .desk-frame-stage is a `display:flex` row expecting ONE child

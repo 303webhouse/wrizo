@@ -3028,6 +3028,71 @@ a:focus-visible,
    behind it. */
 .desk-frame-rhizome-anchor{ position:absolute; inset:0; z-index:-1; pointer-events:none; }
 
+/* M4 S3 (SV15) — THE BAR COMES HOME. The progress instrument renders under
+   the page, in the rhizome's own lane (the anchor above): "bar and rhizome
+   are two styles of one instrument and share one location." The band it
+   occupies is the one the framed stage already reserves — FX3 S1's
+   --fx3-paper-fence, the 40px fence between the paper's bottom edge and the
+   stage's own — so nothing above it moves: this is an absolutely positioned
+   descendant of a stage-spanning overlay anchor, and the paper's rect is
+   structurally immune to it exactly as it is to the growth layer and the
+   goal glow (CD1 S2's hard geometry law, third instance).
+   NOT `.desk-frame-meter`: FX1 S5 killed that always-empty shell on Nick's
+   "the dead bar" verdict and it stays dead (nothing passes DeskFrame's
+   `meter` prop). NOT `.mode-incentive-row` either — that row is still
+   `!framed` in ModeStage.tsx, untouched, so legacy (<1100px) chrome remains
+   byte-identical and the framed desk gains no second progress row.
+   The measure math is the goalglow anchor's own, verbatim (font-size pin +
+   scaled px cap, FX3 S2): the track spans exactly the paper's canonical
+   width at every --paper-scale step instead of drifting out of alignment
+   with it at wide viewports. pointer-events:none is inherited from the
+   anchor and restated here for the same belt-and-suspenders reason the
+   growth layer restates it — an instrument in the writing surface's own
+   ground can never become a control. */
+.desk-frame-instrument{ position:absolute; left:50%; bottom:5px; transform:translateX(-50%);
+  font-size:calc(1rem * var(--paper-scale));
+  width:min(calc(760px * var(--paper-scale)), 60ch); max-width:100%;
+  pointer-events:none; }
+
+/* M4 S4 (SV16) — THE COMPLETION MOMENT. Root-caused first (the finding, for
+   the record): crossing the goal was effectively invisible on the framed
+   desk. The bar's own celebrate never mounted there (the row is `!framed`),
+   and `AmbientGlow`'s bloom is `!framed` too — AB1 S2 parked the ambient
+   glow on the framed desk, where GoalGlow owns the warmth behind the paper.
+   Only the rhizome's quiet segment-flash fired, and only for the one style
+   that shipped it. So the flare gets its own home IN the lane, for BOTH
+   styles: an ember bloom rising out of the page's own bottom edge, "humans
+   acting", nothing counted or scored, gone when it's gone.
+   The ember token verbatim (never a new literal), in the same
+   radial-gradient-to-transparent shape `.wz-goal-glow` above already ships —
+   opacity is the only animated property, so the flare's own paint can never
+   shift the hue mid-window. Wider than the track it rides above (190%): it
+   blooms past the paper's measure into the margin the rhizome roams, which
+   is what makes it unmistakable rather than a brighter 6px bar. The upper
+   half falls BEHIND the opaque paper (z-index:-1 on the anchor), so what the
+   writer sees is warmth spilling out from under the page, not a lamp on top
+   of it. 1100ms — CELEBRATE_MS, the celebration grammar's own constant, the
+   same window `.mode-pfill.celebrate` runs; the class is driven by the SAME
+   `celebrating` flag, so the two land together and clear together. */
+.desk-frame-goalflare{ position:absolute; left:50%; bottom:-14px; transform:translateX(-50%);
+  width:min(1100px, 190%); height:190px; pointer-events:none; opacity:0;
+  background:radial-gradient(ellipse at center, var(--ember) 0%, transparent 68%);
+  filter:blur(10px); }
+.desk-frame-goalflare.lit{ animation:wz-goal-flare 1100ms ease; }
+@keyframes wz-goal-flare{
+  0%{ opacity:0; }
+  14%{ opacity:.62; }
+  55%{ opacity:.48; }
+  100%{ opacity:0; }
+}
+@media (prefers-reduced-motion:reduce){
+  /* The same single soft cross-fade the rhizome's own flash falls back to
+     (M2 S4's rule, reused rather than re-invented): no keyframe pulse, one
+     eased opacity change driven by the identical class toggle. */
+  .desk-frame-goalflare{ animation:none; transition:opacity 600ms ease; }
+  .desk-frame-goalflare.lit{ animation:none; opacity:.5; }
+}
+
 /* M2 S2/S4 — the growth layer itself (components/RhizomeField.tsx). An SVG
    fills its own anchor exactly (inset:0) and clips its own content to its
    own box by default — no separate overflow:hidden wrapper needed. z-index

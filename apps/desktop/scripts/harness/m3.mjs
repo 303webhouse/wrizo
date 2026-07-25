@@ -206,17 +206,43 @@ await withHarness(async (app) => {
 
   // ── S1 — the token warmed ─────────────────────────────────────────────────
   {
-    const ink = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim().toLowerCase()");
-    ok('S1: --rhizome-ink is warmed to #7a6242 (Nick\'s "too dark" verdict, the bounded delta)', ink === '#7a6242', ink);
+    // ORIGINAL (M3 S1):
+    // const ink = await app.evalJs("getComputedStyle(document.documentElement)
+    //   .getPropertyValue('--rhizome-ink').trim().toLowerCase()");
+    // ok('S1: --rhizome-ink is warmed to #7a6242 (Nick\'s "too dark" verdict,
+    //   the bounded delta)', ink === '#7a6242', ink);
+    //
+    // PARKED by M4 S2 (SV14, 2026-07-25) — the ground turns GREEN: Nick's next
+    // verdict on the same bounded delta retired the warm brown outright.
+    // `--rhizome-ink` is #4C5942 now (a deep, low-yellow green, G-dominant so
+    // it reads as a root and never as the house olive), so this check's tested
+    // condition is genuinely false. Re-asserted against its new value in this
+    // file's own PARKED block below; the LIVE successor is m4.mjs's own S2.
   }
 
   // ── LIVE — framed mounting, saturated extent, z-order, nothing orange, Q1 ──
   {
     const pageId = await freshRhizomePage(app, LAPTOP_W, 900);
     ok('Live: the Rhizome field mounts on the framed desk stage', await app.evalJs("!!document.querySelector('.wz-rhizome-field')"));
-    // Q1 stays parked — the framed desk still has NO progress row.
-    ok('Q1 stays parked: the framed desk has NO progress row (this ticket answers no parked question by the back door)',
-      await app.evalJs("!document.querySelector('.wz-progress-row, .progress-row, [data-progress-row]')"));
+    // ORIGINAL (M3):
+    // // Q1 stays parked — the framed desk still has NO progress row.
+    // ok('Q1 stays parked: the framed desk has NO progress row (this ticket
+    //   answers no parked question by the back door)',
+    //   await app.evalJs("!document.querySelector('.wz-progress-row,
+    //   .progress-row, [data-progress-row]')"));
+    //
+    // PARKED by M4 S3 (SV15, 2026-07-25) — Q1 IS ANSWERED, by the front door.
+    // Nick's SV15 ruled that the progress bar renders under the page, in the
+    // rhizome's own lane; the framed desk has a progress instrument now, so
+    // the claim this check's NAME makes ("the framed desk has NO progress
+    // row") is false even though its literal selector list — three names this
+    // app never used — would still pass vacuously. Parked rather than left
+    // standing precisely because a vacuously-green check that asserts a
+    // retired truth is the thing the immutability law exists to prevent.
+    // Re-asserted against the new truth in this file's own PARKED block
+    // below; the LIVE successor is in m4.mjs ("S3 (successor to m3.mjs's
+    // parked Q1)"), which also proves the instrument did NOT come home via a
+    // revived .mode-incentive-row or FX1 S5's dead .desk-frame-meter.
     // z-order under the paper.
     const z = await app.evalJs(`(() => {
       const anchor = document.querySelector('.desk-frame-rhizome-anchor');
@@ -347,11 +373,52 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// ORIGINAL SCAFFOLD NOTE (M3, kept verbatim): "M3 PARKED: PASS (0 checks) —
+// HARNESS_PARKED=1 armed; m3.mjs parks nothing of its own (the M2 checks M3
+// supersedes are parked IN m2.mjs, with the live successors here)."
+//
+// M4 (2026-07-25) — that is no longer true: this gate has two tenants, both
+// quoted verbatim at their own sites above and re-asserted here against their
+// NEW, opposite truths. S2 (SV14) retired the warm ink; S3 (SV15) answered
+// the parked Q1. The LIVE successors live in m4.mjs, not here.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshDesk(app, LAPTOP_W, 900);
+    const ink = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--rhizome-ink').trim().toLowerCase()");
+    pok('PARKED (was "S1: --rhizome-ink is warmed to #7a6242") — M4 S2 (SV14): the ground turns green; the token is #4c5942 now, not the warm brown',
+      ink === '#4c5942', ink);
+
+    await freshRhizomePage(app, LAPTOP_W, 900);
+    const q1 = await app.evalJs(`({
+      instrument: !!document.querySelector('.desk-frame-instrument'),
+      inAnchor: !!document.querySelector('.desk-frame-rhizome-anchor .desk-frame-instrument'),
+      legacyRow: !!document.querySelector('.mode-incentive-row'),
+      meterTracks: document.querySelectorAll('.desk-frame-meter').length,
+    })`);
+    pok('PARKED (was "Q1 stays parked: the framed desk has NO progress row") — M4 S3 (SV15) answers Q1 by the front door: the framed desk DOES carry a progress instrument now, in the rhizome\'s own lane — and still not via .mode-incentive-row or FX1 S5\'s dead .desk-frame-meter',
+      q1.instrument === true && q1.inAnchor === true && q1.legacyRow === false && q1.meterTracks === 0,
+      JSON.stringify(q1));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
-  console.log('\nM3 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; m3.mjs parks nothing of its own (the M2 checks M3 supersedes are parked IN m2.mjs, with the live successors here).');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nM3 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nM3 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
-const pass = checks.every((c) => c.pass);
+
+// M4 — the exit code now covers the parked block too (ab1.mjs's own
+// precedent): with HARNESS_PARKED unset, parkedChecks is empty and this is
+// byte-identical to the original; with it armed, a parked successor that goes
+// red fails the run instead of only printing.
+const allChecks = checks.concat(parkedChecks);
+const pass = allChecks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nM3 VERIFY: PASS (${checks.length} checks)` : `\nM3 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nM3 VERIFY: PASS (${checks.length} checks)` : `\nM3 VERIFY: FAIL — ${allChecks.filter((c) => !c.pass).length}/${allChecks.length} failed`);
 process.exit(pass ? 0 : 1);
