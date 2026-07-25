@@ -6322,6 +6322,56 @@ outlive a session lives here, not in chat.
     PENDING NICK'S WORD, not taken.** `fable-session-handoff-v3.md` is NOT
     edited by this commit; the house laws stand at law 6 (the Relay Law) until
     he rules.
+    **RULED — NICK DECLINES THE ELEVATION, 2026-07-25. CLOSED; no lane re-asks.**
+    "A timing claim carries a correctness gate" **stays a recorded LANE
+    PRACTICE — honored in the work, not canon.** `fable-session-handoff-v3.md`
+    stands at **law 6** (the Relay Law) and is not amended. The practice binds
+    SC's own work regardless, and Amendment 2 below makes it a harness
+    requirement, which is where it does its real work anyway.
+    **SC2 AMENDMENT 2 — 2026-07-25, Fable-authored, committed verbatim**
+    (`docs/wrizo-alpha/sc2-brief-amendment-2.md`; travels with the brief and
+    Amendment 1). Both points originated with the SC lane's builder and are
+    **RATIFIED INTO THE BRIEF — requirements now, not suggestions.**
+    **(1) The baseline is a FIXTURE, not a scratchpad.** Amendment 1's
+    regression bound is only honest if the baseline is measurable inside
+    `sc2.mjs` at any time on any machine, forever — a number measured once in a
+    discarded scenario cannot anchor a bound. **The 20-page baseline scenario
+    lands in `sc2.mjs` as a first-class fixture IN THE TICKET'S FIRST COMMIT,
+    before the pagination work**, and survives as a permanent part of the check,
+    carrying Amendment 1's correctness gate with it (keystrokes asserted landed,
+    focus asserted held, before any figure is believed).
+    **(2) Assert the MECHANISM, not the symptom.** A timing figure that happens
+    to pass proves nothing about WHY — a fast machine, a lucky run, or an
+    unrelated change all produce a green number over a broken mechanism. So
+    `sc2.mjs` asserts the prop stabilisation **directly and BY IDENTITY**: one
+    **frozen style object per element type**, the SAME object identity for two
+    elements of the same type (not two equal objects); and `onActivate` **not a
+    per-index arrow closure** — stable identity across renders of the same
+    element. **The 2× timing bound stays as well, in addition and not instead:**
+    identity proves the mechanism is in place, the bound proves it is
+    sufficient, and neither substitutes for the other. **The principle, stated
+    for reuse: _a timing figure can pass for the wrong reason; identity is
+    checkable_** — the same discipline as the house's rendered-geometry floor,
+    asserting the structure that makes the behavior true rather than only the
+    behavior's observable trace.
+    *Record note: Amendment 2's own "Standing" section still reads the elevation
+    as pending — it was authored before Nick's ruling above and is committed
+    VERBATIM regardless, unedited. The ledger carries the later word; the
+    document is left exactly as Fable wrote it.*
+    **SC2 BUILD ORDER (ruled):** the baseline fixture first (Amendment 2), then
+    S1 the line ledger → S2 the sheet sequence → S3 the break rules → S4 page
+    numbers under R1 → S5 caret + memoization → S6 `sc2.mjs` and the park
+    cycles, parks travelling in the SAME commits as the changes that falsify
+    them, originals verbatim, generations nested, retirements marked RETIRED in
+    words. **The two things most worth getting exactly right: the 54-line body
+    (not 55) and viewport invariance — a page count that moves with the window
+    is a clock that lies.** **SC2 does NOT branch until SC1's merge is visible
+    on `origin/main`** (chat 1's lane, in flight at the time of writing); the SC
+    lane fetches until it sees it, then branches off `main` at that SHA in its
+    own worktree. **Lane boundary restated:** the screenplay surface,
+    `scriptKeys.ts`, `scriptMetrics.ts`, `sc*.mjs`. Prose, Journal, the Tutor's
+    rails (A12–A15, constitutional) and any schema are OUTSIDE it — a task that
+    reaches there stops and says so.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
