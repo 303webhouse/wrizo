@@ -208,12 +208,10 @@ export type DeskTermId =
   // selected-card action (reuses PinToBoardSheet verbatim; the label
   // mirrors 'pageFacePin' — same verb, a second doorway to it).
   | 'boardHomeLabelShelf' | 'shelfBoardEmpty' | 'cascadeShelfOpen'
-  // B2 S5 — the Page pop-out's roster gains its own "New Journal Entry"
-  // action (distinct string from the Journal category's own pre-existing
-  // 'cascadeJournalNewPage' — same underlying door, a second entry point
-  // named the way Nick's own sketch named it). The Board's own Add flow
-  // gains "Existing page…" beside FX6's New page card.
-  | 'cascadePageNewJournalEntry' | 'boardAddExistingPage'
+  // B2 S5 gave the Board's Add flow "Existing page…" beside FX6's New page
+  // card. (The Page pop-out's own "New Journal Entry" action, added here by
+  // B2 S5, was RETIRED by FX15 S3 — dead SV6 vocabulary; see CascadePanels.)
+  | 'boardAddExistingPage'
   // B2 S4 — the Places panel: a Home zone (single-select) + a Boards zone
   // (true checkboxes), superseding the old "Add to…" Moves flow's single-
   // page doorway from the Page pop-out (A16 verbatim: checkboxes write
@@ -591,7 +589,6 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardHomeLabelShelf: 'The Shelf Board — has no drawer home',
   shelfBoardEmpty: 'Nothing waiting.',
   cascadeShelfOpen: 'Open the Shelf',
-  cascadePageNewJournalEntry: 'New Journal Entry',
   boardAddExistingPage: 'Existing page…',
   placesTitle: 'Places',
   placesHomeZoneLabel: 'Home',
