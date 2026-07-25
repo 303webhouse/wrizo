@@ -6111,6 +6111,18 @@ outlive a session lives here, not in chat.
     board is wholly in the room at 1366x768 — bar, telos, tools, ground — and
     Add card is one visible click. The law now remembers screens have height.
 
+    **BUILT — 2026-07-24 (chat 3), branch `fx13-board-in-the-room` (`8dbc336`),
+    pushed; merge rides the zero-schema pre-auth, Fable reviews post-merge,
+    deploys batch with the P0 wave.** S1 root named + S2 fixed at it
+    (`BoardEditor.tsx`: a measure effect fills `.board-canvas-wrap` to
+    `.desk-frame-stage`'s ACTUAL available height, replacing the magic
+    `78vh`; legacy <1100 keeps the fallback, byte-identical). S3: `fx13.mjs`
+    adds the 1366x768 leg — chrome in-room, wrap fills the stage, Add-card one
+    click adds exactly one card, no page overflow — plus a below-floor 1366x640
+    proof (the old 78vh overflowed the stage ~31px there) and FX11's drag
+    re-proven at the leg; both HARNESS_PARKED settings; parks nothing. Regression
+    green across the board/geometry harnesses (fx10/fx11/bm1/ab4/e1/cd4/w1/ab1/
+    ab2/b1); no falsified sizing checks. DoD met. **DF1 resumes now.**
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
