@@ -6716,6 +6716,67 @@ outlive a session lives here, not in chat.
     `useChromeDissolve` A19 page-vanish signal, and the deck-mechanism finding) —
     the successor builds from that map, not from scratch. Current page doors:
     Screenplay · Sprout · Plan (P1 amendment 2, `c26b85e`).
+    **BUILT + PUSHED, AWAITING MERGE — 2026-07-25 (the successor session).**
+    Branch `bg1-beginnings` at `10ee2bf`, off `main` `53a7588`, own worktree,
+    guard-rail confirmed before every commit. Zero schema, zero server files,
+    zero deps. Two commits: the build (`234998e`) and one correction on the
+    record (`10ee2bf`, below). **NOT merged — BG1 merges SECOND, through chat
+    1's lane, AFTER FX15** (P1 amendment 2's merge-coordination note, `38d2f6a`).
+    - **S3 first, because both rows are one thing.** New
+      `components/BeginningsRow.tsx` — one component, one vanish rule ("render
+      only while the surface is empty, unmount the instant it isn't"), the gate
+      held at the two places that can see emptiness rather than in a third copy
+      of the test. Container `pointer-events:none` (the `.fl-invite`/rhizome
+      precedent); doors take the pointer back. Eight new `begin*` lexicon terms.
+    - **S1 — the board's row**, per mode, replacing FX6 S2c's one-line pointer on
+      an ordinary board (that line NAMED two tools and sent the writer to the
+      sliver; these are the doors themselves, in the room). System boards render
+      NO row and keep their declarative lines; the Shelf's "Nothing waiting."
+      is untouched. A paired plan board takes OPEN's row through the same table
+      — no plan-board branch. No Import/Upload (Reference Seal).
+    - **DRIFT CORRECTED in the dossier:** its "MISSING: `onAddLane` — must be
+      built" is **wrong**. `addLane` already existed (`BoardProjection.tsx`), but
+      was unreachable from an EMPTY storyboard — that projection returns its
+      empty line *before* it renders the button, so a board with no cards had no
+      way to lay a lane at all. Lifted to `BoardEditor` and passed down, so ONE
+      lane-append exists rather than two that can drift. Second mechanism note:
+      `onAddCard` now arms the card popup only in OPEN (the popup lives inside
+      `boardBody`, which only OPEN renders — arming it from a projection would
+      set state nothing can render, then spring it open on the next flip back).
+    - **S2 — the page's row**, Screenplay · Sprout · Plan, beside a LIVE caret;
+      dismissed by the first keystroke (A19's `onForward` seam), any door taken,
+      or Esc; never rendered on a page with words. Sprout wires to **FX15's
+      `optIn()`**, not DeckWizard — "deck" was overloaded and the spark deck IS
+      the first-line-invite (the addendum's finding). BG1's delta to that file is
+      one rename + one export (`tapAffordance` → `optIn`), deliberately shaped so
+      the combined tree resolves to FX15's own version with BG1's call site
+      unchanged on either merge order.
+    - **A4:** `fx6.mjs`'s S2 (c) empty-board COPY check is PARKED verbatim at its
+      own site, successor named as `bg1.mjs`. Its sibling ("the pointer
+      disappears the moment the board has a card") was RE-POINTED in place, not
+      parked — the claim survives, only the vehicle moved (vehicle/subject).
+    - **Verification.** `bg1.mjs` — 37 checks, PASS both `HARNESS_PARKED`
+      settings (parked gate armed and empty; BG1 parks nothing of its own).
+      Includes the load-bearing DoD check (a writer types immediately without
+      touching the row, and it is gone when they do), the Sprout rails (ZERO
+      outbound requests on load or on press; nothing insertable), and the
+      **1366×768 leg** for both rows. **Full suite: 44/44 GREEN both settings**
+      — 1826 checks unset, 1966 at `=1`, zero failures, read from raw JSON
+      rather than verdict lines. `tsc` ×2 EXIT 0; `build:web` clean.
+    - **COMBINED-TREE PROOF (the second-merger duty, discharged early).** A trial
+      merge of `bg1-beginnings` × `fx15-quiet-page` conflicts in exactly ONE file
+      — `useFirstLineInvite.tsx` — resolved by taking FX15's version;
+      `PageEditor.tsx` and `deskLexicon.ts` auto-merge clean. On that tree: `tsc`
+      EXIT 0, `build:web` clean, **`fx15.mjs` 13/13, `bg1.mjs` 37/37, `fx6.mjs`
+      37 + 2 parked, both settings** — i.e. Sprout still opens the invitation
+      after FX15 silences it by default. Trial branch/worktree discarded, never
+      pushed; the real merge is chat 1's, in that order.
+    - **Session hazard, for the record:** a second session was driving the
+      browser harness concurrently; its browser sweep killed this session's
+      in-flight `fx10` run mid-suite (0 checks, rc=-1). Re-run in isolation:
+      GREEN, 122 checks. A swept browser is not a defect — but concurrent
+      harness sessions cost a re-run, and the sweep-before-a-suite lesson now
+      has a third witness with the opposite sign.
 68. **FX15 — the Quiet Page.** **OPENED — 2026-07-25 (chat 1)**, from the P1 wave
     (`docs/wrizo-alpha/p1-wave.md`), authority Nick's word of 2026-07-25 (the unbidden
     first-line invite is not wanted by default; + the stale-language sighting). Branch
