@@ -41,33 +41,47 @@ await withHarness(async (app) => {
   await app.evalJs(POINTER_HELPER);
 
   // -- create 4 loose pages: A (text), B (text, to be starred+tagged), C
-  // (ink only), D (text + ink) ------------------------------------------
-  // Polls the SPECIFIC entry (by id, read from the URL right after
-  // creation) rather than a fixed sleep — a blind sleep(2300) proved flaky
-  // under sustained CDP load (this scenario creates 5 pages + many sheet
-  // round-trips), occasionally reading localStorage before the 300ms
-  // debounced flush had actually landed.
-  // B1 — the retired Journal list's own "New page" button is gone
-  // (pages/Journal.tsx deleted, S5); persistence.ts's own new test seam
-  // (window.wrizoCreateJournalPage) reaches the identical fresh-page state
-  // directly, known by id up front rather than parsed back off the URL.
+  // (ink only), D (text + ink) [FIXTURE RE-POINT — FX14 S2] --------------
+  // B1 already re-pointed this scaffolding off the RETIRED Journal LIST to the
+  // wrizoCreateJournalPage seam (see persistence.ts:654's own seam comment). FX14
+  // S2 now unroutes the JournalEntry EDITOR surface too (/journal/:id -> /page/:id
+  // redirect, App.tsx's JournalIdRedirect), so a page's CONTENT — the text the
+  // editor typed and the ink the pen drew — is seeded into persistence DIRECTLY
+  // (from a no-editor surface, per the seeding law: the cache re-hydrates on the
+  // reloads this scenario already performs before each Spread read; getNotebook-
+  // Pages reads cache). This is FIXTURE MAINTENANCE, not a park: J5's subject is
+  // the Spread console (lenses + Add to…) and filing, which FX14 does not touch —
+  // only the page-creation vehicle moved off the retired surface, exactly as B1's
+  // seam comment anticipates. Seed shape matches createJournalPage
+  // (persistence.ts:638: source:'page', origin:'journal'); the ink is the SAME
+  // wide bbox the old penStroke('.entry-full', ...) drew, in the persisted Stroke
+  // shape ({ points: [{x,y}] }, src/types). createdAt is STEPPED per page so the
+  // "Newest" lens order (D,C,B,A) stays deterministic — the old editor path spaced
+  // these out with real time gaps.
+  let pageSeq = 0;
   const makePage = async (text, withInk) => {
-    const id = await app.evalJs('window.wrizoCreateJournalPage().id');
-    await app.evalJs(`location.hash = '#/journal/${id}'`);
-    await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page' });
-    if (text) {
-      await app.evalJs("document.querySelector('.entry-edit').focus()");
-      await app.typeKeys(text);
-    }
-    if (withInk) await app.penStroke('.entry-full', [{ x: 0.2, y: 0.3 }, { x: 0.5, y: 0.35 }, { x: 0.8, y: 0.3 }]);
-    const expect = [
-      text ? `e.text === ${JSON.stringify(text)}` : null,
-      withInk ? '(e.strokes?.length ?? 0) > 0' : null,
-    ].filter(Boolean).join(' && ') || 'true';
-    await app.waitFor(
-      `(() => { const l = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]'); const e = l.find(x => x.id === ${JSON.stringify(id)}); return !!e && (${expect}); })()`,
-      { label: `page ${id} saved`, timeout: 6000 },
-    );
+    pageSeq += 1;
+    const id = `j5-src-${pageSeq}`;
+    // Seed from the Desk/Arrival (no flush-on-unmount writing surface mounted) so
+    // the direct write is NEVER clobbered by a mounted surface's own unmount flush
+    // (MEMORY.md's "harness seeding vs. flushNow race" — seed from Desk, not while
+    // a writing surface is mounted). The old editor path was inherently on a
+    // surface; this scaffolding reaches the identical persisted state from the
+    // safe Desk state instead. The caller reloads before the Spread reads it
+    // (getNotebookPages reads the cache, which re-hydrates on reload).
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk before seeding ${id}` });
+    const strokesJson = withInk ? JSON.stringify([{ points: [{ x: 0.2, y: 0.3 }, { x: 0.5, y: 0.35 }, { x: 0.8, y: 0.3 }] }]) : 'null';
+    await app.evalJs(`(() => {
+      const key = 'writer-studio-journal-entries';
+      const list = JSON.parse(localStorage.getItem(key) || '[]');
+      const created = new Date(Date.now() + ${pageSeq} * 1000).toISOString();
+      const entry = { id: ${JSON.stringify(id)}, text: ${JSON.stringify(text || '')}, projectId: null, source: 'page', origin: 'journal', createdAt: created, updatedAt: created };
+      const strokes = ${strokesJson};
+      if (strokes) entry.strokes = strokes;
+      list.push(entry);
+      localStorage.setItem(key, JSON.stringify(list));
+    })()`);
     return id;
   };
   const idA = await makePage('Alpha text only.', false);
@@ -242,30 +256,21 @@ await withHarness(async (app) => {
   ok('B2 S3/S7 successor of "A left the Spread grid": A (journal-origin) STAYS in the notebook grid — un-filing it returns it to the Journal (T3\'s own "not journal-homed" clause correctly excludes it from Shelf membership), not the Shelf, so there is nothing to remove it from the grid',
     vis.includes(A.id), JSON.stringify(vis));
 
-  // -- Slice 2 / Fable R1: single-page FILE via the entry view's OWN "Add
-  // to…" button (JournalEntry.tsx, not the Spread's multi-select) — the
-  // toast must survive the navigate('/journal') that follows a MOVES verb.
-  // Previously lost: the toast node lived inside the view being unmounted.
-  // Review fix (B2 S3) — same honesty fix as above: F is ALSO journal-
-  // origin (same makePage door), so this toast is now the "nothing moved"
-  // phrasing too, not the old always-"moved" claim.
-  const idF = await makePage('Foxtrot, filed from its own entry view.', false);
-  await app.goto(`/journal/${idF}`);
-  await app.waitFor("!!document.querySelector('.entry-add')", { label: 'entry view (F)' });
-  await app.evalJs("document.querySelector('.entry-add').click()");
-  await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (entry view)' });
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith('The Shelf')).click()");
-  await app.waitFor("!!document.querySelector('.action-toast')", { label: 'toast on /journal after MOVE (R1)' });
-  const entryViewToast = await app.evalJs("document.querySelector('.action-toast')?.textContent ?? null");
-  ok('R1: single-page FILE-to-Shelf toast (now honest — "nothing moved," F is journal-origin too) survives the navigate to /journal',
-    entryViewToast === "1 page stays in the Journal — a journal-homed page can't be shelved directly; nothing moved.", entryViewToast);
-  await app.reload();
-  // B1 — '/journal' now redirects to the Journal Board (pages/Journal.tsx
-  // deleted, S5); this check only ever needed a settled-post-reload marker,
-  // never the retired list's own rows.
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board after reload (R1)' });
-  const toastGoneAfterReload = await app.evalJs("!!document.querySelector('.action-toast')");
-  ok('R1: the one-shot toast does not reappear on reload', toastGoneAfterReload === false, String(toastGoneAfterReload));
+  // -- Slice 2 / Fable R1: single-page FILE via the entry view's OWN "Add to…"
+  //    button [PARKED WHOLE — FX14 S2] --------------------------------------
+  // Drove JournalEntry.tsx's own entry-view "Add to…" button (.entry-add) via
+  // #/journal/:id, proving the File-to-Shelf toast survives the navigate('/journal')
+  // a MOVES verb triggers (the toast node used to live inside the unmounting view).
+  // FX14 S2 unroutes the JournalEntry surface (/journal/:id -> /page/:id redirect,
+  // App.tsx's JournalIdRedirect), so .entry-add never mounts. Both checks PARKED
+  // (A4) as FALSIFIED. SV6, quoted: "Journal Pages no longer exist. The Journal is
+  // now just a board that contains certain pages." Successor: the File-to-Shelf
+  // toast HONESTY (the B2-S3 fix) is proven LIVE ABOVE via the Spread's own
+  // multi-select "Add to…" door (the "Review fix (B2 S3): the 'File to Shelf' toast
+  // is now HONEST..." check); the entry-view door and its toast-survives-navigation
+  // behavior are J7's behavior-parity census. Originals, byte-for-byte:
+  //   PARKED (was "R1: single-page FILE-to-Shelf toast (now honest — \"nothing moved,\" F is journal-origin too) survives the navigate to /journal")
+  //   PARKED (was "R1: the one-shot toast does not reappear on reload")
 
   // -- Slice 2: FILE standalone into a NEW, empty drawer (B) -----------------
   await app.goto('/drawers');
@@ -345,6 +350,12 @@ await withHarness(async (app) => {
   entries = await app.localJSON('writer-studio-journal-entries');
   const G = entries.find((e) => e.id === idG);
   const H = entries.find((e) => e.id === idH);
+  // FX14 S2 fixture re-point: the makePage seeds above land in localStorage;
+  // reload so persistence re-hydrates them into the cache before the Spread
+  // reads them (getNotebookPages reads cache; unlike A-D / E, no reload otherwise
+  // precedes this Spread visit). The old editor path left them cache-live.
+  await app.reload();
+  await app.evalJs(POINTER_HELPER);
 
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (R3)' });

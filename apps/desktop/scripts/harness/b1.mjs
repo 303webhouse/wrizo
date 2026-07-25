@@ -195,9 +195,14 @@ await withHarness(async (app) => {
   // own dedicated section below drives the actual button, proving Catch
   // itself byte-identical; this fixture only needs the resulting STATE).
   const captureId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/journal/${captureId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'fresh capture page framed' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  // FIXTURE RE-POINT [FX14 S2]: the subject is the Journal-Board reconcile card
+  // (derived from the page's origin:'journal', which wrizoCreateJournalPage stamps),
+  // not the JournalEntry surface. FX14 unroutes that surface (/journal/:id ->
+  // /page/:id redirect); the capture page now mounts on THE Page, and the reconcile
+  // reads the Board (journalBoardBoxes navigates there) exactly as before. Not a park.
+  await app.evalJs(`location.hash = '#/page/${captureId}'`); // FX14 S2 re-point: was #/journal/:id
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'fresh capture page on THE Page' });
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('B1S2Capture — a genuine quick thought.');
   await sleep(2400); // JournalEntry's own autosave debounce, past it with margin
 
@@ -221,9 +226,9 @@ await withHarness(async (app) => {
   // the "OTHER card" whose arrangement must survive the whole dance below
   // byte-for-byte.
   const siblingId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/journal/${siblingId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'sibling page framed' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  await app.evalJs(`location.hash = '#/page/${siblingId}'`); // FX14 S2 re-point: was #/journal/:id (same reconcile-card fixture)
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'sibling page on THE Page' });
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('B1S2Sibling — must never move.');
   await sleep(2400);
 
@@ -517,12 +522,18 @@ await withHarness(async (app) => {
   await app.goto('/drawers');
   await app.waitFor("!!document.querySelector('.desk-rail-catch')", { label: 'DeskRail reachable (S5 byte-identical check)' });
   await app.evalJs("document.querySelector('.desk-rail-catch').click()");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'Catch (S5 byte-identical check)' });
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'Catch lands on THE Page (S5 byte-identical check)' }); // FX14 S1/S2 re-point: Catch (useCatch) now opens /page/:id
   const catchRoute = await app.evalJs('location.hash');
-  ok('S5 (a): Catch still opens the SAME untyped writing surface (JournalEntry.tsx, /journal/:id) — never the Board directly',
-    /^#\/journal\/[^/]+$/.test(catchRoute), catchRoute);
-  const catchPageId = catchRoute.replace(/^#\/journal\//, '');
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  // S5(a) Catch-route check [PARKED — FX14 S1/S2]: Catch (useCatch) now opens THE
+  // Page (/page/:id) like every other creation door — no door leads to the retired
+  // JournalEntry surface. FALSIFIED: this asserted Catch lands on /journal/:id. The
+  // captured page still stamps origin:'journal' + no pageType (proven just below,
+  // unchanged). Successor: fx14.mjs proves every creation door (Catch included) lands
+  // on THE Page under a trusted pointer. SV6: "Journal Pages no longer exist. The
+  // Journal is now just a board that contains certain pages." Original, byte-for-byte:
+  //   PARKED (was "S5 (a): Catch still opens the SAME untyped writing surface (JournalEntry.tsx, /journal/:id) — never the Board directly")
+  const catchPageId = catchRoute.replace(/^#\/page\//, ''); // FX14: Catch route is /page/:id now
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('S5 byte-identical capture.');
   await sleep(2400);
   const catchEntry = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(catchPageId)})`);
@@ -589,20 +600,21 @@ await withHarness(async (app) => {
   ok('S5 (c): Open\'s own no-resume fallback re-points to the Journal Board — opens the app cold with nothing to resume and lands on the Journal Board, not the old broken room',
     noResumeRoute.startsWith('#/page/'), noResumeRoute);
 
-  // JournalEntry.tsx's own "← The journal" back-link.
-  const backLinkPageId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/journal/${backLinkPageId}'`);
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'fresh page (back-link check)' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  await app.typeKeys('Back-link probe.');
-  await sleep(2400);
-  const backLinkHref = await app.evalJs("document.querySelector('a')?.textContent?.includes('journal') ? true : [...document.querySelectorAll('a')].some(a => a.textContent.includes('journal'))");
-  ok('S5 (b) precondition: the "← The journal" back-link is present on an authored page', backLinkHref === true, String(backLinkHref));
-  await app.evalJs("[...document.querySelectorAll('a')].find(a => a.textContent.toLowerCase().includes('journal'))?.click()");
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: '"← The journal" lands on the Board' });
-  const backLinkRoute = await app.evalJs('location.hash');
-  ok('S5 (b): JournalEntry.tsx\'s own "← The journal" back-link (untouched code) now lands on the Journal Board too — every old link re-points, no hole',
-    backLinkRoute.startsWith('#/page/'), backLinkRoute);
+  // JournalEntry.tsx's own "← The journal" back-link [PARKED WHOLE — FX14 S2] -
+  // Drove JournalEntry.tsx's own "← The journal" back-link (#/journal/:id ->
+  // .entry-edit -> the anchor), proving it is present on an authored page and lands
+  // on the Journal Board. FX14 S2 unroutes the JournalEntry surface (/journal/:id ->
+  // /page/:id redirect, App.tsx's JournalIdRedirect), so .entry-edit and the
+  // back-link never mount — the back-link is JournalEntry-only chrome that retires
+  // WITH the surface. Both checks PARKED (A4) as FALSIFIED. SV6, quoted: "Journal
+  // Pages no longer exist. The Journal is now just a board that contains certain
+  // pages." Successor: the "old links re-point to the Board, no hole" routing-
+  // continuity claim is proven LIVE just above (S5 (c): Open's own no-resume
+  // fallback lands on #/page/) and universally in fx14.mjs's redirect proof;
+  // JournalEntry's own back-link retires to J7's behavior-parity census. Originals,
+  // byte-for-byte:
+  //   PARKED (was "S5 (b) precondition: the \"← The journal\" back-link is present on an authored page")
+  //   PARKED (was "S5 (b): JournalEntry.tsx's own \"← The journal\" back-link (untouched code) now lands on the Journal Board too — every old link re-points, no hole")
 
   // ==========================================================================
   // S6 — geometry: both reference widths + the 1100px floor.

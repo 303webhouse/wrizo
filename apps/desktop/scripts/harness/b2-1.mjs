@@ -457,40 +457,25 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S6f — JournalEntry.tsx's LEGACY (<1100px) scrap-routing block: touched
-  // deliberately (the word retires app-wide), proven ABSENT when framed.
+  // S6f — JournalEntry.tsx's LEGACY (<1100px) scrap-routing block [PARKED WHOLE
+  //       — FX14 S2]
+  // Drove JournalEntry.tsx's own legacy routing chrome (#/journal/:id ->
+  // .entry-edit -> .route-open / .route-picker) at <1100px, proving the button +
+  // picker read "Drawer" never "project", and that the whole block is ABSENT when
+  // framed (Places, S4, supersedes it). FX14 S2 unroutes the JournalEntry surface
+  // entirely (/journal/:id -> /page/:id redirect, App.tsx's JournalIdRedirect), so
+  // .entry-edit / .route-open / .route-picker never mount — the legacy routing
+  // block is a JournalEntry-only affordance that retires WITH the surface. All
+  // three checks PARKED (A4) as FALSIFIED. SV6, quoted: "Journal Pages no longer
+  // exist. The Journal is now just a board that contains certain pages." Successor:
+  // the "Drawer, never project" lexicon claim is proven LIVE just below in S6g (the
+  // ModeStage gear's Progress selector offers "Drawer", never "Project"); the
+  // legacy JournalEntry routing block itself retires to J7's behavior-parity
+  // census. Originals, byte-for-byte:
+  //   PARKED (was "S6f (legacy-only touch, disclosed): the legacy (<1100px) routing button reads \"Send to a Drawer\", never \"Send to a project\"")
+  //   PARKED (was "S6f (legacy-only touch, disclosed): the legacy picker's empty-state + promote button both read \"Drawer\", never \"project\"")
+  //   PARKED (was "S6f: framed (>=1100px), the legacy routing block is genuinely ABSENT (not merely relabeled) — Places (S4) is the framed surface's own equivalent door")
   // ==========================================================================
-  await freshDesk(app, LAPTOP_W, 900);
-  await app.evalJs(`(() => {
-    const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b21-legacy-route-page', text: 'A scrap worth routing.', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-  })()`);
-  await app.reload();
-  await app.emulateDpr(1, LEGACY_W, 900);
-  await app.evalJs("location.hash = '#/journal/b21-legacy-route-page'");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'legacy JournalEntry framed' });
-  await sleep(300);
-  const legacyRouteOpen = await app.evalJs("document.querySelector('.route-open')?.textContent");
-  ok('S6f (legacy-only touch, disclosed): the legacy (<1100px) routing button reads "Send to a Drawer", never "Send to a project"',
-    legacyRouteOpen === 'Send to a Drawer', String(legacyRouteOpen));
-  await app.evalJs("document.querySelector('.route-open').click()");
-  await app.waitFor("!!document.querySelector('.route-picker')", { label: 'legacy route picker open' });
-  const legacyPickerText = await app.evalJs("document.querySelector('.route-picker')?.textContent");
-  ok('S6f (legacy-only touch, disclosed): the legacy picker\'s empty-state + promote button both read "Drawer", never "project"',
-    legacyPickerText.includes('No Drawers yet.') && legacyPickerText.includes('Promote to a new Drawer'), legacyPickerText);
-
-  // Framed (>=1100px): this whole block is genuinely ABSENT — Places
-  // supersedes it (S4), not merely relabeled.
-  await app.emulateDpr(1, LAPTOP_W, 900);
-  await app.reload();
-  await app.evalJs("location.hash = '#/journal/b21-legacy-route-page'");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'framed JournalEntry' });
-  await sleep(300);
-  const routeOpenFramed = await app.evalJs("!!document.querySelector('.route-open')");
-  ok('S6f: framed (>=1100px), the legacy routing block is genuinely ABSENT (not merely relabeled) — Places (S4) is the framed surface\'s own equivalent door',
-    routeOpenFramed === false, String(routeOpenFramed));
 
   // ==========================================================================
   // S6g — ModeStage's gear: the Progress selector offers "Drawer", never

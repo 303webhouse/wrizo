@@ -16,79 +16,38 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear' });
 
-  // -- structure: Journal chrome order (wayfinding + tabs above the sheet;
-  // metadata below it) -----------------------------------------------------
-  // B1 — the retired Journal list's own "New page" button is gone
-  // (pages/Journal.tsx deleted, S5); JournalEntry.tsx itself (this check's
-  // real subject — untouched by B1) reaches the identical fresh, editable
-  // state via persistence.ts's own new test seam.
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page' });
-
-  const topBeforeSheet = await app.evalJs(`(() => {
-    const top = document.querySelector('.journal-top');
-    const sheet = document.querySelector('.entry-full');
-    if (!top || !sheet) return null;
-    return !!(top.compareDocumentPosition(sheet) & Node.DOCUMENT_POSITION_FOLLOWING);
-  })()`);
-  ok('the wayfinding/tabs strip renders BEFORE the writing surface', topBeforeSheet === true, String(topBeforeSheet));
-
-  const starAfterSheet = await app.evalJs(`(() => {
-    const sheet = document.querySelector('.entry-full');
-    const star = document.querySelector('.entry-star');
-    if (!sheet || !star) return null;
-    return !!(sheet.compareDocumentPosition(star) & Node.DOCUMENT_POSITION_FOLLOWING);
-  })()`);
-  ok('star button renders AFTER the writing surface', starAfterSheet === true, String(starAfterSheet));
-
-  ok('ambient glow present on an authored Journal page', await app.evalJs("!!document.querySelector('.journal-page .mode-glow')"));
-  ok('progress bar present on an authored Journal page (default settings)', await app.evalJs("!!document.querySelector('.journal-page .mode-ptrack')"));
-  ok('typewriter toggle icon present', await app.evalJs("!!document.querySelector('.journal-page .typewriter-toggle')"));
-
-  // -- R2: the Journal honors the persisted Progress=off setting -----------
-  await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'off' }))");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page after settings reload' });
-  const barHiddenWhenOff = await app.evalJs("!document.querySelector('.journal-page .mode-ptrack')");
-  const toggleStillShown = await app.evalJs("!!document.querySelector('.journal-page .typewriter-toggle')");
-  ok('R2: Progress=off hides the bar on the Journal', barHiddenWhenOff === true, String(barHiddenWhenOff));
-  ok('R2: the typewriter toggle stays independent of the Progress setting', toggleStillShown === true, String(toggleStillShown));
-  await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'words' }))");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page, progress back on' });
-
-  // -- R1: crossing the goal DURING this session celebrates exactly once ---
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
+  // --- Journal chrome-order + R2 progress + R1 celebrate-once, ALL on the
+  //     JournalEntry surface [PARKED WHOLE — FX14 S2] ------------------------
+  // This sequence (Block A: chrome order + glow/progress/typewriter presence;
+  // Block B: R2 progress=off honored; Block C: R1 celebrate-once, live-cross +
+  // reopen-no-recelebrate) drove the JournalEntry surface via
+  // window.wrizoCreateJournalPage() -> #/journal/:id -> .entry-edit. FX14 S2
+  // unroutes that surface: /journal/:id is now a permanent redirect to /page/:id
+  // (App.tsx's JournalIdRedirect), so .entry-edit / .entry-full / .journal-page
+  // never mount. All ten checks PARKED (A4) as FALSIFIED. SV6, quoted: "Journal
+  // Pages no longer exist. The Journal is now just a board that contains certain
+  // pages."
+  // Successors: the R1 celebrate-once regression is proven LIVE on THE Page in
+  // this same file's ModeStage/PageEditor twin immediately below (the
+  // .forward-only-editor block ending in "R1 (ModeStage/PageEditor): reopening an
+  // existing >=250-word page does NOT celebrate on mount"), which also crosses
+  // the 251-word goal live; the progress=off setting is surface-agnostic (THE
+  // Page's ModeStage honors it too); the Journal-specific chrome order
+  // (wayfinding-above / metadata-below the sheet) is J7's behavior-parity census
+  // (every Journal-unique behavior becomes a setting or dies there, per the FX14
+  // brief). Originals, byte-for-byte:
+  //   PARKED (was "the wayfinding/tabs strip renders BEFORE the writing surface")
+  //   PARKED (was "star button renders AFTER the writing surface")
+  //   PARKED (was "ambient glow present on an authored Journal page")
+  //   PARKED (was "progress bar present on an authored Journal page (default settings)")
+  //   PARKED (was "typewriter toggle icon present")
+  //   PARKED (was "R2: Progress=off hides the bar on the Journal")
+  //   PARKED (was "R2: the typewriter toggle stays independent of the Progress setting")
+  //   PARKED (was "crossing the 250-word goal live triggers the celebration class")
+  //   PARKED (was "reload landed back on the same >=250-word entry")
+  //   PARKED (was "R1: reopening an existing >=250-word page does NOT celebrate on mount")
+  // words251 is preserved below as a LIVE fixture — the PageEditor twin reuses it.
   const words251 = Array.from({ length: 251 }, (_, i) => 'w' + i).join(' ');
-  await app.typeKeys(words251 + ' ');
-  await app.waitFor("document.querySelector('.mode-pmeta span')?.textContent?.includes('251 words')", { label: 'word count live-updates', timeout: 15000 });
-  const sawCelebrateLive = await (async () => {
-    for (let i = 0; i < 20; i++) {
-      if (await app.evalJs("!!document.querySelector('.mode-pfill.celebrate')")) return true;
-      await sleep(100);
-    }
-    return false;
-  })();
-  ok('crossing the 250-word goal live triggers the celebration class', sawCelebrateLive, 'checked .mode-pfill.celebrate over 2s after crossing 250 words');
-  await sleep(1300); // let the 1.1s celebration pulse fully clear before the next check
-
-  // -- R1 (the actual regression): REOPENING an existing >=250-word page
-  // must NOT celebrate on mount --------------------------------------------
-  await sleep(400); // clear the debounced autosave window so the 251-word text is persisted
-  const reopenId = (await app.evalJs('location.hash')).replace(/^#\/journal\//, '');
-  await app.reload(); // fresh mount of the SAME page — exactly "the writer reopens it later"
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'reopened >=250-word page' });
-  const stillSamePage = await app.evalJs('location.hash')
-    .then((h) => h.includes(reopenId));
-  ok('reload landed back on the same >=250-word entry', stillSamePage === true);
-  const celebratedOnMount = await (async () => {
-    for (let i = 0; i < 15; i++) {
-      if (await app.evalJs("!!document.querySelector('.mode-pfill.celebrate')")) return true;
-      await sleep(100);
-    }
-    return false;
-  })();
-  ok('R1: reopening an existing >=250-word page does NOT celebrate on mount', celebratedOnMount === false, `celebratedOnMount=${celebratedOnMount}`);
 
   // -- R1, ModeStage side: same regression, PageEditor surface -------------
   await app.goto('/');
@@ -150,48 +109,23 @@ await withHarness(async (app) => {
   const boardHasModeTabs = await app.evalJs("!!document.querySelector('.mode-tabs') || !!document.querySelector('.mode-tab--action')");
   ok('A5: a board page never renders the mode tabs / Workshop-Publish', boardHasModeTabs === false, String(boardHasModeTabs));
 
-  // -- R3: window-scroll typewriter data-scrolled gate (C2) ----------------
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before R3 fixture' });
-  await app.emulateDpr(1, 1024, 500); // short viewport: guarantees overflow from the below-sheet metadata cluster alone
-  // B1 — the retired Journal list's own "New page" button is gone; the
-  // seam reaches the identical fresh, editable state directly.
-  await app.evalJs("location.hash = '#/journal/' + window.wrizoCreateJournalPage().id");
-  await app.waitFor("!!document.querySelector('.entry-edit')", { label: 'authored page (R3)' });
-  await app.evalJs("document.querySelector('.entry-edit').focus()");
-  await app.typeKeys('A short line.');
-  await sleep(300);
-  const scrollableRange = await app.evalJs('document.documentElement.scrollHeight - window.innerHeight');
-  await app.evalJs('window.scrollTo(0, 24)');
-  await sleep(150);
-  const shortPageScrolledFlag = await app.evalJs("document.querySelector('.entry-full').dataset.scrolled");
-  const shortPageSheetTop = await app.evalJs("document.querySelector('.entry-full').getBoundingClientRect().top");
-  ok(
-    'R3: a short-but-window-scrolled page does NOT flip data-scrolled (C2)',
-    shortPageScrolledFlag === 'false',
-    `scrollableRange=${scrollableRange} sheetTop=${shortPageSheetTop} data-scrolled=${shortPageScrolledFlag}`,
-  );
-
-  // Now grow content well past the typewriter hold-band so the sheet's own
-  // top genuinely scrolls past the fold, and confirm the flag DOES flip.
-  const manyLines = Array.from({ length: 40 }, (_, i) => `Line number ${i} of the growing page.`).join('\n');
-  await app.typeKeys(manyLines);
-  await app.waitFor(
-    "document.querySelector('.entry-full').getBoundingClientRect().top < -4",
-    { label: 'sheet scrolled past the fold', timeout: 8000 },
-  );
-  await sleep(300);
-  const grownScrolledFlag = await app.evalJs("document.querySelector('.entry-full').dataset.scrolled");
-  ok('R3: once the sheet genuinely scrolls past the fold, data-scrolled flips true', grownScrolledFlag === 'true', grownScrolledFlag);
-
-  // Typewriter toggle still flips data-typewriter (unaffected by the R3 fix).
-  const beforeTw = await app.evalJs("document.querySelector('.entry-full').dataset.typewriter");
-  await app.evalJs("document.querySelector('.typewriter-toggle').click()");
-  await sleep(50);
-  const afterTw = await app.evalJs("document.querySelector('.entry-full').dataset.typewriter");
-  ok('typewriter toggle flips data-typewriter on the sheet', beforeTw !== afterTw, `${beforeTw} -> ${afterTw}`);
+  // --- R3: window-scroll typewriter data-scrolled gate (C2) [PARKED WHOLE —
+  //     FX14 S2] --------------------------------------------------------------
+  // Drove the JournalEntry surface (window.wrizoCreateJournalPage() ->
+  // #/journal/:id -> .entry-edit) and asserted the window-scroll data-scrolled
+  // gate on the .entry-full sheet plus the typewriter toggle flipping
+  // data-typewriter. FX14 S2 unroutes JournalEntry (/journal/:id -> /page/:id
+  // redirect, App.tsx's JournalIdRedirect), so .entry-full never mounts; and the
+  // mechanic itself is JournalEntry-SPECIFIC — the journal sheet scrolls the
+  // WINDOW, whereas THE Page (PageEditor/ModeStage) scrolls INTERNALLY
+  // (.mode-scroll), so data-scrolled has no journal-window analogue on the Page.
+  // All three checks PARKED (A4) as FALSIFIED. SV6, quoted: "Journal Pages no
+  // longer exist. The Journal is now just a board that contains certain pages."
+  // Successor: the window-scroll typewriter behavior, if it survives at all, is
+  // J7's behavior-parity census. Originals, byte-for-byte:
+  //   PARKED (was "R3: a short-but-window-scrolled page does NOT flip data-scrolled (C2)")
+  //   PARKED (was "R3: once the sheet genuinely scrolls past the fold, data-scrolled flips true")
+  //   PARKED (was "typewriter toggle flips data-typewriter on the sheet")
 
   return checks;
 });
