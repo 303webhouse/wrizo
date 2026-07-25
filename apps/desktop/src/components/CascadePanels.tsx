@@ -223,15 +223,15 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 // against its plain neighbors, not urgency color — "nothing orange at
 // rest" holds.
 // ---------------------------------------------------------------------------
-// B2 S5 — the roster reorders to New Journal Entry, New Page, then Places
-// (for the page underfoot). New Journal Entry is a SECOND door to the exact
-// same act the Journal category's own 'cascadeJournalNewPage' button
-// already performs (createJournalPage) — Nick's own sketch names it here
-// too, so a writer already looking at the Page category doesn't have to
-// remember the Journal category is where journal-entry creation lives.
+// B2 S5 gave the Page pop-out two doors: "New Journal Entry" and "New Page".
+// FX15 S3 (the Quiet Page) RETIRES "New Journal Entry" — it was a second,
+// redundant door to journal-origin creation (the Journal category's own
+// button and Catch still perform that exact act, unchanged), and "journal
+// entry" as a page KIND is dead SV6 vocabulary (the Journal is a home/origin,
+// not a type). The Page pop-out now carries one door: New Page, then the Page
+// face, then Places.
 function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
-  const newJournalEntry = () => { const e = createJournalPage(); navigate(`/page/${e.id}`); }; // FX14 S1 — every New Page opens in THE Page
   const newPage = () => { const e = createLooseHomePage(); navigate(`/page/${e.id}`); };
   return (
     <>
@@ -239,9 +239,6 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
           PageFace already carries its own `.wz-pageface` padding, so
           nesting a second panel-body around both would double it up. */}
       <div style={{ padding: '10px 14px 0' }}>
-        <button type="button" className="wz-cascade-action" onClick={newJournalEntry}>
-          {t('cascadePageNewJournalEntry')}
-        </button>
         <button type="button" className="wz-cascade-action wz-cascade-action-door" onClick={newPage}>
           {t('cascadePageNewPage')}
         </button>

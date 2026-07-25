@@ -109,9 +109,15 @@ await withHarness(async (app) => {
   ok('S1: Catch preserves origin semantics — still stamps origin:\'journal\', still untyped (only its destination is THE Page now)',
     catchEntry?.origin === 'journal' && catchEntry?.pageType == null, JSON.stringify(catchEntry));
 
-  // The Page pop-out's own doors: "New Page" and "New Journal Entry". Reach the
-  // pop-out from a stable page underfoot (the Catch section's freshDesk cleared the
-  // S3/S2 seeds), then click each door.
+  // The Page pop-out's own door: "New Page". Reach the pop-out from a stable page
+  // underfoot (the Catch section's freshDesk cleared the S3/S2 seeds), then click it.
+  // [PARKED — FX15 S3] The "New Journal Entry" door was RETIRED (dead SV6 vocabulary);
+  // the loop's second iteration is removed. The journal-origin coverage it carried is
+  // preserved by the Catch check above (Catch still stamps origin:'journal' and lands on
+  // THE Page) and by the Journal category's own button. Original loop assertions, quoted
+  // verbatim (immutable):
+  //   PARKED (was "S1: the \"New Journal Entry\" door lands on a FRESH page in THE Page (/page/:id), never the retired Journal surface")
+  //   PARKED (was "S1: the \"New Journal Entry\" door preserves origin semantics (origin:'journal')")
   await freshDesk(app, 1400, 900);
   await seedFromDesk(app, `(() => {
     const now = new Date().toISOString();
@@ -121,7 +127,7 @@ await withHarness(async (app) => {
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after door-probe seed' });
-  for (const [doorLabel, expectOrigin] of [['New Page', null], ['New Journal Entry', 'journal']]) {
+  for (const [doorLabel, expectOrigin] of [['New Page', null]]) { // FX15 S3: "New Journal Entry" iteration retired (door removed) — see park note above
     await app.evalJs("location.hash = '#/page/fx14-door-probe'");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `THE Page (before "${doorLabel}")` });
     await openPageCategory(app);

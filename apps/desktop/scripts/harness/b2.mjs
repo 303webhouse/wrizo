@@ -668,15 +668,24 @@ await withHarness(async (app) => {
     const pageFaceIndex = kids.findIndex(k => k.classList.contains('wz-pageface'));
     return { doorLabels, placesAfterPageFace: placesIndex > pageFaceIndex };
   })()`);
-  ok('S5: the Page pop-out\'s roster reorders to New Journal Entry, New Page (in that order), before the Page face + Places',
-    JSON.stringify(rosterOrder.doorLabels) === JSON.stringify(['New Journal Entry', 'New Page']), JSON.stringify(rosterOrder));
+  // S5 roster check [PARKED — FX15 S3]: the Page pop-out's "New Journal Entry" door was
+  // RETIRED (dead SV6 vocabulary — the Journal is a home, not a page kind; it was a
+  // redundant second entrance to journal-origin creation, which Catch + the Journal
+  // category's own button still perform, unchanged). The roster is now the single
+  // "New Page" door; the live ok below re-verifies the new one-door roster. Original ok,
+  // quoted verbatim (immutable):
+  //   PARKED (was "S5: the Page pop-out's roster reorders to New Journal Entry, New Page (in that order), before the Page face + Places")
+  ok('S5 [FX15 S3]: the Page pop-out\'s roster is now the single "New Page" door, before the Page face + Places',
+    JSON.stringify(rosterOrder.doorLabels) === JSON.stringify(['New Page']), JSON.stringify(rosterOrder));
   ok('S5: Places renders for the page underfoot, after the Page face', rosterOrder.placesAfterPageFace === true, JSON.stringify(rosterOrder));
 
-  // "New Journal Entry" genuinely creates a journal-origin page (the SAME
-  // act the Journal category's own button performs).
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => b.textContent.trim() === 'New Journal Entry').click()");
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'New Journal Entry door lands on THE Page' }); // FX14 S1 re-point: the door now opens /page/:id
-  const newJournalEntryRoute = await app.evalJs('location.hash');
+  // "New Journal Entry" door checks [PARKED — FX15 S3]: the door is RETIRED, so its
+  // navigation is REMOVED here (no run can click a door that no longer exists). The
+  // journal-ORIGIN creation act these checks proved is NOT gone — Catch and the Journal
+  // category's own button still perform it; fx14.mjs proves Catch stamps origin:'journal'
+  // and lands on THE Page. The FX14-era route park immediately below is kept
+  // byte-identical (immutability); this FX15 note supersedes it further — the door it
+  // describes is now gone entirely, not merely re-routed.
   // S5 New-Journal-Entry-route check [PARKED — FX14 S1]: this door still creates a
   // journal-ORIGIN page (proven below, unchanged), but FX14 S1 makes EVERY New Page
   // door open THE Page — so it travels to /page/:id now, not /journal/:id. FALSIFIED
@@ -684,10 +693,12 @@ await withHarness(async (app) => {
   // Page. SV6: "Journal Pages no longer exist. The Journal is now just a board that
   // contains certain pages." Original, byte-for-byte:
   //   PARKED (was "S5: \"New Journal Entry\" travels to a fresh untyped page (/journal/:id)")
-  const newJournalEntryId = newJournalEntryRoute.replace(/^#\/page\//, ''); // FX14: /page/:id now
-  const newJournalEntryRow = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(newJournalEntryId)})`);
-  ok('S5: "New Journal Entry" stamps origin:\'journal\' — the same door as Catch/the Journal category\'s own button',
-    newJournalEntryRow?.origin === 'journal' && newJournalEntryRow?.projectId == null, JSON.stringify(newJournalEntryRow));
+  // S5 New-Journal-Entry-origin check [PARKED — FX15 S3]: door retired (see the FX15
+  // note above); navigation + row read REMOVED. Successor: fx14.mjs's Catch check proves
+  // origin:'journal' is still stamped on journal-origin creation and lands on THE Page,
+  // and the Journal category's own button remains the live journal-origin door. Original
+  // ok, quoted verbatim (immutable):
+  //   PARKED (was "S5: \"New Journal Entry\" stamps origin:'journal' — the same door as Catch/the Journal category's own button")
 
   // ==========================================================================
   // S5 — the Board's Add flow gains "Existing page…": a quiet picker that
@@ -828,7 +839,6 @@ await withHarness(async (app) => {
       shelfHome: t('boardHomeLabelShelf'),
       shelfEmpty: t('shelfBoardEmpty'),
       shelfOpen: t('cascadeShelfOpen'),
-      newJournalEntry: t('cascadePageNewJournalEntry'),
       addExisting: t('boardAddExistingPage'),
       placesTitle: t('placesTitle'),
       placesLoose: t('placesLoose'),
@@ -976,7 +986,6 @@ if (process.env.HARNESS_PARKED === '1') {
         shelfHome: t('boardHomeLabelShelf'),
         shelfEmpty: t('shelfBoardEmpty'),
         shelfOpen: t('cascadeShelfOpen'),
-        newJournalEntry: t('cascadePageNewJournalEntry'),
         addExisting: t('boardAddExistingPage'),
         placesTitle: t('placesTitle'),
         placesLoose: t('placesLoose'),
@@ -988,7 +997,9 @@ if (process.env.HARNESS_PARKED === '1') {
       lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
         && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-        && lexiconTermsNow.newJournalEntry === 'New Journal Entry'
+        // FX15 S3: cascadePageNewJournalEntry retired (dead SV6 vocabulary) — its
+        // conjunct is dropped here; the probe follows current reality while the frozen
+        // record name above (a "9-way comparison") is left unchanged per the codicil.
         && lexiconTermsNow.addExisting === 'Existing page…'
         && lexiconTermsNow.placesTitle === 'Places'
         && lexiconTermsNow.placesLoose === 'Loose'
