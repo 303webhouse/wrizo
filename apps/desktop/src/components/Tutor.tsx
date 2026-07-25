@@ -7,7 +7,7 @@ import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDi
 import { apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
 import { computeStructureFacts, computeFragmentItems } from '../store/tutorLenses';
-import { computeNudges } from '../store/tutorNudges';
+// FX12 S1 — the computeNudges import is retired; store/tutorNudges.ts sleeps dormant.
 import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstimates';
 import { addTutorSessionCost } from '../store/tutorMeter';
 import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
@@ -39,11 +39,13 @@ import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_
 // harness walk (tu1.mjs) asserts this structurally, not by enumerating
 // "these N buttons are fine."
 //
-// A14 — the room never knocks: nudges (below) are rendered ONLY inside the
-// open panel. Nothing in this file renders a badge/toast/count/dot on the
-// grip, and the grip's own markup is IDENTICAL whether computeNudges()
-// returns [] or not — there is no code path that reads nudges outside the
-// open-panel branch.
+// A14 — the room never knocks. Its PRINCIPLE stands as ratified law; FX12 S1 retired
+// its current IMPLEMENTATION (the "Waiting for you" nudges), not the principle: the
+// nudges section and its engine now sleep entire (no computation, no injection). What
+// remains true and is even easier to see now: nothing in this file renders a
+// badge/toast/count/dot on the grip, and the grip's own markup is unchanged — there is
+// no knock anywhere. A later Tutor-panel ticket may return the letters under content
+// law (the return gate on ledger item 64).
 const DOCK_FLOOR_PX = 120;
 
 // TU2 S2 — the listener's delta assembly. No real tokenizer is available
@@ -329,7 +331,9 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   const consistencyObservations = panelVisible ? computeConsistencyObservations(consistencyScope) : [];
   const structure = panelVisible ? computeStructureFacts(entry, project) : null;
   const fragments = panelVisible ? computeFragmentItems(entry) : [];
-  const nudges = panelVisible ? computeNudges(entry.id) : [];
+  // FX12 S1 — the nudge-generation engine sleeps entire: computeNudges is no longer
+  // called here (its only call site), so no computation and no injection happen. The
+  // engine (store/tutorNudges.ts) and its data are left dormant, untouched.
 
   // --- S5 — the conversation. Read fresh off the record every render (the
   // App.tsx force-render-on-any-write subscription already covers this —
@@ -497,12 +501,12 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
               </div>
             </div>
 
-            {/* FX10 S1 — the lenses + nudges now read as sections AROUND
-                the conversation above, not the panel's own lead content —
-                a single wrapper (a quiet top divider, index.css) is the
-                whole demotion; no section here grows its own scrollbar
-                (S1's "no scroll-within-scroll" applies just as much to
-                these as to the conversation log). */}
+            {/* FX10 S1 — the lenses now read as sections AROUND the conversation
+                above, not the panel's own lead content (FX12 S1 retired the fourth
+                section, nudges) — a single wrapper (a quiet top divider, index.css) is
+                the whole demotion; no section here grows its own scrollbar (S1's "no
+                scroll-within-scroll" applies just as much to these as to the
+                conversation log). */}
             <div className="wz-tutor-sections">
             <div className="wz-tutor-section">
               <div className="wz-tutor-h">{t('tutorLensConsistency')}</div>
@@ -515,7 +519,11 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
               <div className="wz-tutor-h">{t('tutorLensStructure')}</div>
               <div className="wz-tutor-obs">{structure?.homeLabel}</div>
               {structure?.memberships.map((m) => <div key={m} className="wz-tutor-obs">{m}</div>)}
-              <div className="wz-tutor-obs">{structure?.linkedBeatName ?? t('tutorStructureNoBeat')}</div>
+              {/* FX12 S2 — the beats sentence dies (V3): the beats system is dormant
+                  (CD4), so the Structure lens no longer speaks a dead language — the
+                  "Not linked to a beat." line is retired. Home + memberships
+                  (home-derived, true) survive; the Thread arc gives Structure its true
+                  linked-language later. Silence over falsehood until then. */}
             </div>
 
             <div className="wz-tutor-section">
@@ -534,12 +542,15 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
                 )}
             </div>
 
-            <div className="wz-tutor-section">
-              <div className="wz-tutor-h">{t('tutorNudgesTitle')}</div>
-              {nudges.length === 0
-                ? <div className="wz-tutor-empty">{t('tutorNudgesEmpty')}</div>
-                : nudges.map((n) => <div key={n} className="wz-tutor-obs">{n}</div>)}
-            </div>
+            {/* FX12 S1 — the nudges sleep, whole: the "Waiting for you" section
+                unrenders everywhere and the nudge-generation engine (tutorNudges.ts)
+                sleeps entire — its only caller (computeNudges, above) is removed, so no
+                computation and no injection happen on any surface. The engine and its
+                data are UNTOUCHED (dormant, not deleted). A14's letters-frame survives
+                as ratified law — this retires its current implementation, not its
+                principle. RETURN GATE (ledger item 64): the nudges return only via a
+                later Tutor-panel ticket under content law — no guilt-language, no counts,
+                no repeats, deduplicated. The sleep must not become the grave. */}
 
             {/* TU5 S3 — the book's Bible, LAST in the cluster (Fable's ruling:
                 the most at-rest thing sits deepest — lenses are verbs, nudges

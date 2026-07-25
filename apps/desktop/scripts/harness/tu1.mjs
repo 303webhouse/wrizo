@@ -371,8 +371,13 @@ await withHarness(async (app) => {
     structureFiled.includes('In '), structureFiled);
   ok('S3 Structure: a page pinned to a board carries a truthful membership line',
     structureFiled.toLowerCase().includes('pinned'), structureFiled);
-  ok('S3 Structure: a page linked to a beat names the beat (reused from the existing Framework data)',
-    structureFiled.includes(BEAT_NAME), structureFiled);
+  // FX12 S2 — the beats sentence dies (V3): the ORIGINAL check (parked VERBATIM in
+  // this file's PARKED section, A4) asserted the Structure lens NAMES a linked beat;
+  // the beats system is dormant (CD4), so the lens no longer speaks a dead language.
+  // Live successor: the beat line is absent — neither the beat name nor the retired
+  // "Not linked to a beat." fallback appears, even on this beat-seeded filed page.
+  ok('S3 Structure (FX12 S2 successor): the lens no longer speaks beats — neither the beat name nor the retired "Not linked to a beat." line appears on a beat-seeded filed page',
+    !structureFiled.includes(BEAT_NAME) && !structureFiled.includes('Not linked to a beat'), structureFiled);
 
   // ==========================================================================
   // S3 — Fragments lens: recent captures + starred pages sharing a tag.
@@ -439,11 +444,13 @@ await withHarness(async (app) => {
     (await app.evalJs("document.querySelector('.wz-tutor-grip').outerHTML")).replace(/aria-label="[^"]*"|title="[^"]*"/g, '')
     === gripHtmlBefore.replace(/aria-label="[^"]*"|title="[^"]*"/g, ''));
   await openTutor(app);
-  const nudgeText = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[3].innerText");
-  ok('S4 nudges: a starred page untouched for days is named as a letter waiting',
-    nudgeText.includes('A page starred long ago') && nudgeText.includes('days'), nudgeText);
-  ok('S4 nudges: a board with an empty region is named as a letter waiting',
-    nudgeText.includes('Empty board') || nudgeText.includes('nothing on it'), nudgeText);
+  // FX12 S1 — the nudges section ("Waiting for you", the 4th tutor-section) is
+  // retired and its engine sleeps entire. The two S4 nudges-content checks that
+  // read section [3] are parked VERBATIM in this file's PARKED section (A4); their
+  // live successor is the nudges-absent structural sweep in fx12.mjs (zero
+  // "Waiting for you" anywhere, no 4th section). The A14 no-badge/no-knock checks
+  // (the grip-identical check above and the document sweep below) SURVIVE — this
+  // retires the nudges implementation, not A14's principle.
   ok('A14: no badge/toast/count/dot element exists anywhere in the whole document',
     (await app.evalJs("!document.querySelector('[class*=\"badge\"],[class*=\"toast\"],[class*=\"count\"],[class*=\"dot\"]')")));
 
@@ -707,6 +714,25 @@ if (process.env.HARNESS_PARKED === '1') {
   // above against the '3' key; the owning live successor is tu5.mjs.
   pok('PARKED (was "S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v2 key)") — TU5 S6: CURRENT_DISCLOSURE_VERSION is 3 now, so the ack writes version 3, not 2 — live successor in tu5.mjs\'s own disclosure v3 section (and re-asserted fresh here against the v3 key)',
     true, 'superseded by TU5 S6\'s disclosure v3');
+
+  // FX12 S1 — the "Waiting for you" nudges section unrenders everywhere and the
+  // nudge-generation engine sleeps entire (no computation, no injection). Both S4
+  // nudges-content checks are parked VERBATIM; their live successor is the
+  // nudges-absent structural sweep in fx12.mjs (zero "Waiting for you" anywhere,
+  // no 4th tutor-section on any surface). Confirmed falsified live by the full-suite
+  // re-run against the FX12 build. The engine + data are dormant, not deleted; the
+  // return gate is on ledger item 64 (a later Tutor-panel ticket under content law).
+  pok('PARKED (was "S4 nudges: a starred page untouched for days is named as a letter waiting") — FX12 S1: the nudges section unrenders everywhere and the engine sleeps entire — live successor in fx12.mjs (the nudges-absent structural sweep)',
+    true, 'superseded by FX12 S1 — nudges retired, engine dormant');
+  pok('PARKED (was "S4 nudges: a board with an empty region is named as a letter waiting") — FX12 S1: the nudges section unrenders everywhere and the engine sleeps entire — live successor in fx12.mjs (the nudges-absent structural sweep)',
+    true, 'superseded by FX12 S1 — nudges retired, engine dormant');
+
+  // FX12 S2 — the beats sentence dies (V3): the beats system is dormant (CD4), so
+  // the Structure lens no longer names a linked beat. Parked VERBATIM; live
+  // successor: this file's own live S3 Structure section (the FX12 S2 successor,
+  // asserting neither the beat name nor the retired "Not linked to a beat." line).
+  pok('PARKED (was "S3 Structure: a page linked to a beat names the beat (reused from the existing Framework data)") — FX12 S2: the beats system is dormant (CD4); the Structure lens no longer speaks beat language — live successor: this file\'s own live S3 Structure section (FX12 S2 successor)',
+    true, 'superseded by FX12 S2 — the beats sentence retired');
 
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
