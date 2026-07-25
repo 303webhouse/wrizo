@@ -6739,6 +6739,35 @@ outlive a session lives here, not in chat.
     theme key; nothing visual changes. Both HARNESS_PARKED settings; full suite before
     merge. **DoD: the app opens where the writing is.**
 
+68. **M4 — the Root That Shows.** **OPENED 2026-07-25 (chat 3), P1 wave
+    (`p1-wave.md` §M4, SV13–SV16). S1+S2 BUILT + verified; S3+S4 ROOT-CAUSED
+    (below). Branch `m4-root-that-shows` (`b6dc55e`), own worktree; ZERO
+    SCHEMA/SERVER; merges through chat 1's lane, deploy held (P1 + SC, one named
+    manifest).** **S1 (SV13) sequenced origins — DONE:** the 7 blue-noise origins
+    no longer all root at birth. `originsAwake(target)=min(7,floor(7·target/CAP)+1)`
+    gates `growSegment` rooting via `growTo`; origin k wakes when
+    saturationTarget(words) crosses k/7 of CAP — thresholds ~0/129/281/467/707/
+    1045/1623 words, NO new constant; determinism/paper-avoidance/forward-only/
+    high-water refit unchanged (seam-verified: awake steps 1→7). Origin one grows
+    alone (its own branching root); territory earned by writing. **S2 (SV14) the
+    green — DONE:** `--rhizome-ink` #7A6242 → **#3F4A37** (deep low-yellow green,
+    G-dominant so it reads as a root, not the house olive; stepped down in weight
+    — value not just hue). Bounded delta for Nick's eye. **S3 (SV15) bar comes
+    home — ROOT-CAUSED:** on the FRAMED desk the bar (`mode-incentive-row`) does
+    not render — AB1 S2 reserved "the meter track for its later return"; S3 IS
+    that return. Render the instrument (ProgressBar when progressStyle=bar,
+    RhizomeField when=rhizome) in the SAME under-page lane
+    `.desk-frame-rhizome-anchor` (DeskFrame.tsx:243). **S4 (SV16) completion
+    moment — ROOT-CAUSED:** the flare is DEAD on the framed desk — the ProgressBar
+    ignition+spark burst AND the AmbientGlow bloom render only `!framed`
+    (ModeStage.tsx:460, 333) though `celebrating` IS computed (L276); only the
+    rhizome's quiet flash fires. Fix: S3 brings the bar+flare home to the framed
+    lane, then make that flare an unmistakable ORANGE at the earned goal (canon
+    "humans acting"; nothing counted/scored/remembered). **DoD:** one root grows
+    where he can see it, new roots as earned, ground alive-not-touchable, the goal
+    felt. **Remaining: S3+S4 build + `m4.mjs` + both-settings/1366×768/full-suite
+    verification** — S1/S2 committed; the root-cause above is the finish's map.
+
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
    exists on prod; Rev 3 folds it in, plus: the ink canon, the reframed
