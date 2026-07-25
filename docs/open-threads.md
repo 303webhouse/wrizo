@@ -6121,6 +6121,9 @@ outlive a session lives here, not in chat.
     pending device sitting) cleared by Fable on the record, and the
     deploy-manifest recommendation is already satisfied — the batch shipped at
     `375c10f` before any SC merge, so SC earns its own deploy word separately.
+    *(residue superseded 2026-07-25 — the EARNING stands exactly as written; only
+    "separately" is superseded, since one word may now cover both arcs when the
+    manifest names their contents. See the amendment below.)*
     **Sequencing ruled: SC1 → SC2 → SC3 (+ the door + the R5 comment rider) →
     SC4.** All fixes, all zero schema, all freeze-lawful.
     **SC1 BRIEFED — 2026-07-24, Fable-authored**
@@ -6263,6 +6266,16 @@ outlive a session lives here, not in chat.
     hand-verified REVIEW edges, none new) — SC1's frozen park records survived
     BYTE-IDENTICAL. Fable reviews post-merge; **deploy HELD — SC's own separate word
     on SC's own manifest**, never folded into a wave. SC2 is next in sequence.
+    **RESIDUE ANNOTATED — 2026-07-25 (chat 1, in its own hand, per the flag at this
+    item's SC-lane amendment below and Nick's word; cross-reference form, CD4 mode 3).**
+    The residue this record carries is the SEPARATENESS — the phrase **"never folded
+    into a wave"** (and "SC's own separate word … on SC's own manifest" read as
+    *apartness*). The P1-wave amendment moved exactly that: SC content MAY now ride a
+    shared deploy when the manifest enumerates both arcs' contents by name (Fable,
+    2026-07-25 — the amendment below). What did NOT move is the EARNING — the deploy is
+    still HELD, Nick's word is still required, and the manifest must still name
+    everything. Per the general form, the RESIDUE is annotated, not the entry: this
+    record stands byte-identical; only the separateness is superseded, not the earning.
     **Canon note for chat 1: the shared house-laws file moved.** The Relay Law
     was appended to `docs/wrizo-alpha/fable-session-handoff-v3.md` as **law 6**
     — landed by chat 1 at `cc2d971`, verified faithful from this lane (the
@@ -6422,6 +6435,19 @@ outlive a session lives here, not in chat.
     manifest, never folded into a wave"). **Flagged to chat 1 to annotate in its
     own hand** — reaching into another lane's record to correct it would be the
     very rewrite this discipline forbids.
+    **CORRECTED BY APPEND, 2026-07-25 (Fable), and NOT by editing the paragraph
+    above** — the discipline binds this lane's own records too. The method was
+    right and the scope was too coarse. **R6's entry carries a RESIDUE**: the
+    *earning* of a deploy word survives exactly as written, but **"separately"
+    is the single token the amendment moved**, since one word may now cover both
+    arcs when the manifest names their contents. R6 is therefore annotated with
+    a SCOPED note naming that one word, rather than being marked stale entire or
+    left bare. The SC1-BRIEFED line's "deploy is Nick's separate word" stands
+    unannotated — it carries no residue, only the earning. **THE GENERAL FORM,
+    ON THE RECORD: annotate the RESIDUE, not the entry.** An entry is rarely
+    wholly superseded; marking it so discards the true part, and leaving it bare
+    because it is mostly true keeps the false part enforceable. The annotation
+    names exactly what moved.
     **PB1 — the lane is WIDENED, for PB1 only.** Fable's word of 2026-07-25: the
     SC lane gains PB1's named files on the page/board birth path **for the
     duration of PB1**, and **the widening EXPIRES when PB1 merges**. Everything
@@ -6690,6 +6716,67 @@ outlive a session lives here, not in chat.
     `useChromeDissolve` A19 page-vanish signal, and the deck-mechanism finding) —
     the successor builds from that map, not from scratch. Current page doors:
     Screenplay · Sprout · Plan (P1 amendment 2, `c26b85e`).
+    **BUILT + PUSHED, AWAITING MERGE — 2026-07-25 (the successor session).**
+    Branch `bg1-beginnings` at `10ee2bf`, off `main` `53a7588`, own worktree,
+    guard-rail confirmed before every commit. Zero schema, zero server files,
+    zero deps. Two commits: the build (`234998e`) and one correction on the
+    record (`10ee2bf`, below). **NOT merged — BG1 merges SECOND, through chat
+    1's lane, AFTER FX15** (P1 amendment 2's merge-coordination note, `38d2f6a`).
+    - **S3 first, because both rows are one thing.** New
+      `components/BeginningsRow.tsx` — one component, one vanish rule ("render
+      only while the surface is empty, unmount the instant it isn't"), the gate
+      held at the two places that can see emptiness rather than in a third copy
+      of the test. Container `pointer-events:none` (the `.fl-invite`/rhizome
+      precedent); doors take the pointer back. Eight new `begin*` lexicon terms.
+    - **S1 — the board's row**, per mode, replacing FX6 S2c's one-line pointer on
+      an ordinary board (that line NAMED two tools and sent the writer to the
+      sliver; these are the doors themselves, in the room). System boards render
+      NO row and keep their declarative lines; the Shelf's "Nothing waiting."
+      is untouched. A paired plan board takes OPEN's row through the same table
+      — no plan-board branch. No Import/Upload (Reference Seal).
+    - **DRIFT CORRECTED in the dossier:** its "MISSING: `onAddLane` — must be
+      built" is **wrong**. `addLane` already existed (`BoardProjection.tsx`), but
+      was unreachable from an EMPTY storyboard — that projection returns its
+      empty line *before* it renders the button, so a board with no cards had no
+      way to lay a lane at all. Lifted to `BoardEditor` and passed down, so ONE
+      lane-append exists rather than two that can drift. Second mechanism note:
+      `onAddCard` now arms the card popup only in OPEN (the popup lives inside
+      `boardBody`, which only OPEN renders — arming it from a projection would
+      set state nothing can render, then spring it open on the next flip back).
+    - **S2 — the page's row**, Screenplay · Sprout · Plan, beside a LIVE caret;
+      dismissed by the first keystroke (A19's `onForward` seam), any door taken,
+      or Esc; never rendered on a page with words. Sprout wires to **FX15's
+      `optIn()`**, not DeckWizard — "deck" was overloaded and the spark deck IS
+      the first-line-invite (the addendum's finding). BG1's delta to that file is
+      one rename + one export (`tapAffordance` → `optIn`), deliberately shaped so
+      the combined tree resolves to FX15's own version with BG1's call site
+      unchanged on either merge order.
+    - **A4:** `fx6.mjs`'s S2 (c) empty-board COPY check is PARKED verbatim at its
+      own site, successor named as `bg1.mjs`. Its sibling ("the pointer
+      disappears the moment the board has a card") was RE-POINTED in place, not
+      parked — the claim survives, only the vehicle moved (vehicle/subject).
+    - **Verification.** `bg1.mjs` — 37 checks, PASS both `HARNESS_PARKED`
+      settings (parked gate armed and empty; BG1 parks nothing of its own).
+      Includes the load-bearing DoD check (a writer types immediately without
+      touching the row, and it is gone when they do), the Sprout rails (ZERO
+      outbound requests on load or on press; nothing insertable), and the
+      **1366×768 leg** for both rows. **Full suite: 44/44 GREEN both settings**
+      — 1826 checks unset, 1966 at `=1`, zero failures, read from raw JSON
+      rather than verdict lines. `tsc` ×2 EXIT 0; `build:web` clean.
+    - **COMBINED-TREE PROOF (the second-merger duty, discharged early).** A trial
+      merge of `bg1-beginnings` × `fx15-quiet-page` conflicts in exactly ONE file
+      — `useFirstLineInvite.tsx` — resolved by taking FX15's version;
+      `PageEditor.tsx` and `deskLexicon.ts` auto-merge clean. On that tree: `tsc`
+      EXIT 0, `build:web` clean, **`fx15.mjs` 13/13, `bg1.mjs` 37/37, `fx6.mjs`
+      37 + 2 parked, both settings** — i.e. Sprout still opens the invitation
+      after FX15 silences it by default. Trial branch/worktree discarded, never
+      pushed; the real merge is chat 1's, in that order.
+    - **Session hazard, for the record:** a second session was driving the
+      browser harness concurrently; its browser sweep killed this session's
+      in-flight `fx10` run mid-suite (0 checks, rc=-1). Re-run in isolation:
+      GREEN, 122 checks. A swept browser is not a defect — but concurrent
+      harness sessions cost a re-run, and the sweep-before-a-suite lesson now
+      has a third witness with the opposite sign.
 68. **FX15 — the Quiet Page.** **OPENED — 2026-07-25 (chat 1)**, from the P1 wave
     (`docs/wrizo-alpha/p1-wave.md`), authority Nick's word of 2026-07-25 (the unbidden
     first-line invite is not wanted by default; + the stale-language sighting). Branch
@@ -6722,6 +6809,35 @@ outlive a session lives here, not in chat.
     line of preparation for the deferred work: the loading screen reads the persisted
     theme key; nothing visual changes. Both HARNESS_PARKED settings; full suite before
     merge. **DoD: the app opens where the writing is.**
+
+70. **M4 — the Root That Shows.** *(renumbered from 68 — collision with FX15, first-to-open; commits before this reference it as 68.)* **OPENED 2026-07-25 (chat 3), P1 wave
+    (`p1-wave.md` §M4, SV13–SV16). S1+S2 BUILT + verified; S3+S4 ROOT-CAUSED
+    (below). Branch `m4-root-that-shows` (`b6dc55e`), own worktree; ZERO
+    SCHEMA/SERVER; merges through chat 1's lane, deploy held (P1 + SC, one named
+    manifest).** **S1 (SV13) sequenced origins — DONE:** the 7 blue-noise origins
+    no longer all root at birth. `originsAwake(target)=min(7,floor(7·target/CAP)+1)`
+    gates `growSegment` rooting via `growTo`; origin k wakes when
+    saturationTarget(words) crosses k/7 of CAP — thresholds ~0/129/281/467/707/
+    1045/1623 words, NO new constant; determinism/paper-avoidance/forward-only/
+    high-water refit unchanged (seam-verified: awake steps 1→7). Origin one grows
+    alone (its own branching root); territory earned by writing. **S2 (SV14) the
+    green — DONE:** `--rhizome-ink` #7A6242 → **#3F4A37** (deep low-yellow green,
+    G-dominant so it reads as a root, not the house olive; stepped down in weight
+    — value not just hue). Bounded delta for Nick's eye. **S3 (SV15) bar comes
+    home — ROOT-CAUSED:** on the FRAMED desk the bar (`mode-incentive-row`) does
+    not render — AB1 S2 reserved "the meter track for its later return"; S3 IS
+    that return. Render the instrument (ProgressBar when progressStyle=bar,
+    RhizomeField when=rhizome) in the SAME under-page lane
+    `.desk-frame-rhizome-anchor` (DeskFrame.tsx:243). **S4 (SV16) completion
+    moment — ROOT-CAUSED:** the flare is DEAD on the framed desk — the ProgressBar
+    ignition+spark burst AND the AmbientGlow bloom render only `!framed`
+    (ModeStage.tsx:460, 333) though `celebrating` IS computed (L276); only the
+    rhizome's quiet flash fires. Fix: S3 brings the bar+flare home to the framed
+    lane, then make that flare an unmistakable ORANGE at the earned goal (canon
+    "humans acting"; nothing counted/scored/remembered). **DoD:** one root grows
+    where he can see it, new roots as earned, ground alive-not-touchable, the goal
+    felt. **Remaining: S3+S4 build + `m4.mjs` + both-settings/1366×768/full-suite
+    verification** — S1/S2 committed; the root-cause above is the finish's map.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
