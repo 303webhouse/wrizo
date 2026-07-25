@@ -171,8 +171,18 @@ await withHarness(async (app) => {
     const stageR = stage.getBoundingClientRect(), sheetR = sheet.getBoundingClientRect();
     return { fraction: (sheetR.top - stageR.top) / stageR.height };
   })()`);
-  ok('S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as "about a quarter"',
-    scriptInfo.fraction >= 0.20 && scriptInfo.fraction <= 0.32, JSON.stringify(scriptInfo));
+  // SC1 S3 (2026-07-24) — the ORIGINAL check ("the visual start position also
+  // reads as 'about a quarter'") is SUPERSEDED and parked verbatim in this
+  // file's own PARKED section. Nick's SC-V4 verdict, first screenplay sitting:
+  // "the cursor starts by floating in the middle of the page." A screenplay
+  // begins at the top of page one — so the script surface no longer consumes
+  // `--tw-start-offset` at all, and "S7 mirrors prose" stops being true HERE
+  // on purpose: prose starts where the writer's eye rests, a screenplay starts
+  // at its top margin. Prose and Journal keep the FX4 quarter exactly (the
+  // three prose checks above and the Journal checks below are untouched and
+  // still green). The live successor asserts the law that replaced it.
+  ok('SC1 S3 @ 1280px (was "S1 (script): the visual start position also reads as \'about a quarter\'"): a script page starts at the TOP of the stage — page one begins at its top margin (SC-V4), no start-offset on this surface',
+    scriptInfo.fraction >= 0 && scriptInfo.fraction <= 0.02, JSON.stringify(scriptInfo));
 
   // Journal: the carve-out retires — .entry-full now reads --tw-start-offset
   // for the first time. Raw fraction (paddingTop / window.innerHeight, the
@@ -778,6 +788,42 @@ if (process.env.HARNESS_PARKED === '1') {
     })()`);
     pok('PARKED (was "S5: Done closes the popup, un-blurs the board, and commits the edit") — CD4.1: the card-edit popup close button is relabeled "Close" (class board-popup-done + behavior unchanged); live successor: this file\'s own live S5 section',
       popupCloseNow.present === true && popupCloseNow.label === 'Close', JSON.stringify(popupCloseNow));
+
+    // ORIGINAL (this file's own live S1 section, pre-SC1): await
+    // freshScriptPage(app, LAPTOP_W, 900); const scriptInfo = await
+    // app.evalJs(`(() => { const stage = document.querySelector(
+    // '.desk-frame-stage'); const sheet = document.querySelector(
+    // '.script-sheet'); const stageR = stage.getBoundingClientRect(), sheetR
+    // = sheet.getBoundingClientRect(); return { fraction: (sheetR.top -
+    // stageR.top) / stageR.height }; })()`); ok('S1 @ 1280px (script, S7
+    // mirrors prose): the visual start position also reads as "about a
+    // quarter"', scriptInfo.fraction >= 0.20 && scriptInfo.fraction <= 0.32,
+    // JSON.stringify(scriptInfo));
+    // SC1 S3 — SUPERSEDED. FX4 S1 tuned START_FRACTION to 0.25 and applied it
+    // to every writing surface, script included ("S7 mirrors prose"). Nick's
+    // first screenplay sitting overruled that for THIS surface only: SC-V4,
+    // "the cursor starts by floating in the middle of the page." A screenplay
+    // begins at the top of page one, so `.desk-frame-scroll-cap` no longer
+    // consumes `--tw-start-offset` and script's fraction is ~0 by law. FX4's
+    // quarter is untouched for prose and Journal — the probe below re-proves
+    // BOTH halves at once, so this park also stands as the guard that SC1 did
+    // not leak into prose. Live successor in this file's own live S1 section.
+    await freshScriptPage(app, LAPTOP_W, 900);
+    const scriptStartParked = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
+      const sheet = document.querySelector('.script-sheet').getBoundingClientRect();
+      return { fraction: (sheet.top - stage.top) / stage.height };
+    })()`);
+    await freshProsePage(app, LAPTOP_W, 900);
+    const proseStartParked = await app.evalJs(`(() => {
+      const stage = document.querySelector('.desk-frame-stage').getBoundingClientRect();
+      const ed = document.querySelector('.forward-only-editor').getBoundingClientRect();
+      return { fraction: (ed.top - stage.top) / stage.height };
+    })()`);
+    pok('PARKED (was "S1 @ 1280px (script, S7 mirrors prose): the visual start position also reads as \'about a quarter\'") — SC1 S3: script starts at the TOP of page one (SC-V4) while prose KEEPS FX4\'s quarter; live successor in this file\'s own live S1 section',
+      scriptStartParked.fraction >= 0 && scriptStartParked.fraction <= 0.02
+        && proseStartParked.fraction >= 0.20 && proseStartParked.fraction <= 0.32,
+      JSON.stringify({ scriptStartParked, proseStartParked }));
 
     return parkedChecks;
   });

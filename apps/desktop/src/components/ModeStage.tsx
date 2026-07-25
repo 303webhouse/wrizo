@@ -565,7 +565,14 @@ function AssistIcon() {
 // STORED value is untouched either way (same silent-degrade law as
 // Progress:Project) — it simply resumes the instant the writer is back on
 // a framed session.
-export function SettingsPanel({ settings, hasMilestones, framed }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean }) {
+// SC1 S3 (2026-07-24) — `typewriterAvailable` defaults TRUE, so every
+// pre-SC1 caller (this file's own framed/unframed prose gear) is unchanged.
+// Sliver.tsx passes false on a screenplay page, where the surface no longer
+// runs the typewriter and the option must therefore not present itself: the
+// icon toggle is the visible affordance, but this Seg is the second one
+// behind the same gear, and hiding only the first would leave a live switch
+// that does nothing one click deeper.
+export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
   const { t: deskLex } = useDeskLexicon();
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
@@ -600,7 +607,7 @@ export function SettingsPanel({ settings, hasMilestones, framed }: { settings: {
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />
+      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
   );

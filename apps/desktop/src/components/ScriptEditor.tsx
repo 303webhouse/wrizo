@@ -17,9 +17,6 @@ import { triggerDownload } from '../store/download';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
-import { useWritingSettings, seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
-import { countLineEquivalents } from '../store/lineEquivalents';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
@@ -256,38 +253,41 @@ export function ScriptEditor({ id }: { id: string }) {
   // AB2 S4 — the Structure picker's one-way warning (screenplay -> prose;
   // element types don't survive the trip). Switching an empty script is free.
   const [structureConfirm, setStructureConfirm] = useState(false);
-  // AB2 S2 DoD — the typewriter option reaches the script surface's Draft
-  // posture through the rail; its hold-band targets the SAME bounded
-  // scroll-cap the containment fix (finding 4) already gives this surface,
-  // so the two behaviors can't fight (container-mode useTypewriterFade, not
-  // window-mode — see the `desk-frame-scroll-cap` ref below).
+  // AB2 S2 DoD — the typewriter option used to reach the script surface's
+  // Draft posture through the rail, with its hold-band targeting the bounded
+  // scroll-cap AB1's containment fix (finding 4) gives this surface.
+  //
+  // SC1 S3, AMENDED 2026-07-24 (Nick's word, via Fable): **the screenplay
+  // surface does not run the typewriter at all**, interim, pending his own
+  // revision of typewriter mode in a separate build. So this surface no
+  // longer calls useTypewriterFade — the hook and its shared engine are
+  // untouched and byte-identical for prose (ModeStage) and Journal
+  // (JournalEntry), which keep it exactly as FX5 shipped it.
+  //
+  // This AMENDS AB2 S2's own definition of done ("the typewriter option
+  // reaches the script surface's Draft posture") on the record — recorded in
+  // the ledger and in the SC1 report, and carried in ab2.mjs's own park
+  // cycle in the same commit, so it can never fail silently.
+  //
+  // The scroll cap itself stays exactly as it is: it is AB1's containment
+  // fix (a bounded height + internal scroll for a sheet that grows with the
+  // document), which has nothing to do with the typewriter. What goes with
+  // the hook is the static `--tw-start-offset` padding that rode on
+  // `[data-typewriter='true']` — the measured root of SC-V4 (an
+  // unconditional 183px pushing a brand-new page's caret to 38.2% of the
+  // box). See index.css's own rule.
   const scrollCapRef = useRef<HTMLDivElement>(null);
-  const writingSettings = useWritingSettings();
-  useTypewriterFade({
-    enabled: framed && writingSettings.typewriter,
-    containerRef: scrollCapRef,
-    editorSelector: '.script-el-active',
-    // FX3 S3 — the container-mode retune (see useTypewriterFade.ts and
-    // ModeStage.tsx's own matching call); Journal's window-scroll call is
-    // untouched.
-    holdBand: CONTAINER_HOLD_BAND,
-  });
-  // FX2 S2 — ScriptEditor has no `mode` concept at all; it's always
-  // effectively Draft (the brief's own "ScriptEditor's always-drafting
-  // posture"), so the Draft-open seed applies unconditionally here, unlike
-  // PageEditor.tsx's `mode === 'drafting'` gate. `initialEntry?.text` is
-  // the derived shadow persistence.ts's saveScriptDoc keeps in sync with
-  // the ScriptDoc on every save (canon §2.4) — as of THIS mount it reflects
-  // the doc's line count without needing to serialize `initialDoc` by hand.
-  // Captured once via the effect's own closure (empty deps): this
-  // component remounts per page (`key={id}`, PageEditor.tsx), so "once per
-  // mount" already means "once per page-open," satisfying "mid-session
-  // mode switches don't re-evaluate" the same way PageEditor.tsx's own
-  // effect does.
-  useEffect(() => {
-    seedTypewriterDefault(countLineEquivalents(initialEntry?.text ?? '') < DRAFT_TYPEWRITER_LINE_THRESHOLD);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // FX2 S2 gave this surface the Draft-open typewriter seed: on mount it wrote
+  // the GLOBAL typewriter setting from the page's own line count, exactly as
+  // PageEditor.tsx does for prose.
+  //
+  // SC1 S3, AMENDED 2026-07-24 — that seed retires here with the typewriter
+  // itself. It was never a script-local value: `seedTypewriterDefault` writes
+  // the shared `wrizo-writing-settings` store, so leaving it in place would
+  // have a screenplay page — a surface that no longer runs the typewriter at
+  // all — silently flip the writer's typewriter setting for PROSE and Journal
+  // on open, purely as a side effect of opening a script. Prose keeps its own
+  // identical seed in PageEditor.tsx, untouched.
   // AB1 S3 — the vanishing law, generalized to the script surface's own
   // DeskFrame chrome (the mode strip; the corner glyph via App.tsx's shared
   // isWriting session). Mounted unconditionally (rootRef omitted -> writes
@@ -662,8 +662,17 @@ export function ScriptEditor({ id }: { id: string }) {
   // branch only), the SAME paper geometry class/width band prose uses (Law
   // 1). Legacy (<1100px) is untouched — it never wrapped in mode-pagecol and
   // keeps this inline width exactly as before.
+  // SC1 S1 — and now legacy's inline width goes too. `maxWidth:'60ch'` capped
+  // the sheet at the TEXT MEASURE (6.0in) where the page itself is 8.5in, so
+  // the legacy paper was a page's measure with a page's margins crammed
+  // inside it — the same "no page, only furniture" defect the framed branch
+  // had, wearing an inline style instead of a missing one. The page's
+  // geometry is single-sourced in `.script-sheet` now (index.css) and applies
+  // to BOTH branches; an inline maxWidth here would be the one thing able to
+  // override it. Legacy's markup shape is otherwise unchanged (no DeskFrame,
+  // no `.mode-pagecol`, still `.script-page` — fx7.mjs S1's own assertion).
   const scriptSheet = (
-    <div className="script-sheet" style={{ position: 'relative', maxWidth: framed ? undefined : '60ch' }}>
+    <div className="script-sheet" style={{ position: 'relative' }}>
       {elements.map((el, i) => {
         const active = i === activeIndex;
         if (active) {
@@ -737,7 +746,7 @@ export function ScriptEditor({ id }: { id: string }) {
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
         >
-          <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter={writingSettings.typewriter ? 'true' : 'false'}>
+          <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter="false">
             <div className="mode-pagecol">{scriptSheet}</div>
           </div>
         </DeskFrame>
