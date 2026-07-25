@@ -6214,8 +6214,61 @@ outlive a session lives here, not in chat.
     `main` is brought into `sc1-true-geometry`. Third carry-back, now resolved
     by the wave: `fx5.mjs`'s three claimants sequenced themselves — DF1's
     rewrite and FX14's sweep are both on `main`; SC1 never touched the file.
-    **SC2 is NOT open** — its brief is next from Fable; nothing starts without
-    one.
+    **HAZARD DISCHARGED — 2026-07-25, on Fable's GO. Merge HEAD `22dc1c7`**
+    (`git merge --no-ff origin/main` at `f483fe8` into `sc1-true-geometry`;
+    parents `e86d016` + `f483fe8`; **a MERGE, never a rebase — `e86d016`
+    survives in history as the commit Fable reviewed GREEN, so the review of
+    record names a commit that still exists**). Zero conflicts. The trial tree
+    was a prediction; these are the facts at the real HEAD:
+    **(1) The 37 frozen park records, `e86d016` → `22dc1c7`: `ab2` 12→12,
+    `fx1` 14→14, `fx3` 6→6, `fx4` 4→4, `fx7` 1→1 — ALL BYTE-IDENTICAL.**
+    Cross-checked independently with DF1's own `audit-parked-records.mjs`,
+    which now scans 43 files / 131 records: TRACED-once 102, TRACED-multi 23,
+    B1-touched 2 (the known pre-law case, cited not re-flagged), REVIEW 4.
+    **The 4 REVIEW items are DF1's identical hand-verified set** (`ab3`/`cd2`
+    `pok(` inside a comment; `ab4:595` nested escaped quotes; `fx1` the
+    generation-framing the keyer cannot parse) — `fx1`'s is SC1's own record,
+    line 540→580, raised gen-2→gen-3 by SC1 and flagged for the same known
+    extraction edge, not a mutation. The auditor's non-zero exit is DF1's
+    documented behavior on an un-auto-traceable record, i.e. the pre-existing
+    baseline, not a finding.
+    **(2) FULL HISTORIC SUITE AT THE MERGE HEAD — 43/43 files, BOTH
+    `HARNESS_PARKED` settings, serially, every verdict read to completion in
+    the main loop: 1790 VERIFY unset; 139 PARKED + 1892 VERIFY = 2031 at `=1`;
+    zero failures, zero isolation re-runs, asserted against the raw JSON.**
+    The parked total is **139, identical to the pre-merge run** — every SC1
+    park cycle still fires against FX14's rewritten files. `sc1.mjs` 66/66 both
+    settings; `tsc` ×2 EXIT 0; `build:web` clean. Orphaned `--headless`
+    browsers swept before and between passes (2 between). Live check counts
+    moved in several files (`w1` 18→5, `w2` 31→21, `ab2` 41→31, `fx4` 49→42,
+    `b1` 51→48, `j5`/`j6`/`m1`/`b2-1`) — that is **FX14's own re-point
+    consolidation, already on `main` and already reviewed with FX14**, not an
+    SC1 delta. **SC1 holds at `22dc1c7`, verified and unmerged; merge remains
+    chat 1's lane and deploy remains Nick's separate word on SC's OWN
+    manifest** — the P0 deploy of 2026-07-25 (`c13182b` / railway `cf99e5a8`)
+    correctly carries no SC ticket.
+    **Canon note for chat 1: the shared house-laws file moved.** The Relay Law
+    was appended to `docs/wrizo-alpha/fable-session-handoff-v3.md` as **law 6**
+    — landed by chat 1 at `cc2d971`, verified faithful from this lane (the
+    statement verbatim, plus the test, the what-fires clause and the bounds,
+    pointing to `docs/wrizo-alpha/relay-law.md`). The SC lane held the same
+    instruction and stood down rather than duplicate the edit.
+    **SC2 BRIEFED — 2026-07-25, Fable-authored, committed verbatim**
+    (`docs/wrizo-alpha/sc2-the-clock-brief.md`): the Clock. Derived pagination
+    on the **54-line** body (SC1's exact derivation — 66em − 6em − 6em = 54em
+    at 6 lpi — over the committee's approximate "~55"; the discrepancy is to be
+    recorded in the commit, not silently chosen), a sequence of 66em sheets
+    derived and never stored, break rules (no scene heading and no character
+    cue last on a page; no element splits in SC2 — the honest cost is page
+    counts running slightly long against Final Draft until SC2.1's
+    `(MORE)`/`(CONT'D)`; an over-page action block is the one permitted split),
+    R1's page numbers top-right from page two with the bright line provable as
+    an ABSENCE (no total, no "of N", nowhere in the app, `aria-label`
+    included), the caret surviving a page break under trusted pointer with a
+    typing-latency ceiling on a 20-page doc, and `sc2.mjs`'s viewport-invariance
+    proof — **the same document must paginate identically at 1100px, 2200px and
+    in a 700px room; a page count that moves with the window is a clock that
+    lies.** **SC2 is NOT started and does not branch until SC1's merge lands.**
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
