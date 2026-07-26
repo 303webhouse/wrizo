@@ -7228,6 +7228,46 @@ outlive a session lives here, not in chat.
     **MERGED — 2026-07-25, merge `7ec8125`** (re-merged onto origin's latest, clean). GREEN
     both settings on the combined P1 tree (`m4.mjs` 42 checks); DEPLOYED with the P1+SC wave
     (see the DEPLOY MANIFEST below). Review + sitting OPEN.
+72. **FX16 — the Invite, Truly Silent.** **OPENED — 2026-07-25 (chat 1)**, from the P2
+    wave (`docs/wrizo-alpha/p2-wave.md` §FX16), authority SV18 — the first-line invite
+    STILL renders on a fresh page after FX15 (Nick's walk of the deployed tree: "a door
+    left open" + its dismiss line, present by default). FX15 built this surface; the same
+    lane closes it. Branch `fx16-invite-silent` off `main`, own worktree, guard-rail,
+    ledger on `main` (fetch-before + push-same-breath); item number ASSIGNED (72), not
+    claimed; **ZERO SCHEMA, ZERO SERVER FILES**; merges through chat 1's lane, Fable
+    reviews post-merge, one deploy word covers the wave. **S1 — root-cause FIRST (no patch
+    before the mechanism is named):** two candidates — (a, prime suspect) a persisted
+    pre-FX15 value (`wrizo-first-line-invite`=`on`, written by an older build) overriding
+    the new silent default (a stored explicit value beats a changed default → correct for
+    new users, broken for existing ones); (b) the render path ignores the setting.
+    Reproduce on a CLEARED profile AND on one carrying the value; NAME which in the commit.
+    **S2 — fix at that root:** if (a), a one-time migration that RETIRES the stale key so
+    the new default governs — never a silent overwrite of a deliberately-set value (an
+    explicit post-FX15 opt-in survives); if (b), fix the gate. **S3 — the harness closes
+    the hole FX15 left:** `fx15.mjs` proved silence on a CLEAN profile; add the escaped
+    case — a profile carrying the legacy value renders no invite (that absence is the whole
+    ticket). Both HARNESS_PARKED settings; A4 parks (verbatim + successor in the same
+    commit) for anything falsified; full suite before merge. **DoD: a fresh page says
+    nothing, on a new profile and on Nick's.** FX18 follows.
+75. **FX18 — the Chrome Aligned.** **OPENED — 2026-07-25 (chat 1, after FX16)**, from the
+    P2 wave (`p2-wave.md` §FX18), authority SV24–SV27 + the screenplay's instance of SV26.
+    Branch `fx18-chrome-aligned` off `main` (after FX16 lands), own worktree, guard-rail,
+    ledger on `main`; item ASSIGNED (75); **ZERO SCHEMA, ZERO SERVER FILES**; merges
+    through chat 1's lane, Fable reviews post-merge, shared deploy word. **S1 — the arrow
+    mirrors (SV25):** the right-hand drawer handle points right, the left points left; one
+    glyph, GREP every surface that mounts a drawer (Nick found it on two; likely more).
+    **S2 — panels don't overlap each other or the page (SV24, SV26):** the Board's Tutor
+    panel overruns the app edge + covers its own close arrow; an opened right-hand panel
+    overlaps an opened left-hand toolbar, blocking controls beneath (the Typewriter toggle
+    named; the screenplay surface shows the same). ROOT-CAUSE ONCE (one layout law failing
+    in several places), fix so any combination of open panels, on any surface, at every
+    asserted width, leaves both panels wholly in the room + every control hit-testable.
+    Harness: the COMBINATORIAL case — both panels open, on Page/Board/Script, at
+    1100/1366×768/2200, no overlap, every control hit-testable. **S3 — the Board's top
+    menu parallels the Page's (SV27):** ALL CAPS, right-aligned, matching the Page's mode
+    strip; words + behaviour unchanged, only presentation; A4 parks for falsified
+    assertions. **DoD: no panel covers another, no arrow lies about its direction, the two
+    top menus look like siblings.**
 
 ## P1 + SC DEPLOY MANIFEST — 2026-07-25 (chat 1, on Nick's "DEPLOY WHEN READY")
 
