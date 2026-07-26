@@ -6718,6 +6718,90 @@ outlive a session lives here, not in chat.
     clearance — DF1.1 still owns its named root). **Next in this lane: S4 (page
     numbers) and S5 (the caret across the break + memoization), then PB1
     (item 71).**
+    **SC2 S4 BUILT — 2026-07-25, `8192077` on `sc2-the-clock`, pushed.** R1's
+    page number as document furniture: top-right, inside the top margin, **page
+    one bare**, from page two on, set in the sheet's own Courier because it is
+    the DOCUMENT's furniture and not the app's chrome — the one place in this
+    house where a number on the page is lawful.
+    **THE BRIGHT LINE IS THE HARDER HALF AND IS ASSERTED AS STRICTLY AS THE
+    PRESENCE.** A presence check fails loudly the day someone breaks it; an
+    aggregate is the kind of thing that gets added helpfully, in a `title`
+    attribute, by someone who never read the ruling. `sc2.mjs` scans the WHOLE
+    live document — every text node and every `title`/`aria-label` — for
+    "page N of N", "of N pages", bare "N pages" and "N / N", **with the sliver
+    and the Tutor both OPEN** (the two places the brief names), and separately
+    rejects any attribute that mentions pages and carries a digit.
+    **THE SCANNER WAS PROVEN FALSIFIABLE BEFORE IT WAS TRUSTED** — an absence
+    check is exactly the species that passes because it is looking at nothing,
+    and "a check that cannot fail is not a check" is this lane's own law. Four
+    aggregates were planted into a live page and every one was caught: a
+    rendered "Page 2 of 5"; a `title="5 pages today"`; an
+    `aria-label="page 3 of 5"`; a bare "2 / 5" badge.
+    **THE SELECTOR HAZARD THE S2b HANDOFF FLAGGED, MET AND CLOSED.** The number
+    is the sheet's first child from page two on, so
+    `.script-sheet > *:first-child` would have matched IT and every page but the
+    first would have begun one or two blank lines lower than page one. A sibling
+    arm closes it, and it is not left to inspection: page one carries no number
+    and every other page does, **so the standing "page N's first line sits at
+    page one's own offset" cross-check fails the instant that arm is lost — and
+    that is also the proof the number costs no body line.** `user-select:none`:
+    the number is not the writer's words, so a selection dragged across a page
+    break hands back a screenplay and not a screenplay with page numbers loose in
+    it. **Judgment call named rather than left to look ruled:** the trailing
+    period. R1 ruled the position and the bare first page, not the punctuation;
+    "2." is the trade's own form (Final Draft, Fade In, Highland). Vetoable.
+    **SV30 — ANSWERED, and the answer is that the margin is CORRECT.** Measured
+    at Nick's own sitting conditions (~2560px framed, Flux) and at 2560/plateau,
+    1280 and 1100: the sheet is 816px and the left padding 144px — **17.647% of
+    the paper, 1.5in EXACTLY** — with the scene heading and action both beginning
+    at the text block's own left edge (0.1ch off, which is the sheet's 1px
+    border). The grid behind them is the trade's: dialogue 10.1ch, parenthetical
+    16.1ch, character cue 22.1ch. Identical at all four legs and both themes.
+    Fable's screenshot measurement is confirmed against rendered geometry, **so
+    SV30 closes with SV28** — the missing vertical rhythm, already built at
+    `1a759c4` — exactly as predicted. The same measurement shows **SV29 correct
+    in the render too**: character `marginTop` 1 line, dialogue 0, so the space
+    sits ABOVE the cue and there is no blank line between the cue and its
+    dialogue. No change, as ruled.
+    **A REPORT IS NOT A CHECK**, so SV30's verification lands as a permanent leg
+    rather than a paragraph: `sc1.mjs` gains **2560 × Flux, Nick's own sitting
+    width**, which had never been asserted — the widest leg was 2200, and 2560 is
+    the width at which he formed BOTH this verdict and SC-V2 ("the font is too
+    big"). It matters structurally: `--paper-scale` is 1.2 at 2560 and 1 at 1280,
+    and `.script-sheet` deliberately does not multiply by it. **That deliberate
+    exclusion was a comment; it is now an assertion**, and all five S1 checks
+    prove the page is identical at the scale that used to enlarge it.
+    **VERIFICATION — `tsc` ×2 EXIT 0, `build:web` clean; `sc1.mjs` 71/71 (was 66)
+    and `sc2.mjs` 66/66 (was 61) at BOTH settings, each with its 1-check park
+    section. S4 PARKS NOTHING** — additive, and the one selector it edits follows
+    a DOM shape change without retiring any check's subject. **FULL HISTORIC
+    SUITE, both settings, read to completion in the main loop: 43/43 green at
+    unset PLUS `j5` RED, and 43/43 green at `=1` with `j5` held out. Zero failing
+    check objects in any of the 87 logs.**
+    **`j5` REPORTED AND NOT RE-RUN, per the standing instruction.** It threw at
+    `j5.mjs:120` — `waitFor timed out: lens row` — with a diagnostic showing
+    `/journal/spread` rendered as "No loose pages yet": the seeded loose pages
+    were not there. **THE ROOT IS VISIBLE IN THE DIAGNOSTIC AND IS THE SPECIES
+    DF1.1 ALREADY OWNS:** `j5.mjs:114–120` writes localStorage, calls
+    `app.reload()` *"so persistence.ts re-hydrates from it"*, then navigates and
+    queries with **no `waitFor` on the rehydrated state**. That is a **SECOND,
+    DISTINCT missing synchronization point in this file** — the one already
+    charged to DF1.1 is at line 401, after `app.click('Select')`. Two sites, one
+    species: useful to DF1.1 as evidence this is a fixture PATTERN and not a
+    single omission. **Blast radius walked before the runner was reached for:**
+    S4's diff is four files — two are harness files `j5` does not import;
+    `ScriptEditor.tsx` mounts only for `pageType: 'script'`; every CSS selector
+    added is scoped to `.script-sheet` / `.script-page-number`; and `j5` died on
+    `/journal/spread` with no script page mounted at all. `j5` was also green at
+    both settings on this same branch in the S2b run earlier the same day.
+    **THE BOUND, PLAINLY: this shows S4 did not cause it; it does NOT show what
+    did** — though the diagnostic names a specific missing synchronization point
+    DF1.1 can act on directly. **AND THE GAP IS NAMED, NOT PAPERED OVER: `j5`'s
+    `HARNESS_PARKED=1` leg is UNRUN in this tree.** It was held out deliberately
+    rather than run at the other setting, because a second run coming back green
+    is exactly the reassurance the rescission exists to prevent.
+    **Next in this lane: S5 (the caret across the break + memoization + the
+    latency gate against the frozen `c1cabe8` baseline), then PB1 (item 71).**
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
