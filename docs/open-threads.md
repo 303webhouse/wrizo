@@ -7353,6 +7353,62 @@ outlive a session lives here, not in chat.
     re-proven at the new placement, the 1366×768 leg for both rows; A4 parks with verbatim
     originals and named successors in the same commit as the change that falsified them.
     **DoD: Nick sees three doors and knows instantly they are choices.**
+    **BUILT + PUSHED, AWAITING MERGE — 2026-07-25 (chat 5).** Branch
+    `bg2-beginnings-seen` at `e6b8e9a`, off `main` `1bcc843`, own worktree,
+    guard-rail before every commit. Zero schema, zero server files, zero deps.
+    Touches two files (`index.css`, `bg1.mjs`) plus the new `bg2.mjs` — no
+    component change was needed: icons-above-labels is a flex direction, so the
+    markup BG1 shipped already carried it.
+    - **The measurement that justifies the ticket.** `--accent-rest` (#96a05a),
+      BG1's door colour, measures **2.4:1** against `--paper` — Nick's "can
+      barely see" is a real contrast failure, not a preference. New slotted
+      token **`--accent-door` = #4F5730** (the same olive ramp stepped down in
+      value; the darkened end already used as the board pin's rim) at **6.6:1**.
+      A separate token rather than a re-tune of `--accent-rest`, which would
+      have dragged every mode-tab hairline and thread line with it.
+    - **Slotted per theme, not hardcoded.** Both surfaces render on `var(--paper)`
+      (the page sheet and the board canvas alike), so the one theme whose paper
+      is dark (`flux`/`page:dark`) steps back UP the ramp to **#A9B56A, 7.3:1**.
+      A value that only worked on cream would have been a trap laid for that
+      theme; asserted in `bg2.mjs`.
+    - **The resting opacity (.72) is RETIRED** — a translucent door makes the
+      measured colour differ from the seen one, which would have made this
+      ticket's own contrast assertion a half-truth. The door is quiet by value.
+    - **Sizes:** glyph 16→24px, label 13→19px, and the door becomes a genuine
+      hit target (≥44px both axes) instead of a word to aim at.
+    - **A defect found and fixed in the build, not shipped:** at the new size the
+      row silently WRAPPED to two lines — an absolutely-positioned shrink-to-fit
+      box at `left:50%` is offered only half the room. Both surfaces now span
+      the surface (`left:0/right:0`) and let flexbox centre them, so the row
+      cannot become the grid BG1's law forbids.
+    - **A4 parks, in the same commit as the change that falsified them:**
+      `bg1.mjs`'s resting-paint check and its 1366×768 page-placement check,
+      verbatim, successor `bg2.mjs`. The second is worth reading — centering
+      makes the original's geometry (row vs first line) not merely false but
+      *meaningless*, so the SUBJECT ("the caret's own line stays clear of
+      furniture") is re-asserted where it actually lives: no DOOR overlaps the
+      caret (caret x≈416, leftmost door x≈521) and the caret point still
+      hit-tests to `.forward-only-editor`. That check also runs LIVE in `bg2.mjs`.
+    - **Verification.** `bg2.mjs` 23 checks and `bg1.mjs` 35 live + 2 parked,
+      PASS both `HARNESS_PARKED` settings. Contrast is COMPUTED (WCAG relative
+      luminance against the first opaque ancestor background), never eyeballed;
+      rest/hover/press proven under a TRUSTED pointer. **Full suite 48/48 GREEN
+      both settings** — 1904 checks unset, 2049 armed, zero failures. `tsc` ×2
+      EXIT 0; `build:web` clean.
+    - **Two harness defects of my own, found and fixed before commit** (neither
+      ever a build fault): the trusted press sampled `:active` by pressing a
+      real door, which *fired* it — the board gained a card and the row
+      correctly vanished mid-scenario; the press now releases off-target so the
+      activation is cancelled, and the row's survival is itself asserted. And a
+      CSS comment I inserted landed outside an existing `*/`, silently voiding
+      the placement rule (`position: static`) — caught by measuring the DOM
+      rather than trusting the screenshot.
+    - **Session note (the standing invariant working):** one `bg2.mjs` run died
+      at boot with "CDP page target never appeared." Mechanism check first, per
+      the P2 rule: 23 browsers and 3 harness processes alive, **none of them
+      this session's** (two invoked from the repo root — a different lane).
+      External contention, not a defect; re-run as a batch, green. No sweep was
+      performed — cleanup stays scoped to PIDs this session spawned.
 75. **FX18 — the Chrome Aligned.** **OPENED — 2026-07-25 (chat 1, after FX16)**, from the
     P2 wave (`p2-wave.md` §FX18), authority SV24–SV27 + the screenplay's instance of SV26.
     Branch `fx18-chrome-aligned` off `main` (after FX16 lands), own worktree, guard-rail,
