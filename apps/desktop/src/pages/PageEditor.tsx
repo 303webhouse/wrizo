@@ -9,6 +9,7 @@ import { ModeStage, PEN_INKS } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
+import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, getSelectionOffsets } from '../store/caretOffset';
 import { projectMilestones } from '../store/milestones';
@@ -119,6 +120,11 @@ function PageEditorView({ id }: { id: string }) {
   // AB2 S4 — the Structure picker's one-time confirmation (prose page with
   // words -> screenplay). Switching an empty page is free (no modal).
   const [structureConfirm, setStructureConfirm] = useState(false);
+  // BG1 S2 — the beginnings row's own dismissal (the first keystroke, a door
+  // taken, or Esc). Per mount, never persisted: this is not a preference, it
+  // is "the writer is past it on this page." The zero-words gate is the other
+  // half of the same rule — see `beginningsVisible` below.
+  const [beginningsDismissed, setBeginningsDismissed] = useState(false);
   // AB3 S2 — the Page face's sending verbs. Genuinely new capability here
   // (PageEditor never had Move/Copy or Port-to-Board before this ticket —
   // "everything about a page" now includes typed/filed pages too, not just
@@ -317,6 +323,47 @@ function PageEditorView({ id }: { id: string }) {
   // here.
   const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
 
+  // BG1 S2 — the page's beginnings: Screenplay · Sprout · Plan (P1 amendment 2,
+  // Nick's word 2026-07-25 — three single words; "Start from a Spark" is
+  // superseded by "Sprout"). Furniture beside the cursor, never a gate:
+  //
+  //   • The page is ALREADY live and typeable when this renders. The caret is
+  //     under the row from the first frame (ForwardOnlyEditor autofocuses an
+  //     empty page, below) and the row's container is pointer-events:none, so
+  //     it cannot intercept a click or a keystroke meant for the paper. A
+  //     writer who ignores it entirely never knows it was a decision.
+  //   • It renders only while the page has ZERO words, and it is dismissed by
+  //     the first keystroke (A19 — the same `onForward` seam warm-start, TTFK
+  //     and the F6 invite already share), by any door taken, or by Esc.
+  //   • Prose needs no door: prose is what the paper already is.
+  //
+  // Declared before `editorBody` so the row is in scope there; each handler is
+  // wrapped in its own arrow so the functions it calls (`requestScreenplay`
+  // below) are resolved at click time, not at render time.
+  const takeBeginning = (open: () => void) => () => { setBeginningsDismissed(true); open(); };
+  const beginningDoors: BeginningDoor[] = [
+    // Structure, surfaced at the moment it is cheapest to choose: on an empty
+    // page the existing Structure path converts free, with no modal (AB2 S4).
+    { key: 'screenplay', label: dt('beginScreenplay'), onOpen: takeBeginning(() => requestScreenplay()) },
+    // Sprout IS the spark deck, and the spark deck IS the first-line invitation
+    // (P1 amendment 2's addendum: "deck" was overloaded — DeckWizard loads card
+    // decks onto BOARDS; drawing one first line onto a PAGE is this mechanism).
+    // So the door calls FX15's own on-request seam rather than inventing a
+    // page-side deck entry: deck-drawn, never model-drawn, never insertable.
+    { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) },
+    // The page's own PLAN → door, offered at birth: the Page→Plan pipeline's
+    // on-ramp. Identical act to the bar's door (lazy-born board, then travel).
+    { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(() => {
+      flush(); flushNow();
+      const board = getOrCreatePlanBoard(id);
+      if (board) navigate(`/page/${board.id}`);
+    }) },
+  ];
+  const beginningsVisible = !beginningsDismissed && !gateActive && wordCount(text) === 0;
+  const beginningsRow = beginningsVisible
+    ? <BeginningsRow surface="page" doors={beginningDoors} onDismiss={() => setBeginningsDismissed(true)} />
+    : null;
+
   // The editor's own render-prop body — identical between the legacy and the
   // AB1-framed ModeStage instance, factored out so the two branches below
   // can't drift.
@@ -329,7 +376,7 @@ function PageEditorView({ id }: { id: string }) {
         mode={mode}
         autoFocus={initialText.trim() === ''}
         onChange={setText}
-        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); }}
+        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
         placeholder={invite.visible ? '' : 'Write…'}
@@ -356,6 +403,14 @@ function PageEditorView({ id }: { id: string }) {
           this exact (empty) page. gateActive is only ever true when framed
           (F4), so this never touches the legacy branch's behavior. */}
       {gateActive ? null : invite.node}
+      {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
+          (the same warm-start/F6 placement, for the same reason: never
+          selectable, never serialized — the saved bytes are identical whether
+          it showed or not). Set one line below the caret in CSS so the first
+          line stays clear; `gateActive` suppression is already folded into
+          `beginningsVisible`, matching HB1 S3's "the threshold has one
+          sanctioned utterance." */}
+      {beginningsRow}
       {warm.rect && (
         <div
           aria-hidden="true"

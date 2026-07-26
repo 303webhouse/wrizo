@@ -4380,3 +4380,53 @@ a:focus-visible,
 .board-outline-text:focus{ outline:none; border-bottom:1px solid var(--accent-rest); }
 .board-outline-readonly{ color:var(--text-mid); }
 .board-outline-ctl{ display:flex; gap:2px; flex:0 0 auto; }
+
+/* ==========================================================================
+   BG1 — the Beginnings (docs/wrizo-alpha/p1-wave.md §BG1). ONE row, one
+   grammar, two surfaces (S3): quiet olive icon+label doors on a single
+   centered line, never a grid, nothing counted and no completion state.
+   Olive is the door color here per the brief's own wording ("quiet olive
+   icon+label doors") and M4 S2's reservation of the hue — the rhizome's
+   ground deliberately stays OUT of this family so that olive keeps meaning
+   "this is a door."
+
+   The container is pointer-events:none — the `.fl-invite` / rhizome
+   precedent, and load-bearing for S2: the page's caret is live UNDER this row
+   from the first frame and the row may never intercept it. Only the doors
+   take the pointer back.
+   ========================================================================== */
+.wz-beginnings{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+  gap:2px 20px; pointer-events:none; user-select:none; z-index:1;
+}
+.wz-beginning{
+  display:inline-flex; align-items:center; gap:7px; pointer-events:auto;
+  background:none; border:0; padding:5px 2px; cursor:pointer;
+  font-family:var(--font-contentLabel); font-size:13px; letter-spacing:.01em;
+  color:var(--accent-rest); opacity:.72;
+  transition:opacity .18s ease;
+}
+.wz-beginning:hover, .wz-beginning:focus-visible{ opacity:1; }
+.wz-beginning-glyph{ display:inline-flex; width:16px; height:16px; flex:0 0 16px; }
+.wz-beginning-glyph svg{ width:16px; height:16px; display:block; }
+
+/* S1 — the board's row, centered on the empty canvas: the exact placement the
+   retired one-line pointer held (`.board-canvas-empty`'s own transform). */
+.wz-beginnings[data-beginnings='board']{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  white-space:nowrap;
+}
+/* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
+   with no positioned ancestor: it simply takes the place their empty line held. */
+.wz-beginnings[data-beginnings='projection']{ padding:14px 0 4px; }
+
+/* S2 — the page's row: beside the live caret, set one line BELOW it so the
+   first line stays clear of furniture (the caret is never covered, and the
+   writer's first keystroke lands with nothing in its way). Left-set, because
+   the caret is left-set — this is furniture beside the cursor, not a banner. */
+.wz-beginnings[data-beginnings='page']{
+  position:absolute; left:0; right:0;
+  top:calc(1.7 * 17px * var(--paper-scale) + 6px);
+  justify-content:flex-start; gap:2px 18px;
+}
+@media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }

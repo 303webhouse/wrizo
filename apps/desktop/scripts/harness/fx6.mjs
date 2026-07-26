@@ -449,9 +449,10 @@ await withHarness(async (app) => {
   // S2 (c) — two quiet one-line empty-state pointers.
   // ==========================================================================
   await freshBoard(app, 'fx6-s2-empty-board', [], LAPTOP_W, 900);
-  const emptyBoardText = await app.evalJs("document.querySelector('.board-canvas-empty')?.textContent");
-  ok('S2 (c): the empty board (zero cards — carried NO empty-state copy at all before this ticket) shows a quiet one-line pointer naming both board-side tools',
-    !!emptyBoardText && emptyBoardText.includes('Add card') && emptyBoardText.includes('New page card'), emptyBoardText);
+  // BG1 (2026-07-25) — the ordinary board's own one-line pointer is retired for
+  // the Beginnings row; the check that read its COPY is PARKED verbatim at the
+  // foot of this file, live successor in bg1.mjs. The Shelf's own one quiet
+  // line is untouched (b2.mjs still reads it).
   await openSliver(app);
   await sleep(150);
   await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card').click()");
@@ -460,8 +461,13 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.board-popup-done')?.click()");
     await sleep(200);
   }
-  const emptyBoardTextGone = await app.evalJs("!!document.querySelector('.board-canvas-empty')");
-  ok('S2 (c): the pointer disappears the moment the board has a card — quiet, not a permanent fixture',
+  // FIXTURE RE-POINTED (BG1, not parked): the CLAIM below is unchanged and
+  // still true — the empty-state affordance is quiet, not a permanent fixture,
+  // and it goes the moment the board has a card. Only the vehicle moved
+  // (`.board-canvas-empty` -> `.wz-beginnings`), so this is the vehicle/subject
+  // distinction applied, not a falsified assertion.
+  const emptyBoardTextGone = await app.evalJs("!!document.querySelector('.board-canvas-empty, .wz-beginnings')");
+  ok('S2 (c): the pointer disappears the moment the board has a card — quiet, not a permanent fixture (BG1: the vehicle is now the Beginnings row)',
     emptyBoardTextGone === false, String(emptyBoardTextGone));
 
   // The Plan panel's own no-project branch points at the OTHER door — a
@@ -584,6 +590,17 @@ console.log(JSON.stringify(checks, null, 2));
 // the OLDER stored-Drawer entity's own name, so "Drawer" would collide).
 // Quoted verbatim below (SUPERSEDED) and re-asserted against the new
 // copy; live successor in b2-1.mjs.
+//
+// BG1 (2026-07-25) is this file's second tenant: the Beginnings
+// (docs/wrizo-alpha/p1-wave.md §BG1, S1) retires this file's own S2 (c)
+// empty-board COPY check whole. FX6's line named two board-side tools and
+// pointed the writer at the sliver; BG1 replaces it with the doors themselves,
+// in the room — so there is no `.board-canvas-empty` element on an ordinary
+// board to read copy from any more. Quoted verbatim below (SUPERSEDED) and
+// re-asserted against the new truth; live successor in bg1.mjs. The SIBLING
+// check ("the pointer disappears the moment the board has a card") is NOT
+// parked — its claim survives intact and was re-pointed in place at its own
+// site above, per the vehicle/subject distinction.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -615,6 +632,28 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S3 (b): the no-projects line is now truthful — \\"create a project first\\" (ab4-review A2\'s exact wording: membership != filing), never the old \\"file this page into one first\\" fib") — B2.1 S6: the SAME truthful membership-!=-filing claim, "create a binder first" now (the word swap changes only the copy, per the Binder-vs-Drawer judgment); live successor: b2-1.mjs',
       !!emptyBindersLineNow && emptyBindersLineNow.includes('create a binder first') && !emptyBindersLineNow.toLowerCase().includes('file this page'),
       emptyBindersLineNow);
+
+    // ORIGINAL (FX6 S2 (c)): ok('S2 (c): the empty board (zero cards —
+    // carried NO empty-state copy at all before this ticket) shows a quiet
+    // one-line pointer naming both board-side tools',
+    //   !!emptyBoardText && emptyBoardText.includes('Add card') &&
+    //   emptyBoardText.includes('New page card'), emptyBoardText);
+    // BG1 S1 — the pointer that NAMED the tools is replaced by the tools
+    // themselves: an ordinary empty board now renders the Beginnings row
+    // (four doors in OPEN), and carries no `.board-canvas-empty` element at
+    // all. Re-asserted against that new truth — the copy is gone AND the row
+    // that supersedes it is genuinely there, naming the same two doors among
+    // its four. Live successors (per mode, per surface): bg1.mjs.
+    await freshBoard(app, 'fx6-parked-empty-board', [], LAPTOP_W, 900);
+    const emptyBoardNow = await app.evalJs(`({
+      oldCopy: !!document.querySelector('.board-canvas-empty'),
+      row: !!document.querySelector('.wz-beginnings'),
+      doors: [...document.querySelectorAll('.wz-beginning')].map(b => b.textContent.trim()),
+    })`);
+    pok('PARKED (was "S2 (c): the empty board (zero cards — carried NO empty-state copy at all before this ticket) shows a quiet one-line pointer naming both board-side tools") — BG1 S1 replaces the pointer with the doors themselves: no `.board-canvas-empty` on an ordinary board, the Beginnings row instead, still naming both tools among its four doors; live successor: bg1.mjs',
+      emptyBoardNow.oldCopy === false && emptyBoardNow.row === true &&
+      emptyBoardNow.doors.includes('New Card') && emptyBoardNow.doors.includes('New Page Card'),
+      JSON.stringify(emptyBoardNow));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

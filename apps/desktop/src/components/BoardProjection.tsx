@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import {
   boardStructure, flattenLane, withSeqOrder, withLane, withParent, withLanes,
@@ -26,6 +27,12 @@ interface ProjectionProps {
   labelFor: (b: Box) => string;   // reuses BoardEditor's own boxLabel (page-pin/ink read live)
   onEditText: (boxId: string, text: string) => void; // reuses commitText
   readOnly?: boolean;             // a system board never structures (defensive; not mounted there)
+  // BG1 S1/S3 — the Beginnings row, built ONCE in BoardEditor (one door table,
+  // one component, one vanish rule for both surfaces) and handed down. It takes
+  // the place of each projection's empty line: those lines told a writer to go
+  // to OPEN and add cards there, which is exactly the dead end this ticket
+  // removes. Absent (undefined) on a system board, where no row renders at all.
+  beginnings?: ReactNode;
 }
 
 const byId = (boxes: Box[]) => new Map(boxes.map((b) => [b.id, b]));
@@ -96,21 +103,29 @@ function LaneColumn({ lane, boxes, setBoxes, labelFor, laneOptions, readOnly }: 
   );
 }
 
-export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly }: ProjectionProps) {
+export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, beginnings, onAddLane }: ProjectionProps & { onAddLane?: () => void }) {
   const { t } = useDeskLexicon();
   const struct = boardStructure(boxes);
   const hasCards = struct.lanes.some((l) => l.items.length > 0);
   const meta = boxes.find((b) => b.kind === 'board-meta');
   const laneOptions = (meta?.lanes ?? []);
 
-  const addLane = () => {
+  // BG1 S1 — the lane-append lifted to BoardEditor (its own `onAddLane`), so
+  // the row's New Lane door and this button drive ONE mechanism rather than two
+  // copies that can drift. The fallback keeps this component honest on its own
+  // if it is ever mounted without the prop.
+  const addLane = onAddLane ?? (() => {
     const next = [...laneOptions, { id: generateId(), title: `${t('boardLaneDefault')} ${laneOptions.length + 1}` }];
     setBoxes((prev) => withLanes(prev, next, generateId));
-  };
+  });
 
   if (!hasCards) {
+    // BG1 S1 — the row where the empty line stood. Same gate as OPEN's
+    // (`hasCards`, cards only — a lane registry with no cards is not furniture),
+    // same "gone the instant there is furniture." A board with lanes but no
+    // cards keeps the row, which is what lets New Lane be followed by New Card.
     return <div className="board-projection board-storyboard" data-board-projection="storyboard">
-      <p className="board-projection-empty">{t('boardStoryboardEmpty')}</p>
+      {beginnings ?? <p className="board-projection-empty">{t('boardStoryboardEmpty')}</p>}
     </div>;
   }
   return (
@@ -192,13 +207,14 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
   );
 }
 
-export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readOnly }: ProjectionProps) {
+export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readOnly, beginnings }: ProjectionProps) {
   const { t } = useDeskLexicon();
   const struct = boardStructure(boxes);
   const hasCards = struct.lanes.some((l) => l.items.length > 0);
   if (!hasCards) {
+    // BG1 S1 — the row where the empty line stood (see StoryboardProjection).
     return <div className="board-projection board-outline" data-board-projection="outline">
-      <p className="board-projection-empty">{t('boardOutlineEmpty')}</p>
+      {beginnings ?? <p className="board-projection-empty">{t('boardOutlineEmpty')}</p>}
     </div>;
   }
   return (
