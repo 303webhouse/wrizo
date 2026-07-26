@@ -7270,8 +7270,13 @@ code. The known-flake list is `tu2` alone (th2/fx5/j4 cleared by DF1).
 Rollback is a redeploy of it, one command away (`railway up` of that tree) if Nick's testing
 finds anything.
 
-**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — filled immediately after
-`railway up` in the next records touch (the P0-deploy convention).
+**DEPLOY STAMP: git `5edae77` · railway `b63743ca-6f1a-412a-90c6-336897e41e98`** —
+DEPLOYED 2026-07-25 (`railway up --ci`, writer-studio / production / writer-studio-app;
+container digest `sha256:9a31b68d`). Verified LIVE at
+`https://writer-studio-app-production.up.railway.app`: `/healthz` 200, the new bundle
+served (`index-BQaFizCD.js` / `index-zQmMDR5X.css`), `/auth/me` 401. The prior P0 deploy
+(`cf99e5a8`) is now REMOVED — superseded by this one; the rollback SOURCE remains git
+`c13182b` (redeploy that tree via `railway up`).
 
 **Items 62 / 67 / 68 / 69 / 70: GREEN + DEPLOYED, but they STAY OPEN** — Fable's four
 post-merge reviews FOLLOW the deploy (Nick's word) rather than gate it, and Nick's device
