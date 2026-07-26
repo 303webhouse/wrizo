@@ -1,5 +1,5 @@
 import type { ScriptEl, ScriptElType } from '../types';
-import { WIDTH_CH, SPACE_BEFORE } from './scriptMetrics';
+import { widthChFor, spaceBeforeFor } from './scriptMetrics';
 
 // SC2 S1 — THE LINE LEDGER. A pure, synchronous function from a screenplay
 // document to the lines it occupies. No DOM, no font, no measurement: the
@@ -80,31 +80,77 @@ export interface LedgerEntry {
  * space run sitting at the measure hangs rather than wrapping.
  */
 export function wrappedLines(text: string, widthCh: number): number {
-  if (widthCh <= 0) return 1;
-  let total = 0;
-  for (const segment of text.split('\n')) total += wrapSegment(segment, widthCh);
-  return Math.max(1, total);
+  return Math.max(1, wrapToLines(text, widthCh).length);
 }
 
-function wrapSegment(segment: string, width: number): number {
+/**
+ * The SAME wrap, reported as the lines themselves rather than as a count.
+ *
+ * SC2 S2b needs this because the paginator's one permitted split — an action
+ * block longer than a whole page — has to RENDER as two blocks carrying two
+ * halves of the writer's text, and the halves must fall exactly where the
+ * arithmetic said the break was. Counting and slicing therefore cannot be two
+ * implementations: `wrappedLines` is now defined as the length of this, so
+ * there is one wrap algorithm and it is impossible for the count and the cut to
+ * disagree. (Before S2b there was only a count, and a second slicing routine
+ * would have been the obvious way to add the cut — and the obvious way to end
+ * up with a break the render contradicts.)
+ *
+ * THE LINES CONCATENATE BACK TO THE INPUT EXACTLY: `wrapToLines(t, w).join('')
+ * === t`, for every t and every w. Not approximately, not modulo whitespace —
+ * exactly. That is a deliberate contract and it is what the renderer's split
+ * rests on: a part's text is then a genuine SUBSTRING of the writer's own, and
+ * re-wrapping it at the same measure reproduces the same lines (greedy wrapping
+ * from a line start is memoryless). So a split renders identically to no split,
+ * and no character is added or lost.
+ *
+ * The first cut of this returned line CONTENTS and the renderer joined them with
+ * '\n'. It rendered correctly and it was wrong: it put 58 newlines the writer
+ * never typed into a 60-line block's DOM text, and it dropped the trailing
+ * spaces `pre-wrap` deliberately hangs. Neither was visible — sc2.mjs's
+ * concatenation check is what found it. Hence break POSITIONS computed on the
+ * right-trimmed text (ruling 3: trailing space must not cost a line) and slices
+ * taken from the ORIGINAL, with the writer's own newlines put back where they
+ * were.
+ */
+export function wrapToLines(text: string, widthCh: number): string[] {
+  if (!(widthCh > 0)) return [text];
+  const segments = text.split('\n');
+  const out: string[] = [];
+  segments.forEach((segment, s) => {
+    const lines = wrapSegmentLines(segment, widthCh);
+    // The '\n' `split` consumed rides back on the line it ended — the writer's
+    // own hard break, kept as theirs rather than reinvented as a soft one.
+    if (s + 1 < segments.length) lines[lines.length - 1] += '\n';
+    out.push(...lines);
+  });
+  return out.length ? out : [''];
+}
+
+function wrapSegmentLines(segment: string, width: number): string[] {
   const s = segment.replace(/\s+$/, '');          // ruling 3 — trailing space hangs
-  if (s === '') return 1;                          // ruling 2/4 — an empty line is a line
-  let lines = 1;
+  if (s === '') return [segment];                  // ruling 2/4 — an empty line is a line
+  const starts = [0];                              // character index each line begins at
   let col = 0;
+  let pos = 0;
   for (const token of s.match(/\S+|\s+/g) ?? []) {
-    if (token[0] === ' ' || token[0] === '\t') { col += token.length; continue; }
+    if (token[0] === ' ' || token[0] === '\t') { col += token.length; pos += token.length; continue; }
     let w = token.length;
+    let at = pos;
     if (w > width) {                               // ruling 1 — longer than the measure
-      if (col > 0) { lines++; col = 0; }           // it starts on a fresh line...
-      while (w > width) { lines++; w -= width; }   // ...then breaks at the measure
+      if (col > 0) { starts.push(at); col = 0; }   // it starts on a fresh line...
+      while (w > width) { at += width; starts.push(at); w -= width; }   // ...then breaks at the measure
       col = w;
     } else if (col + w > width) {
-      lines++; col = w;                            // ordinary soft wrap at a space
+      starts.push(pos); col = w;                   // ordinary soft wrap at a space
     } else {
       col += w;
     }
+    pos += token.length;
   }
-  return lines;
+  // Sliced from the ORIGINAL segment, so the last line carries the trailing
+  // whitespace the wrap calculation ignored and the concatenation is exact.
+  return starts.map((from, i) => segment.slice(from, i + 1 < starts.length ? starts[i + 1] : segment.length));
 }
 
 /**
@@ -115,8 +161,12 @@ export function lineLedger(elements: ScriptEl[]): LedgerEntry[] {
   return elements.map((el) => ({
     id: el.id,
     t: el.t,
-    lines: wrappedLines(el.text, WIDTH_CH[el.t]),
-    spaceBefore: SPACE_BEFORE[el.t],
+    // SC2 S2b — through the TOTAL lookups (scriptMetrics.ts). A doc carrying an
+    // element type this build has no row for used to produce `undefined` here,
+    // and `undefined` in the paginator's arithmetic is NaN, which paginates
+    // every element onto a page of its own. Named at the seam, not caught later.
+    lines: wrappedLines(el.text, widthChFor(el.t)),
+    spaceBefore: spaceBeforeFor(el.t),
     mayBreak: el.t === 'action',
   }));
 }
