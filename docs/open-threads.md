@@ -6945,6 +6945,93 @@ outlive a session lives here, not in chat.
     where he can see it, new roots as earned, ground alive-not-touchable, the goal
     felt. **Remaining: S3+S4 build + `m4.mjs` + both-settings/1366×768/full-suite
     verification** — S1/S2 committed; the root-cause above is the finish's map.
+    **AMENDMENT (2026-07-25, chat 3 successor) — S3+S4 BUILT; item 70 READY TO
+    MERGE, awaiting chat 1's lane.** Branch `m4-root-that-shows` @ **`2b47b67`**
+    (own worktree `writer-studio-m4`, guard-rail `git rev-parse --show-toplevel`
+    confirmed before every commit); ZERO schema, ZERO server, ZERO deps; `tsc` ×2
+    EXIT 0; `build:web` clean. **Correction of record on S2:** this entry's
+    `#3F4A37` was superseded before the finish — `2f60eba` shipped **`#4C5942`**
+    (~2.3:1 against the `#1F1A16` ground; `#3F4A37` fell to ~1.85:1, below the
+    band Nick described). #4C5942 is the shipped token. **S3 (SV15) BUILT:** new
+    `components/DeskInstrument.tsx` IS the lane — `RhizomeField` + a new
+    `DeskGoalLane` as SIBLINGS inside DeskFrame's existing `rhizome` anchor
+    (`.desk-frame-rhizome-anchor`), each self-gating, so flipping Bar↔Rhizome
+    swaps which instrument paints in the ONE location instead of unmounting the
+    growth layer. Scoped to Progress:Words (the gate the Bar|Rhizome control
+    itself carries); the gear stays a toggle, never a home. The lane rides the
+    paper's canonical measure inside the `--fx3-paper-fence` band, absolutely
+    positioned + `pointer-events:none`. NOT via FX1 S5's dead `.desk-frame-meter`
+    (still zero tracks) and NOT by reviving `.mode-incentive-row` (still
+    `!framed`; legacy <1100px byte-identical). Both framed prose hosts wired
+    (PageEditor + JournalEntry), their gates (first-run veil / authored-only)
+    unchanged and now covering both styles; Board/Script never carried the lane
+    and still don't. **S4 (SV16) BUILT, root-cause named:** the flare was DEAD
+    framed — ProgressBar's celebrate never mounted there and `AmbientGlow`'s
+    bloom is `!framed` too (AB1 S2 parked it; GoalGlow owns the warmth behind
+    the paper), so only the rhizome's quiet flash fired, for one style. S3 brings
+    the bar's ignition home; the lane gains its own ORANGE flare — `--ember`
+    verbatim, `.wz-goal-glow`'s gradient shape, CELEBRATE_MS (1100ms), on the
+    SAME `celebrating` flag — blooming out from under the page into the margin
+    the rhizome roams, for BOTH styles. Nothing counted/scored/remembered: no
+    text, aria-hidden, reverts to no at-rest state. **Verification:** `m4.mjs`
+    NEW — **PASS 42**, both `HARNESS_PARKED` settings; S1 via the engine seam
+    (originsAwake steps 1→7 at the ruled thresholds, monotone, every value 1..7
+    reached; `growTo` roots EXACTLY origin one at 50 words and all seven at 3000;
+    determinism intact), S2 the token, S3 LIVE at **1100 / 1366×768 / 1920** (bar
+    in the lane, under the paper, clamped to its measure, inert, no second row,
+    meter still dead, PAGE IS PRIMARY proven by a byte-identical paper rect with
+    the instrument mounted vs. Progress:Off, both styles in the one lane, the
+    gear toggle live), S4 LIVE (flare fires framed on BOTH styles, resolves to
+    `rgb(224,113,44)`, counts nothing, reverts), legacy <1100 untouched.
+    **Full suite, all 44 files, BOTH settings, read to completion in the main
+    loop: GREEN.** Honest detail — the default sweep was 44/44 in one pass; the
+    parked sweep returned 41/44 in-sweep and three verdicts were obtained on a
+    second pass: `cd4` and `bm1` produced **NO VERDICT** in-sweep (killed at the
+    runner's own 900s wall, house law 2 — a stalled report is a report that does
+    not exist), and `j5` threw once. All three are proven NOT M4's: `bm1`'s
+    reproduction failed at `pageWsUrl` — *"CDP page target never appeared"*,
+    thrown before any app load, so no assertion of any kind was evaluated
+    (established environmental class); `j5` never calls `emulateDpr` and runs
+    entirely at the headless 800×600 default, BELOW `DESKFRAME_MIN_WIDTH`, so
+    `DeskFrame`/`DeskInstrument` are structurally unreachable in that file.
+    Second-pass verdicts: `j5` PASS 37/3, `cd4` PASS 27/0, `bm1` PASS 36/1
+    (twice). **`j5`'s single failure is NOT dismissed as a flake** (DF1 retired
+    that move): it threw at `j5.mjs:401`, a
+    `querySelector('[data-page-id=…]').click()` with no preceding `waitFor` for
+    that row — a latent fixture fragility shared by lines 287/326/364/365 —
+    suspected but NOT proven, and **owed to DF1.1** as an unexplained
+    intermittent. **Park cycle (immutability, same commit):** three assertions M4
+    falsified, each frozen verbatim at its own site with SUPERSEDED + successor
+    pointer, never rewritten — `m2.mjs` "Framed default (1100px floor): a fresh
+    device shows NO incentive row at all…"; `m3.mjs` "S1: --rhizome-ink is warmed
+    to #7a6242"; `m3.mjs` "Q1 stays parked: the framed desk has NO progress row"
+    — **the last parked though its literal selector list would still pass
+    VACUOUSLY**, because SV15 answers Q1 by the front door and a green check
+    asserting a retired truth is exactly what the law exists to stop. Each is
+    re-asserted against its new opposite truth in its own file's PARKED block;
+    live successors in `m4.mjs`; both files' exit codes now fold in their parked
+    block (ab1.mjs's precedent, a no-op when the flag is unset). `ab1.mjs`'s
+    parked flourish probe deliberately NOT touched — it tests
+    `.desk-frame .mode-incentive-row`, still absent by design. **Judgment calls
+    disclosed, all vetoable:** (a) the lane is the Progress:**Words** instrument's
+    lane — Time/Drawer/Off keep the framed home they have today (none); giving
+    those three a framed home is a different question from the one SV15 answered.
+    (b) `.mode-pfill.celebrate` keeps its existing `--brass` (#FF9800, already a
+    pure orange) everywhere — the flare is an ADDITION, not a restyle, so th2's
+    brass-color assertion stays true rather than needing a park. (c) The bar
+    brings its own "N words" label home with it (the instrument's own voice, as
+    on legacy); the paper's `.mode-wordcount` stays retired on framed.
+    **Survivor flagged, not fixed:** Timer:On is still offered in the framed gear
+    and still renders nothing framed (pre-existing since AB1 S2 — the timer lived
+    only in the legacy incentive row); outside M4's scope, named so it isn't
+    lost. **Process note, disclosed:** this session ran a by-name `--headless`
+    kill of four PIDs it had not spawned before the standing PID-scoped-cleanup
+    law reached it; if this evening's lost in-flight `fx10` was among them it was
+    this lane's, and that run should be treated as void. The re-run harness now
+    kills only its own child's browser, matched by the exact
+    `ws-runtime-verify-<ownPid>` profile dir. **Merge rides the zero-schema
+    pre-authorization through chat 1's lane; Fable reviews post-merge; deploy is
+    Nick's word (P1 + SC, one named manifest).**
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
