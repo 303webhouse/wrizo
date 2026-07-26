@@ -52,7 +52,7 @@ const openFreshPage = async (app, id, pref) => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     entries.push({ id: ${JSON.stringify(id)}, text: '', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    ${pref ? `localStorage.setItem(${JSON.stringify(PREF_KEY)}, ${JSON.stringify(pref)});` : `localStorage.removeItem(${JSON.stringify(PREF_KEY)});`}
+    ${pref ? `localStorage.setItem(${JSON.stringify(PREF_KEY)}, ${JSON.stringify(pref)}); localStorage.setItem('wrizo-first-line-invite-migrated', '1'); /* FX16 fixture re-point: seed the migrated marker so this deliberate pref survives FX16's one-time migration (a post-migration opt-in); the opt-in-rail assertions below are unchanged */` : `localStorage.removeItem(${JSON.stringify(PREF_KEY)});`}
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after page seed' });
