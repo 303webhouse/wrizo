@@ -379,7 +379,7 @@ function PageEditorView({ id }: { id: string }) {
         onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
-        placeholder={invite.visible ? '' : 'Write…'}
+        placeholder=""
         ariaLabel="Page writing surface"
         penColor={penColor}
         forwardLock={mode === 'journal' ? forwardLock : true}

@@ -51,6 +51,7 @@ const openWithInviteState = async (app, id, { pref, marker }) => {
 const inviteState = (app) => app.evalJs(`(() => ({
   prompt: !!document.querySelector('.fl-prompt'),
   invite: !!document.querySelector('.fl-invite'),
+  placeholder: document.querySelector('.fo-placeholder')?.textContent ?? null,
   pref: localStorage.getItem(${JSON.stringify(PREF_KEY)}),
   marker: localStorage.getItem(${JSON.stringify(MIGRATED_KEY)}),
 }))()`);
@@ -88,6 +89,8 @@ await withHarness(async (app) => {
     const s = await inviteState(app);
     ok('S1 (regression): a fresh profile (no stored value) stays silent — the migration is a no-op on it (nothing to retire), only marking itself run; FX15 for new users is unchanged',
       s.prompt === false && s.invite === false && s.pref === null && s.marker === '1', JSON.stringify(s));
+    ok('SV31: the empty page renders NO placeholder text at all — .fo-placeholder is absent (the "Write…" placeholder is removed; the caret + the beginnings row are sufficient)',
+      s.placeholder === null, JSON.stringify(s));
   }
 
   return checks;
