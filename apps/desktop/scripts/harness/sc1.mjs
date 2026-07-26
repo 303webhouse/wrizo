@@ -207,11 +207,31 @@ await withHarness(async (app) => {
   // ======================================================================
   // S1 — the true page (SC-V2 the type, SC-V3 the page is not a page)
   // ======================================================================
+  // SC2 S4 (2026-07-25) — THE 2560 · FLUX LEG IS ADDED, and it is SV30's
+  // verification in the only form that lasts. Nick read the screenplay's left
+  // margin as wrong (P2 wave, SV30); the SC lane was charged to measure it
+  // against SC1's own constants and report. Measured: the left padding is 144px
+  // on an 816px sheet — 17.647% of the paper, 1.5in EXACTLY — and the scene
+  // heading and action both begin at the text block's own left edge, at every
+  // width and both themes. The margin is correct, so SV30 closes with SV28 (the
+  // missing vertical rhythm, built at 1a759c4) exactly as Fable predicted.
+  //
+  // A REPORT IS NOT A CHECK, which is why the leg is here rather than only in
+  // the report. Nick's sitting was at ~2560px, and the widest leg this file had
+  // was 2200 — so the width at which he formed BOTH the "font is too big"
+  // verdict (SC-V2) and this one had never been asserted at all. It matters
+  // structurally: `--paper-scale` is 1.2 at 2560 and 1 at 1280, and
+  // `.script-sheet` deliberately does NOT multiply by it (index.css states the
+  // reason — prose has no true size, a screenplay page IS a physical
+  // reference). That deliberate exclusion was a comment; at this leg it is an
+  // assertion, and every check in this loop now proves the page is identical at
+  // the scale that used to enlarge it.
   for (const [label, width, theme] of [
     ['1100 (the framed floor)', FLOOR_W, 'plateau'],
     ['1280 (the laptop reference)', LAPTOP_W, 'plateau'],
     ['2200 (wide)', WIDE_W, 'plateau'],
     ['1280 · Flux', LAPTOP_W, 'flux'],
+    ["2560 · Flux (Nick's own sitting width — SC-V2, SV30)", 2560, 'flux'],
   ]) {
     await freshScriptPage(app, width, 900, theme);
     const m = await app.evalJs(pageMetrics());
