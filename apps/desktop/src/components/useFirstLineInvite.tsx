@@ -22,10 +22,30 @@ import { NUDGE_POOL } from '../store/idleNudges';
 // untouched — the writer's ink always wins the space.
 
 const PREF_KEY = 'wrizo-first-line-invite'; // matches the mode-memory localStorage pattern
+const MIGRATED_KEY = 'wrizo-first-line-invite-migrated'; // FX16 — one-time retirement of the pre-FX15 'on'
 type InvitePref = 'off' | 'on' | 'never';
+
+// FX16 (SV18) — the invite still rendered on EXISTING devices after FX15, because a value
+// stored 'on' by the pre-FX15 build overrode FX15's new silent default (a stored explicit
+// value beats a changed default). That 'on' came from tapping the then-default-shown
+// "invite a first line?" affordance (F6), which FX15 retired. This one-time, marker-guarded
+// migration retires that stale 'on' so the new default (silent) governs — for a fresh
+// profile it is a no-op. It runs ONCE: a DELIBERATE opt-in made AFTER it (BG1's "Sprout"
+// door → optIn, which sets 'on' with the marker already present) survives untouched, so it
+// is never a silent overwrite of a choice the writer made under FX15's own terms. 'never'
+// (an explicit withdrawal) is left alone.
+function migrateInvitePref(): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    if (localStorage.getItem(MIGRATED_KEY)) return;                                  // already migrated — leave later opt-ins alone
+    if (localStorage.getItem(PREF_KEY) === 'on') localStorage.removeItem(PREF_KEY);  // stale pre-FX15 'on' → the new default (off/silent)
+    localStorage.setItem(MIGRATED_KEY, '1');
+  } catch { /* device-local best-effort */ }
+}
 
 function readPref(): InvitePref {
   if (typeof localStorage === 'undefined') return 'off';
+  migrateInvitePref(); // FX16 — retire a pre-FX15 stale 'on' once, before the first read
   const v = localStorage.getItem(PREF_KEY);
   return v === 'on' || v === 'never' ? v : 'off';
 }

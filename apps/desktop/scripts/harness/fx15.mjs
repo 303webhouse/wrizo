@@ -52,7 +52,7 @@ const openFreshPage = async (app, id, pref) => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     entries.push({ id: ${JSON.stringify(id)}, text: '', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-    ${pref ? `localStorage.setItem(${JSON.stringify(PREF_KEY)}, ${JSON.stringify(pref)});` : `localStorage.removeItem(${JSON.stringify(PREF_KEY)});`}
+    ${pref ? `localStorage.setItem(${JSON.stringify(PREF_KEY)}, ${JSON.stringify(pref)}); localStorage.setItem('wrizo-first-line-invite-migrated', '1'); /* FX16 fixture re-point: seed the migrated marker so this deliberate pref survives FX16's one-time migration (a post-migration opt-in); the opt-in-rail assertions below are unchanged */` : `localStorage.removeItem(${JSON.stringify(PREF_KEY)});`}
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after page seed' });
@@ -76,9 +76,14 @@ await withHarness(async (app) => {
     ok('S1: a fresh page renders NO first-line invite by default — no .fl-invite, no .fl-prompt, and the retired "invite a first line?" affordance (.fl-affordance) is gone entirely',
       silent.invite === false && silent.prompt === false && silent.affordance === false, JSON.stringify(silent));
 
+    // S1 placeholder check [PARKED — FX16 SV31]: the "Write…" placeholder is REMOVED from
+    // the empty page (a new page says nothing until the writer does — the caret + the
+    // beginnings row suffice). FALSIFIED: the empty page now renders no placeholder text.
+    // Successor: the re-pointed ok below + fx16.mjs's SV31 assertion. Original ok, verbatim:
+    //   PARKED (was "S1: the empty page shows the plain \"Write…\" placeholder and nothing else — the space belongs to the writer, not an unbidden prompt")
     const placeholder = await app.evalJs("document.querySelector('.fo-placeholder')?.textContent ?? null");
-    ok('S1: the empty page shows the plain "Write…" placeholder and nothing else — the space belongs to the writer, not an unbidden prompt',
-      placeholder === 'Write…', JSON.stringify({ placeholder }));
+    ok('S1 [FX16 SV31]: the empty page renders NO placeholder text at all — .fo-placeholder is absent (the caret + the beginnings row are sufficient)',
+      placeholder === null, JSON.stringify({ placeholder }));
 
     // Typeable immediately: the first word lands with nothing intercepting it.
     await focusEditor(app);
