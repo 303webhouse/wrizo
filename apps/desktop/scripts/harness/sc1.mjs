@@ -14,9 +14,12 @@
 // park, and S5's script icon-count + aria-label); fx4.mjs (S1's script "about
 // a quarter"); fx7.mjs (S1's 30px sliver fence, whose parked scaffold this
 // ticket adds); ab2.mjs (S2's DoD itself, amended by Nick's word, to
-// generation 2). This file is purely ADDITIVE — it proves the true page's new
-// truths — so its own park section is an empty no-op by design (cd4.mjs's own
-// precedent).
+// generation 2). This file was purely ADDITIVE as SC1 shipped it — it proves
+// the true page's new truths — so its own park section was an empty no-op by
+// design (cd4.mjs's own precedent). SC2 is its first tenant: S1 parked S3's
+// "the page never scrolls itself" inline at its site, and S2b parks S1's "the
+// sheet is a US Letter page" (the sheet became a SEQUENCE of sheets), both in
+// the same commits as the changes that superseded them.
 //
 // The standard being asserted (docs/wrizo-alpha/sc-committee-pass.md, Pass
 // One, binding): US Letter 8.5 x 11in; Courier 12pt = 10 characters per inch,
@@ -113,8 +116,19 @@ const pageMetrics = () => `(() => {
   const padT = px(cs.paddingTop), padR = px(cs.paddingRight), padB = px(cs.paddingBottom), padL = px(cs.paddingLeft);
   const fontSize = px(cs.fontSize);
   const lineHeight = cs.lineHeight === 'normal' ? null : px(cs.lineHeight);
+  // SC2 S2b — the probe reads the SEQUENCE as well as the first sheet. The
+  // per-sheet figures above are unchanged and every existing assertion keeps
+  // reading them; sheets/sheetCount are additive, and exist so the parked
+  // "the sheet is a US Letter page" can be superseded by a claim about all of
+  // them rather than silently about the first of N. (No backticks in here:
+  // this comment lives INSIDE a template literal.)
+  const allSheets = [...document.querySelectorAll('.script-sheet')].map((s) => {
+    const sb = s.getBoundingClientRect();
+    return { width: sb.width, height: sb.height };
+  });
   return {
     width: b.width, height: b.height, aspect: b.width / b.height,
+    sheets: allSheets, sheetCount: allSheets.length,
     fontSize, lineHeight, charAdvance: adv,
     padT, padR, padB, padL,
     measure: b.width - padL - padR,
@@ -202,9 +216,47 @@ await withHarness(async (app) => {
     await freshScriptPage(app, width, 900, theme);
     const m = await app.evalJs(pageMetrics());
 
-    ok(`S1 @ ${label}: the sheet is a US Letter page — 8.5 x 11in, aspect within 0.5% of 8.5:11`,
-      Math.abs(m.aspect - ASPECT) / ASPECT < 0.005 && Math.abs(m.width - PAGE_W) <= 1 && Math.abs(m.height - PAGE_H) <= 1,
-      JSON.stringify({ width: m.width, height: m.height, aspect: m.aspect, target: ASPECT }));
+    // SUPERSEDED by SC2 S2b (2026-07-25) — A4 park cycle, travelling in the
+    // SAME commit as the change that falsified it. The ORIGINAL, verbatim:
+    //
+    //   ok(`S1 @ ${label}: the sheet is a US Letter page — 8.5 x 11in, aspect
+    //   within 0.5% of 8.5:11`,
+    //     Math.abs(m.aspect - ASPECT) / ASPECT < 0.005 && Math.abs(m.width -
+    //     PAGE_W) <= 1 && Math.abs(m.height - PAGE_H) <= 1,
+    //     JSON.stringify({ width: m.width, height: m.height, aspect: m.aspect,
+    //     target: ASPECT }));
+    //
+    // SUPERSEDED ON ITS SUBJECT, NOT ON ITS TRUTH — and the distinction is
+    // stated because it is exactly the one the park law asks for. This is a
+    // PARK (the check's subject retired), not a fixture re-point (the vehicle
+    // did not move) and not an annotation (the entry is not merely residue).
+    // The subject was THE SHEET, singular. SC2 S2b makes the surface a SEQUENCE
+    // of sheets, so "the sheet" names nothing in particular: `pageMetrics()`
+    // reads `document.querySelector('.script-sheet')`, which from this commit
+    // on silently measures the FIRST of N. The check would still have PASSED —
+    // that is precisely why it needed parking rather than fixing. A check that
+    // goes on passing while quietly covering a shrinking fraction of what it
+    // claims is worse than one that fails, because nothing announces it.
+    //
+    // The LAW it carried — a page is 8.5 x 11in — is not merely intact but
+    // MULTIPLIED: it now holds N times per document instead of once. The
+    // successor below re-asserts it of EVERY sheet the sequence renders here,
+    // which on this fixture (a fresh page through the real wizard) is a sequence
+    // of one — an honest statement of what this leg can see.
+    //
+    // The successor that ends WIDER than the predecessor lives in sc2.mjs's own
+    // S2b section, at these same four legs plus legacy, on a genuinely
+    // multi-page document: every sheet 816 x 1056, uniform across the sequence,
+    // the inter-sheet gap proven chrome and never body, and page N's first line
+    // at the same offset inside its sheet as page one's — the last two being
+    // truths a single-sheet check could not reach at all. It lives there and
+    // not here because that is where the sequence lives.
+    ok(`SC2 S2b @ ${label} (was "S1 @ ${label}: the sheet is a US Letter page — 8.5 x 11in, aspect within 0.5% of 8.5:11"): EVERY sheet the page renders is a US Letter page — 8.5 x 11in, aspect within 0.5% of 8.5:11 — and all of them are identical. A fresh page is a sequence of one, and it is stated as a sequence so the claim cannot silently shrink to "the first one" again`,
+      m.sheetCount >= 1
+        && m.sheets.every((s) => Math.abs((s.width / s.height) - ASPECT) / ASPECT < 0.005
+          && Math.abs(s.width - PAGE_W) <= 1 && Math.abs(s.height - PAGE_H) <= 1)
+        && new Set(m.sheets.map((s) => `${Math.round(s.width)}x${Math.round(s.height)}`)).size === 1,
+      JSON.stringify({ sheetCount: m.sheetCount, sheets: m.sheets, target: ASPECT }));
 
     ok(`S1 @ ${label}: the margins are the trade's 1.5 / 1 / 1 / 1 inches — asserted as RATIOS of the page, so they hold at any scale`,
       Math.abs(m.padLRatio - (1.5 / 8.5)) < 0.002 && Math.abs(m.padRRatio - (1 / 8.5)) < 0.002
@@ -598,13 +650,55 @@ await withHarness(async (app) => {
     JSON.stringify({ plateau: { w: plateauPage.width, h: plateauPage.height, m: plateauPage.measure }, flux: { w: fluxPage.width, h: fluxPage.height, m: fluxPage.measure } }));
 });
 
-// === PARKED — gated behind HARNESS_PARKED=1. SC1's own park cycles do NOT
-// live here: they travel VERBATIM in the SAME commit inside the files they
-// falsify (fx1.mjs, fx3.mjs, fx4.mjs, fx7.mjs). This file is purely additive,
-// so its own park section is an empty no-op by design (cd4.mjs's precedent).
+// === PARKED — gated behind HARNESS_PARKED=1. SC1's OWN park cycles do NOT live
+// here: they travel VERBATIM in the SAME commit inside the files SC1 falsified
+// (fx1.mjs, fx3.mjs, fx4.mjs, fx7.mjs). This scaffold sat empty by design until
+// now; SC2 S2b is its first tenant — the sheet-height entry below, parked in
+// the file it falsifies, exactly as the law requires. (SC2 S1's own earlier
+// park of this file's S3 "never scrolls itself" is quoted verbatim inline at
+// its site in the live S3 section, with its successor beside it — the same
+// lawful shape, kept where the reader meets it.)
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    // The re-verification PROBE — an instrument, which follows reality; the
+    // quoted records above it never move. It measures on a fresh page (a
+    // sequence of one), which is what these legs render.
+    await freshScriptPage(app, LAPTOP_W);
+    const parked = await app.evalJs(`(() => {
+      const sheets = [...document.querySelectorAll('.script-sheet')];
+      const b = sheets[0].getBoundingClientRect();
+      return { sheetCount: sheets.length, width: +b.width.toFixed(2), height: +b.height.toFixed(2),
+               aspect: +(b.width / b.height).toFixed(5),
+               inSequence: !!sheets[0].closest('.script-sequence') };
+    })()`);
+    // ORIGINAL (S1, at each of the four width/theme legs), verbatim:
+    //   ok(`S1 @ ${label}: the sheet is a US Letter page — 8.5 x 11in, aspect
+    //   within 0.5% of 8.5:11`,
+    //     Math.abs(m.aspect - ASPECT) / ASPECT < 0.005 && Math.abs(m.width -
+    //     PAGE_W) <= 1 && Math.abs(m.height - PAGE_H) <= 1, ...);
+    //
+    // SC2 S2b — PARKED on its SUBJECT: "the sheet", singular, is not a thing
+    // this surface has any more. The full reasoning, and why a check that would
+    // still have passed had to be parked rather than left alone, is at the
+    // supersession site in this file's own live S1 loop. Live successors: the
+    // sequence-shaped re-assertion in that same loop, and the wider one in
+    // sc2.mjs's S2b section (every sheet, uniform, at five legs, on a genuinely
+    // multi-page document, plus the gap-is-chrome and first-line-offset truths
+    // this check could never have reached).
+    pok('PARKED (was "S1 @ <leg>: the sheet is a US Letter page — 8.5 x 11in, aspect within 0.5% of 8.5:11") — SC2 S2b: the surface renders a SEQUENCE of sheets, so a check reading querySelector(\'.script-sheet\') silently measures the first of N; the law it carried is intact and multiplied. Live successors in this file\'s own S1 loop and in sc2.mjs\'s S2b section',
+      parked.sheetCount === 1 && parked.inSequence === true
+        && Math.abs(parked.width - PAGE_W) <= 1 && Math.abs(parked.height - PAGE_H) <= 1
+        && Math.abs(parked.aspect - ASPECT) / ASPECT < 0.005,
+      JSON.stringify(parked));
+  });
   // eslint-disable-next-line no-console
-  console.log('\nSC1 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; SC1\'s A4 park cycles travel in fx1.mjs (S2\'s "script matches prose\'s width band" + its own generation-3 start-fraction park), fx3.mjs (S1\'s script paper-to-stage fence, retired outright — an 11in page is taller than the stage), fx4.mjs (S1\'s script "about a quarter" start), and fx7.mjs (S1\'s 30px sliver fence, whose parked scaffold this ticket adds) — all in the SAME commit as the change that superseded them.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const ppass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(ppass ? `\nSC1 PARKED: PASS (${parkedChecks.length} checks)` : `\nSC1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+  if (!ppass) process.exit(1);
 }
 
 // eslint-disable-next-line no-console
