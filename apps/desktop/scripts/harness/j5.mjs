@@ -8,6 +8,30 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// DF1.1 S2 (item 66) — click a Spread row, ATOMICALLY, once it actually exists.
+//
+// THE DEFECT, named by two independent lanes: every Spread-row click in this
+// file sat immediately after `app.click('Select')` with nothing between them.
+// Entering select mode re-renders the row list, so the very next statement —
+// `document.querySelector('[data-page-id=…]').click()` — could evaluate against
+// a DOM that had not committed the re-render yet. querySelector returns null,
+// `.click()` throws a TypeError, and the whole scenario aborts with NO verdict
+// (not a failed check — an aborted file). Observed live at line 401 during the
+// M4 sweep, ~16s in, well after the app had loaded: distinctly NOT the
+// environmental signature (browser starvation presents as "CDP page target
+// never appeared" or a hang, never a null deref on one selector).
+//
+// THE FIX: find-and-click in ONE page evaluation, polled. There is deliberately
+// no separate "wait, then click" pair — that would still leave a round-trip
+// between the existence check and the click for the row to go away in. waitFor
+// returns on the first truthy evaluation, so the row is clicked exactly once.
+// A fixed sleep would have been the wrong instrument here for the same reason
+// it was wrong in tu2 (S1): it guesses at a settle instead of observing it.
+const clickSpreadRow = (app, id, label) => app.waitFor(
+  `(() => { const el = document.querySelector('[data-page-id="${id}"]'); if (!el) return false; el.click(); return true; })()`,
+  { label: label || `spread row ${id} present, then clicked` },
+);
+
 // A zero-delta tap (pointerdown+pointerup, no movement) exercises a real
 // pointerdown-driven select/open, distinct from a bare .click(). A non-zero
 // delta drives an actual drag attempt through the same delegated listener
@@ -163,8 +187,8 @@ await withHarness(async (app) => {
 
   // -- Slice 1: selection survives a lens flip -------------------------------
   await app.click('Select');
-  await app.evalJs(`document.querySelector('[data-page-id="${A.id}"]').click()`);
-  await app.evalJs(`document.querySelector('[data-page-id="${C.id}"]').click()`);
+  await clickSpreadRow(app, A.id);
+  await clickSpreadRow(app, C.id);
   let count = await app.evalJs("document.querySelector('.spread-select-count').textContent");
   ok('2 selected before any lens change', count.startsWith('2'), count);
 
@@ -238,7 +262,7 @@ await withHarness(async (app) => {
   // true assertion this fix falsifies, A4 park sweep lives in this file's
   // own PARKED section).
   await app.click('Select');
-  await app.evalJs(`document.querySelector('[data-page-id="${A.id}"]').click()`);
+  await clickSpreadRow(app, A.id);
   await app.waitFor("!!document.querySelector('.spread-add')", { label: 'Add to… button' });
   await app.evalJs("document.querySelector('.spread-add').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet' });
@@ -284,7 +308,7 @@ await withHarness(async (app) => {
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (2)' });
   await app.click('Select');
-  await app.evalJs(`document.querySelector('[data-page-id="${B.id}"]').click()`);
+  await clickSpreadRow(app, B.id);
   await app.evalJs("document.querySelector('.spread-add').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (2)' });
   await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(newDrawer.name)})).click()`);
@@ -323,7 +347,7 @@ await withHarness(async (app) => {
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (3)' });
   await app.click('Select');
-  await app.evalJs(`document.querySelector('[data-page-id="${D.id}"]').click()`);
+  await clickSpreadRow(app, D.id);
   await app.evalJs("document.querySelector('.spread-add').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (3)' });
   await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(newDrawer.name)})).click()`); // root -> the drawer
@@ -361,8 +385,8 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (R3)' });
   await app.click('Select');
   // Click H FIRST, then G — the reverse of notebook order.
-  await app.evalJs(`document.querySelector('[data-page-id="${H.id}"]').click()`);
-  await app.evalJs(`document.querySelector('[data-page-id="${G.id}"]').click()`);
+  await clickSpreadRow(app, H.id);
+  await clickSpreadRow(app, G.id);
   const selCountR3 = await app.evalJs("document.querySelector('.spread-select-count').textContent");
   ok('R3 setup: both G and H are selected (2)', selCountR3.startsWith('2'), selCountR3);
   await app.evalJs("document.querySelector('.spread-add').click()");
@@ -398,7 +422,7 @@ await withHarness(async (app) => {
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (4)' });
   await app.click('Select');
-  await app.evalJs(`document.querySelector('[data-page-id="${E.id}"]').click()`);
+  await clickSpreadRow(app, E.id);
   await app.evalJs("document.querySelector('.spread-add').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (4)' });
   await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(newDrawer.name)})).click()`); // root -> the drawer
@@ -455,7 +479,7 @@ await withHarness(async (app) => {
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (5)' });
   await app.click('Select');
-  await app.evalJs(`document.querySelector('[data-page-id="${C.id}"]').click()`); // C = ink-only, no ink-choice prompt needed for a text-empty page... wait C has ink, so a prompt WILL show
+  await clickSpreadRow(app, C.id); // C = ink-only, no ink-choice prompt needed for a text-empty page... wait C has ink, so a prompt WILL show
   await app.evalJs("document.querySelector('.spread-add').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Add to… sheet (5)' });
   await app.evalJs(`[...document.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(newDrawer.name)})).click()`); // root -> the drawer

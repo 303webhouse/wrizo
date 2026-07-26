@@ -80,6 +80,50 @@ const FLOOR_W = 1100; // DESKFRAME_MIN_WIDTH — the mandatory floor, never skip
 const LAPTOP_W = 1280;
 const WIDE_W = 2200;
 
+// DF1.1 S1 (item 66) — the session meter's in-page lifecycle recorder, and the
+// named root cause of tu2's ~1-in-96 suite-context flake.
+//
+// THE MECHANISM, precisely: components/Tutor.tsx schedules TWO timers on the
+// meter — `data-fading` flips true at METER_VISIBLE_MS (3600ms) and the node is
+// REMOVED at METER_TOTAL_MS (4000ms). That leaves a 400ms window in which the
+// meter is both fading and still mounted. The previous form of these checks
+// slept 3650ms on the HARNESS's wall clock and then sampled `data-fading`
+// once — so it had ~350ms of slack, and every CDP round-trip since the meter
+// rendered (a textContent read, two lex() lookups, the dataset read) was
+// charged against that slack. Under suite contention those round-trips
+// occasionally exceed 350ms; by the time the sample lands the node is already
+// gone, `?.dataset.fading` yields undefined, and the check reds. An earlier
+// rewrite here replaced a blind `sleep(400)` with a waitFor — that shrank only
+// the FIRST latency term and left the wall-clock dependency itself in place,
+// which is exactly why the flake outlived it.
+//
+// THE FIX is DF1's own S1 discipline (the fx5 species, generalized): observe
+// the observable on the BROWSER's clock instead of sampling it from outside. A
+// MutationObserver timestamps the mount (capturing the text and the fading flag
+// as they are at that instant), the fade flip (recording that the node was
+// still in the document when it happened), and the removal — all via
+// performance.now(), inside the page. The harness then waits for the recorded
+// removal and asserts against those timestamps. No harness-side latency can
+// move them, so there is no window left to miss and no sleep left to lengthen.
+// Deliberately NOT a weakening: every original check name below is preserved
+// verbatim and two STRONGER checks are added, proving the schedule itself
+// rather than the value of a flag at one arbitrary moment.
+const installMeterRecorder = (app) => app.evalJs(`(() => {
+  window.__tu2Meter = { t0: null, text: null, fadingAtMount: null, tFade: null, mountedAtFade: null, tGone: null };
+  const R = window.__tu2Meter;
+  const tick = () => {
+    const el = document.querySelector('.wz-tutor-meter');
+    const now = performance.now();
+    if (el && R.t0 === null) { R.t0 = now; R.text = el.textContent; R.fadingAtMount = el.dataset.fading; }
+    if (el && R.tFade === null && el.dataset.fading === 'true') { R.tFade = now; R.mountedAtFade = document.contains(el); }
+    if (!el && R.t0 !== null && R.tGone === null) { R.tGone = now; }
+  };
+  if (window.__tu2MeterObs) window.__tu2MeterObs.disconnect();
+  window.__tu2MeterObs = new MutationObserver(tick);
+  window.__tu2MeterObs.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-fading'] });
+  tick();
+})()`);
+
 // --- tu1.mjs's own freshDesk/freshProsePage/seedEntries, copied verbatim
 // (post its own TU2 S6 park-sweep fix — see that file's header) ------------
 const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = true } = {}) => {
@@ -580,46 +624,58 @@ await withHarness(async (app) => {
       (await app.evalJs("!document.querySelector('.wz-tutor-meter')")));
 
     await armTutorMode(app, { configured: true, reply: 'A stubbed reply.', usage: { inputTokens: 1000, outputTokens: 200 }, model: 'deepseek-v4-flash' });
+    await installMeterRecorder(app);
     await app.evalJs("document.querySelector('.wz-tutor-convo-input').focus()");
     await app.typeKeys('Meter check, known model.');
     await app.evalJs("document.querySelector('.wz-tutor-convo-send').click()");
-    // Poll for the meter's own appearance (rather than a blind fixed sleep)
-    // so the timing checks below measure elapsed time from as close to the
-    // ACTUAL render moment as this harness can get — a blind sleep(400)
-    // here would eat unpredictably into the 3600ms visible window the next
-    // checks depend on, and did in an earlier version of this file (a real,
-    // observed flake this rewrite fixes: sleep(400) + sleep(3700) totaled
-    // ~4100ms since render, already past METER_TOTAL_MS's own 4000ms, so
-    // the "still fading, not yet gone" check below saw a null element).
-    await app.waitFor("!!document.querySelector('.wz-tutor-meter')", { label: 'session meter rendered' });
-    const meterKnown = await app.evalJs("document.querySelector('.wz-tutor-meter')?.textContent ?? ''");
+    // DF1.1 S1 — wait for the meter's WHOLE life to be over, then assert
+    // against the timestamps the page took itself. The recorder above is
+    // already installed and observing, so nothing here is timing-sensitive:
+    // this is a backstop (12s against a ~4s lifecycle), not a window.
+    await app.waitFor('!!(window.__tu2Meter && window.__tu2Meter.tGone !== null)',
+      { label: 'session meter recorded its own full lifecycle', timeout: 12000 });
+    const R = await app.evalJs('window.__tu2Meter');
     const turnCostLabel = await lex(app, 'tutorMeterTurnCost');
     const tokensUnit = await lex(app, 'tutorMeterTokensUnit');
+    const meterKnown = R.text ?? '';
     ok('Session meter: renders after a stubbed reply for a KNOWN model — carries the turn-cost label, the token count, and a dollar estimate',
       meterKnown.includes(turnCostLabel) && meterKnown.includes('1,200') && meterKnown.includes(tokensUnit) && meterKnown.includes('$'),
       meterKnown);
 
-    const meterFadingEarly = await app.evalJs("document.querySelector('.wz-tutor-meter')?.dataset.fading");
     ok('Session meter: does not fade immediately — still fully opaque right after rendering',
-      meterFadingEarly === 'false', String(meterFadingEarly));
+      R.fadingAtMount === 'false', String(R.fadingAtMount));
 
-    await sleep(3650); // comfortably past METER_VISIBLE_MS (3600), comfortably under METER_TOTAL_MS (4000)
-    const meterFadingLater = await app.evalJs("document.querySelector('.wz-tutor-meter')?.dataset.fading");
     ok('Session meter: fades on its own timer — data-fading flips true past METER_VISIBLE_MS, still mounted',
-      meterFadingLater === 'true', String(meterFadingLater));
+      R.tFade !== null && R.mountedAtFade === true, JSON.stringify({ tFade: R.tFade, mountedAtFade: R.mountedAtFade }));
 
-    await sleep(500); // now comfortably past METER_TOTAL_MS (4000) from the original render
-    const meterGone = await app.evalJs("!document.querySelector('.wz-tutor-meter')");
     ok('Session meter: genuinely REMOVED from the DOM (a real scheduled unmount, not merely CSS-invisible) once its own timer completes',
-      meterGone === true, String(meterGone));
+      R.tGone !== null && R.tGone > R.tFade, JSON.stringify({ tFade: R.tFade, tGone: R.tGone }));
+
+    // DF1.1 S1 — NEW, and strictly stronger than the sampled form could be:
+    // the old checks could only ever prove "the flag was X when I happened to
+    // look." These prove the SCHEDULE itself, from the page's own clock —
+    // the fade fires at METER_VISIBLE_MS (3600) and the removal one
+    // METER_FADE_MS (400) later, at METER_TOTAL_MS. Bounds are generous
+    // because a browser timer may fire late under load but never EARLY;
+    // t0 is the observer's first sight of the node, so every measured
+    // interval is a slight under-estimate of the real one.
+    ok('Session meter (DF1.1 S1): the fade fires on the app\'s OWN schedule — ~METER_VISIBLE_MS (3600ms) after the node mounts, measured on the browser\'s clock, never the harness\'s',
+      R.tFade - R.t0 >= 3000 && R.tFade - R.t0 <= 5200, JSON.stringify({ mountToFadeMs: Math.round(R.tFade - R.t0) }));
+    ok('Session meter (DF1.1 S1): the removal follows the fade by ~METER_FADE_MS (400ms) — the fade is a real phase with duration, not the same instant as the unmount',
+      R.tGone - R.tFade >= 150 && R.tGone - R.tFade <= 1500, JSON.stringify({ fadeToGoneMs: Math.round(R.tGone - R.tFade) }));
 
     // The honest unknown-model fallback — tokens only, never an invented dollar figure.
+    // DF1.1 S1 — same recorder, same reason: the old `sleep(400)` here raced
+    // the reply's own arrival at the low end and the meter's 4s removal at the
+    // high end. Reading the text the page captured AT MOUNT has neither edge.
     await armTutorMode(app, { configured: true, reply: 'Another stubbed reply.', usage: { inputTokens: 500, outputTokens: 100 }, model: 'some-unknown-future-model' });
+    await installMeterRecorder(app);
     await app.evalJs("document.querySelector('.wz-tutor-convo-input').focus()");
     await app.typeKeys('Meter check, unknown model.');
     await app.evalJs("document.querySelector('.wz-tutor-convo-send').click()");
-    await sleep(400);
-    const meterUnknown = await app.evalJs("document.querySelector('.wz-tutor-meter')?.textContent ?? ''");
+    await app.waitFor('!!(window.__tu2Meter && window.__tu2Meter.t0 !== null)',
+      { label: 'unknown-model session meter rendered (recorded)', timeout: 12000 });
+    const meterUnknown = (await app.evalJs('window.__tu2Meter.text')) ?? '';
     const tokensOnlyLabel = await lex(app, 'tutorMeterTokensOnly');
     ok('Session meter: an unknown model shows TOKENS ONLY — the honest fallback label, no invented dollar figure',
       meterUnknown.includes(tokensOnlyLabel) && meterUnknown.includes('600') && !meterUnknown.includes('$'), meterUnknown);
