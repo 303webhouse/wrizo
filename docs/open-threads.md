@@ -7030,6 +7030,11 @@ outlive a session lives here, not in chat.
       GREEN, 122 checks. A swept browser is not a defect — but concurrent
       harness sessions cost a re-run, and the sweep-before-a-suite lesson now
       has a third witness with the opposite sign.
+    **MERGED — 2026-07-25, merge `5d5ae5e`** (re-merged onto origin's latest after the SC2
+    records advance; the one `useFirstLineInvite` conflict resolved to FX15's version, BG1's
+    Sprout caller preserved in `BeginningsRow.tsx`). GREEN both settings on the combined P1
+    tree (`bg1.mjs` 37 checks); DEPLOYED with the P1+SC wave (see the DEPLOY MANIFEST below).
+    Review + sitting OPEN.
 68. **FX15 — the Quiet Page.** **OPENED — 2026-07-25 (chat 1)**, from the P1 wave
     (`docs/wrizo-alpha/p1-wave.md`), authority Nick's word of 2026-07-25 (the unbidden
     first-line invite is not wanted by default; + the stale-language sighting). Branch
@@ -7075,6 +7080,15 @@ outlive a session lives here, not in chat.
     `fx15.mjs` on the combined tree — discharged by chat 5 (BG1 `6140d92`: one-file
     conflict resolves to FX15's version, both harnesses green). Fable's post-merge review
     owed in the P1 batch. HB2-lite follows.
+    **th2 CLASSIFICATION CORRECTED — 2026-07-25 (chat 1, annotation per Fable; the record
+    above stands unrewritten).** The line above names th2 "the documented known flake
+    (fx5/th2/j4 contention class)" — now stale: **DF1 CLEARED th2 (and fx5, j4) on evidence;
+    the known-flake list is `tu2` ALONE.** The th2 armed timeout was an ENVIRONMENTAL
+    NO-VERDICT (sc2-6-browser-neighbor contention), not a flake. The classification's
+    substance holds by BLAST RADIUS (FX15 touches no theme code) + th2's unarmed pass on the
+    same tree — and was confirmed on a QUIET machine, where the full armed suite ran 47/47
+    (th2 green). **GREEN + DEPLOYED** with the P1+SC wave (see the DEPLOY MANIFEST below);
+    Fable's review + Nick's sitting remain OPEN.
 69. **HB2-lite — the Landing.** **OPENED — 2026-07-25 (chat 1, after FX15)**, from the
     P1 wave (`docs/wrizo-alpha/p1-wave.md`), authority SV11 (ratified). Scope is the
     landing RULE only — the full loading-screen rebuild (SV12a–e) is post-vacation.
@@ -7087,6 +7101,14 @@ outlive a session lives here, not in chat.
     line of preparation for the deferred work: the loading screen reads the persisted
     theme key; nothing visual changes. Both HARNESS_PARKED settings; full suite before
     merge. **DoD: the app opens where the writing is.**
+    **MERGED — 2026-07-25, merge `97f90e9`.** Built: S1 (Arrival's `handleOpen` no-resume
+    fallback re-pointed `/journal` → a fresh Free Write page — the app opens where the
+    writing is, never a journal surface; `b1.mjs` S5(c) A4-parked + a chain note for the
+    FX14 back-link park that named it), S2 (assertion-only — `main.tsx` `initTheme()` already
+    reads the theme key at boot; no redundant read added). New `hb2.mjs`, 9 checks incl. the
+    stale-journal V2 case (a stale `/journal/:id` → THE Page via FX14's redirect, no journal
+    chrome). GREEN both settings; DEPLOYED with the P1+SC wave (see the DEPLOY MANIFEST
+    below). Review + sitting OPEN. Build map: `docs/wrizo-alpha/hb2-lite-scout-notes.md`.
 
 70. **M4 — the Root That Shows.** *(renumbered from 68 — collision with FX15, first-to-open; commits before this reference it as 68.)* **OPENED 2026-07-25 (chat 3), P1 wave
     (`p1-wave.md` §M4, SV13–SV16). S1+S2 BUILT + verified; S3+S4 ROOT-CAUSED
@@ -7203,6 +7225,57 @@ outlive a session lives here, not in chat.
     `ws-runtime-verify-<ownPid>` profile dir. **Merge rides the zero-schema
     pre-authorization through chat 1's lane; Fable reviews post-merge; deploy is
     Nick's word (P1 + SC, one named manifest).**
+    **MERGED — 2026-07-25, merge `7ec8125`** (re-merged onto origin's latest, clean). GREEN
+    both settings on the combined P1 tree (`m4.mjs` 42 checks); DEPLOYED with the P1+SC wave
+    (see the DEPLOY MANIFEST below). Review + sitting OPEN.
+
+## P1 + SC DEPLOY MANIFEST — 2026-07-25 (chat 1, on Nick's "DEPLOY WHEN READY")
+
+**One deploy, both arcs, everything named** (Fable's "one word, one manifest naming both
+arcs"; the SC deploy-separateness residue is superseded per item 62). Deploying the combined
+`main` HEAD — this records commit's own SHA, stamped below immediately after `railway up`.
+
+**Arc 1 — the P1 wave (new code since the P0 deploy):**
+- item 68 · **FX15 — the Quiet Page** · merge `f64230d`
+- item 69 · **HB2-lite — the Landing** · merge `97f90e9`
+- item 70 · **M4 — the Root That Shows** · merge `7ec8125`
+- item 67 · **BG1 — the Beginnings** · merge `5d5ae5e`
+
+**Arc 2 — the SC arc (new code since the P0 deploy):**
+- item 62 · **SC1 — the Script's Own Room / True Geometry** · merge `3e83f4c` (tip `22dc1c7`)
+
+**Already live (in the deployed tree, shipped at the P0 wave — named for completeness):**
+FX13 (63) · DF1 (48) · FX14 (65) · FX12 — live since **git `c13182b` / railway `cf99e5a8`**.
+
+**Docs:** all records/reviews/briefs since `375c10f` (P0 reviews, the SV8 wipe record, the
+SC records, the P1 records + amendments, the hb2-lite scout-notes, this manifest) — records
+only, no deployed surface.
+
+**ZERO SCHEMA, ZERO SERVER FILES** across the entire deployed range (`375c10f..HEAD`):
+`apps/server` diff empty; no migration/schema/db files touched; no schema-at-merge word was
+ever required.
+
+**Verified at the combined merge HEAD:** `tsc` ×3 EXIT 0; `build:web` clean; DF1's
+`audit-parked-records.mjs` at its known baseline (0 new edges; comment-form parks
+audit-invisible by design = DF1.1 advisory 2). **Full historic suite, both settings, read to
+completion — 47/47 UNARMED and 47/47 ARMED.** The armed 47/47 was reached on a QUIET machine
+(Fable's ruling): two earlier armed runs each lost ONE contention-sensitive file to a
+concurrent lane's harness browsers — m2 (crashed run 1, passed run 2) and `j5:120` (a
+`waitFor: lens row` on an empty spread; OUTSIDE the wave's blast radius — nothing in P1
+touches the Journal spread, j5 unarmed always passed, and j5 is DF1.1's known-flaky file,
+its CLEARED rescinded). On a quiet machine both passed → confirmed neighbor contention, not
+code. The known-flake list is `tu2` alone (th2/fx5/j4 cleared by DF1).
+
+**ROLLBACK TARGET: git `c13182b`** — the last known-good production SHA (the P0 wave).
+Rollback is a redeploy of it, one command away (`railway up` of that tree) if Nick's testing
+finds anything.
+
+**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — filled immediately after
+`railway up` in the next records touch (the P0-deploy convention).
+
+**Items 62 / 67 / 68 / 69 / 70: GREEN + DEPLOYED, but they STAY OPEN** — Fable's four
+post-merge reviews FOLLOW the deploy (Nick's word) rather than gate it, and Nick's device
+sitting closes them.
 
 ## CANON DEBTS — Fable's, actionable after the gate session
 7. **Rev 3 of `docs/state-of-wrizo-2026-07.md`.** A week of TTFK data now
