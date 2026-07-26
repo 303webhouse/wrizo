@@ -6593,6 +6593,131 @@ outlive a session lives here, not in chat.
     dialogue splits with `(MORE)`/`(CONT'D)` at SC2.1) rather than imperative
     branching, so each rule is assertable on its own and a future ruling changes
     ONE ROW instead of a control-flow graph.
+    **SC2 S2a + S2a.1 BUILT — 2026-07-25, `447dd8d` and `a2706d3` on
+    `sc2-the-clock`** (folded into the ledger here by chat 7; S2a's own record
+    was carried by the handoff dossier `docs/wrizo-alpha/sc2b-finish-map.md` at
+    `37983d2` and had not reached this file — recorded so the gap does not
+    survive as one). The paginator (`src/store/scriptPaginate.ts`, new) is pure,
+    synchronous and viewport-free: a ledger in, pages out, no DOM and no width
+    ever an input, which is what makes viewport invariance PROVABLE rather than
+    observed. Break rules landed as the ruled TABLE, not branching. **S2a.1
+    ruled `paren`** — a parenthetical is a MODIFIER on the line beneath it and
+    stranded at a page foot modifies nothing — and **DEFERRED `transition` WITH
+    ITS REASON stated in the row itself**: `keepWithPrevious` is the only rule
+    that reaches BACKWARD, mixing directions in one fix-up pass is where
+    oscillation lives, and `paginate()` runs on every keystroke, so an
+    oscillation is a frozen editor and not a wrong page count. Recorded as owed,
+    not decided against. Thirteen properties green at `a2706d3` — **in a SCRATCH
+    harness, which by Amendment 2's own principle is a pre-commit gate and NOT
+    coverage**, since `scriptPaginate.ts` was imported by nothing.
+    **SC2 S2b BUILT — 2026-07-25, `f1bcc21` on `sc2-the-clock`, pushed (chat 7,
+    the SC lane's successor).** The render: the surface stops being one sheet
+    that grows and becomes a SEQUENCE of true 11in pages. `.script-sheet` height
+    is exact now (was `min-height`) — a sheet that can grow is a sheet whose
+    height is a function of what landed on it, and then page 12 is not a page.
+    The elements array stays the edit model; pages are a projection and nothing
+    about pagination enters state, the doc, the store or the server.
+    **THE THIRTEEN PROPERTIES ARE COVERAGE NOW** — the render imports the
+    modules, so all thirteen are permanent `sc2.mjs` assertions against RENDERED
+    geometry, each on a fixture engineered to trip it. Strictly stricter than the
+    scratch forms, which read the pure function's return value: a property that
+    held in the function and failed in the render used to be invisible.
+    **THE TRANSITION ROW LANDED WITH ITS TERMINATION PROOF, not a cap.** The
+    resolution to the two-directions problem is that the rule is EXPRESSED AS THE
+    SAME FORWARD MOVE — a transition at a page top is repaired by pushing the
+    previous page's tail forward to join it, never by pulling the transition
+    back — so both rule families reduce to one action and the pass is
+    single-directional. Termination is proved: Φ (the sum of every part's page
+    index) strictly increases on every move, so no state can recur; `p` only
+    increases and the inner loop removes one part from page `p` per iteration, so
+    at most 2N moves for N parts. **There is no retry limit anywhere — a cap is
+    how an unproven loop hides.** The harness demonstrates it on the fixture that
+    trips both rules at once (a page ending on a scene heading whose next page
+    opens on a transition), and the bound is stated: a non-terminating pass never
+    mounts, so reaching the assertion is the observable half; the general
+    argument is the monotonicity proof, not the check.
+    **THE VERTICAL POLICY IS OWNED** (S1's charge, discharged).
+    `focus({ preventScroll: true })` plus a rule written down as a rule in three
+    clauses — focus never scrolls; the box moves only to keep the caret visible
+    and only by the minimum; no animation, no fraction, no home. Measured off the
+    CARET, not the element, because an action block can be taller than the whole
+    visible band. **Nick's sitting question (does a caret flush at the bottom
+    edge want breathing room?) is left at exactly zero rather than answered in
+    code** — inventing a number would make it look ruled.
+    **FOUR RENDERED CROSS-CHECKS AT FIVE LEGS** (1100 / 1280 / 2200 / 1280·Flux /
+    1000 legacy): rendered sheet count against page arithmetic **derived
+    independently in the harness and never read from the module** — if the module
+    and the render agreed on something wrong, that is what catches it; a
+    mid-document element's rendered sheet index against `floor(i/27)`; the
+    inter-sheet gap proven CHROME (no element in it, no rect straddling a sheet
+    boundary); page N's first line at page one's own offset. **The gap is
+    expressed in `rem`** — never the sheet's `em`, which is the PAGE's unit and
+    would scale the desk as though it were paper, and never a multiple of
+    `--script-line`, so it can never be read as N blank lines of screenplay.
+    **THREE MECHANISMS NAMED BEFORE THEY WERE FIXED, all caught by reproducing:**
+    (1) the lookups were PARTIAL and the arithmetic went NaN on them —
+    `SPACE_BEFORE[t]` for an unknown type is `undefined`, NaN comparisons are all
+    false, and a 928-element doc paginates to 928 pages; `BREAK_RULES[t]
+    .splittable` throws outright. **Not hypothetical: `sc2.mjs`'s FROZEN S0
+    baseline fixture seeds 116 elements typed `'parenthetical'`, which is not a
+    member of `ScriptElType`.** That fixture CANNOT be corrected — it is the
+    pre-pagination reference and a re-issue after pagination exists is no longer
+    a pre-pagination baseline — so it is RECORDED and the lookups are made total
+    with stated fallbacks. A script doc is jsonb from storage and other builds; an
+    unknown type is a thing that happens. (2) the split **rendered correctly and
+    lied about the text** — the first cut joined a split action's lines with
+    newlines, visually identical under `pre-wrap`, having written 58 breaks the
+    writer never typed into a 60-line block's DOM text and dropped the trailing
+    spaces `pre-wrap` hangs. `sc2.mjs`'s character-for-character concatenation
+    check found it on its first run; `wrapToLines` now computes break POSITIONS
+    and slices the ORIGINAL, so the lines concatenate back exactly and a part is
+    a genuine substring. (3) the vertical scroll, as above.
+    **PARK CYCLES (A4, both in the same commit as the change that falsified
+    them).** `sc1.mjs`'s **"the sheet is a US Letter page — 8.5 x 11in"** —
+    PARKED **on its SUBJECT, not its truth**. "The sheet", singular, is not a
+    thing this surface has any more; `pageMetrics()` reads
+    `querySelector('.script-sheet')`, which from here on silently measures the
+    first of N. **It would still have PASSED, which is exactly why it needed
+    parking: a check that goes on passing while covering a shrinking fraction of
+    what it claims is worse than one that fails, because nothing announces it.**
+    Original verbatim, successors named — the sequence-shaped re-assertion in
+    `sc1.mjs`'s own S1 loop, and the wider one in `sc2.mjs` at five legs on a
+    multi-page document (every sheet, uniformity, gap-is-chrome, first-line
+    offset), so the successor ends WIDER than the predecessor as ruled. And
+    `sc2.mjs`'s own S0 **"the sheet is still SC1's true page — ONE 51em x 66em
+    sheet (SC2 has not yet paginated)"** — PARKED; its condition (12pt) still
+    holds, the world it names retired. **Distinguished in the same file from a
+    FIXTURE RE-POINT:** S0's geo probe now counts sheets instead of dividing one
+    sheet's height (a fixed height would have made "pages" read 1 forever); no
+    assertion's text or condition changed for it, and both figures ride in labels
+    and gate nothing.
+    **BOUNDS, STATED SO THEY CANNOT BE READ AS MORE.** The active element is the
+    one exception to the projection — a contenteditable cannot be cut in half, so
+    an active element the paginator splits renders whole on the page where it
+    begins; reachable only with the caret inside an action block longer than a
+    full page (~3,200 characters), only for that element, only while the caret is
+    in it (the alternative was making pagination depend on caret position, which
+    would move the page count as the writer clicks). "No page exceeds 54 lines"
+    holds except for an element that may not split and is itself longer than a
+    page — it has nowhere to go and overflows its sheet alone; **dialogue's case
+    is what SC2.1's `(MORE)`/`(CONT'D)` closes.** Byte-level determinism of the
+    pure function is not observable through a DOM, so P11 asserts the strongest
+    observable consequence — the same document producing the same sheets holding
+    the same elements across a full reload.
+    **S5's memoization seam is PREPARED, NOT TAKEN:** `elementStyle` is one
+    FROZEN object per type at module level and activation is one delegated
+    handler on the sequence reading `data-doc-index`, so neither prop identity
+    changes per render — S5 is an edit, not a rewrite. **S4 (page numbers, R1) is
+    untouched; nothing in S2b shows a count anywhere.**
+    **VERIFICATION — `tsc` ×2 EXIT 0, `build:web` clean; `sc1.mjs` 66/66 and
+    `sc2.mjs` 61/61 at BOTH `HARNESS_PARKED` settings, each with its own 1-check
+    park section; FULL HISTORIC SUITE 44/44 AT BOTH SETTINGS, read to completion
+    in the main loop — every file exit 0, ZERO failing check objects across all
+    88 logs**, asserted against the raw JSON rather than verdict lines. `j5.mjs`
+    green at both settings in this tree (reported, not re-run under any
+    clearance — DF1.1 still owns its named root). **Next in this lane: S4 (page
+    numbers) and S5 (the caret across the break + memoization), then PB1
+    (item 71).**
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
