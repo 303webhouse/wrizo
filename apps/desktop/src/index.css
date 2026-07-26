@@ -1786,7 +1786,36 @@ a:focus-visible,
    "the cursor starts by floating in the middle of the page." The screenplay
    begins at the top margin, and this is one of the two things keeping it
    there. */
-.script-sheet > *:first-child{ margin-top:0 !important; }
+/* SC2 S4 — THE SELECTOR FOLLOWS THE DOM SHAPE, and this is the case the S2b
+   handoff flagged to VERIFY rather than assume. The page number is the sheet's
+   first child from page two on, so `*:first-child` would match IT instead of
+   the first script element, and every page but the first would begin one or two
+   blank lines lower than page one. The number is absolutely positioned, so it
+   moves nothing itself — the whole hazard was this selector, and the sibling
+   arm below closes it. It is not left to inspection either: page one has no
+   number and every other page does, so sc2.mjs's standing "page N's first line
+   sits at page one's own offset" check fails immediately if this arm is lost. */
+.script-sheet > *:first-child,
+.script-sheet > .script-page-number + *{ margin-top:0 !important; }
+/* SC2 S4 — the number itself. In the sheet's OWN type (Courier 12pt, inherited)
+   because it is the document's furniture and not the app's chrome — the one
+   place in the house where a number on the page is lawful (R1).
+
+   Absolutely positioned, so it is outside the flow entirely and cannot cost the
+   body a line: `top:3em` is 0.5in below the paper's edge, halfway into the 1in
+   top margin, and `right:6em` resolves against the padding box, putting the
+   number's right edge exactly on the text block's right edge — the 1in right
+   margin, the trade's own position.
+
+   `user-select:none` because it is not the writer's words. Selecting across two
+   pages must hand back a screenplay, not a screenplay with page numbers loose
+   in it. (The copy-out and export paths serialize from the DOCUMENT and never
+   the DOM, so they could not have picked it up regardless — this is the
+   selection a writer makes with their own hand.) */
+.script-page-number{
+  position:absolute; top:3em; right:6em;
+  color:var(--ink-on-paper); -webkit-user-select:none; user-select:none;
+}
 .script-el-active{
   outline:none; cursor:text; caret-color:var(--brass);
   border-bottom:1px solid var(--brass);
