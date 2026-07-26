@@ -7249,6 +7249,26 @@ outlive a session lives here, not in chat.
     ticket). Both HARNESS_PARKED settings; A4 parks (verbatim + successor in the same
     commit) for anything falsified; full suite before merge. **DoD: a fresh page says
     nothing, on a new profile and on Nick's.** FX18 follows.
+73. **BG2 — the Beginnings, Seen.** **OPENED + BUILDING — 2026-07-25 (chat 5)**, from the
+    P2 wave (`p2-wave.md` §BG2), authority SV19 + SV20 — Nick's walk of the deployed P1
+    tree, where the row this lane shipped in BG1 (item 67) was "much too small," he "can
+    barely see" it, and the page's row read as a footnote rather than a set of modes.
+    Chat 5 built BG1; the shapes are its own. Branch `bg2-beginnings-seen` off `main`, own
+    worktree, guard-rail, ledger on `main`; **ZERO SCHEMA, ZERO SERVER FILES**; merges
+    through chat 1's lane, Fable reviews post-merge, one deploy word covers the wave.
+    **S1 — the grammar revised in ONE place** (`BeginningsRow`), both surfaces inheriting:
+    icons ABOVE labels (was inline), ~50% larger in glyph, label and hit target, and the
+    at-rest colour a dark olive that carries against cream. Lane law unchanged and now
+    asserted as a law: dark olive at rest, brass on hover, orange only on press.
+    **S2 — the page's row is centered on the sheet**, reading as a set of modes; this
+    SUPERSEDES the committee's "furniture beside the cursor" by Nick's own word.
+    Unchanged and re-proven: the caret is live from the first frame, typing dismisses the
+    row, the row never gates writing. **S3 — the board's row keeps its placement** (SV20:
+    already correct) and takes S1's sizing and colour. Harness: geometry re-pointed to the
+    new sizes, contrast asserted as a COMPUTED value against the ground, types-immediately
+    re-proven at the new placement, the 1366×768 leg for both rows; A4 parks with verbatim
+    originals and named successors in the same commit as the change that falsified them.
+    **DoD: Nick sees three doors and knows instantly they are choices.**
 75. **FX18 — the Chrome Aligned.** **OPENED — 2026-07-25 (chat 1, after FX16)**, from the
     P2 wave (`p2-wave.md` §FX18), authority SV24–SV27 + the screenplay's instance of SV26.
     Branch `fx18-chrome-aligned` off `main` (after FX16 lands), own worktree, guard-rail,
