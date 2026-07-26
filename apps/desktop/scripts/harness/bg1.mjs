@@ -132,14 +132,9 @@ await withHarness(async (app) => {
 
   // Quiet olive — the brief's own word for the doors' color, and the hue the
   // house reserves for "this is a door" (--accent-rest, #96a05a).
-  const doorPaint = await app.evalJs(`(() => {
-    const el = document.querySelector('.wz-beginning');
-    const cs = getComputedStyle(el);
-    const token = getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim();
-    return { color: cs.color, opacity: cs.opacity, token };
-  })()`);
-  ok('S1: the doors are painted in the house olive (--accent-rest #96a05a), quietly (resting opacity below full) — olive means "this is a door"',
-    doorPaint.color === 'rgb(150, 160, 90)' && parseFloat(doorPaint.opacity) < 1, JSON.stringify(doorPaint));
+  // BG2 (item 73, SV19/SV20) — the resting-paint check is PARKED at the foot of
+  // this file: the doors keep olive, but the VALUE steps down to `--accent-door`
+  // and the resting opacity is retired. Live successor: bg2.mjs.
 
   // "No grid" — one row, one line: every door shares a top edge.
   const doorTops = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(b => Math.round(b.getBoundingClientRect().top))");
@@ -404,19 +399,12 @@ await withHarness(async (app) => {
     boardLeg.left >= 0 && boardLeg.right <= boardLeg.vw && boardLeg.top >= 0 && boardLeg.bottom <= boardLeg.vh && boardLeg.oneLine === true,
     JSON.stringify(boardLeg));
 
+  // BG2 (item 73, SV19) — the page row's PLACEMENT check is PARKED at the foot
+  // of this file: Nick's own word supersedes the committee's "beside the
+  // cursor," and the row is now centered on the sheet. The claim that survives
+  // untouched is the one immediately below (types-immediately at the leg), which
+  // BG2's brief requires to keep passing. Live successor: bg2.mjs.
   await freshPage(app, 'bg1-leg-page', '', LEG_W, LEG_H);
-  const pageLeg = await app.evalJs(`(() => {
-    const row = document.querySelector('.wz-beginnings');
-    const ed = document.querySelector('.forward-only-editor');
-    const r = row.getBoundingClientRect(), e = ed.getBoundingClientRect();
-    const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
-    return { rowTop: Math.round(r.top), rowLeft: Math.round(r.left), rowRight: Math.round(r.right),
-      firstLineBottom: Math.round(e.top + lineH), vw: innerWidth, vh: innerHeight, rowBottom: Math.round(r.bottom) };
-  })()`);
-  ok('1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole',
-    pageLeg.rowTop >= pageLeg.firstLineBottom - 2 && pageLeg.rowLeft >= 0 &&
-    pageLeg.rowRight <= pageLeg.vw && pageLeg.rowBottom <= pageLeg.vh,
-    JSON.stringify(pageLeg));
 
   // And the leg's own version of the load-bearing claim: still typeable at once.
   await app.typeKeys('At the leg too');
@@ -430,20 +418,94 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-// BG1 parks nothing of its own. The ONE assertion this ticket falsifies lives
-// in another file and is parked there, at its own site, with this file named as
-// its live successor: fx6.mjs's S2 (c) empty-board COPY check (the one-line
-// pointer that named two board-side tools, retired for the doors themselves).
-// Its sibling check ("the pointer disappears the moment the board has a card")
-// was re-pointed in place rather than parked — same claim, new vehicle.
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
+// BG1 parked nothing of its OWN at build time. The one assertion it falsified
+// lived in another file and is parked there, with this file named successor:
+// fx6.mjs's S2 (c) empty-board COPY check.
+//
+// BG2 — the Beginnings, Seen (docs/wrizo-alpha/p2-wave.md §BG2, item 73;
+// authority SV19/SV20, Nick's walk of the deployed P1 tree) is this file's
+// first tenant. Nick could not see what BG1 shipped — "much too small," "can
+// barely see" — and read the page's row as a footnote rather than a set of
+// modes. Two of this file's checks are falsified by the fix, quoted verbatim
+// below (SUPERSEDED) and re-asserted against their new truths. Live successors
+// for the whole revised grammar: bg2.mjs. Everything else in this file is
+// untouched and still runs live — the door sets, the system-board absence, the
+// vanish rule, the Sprout rails, and (BG2's own requirement) the
+// types-immediately DoD check, which must keep passing at the new placement.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    // ORIGINAL (BG1 S1): ok('S1: the doors are painted in the house olive
+    // (--accent-rest #96a05a), quietly (resting opacity below full) — olive
+    // means "this is a door"',
+    //   doorPaint.color === 'rgb(150, 160, 90)' && parseFloat(doorPaint.
+    //   opacity) < 1, JSON.stringify(doorPaint));
+    // BG2 S1 — the doors are STILL olive and still mean "this is a door"; the
+    // value steps down to `--accent-door` (#4F5730) so it carries against cream,
+    // and the resting opacity is retired outright (a translucent door makes the
+    // measured colour differ from the seen one, which would make BG2's own
+    // contrast assertion a lie). Re-asserted against both new truths.
+    await freshBoard(app, 'bg1-parked-paint', [], LAPTOP_W, 900);
+    const paintNow = await app.evalJs(`(() => {
+      const cs = getComputedStyle(document.querySelector('.wz-beginning'));
+      const doc = getComputedStyle(document.documentElement);
+      return { color: cs.color, opacity: cs.opacity,
+        doorToken: doc.getPropertyValue('--accent-door').trim(),
+        oldToken: doc.getPropertyValue('--accent-rest').trim() };
+    })()`);
+    pok('PARKED (was "S1: the doors are painted in the house olive (--accent-rest #96a05a), quietly (resting opacity below full) — olive means \\"this is a door\\"") — BG2 S1 steps the SAME olive down in value to --accent-door (#4F5730) for legibility on cream and retires the resting opacity: the door is quiet by value now, not by fade; live successor: bg2.mjs',
+      paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 1 &&
+      paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',
+      JSON.stringify(paintNow));
+
+    // ORIGINAL (BG1, the 1366x768 leg): ok('1366x768 leg: the page row sits
+    // BELOW the first line (the caret\'s own line stays clear of furniture)
+    // and fits the viewport whole',
+    //   pageLeg.rowTop >= pageLeg.firstLineBottom - 2 && pageLeg.rowLeft >= 0 &&
+    //   pageLeg.rowRight <= pageLeg.vw && pageLeg.rowBottom <= pageLeg.vh,
+    //   JSON.stringify(pageLeg));
+    // BG2 S2 (SV19) — Nick's own word supersedes the committee's "furniture
+    // beside the cursor": the row is centered on the sheet and is no longer
+    // positioned relative to the first line at all, so the original's geometry
+    // (rowTop vs firstLineBottom) is not merely false, it is meaningless now.
+    // The SUBJECT survives whole — "the caret's own line stays clear of
+    // furniture" — and is re-asserted at the granularity that always carried
+    // it: not the row's full-width CONTAINER box (which spans the sheet and
+    // does overlap the first line's band by a few px at this leg, harmlessly,
+    // being pointer-events:none), but the DOORS, and the hit test at the caret
+    // itself. Measured here: the caret sits at x~416, the leftmost door begins
+    // at x~521, and elementFromPoint at the caret returns the editor.
+    await freshPage(app, 'bg1-parked-leg', '', LEG_W, LEG_H);
+    const legNow = await app.evalJs(`(() => {
+      const row = document.querySelector('.wz-beginnings');
+      const ed = document.querySelector('.forward-only-editor');
+      const r = row.getBoundingClientRect(), e = ed.getBoundingClientRect();
+      const lineH = parseFloat(getComputedStyle(ed).lineHeight) || 29;
+      const caret = { x: e.left + 2, yTop: e.top, yBot: e.top + lineH };
+      const covering = [...document.querySelectorAll('.wz-beginning')].filter((b) => {
+        const d = b.getBoundingClientRect();
+        return d.left <= caret.x && d.right >= caret.x && d.top <= caret.yBot && d.bottom >= caret.yTop;
+      }).length;
+      const atCaret = document.elementFromPoint(caret.x + 1, caret.yTop + 8);
+      return { doorsCoveringCaret: covering, atCaret: (atCaret && atCaret.className || '').toString(),
+        rowLeft: Math.round(r.left), rowRight: Math.round(r.right), rowTop: Math.round(r.top),
+        rowBottom: Math.round(r.bottom), vw: innerWidth, vh: innerHeight };
+    })()`);
+    pok('PARKED (was "1366x768 leg: the page row sits BELOW the first line (the caret\'s own line stays clear of furniture) and fits the viewport whole") — BG2 S2 centers the row on the sheet per SV19, so first-line-relative geometry no longer applies; the CLAIM survives measured against the doors and the hit test: no door covers the caret, the caret point still hit-tests to the editor, and the row still fits the viewport whole; live successor: bg2.mjs',
+      legNow.doorsCoveringCaret === 0 && legNow.atCaret.includes('forward-only-editor') &&
+      legNow.rowLeft >= 0 && legNow.rowRight <= legNow.vw &&
+      legNow.rowTop >= 0 && legNow.rowBottom <= legNow.vh,
+      JSON.stringify(legNow));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; BG1 parks nothing of its own (its one park lives in fx6.mjs, which names this file as the successor).`
+    ? `\nBG1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green (BG2 is this file's first tenant; live successors in bg2.mjs).`
     : `\nBG1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
