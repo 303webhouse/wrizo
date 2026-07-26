@@ -6547,6 +6547,52 @@ outlive a session lives here, not in chat.
     radius is any file that mounts a script page or asserts its geometry;
     `tu2` is the one known flake by the rescission, everything else red is real,
     and isolation re-run is NOT available as a first move.
+    **SUITE RUN COMPLETE — 2026-07-25, on `1a759c4`, both settings, read to
+    completion in the main loop: 44/44 files, 1808 VERIFY unset; 139 PARKED +
+    1910 VERIFY = 2049 at `=1`; ZERO assertion failures**, asserted against the
+    raw JSON rather than verdict lines. `--headless` swept before pass 1 (4
+    orphans), between passes, and mid-run. `tsc` ×2 EXIT 0; `build:web` clean.
+    **The parked total held at 139, unchanged from the pre-S1 runs** — the quiet
+    census proof that every existing cycle still fires against the new geometry
+    and that S1's park REPLACED its predecessor rather than piling on.
+    `sc2.mjs` ran in 9 seconds under the new split (the timing path took
+    minutes), and `fx1.mjs` ran clean directly after it in both passes — the
+    citizenship fix works.
+    **`j5.mjs`'s CLEARED VERDICT IS RESCINDED (Fable, 2026-07-25)**, the same law
+    as `tu2`'s: a clearance that reds on first contact was not proportioned to
+    the thing it cleared. It threw once in batch 4 (`Cannot read properties of
+    null (reading 'click')` at `j5.mjs:401`, querying `[data-page-id]` after
+    `app.click('Select')` on the Journal spread). **DF1.1 (item 66) inherits it
+    as a FIX WITH A NAMED ROOT, not an investigation: there is no `waitFor`
+    between the Select click and the query — a missing synchronization point,
+    the same species as `fx5`'s wall-clock sampler.** SC2 did not cause it, shown
+    by blast radius rather than by re-running: `scriptLedger.ts` is imported by
+    nothing (dead until S2 consumes it), `PAGE_LINES` is unreferenced, and every
+    CSS selector S1 adds is `.script-*` scoped. **STANDING INSTRUCTION TO EVERY
+    LANE: the next lane that sees `j5` red REPORTS IT AND DOES NOT RE-RUN.**
+    Three data points do not get to wave away a fourth; if it reds in another
+    lane's tree the honest reading is an order-dependent bug in that fixture.
+    **THE RE-RUN STANDARD, RATIFIED AS THE SUCCESSOR TO THE RETIRED CRUTCH
+    (Fable, 2026-07-25).** DF1 killed "passes in isolation" without naming what
+    replaces it. The replacement: **re-run under the conditions that PRODUCED
+    the failure, not away from them.** Isolation proves a file can pass alone,
+    which was never the question; **batch-then-batch-again** is the claim that
+    matters, and it is now the house form for any red that survives a mechanism
+    check. The mechanism check comes FIRST — walk the blast radius, then reach
+    for the runner. And the bound is stated plainly or the report becomes a
+    reassurance: *this lane showed S1 did not cause it; it did NOT show what
+    did.*
+    **CANON ANCHORS CARRIED INTO SC2 S2 (Fable, 2026-07-25), recorded before the
+    build so they cannot be discovered late.** (1) **THE SHEET SEQUENCE IS
+    DERIVED, NEVER STORED.** Pages are a PROJECTION of the ledger, recomputed —
+    the same constitutional law that makes decks data and modes projections.
+    Store a page array and the first edit above it makes every subsequent page a
+    lie. Nothing about pagination enters the doc, the store, or the server.
+    (2) **THE BREAK RULES ARE DECLARATIVE** — a table keyed by element type
+    (never orphan a scene heading; keep a character cue with its first line;
+    dialogue splits with `(MORE)`/`(CONT'D)` at SC2.1) rather than imperative
+    branching, so each rule is assertable on its own and a future ruling changes
+    ONE ROW instead of a control-flow graph.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
