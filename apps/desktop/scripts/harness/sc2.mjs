@@ -961,6 +961,116 @@ await withHarness(async (app) => {
     return { moved: cap.scrollTop > 0, caretBottom: +car.bottom.toFixed(1), viewBottom: +view.bottom.toFixed(1),
              slackLines: +((view.bottom - car.bottom) / line).toFixed(2), scrolledAttr: cap.dataset.scrolled || null };
   })()`);
+  // ========================================================================
+  // S4 — THE PAGE NUMBERS (R1, approved 2026-07-24)
+  // ========================================================================
+  //
+  // R1 amends the house's anti-gamification boundary by exactly one line: a
+  // page number on a screenplay is not the app counting the writer, it is the
+  // document's own furniture, as intrinsic as a slugline's capitals. THE BRIGHT
+  // LINE TRAVELS WITH THE APPROVAL — the number lives on the page artifact
+  // only, and no aggregate of it ever surfaces anywhere in the app.
+  //
+  // So the absence is asserted as strictly as the presence, and it is the
+  // harder half: a presence check fails loudly the day someone breaks it, while
+  // an aggregate is the kind of thing that gets added helpfully, in a title
+  // attribute, by someone who never read the ruling. These checks are what
+  // stands between R1 and that afternoon.
+  await seedScript(app, 's2b-num', 'INT. THE NUMBERED ROOM - DAY', actionBody(BIG_ELS - 1));
+  const nums = await app.evalJs(`(() => {
+    const sheets = [...document.querySelectorAll('.script-sheet')];
+    const per = sheets.map((s) => {
+      const n = s.querySelector('.script-page-number');
+      if (!n) return null;
+      const cs = getComputedStyle(s), sr = s.getBoundingClientRect(), nr = n.getBoundingClientRect();
+      const border = parseFloat(cs.borderTopWidth) || 0;
+      return {
+        text: n.textContent,
+        // inside the TOP MARGIN: below the paper's edge, above the text block
+        belowPaperTop: +(nr.top - sr.top).toFixed(2),
+        aboveTextBlock: +((sr.top + border + parseFloat(cs.paddingTop)) - nr.bottom).toFixed(2),
+        // right edge on the text block's right edge — the 1in margin
+        offRightMargin: +(nr.right - (sr.right - border - parseFloat(cs.paddingRight))).toFixed(2),
+        userSelect: getComputedStyle(n).userSelect || getComputedStyle(n).webkitUserSelect,
+        fontFamily: getComputedStyle(n).fontFamily,
+        ariaLabel: n.getAttribute('aria-label'), title: n.getAttribute('title'),
+      };
+    });
+    return { sheets: sheets.length, per, total: document.querySelectorAll('.script-page-number').length };
+  })()`);
+  ok(`S4: the page number is top-right inside the top margin, and PAGE ONE IS BARE — ${nums.sheets} sheets carry ${nums.total} numbers, reading "2." through "${nums.sheets}." in document order. It sits 0.5in below the paper's edge (halfway into the 1in top margin, clear of the text block) with its right edge exactly on the 1in right margin, in the sheet's own Courier — the document's furniture, set in the document's own type`,
+    nums.total === nums.sheets - 1 && nums.per[0] === null
+      && nums.per.slice(1).every((n, k) => n && n.text === `${k + 2}.`
+        && n.aboveTextBlock > 0 && n.belowPaperTop > 0
+        && Math.abs(n.offRightMargin) <= 1 && /Courier/.test(n.fontFamily)),
+    JSON.stringify(nums));
+
+  const numGeo = await app.evalJs(SEQ);
+  ok('S4: the number is CHROME AND COSTS NO BODY LINE — and this is proven rather than inspected. Page one carries no number and every other page does, so if the number took a line, page two onward would begin lower than page one; the first-line offset is identical across all sheets and every sheet still spends at most its 54 lines. The 54-line body never knew the number was there, which is what "it sits in the top margin, outside the block" has to MEAN',
+    Math.max(...numGeo.firstOffset) - Math.min(...numGeo.firstOffset) <= 1
+      && numGeo.used.every((u) => u <= BODY_LINES_PER_PAGE)
+      && numGeo.sheets === BIG_PAGES,
+    JSON.stringify({ firstOffset: numGeo.firstOffset, used: numGeo.used, sheets: numGeo.sheets }));
+
+  ok('S4: the number is not the writer\'s words — `user-select:none`, so a selection dragged across a page break hands back a screenplay and not a screenplay with page numbers loose in it. (The copy-out and export paths serialize from the DOCUMENT and never the DOM, so they could not have picked it up regardless; this is the selection a writer makes with their own hand.)',
+    nums.per.slice(1).every((n) => n.userSelect === 'none'),
+    JSON.stringify(nums.per.slice(1).map((n) => n.userSelect)));
+
+  // THE BRIGHT LINE. Scanned across the whole live document — every text node
+  // and every title/aria-label attribute — with the sliver and the Tutor OPEN,
+  // because those are the two places the brief names by name.
+  //
+  // THE SCANNER WAS PROVEN FALSIFIABLE BEFORE IT WAS TRUSTED — an absence check
+  // is exactly the species that passes because it is looking at nothing, and
+  // "a check that cannot fail is not a check" is this lane's own law. Four
+  // aggregates were planted into a live page and every one was caught: a
+  // rendered "Page 2 of 5"; a `title="5 pages today"`; an
+  // `aria-label="page 3 of 5"`; and a bare "2 / 5" badge. Text nodes,
+  // attributes and both wordings — the scan sees all of them.
+  const scanAggregates = () => `(() => {
+    const forms = [
+      { name: 'page N of N', re: /page\\s*\\d+\\s*of\\s*\\d+/i },
+      { name: 'of N pages', re: /\\bof\\s+\\d+\\s+pages?\\b/i },
+      { name: 'N pages', re: /\\b\\d+\\s+pages?\\b/i },
+      { name: 'N / N', re: /\\b\\d+\\s*\\/\\s*\\d+\\b/ },
+    ];
+    const text = document.body.innerText || '';
+    const attrs = [];
+    for (const el of document.querySelectorAll('[title], [aria-label]')) {
+      const t = el.getAttribute('title'), a = el.getAttribute('aria-label');
+      if (t) attrs.push(t);
+      if (a) attrs.push(a);
+    }
+    const attrText = attrs.join(' \\u2014 ');
+    const hits = [];
+    for (const f of forms) {
+      const inText = text.match(f.re), inAttr = attrText.match(f.re);
+      if (inText) hits.push({ where: 'text', form: f.name, sample: inText[0] });
+      if (inAttr) hits.push({ where: 'attribute', form: f.name, sample: inAttr[0] });
+    }
+    // Any attribute that talks about pages AND carries a digit is an aggregate
+    // waiting to happen, whatever its wording.
+    const pageyAttrs = attrs.filter((a) => /\\bpages?\\b/i.test(a) && /\\d/.test(a));
+    return { hits, pageyAttrs, sliverOpen: !!document.querySelector('.wz-sliver-panel, .wz-sliver.open, [data-sliver-open="true"]'),
+             tutorOpen: !!document.querySelector('.wz-tutor-panel, .wz-tutor.open, [data-tutor-open="true"]') };
+  })()`;
+
+  const closedScan = await app.evalJs(scanAggregates());
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(300);
+  await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+  await sleep(400);
+  const openScan = await app.evalJs(scanAggregates());
+
+  ok(`S4 (R1's bright line — THE ABSENCE, asserted as strictly as the presence): on a ${BIG_PAGES}-page screenplay there is NO aggregate of the page number anywhere in the live document — no "page N of N", no "of N pages", no bare "N pages", no "N / N" — in any text node or any title or aria-label attribute, with the sliver and the Tutor both opened. R1 amends the anti-gamification boundary by exactly one line and nothing more: the number is on the page, and the app never editorialises on it`,
+    closedScan.hits.length === 0 && openScan.hits.length === 0
+      && closedScan.pageyAttrs.length === 0 && openScan.pageyAttrs.length === 0,
+    JSON.stringify({ closed: closedScan, open: openScan }));
+
+  ok('S4 (the bright line, the other direction): the ONLY nodes carrying a page number are the page artifacts themselves — one per sheet from page two, each bearing its own number and nothing else. No number carries an aria-label or a title, so there is no second, spoken copy of it to grow a total onto',
+    nums.per.slice(1).every((n) => n.ariaLabel === null && n.title === null),
+    JSON.stringify(nums.per.map((n) => n && { text: n.text, ariaLabel: n.ariaLabel, title: n.title })));
+
   ok('S2b vertical policy, clause 2+3 (and only by the minimum): typing past the fold moves the box only far enough to keep the caret visible — the caret comes to rest ON the bottom edge of the visible band, within a line of it, never centred and never carried to a fraction of the box. There is no typewriter line here and no easing; the page moves the least it can and then stops. (Whether a caret flush on that edge wants breathing room is Nick\'s open question on the ledger — the policy gives it exactly zero until he rules, rather than inventing a number that would look ruled)',
     vert.moved === true && vert.slackLines >= -0.1 && vert.slackLines <= 1.2,
     JSON.stringify(vert));

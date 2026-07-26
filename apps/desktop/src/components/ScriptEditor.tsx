@@ -892,6 +892,33 @@ export function ScriptEditor({ id }: { id: string }) {
     <div className="script-sequence" onClick={onSequenceClick}>
       {pages.map((page) => (
         <div className="script-sheet" data-page-index={page.index} style={{ position: 'relative' }} key={page.index}>
+          {/* SC2 S4 — THE PAGE NUMBER (R1, approved 2026-07-24). Top-right,
+              inside the top margin, PAGE ONE BARE, from page two on.
+
+              R1's bright line travels with it and is the harder half of this
+              slice: the number lives ON THE PAGE ARTIFACT ONLY. No total, no
+              "of N", no aggregate anywhere in the app — not in the sliver, not
+              in the Tutor, not in a title, not in an aria-label. The committee
+              put it plainly: a page number on a screenplay is not the app
+              counting the writer, it is the document's own furniture, as
+              intrinsic as a slugline's capitals. An aggregate would be the app
+              counting, and that is the line R1 amends by exactly one line and
+              nothing more. sc2.mjs asserts the absence as strictly as the
+              presence.
+
+              It is CHROME, not body: it sits in the top margin, outside the
+              54-line block, so it costs no line the paginator counted. That is
+              not asserted by inspection — page one carries no number and every
+              other page does, so the standing cross-check that all sheets share
+              one first-line offset IS the proof, and it fails the moment the
+              number takes a line.
+
+              The trailing period is the trade's own form (Final Draft, Fade In
+              and Highland all render "2."). R1 ruled the position and the bare
+              first page, not the punctuation — so this is a judgment call
+              inside its "per the standard" wording, named here rather than
+              left to look ruled, and vetoable in a line. */}
+          {page.index > 0 && <div className="script-page-number">{page.index + 1}.</div>}
           {page.placed.map((p) => {
             const i = docIndexById.get(p.entry.id);
             const el = i === undefined ? undefined : elements[i];
