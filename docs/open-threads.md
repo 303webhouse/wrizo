@@ -7333,6 +7333,24 @@ outlive a session lives here, not in chat.
     ticket). Both HARNESS_PARKED settings; A4 parks (verbatim + successor in the same
     commit) for anything falsified; full suite before merge. **DoD: a fresh page says
     nothing, on a new profile and on Nick's.** FX18 follows.
+    **MERGED — 2026-07-25, merge `48dc027`** (chat 1's lane; re-merged onto origin's latest
+    after the SC2/BG2 records advances). **S1 root-cause NAMED = hypothesis (a),
+    Nick-confirmed by console:** a value stored `wrizo-first-line-invite`='on' by the
+    pre-FX15 build (a tap of F6's then-default-shown affordance) overrode FX15's silent
+    default; the render path is correct (a cleared profile is silent). **S2:** one-time
+    marker-guarded migration (`migrateInvitePref`, guarded by `wrizo-first-line-invite-migrated`)
+    retires the stale 'on'; a deliberate opt-in made afterward survives. **SV31 folded in
+    (Fable, same ticket):** the "Write…" placeholder is removed from the empty page
+    (PageEditor `placeholder=''`); fx15.mjs's placeholder assertion is A4-parked + re-pointed
+    to "no placeholder text." New `fx16.mjs` (6 checks: escaped legacy-'on' → no invite;
+    opt-in survives; 'never' untouched; fresh no-op; SV31 no-placeholder); fx15.mjs's on-seed
+    gains the marker (fixture re-point, assertions unchanged). **Verified at merge HEAD:**
+    `tsc` ×3 EXIT 0; `build:web` clean; full suite BOTH settings — **ARMED 48/48 GREEN,
+    UNARMED 47 GREEN + the known `j5.mjs` flake** (DF1.1's; OUTSIDE FX16's blast radius —
+    FX16 touches no Journal-spread code; j5 passed ARMED this run; REPORTED, not re-run per
+    Fable's P2 invariant — the SC lane reported the same at `e4a5521`). **GREEN; deploy HELD**
+    for the P2 wave's one word (FX16 · BG2 · FX17 · FX18) + one manifest; Fable's review +
+    Nick's sitting follow the deploy. FX18 next.
 73. **BG2 — the Beginnings, Seen.** **OPENED + BUILDING — 2026-07-25 (chat 5)**, from the
     P2 wave (`p2-wave.md` §BG2), authority SV19 + SV20 — Nick's walk of the deployed P1
     tree, where the row this lane shipped in BG1 (item 67) was "much too small," he "can
