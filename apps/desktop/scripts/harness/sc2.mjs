@@ -147,6 +147,12 @@ const MARGIN_EM = 6;                                        // 1in, top and bott
 const BODY_EM = PAGE_H_EM - MARGIN_EM - MARGIN_EM;          // 54em = 9in of text block
 const LINE_BOX_EM = 1;                                      // 12pt at 12pt type = 6 lpi
 const BODY_LINES_PER_PAGE = BODY_EM / LINE_BOX_EM;          // 54, derived
+// The trade's page in CSS px at 96dpi — sc1.mjs's own numbers, inherited rather
+// than restated as a second table (SC2 S2b's height successor asserts them of
+// EVERY sheet in the sequence, where sc1's predecessor asserted them of one).
+const PAGE_W = 8.5 * 96;   // 816
+const PAGE_H = 11 * 96;    // 1056
+const ASPECT = 8.5 / 11;
 
 // THE FIXTURES ARE PINNED BY ELEMENT COUNT, NOT PAGE COUNT (Fable, 2026-07-25).
 // A controlled experiment holds its INPUT constant, and page count is an OUTPUT
@@ -182,12 +188,124 @@ const TIMING = process.env.SC2_TIMING === '1';
 const RUNS = TIMING ? 3 : 1;
 const TYPED_LEN = TIMING ? 240 : 40;
 
-const freshDesk = async (app, width = LAPTOP_W, height = 900) => {
+const freshDesk = async (app, width = LAPTOP_W, height = 900, theme = 'plateau') => {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');");
+  if (theme !== 'plateau') await app.evalJs(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)})`);
   await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk (${theme})` });
   await app.emulateDpr(1, width, height);
+};
+
+// ===========================================================================
+// SC2 S2b — the sheet sequence. Shared scaffolding for the section below.
+// ===========================================================================
+
+// THE PAGE ARITHMETIC IS DERIVED HERE, INDEPENDENTLY OF THE MODULE UNDER TEST.
+// This is the point of the whole section: `scriptPaginate.ts` proves the count
+// is viewport-invariant because width was never an input, which is necessary and
+// NOT sufficient — it cannot catch the render disagreeing with the arithmetic at
+// a given width, and it cannot catch the arithmetic itself being wrong. So the
+// expected page for every element below comes from the trade's own geometry,
+// worked out here in four lines, and never from the module's output. If the
+// module and the render agreed on something wrong, this is what would catch it.
+//
+// THE FIXTURE SHAPE: a scene heading followed by one-line action elements.
+//   - the body is 54 lines (66 − 6 − 6; asserted as geometry above, never typed)
+//   - the FIRST element of a page contributes no space above it, so it costs
+//     just its own 1 line
+//   - every later action costs 1 blank line + 1 line of text = 2
+// so a page holds 1 + floor((54 − 1) / 2) = 27 of them, and element i sits on
+// page floor(i / 27). Both numbers are hand-checkable, which is the property
+// that makes them worth asserting against.
+const PER_PAGE = 1 + Math.floor((BODY_LINES_PER_PAGE - 1) / 2);   // 27
+const actionBody = (n, from = 0) =>
+  Array.from({ length: n }, (_, i) => ({ id: `s2b-a-${from + i}`, t: 'action', text: `Line ${from + i}.` }));
+
+const seedScript = async (app, id, heading, body, { width = LAPTOP_W, theme = 'plateau' } = {}) => {
+  await freshDesk(app, width, 900, theme);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([{
+      id: ${JSON.stringify(id)}, text: '', pageType: 'script', createdAt: now, updatedAt: now,
+      script: { v: 1, scenes: [{ id: 's2b-h', heading: { id: 's2b-h', t: 'scene', text: ${JSON.stringify(heading)} },
+        body: ${JSON.stringify(body)} }] },
+    }]));
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk after ${id} seed` });
+  await app.emulateDpr(1, width, 900);
+  await app.evalJs(`location.hash = '#/page/${id}'`);
+  await app.waitFor("!!document.querySelector('.script-sheet')", { label: `${id} script surface` });
+  await sleep(550);
+};
+
+// Everything the SEQUENCE claims about itself, off rendered geometry.
+const SEQ = `(() => {
+  const seq = document.querySelector('.script-sequence');
+  const sheets = [...document.querySelectorAll('.script-sheet')];
+  const cs0 = getComputedStyle(sheets[0]);
+  const line = parseFloat(cs0.lineHeight);
+  const kids = (s) => [...s.querySelectorAll('.script-el, .script-el-active')];
+  const all = [...document.querySelectorAll('.script-el, .script-el-active')];
+  const r = (e) => e.getBoundingClientRect();
+
+  // The inter-sheet gaps, and whether ANY element lies in one.
+  const gaps = [];
+  for (let i = 0; i + 1 < sheets.length; i++) {
+    const top = r(sheets[i]).bottom, bottom = r(sheets[i + 1]).top;
+    gaps.push({
+      px: +(bottom - top).toFixed(2),
+      occupied: all.filter((e) => r(e).bottom > top + 0.5 && r(e).top < bottom - 0.5).length,
+    });
+  }
+  // No element may extend past the sheet that holds it.
+  const straddlers = all.filter((e) => {
+    const own = e.closest('.script-sheet');
+    if (!own) return true;
+    const er = r(e), sr = r(own);
+    return er.top < sr.top - 0.5 || er.bottom > sr.bottom + 0.5;
+  }).length;
+
+  return {
+    hasSequence: !!seq,
+    sheets: sheets.length,
+    linePx: +line.toFixed(2),
+    gapPx: seq ? getComputedStyle(seq).rowGap : null,
+    dims: sheets.map((s) => ({ w: +r(s).width.toFixed(2), h: +r(s).height.toFixed(2) })),
+    // lines a sheet actually spends, measured off the rendered boxes
+    used: sheets.map((s) => Math.round(kids(s).reduce((n, e) =>
+      n + (r(e).height + parseFloat(getComputedStyle(e).marginTop)) / line, 0))),
+    firstOffset: sheets.map((s) => +(r(kids(s)[0] || s).top - r(s).top).toFixed(2)),
+    firstMarginTop: sheets.map((s) => parseFloat(getComputedStyle(kids(s)[0] || s).marginTop)),
+    firstType: sheets.map((s) => (kids(s)[0] || {}).dataset && kids(s)[0].dataset.type),
+    lastType: sheets.map((s) => (kids(s)[kids(s).length - 1] || {}).dataset && kids(s)[kids(s).length - 1].dataset.type),
+    docIndexes: sheets.map((s) => kids(s).map((e) => +e.dataset.docIndex)),
+    continuedFrom: sheets.map((s) => kids(s).map((e) => e.dataset.continuedFrom === 'true')),
+    continues: sheets.map((s) => kids(s).map((e) => e.dataset.continues === 'true')),
+    gaps, straddlers,
+  };
+})()`;
+
+// The sheet index a given document index actually rendered onto.
+const sheetIndexOf = (i) => `(() => {
+  const el = document.querySelector('.script-el[data-doc-index="${i}"], .script-el-active[data-doc-index="${i}"]');
+  if (!el) return -1;
+  return [...document.querySelectorAll('.script-sheet')].indexOf(el.closest('.script-sheet'));
+})()`;
+
+const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? el.getBoundingClientRect().toJSON() : null; })()`);
+
+// Gesture claims take a genuinely trusted CDP pointer, never a synthetic click
+// (sc1.mjs's own shape, verbatim).
+const trustedClick = async (app, sel) => {
+  const r = await rectOf(app, sel);
+  if (!r) throw new Error('trustedClick: no element ' + sel);
+  const x = r.left + r.width / 2, y = r.top + r.height / 2;
+  await app.mouseMove(x, y);
+  await app.mouseDown(x, y);
+  await app.mouseUp(x, y);
+  await sleep(160);
 };
 
 // A realistic page of screenplay — headings, action that wraps the measure,
@@ -262,17 +380,31 @@ async function measure(app, sceneCount, typed) {
   await app.waitFor("!!document.querySelector('.script-sheet')", { label: 'script surface' });
   await sleep(600);
 
+  // SC2 S2b — THE PROBE IS RE-POINTED; THE ASSERTIONS BELOW ARE NOT REWRITTEN.
+  // `pages` and `lines` were read off ONE sheet's height, which was the only
+  // honest reading while the surface was one sheet that grew. From S2b the
+  // surface is a SEQUENCE of exact 11in sheets, so a sheet's height is a
+  // constant (1056px) and those two figures would have quietly become "1 page,
+  // 66 lines" for every document ever measured — a number that still looks like
+  // a measurement. `pages` now counts sheets and `lines` sums the elements'
+  // own rendered heights and spacing. This is the instrument following reality,
+  // disclosed here: both figures ride in check LABELS as observations and gate
+  // nothing, and no assertion's text or condition changes because of it.
   const geo = await app.evalJs(`(() => {
-    const sheet = document.querySelector('.script-sheet');
+    const sheets = [...document.querySelectorAll('.script-sheet')];
+    const sheet = sheets[0];
     const cs = getComputedStyle(sheet);
     const fs = parseFloat(cs.fontSize);
     const h = sheet.getBoundingClientRect().height;
-    return { els: document.querySelectorAll('.script-el, .script-el-active').length,
+    const els = [...document.querySelectorAll('.script-el, .script-el-active')];
+    const lines = els.reduce((n, e) => n + (e.getBoundingClientRect().height + parseFloat(getComputedStyle(e).marginTop)) / fs, 0);
+    return { els: els.length,
              fontPx: +fs.toFixed(2), heightPx: +h.toFixed(1),
              lineHeightPx: +parseFloat(cs.lineHeight).toFixed(2),
              padTopPx: +parseFloat(cs.paddingTop).toFixed(2),
              padBottomPx: +parseFloat(cs.paddingBottom).toFixed(2),
-             pages: +(h / (${PAGE_H_EM} * fs)).toFixed(2), lines: Math.round(h / fs) };
+             sheetsUniform: new Set(sheets.map((s) => Math.round(s.getBoundingClientRect().height))).size <= 1,
+             pages: sheets.length, lines: Math.round(lines) };
   })()`);
 
   await app.evalJs(`(() => {
@@ -374,8 +506,26 @@ await withHarness(async (app) => {
   // pages would leave the bound anchored to nothing.
   ok(`S0 fixture: the baseline document is exactly ${ELEMENTS_BIG} ELEMENTS — the pinned input, held constant so both sides of the bound run the same document. Page count is an OUTPUT of the code under test and rides as an observation only: ${big.geo.pages} pages here, ${big.geo.lines} lines at ${BODY_LINES_PER_PAGE} body lines/page (20 pages before S1 gave the page its vertical rhythm, ~30 after)`,
     big.geo.els === ELEMENTS_BIG, JSON.stringify(big.geo));
-  ok('S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em sheet at 12pt (SC2 has not yet paginated; this is the pre-SC2 state the bound is measured against)',
-    Math.abs(big.geo.fontPx - EM) < 0.01, JSON.stringify({ fontPx: big.geo.fontPx, expected: EM }));
+  // SUPERSEDED by SC2 S2b (2026-07-25) — A4 park cycle, travelling in the SAME
+  // commit as the change that falsified it. The ORIGINAL, verbatim:
+  //
+  //   ok('S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em
+  //   sheet at 12pt (SC2 has not yet paginated; this is the pre-SC2 state the
+  //   bound is measured against)',
+  //     Math.abs(big.geo.fontPx - EM) < 0.01, JSON.stringify({ fontPx:
+  //     big.geo.fontPx, expected: EM }));
+  //
+  // SUPERSEDED ON ITS SUBJECT, NOT ITS NUMBER. Its condition (12pt type) is
+  // untouched and still holds; what retired is the state the check exists to
+  // pin — "ONE sheet", "SC2 HAS NOT YET PAGINATED". S2b paginates, so that
+  // sentence cannot be re-asserted by anyone, and a check that reads as a claim
+  // about the pre-SC2 world would be a false label on a true condition. Parked
+  // verbatim in this file's own PARKED section. The successor below asserts
+  // MORE than it did: the 12pt metric it held, now on EVERY sheet, plus the
+  // uniformity a sequence makes assertable and a single sheet could not.
+  ok('SC2 S2b (was "S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em sheet at 12pt"): every sheet in the sequence is SC1\'s true page at 12pt, and they are UNIFORM — the baseline document now projects to a sequence, and a page whose height depended on what landed on it would not be a page',
+    Math.abs(big.geo.fontPx - EM) < 0.01 && Math.abs(big.geo.heightPx - PAGE_H_EM * EM) <= 1 && big.geo.sheetsUniform === true,
+    JSON.stringify({ fontPx: big.geo.fontPx, expected: EM, heightPx: big.geo.heightPx, sheets: big.geo.pages, uniform: big.geo.sheetsUniform }));
 
   // 54 ASSERTED AS GEOMETRY, NOT AS A COUNT. The line box is exactly 12pt and
   // the text block exactly 9in; 54 is what falls out. A check that compared a
@@ -533,19 +683,341 @@ await withHarness(async (app) => {
   })()`);
   ok('S1 suppression: the FIRST element of the document contributes no space above it — it sits flush on the top margin despite its type calling for 2 blank lines. This is the consumer\'s rule (CSS at document start, S2\'s paginator at every page top), never the ledger\'s, so the ledger stays position-independent — and it is also what keeps SC1\'s SC-V4 fix intact: a first child\'s margin-top would push the whole sheet down and float the caret off the top margin again',
     Math.abs(firstTop.gap) < 1.5, JSON.stringify(firstTop));
+
+  // ========================================================================
+  // S2b — THE SHEET SEQUENCE (the render)
+  // ========================================================================
+  //
+  // THE THIRTEEN PROPERTIES BECOME COVERAGE HERE. Until this commit they lived
+  // in a scratch harness, because `scriptPaginate.ts` was imported by nothing —
+  // and by Amendment 2's own principle that is a pre-commit gate, not coverage:
+  // proof lives where the thing it proves lives, and a check that is not in the
+  // repository is a memory of a check. S2b's render imports the modules, so the
+  // projection is now observable in the DOM and every property is asserted
+  // where it actually has to hold — against rendered geometry, on a fixture
+  // engineered to exercise it.
+  //
+  // The conversion makes them STRICTER, not looser. The scratch versions read
+  // `paginate()`'s return value; these read the page the writer would see. A
+  // property that held in the pure function and failed in the render used to be
+  // invisible; it now fails here.
+  //
+  // WHAT THIS SECTION CANNOT REACH, stated rather than glossed: byte-level
+  // determinism of the pure function's return value is not observable through a
+  // DOM. Property 11's rendered form asserts the strongest observable
+  // consequence — the same document reloaded produces the same sheets holding
+  // the same elements — which is what "hidden state" would break.
+
+  // -- P1: a single element projects to exactly 1 page ---------------------
+  await seedScript(app, 's2b-one', 'INT. A SINGLE ROOM - DAY', []);
+  let m = await app.evalJs(SEQ);
+  ok('S2b P1: a document of one element projects to exactly ONE sheet — the sequence exists even at length one, so a fresh page is a page and not a special case',
+    m.hasSequence === true && m.sheets === 1, JSON.stringify({ sheets: m.sheets, hasSequence: m.hasSequence }));
+
+  // -- P2 / P3: 53 lines is one page, 55 lines is two ----------------------
+  // The pair that pins the boundary from BOTH sides. One of them alone would
+  // pass against an off-by-one; together they cannot.
+  await seedScript(app, 's2b-53', 'INT. FIFTY-THREE - DAY', actionBody(26));
+  m = await app.evalJs(SEQ);
+  ok(`S2b P2: a document of 53 lines is ONE page — 1 heading line + 26 actions at 2 lines each, one line short of the 54-line body`,
+    m.sheets === 1 && m.used[0] === 53, JSON.stringify({ sheets: m.sheets, used: m.used }));
+
+  await seedScript(app, 's2b-55', 'INT. FIFTY-FIVE - DAY', actionBody(27));
+  m = await app.evalJs(SEQ);
+  ok('S2b P3: a document of 55 lines is TWO pages — the 27th action would take it to 55 and the body holds 54, so it begins page two. The 54-line body is proven from both sides, and the trade\'s folklore 55 would have put it on one page',
+    m.sheets === 2 && m.used[0] === 53 && m.docIndexes[1].length === 1,
+    JSON.stringify({ sheets: m.sheets, used: m.used, page2: m.docIndexes[1] }));
+
+  // -- P4 / P10 / P11 / P12 / P13 on a real multi-page document ------------
+  const BIG_PAGES = 5;
+  const BIG_ELS = PER_PAGE * BIG_PAGES;                      // 135
+  await seedScript(app, 's2b-big', 'INT. THE LONG ROOM - DAY', actionBody(BIG_ELS - 1));
+  m = await app.evalJs(SEQ);
+
+  ok(`S2b P4: no page exceeds the 54-line body — every one of the ${m.sheets} sheets spends at most ${BODY_LINES_PER_PAGE} lines, MEASURED off the rendered boxes and their spacing rather than counted from the projection. (The one bound worth naming: an element that may not split and is ITSELF longer than a page has nowhere to go and overflows its sheet alone — dialogue's case is what SC2.1's (MORE)/(CONT'D) closes.)`,
+    m.used.every((u) => u <= BODY_LINES_PER_PAGE), JSON.stringify({ used: m.used, body: BODY_LINES_PER_PAGE }));
+
+  ok('S2b P10: the first element of EVERY page contributes zero space above it — not just the document\'s first. Its rendered margin-top is 0 on every sheet, and its distance from its own sheet\'s top edge is the 1in margin exactly. The paginator zeroes `spaceBefore` at every page top and CSS zeroes the margin at every sheet\'s first child; this asserts the two agree',
+    m.firstMarginTop.every((v) => Math.abs(v) < 0.5)
+      && new Set(m.firstOffset.map((v) => Math.round(v))).size === 1,
+    JSON.stringify({ firstMarginTop: m.firstMarginTop, firstOffset: m.firstOffset }));
+
+  const flat = m.docIndexes.flat().filter((_, k) => !m.continuedFrom.flat()[k]);
+  ok(`S2b P12: every element is placed EXACTLY once — the ${BIG_ELS} document indexes rendered across the sequence, continuation parts excluded, are precisely 0..${BIG_ELS - 1} with none lost and none duplicated. A paginator that drops a writer's line is the worst failure this ticket could ship, and it would be silent`,
+    flat.length === BIG_ELS && new Set(flat).size === BIG_ELS
+      && flat.slice().sort((a, b) => a - b).every((v, k) => v === k),
+    JSON.stringify({ placed: flat.length, unique: new Set(flat).size, expected: BIG_ELS }));
+
+  const before = JSON.stringify(m.docIndexes);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.script-sheet')", { label: 's2b-big reload' });
+  await sleep(550);
+  let m2 = await app.evalJs(SEQ);
+  ok('S2b P11 (deterministic): the same document renders the same sequence — sheet for sheet, element for element — across a full reload. Pagination is derived and never stored, so this is what "no hidden state" looks like from outside: nothing survives the reload to make the second projection differ from the first',
+    JSON.stringify(m2.docIndexes) === before, JSON.stringify({ before: m.docIndexes.map((p) => p.length), after: m2.docIndexes.map((p) => p.length) }));
+
+  // P13 — idempotence, in its load-bearing form. `paginate()` runs on EVERY
+  // keystroke, so the question that matters is not "does it return the same
+  // thing twice" but "does typing at the end of a document quietly rewrite the
+  // pages above". A writer on page five must not watch page one reflow.
+  const pageOneBefore = JSON.stringify(m2.docIndexes[0]);
+  await trustedClick(app, `.script-el[data-doc-index="${BIG_ELS - 1}"]`);
+  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 's2b-big tail active' });
+  await app.typeKeys(' and then the light went out of the room entirely.');
+  await sleep(400);
+  const m3 = await app.evalJs(SEQ);
+  ok('S2b P13 (idempotence): typing at the END of a five-page document leaves page ONE byte-identical — same elements, same order, same first-line offset. This is the property that makes "derived, never stored" safe under the hands rather than merely correct on paper: the sequence recomputes on every keystroke, so hidden state would surface as a page quietly rewriting itself above the writer',
+    JSON.stringify(m3.docIndexes[0]) === pageOneBefore
+      && Math.abs(m3.firstOffset[0] - m2.firstOffset[0]) < 0.5,
+    JSON.stringify({ before: pageOneBefore, after: JSON.stringify(m3.docIndexes[0]) }));
+
+  // -- P5 / P6 / P7: the three "never last" rules, each tripped on purpose --
+  // 25 actions puts the page at 51 lines, which is where each of these lands
+  // its subject at the page foot. The fixtures are engineered to trip the rule,
+  // not merely to be long: a rule that is never reached is a rule never tested.
+  await seedScript(app, 's2b-scene', 'INT. THE FIRST - DAY', [
+    ...actionBody(25),
+    { id: 's2b-h2', t: 'scene', text: 'INT. THE SECOND - NIGHT' },
+    ...actionBody(20, 100),
+  ]);
+  m = await app.evalJs(SEQ);
+  ok('S2b P5: a scene heading is never the last line of a page — placed at line 54 by construction, it travels whole to the top of the next page instead of dangling at the foot of this one',
+    m.sheets >= 2 && m.lastType.slice(0, -1).every((t) => t !== 'scene'),
+    JSON.stringify({ lastType: m.lastType, firstType: m.firstType }));
+
+  await seedScript(app, 's2b-char', 'INT. THE CUE - DAY', [
+    ...actionBody(25),
+    { id: 's2b-c', t: 'character', text: 'MARGUERITE' },
+    { id: 's2b-d', t: 'dialogue', text: 'You said the same thing last year, and the year before that, and I believed you both times.' },
+    ...actionBody(20, 200),
+  ]);
+  m = await app.evalJs(SEQ);
+  const cueSheet = await app.evalJs(sheetIndexOf(26));
+  const lineSheet = await app.evalJs(sheetIndexOf(27));
+  ok('S2b P6: a character cue is never the last line of a page — it travels with its dialogue (the Half-Hour Writer\'s ruling), so the cue and the first line it speaks land on the SAME sheet. A name at the foot of one page and its words at the top of the next is the defect this rule exists for',
+    m.lastType.slice(0, -1).every((t) => t !== 'character') && cueSheet === lineSheet && cueSheet >= 0,
+    JSON.stringify({ lastType: m.lastType, cueSheet, lineSheet }));
+
+  await seedScript(app, 's2b-paren', 'INT. THE MODIFIER - DAY', [
+    ...actionBody(25),
+    { id: 's2b-c2', t: 'character', text: 'HOLLIS' },
+    { id: 's2b-p2', t: 'paren', text: '(not looking up)' },
+    { id: 's2b-d2', t: 'dialogue', text: 'I did say it. It was true then and it is true now, whatever you have decided about it since.' },
+    ...actionBody(20, 300),
+  ]);
+  m = await app.evalJs(SEQ);
+  ok('S2b P7: a parenthetical is never the last line of a page (ruled 2026-07-25) — it is a MODIFIER on the line beneath it, and stranded at a page foot it modifies nothing. It travels forward, and the cue above it travels with it',
+    m.lastType.slice(0, -1).every((t) => t !== 'paren' && t !== 'character'),
+    JSON.stringify({ lastType: m.lastType, firstType: m.firstType }));
+
+  // -- P8: the one permitted split, and the writer's text surviving it ------
+  const longAction = Array.from({ length: 60 }, (_, i) =>
+    `Sentence ${String(i).padStart(2, '0')} runs to about sixty characters wide here.`).join(' ');
+  await seedScript(app, 's2b-split', 'INT. THE UNBROKEN - DAY', [{ id: 's2b-big-action', t: 'action', text: longAction }]);
+  m = await app.evalJs(SEQ);
+  const split = await app.evalJs(`(() => {
+    const parts = [...document.querySelectorAll('[data-doc-index="1"]')];
+    return { parts: parts.length,
+             joined: parts.map((p) => p.textContent).join(''),
+             firstContinues: parts[0] && parts[0].dataset.continues === 'true',
+             secondContinuedFrom: parts[1] && parts[1].dataset.continuedFrom === 'true' };
+  })()`);
+  const source = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries'))[0].script.scenes[0].body[0].text");
+  ok('S2b P8: an action block longer than a whole page is the ONE permitted split — it cannot move whole, so it breaks at a line boundary and continues onto the next sheet, marked as continuing rather than silently cut',
+    m.sheets === 2 && split.parts === 2 && split.firstContinues === true && split.secondContinuedFrom === true,
+    JSON.stringify({ sheets: m.sheets, ...split, joined: undefined }));
+  ok('S2b P8 (the split loses no word AND invents none): the two rendered halves concatenate back to the writer\'s text CHARACTER FOR CHARACTER — each part is a genuine substring, not a re-rendering. The cut comes from the same wrap the line count came from (scriptLedger\'s wrapToLines, which `wrappedLines` is now defined as the length of), so the break can only land where the arithmetic put it. This check earned its keep on its first run: the first cut of the split joined the lines with newlines, which LOOKED right at every width and had quietly written 58 breaks the writer never typed into the block\'s text',
+    split.joined === source,
+    JSON.stringify({ rendered: split.joined.length, source: source.length, equal: split.joined === source }));
+
+  // -- P9: dialogue does not split -----------------------------------------
+  await seedScript(app, 's2b-dlg', 'INT. THE UNBROKEN SPEECH - DAY', [
+    ...actionBody(20),
+    { id: 's2b-long-d', t: 'dialogue', text: Array.from({ length: 12 }, (_, i) =>
+      `And another thing, number ${i}, which I have been meaning to say to you for a very long time now.`).join(' ') },
+  ]);
+  m = await app.evalJs(SEQ);
+  const dlg = await app.evalJs('(() => [...document.querySelectorAll(\'[data-doc-index="21"]\')].length)()');
+  ok('S2b P9: dialogue never splits in SC2 — a speech that will not fit in the room left on a page moves WHOLE to the next one rather than breaking. The cost is named and not silent: page counts run slightly long against Final Draft until SC2.1 lands (MORE)/(CONT\'D), which is an edit to dialogue\'s single row in the break table',
+    dlg === 1 && m.sheets === 2 && m.continues.flat().every((c) => c === false),
+    JSON.stringify({ dialogueParts: dlg, sheets: m.sheets }));
+
+  // -- THE TRANSITION ROW, AND ITS TERMINATION PROOF ------------------------
+  // The fixture is engineered to trip BOTH directions at once: page one ends on
+  // a scene heading (which must move forward) and page two opens on a
+  // transition (which must not begin a page). A pass that pulled the transition
+  // BACK while pulling the heading FORWARD is the oscillation this shape exists
+  // to catch — and because `paginate()` runs on every keystroke, an oscillation
+  // is not a wrong page count, it is a frozen editor.
+  //
+  // WHAT TERMINATION LOOKS LIKE FROM OUT HERE, stated exactly so the check is
+  // not read as more than it is: a non-terminating fix-up pass never returns, so
+  // the surface never mounts and this scenario dies on its own `waitFor`
+  // timeout. Reaching these lines at all is the observable half of the proof;
+  // the general argument — every move is forward, Φ (the sum of page indexes)
+  // strictly increases, at most 2N moves — is carried in scriptPaginate.ts
+  // where the pass lives. There is no retry cap and no iteration limit
+  // anywhere: a cap would have made this check pass while hiding exactly the
+  // failure it is here to find.
+  await seedScript(app, 's2b-trans', 'INT. THE FIRST ROOM - DAY', [
+    ...actionBody(25),
+    { id: 's2b-h3', t: 'scene', text: 'INT. THE SECOND ROOM - NIGHT' },
+    { id: 's2b-tr', t: 'transition', text: 'CUT TO:' },
+    ...actionBody(20, 400),
+  ]);
+  m = await app.evalJs(SEQ);
+  const transSheet = await app.evalJs(sheetIndexOf(27));
+  const headSheet = await app.evalJs(sheetIndexOf(26));
+  ok('S2b (the transition row, deferred from S2a.1 and landed here): a transition never begins a page — it belongs with the scene it ends, so it renders on the SAME sheet as the heading above it, and the sheet it opens is opened by that heading instead. The rule is `keepWithPrevious` and it is the only rule that reaches backward in intent; it is implemented as the same FORWARD move as every other rule (push the previous page\'s tail forward to join it), which is what makes the pass single-directional and its termination provable rather than hoped',
+    m.firstType.every((t) => t !== 'transition') && transSheet === headSheet && transSheet >= 0,
+    JSON.stringify({ firstType: m.firstType, lastType: m.lastType, headSheet, transSheet }));
+
+  const stable1 = JSON.stringify(m.docIndexes);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.script-sheet')", { label: 's2b-trans reload', timeout: 8000 });
+  await sleep(550);
+  m2 = await app.evalJs(SEQ);
+  ok('S2b (the transition row TERMINATES, and its result is STABLE): the fixture engineered to trip both rules at once — a page ending on a scene heading whose next page opens on a transition — mounts, settles in one pass, and produces the identical sequence again on a fresh load. It reaches a fixed point rather than a cycle; no cap or retry limit is doing that work, because a cap is how an unproven loop hides',
+    JSON.stringify(m2.docIndexes) === stable1 && m2.firstType.every((t) => t !== 'transition'),
+    JSON.stringify({ first: m.docIndexes.map((p) => p.length), again: m2.docIndexes.map((p) => p.length) }));
+
+  // -- THE FOUR RENDERED CROSS-CHECKS, AND THE sc1.mjs HEIGHT SUCCESSOR -----
+  //
+  // `paginate()` is pure and takes no width, so the arithmetic is viewport-
+  // invariant by construction. That is NECESSARY AND NOT SUFFICIENT: it cannot
+  // catch the RENDER disagreeing with the arithmetic at a given width. So the
+  // sequence is measured at each width/theme leg and compared against the page
+  // arithmetic derived independently at the top of this file.
+  //
+  // The last check in each leg is the LIVE SUCCESSOR to sc1.mjs's parked "the
+  // sheet is a US Letter page" (parked verbatim there, in this same commit).
+  // It ends WIDER than its predecessor by four measures: every sheet rather
+  // than the first, uniformity across the sequence, the gap proven chrome, and
+  // page N's first line at page one's own offset — the last two being truths a
+  // single-sheet check could not reach at all.
+  const MID = Math.floor(BIG_ELS * 0.6);                    // 81 — ~60% through
+  const MID_PAGE = Math.floor(MID / PER_PAGE);              // derived here, not read
+  for (const [label, width, theme] of [
+    ['1100 (the framed floor)', 1100, 'plateau'],
+    ['1280 (the laptop reference)', LAPTOP_W, 'plateau'],
+    ['2200 (wide)', 2200, 'plateau'],
+    ['1280 · Flux', LAPTOP_W, 'flux'],
+    ['1000 (legacy, below the framed gate)', 1000, 'plateau'],
+  ]) {
+    await seedScript(app, 's2b-leg', 'INT. THE SAME ROOM - DAY', actionBody(BIG_ELS - 1), { width, theme });
+    const leg = await app.evalJs(SEQ);
+    const midSheet = await app.evalJs(sheetIndexOf(MID));
+
+    ok(`S2b @ ${label} — cross-check 1: the RENDERED sheet count is ${BIG_PAGES}, the count the page arithmetic derives for ${BIG_ELS} elements (${PER_PAGE} to a page). Identical at every leg: a page count that moves with the window is a clock that lies, and the arithmetic proving itself viewport-free cannot prove the render is`,
+      leg.sheets === BIG_PAGES, JSON.stringify({ sheets: leg.sheets, expected: BIG_PAGES, els: BIG_ELS }));
+
+    ok(`S2b @ ${label} — cross-check 2: a MID-DOCUMENT element lands on the sheet the arithmetic puts it on — element ${MID} (~60% through) renders on sheet ${MID_PAGE}, floor(${MID}/${PER_PAGE}). A correct total with the breaks in the wrong places would pass check 1 and fail this one`,
+      midSheet === MID_PAGE, JSON.stringify({ midSheet, expected: MID_PAGE, index: MID }));
+
+    ok(`S2b @ ${label} — cross-check 3: the inter-sheet gap is CHROME AND NEVER BODY — every gap between one sheet's bottom border and the next's top is ${leg.gapPx} of empty desk holding no element at all, and no element's rect straddles a sheet boundary. The gap is expressed in the app's root unit, never in the page's own em and never in a multiple of --script-line, so it can neither scale as though it were paper nor be read as N blank lines of screenplay`,
+      leg.gaps.length === BIG_PAGES - 1 && leg.gaps.every((g) => g.occupied === 0 && g.px > 0)
+        && leg.straddlers === 0,
+      JSON.stringify({ gaps: leg.gaps, straddlers: leg.straddlers, gapPx: leg.gapPx }));
+
+    ok(`S2b @ ${label} — cross-check 4: page N's first line sits at the SAME offset inside its sheet as page one's — within 1px, across all ${leg.sheets} sheets. Every page begins on its own top margin; none inherits a nudge from what broke above it`,
+      Math.max(...leg.firstOffset) - Math.min(...leg.firstOffset) <= 1,
+      JSON.stringify({ firstOffset: leg.firstOffset }));
+
+    ok(`SC2 S2b @ ${label} (successor to sc1.mjs's parked "the sheet is a US Letter page — 8.5 x 11in, aspect within 0.5% of 8.5:11"): EVERY sheet in the sequence is a US Letter page — 816 x 1056px, aspect within 0.5% of 8.5:11 — and they are UNIFORM: no sheet differs from any other. The predecessor measured the first of one; a page whose height depended on how much text landed on it would not be a page at all`,
+      leg.dims.length === BIG_PAGES
+        && leg.dims.every((d) => Math.abs(d.w - PAGE_W) <= 1 && Math.abs(d.h - PAGE_H) <= 1
+          && Math.abs((d.w / d.h) - ASPECT) / ASPECT < 0.005)
+        && new Set(leg.dims.map((d) => `${Math.round(d.w)}x${Math.round(d.h)}`)).size === 1,
+      JSON.stringify({ dims: leg.dims }));
+  }
+
+  // -- THE VERTICAL POLICY, OWNED RATHER THAN EMERGENT ---------------------
+  // Before S2b this surface had no vertical policy; it had a side effect.
+  // `node.focus()` scrolled whatever was below the fold into view, so every
+  // Enter moved the page and nobody had ever decided that it should — which is
+  // why it broke on SC2 S1, a change with nothing to do with scrolling
+  // (sc1.mjs's S3 park carries the measurement). The rule is now written down
+  // in ScriptEditor.tsx as three clauses, and these two checks are the clauses.
+  await seedScript(app, 's2b-vert', 'INT. THE STILL ROOM - DAY', actionBody(BIG_ELS - 1));
+  const capTop = await app.evalJs("(() => { const c = document.querySelector('.desk-frame-scroll-cap'); return { st: c.scrollTop, h: c.clientHeight }; })()");
+  await trustedClick(app, '.script-el[data-doc-index="2"]');
+  await app.waitFor("!!document.querySelector('.script-el-active')", { label: 's2b-vert active' });
+  await sleep(250);
+  const afterVisibleClick = await app.evalJs("document.querySelector('.desk-frame-scroll-cap').scrollTop");
+  ok('S2b vertical policy, clause 1+2 (the box does not move when it has no reason to): placing the caret in an element that is ALREADY visible leaves the scroll box exactly where it was — not a pixel, not a centring nudge. focus() now carries { preventScroll: true }, so the browser\'s own scroll-into-view reflex is off and every movement of this page is a decision taken here',
+    Math.abs(afterVisibleClick - capTop.st) < 0.5,
+    JSON.stringify({ before: capTop.st, after: afterVisibleClick }));
+
+  // Now drive the caret genuinely past the fold with real keystrokes and assert
+  // the box moved by the MINIMUM — the caret ends just inside the bottom edge,
+  // not centred, not carried to a fraction of the box.
+  for (let i = 0; i < 22; i++) { await app.key('Enter'); await app.typeKeys(`Down the page, line ${i}.`); await sleep(45); }
+  await sleep(300);
+  const vert = await app.evalJs(`(() => {
+    const cap = document.querySelector('.desk-frame-scroll-cap');
+    const a = document.querySelector('.script-el-active');
+    const view = cap.getBoundingClientRect(), car = a.getBoundingClientRect();
+    const line = parseFloat(getComputedStyle(document.querySelector('.script-sheet')).lineHeight);
+    return { moved: cap.scrollTop > 0, caretBottom: +car.bottom.toFixed(1), viewBottom: +view.bottom.toFixed(1),
+             slackLines: +((view.bottom - car.bottom) / line).toFixed(2), scrolledAttr: cap.dataset.scrolled || null };
+  })()`);
+  ok('S2b vertical policy, clause 2+3 (and only by the minimum): typing past the fold moves the box only far enough to keep the caret visible — the caret comes to rest ON the bottom edge of the visible band, within a line of it, never centred and never carried to a fraction of the box. There is no typewriter line here and no easing; the page moves the least it can and then stops. (Whether a caret flush on that edge wants breathing room is Nick\'s open question on the ledger — the policy gives it exactly zero until he rules, rather than inventing a number that would look ruled)',
+    vert.moved === true && vert.slackLines >= -0.1 && vert.slackLines <= 1.2,
+    JSON.stringify(vert));
 });
 
-// === PARKED — gated behind HARNESS_PARKED=1. This commit is purely ADDITIVE:
-// it adds a new file and falsifies no existing assertion, so its park section
-// is an empty no-op by design (cd4.mjs's and sc1.mjs's own precedent). SC2's
-// real park cycles arrive with S2's sheet sequence, which WILL falsify sc1.mjs's
-// "the sheet is a US Letter page ... height within 1px of 1056" at four
-// width/theme combinations, and anything else asserting the script sheet's total
-// height. Those travel VERBATIM in the same commits as the changes that
-// supersede them.
+// === PARKED — gated behind HARNESS_PARKED=1. SC2's park cycles LARGELY do not
+// live here: they travel VERBATIM in the files they falsify (S1 parked sc1.mjs's
+// S3 "the page never scrolls itself"; S2b parks sc1.mjs's "the sheet is a US
+// Letter page"). This section holds the ONE entry SC2 falsifies in its own file:
+// S0's pre-pagination single-sheet claim, which S2b retired by paginating.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    // The re-verification PROBE (an instrument, not history — it follows
+    // reality; the quoted record above it never moves). It re-measures on a
+    // 3-page document, since the claim being retired was about there being ONE
+    // sheet and a one-element fixture could not show the retirement at all.
+    await seedScript(app, 's2b-parked', 'INT. THE PARKED PAGE - DAY', actionBody(PER_PAGE * 3 - 1));
+    const parked = await app.evalJs(`(() => {
+      const sheets = [...document.querySelectorAll('.script-sheet')];
+      const cs = getComputedStyle(sheets[0]);
+      return {
+        sheets: sheets.length,
+        fontPx: +parseFloat(cs.fontSize).toFixed(2),
+        heights: [...new Set(sheets.map((s) => Math.round(s.getBoundingClientRect().height)))],
+        widths: [...new Set(sheets.map((s) => Math.round(s.getBoundingClientRect().width)))],
+      };
+    })()`);
+    // ORIGINAL (S0 fixture), quoted verbatim from its shipped form:
+    //   ok('S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em
+    //   sheet at 12pt (SC2 has not yet paginated; this is the pre-SC2 state the
+    //   bound is measured against)',
+    //     Math.abs(big.geo.fontPx - EM) < 0.01, JSON.stringify({ fontPx:
+    //     big.geo.fontPx, expected: EM }));
+    //
+    // SUPERSEDED ON ITS SUBJECT, NOT ON ITS NUMBER — the distinction matters,
+    // and this is a PARK, not a fixture re-point and not an annotation. Its
+    // CONDITION (12pt type) is untouched and still true; what retired is the
+    // world it names. "One sheet" and "SC2 has not yet paginated" are sentences
+    // nobody can assert after this commit, and a true condition wearing a false
+    // label is how a check quietly stops meaning anything. The live successor
+    // is in this file's own S0 section, and it asserts strictly more: the 12pt
+    // metric on EVERY sheet, the exact 11in height, and uniformity across the
+    // sequence — the last of which a single-sheet check could not reach.
+    pok('PARKED (was "S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em sheet at 12pt (SC2 has not yet paginated; this is the pre-SC2 state the bound is measured against)") — SC2 S2b: the surface is a SEQUENCE of true pages now, so "one sheet" and "has not yet paginated" are both retired; the probe re-measures the claim that survived — 12pt type on a true 8.5x11in page — across a three-page document, where the retirement is visible. Live successor in this file\'s own S0 section',
+      parked.sheets === 3 && Math.abs(parked.fontPx - EM) < 0.01
+        && parked.heights.length === 1 && Math.abs(parked.heights[0] - PAGE_H) <= 1
+        && parked.widths.length === 1 && Math.abs(parked.widths[0] - PAGE_W) <= 1,
+      JSON.stringify(parked));
+  });
   // eslint-disable-next-line no-console
-  console.log('\nSC2 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; SC2\'s park cycles do NOT live here, they travel VERBATIM in the files they falsify. S1 (the line ledger + the page\'s vertical rhythm) parks ONE check: sc1.mjs\'s S3 "the page never scrolls itself", superseded on its NUMBER and not its law — the engine is still gone, but a document with real vertical rhythm is ~1.54x taller and now overflows the cap, so the box scrolls to keep the caret visible (root cause: ActiveScriptElement\'s node.focus(), not the typewriter). Its successor is live in sc1.mjs. S2 (the sheet sequence) will park sc1.mjs\'s single-sheet height assertion next.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const ppass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(ppass ? `\nSC2 PARKED: PASS (${parkedChecks.length} checks)` : `\nSC2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+  if (!ppass) process.exit(1);
 }
 
 // eslint-disable-next-line no-console
