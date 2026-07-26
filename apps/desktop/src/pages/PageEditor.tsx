@@ -25,7 +25,7 @@ import { ModeStrip } from '../components/ModeStrip';
 import { Sliver, CAPTURE_ITEMS, type SliverContent } from '../components/Sliver';
 import { Tutor } from '../components/Tutor';
 import { GoalGlow } from '../components/GoalGlow';
-import { RhizomeField } from '../components/RhizomeField';
+import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
@@ -708,7 +708,12 @@ function PageEditorView({ id }: { id: string }) {
           // the writer hasn't actually chosen Rhizome, so mounting it
           // unconditionally past the gate costs nothing on the shipped
           // Bar-default path.
-          rhizome={gateActive ? undefined : <RhizomeField unitCount={wordCount(text)} seedKey={entry.id} paperRef={surfaceRef} />}
+          // M4 S3/S4 — this lane now carries the whole progress INSTRUMENT,
+          // not just the growth layer: DeskInstrument.tsx renders the
+          // rhizome OR the bar (two styles, one location, SV15) plus the
+          // goal flare (SV16). The gate rule above is unchanged and now
+          // covers both styles — the threshold stays pure either way.
+          rhizome={gateActive ? undefined : <DeskInstrument unitCount={wordCount(text)} seedKey={entry.id} paperRef={surfaceRef} />}
           dissolved={receded}
         >
           <ModeStage

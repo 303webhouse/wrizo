@@ -379,13 +379,27 @@ export function saturationTarget(words: number): number {
   return Math.round(CAP_SEGMENTS * (1 - Math.exp(-w / SAT_K)));
 }
 
-// Add exactly ONE segment. The first `origins.length` segments each ROOT a
-// distinct origin shoot (the blue-noise scatter); after all origins are rooted,
+// M4 S1 (SV13) — sequenced origins. Origin ONE (paper bottom-center) grows
+// alone; origin k (0-indexed i) wakes only once the saturation TARGET has
+// crossed i/ORIGIN_COUNT of CAP. Because the target IS saturationTarget(total
+// words), the word thresholds fall out with NO new constant — ~0 / 129 / 281 /
+// 467 / 707 / 1045 / 1623 words (w = −SAT_K·ln(1 − i/ORIGIN_COUNT)). One legible
+// root first; new territory earned by writing. Determinism, paper-avoidance,
+// forward-only and the high-water refit are all unchanged — only the ROOTING
+// GATE moves. (Forward-only: a refit rebuilds from the same seed at the current
+// HIGH-WATER target, so it wakes exactly the origins the writing has earned and
+// never un-wakes one.)
+export function originsAwake(target: number): number {
+  return Math.min(ORIGIN_COUNT, Math.floor(ORIGIN_COUNT * Math.max(0, target) / CAP_SEGMENTS) + 1);
+}
+
+// Add exactly ONE segment. Up to `maxOrigins` distinct origins each ROOT a shoot
+// (the blue-noise scatter, sequenced by S1); once the awake origins are rooted,
 // growth branches (~BRANCH_CHANCE) or extends a live shoot exactly as M2's
 // growOne does. Returns the SAME state reference on an honest skip (the
 // resolveSegment paper-corner case) so growTo can retry with fresh draws.
-function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[]): RhizomeState {
-  const rootingPhase = state.shoots.length < origins.length;
+function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], maxOrigins: number): RhizomeState {
+  const rootingPhase = state.shoots.length < Math.min(origins.length, maxOrigins);
   const branch = !rootingPhase && state.shoots.length < CAP_SHOOTS && rng() < BRANCH_CHANCE;
 
   let tip: RhizomePoint;
@@ -442,10 +456,11 @@ function growSegment(state: RhizomeState, rng: () => number, geo: RhizomeGeometr
 // word-by-word and pasting an essay reach the byte-identical shape.
 export function growTo(state: RhizomeState, rng: () => number, geo: RhizomeGeometry, origins: RhizomePoint[], target: number): RhizomeState {
   const cap = Math.min(Math.max(0, Math.round(target)), CAP_SEGMENTS);
+  const awake = originsAwake(cap); // M4 S1 — only the origins the writing has earned
   let s = state;
   let skips = 0;
   while (s.segments.length < cap) {
-    const next = growSegment(s, rng, geo, origins);
+    const next = growSegment(s, rng, geo, origins, awake);
     if (next === s) { if (++skips > 200) break; continue; } // pinned — stop rather than spin
     skips = 0;
     s = next;
@@ -496,6 +511,6 @@ if (typeof window !== 'undefined') {
     CAP_SEGMENTS, CAP_SHOOTS, BAND_1, BAND_2,
     // M3 — the roam + saturation, exposed so m3.mjs proves them against the
     // real algorithm (the same seam discipline as above).
-    seedOrigins, saturationTarget, growTo, SAT_K, ORIGIN_COUNT,
+    seedOrigins, saturationTarget, growTo, originsAwake, SAT_K, ORIGIN_COUNT,
   };
 }

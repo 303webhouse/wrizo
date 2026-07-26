@@ -572,11 +572,26 @@ await withHarness(async (app) => {
     ok('Legacy default: the ordinary linear track renders on a fresh device, exactly as pre-M2', legacyTrackVisible === true, String(legacyTrackVisible));
     ok('Legacy default: no Rhizome field anywhere on a fresh device', (await app.evalJs("!document.querySelector('.wz-rhizome-field')")), '');
 
-    // Framed default: same fresh-device proof, at the framed floor width.
-    await freshProsePage(app, FLOOR_W, 900);
-    const framedTrackVisible = await app.evalJs("!!document.querySelector('.mode-ptrack')");
-    ok('Framed default (1100px floor): a fresh device shows NO incentive row at all (unchanged pre-M2 framed behavior — the row never rendered there before this ticket either) and no Rhizome field',
-      framedTrackVisible === false && (await app.evalJs("!document.querySelector('.wz-rhizome-field')")), String(framedTrackVisible));
+    // ORIGINAL (M2 SECTION L): // Framed default: same fresh-device proof, at
+    // the framed floor width.
+    // await freshProsePage(app, FLOOR_W, 900);
+    // const framedTrackVisible = await app.evalJs("!!document.querySelector('.mode-ptrack')");
+    // ok('Framed default (1100px floor): a fresh device shows NO incentive row
+    // at all (unchanged pre-M2 framed behavior — the row never rendered there
+    // before this ticket either) and no Rhizome field',
+    //   framedTrackVisible === false && (await app.evalJs("!document.
+    //   querySelector('.wz-rhizome-field')")), String(framedTrackVisible));
+    //
+    // PARKED by M4 S3 (SV15, 2026-07-25) — "the bar comes home": the progress
+    // instrument now renders on the framed desk, under the page, in the
+    // rhizome's own lane (.desk-frame-instrument inside
+    // .desk-frame-rhizome-anchor). A fresh framed device therefore DOES show a
+    // .mode-ptrack now — this assertion's tested condition is genuinely,
+    // deliberately false. Re-asserted against its new opposite truth in this
+    // file's own PARKED block below; the LIVE successor is in m4.mjs ("S3
+    // (successor to m2.mjs's parked 'Framed default')"). The claim it was
+    // really guarding — that no SECOND row appears, i.e. .mode-incentive-row
+    // stays `!framed` — is still true and is asserted in both places.
   }
 
   return checks;
@@ -586,26 +601,52 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// m2.mjs is a brand-new file; it parks nothing of its own (every check
-// above reflects this ticket's live, current design). The park sweep (this
-// ticket's own S5 + the standing house rule, FX7's Ruling 4) — a full,
-// independent run of every pre-existing harness file, both HARNESS_PARKED
-// settings, against THIS ticket's own build — is recorded in full in the
-// build report, not here (this gate stays intentionally empty, mirroring
-// tu2.mjs's/b3.mjs's own precedent for a brand-new file that falsified
-// nothing elsewhere).
+// ORIGINAL SCAFFOLD NOTE (M2, kept verbatim): m2.mjs is a brand-new file; it
+// parks nothing of its own (every check above reflects this ticket's live,
+// current design). The park sweep (this ticket's own S5 + the standing house
+// rule, FX7's Ruling 4) — a full, independent run of every pre-existing
+// harness file, both HARNESS_PARKED settings, against THIS ticket's own build
+// — is recorded in full in the build report, not here (this gate stays
+// intentionally empty, mirroring tu2.mjs's/b3.mjs's own precedent for a
+// brand-new file that falsified nothing elsewhere).
+//
+// M4 S3 (2026-07-25) — this gate has its first tenant: SECTION L's "Framed
+// default (1100px floor)" check, quoted verbatim at its own site above and
+// re-asserted here against its NEW, opposite truth (proving the change, not
+// re-testing a state SV15 deliberately ended). The LIVE successor lives in
+// m4.mjs, not here.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshProsePage(app, FLOOR_W, 900); // the ORIGINAL fixture, unchanged
+    await sleep(300);
+    const framed = await app.evalJs(`({
+      track: !!document.querySelector('.mode-ptrack'),
+      trackInLane: !!document.querySelector('.desk-frame-instrument .mode-ptrack'),
+      field: !!document.querySelector('.wz-rhizome-field'),
+      legacyRow: !!document.querySelector('.mode-incentive-row'),
+    })`);
+    pok('PARKED (was "Framed default (1100px floor): a fresh device shows NO incentive row at all ... and no Rhizome field") — M4 S3 (SV15) brings the bar home: a fresh framed device now DOES show a track, inside the rhizome\'s own lane; still no Rhizome field on the Bar default, and still no second .mode-incentive-row',
+      framed.track === true && framed.trackInLane === true && framed.field === false && framed.legacyRow === false,
+      JSON.stringify(framed));
+    return parkedChecks;
+  });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nM2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, nothing parked out of m2.mjs itself`
+    ? `\nM2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
     : `\nM2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
-const pass = checks.every((c) => c.pass);
+// M4 — the exit code now covers the parked block too (ab1.mjs's own
+// precedent): with HARNESS_PARKED unset, parkedChecks is empty and this is
+// byte-identical to the original; with it armed, a parked successor that goes
+// red fails the run instead of only printing.
+const allChecks = checks.concat(parkedChecks);
+const pass = allChecks.every((c) => c.pass);
 // eslint-disable-next-line no-console
-console.log(pass ? `\nM2 VERIFY: PASS (${checks.length} checks)` : `\nM2 VERIFY: FAIL — ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+console.log(pass ? `\nM2 VERIFY: PASS (${checks.length} checks)` : `\nM2 VERIFY: FAIL — ${allChecks.filter((c) => !c.pass).length}/${allChecks.length} failed`);
 process.exit(pass ? 0 : 1);
