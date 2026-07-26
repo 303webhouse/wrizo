@@ -2128,14 +2128,17 @@ export function BoardEditor({ id }: { id: string }) {
       <div className="desk-frame-host" data-chrome-receded={boardDissolve.dissolved ? 'true' : 'false'}>
         {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
             chrome that never recessed with the rest of the room. */}
-        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div className="sprint-crumb" aria-label="Location">
+        {/* FX18 S3 (SV27): the board's top menu parallels the Page's mode strip — right-
+            aligned. Crumb stays left (marginRight:auto); the mode bar + actions group right
+            (actions' CSS margin-left:auto neutralized below so they stay adjacent). */}
+        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
+          <div className="sprint-crumb" aria-label="Location" style={{ marginRight: 'auto' }}>
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
             <span className="crumb-here">{title}</span>
           </div>
           {boardModeBar}
-          <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 0 }}>
             {!isSystemBoard && !pairedPageId && <button type="button" className="btn-quiet board-pair" onClick={pairWithNewPage}>{t('boardPairWithPage')}</button>}
             {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}
             {/* CD4 S1 — "Done" removed; PAGE → (boardModeBar) is the Board's only exit now. */}

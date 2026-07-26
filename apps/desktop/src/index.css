@@ -2917,7 +2917,22 @@ a:focus-visible,
    the grip ~242px inside the board canvas instead of flush to its edge,
    the identical defect FX4 S3 diagnosed for the sliver). */
 .desk-frame-tutor-anchor{
-  position:absolute; top:0; z-index:5; height:100%;
+  /* FX18 S2 (SV24): the grip anchor rides ABOVE the open panel anchor
+     (z-index:6). The margin clamp keeps the panel in the room but not off its
+     own grip: the docked panel's near edge lands on the paper's right edge —
+     exactly where the grip sits — so the panel buries its own close arrow the
+     instant it opens ("covers its own close arrow", SV24 proper; the clamp
+     alone does NOT cure it, confirmed by fx18.mjs's grip hit-test). Lifting
+     the anchor to z-index:7 restores the grip as the visible left-edge tab
+     (the panel's border-left:none was always drawn to join it). pointer-
+     events:none keeps this lifted anchor click-transparent so ONLY the 16px
+     grip (re-armed :auto below — it is this anchor's sole interactive child,
+     a lone <button>, Tutor.tsx:441) intercepts; the open panel underneath
+     stays fully live. The sliver twin needs no lift: its panel is inset 16px
+     (`.wz-sliver-panel{right:16px}`) so its grip already sits in an uncovered
+     gutter — the tutor panel is a flex-end child, geometrically decoupled
+     from its grip, so it takes the stacking cure instead of the inset one. */
+  position:absolute; top:0; z-index:7; pointer-events:none; height:100%;
   font-size:calc(1rem * var(--paper-scale));
   --tutor-paper-half: min(calc(380px * var(--paper-scale)), 30ch);
   --tutor-paper-pad: 38px;   /* .mode-page{ padding:30px 38px } — hand-synced, mirrors --sliver-paper-pad's own comment */
@@ -2987,8 +3002,12 @@ a:focus-visible,
      copies of the formula to drift apart. */
   --tutor-panel-open-w: clamp(320px, 34vw, 460px);
 }
-.desk-frame-tutor-panel-anchor--prose,
-.desk-frame-tutor-panel-anchor--screenplay{ /* intentionally empty */ }
+.desk-frame-tutor-panel-anchor--prose{ /* intentionally empty — prose uses the base measure */ }
+/* FX18 S2 (SV26): the screenplay page is 8.5in wide, so its panel MARGIN must use the
+   screenplay half-measure (mirroring the grip anchor's own --screenplay override above) —
+   otherwise the new open-panel margin-clamp would mis-measure the screenplay margin and let
+   the panel overrun. */
+.desk-frame-tutor-panel-anchor--screenplay{ --tutor-panel-paper-half: min(50%, 4.25in); }
 /* TU2 S4 — the board variant's other half: this anchor governs the DOCKED
    panel's own margin clamp (`--tutor-panel-margin`, consumed by
    `.wz-tutor-panel[data-open='true'][data-docked='true']` below), not the
@@ -3381,6 +3400,7 @@ a:focus-visible,
    what mirrors, not the literal side). */
 .wz-tutor-grip{ position:absolute; top:16px; left:0; width:16px; height:34px;
   display:flex; align-items:center; justify-content:center; z-index:2;
+  pointer-events:auto; /* FX18 S2 (SV24): re-armed atop the lifted, click-transparent anchor above — the grip stays clickable while the open panel underneath keeps its own clicks */
   background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
   color:var(--text-mid); cursor:pointer; transition:.15s; }
 .wz-tutor-grip:hover{ color:var(--text-hi); }
@@ -3423,12 +3443,37 @@ a:focus-visible,
    footprint, exactly like the sliver's already does today. */
 .wz-tutor-panel{
   flex:0 0 auto; height:100%; overflow-y:auto; overflow-x:hidden;
-  width:var(--tutor-panel-open-w); max-width:var(--tutor-panel-open-w);
+  /* FX18 S2 (SV24/SV26) — Fable's ruling (2026-07-29): FX18 SUPERSEDES FX10 S1's fixed-vw
+     OVERLAY law (a founder's device verdict outranks the architect's earlier "no-JS,
+     overlay-as-today" convenience ruling; FX13's measure-effect is now the house's proven
+     pattern for exactly this adjustment). THREE regimes, driven by Tutor.tsx's measure-effect
+     which sets an inline px width from the TRUE geometric margin (stage.right - paper.right,
+     measured — NOT this calc, which adds --frame-gap and so overshoots the paper by 28px):
+       (1) WRITING SURFACE, geoMargin >= ~280px usable floor: OCCUPY the margin at
+           min(geoMargin, open-w) — flush to the paper's right edge, never covering it.
+       (2) WRITING SURFACE, geoMargin < ~280px: OVERLAY at natural open-w (the documented
+           narrow-screen degradation) — a downward discontinuity at 280 that CSS clamp cannot
+           express, hence the measured inline width.
+       (3) BOARD: keeps natural open-w and MAY overlay the canvas (an arrangement surface, not
+           sacred paper) — the --board rule below; grip rides atop via the z-lift above.
+     The clamp below is only the FALLBACK before the effect runs (wide screens already correct
+     by CSS alone; the inline width supersedes it). The 5 fx10 "full open-w" A4 parks stand. */
+  width:clamp(280px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
+  max-width:clamp(280px, var(--tutor-panel-margin), var(--tutor-panel-open-w));
   background:var(--desk-ground); border:1px solid var(--ink-border); border-left:none;
   opacity:0; pointer-events:none; transform:translateX(-6px);
   transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease;
 }
 .wz-tutor-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+/* FX18 S2 regime (3) — the BOARD overlay exception (Fable's ruling): the board is an
+   arrangement surface, not sacred paper, so its Tutor panel keeps its natural open-w and
+   may overlay the canvas (bounded to the app edge by the flex-end dock; the grip rides atop
+   it via the z-lifted anchor). Tutor.tsx leaves panelWidthPx null on Board, so this rule
+   owns the width — pure CSS, no flash of the writing-surface fallback. Regime (2), the
+   writing-surface narrow-screen degradation (overlay at open-w), is set by the same measure-
+   effect's inline width, not a CSS attribute — see Tutor.tsx. */
+.desk-frame-tutor-panel-anchor--board .wz-tutor-panel{
+  width:var(--tutor-panel-open-w); max-width:var(--tutor-panel-open-w); }
 /* A15/S2's dock rider (CD2's exact grammar, mirrored): a docked panel
    compresses toward the margin genuinely available, floored at 120px —
    never occludes the measure once docked. Cascade.tsx's own
@@ -4352,6 +4397,11 @@ a:focus-visible,
 .board-door,.page-plan-door{ background:none; border:0; color:var(--text-mid); cursor:pointer;
   font-family:var(--font-contentLabel); font-size:13px; padding:5px 10px; }
 .board-door:hover,.page-plan-door:hover{ color:var(--text-hi); }
+/* FX18 S3 (SV27): the Board's top menu parallels the Page's mode strip — ALL CAPS.
+   Scoped to the Board bar (.board-mode-tab + .board-door); the Page's own .page-plan-door
+   is deliberately NOT included. Mirrors .desk-mode-tab's transform; words/behaviour and the
+   DOM textContent are unchanged (paint only, the ab2-S7 discipline). */
+.board-mode-tab, .board-door{ text-transform:uppercase; letter-spacing:.08em; }
 .board-telos{ color:var(--text-low); font-family:var(--font-contentLabel); font-size:12px;
   letter-spacing:.02em; margin:2px 0 0; user-select:none; }
 
