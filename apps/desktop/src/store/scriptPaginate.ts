@@ -49,7 +49,24 @@ export const BREAK_RULES: Record<ScriptElType, BreakRule> = {
   action: { neverLast: false, keepWithNext: false, splittable: true },
   // No element splits in SC2. Dialogue's row is what SC2.1 edits.
   dialogue: { neverLast: false, keepWithNext: false, splittable: false },
-  paren: { neverLast: false, keepWithNext: false, splittable: false },
+  // RULED 2026-07-25 (Fable): a parenthetical is a MODIFIER on the line beneath
+  // it — stranded at a page foot it modifies nothing, and in the trade it can
+  // never be the last thing on a page.
+  paren: { neverLast: true, keepWithNext: true, splittable: false },
+  // TRANSITION IS DEFERRED, AND THIS IS THE "SAY SO" (Fable's own option).
+  // The ruling is `keepWithPrevious` — a transition orphaned onto a fresh page,
+  // away from the scene it ends, is the mirror of a stranded heading. It needs a
+  // FOURTH COLUMN, and the column is the easy part; the hard part is that every
+  // other rule pulls an element FORWARD off a page foot, while this one is the
+  // only rule that reaches BACKWARD. Mixing directions in one fix-up pass is
+  // where oscillation lives — A pulled forward by neverLast, pulled back by
+  // keepWithPrevious, forever — and this function runs on every keystroke, so an
+  // oscillation is not a wrong page count, it is a frozen editor.
+  // The safe shape is known (push the PREVIOUS page's last element forward to
+  // join the transition, never pull the transition back, so every move stays
+  // forward-only and the pass provably terminates). It is deferred to S2b so it
+  // lands with a termination proof in the harness rather than under time
+  // pressure here. Recorded as owed, not as decided-against.
   transition: { neverLast: false, keepWithNext: false, splittable: false },
   shot: { neverLast: false, keepWithNext: false, splittable: false },
   general: { neverLast: false, keepWithNext: false, splittable: false },
