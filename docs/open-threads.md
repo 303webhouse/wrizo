@@ -6802,6 +6802,79 @@ outlive a session lives here, not in chat.
     is exactly the reassurance the rescission exists to prevent.
     **Next in this lane: S5 (the caret across the break + memoization + the
     latency gate against the frozen `c1cabe8` baseline), then PB1 (item 71).**
+    **CORRECTION — 2026-07-26, on this lane's own record, appended not rewritten.
+    DF1.1 FOUND THE ROOT AND IT RETIRES ONE OF THIS ENTRY'S CLEARANCES.**
+    `runtime-verify.mjs:615` keys the browser profile directory on the NODE PID
+    (`ws-runtime-verify-${process.pid}`); Windows recycles PIDs; `removeDir(udd)`
+    in the `finally` at :638 often fails, so a killed or crashed run leaves its
+    directory behind holding a `DevToolsActivePort` file naming a DEAD port. A
+    later run drawing that PID launches into the stale directory and polls a port
+    nothing is listening on. **It throws BEFORE any app load, so it happens on a
+    completely quiet machine.** Independently corroborated in this tree the same
+    day: **58 `ws-runtime-verify-*` directories were sitting in TEMP**, matching
+    DF1.1's own count, and the source reads exactly as described. DF1.1 fixes it
+    with a clear-before-launch.
+    **WHAT THIS RETIRES: the S1 entry above exonerates SC2 as the cause of
+    `fx1.mjs`'s 480s timeout on the ground that "fx1 passes cleanly alone."** That
+    reasoning no longer rules the class out. **"The machine was quiet" and "it
+    passes alone" were never mechanism checks — they were the absence of ONE
+    alternative**, and a second alternative now exists that reproduces on a quiet
+    machine. The suite-citizenship split of `sc2.mjs` behind `SC2_TIMING` stands
+    on its own merits (it genuinely made the file fast in-suite), but its success
+    is NOT evidence for the contention theory it was written to answer. The
+    original entry is left verbatim above; this is the annotation beside it.
+    **WHAT THIS DOES NOT TOUCH: no false pass is possible from that mode.** It
+    fails before the app loads, so it can only produce a MISSING verdict, never a
+    green one. Nothing merged out of this lane is retroactively suspect, and the
+    44/44 and 43/43 suite verdicts recorded above stand — a file that hit this
+    mode would have been red or absent, not falsely green.
+    **AND THE `j5` RED OF 2026-07-25 IS NOT THIS CLASS — checked against the log
+    rather than assumed, and flagged so DF1.1 does not close it with the
+    clear-before-launch fix.** The stale-directory mode throws in `readCdpPort` /
+    "CDP page target never appeared" with no app in evidence. `j5` threw
+    `waitFor timed out: lens row` with a `__diag()` payload that could only exist
+    on a LIVE CDP connection to a LOADED app: a served href, the full nav-button
+    list, and the Journal spread rendered with "No loose pages yet". CDP was
+    connected, the app was up, the surface had mounted — and the seed simply had
+    not rehydrated. **Zero occurrences of the stale-directory signature appear in
+    any of this lane's 87 suite logs.** The named root stands as reported:
+    `j5.mjs:114–120` writes localStorage, calls `app.reload()` *"so persistence.ts
+    re-hydrates from it"*, then navigates and queries with no `waitFor` on the
+    rehydrated state — a second, distinct missing synchronization point from the
+    one at line 401. **Two independent defects in one file; the clear-before-launch
+    fix closes neither of them.**
+    **SC2 S5 (part) — `b7b34f3` on branch `sc2-s5-memo`, PUSHED, VERIFICATION
+    OWED, DO NOT MERGE.** `React.memo` on `StaticScriptElement` — the seam S2b
+    prepared, so an edit and not a rewrite. `tsc` ×2 EXIT 0 and `build:web` clean
+    is the whole of what is verifiable without a browser: it proves compilation
+    and bundling and NOTHING about behaviour or speed. **No harness has run
+    against it.** Pushed rather than held locally because unpushed work is the
+    orphan class that has cost this project twice (E1's fix; chat 3's uncommitted
+    S1/S2) — report-equals-push forbids claiming done without pushing, not
+    pushing work-in-progress. The distinct branch name plus the commit's own
+    `VERIFICATION OWED — DO NOT MERGE` subject are the guard; **`sc2-the-clock`
+    stays at `8192077`, which remains the only SC2 branch tip fit to merge.**
+    **The caret half is deliberately NOT written.** The prediction is that a page
+    crossing reparents the live contenteditable (sheets are DOM parents keyed by
+    page index, and React deletes-and-inserts rather than moving a node between
+    parents), destroying it and re-seeding the caret from `caretHint` instead of
+    from where the writer's hands were. **That is a prediction, not an
+    observation**, and this arc's hardest law is reproduce before patching — four
+    premises here read as obvious and were false when measured. **Fable's
+    alternative, recorded to be weighed AFTER observation and not before:** if the
+    remount is real, consider dissolving the class rather than patching it — one
+    flat element flow with stable keys, sheets as absolutely-positioned backdrops
+    at paginator-computed offsets, so a crossing changes an element's OFFSET and
+    never its PARENT. The caret is then preserved structurally, and "the gap is
+    chrome, never body" becomes a property of the construction rather than an
+    assertion. **The trade to examine when measuring: today an element is
+    contained by its sheet through DOM NESTING; under the alternative, containment
+    becomes ALIGNMENT BY SHARED ARITHMETIC, which is a different fragility and
+    changes what the four cross-checks are proving.**
+    **QUEUE CORRECTED: PB1 is chat 5's (item 71, already opened there
+    2026-07-26). The lane widening was granted to the ticket, not to this
+    session. THIS LANE'S QUEUE IS S5 ALONE.** All browser work is held pending
+    chat 6's all-clear on DF1.1's DoD sweeps.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
