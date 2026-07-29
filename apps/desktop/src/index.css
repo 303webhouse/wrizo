@@ -58,6 +58,21 @@
      selectors. Working value only. */
   --accent-rest: #96a05a;
 
+  /* BG2 S1 (SV19/SV20, Nick's walk of the deployed P1 tree) — the DOOR olive.
+     `--accent-rest` is tuned to mark "where you are" on dark chrome; on cream
+     paper it measures 2.4:1 against `--paper`, which is exactly Nick's "can
+     barely see." This is the same olive ramp stepped DOWN in value — the
+     darkened end already in use as the board pin's hand-darkened rim (#4F5730)
+     — not a new hue: olive still means "this is a door." Against `--paper`
+     (#F3EDE1) it measures 6.6:1.
+     A separate token rather than a re-tune of `--accent-rest` because the two
+     do different jobs on different grounds; re-tuning the shared one would drag
+     every mode-tab hairline and thread line with it.
+     Slotted per theme, the established seam pattern: the ONLY ground the doors
+     ever sit on is `--paper` (the page sheet and the board canvas both), so a
+     theme that darkens the paper must lighten the door in step. */
+  --accent-door: #4F5730;
+
   /* CD2 S1/S5 — the strip's fixed geometry, a per-theme constant, replacing
      AB3's --drawer-width (200px) whole: the left drawer retires, and its
      successor is a narrow icon+label rail, not a content drawer — the freed
@@ -397,6 +412,11 @@
   --paper-border: #2A6A76;
   --ink-on-paper: #E3F1EC;
   --ink-on-paper-low: #57D0F5;    /* canon's "meta" slot, dark */
+  /* BG2 S1 — the one theme whose paper is DARK, so the door olive steps back
+     UP the same ramp rather than down: #4F5730 would measure 1.3:1 here. This
+     value measures 7.3:1 against this block's own --paper. Same hue family,
+     same meaning; only the value follows the ground. */
+  --accent-door: #A9B56A;
 }
 :root[data-theme='flux'][data-page='light'] {
   --paper: #EDF6F3;
@@ -4382,51 +4402,74 @@ a:focus-visible,
 .board-outline-ctl{ display:flex; gap:2px; flex:0 0 auto; }
 
 /* ==========================================================================
-   BG1 — the Beginnings (docs/wrizo-alpha/p1-wave.md §BG1). ONE row, one
-   grammar, two surfaces (S3): quiet olive icon+label doors on a single
-   centered line, never a grid, nothing counted and no completion state.
-   Olive is the door color here per the brief's own wording ("quiet olive
-   icon+label doors") and M4 S2's reservation of the hue — the rhizome's
-   ground deliberately stays OUT of this family so that olive keeps meaning
-   "this is a door."
+   BG1 — the Beginnings (docs/wrizo-alpha/p1-wave.md §BG1), as revised by
+   BG2 — the Beginnings, Seen (docs/wrizo-alpha/p2-wave.md §BG2, item 73).
+   ONE row, one grammar, two surfaces: olive icon+label doors, never a grid,
+   nothing counted and no completion state. Olive is the door color per BG1's
+   brief and M4 S2's reservation of the hue — the rhizome's ground deliberately
+   stays OUT of this family so that olive keeps meaning "this is a door."
+   BG2 keeps every one of those laws and changes only what Nick could not see:
+   size, stacking, and the olive's VALUE (see the BG2 S1 block below).
 
    The container is pointer-events:none — the `.fl-invite` / rhizome
    precedent, and load-bearing for S2: the page's caret is live UNDER this row
    from the first frame and the row may never intercept it. Only the doors
    take the pointer back.
    ========================================================================== */
+/* BG2 S1 (SV19/SV20) — the grammar revised in ONE place, both surfaces
+   inheriting. Nick's verdict on the shipped row was "much too small" and "can
+   barely see," and that it did not read as a set of MODES. Three changes, all
+   here: icons ABOVE their labels (was inline), everything ~50% larger, and the
+   door olive stepped down in value so it carries against cream (`--accent-door`,
+   slotted per theme at the top of this file).
+   The lane law: DARK OLIVE at rest — brass on hover — orange only on press.
+   The resting opacity is GONE deliberately: a translucent door means the colour
+   the eye sees is not the colour the token declares, which would make BG2's own
+   computed-contrast assertion a lie. The door is quiet because of its value now,
+   not because it is faded. */
 .wz-beginnings{
-  display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
-  gap:2px 20px; pointer-events:none; user-select:none; z-index:1;
+  display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center;
+  gap:8px 30px; pointer-events:none; user-select:none; z-index:1;
 }
 .wz-beginning{
-  display:inline-flex; align-items:center; gap:7px; pointer-events:auto;
-  background:none; border:0; padding:5px 2px; cursor:pointer;
-  font-family:var(--font-contentLabel); font-size:13px; letter-spacing:.01em;
-  color:var(--accent-rest); opacity:.72;
-  transition:opacity .18s ease;
+  display:inline-flex; flex-direction:column; align-items:center; gap:8px;
+  pointer-events:auto; background:none; border:0; padding:10px 12px; cursor:pointer;
+  font-family:var(--font-contentLabel); font-size:19px; letter-spacing:.01em;
+  color:var(--accent-door);
+  transition:color .18s ease;
 }
-.wz-beginning:hover, .wz-beginning:focus-visible{ opacity:1; }
-.wz-beginning-glyph{ display:inline-flex; width:16px; height:16px; flex:0 0 16px; }
-.wz-beginning-glyph svg{ width:16px; height:16px; display:block; }
+.wz-beginning:hover, .wz-beginning:focus-visible{ color:var(--brass); }
+.wz-beginning:active{ color:var(--brass-press); }
+.wz-beginning-glyph{ display:inline-flex; width:24px; height:24px; flex:0 0 24px; }
+.wz-beginning-glyph svg{ width:24px; height:24px; display:block; }
+/* One door, one line of label — "New Page Card" must not wrap into a taller
+   door than its neighbours and break the row's shared baseline. */
+.wz-beginning-label{ white-space:nowrap; }
 
-/* S1 — the board's row, centered on the empty canvas: the exact placement the
-   retired one-line pointer held (`.board-canvas-empty`'s own transform). */
-.wz-beginnings[data-beginnings='board']{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  white-space:nowrap;
+/* BG2 S2/S3 — ONE placement rule now, which is the truest reading of "one
+   grammar" this row has had. SV20 confirmed the board's centering as correct;
+   SV19 asks for the page's row to be centered on the sheet too, reading as a
+   set of modes rather than a footnote under the caret. So both surfaces take
+   the same centering, and the page's old "beside the cursor" offset (the
+   committee's placement) is SUPERSEDED by Nick's own word.
+   This also strengthens the S2 invariant rather than weakening it: centered on
+   the sheet, the row is further from the caret than it has ever been, so the
+   first line is clearer still. The caret stays live from the first frame, the
+   container stays pointer-events:none, and typing still dismisses.
+
+   Centered by SPANNING the surface (left:0/right:0) and letting flexbox do the
+   centering, NOT by `left:50%` + a translate. At BG1's smaller size the latter
+   happened to fit; at BG2's size it silently wrapped the row into two lines —
+   an absolutely-positioned shrink-to-fit box offered only the space from its
+   left edge to the containing block's right edge, i.e. half the room. The row
+   must never become a grid (BG1's law), so the box gets the whole width and
+   `justify-content:center` places it. */
+.wz-beginnings[data-beginnings='board'],
+.wz-beginnings[data-beginnings='page']{
+  position:absolute; top:50%; left:0; right:0; transform:translateY(-50%);
 }
 /* S1 — the same row inside STORYBOARD/OUTLINE, which are ordinary flow blocks
    with no positioned ancestor: it simply takes the place their empty line held. */
-.wz-beginnings[data-beginnings='projection']{ padding:14px 0 4px; }
+.wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }
 
-/* S2 — the page's row: beside the live caret, set one line BELOW it so the
-   first line stays clear of furniture (the caret is never covered, and the
-   writer's first keystroke lands with nothing in its way). Left-set, because
-   the caret is left-set — this is furniture beside the cursor, not a banner. */
-.wz-beginnings[data-beginnings='page']{
-  position:absolute; left:0; right:0;
-  top:calc(1.7 * 17px * var(--paper-scale) + 6px);
-  justify-content:flex-start; gap:2px 18px;
-}
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
