@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsPinning } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
@@ -385,7 +385,36 @@ function ActiveScriptElement({
 // `docIndex` is the DOCUMENT index — `activateAt` addresses the flat element
 // array and must keep doing so; a page-local position would silently address
 // the wrong element the moment a break moved above it.
-function StaticScriptElement({ el, text, docIndex, continues, continuedFrom }: {
+//
+// SC2 S5 — AND HERE THE SEAM IS TAKEN. `React.memo` is the whole change; S2b
+// did the work that makes it bite, which is why this is an edit and not a
+// rewrite. Every prop is compared by the default shallow equality and every one
+// of them is stable when the element has not changed:
+//   `el`        — `setElements` maps with `prev.map((e, i) => i === idx ? {...}
+//                 : e)`, so an untouched element keeps its object identity;
+//   `text`      — `el.text` by identity for anything unsplit (textOfPart
+//                 returns it directly), a value-equal string for a split part;
+//   `docIndex`  — a number, and only changes when something above is inserted
+//                 or removed, which is exactly when this element must re-render;
+//   the flags   — booleans.
+// The style object is frozen per type at module level and the click handler is
+// delegated to the sequence, so neither reintroduces a fresh identity per
+// render. Those were the two things that would have made this a no-op.
+//
+// WHAT IT IS FOR, from the measurement rather than from intuition: sc2.mjs's S0
+// header records that the per-keystroke cost is React reconciling EVERY
+// StaticScriptElement, and that `groupIntoScenes` — the brief's original
+// suspect — does not run per keystroke at all (AUTOSAVE_MS = 2000, debounced).
+// A keystroke changes one element; with this, one element re-renders.
+//
+// !! VERIFICATION OWED AND NOT YET DONE !! The DIAGNOSIS is measured and on the
+// record; the EFFECT of this fix is not. Amendment 1's gate is a regression
+// bound judged by checking out the frozen baseline `c1cabe8` on the judging
+// machine, measuring, and measuring the tip in the SAME session INTERLEAVED —
+// and that is a browser run, held until the machine is quiet. Nothing here may
+// be reported as an improvement until that number exists. Four premises in this
+// arc read as obvious and were false when measured.
+const StaticScriptElement = memo(function StaticScriptElement({ el, text, docIndex, continues, continuedFrom }: {
   el: ScriptEl;
   text: string;
   docIndex: number;
@@ -404,7 +433,7 @@ function StaticScriptElement({ el, text, docIndex, continues, continuedFrom }: {
       {text}
     </div>
   );
-}
+});
 
 // SC2 S2b — the writer's own text for ONE part of a placed element.
 //
