@@ -7847,6 +7847,53 @@ outlive a session lives here, not in chat.
     assertions. **DoD: no panel covers another, no arrow lies about its direction, the two
     top menus look like siblings.**
 
+## P2a DEPLOY MANIFEST — 2026-07-29 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
+
+**P2a — three fixes shipped while FX17 (P2b) builds** (Fable: "P2a ships now-when-green:
+FX16 + FX18 + BG2 + the DF1.1 rider… P2b ships FX17 alone when chat 6 lands it"). Deploying
+the `main` HEAD — this records commit's own SHA, stamped below immediately after `railway up`.
+
+**New code since the P1+SC deploy (`5edae77`):**
+- item 72 · **FX16 — the Invite, Truly Silent** (incl. SV31) · merge `48dc027` (on origin/main; not yet deployed — 5edae77 predates it)
+- item 73 · **BG2 — the Beginnings, Seen** · merge `07ad0a9` (branch tip `e6b8e9a`)
+- item 75 · **FX18 — the Chrome Aligned** (three-regime panel law; FX18 SUPERSEDES FX10 S1) · merge `7edd097` (branch `0ceb080`)
+- item 66 · **DF1.1 — the quiescence instrument** · merge `e2b6945` (branch `30fc2ca`) — **HARNESS-ONLY, zero deployed surface** (the committed `run-suite.mjs` runner, j5 fixture, tu2 root, audit)
+
+**App-code touched (`5edae77..HEAD`, apps/desktop/src):** `useFirstLineInvite.tsx` + `PageEditor.tsx`
+(FX16); `Tutor.tsx` + `index.css` + `BoardEditor.tsx` (FX18); `index.css` (BG2). All frontend.
+
+**Full range `5edae77..HEAD` — everything named, ZERO src outside the three arcs.** Beyond the
+FX16/BG2/FX18 arcs above (the ONLY `apps/desktop/src` diff in the range — 5 files, verified) and
+DF1.1's harness-only files, the reset-to-origin carried SIX records/spec commits, EACH zero
+src/server (docs/ledger only, verified via `git diff-tree`): PB1 S0 `56cc113` + PB1 rulings/spec
+`610245b` (item 71); FX17 S0 `bf92959` (item 74 — P2b, no patch yet); DF1.1 DoD ledger `95e9124`
+(item 66); SC2-lane ledger `382d87a` + `a260723`.
+
+**ZERO SCHEMA, ZERO SERVER FILES** across `5edae77..HEAD`: `apps/server` diff empty; no
+migration/schema/db files touched (P1-manifest style, cf. 5edae77's `375c10f..HEAD`).
+
+**Docs:** all records/reviews/briefs/scout-notes since `5edae77` (FX16/FX18/BG2/DF1.1 records,
+the `fx18-scout-notes`, this manifest) — records only, no deployed surface.
+
+**Verified at the merge HEAD (`e2b6945`):** `tsc` ×2 EXIT 0 (app + node); `build:web` clean.
+**Full historic suite via DF1.1's committed `run-suite.mjs`, BOTH HARNESS_PARKED settings,
+read to completion — 50/50 UNSET (CLEAN) and 50/50 PARKED (CLEAN)** on the trustworthy
+instrument (DF1.1's DoD met — six clean sweeps, known-flake list EMPTY — plus its fail-fast-
+on-dirty-machine guard). FX18's own file 16/16; fx10 122/122 (its 5 "full open-w" assertions
+A4-parked in place — FX18 supersedes FX10 S1 per Fable's ruling; tu2's 6 FX10-superseded
+width parks + the disclosure-v2 parks all still green under HARNESS_PARKED=1).
+
+**ROLLBACK TARGET: git `5edae77` · railway `b63743ca-6f1a-412a-90c6-336897e41e98`** — the
+current live production SHA (P1+SC, stamped LIVE at `1bcc843`), CONFIRMED by Fable as the P2a
+rollback (2026-07-29). Production has ratcheted since P0: the P1 deploy's own target `c13182b`
+is the P0-live state, so rolling P2a to it would strip P1+SC1 from a live build to cure a P2
+problem. Rollback is a redeploy of 5edae77's tree (`railway up` of it).
+
+**DEPLOY STAMP: <pending — stamped immediately after `railway up`, in the follow-up ledger commit>.**
+
+**Items 66 / 72 / 73 / 75: GREEN + DEPLOYED, but they STAY OPEN** — Fable's post-merge reviews
+FOLLOW the deploy (Nick's word); Nick's device sitting closes them. FX17 (74) stays OPEN for P2b.
+
 ## P1 + SC DEPLOY MANIFEST — 2026-07-25 (chat 1, on Nick's "DEPLOY WHEN READY")
 
 **One deploy, both arcs, everything named** (Fable's "one word, one manifest naming both
