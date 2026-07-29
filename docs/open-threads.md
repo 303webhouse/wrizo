@@ -7312,6 +7312,88 @@ outlive a session lives here, not in chat.
     **MERGED — 2026-07-25, merge `7ec8125`** (re-merged onto origin's latest, clean). GREEN
     both settings on the combined P1 tree (`m4.mjs` 42 checks); DEPLOYED with the P1+SC wave
     (see the DEPLOY MANIFEST below). Review + sitting OPEN.
+71. **PB1 — Born on the First Word.** **OPENED — 2026-07-26 (chat 5); S1
+    ROOT-CAUSED (statically), BUILD HELD.** From the P1 wave
+    (`docs/wrizo-alpha/p1-wave.md` §PB1); authority the export's finding — ~45
+    empty Untitled pages and duplicate empty boards in Nick's real corpus.
+    Branch `pb1-born-on-first-word` off `main` `8726523`, own worktree,
+    guard-rail, ledger on `main`; **ZERO SCHEMA, ZERO SERVER FILES**; merges
+    through chat 1's lane, Fable reviews post-merge, deploy is Nick's word.
+    **Two disclosed reassignments, not silent adoptions:** the brief's own
+    header still reads "owner: chat 4, after SC2" — reassigned to chat 5 by
+    Nick's relay, 2026-07-26; and PB1 carries no item number in the brief, so
+    71 is taken from this ledger's own reservation, assigned not claimed.
+    **S1 — THE MECHANISM, NAMED (source-read; browser reproduction still owed,
+    see the hold below).** The empties were not bred by the creation doors
+    alone. They were bred by *a lifecycle guarantee that lived on a SURFACE
+    rather than on the RECORD* — and FX14 moved the destination out from under
+    it. The chain: (1) all four creators persist a row with `text: ''` on
+    arrival — `createJournalPage` (persistence.ts:638), `createLooseHomePage`
+    (:1291), `createBoardPage` (:753), `getOrCreatePlanBoard` (:1470); (2) that
+    was safe, and the code says why — persistence.ts:636 "An empty page left
+    untouched is discarded on exit by the page itself (honor-discard, J1a), so
+    this never litters the journal," echoed at useCatch.ts:8; (3) the discard
+    was implemented on `JournalEntry.tsx` (:647–657, in its unmount effect),
+    NOT in the store; (4) **FX14 unrouted that surface** (App.tsx:13, :90 —
+    every door now lands at `/page/:id`), and `PageEditor.tsx` has no discard
+    at all (`deletedAt` appears nowhere in it; its unmount is only
+    `flush(); flushNow()`, and `flush()` writes only when the text differs).
+    **So on the day FX14 merged, every creation door silently became a litter
+    generator** — which is why ~45 appeared recently rather than always. The
+    two comments above are now false: they assert a guarantee that no longer
+    executes.
+    **Why re-adding honor-discard to PageEditor is the WRONG fix:** it rebuilds
+    the exact fragility that just failed (a record-level invariant enforced by
+    whichever surface happens to be mounted, so the next routing change breaks
+    it again, silently); it is create-then-delete, i.e. a reaper with extra
+    steps, which S3 forbids in spirit; and it leaves `deletedAt` tombstones in
+    the corpus and in sync traffic for pages that were never written.
+    **The constraint that decides the shape (why "just don't persist" is not
+    one line):** (a) the route needs a resolvable record — `PageEditor` does
+    `if (!entry) return <Navigate to="/" replace />` and the outer component
+    reads the same row to decide `BoardEditor`/`ScriptEditor` delegation; and
+    (b) an unborn row cannot merely sit in the cache, because `flush()`
+    (persistence.ts:168) serializes `cache[name]` WHOLESALE, so any unborn row
+    reaches disk on the next flush of that collection — which any unrelated
+    write schedules and every route change forces via `flushNow()` — and
+    `upsert` also marks it dirty, so the sync loop would push it to the server.
+    **An unborn page must therefore never enter the store at all**; excluding
+    it inside `flush()`/`dirty` would mean editing the hottest path in the app
+    to carry a concept one feature needs.
+    **S2 shape (proposed, not built):** doors stop creating rows and instead
+    navigate to an unborn surface carrying a *birth descriptor* on the
+    established one-shot `location.state` idiom (`warmStart`/`firstRunGate`/
+    `fromBoardId` precedent); on the first content change, ONE synchronous call
+    creates the entry *with the first keystroke already in it* — never
+    create-empty-then-save, which is the loss window — applies the descriptor's
+    semantics (origin / projectId / pageType / pin), and `replace`s the URL.
+    The first word reaches disk through the same `saveJournalEntry` path and
+    the same 300ms flush guarantee as today, offline included; no keystroke is
+    buffered anywhere it is not buffered today.
+    **THREE QUESTIONS OWED BEFORE BUILDING** (recorded rather than decided
+    unilaterally, since each changes behaviour Nick can feel): (1) reload
+    before the first word — `location.state` does not survive a reload (F3
+    already ruled that an accepted edge case for `warmStart`), so an unborn
+    page reloaded before its first word has nothing to restore, which is
+    correct under PB1 but needs a defined fallback; **recommendation: fall back
+    to an unborn LOOSE page**, keeping the writer on paper. (2) the plan-board
+    pointer — `getOrCreatePlanBoard` writes `planBoardId` onto the PAGE at
+    board-creation time, so an unborn board has nothing to point at;
+    **recommendation: mint-and-point-at-birth**, pointer and board born in one
+    act, so "a board when it has a box" holds without exception. (3)
+    `createBoardPage(binderId, title?)` takes a title, and a titled board
+    arguably already has content; **recommendation: a titled board is born
+    immediately, an untitled one waits for its first box.**
+    **S3 — no sweeper**, unchanged and binding: existing empties are never
+    deleted by code, and never a background reaper.
+    **HOLD (2026-07-26):** all browser/harness runs are held while chat 6 runs
+    DF1.1's DoD sweeps; editing, `tsc` and `build:web` are permitted. S1's own
+    instructed reproduction (open a New Page, navigate away without typing,
+    check Places) is therefore OWED, and nothing above is claimed proven by
+    execution — it is a source read, and the reproduction outranks it. No code
+    has been changed on the branch; the map is staged in the session scratchpad
+    per the "S0 pre-drafts stay out of the repo" rule.
+    **DoD: the app stops collecting rooms nobody entered.**
 72. **FX16 — the Invite, Truly Silent.** **OPENED — 2026-07-25 (chat 1)**, from the P2
     wave (`docs/wrizo-alpha/p2-wave.md` §FX16), authority SV18 — the first-line invite
     STILL renders on a fresh page after FX15 (Nick's walk of the deployed tree: "a door
