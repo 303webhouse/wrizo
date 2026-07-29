@@ -7788,6 +7788,45 @@ outlive a session lives here, not in chat.
       this session's** (two invoked from the repo root — a different lane).
       External contention, not a defect; re-run as a batch, green. No sweep was
       performed — cleanup stays scoped to PIDs this session spawned.
+74. **FX17 — the Board's Floor.** **OPENED + S1 ROOT-CAUSED — 2026-07-26 (chat 6)**, from
+    the P2 wave (`p2-wave.md` §FX17, authority SV21/SV22/SV23; FX13 gave the board its
+    height law, this finishes it). Branch `fx17-boards-floor` off `main` @ `a260723`, own
+    worktree, guard-rail before every commit; **ZERO SCHEMA, ZERO SERVER**; merges through
+    chat 1's lane, Fable reviews post-merge, deploy is the P2 wave's own word. *(The
+    assignment reached this lane late — the brief was on disk at `5048d58` the whole time;
+    recorded so the relay gap is visible, not to re-litigate it.)*
+    **S1 (SV22) — THE STUTTER, ROOT-CAUSED BEFORE ANY PATCH, and it is a genuine
+    closed-loop layout thrash.** Reproduced under TRUSTED pointer (`Input.dispatchMouseEvent`
+    — real mouse press/move/release, not synthetic PointerEvents) at the mandatory
+    **1366×768** leg, sampling the page's own frame clock through a full bottom-edge drag.
+    **The measurement: 142 frames, 71 vertical-scrollbar FLIPS — one every other frame,
+    ~30Hz — with `.board-canvas-wrap`'s `clientWidth` oscillating 1098↔1088 (10px, exactly
+    the scrollbar) and the canvas width in lockstep. The dragged card reached only
+    y=0.349 of a full-height drag: it never gets near the floor.** **THE MECHANISM, named:
+    the canvas's HEIGHT is computed from its WIDTH, and the width is measured with
+    `clientWidth`, which the scrollbar changes.** `contentMinHeightPx = (maxBottom(boxes) +
+    0.08) * pageWidthPx` (BoardEditor.tsx ~L1562) and `pageWidthPx = containerWidthPx =
+    max(320, wrapRef.clientWidth)` (~L829/L887, a `ResizeObserver` on the WRAP ITSELF). So:
+    drag down → `maxBottom` grows → canvas height grows → it crosses the wrap's available
+    height → the vertical scrollbar appears → `clientWidth` drops 10px → `pageWidthPx`
+    shrinks → **the height, being derived from the width, shrinks with it** → the content
+    fits again → the scrollbar vanishes → the width returns → the height grows → it
+    relatches. One cycle per React render (`onMove` calls `setBoxes` on EVERY pointermove,
+    ~L1438), which is why it runs at frame rate. The drag delta itself (`dy = (clientY -
+    startY) / pageWidthPx`) is scaled by the same oscillating value, so the card's computed
+    position jitters too — the felt "freeze". **This is the brief's "re-render loop"
+    candidate, not the auto-scroll or per-event-clamp candidates.** **The asymmetry that
+    allowed it:** FX13 already installed a THRASH GUARD on the HEIGHT observer — it watches
+    `.desk-frame-stage`, never the wrap, with the comment "the wrap's own height can never
+    feed back into it" — but the WIDTH observer watches the wrap itself, which is precisely
+    the feedback path that guard exists to forbid. The guard was built on one axis and
+    omitted on the other. **Fix lands at that root** (house precedent in-tree: SC1 S4's
+    `scrollbar-gutter:stable both-edges` on `.desk-frame-scroll-cap`, index.css L2693).
+    **S2–S4 remaining:** the floor with its border (1366×768 asserted), grow-then-hard-stop
+    with the limit NAMED in code and ledger, and fit-to-content (the minimal reading — a
+    zoom slider is post-vacation). **S4 is the slice that yields if the freeze presses;
+    S1 is what must not survive.** **DoD:** a card can be dragged anywhere on a board that
+    reaches its floor, and the whole board can be seen at once.
 75. **FX18 — the Chrome Aligned.** **OPENED — 2026-07-25 (chat 1, after FX16)**, from the
     P2 wave (`p2-wave.md` §FX18), authority SV24–SV27 + the screenplay's instance of SV26.
     Branch `fx18-chrome-aligned` off `main` (after FX16 lands), own worktree, guard-rail,
