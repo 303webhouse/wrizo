@@ -7100,6 +7100,119 @@ outlive a session lives here, not in chat.
     form; teach the audit the comment convention, or migrate comment-form records to
     pok-form at next touch, so the audit's coverage statement stays honest. **Item 48
     closes when DF1.1 lands.** Not yet briefed/sequenced — Nick's call on timing.
+    **BUILT + DoD MET — 2026-07-26 (chat 6). Branch `df1-1-rider` @ `30fc2ca`, own
+    worktree, guard-rail before every commit; HARNESS AND TOOLING ONLY — zero `src/`,
+    zero schema, zero server, zero deps; nothing ships, no deploy consequence.**
+    **Slice renumbering (drift, recorded):** this entry numbered its slices S1 tu2 /
+    S2 audit-exit-code / S3 tracer-blindness; Nick's brief of 2026-07-25 numbered them
+    S1 tu2 / S2 j5 / S3 runner hygiene / S4 both audit edges, and added j5 + the runner
+    outright. Built to the brief; the mapping is recorded so the two stop diverging.
+    **S1 (tu2) — ROOT-CAUSED AND FIXED, not merely re-run.** `Tutor.tsx` runs two
+    timers on the session meter: `data-fading` at METER_VISIBLE_MS (3600ms), DOM
+    REMOVAL at METER_TOTAL_MS (4000ms) — a 400ms window. The check slept **3650ms on
+    the HARNESS wall clock** and sampled once, leaving ~350ms of slack against which
+    EVERY CDP round-trip since the meter rendered (a textContent read, two `lex()`
+    lookups, the dataset read) was charged. Under contention those exceed 350ms, the
+    node is gone, `?.dataset.fading` is `undefined`, red. An earlier rewrite replaced a
+    blind `sleep(400)` with a `waitFor` — that shrank only the FIRST latency term and
+    left the wall-clock dependency, which is why the flake outlived it. Fixed with an
+    in-page MutationObserver timestamping mount / fade / removal on `performance.now()`
+    (DF1's own fx5 species). **NOT a weakening, so NO A4 park owed:** all six original
+    check names preserved verbatim, TWO STRONGER checks added that prove the SCHEDULE
+    rather than a flag's value at one arbitrary moment. tu2 96 → **98**. **The measured
+    margin, across all six DoD sweeps:** mount→fade **3599–3609ms** (target 3600),
+    fade→removal **393–411ms** (target 400) — ≤10ms of jitter on the browser's own
+    clock, where the retired instrument needed a single sample to land inside a 400ms
+    window with ~350ms of slack. **tu2 returns to CLEARED on mechanism + measured
+    margin; the known-flake list is now EMPTY.**
+    **S2 (j5) — three species, and the clearance stated precisely.** Coordinated by
+    SPECIES, not line number (every line shifted): **(1) "query-then-click"** —
+    `app.click('Select')` then an unguarded `[data-page-id]` query; select-mode
+    re-renders the list, `querySelector` returns null, `.click()` throws and the file
+    aborts with NO verdict. **OBSERVED to fail** (live at j5:401 in the M4 sweep, ~16s
+    in, after the app had loaded — not the environmental signature). Brief named five
+    sites; the defect was at **NINE** (166/167/241/287/326/364/365/401/458) — fixing
+    five and leaving four identical instances would have narrowed the fix, so the class
+    was completed. **(2) "reload-then-query"** — found by chat 7; the waits were on
+    CHROME (`.spread-lens-row`, `.spread-select-toggle`), which mount unconditionally
+    and are present while the rehydrated page list is still EMPTY, so a lens assertion
+    compared `[]` against `{A,B}`. **OBSERVED to fail.** Fixed at the two entries that
+    read the cell list as a SET; the other five are already covered by species 1's
+    per-row poll, which is strictly more precise than any count. *Correction of record:*
+    the first fix asserted `>= 4 cells` at all seven entries on the claim that A–D are
+    never deleted — FALSE, filing removes a page from the Journal, and the harness said
+    so on the first run; the false claim is corrected in the comment, not deleted.
+    **(3) "sleep-behind-lens-re-render"** — 13 flat `sleep(100)`s before reading the
+    cells. **NEVER OBSERVED to fail; known-fragile by inspection only, hardened
+    preventively.** Fable's ruling, honored here: **no clearance is claimed for a
+    failure that never happened.** Replaced with cell-list QUIESCENCE (two consecutive
+    identical samples) — keyed on the cell list, not the chip, because the star chip
+    RENAMES itself when it activates ('☆'→'★') and 'research' is clicked twice;
+    deliberately NOT a wait for the EXPECTED set, which would make all thirteen checks
+    vacuous. **The instrument was validated before the DoD's evidence was allowed to
+    rest on it** (Fable's standard, chat 7's aggregate-scanner precedent):
+    `scripts/selftest-quiescence.mjs` reads the predicate OUT OF `j5.mjs` at runtime
+    (a copy would silently stop testing the real one) and proves three directions — a
+    static list settles in 118ms; **a list churning every 50ms NEVER satisfies it
+    across the full 3.3s window** (the wait genuinely CAN fail — a wait that cannot
+    fail is not a wait); it recovers in 108ms, so direction 2 failed from movement, not
+    a latched state. PASS 4. Kept OUT of `scripts/harness/` so the 47-file suite
+    composition the DoD measured is unchanged. j5 PASS 37 both settings, count
+    unchanged throughout. **j5 returns to CLEARED for species 1 and 2 on mechanism +
+    six clean sweeps; species 3 contributes hardening, not evidence.**
+    **S3 (the runner) — and the biggest finding of the ticket.** There was NO committed
+    runner; every lane wrote a throwaway in scratch and re-learned the same lessons,
+    which is why they lived in one agent's memory instead of the repo. New
+    `apps/desktop/scripts/run-suite.mjs` (+ `verify:suite` / `verify:suite:parked`)
+    encodes: never `$(node …)` (command substitution blocks on the browser grandchild
+    holding the pipe — the "suite runs forever" stall); cleanup scoped to PIDs the
+    process spawned, matched by the exact `ws-runtime-verify-<ownPid>` profile dir,
+    never by name; fail-fast refusal if foreign harness browsers exist at start AND
+    between every file, reporting **VOID** rather than a half-clean sweep; a file
+    returning no VERIFY line is NOVERDICT, never a pass. **THE ROOT CAUSE OF THE "CDP
+    PAGE TARGET NEVER APPEARED" CLASS — it is NOT contention.** The profile dir is
+    keyed on the node PID and Windows RECYCLES PIDs; a KILLED run never reaches its
+    `finally`, so its dir survives — **58 were sitting in TEMP**, each holding a
+    `DevToolsActivePort` naming a long-dead port (one of them
+    `ws-runtime-verify-20144`, this lane's own SIGKILLed m2 run from the M4 session).
+    A later run drawing a matching PID launches into that stale dir, `readCdpPort`
+    returns the DEAD port, and `pageWsUrl` polls a port nothing is listening on until
+    it throws — BEFORE any app load, which is exactly why it reads as starvation.
+    `b1.mjs` hit it with **zero foreign browsers and the mid-run guard green**. Fixed
+    by clearing the profile dir before launch (one line, self-healing as PIDs come
+    round); deliberately NOT a mass TEMP sweep — a dir belonging to a LIVE run in
+    another lane is not this process's to delete. **This retires "the machine was
+    quiet, therefore not environmental" as a clearance argument** — the SC2 lane has
+    already amended its own entry accordingly (`382d87a`). It does not retro-explain
+    every such red: contention is real and produces the same message. Also fixed: the
+    runner's OWN wolf-cry — fx7 prints `FX7 VERIFY (partial): PASS` and a literal
+    `VERIFY:` test reported a fully passing file as NOVERDICT (the S4 disease,
+    reproduced in the driver, where it is worse — a driver that cries wolf teaches
+    lanes to discount it).
+    **S4 (the audit's two edges).** All four hand-ruled edges were FRAMINGS THE
+    INSTRUMENT COULD NOT READ, never violations: `ab3:688`/`cd2:963` are generation-2
+    records quoted verbatim INSIDE comments (the extractor read the `// ` prefixes into
+    the key); `ab4:595` is a nested-escape record whose own quoted words (`\\"Add
+    card\\"`) terminated the scan at 6 chars; `fx1:580` uses the generation framing
+    `(was gen-2 "…")`. The keyer now takes the first quote in a short window after
+    `(was ` (covering every framing used so far and the next one invented), carries
+    source-escaped quotes into the key verbatim, and skips comment occurrences. **A
+    clean audited state EXITS 0** — key-not-found 0, no-key 0, traced-once 104 → 106.
+    Per Fable the four edges stay DOCUMENTED in the report though the tool no longer
+    flags them, so the reasoning outlives the fix. The tracer also learned the
+    comment-form convention it was blind to: ~208 comment-form records across 29 files
+    are counted and reported, **with the counting rule stated and its imprecision
+    owned** (it is an estimate, slightly high), so the coverage line now reads "this
+    tool reaches ~39% of the tree's park records" instead of implying it reaches all.
+    **DoD — MET, EMPIRICALLY.** **Three consecutive full-suite runs × both
+    `HARNESS_PARKED` settings = six sweeps, 47/47 files each, ALL SIX `SUITE RESULT:
+    CLEAN`, ZERO re-runs of any kind**, read to completion in the main loop
+    (15:42→17:42 on 2026-07-26). The first attempt was NOT clean (b1 NOVERDICT + the
+    fx7 wolf-cry) and was VOIDED and restarted from zero rather than counted — the
+    strict reading Fable ruled. **The known-flake list is now EMPTY: after DF1.1 a red
+    suite means something is wrong, full stop.** **Item 48 closes with this.** Merge
+    rides the zero-schema pre-authorization through chat 1's lane; Fable reviews
+    post-merge; no deploy.
 67. **BG1 — the Beginnings (board + page).** **OPENED + BUILDING — 2026-07-25
     (chat 3)**, from the P1 wave (`docs/wrizo-alpha/p1-wave.md` — Chamber A / SV3
     + SV17 + the committee pass). Branch `bg1-beginnings` off `main`, own
