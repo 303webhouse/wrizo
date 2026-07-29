@@ -47,6 +47,13 @@ import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_
 // no knock anywhere. A later Tutor-panel ticket may return the letters under content
 // law (the return gate on ledger item 64).
 const DOCK_FLOOR_PX = 120;
+// FX18 S2 (Fable's ruling, 2026-07-29) — the usable-panel floor: the smallest margin at
+// which an OPEN panel can occupy the writing-surface margin without becoming a useless
+// sliver. Below it the panel overlays the paper at natural open-w instead — the documented
+// narrow-screen degradation (the measure-effect below sets the panel's inline width to
+// natural open-w there). Distinct from DOCK_FLOOR_PX above: that gates whether the DOCK
+// affordance is offered; this gates whether an open panel occupies the margin or overlays.
+const USABLE_PANEL_FLOOR_PX = 280;
 
 // TU2 S2 — the listener's delta assembly. No real tokenizer is available
 // client-side, so the cap is a disclosed, documented character-based
@@ -193,6 +200,14 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [docked, setDocked] = useState(false);
+  // FX18 S2 (Fable's ruling) — the OPEN panel's live width in px on a WRITING surface,
+  // MEASURED (the FX13 measure-effect pattern), or null to defer to CSS. Occupy-margin uses
+  // the TRUE geometric margin (stage.right - paper.right) so the panel sits FLUSH to the
+  // paper's right edge — never dipping past its own grip into the paper (the CSS
+  // --tutor-panel-margin calc adds --frame-gap and so overshot by 28px). Below the usable
+  // floor it becomes natural open-w (overlay). null on Board (the --board CSS rule owns it)
+  // and while docked (the docked CSS rule owns it).
+  const [panelWidthPx, setPanelWidthPx] = useState(null);
   const [showDisclosure, setShowDisclosure] = useState(false);
   const [composerText, setComposerText] = useState('');
   const [sending, setSending] = useState(false);
@@ -243,6 +258,31 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [open, docked, showDisclosure]);
+
+  // FX18 S2 (Fable's ruling) — the writing-surface panel width, MEASURED not approximated (the
+  // FX13 measure-effect pattern Fable named; the same geometry availableTutorMargin() reads,
+  // minus the +frame-gap the dock heuristic adds — here we want the TRUE margin so the panel
+  // sits flush to the paper). While open+undocked on a writing surface, on every mount/resize:
+  // occupy the margin at min(geoMargin, open-w) when a usable panel fits (geoMargin >=
+  // USABLE_PANEL_FLOOR_PX), else overlay at natural open-w (the documented narrow-screen
+  // degradation). null on Board (the --board CSS rule sets open-w) and while docked (the docked
+  // CSS rule owns the width). The paper rect is stable open<->closed (the panel is absolutely
+  // positioned, never pushes it — fx10's "paper rect byte-identical" invariant), so one read on
+  // open + a resize listener suffices.
+  useEffect(() => {
+    if (!open || docked || pageKind === 'board') { setPanelWidthPx(null); return; }
+    const measure = () => {
+      const stage = document.querySelector('.desk-frame-stage');
+      const paper = document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+      if (!stage || !paper) { setPanelWidthPx(null); return; }
+      const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460)); // --tutor-panel-open-w
+      const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
+      setPanelWidthPx(Math.round(geoMargin >= USABLE_PANEL_FLOOR_PX ? Math.min(geoMargin, openW) : openW));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [open, docked, pageKind]);
 
   const openDisclosureIfNeeded = () => {
     if (!getTutorDisclosureSeen()) setShowDisclosure(true);
@@ -448,12 +488,15 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
           title={open ? t('tutorClose') : t('tutorOpen')}
           onClick={handleGripClick}
         >
-          <span className="wz-tutor-grip-glyph" aria-hidden="true">{open ? '›' : '‹'}</span>
+          {/* FX18 S1 (SV25): the RIGHT drawer mirrors the left. Closed → '›' (points right/
+              outward); open → '‹' (points left/inward, toward the panel that slides out).
+              The mirror of Sliver.tsx's left grip; that literal is left untouched. */}
+          <span className="wz-tutor-grip-glyph" aria-hidden="true">{open ? '‹' : '›'}</span>
         </button>
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'}>
+        <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
           {open && (
             <div className="wz-tutor-body">
             <div className="wz-tutor-head">

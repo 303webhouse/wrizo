@@ -160,15 +160,38 @@ await withHarness(async (app) => {
       ok(`S1 geometry @${width}px/${surface}: paper rect BYTE-IDENTICAL, closed -> open`,
         JSON.stringify(paperClosed) === JSON.stringify(paperOpen), JSON.stringify({ paperClosed, paperOpen }));
 
-      // Fable's corrected ruling (superseding TU2 S4's "2x --strip-width"
-      // spec error): clamp(320px, 34% of the viewport, 460px), a genuine
-      // `vw`-unit CSS clamp — no JS-side margin adjustment (the CD2 overlay
-      // law means the panel simply overlays the paper below the width
-      // where it can't fit, exactly as today; see index.css's own header
-      // comment on `--tutor-panel-open-w` for the full reasoning).
-      const expectedOpenW = Math.max(320, Math.min(width * 0.34, 460));
-      ok(`S1 geometry @${width}px/${surface}: the OPEN panel's own width matches the RULED clamp(320px, 34vw, 460px) — ${expectedOpenW.toFixed(2)}px at this width, not TU2's superseded ~168px`,
-        Math.abs(panelOpen.width - expectedOpenW) < 1, JSON.stringify({ panelOpenWidth: panelOpen.width, expected: expectedOpenW }));
+      // ── FX18 S2 A4-PARK (Fable's ruling, 2026-07-29): FX18 SUPERSEDES FX10 S1. ──
+      //  PARKED VERBATIM — the FX10 S1 assertion this position carried (and its own ruling
+      //  comment), retired because its "the OPEN panel is ALWAYS full open-w, overlaying the
+      //  paper" premise no longer holds:
+      //    // Fable's corrected ruling (superseding TU2 S4's "2x --strip-width"
+      //    // spec error): clamp(320px, 34% of the viewport, 460px), a genuine
+      //    // `vw`-unit CSS clamp — no JS-side margin adjustment (the CD2 overlay
+      //    // law means the panel simply overlays the paper below the width
+      //    // where it can't fit, exactly as today; ...).
+      //    const expectedOpenW = Math.max(320, Math.min(width * 0.34, 460));
+      //    ok(`S1 geometry @${width}px/${surface}: the OPEN panel's own width matches the
+      //       RULED clamp(320px, 34vw, 460px) — ${expectedOpenW.toFixed(2)}px at this width,
+      //       not TU2's superseded ~168px`,
+      //       Math.abs(panelOpen.width - expectedOpenW) < 1, JSON.stringify({ ... }));
+      //  SUPERSEDING AUTHORITY: SV24 (the open panel overruns the app edge + covers its own
+      //   close arrow) + SV26 (an open panel covers the writing surface / the opposite
+      //   toolbar) — Nick's founder device verdicts on the shipped surface, which outrank
+      //   FX10 S1's "no-JS, overlay-as-today" convenience ruling (Fable, 2026-07-29). The new
+      //   law: on a WRITING surface the panel occupies the margin and never covers the sacred
+      //   paper down to a ~280px usable floor, overlaying at open-w only below it (documented
+      //   degradation); the BOARD keeps natural open-w and may overlay its own canvas. The
+      //   full 3-regime successor is fx18.mjs S2; the in-place successor below re-verifies the
+      //   new law on fx10's own page+board legs (lenient by design — it asserts the ceiling +
+      //   the sacred-paper invariant, never an exact per-regime width; that is fx18.mjs's job).
+      const USABLE_FLOOR_PX = 280;                                     // mirrors Tutor.tsx USABLE_PANEL_FLOOR_PX
+      const expectedOpenW = Math.max(320, Math.min(width * 0.34, 460)); // --tutor-panel-open-w, unchanged by FX18
+      const stageOpen = await rectOf(app, '.desk-frame-stage');
+      const marginOpen = stageOpen && paperOpen ? Math.round(stageOpen.right - paperOpen.right) : null; // TRUE geometric margin (no +frame-gap) — matches Tutor.tsx's measure-effect regime decision
+      ok(`S1 geometry @${width}px/${surface}: [FX18 successor — the new margin-aware law] the OPEN panel never exceeds the reading measure open-w (${expectedOpenW.toFixed(0)}px), and on a WIDE writing surface (margin ${marginOpen}px >= ${USABLE_FLOOR_PX}) it occupies the margin WITHOUT covering the paper (panel.left >= paper.right). FX10 S1's "always full open-w overlay" is A4-parked above; superseded by SV24/SV26.`,
+        panelOpen.width <= expectedOpenW + 1
+          && (surface === 'board' || marginOpen == null || marginOpen < USABLE_FLOOR_PX || (panelOpen && paperOpen && panelOpen.left >= paperOpen.right - 2)),
+        JSON.stringify({ panelOpenWidth: panelOpen.width, expectedOpenW, marginOpen, paperRight: paperOpen && paperOpen.right, panelLeft: panelOpen && panelOpen.left, surface, width }));
 
       await app.evalJs("document.querySelector('.wz-tutor-dock-btn')?.click()");
       await sleep(250);
