@@ -7466,6 +7466,65 @@ outlive a session lives here, not in chat.
     execution — it is a source read, and the reproduction outranks it. No code
     has been changed on the branch; the map is staged in the session scratchpad
     per the "S0 pre-drafts stay out of the repo" rule.
+    **FABLE'S FOUR RULINGS — 2026-07-26**, which supersede the three questions
+    recorded above: (1) **the birth descriptor goes in the URL, not
+    `location.state`** — an unborn page gets its own route carrying origin /
+    project / board / title as query params, reload-safe by construction, which
+    DISSOLVES the reload question rather than answering it (the door's meaning
+    is in the address). (2) **Birth triggers are the first word, or an act that
+    creates a durable relationship** — pairing a plan board, porting or pinning
+    to a board; a mere setting change (Screenplay ↔ Prose) does NOT birth, being
+    cheap and reversible. So PLAN → from an unborn page **births the page, then
+    mints the board, then pairs — order fixed**, so the pointer is never
+    dangling and no orphan board is ever minted. (3) **A name is content** — a
+    titled board is born immediately, stated as the general rule so it settles
+    the next case. (4) **Enumerate the unborn surface before writing.**
+    Also ruled: the objection to re-adding honor-discard is SUSTAINED (it
+    rebuilds the same fragility and leaves tombstones for pages never written —
+    Trash litter instead of Places litter), and the diagnosis is accepted as
+    better than the brief's own premise: **FX14 is the cause, and Fable's review
+    of it missed this.**
+    **RULING 4 DISCHARGED — the specification is committed at
+    `docs/wrizo-alpha/pb1-unborn-surface.md`**, before a line of the fix. It
+    carries: the **door census** (the eight creation doors split by ruling 2's
+    own question — four already create a relationship in the same act and are
+    UNCHANGED; four create a bare room and become unborn), which **names the
+    empty-board source** — `CascadePanels.tsx:277`/`:294` call
+    `createBoardPage(project.id)` with no title, and with `getOrCreatePlanBoard`
+    idempotent per page these are the only way a DUPLICATE empty board can
+    accrue, matching the export's finding; the **unborn route** and its params;
+    the **synthetic record** (the unborn surface builds a JournalEntry-shaped
+    object from the descriptor and passes it to children unchanged, because
+    `useCascade` hard-requires `subject.entry.id` and `ModeStrip.onPublish` is
+    required — neither may be loosened for one feature) which **never enters the
+    store**, so `getJournalEntry(unbornId)` is null for the whole unborn life;
+    the **affordance table** (Star and tags ABSENT — `patchJournalEntry` would
+    silently no-op, and a star that does not stick is the definition of
+    half-work; Tutor and the rhizome instrument ABSENT via the EXISTING
+    first-run-gate precedent `tutor={gateActive ? undefined : …}`; way-back
+    non-participating via the existing `participatesInWayBack:false` option;
+    TTFK instrumenting but writing no row unless born, via `useSessionLog`'s
+    existing `enabled` getter; Publish unchanged because an unborn page has zero
+    words BY DEFINITION, so it is identical to today's empty-page behaviour);
+    and **birth as one synchronous call** — build the record with the first
+    content already in it, save, apply extras, then `replace` the URL, the swap
+    AFTER the write so a crash between them loses nothing.
+    **Two risks carried forward, named not buried:** (a) ruling 2 forbids
+    Screenplay from birthing, so an unborn page must be able to render as a
+    SCRIPT — coupling is light (`ScriptEditor.tsx` has two `entry.` reads) but
+    it is a second unborn surface and the largest single risk to the July 30
+    gate; the fallback to PROPOSE if it threatens the date (never to take
+    unilaterally) is that Screenplay on an unborn page becomes the one setting
+    that births, disclosed as a deliberate exception. (b) **Empty PAIRED plan
+    boards remain possible by design** — ruling 2 makes pairing a birth
+    trigger, so PLAN → with no box left after it is a room deliberately opened,
+    not one nobody entered; recorded so no future reader mistakes it for
+    surviving litter.
+    **CALENDAR GATE (Fable, 2026-07-26):** PB1 touches the most core path and
+    the brief already names it the one that waits. Nick's corpus is freshly
+    wiped, so litter now accrues only from his own testing — the cost of
+    waiting is noise, not loss. **If PB1 is not merged AND reviewed by
+    2026-07-30 it holds until post-vacation.** Build it right rather than fast.
     **DoD: the app stops collecting rooms nobody entered.**
 72. **FX16 — the Invite, Truly Silent.** **OPENED — 2026-07-25 (chat 1)**, from the P2
     wave (`docs/wrizo-alpha/p2-wave.md` §FX16), authority SV18 — the first-line invite
