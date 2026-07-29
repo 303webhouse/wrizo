@@ -32,6 +32,40 @@ const clickSpreadRow = (app, id, label) => app.waitFor(
   { label: label || `spread row ${id} present, then clicked` },
 );
 
+// DF1.1 S2 (item 66) — SPECIES 2, "reload-then-query". Found by chat 7 and
+// absorbed here rather than left to a third lane to rediscover.
+//
+// THE DEFECT: this file writes fixture pages STRAIGHT into localStorage, then
+// reloads so persistence.ts re-hydrates its in-memory cache from disk, then
+// navigates to the Spread and waits for a CHROME element ('.spread-lens-row',
+// '.spread-select-toggle'). Chrome is the wrong observable. The Spread mounts
+// its lens row and its Select toggle unconditionally — they are present while
+// the rehydrated page list is still EMPTY. So the wait returns, the very next
+// read finds zero cells, and a lens assertion compares [] against {A,B}. The
+// harness was synchronizing on the frame, not on the data in it.
+//
+// THE FIX: wait for the DATA, but only where the data is read as a SET.
+//
+// CORRECTION OF RECORD — the first version of this helper was applied at all
+// SEVEN Spread entries on the claim that "A,B,C,D are never deleted, so >= 4
+// always holds." That claim is FALSE and the harness said so immediately:
+// filing a page into a drawer or the Shelf REMOVES it from the Journal, so by
+// the third Spread entry only three cells remain and the wait timed out. The
+// invariant does not exist.
+//
+// What is actually true is narrower and better. At five of the seven entries
+// the next action is `clickSpreadRow`, which already polls for the ONE row it
+// needs — a per-row wait on exactly the data that site consumes, strictly more
+// precise than any count could be. Species 2's real exposure is only the two
+// entries that read the cell list as a SET (the lens matrix, and the post-drag
+// order check): those consume every row at once and had nothing waiting on any
+// of them. Both sit before any filing has happened, so four is the honest
+// expected count THERE — a local fact about those two sites, not a global law.
+const waitSpreadRehydrated = (app, label) => app.waitFor(
+  "document.querySelectorAll('.spread-cell').length >= 4",
+  { label: `Spread rehydrated (${label}): the seeded rows are actually present, not just the chrome` },
+);
+
 // A zero-delta tap (pointerdown+pointerup, no movement) exercises a real
 // pointerdown-driven select/open, distinct from a bare .click(). A non-zero
 // delta drives an actual drag attempt through the same delegated listener
@@ -142,46 +176,73 @@ await withHarness(async (app) => {
   // -- Slice 1: the lens matrix ----------------------------------------------
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-lens-row')", { label: 'lens row' });
+  await waitSpreadRehydrated(app, 'lens row');
 
   const visibleIds = async () => app.evalJs("[...document.querySelectorAll('.spread-cell')].map(c => c.dataset.pageId)");
-  const clickChip = (label) => app.evalJs(`[...document.querySelectorAll('.spread-lens-chip')].find(b => b.textContent.trim() === ${JSON.stringify(label)}).click()`);
+
+  // DF1.1 S2 — SPECIES 3, "sleep-behind-lens-re-render". Every lens assertion
+  // used to read the cells after a flat `sleep(100)`. That is the same disease
+  // as species 1 and 2: a guessed interval standing in for an observed settle.
+  //
+  // The synchronization signal is deliberately CELL-LIST QUIESCENCE (two
+  // consecutive identical samples), not the chip's own state, for two concrete
+  // reasons found in this file: the star chip RENAMES itself when it activates
+  // ('☆ Starred' -> '★ Starred'), so a chip located by text cannot be re-found
+  // after its own click; and 'research' is clicked twice (on, then off), so
+  // "wait until active" would hang on the second. Quiescence is immune to both.
+  //
+  // It is also deliberately NOT a wait for the EXPECTED set — that would make
+  // every lens check vacuous (wait until true, then assert true). Quiescence is
+  // independent of what the assertion claims, so a genuinely wrong lens result
+  // still settles and still fails the check, exactly as it should.
+  //
+  // A timeout is SWALLOWED on purpose (bg1.mjs's waitPersist precedent): if the
+  // list never settles, the assertion below must still run and report the real
+  // state rather than aborting the file with no verdict.
+  const waitCellsSettled = async () => {
+    await app.evalJs('window.__j5CellSnap = undefined');
+    try {
+      await app.waitFor(`(() => {
+        const now = [...document.querySelectorAll('.spread-cell')].map(c => c.dataset.pageId).join(',');
+        const prev = window.__j5CellSnap;
+        window.__j5CellSnap = now;
+        return prev !== undefined && prev === now;
+      })()`, { timeout: 3000, label: 'spread cell list settled' });
+    } catch { /* the assertion that follows reports the truth */ }
+  };
+  const clickChip = async (label) => {
+    await app.evalJs(`[...document.querySelectorAll('.spread-lens-chip')].find(b => b.textContent.trim() === ${JSON.stringify(label)}).click()`);
+    await waitCellsSettled();
+  };
 
   await clickChip('Text');
-  await sleep(100);
   let vis = await visibleIds();
   ok('content=Text shows exactly {A,B}', new Set(vis).size === 2 && vis.includes(A.id) && vis.includes(B.id), JSON.stringify(vis));
 
   await clickChip('Ink');
-  await sleep(100);
   vis = await visibleIds();
   ok('content=Ink shows exactly {C}', vis.length === 1 && vis[0] === C.id, JSON.stringify(vis));
 
   await clickChip('Text+ink');
-  await sleep(100);
   vis = await visibleIds();
   ok('content=Text+ink shows exactly {D}', vis.length === 1 && vis[0] === D.id, JSON.stringify(vis));
 
   await clickChip('All');
-  await sleep(100);
   vis = await visibleIds();
   ok('content=All shows all 4', new Set(vis).size === 4, JSON.stringify(vis));
 
   await clickChip('☆ Starred');
-  await sleep(100);
   vis = await visibleIds();
   ok('★ Starred shows exactly {B}', vis.length === 1 && vis[0] === B.id, JSON.stringify(vis));
   await clickChip('★ Starred'); // toggle back off
-  await sleep(100);
 
   await app.waitFor("[...document.querySelectorAll('.spread-lens-chip')].some(b => b.textContent.trim() === 'research')", { label: 'tag chip' });
   await clickChip('research');
-  await sleep(100);
   vis = await visibleIds();
   ok('TAG=research shows exactly {B}', vis.length === 1 && vis[0] === B.id, JSON.stringify(vis));
   await clickChip('research'); // clear
 
   await clickChip('Newest');
-  await sleep(100);
   vis = await visibleIds();
   ok('order=Newest sorts createdAt-descending (D,C,B,A)', JSON.stringify(vis) === JSON.stringify([D.id, C.id, B.id, A.id]), JSON.stringify(vis));
 
@@ -193,21 +254,17 @@ await withHarness(async (app) => {
   ok('2 selected before any lens change', count.startsWith('2'), count);
 
   await clickChip('Text'); // hides C (ink-only)
-  await sleep(100);
   count = await app.evalJs("document.querySelector('.spread-select-count').textContent");
   ok('selection count survives a lens change that HIDES a selected cell', count.startsWith('2'), count);
 
   await clickChip('All');
-  await sleep(100);
   const cSelected = await app.evalJs(`document.querySelector('[data-page-id="${C.id}"]').dataset.selected`);
   ok('a hidden-then-reshown selected cell is still marked selected', cSelected === 'true', cSelected);
   await app.click('Close'); // CD4.1 — exit select mode (the toggle reads Select/Close now, not Select/Done); clears selection
   await clickChip('Your order');
-  await sleep(100);
 
   // -- Slice 1: drag disabled under ANY non-default lens ---------------------
   await clickChip('Text'); // a non-default lens
-  await sleep(100);
   const orderIndexBefore = (await app.localJSON('writer-studio-journal-entries')).find((e) => e.id === A.id).orderIndex ?? null;
   await app.evalJs(`__pointerSeq('[data-page-id="${A.id}"]', 80, 0, {steps:6})`);
   await sleep(400); // clear the 300ms debounced-flush window before reading localStorage
@@ -217,7 +274,6 @@ await withHarness(async (app) => {
   ok('the "view, not an arrangement" lens note shows under a non-default lens', noteVisible === true);
 
   await clickChip('All'); // back to default lens (Your order + All + no star + no tag)
-  await sleep(100);
   const noteGone = await app.evalJs("!!document.querySelector('.spread-lens-note')");
   ok('the lens note is gone in the default lens state', noteGone === false);
 
@@ -246,6 +302,7 @@ await withHarness(async (app) => {
   await app.evalJs(POINTER_HELPER);
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-lens-row')", { label: 'lens row after drag reload' });
+  await waitSpreadRehydrated(app, 'lens row after drag reload');
   const orderAfterReload = await visibleIds();
   ok('R2: the reordered position survives a reload', JSON.stringify(orderAfterReload) === JSON.stringify(orderAfterDrag), JSON.stringify(orderAfterReload));
 
