@@ -157,8 +157,15 @@ function runOne(file) {
       ownPids.delete(child.pid);
       let text = '';
       try { text = readFileSync(outFile, 'utf8'); } catch { /* unreadable */ }
-      const verdicts = text.split('\n').filter((l) => /VERIFY:|PARKED:/.test(l)).map((l) => l.trim());
-      const failed = verdicts.filter((v) => /FAIL/.test(v));
+      // DF1.1 S3 — match the verdict line by SHAPE, not by the literal
+      // "VERIFY:". fx7.mjs prints "FX7 VERIFY (partial): PASS (45 checks)" —
+      // a deliberate, permanent wording — so a literal `VERIFY:` test reported
+      // a fully passing file as NOVERDICT. Caught by the DoD's own first sweep.
+      // That is precisely the "a tool that reds on known-benign" disease this
+      // ticket is fixing in the audit (S4), reproduced in this runner; a suite
+      // driver that cries wolf teaches lanes to discount it.
+      const verdicts = text.split('\n').filter((l) => /\bVERIFY\b[^\n]*:|\bPARKED\b[^\n]*:/.test(l)).map((l) => l.trim());
+      const failed = verdicts.filter((v) => /\bFAIL\b/.test(v));
       resolve({ file, code, timedOut, sweptBrowsers, verdicts, failed, outFile, childPid: child.pid });
     });
   });
@@ -195,7 +202,7 @@ for (let i = 0; i < files.length; i++) {
   // HOUSE LAW: a stalled report is a report that does not exist. A file that
   // produced no VERIFY line did not test anything, whatever its exit code —
   // it is a MISSING verdict, never a passing one.
-  const noVerdict = !r.verdicts.some((v) => /VERIFY:/.test(v));
+  const noVerdict = !r.verdicts.some((v) => /\bVERIFY\b[^\n]*:/.test(v));
   const status = r.timedOut ? 'TIMEOUT' : noVerdict ? 'NOVERDICT' : (r.code === 0 && r.failed.length === 0) ? 'OK' : 'FAIL';
   r.status = status;
   results.push(r);

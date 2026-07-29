@@ -619,6 +619,28 @@ export async function withHarness(scenario, opts = {}) {
   let proc;
   let ws;
   try {
+    // DF1.1 S3 (item 66) — clear any PRE-EXISTING profile dir before launching.
+    //
+    // ROOT CAUSE of the "CDP page target never appeared" class, which has been
+    // read as environmental/contention for weeks and is not: this udd is keyed
+    // on the node PID (above), and Windows RECYCLES PIDs. A run that is KILLED
+    // never reaches the finally below, so its profile dir survives — 58 of them
+    // were sitting in TEMP when this was diagnosed, each holding a
+    // DevToolsActivePort file naming a long-dead port. When a later run draws a
+    // matching PID, launchBrowser starts into that stale dir, readCdpPort finds
+    // the OLD port file immediately (before the new browser rewrites it) and
+    // returns a dead port, and pageWsUrl then polls a port nothing is listening
+    // on until it gives up. The failure lands BEFORE any app load, so it reads
+    // exactly like browser starvation — which is why it kept being filed under
+    // contention. Contention can produce the same message; this produces it on
+    // a completely quiet machine.
+    //
+    // One line closes the whole class, and it is self-healing: every run clears
+    // its own dir on the way in, so the backlog drains as PIDs come round
+    // again. Deliberately NOT a mass sweep of TEMP — a dir belonging to a LIVE
+    // run in another lane is not this process's to delete, the same provenance
+    // rule the process cleanup obeys.
+    await removeDir(udd);
     proc = launchBrowser(browserPath, udd, `${base}/#/`);
     const cdpPort = await readCdpPort(udd);
     const wsUrl = await pageWsUrl(cdpPort);
