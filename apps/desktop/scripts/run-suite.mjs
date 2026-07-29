@@ -164,8 +164,31 @@ function runOne(file) {
   });
 }
 
+// DF1.1 S3 — the guard again, BETWEEN files. Checking only at startup leaves the
+// obvious hole: another lane starts at minute three and every file after it is
+// measured on a contended machine, discovered (if at all) at minute forty. A
+// sweep whose whole purpose is "three consecutive clean runs" has to know the
+// moment its conditions stop holding, so it stops THEN and says why.
+function foreignNow() {
+  const bs = harnessBrowsers();
+  if (bs === null) return [];               // enumeration failure is reported at startup, not re-litigated per file
+  return bs.filter((b) => !ownPids.has(b.owner));
+}
+
 const results = [];
+let abortedAt = null;
 for (let i = 0; i < files.length; i++) {
+  const intruders = foreignNow();
+  if (intruders.length > 0 && !IGNORE_FOREIGN) {
+    abortedAt = files[i];
+    say('');
+    say(`SUITE ABORTED before ${files[i]}: ${intruders.length} foreign harness browser(s) appeared MID-RUN`);
+    for (const b of intruders.slice(0, 8)) say(`  browserPid=${b.pid} ownerNodePid=${b.owner}`);
+    say('  Another lane started while this sweep was running. Everything measured from here would be');
+    say('  measured under contention, so this run is VOID rather than partly trustworthy. Re-run it');
+    say('  whole in a quiet window — a sweep cannot be half-clean.');
+    break;
+  }
   const t0 = Date.now();
   const r = await runOne(files[i]);
   const secs = Math.round((Date.now() - t0) / 1000);
@@ -182,8 +205,9 @@ for (let i = 0; i < files.length; i++) {
 
 const bad = results.filter((r) => r.status !== 'OK');
 say('');
-say(`SUITE DONE HARNESS_PARKED=${PARKED ? '1' : 'unset'} — ${results.length - bad.length}/${results.length} returned a passing verdict`
+say(`SUITE DONE HARNESS_PARKED=${PARKED ? '1' : 'unset'} — ${results.length - bad.length}/${results.length} of ${files.length} returned a passing verdict`
   + `${contaminated ? ' [CONTAMINATED: foreign browsers present at start]' : ''}`);
 for (const r of bad) say(`  ${r.status}: ${r.file} — full output at ${r.outFile}`);
-say(`SUITE RESULT: ${bad.length === 0 && !contaminated ? 'CLEAN' : bad.length === 0 ? 'PASS-BUT-CONTAMINATED' : 'NOT CLEAN'}`);
-process.exit(bad.length === 0 && !contaminated ? 0 : 1);
+const clean = bad.length === 0 && !contaminated && !abortedAt && results.length === files.length;
+say(`SUITE RESULT: ${clean ? 'CLEAN' : abortedAt ? `VOID (aborted mid-run at ${abortedAt})` : bad.length === 0 ? 'PASS-BUT-CONTAMINATED' : 'NOT CLEAN'}`);
+process.exit(clean ? 0 : 1);
