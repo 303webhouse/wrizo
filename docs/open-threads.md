@@ -6875,6 +6875,40 @@ outlive a session lives here, not in chat.
     2026-07-26). The lane widening was granted to the ticket, not to this
     session. THIS LANE'S QUEUE IS S5 ALONE.** All browser work is held pending
     chat 6's all-clear on DF1.1's DoD sweeps.
+    **`j5` CLOSED, AND THIS LANE'S OWN CLAIM NARROWED THE MOMENT ITS GROUND MOVED
+    — 2026-07-29.** The correction above records the `j5` root as owed to DF1.1;
+    it is not owed any more. Chat 6 absorbed it at **`fd57ee6`** ("DF1.1 S2b:
+    absorb chat 7's third j5 species; coordinate by species, not line"), verified
+    on disk rather than taken from the relay: `waitSpreadRehydrated` is defined at
+    `j5.mjs:64` and applied at **both** read sites — `:179` (`lens row`, the exact
+    site this lane reported) and `:305` (`lens row after drag reload`, which this
+    lane never reached). That commit records `j5` PASS 37 at both `HARNESS_PARKED`
+    settings with the check count unchanged and no park owed. **So "the named root
+    stands as reported" and "the clear-before-launch fix closes neither of them"
+    are both superseded: the first root is fixed, and the second site was fixed
+    alongside it.** What survives intact is the narrower claim that mattered —
+    the `j5` red was a DISTINCT species from the stale-profile-directory class,
+    which is why it needed its own fix and got one.
+    **ONE PRECISION FOR ANY LANE ABOUT TO RUN A SUITE: `fd57ee6` is on
+    `df1-1-rider`, NOT on `main`** (checked: `origin/main`'s `j5.mjs` contains
+    zero occurrences of `waitSpreadRehydrated`). Until that rider merges, a lane
+    running the historic suite off a `main`-parented tree still meets the
+    unfixed fixture and can still see this red. Stated so nobody reads "closed"
+    as "closed in my tree."
+    **A BINDING CONDITION ON THE FLAT-FLOW ALTERNATIVE (Fable, 2026-07-29),
+    recorded BEFORE any build so it cannot be discovered late.** If the sheets
+    ever become absolutely-positioned backdrops with one flat element flow,
+    **cross-check 3 does not weaken into an alignment check.** It is REPLACED by
+    one with equal or better teeth — **rendered containment measured against the
+    backdrop rect** — per the parks-end-wider law. That is the whole hinge of the
+    trade: today containment is a consequence of DOM nesting and the check merely
+    confirms it; under the alternative containment becomes a claim the arithmetic
+    makes, and the check has to carry the weight the nesting used to. A successor
+    that only proved "the content lines up with the backdrop" would be strictly
+    weaker than the predecessor that proved "no element can leave its sheet,"
+    and coverage would erode quietly at exactly the moment it was most needed.
+    **The alternative stays research until the remount is OBSERVED**; this
+    condition binds it if it is ever adopted.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
