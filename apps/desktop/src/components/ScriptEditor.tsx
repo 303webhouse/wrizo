@@ -246,7 +246,7 @@ type CaretHint = 'start' | 'end' | number;
 
 // -- the ONE live contenteditable block --------------------------------------
 function ActiveScriptElement({
-  el, caretHint, onInput, onKeyDown, elRef, docIndex,
+  el, caretHint, onInput, onKeyDown, elRef, docIndex, sessionKey, liveCaret, noteCaret,
 }: {
   el: ScriptEl;
   caretHint: CaretHint;
@@ -254,6 +254,9 @@ function ActiveScriptElement({
   onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   elRef: React.MutableRefObject<HTMLDivElement | null>;
   docIndex: number;
+  sessionKey: string;
+  liveCaret: React.MutableRefObject<{ key: string; offset: number } | null>;
+  noteCaret: () => void;
 }) {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [seed] = useState(() => el.text);
@@ -267,7 +270,40 @@ function ActiveScriptElement({
     // the page's scrolling was the browser's reflex to focus(), never a
     // decision. Clause 2 then makes the decision, explicitly, one line down.
     node.focus({ preventScroll: true });
-    const offset = caretHint === 'start' ? 0 : caretHint === 'end' ? seed.length : caretHint;
+    // SC2 S5 — THE CARET ACROSS THE BREAK, and this line is the fix.
+    //
+    // OBSERVED, not predicted (2026-07-29). Sheets are DOM parents keyed by page
+    // index, so when the paginator moves the ACTIVE element to another sheet,
+    // React deletes it from one parent's child list and inserts it into the
+    // other's — it never moves a host node between parents. The live
+    // contenteditable is destroyed and a fresh one mounts in its place. Proved
+    // with an expando on the node (a property React cannot preserve across a
+    // delete+insert): one Tab on the last element of a page and the expando was
+    // gone, the element had crossed sheet 0 to sheet 1.
+    //
+    // What that cost: `caretHint` is written ONLY by `moveActive`, and `retype`,
+    // `handleInput` and `acceptAutocomplete` never call it — so on a crossing
+    // caused by a mutation rather than a navigation, the fresh instance restored
+    // the caret to a hint left over from the last ACTIVATION. Measured: caret at
+    // 12, restored to 9, and the writer's next two keystrokes landed at 9 —
+    // inside the word they had just typed.
+    //
+    // So the remount is preferred-over: if this mount is the SAME edit session
+    // as the one that just ended (same element id, same seedNonce — i.e. React
+    // rebuilt us for a reason of its own rather than because the writer moved),
+    // the live offset the writer actually had wins over the stale hint. On a
+    // genuine activation the key does not match and `caretHint` governs exactly
+    // as before.
+    //
+    // WHAT THIS DOES NOT FIX, stated so it is not read as more: a remount still
+    // destroys a new DOM node's worth of browser state that no offset can
+    // restore — an in-flight IME composition, a non-collapsed selection (only
+    // the caret's start offset travels), and the element's native undo stack.
+    // Those need the class dissolved, not the symptom closed.
+    const remembered = liveCaret.current && liveCaret.current.key === sessionKey ? liveCaret.current.offset : null;
+    const offset = remembered !== null
+      ? Math.max(0, Math.min(remembered, seed.length))
+      : caretHint === 'start' ? 0 : caretHint === 'end' ? seed.length : caretHint;
     setCaretOffset(node, offset);
     keepCaretVisible(node);
 
@@ -329,6 +365,8 @@ function ActiveScriptElement({
       aria-label={`Script ${el.t} — active`}
       onInput={() => onInput(nodeRef.current?.textContent ?? '')}
       onKeyDown={onKeyDown}
+      onKeyUp={noteCaret}
+      onMouseUp={noteCaret}
       style={elementStyle(el.t)}
       data-doc-index={docIndex}
     />
@@ -485,6 +523,11 @@ export function ScriptEditor({ id }: { id: string }) {
   const scenesRef = useRef<Scene[]>(initialDoc.scenes);
   const lastSavedRef = useRef(elements);
   const activeElRef = useRef<HTMLDivElement | null>(null);
+  // SC2 S5 — where the writer's caret ACTUALLY is, as against `caretHint`, which
+  // is where the last ACTIVATION put it. Keyed by element id + seedNonce so it
+  // can only ever be spent on a remount of the very same edit session; a genuine
+  // activation carries a different key and falls through to the hint.
+  const liveCaret = useRef<{ key: string; offset: number } | null>(null);
 
   // SC2 S2b — the projection. Derived from `elements` and nothing else, so it is
   // recomputed exactly when the document changes and not when the caret hint,
@@ -607,12 +650,20 @@ export function ScriptEditor({ id }: { id: string }) {
     setAcDismissed(null);
   };
 
+  const noteCaret = () => {
+    const node = activeElRef.current;
+    const el = elements[activeIndex];
+    if (!node || !el) return;
+    liveCaret.current = { key: `${el.id}:${seedNonce}`, offset: getCaretOffset(node) };
+  };
+
   const retype = (nextType: ScriptElType) => {
     setElements(prev => prev.map((e, i) => (i === activeIndex ? { ...e, t: nextType } : e)));
   };
 
   const handleInput = (text: string) => {
     noteFirstKeystroke();
+    noteCaret();
     if (framed) scriptDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setElements(prev => {
       const el = prev[activeIndex];
@@ -942,6 +993,9 @@ export function ScriptEditor({ id }: { id: string }) {
                     key={`${el.id}:${seedNonce}`}
                     el={el}
                     docIndex={i}
+                    sessionKey={`${el.id}:${seedNonce}`}
+                    liveCaret={liveCaret}
+                    noteCaret={noteCaret}
                     caretHint={caretHint}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
