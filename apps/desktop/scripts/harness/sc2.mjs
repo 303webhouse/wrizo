@@ -1074,6 +1074,95 @@ await withHarness(async (app) => {
   ok('S2b vertical policy, clause 2+3 (and only by the minimum): typing past the fold moves the box only far enough to keep the caret visible — the caret comes to rest ON the bottom edge of the visible band, within a line of it, never centred and never carried to a fraction of the box. There is no typewriter line here and no easing; the page moves the least it can and then stops. (Whether a caret flush on that edge wants breathing room is Nick\'s open question on the ledger — the policy gives it exactly zero until he rules, rather than inventing a number that would look ruled)',
     vert.moved === true && vert.slackLines >= -0.1 && vert.slackLines <= 1.2,
     JSON.stringify(vert));
+
+  // ========================================================================
+  // S5 — THE CARET ACROSS THE BREAK
+  // ========================================================================
+  //
+  // OBSERVED BEFORE IT WAS PATCHED (2026-07-29), which is this arc's own law and
+  // the reason this check exists in the shape it does. Sheets are DOM parents
+  // keyed by page index, so when the paginator moves the ACTIVE element to
+  // another sheet React deletes it from one parent's child list and inserts it
+  // into the other's — it never moves a host node between parents. Proved with
+  // an expando on the node, a property React cannot carry across a
+  // delete+insert.
+  //
+  // THE ONE-KEYSTROKE REPRO, and it is a gesture a screenwriter makes constantly:
+  // `TAB_MAP.action` is `character`, `character` is `neverLast`, and `retype()`
+  // touches ONLY `elements` — not activeIndex, not caretHint, not seedNonce. So
+  // one Tab on the last element of a non-final page pushes it whole to the next
+  // page with no re-seed. Measured before the fix: the caret was at 12 and came
+  // back at 9, and the writer's next two keystrokes landed at 9 — inside the word
+  // they had just typed ("Line 25 o!!XYZf" for "Line 25 oXYZ!!f").
+  //
+  // WHY THE ASSERTION IS ON THE KEYSTROKES AND NOT ONLY ON THE OFFSET: an offset
+  // is a number that could agree by accident. Where the next characters LAND is
+  // the thing the writer actually experiences, and it cannot agree by accident.
+  //
+  // NOTE WHAT IS DELIBERATELY *NOT* ASSERTED: that the node survives. It does
+  // not — the expando is still gone after the fix, because the fix closes the
+  // SYMPTOM and leaves the CLASS alive. That is recorded here on purpose so the
+  // day someone dissolves the class (one flat element flow, sheets as
+  // absolutely-positioned backdrops) this check tightens rather than being
+  // quietly satisfied by an architecture it never asked for.
+  const TAIL = PER_PAGE - 1;                       // last element of sheet 0
+  await seedScript(app, 's2b-caret', 'INT. THE CROSSING - DAY',
+    Array.from({ length: BIG_ELS - 1 }, (_, i) => ({ id: `cx-${i}`, t: 'action', text: `Line ${i} of the crossing.` })));
+
+  // The target sits ~51 lines down an 1056px sheet, well below the visible band.
+  // WITHOUT scrolling it into view the trusted pointer lands outside the page and
+  // the active element never changes — which is exactly how the first run of this
+  // observation reported a clean "no remount" while measuring nothing at all.
+  // Hence the gate below: a precondition that is asserted, not assumed.
+  await app.evalJs(`(() => { const e = document.querySelector('[data-doc-index="${TAIL}"]'); if (e) e.scrollIntoView({ block: 'center' }); return !!e; })()`);
+  await sleep(320);
+  await trustedClick(app, `[data-doc-index="${TAIL}"]`);
+  await sleep(280);
+  const gate = JSON.parse(await app.evalJs(`(() => { const a = document.querySelector('.script-el-active');
+    return JSON.stringify({ idx: a ? a.dataset.docIndex : null, focused: a === document.activeElement }); })()`));
+  ok(`S5 gate: the element at the FOOT of page one is genuinely active and focused before anything is concluded — without this the trusted pointer lands below the visible band, the active element stays element 0, and the whole check passes while measuring nothing (this is not hypothetical: it is what the first run of this observation did)`,
+    String(gate.idx) === String(TAIL) && gate.focused === true, JSON.stringify(gate));
+
+  // Type, so the live caret is provably somewhere the stale hint is not.
+  await app.typeKeys('XYZ');
+  await sleep(260);
+  const READ = `(() => {
+    const a = document.querySelector('.script-el-active');
+    const sheets = [...document.querySelectorAll('.script-sheet')];
+    const t = document.querySelector('[data-doc-index="${TAIL}"]');
+    const sel = getSelection(); let caret = null;
+    if (a && sel && sel.rangeCount) { const r = sel.getRangeAt(0);
+      if (a.contains(r.startContainer)) { const p = r.cloneRange(); p.selectNodeContents(a); p.setEnd(r.startContainer, r.startOffset); caret = p.toString().length; } }
+    return { sheet: t ? sheets.indexOf(t.closest('.script-sheet')) : -1, type: t ? t.dataset.type : null,
+             probe: a ? (a.__sc2probe ?? null) : null, focused: a === document.activeElement,
+             text: a ? a.textContent : null, caret };
+  })()`;
+  const pre = JSON.parse(await app.evalJs(`JSON.stringify(${READ})`));
+  await app.evalJs("(() => { const a = document.querySelector('.script-el-active'); if (a) a.__sc2probe = 987654321; return true; })()");
+  await app.key('Tab');
+  await sleep(600);
+  const post = JSON.parse(await app.evalJs(`JSON.stringify(${READ})`));
+  await app.typeKeys('!!');
+  await sleep(320);
+  const typed = JSON.parse(await app.evalJs(`JSON.stringify(${READ})`));
+  const wanted = pre.text.slice(0, pre.caret) + '!!' + pre.text.slice(pre.caret);
+
+  ok(`S5 setup: ONE Tab genuinely moved the active element across a page boundary — sheet ${pre.sheet} to sheet ${post.sheet}, retyped ${pre.type} to ${post.type}. The check that follows is worthless if the crossing did not happen, so the crossing is asserted first`,
+    post.sheet === pre.sheet + 1 && pre.type === 'action' && post.type === 'character',
+    JSON.stringify({ pre: { sheet: pre.sheet, type: pre.type }, post: { sheet: post.sheet, type: post.type } }));
+
+  ok('S5 (the class, recorded not asserted away): the crossing STILL destroys and rebuilds the live contenteditable — the expando planted on the node before the Tab is gone afterwards. The fix restores the caret onto the new node; it does not stop the node being replaced, and an IME composition, a non-collapsed selection and the native undo stack are still lost with it. Recorded here so that dissolving the class later tightens this section rather than quietly satisfying it',
+    post.probe === null, JSON.stringify({ probeBefore: 987654321, probeAfter: post.probe }));
+
+  ok(`S5: THE CARET SURVIVES THE PAGE BREAK. It was at offset ${pre.caret} before the Tab and is at ${post.caret} after — where the writer's hands were, not where the last ACTIVATION left a hint. Before this fix it came back at the stale hint, three characters upstream`,
+    post.caret === pre.caret && post.focused === true,
+    JSON.stringify({ before: pre.caret, after: post.caret, focused: post.focused }));
+
+  ok(`S5: and the proof a writer would recognise — the NEXT keystrokes land where the hands were. Typing "!!" after the crossing produces ${JSON.stringify(wanted)}; before the fix it produced the same characters three positions upstream, inside the word just typed. An offset can agree by accident; where the letters land cannot`,
+    typed.text === wanted, JSON.stringify({ got: typed.text, wanted }));
+
+  ok('S5: the writer\'s text is untouched by the crossing itself — the remount re-seeds from the element state the keystroke just wrote, so no committed character is lost or duplicated (autosave reads that same state and never the DOM, so nothing could reach disk wrong either)',
+    post.text === pre.text, JSON.stringify({ before: pre.text, after: post.text }));
 });
 
 // === PARKED — gated behind HARNESS_PARKED=1. SC2's park cycles LARGELY do not
