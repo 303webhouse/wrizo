@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createLooseHomePage } from '../store/persistence';
+import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
 import { setWritingSettings } from '../store/writingSettings';
 import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
@@ -59,8 +59,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       // changes aren't silently re-forced back on every subsequent Write.
       if (!framed) setFirstRunComplete(true);
     }
-    const page = createLooseHomePage();
-    navigate(`/page/${page.id}`, firstRun ? { state: { firstRunGate: true } } : undefined);
+    // PB1 (item 71) — the Write door opens a room; it does not build one. No
+    // row exists until the first word: the door's meaning (a loose page) rides
+    // in the address, and the first-run gate's own one-shot state rides beside
+    // it exactly as before.
+    navigate(unbornHref({ origin: 'loose' }), firstRun ? { state: { firstRunGate: true } } : undefined);
   };
 
   const handleOpen = () => {

@@ -9,6 +9,7 @@ import { ModeStage, PEN_INKS } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
+import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, getSelectionOffsets } from '../store/caretOffset';
@@ -74,6 +75,11 @@ function PageEditorView({ id }: { id: string }) {
   // component's legacy JSX (byte-identical to pre-AB1) renders instead. See
   // docs/wrizo-alpha/ab1-shell-inventory.md.
   const framed = useDeskFrameViewport();
+  // PB1 (item 71) — non-null only while this surface has no row yet. Every use
+  // below reads as "if this page is still unborn, …", so the born path is the
+  // ordinary one, untouched. `entry` resolves from the unborn slot meanwhile,
+  // so the whole tree mounts exactly as it always did.
+  const unborn = useUnborn(id);
   const entry = getJournalEntry(id);
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
@@ -136,6 +142,12 @@ function PageEditorView({ id }: { id: string }) {
 
   const textRef = useRef(text);
   textRef.current = text;
+  // PB1 — the live unborn handle, read from inside effect closures (flush, the
+  // unmount teardown) that would otherwise capture a stale `unborn` from the
+  // render in which they were created. Nulls itself at birth, so every guard
+  // below stops applying the instant the row exists.
+  const unbornRef = useRef(unborn);
+  unbornRef.current = unborn;
   const lastSavedRef = useRef(initialText);
   const editorRef = useRef<HTMLDivElement>(null);
   // FX7 S2 — Free Write's own rail-driven marker insertion escape hatch
@@ -183,6 +195,11 @@ function PageEditorView({ id }: { id: string }) {
   const noteSessionKeystroke = useSessionLog('page', {
     projectId: () => entry?.projectId ?? null,
     words: () => wordCount(textRef.current),
+    // PB1 — a page that was never born leaves no session row: telemetry for a
+    // room nobody entered is its own litter. The keystroke that BIRTHS the page
+    // is still measured, because by the time this getter runs at teardown the
+    // page has a row and `unbornRef` has nulled itself.
+    enabled: () => !unbornRef.current,
   });
 
   // F6 — the first-line invitation on a truly empty page (entry.text.length === 0).
@@ -214,6 +231,11 @@ function PageEditorView({ id }: { id: string }) {
   // this hook doesn't need to touch it.
   useWayBack({
     entryId: id,
+    // PB1 — an unborn page is not a place to be returned to: it has no row, so
+    // a return chip pointing at it would resolve to nothing. Reuses the option
+    // B1 already added for system boards rather than inventing a second way to
+    // opt out.
+    participatesInWayBack: !unborn,
     mode,
     scrollEl: () => surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll') ?? null,
     editorEl: () => editorRef.current,
@@ -230,11 +252,35 @@ function PageEditorView({ id }: { id: string }) {
 
   // Persist the page text to its JournalEntry (debounced), merging the latest
   // record so other metadata is never clobbered.
+  // PB1 — an unborn page has no row to merge into, and must not gain one here:
+  // birth is `onTextChange` below, which is SYNCHRONOUS and carries the first
+  // word with it. If this ran on an unborn page it would write an empty row on
+  // the debounce and re-create the litter this ticket removes.
   const flush = () => {
+    if (unbornRef.current) return;
     const latest = getJournalEntry(id);
     if (latest && latest.text !== textRef.current) {
       saveJournalEntry({ ...latest, text: textRef.current });
       lastSavedRef.current = textRef.current;
+    }
+  };
+
+  // PB1 — THE FIRST WORD. The birth trigger, and the one place the local-first
+  // invariant is at stake: the row is written WITH this text in the same
+  // synchronous call (store/unbornPage.ts's `birth`), never created empty and
+  // filled in afterwards. So the first keystroke reaches disk on exactly the
+  // path and the schedule every later keystroke does — the existing debounced
+  // flush, offline included — and there is no window in which it exists only in
+  // memory that did not already exist for every other keystroke in the app.
+  //
+  // Fires on the first NON-EMPTY text: a keystroke that leaves the page empty
+  // (typing a space then deleting it, an IME composition that resolves to
+  // nothing) has produced no word, and a page is born when it has a word.
+  const onTextChange = (next: string) => {
+    setText(next);
+    if (unbornRef.current && next.trim()) {
+      lastSavedRef.current = next;
+      unbornRef.current.birthWith({ text: next });
     }
   };
 
@@ -278,6 +324,26 @@ function PageEditorView({ id }: { id: string }) {
   const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
+  // PB1 — the durable-relationship doors (Fable's ruling 2). Pairing, porting
+  // and pinning all create something that outlives the visit, so they birth the
+  // page FIRST and then act on the real row — never "act on nothing and hope."
+  // The order is fixed and the two steps are one act, so no pointer is ever
+  // left dangling and no orphan is ever minted.
+  const withBirth = (act: (pageId: string) => void) => () => {
+    if (unbornRef.current) { const born = unbornRef.current.birthWith({ text: textRef.current }); act(born.id); return; }
+    act(id);
+  };
+
+  // PLAN → : births the page, then mints the board, then pairs. Ruling 2's own
+  // fixed order — getOrCreatePlanBoard writes planBoardId back onto the PAGE,
+  // so the page must exist before the board is minted or the pointer would have
+  // nothing to live on.
+  const openPlanBoard = withBirth((pageId) => {
+    flush(); flushNow();
+    const board = getOrCreatePlanBoard(pageId);
+    if (board) navigate(`/page/${board.id}`);
+  });
+
   // AB3 S2 — star/tag mutations, new capability on this surface (mirrors
   // JournalEntry.tsx's own patch-based closures, now shared via
   // patchJournalEntry so both hosts can't drift on the "merge live text"
@@ -309,11 +375,15 @@ function PageEditorView({ id }: { id: string }) {
     homeLabel,
     memberships,
     footer: entry.projectId == null ? 'Saved automatically — even if you never file it to a Drawer or the Shelf.' : undefined,
-    onToggleStar: toggleStar,
-    onAddTag: addTag,
-    onRemoveTag: removeTag,
-    onOpenPortToBoard: () => setPortOpen(true),
-    onOpenPin: () => setPinOpen(true),
+    // PB1 — ABSENT while unborn. patchJournalEntry resolves nothing to merge
+    // into for a page with no row, so these would silently no-op: a star that
+    // does not stick is the definition of half-work. They return the moment the
+    // page has a word.
+    onToggleStar: unborn ? undefined : toggleStar,
+    onAddTag: unborn ? undefined : addTag,
+    onRemoveTag: unborn ? undefined : removeTag,
+    onOpenPortToBoard: withBirth(() => setPortOpen(true)),
+    onOpenPin: withBirth(() => setPinOpen(true)),
   };
 
   // CD2 S1/S5 — the cascade, replacing the Drawer whole. One hook call
@@ -353,11 +423,7 @@ function PageEditorView({ id }: { id: string }) {
     { key: 'sprout', label: dt('beginSprout'), onOpen: takeBeginning(() => invite.optIn()) },
     // The page's own PLAN → door, offered at birth: the Page→Plan pipeline's
     // on-ramp. Identical act to the bar's door (lazy-born board, then travel).
-    { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(() => {
-      flush(); flushNow();
-      const board = getOrCreatePlanBoard(id);
-      if (board) navigate(`/page/${board.id}`);
-    }) },
+    { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(openPlanBoard) },
   ];
   const beginningsVisible = !beginningsDismissed && !gateActive && wordCount(text) === 0;
   const beginningsRow = beginningsVisible
@@ -375,7 +441,7 @@ function PageEditorView({ id }: { id: string }) {
         initialText={modeSeed}
         mode={mode}
         autoFocus={initialText.trim() === ''}
-        onChange={setText}
+        onChange={onTextChange}
         onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); invite.dismiss(); setBeginningsDismissed(true); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
@@ -514,6 +580,20 @@ function PageEditorView({ id }: { id: string }) {
     saveJournalEntry({ ...latest, pageType: 'script', script: doc, text: serializeScriptDoc(doc) });
   };
   const requestScreenplay = () => {
+    // PB1 — AMENDMENT to Fable's ruling 2 (2026-07-26), quoted so it reads as a
+    // ruled distinction rather than a schedule concession: "the Screenplay door
+    // is presented as a mode choice … but structurally it's the one that
+    // transforms the surface itself rather than decorating it. The writer who
+    // clicks Screenplay has made a durable authorial commitment about what this
+    // document is, which is closer in kind to pairing a board than to toggling
+    // a setting … a screenplay page is a different document, not a
+    // differently-dressed one." So Screenplay BIRTHS, at zero words — which is
+    // also why there is no unborn script surface to hold.
+    if (unbornRef.current) {
+      const doc = proseTextToScriptDoc('');
+      unbornRef.current.birthWith({ pageType: 'script', script: doc, text: serializeScriptDoc(doc) });
+      return;
+    }
     flush(); flushNow();
     const latest = getJournalEntry(id);
     if (!latest) return;
@@ -716,11 +796,7 @@ function PageEditorView({ id }: { id: string }) {
                   unpaired page births the plan board (S2's lazy rule) and flips;
                   later clicks resolve to it. No knock/badge/dot (A14). Bar chrome
                   only — the paper's rect and text measure are never touched (S8). */}
-              <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={() => {
-                flush(); flushNow();
-                const board = getOrCreatePlanBoard(id);
-                if (board) navigate(`/page/${board.id}`);
-              }}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
+              <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
             </div>
           </div>
         </FirstRunVeil>
@@ -745,7 +821,7 @@ function PageEditorView({ id }: { id: string }) {
           // DeskFrame.tsx provides ITS anchor div outside the veil; the
           // Tutor provides its own anchors internally, so a veil wrapper
           // here would swallow them both.
-          tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" />}
+          tutor={gateActive || unborn ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
           // contract exactly), fed the gate's own word fraction instead of
@@ -768,7 +844,7 @@ function PageEditorView({ id }: { id: string }) {
           // rhizome OR the bar (two styles, one location, SV15) plus the
           // goal flare (SV16). The gate rule above is unchanged and now
           // covers both styles — the threshold stays pure either way.
-          rhizome={gateActive ? undefined : <DeskInstrument unitCount={wordCount(text)} seedKey={entry.id} paperRef={surfaceRef} />}
+          rhizome={gateActive || unborn ? undefined : <DeskInstrument unitCount={wordCount(text)} seedKey={entry.id} paperRef={surfaceRef} />}
           dissolved={receded}
         >
           <ModeStage
@@ -831,11 +907,7 @@ function PageEditorView({ id }: { id: string }) {
               never automatically) and flips to it; later clicks resolve to the
               same board. No knock, no badge, no dot (A14). Bar chrome only — the
               paper's rect and text measure are never touched (S8). */}
-          <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={() => {
-            flush(); flushNow();
-            const board = getOrCreatePlanBoard(id);
-            if (board) navigate(`/page/${board.id}`);
-          }}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
+          <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
         </div>
       </div>
 
@@ -875,4 +947,28 @@ export function PageEditor() {
   if (entry?.pageType === 'board') return <BoardEditor key={id} id={id} />;
   if (entry?.pageType === 'script') return <ScriptEditor key={id} id={id} />;
   return <PageEditorView key={id} id={id} />;
+}
+
+// PB1 (item 71) — /page/new, the unborn surface. A door that opens a blank
+// surface no longer creates a row; it lands here carrying what it MEANT as
+// query params (Fable's ruling 1: the descriptor goes in the address, which is
+// reload-safe by construction — reload re-reads the URL and the door's meaning
+// survives with no storage and no fallback rule to invent).
+//
+// The dispatch below is the SAME dispatch as /page/:id above, reading the same
+// getJournalEntry — which resolves the unborn slot while the surface is
+// unborn, so neither editor needed a second code path to mount. There is no
+// unborn SCRIPT surface: choosing Screenplay births (the ruled amendment to
+// ruling 2, see requestScreenplay above), so a script page always has a row by
+// the time ScriptEditor mounts.
+export function UnbornPage() {
+  return (
+    <UnbornProvider>
+      {(id, descriptor) => (
+        descriptor.kind === 'board'
+          ? <BoardEditor key={id} id={id} />
+          : <PageEditorView key={id} id={id} />
+      )}
+    </UnbornProvider>
+  );
 }

@@ -633,8 +633,23 @@ function stampPageActivity(projectId: string, pageId: string): void {
 
 // Create a blank, directly-authored journal page (J10) and persist it. Marked
 // source: 'page' so the read view renders the editable sheet instead of a
-// read-only capture. An empty page left untouched is discarded on exit by the
-// page itself (honor-discard, J1a), so this never litters the journal.
+// read-only capture.
+//
+// PB1 (item 71) — THE CURRENT GUARANTEE, replacing the honor-discard sentence
+// that used to stand here ("An empty page left untouched is discarded on exit
+// by the page itself (honor-discard, J1a), so this never litters the journal").
+// That was true only while these pages opened on JournalEntry.tsx, whose
+// unmount soft-deleted an untouched page. FX14 routed every door to THE Page,
+// which has no such cleanup, and the sentence quietly became a promise nothing
+// kept — which is how ~45 empty Untitleds reached Nick's corpus.
+//
+// The guarantee now holds without any cleanup: **the blank-surface doors no
+// longer call this.** They open an unborn surface (/page/new, store/
+// unbornPage.ts) and the row is written by the first word. This function
+// survives for callers that create a page AND a durable relationship in the
+// same act — where the room is entered at the moment it is made — and for the
+// test/inspection seam below. If you are adding a door that just opens a blank
+// page, do not call this; navigate to unbornHref() instead.
 export function createJournalPage(): JournalEntry {
   const now = new Date().toISOString();
   const entry: JournalEntry = {
@@ -1401,9 +1416,53 @@ export function getAllUserBoards(): JournalEntry[] {
     .sort((a, b) => a.id.localeCompare(b.id)); // stable, deterministic order
 }
 
+// PB1 — THE UNBORN SLOT. A surface the writer has opened but not yet written
+// in has no row: "a page is born when it has a word; a board when it has a
+// box." But every consumer of a page — the cascade, the Page face, the Tutor,
+// describePageHome, the editors' own delegation — reads its subject through
+// getJournalEntry, and two of them (useCascade's `subject.entry.id`,
+// ModeStrip's required onPublish) are shared with surfaces far outside this
+// ticket and may not be loosened for one feature. So the unborn surface keeps
+// a record-SHAPED object here, in a slot of its own, and every reader works
+// unchanged.
+//
+// The slot is deliberately NOT part of `cache`, and this is the whole reason
+// PB1 works: `flush()` above serializes `cache[name]` WHOLESALE, so an unborn
+// row placed in the cache would reach disk on the next flush of that
+// collection — which every route change forces via flushNow() — and `upsert`
+// would mark it dirty, so the sync loop would push it to the server too. A
+// row in the slot touches neither. It is never serialized, never synced, never
+// enumerated: getJournalEntries() and every derived view read `cache` alone,
+// so an unborn page cannot appear in Places, the Journal, the Shelf, a board's
+// pin list, or an export. That absence is structural, not a filter someone has
+// to remember to write.
+//
+// Exactly one slot: only one surface is mounted at a time, and an unborn
+// surface that is navigated away from is gone — nothing was stored, so there
+// is nothing to clean up. Birth is `saveJournalEntry(...)` with the first
+// content already in it, which puts the row in `cache` by the ordinary path;
+// the slot is then cleared by its owner.
+let unbornSlot: JournalEntry | null = null;
+
+export function setUnbornEntry(entry: JournalEntry | null): void {
+  unbornSlot = entry ? clone(entry) : null;
+}
+
+export function getUnbornEntry(): JournalEntry | null {
+  return unbornSlot ? clone(unbornSlot) : null;
+}
+
+export function isUnborn(id: string): boolean {
+  return unbornSlot != null && unbornSlot.id === id;
+}
+
 export function getJournalEntry(id: string): JournalEntry | null {
   const entry = cache.journalEntries.find(e => e.id === id);
-  return entry && !entry.deletedAt ? clone(entry) : null;
+  if (entry) return !entry.deletedAt ? clone(entry) : null;
+  // Fall through to the unborn slot only when the store has no row: a real row
+  // always wins, so birth (which writes the row) instantly stops this branch
+  // from mattering, with no ordering hazard between the write and the clear.
+  return unbornSlot && unbornSlot.id === id ? clone(unbornSlot) : null;
 }
 
 // CD2 S3 — soft-delete a page, mirroring softDeleteDrawer's own pattern

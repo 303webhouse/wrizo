@@ -10,6 +10,7 @@ import { useBoardMode } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
 import { withLanes } from '../store/boardStructure';
 import { BeginningsRow, type BeginningDoor } from './BeginningsRow';
+import { useUnborn } from './UnbornSurface';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
@@ -603,6 +604,14 @@ export function BoardEditor({ id }: { id: string }) {
   // framed, since Board had no dissolve engine at all before this ticket.
   const boardDissolve = useChromeDissolve({ surface: 'board', editorSelector: '.board-canvas' });
 
+  // PB1 (item 71) — non-null only while this board has no row yet. "A board is
+  // born when it has a box": the two untitled create-board doors now open an
+  // unborn surface, and the FIRST BOX writes the row. A titled board never
+  // arrives here unborn — a name is content (ruling 3), so it is born at once.
+  const unborn = useUnborn(id);
+  const unbornRef = useRef(unborn);
+  unbornRef.current = unborn;
+
   // W2 — route + mount identity only (S1: a Board's own view state — pan,
   // zoom, selection — already persists through its own store; no scroll/
   // caret to capture here).
@@ -916,15 +925,27 @@ export function BoardEditor({ id }: { id: string }) {
   }, [id, systemKind]);
 
   // Autosave — debounced, like PageEditor's text; flush on hide/unmount.
+  // PB1 — on an UNBORN board the first box births the row synchronously,
+  // carrying the boxes with it, instead of waiting for this debounce: the
+  // board's content must reach disk on exactly the schedule it always did, and
+  // a debounced birth would open a window in which the writer's first card
+  // existed only in memory. Once born, `unbornRef` nulls itself and the
+  // ordinary debounce below resumes for every later change.
   useEffect(() => {
     if (boxes === lastSavedRef.current) return;
+    if (unbornRef.current) {
+      if (boxes.length === 0) return; // still nothing in the room
+      lastSavedRef.current = boxes;
+      unbornRef.current.birthWith({ boxes });
+      return;
+    }
     const h = setTimeout(() => { saveBoardBoxes(id, boxesRef.current); lastSavedRef.current = boxesRef.current; }, AUTOSAVE_MS);
     return () => clearTimeout(h);
   }, [boxes, id]);
 
   useEffect(() => {
     const onHide = () => {
-      if (document.visibilityState === 'hidden' && boxesRef.current !== lastSavedRef.current) {
+      if (document.visibilityState === 'hidden' && !unbornRef.current && boxesRef.current !== lastSavedRef.current) {
         saveBoardBoxes(id, boxesRef.current);
         lastSavedRef.current = boxesRef.current;
         flushNow();
@@ -933,7 +954,9 @@ export function BoardEditor({ id }: { id: string }) {
     document.addEventListener('visibilitychange', onHide);
     return () => {
       document.removeEventListener('visibilitychange', onHide);
-      if (boxesRef.current !== lastSavedRef.current) saveBoardBoxes(id, boxesRef.current);
+      // PB1 — an unborn board leaves nothing behind: no row was written, so
+      // there is nothing to flush and nothing to clean up.
+      if (!unbornRef.current && boxesRef.current !== lastSavedRef.current) saveBoardBoxes(id, boxesRef.current);
       flushNow();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

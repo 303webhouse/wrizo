@@ -5,9 +5,10 @@ import { firstLine } from '../store/entryText';
 import { useSectionFold } from '../store/sectionFold';
 import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
-  createJournalPage, createLooseHomePage, createBoardPage, createQuickSprintProject, softDeleteEntry,
+  createQuickSprintProject, softDeleteEntry,
   getJournalEntry, getOrCreateSystemBoard,
 } from '../store/persistence';
+import { unbornHref } from '../store/unbornPage';
 import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
@@ -172,7 +173,8 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
   const { t } = useDeskLexicon();
   const pages = getJournalPages().slice().sort(byRecent);
   const recent = pages.slice(0, 5);
-  const newPage = () => { const e = createJournalPage(); navigate(`/page/${e.id}`); }; // FX14 S1 — every New Page opens in THE Page
+  // PB1 (item 71) — no row until the first word; the door's origin rides in the address.
+  const newPage = () => navigate(unbornHref({ origin: 'journal' })); // FX14 S1 — every New Page opens in THE Page
   return (
     <div className="wz-cascade-panel-body">
       {/* B1 S5 — travels to the Journal BOARD now (the section's own
@@ -232,7 +234,8 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 // face, then Places.
 function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
-  const newPage = () => { const e = createLooseHomePage(); navigate(`/page/${e.id}`); };
+  // PB1 (item 71) — no row until the first word.
+  const newPage = () => navigate(unbornHref({ origin: 'loose' }));
   return (
     <>
       {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper —
@@ -274,7 +277,10 @@ function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
   if (!project) {
     const seedTitle = firstLine(subject.entry.text).slice(0, 60) || 'Untitled';
     const promote = () => createQuickSprintProject(subject.entry.text, seedTitle);
-    const createBoard = () => { const proj = promote(); const b = createBoardPage(proj.id); navigate(`/page/${b.id}`); };
+    // PB1 (item 71) — an UNTITLED board is the duplicate-empty-board source named
+    // in the door census: no row until it has a box. (A titled board is born at
+    // once — a name is content, ruling 3 — and does not come through here.)
+    const createBoard = () => { const proj = promote(); navigate(unbornHref({ kind: 'board', binderId: proj.id })); };
     const plotStory = () => { const proj = promote(); navigate(`/project/${proj.id}/wizard`); };
     return (
       <div className="wz-cascade-panel-body">
@@ -291,7 +297,8 @@ function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
   }
 
   const boards = getBinderPages(project.id).filter((p) => p.pageType === 'board');
-  const createBoard = () => { const b = createBoardPage(project.id); navigate(`/page/${b.id}`); };
+  // PB1 (item 71) — no row until the board has a box (see the door census).
+  const createBoard = () => navigate(unbornHref({ kind: 'board', binderId: project.id }));
   const plotStory = () => navigate(`/project/${project.id}/wizard`);
 
   return (

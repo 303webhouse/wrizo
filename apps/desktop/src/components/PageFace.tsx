@@ -20,9 +20,15 @@ export interface PageFaceSubject {
   // The saved-silently line — its ONLY appearance anywhere once this ships.
   // Undefined when it doesn't apply (a filed page has its own save story).
   footer?: string;
-  onToggleStar: () => void;
-  onAddTag: (tag: string) => void;
-  onRemoveTag: (tag: string) => void;
+  // PB1 (item 71) — OPTIONAL, and absent means the control does not render.
+  // An unborn page (one the writer has opened but not yet written in) has no
+  // row, so `patchJournalEntry` would find nothing to merge into and these
+  // would silently no-op. A star that does not stick is worse than no star, so
+  // the face simply does not offer them until the page has a word. Every born
+  // page passes all three, exactly as before.
+  onToggleStar?: () => void;
+  onAddTag?: (tag: string) => void;
+  onRemoveTag?: (tag: string) => void;
   // B2 S4 — onOpenMoveCopy RETIRES: the Move/Copy verb (AddToSheet's single-
   // page doorway) is superseded by the Places panel (PlacesPanel.tsx),
   // mounted alongside this component in CascadePanels.tsx's PagePanel, not
@@ -52,7 +58,7 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
   const commitTag = () => {
     const v = tagDraft.trim();
     if (!v) return;
-    subject.onAddTag(v);
+    subject.onAddTag?.(v);
     setTagDraft('');
   };
 
@@ -60,15 +66,17 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
     <div className="wz-pageface">
       <div className="wz-pageface-title">{title}</div>
 
-      <button
-        type="button"
-        className="wz-pageface-star"
-        data-starred={entry.starred ? 'true' : 'false'}
-        aria-pressed={!!entry.starred}
-        onClick={subject.onToggleStar}
-      >
-        {entry.starred ? `★ ${t('pageFaceStarred')}` : `☆ ${t('pageFaceStar')}`}
-      </button>
+      {subject.onToggleStar && (
+        <button
+          type="button"
+          className="wz-pageface-star"
+          data-starred={entry.starred ? 'true' : 'false'}
+          aria-pressed={!!entry.starred}
+          onClick={subject.onToggleStar}
+        >
+          {entry.starred ? `★ ${t('pageFaceStarred')}` : `☆ ${t('pageFaceStar')}`}
+        </button>
+      )}
 
       <div className="wz-pageface-home">
         <div className="wz-pageface-home-label">{subject.homeLabel}</div>
@@ -77,22 +85,24 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
         ))}
       </div>
 
-      <div className="wz-pageface-tags">
-        {(entry.tags ?? []).map(tag => (
-          <span key={tag} className="wz-pageface-tag" data-tag={tag}>
-            {tag}
-            <button type="button" className="wz-pageface-tag-remove" aria-label={`Remove ${tag}`} onClick={() => subject.onRemoveTag(tag)}>×</button>
-          </span>
-        ))}
-        <input
-          className="wz-pageface-tag-input"
-          value={tagDraft}
-          onChange={e => setTagDraft(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitTag(); } }}
-          placeholder={t('pageFaceAddTag')}
-        />
-        <button type="button" className="wz-pageface-tag-add" onClick={commitTag}>{t('pageFaceAdd')}</button>
-      </div>
+      {subject.onAddTag && (
+        <div className="wz-pageface-tags">
+          {(entry.tags ?? []).map(tag => (
+            <span key={tag} className="wz-pageface-tag" data-tag={tag}>
+              {tag}
+              <button type="button" className="wz-pageface-tag-remove" aria-label={`Remove ${tag}`} onClick={() => subject.onRemoveTag?.(tag)}>×</button>
+            </span>
+          ))}
+          <input
+            className="wz-pageface-tag-input"
+            value={tagDraft}
+            onChange={e => setTagDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitTag(); } }}
+            placeholder={t('pageFaceAddTag')}
+          />
+          <button type="button" className="wz-pageface-tag-add" onClick={commitTag}>{t('pageFaceAdd')}</button>
+        </div>
+      )}
 
       <div className="wz-pageface-verbs">
         <button type="button" className="wz-pageface-verb wz-pageface-verb-port" onClick={subject.onOpenPortToBoard}>

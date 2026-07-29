@@ -12,7 +12,7 @@ import { QuickSprint } from './pages/QuickSprint';
 import { Spread } from './pages/Spread';
 // FX14 S2 — JournalEntry no longer routed (the /journal/:id redirect below replaces
 // it); the component + behavior-parity are J7's, so the file is left in place, unimported.
-import { PageEditor } from './pages/PageEditor';
+import { PageEditor, UnbornPage } from './pages/PageEditor';
 import { ImportDraft } from './pages/ImportDraft';
 import { VoiceWallWhisper } from './components/VoiceWallWhisper';
 import { ThemeEffectsLayer } from './components/ThemeEffectsLayer';
@@ -281,6 +281,10 @@ export function App() {
         <Route path="/trash" element={<TrashBoardGate />} />
         <Route path="/journal/spread" element={<Spread />} />
         <Route path="/journal/:id" element={<JournalIdRedirect />} />
+        {/* PB1 (item 71) — the unborn surface. Declared BEFORE /page/:id so the
+            literal segment wins the match; a blank-surface door lands here
+            with its descriptor in the query string and creates no row. */}
+        <Route path="/page/new" element={<UnbornPage />} />
         <Route path="/page/:id" element={<PageEditor />} />
         </Routes>
         </AppMain>
