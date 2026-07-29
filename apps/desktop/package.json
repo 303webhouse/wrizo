@@ -6,7 +6,9 @@
     "dev": "concurrently \"vite\" \"node scripts/wait-and-electron.mjs\"",
     "build": "vite build && tsc src/main.ts src/preload.ts --outDir dist --declaration false --module commonjs --target es2020 --skipLibCheck --esModuleInterop --moduleResolution node",
     "build:web": "vite build --outDir dist-web --emptyOutDir",
-    "verify:runtime": "node scripts/runtime-verify.mjs --selftest"
+    "verify:runtime": "node scripts/runtime-verify.mjs --selftest",
+    "verify:suite": "node scripts/run-suite.mjs",
+    "verify:suite:parked": "node scripts/run-suite.mjs --parked"
   },
   "dependencies": {
     "@fontsource-variable/crimson-pro": "^5.2.8",
