@@ -6909,6 +6909,16 @@ outlive a session lives here, not in chat.
     and coverage would erode quietly at exactly the moment it was most needed.
     **The alternative stays research until the remount is OBSERVED**; this
     condition binds it if it is ever adopted.
+    **SC2 — chat 7 STOPPED CLEAN (2026-07-30; context spent; endorsed** — a suite you
+    cannot finish reading is not a verification; tree clean, both branches pushed, owed
+    work named). State: `sc2-the-clock` @ `fc92ac1` proven; `sc2-s5-memo` @ `5e2eaa7`
+    rebased (`--force-with-lease` after the ruled rebase, disclosed, lawful), both gates
+    recorded — Amendment 1's bound 1.10× ≤ 2.0 MET with margin (noise-band framing
+    ratified: direction robust, point estimate not claimed); the memo 0.84×, faster 3/3
+    rounds, −21% mean — ADMITTED to the merge candidate CONDITIONAL on the suite of record.
+    **Successor owes:** rebase onto current `origin/main`, ONE suite of record at the
+    surviving head both settings; if red, revert the memo half first. Then the merge offer;
+    Fable's review closes 62.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
@@ -7746,6 +7756,11 @@ outlive a session lives here, not in chat.
       untouched, with zero tombstones minted anywhere.
     **DoD: the app stops collecting rooms nobody entered.** — MET, pending
     Fable's same-day review on `af47582`.
+    **REVIEWED, GREEN (2026-07-30).** Merged `e8ae17d`; review at
+    `docs/wrizo-alpha/pb1-review-fable.md`; gate MET. **Merged-but-undeployed —
+    rides P2b, named in its manifest.** OBS-1 (unborn-Screenplay surface flip) to
+    the next sitting. Note: main now carries `pb1.mjs`, so chat 6's suite of record
+    at its rebased head is **52 files, not 51**.
 72. **FX16 — the Invite, Truly Silent.** **OPENED — 2026-07-25 (chat 1)**, from the P2
     wave (`docs/wrizo-alpha/p2-wave.md` §FX16), authority SV18 — the first-line invite
     STILL renders on a fresh page after FX15 (Nick's walk of the deployed tree: "a door
@@ -7919,6 +7934,18 @@ outlive a session lives here, not in chat.
     strip; words + behaviour unchanged, only presentation; A4 parks for falsified
     assertions. **DoD: no panel covers another, no arrow lies about its direction, the two
     top menus look like siblings.**
+
+76. **SC2-S5 — dissolution (one flat element flow, sheets as backdrops).** **OPEN —
+    2026-07-30; post-vacation.** Ruled conditions: (a) cross-check 3's stronger successor
+    exists BEFORE any build; (b) `sc2.mjs`'s class-alive assertion FLIPS to asserting
+    preservation — tightened, never quietly satisfied; (c) in-flight IME, non-collapsed
+    selection, and native undo across the break are in-scope acceptance criteria.
+77. **Harness-infra pair — chat 6's lane.** **OPEN — 2026-07-30; non-blocking, required
+    before any future A/B gate.** (a) `withHarness` `opts.dist` is DISHONEST — serves the
+    given `index.html` but resolves `/assets` against the default `dist-web`; near-miss
+    class: an asset-hash collision silently compares a build against itself with plausible
+    numbers. Make it honest or amputate the parameter. (b) `b2-1.mjs` first-parked-pass
+    NOVERDICT ("__click is not defined") — diagnose, never clear.
 
 ## P2a DEPLOY MANIFEST — 2026-07-29 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
 
