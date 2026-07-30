@@ -7672,7 +7672,80 @@ outlive a session lives here, not in chat.
     wiped, so litter now accrues only from his own testing — the cost of
     waiting is noise, not loss. **If PB1 is not merged AND reviewed by
     2026-07-30 it holds until post-vacation.** Build it right rather than fast.
-    **DoD: the app stops collecting rooms nobody entered.**
+    **BUILT + VERIFIED, READY TO MERGE — 2026-07-26 (chat 5).** Branch
+    `pb1-born-on-first-word` at **`af47582`**, rebased onto `main` `569d3f2`,
+    four commits, own worktree, guard-rail before every commit. Zero schema,
+    zero server files, zero deps. **NOTE FOR THE MERGER:** the OLDEST commit's
+    subject still carries `[DO-NOT-MERGE: unverified]` — that was true when
+    written and is left as history rather than rewritten. The branch TIP
+    (`af47582`, "PB1 VERIFIED") is the operative signal and this entry is the
+    other. **PB1 is clear to merge.**
+    - **S1's REPRODUCTION, both halves, as observed fact** (not inference):
+      pre-fix at `569d3f2`, Catch persists a row instantly (`text:""`,
+      `origin:'journal'`) and leaving without typing leaves **1 live litter row
+      and ZERO tombstones** — the absent tombstone being the direct evidence
+      that honor-discard no longer runs, exactly as the source read predicted.
+      Post-fix: **0 rows** at the door and 0 after leaving.
+    - **VERIFICATION: full suite 51/51 CLEAN, both `HARNESS_PARKED` settings**,
+      on DF1.1's committed `run-suite.mjs` (fail-fast guard, PID-scoped
+      cleanup). `pb1.mjs` 22 checks green both settings. `tsc` ×2 EXIT 0;
+      `build:web` clean.
+    - **A REAL KEYSTROKE LOSS, FOUND BY THE HARNESS AND FIXED** — the finding of
+      this ticket, and it was mine. Birth called `navigate()`, which changed the
+      route, which unmounted `/page/new`'s tree and mounted `/page/:id`'s. The
+      newly mounted editor does **not** take focus (`ForwardOnlyEditor`'s
+      `autoFocus` is gated on the page being EMPTY, and by then it isn't), so
+      every keystroke arriving after the remount landed on nothing: a
+      58-character burst across the birth boundary persisted as **"The "**.
+      Short bursts won the race ("Born" completed), real typing would not have.
+      This is precisely the loss the brief forbids. Fixed STRUCTURALLY, not
+      statistically: birth no longer changes routes — `history.replaceState`
+      updates the address without firing `hashchange`, so HashRouter is never
+      notified, the surface is never remounted, and focus is never lost; the
+      provider withdraws its handle at birth instead, so way-back, Star, tags,
+      the Tutor, the instrument and the debounced autosave all resume with no
+      remount. **The burst-integrity check that caught it is committed in
+      `pb1.mjs`** and is the check a future change to this path must survive.
+    - **THE FIRST FULL SUITE WENT NOT CLEAN — seven reds, all mine, all fixed at
+      their own sites** with the mechanism disclosed there (`ea78d48`): `ab3`,
+      `b1`, `fx6`, `fx14`, `hb1`, `hb2` each derived a page id from the ADDRESS
+      (or read the newest row) immediately after a bare-room door; the SUBJECT in
+      every case is the door's semantics, which PB1 preserves — the row simply
+      arrives with the first word — so each fixture types one word and reads what
+      it always did. `fx14` and `hb2` additionally quote their ORIGINAL assertion
+      verbatim, being genuinely falsified on arrival. `ab3` also read the entries
+      key with no `|| '[]'` fallback, and with birth-on-content that key can be
+      genuinely ABSENT. `cd2`'s Star is absent on an unborn page by design, so it
+      births first — and typing dissolves the chrome (A19), which closes the
+      cascade panel, so the Page category is re-opened after.
+    - **TWO CORRECTIONS ON THE RECORD.** (a) `fx14`'s route assertion had begun
+      **PASSING BY ACCIDENT** on `#/page/new?origin=journal`, because its regex
+      character class excluded only `/` and that string contains none — a check
+      that passes for the wrong reason is worse than one that fails. (b) My own
+      claim, written into `pb1.mjs`'s footer, that "PB1 falsifies no committed
+      assertion, because the bare-room doors had no row-exists assertion," was
+      **false**: those doors were asserted in six places, just never as "a row
+      exists" — always as "the row this door made has origin X," the same
+      coupling wearing a different coat. **The FX14 regression was one keystroke
+      of coverage away from being caught in its own review.** The footer now
+      carries that correction instead of the tidy claim.
+    - **ONE RED REPORTED UNRESOLVED, not swept under.** `b2-1.mjs` NOVERDICT on
+      the FIRST parked pass: `ReferenceError: __click is not defined` in
+      `seedProjectWithPlan`, i.e. the harness's injected helpers were missing in
+      that file's second `withHarness`. Mechanism check first, never a re-run
+      first: it PASSES on clean `origin/main` `569d3f2`, PASSES in a three-file
+      batch on this branch, and PASSES in the full parked suite on the second
+      pass (51/51). It is harness INFRASTRUCTURE — helper injection — not app
+      behaviour, and nothing in PB1 touches `runtime-verify.mjs`. **The flake
+      list is empty and this is not being called a flake:** it is recorded as a
+      one-off in DF1.1's helper-injection path for chat 6's lane. If it recurs,
+      it belongs there.
+    - **S3 NO SWEEPER, verified against the diff and in the harness:** no
+      deletion, no soft-delete, no reaper, no timer. A seeded pre-existing empty
+      page survives a round trip through both an unborn and a born surface,
+      untouched, with zero tombstones minted anywhere.
+    **DoD: the app stops collecting rooms nobody entered.** — MET, pending
+    Fable's same-day review on `af47582`.
 72. **FX16 — the Invite, Truly Silent.** **OPENED — 2026-07-25 (chat 1)**, from the P2
     wave (`docs/wrizo-alpha/p2-wave.md` §FX16), authority SV18 — the first-line invite
     STILL renders on a fresh page after FX15 (Nick's walk of the deployed tree: "a door
