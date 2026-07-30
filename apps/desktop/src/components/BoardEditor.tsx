@@ -1582,7 +1582,44 @@ export function BoardEditor({ id }: { id: string }) {
   // override (once set) can only make it TALLER than that floor, never
   // shorter. contentMinHeightPx is the SAME formula the pre-FX4 auto-height
   // always used — byte-identical when canvasOverrideH is null.
-  const contentMinHeightPx = Math.max((maxBottom(boxes) + 0.08) * pageWidthPx, VIEWPORT_MIN_PX);
+  // FX17 S2 (SV21) — THE BOARD REACHES ITS FLOOR. Measured before the change,
+  // at the 1366x768 leg: the stage ended at y=722 and the wrap at y=683, so 39px
+  // of granted room went unused and the board visibly "stopped short". The cause
+  // is that the canvas's floor was a FIXED CONSTANT (VIEWPORT_MIN_PX, 560) while
+  // the wrap carries `maxHeight` rather than `height` — so with little content
+  // the wrap shrink-wrapped to 560 and simply declined the room FX13 had already
+  // measured for it. FX13 computed the room; nothing spent it.
+  //
+  // So the floor becomes the ROOM, when the room is known: availHeightPx is the
+  // stage's own remaining height (see its effect above). Legacy (<1100px, no
+  // DeskFrame) has no stage, availHeightPx stays null, and the constant floor is
+  // kept — that path is byte-identical to pre-FX17.
+  //
+  // This deliberately does NOT reintroduce the S1 loop, and the reason is
+  // structural rather than tuned: `avail` is measured from the STAGE's bottom
+  // minus the WRAP's TOP, and observed on the stage (FX13's own guard, whose
+  // comment states the wrap's height can never feed back into it). The stage is
+  // `flex:1; min-height:0`, sized by the flex column and not by this content, and
+  // the wrap's TOP does not move when its own height changes. So canvas height
+  // depends on the room, and the room does not depend on the canvas height —
+  // an acyclic edge, unlike S1's width<->height cycle. Re-verified empirically on
+  // the frame clock all the same, because that is this ticket's standard.
+  // The border term, and why it is not a fudge: `availHeightPx` is the wrap's
+  // OUTER height (it is applied as `maxHeight`, and the wrap is border-box), so
+  // the content box it actually offers is 2px smaller — 1px of border top and
+  // bottom, declared on the wrap's own inline style below. Flooring the canvas at
+  // the outer height therefore overflowed by exactly 2px and left the board with
+  // a permanent, pointless 2px scroll (measured: scrollHeight 599 vs clientHeight
+  // 597). A board that always has something to scroll has not reached its floor.
+  // Subtracting the border here — rather than measuring the wrap's clientHeight —
+  // keeps the dependency acyclic: clientHeight would shrink when a HORIZONTAL
+  // scrollbar appeared, which is the same feedback shape S1 just closed on the
+  // other axis, and would have re-opened it.
+  const WRAP_BORDER_PX = 2;
+  const contentMinHeightPx = Math.max(
+    (maxBottom(boxes) + 0.08) * pageWidthPx,
+    availHeightPx != null ? availHeightPx - WRAP_BORDER_PX : VIEWPORT_MIN_PX,
+  );
   const canvasHeightPx = canvasOverrideH != null ? Math.max(canvasOverrideH, contentMinHeightPx) : contentMinHeightPx;
   // B1 — a system Board never has a project (S1), so the pre-B1 fallback
   // ('/journal') would send BOTH system Boards' own "Done" to the SAME
