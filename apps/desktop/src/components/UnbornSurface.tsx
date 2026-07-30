@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { setUnbornEntry } from '../store/persistence';
 import {
   birth, mintUnbornId, readDescriptor, unbornEntry,
@@ -39,7 +39,10 @@ export function useUnborn(id: string): UnbornHandle | null {
 
 export function UnbornProvider({ children }: { children: (id: string, descriptor: UnbornDescriptor) => ReactNode }) {
   const location = useLocation();
-  const navigate = useNavigate();
+  // Set once, at birth. From then on the context yields null, so every child
+  // takes the ordinary born path — WITHOUT the surface ever unmounting. See the
+  // address note in `birthWith` for why that matters more than it looks.
+  const [born, setBorn] = useState(false);
   // Minted once and kept for the whole unborn session: per-page localStorage
   // keys, React keys and the cascade's own subject id all hang off it, and it
   // becomes the row's id at birth — the surface never changes identity under
@@ -64,17 +67,39 @@ export function UnbornProvider({ children }: { children: (id: string, descriptor
   useEffect(() => () => setUnbornEntry(null), []);
 
   const birthWith = useCallback((content: BirthContent, opts: { pinToBoardId?: string | null } = {}) => {
-    const born = birth(id, descriptor, content, opts);
-    // The address stops describing a door and starts naming a room. AFTER the
-    // write, deliberately: a crash between the two loses nothing, because the
-    // row is already durable and the writer is merely on an address that no
-    // longer matters. `replace` so Back does not return to a door that has
-    // already been walked through.
-    navigate(`/page/${born.id}`, { replace: true });
-    return born;
-  }, [id, descriptor, navigate]);
+    const row = birth(id, descriptor, content, opts);
 
-  const handle = useMemo<UnbornHandle>(() => ({ id, descriptor, birthWith }), [id, descriptor, birthWith]);
+    // THE ADDRESS IS CORRECTED WITHOUT A ROUTE CHANGE, and this is load-bearing
+    // for the local-first invariant rather than a cosmetic choice.
+    //
+    // Found by this ticket's own burst-integrity check, not reasoned about: a
+    // `navigate()` here changes the route, which unmounts /page/new's tree and
+    // mounts /page/:id's. The newly mounted editor does NOT take focus —
+    // ForwardOnlyEditor's `autoFocus` is gated on the page being EMPTY, and by
+    // then it isn't — so every keystroke arriving after the remount landed on
+    // nothing. A 58-character burst across the birth boundary persisted as
+    // "The ". Short bursts won the race; real typing would not have.
+    //
+    // `history.replaceState` updates the address without firing `hashchange`,
+    // so HashRouter is never notified, no route change occurs, the surface is
+    // never remounted, focus is never lost, and not one keystroke is dropped.
+    // The address still stops describing a door and starts naming a room; a
+    // reload reads `#/page/<id>` and resolves the real row. AFTER the write,
+    // deliberately: a crash between them loses nothing, because the row is
+    // already durable. `replaceState` rather than a push, so Back does not
+    // return to a door that has already been walked through.
+    try { window.history.replaceState(null, '', `#/page/${row.id}`); } catch { /* address is cosmetic; the row is the truth */ }
+    setBorn(true);
+    return row;
+  }, [id, descriptor]);
+
+  // Withdrawn at birth: `useUnborn` returns null from here on, so way-back
+  // re-joins, Star and tags return, the Tutor and the instrument mount, and the
+  // debounced autosave takes over — all without a remount.
+  const handle = useMemo<UnbornHandle | null>(
+    () => (born ? null : { id, descriptor, birthWith }),
+    [born, id, descriptor, birthWith],
+  );
 
   return (
     <UnbornContext.Provider value={handle}>
