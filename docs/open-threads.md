@@ -7915,6 +7915,79 @@ outlive a session lives here, not in chat.
     zoom slider is post-vacation). **S4 is the slice that yields if the freeze presses;
     S1 is what must not survive.** **DoD:** a card can be dragged anywhere on a board that
     reaches its floor, and the whole board can be seen at once.
+    **S1+S2+S3 BUILT + VERIFIED; MERGE OFFERED — 2026-07-30 (chat 6).** Branch
+    `fx17-boards-floor` @ **`ef7429c`**, REBASED onto `main` @ `f721d16` (clean, zero
+    conflicts), own worktree, guard-rail before every commit; `tsc` x2 EXIT 0;
+    `build:web` clean; ZERO SCHEMA, ZERO SERVER, ZERO deps. **S4 YIELDED on Fable's
+    categorical ruling — now item 78, post-vacation.**
+    **THE STATED LIMIT, NAMED HERE AS SV22 REQUIRES: `BOARD_MAX_Y = 3` — three
+    page-widths tall** (with `BOARD_BREATHING_ROOM = 0.08`, the same term the auto-height
+    formula already adds below the lowest card). Deliberately expressed in the board's OWN
+    normalized coordinate system, not in pixels and not in screenfuls, so a board's extent
+    cannot change when the window does — a viewport-relative limit would let the same
+    board be dragged further on a tall monitor than on a laptop, and would move the floor
+    under already-saved cards on a resize. Fable ratified the unit choice as this slice's
+    architecture decision. One number, so a future ruling changes one line — and
+    `fx17.mjs` hard-codes it deliberately, so moving it REDS the harness and forces this
+    entry to be updated with it.
+    **S1 (SV22) — the stutter, root-caused before any patch and fixed at that root.**
+    A closed width<->height feedback loop: the canvas's HEIGHT is derived from its WIDTH
+    (`contentMinHeightPx = (maxBottom + 0.08) * pageWidthPx`) while that width was measured
+    as `wrapRef.clientWidth`, which the scrollbar changes. Dragging down grew the canvas,
+    crossed the wrap's height, raised the scrollbar, cost 10px of `clientWidth`, shrank
+    `pageWidthPx`, shrank the height with it, dropped the scrollbar, and relatched — one
+    cycle per React render (`onMove` calls `setBoxes` on every pointermove), so it ran at
+    frame rate. Measured under TRUSTED pointer at 1366x768 on the page's own frame clock:
+    **142 frames, 71 gutter flips (one every other frame), `clientWidth` oscillating
+    1098<->1088, and the card reaching only y=0.349.** FIX: `scrollbar-gutter:stable` on
+    `.board-canvas-wrap` — the measured width stops depending on the scrollbar, removing
+    the feedback EDGE at its source (a threshold guard could not have worked: the change is
+    a full 10px). **This closed the axis FX13 left open** — FX13 guarded the HEIGHT
+    observer ("the wrap's own height can never feed back into it", watching
+    `.desk-frame-stage`) while the WIDTH observer watched the wrap ITSELF. After: **0 flips,
+    single-valued width.**
+    **S2 (SV21) — the floor.** The canvas's floor was a fixed constant
+    (VIEWPORT_MIN_PX, 560) while the wrap carries `maxHeight` not `height`, so a
+    lightly-populated board shrink-wrapped and DECLINED the room FX13 had already measured:
+    at 1366x768 the stage ended at 722 and the wrap at 683 — **39px granted and
+    unspent.** The floor is now the ROOM (`availHeightPx`) when the room is known; legacy
+    (<1100px, no stage) keeps the constant and is byte-identical. The **2px border term** is
+    not a fudge: `availHeightPx` is the wrap's OUTER height (border-box), so flooring at it
+    overflowed by exactly 2px and left a permanent pointless scroll (599 vs 597) — a
+    board that always has something to scroll has not reached its floor. Subtracting the
+    border rather than measuring `clientHeight` keeps the edge ACYCLIC: `clientHeight`
+    shrinks when a HORIZONTAL scrollbar appears, which is S1's shape on the other axis.
+    After: wrap bottom **720** vs stage **722**; canvas == clientH == scrollH == **597**,
+    residual scroll **ZERO**.
+    **S3 (SV22) — grows, then stops.** The stop is enforced at the GESTURE, clamping
+    the shared `dy` rather than each box: a per-box clamp would let the lowest card of a
+    grouped selection land while the others kept travelling, visibly deforming it —
+    Fable RATIFIED the delta-clamp as what no-rubber-banding means for a selection. The stop
+    is EXACT, not approximate: clamp and height formula share the 0.08 term, so the canvas
+    reaches `BOARD_MAX_Y x pageWidthPx` on the very frame the card stops (measured **3264 ==
+    3 x 1088, to the pixel**) — no dead zone travelled first, nothing left to spring
+    back from. The canvas HEIGHT itself is deliberately NOT capped (Fable: clip-nothing
+    outranks the limit), so nothing can be clipped if a card reaches deep water by a path a
+    drag does not control.
+    **X-AXIS ASYMMETRY, NOTED AND DELIBERATELY UNTOUCHED (Fable's ruling):** the x-axis
+    keeps its per-box `Math.max(0, ...)` clamp, so a grouped selection CAN still deform
+    against the LEFT wall. Side-wall feel is Nick's-hardware material, post-vacation if
+    ever; recorded here so the asymmetry is a known choice rather than an oversight.
+    **VERIFICATION.** `fx17.mjs` NEW — **PASS 18**, both `HARNESS_PARKED` settings;
+    every drag on a TRUSTED pointer (`Input.dispatchMouseEvent`, never a synthetic replay),
+    fixtures adopted from `fx13.mjs` verbatim, frame-clock sampling done INSIDE the page so
+    no CDP round-trip can hide an oscillation. Asserts: the gutter reserved with nothing to
+    scroll; 144 frames / 0 flips / single-valued widths / 19 heights and 0 drops; the floor
+    and the 1088 standing width; the hard stop at exactly 2.92; the exactness; **the
+    group-shape invariant** (a pair's separation byte-identical, 0.2 -> 0.2, across a drag
+    that drives the LOWER card into the floor); and **a limit stops, it never relocates** (a
+    card seeded at y=3.60 keeps y=3.60 EXACTLY through a sideways drag while x moves
+    freely). Parks NOTHING — FX17 falsified no pre-existing assertion, and fx13's height
+    law is STRENGTHENED, confirmed by fx13 green in the sweep. **SUITE OF RECORD at the
+    rebased head: 52/52 CLEAN, BOTH settings, zero re-runs** (07:39-08:22 on 2026-07-30,
+    via DF1.1's committed runner). `fx18.mjs` PASS 16 and `bg2.mjs` PASS 23 green at the
+    rebased head — the board-geometry-adjacent files see FX17's changes, as Fable
+    required. **P2b: FX17 deploys ALONE on Nick's standing word once merged.**
 75. **FX18 — the Chrome Aligned.** **OPENED — 2026-07-25 (chat 1, after FX16)**, from the
     P2 wave (`p2-wave.md` §FX18), authority SV24–SV27 + the screenplay's instance of SV26.
     Branch `fx18-chrome-aligned` off `main` (after FX16 lands), own worktree, guard-rail,
@@ -8193,6 +8266,34 @@ sitting closes them.
   `hb1-threshold`; CD1's session keeps the original checkout
   (`writer-studio`) on `main`. Any future third concurrent agent gets
   its own worktree the same way before it writes a single file.
+78. **FX17-S4 — fit to content (the board seen whole).** **OPENED — 2026-07-30
+    (chat 6), on Fable's categorical ruling that FX17's S4 YIELDS.** Authority SV23, carried
+    out of the P2 wave's §FX17 (`p2-wave.md`) with S1-S3 shipped as P2b. Post-vacation.
+    UI/harness only; zero schema, zero server. **Scope is the MINIMAL reading of Nick's
+    ask** — "as far out as needed to see the entire board" is fit-to-content, NOT a
+    general zoom UI; a zoom slider is a feature and is not this item.
+    **THE MECHANISM, preserved verbatim as Fable ordered (chat 6's S4 design, unbuilt):**
+    fit-to-content wants no new coordinate system. Introduce a transient `viewScale` and let
+    `pageWidthPx` be `base x viewScale`. Because every box's x/y/w/h is ALREADY a fraction
+    of `pageWidthPx`, and because the drag delta divides by that same value, the whole board
+    — positions, sizes, and the pointer math — scales uniformly and stays consistent
+    for free. Fit factor is
+    `min(1, availClientH / ((maxBottom + 0.08) * base), clientW / (maxRight * base))`; never
+    above 1, because zooming IN is the zoom UI that waits. **NO CSS transform** — that
+    would desynchronise pointer->board coords, which is precisely where FX17 S1's bug lived.
+    **NO touching `canvasOverrideW`** — that is a PERSISTED document property, and
+    overwriting it would make "zoom" silently mean "resize", mutating what the writer made
+    (the same principle as *a limit stops; it never relocates*).
+    **THE OPEN DECISION, for Nick's hardware — do not pre-empt it:** WHERE the control
+    lives. `board-action-row` is selection-gated and cannot host an always-available view
+    control. The always-present candidate is `board-mode-strip`, but BM1 ruled *"doors are
+    doors, modes are modes"* and a view control is neither — placing it there spends a
+    ratified law. The alternative is the sliver's instrument foot (FX3 S5's home for
+    instruments), a larger change than the minimal reading implies. Chat 6 escalated rather
+    than choose; Fable recorded it here as Nick's call.
+    **DoD:** the whole board can be seen at once, and no ratified chrome law is spent doing
+    it.
+
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
@@ -8231,6 +8332,34 @@ sitting closes them.
   named plainly in the ledger and (b) the merging agent performs its
   own compensating verification and discloses it — never silently
   treated as netted just because an agent was dispatched.
+- **A LIMIT STOPS; IT NEVER RELOCATES — ratified 2026-07-30 (Fable's
+  word, FX17 S3).** When a new bound arrives it may prevent further
+  motion in the direction it governs; it may NOT rearrange what
+  writers already made. Concretely: a card already sitting past
+  `BOARD_MAX_Y` (an older save from before the constant existed, a
+  deck load that placed it) keeps its position exactly — the clamp
+  floors its own headroom at zero rather than clamping to a negative
+  one, so the card cannot travel further down while still moving
+  freely up and sideways. A stop, never a correction. Same family as
+  *loose may never be nudged*. **Cite it in future geometry and theme
+  work**: the test is whether merely INTRODUCING the law moves
+  anything that already exists. If it does, it is not a limit — it
+  is a migration, and it needs its own word.
+- **ANNOTATION (2026-07-30, chat 6 — the DF1.1 lane, which
+  superseded it): THE ISOLATION RULE BELOW IS RETIRED, not deleted.**
+  DF1 killed "it passes in isolation" as a clearance argument
+  (isolation proves a file CAN pass alone, which was never the
+  question), and DF1.1 named the successor Fable ratified: **re-run
+  under the conditions that produced the failure, not away from them
+  — batch-then-batch-again, and only after a mechanism check.**
+  DF1.1 also retired the companion argument "the machine was quiet,
+  therefore not environmental": `CDP page target never appeared` has a
+  second, non-contention cause (PID-keyed browser profile dirs left by
+  killed runs, feeding dead ports to later runs). The entry below is
+  kept verbatim for the audit trail; its own practice note — that a
+  merge-gating sweep should not run alongside another session's build
+  — still stands, and is now enforced mechanically by
+  `run-suite.mjs`'s fail-fast refusal.
 - **CONTENTION-SUSPECTED FAILURES MUST BE RE-RUN IN ISOLATION —
   ratified 2026-07-21 (Fable's FX8 review, Ruling 4a).** A harness
   check failing only inside a full-suite run, never in isolation, is
