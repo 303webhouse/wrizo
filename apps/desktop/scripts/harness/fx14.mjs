@@ -101,10 +101,26 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'Catch landed on THE Page' });
   const catchHash = await app.evalJs('location.hash');
   const catchNoJournalSurface = await app.evalJs("!document.querySelector('.entry-edit')");
-  ok('S1: Catch (DeskRail) lands on THE Page (/page/:id), never the retired Journal surface',
-    /^#\/page\/[^/]+$/.test(catchHash) && catchNoJournalSurface === true, catchHash);
-  const catchId = catchHash.replace(/^#\/page\//, '');
-  await sleep(500); // let createJournalPage's own persist flush land in localStorage before reading it
+  // PB1 (item 71) — RE-POINTED, and the old form is quoted here because it did
+  // something worse than fail: it kept PASSING by accident. Catch now lands on
+  // the unborn address `#/page/new?origin=journal`, and the original regex
+  //   /^#\/page\/[^/]+$/.test(catchHash)
+  // matches that string, because `new?origin=journal` contains no slash. The
+  // claim's SUBJECT — Catch reaches THE Page and never the retired Journal
+  // surface — is intact and asserted below in BOTH stages: the unborn address
+  // first, then the room's own address once the first word births it. Live
+  // successor for the whole birth mechanism: pb1.mjs.
+  ok('S1: Catch (DeskRail) lands on THE Page — unborn first (/page/new, no row yet, PB1), never the retired Journal surface',
+    /^#\/page\/new(\?|$)/.test(catchHash) && catchNoJournalSurface === true, catchHash);
+  // The first word births the row; only then does an id exist to read.
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await app.typeKeys('Caught');
+  await app.waitFor("location.hash.indexOf('#/page/') === 0 && location.hash.indexOf('#/page/new') !== 0", { label: 'Catch page born (address names the room)' });
+  const bornHash = await app.evalJs('location.hash');
+  ok('S1: and once it has a word the address names the room — /page/:id, still never the Journal surface',
+    /^#\/page\/[^/?]+$/.test(bornHash) && (await app.evalJs("!document.querySelector('.entry-edit')")) === true, bornHash);
+  const catchId = bornHash.replace(/^#\/page\//, '');
+  await sleep(500); // past the debounced flush
   const catchEntry = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(catchId)})`);
   ok('S1: Catch preserves origin semantics — still stamps origin:\'journal\', still untyped (only its destination is THE Page now)',
     catchEntry?.origin === 'journal' && catchEntry?.pageType == null, JSON.stringify(catchEntry));
