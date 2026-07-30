@@ -404,7 +404,19 @@ await withHarness(async (app) => {
   const hashAfterNewPage = await app.evalJs('location.hash');
   ok('S2 (a): clicking New Page travels to a genuinely fresh page (a new /page/:id, distinct from where we started)',
     hashAfterNewPage.startsWith('#/page/') && hashAfterNewPage !== hashBeforeNewPage, JSON.stringify({ hashBeforeNewPage, hashAfterNewPage }));
-  const newCascadePageId = hashAfterNewPage.split('/page/')[1];
+  // PB1 (item 71) — New Page opens an unborn surface; the row (and the id) come
+  // into being with the first word. The homing-law assertion below is unchanged
+  // and still true — the door's meaning travels in the address and lands on the
+  // row at birth. Live successor for the mechanism: pb1.mjs.
+  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.typeKeys('New page');
+  await app.waitFor("location.hash.indexOf('#/page/') === 0 && location.hash.indexOf('#/page/new') !== 0", { label: 'cascade New Page born' });
+  const newCascadePageId = (await app.evalJs('location.hash')).split('/page/')[1];
+  // The address flips at birth synchronously; the ROW reaches localStorage on
+  // persistence.ts's own 300ms debounced flush. Wait for THIS id specifically —
+  // a generic "some live row exists" wait is already satisfied by the page this
+  // flow started on and would return before the new row landed.
+  await app.waitFor(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => e.id === ${JSON.stringify(newCascadePageId)})`, { label: 'cascade New Page row flushed' });
   const newCascadePageEntry = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(newCascadePageId)})`);
   ok('S2 (a): the created page\'s own homing laws — loose, exactly like Arrival\'s own Write door (createLooseHomePage) — never filed, never journal-membered, "just a page, from wherever you are"',
     !!newCascadePageEntry && newCascadePageEntry.origin === 'loose' && newCascadePageEntry.projectId == null, JSON.stringify(newCascadePageEntry));

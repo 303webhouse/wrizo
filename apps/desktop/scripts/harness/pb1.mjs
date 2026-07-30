@@ -353,12 +353,34 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-// PB1 parks nothing. It falsifies no committed assertion: the four doors whose
-// harness checks assert "a row exists after this door" are the RELATIONSHIP
-// doors, which PB1 leaves untouched by design (see the door census in
-// docs/wrizo-alpha/pb1-unborn-surface.md). The bare-room doors had no
-// row-exists assertion to falsify — which is itself why the FX14 regression
-// went unseen for a week, and is the gap this file closes.
+// CORRECTION ON THE RECORD. An earlier version of this footer claimed "PB1
+// parks nothing; it falsifies no committed assertion, because the bare-room
+// doors had no row-exists assertion to falsify." The full suite falsified that
+// claim immediately: SEVEN files went red, and every one of them was this
+// ticket's own consequence. The bare-room doors were asserted after all — just
+// never as "a row exists," always as "the row this door made has origin X" or
+// "the address is /page/:id," which is the same coupling wearing a different
+// coat. The lesson is worth more than the tidy claim was: a door's litter was
+// invisible to the suite, but the door's OUTPUT was asserted in six places, so
+// the regression was one keystroke of coverage away from being caught in FX14's
+// own review.
+//
+// What those seven needed, and why none of them is a park of a dead claim:
+//   ab3, b1, fx6, fx14, hb1, hb2 — each derived a page id from the address, or
+//     read the newest row, IMMEDIATELY after pressing a bare-room door. The
+//     SUBJECT in every case is the door's semantics (origin 'loose'/'journal',
+//     lands in THE Page and never the Journal surface), and PB1 preserves all of
+//     it — the row simply arrives with the first word instead of on arrival. So
+//     each fixture types one word and reads the same thing it always did, with
+//     the change disclosed at its own site.
+//   fx14 and hb2 additionally quote their ORIGINAL assertion verbatim, because
+//     those two were about the ADDRESS SHAPE and were genuinely falsified on
+//     arrival — fx14's worse than falsified: its regex kept PASSING by accident
+//     on `#/page/new?origin=journal`, since that string contains no slash. Both
+//     now assert BOTH stages, the unborn address and then the room's own.
+//   cd2 — Star is absent on an unborn page by design, so its fixture births the
+//     page before reaching for it.
+// PB1 itself parks no assertion of its own.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console

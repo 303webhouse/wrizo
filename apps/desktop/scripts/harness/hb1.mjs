@@ -89,7 +89,16 @@ await withHarness(async (app) => {
   ok('S2: first-run Write forces typewriter ON (store + live data-typewriter)',
     forced.typewriter === true && forced.typewriterLive === 'true', JSON.stringify(forced));
   ok('S2: first-run Write forces Free Write mode', forced.modeActive === 'Free Write', JSON.stringify(forced));
-  ok('flow §2: the created page is origin \'loose\' (the home-base door)', forced.origin === 'loose', JSON.stringify(forced));
+  // PB1 (item 71) — the home-base door no longer persists a row on arrival; the
+  // page is born by its first word. The CLAIM is unchanged (the door's page is
+  // loose-origin) and so is the settings snapshot above — only the moment the
+  // row exists moved, so the origin is read after a keystroke instead of before
+  // one. Live successor for the mechanism: pb1.mjs.
+  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.typeKeys('w');
+  await app.waitFor("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => !e.deletedAt)", { label: 'first-run Write page born' });
+  const bornOrigin = await app.evalJs("(() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const e = es.find(x => !x.deletedAt); return e && e.origin; })()");
+  ok('flow §2: the created page is origin \'loose\' (the home-base door)', bornOrigin === 'loose', JSON.stringify({ ...forced, bornOrigin }));
 
   const veil = await app.evalJs(`(() => {
     const veils = [...document.querySelectorAll('.hb1-veil')];

@@ -104,10 +104,19 @@ const freshProjectPage = async (app, marker) => {
 
 // S4 — the Desk's start-writing / home-base door: a loose page, homing
 // nowhere. Opens at /page/:id (PageEditor), never /journal/:id.
+  // PB1 (item 71) — a bare-room door no longer persists a row: the page is born
+  // by its first word. This fixture's SUBJECT was never "a row exists on
+  // arrival" — the door is a VEHICLE for reaching a loose/journal page — so it
+  // types one word to get one, and every assertion downstream reads the same
+  // page it always did. (The on-arrival behaviour itself is PARKED where it was
+  // asserted; live successor: pb1.mjs.)
 const freshLoosePage = async (app) => {
   await freshDesk(app);
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await app.typeKeys('x');            // PB1 — the first word births the row
+  await app.waitFor("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => !e.deletedAt && e.origin === 'loose')", { label: 'loose page born' });
   await sleep(500); // past persistence.ts's 300ms debounced flush
 };
 
@@ -304,7 +313,9 @@ await withHarness(async (app) => {
   // Door 3: the Desk's start-writing / home-base door -> 'loose', homes
   // nowhere; starting there never files it.
   await freshLoosePage(app);
-  const looseEntries = await app.localJSON('writer-studio-journal-entries');
+  // PB1 — defensive: with birth-on-content the entries key can be genuinely
+  // ABSENT (no row was ever written), and localJSON returns null for that.
+  const looseEntries = (await app.localJSON('writer-studio-journal-entries')) || [];
   // Newest by createdAt among entries with no text (the fresh loose page).
   const looseDoorEntry = looseEntries.filter(e => e.origin === 'loose').sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
   ok('S4: the Desk\'s start-writing door stamps origin:\'loose\', projectId null, not shelved', looseDoorEntry?.origin === 'loose' && looseDoorEntry?.projectId == null && !looseDoorEntry?.shelved, JSON.stringify(looseDoorEntry));

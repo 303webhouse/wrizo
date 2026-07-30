@@ -532,9 +532,19 @@ await withHarness(async (app) => {
   // on THE Page under a trusted pointer. SV6: "Journal Pages no longer exist. The
   // Journal is now just a board that contains certain pages." Original, byte-for-byte:
   //   PARKED (was "S5 (a): Catch still opens the SAME untyped writing surface (JournalEntry.tsx, /journal/:id) — never the Board directly")
-  const catchPageId = catchRoute.replace(/^#\/page\//, ''); // FX14: Catch route is /page/:id now
+  // PB1 (item 71) — the id is derived AFTER the first word, not before it. Catch
+  // now opens an unborn surface (`#/page/new?origin=journal`) and the row — and
+  // therefore the id — comes into being with the first keystroke. This fixture
+  // already typed one; it simply read the address too early. The assertion below
+  // is unchanged, and still true: the captured page stamps origin 'journal' and
+  // stays untyped. Live successor for the birth mechanism itself: pb1.mjs.
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('S5 byte-identical capture.');
+  await app.waitFor("location.hash.indexOf('#/page/') === 0 && location.hash.indexOf('#/page/new') !== 0", { label: 'captured page born' });
+  const catchPageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  // This id specifically — a generic live-row wait is satisfied by rows this
+  // flow seeded earlier and would return before the captured page's own landed.
+  await app.waitFor(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => e.id === ${JSON.stringify(catchPageId)})`, { label: 'captured page row flushed' });
   await sleep(2400);
   const catchEntry = await app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(catchPageId)})`);
   ok('S5 (a): the captured page still stamps origin:\'journal\', still no pageType (untyped), exactly as createJournalPage always has',

@@ -62,8 +62,30 @@ await withHarness(async (app) => {
       twLive: document.querySelector('.mode-scroll')?.dataset.typewriter,
       origin: (() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]'); const e = es.find(x=>!x.deletedAt); return e && e.origin; })(),
     })`);
-    ok('S1 case 1: Write lands on a fresh page in THE Page (/page/:id, .forward-only-editor), never a journal surface (.entry-edit absent, origin loose)',
-      /^#\/page\/[^/]+$/.test(w.hash) && w.editor === true && w.journalChrome === false && w.origin === 'loose', JSON.stringify(w));
+    // PB1 (item 71) — RE-POINTED. ORIGINAL, byte-for-byte:
+    //   ok('S1 case 1: Write lands on a fresh page in THE Page (/page/:id,
+    //   .forward-only-editor), never a journal surface (.entry-edit absent,
+    //   origin loose)',
+    //     /^#\/page\/[^/]+$/.test(w.hash) && w.editor === true &&
+    //     w.journalChrome === false && w.origin === 'loose', JSON.stringify(w));
+    // Write now lands on an unborn surface — `#/page/new` — with no row until the
+    // first word, so both the address shape and the origin read are false ON
+    // ARRIVAL. The claim's SUBJECT is the LANDING (SV11: the app opens where the
+    // writing is, in THE Page, never a journal surface), and that is intact:
+    // asserted here on arrival, then again after the first word, when the address
+    // names the room and the row carries the loose origin. Live successor for the
+    // birth mechanism: pb1.mjs.
+    ok('S1 case 1: Write lands in THE Page — an unborn surface (/page/new, live editor, no row yet), never a journal surface',
+      /^#\/page\/new(\?|$)/.test(w.hash) && w.editor === true && w.journalChrome === false, JSON.stringify(w));
+    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+    await app.typeKeys('w');
+    await app.waitFor("location.hash.indexOf('#/page/') === 0 && location.hash.indexOf('#/page/new') !== 0", { label: 'landed page born' });
+    // The address flips synchronously at birth; the row lands on the ordinary
+    // 300ms debounced flush, so wait for it before reading origin from the store.
+    await app.waitFor("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => !e.deletedAt)", { label: 'landed page row flushed' });
+    const bornW = await app.evalJs(`({ hash: location.hash, editor: !!document.querySelector('.forward-only-editor'), journalChrome: !!document.querySelector('.entry-edit'), origin: (() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]'); const e = es.find(x=>!x.deletedAt); return e && e.origin; })() })`);
+    ok('S1 case 1: and once it has a word it IS a fresh page in THE Page (/page/:id, origin loose), still never a journal surface',
+      /^#\/page\/[^/?]+$/.test(bornW.hash) && bornW.editor === true && bornW.journalChrome === false && bornW.origin === 'loose', JSON.stringify(bornW));
     ok('S1 case 1: Write lands in Free Write with Typewriter on (mode tab + store + live data-typewriter)',
       w.mode === 'Free Write' && w.tw === true && w.twLive === 'true', JSON.stringify(w));
   }

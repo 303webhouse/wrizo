@@ -252,6 +252,21 @@ await withHarness(async (app) => {
   // PageFace.tsx itself is byte-unchanged by CD2, but the doorway to reach
   // it moved from a click-to-flip drawer pull to the strip's Page
   // category; re-proven fresh here through the new doorway).
+  // PB1 (item 71) — Star is ABSENT on an unborn page (patchJournalEntry would
+  // have nothing to merge into, and a star that does not stick is half-work), so
+  // this fixture births the page first. The star-persistence claim below is
+  // unchanged; only the page has to exist before it can be starred, which is the
+  // whole point of the ticket. Live successor: pb1.mjs's unborn-absence checks.
+  if (!(await app.evalJs("!!document.querySelector('.wz-pageface-star')"))) {
+    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+    await app.typeKeys('s');
+    await app.waitFor("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => !e.deletedAt)", { label: 'page born (row flushed)' });
+    // Typing dissolves the chrome (A19), which closes the cascade panel this
+    // fixture opened — so the Page category is re-opened after the birth rather
+    // than before it. Same doorway, same claim; only the order changed.
+    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+    await app.waitFor("!!document.querySelector('.wz-pageface-star')", { label: 'Page face re-opened, Star present' });
+  }
   await app.evalJs("document.querySelector('.wz-pageface-star').click()");
   await sleep(2300); // past PageEditor's own AUTOSAVE_MS (2000ms)
   const starredAfter = await app.evalJs("document.querySelector('.wz-pageface-star')?.dataset.starred");
