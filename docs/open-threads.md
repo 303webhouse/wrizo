@@ -7889,7 +7889,12 @@ rollback (2026-07-29). Production has ratcheted since P0: the P1 deploy's own ta
 is the P0-live state, so rolling P2a to it would strip P1+SC1 from a live build to cure a P2
 problem. Rollback is a redeploy of 5edae77's tree (`railway up` of it).
 
-**DEPLOY STAMP: <pending — stamped immediately after `railway up`, in the follow-up ledger commit>.**
+**DEPLOY STAMP: git `ca34f67` · railway `5a4da218-f4c0-458d-aeb6-ec286c0f3e1e`** — DEPLOYED
+2026-07-29 (`railway up --ci`, writer-studio / production / writer-studio-app; deployed image
+`sha256:be6f550d`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` 200, the new bundle served (`index-B4Bn5NUO.js` / `index-Qu-Rq3R4.css` — matches the
+merge-HEAD build byte-for-byte), `/auth/me` 401. The prior P1+SC deploy (`b63743ca`) is now
+superseded; the rollback SOURCE remains git `5edae77` (redeploy that tree via `railway up`).
 
 **Items 66 / 72 / 73 / 75: GREEN + DEPLOYED, but they STAY OPEN** — Fable's post-merge reviews
 FOLLOW the deploy (Nick's word); Nick's device sitting closes them. FX17 (74) stays OPEN for P2b.
