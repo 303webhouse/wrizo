@@ -67,3 +67,38 @@ Migrations run automatically on boot when the `users` table is absent
 URL, `DATABASE_PUBLIC_URL`), a local `SESSION_SECRET`, a local `INVITE_CODE`,
 `PORT=3000`, and `NODE_ENV=development`. Run `pnpm --filter @writer-studio/server build`
 then `node apps/server/dist/index.js`.
+
+## Ship checklist (per deploy) — the definition of ready
+
+The setup above is one-time; this is the recurring gate for every ship. Deploy is
+always Nick's separate word ("DEPLOY WHEN READY" is standing for the P-waves).
+
+1. **Merged + verified at the merge HEAD:** `tsc` ×2 (app + node) EXIT 0, `build:web`
+   clean, the full historic suite read to completion **BOTH `HARNESS_PARKED` settings**
+   (via the committed `apps/desktop/scripts/run-suite.mjs`).
+2. **Manifest enumerated** — a records commit naming EVERYTHING in the target SHA (every
+   merged-but-undeployed ticket, per the stamp law), docs range attested zero-src outside
+   the named arcs.
+3. **Rollback target named BEFORE ship** — the current live SHA (`git <sha> · railway <id>`),
+   ratcheted forward each deploy. Rolling to a superseded deploy resurrects its env (e.g. a
+   pre-rotation key), so the ratchet is explicit.
+4. **Push before deploy** — production must never run a SHA that isn't on origin (the orphan
+   class). Order: re-merge → verify → **push main** → `railway up` → stamp → ledger.
+5. **Stamp both identifiers** — `git <sha> · railway <deployment-id>`, verified LIVE:
+   `/healthz` 200, the new asset hash served, `/auth/me` 401. An env-only change (e.g. a key
+   rotation) needs a `railway redeploy` to take effect and gets its own append-only stamp
+   annotation (same git SHA, new railway id).
+
+### Shipping during a RED-suite state — pre-ruled house law (Fable, 2026-07-31)
+
+A green full suite is the normal gate (step 1). When clean `main`'s suite is standing RED
+(e.g. item 82), a green suite is unavailable, so a **hotfix may ship ONLY on ALL THREE, and
+NEVER silently**:
+
+- **(a) targeted spec green** for the changed surface — the fix's own harness passes;
+- **(b) the red set UNCHANGED in identity** — no NEW reds (same files, same failures); a new
+  red halts the ship;
+- **(c) Nick's explicit word** naming the standing reds as a recorded exception for this ship.
+
+All three, recorded in the manifest. The burden shifts from "full suite green" to
+targeted-green + red-set-invariance + the founder's named exception.
