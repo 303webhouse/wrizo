@@ -6,11 +6,17 @@
 // future lane would find it — they lived in one agent's memory. That is the
 // actual defect this slice fixes: the knowledge was not in the repo.
 //
-// Run (from apps/desktop, with dist-web freshly built):
+// Run (from apps/desktop — it REBUILDS dist-web itself before running):
 //   node scripts/run-suite.mjs                 # HARNESS_PARKED unset
 //   node scripts/run-suite.mjs --parked        # HARNESS_PARKED=1
 //   node scripts/run-suite.mjs --only tu2.mjs,j5.mjs
+//   node scripts/run-suite.mjs --no-rebuild    # quick iteration; STAMPED as such
 // Exit 0 only if EVERY file returned a verdict AND every verdict passed.
+//
+// Every verdict record carries a PROVENANCE STAMP — `tree=<sha> bundle=<asset
+// hash>/<bytes>` — on SUITE START, on SUITE RESULT, and in `manifest.json`
+// beside the logs. Quote the stamp whenever you quote a result: a suite claim
+// without it names its source but not its software (item 77(c), below).
 //
 // ---------------------------------------------------------------------------
 // THE THREE HYGIENE LAWS THIS RUNNER ENCODES
@@ -39,8 +45,8 @@
 //    "CDP page target never appeared" or a silent 900s hang, both of which
 //    look exactly like a flaky test and are not one.
 // ---------------------------------------------------------------------------
-import { spawn, execFileSync } from 'node:child_process';
-import { openSync, closeSync, readFileSync, mkdirSync, writeFileSync, appendFileSync, readdirSync } from 'node:fs';
+import { spawn, spawnSync, execFileSync } from 'node:child_process';
+import { openSync, closeSync, readFileSync, statSync, mkdirSync, writeFileSync, appendFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -55,6 +61,7 @@ const valOf = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : 
 
 const PARKED = has('--parked');
 const IGNORE_FOREIGN = has('--ignore-foreign');
+const NO_REBUILD = has('--no-rebuild');
 const PER_FILE_TIMEOUT_MS = Number(valOf('--timeout') || 15 * 60 * 1000);
 const ONLY = (valOf('--only') || '').split(',').map((s) => s.trim()).filter(Boolean);
 const OUT_DIR = valOf('--out') || path.join(os.tmpdir(), `wrizo-suite-${process.pid}`);
@@ -63,6 +70,78 @@ mkdirSync(OUT_DIR, { recursive: true });
 const LOG = path.join(OUT_DIR, PARKED ? 'suite-parked.log' : 'suite-default.log');
 
 const say = (line) => { process.stdout.write(line + '\n'); appendFileSync(LOG, line + '\n'); };
+
+// ---------------------------------------------------------------------------
+// ITEM 77(c) — PROVENANCE. A suite result must be able to say WHAT IT TESTED.
+//
+// The gap this closes, ratified structural after item 82's diagnosis: this
+// harness serves `apps/desktop/dist-web`, a BUILD ARTIFACT. `dist-web/` is
+// gitignored with zero tracked files, so A TREE SHA DOES NOT PIN WHAT RAN. Two
+// worktrees at byte-identical `apps/` can serve entirely different applications
+// depending on when each last built — and that is not hypothetical: during
+// item 82's diagnosis a worktree was found on this machine carrying +995 lines
+// of a ticket's source while serving a byte-identical clean-main bundle. A red
+// measured there could be neither validated nor invalidated afterwards, because
+// the one identifier anybody had recorded (the SHA) described the source and
+// not the software.
+//
+// So every verdict record now carries BOTH identifiers — tree SHA and the
+// served bundle's asset hash — and a suite REBUILDS before it runs, so the two
+// cannot silently drift apart in the first place. The cost is ~2s; the thing it
+// buys is that any future red is falsifiable on arrival instead of forensically
+// irrecoverable a day later.
+function gitInfo() {
+  const run = (args) => { try { return execFileSync('git', args, { cwd: DESKTOP, encoding: 'utf8' }).trim(); } catch { return null; } };
+  const sha = run(['rev-parse', '--short', 'HEAD']);
+  const dirty = run(['status', '--porcelain']);
+  return { sha: sha || 'unknown', dirty: dirty ? dirty.split('\n').filter(Boolean).length : 0 };
+}
+
+// The served bundle's identity, read from what will actually be served.
+function bundleInfo() {
+  const dist = path.join(DESKTOP, 'dist-web');
+  try {
+    const html = readFileSync(path.join(dist, 'index.html'), 'utf8');
+    const js = (html.match(/index-[A-Za-z0-9_-]+\.js/) || [])[0] || null;
+    const css = (html.match(/index-[A-Za-z0-9_-]+\.css/) || [])[0] || null;
+    let bytes = null;
+    if (js) { try { bytes = statSync(path.join(dist, 'assets', js)).size; } catch { /* unreadable */ } }
+    return { js, css, bytes };
+  } catch {
+    return { js: null, css: null, bytes: null };
+  }
+}
+
+// A suite of record rebuilds before running (Fable, 2026-07-31). Skippable with
+// --no-rebuild for quick iteration, but the skip is STAMPED into the record so a
+// result produced without it can never be mistaken for a suite of record.
+function rebuild() {
+  if (NO_REBUILD) return { rebuilt: false, ok: null };
+  const r = spawnSync('pnpm', ['run', 'build:web'], { cwd: DESKTOP, encoding: 'utf8', shell: process.platform === 'win32' });
+  return { rebuilt: true, ok: r.status === 0, err: r.status === 0 ? null : (r.stderr || r.stdout || '').split('\n').slice(-4).join(' | ') };
+}
+
+const build = rebuild();
+if (build.rebuilt && !build.ok) {
+  say(`SUITE REFUSED: the pre-run rebuild FAILED, so what would be served is unknown and stale. ${build.err || ''}`);
+  process.exit(2);
+}
+const GIT = gitInfo();
+const BUNDLE = bundleInfo();
+// The one string every verdict record carries. Named so a reader can tell at a
+// glance whether two results are even comparable.
+const STAMP = `tree=${GIT.sha}${GIT.dirty ? `+${GIT.dirty}dirty` : ''} bundle=${BUNDLE.js || 'MISSING'}${BUNDLE.bytes ? `/${BUNDLE.bytes}b` : ''}${build.rebuilt ? '' : ' NO-REBUILD'}`;
+// And the same facts machine-readably, beside the logs. Comparing two results
+// is precisely what item 82 could not do after the fact; this makes it a diff.
+writeFileSync(path.join(OUT_DIR, 'manifest.json'), JSON.stringify({
+  startedAt: new Date().toISOString(),
+  setting: PARKED ? 'HARNESS_PARKED=1' : 'unset',
+  tree: GIT.sha,
+  dirtyFiles: GIT.dirty,
+  bundle: BUNDLE,
+  rebuiltBeforeRun: build.rebuilt,
+  runner: 'run-suite.mjs (item 77(c) stamp)',
+}, null, 2));
 
 // --- the machine this runner is sharing ------------------------------------
 // Enumerate browsers holding a runtime-verify profile. Returns [{pid, owner}].
@@ -129,7 +208,7 @@ const contaminated = !!(preexisting && preexisting.length > 0) || preexisting ==
 const files = readdirSync(HARNESS_DIR).filter((f) => f.endsWith('.mjs'))
   .filter((f) => ONLY.length === 0 || ONLY.includes(f)).sort();
 
-say(`SUITE START HARNESS_PARKED=${PARKED ? '1' : 'unset'} files=${files.length} out=${OUT_DIR}${contaminated ? ' CONTAMINATED=yes' : ''}`);
+say(`SUITE START HARNESS_PARKED=${PARKED ? '1' : 'unset'} files=${files.length} ${STAMP} out=${OUT_DIR}${contaminated ? ' CONTAMINATED=yes' : ''}`);
 
 const ownPids = new Set();
 
@@ -216,5 +295,5 @@ say(`SUITE DONE HARNESS_PARKED=${PARKED ? '1' : 'unset'} — ${results.length - 
   + `${contaminated ? ' [CONTAMINATED: foreign browsers present at start]' : ''}`);
 for (const r of bad) say(`  ${r.status}: ${r.file} — full output at ${r.outFile}`);
 const clean = bad.length === 0 && !contaminated && !abortedAt && results.length === files.length;
-say(`SUITE RESULT: ${clean ? 'CLEAN' : abortedAt ? `VOID (aborted mid-run at ${abortedAt})` : bad.length === 0 ? 'PASS-BUT-CONTAMINATED' : 'NOT CLEAN'}`);
+say(`SUITE RESULT: ${clean ? 'CLEAN' : abortedAt ? `VOID (aborted mid-run at ${abortedAt})` : bad.length === 0 ? 'PASS-BUT-CONTAMINATED' : 'NOT CLEAN'} — ${STAMP}`);
 process.exit(clean ? 0 : 1);
