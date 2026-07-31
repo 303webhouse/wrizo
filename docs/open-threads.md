@@ -8027,6 +8027,18 @@ outlive a session lives here, not in chat.
     numbers. Make it honest or amputate the parameter. (b) `b2-1.mjs` first-parked-pass
     NOVERDICT ("__click is not defined") — diagnose, never clear.
 
+## P1 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane) — CLOSES THE REVIEW LEDGER
+
+The P1 wave's four post-merge reviews. All PASS. Verdict files committed this records commit:
+- item 68 · **FX15 — REVIEWED, GREEN.** `docs/wrizo-alpha/fx15-review-fable.md`.
+- item 69 · **HB2-lite — REVIEWED, GREEN.** `docs/wrizo-alpha/hb2lite-review-fable.md`.
+- item 70 · **M4 — REVIEWED, GREEN.** `docs/wrizo-alpha/m4-review-fable.md`.
+- item 67 · **BG1 — REVIEWED, GREEN.** `docs/wrizo-alpha/bg1-review-fable.md`.
+
+**REVIEW STATE — the review ledger is CLEAR.** Every deployed ticket is now reviewed: P1
+(67 / 68 / 69 / 70), SC1 (prior desk), P2 (66 / 71 / 72 / 73 / 74 / 75). No post-merge review
+is owed.
+
 ## P2 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane)
 
 All PASS. Verdict files committed this records commit:
