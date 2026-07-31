@@ -6994,6 +6994,39 @@ outlive a session lives here, not in chat.
     product change, churning the SHA map and the archive-ref story for nothing.
     **THE LANE HOLDS.** SC2's work is done and proven; the branch parks offer-ready at
     `9503515` until main's suite can go green under it. Fable's review still closes 62.
+    **FOURTH SUITE OF RECORD — 2026-07-31, ORDERED BY FABLE UNDER A PROVENANCE DISCIPLINE;
+    STILL NO MERGE OFFER.** Result: **53/53 CLEAN at `HARNESS_PARKED` unset (exit 0) —
+    the first fully green pass this head has produced — and 52/53 at `=1`, `m4.mjs` FAIL
+    1/42.** Not green at both settings, so the gate (the head merges only on its own full
+    green) holds and the offer stays unmade. `sc2.mjs` **72/72 both settings** for the
+    fourth consecutive run; `sc1.mjs` 71 + 71.
+    **THE PROVENANCE DISCIPLINE EARNED ITS PLACE IMMEDIATELY, and the defect it caught was
+    THIS LANE'S OWN.** The order was: rebuild `dist-web` IN the worktree, record the served
+    asset hash, and grep an SC2-only symbol to prove WHICH APP was tested. On the first
+    check the worktree's `dist-web` was **main's bundle** (`index-CubIOguU.js`, zero
+    occurrences of `paginate`) sitting under SC2's source — because the control runs
+    restored the git branch but never rebuilt, so the restore step should have been
+    `checkout && rebuild`, not `checkout` alone. **No reported result was corrupted** (the
+    fresh build reproduced `index-DSrJF9Jz.js`, byte-identical to the hash built before the
+    original suite of record, which retroactively proves that run tested the right app) —
+    but the next run in that worktree would have silently measured main and called it SC2.
+    Same class as `17edc10`'s `withHarness` `opts.dist` finding: **a build swap that yields
+    plausible numbers against the wrong tree.** Provenance of record for this head:
+    **`assets/index-DSrJF9Jz.js` + `assets/index-62lZ1TCK.css`, with `script-sequence` and
+    `script-page-number` (both absent from `main`'s src entirely) present in BOTH bundles.**
+    **THREE ATTEMPTS WERE NEEDED, AND THE TWO FAILURES WERE NOT REDS.** Attempts 1 and 2
+    came back **VOID** — foreign harness browsers appeared mid-run (owners `42772`, then
+    `25268`; the latter traced to chat 6's item-77(c) verification via its own scratchpad
+    path), so `run-suite.mjs` aborted rather than hand back a half-clean sweep, and the
+    parked pass REFUSED to start (exit 2). **Nothing foreign was killed** — provenance said
+    the browsers were not this runner's, and a by-name `--headless` sweep is the standing
+    law's named violation. `--ignore-foreign` was NOT used: it produces numbers stamped
+    CONTAMINATED, and a merge offer resting on one is worse than no offer. Attempt 3 ran in
+    a **coordinated** window (Fable held the other lanes) — the difference between a raced
+    window and a coordinated one is the whole result.
+    **A CORRECTION THIS RUN FORCED, recorded at item 82:** the clean unset pass falsified
+    this lane's earlier "j5 is the deterministic red" claim — `j5` and `j4` both PASS at
+    unset here. Item 82 is one family of races, not a deterministic spine plus a family.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
@@ -8627,6 +8660,36 @@ sitting closes them.
     Every red here is therefore real until diagnosed. **DoD:** each red root-caused and
     fixed or lawfully parked, and a full suite green at both settings on `main` — which is
     also what unblocks item 62's parked merge offer.
+    **CORRECTION — 2026-07-31, SAME LANE, ON NEW EVIDENCE. THE "DETERMINISTIC ONE" FRAMING
+    ABOVE IS FALSIFIED; IT IS LEFT STANDING VERBATIM AND CORRECTED HERE, NOT REWRITTEN.**
+    A fourth suite of record at `9503515` — run in a COORDINATED quiet window under the
+    provenance discipline (bundle `index-DSrJF9Jz.js`, SC2-only markers `script-sequence` +
+    `script-page-number` proven present in both bundles before the run) — came back
+    **53/53 CLEAN at `HARNESS_PARKED` unset**, with **`j5` PASS (37 checks)** and **`j4`
+    PASS (24 checks)**. `j5` is therefore **NOT deterministic.** The earlier claim
+    generalised from four consecutive failures; four consecutive failures of a race are
+    still a race, and the word was too strong for the evidence.
+    **THIS IS NOT EXPLAINED BY CONTENTION, WHICH WAS CHECKED BEFORE THE CORRECTION WAS
+    WRITTEN.** `run-suite.mjs` aborts VOID if a foreign harness browser appears mid-run;
+    the original suite of record (53 files) and the clean-`main` control (52 files) both
+    ran their full lists WITHOUT voiding, so both were measured on a quiet box. The
+    reds were real observations on a quiet machine; what was wrong was the CLASS assigned
+    to them, not the sightings.
+    **THE ITEM IS THEREFORE ONE FAMILY, NOT TWO.** `j4`, `j5`, `b2-1`, `fx6`, `th2` and
+    `m4` are all **order/timing-dependent races**; item 82 has no deterministic spine and
+    the hydration-race mechanism named above now covers `j4`+`j5` as members of the family
+    rather than as a separate class. **`m4` joins as the sixth witness** (parked FAIL 1/42:
+    "S4 (Bar): the flare is ORANGE … at a real (non-zero) opacity" measured `opacity:"0"`,
+    while passing 42/42 unset **in the same run**) — and `m4`+`th2` are plainly the SAME
+    species: both assert **evental celebration paint that reverts**, and both were caught
+    mid-fade. That pairing is the most tractable lead in this item and is where a
+    successor should start: an assertion that races an animation it does not gate on is a
+    defect in the CHECK, not necessarily in the product — the reciprocal of the lane
+    practice that a timing claim carries a correctness gate.
+    **WHAT SURVIVES THE CORRECTION UNCHANGED:** clean `main` was observed RED at both
+    settings (51/52 unset, 51/52 parked) on a quiet box, so the freeze-eve finding stands;
+    nothing was ever attributed to SC2; and `fd57ee6` is still an ancestor of both control
+    trees, so it is still not the answer.
 
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
