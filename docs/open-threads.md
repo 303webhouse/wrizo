@@ -8020,6 +8020,51 @@ outlive a session lives here, not in chat.
     numbers. Make it honest or amputate the parameter. (b) `b2-1.mjs` first-parked-pass
     NOVERDICT ("__click is not defined") — diagnose, never clear.
 
+## P2b DEPLOY MANIFEST — 2026-07-30 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
+
+**P2b — FX17, with PB1 RIDING.** Fable's amendment named "FX17 alone," but PB1 merged
+between P2a and P2b, so per the stamp law (every merged-but-undeployed ticket is named) the
+P2b SHA carries both. Deploying the `main` HEAD — this records commit's own SHA, stamped
+below immediately after `railway up`.
+
+**New code since the P2a deploy (`ca34f67`):**
+- item 74 · **FX17 — the Board's Floor** · merge `c340876` (branch `ef7429c`) — the
+  width↔height feedback loop closed (S1); the board grows to a named `BOARD_MAX_Y` floor and
+  stops exact (S2/S3); the limit stops, never relocates.
+- item 71 · **PB1 — Born on the First Word** (RIDING — merged `e8ae17d`, reviewed GREEN, held
+  undeployed since it landed after P2a) · merge `e8ae17d` (branch `af47582`) — birth belongs
+  to the record; the unborn slot lives outside the cache; `history.replaceState` corrects the
+  address (no remount).
+
+**App-code touched (`ca34f67..HEAD`, apps/desktop/src) — ALL FX17 or PB1, nothing else:**
+FX17 — `BoardEditor.tsx`, `index.css`. PB1 — `App.tsx`, `Arrival.tsx`, `CascadePanels.tsx`,
+`DrawersTree.tsx`, `PageFace.tsx`, `UnbornSurface.tsx`, `useCatch.ts`, `PageEditor.tsx`,
+`persistence.ts`, `unbornPage.ts` (+ `BoardEditor.tsx` shared). All frontend.
+
+**ZERO SCHEMA, ZERO SERVER FILES** across `ca34f67..HEAD`: `apps/server` diff empty; no
+migration/schema/db files.
+
+**Docs since `ca34f67` (records only, no deployed surface):** the P2a deploy stamp
+(`569d3f2`), the PB1 review + ledger appends (`b9442dc`), the sitting agenda v3 (`f721d16`),
+chat 6's FX17 ledger (`389ec29`), this manifest + the hd-arc-seed. Zero deployed surface.
+
+**Verified:** FX17's suite of record — full historic suite, BOTH HARNESS_PARKED settings,
+read to completion — **52/52 both settings at `ef7429c`** (rebased onto the PB1-carrying main,
+so PB1 + FX17 were tested together; `fx17.mjs` 18 checks under trusted pointer). PB1 verified
+51/51 at its own head + reviewed GREEN (`docs/wrizo-alpha/pb1-review-fable.md`). The FX17 merge
+into main is a docs-only three-way over chat 6's records commit (`389ec29`) — no re-verification
+owed (Fable's pre-authorization); the deployed bundle's app code equals `ef7429c`'s (docs don't
+enter the build). `tsc` ×2 EXIT 0 + `build:web` clean re-confirmed at the merge HEAD (`c340876`).
+
+**ROLLBACK TARGET: git `ca34f67` · railway `5a4da218-f4c0-458d-aeb6-ec286c0f3e1e`** — the
+current live production build (P2a: FX16 + FX18 + BG2). Rollback is a redeploy of that tree
+(`railway up`).
+
+**DEPLOY STAMP: <pending — stamped immediately after `railway up`, in the follow-up ledger commit>.**
+
+**Items 74 + 71: GREEN + DEPLOYED** (74 GREEN at its merge; 71 was merged-but-undeployed, now
+DEPLOYED). 74 stays open for Fable's post-merge review + the sitting; 71's review already closed GREEN.
+
 ## P2a DEPLOY MANIFEST — 2026-07-29 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
 
 **P2a — three fixes shipped while FX17 (P2b) builds** (Fable: "P2a ships now-when-green:
