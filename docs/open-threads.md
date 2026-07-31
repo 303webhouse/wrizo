@@ -8027,6 +8027,29 @@ outlive a session lives here, not in chat.
     numbers. Make it honest or amputate the parameter. (b) `b2-1.mjs` first-parked-pass
     NOVERDICT ("__click is not defined") — diagnose, never clear.
 
+## P2 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane)
+
+All PASS. Verdict files committed this records commit:
+- item 72 · **FX16 — REVIEWED, GREEN.** `docs/wrizo-alpha/fx16-review-fable.md`.
+- item 73 · **BG2 — REVIEWED, GREEN.** `docs/wrizo-alpha/bg2-review-fable.md`.
+- item 75 · **FX18 — REVIEWED, GREEN.** `docs/wrizo-alpha/fx18-review-fable.md`.
+- item 66 · **DF1.1 — REVIEWED, GREEN.** `docs/wrizo-alpha/df11-review-fable.md`.
+- item 71 · **PB1 — REVIEWED, GREEN** (`pb1-review-fable.md`, committed `b9442dc`).
+- item 74 · **FX17 — Fable's verdict is REVIEWED, GREEN**, but its review FILE
+  (`fx17-review-fable.md`, "the earlier paste") **did NOT reach chat 1** — HELD pending
+  re-send, to be committed on receipt. Flagged, NOT fabricated (the verdict is Fable's to
+  write, not chat 1's to invent).
+
+**Review state:** the P2 house is reviewed GREEN — 66 / 71 / 72 / 73 / 75 files committed;
+**FX17 (74)'s verdict is GREEN but its file awaits the relay paste** (see above). Owed next:
+the P1 four (FX15, HB2-lite, M4, BG1) — Fable's desk.
+
+**ROLLBACK RATCHET (explicit, 2026-07-31):** the next ship's rollback target is now git
+`c266cb3` · railway `11b612db`. `dfa03148` is SUPERSEDED — rolling to it would resurrect the
+pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ever revoked,
+every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
+moment.
+
 ## P2b DEPLOY MANIFEST — 2026-07-30 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
 
 **P2b — FX17, with PB1 RIDING.** Fable's amendment named "FX17 alone," but PB1 merged
