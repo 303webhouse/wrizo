@@ -8121,6 +8121,37 @@ outlive a session lives here, not in chat.
     immediately before running. **INTERIM DISCIPLINE, EFFECTIVE NOW (Fable):** every suite
     claim any lane makes names **tree SHA + served asset hash**, and suites of record
     rebuild first.
+    **(c) BUILT + VERIFIED; MERGE OFFERED — 2026-07-31 (chat 6).** Branch
+    `item77c-bundle-stamp` @ **`3527928`** (WIP marker `a26a810` on top — empty, tree
+    object IDENTICAL to the fix, so it changes no code), off `main` @ `bd0b4a0`;
+    HARNESS/TOOLING ONLY — zero `src`, zero schema, zero server, zero deps; nothing
+    ships. **Both halves of the ruling, mechanised:** (i) every verdict record now
+    carries `tree=<sha>[+Ndirty] bundle=<asset-hash>/<bytes>` — on `SUITE START`, on
+    `SUITE RESULT` (the line a report quotes), and in a machine-readable
+    `manifest.json` beside the logs; (ii) a suite REBUILDS before running, and a
+    FAILED rebuild **REFUSES** the suite rather than degrading to an unknown stale
+    bundle. `--no-rebuild` survives for iteration and is stamped `NO-REBUILD`, so a
+    result produced without it can never masquerade as a suite of record. The
+    **dirty-file count is part of the stamp on purpose** — an identity claim must
+    never outrun what is actually known (Fable ratified both decisions).
+    **VERIFIED BY PLANTING THE FAILURE, not by asserting the path:** `dist-web` was
+    DELETED, then `--only fx12.mjs` run; the runner rebuilt it unprompted, passed, and
+    emitted the stamp on both lines with a matching manifest. A stamp that only ever
+    reports success proves nothing.
+    **SUITE OF RECORD — the first stamped results in this project's history:**
+    **PARKED `SUITE RESULT: CLEAN — tree=3527928 bundle=index-CubIOguU.js/523769b`
+    (52/52, dirtyFiles 0, rebuiltBeforeRun true)** and **DEFAULT `SUITE RESULT: CLEAN
+    — tree=a26a810 bundle=index-CubIOguU.js/523769b` (52/52)**. The two halves carry
+    DIFFERENT tree SHAs (the empty marker landed between them) and the SAME bundle
+    hash and byte count — so they are provably the same software, which is exactly the
+    comparison item 82's control could not make about itself. **Disclosed:** an earlier
+    attempt at the default half was REFUSED at second zero against 16 foreign browsers
+    (SC2's window) — the guard working as ruled, scheduling not error; that attempt
+    produced no result and none is cited. A defect in this lane's own scratch driver
+    (no halt-on-nonzero, unlike the DF1.1 DoD driver) let the pair continue past that
+    refusal; scratch tooling, uncommitted, recorded because it is the same class this
+    arc keeps catching. **Merge is harness-only, zero-schema, pre-authorized class;
+    it needs no browser and may process during any window.**
 
 ## P1 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane) — CLOSES THE REVIEW LEDGER
 
