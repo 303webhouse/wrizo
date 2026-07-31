@@ -6921,6 +6921,79 @@ outlive a session lives here, not in chat.
     **Successor owes:** rebase onto current `origin/main`, ONE suite of record at the
     surviving head both settings; if red, revert the memo half first. Then the merge offer;
     Fable's review closes 62.
+    **SC2 — SUCCESSOR'S OWED WORK DISCHARGED; NOTHING ATTRIBUTED TO SC2; THE BRANCH
+    PARKS OFFER-READY (2026-07-31, chat SC2-successor).** The rebase, the suite of
+    record, and the attribution are all done; the merge offer is NOT made, because the
+    head does not have its own full green and — ruled by Fable this session — **the head
+    merges only on its own full green, deadline notwithstanding.** The blocker is main's,
+    not SC2's.
+    **THE REBASE.** `sc2-s5-memo` rebased onto `origin/main` @ `a0ec245`, **11/11 commits
+    replayed, ZERO conflicts**, `--empty=keep` so the empty gate-commit survived as itself.
+    Fidelity was checked rather than assumed: **6 of the 7 files are byte-identical BLOBS
+    pre→post**; `index.css` is the only file both sides touched (main +263, SC2 +119) and
+    its SC2 delta was diffed pre vs post and is UNCHANGED — git interleaved them without a
+    conflict AND without a silent loss. `tsc` ×2 EXIT 0; `build:web` clean. Head offered
+    for merge when main allows: **`9503515`** (= 11 replayed + one empty `WIP — DO NOT
+    MERGE` marker carrying the gate while the suite ran; `a0ec245..9503515` is **12**
+    commits, and that arithmetic is owned, not assumed).
+    **THE SHA MAP.** The rebase rewrote SHAs that frozen commit bodies cite. **No commit
+    message was edited** — originals verbatim, successor pointer alongside:
+    `57bc9f9`→`4884dc6` (S0) · `439d933`→`75581d6` (S0 re-issue) · **`c1cabe8`→`c8bb07f`
+    (S0 re-issue 2 — THE FROZEN BASELINE the latency gate names)** · `1a759c4`→`660e842`
+    (S1) · `447dd8d`→`9b177be` (S2a) · `a2706d3`→`b5101cc` (S2a.1) · `f1bcc21`→`3935dc2`
+    (S2b) · `8192077`→`1d61324` (S4) · **`fc92ac1`→`d52fbb5` (S5 caret — the separable
+    pre-memo head)** · `b8a6da5`→`eba7e27` (the memo half, 32+/3−, `ScriptEditor.tsx`
+    only) · `5e2eaa7`→`17edc10` (the gate record, still empty).
+    **THE ARCHIVE REF — `origin/sc2-prerebase-archive` @ `5e2eaa7`, ARCHIVE CLASS, NEVER
+    MERGED.** Pushed on Fable's order BEFORE any cleanup, because `17edc10` cites the
+    frozen baseline **by SHA** and local refs are one deleted worktree from unreachable.
+    Verified, not assumed: `git merge-base --is-ancestor c1cabe8 <archive>` → TRUE. **The
+    gate's evidence is resolvable on the trail, not on one machine.**
+    **THE TIMING GATE — NOT RE-RUN, RULED (Fable, 2026-07-31).** `sc2.mjs`'s three-run
+    interleaved measurement is behind `SC2_TIMING=1` and the suite does not set it — that
+    is Fable's own SUITE CITIZENSHIP ruling of 2026-07-25 (the measurement holds a browser
+    for minutes and starved `fx1` into a 480s timeout), not an omission. Reasoning on the
+    record: the measured surface is byte-identical across the rebase, and the main delta
+    beneath it is off the script keystroke path (PB1 never touched `ScriptEditor`;
+    FX17/BG2/FX16 do not mount on a script surface; DF1.1 is zero product src). **The
+    claim's lawful shape: a green suite proves correctness, viewport-invariance and
+    Amendment 2's IDENTITY assertions — NEVER that the timing re-ran.** The `17edc10`
+    figures (1.10× ≤ 2.0; the memo 0.84×) stand as the gate of record, at the pre-rebase
+    SHAs, preserved on the archive ref.
+    **STANDING CONDITION ON THIS ITEM'S CLOSE-OUT (Fable, 2026-07-31):** **any future src
+    change touching the script keystroke path — `ScriptEditor`, the paginator, the ledger
+    — RE-RUNS the interleaved gate before ITS merge word.** (Its sibling condition rides
+    item 76's DoD.)
+    **THE SUITE OF RECORD — RED, and the red is not SC2's.** Head `9503515`, committed
+    runner `scripts/run-suite.mjs`, glob **53** (main's 52 + `sc2.mjs`; the branch adds
+    exactly one file and removes none), both settings serially, every verdict read to
+    completion, asserted against the raw JSON. **51/53 unset · 51/53 parked; NOT CLEAN
+    both.** Reds: `j4` + `j5` NOVERDICT (unset); `b2-1` NOVERDICT + `fx6` FAIL 1/37
+    (parked). **SC2's own instruments are GREEN: `sc2.mjs` 72/72 BOTH settings (the same
+    figure `fc92ac1` recorded pre-rebase, unchanged at the new head), `sc1.mjs` clean both
+    settings with SC2's park cycles still firing against FX14's rewritten files — zero
+    `pass:false` in the raw JSON of any of the four files.** SC1's inherited merge-order
+    obligation is thereby satisfied at the rebased head.
+    **ATTRIBUTION — BY EXPERIMENT, NOT BY LANE-BOUNDARY ARGUMENT.** The memo-revert
+    instrument was resequenced behind the control and the resequencing was disclosed
+    before it was done, on this reasoning: **three of the four reds flip between PASS and
+    FAIL on an UNCHANGED tree**, so the tree is not the variable and no code-level revert
+    can explain them. `j5` at unset was the only deterministic red (failed in-suite AND
+    isolated). Control run: clean `origin/main`, **zero SC2 in the tree** (`sc2.mjs`
+    absent, confirmed), identical isolation protocol → **7 of 8 cells match**, and **`j5`
+    fails identically on clean main** — same `waitFor timed out: lens row`, same "No loose
+    pages yet" empty state, same `j5.mjs:178`. Then the definitive control, **FULL suite
+    both settings on clean main: 51/52 unset (`j5` NOVERDICT) · 51/52 parked (`th2` FAIL
+    2/42) — NOT CLEAN BOTH.** **Clean main is red on the eve of the freeze; nothing is
+    attributed to SC2.** Opened as **item 82**.
+    **A CONTROL-VALIDITY NOTE, since `origin/main` moved mid-session** (to `9b30273`, when
+    another lane's fetch advanced the shared remote-tracking ref): `a0ec245..9b30273` is
+    **byte-identical under `apps/`** — records-only, 10 docs files, +262 — so the control
+    tree is product-identical to the branch's parent and the control stands. **No
+    re-rebase is owed**; re-rebasing would rewrite eleven SHAs a second time for zero
+    product change, churning the SHA map and the archive-ref story for nothing.
+    **THE LANE HOLDS.** SC2's work is done and proven; the branch parks offer-ready at
+    `9503515` until main's suite can go green under it. Fable's review still closes 62.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
@@ -8020,6 +8093,12 @@ outlive a session lives here, not in chat.
     exists BEFORE any build; (b) `sc2.mjs`'s class-alive assertion FLIPS to asserting
     preservation — tightened, never quietly satisfied; (c) in-flight IME, non-collapsed
     selection, and native undo across the break are in-scope acceptance criteria.
+    **(d) — ADDED 2026-07-31 (Fable), the sibling of item 62's close-out condition:** the
+    dissolution **RE-ESTABLISHES Amendment 1's bound FROM SCRATCH as part of its own DoD**
+    — a fresh interleaved baseline-vs-tip measurement on the judging machine, not an
+    inheritance of SC2's 1.10×. The bound was not re-run at the SC2 merge head by Fable's
+    ruling of 2026-07-31 (reasoning in item 62), so this item may not lean on it: the
+    dissolution rewrites the element flow the figure was measured over.
 77. **Harness-infra pair — chat 6's lane.** **OPEN — 2026-07-30; non-blocking, required
     before any future A/B gate.** (a) `withHarness` `opts.dist` is DISHONEST — serves the
     given `index.html` but resolves `/assets` against the default `dist-web`; near-miss
@@ -8398,6 +8477,71 @@ sitting closes them.
     than choose; Fable recorded it here as Nick's call.
     **DoD:** the whole board can be seen at once, and no ratified chrome law is spent doing
     it.
+82. **The Spread hydration reds (`j4` + `j5`) — and the order-dependent family beside
+    them.** **OPENED — 2026-07-31 (chat SC2-successor), on Fable's order.** *(Numbered 82
+    as ruled; 79/80/81 are unclaimed on `main` at open time and presumed in flight in
+    other lanes — a gap is safer than a collision across six lanes.)* **This item exists
+    because a full suite on CLEAN `main`, with zero SC2 in the tree, is RED at both
+    settings on the eve of the freeze.**
+    **THE CONTROL, of record.** Tree `9b30273` (byte-identical to `a0ec245` under
+    `apps/`), committed runner, glob 52, both settings serially, contamination guard
+    satisfied honestly (no `--ignore-foreign`, zero foreign browsers at start):
+    **51/52 unset — `j5.mjs` NOVERDICT. 51/52 parked — `th2.mjs` FAIL 2/42. NOT CLEAN
+    BOTH.**
+    **THE DETERMINISTIC ONE — `j5`, and it is the item's spine.** `waitFor timed out: lens
+    row` at `j5.mjs:178`; the diag shows the app rendering **its own empty state** — "No
+    loose pages yet — pages you write in the Journal will spread out here." That string is
+    React conditional rendering on DATA, so the Spread had zero pages in state; CSS cannot
+    produce rendered text, which is what structurally exonerated SC2's `index.css` (its
+    only file with global blast radius) before any control was run. `j5` failed **every**
+    unset run — in-suite and isolated, on BOTH trees.
+    **THE SHARED ROOT.** `j4` fails at `j4.mjs:84`, `document.querySelector('[data-page-id
+    ="..."]').click()` on **null**, with `.spread-select-toggle` already mounted and the
+    entry present in localStorage. Both files use the **same** raw-localStorage vehicle
+    (seed shape `source:'page', origin:'journal'`, then "reload to hydrate"), differing
+    only in how many reloads precede the Spread read. That points at a **hydration race**
+    — `getNotebookPages` reads an in-memory cache that re-hydrates on load, and a read
+    landing before hydration renders the empty state — rather than a filter. PB1's +65
+    lines in `persistence.ts` sit on that path; PB1 touched **neither** harness, and its
+    51/51 green was measured at its branch tip `af47582`, **before** its merge into main
+    at `e8ae17d` — the combined-tree gap SC1's merge-order hazard was written about.
+    Mechanism named, NOT settled.
+    **TWO MECHANISM QUESTIONS FOR WHOEVER TAKES THIS (Fable, 2026-07-31 — questions, not
+    verdicts).** (1) `j4`'s shape — chrome mounted, localStorage populated, cell absent —
+    is **DF1.1 species 2's exact signature, "chrome as the wrong observable," in a file
+    DF1.1 never touched.** Supporting datum from the control: on main-parked `j4` fails
+    *differently again* (`Failed to read the 'localStorage' property from 'Window': Access
+    is denied for this document`, `j4.mjs:296`), so **`j4` carries at least two distinct
+    failure modes.** (2) `j5`'s diag shows the lens row absent **together with** the empty
+    state, which contradicts DF1.1's "chrome mounts unconditionally" note: with zero pages
+    the lens row may not mount at all, which would make it a **consequence** of the empty
+    spread rather than an independent symptom.
+    **`fd57ee6` IS NOT THE ANSWER — checked, because it would have been the easy one.**
+    The SC lane's own pre-rebase `j5` closure is an ancestor of **both** `a0ec245` and the
+    SC2 head (`merge-base --is-ancestor` TRUE for each; it landed via DF1.1's merge
+    `e2b6945`). **Both sides of the control contain the fix**, so this red is not that
+    class resurfacing and cannot be mis-attributed on its absence. It is a **fourth
+    species, or something `fd57ee6` never addressed.**
+    **THE ORDER-DEPENDENT FAMILY, noted alongside item 77 pending mechanism.** These
+    **flip between PASS and FAIL on an UNCHANGED tree**, which is why no code-level revert
+    can explain them and why the memo-revert instrument was resequenced behind the
+    control: **`fx6`** — "walking back a SECOND step … restoring the literal hyphens":
+    `pass:true detail:"Hello--world "` unset, `pass:false detail:"Hello—world "` parked,
+    same tree, same run; **`b2-1`** — parked NOVERDICT, `ReferenceError: __click is not
+    defined` at `b2-1.mjs:110`, **exactly item 77(b)'s named signature**, reproduced after
+    28 passing checks; **`th2`** — parked FAIL 2/42, "crossing the goal fires the
+    celebration" → `false` (the brass-colour check failing as its consequence), while
+    passing **42/42 unset in the same control** — celebrate-once state surviving across
+    files; **`j4`** itself. Time-dependence was tested and is NOT supported by this run:
+    all six branch observations fall inside one local day (2026-07-31, 00:48–01:18 MDT),
+    no midnight or month rollover was crossed, and the two failure sets move in
+    **opposite** directions along the time axis, which no monotonic date effect can
+    produce. An August-side run remains a genuinely different test.
+    **WHY THIS IS NOT A FLAKE LIST.** The known-flake list is EMPTY after DF1.1, and both
+    "passes in isolation" and "the machine was quiet" are retired as clearance arguments.
+    Every red here is therefore real until diagnosed. **DoD:** each red root-caused and
+    fixed or lawfully parked, and a full suite green at both settings on `main` — which is
+    also what unblocks item 62's parked merge offer.
 
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
