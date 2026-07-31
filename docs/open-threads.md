@@ -8152,6 +8152,13 @@ outlive a session lives here, not in chat.
     refusal; scratch tooling, uncommitted, recorded because it is the same class this
     arc keeps catching. **Merge is harness-only, zero-schema, pre-authorized class;
     it needs no browser and may process during any window.**
+    **→ MERGED — 2026-07-31 (chat 1), merge `c2a351f`.** The DO-NOT-MERGE marker `a26a810` was
+    honored-through per chat 6's explicit offer (Fable-ratified): **verified** empty, its tree
+    object byte-identical to the fix `3527928` (tree `03c8081`), so the merged tree IS the
+    verified fix. Harness-only (`run-suite.mjs` +84/−5); docs-only three-way over current main,
+    no contention, no re-verification owed. **Item 77(c) MERGED.** The runner now stamps
+    `tree + bundle` into every verdict and rebuilds before running — the deploy.md discipline,
+    executable in the instrument.
 
 ## P1 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane) — CLOSES THE REVIEW LEDGER
 
