@@ -8074,6 +8074,13 @@ current live production build (P2a: FX16 + FX18 + BG2). Rollback is a redeploy o
 merge-HEAD build byte-for-byte), `/auth/me` 401. The prior P2a deploy (`5a4da218`) is now
 superseded; the rollback SOURCE remains git `ca34f67` (redeploy that tree via `railway up`).
 
+**KEY-ROTATION REDEPLOY — 2026-07-30 (annotation, not a new build):** `TUTOR_API_KEY` (the
+DeepSeek key, sitting agenda 0.5) was rotated; a `railway redeploy` of the SAME build restarted
+the container to pick up the new value. **GIT identifier UNCHANGED — `c266cb3`; image UNCHANGED
+— `sha256:7e49bfda` (zero code change).** The RAILWAY identifier is now
+`11b612db-4be2-4d31-bca1-afd4118c99a7` (reason: redeploy); `dfa03148` superseded. Verified LIVE:
+`/healthz` 200, same bundle (`index-CubIOguU.js` / `index-DfTiVdTQ.css`), `/auth/me` 401.
+
 **Items 74 + 71: GREEN + DEPLOYED** (74 GREEN at its merge; 71 was merged-but-undeployed, now
 DEPLOYED). 74 stays open for Fable's post-merge review + the sitting; 71's review already closed GREEN.
 
