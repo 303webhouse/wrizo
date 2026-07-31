@@ -6582,6 +6582,8 @@ outlive a session lives here, not in chat.
     for the runner. And the bound is stated plainly or the report becomes a
     reassurance: *this lane showed S1 did not cause it; it did NOT show what
     did.*
+    **Fable RATIFIED chat 6's annotation of the isolation-re-run law (2026-07-30) — no
+    revert.** Recorded with the P2b stamp; chat 6's annotation stands as written.
     **CANON ANCHORS CARRIED INTO SC2 S2 (Fable, 2026-07-25), recorded before the
     build so they cannot be discovered late.** (1) **THE SHEET SEQUENCE IS
     DERIVED, NEVER STORED.** Pages are a PROJECTION of the ledger, recomputed —
@@ -7761,6 +7763,8 @@ outlive a session lives here, not in chat.
     rides P2b, named in its manifest.** OBS-1 (unborn-Screenplay surface flip) to
     the next sitting. Note: main now carries `pb1.mjs`, so chat 6's suite of record
     at its rebased head is **52 files, not 51**.
+    **DEPLOYED with P2b — 2026-07-30** (git `c266cb3` · railway `dfa03148`); rode the FX17
+    SHA per the stamp law. See the P2b DEPLOY MANIFEST.
 72. **FX16 — the Invite, Truly Silent.** **OPENED — 2026-07-25 (chat 1)**, from the P2
     wave (`docs/wrizo-alpha/p2-wave.md` §FX16), authority SV18 — the first-line invite
     STILL renders on a fresh page after FX15 (Nick's walk of the deployed tree: "a door
@@ -7988,6 +7992,9 @@ outlive a session lives here, not in chat.
     via DF1.1's committed runner). `fx18.mjs` PASS 16 and `bg2.mjs` PASS 23 green at the
     rebased head — the board-geometry-adjacent files see FX17's changes, as Fable
     required. **P2b: FX17 deploys ALONE on Nick's standing word once merged.**
+    **GREEN + DEPLOYED with P2b — 2026-07-30** (git `c266cb3` · railway `dfa03148`) — NOT
+    alone after all: PB1 merged between P2a and P2b, so per the stamp law FX17 + PB1 rode the
+    same SHA. See the P2b DEPLOY MANIFEST. Stays open for Fable's post-merge review + the sitting.
 75. **FX18 — the Chrome Aligned.** **OPENED — 2026-07-25 (chat 1, after FX16)**, from the
     P2 wave (`p2-wave.md` §FX18), authority SV24–SV27 + the screenplay's instance of SV26.
     Branch `fx18-chrome-aligned` off `main` (after FX16 lands), own worktree, guard-rail,
@@ -8060,7 +8067,12 @@ enter the build). `tsc` ×2 EXIT 0 + `build:web` clean re-confirmed at the merge
 current live production build (P2a: FX16 + FX18 + BG2). Rollback is a redeploy of that tree
 (`railway up`).
 
-**DEPLOY STAMP: <pending — stamped immediately after `railway up`, in the follow-up ledger commit>.**
+**DEPLOY STAMP: git `c266cb3` · railway `dfa03148-2dc8-427d-8629-d6677ca183a9`** — DEPLOYED
+2026-07-30 (`railway up --ci`, writer-studio / production / writer-studio-app; deployed image
+`sha256:7e49bfda`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` 200, the new bundle served (`index-CubIOguU.js` / `index-DfTiVdTQ.css` — matches the
+merge-HEAD build byte-for-byte), `/auth/me` 401. The prior P2a deploy (`5a4da218`) is now
+superseded; the rollback SOURCE remains git `ca34f67` (redeploy that tree via `railway up`).
 
 **Items 74 + 71: GREEN + DEPLOYED** (74 GREEN at its merge; 71 was merged-but-undeployed, now
 DEPLOYED). 74 stays open for Fable's post-merge review + the sitting; 71's review already closed GREEN.
