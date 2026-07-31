@@ -8104,7 +8104,23 @@ outlive a session lives here, not in chat.
     given `index.html` but resolves `/assets` against the default `dist-web`; near-miss
     class: an asset-hash collision silently compares a build against itself with plausible
     numbers. Make it honest or amputate the parameter. (b) `b2-1.mjs` first-parked-pass
-    NOVERDICT ("__click is not defined") — diagnose, never clear.
+    NOVERDICT ("__click is not defined") — diagnose, never clear. **(c) THE DEFAULT DIST IS
+    UNTRACKED, UNSTAMPED, AND INVISIBLE TO EVERY PROVENANCE CLAIM — the generalized
+    species of (a), ratified structural by Fable 2026-07-31 on chat 6's item-82
+    diagnosis.** `withHarness` serves `DEFAULT_DIST = apps/desktop/dist-web`, a BUILD
+    ARTIFACT; `dist-web/` is gitignored (`.gitignore:8`) with ZERO tracked files. **A tree
+    SHA therefore does not pin what a suite tested** — two worktrees at byte-identical
+    `apps/` can serve entirely different applications depending on when each last built.
+    **Demonstrated on disk, not argued:** `.claude/worktrees/sc2-the-clock` at HEAD
+    `9503515` (+995/-41 lines of SC2 app source) serves `index-CubIOguU.js`,
+    **byte-identical** (523,769 bytes, `cmp` clean) to chat 6's clean-main control build of
+    `9b30273`, with `scriptPaginate` absent from both — a tree and its served bundle
+    disagreeing by ~1000 lines, live. FIX (harness-only, fix-class, scheduled AFTER the
+    diagnosis — do not change the instrument mid-measurement): the runner stamps the served
+    bundle's asset hash into every verdict record, and a suite of record rebuilds
+    immediately before running. **INTERIM DISCIPLINE, EFFECTIVE NOW (Fable):** every suite
+    claim any lane makes names **tree SHA + served asset hash**, and suites of record
+    rebuild first.
 
 ## P1 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane) — CLOSES THE REVIEW LEDGER
 
@@ -8492,6 +8508,28 @@ sitting closes them.
     other lanes — a gap is safer than a collision across six lanes.)* **This item exists
     because a full suite on CLEAN `main`, with zero SC2 in the tree, is RED at both
     settings on the eve of the freeze.**
+    **ANNOTATION — APPEND-ONLY, 2026-07-31 (chat 6, on Fable's order; the entry above
+    stands unrewritten). THIS FINDING IS UNDER PROVENANCE REVIEW, AND ITS CONTROL DID NOT
+    REPRODUCE.** Re-run at the control SHA this entry names — tree `9b30273`, served bundle
+    **`index-CubIOguU.js`** (523,769 bytes), rebuilt immediately before running, committed
+    runner, glob 52, both settings serially, contamination guard satisfied (no
+    `--ignore-foreign`; no CONTAMINATED/REFUSED/ABORTED line on either sweep): **52/52
+    CLEAN unset AND 52/52 CLEAN parked.** All five named reds passed — `j5` PASS 37 (and
+    5x total, four of them standalone unset, against "failed every unset run, in-suite and
+    isolated"); `j4` PASS 24 unset / 28 parked; `b2-1` PASS 28 (+5 standalone parked runs
+    green, so 77(b) does not live in the file alone); `th2` PASS 42 both; `fx6` PASS 37
+    both. **THE CONTROL'S OWN IDENTITY IS THE PROBLEM, NOT THE OBSERVER:** the sole
+    identifier it records (a tree SHA) provably does not pin what runs — see item 77(c) —
+    and this control's served bundle is UNRECOVERABLE (that worktree's `dist-web` was built
+    01:36, *after* the 00:48-01:18 window, and its hash was recorded nowhere). **This does
+    NOT close item 82:** "not reproduced" is not "does not happen", and DF1.1's law binds —
+    clearance evidence must scale to the observed rarity, and one sweep per setting cannot
+    prove a flip family absent. The reds remain real observations. Full report, including
+    two REFUTED hypotheses preserved as spent (helper-injection timing; stale-browser
+    reattachment across the second `withHarness` a parked run performs) and chat 6's own
+    correction of an earlier over-claim, at `docs/wrizo-alpha/item82-diagnosis-chat6.md`.
+    **Item 62's parked merge offer should not be unblocked on this annotation alone** —
+    that is Fable's and Nick's call, not this lane's.
     **THE CONTROL, of record.** Tree `9b30273` (byte-identical to `a0ec245` under
     `apps/`), committed runner, glob 52, both settings serially, contamination guard
     satisfied honestly (no `--ignore-foreign`, zero foreign browsers at start):
