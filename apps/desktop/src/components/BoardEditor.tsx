@@ -86,6 +86,28 @@ const VIEWPORT_MIN_PX = 560;
 // auto-fit height already respects); height is computed live from
 // maxBottom(boxes), same formula the existing auto-height already uses.
 const CANVAS_MIN_W = VIEWPORT_MIN_PX;
+// FX17 S3 (SV22) — THE STATED LIMIT. "The canvas extends downward — to a stated
+// limit, then a hard stop with no stutter and no rubber-banding." This is that
+// limit, and it is named here and in the ledger as the brief requires.
+//
+// THREE PAGE-WIDTHS TALL. Deliberately expressed in the board's OWN normalized
+// coordinate system (every box's x/y/w/h is a fraction of pageWidthPx), not in
+// pixels and not in screenfuls, for one concrete reason: a board's own extent
+// must not change when the window does. A viewport-relative limit would mean the
+// same board could be dragged further on a tall monitor than on a laptop, and a
+// window resize would silently move the floor under saved cards. Three is
+// generous — a canvas twice as tall as it is wide is already a large board — and
+// it is one number, so a future ruling changes one line.
+//
+// THE BREATHING MARGIN is the same 0.08 the auto-height formula already adds
+// below the lowest card. That shared term is what makes the stop exact rather
+// than approximate: the drag clamp holds a card's BOTTOM at
+// BOARD_MAX_Y - 0.08, at which point the height formula computes exactly
+// (BOARD_MAX_Y - 0.08 + 0.08) * pageWidthPx = BOARD_MAX_Y * pageWidthPx. So the
+// canvas reaches its limit at precisely the frame the card stops — no dead zone
+// travelled before the stop, and nothing left to spring back from.
+const BOARD_MAX_Y = 3;
+const BOARD_BREATHING_ROOM = 0.08;
 // AB4 S2/S5 — matches persistence.ts's own BOARD_STACK_GAP (not exported;
 // this file has never imported the port's internal layout constants, so a
 // local mirror is the established shape here, same as pageWidthPx's own
@@ -1456,8 +1478,33 @@ export function BoardEditor({ id }: { id: string }) {
       if (phase === 'dragging') {
         e.preventDefault();
         const dx = (e.clientX - startX) / pageWidthPx;
-        const dy = (e.clientY - startY) / pageWidthPx;
+        const dyRaw = (e.clientY - startY) / pageWidthPx;
         const ids = new Set(movingIds);
+        // FX17 S3 (SV22) — THE HARD STOP, applied to the DELTA rather than to
+        // each box. Clamping per box (the way the x-axis's own Math.max(0, …)
+        // does) would let the lowest card in a multi-card selection hit the floor
+        // while the others kept travelling — the selection would visibly deform
+        // as it landed. Clamping the shared dy holds the group's shape: every
+        // card stops at the same instant, which is what "a hard stop with no
+        // rubber-banding" has to mean for more than one card.
+        //
+        // The bound is the lowest moving card's BOTTOM against
+        // BOARD_MAX_Y - BOARD_BREATHING_ROOM (see those constants).
+        //
+        // The Math.max(0, …) is load-bearing, not defensive noise. A card can
+        // already sit BELOW the limit without ever having been dragged there — an
+        // older save from before this constant existed, or a deck load that placed
+        // it. For such a card dyLimit is NEGATIVE, and clamping straight to it
+        // would force the card UPWARD the instant the writer touched it, even
+        // while dragging sideways: a silent correction of their layout, which is
+        // worse than the unbounded growth this slice replaces. Flooring the bound
+        // at 0 means such a card simply cannot travel FURTHER down, while still
+        // moving freely up and sideways. A stop, never a correction — and no card
+        // is ever relocated by the arrival of a limit.
+        const movingStart = startBoxes.filter(b => ids.has(b.id));
+        const lowestBottom = Math.max(...movingStart.map(b => b.y + b.h));
+        const dyLimit = (BOARD_MAX_Y - BOARD_BREATHING_ROOM) - lowestBottom;
+        const dy = Math.min(dyRaw, Math.max(0, dyLimit));
         setBoxes(startBoxes.map(b => (ids.has(b.id) ? { ...b, x: Math.max(0, b.x + dx), y: Math.max(0, b.y + dy) } : b)));
         return;
       }
@@ -1582,7 +1629,44 @@ export function BoardEditor({ id }: { id: string }) {
   // override (once set) can only make it TALLER than that floor, never
   // shorter. contentMinHeightPx is the SAME formula the pre-FX4 auto-height
   // always used — byte-identical when canvasOverrideH is null.
-  const contentMinHeightPx = Math.max((maxBottom(boxes) + 0.08) * pageWidthPx, VIEWPORT_MIN_PX);
+  // FX17 S2 (SV21) — THE BOARD REACHES ITS FLOOR. Measured before the change,
+  // at the 1366x768 leg: the stage ended at y=722 and the wrap at y=683, so 39px
+  // of granted room went unused and the board visibly "stopped short". The cause
+  // is that the canvas's floor was a FIXED CONSTANT (VIEWPORT_MIN_PX, 560) while
+  // the wrap carries `maxHeight` rather than `height` — so with little content
+  // the wrap shrink-wrapped to 560 and simply declined the room FX13 had already
+  // measured for it. FX13 computed the room; nothing spent it.
+  //
+  // So the floor becomes the ROOM, when the room is known: availHeightPx is the
+  // stage's own remaining height (see its effect above). Legacy (<1100px, no
+  // DeskFrame) has no stage, availHeightPx stays null, and the constant floor is
+  // kept — that path is byte-identical to pre-FX17.
+  //
+  // This deliberately does NOT reintroduce the S1 loop, and the reason is
+  // structural rather than tuned: `avail` is measured from the STAGE's bottom
+  // minus the WRAP's TOP, and observed on the stage (FX13's own guard, whose
+  // comment states the wrap's height can never feed back into it). The stage is
+  // `flex:1; min-height:0`, sized by the flex column and not by this content, and
+  // the wrap's TOP does not move when its own height changes. So canvas height
+  // depends on the room, and the room does not depend on the canvas height —
+  // an acyclic edge, unlike S1's width<->height cycle. Re-verified empirically on
+  // the frame clock all the same, because that is this ticket's standard.
+  // The border term, and why it is not a fudge: `availHeightPx` is the wrap's
+  // OUTER height (it is applied as `maxHeight`, and the wrap is border-box), so
+  // the content box it actually offers is 2px smaller — 1px of border top and
+  // bottom, declared on the wrap's own inline style below. Flooring the canvas at
+  // the outer height therefore overflowed by exactly 2px and left the board with
+  // a permanent, pointless 2px scroll (measured: scrollHeight 599 vs clientHeight
+  // 597). A board that always has something to scroll has not reached its floor.
+  // Subtracting the border here — rather than measuring the wrap's clientHeight —
+  // keeps the dependency acyclic: clientHeight would shrink when a HORIZONTAL
+  // scrollbar appeared, which is the same feedback shape S1 just closed on the
+  // other axis, and would have re-opened it.
+  const WRAP_BORDER_PX = 2;
+  const contentMinHeightPx = Math.max(
+    (maxBottom(boxes) + 0.08) * pageWidthPx,
+    availHeightPx != null ? availHeightPx - WRAP_BORDER_PX : VIEWPORT_MIN_PX,
+  );
   const canvasHeightPx = canvasOverrideH != null ? Math.max(canvasOverrideH, contentMinHeightPx) : contentMinHeightPx;
   // B1 — a system Board never has a project (S1), so the pre-B1 fallback
   // ('/journal') would send BOTH system Boards' own "Done" to the SAME

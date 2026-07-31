@@ -1318,6 +1318,38 @@ a:focus-visible,
    these six rules: the systemic default already produces byte-identical
    values (the SAME two tokens), so this comment is what's left here —
    removing the duplicate keeps the two from ever silently drifting apart. */
+/* FX17 S1 (SV22) — THE STUTTER'S ROOT. Reserve the scrollbar's gutter always,
+   so `clientWidth` is the same number whether the scrollbar is showing or not.
+   That one property breaks a genuine closed feedback loop, measured on the
+   page's own frame clock under a trusted-pointer drag: 142 frames, 71 vertical-
+   scrollbar flips (one every OTHER frame), this wrap's clientWidth oscillating
+   1098<->1088 — exactly the scrollbar's 10px — with the canvas width in
+   lockstep, and the dragged card never getting near the floor.
+   THE LOOP: the canvas's HEIGHT is derived from its WIDTH
+   (`contentMinHeightPx = (maxBottom(boxes) + 0.08) * pageWidthPx`,
+   BoardEditor.tsx), and that width is measured as `wrapRef.clientWidth` by a
+   ResizeObserver on THIS element. Dragging a card down grows `maxBottom`, so
+   the canvas grows, crosses this wrap's available height, and the vertical
+   scrollbar appears; the scrollbar eats 10px of `clientWidth`; `pageWidthPx`
+   shrinks; the height — being computed FROM the width — shrinks with it; the
+   content fits again; the scrollbar vanishes; the width returns; and it
+   relatches. One cycle per React render (the drag calls `setBoxes` on every
+   pointermove), which is why it ran at frame rate. The drag delta is itself
+   scaled by that oscillating `pageWidthPx`, so the card's position jittered
+   too — the "freeze" as a hand feels it.
+   WHY HERE and not in the observer: with a stable gutter the measured width
+   simply stops depending on the scrollbar, so the feedback EDGE is removed at
+   its source. A threshold guard in the observer could not have worked — the
+   change is a full 10px, far above any sane jitter floor. FX13 already put a
+   thrash guard on the HEIGHT observer ("the wrap's own height can never feed
+   back into it" — it watches `.desk-frame-stage`, never the wrap); the WIDTH
+   observer watches the wrap ITSELF, which is precisely the path that guard
+   forbids. This closes the axis FX13 left open.
+   In-house precedent for the property: SC1 S4's `scrollbar-gutter:stable
+   both-edges` on `.desk-frame-scroll-cap`. Single-edge here — the board's
+   canvas is left-aligned in its wrap, so reserving both edges would shift the
+   content's optical centre for no benefit. */
+.board-canvas-wrap{ scrollbar-gutter:stable; }
 .board-canvas{ border-radius:0; }
 /* FX6 S2c — the empty board's own quiet one-line pointer (this canvas
    carried NO empty-state copy at all before this ticket). Centered, quiet
