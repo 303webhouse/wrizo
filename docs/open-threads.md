@@ -8039,6 +8039,12 @@ All PASS. Verdict files committed this records commit:
   (`fx17-review-fable.md`, "the earlier paste") **did NOT reach chat 1** — HELD pending
   re-send, to be committed on receipt. Flagged, NOT fabricated (the verdict is Fable's to
   write, not chat 1's to invent).
+  → **RESOLVED 2026-07-31:** the paste reached chat 1; `docs/wrizo-alpha/fx17-review-fable.md`
+  committed verbatim (the deploy-of-record `dfa03148` in the file is deliberate per Fable —
+  the deploy at review time; the rotation to `11b612db` is covered by the stamp annotation
+  above). **Item 74 REVIEWED, GREEN. The P2 house is now FULLY reviewed — 66 / 71 / 72 / 73 /
+  74 / 75 all GREEN, all verdict files committed.** OBS-2 (resize past `BOARD_MAX_Y` — gap or
+  freedom) noted non-blocking to the item-78 neighborhood, post-vacation.
 
 **Review state:** the P2 house is reviewed GREEN — 66 / 71 / 72 / 73 / 75 files committed;
 **FX17 (74)'s verdict is GREEN but its file awaits the relay paste** (see above). Owed next:
