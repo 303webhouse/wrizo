@@ -77,10 +77,12 @@ always Nick's separate word ("DEPLOY WHEN READY" is standing for the P-waves).
    `build:web` FIRST** — never run the suite against a stale `dist-web` — then the full
    historic suite read to completion **BOTH `HARNESS_PARKED` settings** (via the committed
    `apps/desktop/scripts/run-suite.mjs`). **A suite-of-record claim MUST name the tree SHA +
-   the served bundle asset hash** (`index-<hash>.js` / `.css`), so a stale build can never be
-   mistaken for the fresh one. *(The item-82 lesson, 2026-07-31: a bench that skipped the
-   rebuild reported clean `main` RED; `bd0b4a0`'s fresh build of the same tree `9b30273` is
-   52/52 CLEAN both settings. The ship gate always rebuilt — the bench now matches it.)*
+   the served bundle asset hash** (`index-<hash>.js` / `.css`), so any suite claim can be
+   re-examined against the exact build that produced it. *(The item-82 lesson, 2026-07-31: a
+   control whose served bundle was recorded nowhere and later overwritten reported clean
+   `main` RED — a claim that could never be re-examined. `bd0b4a0`'s fresh, hash-named build
+   of the same tree is 52/52 CLEAN both settings. The original reds remain unattributed —
+   item 82, watch-class. This rule exists so no suite claim is ever unfalsifiable again.)*
 2. **Manifest enumerated** — a records commit naming EVERYTHING in the target SHA (every
    merged-but-undeployed ticket, per the stamp law), docs range attested zero-src outside
    the named arcs.
