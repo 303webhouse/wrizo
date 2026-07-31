@@ -137,7 +137,9 @@ survives a mechanism check = stop and hold, never deploy.
   with DO-NOT-MERGE subjects are encouraged; unpushed local work is
   the orphan class).
 - **Item numbers are assigned by Fable in wave briefs, never claimed.**
-  62 SC · 66 DF1.1 · 67–71 P1 · 72–75 P2 · 76 SC2-S5 · 77 harness-infra. Next free: 78.
+  62 SC · 66 DF1.1 · 67–71 P1 · 72–75 P2 · 76 SC2-S5 · 77 harness-infra · 78 board
+  fit-to-content · 82 Spread-hydration reds (79–81 presumed in flight in other lanes; 83
+  floated + withdrawn same-day, never opened). Next free: 83.
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

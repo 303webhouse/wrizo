@@ -8201,6 +8201,15 @@ the container to pick up the new value. **GIT identifier UNCHANGED — `c266cb3`
 `11b612db-4be2-4d31-bca1-afd4118c99a7` (reason: redeploy); `dfa03148` superseded. Verified LIVE:
 `/healthz` 200, same bundle (`index-CubIOguU.js` / `index-DfTiVdTQ.css`), `/auth/me` 401.
 
+**TUTOR VERIFIED LIVE — 2026-07-31 (freeze-eve check):** the Tutor calls `deepseek-v4-flash`
+(the env default — `TUTOR_MODEL` is UNSET in Railway, so the code default holds; the legacy
+`deepseek-chat` / `deepseek-reasoner` aliases retired 2026-07-24 were **NEVER in use** here).
+One live production round-trip returned **HTTP 200** on the rotated key (`POST /api/tutor/chat`,
+a real reply, model echoed `deepseek-v4-flash`, 538/94 tokens). The throwaway test row
+`tutor-liveness-18979@wrizo.test` is left **INERT by ruling** — no account-delete endpoint
+exists; removal is Nick's word, any time (it is an empty user row, `.test` email, no pages,
+Tutor turns not server-persisted). Item 83 was floated and withdrawn same-day — never opened.
+
 **Items 74 + 71: GREEN + DEPLOYED** (74 GREEN at its merge; 71 was merged-but-undeployed, now
 DEPLOYED). 74 stays open for Fable's post-merge review + the sitting; 71's review already closed GREEN.
 
