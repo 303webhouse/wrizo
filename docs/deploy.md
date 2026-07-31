@@ -73,9 +73,14 @@ then `node apps/server/dist/index.js`.
 The setup above is one-time; this is the recurring gate for every ship. Deploy is
 always Nick's separate word ("DEPLOY WHEN READY" is standing for the P-waves).
 
-1. **Merged + verified at the merge HEAD:** `tsc` ×2 (app + node) EXIT 0, `build:web`
-   clean, the full historic suite read to completion **BOTH `HARNESS_PARKED` settings**
-   (via the committed `apps/desktop/scripts/run-suite.mjs`).
+1. **Merged + verified at the merge HEAD:** `tsc` ×2 (app + node) EXIT 0, then **rebuild
+   `build:web` FIRST** — never run the suite against a stale `dist-web` — then the full
+   historic suite read to completion **BOTH `HARNESS_PARKED` settings** (via the committed
+   `apps/desktop/scripts/run-suite.mjs`). **A suite-of-record claim MUST name the tree SHA +
+   the served bundle asset hash** (`index-<hash>.js` / `.css`), so a stale build can never be
+   mistaken for the fresh one. *(The item-82 lesson, 2026-07-31: a bench that skipped the
+   rebuild reported clean `main` RED; `bd0b4a0`'s fresh build of the same tree `9b30273` is
+   52/52 CLEAN both settings. The ship gate always rebuilt — the bench now matches it.)*
 2. **Manifest enumerated** — a records commit naming EVERYTHING in the target SHA (every
    merged-but-undeployed ticket, per the stamp law), docs range attested zero-src outside
    the named arcs.
