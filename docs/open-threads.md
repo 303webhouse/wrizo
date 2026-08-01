@@ -8765,6 +8765,12 @@ sitting closes them.
     re-verification owed, browserless. **m4/th2 attributed to the checks; `j4`, `j5`, `b2-1`,
     `fx6` remain UNATTRIBUTED** (the family does not inherit the species' verdict). SC2's merge
     sequence keys on this.
+    **→ REVIEWED, GREEN (2026-08-01), Fable** — `docs/wrizo-alpha/item82-fix1-review-fable.md`;
+    VERDICT PASS. Defect documented where it lived (m4's frame-clock trajectory, th2's .35s
+    settled-value trap); recorders install BEFORE the trigger, the harness reads the RECORD;
+    m4 threshold 0.1→0.5 at the designed peak (`getAnimations()`); one check added, every
+    original name preserved, strengthened in place, no park owed. OBS (non-urgent): th2's
+    opening comment says "MutationObserver" but the impl is an rAF sampler — one-word fix, next touch.
 
 - **REPORT = PUSH — long-standing practice, stated verbatim as it has
   always been carried in the briefs: "report = push."** A ticket's
