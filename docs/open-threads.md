@@ -8941,3 +8941,48 @@ sitting closes them.
   "deploy," run `git log <last-deployed-SHA>..<target-SHA> --oneline`
   (or read the ledger's own merged-not-deployed items) and name every
   ticket that turns up, not just the one the request was about.
+
+## ITEM 84 — THE TUTOR'S POP-OUT MENUS (design arc) — OPENED 2026-08-01, S0
+
+**Charter (Nick's seed, 2026-08-01):** mode-aware pop-out menus for the Tutor —
+options relevant to the writer's current mode (Free Write, Draft, Revise) and
+surface, without overload. **DESIGN ONLY under the Aug 1 freeze:** committed
+documents + HTML mockups in `docs/menus/tutor/`; this lane never touches
+`apps/`. Phases: (1) census · (2) committee double-pass per mode + a
+working-writers bench · (3) ≥2 Plateau mockups per mode, true tokens, true
+geometry at both reference widths inside the FX18 three-regime panel law ·
+(4) LOCK on Nick's word, sitting-informed; build tickets post-vacation.
+Theme adaptations only AFTER Plateau locks and builds, as their own passes
+under the cross-theme seam laws.
+
+**Canon over every option, restated at open:** the Tutor tutors — guidance and
+light editing suggestions, never a ghostwriter, never prose generation
+(`docs/wrizo-alpha/tutor-rules.md`, the shipped `SYSTEM_PROMPT`, verbatim on
+disk). No model call without the writer's own act — nothing sends on load (the
+ratified disclosure law, v3 verbatim in `deskLexicon.ts`; FX15's deck-drawn
+precedent is the lawful local pattern). The Bible is the writer's alone.
+Nudges stay asleep behind item 64's return gate. TU4's mechanics lens stays
+DEFERRED absent Nick's word.
+
+**S0 census landed:** `docs/menus/tutor/tutor-menus-census.md` — every
+existing Tutor control and promise, byte-verbatim from `deskLexicon.ts` +
+`Tutor.tsx` at main `3dc3d49` — re-verified unchanged across the
+`3dc3d49..3a5840a` delta before landing — with the FX18 geometry constants
+and the per-surface scoping table. **Headline finding: the Tutor is mode-blind
+today** — it varies by surface (page/script/board), never by writing mode.
+Item 84 is the panel's first mode-aware layer: new law, not renovated law.
+
+**DIVERGENCE SURFACED (house law: surface, never fork):** the seed inherits a
+shared menu grammar from "item 83's lane"; this ledger's own last word —
+still standing at `3a5840a` — is *"Item 83 was floated and withdrawn same-day
+— never opened,"* and `docs/menus/` is absent from the remote at `3a5840a`
+and from all pushed history (build lane, `git log --all`). The build lane
+also observed an **empty `item83-menus` branch stub** in the studio checkout
+(tip `3a5840a`, zero commits, not on the remote — 404 verified by the desk):
+the first sign of an 83 lane standing up, with nothing yet published for
+this lane to inherit. Phase 2's grammar-inheritance clause is **HELD**
+pending item 83's own S0 landing or Nick's word. Phase 1 carried no
+dependency on it and is complete.
+
+**Gates:** committee passes await Nick's ruling on the item-83 question;
+no lock before the sitting log lands.
