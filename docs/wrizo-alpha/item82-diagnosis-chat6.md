@@ -175,3 +175,99 @@ recorded.
 
 — chat 6, 2026-07-31. Control: tree `9b30273`, bundle `index-CubIOguU.js`,
 52/52 CLEAN both settings.
+
+
+---
+
+# Item 82 — fix 2 S0 (chat 6) · 2026-08-01
+
+**Diagnosis only. The deciding question Fable set — does `j5` seed through the
+app's own save path (product risk) or by fixture injection (harness mechanics) —
+is ANSWERED, and the mechanism is PROVEN on the box rather than named.**
+
+## VERDICT: harness mechanics. Not product risk.
+
+`makePage` does **not** use the app's save path. It is a raw read-modify-write on
+`writer-studio-journal-entries` — read at `j5.mjs:135`, write at `j5.mjs:141` —
+executed from the Desk. The app's own seam `window.wrizoCreateJournalPage` exists
+at `persistence.ts:680` and is used by seven other harnesses; `j5` never calls it.
+
+## THE MECHANISM, PROVEN
+
+Injecting a row exactly as `makePage` does, then doing what `j5` does at `:468`
+(navigate to `/journal` **before** reloading):
+
+```
+after inject        n=1  hasRow=true
+on /journal    0ms  n=1  hasRow=true
+             100ms  n=1  hasRow=FALSE   <- destroyed
+             ...    n=1  hasRow=false   (through 1100ms)
+```
+
+`n` stays 1 throughout: the injected row is *replaced*. `JournalBoardGate`
+(`App.tsx:52-56`) calls `getOrCreateSystemBoard('journal')`
+(`persistence.ts:1702`) -> `saveJournalEntry` -> `upsert` -> `scheduleFlush` ->
+`flush()`, and `flush()` writes `JSON.stringify(cache[name])` **wholesale**
+(`persistence.ts:170`). That cache is hydrated **once**, at module init
+(`persistence.ts:43-60`), never re-read, and there is **no `storage` event
+listener anywhere in `apps/desktop/src`** — so a row written to localStorage
+after boot is invisible to it and is erased by the next flush of that collection.
+
+**Why a real writer cannot hit this — the immunity argument.** Every product
+write reaches storage *through* the cache (`saveJournalEntry` -> `upsert` ->
+`cache.journalEntries`), so a real writer's page is never invisible to a flush.
+Only a fixture writing *behind* the cache's back can be destroyed this way. That
+is the whole of the attribution, and it is why this is harness mechanics.
+
+**It also explains `j5`'s OTHER red.** The A-D seeds carry the identical
+exposure — injected at `:145-148`, `goto('/journal')` at `:161`, reload only at
+`:173`. When the 300ms flush (`FLUSH_DELAY`, `persistence.ts:158`) wins that
+race, A-D die and the Spread renders "No loose pages yet" — the exact 2026-07-25
+symptom. When the reload wins, they survive. **One mechanism, both symptoms,
+race-timed by a 300ms debounce** — which is why it flips on an unchanged tree.
+
+**The law was obeyed in spirit and broken in ordering.** `AGENTS.md:62-71` says:
+seed off a flush-handler surface, *reload from there*, **then** navigate. `j5`
+seeds from the Desk correctly, then navigates **before** reloading.
+
+## SUPERSESSION — SC2's hypothesis stands verbatim
+
+SC2's lead was **partial hydration: a stale-snapshot read racing landing
+writes.** It stands unrewritten, and it was **productively wrong**: it aimed at
+the right race and the wrong side of the cache. The read is not stale — the
+*write* is erased, by a wholesale flush of a cache that never contained the row.
+Same race, opposite direction. The readers it aimed were pointed correctly.
+
+## THE CENSUS (Fable's item 3) — and what it does NOT license
+
+**47 of 52 harness files contain raw writes to `writer-studio-journal-entries`;
+7 use the app seam** (ab3, b1, b2, fx1, th2, w1, w2). The raw-write count is
+approximate — the pattern also matches generic `setItem(key, ...)` lines whose
+key is bound elsewhere — and should be re-derived per file before anyone acts on
+it.
+
+**Raw write != exposure.** Exposure requires BOTH a raw write AND a navigation to
+a flush-handler surface (or any `flushNow()`) BEFORE the re-hydrating reload.
+Determining which of the 47 are exposed is per-file work and is NOT done here.
+
+**`j4` IS NOT ATTRIBUTED BY THIS.** It uses the identical read-modify-write
+vehicle (`j4.mjs:63-66`) — but its ordering is CORRECT: it reloads at
+`j4.mjs:68`, immediately, **before** navigating to the Spread. This mechanism
+therefore does not explain `j4`, and `j4` remains **unattributed**. Recorded as a
+negative result because the tempting move was to let the fix claim it for free.
+
+## A DANGEROUS COMMENT, corrected in the fix
+
+`j5.mjs:311` asserts `makePage -> wrizoCreateJournalPage`. That is **false**.
+Anyone auditing this fixture by reading it would answer the deciding question
+WRONGLY — concluding the app's save path was in use, and therefore that this is
+product risk.
+
+## WHAT WOULD FALSIFY THIS
+
+A run in which the injected row SURVIVES navigation to `/journal` past ~300ms
+with the system board already minted, or evidence that some product path writes
+this key without going through `cache`. Neither was observed.
+
+— chat 6, 2026-08-01. Probe run on tree `4f12cb5`, bundle
+`index-CubIOguU.js`/523769b.

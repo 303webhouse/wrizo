@@ -8667,6 +8667,52 @@ sitting closes them.
     Every red here is therefore real until diagnosed. **DoD:** each red root-caused and
     fixed or lawfully parked, and a full suite green at both settings on `main` — which is
     also what unblocks item 62's parked merge offer.
+    **FIX 2 — S0 ATTRIBUTION, PROVEN — 2026-08-01 (chat 6), on Fable's re-tasking
+    after a stamped `j5` recurrence (SC2's fifth suite: parked, NEW site `:482`,
+    Spread POPULATED with one seeded row absent). NO PATCH YET; attribution first.**
+    **VERDICT: HARNESS MECHANICS, NOT PRODUCT RISK.** `j5`'s `makePage` does NOT use
+    the app's save path — it is a raw read-modify-write on the journal-entries key
+    (`j5.mjs:135` read, `:141` write) from the Desk; the app seam
+    `window.wrizoCreateJournalPage` (`persistence.ts:680`) exists and is used by seven
+    other harnesses, and `j5` never calls it. **PROVEN ON THE BOX, not named:**
+    injecting a row exactly as `makePage` does and then navigating to `/journal`
+    BEFORE reloading (what `j5` does at `:468`) destroys it within 100ms —
+    `after inject n=1 hasRow=true` → `0ms true` → `100ms FALSE`, with `n` staying 1
+    because the row is REPLACED. `JournalBoardGate` (`App.tsx:52-56`) mints the system
+    board via `getOrCreateSystemBoard` → `saveJournalEntry` → `upsert` →
+    `scheduleFlush` → `flush()`, and `flush()` serializes `cache[name]` WHOLESALE
+    (`persistence.ts:170`) from a cache hydrated ONCE at module init
+    (`persistence.ts:43-60`) and never re-read — no `storage` listener exists anywhere
+    in `apps/desktop/src`. **THE IMMUNITY ARGUMENT:** every product write reaches
+    storage THROUGH the cache, so a real writer's page is never invisible to a flush;
+    only a fixture writing behind the cache's back can be erased. **IT ALSO EXPLAINS
+    `j5`'s OTHER RED:** the A–D seeds share the exposure (inject `:145-148`,
+    `goto('/journal')` `:161`, reload only `:173`) — when the 300ms `FLUSH_DELAY` wins
+    that race the Spread renders "No loose pages yet", the exact 2026-07-25 symptom;
+    when the reload wins they survive. **One mechanism, both symptoms, race-timed by a
+    300ms debounce — which is why it flips on an unchanged tree.** `AGENTS.md:62-71`
+    was obeyed in spirit and broken in ORDERING: seed off a flush surface, *reload from
+    there*, THEN navigate.
+    **SUPERSESSION — SC2's hypothesis stands VERBATIM.** Its "partial hydration, a
+    stale-snapshot read racing landing writes" was **productively wrong**: the right
+    race, the wrong side of the cache. The read is not stale; the WRITE is erased. It
+    aimed the readers correctly and is left unrewritten.
+    **CENSUS (Fable's item 3): 47 of 52 harness files contain raw writes to
+    `writer-studio-journal-entries`; 7 use the seam** (ab3, b1, b2, fx1, th2, w1, w2).
+    The count is APPROXIMATE (the pattern also matches generic `setItem(key, …)` lines)
+    and **raw write ≠ exposure** — exposure needs a raw write AND a navigation to a
+    flush surface BEFORE the re-hydrating reload; which of the 47 qualify is per-file
+    work NOT done here. **`j4` IS NOT ATTRIBUTED BY THIS:** it uses the identical
+    vehicle (`j4.mjs:63-66`) but the CORRECT ordering — it reloads at `j4.mjs:68`
+    immediately, before navigating — so this mechanism does not explain it and **`j4`
+    remains UNATTRIBUTED.** Recorded as a negative result, because the tempting move was
+    to let the fix claim it for free.
+    **ALSO FOUND:** `j5.mjs:311` asserts `makePage -> wrizoCreateJournalPage`, which is
+    FALSE — a comment that answers the deciding question WRONGLY, and would tell an
+    auditor this is product risk. Corrected with the fix.
+    **FIX (b) APPROVED by Fable** (route `makePage` through the seam; it removes the
+    mechanism rather than dodging the timing) **— not yet built.** Full report:
+    `docs/wrizo-alpha/item82-diagnosis-chat6.md`.
     **FIX 1 — BUILT + VERIFIED; MERGE OFFERED — 2026-08-01 (chat 6), on Fable's
     re-tasking after SC2's fourth suite characterized the family.** Branch
     `item82-fix1-celebration-gate` @ **`7fd337c`** (WIP marker `4f12cb5` above it —
