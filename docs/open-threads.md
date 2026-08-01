@@ -8192,6 +8192,13 @@ outlive a session lives here, not in chat.
     no contention, no re-verification owed. **Item 77(c) MERGED.** The runner now stamps
     `tree + bundle` into every verdict and rebuilds before running — the deploy.md discipline,
     executable in the instrument.
+    **→ REVIEWED, GREEN (2026-08-01), Fable** — `docs/wrizo-alpha/item77c-review-fable.md`;
+    VERDICT PASS. The stamp reads identity from what will be SERVED (hashed asset names +
+    on-disk byte count, never build logs); a git failure stamps `tree=unknown` rather than
+    lying; rebuild-first REFUSES (exit 2, distinct from NOT CLEAN's 1); `--no-rebuild` is
+    stamped, structurally unable to masquerade as a record. Teeth **(a)/(b) remain OPEN**
+    (chat 6's lane). **Board-note precision (Fable): SC2's window FOLLOWS chat 6's m4/th2 fix
+    — a SEQUENCE, not merely Nick's timing.**
 
 ## P1 POST-MERGE REVIEW BATCH — 2026-07-31 (Fable, via chat 1's records lane) — CLOSES THE REVIEW LEDGER
 
