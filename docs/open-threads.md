@@ -8667,6 +8667,67 @@ sitting closes them.
     Every red here is therefore real until diagnosed. **DoD:** each red root-caused and
     fixed or lawfully parked, and a full suite green at both settings on `main` — which is
     also what unblocks item 62's parked merge offer.
+    **FIX 1 — BUILT + VERIFIED; MERGE OFFERED — 2026-08-01 (chat 6), on Fable's
+    re-tasking after SC2's fourth suite characterized the family.** Branch
+    `item82-fix1-celebration-gate` @ **`7fd337c`** (WIP marker `4f12cb5` above it —
+    empty, tree object identical, changes no code). HARNESS-ONLY: zero `src`, zero
+    schema, zero server, zero deps. **THE SPECIES IS CONFIRMED AND THE DEFECT IS IN
+    THE CHECKS.** The lead (m4/th2 both assert evental celebration paint without
+    gating on the animation that reverts it) was a hypothesis; it is now reproduced.
+    **THE MECHANISM, QUANTIFIED ON THE BROWSER'S FRAME CLOCK BEFORE ANYTHING WAS
+    CHANGED** — the flare's real trajectory at 1366×768: `dt=0ms op 0.000`,
+    `dt=30ms op 0.067`, `dt=46ms op 0.206`, … peak `0.620` (exactly the 14%
+    keyframe), … `dt=961ms op 0.029`, `dt=1011ms op 0.012`, `dt=1027ms op 0.008`.
+    **22% of the window sits at or below the 0.1 that `m4.mjs` asserted must be
+    EXCEEDED** — roughly the first 40ms and last 120ms of a 1100ms animation. A
+    100ms poll landing anywhere in that 22% failed a check about a product behaving
+    perfectly. `th2`'s exposure is the same species without the threshold: it waited
+    for `.mode-pfill.celebrate`, a class alive for only CELEBRATE_MS (1100ms), so one
+    poll cycle stalling past that window under load misses it entirely and reports
+    *"crossing the goal fires the celebration: false"*, taking the brass-colour check
+    down as a consequence — item 82's th2 symptom exactly.
+    **THE FIX is DF1.1's tu2 discipline applied to paint instead of to a timer:**
+    record the event's whole life IN THE PAGE, on the browser's own clock, recorder
+    installed BEFORE the trigger, then assert against the RECORD — so nothing depends
+    on the harness looking at the right instant. `m4` keeps the PEAK opacity (the
+    animation's designed maximum, not an arbitrary phase) and reads the schedule from
+    `getAnimations()`; **the threshold RISES 0.1 → 0.5** (designed peak 0.62), so the
+    bar got STRICTER while the flakiness went away, because it is measured where the
+    value actually lives. A NEW check asserts the schedule itself — `wz-goal-flare`,
+    1100ms, from the browser. `th2` keeps the SETTLED background. Every original check
+    name preserved verbatim; nothing weakened, so **no park is owed**. m4 42 → 43
+    checks; th2 42, unchanged.
+    **OWNED:** `m4.mjs` is chat 6's own file and the 0.1 was chat 6's own number,
+    chosen when M4's flare was built and sitting 22% inside the animation's
+    sub-threshold band. This is not a correction of someone else's work.
+    **A MISTAKE THE HARNESS CAUGHT, recorded because it is the point:** the first
+    version of the th2 recorder captured the colour at FIRST SIGHT of the class and
+    went red with `rgb(166, 255, 61)` — lime. `.mode-pfill` carries
+    `transition: background .35s ease`, so `.celebrate` does not switch the fill to
+    brass, it ANIMATES it over 350ms; the original waitFor was implicitly waiting that
+    out and the rewrite had discarded it. R1 has real diagnostic power and proved it
+    on this lane's own regression.
+    **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=7fd337c
+    bundle=index-CubIOguU.js/523769b` and PARKED `SUITE RESULT: CLEAN — tree=4f12cb5
+    bundle=index-CubIOguU.js/523769b`, 52/52 each, zero FAIL/TIMEOUT/NOVERDICT, no
+    contamination line.** (The halves carry different tree SHAs because the WIP marker
+    was pushed between them; the identical bundle hash proves the same software.)
+    **SCOPE BOUNDARY — BINDING (Fable):** *"defect in the checks, not the product"* is
+    PROVEN **for `m4` and `th2` ONLY**. **`j4`, `j5`, `b2-1` and `fx6` remain
+    UNATTRIBUTED** — check-versus-product is genuinely open for each, and the family
+    must not inherit the species' verdict. That would be the same overreach shape as
+    calling `j5` deterministic off four consecutive failures, which this arc has
+    already paid for once.
+    **AUGUST-SIDE READING (the desk's rider): this is the FIRST August-side suite.**
+    Item 82's six observations all fall inside 2026-07-31; these sweeps ran
+    2026-08-01T19:11:45Z → 19:58:00Z, crossing the month boundary they never did.
+    Both settings CLEAN, so **date-math is weakened further — but not killed**, and
+    the honest qualifier is that most harness date usage is month-agnostic
+    `toISOString()` fixture stamping; the real exposure is day-offset arithmetic
+    (tu1/tu2's "untouched for days" nudges), so a green count of 52 is broad evidence
+    rather than a targeted test. A red appearing August-side that never appeared
+    July-side would put date-math back on the table — and would now arrive naming its
+    own tree and bundle.
     **CORRECTION — 2026-07-31, SAME LANE, ON NEW EVIDENCE. THE "DETERMINISTIC ONE" FRAMING
     ABOVE IS FALSIFIED; IT IS LEFT STANDING VERBATIM AND CORRECTED HERE, NOT REWRITTEN.**
     A fourth suite of record at `9503515` — run in a COORDINATED quiet window under the
@@ -8698,6 +8759,42 @@ sitting closes them.
     nothing was ever attributed to SC2; and `fd57ee6` is still an ancestor of both control
     trees, so it is still not the answer.
 
+- **REPORT = PUSH — long-standing practice, stated verbatim as it has
+  always been carried in the briefs: "report = push."** A ticket's
+  work is not delivered until it is on the remote; a build that ends
+  with a green verification and an unpushed branch has produced
+  nothing another lane can use.
+- **ELEVATED 2026-08-01 (Fable's word, on chat 6's own analysis after
+  the second occurrence in one lane): COMMIT = PUSH. The push binds
+  to the COMMIT, not to the report. WIP markers exist precisely so
+  that VERIFICATION CAN FOLLOW PUBLICATION.** The original above
+  stands unrewritten; this is its stronger successor, and every lane
+  inherits it.
+  **THE EVIDENCE, which is why this is structural and not a scolding:
+  the ledger already records FIVE occurrences of this exact class.**
+  Three predate chat 6 entirely and appear in other lanes' entries in
+  the same words — *"the build's own 'report = push' step never
+  happened; the orchestrating session completed it"* (twice) and
+  *"the build's own 'report = push' step never ran"* — each one paid
+  for by an orchestrating session doing the push on the builder's
+  behalf. Chat 6 supplied occurrences four (FX17 S1, 2026-07-30) and
+  five (item 82 fix 1, 2026-08-01).
+  **THE MECHANISM, from the lane that repeated it.** It is not
+  forgetfulness. An agent's sense of "done" attaches to THE ARTIFACT
+  BEING CORRECT, not to the artifact being DURABLE SOMEWHERE ELSE. So
+  the instant a fix goes green, the next act that feels like progress
+  is verification, and the push is silently reclassified as
+  bookkeeping to be bundled with the report. That is exactly
+  backwards: the window between "it works" and "it is reported" is
+  when the work is simultaneously most valuable and least durable —
+  and it is often 45 minutes of sweep long. A second pull runs
+  underneath: pushing an unfinished branch feels like publishing
+  something half-made, which is the objection the WIP marker was
+  invented to dissolve and which gets re-derived anyway.
+  **THE SHAPE ALL FIVE SHARE:** commit -> start long verification ->
+  push at report time. Binding the push to the commit removes the
+  window by construction instead of relying on anyone remembering it
+  at the moment they are least inclined to.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
