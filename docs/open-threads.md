@@ -8772,6 +8772,52 @@ sitting closes them.
     original name preserved, strengthened in place, no park owed. OBS (non-urgent): th2's
     opening comment says "MutationObserver" but the impl is an rAF sampler — one-word fix, next touch.
 
+83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
+    (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
+    **vetoable by Nick on sight.** Authority: SV5 (`docs/wrizo-alpha/hd-arc-seed.md`)
+    + the item-83 seed. *(Numbering per the assigned-never-claimed law: 84 is the
+    Tutor lane's, reserved; next free is 85. 79–81 remain the gap item 82 recorded.)*
+    **DESIGN ONLY under the Aug 1 freeze:** this lane's medium is committed documents
+    and HTML mockups under `docs/menus/`; it never touches `apps/`. Scope matrix, six
+    contexts: Page (prose) × {Free Write, Draft, Revise} · Screenplay page · Board ·
+    Card. Ink/Image stays with the HD charter, outside this matrix — a divergence the
+    census names rather than silently drops.
+    **PHASE 1 LANDED WITH THIS S0:** `docs/menus/item83-census.md` — the verbatim
+    per-context control inventory, read against `main` @ `3dc3d49` and landed atop
+    `3a5840a` — the one intervening commit verified RECORDS-ONLY against the remote
+    (`docs/open-threads.md` +97, zero code: item 82's fix 1 + the COMMIT = PUSH
+    elevation), so the inventory stands unmoved at the landing tip; truth-states
+    BUILT / RATIFIED-UNBUILT / LEGACY / INHERITED-OPEN; eight divergences named
+    (Revise deferred-in-code vs. seeded-in-matrix vs. walked-in-agenda; card color's
+    Chamber B/Chamber 3 tension; the Typewriter cluster as ruled vs. as built; the
+    Progress Bar three-way vs. M4's one-lane; TS1 overlap; A19 unbuilt; among them).
+    Census proposes nothing — Phase 2 argues.
+    **INHERITS ITEM 78 WHOLE** — the fit-to-content placement question (where the
+    view control lives) is now this lane's to argue inside the two-hands grammar;
+    item 78's preserved mechanism stands untouched and un-re-argued.
+    **OWNS THE SHARED MENU GRAMMAR** — the Tutor lane (84) inherits it; divergences
+    route to Nick, never fork silently. Screenplay-surface rows are census only —
+    the SC arc (62) keeps its lane; the Card rename seam belongs to the Naming arc
+    (SV4) and gets ruled with Nick, never built twice.
+    **LAWS CARRIED:** fx18's three-regime panel law, constitutional for any panel
+    geometry this lane draws; BM1 — doors are doors, modes are modes; a tool control
+    is neither, and its home must be argued, not assumed; ZERO resting orange in
+    menus (Plateau's resting ceiling stands; evental orange on press only);
+    progressive disclosure never shows a locked door (M1); paper never reflows for
+    chrome; a limit stops, it never relocates; presence is not composition — every
+    Phase-3 mockup carries rendered dimensions at BOTH reference widths (the
+    1366×768 floor + wide) from day one.
+    **PHASES + GATES:** (1) census — DONE, this commit. (2) Committee double-pass
+    per context — Experts, Architects, a NAMED opposition, plus the cognition/ADHD
+    bench on chrome density; tensions named honestly, canon violations flagged never
+    deferred. (3) ≥2 standalone HTML mockups per context, Plateau tokens only, in
+    `docs/menus/`. (4) Nick's lock, sitting-informed — **NO option set locks before
+    the pre-flight sitting log lands** (`device-sitting-agenda-v3.md`); then
+    post-vacation HD build tickets, briefed decision-complete. Lane worktree:
+    `.claude/menus` on `item83-menus`, one lane, one arc, no browser harness;
+    COMMIT = PUSH inherited from its elevation (`3a5840a`) — this lane's pushes
+    bind to the commit, verification follows publication.
+
 - **REPORT = PUSH — long-standing practice, stated verbatim as it has
   always been carried in the briefs: "report = push."** A ticket's
   work is not delivered until it is on the remote; a build that ends
