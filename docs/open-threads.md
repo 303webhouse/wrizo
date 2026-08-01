@@ -8758,6 +8758,13 @@ sitting closes them.
     settings (51/52 unset, 51/52 parked) on a quiet box, so the freeze-eve finding stands;
     nothing was ever attributed to SC2; and `fd57ee6` is still an ancestor of both control
     trees, so it is still not the answer.
+    **→ FIX 1 MERGED — 2026-08-01 (chat 1), merge `c228c4b`.** The DO-NOT-MERGE marker
+    `4f12cb5` honored-through per the 77(c) precedent (Fable-ratified): **verified** empty,
+    tree object identical to the fix `7fd337c` (tree `7574bd9`), so the merged tree IS the fix
+    (stamped 52/52 CLEAN both settings). Harness-only (`m4.mjs` +104, `th2.mjs` +71); no
+    re-verification owed, browserless. **m4/th2 attributed to the checks; `j4`, `j5`, `b2-1`,
+    `fx6` remain UNATTRIBUTED** (the family does not inherit the species' verdict). SC2's merge
+    sequence keys on this.
 
 - **REPORT = PUSH — long-standing practice, stated verbatim as it has
   always been carried in the briefs: "report = push."** A ticket's
