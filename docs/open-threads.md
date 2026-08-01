@@ -8928,6 +8928,24 @@ sitting closes them.
   push at report time. Binding the push to the commit removes the
   window by construction instead of relying on anyone remembering it
   at the moment they are least inclined to.
+- **FETCH BEFORE READ — for ref-holding lanes (Fable, 2026-08-01).** A lane that acts on a
+  ref it holds (a SHA, a branch tip, "the suite of record at X") runs `git fetch` immediately
+  before reading it: the held ref may have moved by the time it is read, and a decision made
+  on a stale ref is a decision about a world that no longer exists.
+  **THE CENSUS, honest — ONE proven occurrence, not inflated.** SC2's lane acted on a held
+  ref that had moved under it (proven, in item 62/82's own trail). **The item-84 merge
+  incident is NOT this class: RECLASSIFIED as interleaving-after-read** — two histories both
+  appended after a clean read (a merge-resolution concern), not a stale-ref read. Kept
+  distinct so the census stays honest: one class, one occurrence, named — not two.
+- **PIN THEN RE-VERIFY AT ACTION TIME — the sibling for values, not refs (Fable, 2026-08-01).**
+  A value pinned at read time (a hash, a count, a state) is re-verified at the instant it is
+  acted on, never trusted across the gap. Fetch-before-read protects a ref; this protects a
+  measurement — the same window, a different held thing.
+- **RELAYED CLAIMS CARRY THEIR READ-TIME — the sibling for reports (Fable, 2026-08-01).** A
+  claim relayed between lanes ("green," "at X," "clean both settings") carries WHEN it was
+  read/true, so a stale claim is dated on its face and cannot be mistaken for a current one.
+  The provenance stamp (77(c)) is this law made executable for suites; this states it for
+  claims carried in prose.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
