@@ -8771,6 +8771,34 @@ sitting closes them.
     m4 threshold 0.1→0.5 at the designed peak (`getAnimations()`); one check added, every
     original name preserved, strengthened in place, no park owed. OBS (non-urgent): th2's
     opening comment says "MutationObserver" but the impl is an rAF sampler — one-word fix, next touch.
+    **→ FIX 1 CONFIRMED IN SITU BY SC2'S FIFTH SUITE OF RECORD — 2026-08-01, tree `fd6713a`
+    (SC2 rebased onto `6ec5a85`, fix 1 beneath), bundle `index-DSrJF9Jz.js/529099b`,
+    coordinated window.** `m4` PASS **43** checks (42→43, the added recorder check) and `th2`
+    PASS **42**, **green in BOTH passes.** The species is retired from the family by
+    observation, not by inheritance. **Result: 53/53 CLEAN unset; 52/53 parked — `j5`
+    NOVERDICT.** No merge offer: the gate is green at BOTH settings and it was not met.
+    **THE ROOT AS RECORDED ABOVE IS REFINED BY THIS OCCURRENCE — PARTIAL, NOT EMPTY.** This
+    item's mechanism paragraph names a hydration race producing an EMPTY spread ("No loose
+    pages yet"). That is the shape of the earlier sightings; it is **NOT** the shape of this
+    one, and a successor reading only the paragraph above would chase the wrong thing.
+    Failure site is **`j5.mjs:482`, not `:178`** — `waitFor timed out: spread row j5-src-7
+    present, then clicked` — and the diag shows the Spread **POPULATED**, lens row and
+    controls present:
+    `buttons:[… "Close","Your order","Newest","All","Text","Ink","Text+ink","☆ Starred",`
+    `"Alpha text only.1","A sketch2","Delta has both.3","Golf comes first in the`
+    `notebook.4","Hotel comes second in the notebook.5"]` — five rows rendered, **`j5-src-7`
+    absent.** Zero checks emitted before the throw (buffered JSON → NOVERDICT).
+    **THE SHARPER HYPOTHESIS FOR FIX 2:** the cache does not fail to hydrate, it hydrates a
+    **STALE SNAPSHOT** — a Spread read racing seed writes that are still landing, so the
+    EARLIER pages appear and the LATER ones do not. That subsumes the empty-spread sightings
+    as the degenerate case (read lands before write 1) and explains why one file fails at
+    DIFFERENT SITES on different runs: the race can bite anywhere in the seed sequence, and
+    the site merely records where it bit. Empty vs partial is one mechanism at two amplitudes,
+    not two defects.
+    **`j4`, `b2-1`, `fx6` STAY UNATTRIBUTED AND QUIET — NOT RETIRED.** None of them reproduced
+    in the fifth suite; that is an absence of evidence and nothing more. They are not cleared,
+    not parked, and not to be cited as fixed by fix 1 — the family does not inherit the
+    species' verdict in either direction. **`j5` is fix 2's target.**
 
 83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
     (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
