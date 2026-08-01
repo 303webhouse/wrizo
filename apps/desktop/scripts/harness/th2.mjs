@@ -155,6 +155,62 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'fresh PageEditor for surge fixture' });
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  // ITEM 82 FIX 1 (2026-08-01) — RECORD THE CELEBRATION, DO NOT RACE IT.
+  //
+  // THE DEFECT: check 4 below waited for `.mode-pfill.celebrate` with a 100ms
+  // poll. That class exists for CELEBRATE_MS — 1100ms — and then is gone. A
+  // single poll cycle that stalls past 1100ms under load misses the window
+  // ENTIRELY, and the check reports "crossing the goal fires the celebration:
+  // false" about a celebration that fired perfectly, taking the brass-colour
+  // check down with it as a consequence. That is item 82's th2 symptom, and it
+  // is the same species as m4's flare: an assertion about an evental, animated
+  // state gated only on "did I happen to see it".
+  //
+  // THE FIX is DF1.1's tu2 discipline: a MutationObserver installed BEFORE the
+  // trigger timestamps the class's arrival and departure on the browser's own
+  // clock, and captures the computed background AT that moment. The harness then
+  // reads the RECORD. Nothing depends on the harness looking at the right
+  // instant, so no amount of CDP or machine latency can turn a real celebration
+  // into a false negative. The background is captured while the class is
+  // present rather than sampled later: `.mode-pfill.celebrate`'s background is
+  // static (only its box-shadow animates), so the recorded value is the settled
+  // one the R1 check has always been about.
+  // NOTE THE SETTLED-VALUE TRAP, found by this very check when the first
+  // version of this fix walked into it: `.mode-pfill` carries
+  // `transition: background .35s ease`, so adding `.celebrate` does not switch
+  // the fill to brass — it ANIMATES it from lime over 350ms. Capturing the
+  // colour at first sight therefore records `rgb(166, 255, 61)` (lime), which
+  // is precisely the failure R1 exists to catch, and the original waitFor was
+  // implicitly waiting out that transition. So this samples on rAF and keeps
+  // the LAST value seen while the class is present: by then the 350ms
+  // transition has long settled inside the 1100ms window, and the recorded
+  // colour is the settled one R1 has always been about. Same shape as m4's
+  // flare recorder, which keeps the PEAK for the same reason — the honest
+  // quantity is the one the animation is designed to reach, never the one at
+  // an arbitrary phase.
+  await app.evalJs(`(() => {
+    window.__th2Celebrate = { firstSeen: null, goneAt: null, bg: null, bgFirst: null, frames: 0 };
+    const R = window.__th2Celebrate;
+    let stop = false;
+    const tick = () => {
+      if (stop) return;
+      const el = document.querySelector('.mode-pfill.celebrate');
+      if (el) {
+        const now = performance.now();
+        const bg = getComputedStyle(el).backgroundColor;
+        if (R.firstSeen === null) { R.firstSeen = now; R.bgFirst = bg; }
+        R.bg = bg;          // last-wins: the SETTLED colour, not the transition's start
+        R.frames++;
+      } else if (R.firstSeen !== null && R.goneAt === null) {
+        R.goneAt = performance.now();
+        stop = true;
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    window.__th2CelebrateStop = () => { stop = true; };
+  })()`);
   await app.typeKeys(words251 + ' ');
   await app.waitFor("document.querySelector('.mode-pmeta span')?.textContent?.includes('251 words')", { label: 'word count crosses 251 (Flux)', timeout: 15000 });
   // waitFor (not a fixed-count poll) — it returns the instant the class
@@ -169,18 +225,21 @@ await withHarness(async (app) => {
     // check exists to catch. CELEBRATE_MS itself is only 1100ms and waitFor
     // polls every 100ms, so a wider budget only buys margin against startup
     // jitter — it can't paper over a genuinely missed pulse.
-    await app.waitFor("!!document.querySelector('.mode-pfill.celebrate')", { label: 'celebrate class appears', timeout: 6000 });
+    // Wait for the RECORDER to have seen the celebration begin AND end — not for
+    // a live glimpse of a 1100ms class. The budget is a backstop against nothing
+    // happening at all, never a window this must land inside.
+    await app.waitFor('!!(window.__th2Celebrate && window.__th2Celebrate.goneAt !== null)',
+      { label: 'celebrate class recorded (begin + end)', timeout: 15000 });
     celebrateSeen = true;
     // cd1.1 deflake (Fable review) — a fixed sleep() before a SEPARATE evalJs
     // read raced the celebrate window itself: it can auto-clear between the
     // two CDP round-trips, even after the color momentarily matched. Wait on
     // a predicate that stashes the matched value onto window as part of the
     // SAME evaluation that observes it, closing the round-trip gap entirely.
-    await app.waitFor(
-      "(() => { const el = document.querySelector('.mode-pfill.celebrate'); if (!el) return false; const bg = getComputedStyle(el).backgroundColor; if (bg !== 'rgb(255, 152, 0)') return false; window.__th2CelebrateBg = bg; return true; })()",
-      { label: 'celebrate fill settles to brass', timeout: 3000 },
-    );
-    celebrateBgSettled = await app.evalJs("window.__th2CelebrateBg");
+    // The colour comes from the SAME record, captured while the class was
+    // actually present, so this can no longer race the window either.
+    celebrateBgSettled = await app.evalJs('window.__th2Celebrate.bg');
+    await app.evalJs("window.__th2CelebrateStop && window.__th2CelebrateStop()");
   } catch {
     celebrateSeen = false;
   }

@@ -287,35 +287,91 @@ await withHarness(async (app) => {
   // M4 — ProgressBar's celebrate never mounted there, and AmbientGlow's bloom
   // is `!framed` too. Seeded just below the goal so the crossing happens on
   // THIS fixture's own keystrokes (m3.mjs's burst-check pattern).
+  // ITEM 82 FIX 1 (2026-08-01) — GATE THE CELEBRATION ON ITS OWN SCHEDULE.
+  //
+  // THE DEFECT, reproduced before it was fixed (not inferred): these checks
+  // asserted an EVENTAL, ANIMATED paint by sampling it at whatever instant a
+  // 100ms `waitFor` poll happened to catch the `.lit` class — with no gate on
+  // the animation that produces and then reverts that paint. The flare's real
+  // trajectory, recorded on the browser's frame clock at 1366x768:
+  //
+  //     dt=   0ms  opacity 0.000      <- below the asserted 0.1
+  //     dt=  30ms  opacity 0.067      <- below the asserted 0.1
+  //     dt=  46ms  opacity 0.206
+  //     dt=  62ms  opacity 0.347
+  //     ...        peak    0.620      (exactly the 14% keyframe)
+  //     dt= 961ms  opacity 0.029      <- below the asserted 0.1
+  //     dt=1011ms  opacity 0.012
+  //     dt=1027ms  opacity 0.008
+  //
+  // **22% of the window sits at or below the 0.1 this file asserted must be
+  // exceeded** — roughly the first 40ms and the last 120ms of a 1100ms
+  // animation. A poll landing anywhere in that 22% failed a check about a
+  // product behaving perfectly. That is the defect: it was in the CHECK.
+  //
+  // THE FIX is DF1.1's tu2 discipline, applied to paint instead of to a timer:
+  // record the event's whole life IN THE PAGE on the browser's own clock, then
+  // assert against the RECORD. The recorder is installed BEFORE the trigger, so
+  // nothing depends on the harness looking at the right moment; it reads the
+  // animation's own declared schedule via `getAnimations()` — the browser's
+  // authority, not this file's guess — and it keeps the PEAK opacity, which is
+  // the animation's designed maximum rather than an arbitrary phase of it.
+  // Strictly stronger: the old form could only ever say "the flag was X when I
+  // happened to look."
+  const installFlareRecorder = (app) => app.evalJs(`(() => {
+    window.__m4Flare = { firstLit: null, goneAt: null, peak: 0, bgAtPeak: null,
+      text: null, aria: null, anim: null, barCelebrateSeen: false, frames: 0 };
+    const R = window.__m4Flare;
+    const tick = () => {
+      const el = document.querySelector('.desk-frame-goalflare');
+      if (el) {
+        if (el.classList.contains('lit')) {
+          const now = performance.now();
+          if (R.firstLit === null) {
+            R.firstLit = now;
+            R.text = el.textContent;
+            R.aria = el.getAttribute('aria-hidden');
+            const a = el.getAnimations ? el.getAnimations()[0] : null;
+            if (a) R.anim = { name: a.animationName, duration: a.effect.getTiming().duration };
+          }
+          R.frames++;
+          const cs = getComputedStyle(el);
+          const op = parseFloat(cs.opacity);
+          if (op > R.peak) { R.peak = op; R.bgAtPeak = cs.backgroundImage; }
+          if (document.querySelector('.desk-frame-instrument .mode-pfill.celebrate')) R.barCelebrateSeen = true;
+        } else if (R.firstLit !== null && R.goneAt === null) {
+          R.goneAt = performance.now();
+        }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })()`);
+
   const flareRun = async (style) => {
     const pageId = await freshStyledPage(app, style, LAPTOP_W, LAPTOP_H);
     await seedWordsAndReopen(app, pageId, 244); // just below WORD_GOAL (250)
     await sleep(500);
     const litBefore = await app.evalJs("!!document.querySelector('.desk-frame-goalflare.lit')");
+    await installFlareRecorder(app); // BEFORE the trigger — see the note above
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     await app.typeKeys('aa bb cc dd ee ff gg '); // 7 words -> 251, crosses 250
-    let lit = false, sample = null;
+    // Wait for the RECORDER to have seen the whole life, not for a live glimpse.
+    // The timeout is a backstop against nothing happening at all (12s against a
+    // ~1.1s event), never a window this has to land inside.
+    let lit = false, R = null;
     try {
-      // One evaluation observes the class AND stashes the computed paint, so
-      // the ~1.1s window can't close between two CDP round-trips (the cd1.1
-      // deflake lesson, reused verbatim).
-      await app.waitFor(`(() => {
-        const el = document.querySelector('.desk-frame-goalflare.lit');
-        if (!el) return false;
-        const cs = getComputedStyle(el);
-        window.__m4Flare = { bg: cs.backgroundImage, opacity: cs.opacity, text: el.textContent, aria: el.getAttribute('aria-hidden'),
-          // Sampled in the SAME evaluation, for the same round-trip reason —
-          // the bar's own ignition rides the identical CELEBRATE_MS window.
-          barCelebrate: !!document.querySelector('.desk-frame-instrument .mode-pfill.celebrate') };
-        return true;
-      })()`, { label: `M4 flare lit (${style})`, timeout: 8000 });
+      await app.waitFor('!!(window.__m4Flare && window.__m4Flare.goneAt !== null)',
+        { label: `M4 flare recorded its full life (${style})`, timeout: 12000 });
       lit = true;
-      sample = await app.evalJs('window.__m4Flare');
     } catch { lit = false; }
-    const barCelebrated = style === 'bar' ? (sample ? sample.barCelebrate : false) : null;
-    await sleep(1600); // past CELEBRATE_MS (1100) + margin
+    R = await app.evalJs('window.__m4Flare');
+    const sample = R && R.firstLit !== null
+      ? { bg: R.bgAtPeak, opacity: String(R.peak), text: R.text, aria: R.aria, barCelebrate: R.barCelebrateSeen }
+      : null;
+    const barCelebrated = style === 'bar' ? (R ? R.barCelebrateSeen : false) : null;
     const litAfter = await app.evalJs("!!document.querySelector('.desk-frame-goalflare.lit')");
-    return { litBefore, lit, sample, barCelebrated, litAfter };
+    return { litBefore, lit: lit && !!(R && R.firstLit !== null), sample, barCelebrated, litAfter, R };
   };
 
   {
@@ -324,8 +380,16 @@ await withHarness(async (app) => {
     ok('S4 (Bar): crossing the word goal FIRES the completion flare on the FRAMED desk — the moment that was dead here before M4 (ProgressBar\'s celebrate and AmbientGlow\'s bloom are both `!framed`)',
       bar.lit === true, JSON.stringify(bar.sample));
     ok('S4 (Bar): the flare is ORANGE — its paint resolves to the ember token rgb(224, 113, 44), at a real (non-zero) opacity: unmistakable, not a hairline',
-      !!bar.sample && bar.sample.bg.includes('rgb(224, 113, 44)') && parseFloat(bar.sample.opacity) > 0.1,
-      JSON.stringify({ bg: bar.sample?.bg?.slice(0, 90), opacity: bar.sample?.opacity }));
+      !!bar.sample && bar.sample.bg.includes('rgb(224, 113, 44)') && parseFloat(bar.sample.opacity) > 0.5,
+      JSON.stringify({ bg: bar.sample?.bg?.slice(0, 90), peakOpacity: bar.sample?.opacity }));
+    // ITEM 82 FIX 1 — NEW, and the reason the check above is now safe: the paint
+    // is asserted at the animation's own PEAK, and the animation's schedule is
+    // read from the browser rather than assumed. 0.5 is a HIGHER bar than the
+    // 0.1 it replaces (the designed peak is 0.62) — the threshold rose while the
+    // flakiness went away, because it is measured where the value actually lives.
+    ok('S4 (Bar, item 82 fix 1): the flare\'s SCHEDULE is proven on the browser\'s own clock — `wz-goal-flare` for 1100ms, read from getAnimations(), with the paint asserted at its designed PEAK rather than at whatever phase a poll happened to catch (22% of this window sits below the old 0.1 threshold)',
+      !!bar.R && !!bar.R.anim && bar.R.anim.name === 'wz-goal-flare' && bar.R.anim.duration === 1100 && bar.R.frames > 5,
+      JSON.stringify({ anim: bar.R?.anim, framesObserved: bar.R?.frames, peak: bar.R?.peak }));
     ok('S4 (Bar): NOTHING IS COUNTED — the flare carries no text of its own and is aria-hidden; it scores nothing and remembers nothing',
       !!bar.sample && bar.sample.text === '' && bar.sample.aria === 'true', JSON.stringify({ text: bar.sample?.text, aria: bar.sample?.aria }));
     ok('S4 (Bar): the bar\'s OWN ignition lands too, in the lane — .mode-pfill.celebrate on the framed desk, which never mounted here before',
