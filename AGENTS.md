@@ -70,6 +70,29 @@ flush handler (Desk works) first, seed, reload from there, then navigate to
 the actual target. Discovered in M1 (`scripts/harness/m1.mjs`); load-bearing
 for every future harness that seeds fixtures this way.
 
+**SUCCESSOR, ratified 2026-08-01 (Fable), on item 82 fix 2's proven mechanism —
+the ordering rule above stands verbatim; this supersedes it in strength:
+SEEDING GOES THROUGH THE APP'S SEAMS, NEVER RAW STORAGE.** Use
+`window.wrizoCreateJournalPage` (and its siblings) as ab3/b1/b2/fx1/th2/w1/w2
+already do. **The reasoning, proven on the box rather than argued:** the ordering
+rule protects against a flush firing while a *surface* is mounted — but the
+hazard is not the surface, it is the CACHE. `persistence.ts` hydrates
+`cache.journalEntries` **once**, at module init, never re-reads it, and no
+`storage` listener exists anywhere in `apps/desktop/src`; `flush()` then
+serializes that cache **wholesale**. So a row written to `localStorage` after
+boot is invisible to the app and is **erased by the next flush of that
+collection**, from any source — including one the fixture never touched.
+Measured: a row injected from the Desk and then followed by a navigation to
+`/journal` was destroyed within 100ms, because `JournalBoardGate` mints the
+system board (`getOrCreateSystemBoard` -> `saveJournalEntry` -> `scheduleFlush`)
+and the resulting flush wrote a cache that had never contained the row. A seed
+made through the seam enters the cache, so no flush can erase it — the mechanism
+is removed rather than out-timed. **A real writer is immune** (every product
+write reaches storage through the cache); this is a harness-only hazard, which is
+exactly why it went unnoticed. **Until item 85's remediation lands, this is the
+guard: new seeding goes through seams, and any edit to one of the 47 raw-writing
+harness files checks that file's own exposure before it lands.**
+
 ## Config changes: propose, never ship
 Changes to CC's own permissions, harness configuration, or session settings
 are proposed in a report and made only on Nick's explicit word — never shipped

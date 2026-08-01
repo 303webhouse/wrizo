@@ -8846,6 +8846,45 @@ sitting closes them.
     not parked, and not to be cited as fixed by fix 1 — the family does not inherit the
     species' verdict in either direction. **`j5` is fix 2's target.**
 
+85. **The raw-write remediation — harness seeding migrates to the app's seams.**
+    **OPENED — 2026-08-01 (chat 6), on Fable's word, from item 82 fix 2's proven
+    mechanism.** Post-vacation. Harness-only in phase 2; phase 1 is analysis.
+    **THE SEED — chat 6's census, with its caveat carried VERBATIM because the caveat
+    is the load-bearing part: 47 of 52 harness files contain raw writes to
+    `writer-studio-journal-entries`; 7 use the app seam** (ab3, b1, b2, fx1, th2, w1,
+    w2). *"The raw-write count is APPROXIMATE — the pattern also matches generic
+    `setItem(key, …)` lines whose key is bound elsewhere — and should be re-derived per
+    file before anyone acts on it. Raw write ≠ exposure. Exposure requires BOTH a raw
+    write AND a navigation to a flush-handler surface (or any `flushNow()`) BEFORE the
+    re-hydrating reload. Determining which of the 47 are exposed is per-file work and is
+    NOT done here."*
+    **WHY IT EXISTS:** `persistence.ts` hydrates its cache ONCE at module init, never
+    re-reads it, and no `storage` listener exists in `apps/desktop/src`; `flush()`
+    serializes that cache WHOLESALE. A row written to localStorage after boot is
+    therefore invisible to the app and is ERASED by the next flush of that collection —
+    from ANY source, including one the fixture never touched. Proven at item 82 fix 2
+    (a Desk-injected row destroyed within 100ms by `JournalBoardGate` minting the system
+    board). A real writer is immune, because every product write reaches storage THROUGH
+    the cache; this is a harness-only hazard, which is why it survived this long.
+    **TWO PHASES, in order.** **Phase 1 — QUALIFICATION, per file:** for each of the 47,
+    determine whether it is actually EXPOSED (raw write + a flush-surface navigation or
+    `flushNow()` before the rehydrating reload). Produce a qualified list; the census
+    count is a starting set, never a defect list. **Phase 2 — MIGRATION, batched:** move
+    qualified files to the seam, so the mechanism is removed rather than the timing
+    dodged (item 82 fix 2's own ruling: (b) over (a)).
+    **QUALIFICATION MAY ATTRIBUTE OTHER ITEM-82 MEMBERS — but EVIDENCE PER MEMBER, NEVER
+    INHERITANCE.** `fx6` or others may turn out to be exposed and thereby explained.
+    They are NOT explained until their own exposure is demonstrated. Precedent set at fix
+    2: **`j4` uses the identical raw vehicle (`j4.mjs:63-66`) and is NOT attributed** —
+    its ordering is correct (it reloads at `:68`, immediately, before navigating), so the
+    mechanism does not explain it and `j4` remains unattributed. That negative result is
+    the standard this item holds itself to.
+    **GUARD UNTIL IT LANDS:** `AGENTS.md`'s seeding law gained its successor on the same
+    date — *seeding goes through the app's seams, never raw storage* (the ordering rule
+    kept verbatim above it, this mechanism as its reasoning). New seeding goes through
+    seams, and any edit to one of the 47 checks that file's exposure before it lands.
+    **DoD:** every exposed harness seeds through a seam; the census re-derived exactly;
+    each item-82 member either attributed on its own evidence or explicitly left open.
 83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
     (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
     **vetoable by Nick on sight.** Authority: SV5 (`docs/wrizo-alpha/hd-arc-seed.md`)
