@@ -8976,6 +8976,13 @@ sitting closes them.
   incident is NOT this class: RECLASSIFIED as interleaving-after-read** — two histories both
   appended after a clean read (a merge-resolution concern), not a stale-ref read. Kept
   distinct so the census stays honest: one class, one occurrence, named — not two.
+  **PRECISION (Fable, 2026-08-01) — the exclusion itself was mislabeled, and the correction is
+  the lesson:** what reached this lane as "the 84 incident" was TWO events under one label. (i)
+  The **84 desk's relay-aged question** — read TRUE at 22:03Z, the world moved at 22:05Z, the
+  claim traveled UNDATED: a RELAYED CLAIMS occurrence, not fetch-before-read. (ii) **Chat 1's
+  clean auto-merge of the S0 branch** — a separate, THIRD event, merge-resolution class. Two
+  events, one label, now UNSHARED. A compressed instruction reconstructed wrongly at the
+  receiver — the RELAYED CLAIMS law illustrating itself.
 - **PIN THEN RE-VERIFY AT ACTION TIME — the sibling for values, not refs (Fable, 2026-08-01).**
   A value pinned at read time (a hash, a count, a state) is re-verified at the instant it is
   acted on, never trusted across the gap. Fetch-before-read protects a ref; this protects a
