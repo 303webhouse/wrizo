@@ -191,3 +191,13 @@ Write asked the grammar to be almost nothing on the Counsel side and it held; Dr
 where the Tutor's menu earns its density rules.
 
 — the item-84 desk, 2026-08-01
+
+---
+
+**ERRATA (the desk's own, flagged by the build lane at commit time):** the
+Provenance block's FW6 quotation is a two-fragment composite — "the right
+hand is present, and silent until asked." (8b3475d line 91, first-pass
+prose) + "Contents remain the Tutor lane's (84)" (line 161, FW6's body) —
+each fragment byte-exact, presented as one continuous sentence. The frame
+reading stands; the quotation's form overstated its locus. Corrected here,
+not rewritten.
