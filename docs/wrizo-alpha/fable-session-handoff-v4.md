@@ -140,6 +140,10 @@ survives a mechanism check = stop and hold, never deploy.
   62 SC · 66 DF1.1 · 67–71 P1 · 72–75 P2 · 76 SC2-S5 · 77 harness-infra · 78 board
   fit-to-content · 82 Spread-hydration reds (79–81 presumed in flight in other lanes; 83
   floated + withdrawn same-day, never opened). Next free: 83.
+  **UPDATE 2026-08-02:** 83 was RE-OPENED (Tool Pop-out Menus, menus arc); 84 (Tutor menus) ·
+  85 (raw-write) · 86 (page size) · 87 (New-Page defaults) · 88 + 88a/88b/88c (filing/binder
+  incident family) · 89 (offline-strand, P0) · 90–95 (pre-flight sitting items) all opened.
+  **Next free: 96.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

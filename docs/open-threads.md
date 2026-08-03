@@ -3,6 +3,41 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## PRE-FLIGHT SITTING — 2026-08-02 (Nick, ranked) — the fix wave's input
+
+Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's word; laptop
+17" then Desktop). Two P0s, six P1s, ten P2s. **New items opened this commit: 90–95.**
+
+**P0 (loses work):**
+- **item 89 · S8 — offline pages/edits silently STRANDED.** The dirty set is memory-only
+  (`persistence.ts:77`); any reload before reconnect strands offline-born pages AND offline
+  edits; backfill is one-shot per device (`sync.ts:62-73`). **RECOVERY RAN** (Fable's ruling):
+  resync key cleared on Nick's Desktop, backfill re-pushed, stranded page `mscqyn48uyxk6p37l`
+  reappeared in the Journal master list. **Chat 6's close-out records for item 89's mechanism
+  did NOT land before its stop — so this P0 summary (and the sitting log) IS the mechanism of
+  record.**
+- **item 88a · S5 — `setPageHome` accepts ANY string as binder id.** A bogus id orphans a
+  page from every enumerator including export.
+
+**P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible · S3/87 New
+Page defaults (Draft; hide presets in Free Write; typewriter off) · S4/88 panel affordance
+illegible (filing targets read as a page list) · S6/88b `fileTo` toasts success unconditionally
+· S11/**91** board→Page rail lands on the Wrizo landing (verdict: New Page auto-linked back to
+the board) · S12/**92** New Page Card from a board never appears on that board (Plan may mint a
+second board — S0 owed).
+
+**P2 (polish — waits till back):** S2/86 page size (ruled post-vacation) · S7/88c binder
+unidentifiable in Drawers · S9 shell won't reload offline (flight rule logged) · S10+S17/**90**
+Trash overhaul (Untitled pin-cards, no dates, click opens nothing; Restore/Remove DO appear on
+selection) · S13 cards-vs-pages distinction → menus arc (founder verdict) · S14/**94** rail
+hover targets (apply BG2's 44px law) · S15/**95** export polish (derived-title duplication,
+literal markers) · S16 legacy-shell whisper → menus arc notes (founder verdict).
+
+**Items opened:** 90 (Trash overhaul) · 91 (board→Page routing) · 92 (board-card pairing flow)
+· 93 (pairing MODEL — committee, post-vacation) · 94 (rail hit-targets) · 95 (export polish).
+**S13 + S16 route to the menus arc as founder verdicts.** Registry: next free **96**. The
+successor fix lane is being seeded.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
