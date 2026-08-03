@@ -143,7 +143,8 @@ survives a mechanism check = stop and hold, never deploy.
   **UPDATE 2026-08-02:** 83 was RE-OPENED (Tool Pop-out Menus, menus arc); 84 (Tutor menus) ·
   85 (raw-write) · 86 (page size) · 87 (New-Page defaults) · 88 + 88a/88b/88c (filing/binder
   incident family) · 89 (offline-strand, P0) · 90–95 (pre-flight sitting items) all opened.
-  **Next free: 96.**
+  **Next free: 96.** 2026-08-03: 96 (the Places Model charter — post-vacation committee)
+  opened. **Next free: 97.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

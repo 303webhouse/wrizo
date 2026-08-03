@@ -38,6 +38,15 @@ literal markers) · S16 legacy-shell whisper → menus arc notes (founder verdic
 **S13 + S16 route to the menus arc as founder verdicts.** Registry: next free **96**. The
 successor fix lane is being seeded.
 
+## ITEM 96 — THE PLACES MODEL (charter — post-vacation committee pass)
+
+**Founding text — Nick's sitting sentence, verbatim:** *"it's almost incomprehensible where
+any of the documents/pages are stored."* **MANDATE: one comprehensible answer to "where is my
+page," taught by the interface itself.** Item **93** (the pairing model) folds in as its FIRST
+question; **88c** (binder rendering in Drawers) and **S13** (cards vs pages) route HERE
+alongside the menus arc — seams coordinated through Nick. Post-vacation committee pass; no
+build under the freeze. Registry: next free **97**.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
