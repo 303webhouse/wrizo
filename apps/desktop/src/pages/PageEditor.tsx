@@ -97,11 +97,42 @@ function PageEditorView({ id }: { id: string }) {
   // filed-but-untyped support page (origin 'journal'/'project'/null) still
   // opens in Draft, unchanged.
   const modeKey = `wrizo-mode-page-${id}`;
+  // ITEM 87 (clause 1) — a door that DECLARED which room it opens wins over the
+  // origin/pageType rule, and only over it: the writer's own remembered choice
+  // still comes first (a door's opinion is about a page that does not exist
+  // yet, so it can never outrank a page the writer has already set a mode on).
+  // CD1 S8 (A7) is UNREVERSED below — a silent door still gets Free Write for a
+  // loose page. Only doors that say `?mode=draft` change, which is what makes
+  // "New Page lands in Draft" true without touching Arrival's Write door.
   const [mode, setMode] = useState<EditorMode>(() => {
     const saved = localStorage.getItem(modeKey);
     if (saved === 'journal' || saved === 'drafting') return saved;
+    if (unborn?.descriptor.mode === 'draft') return 'drafting';
+    if (unborn?.descriptor.mode === 'freewrite') return 'journal';
     return entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' : 'drafting';
   });
+
+  // ITEM 87 (clause 1) — THE DOOR'S CHOICE HAS TO OUTLIVE THE DOOR.
+  //
+  // Without this, "New Page lands in Draft" would be true exactly once. The
+  // descriptor lives in the ADDRESS, and birth corrects the address to
+  // `/page/:id`; the row itself is loose-origin, so the NEXT visit re-runs the
+  // initializer above with no descriptor and falls through to the origin rule —
+  // reopening the writer's Draft page in Free Write. `modeKey` is otherwise
+  // written only by `switchMode`, i.e. only when the writer chooses explicitly.
+  //
+  // So the door's opinion is persisted, but only once the page is a ROOM: the
+  // guard on `!unborn` is what keeps PB1 intact — a door the writer opens and
+  // abandons still writes NOTHING, and since a reload mints a fresh unborn id,
+  // persisting earlier would litter localStorage with keys for pages that never
+  // existed. The `saved` guard means this can never overwrite a choice the
+  // writer has made; it only records the one the door made on their behalf.
+  const doorModeRef = useRef<'freewrite' | 'draft' | null>(unborn?.descriptor.mode ?? null);
+  useEffect(() => {
+    if (unborn || !doorModeRef.current) return;
+    if (localStorage.getItem(modeKey)) return;
+    localStorage.setItem(modeKey, mode);
+  }, [unborn, mode, modeKey]);
 
   const initialText = entry?.text ?? '';
   const [text, setText] = useState(initialText);
@@ -217,9 +248,23 @@ function PageEditorView({ id }: { id: string }) {
   // satisfying "mid-session mode switches don't re-evaluate" for free,
   // without a separate guard ref. Free Write is untouched — no call here
   // when the page opens into 'journal'.
+  // ITEM 87 (clause 3) — A FRESH PAGE OPENS WITH THE TYPEWRITER OFF.
+  //
+  // Nick's S3, and it AMENDS FX2 S2 rather than discarding it. FX2 S2 ruled
+  // "Draft opens with typewriter ON unless the page already holds 10+ line-
+  // equivalents," reasoning that the line-following fade helps someone starting
+  // to write and hinders someone editing a body of text. An EMPTY page seeds 0
+  // line-equivalents, so it fell on the ON side of that rule by arithmetic
+  // rather than by intent — and a page with nothing in it has no lines to
+  // follow, which is the state Nick objected to. The threshold rule is
+  // untouched everywhere it still applies: a page with SOME text below the
+  // threshold still opens ON (fx2.mjs's ~3-line check proves it, unchanged).
+  // Only the empty case moves, so this is an amendment at the one point the
+  // original rule was never really about.
   useEffect(() => {
     if (mode === 'drafting') {
-      seedTypewriterDefault(countLineEquivalents(initialText) < DRAFT_TYPEWRITER_LINE_THRESHOLD);
+      const fresh = initialText.trim().length === 0;
+      seedTypewriterDefault(!fresh && countLineEquivalents(initialText) < DRAFT_TYPEWRITER_LINE_THRESHOLD);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

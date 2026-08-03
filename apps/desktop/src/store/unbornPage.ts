@@ -30,6 +30,21 @@ export interface UnbornDescriptor {
   // survives a reload with no storage and no store row — the same property that
   // makes the rest of PB1 reload-safe by construction.
   pinBoardId: string | null;
+  // ITEM 87 (clause 1) — THE DOOR DECLARES THE ROOM IT OPENS.
+  //
+  // Nick's S3: "New Page lands in Draft." The obvious patch — flip PageEditor's
+  // default so a loose page opens in Draft — would REVERSE a ruled default:
+  // CD1 S8 (A7) deliberately opens loose-origin pages in Free Write to match the
+  // front-door posture, and Arrival's own Write door depends on exactly that. A
+  // New Page and the Write door produce the SAME loose-origin surface, so origin
+  // alone cannot tell them apart; only the door knows which it is.
+  //
+  // So this is additive, and CD1 S8 stands unreversed: a door that means "a page
+  // to work on" SAYS so, and everything that stays silent keeps today's
+  // behaviour byte-for-byte. That is how a ruled default gets amended rather
+  // than flipped (Fable's ruling 4). Null means "no opinion" — the existing
+  // origin/pageType rule decides, untouched.
+  mode: 'freewrite' | 'draft' | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -42,11 +57,15 @@ export function readDescriptor(search: string): UnbornDescriptor {
   const kind = q.get('kind') === 'board' ? 'board' : 'prose';
   const binderId = q.get('binder');
   const pinBoardId = q.get('pin');
+  const rawMode = q.get('mode');
   return {
     origin,
     kind,
     binderId: binderId && binderId.trim() ? binderId : null,
     pinBoardId: pinBoardId && pinBoardId.trim() ? pinBoardId : null,
+    // Anything unrecognised degrades to "no opinion", not to a guess — the
+    // address is a hint about a room that does not exist yet.
+    mode: rawMode === 'draft' ? 'draft' : rawMode === 'freewrite' ? 'freewrite' : null,
   };
 }
 
@@ -56,6 +75,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.kind && d.kind !== 'prose') q.set('kind', d.kind);
   if (d.binderId) q.set('binder', d.binderId);
   if (d.pinBoardId) q.set('pin', d.pinBoardId);
+  if (d.mode) q.set('mode', d.mode);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
