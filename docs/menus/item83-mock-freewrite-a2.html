@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>item 83 · Free Write mockup A2 — the ruled desk + the two-drawer law</title>
+<!--
+  ITEM 83 · PHASE 3 · FREE WRITE PAIR v2 · VARIANT A2 (r11 revision)
+  menus lane · 2026-08-03 · SUPERSEDES item83-mock-freewrite-a.html.
+  Renders R1/R2/R5/R7/R8/R9/R10 and now R11 — THE TOOLS DRAWER IS
+  PAPER-MOUNTED: handle + strip flush with the paper's LEFT edge at every
+  size; the drawer opens LEFTWARD into the margin, its right edge pinned to
+  the page throughout the slide (left and width transition in lockstep);
+  closed, only the handle remains on the paper's edge. The PAGE drawer stays
+  rail-flush (issue 1's gap was this mockup's own coordinate-origin bug,
+  fixed: slabs are positioned inside the room, which begins after the rail —
+  so the rail-flush anchor is left:0, not left:84). Coexistence re-derives
+  from opposite anchors: the Tools drawer's open left edge must clear the
+  PAGE drawer's right edge. Slide only, never a fade (R10).
+  Tokens: shipped :root Plateau. Paper never reflows. Reduced motion honored.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --brass-press:#e88900;
+    --accent-rest:#96a05a; --accent-door:#4F5730;
+    --ink-on-paper:#2B2014; --ink-on-paper-low:#8A7C68;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi)}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:9;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  .rig button:focus-visible{outline:2px solid #888;outline-offset:1px}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+
+  .fit{position:absolute;inset:42px 0 0 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8)}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:56px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px;position:relative;z-index:4}
+  .rail .cat{width:100%;text-align:center;padding:9px 0 8px;color:var(--text-low);
+        font-size:10px;letter-spacing:.08em;cursor:pointer;background:none;border:none;font-family:inherit}
+  .rail .cat .glyph{display:block;font-size:15px;line-height:1;margin-bottom:3px;color:var(--text-mid)}
+  .rail .cat:hover{color:var(--text-mid)}
+  .rail .cat[aria-expanded="true"]{color:var(--text-hi);border-left:1px solid var(--accent-rest)}
+  .rail .cat:focus-visible{outline:1px solid var(--accent-rest);outline-offset:-1px}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:26px;padding:0 34px;border-bottom:1px solid var(--line)}
+  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em;min-width:170px}
+  .crumb b{color:var(--text-mid);font-weight:500}
+  .strip{display:flex;gap:24px;margin:0 auto}
+  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);
+        padding:6px 2px;border-bottom:1px solid transparent;cursor:default}
+  .mode.active{color:var(--text-hi);border-bottom-color:var(--accent-rest)}
+  .mode.dark{color:var(--text-low)}
+  .mode.door{color:var(--text-mid)}
+  .mode:hover{color:var(--text-hi)}
+  .mode.door:hover{color:var(--brass)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  .paper{position:absolute;top:44px;bottom:64px;left:50%;transform:translateX(-50%);
+         width:min(760px,60ch);background:var(--paper);color:var(--ink-on-paper);
+         border:1px solid var(--line);padding:58px 64px;font-family:var(--prose);
+         font-size:19px;line-height:1.62}
+  .paper p{margin:0 0 1em}
+  .dim{color:var(--ink-on-paper-low)}
+  .caret{display:inline-block;width:1px;height:1.05em;background:var(--ink-on-paper);
+         vertical-align:-0.15em;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  .lane{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:min(760px,60ch);height:3px}
+  .lane .fill{height:1px;margin-top:1px;background:var(--accent-rest);width:41%}
+
+  /* ---- R10: slabs, slide-only. A slab sits at its anchor; its body wipes
+         open/shut behind the seam. Anchor shifts slide the whole slab. ---- */
+  .slab{position:absolute;top:64px;bottom:64px;display:flex;align-items:stretch;
+        transition:left .24s ease}
+  #toolSlab{transition:left .24s ease}
+  .bodywrap{overflow:hidden;transition:width .24s ease;height:100%}
+  .dbody{height:100%;display:flex;flex-direction:column;background:var(--panel);
+         border:1px solid var(--line);border-left:none;color:var(--text-mid);font-size:12.5px}
+  @media (prefers-reduced-motion:reduce){.slab,.bodywrap{transition:none}.caret{animation:none}}
+  .dbody .scroll{flex:1;overflow:auto;padding:4px 0 6px}
+  #pageSlab{z-index:2}
+  #toolSlab{z-index:3}
+  #pageSlab .dbody{border-left:none}   /* flush at 0: the rail's border-right is the seam */
+
+  /* the handle — affixed to the Tools drawer's left edge, travels with it */
+  .handle{width:14px;background:var(--panel);border:1px solid var(--line);
+          align-self:center;height:74px;display:grid;place-items:center;cursor:pointer;
+          color:var(--accent-rest);font-size:11px;padding:0}
+  .handle:focus-visible{outline:2px solid var(--accent-rest);outline-offset:1px}
+
+  .zonehead{display:block;padding:8px 14px 7px;font-size:10px;letter-spacing:.24em;
+            text-transform:uppercase;color:var(--accent-rest)}
+  button.zonehead{width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center}
+  button.zonehead .tw{margin-left:auto;color:var(--text-low);font-size:10px;letter-spacing:0}
+  button.zonehead:hover .tw{color:var(--text-mid)}
+  .zone{border-bottom:1px solid var(--line);padding:2px 0 10px;margin:0 0 6px}
+  .zone:last-child{border-bottom:none}
+
+  .marks{display:flex;gap:6px;padding:0 14px}
+  .mark{width:34px;height:30px;background:none;border:1px solid var(--line);cursor:pointer;
+        color:var(--text-mid);font-family:var(--prose);font-size:15px}
+  .mark.b{font-weight:700}.mark.i{font-style:italic}.mark.u{text-decoration:underline}
+  .mark:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .mark:active{color:var(--brass);border-color:var(--brass)}
+  .mark[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .inkrow{display:flex;gap:6px;padding:0 14px;margin-bottom:8px}
+  .pentype{flex:1;background:none;border:1px solid var(--line);color:var(--text-mid);
+        padding:5px 0 3px;cursor:pointer;display:grid;place-items:center}
+  .pentype:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .pentype:active{color:var(--brass)}
+  .pentype[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .swatches{display:flex;gap:8px;padding:0 14px;align-items:center}
+  .sw{width:22px;height:22px;border:1px solid var(--line);cursor:pointer;padding:0}
+  .sw:hover{border-color:var(--text-low)}
+  .sw[aria-pressed="true"]{outline:1px solid var(--accent-rest);outline-offset:2px}
+
+  .foot{border-top:1px solid var(--line);padding:10px 12px 12px}
+  .goal{display:flex;align-items:baseline;gap:10px;color:var(--text-mid);font-size:12px}
+  .goal .timer{font-variant-numeric:tabular-nums;color:var(--text-low)}
+  .goal .target{margin-left:auto;color:var(--text-mid)}
+  .hairline{height:1px;background:var(--line);margin:8px 0 10px;position:relative}
+  .hairline .done{position:absolute;inset:0 auto 0 0;width:41%;background:var(--accent-rest)}
+  .instruments{display:flex;gap:5px}
+  .inst{flex:1;background:none;border:1px solid var(--line);color:var(--text-mid);
+        font:inherit;font-size:10px;letter-spacing:.03em;padding:6px 2px 5px;cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:3px}
+  .inst .g{font-size:13px;line-height:1}
+  .inst:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .inst:active{color:var(--brass);border-color:var(--brass)}
+  .inst .dot{width:4px;height:4px;background:var(--accent-rest)}
+
+  .prow{display:flex;align-items:center;gap:8px;padding:6px 14px;color:var(--text-mid);font-size:11.5px}
+  .prow .lab{flex:1}
+  .prow.doorrow{cursor:pointer}
+  .prow.doorrow:hover{color:var(--text-hi)}
+  .prow.doorrow:active{color:var(--brass)}
+  .mini{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;
+        font-size:10.5px;padding:3px 7px;cursor:pointer}
+  .mini:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .mini[disabled]{color:var(--text-low);cursor:default}
+  .defaults{margin:6px 12px 10px;padding:6px 0;width:calc(100% - 24px);background:none;
+        border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:11px;cursor:pointer}
+  .defaults:hover{color:var(--text-hi);border-color:var(--text-low)}
+
+  .tgrip{position:absolute;top:50%;right:0;transform:translateY(-50%);width:14px;height:74px;
+         background:var(--panel);border:1px solid var(--line);border-right:none;
+         display:grid;place-items:center;color:var(--accent-rest);font-size:11px}
+  .note{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:#5e564c;letter-spacing:.03em}
+</style>
+</head>
+<body>
+  <div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+    <b>ITEM 83 · FREE WRITE · A2 — flush drawers, the handle law</b>
+    <button id="w1" aria-pressed="false">1366×768</button>
+    <button id="w2" aria-pressed="true">1680×1050</button>
+    <span id="geom">measuring…</span>
+  </div>
+
+  <div class="fit"><div class="stage" id="stage">
+    <div class="frame">
+      <nav class="rail" aria-label="Cascade">
+        <button class="cat"><span class="glyph">✶</span>journal</button>
+        <button class="cat" id="pageCat" aria-expanded="true"><span class="glyph">▭</span>page</button>
+        <button class="cat"><span class="glyph">⌗</span>plan</button>
+        <button class="cat"><span class="glyph">☰</span>drawers</button>
+        <button class="cat"><span class="glyph">⌂</span>shelf</button>
+        <button class="cat"><span class="glyph">✕</span>trash</button>
+        <button class="cat"><span class="glyph">⚙</span>settings</button>
+        <button class="cat"><span class="glyph">◐</span>theme</button>
+      </nav>
+
+      <div class="band">
+        <div class="crumb">Location&nbsp; <b>Loose · The coat on the train</b></div>
+        <div class="strip" role="tablist" aria-label="Writing mode">
+          <span class="mode active" role="tab" aria-selected="true">Free Write</span>
+          <span class="mode" role="tab">Draft</span>
+          <span class="mode dark" role="tab" aria-disabled="true">Revise</span>
+          <span class="mode dark" role="tab" aria-disabled="true">Workshop</span>
+          <span class="mode door">Publish →</span>
+        </div>
+      </div>
+
+      <div class="room">
+        <main class="paper">
+          <p>She doesn't run for the train. That's the whole discovery of this
+          morning — she walks, because the coat is already on the seat and the
+          leaving is already done. Everything I wrote yesterday assumed panic,
+          and it was never panic. It was <span class="dim">*</span><i>relief</i><span class="dim">*</span>.</p>
+          <p>Keep going. What does the platform smell like<span class="caret"></span></p>
+        </main>
+        <div class="lane" aria-hidden="true"><div class="fill"></div></div>
+
+        <!-- the cascade's PAGE drawer — flush against the rail (R10.i) -->
+        <div class="slab" id="pageSlab">
+          <div class="bodywrap" id="pageWrap">
+            <aside class="dbody" style="width:200px" aria-label="Page">
+              <div class="scroll">
+                <div class="zone">
+                  <span class="zonehead">Page</span>
+                  <div class="prow doorrow" role="button" tabindex="0"><span class="lab">＋ New page</span><span>→</span></div>
+                </div>
+                <div class="zone">
+                  <span class="zonehead">Page setup</span>
+                  <div class="prow"><span class="lab">Margins</span><button class="mini">Normal ▾</button></div>
+                  <div class="prow"><span class="lab">Line spacing</span><button class="mini">1.6 ▾</button></div>
+                  <div class="prow"><span class="lab">Page numbers</span><button class="mini">Off ▾</button></div>
+                  <div class="prow"><span class="lab" style="padding-left:10px;color:var(--text-low)">Placement</span><button class="mini" disabled>Bottom · center</button></div>
+                  <div class="prow"><span class="lab">Headers</span><button class="mini">Off ▾</button></div>
+                  <div class="prow"><span class="lab">Footers</span><button class="mini">Off ▾</button></div>
+                </div>
+                <div class="zone">
+                  <button class="zonehead" aria-expanded="false">Places <span class="tw">＋</span></button>
+                </div>
+              </div>
+              <button class="defaults">Set as my default page settings</button>
+            </aside>
+          </div>
+        </div>
+
+        <!-- the Tools drawer + its HANDLE, one slab (R10.ii) -->
+        <div class="slab" id="toolSlab">
+          <button class="handle" id="handle" aria-label="Close hand tools" aria-expanded="true">‖</button>
+          <div class="bodywrap" id="toolWrap">
+            <aside class="dbody" style="width:184px" aria-label="Hand tools">
+              <div class="scroll">
+                <div class="zone">
+                  <span class="zonehead">Styling</span>
+                  <div class="marks">
+                    <button class="mark b" aria-pressed="false" aria-label="Bold">B</button>
+                    <button class="mark i" aria-pressed="false" aria-label="Italic">I</button>
+                    <button class="mark u" aria-pressed="false" aria-label="Underline">U</button>
+                  </div>
+                </div>
+                <div class="zone">
+                  <span class="zonehead">Ink</span>
+                  <div class="inkrow" role="radiogroup" aria-label="Ink type">
+                    <button class="pentype" aria-pressed="true" aria-label="Pen" title="Pen">
+                      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 15.5l1.1-3.8 7.6-7.6a1.5 1.5 0 0 1 2.1 0l.6.6a1.5 1.5 0 0 1 0 2.1l-7.6 7.6-3.8 1.1z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M12.4 5l2.6 2.6" stroke="currentColor" stroke-width="1.3"/><path d="M5.6 11.7l2.7 2.7" stroke="currentColor" stroke-width="1.3"/></svg>
+                    </button>
+                    <button class="pentype" aria-pressed="false" aria-label="Pencil" title="Pencil">
+                      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16l.9-3.3L12.6 5l2.4 2.4-7.7 7.7L4 16z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M12.6 5l2.4 2.4M4.9 12.7L7.3 15.1" stroke="currentColor" stroke-width="1.3"/><path d="M14.2 3.4l2.4 2.4" stroke="currentColor" stroke-width="2"/></svg>
+                    </button>
+                    <button class="pentype" aria-pressed="false" aria-label="Marker" title="Marker">
+                      <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 15h5l6-6-3-3-6 6v3z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M12 4.5L15.5 8" stroke="currentColor" stroke-width="2.4"/><path d="M4 17h7" stroke="currentColor" stroke-width="1.3"/></svg>
+                    </button>
+                  </div>
+                  <div class="swatches" role="radiogroup" aria-label="Ink color">
+                    <button class="sw" style="background:#5b3a1e" aria-pressed="true"  aria-label="Walnut"></button>
+                    <button class="sw" style="background:#2B2014" aria-pressed="false" aria-label="Iron"></button>
+                    <button class="sw" style="background:#6e2b1e" aria-pressed="false" aria-label="Oxblood"></button>
+                    <button class="sw" style="background:#2f4f52" aria-pressed="false" aria-label="Sea"></button>
+                  </div>
+                </div>
+              </div>
+              <div class="foot">
+                <div class="goal"><span>Goal: 20 lines</span><span class="timer">31:07</span><span class="target">Set</span></div>
+                <div class="hairline"><div class="done"></div></div>
+                <div class="instruments">
+                  <button class="inst" aria-pressed="true" aria-label="Typewriter — on"><span class="g">⌨</span>Typewriter<span class="dot" aria-hidden="true"></span></button>
+                  <button class="inst" aria-label="Progress"><span class="g">◔</span>Progress</button>
+                  <button class="inst" aria-label="Full Screen"><span class="g">⛶</span>Full Screen</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <div class="tgrip" aria-label="Open the Tutor" title="The Tutor — opens only by your press">‖</div>
+        <div class="note">R11: Tools drawer paper-mounted — handle + strip flush with the page’s left edge at every size · PAGE drawer flush at the rail</div>
+      </div>
+    </div>
+  </div></div>
+
+<script>
+  const stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+        pageSlab=document.getElementById('pageSlab'), pageWrap=document.getElementById('pageWrap'),
+        toolSlab=document.getElementById('toolSlab'), toolWrap=document.getElementById('toolWrap'),
+        handle=document.getElementById('handle'), pageCat=document.getElementById('pageCat'),
+        B1=document.getElementById('w1'), B2=document.getElementById('w2');
+  const CASCADE_W=200, SLIVER_W=184, HANDLE_W=14, RAIL=84;
+  const SIZES={a:[1366,768], b:[1680,1050]};
+  let cur='b';                       // wide first: both drawers, flush, coexisting
+  let pageOpen=true, toolOpen=true, lastOpened='sliver';
+
+  function marginW(){ const W=SIZES[cur][0]; return (W-RAIL-Math.min(760,W*0.6))/2; }
+  function canCoexist(){ return (marginW()-HANDLE_W-SLIVER_W) >= CASCADE_W; }
+
+  function apply(){
+    pageWrap.style.width=(pageOpen?CASCADE_W:0)+'px';
+    toolWrap.style.width=(toolOpen?SLIVER_W:0)+'px';
+    pageCat.setAttribute('aria-expanded',String(pageOpen));
+    handle.setAttribute('aria-expanded',String(toolOpen));
+    handle.setAttribute('aria-label', toolOpen?'Close hand tools':'Open hand tools');
+    pageSlab.style.left='0px';                       // flush: the room begins at the rail's inner edge
+    const paperLeft=Math.round(marginW());           // paper is centered in the room
+    toolSlab.style.left=(paperLeft-HANDLE_W-(toolOpen?SLIVER_W:0))+'px'; // right edge pinned to the paper
+  }
+  function layout(){
+    const [W,H]=SIZES[cur];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    apply();
+    const fit=document.querySelector('.fit');
+    const s=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+s+')';
+    requestAnimationFrame(()=>{
+      const m=Math.round(marginW());
+      geom.textContent=`rendered ${W}×${H} @ ${(s*100).toFixed(0)}% · margin ${m}px/side · PAGE flush@rail ✓ · Tools flush@paper ✓ · ${canCoexist()?'coexist ✓':'EXCLUSIVE (tools left edge '+(m-HANDLE_W-SLIVER_W)+' < page '+CASCADE_W+')'}`;
+    });
+  }
+  function toggle(which){
+    if(which==='page'){
+      if(pageOpen) pageOpen=false;
+      else{ if(!canCoexist()&&toolOpen) toolOpen=false; pageOpen=true; lastOpened='page'; }
+    }else{
+      if(toolOpen) toolOpen=false;
+      else{ if(!canCoexist()&&pageOpen) pageOpen=false; toolOpen=true; lastOpened='sliver'; }
+    }
+    apply();
+  }
+  handle.onclick=()=>toggle('sliver');
+  pageCat.onclick=()=>toggle('page');
+  document.querySelectorAll('.rail .cat:not(#pageCat)').forEach(c=>c.title='mockup: the Page drawer only');
+  B1.onclick=()=>{cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');
+    if(!canCoexist()&&pageOpen&&toolOpen){ if(lastOpened==='sliver')pageOpen=false; else toolOpen=false; } layout();};
+  B2.onclick=()=>{cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout();};
+  addEventListener('resize',layout);
+
+  document.querySelectorAll('.mark').forEach(b=>b.onclick=()=>b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true')));
+  document.querySelectorAll('.pentype,.sw').forEach(b=>b.onclick=()=>{
+    b.parentElement.querySelectorAll('[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');});
+  document.querySelector('button.zonehead').onclick=function(){
+    const o=this.getAttribute('aria-expanded')==='true';
+    this.setAttribute('aria-expanded',String(!o));
+    this.querySelector('.tw').textContent=o?'＋':'—';};
+  layout();
+</script>
+</body>
+</html>
