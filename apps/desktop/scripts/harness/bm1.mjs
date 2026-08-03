@@ -222,8 +222,18 @@ async function scenario(app) {
   await openBoard(app, 'bm1-unpaired');
   await trustedClick(app, '.board-door[data-board-door="page"]');
   await sleep(200);
-  const leftUnpaired = await app.evalJs("!location.hash.includes('bm1-unpaired')");
-  ok('S3 PAGE → (trusted pointer): on an UNPAIRED board travels to the FX10 named return (leaves the board)', leftUnpaired === true, await app.evalJs('location.hash'));
+  // ITEM 91 (2026-08-03) — Nick's S11 verdict overrules the FX10-named-return
+  // behaviour this check was written for: an unpaired board's PAGE → no longer
+  // EJECTS to backTo, it opens a New Page auto-linked back to the board. The
+  // original assertion is parked VERBATIM in this file's PARKED section (record
+  // name byte-frozen); this is its live successor. Note it is genuinely
+  // falsified, not merely re-worded — the new address CONTAINS the board id (as
+  // `?pin=`), so the old `!hash.includes('bm1-unpaired')` probe is now false for
+  // the right reason: the writer no longer leaves the board behind, they take it
+  // with them.
+  const unpairedRoute = await app.evalJs('location.hash');
+  ok('S3 PAGE → (ITEM 91 successor, trusted pointer): on an UNPAIRED board opens an unborn page carrying this board as its pin target',
+    /\/page\/new/.test(unpairedRoute) && unpairedRoute.includes('pin=bm1-unpaired'), unpairedRoute);
 
   // ============ S4/S6/S7 — the projections (one structure, three views) =====
   await freshDesk(app);
@@ -350,6 +360,22 @@ if (process.env.HARNESS_PARKED === '1') {
   // — that BM1 added its controls without falsifying a historic check — is still
   // true, so the probe stays `true`.
   pok('BM1 A4 sweep: no historic check falsified — board bar is additive + distinctly-classed (Done left in place per instructions)', true, 'empty park section by design');
+  // ITEM 91 (2026-08-03) — this file's OWN S3 unpaired check is now falsified by
+  // Nick's S11 verdict, so it parks here with its record name byte-frozen. It was
+  // never wrong about what it measured; the behaviour it measured has been
+  // overruled. The probe below re-verifies the NEW truth, per this project's
+  // established park discipline (b2.mjs's CD4 cycle is the precedent).
+  await withHarness(async (app) => {
+    await freshDesk(app);
+    await seedEntries(app, [{ id: 'bm1-unpaired', text: 'unpaired board', projectId: null, pageType: 'board', source: 'page', origin: 'loose', boxes: [], createdAt: '2026-05-01T00:00:00.000Z', updatedAt: '2026-05-01T00:00:00.000Z' }]);
+    await app.reload();
+    await openBoard(app, 'bm1-unpaired');
+    await trustedClick(app, '.board-door[data-board-door="page"]');
+    await sleep(200);
+    const nowRoute = await app.evalJs('location.hash');
+    pok('PARKED (was "S3 PAGE → (trusted pointer): on an UNPAIRED board travels to the FX10 named return (leaves the board)") — ITEM 91, Nick\'s S11 verdict: an unpaired board\'s PAGE → now opens a New Page auto-linked BACK to the board (the address carries `?pin=<boardId>`), so it no longer leaves the board at all; live successor: this file\'s own S3 section above',
+      /\/page\/new/.test(nowRoute) && nowRoute.includes('pin=bm1-unpaired'), nowRoute);
+  });
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   console.log(parkedPass ? `\nBM1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, park sweep is a verified no-op` : `\nBM1 PARKED: FAIL`);
