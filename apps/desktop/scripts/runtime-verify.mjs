@@ -106,6 +106,19 @@ function startServer(dist) {
   // offline discipline.
   let tutorMode = {};
   let lastTutorChatBody = null;
+  // ITEM 89 — the sync double's own controllable behavior, added on the exact
+  // precedent of `tutorMode` above and defaulting the same way: `{}` (every
+  // field falsy), so a file that never POSTs to `/api/_sync_mode` sees EXACTLY
+  // the pre-existing always-succeeds double. Only item89.mjs sets it.
+  //
+  // Why a SERVER-side switch when a harness can already monkey-patch
+  // `window.fetch`: a fetch trap dies with the page, so it cannot express the
+  // one state item 89 is about — a device that is still unreachable AFTER a
+  // reload. That is not a corner case, it is the defect's whole habitat (close
+  // the laptop on a plane, open it at the gate). Trapping page-side also tests
+  // a stand-in for a failed request instead of a failed request; this returns a
+  // real 503, so the client takes its own genuine catch/backoff branch.
+  let syncMode = {};
   const server = http.createServer(async (req, res) => {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
@@ -175,10 +188,28 @@ function startServer(dist) {
       });
       return;
     }
+    // ITEM 89 — arm/disarm the sync double. Body: `{ fail?: boolean }`.
+    // `{ fail: true }` makes every subsequent `/api/sync` answer 503 until
+    // re-armed; `{}` restores the always-succeeds default.
+    if (p === '/api/_sync_mode' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (c) => { body += c; });
+      req.on('end', () => {
+        try { syncMode = JSON.parse(body || '{}') || {}; } catch { syncMode = {}; }
+        sendJson(res, { ok: true, syncMode });
+      });
+      return;
+    }
     if (p === '/api/sync') {
       let body = '';
       req.on('data', (c) => { body += c; });
       req.on('end', () => {
+        // Armed failure: a real HTTP error, so the client's own catch/backoff
+        // branch runs and NOTHING is recorded as pushed.
+        if (syncMode.fail) {
+          res.writeHead(503, { 'content-type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'harness: sync unavailable' }));
+        }
         syncCount += 1;
         try {
           const je = JSON.parse(body || '{}')?.push?.journalEntries;

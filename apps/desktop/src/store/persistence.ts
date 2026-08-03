@@ -73,15 +73,75 @@ export function generateId(): string {
 
 // --- Dirty registry -------------------------------------------------------
 // Ids of records changed locally since the last sync, tracked per collection.
+//
+// PERSISTED (item 89). This set used to be module-scope memory only, and that
+// was a work-losing defect: `getDirtyRecords()` filters the cache BY this set,
+// so a reload before the next successful push emptied it and every pending row
+// became unpushable — sitting on disk, enumerated normally by every local
+// screen, and invisible to sync forever. Nothing surfaced the loss, because
+// every list in the app reads the local cache (`getJournalPages()` and friends
+// read `cache` alone), so a stranded row looks exactly like a synced one on the
+// device that owns it. The only recovery was the one-shot journal backfill
+// below, cleared by hand. Journaling the ids alongside the data closes it:
+// what survives the reload pushes on the next connection, unattended.
 
-const dirty: Record<CollectionName, Set<string>> = {
-  projects: new Set(),
-  storyPlans: new Set(),
-  sessions: new Set(),
-  drafts: new Set(),
-  journalEntries: new Set(),
-  drawers: new Set(),
-};
+const DIRTY_KEY = 'writer-studio-dirty-v1';
+
+const COLLECTIONS = Object.keys(KEYS) as CollectionName[];
+
+function emptyDirty(): Record<CollectionName, Set<string>> {
+  return {
+    projects: new Set(),
+    storyPlans: new Set(),
+    sessions: new Set(),
+    drafts: new Set(),
+    journalEntries: new Set(),
+    drawers: new Set(),
+  };
+}
+
+function hydrateDirty(): Record<CollectionName, Set<string>> {
+  const sets = emptyDirty();
+  try {
+    const raw = localStorage.getItem(DIRTY_KEY);
+    if (!raw) return sets;
+    const parsed = JSON.parse(raw) as Partial<Record<CollectionName, unknown>>;
+    for (const name of COLLECTIONS) {
+      const ids = parsed?.[name];
+      if (!Array.isArray(ids)) continue;
+      // Prune to ids that still have a record in the cache. A persisted id
+      // whose row never reached disk — the tab died inside the 300ms write
+      // window — would otherwise be a phantom that pushes nothing (there is no
+      // record to send) while `applyCollection()` skips that id as "a local
+      // unsynced edit" forever, so the server's own copy could never land.
+      // Pruning at the one moment both halves are on the table makes the
+      // restore self-healing instead of a new way to strand a row.
+      const live = new Set((cache[name] as { id: string }[]).map(r => r.id));
+      for (const id of ids) {
+        if (typeof id === 'string' && live.has(id)) sets[name].add(id);
+      }
+    }
+  } catch {
+    // Corrupt or unavailable storage must never crash boot — start empty.
+  }
+  return sets;
+}
+
+// Write the id journal. Called from `flush()` so the dirty snapshot lands in
+// the same synchronous moment as the collection it describes: the two can
+// never disagree about a record that reached disk. `markClean()` and the
+// journal backfill call it directly, since neither touches a collection.
+function persistDirty(): void {
+  try {
+    const out: Record<string, string[]> = {};
+    for (const name of COLLECTIONS) out[name] = [...dirty[name]];
+    localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+  } catch {
+    // Storage full/unavailable — never throw into a write path.
+  }
+}
+
+const dirty: Record<CollectionName, Set<string>> = hydrateDirty();
 
 export interface DirtyRecords {
   projects: Project[];
@@ -112,6 +172,25 @@ export function markClean(ids: string[]): void {
     dirty.journalEntries.delete(id);
     dirty.drawers.delete(id);
   }
+  persistDirty();
+}
+
+// Item 89 — test/inspection seam (this file's own established pattern; see
+// `window.wrizoCreateJournalPage` below). The registry is module-private and
+// the whole defect was that its survival across a reload could not be
+// observed, so the harness needs to read it the way sync does: after the
+// bundle re-hydrates, not through the localStorage key it happens to use.
+// Never read by app code.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoDirty?: unknown }).wrizoDirty = {
+    key: DIRTY_KEY,
+    ids: (): Record<string, string[]> => {
+      const out: Record<string, string[]> = {};
+      for (const name of COLLECTIONS) out[name] = [...dirty[name]];
+      return out;
+    },
+    records: (): DirtyRecords => getDirtyRecords(),
+  };
 }
 
 // One-time journal backfill (journal-resync patch). Pre-D2, the client pushed
@@ -124,6 +203,8 @@ export function markClean(ids: string[]): void {
 // gated on the new server's response shape + a localStorage flag.
 export function markAllJournalEntriesDirty(): void {
   for (const e of cache.journalEntries) dirty.journalEntries.add(e.id);
+  // Touches no collection, so no flush would carry the journal — write it here.
+  persistDirty();
 }
 
 // --- Subscriptions --------------------------------------------------------
@@ -171,6 +252,9 @@ function flush(name: CollectionName): void {
   } catch {
     // Storage full/unavailable — never throw into a write path.
   }
+  // The id journal rides with the data (item 89): whenever a record reaches
+  // disk, the fact that it is unpushed reaches disk in the same tick.
+  persistDirty();
 }
 
 function scheduleFlush(name: CollectionName): void {
@@ -1949,5 +2033,12 @@ export function resetLocalData(): void {
       // ignore
     }
   });
+  // The id journal is per-account data too — a logout that left it behind
+  // would boot the next account holding the previous one's pending ids.
+  try {
+    localStorage.removeItem(DIRTY_KEY);
+  } catch {
+    // ignore
+  }
   notify();
 }
