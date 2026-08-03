@@ -59,6 +59,23 @@ function stampMap(records: DirtyRecords): Map<string, string> {
 // flagged "synced" locally but never actually stored) pushes once. The
 // localStorage flag makes it fire at most once per device; LWW + stable ids make
 // re-pushing a row the server already has a no-op.
+//
+// KEPT, deliberately, after item 89 persisted the dirty set — the two address
+// DISJOINT populations and neither subsumes the other. Persistent dirty saves
+// rows that ARE dirty across a reload; this backfill saves rows that are
+// wrongly CLEAN, marked synced by a client talking to a server that dropped
+// them. A clean row is invisible to a dirty-set fix by construction, so
+// retiring this guard would permanently strand the exact backlog it was
+// written for on any device that has not yet run it.
+// What item 89 DOES retire is this key's accidental second job: it was the
+// only lever for recovering a freshly-stranded page, and clearing it by hand
+// was the recovery Fable had to run on 2026-08-02. Newly stranded rows now
+// push themselves on the next connection, so no one clears this again.
+// Standing asymmetry, recorded rather than silently fixed: the backfill covers
+// `journalEntries` ONLY. Stranding was never journal-specific — projects,
+// drawers, drafts, sessions and storyPlans stranded the same way with no
+// recovery path at all, manual or otherwise. Persistent dirty is what covers
+// those six; this guard is not, and was never, the general answer.
 function maybeBackfillJournal(pull: unknown): void {
   try {
     if (localStorage.getItem(JOURNAL_RESYNC_KEY)) return;

@@ -73,15 +73,75 @@ export function generateId(): string {
 
 // --- Dirty registry -------------------------------------------------------
 // Ids of records changed locally since the last sync, tracked per collection.
+//
+// PERSISTED (item 89). This set used to be module-scope memory only, and that
+// was a work-losing defect: `getDirtyRecords()` filters the cache BY this set,
+// so a reload before the next successful push emptied it and every pending row
+// became unpushable — sitting on disk, enumerated normally by every local
+// screen, and invisible to sync forever. Nothing surfaced the loss, because
+// every list in the app reads the local cache (`getJournalPages()` and friends
+// read `cache` alone), so a stranded row looks exactly like a synced one on the
+// device that owns it. The only recovery was the one-shot journal backfill
+// below, cleared by hand. Journaling the ids alongside the data closes it:
+// what survives the reload pushes on the next connection, unattended.
 
-const dirty: Record<CollectionName, Set<string>> = {
-  projects: new Set(),
-  storyPlans: new Set(),
-  sessions: new Set(),
-  drafts: new Set(),
-  journalEntries: new Set(),
-  drawers: new Set(),
-};
+const DIRTY_KEY = 'writer-studio-dirty-v1';
+
+const COLLECTIONS = Object.keys(KEYS) as CollectionName[];
+
+function emptyDirty(): Record<CollectionName, Set<string>> {
+  return {
+    projects: new Set(),
+    storyPlans: new Set(),
+    sessions: new Set(),
+    drafts: new Set(),
+    journalEntries: new Set(),
+    drawers: new Set(),
+  };
+}
+
+function hydrateDirty(): Record<CollectionName, Set<string>> {
+  const sets = emptyDirty();
+  try {
+    const raw = localStorage.getItem(DIRTY_KEY);
+    if (!raw) return sets;
+    const parsed = JSON.parse(raw) as Partial<Record<CollectionName, unknown>>;
+    for (const name of COLLECTIONS) {
+      const ids = parsed?.[name];
+      if (!Array.isArray(ids)) continue;
+      // Prune to ids that still have a record in the cache. A persisted id
+      // whose row never reached disk — the tab died inside the 300ms write
+      // window — would otherwise be a phantom that pushes nothing (there is no
+      // record to send) while `applyCollection()` skips that id as "a local
+      // unsynced edit" forever, so the server's own copy could never land.
+      // Pruning at the one moment both halves are on the table makes the
+      // restore self-healing instead of a new way to strand a row.
+      const live = new Set((cache[name] as { id: string }[]).map(r => r.id));
+      for (const id of ids) {
+        if (typeof id === 'string' && live.has(id)) sets[name].add(id);
+      }
+    }
+  } catch {
+    // Corrupt or unavailable storage must never crash boot — start empty.
+  }
+  return sets;
+}
+
+// Write the id journal. Called from `flush()` so the dirty snapshot lands in
+// the same synchronous moment as the collection it describes: the two can
+// never disagree about a record that reached disk. `markClean()` and the
+// journal backfill call it directly, since neither touches a collection.
+function persistDirty(): void {
+  try {
+    const out: Record<string, string[]> = {};
+    for (const name of COLLECTIONS) out[name] = [...dirty[name]];
+    localStorage.setItem(DIRTY_KEY, JSON.stringify(out));
+  } catch {
+    // Storage full/unavailable — never throw into a write path.
+  }
+}
+
+const dirty: Record<CollectionName, Set<string>> = hydrateDirty();
 
 export interface DirtyRecords {
   projects: Project[];
@@ -112,6 +172,25 @@ export function markClean(ids: string[]): void {
     dirty.journalEntries.delete(id);
     dirty.drawers.delete(id);
   }
+  persistDirty();
+}
+
+// Item 89 — test/inspection seam (this file's own established pattern; see
+// `window.wrizoCreateJournalPage` below). The registry is module-private and
+// the whole defect was that its survival across a reload could not be
+// observed, so the harness needs to read it the way sync does: after the
+// bundle re-hydrates, not through the localStorage key it happens to use.
+// Never read by app code.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoDirty?: unknown }).wrizoDirty = {
+    key: DIRTY_KEY,
+    ids: (): Record<string, string[]> => {
+      const out: Record<string, string[]> = {};
+      for (const name of COLLECTIONS) out[name] = [...dirty[name]];
+      return out;
+    },
+    records: (): DirtyRecords => getDirtyRecords(),
+  };
 }
 
 // One-time journal backfill (journal-resync patch). Pre-D2, the client pushed
@@ -124,6 +203,8 @@ export function markClean(ids: string[]): void {
 // gated on the new server's response shape + a localStorage flag.
 export function markAllJournalEntriesDirty(): void {
   for (const e of cache.journalEntries) dirty.journalEntries.add(e.id);
+  // Touches no collection, so no flush would carry the journal — write it here.
+  persistDirty();
 }
 
 // --- Subscriptions --------------------------------------------------------
@@ -171,6 +252,9 @@ function flush(name: CollectionName): void {
   } catch {
     // Storage full/unavailable — never throw into a write path.
   }
+  // The id journal rides with the data (item 89): whenever a record reaches
+  // disk, the fact that it is unpushed reaches disk in the same tick.
+  persistDirty();
 }
 
 function scheduleFlush(name: CollectionName): void {
@@ -1377,15 +1461,78 @@ export function getBinderPages(binderId: string): JournalEntry[] {
 // synonym so every pre-existing call site (AddToSheet.tsx, PageFileMenu.tsx)
 // keeps working, byte-identical in effect, with zero call-site edits forced
 // by this ticket alone.
-export function setPageHome(pageId: string, target: string): void {
-  const entry = getJournalEntry(pageId);
-  if (!entry) return;
+// ITEM 88a — THE TARGET IS VALIDATED, AND A REFUSAL IS REPORTABLE.
+//
+// This function used to accept ANY string as a binder id and assign it straight
+// to `projectId`, with no existence check and a `void` return. Both halves lost
+// work:
+//
+//   - An id naming no live binder made the page invisible to EVERY enumerator —
+//     not the Journal (`projectId == null` filter), not any binder's page list,
+//     not the Shelf (`belongsOnShelf` excludes filed pages), and not the
+//     "Everything" export. One bad string could retire a page from the product
+//     while leaving the row perfectly intact on disk.
+//   - The `void` return made the `!entry` early exit indistinguishable from
+//     success, which is exactly how PlacesPanel came to toast "Filed to X." over
+//     a filing that never happened (item 88b, on an UNBORN page — a row PB1
+//     deliberately keeps out of the store until its first word).
+//
+// So the outcome is now a value the caller must look at. Refusals write NOTHING:
+// a filing that cannot be honoured leaves the page where it was, which is always
+// recoverable, rather than somewhere no surface can reach. `getProject()` is the
+// app's own definition of a live binder (it filters `deletedAt`) and is the same
+// definition `getProjects()` uses to build the list the UI offers — so a target
+// the writer could actually pick is always accepted, and a deleted binder is
+// refused for the same reason a nonexistent one is: filing into it orphans the
+// page just as completely.
+export type PageHomeResult = 'filed' | 'no-such-page' | 'no-such-binder';
+
+export function setPageHome(pageId: string, target: string): PageHomeResult {
+  // ITEM 88b — READ THE CACHE, NOT `getJournalEntry`. This is the correction
+  // that the harness forced, and the reasoning matters more than the line.
+  //
+  // Item 88's own S0 recorded 88b as "setPageHome early-returns when
+  // getJournalEntry misses, which is exactly the case for an UNBORN page, so
+  // the panel toasts a filing that never happened." That analysis is FALSE, and
+  // `item88.mjs` falsified it on the first run: `getJournalEntry` FALLS THROUGH
+  // TO THE UNBORN SLOT (see its own body below), so an unborn page IS found
+  // here. The old code then mutated that record-shaped object and handed it to
+  // `saveJournalEntry` — which put it in the cache, marked it dirty, and
+  // scheduled it to disk. Filing an unborn page did not no-op and did not lie:
+  // it BIRTHED AN EMPTY PAGE through a side door, bypassing `birth()`, leaving
+  // `setUnbornEntry(null)` uncalled (so the slot still held the same id), and
+  // minting exactly the `text: ''` litter PB1 exists to prevent.
+  //
+  // An unborn surface is deliberately "never serialized, never synced, never
+  // enumerated" — it cannot appear in Places, the Journal, the Shelf, a board's
+  // pin list, or an export. A thing that is in no pool cannot be moved between
+  // pools, so filing is not a no-op by accident here; it is a no-op by the same
+  // structural law. Reading the cache directly is what makes that true in code
+  // rather than by comment: birth stays the ONE path that turns a surface into
+  // a row (PB1's ruling 2), and this function can no longer take that job by
+  // side effect. The refusal is reportable, so the panel can say so plainly —
+  // which is Nick's own S6 verdict, "no toast on a no-op."
+  const found = cache.journalEntries.find(e => e.id === pageId && !e.deletedAt);
+  if (!found) return 'no-such-page';
+  const entry = clone(found);
   if (target === 'shelf' || target === 'loose' || target === 'journal') {
     entry.projectId = null;
   } else {
-    entry.projectId = target; // a binder id
+    if (!getProject(target)) return 'no-such-binder';
+    entry.projectId = target; // a binder id, now known to name a live binder
   }
   saveJournalEntry(entry);
+  return 'filed';
+}
+
+// ITEM 88a — test/inspection seam, this file's own established pattern (the
+// `window.wrizoPinPageToBoard = pinPageToBoard` line above, verbatim in shape).
+// The guard exists precisely for a target no UI can offer — every surface builds
+// its list from `getProjects()`, so a bogus binder id is unreachable by clicking
+// and the refusal would otherwise be unassertable from a harness. Never read by
+// app code.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoSetPageHome?: unknown }).wrizoSetPageHome = setPageHome;
 }
 
 // B2 S4 — the inverse of pinPageToBoard: uncheck in the Places panel's
@@ -1949,5 +2096,12 @@ export function resetLocalData(): void {
       // ignore
     }
   });
+  // The id journal is per-account data too — a logout that left it behind
+  // would boot the next account holding the previous one's pending ids.
+  try {
+    localStorage.removeItem(DIRTY_KEY);
+  } catch {
+    // ignore
+  }
   notify();
 }
