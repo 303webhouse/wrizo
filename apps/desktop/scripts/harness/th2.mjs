@@ -166,9 +166,9 @@ await withHarness(async (app) => {
   // is the same species as m4's flare: an assertion about an evental, animated
   // state gated only on "did I happen to see it".
   //
-  // THE FIX is DF1.1's tu2 discipline: a MutationObserver installed BEFORE the
+  // THE FIX is DF1.1's tu2 discipline: an rAF recorder installed BEFORE the
   // trigger timestamps the class's arrival and departure on the browser's own
-  // clock, and captures the computed background AT that moment. The harness then
+  // clock, and captures the computed background WHILE IT IS PRESENT. The harness then
   // reads the RECORD. Nothing depends on the harness looking at the right
   // instant, so no amount of CDP or machine latency can turn a real celebration
   // into a false negative. The background is captured while the class is
