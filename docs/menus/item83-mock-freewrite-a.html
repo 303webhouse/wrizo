@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>item 83 · Free Write mockup A — the desk at rest</title>
+<!--
+  ITEM 83 · PHASE 3 · FREE WRITE PAIR · VARIANT A — "the desk at rest"
+  menus lane · 2026-08-03 · provenance: passes 0-7 on main @ a0c7acd
+  Renders: FW1 (the panel is the foot) + FW5 (the origin-gated "Journal"
+  section, collapsed, on a journal-born page) + FW6 (the right hand present,
+  silent). The Typewriter cluster is CLOSED here; variant B opens it (FW2).
+
+  TOKENS: from apps/desktop/src/index.css :root — which IS Plateau (the
+  stylesheet's own line 362: "Plateau is the bare :root block"). The
+  foundations table's --paper #f7efe1 differs by a hair from the shipped
+  #F3EDE1; the shipped value is used (disk wins).
+  LAWS RENDERED: engraved mode strip, uppercase dress over ratified
+  title-case strings (Plateau ruling 2, 2026-07-14); active mode wears the
+  1px olive hairline, brass leaves the strip entirely (ruling 1) — which
+  corrects DR4's "resting orange retained" note, erratum on the lock sheet;
+  the ember (--brass-press) rests ONLY on engraved zone headings; olive
+  rest / brass hover / brass press on interactive rows; square corners,
+  1px solid --line borders; paper never reflows for chrome.
+  MOCKUP-ONLY MECHANICS: the stage is a fixed-size box scaled to fit the
+  window via CSS transform on a WRAPPER — lawful here because this is a
+  static mockup, not the app (FX17's no-transform law guards live pointer
+  coords, which a mockup has none of). The geometry line MEASURES the
+  rendered boxes (getBoundingClientRect) and prints them — presence is not
+  composition, enforced by self-report. Panel widths are drawn values
+  (248px floor / 300px wide); production width is fx18's measured-margin
+  law, and the caption says so.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --brass-press:#e88900;
+    --accent-rest:#96a05a; --accent-door:#4F5730;
+    --ink-on-paper:#2B2014; --ink-on-paper-low:#8A7C68;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi)}
+
+  /* ---- the mockup rig (not Wrizo chrome) ---- */
+  .rig{position:fixed;inset:0 0 auto 0;z-index:9;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;
+       padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  .rig button:focus-visible{outline:2px solid #888;outline-offset:1px}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+
+  /* ---- stage scaling wrapper (mockup-only transform) ---- */
+  .fit{position:absolute;inset:42px 0 0 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8)}
+
+  /* ---- DeskFrame skeleton: rail · strip · stage · (tutor edge) ---- */
+  .frame{position:absolute;inset:0;display:grid;
+         grid-template-columns:84px 1fr;grid-template-rows:56px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px}
+  .rail .cat{width:100%;text-align:center;padding:9px 0 8px;color:var(--text-low);
+        font-size:10px;letter-spacing:.08em;cursor:default}
+  .rail .cat .glyph{display:block;font-size:15px;line-height:1;margin-bottom:3px;color:var(--text-mid)}
+  .rail .cat:hover{color:var(--text-mid)}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:26px;padding:0 34px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em;min-width:170px}
+  .crumb b{color:var(--text-mid);font-weight:500}
+  .strip{display:flex;gap:24px;margin:0 auto}
+  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);
+        padding:6px 2px;border-top:1px solid transparent;border-bottom:1px solid transparent;cursor:default}
+  .mode.active{color:var(--text-hi);border-bottom-color:var(--accent-rest)} /* the 1px olive hairline */
+  .mode.dark{color:var(--text-low)}          /* deferred tabs — quiet, SP3's map reading */
+  .mode.door{color:var(--text-mid)}          /* PUBLISH → the strip's door (DR4; no resting orange) */
+  .mode:hover{color:var(--text-hi)}
+  .mode.door:hover{color:var(--brass)}       /* brass on hover — the lane law; evental, never resting */
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* ---- the paper ---- */
+  .paper{position:absolute;top:44px;bottom:64px;left:50%;transform:translateX(-50%);
+         width:min(760px,60ch);background:var(--paper);color:var(--ink-on-paper);
+         border:1px solid var(--line);padding:58px 64px;font-family:var(--prose);
+         font-size:19px;line-height:1.62}
+  .paper p{margin:0 0 1em}
+  .caret{display:inline-block;width:1px;height:1.05em;background:var(--ink-on-paper);
+         vertical-align:-0.15em;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.caret{animation:none}}
+
+  /* ---- the instrument lane (M4's one lane, under the page) ---- */
+  .lane{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+        width:min(760px,60ch);height:3px;background:transparent}
+  .lane .fill{height:1px;margin-top:1px;background:var(--accent-rest);width:34%}
+
+  /* ---- the left hand: grip + panel ---- */
+  .grip{position:absolute;top:50%;transform:translateY(-50%);width:14px;height:74px;
+        background:var(--panel);border:1px solid var(--line);border-left:none;cursor:pointer;
+        display:grid;place-items:center;color:var(--accent-rest);font-size:11px;letter-spacing:.1em}
+  .grip:focus-visible{outline:2px solid var(--accent-rest);outline-offset:1px}
+  .sliver{position:absolute;top:64px;bottom:64px;display:flex;flex-direction:column;
+          background:var(--panel);border:1px solid var(--line);color:var(--text-mid);
+          font-size:12.5px}
+  .sliver .body{flex:1;overflow:auto;padding:10px 0 6px}
+
+  .zone{border-bottom:1px solid var(--line);padding:2px 0 8px;margin:0 0 6px}
+  .zone:last-child{border-bottom:none}
+  .zonehead{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;
+            cursor:pointer;padding:7px 14px 6px;font:inherit;
+            font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+            color:var(--brass-press)} /* the ember — the ONE resting allowance */
+  .zonehead .tw{margin-left:auto;color:var(--text-low);font-size:10px}
+  .zonehead:hover .tw{color:var(--text-mid)}
+  .zonehead:focus-visible{outline:1px solid var(--accent-rest);outline-offset:-1px}
+
+  .row{display:flex;align-items:center;gap:10px;padding:7px 14px;color:var(--text-mid);cursor:pointer}
+  .row:hover{color:var(--text-hi)}
+  .row:active{color:var(--brass)}            /* evental orange, on press only */
+  .row .state{margin-left:auto;font-size:10.5px;letter-spacing:.05em;color:var(--text-low)}
+  .row .on{color:var(--accent-rest)}          /* olive marks where you are */
+
+  /* ---- the foot (FW1: on Free Write, the panel IS this) ---- */
+  .foot{border-top:1px solid var(--line);padding:10px 14px 12px}
+  .goal{display:flex;align-items:baseline;gap:10px;color:var(--text-mid);font-size:12px}
+  .goal .timer{font-variant-numeric:tabular-nums;color:var(--text-low)}
+  .goal .target{margin-left:auto;color:var(--text-mid)}
+  .hairline{height:1px;background:var(--line);margin:8px 0 10px;position:relative}
+  .hairline .done{position:absolute;inset:0 auto 0 0;width:34%;background:var(--accent-rest)}
+  .instruments{display:flex;gap:6px}
+  .inst{flex:1;background:none;border:1px solid var(--line);color:var(--text-mid);
+        font:inherit;font-size:10.5px;letter-spacing:.04em;padding:7px 4px 6px;cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:3px}
+  .inst .g{font-size:13px;line-height:1}
+  .inst:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .inst:active{color:var(--brass);border-color:var(--brass)}
+  .inst:focus-visible{outline:1px solid var(--accent-rest);outline-offset:1px}
+  .inst .dot{width:4px;height:4px;border-radius:0;background:var(--accent-rest)} /* typewriter ON */
+
+  /* ---- the right hand: present, silent (FW6) ---- */
+  .tgrip{position:absolute;top:50%;right:0;transform:translateY(-50%);width:14px;height:74px;
+         background:var(--panel);border:1px solid var(--line);border-right:none;
+         display:grid;place-items:center;color:var(--accent-rest);font-size:11px}
+
+  .note{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:#5e564c;letter-spacing:.03em}
+</style>
+</head>
+<body>
+  <div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+    <b>ITEM 83 · FREE WRITE · A — the desk at rest</b>
+    <button id="w1" aria-pressed="true">1366×768</button>
+    <button id="w2" aria-pressed="false">1680×1050</button>
+    <span id="geom">measuring…</span>
+  </div>
+
+  <div class="fit"><div class="stage" id="stage">
+    <div class="frame">
+      <!-- the cascade rail: the strip track's 84px successor -->
+      <nav class="rail" aria-label="Cascade">
+        <div class="cat"><span class="glyph">✶</span>journal</div>
+        <div class="cat"><span class="glyph">▭</span>page</div>
+        <div class="cat"><span class="glyph">⌗</span>plan</div>
+        <div class="cat"><span class="glyph">☰</span>drawers</div>
+        <div class="cat"><span class="glyph">⌂</span>shelf</div>
+        <div class="cat"><span class="glyph">✕</span>trash</div>
+        <div class="cat"><span class="glyph">⚙</span>settings</div>
+        <div class="cat"><span class="glyph">◐</span>theme</div>
+      </nav>
+
+      <!-- wayfinding + the engraved strip -->
+      <div class="band">
+        <div class="crumb">Location&nbsp; <b>The Journal · Morning pages</b></div>
+        <div class="strip" role="tablist" aria-label="Writing mode">
+          <span class="mode active" role="tab" aria-selected="true">Free Write</span>
+          <span class="mode" role="tab">Draft</span>
+          <span class="mode dark" role="tab" aria-disabled="true">Revise</span>
+          <span class="mode dark" role="tab" aria-disabled="true">Workshop</span>
+          <span class="mode door">Publish →</span>
+        </div>
+      </div>
+
+      <div class="room">
+        <!-- the paper -->
+        <main class="paper">
+          <p>The kettle again. Every morning it whistles at the exact moment I
+          find the first true sentence, as if the house objects to beginnings.
+          Write through it. The sound is just the sound.</p>
+          <p>What I keep circling: she leaves the coat on the train on purpose.
+          Not forgetting — leaving. The whole chapter turns if it's chosen<span class="caret"></span></p>
+        </main>
+        <div class="lane" aria-hidden="true"><div class="fill"></div></div>
+
+        <!-- the left hand -->
+        <button class="grip" id="grip" aria-label="Close hand tools" aria-expanded="true">‖</button>
+        <aside class="sliver" id="sliver" aria-label="Hand tools">
+          <div class="body">
+            <!-- FW5: the origin-gated Journal section — journal-born page only; collapsed -->
+            <div class="zone">
+              <button class="zonehead" aria-expanded="false">Journal <span class="tw">＋</span></button>
+            </div>
+          </div>
+          <!-- FW1: the foot is the panel -->
+          <div class="foot">
+            <div class="goal"><span>Goal: 12 lines</span><span class="timer">14:32</span><span class="target">Set</span></div>
+            <div class="hairline"><div class="done"></div></div>
+            <div class="instruments">
+              <button class="inst" aria-pressed="true" aria-label="Typewriter — on. Opens the cluster."><span class="g">⌨</span>Typewriter<span class="dot" aria-hidden="true"></span></button>
+              <button class="inst" aria-label="Writing settings"><span class="g">⚙</span>Settings</button>
+              <button class="inst" aria-label="Theme"><span class="g">◐</span>Theme</button>
+              <button class="inst" aria-label="Instruments"><span class="g">⟟</span>Instruments</button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- the right hand: present, silent (FW6) -->
+        <div class="tgrip" aria-label="Open the Tutor" title="The Tutor — opens only by your press">‖</div>
+
+        <div class="note">panel drawn 248 / 300 px · production width = fx18 measured-margin law</div>
+      </div>
+    </div>
+  </div></div>
+
+<script>
+  // Mockup rig only. Two reference widths; the stage scales to fit the window;
+  // the geometry line prints MEASURED boxes (presence is not composition).
+  const stage = document.getElementById('stage');
+  const sliver = document.getElementById('sliver');
+  const grip = document.getElementById('grip');
+  const geom = document.getElementById('geom');
+  const B1 = document.getElementById('w1'), B2 = document.getElementById('w2');
+  const SIZES = {a:[1366,768,248], b:[1680,1050,300]};
+  let cur = 'a';
+
+  function layout(){
+    const [W,H,P] = SIZES[cur];
+    stage.style.width = W+'px'; stage.style.height = H+'px';
+    // the left hand sits in the margin between rail and paper
+    const railW = 84, paperW = Math.min(760, W*0.6);
+    const marginW = (W - railW - paperW) / 2;             // true geometric margin, this mockup's frame
+    const panelW = Math.min(P, Math.max(120, marginW - 24)); // DOCK floor honored; drawn value capped by margin
+    sliver.style.width = panelW+'px';
+    sliver.style.left = railW + Math.max(8,(marginW - panelW)/2) + 'px';
+    grip.style.left = railW + 'px';
+    // scale to fit the window
+    const fit = document.querySelector('.fit');
+    const s = Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform = 'scale('+s+')';
+    // the rendered-geometry line — measured, not asserted
+    requestAnimationFrame(()=>{
+      const p = document.querySelector('.paper').getBoundingClientRect();
+      const sv = sliver.getBoundingClientRect();
+      geom.textContent = `rendered ${W}×${H} @ ${(s*100).toFixed(0)}% · paper ${Math.round(p.width/s)}px · panel ${Math.round(sv.width/s)}px · margin ${Math.round(marginW)}px/side · rail 84px`;
+    });
+  }
+  function setW(which){ cur=which;
+    B1.setAttribute('aria-pressed', which==='a'); B2.setAttribute('aria-pressed', which==='b'); layout(); }
+  B1.onclick=()=>setW('a'); B2.onclick=()=>setW('b');
+  addEventListener('resize', layout);
+
+  // the vanish engine's kinship, sketched: the grip persists; the panel toggles
+  let open=true;
+  grip.onclick=()=>{ open=!open; sliver.style.display=open?'flex':'none';
+    grip.setAttribute('aria-label', open?'Close hand tools':'Open hand tools');
+    grip.setAttribute('aria-expanded', String(open)); };
+
+  // the collapsed Journal section opens in place (one press; state would be remembered)
+  document.querySelector('.zonehead').onclick=function(){
+    const openNow = this.getAttribute('aria-expanded')==='true';
+    this.setAttribute('aria-expanded', String(!openNow));
+    let list=this.parentElement.querySelector('.origin-rows');
+    if(!openNow && !list){
+      list=document.createElement('div'); list.className='origin-rows';
+      list.innerHTML='<div class="row">Ink · walnut <span class="state">nib · fine ▾</span></div>'+
+                     '<div class="row">Spark deck</div><div class="row">Fragments</div>'+
+                     '<div class="row">Send → Drawer</div>';
+      this.parentElement.appendChild(list);
+      this.querySelector('.tw').textContent='—';
+    } else if(list){ list.remove(); this.querySelector('.tw').textContent='＋'; }
+  };
+  layout();
+</script>
+</body>
+</html>
