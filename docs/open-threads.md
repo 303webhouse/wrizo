@@ -58,6 +58,44 @@ question; **88c** (binder rendering in Drawers) and **S13** (cards vs pages) rou
 alongside the menus arc — seams coordinated through Nick. Post-vacation committee pass; no
 build under the freeze. Registry: next free **97**.
 
+## FIX-WAVE MERGE + LEDGER BUNDLE — 2026-08-03 (item 89/88 fix merged; Fable)
+
+**MERGED `da69332`** — the fix lane's `item89-persist-dirty` (four commits 8875343→3de9f28):
+item 89 (P0, dirty set PERSISTED — offline writes were unsendable, not merely unsent), 88a
+(P0, filing-target validation), 88b (P1, side-door birth killed), + the item88/item89
+harnesses. Stamped PARKED suites both settings (53/53 then 54/54, identical bundle hash),
+proven to bite pre-fix (8/14 + 5/10 red on pre-fix bundles). Zero schema, zero server. The fix
+lane's own FIXED records + corrected mechanisms (item 89's recovery appeared in RECENT, not the
+Journal master — `inJournalView` excludes loose by construction, recovery proven server-side by
+read-only query; 88b's side-door falsification — filing an unborn page birthed litter via
+`getJournalEntry`'s unborn-slot fall-through, bypassing `birth()`; the toast never lied) are
+already on the ledger above; item 92 S0 PROVEN (`pinToBoardId` dead code) is recorded too.
+**Fable's review follows same-day; DEPLOY is Nick's word** — these are the sitting's P0s, a
+deploy under the amended checklist (rebuild-first, name SHA + asset hash; red-suite clause if
+item 82's family still stands).
+
+**item 87 → RECLASSIFIED.** Not a defect-flip: a REVERSAL of a ruled default (FX2 S2 seeds
+typewriter ON). Owes a full pass WITH PARKED ASSERTIONS, not a one-line flip — the immutability
+law governs a ruled default as it governs a check.
+
+**ITEM 97 OPENS — the trashed-plan-board dangling pointer.** A trashed plan board's pointer
+dangles (the soft-deleted board reads as ABSENT), so the next PLAN→ flip RE-MINTS a second
+board. New ticket, fix-class.
+
+**ITEM 98 OPENS + STANDING GUARD (deploy-critical).** Railway commands run ONLY from the
+correctly-linked PRIMARY CHECKOUT, `railway status`-verified first. **Worktrees are absent from
+the path-keyed link map and resolve to project `fabulous-essence` / service `pandoras-box` — an
+UNRELATED production system** (documented in the fix lane's records below). A `railway up` /
+`redeploy` from a worktree would deploy against the wrong product. Remediation: add worktrees to
+the link map OR guard the command. Until then: primary checkout only, status-verified. (Chat 1
+has always deployed from the primary checkout `c:/Users/nickh/writer-studio`; this formalizes it
+as law.) Registry: next free **99**.
+
+**RATIFIED for the record (Fable):** the fix lane's SOLO-despite-ultracode restraint was
+correct under standing law — parallel agents on one browser pool would trip the dirty-machine
+refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
+other lanes' in-flight runs). One browser pool, one runner at a time.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
