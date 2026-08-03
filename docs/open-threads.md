@@ -9288,6 +9288,23 @@ sitting closes them.
     **So the parked stamp for 91+92 is OWED, not claimed** — both settings get re-run the
     moment a window opens, and the merge offer says so rather than presenting a half-stamp
     as a whole one.
+    **REGISTERED BY FABLE (2026-08-03):** the honest half-stamp ships as described; this
+    diagnosis is entered as the **first-parked-act race species** (a fixture touching
+    `localStorage` before its first navigation, racing the browser's launch load). Two
+    boundaries recorded WITH it, because a species is only useful if its edges are drawn:
+    **(a) THE b2-1 CONVERGENCE IS A HYPOTHESIS, NOT AN ATTRIBUTION** — same pre-commit
+    window, different symptom, and its own probe is owed before anything is attributed to
+    it. **This lane's data constrains it and is offered as evidence, not as a verdict:
+    `b2-1.mjs` returned PASS (28 checks) in ALL SIX suite runs this lane executed —
+    unparked and parked, across four distinct bundles** (`index-iOcJ71l_`,
+    `index-CThKwy6K`, `index-Cib2nzSw` ×2 settings). So no b2-1 symptom is visible from
+    here; whoever runs the probe should know that this window's runs do not reproduce it.
+    **(b) THE ORIGINAL j4 RED (`:84` null-click, HARNESS_PARKED unset) STAYS
+    UNATTRIBUTED** — the species does not inherit backwards, and this lane adds nothing to
+    it either way: **that failure was never observed in any run this lane made.** j4
+    returned PASS in four of this lane's five runs that reached it; the single red is the
+    `:297` parked-block SecurityError diagnosed above, at a different line, a different
+    setting and a different symptom.
     **ITEM 97 NOT RIDDEN — DECLINE ACCEPTED (Fable's ruling 3).** It did not fall out of
     this read (this diff touches `BoardEditor` and `unbornPage`, not
     `getOrCreatePlanBoard`), and it carries a product question — restore the trashed

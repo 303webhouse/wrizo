@@ -50,6 +50,22 @@ moment it has a browser window and return the completed stamp. Merging 91+92
 before that re-run would be merging on a half-stamp, and this lane does not ask
 for that.
 
+**Registered by Fable** as the *first-parked-act race species*, with two edges
+drawn so it cannot over-reach:
+
+- The **b2-1 convergence is a HYPOTHESIS**, not an attribution — its own probe is
+  owed first. This lane's data constrains it: `b2-1.mjs` returned **PASS (28
+  checks) in all six runs executed here**, unparked and parked, across four
+  distinct bundles. No b2-1 symptom is visible from this lane.
+- The **original j4 red (`:84` null-click, unset) stays UNATTRIBUTED.** The
+  species does not inherit backwards, and this lane adds nothing to it: that
+  failure was **never observed in any run made here**. The single j4 red seen
+  here is the `:297` parked-block SecurityError — different line, different
+  setting, different symptom.
+
+**Box queue (Fable):** post-deploy-stamp this lane goes FIRST — the owed parked
+re-run completes this offer — then the SC2 chain. Nothing races.
+
 **Item 92** — the New-page card was written to the store by `pinPageToBoard` and
 then erased by BoardEditor's own stale local `boxes` on unmount. The fix appends
 the pin to `boxesRef.current` (never a store read as local truth) and assigns the
