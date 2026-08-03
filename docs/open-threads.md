@@ -8885,6 +8885,67 @@ sitting closes them.
     seams, and any edit to one of the 47 checks that file's exposure before it lands.
     **DoD:** every exposed harness seeds through a seam; the census re-derived exactly;
     each item-82 member either attributed on its own evidence or explicitly left open.
+88. **The Page-panel filing incident — affordance illegibility, and three defects
+    under it.** **OPENED + S0 RESOLVED AT THE EVENT LEVEL — 2026-08-02 (chat 6), on
+    Fable's trip-critical order. ZERO DATA LOSS.**
+    **THE EVENT (production, Nick's laptop):** on a NEW EMPTY page, opening the Page
+    icon's panel and clicking "Poop" did not navigate — it toasted *"Filed to Poop."*
+    Poop was then findable in neither Journal, Shelf, panel, nor the Everything export
+    (111 pages, zero mentions).
+    **RESOLUTION: "Poop" IS A BINDER, AND IT EXISTS.** A whole-store console search
+    (`Object.entries(localStorage).filter(([k,v]) => v.toLowerCase().includes('poop'))`)
+    returns **`['writer-studio-projects']`** and one project object — screenshot on
+    file. Every negative is explained without loss: a binder lives in Drawers, not
+    Journal or Shelf; and the Everything export walks PAGES, so a binder's NAME would
+    never appear in it. **The production Postgres query was CANCELLED as unnecessary**
+    — recorded as NOT RUN rather than inconclusive.
+    **A NEAR-MISS WORTH RECORDING:** the Railway CLI reachable from this lane's
+    worktree was linked to project `fabulous-essence` / service `pandoras-box` — an
+    unrelated production system — while the primary checkout had NO link at all. A
+    `railway run` issued without checking would have injected another product's
+    production credentials. `railway status` has no project flag, so retargeting
+    requires `railway link`, which mutates shared CLI state; this lane declined to do
+    that unilaterally and reported instead.
+    **(i) THE SURFACE IS CONFIRMED:** `CascadePanels.tsx:249-253` composes the Page
+    face as `<PageFace subject={subject} />` (the Port/Pin verbs) followed by
+    `<PlacesPanel entry={subject.entry} />` (the filing targets); the toast string is
+    PlacesPanel's own (`PlacesPanel.tsx:66`). One panel — and the clicked row was a
+    filing TARGET, not a navigation door, which is the whole incident.
+    **88 — AFFORDANCE ILLEGIBILITY (the parent; REDESIGN routes to the MENUS ARC,
+    items 83/84):** a list of binder names inside the current page's panel reads as
+    "places I can GO" and is in fact "places I can PUT THIS". Nothing distinguishes a
+    door from a destination. The redesign belongs to the menus arc because this panel
+    is their chrome; only the defects below belong to the fix wave.
+    **88a — NO VALIDATION ON THE FILING TARGET (defect → wave).** `setPageHome`
+    (`persistence.ts:1380-1389`): anything not `'shelf'|'loose'|'journal'` is assigned
+    straight to `entry.projectId` as "a binder id", with NO existence check. A page
+    given a projectId matching no live binder is invisible to EVERY enumerator — not
+    the Journal (`projectId == null` filter), not any binder's page list, not the
+    Shelf. **A code-level YES to the question of whether a filing mutation can render a
+    row invisible to everything including export.** Not the cause here (Poop is a real
+    binder), but a live hazard on its own.
+    **88b — THE LYING TOAST (defect → wave).** `PlacesPanel.tsx:63-67` — `fileTo`
+    calls `setPageHome`, then `flushNow()`, then toasts `Filed to ${label}.`
+    UNCONDITIONALLY. `setPageHome` early-returns when `getJournalEntry` misses, which
+    is exactly the case for an UNBORN page under PB1 (an unborn row deliberately never
+    enters the store). So on a new empty page — the incident's own condition — the
+    toast reports a filing that never happened. Success is not conditioned on success.
+    **88c — THE BINDER-RENDER GAP (defect → wave; ONE READ OUTSTANDING).** Poop does
+    not render in Drawers, and the enumeration does not explain it: `getProjects()`
+    (`persistence.ts:219-221`) filters only `!p.deletedAt`, and `DrawersTree.tsx:36-37`
+    renders orphans (no drawerId, or a dead one) under an unsorted group with NO
+    kind/type filter — so a live binder SHOULD appear. Two possibilities remain, with
+    different fixes: Poop carries `deletedAt` (a DELETION path, not a render gap), or
+    it renders and was not recognised (a LEGIBILITY gap). **Settled by one console line
+    on Poop's own record — id/title/kind/type/drawerId/deletedAt/createdAt/updatedAt —
+    not yet run.** Related, visible in the same tree: **UNTITLED-BINDER LITTER** —
+    `createBinder` (`persistence.ts:249-253`) writes the literal string `'Untitled'`
+    when given an empty title, so any path calling it without a name mints an
+    indistinguishable binder. A census line over `writer-studio-projects` is owed.
+    **TWO WAVE FINDINGS FROM THE ADDENDUM, independent of Poop:** Trash items are
+    UNINSPECTABLE (nothing opens when clicked), and Trash renders NO DATES.
+    **INTERIM RULE (relayed to Nick; in force until the affordance is redesigned): the
+    Page panel is off-limits.**
 83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
     (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
     **vetoable by Nick on sight.** Authority: SV5 (`docs/wrizo-alpha/hd-arc-seed.md`)
