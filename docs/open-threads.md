@@ -9077,13 +9077,13 @@ sitting closes them.
     asserted — driving a real logout would end the authed session the rest of the file
     depends on, and a dirty id that outlives its clean is a no-op re-push (LWW + stable
     ids). Both disclosures live in the harness header, not only here.
-    **SUITE — unparked `53/53` CLEAN**, `tree=c7878ed+4dirty
-    bundle=index-iOcJ71l_.js/524433b` (`item89.mjs :: PASS (14 checks)` at [36/53]),
-    plus `tsc` clean. **The PARKED run is IN FLIGHT at this commit** on the identical
-    tree and the identical bundle hash — stated as in-flight rather than claimed,
-    per "stamps on every claim"; its result lands in a follow-up commit on this
-    branch. Committed before it finished deliberately: COMMIT = PUSH is the law that
-    keeps a P0 fix from living only in a worktree.
+    **SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE.** Unparked `53/53`
+    (`item89.mjs :: ITEM89 VERIFY: PASS (14 checks)` at [36/53]) and parked `53/53`
+    (`ITEM89 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed`), both stamped
+    `tree=c7878ed+4dirty bundle=index-iOcJ71l_.js/524433b` — the same asset hash on
+    both runs, so the two results describe the same software and not merely the same
+    commit. `tsc` clean. *(The parked run was still in flight at the fix's own commit
+    `8875343`, which said so rather than claiming it; this line closes that gap.)*
 83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
     (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
     **vetoable by Nick on sight.** Authority: SV5 (`docs/wrizo-alpha/hd-arc-seed.md`)
