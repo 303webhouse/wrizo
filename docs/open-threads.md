@@ -9094,12 +9094,14 @@ sitting closes them.
     checks), 10/10 with the fix. S3 is the control — the honest filing path — and passes
     on BOTH builds, so the suite cannot be satisfied by a guard that simply refuses
     everything, which would be a worse defect than the one being fixed.
-    **SUITE — unparked `54/54` CLEAN**, `tree=37d0826+3dirty
-    bundle=index-CThKwy6K.js/524897b` (`item88.mjs :: ITEM88 VERIFY: PASS (10 checks)`),
-    plus `tsc` clean. The PARKED run is IN FLIGHT at this commit on the identical bundle —
-    stated as in-flight rather than claimed; its result follows on this branch. *(The
-    `+3dirty` counts the two src files and the new harness; this file's own records edits
-    landed after the run started and change no bundle.)*
+    **SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE.** Unparked `54/54`
+    (`item88.mjs :: ITEM88 VERIFY: PASS (10 checks)`) and parked `54/54`
+    (`ITEM88 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed`), both
+    `bundle=index-CThKwy6K.js/524897b` on `tree=37d0826` — the same asset hash on both
+    runs, so the two results describe the same software and not merely the same commit.
+    `tsc` clean. *(Dirty counts differ between the two stamps, `+3` then `+4`, purely
+    because this file's own records edits landed between the runs; no bundle input
+    moved, which the identical hash proves.)*
     **NOT TOUCHED, disclosed:** `AddToSheet` (:73/:89) and `PageFileMenu` (:29) still
     ignore the new return value. Neither is a live hazard — AddToSheet already reads its
     own outcome back and both file into ids drawn from `getProjects()` — but they are the
