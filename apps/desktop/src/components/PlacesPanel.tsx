@@ -60,24 +60,39 @@ export function PlacesPanel({ entry: entryProp }: { entry: JournalEntry }) {
   const filedProjectId = entry.projectId;
   const isLoose = !inJournal && filedProjectId == null;
 
+  // ITEM 88b — the toast reports what actually happened. It used to fire
+  // `Filed to ${label}.` UNCONDITIONALLY, while setPageHome early-returns
+  // whenever `getJournalEntry` misses — which is exactly the case for an
+  // UNBORN page (PB1 keeps a page out of the store until its first word). On a
+  // new empty page, the incident's own condition, it reported a filing that
+  // never happened. Success is now conditioned on success, and a refusal says
+  // "nothing moved" in the same words AddToSheet's own fileToShelf already
+  // uses for the same class of lie (see its comment: "kept lying about having
+  // moved the page ... reads the ACTUAL outcome back after the write").
   const fileTo = (target: string, label: string) => {
-    setPageHome(entry.id, target);
+    const result = setPageHome(entry.id, target);
     flushNow();
-    toast.show(`Filed to ${label}.`);
+    if (result === 'filed') toast.show(`Filed to ${label}.`);
+    else if (result === 'no-such-page') toast.show(`Write a word first — an empty page isn't saved yet; nothing moved.`);
+    else toast.show(`${label} is no longer there; nothing moved.`);
   };
 
   const selectJournal = () => { if (!inJournal) fileTo('journal', t('drawerPlaceJournal')); };
   const selectLoose = () => { if (!isLoose) fileTo('loose', t('placesLoose')); };
   const selectProject = (id: string, title: string) => { if (filedProjectId !== id) fileTo(id, title || 'Untitled'); };
 
+  // Same honesty as fileTo above. The binder is minted a line earlier so it
+  // always exists — but the page may still be unborn, which is the half that
+  // was lying here too.
   const createAndFile = () => {
     const name = newDrawerName.trim() || 'New Drawer';
     const project = createBinder(name, 'other');
-    setPageHome(entry.id, project.id);
+    const result = setPageHome(entry.id, project.id);
     flushNow();
     setNewDrawerOpen(false);
     setNewDrawerName('');
-    toast.show(`Filed to ${project.title}.`);
+    if (result === 'filed') toast.show(`Filed to ${project.title}.`);
+    else toast.show(`Write a word first — an empty page isn't saved yet; ${project.title} is ready when you are.`);
   };
 
   // Boards zone — every board this page COULD join (any project, any

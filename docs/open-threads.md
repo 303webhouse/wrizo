@@ -22,8 +22,13 @@ Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's 
   read-only production query; only the named surface was wrong. (2) The backfill
   (`sync.ts:62-73`) is KEPT, not retired — it covers rows wrongly marked CLEAN, a
   population persistent dirty cannot reach — but it is no longer anyone's recovery lever.
-- **item 88a · S5 — `setPageHome` accepts ANY string as binder id.** A bogus id orphans a
-  page from every enumerator including export.
+- ~~**item 88a · S5 — `setPageHome` accepts ANY string as binder id.**~~ **FIXED — 2026-08-03
+  (fix lane), paired with 88b.** A bogus id orphaned a page from every enumerator including
+  export; the target must now name a live binder, and a refusal writes nothing. **88b's
+  recorded mechanism was FALSIFIED in the same pass** — filing an unborn page was never a
+  no-op with a lying toast, it was a WRITE that birthed an empty page through a side door
+  (`getJournalEntry` falls through to the unborn slot). See item 88's falsification note
+  and the 88a+88b close-out below.
 
 **P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible · S3/87 New
 Page defaults (Draft; hide presets in Free Write; typewriter off) · S4/88 panel affordance
@@ -8971,6 +8976,20 @@ sitting closes them.
     is exactly the case for an UNBORN page under PB1 (an unborn row deliberately never
     enters the store). So on a new empty page — the incident's own condition — the
     toast reports a filing that never happened. Success is not conditioned on success.
+    **↑ THAT DIAGNOSIS IS FALSIFIED — 2026-08-03 (fix lane). Kept verbatim above and
+    corrected here, per the park-never-rewrite discipline.** `getJournalEntry` does NOT
+    miss on an unborn page: it **falls through to the unborn slot** (its own tail,
+    `return unbornSlot && unbornSlot.id === id ? clone(unbornSlot) : null`). The entry IS
+    found, and the old code mutated it and handed it to `saveJournalEntry` — which put it
+    in the cache, marked it dirty, and scheduled it to disk. **Filing an unborn page never
+    no-opped and the toast never lied: it BIRTHED AN EMPTY PAGE through a side door**,
+    bypassing `birth()`, leaving `setUnbornEntry(null)` uncalled (the slot kept holding
+    the same id), and minting exactly the `text: ''` litter PB1 exists to prevent. The
+    real defect was worse than the recorded one and in the OPPOSITE direction — a WRITE
+    where the record alleged a no-op. Found because `item88.mjs` was written to the
+    RECORDED mechanism and went red on the first run against the FIXED build: the harness
+    falsified the brief, which is the whole reason a scenario is written before it is
+    trusted.
     **88c — THE BINDER-RENDER GAP (defect → wave; ONE READ OUTSTANDING).** Poop does
     not render in Drawers, and the enumeration does not explain it: `getProjects()`
     (`persistence.ts:219-221`) filters only `!p.deletedAt`, and `DrawersTree.tsx:36-37`
@@ -8987,6 +9006,105 @@ sitting closes them.
     UNINSPECTABLE (nothing opens when clicked), and Trash renders NO DATES.
     **INTERIM RULE (relayed to Nick; in force until the affordance is redesigned): the
     Page panel is off-limits.**
+92. **The New-page-card that never lands — S0 PROVEN, unbuilt.** **P1 (S12) — MECHANISM
+    ESTABLISHED, NO PATCH — 2026-08-03 (fix lane).** Nick's S0 was owed before any patch;
+    it is paid here, and **the hypothesis in the sitting log is not supported.**
+    **NOT the cause: "Plan may have minted a second board."** `onAddPageCard`
+    (`BoardEditor.tsx:1162-1166`) genuinely creates a real row AND pins it — the act is
+    not a store-level no-op. And the door is **absent on system boards**
+    (`beginningDoors`, `:1704`: `isSystemBoard ? [] : (...)`), so `reconcileSystemBoard`'s
+    stale-pin removal — which really does delete pins whose page stops qualifying — cannot
+    reach it: BoardEditor's reconcile effect returns early for user boards (`:935`).
+    **THE ACTUAL MECHANISM — a stale-local-state overwrite, and the codebase already
+    names the law it breaks.** `pinPageToBoard` writes the BOARD's row **in the store**.
+    BoardEditor holds its cards in local React state (`const [boxes, setBoxes] =
+    useState(() => initialEntry?.boxes ?? [])`, `:658`) which is initialized ONCE and, on
+    a user board, never re-read — the `subscribe()` that would refresh it is inside the
+    system-board-only reconcile effect. `onAddPageCard` never calls `setBoxes`. So the
+    component's `boxesRef.current` still holds the PRE-PIN array, and the next save from
+    that instance writes it back over the pin: the unmount cleanup (`:981`,
+    `if (!unbornRef.current && boxesRef.current !== lastSavedRef.current)
+    saveBoardBoxes(id, boxesRef.current)` followed by `flushNow()`) fires on the very
+    `navigate('/page/:id')` that door performs, and the debounced autosave (`:964`) does
+    the same after any later interaction. **The card is written and then erased by the
+    surface that created it.**
+    **The convention this violates is already documented, three hundred lines above the
+    offending call.** `BoardEditor.tsx:665-676` (B3 S3) states it verbatim: deck cards are
+    appended "via the SAME setBoxes path any other card creation already uses —
+    BoardEditor's own existing debounced autosave effect persists them, exactly like
+    onAddCard above. **A direct saveBoardBoxes call here instead would race that same
+    debounced autosave (the harness seeding/flushNow race this project has already
+    diagnosed once, generalized)**." `onAddPageCard` is the one card-creating door that
+    reaches around `setBoxes` into the store — the identical race, in the product this
+    time rather than a harness.
+    **FIX SHAPE (unbuilt, for the next lane):** route the new card through `setBoxes` like
+    every sibling door, or re-read the board after `pinPageToBoard` and `setBoxes` the
+    result before navigating. **NOT patched here** — the fix is small but it is a P1
+    behind two P0s, and this lane will not ship a board mutation it cannot also put a
+    stamped suite behind.
+    **RELATED, found in the same trace and NOT the same bug (worth its own ticket):**
+    `getJournalEntry` returns null for SOFT-DELETED rows (`persistence.ts:1545`), so
+    trashing a plan board makes its page's `planBoardId` pointer dangle, and the next flip
+    re-mints (`getOrCreatePlanBoard`, `:1616-1620` — "Pointer dangles (board hard-gone) —
+    fall through and re-birth below", which also fires for merely soft-deleted). **That IS
+    a genuine second-plan-board path** — the sitting log's instinct was sound, just aimed
+    at the wrong symptom.
+    **ALSO FOUND, and it makes 91 and 92 likely ONE fix:** `birth()` accepts
+    `opts.pinToBoardId` and `UnbornSurface.birthWith` threads it through — but **NO call
+    site anywhere supplies it** (the only four `birthWith(` callers pass content only).
+    The capability is dead code, and `UnbornDescriptor`/`unbornHref` have no pin field to
+    carry it, which is exactly the seam Nick's item-91 verdict asks for ("a New Page
+    carrying the board's binder/pin descriptor via `unbornHref`"). Building 91's descriptor
+    is what would make 92's door able to say "born pinned here" in one act.
+88a+88b. **The filing target is validated; the unborn page stops being born by a side
+    door.** **P0 (S5) + P1 (S6) — FIXED — 2026-08-03 (fix lane).** Closes 88a and 88b as
+    a pair, because both live in `setPageHome` and one return value fixes both.
+    **88a (the P0), as recorded and CONFIRMED:** `setPageHome` assigned ANY string that
+    was not `'shelf'|'loose'|'journal'` straight to `entry.projectId` with no existence
+    check. A page whose projectId names no live binder is invisible to EVERY enumerator —
+    not the Journal (`projectId == null`), not any binder's page list, not the Shelf
+    (`belongsOnShelf` excludes filed pages), not the "Everything" export. **Fix:** the
+    target must name a LIVE binder via `getProject()` — the app's own definition, and the
+    same one `getProjects()` uses to build the list every UI offers, so any target a
+    writer could actually pick is still accepted. A deleted binder is refused for the
+    same reason a nonexistent one is: filing into it orphans the page just as completely.
+    **Refusals write NOTHING** — a filing that cannot be honoured leaves the page where it
+    was, which is always recoverable, instead of somewhere no surface can reach.
+    **88b (the P1) — THE RECORDED MECHANISM WAS WRONG; see the falsification note under
+    item 88 above.** The defect was not a lying toast over a no-op; it was a WRITE:
+    `getJournalEntry` falls through to the unborn slot, so filing an unborn page birthed
+    an empty row through a side door, bypassing `birth()` and leaving the slot populated.
+    **Fix:** `setPageHome` now reads the CACHE directly rather than `getJournalEntry`, so
+    an unborn surface is not a filing subject at all. That is not a special case bolted
+    on — an unborn row is by PB1's own structural law "never serialized, never synced,
+    never enumerated," so a thing that is in no pool cannot be moved between pools.
+    `birth()` stays the ONE path that turns a surface into a row (PB1 ruling 2), and this
+    function can no longer take that job by side effect. The refusal is reportable, so
+    `PlacesPanel.fileTo` and `createAndFile` now say so plainly — **Nick's own S6 verdict,
+    "no toast on a no-op,"** honoured by first making it genuinely a no-op. The honest
+    phrasing follows `AddToSheet.fileToShelf`'s own precedent for this exact class of lie
+    ("reads the ACTUAL outcome back after the write").
+    **SEAM:** `window.wrizoSetPageHome` (the `window.wrizoPinPageToBoard` pattern,
+    verbatim in shape). 88a's guard exists precisely for a target NO UI can offer — every
+    surface builds its list from `getProjects()` — so the refusal is unassertable from a
+    harness without it. 88b needs no seam and gets none: it is reproduced as a writer, on
+    a real unborn page, with a real click.
+    **VERIFICATION — `scripts/harness/item88.mjs`, 10 checks, PROVEN TO BITE:** 5/10
+    FAILED against the pre-fix bundle (all three 88b incident checks and both 88a guard
+    checks), 10/10 with the fix. S3 is the control — the honest filing path — and passes
+    on BOTH builds, so the suite cannot be satisfied by a guard that simply refuses
+    everything, which would be a worse defect than the one being fixed.
+    **SUITE — unparked `54/54` CLEAN**, `tree=37d0826+3dirty
+    bundle=index-CThKwy6K.js/524897b` (`item88.mjs :: ITEM88 VERIFY: PASS (10 checks)`),
+    plus `tsc` clean. The PARKED run is IN FLIGHT at this commit on the identical bundle —
+    stated as in-flight rather than claimed; its result follows on this branch. *(The
+    `+3dirty` counts the two src files and the new harness; this file's own records edits
+    landed after the run started and change no bundle.)*
+    **NOT TOUCHED, disclosed:** `AddToSheet` (:73/:89) and `PageFileMenu` (:29) still
+    ignore the new return value. Neither is a live hazard — AddToSheet already reads its
+    own outcome back and both file into ids drawn from `getProjects()` — but they are the
+    obvious next callers to make honest, and they are named here rather than silently
+    left. `JournalEntry.tsx`'s two calls are on an UNROUTED surface (dead since FX14).
 89. **The dirty set was memory-only — every offline write was UNSENDABLE.** **P0 (S8
     of the pre-flight sitting) — S0 PROVEN + FIXED — 2026-08-03 (fix lane, chat 6's
     successor).**
