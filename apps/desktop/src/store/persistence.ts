@@ -734,18 +734,56 @@ function stampPageActivity(projectId: string, pageId: string): void {
 // same act — where the room is entered at the moment it is made — and for the
 // test/inspection seam below. If you are adding a door that just opens a blank
 // page, do not call this; navigate to unbornHref() instead.
-export function createJournalPage(): JournalEntry {
+//
+// ITEM 82 FIX (b) — the optional `seed`. Every field here exists for ONE
+// reason: to let a fixture reach the state it needs THROUGH this function
+// instead of writing the row behind the cache's back. AGENTS.md's successor
+// seeding law (2026-08-01) says seeding goes through the app's seams, and
+// `j5.mjs` could not obey it because its four fixture pages need a NAMED id
+// (`j5-src-N`, asserted by id all through the file), a STEPPED `createdAt`
+// (the Spread's notebook and "Newest" orders are both derived from it — see
+// pageOrder.notebookKey and Spread.tsx's newest sort), and `strokes` (the
+// ink-lens fixtures). This function minted all three itself, so the fixture
+// stayed a raw write — and a raw write is erased by the next flush of this
+// collection, which is item 82's proven mechanism.
+//
+// PRODUCT DOORS MUST NOT PASS `seed`. It is not a feature of page creation;
+// it is the seam's parameter list. Census at the time of writing: this
+// function has ZERO call sites in `apps/desktop/src` — it is reachable only
+// through `window.wrizoCreateJournalPage` below — so this extension has no
+// product blast radius at all. A future door that creates a page and a
+// durable relationship in one act calls this with NO argument, exactly as
+// the paragraph above describes.
+//
+// `updatedAt` is NOT seedable and is deliberately not faked: `upsert` stamps
+// it on every write (persistence.ts's one write path), and the seam does not
+// get a private clock the product does not have. Nothing in the notebook's
+// ordering reads it — `notebookKey` is `orderIndex ?? createdAt`, and the
+// Spread's "Newest" lens sorts on `createdAt` — so a seeded page orders
+// exactly as its raw-written predecessor did.
+export interface JournalPageSeed {
+  id?: string;
+  text?: string;
+  createdAt?: string;
+  strokes?: Stroke[];
+}
+
+export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   const now = new Date().toISOString();
+  const createdAt = seed?.createdAt ?? now;
   const entry: JournalEntry = {
-    id: generateId(),
-    text: '',
+    id: seed?.id ?? generateId(),
+    text: seed?.text ?? '',
     projectId: null,
     source: 'page',
     // AB3 S4 — the Journal/Catch door: this page homes in the Journal.
     origin: 'journal',
-    createdAt: now,
-    updatedAt: now,
+    createdAt,
+    updatedAt: createdAt,
   };
+  // Set only when seeded, so an unseeded page's row is byte-identical to the
+  // one this function wrote before fix (b) — `strokes` is absent, not empty.
+  if (seed?.strokes) entry.strokes = seed.strokes;
   saveJournalEntry(entry);
   return entry;
 }
@@ -760,6 +798,14 @@ export function createJournalPage(): JournalEntry {
 // This seam gives every one of those pre-existing scenarios an equally
 // direct path to the identical state, without resurrecting the retired
 // room's own UI just to keep old harness plumbing working.
+//
+// Item 82 fix (b): callers may pass a `JournalPageSeed` (id / text /
+// createdAt / strokes) — see that interface's own comment for why, and for
+// why product code never does. The write is DEBOUNCED like every other
+// product write (`scheduleFlush`, 300ms), so a fixture that reads
+// localStorage straight afterwards must wait for the row to land; the raw
+// write this replaces was synchronous, and that is the one behavioural
+// difference a migrating harness has to absorb.
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage = createJournalPage;
 }
