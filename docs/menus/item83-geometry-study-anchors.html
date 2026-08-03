@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>item 83 · geometry study — the two anchors</title>
+<!--
+  ITEM 83 · GEOMETRY STUDY — THE TWO ANCHORS (menus lane sandbox, 2026-08-03)
+  Not a mockup pair. A mechanism study answering R10(i), R10(ii), R11 and R9
+  with STRUCTURE instead of arithmetic. Dress is deliberately plain so the
+  geometry is the only thing on trial.
+
+  THE DEFECT THIS REPLACES. a2/b2 anchor the Tools drawer by COMPUTING where
+  the paper is:
+      marginW() = (W - RAIL - Math.min(760, W*0.6)) / 2
+  but the paper is RENDERED by CSS as  width: min(760px, 60ch).
+  `W*0.6` is a share of the viewport; `60ch` is sixty zero-glyphs of the prose
+  face. They are different quantities and coincide only if 60ch >= 760px —
+  i.e. a "0" of 0.667em, which no text face has (a serif's is ~0.5em). So the
+  script pins the drawer to a paper edge that is not where the paper is, and
+  the error MOVES when the webfont fails to load. That is the whole bug class:
+  a computed anchor re-deriving what CSS already decided.
+
+  THE LAW THIS APPLIES. fx18 already says it for width — measured, never
+  assumed. This extends it to POSITION, and goes one better:
+      ANCHOR STRUCTURALLY; MEASURE ONLY TO DECIDE; NEVER RE-DERIVE.
+  - The Tools drawer is a CHILD of the paper's column at `right: 100%`.
+    Its right edge IS the paper's left edge, by layout, at every size, in
+    every font, with no script running at all. It cannot drift because there
+    is no second opinion about where the paper is.
+  - The PAGE drawer is a child of the room at `left: 0` — flush at the rail
+    by the same logic (R10 i).
+  - Script measures rendered rects ONLY to decide the two-drawer question
+    (R9/R11 coexistence). A policy decision may measure; an anchor may not.
+
+  WHAT IS DEMONSTRATED
+  R10(i)  PAGE drawer flush at the rail — no gap at any width.
+  R10(ii) the handle is affixed to the Tools drawer's left edge and travels
+          with it as one object; slide only, never a fade.
+  R11     Tools handle + strip flush with the paper's left edge at every size;
+          opens LEFTWARD into the margin; right edge pinned throughout; closed,
+          the handle alone rests on the paper's edge. Never over the paper.
+  R9/R11  coexistence when the Tools drawer's open left edge clears the PAGE
+          drawer's right edge; otherwise opening one closes the other, same
+          motion. The threshold is MEASURED, not predicted.
+
+  SELF-VERIFYING. The readout prints paper-left minus dock-right and
+  cascade-left minus rail-right. Both must read 0.0px in every state and at
+  every width. If a future edit reintroduces a computed anchor, this line goes
+  non-zero and says so in red. Presence is not composition — the study reports
+  its own geometry rather than asserting it.
+
+  OFFLINE-SAFE: no webfonts, no network references of any kind (the pair's
+  Google Fonts @import would silently substitute faces on a plane — and since
+  the paper's width is measured in `ch`, a substituted face MOVES the paper).
+  System stacks here on purpose: the anchor holds whatever the face turns out
+  to be, which is the point being proved.
+-->
+<style>
+  :root{
+    /* Plateau, from apps/desktop/src/index.css :root — verified values */
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a;
+    --ink-on-paper:#2B2014; --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:system-ui,'Segoe UI',sans-serif; --prose:Georgia,'Times New Roman',serif;
+
+    --rail-w:84px; --handle-w:14px;
+    --cascade-open:200px; --tools-open:184px;
+    --slide:260ms cubic-bezier(.2,.7,.2,1);   /* R10: slide only — no opacity anywhere */
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi)}
+
+  /* ---------- study rig (not Wrizo chrome) ---------- */
+  .rig{position:fixed;inset:0 0 auto 0;z-index:9;display:flex;flex-wrap:wrap;gap:10px;
+       align-items:center;padding:8px 14px;background:#000;border-bottom:1px solid #222;
+       font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.05em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;
+       padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#7a7a7a;color:#fff}
+  .rig label{display:flex;align-items:center;gap:6px;color:#8f8f8f}
+  .rig input[type=range]{width:190px}
+  #verdict{margin-left:auto;font-variant-numeric:tabular-nums}
+  #verdict .ok{color:#96a05a}
+  #verdict .bad{color:#ff5f5f;font-weight:700}
+
+  .fit{position:absolute;inset:58px 0 0 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 70px rgba(0,0,0,.8)}
+
+  /* ---------- DeskFrame skeleton ---------- */
+  .frame{position:absolute;inset:0;display:grid;
+         grid-template-columns:var(--rail-w) 1fr;grid-template-rows:56px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:center;padding-top:12px}
+  .cat{width:100%;text-align:center;padding:8px 0;color:var(--text-low);font:inherit;
+       font-size:10px;letter-spacing:.08em;background:none;border:none;cursor:pointer}
+  .cat[aria-expanded="true"]{color:var(--accent-rest)}
+  .cat .g{display:block;font-size:14px;margin-bottom:2px;color:var(--text-mid)}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;padding:0 30px;
+        border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--text-low)}
+  .band .on{color:var(--text-hi);border-bottom:1px solid var(--accent-rest);padding-bottom:5px}
+
+  /* the room begins at the rail's inner edge — so left:0 IS rail-flush */
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* ---------- ANCHOR 1 — the PAGE drawer, rail-mounted (R10 i) ---------- */
+  .cascade-dock{position:absolute;left:0;top:0;bottom:0;display:flex;z-index:2}
+  .cascade-pane{width:0;overflow:hidden;background:var(--panel);
+                border-right:1px solid var(--line);transition:width var(--slide)}
+  .cascade-dock[data-open="true"] .cascade-pane{width:var(--cascade-open)}
+  .pane-inner{width:var(--cascade-open);padding:12px 0}
+
+  /* ---------- THE PAPER COLUMN — the anchor body for the Tools drawer ---------- */
+  .paper-col{position:absolute;top:40px;bottom:56px;left:50%;transform:translateX(-50%);
+             width:min(760px,60ch);font-family:var(--prose);font-size:19px}
+  .paper{position:absolute;inset:0;background:var(--paper);color:var(--ink-on-paper);
+         border:1px solid var(--line);padding:44px 56px;line-height:1.62;overflow:hidden}
+
+  /* ---------- ANCHOR 2 — the TOOLS drawer, paper-mounted (R11) ----------
+     right:100% puts the dock's right edge exactly on the column's left edge.
+     No calc, no script, no font assumption. The drawer grows LEFTWARD because
+     the right edge is the pinned one.                                        */
+  .tools-dock{position:absolute;right:100%;top:0;bottom:0;display:flex;
+              align-items:stretch;z-index:3}
+  .tools-pane{width:0;overflow:hidden;background:var(--panel);
+              border:1px solid var(--line);border-right:none;transition:width var(--slide)}
+  .tools-dock[data-open="true"] .tools-pane{width:var(--tools-open)}
+  .tools-inner{width:var(--tools-open);display:flex;flex-direction:column;height:100%;
+               font-family:var(--ui);font-size:12.5px;color:var(--text-mid)}
+
+  /* the handle: affixed to the drawer's LEFT edge, travelling with it (R10 ii).
+     It is a flex sibling, so it is carried by layout — not animated separately,
+     which is what makes "one object, one movement" true rather than simulated. */
+  .handle{align-self:center;width:var(--handle-w);height:76px;flex:none;
+          background:var(--panel);border:1px solid var(--line);border-right:none;
+          color:var(--accent-rest);font:inherit;font-size:10px;cursor:pointer;
+          display:grid;place-items:center;padding:0}
+  .handle:hover{color:var(--text-hi)}
+  .handle:focus-visible{outline:2px solid var(--accent-rest);outline-offset:1px}
+
+  .zonehead{padding:9px 13px 6px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+            color:var(--accent-rest)}            /* R7 — menus rest olive */
+  .row{padding:6px 13px;color:var(--text-mid)}
+  .foot{margin-top:auto;border-top:1px solid var(--line);display:flex}
+  .foot span{flex:1;text-align:center;padding:9px 2px;font-size:9.5px;letter-spacing:.06em;
+             color:var(--text-mid);border-right:1px solid var(--line)}
+  .foot span:last-child{border-right:none}
+
+  .flag{position:absolute;left:10px;bottom:8px;font-size:10.5px;color:#5e564c;
+        font-family:var(--ui)}
+  @media (prefers-reduced-motion:reduce){
+    .cascade-pane,.tools-pane{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="rig" role="toolbar" aria-label="Geometry study rig">
+    <b>ITEM 83 · GEOMETRY STUDY — THE TWO ANCHORS</b>
+    <button id="bPage"  aria-pressed="true">PAGE drawer</button>
+    <button id="bTools" aria-pressed="true">TOOLS drawer</button>
+    <label>width <input id="w" type="range" min="900" max="2200" step="1" value="1680"></label>
+    <span id="wv">1680</span>
+    <button data-w="1024">1024</button>
+    <button data-w="1280">1280</button>
+    <button data-w="1366">1366</button>
+    <button data-w="1680">1680</button>
+    <button data-w="1920">1920</button>
+    <span id="verdict">measuring…</span>
+  </div>
+
+  <div class="fit"><div class="stage" id="stage">
+    <div class="frame">
+      <nav class="rail" aria-label="Cascade">
+        <button class="cat" id="pageCat" aria-expanded="true"><span class="g">▭</span>page</button>
+        <button class="cat" tabindex="-1"><span class="g">✶</span>journal</button>
+        <button class="cat" tabindex="-1"><span class="g">⌗</span>plan</button>
+        <button class="cat" tabindex="-1"><span class="g">☰</span>drawers</button>
+      </nav>
+
+      <div class="band"><span class="on">Free Write</span></div>
+
+      <div class="room" id="room">
+        <!-- ANCHOR 1 · rail-mounted -->
+        <div class="cascade-dock" id="cascadeDock" data-open="true">
+          <div class="cascade-pane"><div class="pane-inner">
+            <div class="zonehead">Page</div>
+            <div class="row">Margins</div><div class="row">Line spacing</div>
+            <div class="row">Page numbers</div><div class="row">Headers &amp; footers</div>
+            <div class="zonehead" style="margin-top:10px">Defaults</div>
+            <div class="row">Set my defaults</div>
+          </div></div>
+        </div>
+
+        <!-- THE ANCHOR BODY · the paper column -->
+        <div class="paper-col" id="paperCol">
+          <div class="paper" id="paper">
+            She doesn’t run for the train. That’s the whole discovery of this
+            morning — she walks, because the coat is already on the seat and the
+            leaving is already done.
+          </div>
+
+          <!-- ANCHOR 2 · paper-mounted, right:100% -->
+          <div class="tools-dock" id="toolsDock" data-open="true">
+            <button class="handle" id="handle" aria-expanded="true"
+                    aria-controls="toolsPane" aria-label="Close hand tools">‖</button>
+            <div class="tools-pane" id="toolsPane"><div class="tools-inner">
+              <div class="zonehead">Styling</div>
+              <div class="row">Bold · Italic · Underline</div>
+              <div class="zonehead">Ink</div>
+              <div class="row">✒ ✏ 🖊 · colours</div>
+              <div class="foot"><span>TYPEWRITER</span><span>PROGRESS</span><span>FULL SCREEN</span></div>
+            </div></div>
+          </div>
+        </div>
+
+        <div class="flag" id="flag"></div>
+      </div>
+    </div>
+  </div></div>
+
+<script>
+  const stage=document.getElementById('stage'), room=document.getElementById('room'),
+        paperCol=document.getElementById('paperCol'), paper=document.getElementById('paper'),
+        cascadeDock=document.getElementById('cascadeDock'), toolsDock=document.getElementById('toolsDock'),
+        handle=document.getElementById('handle'), pageCat=document.getElementById('pageCat'),
+        bPage=document.getElementById('bPage'), bTools=document.getElementById('bTools'),
+        wIn=document.getElementById('w'), wv=document.getElementById('wv'),
+        verdict=document.getElementById('verdict'), flag=document.getElementById('flag');
+
+  const HEIGHT_FOR = W => Math.round(W*0.5625);   // 16:9 stage; height is irrelevant to the anchors
+  let W = 1680;
+
+  const isOpen = d => d.dataset.open === 'true';
+  const setOpen = (d,v) => { d.dataset.open = String(v); };
+
+  const cssPx = n => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(n));
+  const toolsOpenPx   = () => cssPx('--tools-open');
+  const cascadeOpenPx = () => cssPx('--cascade-open');
+  const scale = () => parseFloat(stage.dataset.scale) || 1;
+
+  /* Coexistence is a POLICY question, so it may measure. It asks the rendered
+     boxes, never a formula: can the Tools drawer's open left edge clear the
+     PAGE drawer's right edge?
+     UNIT DISCIPLINE, and the reason it is spelled out: getBoundingClientRect()
+     returns SCREEN px (the stage is transform-scaled to fit the window), while
+     offsetWidth and the CSS custom properties are LAYOUT px. Comparing the two
+     families is the same species of error as the computed anchor this study
+     replaces — it just hides better, because at scale 1 it is invisible.
+     Everything below is divided into layout px before any comparison.        */
+  function canCoexist(){
+    const s = scale();
+    const roomL  = room.getBoundingClientRect().left;
+    const paperL = (paper.getBoundingClientRect().left - roomL) / s;   // → layout px
+    const openToolsLeft = paperL - handle.offsetWidth - toolsOpenPx();
+    return openToolsLeft >= cascadeOpenPx();
+  }
+
+  function toggle(which){
+    const d = which==='page' ? cascadeDock : toolsDock;
+    const other = which==='page' ? toolsDock : cascadeDock;
+    if(isOpen(d)) setOpen(d,false);
+    else { setOpen(d,true); if(!canCoexist() && isOpen(other)) setOpen(other,false); }  // R9 exclusion
+    sync();
+  }
+
+  function sync(){
+    const t=isOpen(toolsDock), p=isOpen(cascadeDock);
+    handle.setAttribute('aria-expanded',String(t));
+    handle.setAttribute('aria-label', t?'Close hand tools':'Open hand tools');
+    pageCat.setAttribute('aria-expanded',String(p));
+    bPage.setAttribute('aria-pressed',String(p));
+    bTools.setAttribute('aria-pressed',String(t));
+    measure();
+  }
+
+  function layout(){
+    stage.style.width=W+'px'; stage.style.height=HEIGHT_FOR(W)+'px';
+    const fit=document.querySelector('.fit');
+    const s=Math.min(fit.clientWidth/W, fit.clientHeight/HEIGHT_FOR(W), 1);
+    stage.style.transform='scale('+s+')';
+    stage.dataset.scale=s;
+    measure();
+  }
+
+  /* THE SELF-CHECK. Both deltas must be 0.0px in every state, at every width.
+     Anything else means an anchor started being computed again.              */
+  function measure(){
+    requestAnimationFrame(()=>{
+      const s=parseFloat(stage.dataset.scale)||1;
+      const px = v => v/s;
+      const pR=paper.getBoundingClientRect(), dR=toolsDock.getBoundingClientRect();
+      const cR=cascadeDock.getBoundingClientRect(), roomR=room.getBoundingClientRect();
+
+      const dTools = px(pR.left - dR.right);      // paper's left edge  vs dock's right edge
+      const dPage  = px(cR.left - roomR.left);    // rail's inner edge vs cascade dock's left
+      const good = Math.abs(dTools)<0.5 && Math.abs(dPage)<0.5;
+      const cls = good ? 'ok' : 'bad';
+
+      verdict.innerHTML =
+        `<span class="${cls}">tools↔paper ${dTools.toFixed(1)}px · page↔rail ${dPage.toFixed(1)}px` +
+        `${good?' ✓ flush':' ✗ DRIFT'}</span>`;
+
+      flag.textContent =
+        `paper ${Math.round(px(pR.width))}px · margin ${Math.round(px(pR.left-roomR.left))}px/side · ` +
+        `${canCoexist()?'coexist':'exclusive'} · anchors: CSS only (right:100% / left:0)`;
+    });
+  }
+
+  handle.onclick=()=>toggle('tools');
+  pageCat.onclick=()=>toggle('page');
+  bTools.onclick=()=>toggle('tools');
+  bPage.onclick=()=>toggle('page');
+  wIn.oninput=e=>{ W=+e.target.value; wv.textContent=W; layout(); };
+  document.querySelectorAll('.rig button[data-w]').forEach(b=>{
+    b.onclick=()=>{ W=+b.dataset.w; wIn.value=W; wv.textContent=W; layout(); };
+  });
+  addEventListener('resize',layout);
+  ['transitionend','transitionrun'].forEach(ev=>room.addEventListener(ev,measure));
+  layout(); sync();
+</script>
+</body>
+</html>
