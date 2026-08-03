@@ -73,6 +73,14 @@ already on the ledger above; item 92 S0 PROVEN (`pinToBoardId` dead code) is rec
 **Fable's review follows same-day; DEPLOY is Nick's word** — these are the sitting's P0s, a
 deploy under the amended checklist (rebuild-first, name SHA + asset hash; red-suite clause if
 item 82's family still stands).
+**→ REVIEWED, GREEN (2026-08-03), Fable** — `docs/wrizo-alpha/p0-wave-review-fable.md`; VERDICT
+PASS; items **89, 88a, 88b GREEN**. The dirty registry journals to disk in the SAME synchronous
+tick as its collection (they cannot disagree); boot restore self-heals the phantom-id trap the
+fix could have introduced (S4); corrupt journal boots empty (S5); logout clears it (no
+cross-account leak). 88a refusals write nothing; 88b's side-door birth killed by reading the
+cache directly — PB1 ruling 2 preserved. **No parks owed** ("the absence is the finding"). OBS
+(non-blocking, item-90 neighborhood): `'no-such-page'` conflates unborn with trashed — split
+the toast when item 90 makes Trash items openable.
 
 **item 87 → RECLASSIFIED.** Not a defect-flip: a REVERSAL of a ruled default (FX2 S2 seeds
 typewriter ON). Owes a full pass WITH PARKED ASSERTIONS, not a one-line flip — the immutability
