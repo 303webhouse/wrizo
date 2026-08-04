@@ -104,6 +104,32 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 99 — THE ORPHAN REAPER (harness-infra; deploy-forensic) — OPENS 2026-08-03
+
+**OPENS.** Crashed and killed harness runs have leaked headless browsers AND their node parents
+since 2026-07-29. DF1.1's `run-suite.mjs` clears stale profile dirs at launch and kills its OWN
+session's children on exit — but a run that dies ungracefully leaves DEAD-OWNER orphans:
+browsers whose `ws-runtime-verify-<pid>` owner node is gone, that no later run will claim. They
+accumulate until the preflight guard (rightly) can't see past them and REFUSES. **This blocked
+the P0 deploy's suite of record** — two attempts VOIDed/REFUSED against 32–57 sustained foreign
+harness browsers, owner node `50580` VERIFIED DEAD. **Remediation, post-vacation:** the runner's
+preflight gains a DEAD-OWNER sweep under today's exact safety argument — kill only browsers whose
+owner node PID is verified dead (dead owner = no live session, so the cross-lane kill law touches
+nothing here), logged every run; it should also reap the stale profile DIRS of dead owners. Until
+then the sweep is a manual, authorized, logged act. Fix-class. Registry: next free **100**.
+
+**SWEEP LOG — 2026-08-03 (authorized by Fable; dead-owner browsers ONLY, logged, live nodes
+untouched — three conditions).** Diagnosis window: 32–57 harness browsers sustained ~24 min,
+owner node `50580` VERIFIED DEAD (`Get-Process` empty) — its browsers were orphans, not a live
+lane. **Execution: 0 PIDs killed.** The `50580`-class orphan processes had already exited on
+their own between diagnosis and execution: harness-browser count = 0 across three samples; total
+browsers = 9, all Nick's real Chrome/Edge, left UNTOUCHED (condition 3). **54 stale
+`ws-runtime-verify-*` profile DIRS remain on disk** — no live process; DF1.1's clear-before-launch
+handles them at the next run; noted for the reaper's scope, out of the kill-authorization. The
+authorized action was executed against an empty target set — the honest, reviewable record
+(condition 2). The suite of record then ran CLEAN in the freed window at `aa07b9c`, bundle
+`index-CThKwy6K.js/524897b`, both settings 54/54.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
@@ -8341,6 +8367,55 @@ the P1 four (FX15, HB2-lite, M4, BG1) — Fable's desk.
 pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ever revoked,
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
+
+## P0 WAVE DEPLOY MANIFEST — 2026-08-03 (chat 1, on Nick's "Ship it"; Fable's amended checklist)
+
+**P0 WAVE — the offline-strand + filing fixes, plus the merged-but-undeployed carry.** Nick's
+word: "Ship it." Fable's instruction: the deploy carries the full merged-but-undeployed set
+since the P2b live build `c266cb3`; manifest names everything; deploy from the PRIMARY CHECKOUT
+only (item 98's guard); amended checklist (rebuild-first, name SHA + asset hash). Deploying the
+`main` HEAD (`1834dfe`) — this records commit's own SHA, stamped below immediately after
+`railway up`. The suite of record ran at `aa07b9c`, docs-only behind HEAD.
+
+**New PRODUCT code since the P2b live build (`c266cb3`) — apps/desktop/src, THREE FILES, ALL the
+P0 wave, nothing else (verified `c266cb3..HEAD`, 202/−16):**
+- item 89 (P0) · **PERSIST THE DIRTY SET** — `persistence.ts` (+178), `sync.ts` (+17, backfill).
+  Offline writes were unsendable, not merely unsent: the dirty set was memory-only, and because
+  `getDirtyRecords()` filters the cache BY it, a reload made the push impossible. Now journaled
+  to disk in the SAME synchronous tick as its collection; boot restore self-heals phantom ids
+  (S4); corrupt journal boots empty (S5); logout clears it (no cross-account leak).
+- items 88a/88b (P0/P1) · **FILING-TARGET VALIDATION + side-door birth killed** —
+  `PlacesPanel.tsx` (+23). `setPageHome` refuses a non-live binder (writes nothing); filing an
+  unborn page no longer births litter through `getJournalEntry`'s unborn-slot fall-through (PB1
+  ruling 2 preserved — birth stays the one path).
+- Merge `da69332` (four commits `8875343..3de9f28`). **ZERO schema, ZERO server.**
+
+**Harness/instrument since `c266cb3` (zero deployed surface):** item 82 fix 1 `c228c4b`
+(m4/th2 celebration-gate checks — `m4.mjs`, `th2.mjs`); item 77(c) `c2a351f` (`run-suite.mjs`
+bundle stamp); the P0 wave's own `item88.mjs` / `item89.mjs` + `runtime-verify.mjs`.
+
+**Docs since `c266cb3` (records only, no deployed surface):** the P0 wave review
+(`p0-wave-review-fable.md`), the sitting log, items 90–99 opens, item 96 charter, the item 83/84
+menus-arc design records (mockups + rulings, the menus lane — `docs/menus/*`, zero app code), the
+standing-laws appends, and this manifest. Confirmed: `aa07b9c..HEAD` is docs-only (bundle
+provably unchanged), and `c266cb3..HEAD` touches `apps/desktop/src` in exactly the three files
+above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, in a machine-clean window — **54/54 UNSET (CLEAN)
+and 54/54 PARKED (CLEAN)** at `tree=aa07b9c bundle=index-CThKwy6K.js/524897b`, the exact bundle
+Fable reviewed GREEN in the P0 wave. The runner rebuilt `build:web` before each run and stamped
+both identifiers; its guard confirmed no foreign harness browsers at start or mid-run (result is
+**NOT contaminated**). HEAD (`1834dfe`) is `aa07b9c` + docs-only menus records — bundle identical,
+re-verified as the served asset in the stamp below.
+
+**ROLLBACK TARGET: git `c266cb3` · railway `11b612db-4be2-4d31-bca1-afd4118c99a7`** — the
+current live production build (P2b: FX17 + PB1, the key-rotation redeploy id). Rollback is a
+redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
+`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
+(`index-CThKwy6K.js`) + `/auth/me` 401 verified LIVE.
 
 ## P2b DEPLOY MANIFEST — 2026-07-30 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
 
