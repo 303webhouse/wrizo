@@ -74,7 +74,8 @@ already on the ledger above; item 92 S0 PROVEN (`pinToBoardId` dead code) is rec
 deploy under the amended checklist (rebuild-first, name SHA + asset hash; red-suite clause if
 item 82's family still stands).
 **→ REVIEWED, GREEN (2026-08-03), Fable** — `docs/wrizo-alpha/p0-wave-review-fable.md`; VERDICT
-PASS; items **89, 88a, 88b GREEN**. The dirty registry journals to disk in the SAME synchronous
+PASS; items **89, 88a, 88b GREEN** → **DEPLOYED 2026-08-03, git `c23c380` · railway `ee0a9bf2`**
+(see the P0 WAVE DEPLOY MANIFEST below). The dirty registry journals to disk in the SAME synchronous
 tick as its collection (they cannot disagree); boot restore self-heals the phantom-id trap the
 fix could have introduced (S4); corrupt journal boots empty (S5); logout clears it (no
 cross-account leak). 88a refusals write nothing; 88b's side-door birth killed by reading the
@@ -8413,9 +8414,23 @@ re-verified as the served asset in the stamp below.
 current live production build (P2b: FX17 + PB1, the key-rotation redeploy id). Rollback is a
 redeploy of that tree (`railway up`).
 
-**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
-`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
-(`index-CThKwy6K.js`) + `/auth/me` 401 verified LIVE.
+**DEPLOY STAMP: git `c23c380` · railway `ee0a9bf2-92fe-4631-8736-d98aa183ac9f`** — DEPLOYED
+2026-08-03 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:0eece37d`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-CThKwy6K.js` / `index-DfTiVdTQ.css`) — Railway's
+server-side `build:web` reproduced the suite-of-record bundle hash (`index-CThKwy6K.js`)
+byte-for-byte, so what is LIVE is exactly what was tested and reviewed GREEN — and `/auth/me`
+**401**. The prior P2b build (`c266cb3` · railway `11b612db`) is now superseded as the live
+build; the rollback SOURCE remains git `c266cb3` (redeploy that tree via `railway up`).
+
+**Items 89 / 88a / 88b: GREEN + DEPLOYED** — the P0 wave is LIVE. 89 (offline-strand) and 88a
+(filing-target validation) were the sitting's two P0s; 88b (side-door birth) rode as the P1 in
+the same patch. All three reviewed GREEN (`p0-wave-review-fable.md`) and now deployed. The
+non-blocking OBS (item-90 neighborhood: `'no-such-page'` conflates unborn with trashed) stays
+noted for item 90. Item 82's family did NOT red in the suite of record; no red-suite clause was
+invoked. Item 99 (the Orphan Reaper) opened alongside — the machine-contention forensics behind
+this deploy's two false starts, with the post-vacation runner remediation logged.
 
 ## P2b DEPLOY MANIFEST — 2026-07-30 (chat 1, on Nick's standing "DEPLOY WHEN READY"; Fable's two-stage amendment)
 
