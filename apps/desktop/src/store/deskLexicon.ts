@@ -177,6 +177,18 @@ export type DeskTermId =
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
+  // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
+  // dimension (margins, leading, numbers, headers, footers), as opposed to
+  // Revise's face+size, which is the page's VOICE (the F5 split). Every
+  // string here is themable by construction — a literal in JSX would be
+  // invisible to Flux and to every register after it (§1.4).
+  | 'pageSetupHeading' | 'pageSetupMargins' | 'pageSetupMarginsNormal'
+  | 'pageSetupMarginsNarrow' | 'pageSetupMarginsWide' | 'pageSetupLineSpacing'
+  | 'pageSetupNumbers' | 'pageSetupNumbersPlacementBottomCenter'
+  | 'pageSetupNumbersPlacementBottomRight' | 'pageSetupNumbersPlacementTopRight'
+  | 'pageSetupHeaders' | 'pageSetupFooters' | 'pageSetupHeaderText'
+  | 'pageSetupFooterText' | 'pageSetupSaveDefaults' | 'pageSetupSavedDefaults'
+  | 'pageSetupOn' | 'pageSetupOff' | 'pageSetupExportNote'
   // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
   // Trash Board — the SAME "one term, every surface" shape
   // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
@@ -598,6 +610,30 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
   tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
+  // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
+  // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
+  pageSetupHeading: 'Page setup',
+  pageSetupMargins: 'Margins',
+  pageSetupMarginsNormal: 'Normal',
+  pageSetupMarginsNarrow: 'Narrow',
+  pageSetupMarginsWide: 'Wide',
+  pageSetupLineSpacing: 'Line spacing',
+  pageSetupNumbers: 'Page numbers',
+  pageSetupNumbersPlacementBottomCenter: 'Bottom centre',
+  pageSetupNumbersPlacementBottomRight: 'Bottom right',
+  pageSetupNumbersPlacementTopRight: 'Top right',
+  pageSetupHeaders: 'Headers',
+  pageSetupFooters: 'Footers',
+  pageSetupHeaderText: 'Header text',
+  pageSetupFooterText: 'Footer text',
+  pageSetupSaveDefaults: 'Set as my default page settings',
+  pageSetupSavedDefaults: 'Saved as your default.',
+  pageSetupOn: 'On',
+  pageSetupOff: 'Off',
+  // F6's default, said plainly on the surface rather than left to be
+  // discovered: numbers/headers/footers are sheet furniture for printed and
+  // exported output; the screen page stays one continuous sheet.
+  pageSetupExportNote: 'Numbers, headers and footers appear on export and print — the page on screen stays continuous.',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',

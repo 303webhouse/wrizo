@@ -6,9 +6,11 @@ import { useSectionFold } from '../store/sectionFold';
 import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createQuickSprintProject, softDeleteEntry,
-  getJournalEntry, getOrCreateSystemBoard,
+  getJournalEntry, getOrCreateSystemBoard, saveJournalEntry,
 } from '../store/persistence';
 import { unbornHref } from '../store/unbornPage';
+import { setUserPageDefaults } from '../store/pageDefaults';
+import { PAGE_SETTINGS_FALLBACK, type PageSettings } from '../types';
 import type { Box } from '../types';
 import { getCurrentUser } from '../store/currentUser';
 import { requestLogout } from '../store/logoutRequest';
@@ -247,11 +249,122 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
         </button>
       </div>
       <PageFace subject={subject} />
+      {/* ITEM 83 M3 (R6) — the Page menu's charter: general page options
+          governing the OPEN page. Sits between the page's own face and its
+          Places, because it is about this sheet rather than about where the
+          sheet lives. */}
+      <PageSetupZone entry={subject.entry} />
       {/* B2 S4 — Places: the Home zone (single-select) + Boards zone (true
           checkboxes), for the page underfoot. Supersedes PageFace's own
           retired Move/Copy verb. */}
       <PlacesPanel entry={subject.entry} />
     </>
+  );
+}
+
+// ITEM 83 M3 (R6) — PAGE SETUP.
+//
+// Nick's ruling: "general page options that govern the opened page (margins,
+// line spacing, page numbers + their placement, headers, footers, etc.) ...
+// linked to the current page a user is on but reset to defaults when the user
+// creates a new page. (There should also be a setting for the user to set
+// their own default page settings at the bottom of the PAGE menu.)"
+//
+// THE PAPER IS THE PREVIEW. Margins and line spacing write CSS custom
+// properties onto the live sheet, so the change is visible on the writer's own
+// page as they choose it — no modal preview, no Apply ceremony, no
+// committed-versus-draft state. A decision that is expensive to unmake will
+// not be made (RV4's reasoning, which applies to the sheet as much as to the
+// voice). Numbers/headers/footers are STORED but do not paint on screen:
+// F6's default is that they are sheet furniture for print and export, and the
+// screen page stays continuous. The zone says so on its face rather than
+// leaving a writer to wonder why a number never appeared.
+function PageSetupZone({ entry }: { entry: JournalEntry }) {
+  const { t } = useDeskLexicon();
+  const [saved, setSaved] = useState(false);
+  const current = entry.pageSettings ?? PAGE_SETTINGS_FALLBACK;
+
+  // One writer, one shape: every control funnels through here, so a partial
+  // update can never drop a sibling field.
+  const patch = (next: Partial<PageSettings>) => {
+    const merged: PageSettings = { ...current, ...next };
+    saveJournalEntry({ ...entry, pageSettings: merged, updatedAt: new Date().toISOString() });
+    setSaved(false);
+  };
+
+  return (
+    <div className="wz-cascade-panel-body wz-page-setup">
+      <div className="wz-cascade-panel-title">{t('pageSetupHeading')}</div>
+
+      <div className="wz-page-setup-row">
+        <span className="wz-page-setup-label">{t('pageSetupMargins')}</span>
+        <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('pageSetupMargins')}>
+          {(['normal', 'narrow', 'wide'] as const).map(m => (
+            <button key={m} type="button" role="radio" aria-checked={current.margins === m}
+              className="wz-page-setup-chip" onClick={() => patch({ margins: m })}>
+              {t(m === 'normal' ? 'pageSetupMarginsNormal' : m === 'narrow' ? 'pageSetupMarginsNarrow' : 'pageSetupMarginsWide')}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="wz-page-setup-row">
+        <label className="wz-page-setup-label" htmlFor="wz-page-leading">{t('pageSetupLineSpacing')}</label>
+        <input id="wz-page-leading" className="wz-page-setup-range" type="range"
+          min="1.2" max="2.2" step="0.1" value={current.lineSpacing}
+          onChange={e => patch({ lineSpacing: Number(e.target.value) })} />
+        <span className="wz-page-setup-value">{current.lineSpacing.toFixed(1)}</span>
+      </div>
+
+      <div className="wz-page-setup-row">
+        <span className="wz-page-setup-label">{t('pageSetupNumbers')}</span>
+        <button type="button" className="wz-page-setup-chip" aria-pressed={current.pageNumbers.on}
+          onClick={() => patch({ pageNumbers: { ...current.pageNumbers, on: !current.pageNumbers.on } })}>
+          {t(current.pageNumbers.on ? 'pageSetupOn' : 'pageSetupOff')}
+        </button>
+      </div>
+      {current.pageNumbers.on && (
+        <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-label={t('pageSetupNumbers')}>
+          {(['bottom-center', 'bottom-right', 'top-right'] as const).map(p => (
+            <button key={p} type="button" role="radio" aria-checked={current.pageNumbers.placement === p}
+              className="wz-page-setup-chip" onClick={() => patch({ pageNumbers: { ...current.pageNumbers, placement: p } })}>
+              {t(p === 'bottom-center' ? 'pageSetupNumbersPlacementBottomCenter'
+                : p === 'bottom-right' ? 'pageSetupNumbersPlacementBottomRight'
+                : 'pageSetupNumbersPlacementTopRight')}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(['headers', 'footers'] as const).map(k => (
+        <div key={k}>
+          <div className="wz-page-setup-row">
+            <span className="wz-page-setup-label">{t(k === 'headers' ? 'pageSetupHeaders' : 'pageSetupFooters')}</span>
+            <button type="button" className="wz-page-setup-chip" aria-pressed={current[k].on}
+              onClick={() => patch({ [k]: { ...current[k], on: !current[k].on } } as Partial<PageSettings>)}>
+              {t(current[k].on ? 'pageSetupOn' : 'pageSetupOff')}
+            </button>
+          </div>
+          {current[k].on && (
+            <input className="wz-page-setup-text" type="text" value={current[k].text}
+              aria-label={t(k === 'headers' ? 'pageSetupHeaderText' : 'pageSetupFooterText')}
+              placeholder={t(k === 'headers' ? 'pageSetupHeaderText' : 'pageSetupFooterText')}
+              onChange={e => patch({ [k]: { ...current[k], text: e.target.value } } as Partial<PageSettings>)} />
+          )}
+        </div>
+      ))}
+
+      <p className="wz-page-setup-note">{t('pageSetupExportNote')}</p>
+
+      {/* R6's own closing clause: the writer's defaults live at the bottom of
+          the PAGE menu, and are a COPY of this page's settings (see
+          store/pageDefaults.ts on why a copy rather than a live link). */}
+      <button type="button" className="wz-cascade-action"
+        onClick={() => { setUserPageDefaults(current); setSaved(true); }}>
+        {t('pageSetupSaveDefaults')}
+      </button>
+      {saved && <p className="wz-page-setup-note wz-page-setup-note--ok">{t('pageSetupSavedDefaults')}</p>}
+    </div>
   );
 }
 

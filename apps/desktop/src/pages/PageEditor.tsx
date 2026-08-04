@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
+import { setPageDress } from '../store/pageDress';
 import { describePageHome } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -83,6 +84,14 @@ function PageEditorView({ id }: { id: string }) {
   const entry = getJournalEntry(id);
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
+  // ITEM 83 M3 (R6) — publish THIS page's dress so the sheet wears it (the
+  // paper is the preview). Cleared on unmount so a page with no settings can
+  // never inherit the last page's margins — an undressed page must render
+  // exactly as it did before M3, and a stale dress would break that quietly.
+  useEffect(() => {
+    setPageDress(entry?.pageSettings ?? null);
+    return () => setPageDress(null);
+  }, [entry?.id, entry?.pageSettings]);
   // M1 — null on any plan-less project (Journal pages never reach this
   // surface at all); ModeStage silently degrades Progress:Project to Words
   // when this is null, per the canon's no-greyed-states rule.
