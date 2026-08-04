@@ -685,39 +685,31 @@ function TypewriterMenu() {
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setTypewriterExplicit(v === 'on')} />
 
+      {/* ITEM 83 S3 — TRUTH-FIX. The ON/OFF toggles below STAY, because each
+          drives a real engine today: Forward Lock writes store/forwardLock.ts
+          (the live forward-only boundary), Line Fade and Page Scroll write
+          writingSettings, which useTypewriterFade already reads.
+          THE ADJUSTMENT ROWS ARE UNMOUNTED — Forward Lock's window unit and
+          count, Line Fade's line count, and the writing-line position. They
+          PERSISTED but drove nothing: no engine reads forwardLockUnit,
+          forwardLockCount, lineFadeLines or writingLine. A control that
+          remembers your choice and then ignores it is worse than an absent
+          one, because it teaches a writer the feature works.
+          NOT grayed, ABSENT (G3) — a disabled control for an unbuilt
+          capability is a locked door wearing paint. The settings themselves
+          stay in the store, defaulted to today's behaviour, so the rows
+          return the moment the engine brief connects them; nothing about
+          this is a retreat from R3, only from claiming it early. That brief
+          is R12's own flagged engine-touching work. */}
       <Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setForwardLock(v === 'on')} />
-      {forwardLock && (
-        <>
-          <Seg label={t('twForwardLockWindow')} value={settings.forwardLockUnit}
-            opts={[['words', t('twUnitWords')], ['sentences', t('twUnitSentences')]]}
-            onPick={v => setWritingSettings({ forwardLockUnit: v as 'words' | 'sentences' })} />
-          <label className="wz-tw-number">
-            <span>{settings.forwardLockUnit === 'words' ? t('twUnitWords') : t('twUnitSentences')}</span>
-            <input type="number" min={1} max={50} value={settings.forwardLockCount}
-              onChange={e => setWritingSettings({ forwardLockCount: Math.max(1, Number(e.target.value) || 1) })} />
-          </label>
-        </>
-      )}
 
       {/* O-FW2 resolved by merger: the gear's old "Fade depth" lives here now,
-          as Line Fade's own on/off + line count. No second fade home. */}
+          as Line Fade's own on/off. No second fade home. */}
       <Seg label={t('twLineFade')} value={settings.lineFadeOn ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
         onPick={v => setWritingSettings({ lineFadeOn: v === 'on' })} />
-      {settings.lineFadeOn && (
-        <>
-          <label className="wz-tw-number">
-            <span>{t('twLineFadeLines')}</span>
-            <input type="number" min={1} max={12} value={settings.lineFadeLines}
-              onChange={e => setWritingSettings({ lineFadeLines: Math.max(1, Number(e.target.value) || 1) })} />
-          </label>
-          <Seg label={t('twWritingLine')} value={settings.writingLine}
-            opts={[['top', t('twLineTop')], ['center', t('twLineCenter')], ['bottom', t('twLineBottom')]]}
-            onPick={v => setWritingSettings({ writingLine: v as 'top' | 'center' | 'bottom' })} />
-        </>
-      )}
 
       <Seg label={t('twPageScroll')} value={settings.pageScroll ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
