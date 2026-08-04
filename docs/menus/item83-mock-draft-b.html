@@ -9,9 +9,11 @@
   Renders the Draft Desk: Chamber 1's ratified Format core plus Nick's R4
   roster — bulleted lists, block quote, indent, text alignment (L·C·R),
   ¶ Spacing (the block operation; the sheet's leading lives in the PAGE
-  drawer per flag F4) — with the Structure entry as VERB ROWS in-drawer
-  (DR3's in-drawer candidate; the tab-dress alternative decides at Nick's
-  lock). Ink is ABSENT by R4 — nothing grayed (G3). Inherits R5's
+  drawer per flag F4) — with the STRUCTURE zone carrying DR3's
+  subject — one conversion row, confirm-gated, destination named: "Convert
+  to Screenplay…" (the in-drawer candidate; the built Prose|Screenplay
+  tablist stands as the named alternative at Nick's lock; SP1's mirror is
+  "Convert to Prose…"). Ink is ABSENT by R4 — nothing grayed (G3). Inherits R5's
   three-instrument foot, R7's olive register, R10/R11's cabinet geometry,
   and THE ANCHOR LAW from the builder's study:
   - anchors are LAYOUT: the Tools dock is a child of the paper's column at
@@ -125,16 +127,6 @@
   .mark:hover{color:var(--text-hi);border-color:var(--text-low)}
   .mark:active{color:var(--brass);border-color:var(--brass)}
   .mark[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
-  .inkrow{display:flex;gap:6px;padding:0 14px;margin-bottom:8px}
-  .pentype{flex:1;background:none;border:1px solid var(--line);color:var(--text-mid);
-        padding:5px 0 3px;cursor:pointer;display:grid;place-items:center}
-  .pentype:hover{color:var(--text-hi);border-color:var(--text-low)}
-  .pentype:active{color:var(--brass)}
-  .pentype[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
-  .swatches{display:flex;gap:8px;padding:0 14px;align-items:center}
-  .sw{width:22px;height:22px;border:1px solid var(--line);cursor:pointer;padding:0}
-  .sw:hover{border-color:var(--text-low)}
-  .sw[aria-pressed="true"]{outline:1px solid var(--accent-rest);outline-offset:2px}
 
   .foot{border-top:1px solid var(--line);padding:10px 12px 12px}
   .goal{display:flex;align-items:baseline;gap:10px;color:var(--text-mid);font-size:12px}
@@ -276,8 +268,8 @@
                   </div>
                   <div class="zone">
                     <span class="zonehead">Structure</span>
-                    <div class="prow doorrow" role="button" tabindex="0"><span class="lab">Mark scene</span></div>
-                    <div class="prow doorrow" role="button" tabindex="0"><span class="lab">Mark chapter</span></div>
+                    <div class="prow doorrow" role="button" tabindex="0"
+                         aria-haspopup="dialog" title="Confirm-gated: asks before converting"><span class="lab">Convert to Screenplay…</span><span class="dim2">⇄</span></div>
                   </div>
                 </div>
                 <div class="foot">
@@ -370,9 +362,6 @@
   addEventListener('resize',layout);
 
   document.querySelectorAll('.mark').forEach(b=>b.onclick=()=>b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true')));
-  document.querySelectorAll('.pentype,.sw').forEach(b=>b.onclick=()=>{
-    b.parentElement.querySelectorAll('[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed','false'));
-    b.setAttribute('aria-pressed','true');});
   document.querySelectorAll('.choicerow').forEach(g=>{
     g.querySelectorAll('.mini').forEach(m=>m.onclick=()=>{
       g.querySelectorAll('.mini').forEach(x=>x.setAttribute('aria-pressed','false'));
