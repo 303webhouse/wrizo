@@ -199,6 +199,30 @@ clearing the rail-mounted PAGE drawer's right edge — and the fx18 companion
 clause updates to match. Pop-outs from the Tools foot rise ABOVE the drawer
 (a raised tray, drawer-width, never over the paper).
 
+**THE ANCHOR LAW — ratified from the builder's geometry study.** The v2 pair
+as first landed pinned the Tools drawer by *computing* the paper's position
+(`Math.min(760, W*0.6)`) while CSS drew the paper at `min(760px, 60ch)` —
+two different quantities, so the drawer was pinned to an edge the paper does
+not occupy, and the error moved when the webfont failed. The MENU builder's
+study (`item83-geometry-study-anchors.html`, its own commit on `main`)
+removes the arithmetic instead of correcting it: **anchors are layout —
+the Tools dock is a child of the paper's column at `right:100%`, the PAGE
+drawer a child of the room at `left:0` — and script measures only to decide
+policy (the R9/R11 coexistence handoff). A policy question may measure; an
+anchor may not.** Ratified as lane law, fx18's measured-never-assumed
+doctrine extended from width to position; the study stands as the lane's
+normative reference, its self-checking flush readout adopted into the pair.
+The a2/b2 files are re-anchored on this architecture in place — git history
+is the annotation; the superseded geometry remains readable at `84302f5`.
+
+**F8 · The narrow end: clip or overlay.** Below the width where even a lone
+Tools drawer fits the margin, R11's never-over-the-paper and fx18's
+below-floor overlay law point opposite ways. Default: **the 1366×768
+constitutional floor is the boundary** — at and above it, R11 holds
+absolutely (and the real paper width guarantees the room: a lone drawer
+always fits); below the floor, fx18's overlay law governs and R11 yields.
+One word confirms or redraws the boundary.
+
 ---
 
 ## §3 · FLAGS — one word each; the desk proceeds on the stated default
