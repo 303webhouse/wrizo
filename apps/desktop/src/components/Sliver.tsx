@@ -5,7 +5,6 @@ import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '.
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
 import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
 import { countLineEquivalents } from '../store/lineEquivalents';
-import { TypewriterToggle } from './WritingIncentives';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
 // the sliver's own foot (below); rather than duplicate SettingsPanel/
 // ThemePanel/Seg/GearIcon's JSX here, they're exported from ModeStage.tsx
