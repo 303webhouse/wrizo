@@ -9288,6 +9288,25 @@ sitting closes them.
     **So the parked stamp for 91+92 is OWED, not claimed** — both settings get re-run the
     moment a window opens, and the merge offer says so rather than presenting a half-stamp
     as a whole one.
+    **↑ THE OWED STAMP IS NOW PAID — 2026-08-04, post-deploy-stamp, slot 1.** Re-run on a
+    CLEAN, NAMED tree (branch `fw2-offer` @ `dad280e`, item 87's code deliberately absent
+    so the stamp describes exactly the software being merged): **unparked `55/55` CLEAN
+    and parked `55/55` CLEAN, both `tree=dad280e
+    bundle=index-Cib2nzSw.js/525306b`** — no `+Ndirty` suffix, and the SAME asset hash as
+    the earlier runs, which is itself the proof that item 87's code is not in the offered
+    bundle. **`j4.mjs` PASSED parked**, so the navigate-first fixture fix is no longer
+    unrun — the first-parked-act race is closed by exercise, not by argument.
+    **ONE INCIDENT ON THE WAY, ATTRIBUTED AND NOT INHERITED:** the menus lane reported
+    (record: `docs/menus/incident-2026-08-04-s4.md`) that an S4 cleanup error killed a
+    browser belonging to this lane's first parked attempt. Its `e1` leg was left with a
+    live node child and no browser — it would have hung to timeout and read red. **That
+    run was ABANDONED and restarted rather than reported with an excused red**: chat 1
+    merges on these stamps, and "54/55 with one red we agreed to disregard" is a worse
+    thing to merge on than a clean 55/55. The restart cost the same wall-clock as waiting
+    for the bad result and re-running one leg. **`e1` passed on the clean re-run**,
+    confirming the red would indeed have been spurious. Stopping that run orphaned
+    NOTHING (its browser was already dead); the full owner-liveness check was run anyway
+    rather than assumed.
     **REGISTERED BY FABLE (2026-08-03):** the honest half-stamp ships as described; this
     diagnosis is entered as the **first-parked-act race species** (a fixture touching
     `localStorage` before its first navigation, racing the browser's launch load). Two
