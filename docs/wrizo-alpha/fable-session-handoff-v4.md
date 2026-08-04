@@ -145,7 +145,9 @@ survives a mechanism check = stop and hold, never deploy.
   incident family) · 89 (offline-strand, P0) · 90–95 (pre-flight sitting items) all opened.
   **Next free: 96.** 2026-08-03: 96 (the Places Model charter — post-vacation committee)
   opened. **Next free: 97.** 2026-08-03: 97 (trashed-plan-board dangling pointer) + 98
-  (railway-worktree link guard, deploy-critical) opened. **Next free: 99.**
+  (railway-worktree link guard, deploy-critical) opened. **Next free: 99.** 2026-08-03: 99 (THE
+ORPHAN REAPER — dead-owner harness-browser leak; manual authorized sweep now, runner-preflight
+sweep post-vacation) opened with the P0-wave deploy. **Next free: 100.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 
