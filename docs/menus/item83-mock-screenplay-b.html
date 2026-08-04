@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>item 83 · Screenplay mockup B — the map reading</title>
+<!--
+  ITEM 83 · PHASE 3 · SCREENPLAY PAIR · VARIANT B — "the map reading"
+  menus lane · 2026-08-04 · first landing of this pair.
+  Renders SP1: Screenplay's whole Desk is ONE section — STRUCTURE carrying
+  the mirror of Draft's conversion, "Convert to Prose…" (confirm-gated,
+  destination named). Everything else the drawer could hold, it refuses:
+  no Styling, no Format roster, no Ink — SP2's fractal absence, nothing
+  grayed. The foot is UNIVERSAL per R12: TYPEWRITER · PROGRESS · FULL
+  SCREEN on screenplay as everywhere — Nick's word resolving F9 and
+  returning the engine to screenplay pages (SC1's "pending Nick's own
+  revision" arriving; the built engine's revival is a post-vacation brief).
+  THIS VARIANT renders SP3's MAP candidate: the strip stands, every mode
+  QUIET-DARK — the map says these rooms exist and none is this room; only
+  the Publish door keeps its dress. Variant A renders strict absence.
+  Nick's word picks at lock.
+  Paper: SC1's Courier register sketched (the true US-Letter geometry and
+  the Clock's 54-line body belong to the built room, not this mockup).
+  Inherits R7's olive register, R10/R11's cabinet geometry, and THE ANCHOR
+  LAW (anchors are layout; policy may measure; the flush readout self-checks).
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --brass-press:#e88900;
+    --accent-rest:#96a05a; --accent-door:#4F5730;
+    --ink-on-paper:#2B2014; --ink-on-paper-low:#8A7C68;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi)}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:9;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  .rig button:focus-visible{outline:2px solid #888;outline-offset:1px}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+  #geom.drift{color:#e05c5c}
+
+  .fit{position:absolute;inset:42px 0 0 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8)}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:56px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px;position:relative;z-index:4}
+  .rail .cat{width:100%;text-align:center;padding:9px 0 8px;color:var(--text-low);
+        font-size:10px;letter-spacing:.08em;cursor:pointer;background:none;border:none;font-family:inherit}
+  .rail .cat .glyph{display:block;font-size:15px;line-height:1;margin-bottom:3px;color:var(--text-mid)}
+  .rail .cat:hover{color:var(--text-mid)}
+  .rail .cat[aria-expanded="true"]{color:var(--text-hi);border-left:1px solid var(--accent-rest)}
+  .rail .cat:focus-visible{outline:1px solid var(--accent-rest);outline-offset:-1px}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:26px;padding:0 34px;border-bottom:1px solid var(--line)}
+  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em;min-width:170px}
+  .crumb b{color:var(--text-mid);font-weight:500}
+  .strip{display:flex;gap:24px;margin:0 auto}
+  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);
+        padding:6px 2px;border-bottom:1px solid transparent;cursor:default}
+  .mode.active{color:var(--text-hi);border-bottom-color:var(--accent-rest)}
+  .mode.dark{color:var(--text-low)}
+  .mode.door{color:var(--text-mid)}
+  .mode:hover{color:var(--text-hi)}
+  .mode.door:hover{color:var(--brass)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* ---- the paper's column: the anchor for everything paper-mounted ---- */
+  .paper-col{position:absolute;top:44px;bottom:64px;left:50%;transform:translateX(-50%);
+             width:min(760px,60ch);font-family:var(--prose);font-size:19px}
+  .paper{position:absolute;inset:0;background:var(--paper);color:var(--ink-on-paper);
+         border:1px solid var(--line);padding:58px 64px;line-height:1.62;overflow:hidden}
+  .paper p{margin:0 0 1em}
+  .dim{color:var(--ink-on-paper-low)}
+  .caret{display:inline-block;width:1px;height:1.05em;background:var(--ink-on-paper);
+         vertical-align:-0.15em;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .lane{position:absolute;left:0;right:0;bottom:-24px;height:3px}
+  .lane .fill{height:1px;margin-top:1px;background:var(--accent-rest);width:41%}
+
+  /* ---- the Tools dock: right edge IS the paper's left edge, by layout ---- */
+  .tools-dock{position:absolute;right:100%;top:20px;bottom:20px;display:flex;
+              align-items:stretch;z-index:3;font-family:var(--ui)}
+  .handle{width:14px;flex:none;background:var(--panel);border:1px solid var(--line);
+          align-self:center;height:74px;display:grid;place-items:center;cursor:pointer;
+          color:var(--accent-rest);font-size:11px;padding:0}
+  .handle:focus-visible{outline:2px solid var(--accent-rest);outline-offset:1px}
+  .bodywrap{overflow:hidden;transition:width .24s ease;height:100%}
+  @media (prefers-reduced-motion:reduce){.bodywrap,.pagewrap{transition:none}.caret{animation:none}}
+  .dbody{width:184px;height:100%;display:flex;flex-direction:column;background:var(--panel);
+         border:1px solid var(--line);color:var(--text-mid);font-size:12.5px}
+  .dbody .scroll{flex:1;overflow:auto;padding:4px 0 6px}
+
+  /* ---- the PAGE drawer: a child of the room at left:0 — rail-flush ---- */
+  .page-slab{position:absolute;left:0;top:64px;bottom:64px;z-index:2;display:flex}
+  .pagewrap{overflow:hidden;transition:width .24s ease;height:100%}
+  .page-slab .dbody{width:200px;border-left:none} /* the rail's border-right is the seam */
+
+  .zonehead{display:block;padding:8px 14px 7px;font-size:10px;letter-spacing:.24em;
+            text-transform:uppercase;color:var(--accent-rest)}
+  button.zonehead{width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center}
+  button.zonehead .tw{margin-left:auto;color:var(--text-low);font-size:10px;letter-spacing:0}
+  button.zonehead:hover .tw{color:var(--text-mid)}
+  .zone{border-bottom:1px solid var(--line);padding:2px 0 10px;margin:0 0 6px}
+  .zone:last-child{border-bottom:none}
+
+  .marks{display:flex;gap:6px;padding:0 14px}
+  .mark{width:34px;height:30px;background:none;border:1px solid var(--line);cursor:pointer;
+        color:var(--text-mid);font-family:var(--prose);font-size:15px}
+  .mark.b{font-weight:700}.mark.i{font-style:italic}.mark.u{text-decoration:underline}
+  .mark:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .mark:active{color:var(--brass);border-color:var(--brass)}
+  .mark[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+
+  .foot{border-top:1px solid var(--line);padding:10px 12px 12px}
+  .goal{display:flex;align-items:baseline;gap:10px;color:var(--text-mid);font-size:12px}
+  .goal .timer{font-variant-numeric:tabular-nums;color:var(--text-low)}
+  .goal .target{margin-left:auto;color:var(--text-mid)}
+  .hairline{height:1px;background:var(--line);margin:8px 0 10px;position:relative}
+  .hairline .done{position:absolute;inset:0 auto 0 0;width:41%;background:var(--accent-rest)}
+  .instruments{display:flex;gap:5px}
+  .inst{flex:1;background:none;border:1px solid var(--line);color:var(--text-mid);
+        font:inherit;font-size:10px;letter-spacing:.03em;padding:6px 2px 5px;cursor:pointer;
+        display:flex;flex-direction:column;align-items:center;gap:3px}
+  .inst .g{font-size:13px;line-height:1}
+  .inst:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .inst:active{color:var(--brass);border-color:var(--brass)}
+  .inst .dot{width:4px;height:4px;background:var(--accent-rest)}
+
+  .prow{display:flex;align-items:center;gap:8px;padding:6px 14px;color:var(--text-mid);font-size:11.5px}
+  .prow .lab{flex:1}
+  .prow.doorrow{cursor:pointer}
+  .prow.doorrow:hover{color:var(--text-hi)}
+  .prow.doorrow:active{color:var(--brass)}
+  .mini{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;
+        font-size:10.5px;padding:3px 7px;cursor:pointer}
+  .mini:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .mini[disabled]{color:var(--text-low);cursor:default}
+  .defaults{margin:6px 12px 10px;padding:6px 0;width:calc(100% - 24px);background:none;
+        border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:11px;cursor:pointer}
+  .defaults:hover{color:var(--text-hi);border-color:var(--text-low)}
+
+  .tgrip{position:absolute;top:50%;right:0;transform:translateY(-50%);width:14px;height:74px;
+         background:var(--panel);border:1px solid var(--line);border-right:none;
+         display:grid;place-items:center;color:var(--accent-rest);font-size:11px}
+  .dim2{color:var(--text-low);font-family:var(--prose)}
+  .choicerow{display:flex;gap:4px;padding:0 14px 6px}
+  .choicerow .mini[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .scriptface{font-family:'Courier Prime','Courier New',monospace;font-size:16px;line-height:1.5}
+  .scriptface .slug{text-transform:uppercase;letter-spacing:.02em;margin-bottom:1.2em}
+  .scriptface .cue{text-align:center;text-transform:uppercase;margin:1.1em 0 .1em}
+  .scriptface .dlg{margin:0 auto 1.1em;max-width:58%}
+  .note{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:#5e564c;letter-spacing:.03em}
+</style>
+</head>
+<body>
+  <div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+    <b>ITEM 83 · SCREENPLAY · B — the map reading</b>
+    <button id="w1" aria-pressed="false">1366×768</button>
+    <button id="w2" aria-pressed="true">1680×1050</button>
+    <span id="geom">measuring…</span>
+  </div>
+
+  <div class="fit"><div class="stage" id="stage">
+    <div class="frame">
+      <nav class="rail" id="rail" aria-label="Cascade">
+        <button class="cat"><span class="glyph">✶</span>journal</button>
+        <button class="cat" id="pageCat" aria-expanded="false"><span class="glyph">▭</span>page</button>
+        <button class="cat"><span class="glyph">⌗</span>plan</button>
+        <button class="cat"><span class="glyph">☰</span>drawers</button>
+        <button class="cat"><span class="glyph">⌂</span>shelf</button>
+        <button class="cat"><span class="glyph">✕</span>trash</button>
+        <button class="cat"><span class="glyph">⚙</span>settings</button>
+        <button class="cat"><span class="glyph">◐</span>theme</button>
+      </nav>
+
+      <div class="band">
+        <div class="crumb">Location&nbsp; <b>Loose · THE PLATFORM — a screenplay</b></div>
+        <div class="strip" role="list" aria-label="Rooms (map)">
+          <span class="mode dark">Free Write</span>
+          <span class="mode dark">Draft</span>
+          <span class="mode dark">Revise</span>
+          <span class="mode dark">Workshop</span>
+          <span class="mode door">Publish →</span>
+        </div>
+      </div>
+
+      <div class="room" id="room">
+        <!-- the PAGE drawer — rail-flush by layout (left:0 in the room) -->
+        <div class="page-slab" id="pageSlab">
+          <div class="pagewrap" id="pageWrap">
+            <aside class="dbody" aria-label="Page">
+              <div class="scroll">
+                <div class="zone">
+                  <span class="zonehead">Page</span>
+                  <div class="prow doorrow" role="button" tabindex="0"><span class="lab">＋ New page</span><span>→</span></div>
+                </div>
+                <div class="zone">
+                  <span class="zonehead">Page setup</span>
+                  <div class="prow"><span class="lab">Margins</span><button class="mini">Normal ▾</button></div>
+                  <div class="prow"><span class="lab">Line spacing</span><button class="mini">1.6 ▾</button></div>
+                  <div class="prow"><span class="lab">Page numbers</span><button class="mini">Off ▾</button></div>
+                  <div class="prow"><span class="lab" style="padding-left:10px;color:var(--text-low)">Placement</span><button class="mini" disabled>Bottom · center</button></div>
+                  <div class="prow"><span class="lab">Headers</span><button class="mini">Off ▾</button></div>
+                  <div class="prow"><span class="lab">Footers</span><button class="mini">Off ▾</button></div>
+                </div>
+                <div class="zone">
+                  <button class="zonehead" aria-expanded="false">Places <span class="tw">＋</span></button>
+                </div>
+              </div>
+              <button class="defaults">Set as my default page settings</button>
+            </aside>
+          </div>
+        </div>
+
+        <!-- the paper's column; the Tools dock is its child at right:100% -->
+        <div class="paper-col" id="paperCol">
+          <main class="paper scriptface">
+            <p class="slug">INT. RAILWAY PLATFORM — MORNING</p>
+            <p>The coat lies folded on the bench like a decision already
+            made. MARA, 30s, walks the platform's length without hurry.</p>
+            <p class="cue">MARA</p>
+            <p class="dlg">It was never panic.</p>
+            <p>A train arrives. She does not turn her head.<span class="caret"></span></p>
+          </main>
+          <div class="lane" aria-hidden="true"><div class="fill"></div></div>
+
+          <div class="tools-dock" id="toolDock">
+            <button class="handle" id="handle" aria-label="Close hand tools" aria-expanded="true">‖</button>
+            <div class="bodywrap" id="toolWrap">
+              <aside class="dbody" aria-label="Hand tools">
+                <div class="scroll">
+                  <div class="zone">
+                    <span class="zonehead">Structure</span>
+                    <div class="prow doorrow" role="button" tabindex="0"
+                         aria-haspopup="dialog" title="Confirm-gated: asks before converting"><span class="lab">Convert to Prose…</span><span class="dim2">⇄</span></div>
+                  </div>
+                </div>
+                <div class="foot">
+                  <div class="goal"><span>Goal: 45 min</span><span class="timer">12:40</span><span class="target">Set</span></div>
+                  <div class="hairline"><div class="done"></div></div>
+                  <div class="instruments">
+                    <button class="inst" aria-pressed="true" aria-label="Typewriter — on"><span class="g">⌨</span>Typewriter<span class="dot" aria-hidden="true"></span></button>
+                    <button class="inst" aria-label="Progress"><span class="g">◔</span>Progress</button>
+                    <button class="inst" aria-label="Full Screen"><span class="g">⛶</span>Full Screen</button>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+
+        <div class="tgrip" aria-label="Open the Tutor" title="The Tutor — opens only by your press">‖</div>
+        <div class="note">Draft: R4 roster · SP1: the null desk — one zone, the mirror · R12: Typewriter rides on Screenplay — universal foot · SP3-B: the map — every room dark, the door keeps its dress · A shows strict absence · Ink absent by R4 (G3)</div>
+      </div>
+    </div>
+  </div></div>
+
+<script>
+  const stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+        room=document.getElementById('room'), paperCol=document.getElementById('paperCol'),
+        pageSlab=document.getElementById('pageSlab'), pageWrap=document.getElementById('pageWrap'),
+        toolDock=document.getElementById('toolDock'), toolWrap=document.getElementById('toolWrap'),
+        handle=document.getElementById('handle'), pageCat=document.getElementById('pageCat'),
+        B1=document.getElementById('w1'), B2=document.getElementById('w2');
+  const CASCADE_W=200, SLIVER_W=184, HANDLE_W=14;
+  const SIZES={a:[1366,768], b:[1680,1050]};
+  let cur='b', pageOpen=false, toolOpen=true, lastOpened='sliver', scale=1;
+
+  /* UNIT DISCIPLINE (the study's law): getBoundingClientRect returns
+     transform-SCALED px; divide by the rig's scale before comparing with
+     layout px, or the policy is wrong at every zoom except 1. */
+  function measure(){
+    const rL=room.getBoundingClientRect().left;
+    const paperLeft=(paperCol.getBoundingClientRect().left-rL)/scale;   // layout px, room-relative
+    return {paperLeft};
+  }
+  function canCoexist(){ const {paperLeft}=measure();
+    return (paperLeft-HANDLE_W-SLIVER_W) >= CASCADE_W; }
+
+  function apply(){
+    pageWrap.style.width=(pageOpen?CASCADE_W:0)+'px';
+    toolWrap.style.width=(toolOpen?SLIVER_W:0)+'px';
+    pageCat.setAttribute('aria-expanded',String(pageOpen));
+    handle.setAttribute('aria-expanded',String(toolOpen));
+    handle.setAttribute('aria-label', toolOpen?'Close hand tools':'Open hand tools');
+  }
+  function readout(){
+    const rL=room.getBoundingClientRect().left;
+    const paperL=(paperCol.getBoundingClientRect().left-rL)/scale;
+    const dockR=(toolDock.getBoundingClientRect().right-rL)/scale;
+    const cascL=(pageSlab.getBoundingClientRect().left-rL)/scale;
+    const d1=(paperL-dockR).toFixed(1), d2=cascL.toFixed(1);
+    const ok=Math.abs(paperL-dockR)<0.6 && Math.abs(cascL)<0.6;
+    const [W,H]=SIZES[cur];
+    geom.classList.toggle('drift',!ok);
+    geom.textContent=`rendered ${W}×${H} @ ${(scale*100).toFixed(0)}% · paper-left−dock-right ${d1} · cascade-left ${d2} `+
+      (ok?'✓ flush':'✗ DRIFT')+` · ${canCoexist()?'coexist ✓':'exclusive'}`;
+  }
+  function layout(){
+    const [W,H]=SIZES[cur];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    const fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    apply();
+    requestAnimationFrame(readout);
+  }
+  function toggle(which){
+    if(which==='page'){
+      if(pageOpen) pageOpen=false;
+      else{ if(!canCoexist()&&toolOpen) toolOpen=false; pageOpen=true; lastOpened='page'; }
+    }else{
+      if(toolOpen) toolOpen=false;
+      else{ if(!canCoexist()&&pageOpen) pageOpen=false; toolOpen=true; lastOpened='sliver'; }
+    }
+    apply(); requestAnimationFrame(readout);
+  }
+  handle.onclick=()=>toggle('sliver');
+  pageCat.onclick=()=>toggle('page');
+  document.querySelectorAll('.rail .cat:not(#pageCat)').forEach(c=>c.title='mockup: the Page drawer only');
+  B1.onclick=()=>{cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');
+    layout(); requestAnimationFrame(()=>{ if(!canCoexist()&&pageOpen&&toolOpen){
+      if(lastOpened==='sliver')pageOpen=false; else toolOpen=false; apply(); requestAnimationFrame(readout);} });};
+  B2.onclick=()=>{cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout();};
+  addEventListener('resize',layout);
+
+  document.querySelectorAll('.mark').forEach(b=>b.onclick=()=>b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true')));
+  document.querySelectorAll('.choicerow').forEach(g=>{
+    g.querySelectorAll('.mini').forEach(m=>m.onclick=()=>{
+      g.querySelectorAll('.mini').forEach(x=>x.setAttribute('aria-pressed','false'));
+      m.setAttribute('aria-pressed','true');});
+  });
+  const zh=document.querySelector('button.zonehead');
+  if(zh) zh.onclick=function(){
+    const o=this.getAttribute('aria-expanded')==='true';
+    this.setAttribute('aria-expanded',String(!o));
+    this.querySelector('.tw').textContent=o?'＋':'—';};
+  layout();
+</script>
+</body>
+</html>

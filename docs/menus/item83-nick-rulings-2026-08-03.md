@@ -222,6 +222,27 @@ constitutional floor is the boundary** — at and above it, R11 holds
 absolutely (and the real paper width guarantees the room: a lone drawer
 always fits); below the floor, fx18's overlay law governs and R11 yields.
 One word confirms or redraws the boundary.
+**F9 · The screenplay foot.** R5 binds TYPEWRITER · PROGRESS · FULL SCREEN
+to the bottom of every tool menu; the disk disables the typewriter engine on
+screenplay pages (SC1, pending Nick's own revision), and SP2 rules absence
+fractal. Default: **the foot reads per-surface** — on Screenplay it carries
+PROGRESS · FULL SCREEN, the Typewriter absent, not grayed. One word instead
+makes the foot universal with the instrument dark.
+
+And, on the Screenplay pair:
+
+> One small change: TYPEWRITER mode should be available while writing a
+> screenplay, too
+
+**R12 · TYPEWRITER RIDES ON SCREENPLAY — F9 resolved.** The foot is
+universal after all: TYPEWRITER · PROGRESS · FULL SCREEN on screenplay as
+everywhere (R5 unqualified). The typewriter engine returns to screenplay
+pages — SC1's disable was recorded as "pending Nick's own revision," and
+this is that revision arriving at the design layer; the engine's revival on
+the built surface (its interaction with the Clock's 54-line body and the
+Courier register) is a post-vacation build brief, schema-free but
+engine-touching, and travels flagged as such. The R3 Typewriter menu rides
+unchanged wherever the button lives.
 
 ---
 
