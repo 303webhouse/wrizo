@@ -131,6 +131,27 @@ authorized action was executed against an empty target set — the honest, revie
 (condition 2). The suite of record then ran CLEAN in the freed window at `aa07b9c`, bundle
 `index-CThKwy6K.js/524897b`, both settings 54/54.
 
+## SHIP 2 (fw2) — PARKED, NOT SHIPPED — 2026-08-04 (Nick's conditional word; condition 2)
+
+Nick's word: merge `fw2-offer @ dad280e` (items 91+92, zero schema, pre-authorized) and deploy
+under the amended checklist ONLY if the fix lane's parked re-run stamped GREEN both settings;
+if the re-run is red or incomplete → no merge, the offer parks as-is, report. **The parked
+re-run is INCOMPLETE.** Per the fix lane's own offer doc (`docs/wrizo-alpha/fw2-merge-offer-to-chat1.md`
+@ `dad280e`): unparked **55/55 CLEAN** (`bundle=index-Cib2nzSw.js/525306b`, `tsc` clean), but
+parked returned **one NOVERDICT (`j4.mjs`)** — a named *first-parked-act race* (`j4`'s parked
+block calls `localStorage.clear()` before the initial `about:blank`→app load; pre-existing and
+untouched by this diff; `j4` was green in the unparked run of the identical bundle minutes
+earlier). The one-line fixture fix (navigate-first) is itself **UNRUN** — the box schedule closed
+the window — so **the parked stamp is OWED, not claimed**; the fix lane explicitly does not ask
+for a merge on a half-stamp. **DECISION: no merge, no deploy; `fw2-offer` stays on its branch,
+parked as-is.** The RED-SUITE CLAUSE WAS NOT PRE-SPENT — no red of any identity was measured
+here; the gate simply is not met (incomplete ≠ red). Item 87 was never in this package
+(`fw2-offer` excludes it by construction; item 87 is built-not-verified on
+`fw2-boards-and-defaults`, `DO NOT MERGE YET`). **Production stays git `c23c380` · railway
+`ee0a9bf2`** (the P0 wave; rollback ratchet unchanged). Per Nick's word the box now passes to the
+SC-chain (merge + PARK only; P2c is the first post-vacation ship); **ZERO further deploys of any
+kind until Nick returns** (vacation handoff `docs/wrizo-alpha/vacation-handoff-2026-08-04.md`).
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
