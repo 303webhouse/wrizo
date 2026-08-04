@@ -105,6 +105,11 @@ function rowToJournalEntry(r: any) {
     // SQL null -> JS undefined, never an empty object/array (the ticket's
     // own null<->undefined fixed-point requirement).
     tutor: r.tutor ?? undefined,
+    // ITEM 83 M2 (R6) — the page's own sheet dress. The exact
+    // origin/script/tutor recipe: SQL null → JS undefined, never `null` and
+    // never an empty object, so a page never dressed stays byte-identical to
+    // today and the app's own defaults govern it.
+    pageSettings: r.page_settings ?? undefined,
     tags: r.tags ?? undefined,
     routedProjectIds: r.routed_project_ids ?? undefined,
     strokes: r.strokes ?? undefined,
@@ -246,8 +251,8 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
       await pool.query(
         `insert into journal_entries
            (id, user_id, project_id, text, session_id, starred, source, shelved, beat_id, page_type,
-            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23)
+            order_index, imported_at, boxes, script, origin, tutor, tags, routed_project_ids, strokes, deleted_at, created_at, updated_at, plan_board_id, page_settings)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19::jsonb,$20,$21,$22,$23,$24::jsonb)
          on conflict (id) do update set
            project_id = excluded.project_id, text = excluded.text, session_id = excluded.session_id,
            starred = excluded.starred, source = excluded.source, shelved = excluded.shelved,
@@ -255,13 +260,17 @@ async function upsertJournalEntries(userId: string, records: any[]): Promise<voi
            imported_at = excluded.imported_at, boxes = excluded.boxes, script = excluded.script,
            origin = excluded.origin, tutor = excluded.tutor, tags = excluded.tags, routed_project_ids = excluded.routed_project_ids,
            strokes = excluded.strokes, deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
-           plan_board_id = excluded.plan_board_id
+           plan_board_id = excluded.plan_board_id,
+           /* ITEM 83 M2 (R6) — the page's own sheet dress, riding the same
+              last-writer-wins guard (the updated_at comparison below) as
+              every column above it. No special-casing: dress is page data. */
+           page_settings = excluded.page_settings
          where journal_entries.user_id = excluded.user_id
            and excluded.updated_at > journal_entries.updated_at`,
         [e.id, userId, e.projectId ?? null, e.text ?? '', e.sessionId ?? null,
          e.starred ?? null, e.source ?? null, e.shelved ?? false, e.beatId ?? null, e.pageType ?? null,
          e.orderIndex ?? null, e.importedAt ?? null, JSON.stringify(e.boxes ?? null), JSON.stringify(e.script ?? null), e.origin ?? null, JSON.stringify(e.tutor ?? null), JSON.stringify(e.tags ?? null), JSON.stringify(e.routedProjectIds ?? null), JSON.stringify(e.strokes ?? null),
-         e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null],
+         e.deletedAt ?? null, e.createdAt, e.updatedAt, e.planBoardId ?? null, JSON.stringify(e.pageSettings ?? null)],
       );
     } catch (err) {
       console.error('[sync] journal_entry upsert failed', e.id, err);
@@ -279,6 +288,38 @@ async function pull(table: string, userId: string, lastSyncAt: string | null) {
   );
   return rows;
 }
+
+// ITEM 83 M2 (R6) — the writer's own default page dress.
+//
+// WHY THIS IS NOT PART OF /sync. Every collection /sync carries is a set of
+// records with ids and updated_at, reconciled last-writer-wins. `page_defaults`
+// is one singleton value on the user row with no id and no clock of its own —
+// forcing it into that shape would mean inventing a record type and a
+// timestamp for a field the writer edits from one place. A plain read/write
+// pair is the honest shape, and it rides the same `requireAuth` +
+// session-scoped `userId` the rest of this router already enforces.
+//
+// Read returns null when never set — the null↔undefined fixed point every
+// additive column in this codebase keeps: a writer who has never chosen
+// defaults is byte-identical to today, and the client falls back to the app's
+// own constants rather than to a server-invented object.
+syncRouter.get('/page-defaults', asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.session.userId as string;
+  const { rows } = await pool.query(`select page_defaults from users where id = $1`, [userId]);
+  res.json({ pageDefaults: rows[0]?.page_defaults ?? null });
+}));
+
+syncRouter.put('/page-defaults', asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.session.userId as string;
+  // The body is the settings object itself, or null to clear. Stored as-is:
+  // the shape is documented at migrate.ts's own column comment and mirrored in
+  // types/index.ts; the server does not re-validate a shape the client owns,
+  // exactly as `tutor`/`boxes`/`script` jsonb already work here.
+  const next = req.body?.pageDefaults ?? null;
+  await pool.query(`update users set page_defaults = $2::jsonb where id = $1`,
+    [userId, JSON.stringify(next)]);
+  res.json({ pageDefaults: next });
+}));
 
 syncRouter.post('/sync', asyncHandler(async (req: Request, res: Response) => {
   const userId = req.session.userId as string;

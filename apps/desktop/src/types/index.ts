@@ -269,7 +269,37 @@ export interface JournalEntry {
   // dirty set, server table, both mappers) — strictly MORE blast radius, not
   // cleaner (see the build report's S2 shape decision).
   planBoardId?: string;
+  // ITEM 83 M2 (R6) — the page's own sheet dress, set from the writer's
+  // defaults at birth and edited from the Page drawer's PAGE SETUP zone.
+  // Optional and absent (never null) on every page never dressed — the same
+  // grandfather fixed point planBoardId/tutor/origin keep, so an untouched
+  // page reads undefined and the app's own PAGE_SETTINGS_FALLBACK governs.
+  pageSettings?: PageSettings;
 }
+
+// ITEM 83 M2 (R6) — the sheet's dimension: what a page IS as paper, as
+// opposed to Revise's face+size, which is its VOICE (the F5 split, Nick's to
+// confirm). One shape serves both the per-page value and the per-user
+// default, because "set as my default" is literally a copy of the open page's
+// own settings — two shapes would let them drift.
+export interface PageSettings {
+  margins: 'normal' | 'narrow' | 'wide';
+  lineSpacing: number;
+  pageNumbers: { on: boolean; placement: 'bottom-center' | 'bottom-right' | 'top-right' };
+  headers: { on: boolean; text: string };
+  footers: { on: boolean; text: string };
+}
+
+// The app's own floor, used wherever a page carries no settings and no user
+// default exists. Deliberately the values the app already renders today, so
+// M2 changes nothing visually until a writer opens PAGE SETUP and chooses.
+export const PAGE_SETTINGS_FALLBACK: PageSettings = {
+  margins: 'normal',
+  lineSpacing: 1.6,
+  pageNumbers: { on: false, placement: 'bottom-center' },
+  headers: { on: false, text: '' },
+  footers: { on: false, text: '' },
+};
 
 // J4 — a Board's positioned content unit (I2/I3 realized): the first
 // fragments-under-Pages instance, designed fragment-compatible on purpose.
