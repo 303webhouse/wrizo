@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { firstLine } from '../store/entryText';
@@ -6,7 +6,7 @@ import { useSectionFold } from '../store/sectionFold';
 import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createQuickSprintProject, softDeleteEntry,
-  getJournalEntry, getOrCreateSystemBoard, saveJournalEntry,
+  getJournalEntry, getOrCreateSystemBoard, saveJournalEntry, pinPageToBoard,
 } from '../store/persistence';
 import { unbornHref } from '../store/unbornPage';
 import { setUserPageDefaults } from '../store/pageDefaults';
@@ -238,6 +238,10 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
   const { t } = useDeskLexicon();
   // PB1 (item 71) — no row until the first word.
   const newPage = () => navigate(unbornHref({ origin: 'loose' }));
+  // ITEM 83 M6 (R13.i/ii) — on a BOARD, the Page face is the board's own
+  // page-side hand: the sliver does not mount here (R13.iv), so New page and
+  // Place-page live in this drawer instead.
+  const onBoard = subject.entry.pageType === 'board';
   return (
     <>
       {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper —
@@ -248,6 +252,7 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
           {t('cascadePageNewPage')}
         </button>
       </div>
+      {onBoard && <PlacePageOnBoard boardId={subject.entry.id} />}
       <PageFace subject={subject} />
       {/* ITEM 83 M3 (R6) — the Page menu's charter: general page options
           governing the OPEN page. Sits between the page's own face and its
@@ -259,6 +264,70 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
           retired Move/Copy verb. */}
       <PlacesPanel entry={subject.entry} />
     </>
+  );
+}
+
+// ITEM 83 M6 (R13.ii) — PLACE PAGE ON BOARD.
+//
+// Nick's restructure: the board's PAGE drawer carries New page plus a
+// "Place page on board" list — recent pages, scrollable, sortable by
+// Date · Drawer · A–Z. Choosing one DERIVES it onto this board.
+//
+// MEMBERSHIP, NEVER FILING — the distinction PlacesPanel already keeps and
+// this list inherits: pinning a page onto a board changes where it APPEARS,
+// never where it LIVES. Nothing here writes projectId or origin.
+//
+// S13's precedent applies (the founder verdict routed to this arc): the verb
+// names the act. The heading says "Place page on board", not "Pages" — a bare
+// noun list in a drawer is exactly the GO-versus-PUT confusion the Places
+// Panel's own redesign (M7) exists to close, and this list would have
+// reproduced it one drawer over.
+type PlaceSort = 'date' | 'drawer' | 'az';
+
+function PlacePageOnBoard({ boardId }: { boardId: string }) {
+  const { t } = useDeskLexicon();
+  const [sort, setSort] = useState<PlaceSort>('date');
+  const [, force] = useReducer((n: number) => n + 1, 0);
+
+  const candidates = getJournalPages()
+    .filter(p => p.id !== boardId && p.pageType !== 'board')
+    .slice(0, 30);
+
+  const drawerNameOf = (p: JournalEntry): string => {
+    const proj = p.projectId ? getProjects().find(x => x.id === p.projectId) : null;
+    return proj?.title || t('placesLoose');
+  };
+  const titleOf = (p: JournalEntry): string => firstLine(p.text).slice(0, 60) || 'Untitled';
+
+  const sorted = [...candidates].sort((a, b) => {
+    if (sort === 'az') return titleOf(a).localeCompare(titleOf(b));
+    if (sort === 'drawer') return drawerNameOf(a).localeCompare(drawerNameOf(b)) || titleOf(a).localeCompare(titleOf(b));
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+
+  const place = (pageId: string) => { pinPageToBoard(pageId, boardId); force(); };
+
+  return (
+    <div className="wz-cascade-panel-body wz-place-page">
+      <div className="wz-cascade-panel-title">{t('placePageHeading')}</div>
+      <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('placePageSort')}>
+        {(['date', 'drawer', 'az'] as const).map(s => (
+          <button key={s} type="button" role="radio" aria-checked={sort === s}
+            className="wz-page-setup-chip" onClick={() => setSort(s)}>
+            {t(s === 'date' ? 'placeSortDate' : s === 'drawer' ? 'placeSortDrawer' : 'placeSortAZ')}
+          </button>
+        ))}
+      </div>
+      <div className="wz-place-page-list">
+        {sorted.length === 0 && <p className="wz-page-setup-note">{t('placePageEmpty')}</p>}
+        {sorted.map(p => (
+          <button key={p.id} type="button" className="wz-place-page-row" onClick={() => place(p.id)}>
+            <span className="wz-place-page-title">{titleOf(p)}</span>
+            <span className="wz-place-page-home">{drawerNameOf(p)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -2256,11 +2256,21 @@ export function BoardEditor({ id }: { id: string }) {
 
         <div style={{ height: 16 }} />
 
+        {/* ITEM 83 M6 (R13.iv) — THE TOOLS SLIVER DOES NOT MOUNT ON BOARDS.
+            Nick restructured the board's chrome in session: the board's acts
+            move into the cascade's own PAGE and PLAN faces, and the sliver —
+            which is the PAGE's hand — has nothing left to hold here. This is
+            ABSENCE, not a hidden mount: the `sliver` prop is simply not passed,
+            so DeskFrame renders no anchor at all (its own `{sliver && ...}`
+            guard), exactly the shape B1 S3 established for a system board's
+            Add action and PlacesPanel's own null return. A writer never meets
+            a grip that opens onto nothing. R14 then removed the page
+            instruments from card/board tools, so there is not even a foot left
+            to argue for keeping it. */}
         <DeskFrame
           pageKind="board"
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
-          sliver={<Sliver content={sliverContent} goalText="" />}
           // TU2 S4 — "Presence on Boards": the same room, following the same
           // prop pattern every other framed host already uses (entry/
           // project/pageText/pageKind — see PageEditor.tsx/JournalEntry.tsx/

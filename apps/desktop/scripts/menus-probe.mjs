@@ -63,7 +63,11 @@ const rect = (app, sel) => app.evalJs(
 // The paper: the actual sheet, not its column. The pre-wave defect was
 // precisely that these differ (SC1 S4 measured a 66-115px gap), so the probe
 // asks for the sheet the writer sees.
-const PAPER_SEL = '.mode-page, .board-canvas, .script-page';
+// The sheet the writer actually sees, per surface. `.script-sheet` (not
+// `.script-page`, which is the outer wrapper) is the screenplay's own paper —
+// index.css single-sources its geometry there for both the framed and legacy
+// branches. Asking for the wrapper measured a box the writer never sees.
+const PAPER_SEL = '.mode-page, .board-canvas, .script-sheet';
 // The dock/handle resolve to the wave's own markers FIRST and fall back to
 // the pre-wave classes. That fallback is deliberate: it is what lets this
 // probe run RED against today's tree (the sliver exists, and is not flush),
@@ -175,15 +179,19 @@ const SURFACES = {
   },
   board: async (app, w, h) => {
     await freshDesk(app, w, h);
-    // Seed through the app's own seam, never raw localStorage (AGENTS.md
-    // successor law: a raw row is invisible to the module-init cache and is
-    // erased by the next flush of that collection, from any source).
-    const made = await app.evalJs(`(() => {
-      const f = window.wrizoCreateJournalPage; if (!f) return null;
-      const p = f({ text: 'Menus probe board', pageType: 'board' }); return p && p.id ? p.id : null; })()`);
-    if (!made) return { skip: 'no window.wrizoCreateJournalPage seam for a board page' };
-    await app.evalJs(`location.hash = '#/page/${made}'`);
-    await app.waitFor(`!!document.querySelector('.board-canvas')`, { label: 'board surface' });
+    // Reach a board through the APP'S OWN DOOR, never a raw localStorage seed.
+    // `#/journal` is JournalBoardGate, which mints the Journal system board via
+    // getOrCreateSystemBoard — a real product path, so the row enters the
+    // module-init cache and no flush can erase it (AGENTS.md's successor law).
+    //
+    // An earlier draft called window.wrizoCreateJournalPage({pageType:'board'}).
+    // That seam takes NO ARGUMENTS — it hardcodes a journal-origin prose page —
+    // so the object was silently ignored and the probe waited for a
+    // `.board-canvas` on a prose page until it timed out. Passing options to a
+    // zero-arg function is invisible in JS; the diagnosis came from the
+    // waitFor's own diag dump showing a Free Write strip.
+    await app.evalJs(`location.hash = '#/journal'`);
+    await app.waitFor(`!!document.querySelector('.board-canvas')`, { label: 'board surface (Journal system board)' });
   },
 };
 

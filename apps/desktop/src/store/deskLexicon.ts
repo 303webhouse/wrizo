@@ -200,6 +200,11 @@ export type DeskTermId =
   | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftSpacing'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
+  // ITEM 83 M6 (R13.ii) — the board's Place-page list. The heading is a VERB
+  // PHRASE by S13's precedent: a bare noun list in a drawer reproduces the
+  // GO-versus-PUT confusion the Places redesign exists to close.
+  | 'placePageHeading' | 'placePageSort' | 'placeSortDate' | 'placeSortDrawer'
+  | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
   // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
   // Trash Board — the SAME "one term, every surface" shape
   // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
@@ -685,6 +690,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftAlignRight: 'Align right',
   draftConvertToScreenplay: 'Convert to Screenplay…',
   draftConvertToProse: 'Convert to Prose…',
+  placePageHeading: 'Place page on board',
+  placePageSort: 'Sort recent pages',
+  placeSortDate: 'Date',
+  placeSortDrawer: 'Drawer',
+  placeSortAZ: 'A–Z',
+  placePageEmpty: 'No pages yet.',
+  planNewCard: '＋ New card',
+  planFitToContent: 'Fit to content',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',

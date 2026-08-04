@@ -4640,3 +4640,19 @@ a:focus-visible,
 /* The foot's Typewriter instrument marks its ON state in olive, never brass
    (R7) — the same where-you-are law the drawer's toggles now follow. */
 .wz-sliver-instruments-btn[data-on='true']{ color:var(--accent-rest); }
+
+/* ITEM 83 M6 (R13.ii) — the board's Place-page list. Scrollable but bounded:
+   a limit STOPS, it never relocates, so the list caps its own height rather
+   than pushing the drawer's other zones off. */
+.wz-place-page{ display:flex; flex-direction:column; gap:6px; }
+.wz-place-page-list{ display:flex; flex-direction:column; max-height:240px; overflow-y:auto; }
+.wz-place-page-row{ display:flex; align-items:baseline; gap:8px; width:100%;
+  background:none; border:0; border-bottom:1px solid var(--ink-border);
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px;
+  padding:6px 2px; cursor:pointer; text-align:left; transition:.15s; }
+.wz-place-page-row:last-child{ border-bottom:none; }
+.wz-place-page-row:hover{ color:var(--text-hi); }
+.wz-place-page-row:active{ color:var(--brass); }
+.wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+.wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
