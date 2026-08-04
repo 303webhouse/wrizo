@@ -300,6 +300,24 @@ post-vacation, or earlier only on Nick's explicit freeze-lift word.
 Default: **IN** — the opened card's Tools carry link and tag rows beside
 styling. One word drops them.
 
+And, on the opened-card pair:
+
+> Quick fix: The TOOL menu on Cards and Boards should NOT include any of
+> the Page settings (Typewriter mode, Progress, or Full Screen). Also, the
+> side menu of a card can extend vertically beyond the height of the card
+> if needed for the user to see all of the available options in the menu.
+> The TOOL menu should be centered to whatever size the card is when it is
+> opened.
+
+**R14 · THE PAGE INSTRUMENTS STAY ON PAGES.** Card and board TOOL menus
+carry **no Typewriter, Progress, or Full Screen** — R12's universal foot is
+hereby scoped to its true subject: the page-writing surfaces (prose and
+screenplay). Card tools and any specialty-board TOOL tabs to come carry no
+foot. And the opened card's side menu is **centered to the card's size,
+whatever it is, and may extend vertically beyond the card's height** when
+its options need the room — the dock is the card's companion, not its
+prisoner. The opened-card pair re-renders accordingly.
+
 ---
 
 ## §3 · FLAGS — one word each; the desk proceeds on the stated default
