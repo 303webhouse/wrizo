@@ -4656,3 +4656,10 @@ a:focus-visible,
 .wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 .wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
+
+/* ITEM 83 M7 (PP2) — THE STATE SPEAKS FIRST. The page's current home wears a
+   1px olive left hairline and hi text, so the Home zone reads as
+   "where it is → where it could go" instead of a menu of doors. Static, no
+   motion; olive at rest, never orange (R7's ceiling holds in cascade chrome). */
+.wz-places-radio[data-current='true']{
+  color:var(--text-hi); box-shadow:inset 1px 0 0 0 var(--accent-rest); }

@@ -205,6 +205,9 @@ export type DeskTermId =
   // GO-versus-PUT confusion the Places redesign exists to close.
   | 'placePageHeading' | 'placePageSort' | 'placeSortDate' | 'placeSortDrawer'
   | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
+  // ITEM 83 M7 (PP1) — the Home zone's heading, which until now existed only
+  // as an aria-label the eye could not hear.
+  | 'placesHomeHeading'
   // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
   // Trash Board — the SAME "one term, every surface" shape
   // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
@@ -698,6 +701,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   placePageEmpty: 'No pages yet.',
   planNewCard: '＋ New card',
   planFitToContent: 'Fit to content',
+  // ITEM 83 M7 (PP1) — a VERB PHRASE naming the act, not a noun. The old
+  // accessible name was the bare noun 'Home'; promoted to the eye it would
+  // have read as a destination, which is the confusion being closed.
+  placesHomeHeading: 'This page lives in…',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',
@@ -713,11 +720,18 @@ const CANONICAL: Record<DeskTermId, string> = {
   placesTitle: 'Places',
   placesHomeZoneLabel: 'Home',
   placesLoose: 'Loose',
-  placesNewDrawer: '+ New Drawer',
+  // ITEM 83 M7 (PP4) — names the act, not just the object: this is a
+  // put-family gesture (create the place AND file here in one move), and it
+  // sits among put-family rows. The flow itself is unchanged.
+  placesNewDrawer: 'File to a new drawer…',
   placesNewDrawerPlaceholder: 'Drawer name',
   placesNewDrawerCreate: 'Create',
   placesNewDrawerCancel: 'Cancel',
-  placesBoardsTitle: 'Boards',
+  // ITEM 83 M7 (PP1) — the Boards zone already had a visible heading, but it
+  // was the bare noun 'Boards' while its ACCESSIBLE name was the honest
+  // 'Boards this page can join'. Same defect, milder: the eye got the noun,
+  // the ear got the sentence. Standing memberships, said plainly.
+  placesBoardsTitle: 'Pinned to boards…',
   placesBoardsZoneLabel: 'Boards this page can join',
   placesBoardsEmpty: 'No boards yet.',
   drawersKindBoard: 'Board',
