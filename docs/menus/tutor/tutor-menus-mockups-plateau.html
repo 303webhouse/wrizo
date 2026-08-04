@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITEM 84 · Phase 3 Mockups — the Tutor's Menu, Plateau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Plateau tokens — verbatim: plateau-foundations.md + shipped index.css @ main */
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#f7efe1;
+    --brass:#FF9800; --brass-press:#e88900; --olive:#96a05a;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --font-ui:'Figtree',sans-serif; --font-prose:'Crimson Pro',serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--ground); color:var(--text-mid); font-family:var(--font-ui);
+        padding:28px 24px 48px; }
+  /* ---------- mockup chrome (outside the panels; quiet, editorial) ---------- */
+  .doc-head{ max-width:920px; margin:0 auto 6px; }
+  .doc-title{ font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--text-hi); }
+  .doc-note{ font-size:11.5px; line-height:1.55; color:var(--text-low); max-width:920px;
+             margin:6px auto 0; }
+  .doc-note b{ color:var(--text-mid); font-weight:500; }
+  .mode{ max-width:920px; margin:34px auto 0; }
+  .mode-eyebrow{ font-size:10px; letter-spacing:2.5px; text-transform:uppercase;
+                 color:var(--olive); border-bottom:1px solid var(--line);
+                 padding-bottom:5px; margin-bottom:14px; }
+  .mode-eyebrow span{ color:var(--text-low); letter-spacing:1px; text-transform:none; }
+  .pair{ display:flex; gap:44px; flex-wrap:wrap; }
+  .variant{ width:300px; }
+  .variant-caption{ margin-top:9px; font-size:10.5px; line-height:1.5; color:var(--text-low); }
+  .variant-caption b{ color:var(--text-mid); font-weight:500; letter-spacing:.5px; }
+  .specimen{ font-size:8.5px; letter-spacing:1px; color:var(--text-low); text-transform:uppercase;
+             border:1px solid var(--line); padding:0 3px; margin-left:5px; vertical-align:1px; }
+  /* ---------- the panel — true 300px, 640px height budget (768-floor) ---------- */
+  .panel{ width:300px; height:640px; background:var(--panel); border:1px solid var(--line);
+          display:flex; flex-direction:column; overflow:hidden; }
+  .p-head{ display:flex; align-items:center; justify-content:space-between;
+           padding:10px 12px 9px; border-bottom:1px solid var(--line); }
+  .p-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+  .p-dock{ font-size:9.5px; color:var(--text-low); letter-spacing:.5px; }
+  .p-body{ flex:1; overflow-y:auto; padding:2px 0 8px; }
+  /* section heading — G5's candidate: the engraved resting-ember */
+  .s-head{ display:flex; align-items:center; justify-content:space-between;
+           padding:9px 12px 7px; cursor:default; }
+  .s-name{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-press); }
+  .s-tog{ font-size:10px; color:var(--text-low); }
+  .s-body{ padding:0 12px 10px; }
+  .sect{ border-bottom:1px solid var(--line); }
+  .empty{ font-size:12px; color:var(--text-low); font-family:var(--font-ui); }
+  .lens-item{ font-size:12.5px; color:var(--text-mid); line-height:1.5; }
+  .note{ font-size:10.5px; color:var(--text-low); margin-top:4px; line-height:1.45; }
+  /* conversation */
+  .msgs{ min-height:52px; display:flex; align-items:center; }
+  .chips{ display:flex; flex-direction:column; gap:6px; margin:2px 0 10px; }
+  .chip{ font-family:var(--font-prose); font-size:13.5px; line-height:1.35; text-align:left;
+         color:var(--text-mid); background:none; border:1px solid var(--line);
+         border-left:2px solid var(--olive); padding:6px 9px; cursor:pointer; }
+  .chip:hover{ color:var(--brass); border-color:var(--brass); border-left-color:var(--brass); }
+  .chip:active{ color:var(--brass-press); border-color:var(--brass-press);
+                border-left-color:var(--brass-press); }
+  .chip[disabled]{ opacity:.45; cursor:default; }
+  .chip[disabled]:hover{ color:var(--text-mid); border-color:var(--line);
+                         border-left-color:var(--olive); }
+  .composer{ display:flex; gap:7px; align-items:stretch; }
+  .composer input{ flex:1; background:var(--ground); border:1px solid var(--line);
+                   color:var(--text-hi); font-family:var(--font-prose); font-size:13.5px;
+                   padding:7px 9px; min-width:0; }
+  .composer input::placeholder{ color:var(--text-low); }
+  .send{ font-family:var(--font-ui); font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+         background:none; border:1px solid var(--line); color:var(--olive);
+         padding:0 11px; cursor:pointer; }
+  .send:hover{ color:var(--brass); border-color:var(--brass); }
+  .send:active{ color:var(--brass-press); border-color:var(--brass-press); }
+  .doc-foot{ max-width:920px; margin:40px auto 0; font-size:10.5px; line-height:1.6;
+             color:var(--text-low); border-top:1px solid var(--line); padding-top:12px; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="doc-head"><div class="doc-title">Item 84 · Phase 3 — the Tutor's menu · Plateau mockups</div></div>
+<p class="doc-note"><b>Six panels, three pairs; each pair is one lock-sheet choice.</b> Panel interior at true
+300px natural width (FX18; interior identical in margin and overlay regimes, so one rendering serves both
+reference widths); height shown at a 640px budget ≈ the 768-floor paper column — in-app, the measure-effect
+owns geometry. Tokens verbatim from plateau-foundations.md and shipped index.css. All strings verbatim from
+deskLexicon; chip texts verbatim from Passes 1–3. Section headings render G5's candidate — the engraved
+resting-ember (--brass-press) — where shipped heads rest text-mid; chips and Send ride olive-rest /
+brass-hover / press. Chips set in Crimson Pro: a chip becomes the writer's own words (lock-checkable).
+The meter is absent everywhere below: it exists only after a completed reply. Lens bodies marked
+<span class="specimen">specimen</span> are placeholder content, not proposals.</p>
+
+<!-- ============================== FREE WRITE ============================== -->
+<div class="mode">
+  <div class="mode-eyebrow">Free Write <span>· TFW1–TFW6 · the choice: three asks, or the zero roster</span></div>
+  <div class="pair">
+
+    <div class="variant">
+      <div class="panel">
+        <div class="p-head"><span class="p-title">The Tutor</span><span class="p-dock">Close, keep dock</span></div>
+        <div class="p-body">
+          <div class="sect"><div class="s-head"><span class="s-name">Talk it through</span></div>
+            <div class="s-body">
+              <div class="msgs"><span class="empty">Nothing said yet.</span></div>
+              <div class="chips">
+                <button class="chip">Where's the energy in what I just wrote?</button>
+                <button class="chip">What thread could I pull next?</button>
+                <button class="chip">Ask me something that keeps me moving.</button>
+              </div>
+              <div class="composer"><input placeholder="Ask a question…"><button class="send">Send</button></div>
+            </div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Consistency</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Structure</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Fragments</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">The book's Bible</span><span class="s-tog">+</span></div></div>
+        </div>
+      </div>
+      <p class="variant-caption"><b>A · THE THREE ASKS (TFW3)</b> — chips stage into the composer, editable, Send-fired;
+      lenses rest (TFW5). Lock word keeps this roster.</p>
+    </div>
+
+    <div class="variant">
+      <div class="panel">
+        <div class="p-head"><span class="p-title">The Tutor</span><span class="p-dock">Close, keep dock</span></div>
+        <div class="p-body">
+          <div class="sect"><div class="s-head"><span class="s-name">Talk it through</span></div>
+            <div class="s-body">
+              <div class="msgs"><span class="empty">Nothing said yet.</span></div>
+              <div class="composer"><input placeholder="Ask a question…"><button class="send">Send</button></div>
+            </div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Consistency</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Structure</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Fragments</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">The book's Bible</span><span class="s-tog">+</span></div></div>
+        </div>
+      </div>
+      <p class="variant-caption"><b>B · THE ZERO ROSTER (TFW1)</b> — the funnel's barest counsel: composer alone.
+      Lock word strikes the Free Write chips entirely; the mechanic survives for Draft.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================ DRAFT ================================ -->
+<div class="mode">
+  <div class="mode-eyebrow">Draft <span>· TD1–TD7 · the choice: Consistency wakes, or rests</span></div>
+  <div class="pair">
+
+    <div class="variant">
+      <div class="panel">
+        <div class="p-head"><span class="p-title">The Tutor</span><span class="p-dock">Close, keep dock</span></div>
+        <div class="p-body">
+          <div class="sect"><div class="s-head"><span class="s-name">Talk it through</span></div>
+            <div class="s-body">
+              <div class="msgs"><span class="empty">Nothing said yet.</span></div>
+              <div class="chips">
+                <button class="chip">Where does this drag?</button>
+                <button class="chip">What's load-bearing here — and what could go?</button>
+                <button class="chip">Where do I lose the thread?</button>
+                <button class="chip" disabled title="Select a stretch on the page first (TD4 — mounts only behind its ratified sentence)">Look at just this stretch — what's it doing?</button>
+              </div>
+              <div class="composer"><input placeholder="Ask a question…"><button class="send">Send</button></div>
+            </div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Consistency</span><span class="s-tog">−</span></div>
+            <div class="s-body"><div class="lens-item">Mara / Marra — 2 pages<span class="specimen">specimen</span></div>
+              <div class="lens-item">The Long Field / the long field — 3 pages<span class="specimen">specimen</span></div></div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Structure</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Fragments</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">The book's Bible</span><span class="s-tog">+</span></div></div>
+        </div>
+      </div>
+      <p class="variant-caption"><b>A · CONSISTENCY WAKES (TD3 + TD5)</b> — four asks, the fourth disabled-visible
+      until selection + its sentence (TD4, G3's lawful species); comparison awake by default.</p>
+    </div>
+
+    <div class="variant">
+      <div class="panel">
+        <div class="p-head"><span class="p-title">The Tutor</span><span class="p-dock">Close, keep dock</span></div>
+        <div class="p-body">
+          <div class="sect"><div class="s-head"><span class="s-name">Talk it through</span></div>
+            <div class="s-body">
+              <div class="msgs"><span class="empty">Nothing said yet.</span></div>
+              <div class="chips">
+                <button class="chip">Where does this drag?</button>
+                <button class="chip">What's load-bearing here — and what could go?</button>
+                <button class="chip">Where do I lose the thread?</button>
+                <button class="chip" disabled title="Select a stretch on the page first (TD4 — mounts only behind its ratified sentence)">Look at just this stretch — what's it doing?</button>
+              </div>
+              <div class="composer"><input placeholder="Ask a question…"><button class="send">Send</button></div>
+            </div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Consistency</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Structure</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Fragments</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">The book's Bible</span><span class="s-tog">+</span></div></div>
+        </div>
+      </div>
+      <p class="variant-caption"><b>B · CONSISTENCY RESTS (TD5's revert)</b> — same roster, one notch quieter;
+      the lens opens by press and memory keeps the writer's choice.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================ REVISE =============================== -->
+<div class="mode">
+  <div class="mode-eyebrow">Revise <span>· TR1–TR7 · the choice: full wake, or one notch quiet · the Reading absent by law until its sentence (TR3, G3)</span></div>
+  <div class="pair">
+
+    <div class="variant">
+      <div class="panel">
+        <div class="p-head"><span class="p-title">The Tutor</span><span class="p-dock">Close, keep dock</span></div>
+        <div class="p-body">
+          <div class="sect"><div class="s-head"><span class="s-name">Talk it through</span></div>
+            <div class="s-body">
+              <div class="msgs"><span class="empty">Nothing said yet.</span></div>
+              <div class="chips">
+                <button class="chip">Ask me what this piece is trying to be.</button>
+                <button class="chip">Ask me where I'm avoiding looking.</button>
+                <button class="chip">Ask me which Bible facts this draft has drifted from.</button>
+              </div>
+              <div class="composer"><input placeholder="Ask a question…"><button class="send">Send</button></div>
+            </div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Consistency</span><span class="s-tog">−</span></div>
+            <div class="s-body"><div class="lens-item">Mara / Marra — 2 pages<span class="specimen">specimen</span></div></div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Structure</span><span class="s-tog">−</span></div>
+            <div class="s-body"><div class="lens-item">Home: The Long Field · Chapter Three<span class="specimen">specimen</span></div></div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Fragments</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">The book's Bible</span><span class="s-tog">+</span></div></div>
+        </div>
+      </div>
+      <p class="variant-caption"><b>A · FULL WAKE (TR2 + TR5)</b> — the Interview mounts; Consistency and Structure
+      awake at the bench ceiling exactly. Judgment's room, furnished.</p>
+    </div>
+
+    <div class="variant">
+      <div class="panel">
+        <div class="p-head"><span class="p-title">The Tutor</span><span class="p-dock">Close, keep dock</span></div>
+        <div class="p-body">
+          <div class="sect"><div class="s-head"><span class="s-name">Talk it through</span></div>
+            <div class="s-body">
+              <div class="msgs"><span class="empty">Nothing said yet.</span></div>
+              <div class="chips">
+                <button class="chip">Ask me what this piece is trying to be.</button>
+                <button class="chip">Ask me where I'm avoiding looking.</button>
+                <button class="chip">Ask me which Bible facts this draft has drifted from.</button>
+              </div>
+              <div class="composer"><input placeholder="Ask a question…"><button class="send">Send</button></div>
+            </div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Consistency</span><span class="s-tog">−</span></div>
+            <div class="s-body"><div class="lens-item">Mara / Marra — 2 pages<span class="specimen">specimen</span></div></div>
+          </div>
+          <div class="sect"><div class="s-head"><span class="s-name">Structure</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">Fragments</span><span class="s-tog">+</span></div></div>
+          <div class="sect"><div class="s-head"><span class="s-name">The book's Bible</span><span class="s-tog">+</span></div></div>
+        </div>
+      </div>
+      <p class="variant-caption"><b>B · ONE NOTCH QUIET (TR5's alternative)</b> — Structure rests; the Interview
+      unchanged. The same room with one lamp fewer.</p>
+    </div>
+
+  </div>
+</div>
+
+<p class="doc-foot">ITEM 84 · Phase 3 · 2026-08-03 · the item-84 desk. Candidates only — nothing here locks
+before Nick's word. Geometry note: at the 640px budget, variant RV-A (the at-ceiling case) renders without
+scroll — the bench sentence holds. Hover and press states are live in this file (olive → brass → ember);
+the disabled TD4 chip does not respond, by law. What the lock sheet asks of each pair is printed beneath it.</p>
+
+</body>
+</html>
