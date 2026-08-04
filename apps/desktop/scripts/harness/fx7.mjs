@@ -302,10 +302,32 @@ await withHarness(async (app) => {
     const [strip, panel] = await Promise.all([rectOf(app, '.desk-frame-strip'), rectOf(app, '.wz-cascade-panel')]);
     const frameGap = await app.evalJs("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-gap'))");
     const gap = panel.left - strip.right;
-    ok(`S3 @${w}px: the cascade panel sits genuinely FLUSH against the strip's own right edge — gap equals exactly --frame-gap (${frameGap}px), never an overlap and never a wider drift`,
-      Math.abs(gap - frameGap) < 1, JSON.stringify({ gap, frameGap, strip, panel }));
-    ok(`S3 @${w}px: no overlap — the panel's own left edge never sits before the strip's own right edge`,
-      panel.left >= strip.right, JSON.stringify({ panelLeft: panel.left, stripRight: strip.right }));
+    // ---- PARKED — SUPERSEDED by item 83 M1 (R10.i), 2026-08-04 ----------
+    // The two checks below are kept VERBATIM, exactly as FX7 S3 wrote them,
+    // and are no longer run. They assert `gap === --frame-gap (28px)`, which
+    // was FX7's own correct intent: the panel flush against the strip PLUS
+    // one deliberate gap. Nick then ruled that gap away twice on rendered
+    // screenshots ("there is still a large gap between the left menu strip
+    // and the opened Page tab"), and R10(i) made it law — "an open drawer
+    // sits FLUSH against what it opened from." The successor assertions
+    // immediately below assert the NEW law (gap === 0) at the same three
+    // widths, so coverage is not lost, only re-aimed. Live successor
+    // instrument: scripts/menus-probe.mjs ("cascade panel flush at rail").
+    //
+    //   ok(`S3 @${w}px: the cascade panel sits genuinely FLUSH against the strip's own right edge — gap equals exactly --frame-gap (${frameGap}px), never an overlap and never a wider drift`,
+    //     Math.abs(gap - frameGap) < 1, JSON.stringify({ gap, frameGap, strip, panel }));
+    //   ok(`S3 @${w}px: no overlap — the panel's own left edge never sits before the strip's own right edge`,
+    //     panel.left >= strip.right, JSON.stringify({ panelLeft: panel.left, stripRight: strip.right }));
+    // --------------------------------------------------------------------
+    ok(`S3 @${w}px [R10.i successor]: the cascade drawer sits FLUSH ON the strip — zero gap, the --frame-gap term retired from .desk-frame-cascade-anchor`,
+      Math.abs(gap) < 0.6, JSON.stringify({ gap, retiredFrameGap: frameGap, strip, panel }));
+    // Overlap tolerance is a HALF PIXEL, not zero: the anchor's `left` is a
+    // calc() over --strip-width/--frame-host-pad-x and lands on a subpixel
+    // boundary at some widths (measured -0.015625px at 1280 — 1/64th of a
+    // pixel, invisible, and not an overlap in any meaningful sense). An
+    // exact `>=` here would red the suite on a rounding artifact.
+    ok(`S3 @${w}px [R10.i successor]: no meaningful overlap — the drawer's left edge never crosses the strip's right edge beyond a subpixel rounding artifact`,
+      panel.left >= strip.right - 0.5, JSON.stringify({ panelLeft: panel.left, stripRight: strip.right, delta: panel.left - strip.right }));
   }
   // The Plan category's own survey (layer 3, a DIFFERENT cascade panel
   // component) rides the SAME anchor — one fix, both layers, confirmed
@@ -317,8 +339,18 @@ await withHarness(async (app) => {
   await sleep(150);
   const [stripForSurvey, planPanel] = await Promise.all([rectOf(app, '.desk-frame-strip'), rectOf(app, '.wz-cascade-panel')]);
   const frameGapNow = await app.evalJs("parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame-gap'))");
-  ok('S3: the Plan category\'s own panel (a distinct cascade tenant) is ALSO flush against the strip — confirms the fix lives on the shared anchor, not a one-off per-panel patch',
-    Math.abs((planPanel.left - stripForSurvey.right) - frameGapNow) < 1, JSON.stringify({ planPanel, stripForSurvey }));
+  // ---- PARKED — SUPERSEDED by item 83 M1 (R10.i), 2026-08-04 ----------
+  // Kept verbatim; same reasoning as the two parked checks above. Its point
+  // — that the fix lives on the SHARED anchor, not a per-panel patch — is
+  // preserved exactly by the successor beneath it, which makes the same
+  // cross-tenant claim against the new zero-gap law.
+  //
+  //   ok('S3: the Plan category\'s own panel (a distinct cascade tenant) is ALSO flush against the strip — confirms the fix lives on the shared anchor, not a one-off per-panel patch',
+  //     Math.abs((planPanel.left - stripForSurvey.right) - frameGapNow) < 1, JSON.stringify({ planPanel, stripForSurvey }));
+  // --------------------------------------------------------------------
+  ok('S3 [R10.i successor]: the Plan category\'s own panel (a distinct cascade tenant) is ALSO flush ON the strip — the zero-gap law lives on the shared anchor, not a one-off per-panel patch',
+    Math.abs(planPanel.left - stripForSurvey.right) < 0.6,
+    JSON.stringify({ planPanel, stripForSurvey, retiredFrameGap: frameGapNow }));
 
   // ==========================================================================
   // S4 — the systemic theme-aware scrollbar restyle. Extends the Plateau

@@ -3333,7 +3333,12 @@ a:focus-visible,
    sliver's eyebrow labels (READING/STRUCTURE/CAPTURE/etc.) are
    informational, not evental: olive marks where you are, orange marks what
    you do, and an eyebrow label is neither — it's just quiet. */
-.wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* item 83 M1 (R7, "menus rest olive") — Nick's word: "the accent color on
+   the menus should be the olive green, not brass." The engraved zone heading
+   is the menus' one resting-accent site (Pass 0's G5, as amended by R7 from
+   the ember to the olive register); it was --text-mid, which read as body
+   copy rather than an engraving. */
+.wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
 .wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
 .wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
 /* AB4 S5 — "Add card," the board sliver's one non-toggle tool: a real
@@ -3373,8 +3378,14 @@ a:focus-visible,
   border:1px solid var(--ink-border-strong); border-radius:0; background:var(--ink-950); transition:.15s; }
 .wz-sliver-toggle-switch::after{ content:''; position:absolute; top:1px; left:1px; width:12px; height:12px;
   border-radius:50%; background:var(--text-low); transition:.15s; }
-.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:var(--brass); border-color:var(--brass); }
-.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ left:13px; background:var(--on-brass); }
+/* item 83 M1 (R7) — an ON toggle is a WHERE-YOU-ARE state, not an act, so it
+   rests olive. This was the menus' most literal breach of "no resting orange":
+   a brass-filled switch sat lit for the whole session on every page with a
+   toggle on. Olive marks state, brass stays evental (the :active flash, F7's
+   retained default). The knob rides --ink-950 for contrast on olive, where it
+   previously used --on-brass. */
+.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ left:13px; background:var(--ink-950); }
 
 /* The Structure picker (S4) — a two-way segmented control, Prose | Screenplay.
    FX1 S6 — the active state was a solid brass fill (an evental treatment for
@@ -3675,7 +3686,13 @@ a:focus-visible,
 .wz-strip-item{ display:flex; flex-direction:column; align-items:center; gap:3px;
   width:100%; padding:10px 4px; background:none; border:0; border-left:2px solid transparent; cursor:pointer;
   color:var(--text-hi); font-family:var(--font-ui); transition:.15s; }
-.wz-strip-item:hover{ color:var(--brass); background:var(--ink-900); }
+/* item 83 M1 (R7) — hover is not an act. The two-regime law the menus now
+   run: olive marks where you are, brass marks what you DO — and "what you do"
+   is the press, not the approach. Hover lifts to --text-hi (the mockups' own
+   `.row:hover`); the brass moves to :active, where the founding invariant's
+   sub-second flash belongs (F7 default: the flash stays). */
+.wz-strip-item:hover{ color:var(--text-hi); background:var(--ink-900); }
+.wz-strip-item:active{ color:var(--brass); }
 /* Olive marks the OPEN category (S1: "olive on the open category") — the
    same lawful --accent-rest-not-brass pattern every other where-you-are
    marker in this app already uses (DeskRail's own .desk-rail-item.active,
@@ -3762,8 +3779,22 @@ a:focus-visible,
      centering has pushed the stage away from the strip's fixed screen
      position, landing this anchor's screen-left exactly on the strip's
      own screen-right + one --frame-gap, at every viewport. */
+  /* SUPERSEDED IN ONE TERM — item 83 M1 (R10.i, "flush drawers"). FX7 S3's
+     derivation above stands verbatim and is still the reason this anchor
+     cancels the grid's centering at all; only its DESTINATION changes.
+     Nick, twice, on rendered screenshots: "there is still a large gap
+     between the left menu strip and the opened Page tab." Measured on this
+     tree before the change (menus-probe, prose, 1366 AND 1680): strip.right
+     = 84.0, panel.left = 112.0 — a 28.0px gap, i.e. exactly the
+     `+ var(--frame-gap)` term below. FX7's "flush" meant flush-to-strip
+     PLUS one gap, which was that ticket's intent; R10(i) retires the gap
+     for drawers ("an open drawer sits FLUSH against what it opened from").
+     The term is dropped, nothing else. The anchor stays pure layout math
+     over the SAME two tokens the strip's own rule uses (`--strip-width`,
+     `--frame-host-pad-x`, .desk-frame-strip above) — one source of truth,
+     so this cannot drift from the strip it targets. */
   --fx7-cascade-grid-margin: max(0px, calc((100vw - 2 * var(--frame-host-pad-x) - var(--frame-max)) / 2));
-  left: calc(var(--strip-width) + var(--frame-gap) - var(--frame-host-pad-x) - var(--fx7-cascade-grid-margin));
+  left: calc(var(--strip-width) - var(--frame-host-pad-x) - var(--fx7-cascade-grid-margin));
   display:flex; align-items:stretch; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
   /* Same canonical-half-width formula .desk-frame-sliver-anchor already
@@ -3788,6 +3819,12 @@ a:focus-visible,
   height:100%; overflow-y:auto; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md);
   margin-right:10px;
+  /* item 83 M1 (R10.i) — the drawer now sits FLUSH on the rail, so the seam
+     is the rail's own border-right; a border-left here would paint a second
+     1px line against it and read as a hairline gap at exactly the join the
+     ruling was written to close. The left corners square off for the same
+     reason: a radius at a flush seam is a visible notch. */
+  border-left:none; border-top-left-radius:0; border-bottom-left-radius:0;
   opacity:1; transition:width 180ms ease, opacity 180ms ease, margin-right 180ms ease, border-width 180ms ease;
 }
 /* The dock's own close animation (T5, the canon's third ratification
@@ -3805,7 +3842,9 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){ .wz-cascade-panel{ transition:none; } }
 .wz-cascade-panel-head{ display:flex; align-items:center; justify-content:space-between; gap:8px;
   padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
-.wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* item 83 M1 (R7) — the cascade drawer's engraved heading, same register as
+   .wz-sliver-h above: one accent site per menu, olive, at rest. */
+.wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
 /* The dock's own quiet close affordance (S2: "a quiet close affordance") —
    text-scale, never brass (this is chrome, not an evental action). */
 .wz-cascade-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);

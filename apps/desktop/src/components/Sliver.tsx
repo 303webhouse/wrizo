@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
 import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
@@ -154,15 +155,31 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // item 83 M1 (R9/R11) — the two-drawer law. Opening announces itself; the
+  // store answers whether the cascade must yield, and does the measuring (see
+  // store/menusDrawers.ts on why a POLICY may measure where an anchor may not).
+  // Closing is announced too, so the store never believes a drawer is open
+  // after the writer has shut it.
+  const toggleOpen = () => setOpen(o => {
+    const next = !o;
+    if (next) requestOpen('tools');   // the store closes the cascade if the band is short
+    else noteClosed('tools');
+    return next;
+  });
+
+  // Register this drawer's own close path, so an exclusion handoff shuts it
+  // exactly the way the writer's own click would.
+  useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '/' || !(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
-      setOpen(o => !o);
+      toggleOpen();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  });
 
   // Review fix (post-CD1) — mirrors ModeStage's own pre-existing "opt-in
   // session timer" semantic (`firstWriteRef`: elapsed since the FIRST
@@ -188,9 +205,15 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
 
   return (
-    <div className="wz-sliver" ref={rootRef} data-open={open ? 'true' : 'false'}>
+    // item 83 M1 — the wave's own contract markers. scripts/menus-probe.mjs
+    // binds to these, not to the `wz-` classes, so the acceptance instrument
+    // keeps testing the RULED INVARIANT (the dock's right edge is the paper's
+    // left edge; the handle rides the drawer's left) even if the class names
+    // are refactored later. Behaviour-free attributes: nothing styles them.
+    <div className="wz-sliver" ref={rootRef} data-open={open ? 'true' : 'false'} data-menus-dock="">
       <button
         type="button"
+        data-menus-handle=""
         className="wz-sliver-grip"
         aria-expanded={open}
         aria-label={open ? t('sliverClose') : t('sliverOpen')}
