@@ -2272,21 +2272,29 @@ export function BoardEditor({ id }: { id: string }) {
 
         <div style={{ height: 16 }} />
 
-        {/* ITEM 83 M6 (R13.iv) — THE TOOLS SLIVER DOES NOT MOUNT ON BOARDS.
-            Nick restructured the board's chrome in session: the board's acts
-            move into the cascade's own PAGE and PLAN faces, and the sliver —
-            which is the PAGE's hand — has nothing left to hold here. This is
-            ABSENCE, not a hidden mount: the `sliver` prop is simply not passed,
-            so DeskFrame renders no anchor at all (its own `{sliver && ...}`
-            guard), exactly the shape B1 S3 established for a system board's
-            Add action and PlacesPanel's own null return. A writer never meets
-            a grip that opens onto nothing. R14 then removed the page
-            instruments from card/board tools, so there is not even a foot left
-            to argue for keeping it. */}
+        {/* ITEM 83 M11 — R13.iv IS DEFERRED, AND THIS IS WHY.
+            M6 removed the board's Tools sliver on R13.iv ("no Tools sliver on
+            boards"), because R13 moves the board's acts into the cascade's own
+            PAGE and PLAN faces. The Place-page list (R13.ii) was built; the
+            ACTS WERE NOT RE-HOMED. The sliver was the only home for Add card,
+            New page card, Existing page…, From a deck… and the
+            connections-footer toggle, so removing it deleted real capability
+            rather than relocating it — and the suite said so immediately, in
+            ten separate files (fx13, b1, b2, b3, fx4, fx5, fx6, fx7 S9, m2,
+            m4), every one of them reaching for a board tool that no longer
+            existed.
+            Implementing half of a ruling is worse than deferring it: the
+            ruling says the acts MOVE, and until they have somewhere to move
+            to, the sliver is where they live. Restored deliberately, with the
+            harnesses as the evidence. R13.iv should land in one ticket
+            TOGETHER with the Plan face's `＋ New card` and the rest — the
+            absence and the new home in the same commit, so no state of the
+            tree is ever missing a board's own tools. */}
         <DeskFrame
           pageKind="board"
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
+          sliver={<Sliver content={sliverContent} goalText="" />}
           // TU2 S4 — "Presence on Boards": the same room, following the same
           // prop pattern every other framed host already uses (entry/
           // project/pageText/pageKind — see PageEditor.tsx/JournalEntry.tsx/
