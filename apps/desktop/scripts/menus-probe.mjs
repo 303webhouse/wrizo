@@ -67,7 +67,15 @@ const rect = (app, sel) => app.evalJs(
 // `.script-page`, which is the outer wrapper) is the screenplay's own paper —
 // index.css single-sources its geometry there for both the framed and legacy
 // branches. Asking for the wrapper measured a box the writer never sees.
-const PAPER_SEL = '.mode-page, .board-canvas, .script-sheet';
+// On a board the sheet the writer sees — and the box the dock is anchored
+// against — is `.board-canvas-wrap`, which carries the 1px border;
+// `.board-canvas` is the element INSIDE that border. Measuring the inner one
+// reported a 1.00px gap at both widths that was simply the border itself
+// (proven: wrap.left 133.0, canvas.left 134.0, dock.right 133.0 — flush on the
+// wrapper, one pixel short of the canvas). Third time this probe has asked for
+// the wrong box; the rule that keeps catching it is "name the box the writer
+// sees, not the nearest one with a matching class".
+const PAPER_SEL = '.mode-page, .board-canvas-wrap, .script-sheet';
 // The dock/handle resolve to the wave's own markers FIRST and fall back to
 // the pre-wave classes. That fallback is deliberate: it is what lets this
 // probe run RED against today's tree (the sliver exists, and is not flush),
