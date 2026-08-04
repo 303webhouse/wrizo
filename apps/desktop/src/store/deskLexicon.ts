@@ -196,6 +196,10 @@ export type DeskTermId =
   | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
+  // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
+  | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftSpacing'
+  | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
+  | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
   // Trash Board — the SAME "one term, every surface" shape
   // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
@@ -668,6 +672,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   footProgress: 'Progress',
   footFullScreen: 'Full Screen',
   footTarget: 'Target',
+  // ITEM 83 M5 (R4) — Draft's roster. Destination-named verbs (DR3's bench
+  // law): never a bare 'Convert'.
+  draftHeading: 'Heading',
+  draftBullet: 'Bulleted list',
+  draftQuote: 'Block quote',
+  draftIndent: 'Indent',
+  draftSpacing: 'Line spacing',
+  draftAlignment: 'Alignment',
+  draftAlignLeft: 'Align left',
+  draftAlignCenter: 'Align centre',
+  draftAlignRight: 'Align right',
+  draftConvertToScreenplay: 'Convert to Screenplay…',
+  draftConvertToProse: 'Convert to Prose…',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',

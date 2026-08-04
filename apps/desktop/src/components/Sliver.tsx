@@ -376,11 +376,30 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           {/* onMouseDown preventDefault — a sliver button is OUTSIDE the
               contenteditable, so a normal click's mousedown would blur it
               and collapse whatever text was selected (moved verbatim). */}
+          {/* ITEM 83 M5 (R1) — STYLING's B·I·U leads Draft too, so the two
+              prose modes read as one hand with different reach. */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title="Bold" onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
-            <button type="button" className="mode-tbtn" title="Italic" onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
-            <button type="button" className="mode-tbtn" title="Heading" onClick={() => content.format!.onFormat('heading')}>H</button>
-            <button type="button" className="mode-tbtn" title="Spacing" onClick={() => content.format!.onFormat('spacing')}>&para;</button>
+            <button type="button" className="mode-tbtn" title={t('stylingBold')} onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
+            <button type="button" className="mode-tbtn" title={t('stylingItalic')} onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
+            <button type="button" className="mode-tbtn" title={t('stylingUnderline')} onClick={() => content.format!.onFormat('underline')}><u>U</u></button>
+            <button type="button" className="mode-tbtn" title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+          </div>
+          {/* ITEM 83 M5 (R4) — the roster Nick named: bulleted lists,
+              indentation/block quote, alignment, line spacing. Lists and
+              quotes ride conventions that already exist (`- `, `> `); indent
+              and alignment become line-prefix directives per F3's default
+              (store/draftFormat.ts documents the tokens and why they are not
+              metadata). */}
+          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+            <button type="button" className="mode-tbtn" title={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}>•</button>
+            <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
+            <button type="button" className="mode-tbtn" title={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}>&rarr;</button>
+            <button type="button" className="mode-tbtn" title={t('draftSpacing')} onClick={() => content.format!.onFormat('spacing')}>&para;</button>
+          </div>
+          <div className="wz-sliver-format" role="group" aria-label={t('draftAlignment')} onMouseDown={e => e.preventDefault()}>
+            <button type="button" className="mode-tbtn" title={t('draftAlignLeft')} onClick={() => content.format!.onFormat('align-left')}>&#8676;</button>
+            <button type="button" className="mode-tbtn" title={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}>&#8596;</button>
+            <button type="button" className="mode-tbtn" title={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}>&#8677;</button>
           </div>
         </div>
       )}
@@ -388,26 +407,24 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
       {content.kind === 'draft' && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railStructure')}</div>
-          <div className="wz-sliver-structure" role="tablist" aria-label={t('railStructure')}>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={content.structure === 'prose'}
-              className={`wz-sliver-structure-btn${content.structure === 'prose' ? ' active' : ''}`}
-              onClick={() => content.onSwitchStructure('prose')}
-            >
-              {t('railStructureProse')}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={content.structure === 'screenplay'}
-              className={`wz-sliver-structure-btn${content.structure === 'screenplay' ? ' active' : ''}`}
-              onClick={() => content.onSwitchStructure('screenplay')}
-            >
-              {t('railStructureScreenplay')}
-            </button>
-          </div>
+          {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
+              Screenplay TABLIST retires from the panel. A tablist's dress
+              promises free switching; conversion is a consequential one-way
+              act behind its own confirm dialog. Its HOME was always right (an
+              instrument acting on the work — G1 puts it in the hand); only its
+              clothes were mode clothes on a non-mode. One verb row now, with
+              its destination named in the control itself — never a bare
+              "Convert", which is the bench's named enemy. The surface itself
+              says where you are: the courier measure announces screenplay
+              louder than any tab could. */}
+          <button
+            type="button"
+            className="wz-cascade-action"
+            aria-haspopup="dialog"
+            onClick={() => content.onSwitchStructure(content.structure === 'prose' ? 'screenplay' : 'prose')}
+          >
+            {content.structure === 'prose' ? t('draftConvertToScreenplay') : t('draftConvertToProse')}
+          </button>
         </div>
       )}
 
