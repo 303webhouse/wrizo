@@ -286,6 +286,9 @@ function BoardCardPopup({
   const elRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef(initialText);
   const { t: lex } = useLexicon();
+  // ITEM 83 M9 — the desk lexicon, for the dock's own strings (§1.4: every
+  // user-facing string is themable, never a literal in JSX).
+  const { t: dt } = useDeskLexicon();
   // FX6 S1 — the real undo/redo stack (store/textUndo.ts's own header
   // comment carries the full mechanism-choice + coalescing-granularity +
   // em-dash-shim-fold reasoning, shared verbatim with ForwardOnlyEditor.
@@ -546,16 +549,29 @@ function BoardCardPopup({
         aria-label={`Edit ${lex('board').toLowerCase()} card`}
         onClick={e => e.stopPropagation()}
       >
+        {/* ITEM 83 M9 (R13.v/R14) — THE OPENED CARD'S TOOLS DOCK.
+            The card is the paper here, so the dock is a CHILD OF THE CARD at
+            `right:100%` — its right edge IS the card's left edge, by layout,
+            at every size. Same anchor law as the page's Tools drawer; nothing
+            is scripted, so nothing can drift.
+            R14, verbatim: "the opened card's side menu is centered to the
+            card's size, whatever it is, and may extend vertically beyond the
+            card's height when its options need the room — the dock is the
+            card's companion, not its prisoner." So: translateY(-50%) centring,
+            and no height tie to the card.
+            CONTENTS: styling only. NO FOOT — R14 keeps Typewriter/Progress/
+            Full Screen on page-writing surfaces, and a card is not one.
+            Links/tags are F10's default (IN) but need a data model no ticket
+            in this brief creates, so they are deferred by §0 rather than
+            faked; nothing renders for them. */}
+        <div className="board-popup-dock" onMouseDown={e => e.preventDefault()}>
+          <div className="board-popup-dock-h">{dt('stylingHeading')}</div>
+          <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
+          <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
+          <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
+        </div>
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
-          {/* onMouseDown preventDefault — a strip button sits OUTSIDE the
-              contenteditable, so a normal click's mousedown would blur it
-              and collapse whatever text was selected (the SAME reason
-              Sliver.tsx's own Draft-format row does this). */}
-          <div onMouseDown={e => e.preventDefault()} style={{ display: 'flex', gap: 4 }}>
-            <button type="button" className="mode-tbtn board-popup-tool" title="Bold" onClick={() => applyBoardFormat('bold')}><b>B</b></button>
-            <button type="button" className="mode-tbtn board-popup-tool" title="Italic" onClick={() => applyBoardFormat('italic')}><i>I</i></button>
-          </div>
         </div>
         <div
           ref={elRef}
