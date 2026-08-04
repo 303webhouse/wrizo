@@ -212,6 +212,15 @@ policy (the R9/R11 coexistence handoff). A policy question may measure; an
 anchor may not.** Ratified as lane law, fx18's measured-never-assumed
 doctrine extended from width to position; the study stands as the lane's
 normative reference, its self-checking flush readout adopted into the pair.
+**Corollary, from the Board pair's review:** a self-check must compare two
+INDEPENDENTLY RENDERED truths. The board's first readout compared a measured
+position against the same constant that had assigned it — a check that can
+never fail, verifying only that the browser honors `style.left`. The
+paper-mounted check could fail (and did) because paper-left and dock-right
+render separately. The board pair is rebuilt accordingly: the two drawers
+become flex siblings in one `left:0` row, flush falling out of layout with
+no constant and no script, and the readout measures `tools-left −
+cascade-right` across separately rendered boxes.
 The a2/b2 files are re-anchored on this architecture in place — git history
 is the annotation; the superseded geometry remains readable at `84302f5`.
 
@@ -243,6 +252,53 @@ the built surface (its interaction with the Clock's 54-line body and the
 Courier register) is a post-vacation build brief, schema-free but
 engine-touching, and travels flagged as such. The R3 Typewriter menu rides
 unchanged wherever the button lives.
+
+And, on the Board pair:
+
+> Hmmm, you should be able to add a New Page to a Board, so that option
+> should be in the Page menu tab. There should also be an option to Place
+> Page on a Board, which should open a toggle menu in the Page tab with a
+> list of recent pages, scrollable and sortable by date, Drawer, and A-Z
+> title (by first letter). The Board options like "New Card," "Import
+> File," etc. should be under the Plan menu tab. We don't need the TOOL
+> Sliver for Boards. The TOOL sliver tab should show up on individual Cards
+> when they are opened up. Then the bolding, italicizing, etc. and probably
+> linking/tagging options should be in that TOOL menu. Some specialty Board
+> types should have an attached TOOL tab, though. The Outline, e.g., should
+> look like a normal Page even though it is technically a Board, and that
+> special Board should have a TOOL menu with options for formatting/
+> customizing Outlines. We can put these specialized TOOL menus on hold for
+> now, though, so that we can get the basic Pages and Boards usable by the
+> time I leave tomorrow a.m.
+
+**R13 · THE BOARD'S CHROME RESTRUCTURED.** Seven rulings in one breath:
+**(i)** New Page lives in the PAGE drawer on boards too — a page born from a
+board lands on that board. **(ii)** The PAGE drawer gains **"Place page on
+board"**: an in-drawer toggle menu (G4's in-place disclosure) listing recent
+pages, scrollable, sortable by **date · Drawer · A-Z title (first letter)**.
+**(iii)** Board acts — **New Card, Import File, etc.** — live in the **PLAN
+drawer**. "Import File" is hereby a named capability; its design (and its
+seam with the anti-slop paste rail) owes its own pass, routed not guessed.
+**(iv)** **No Tools sliver on boards** — superseding the Board pair's whole
+Tools drawer (prior render readable at its landed SHA) and re-homing **BD1's
+Fit to content into the PLAN drawer** (the foot left the board; the
+hardware-reserved note travels with it). **BD2's Delete question re-homes**
+to the card's grip tray and the opened card's Tools — the A/B stands, the
+venue moved. **(v)** The Tools sliver belongs to the **OPENED CARD**:
+styling (B/I/…) and probably linking/tagging — superseding CA4's
+links-absent (flag F10 below). CA3's on-board grip tray stands unretired.
+**(vi)** **Specialty boards carry type-specific TOOL tabs** — and the
+Outline is revealed as **a board wearing a page's face**: technically a
+Board, dressed as a Page, with its own formatting TOOL menu. A Places-Model
+note of the first order; the 96 seam receives it. **(vii)** Specialty TOOL
+menus are **ON HOLD**; the basics — Pages and Boards — settle before
+tomorrow morning's departure. Under the standing freeze this lands as
+design-locked tonight with decision-complete briefs queued; the build fires
+post-vacation, or earlier only on Nick's explicit freeze-lift word.
+
+**F10 · Linking/tagging in the opened-card Tools.** Nick's "probably."
+Default: **IN** — the opened card's Tools carry link and tag rows beside
+styling. One word drops them.
 
 ---
 

@@ -2,28 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>item 83 · Board mockup A — the wall, Delete inert (BD2-A)</title>
+<title>item 83 · Board mockup A — the PAGE drawer on a board (R13)</title>
 <!--
-  ITEM 83 · PHASE 3 · BOARD PAIR · VARIANT A — "Delete, categorically inert"
-  menus lane · 2026-08-04 · first landing of this pair.
-  Renders the board-surface Desk from Pass 4:
-  - BD1: FIT TO CONTENT homes in the foot's instruments row, joining R12's
-    universal three (the seat is hardware-reserved — Nick's device verdict
-    finalizes the row's census);
-  - BD2-A: on a selected DERIVED card, Delete renders PRESENT AND INERT by
-    category law — dim, truthful to the ear (aria-disabled), pressing yields
-    nothing because the category refuses, not because a switch is off.
-    Variant B renders the contested alternative: Delete ABSENT (G3).
-  - CA1's verbs teach the kind: the derived card's door is "Open the page →".
-  - The BOARD zone carries the one beginnings-backed act: "＋ New card →".
-  BOARDS HAVE NO PAPER: R11's paper-mount reads per-surface — here the Tools
-  dock anchors railward in the R10 cabinet stack, and the two-drawer
-  exclusion (paper-born) does not fire: both drawers may stand at any width.
-  Both readings are named for Nick's lock, not asserted as law.
-  Strip: SP3 pending — rendered as the quiet map, consistent with the
-  Screenplay pair's open question.
-  Inherits R7's olive register and THE ANCHOR LAW (anchors are layout;
-  policy may measure; the flush readout self-checks).
+  ITEM 83 · PHASE 3 · BOARD PAIR · VARIANT A (R13 revision) — "the PAGE drawer"
+  menus lane · 2026-08-04 · supersedes this pair's Tools-sliver render
+  (readable at its landed SHA). Renders R13 on boards:
+  - NO Tools sliver on board surfaces (R13.iv) — the board's chrome is the
+    cascade alone; CA3's card grips remain the on-board card affordance.
+  - THIS VARIANT: the PAGE drawer open, carrying R13.i "＋ New page →"
+    (a page born from a board lands on the board) and R13.ii "Place page
+    on board" — an in-drawer toggle menu (G4 in-place): recent pages,
+    scrollable, sortable by Date · Drawer · A-Z (first letter). Sort chips
+    are live; the list is sample data.
+  - Variant B opens the PLAN drawer: board acts (New card · Import file)
+    plus BD1's Fit to content, re-homed there by R13.iv.
+  Cascade discipline: one category panel at a time (the cascade's own
+  state-reset law) — page and plan swap, they never stack.
+  Anchor law holds: the drawer is a left:0 room child, widths in CSS,
+  nothing scripted, the readout measures a rendered box.
 -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
@@ -31,14 +27,12 @@
     --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
     --brass:#FF9800; --brass-press:#e88900;
     --accent-rest:#96a05a; --accent-door:#4F5730;
-    --ink-on-paper:#2B2014; --ink-on-paper-low:#8A7C68;
     --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
     --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
   }
   *{box-sizing:border-box;margin:0}
   html,body{height:100%}
   body{background:#000;font-family:var(--ui);color:var(--text-hi)}
-
   .rig{position:fixed;inset:0 0 auto 0;z-index:9;display:flex;gap:14px;align-items:center;
        padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
   .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
@@ -46,11 +40,9 @@
   .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
   #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
   #geom.drift{color:#e05c5c}
-
   .fit{position:absolute;inset:42px 0 0 0;display:grid;place-items:center;overflow:hidden}
   .stage{background:var(--ground);position:relative;transform-origin:center center;
          box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8)}
-
   .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:56px 1fr}
   .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
         display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px;position:relative;z-index:4}
@@ -59,41 +51,32 @@
   .rail .cat .glyph{display:block;font-size:15px;line-height:1;margin-bottom:3px;color:var(--text-mid)}
   .rail .cat:hover{color:var(--text-mid)}
   .rail .cat[aria-expanded="true"]{color:var(--text-hi);border-left:1px solid var(--accent-rest)}
-
   .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:26px;padding:0 34px;border-bottom:1px solid var(--line)}
-  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em;min-width:200px}
+  .crumb{font-size:11.5px;color:var(--text-low);letter-spacing:.02em}
   .crumb b{color:var(--text-mid);font-weight:500}
   .strip{display:flex;gap:24px;margin:0 auto}
-  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);
-        padding:6px 2px;border-bottom:1px solid transparent;cursor:default}
-  .mode.dark{color:var(--text-low)}
+  .mode{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-low);padding:6px 2px}
   .mode.door{color:var(--text-mid)}
   .mode.door:hover{color:var(--brass)}
-
   .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
-
-  /* ---- the wall: no paper; cards on the ground ---- */
   .board{position:absolute;inset:24px 34px 34px 34px}
   .bcard{position:absolute;width:210px;min-height:120px;background:var(--panel);
          border:1px solid var(--line);padding:12px 14px;font-size:12.5px;color:var(--text-mid)}
   .bcard .kind{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-low);margin-bottom:6px}
-  .bcard .body{font-family:var(--prose);font-size:14.5px;line-height:1.45;color:var(--text-mid)}
+  .bcard .body{font-family:var(--prose);font-size:14.5px;line-height:1.45}
   .bcard.sel{outline:1px solid var(--accent-rest);outline-offset:2px;color:var(--text-hi)}
-  .bcard.sel .body{color:var(--text-hi)}
+  .cgrip{position:absolute;right:-15px;top:50%;transform:translateY(-50%);
+         width:14px;height:48px;background:var(--panel);border:1px solid var(--line);
+         display:grid;place-items:center;color:var(--accent-rest);font-size:10px;cursor:pointer;padding:0}
 
-  /* ---- drawers: rail-mounted stack (no paper on boards; R11 per-surface) ---- */
-  .slabL{position:absolute;top:64px;bottom:64px;display:flex;align-items:stretch;z-index:3;
-         transition:left .24s ease}
-  .bodywrap{overflow:hidden;transition:width .24s ease;height:100%}
-  @media (prefers-reduced-motion:reduce){.slabL,.bodywrap{transition:none}}
-  .dbody{height:100%;display:flex;flex-direction:column;background:var(--panel);
+  /* one cascade panel at a time; left:0 room child; widths in CSS */
+  .cwrap{position:absolute;left:0;top:64px;bottom:64px;overflow:hidden;
+         transition:width .24s ease;width:0;z-index:3}
+  .cwrap[data-open="true"]{width:210px}
+  @media (prefers-reduced-motion:reduce){.cwrap{transition:none}}
+  .dbody{width:210px;height:100%;display:flex;flex-direction:column;background:var(--panel);
          border:1px solid var(--line);border-left:none;color:var(--text-mid);font-size:12.5px}
   .dbody .scroll{flex:1;overflow:auto;padding:4px 0 6px}
-  #pageSlab{z-index:2;left:0}
-  .handle{width:14px;flex:none;background:var(--panel);border:1px solid var(--line);
-          align-self:center;height:74px;display:grid;place-items:center;cursor:pointer;
-          color:var(--accent-rest);font-size:11px;padding:0}
-
   .zonehead{display:block;padding:8px 14px 7px;font-size:10px;letter-spacing:.24em;
             text-transform:uppercase;color:var(--accent-rest)}
   .zone{border-bottom:1px solid var(--line);padding:2px 0 10px;margin:0 0 6px}
@@ -103,24 +86,29 @@
   .prow.doorrow{cursor:pointer}
   .prow.doorrow:hover{color:var(--text-hi)}
   .prow.doorrow:active{color:var(--brass)}
-  .prow.inert{color:var(--text-low);cursor:default}
+  .prow[aria-expanded="true"]{color:var(--text-hi)}
 
-  .foot{border-top:1px solid var(--line);padding:10px 10px 12px}
-  .instruments{display:flex;gap:4px}
-  .inst{flex:1;background:none;border:1px solid var(--line);color:var(--text-mid);
-        font:inherit;font-size:9.5px;letter-spacing:.02em;padding:6px 1px 5px;cursor:pointer;
-        display:flex;flex-direction:column;align-items:center;gap:3px}
-  .inst .g{font-size:12px;line-height:1}
-  .inst:hover{color:var(--text-hi);border-color:var(--text-low)}
-  .inst:active{color:var(--brass);border-color:var(--brass)}
-  .inst .dot{width:4px;height:4px;background:var(--accent-rest)}
+  /* R13.ii — the Place-page toggle menu, in place */
+  .placelist{padding:0 10px 4px}
+  .sorts{display:flex;gap:4px;padding:2px 4px 8px}
+  .chip{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;
+        font-size:10px;padding:3px 8px;cursor:pointer}
+  .chip:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .plist{max-height:180px;overflow:auto;border:1px solid var(--line)}
+  .pitem{display:flex;flex-direction:column;gap:1px;padding:6px 10px;cursor:pointer;border-bottom:1px solid var(--line)}
+  .pitem:last-child{border-bottom:none}
+  .pitem:hover{color:var(--text-hi)}
+  .pitem:active{color:var(--brass)}
+  .pitem .t{font-size:11.5px}
+  .pitem .m{font-size:9.5px;color:var(--text-low);letter-spacing:.04em}
 
   .note{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:#5e564c;letter-spacing:.03em}
 </style>
 </head>
 <body>
   <div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
-    <b>ITEM 83 · BOARD · A — Delete, categorically inert</b>
+    <b>ITEM 83 · BOARD · A — the PAGE drawer (R13)</b>
     <button id="w1" aria-pressed="true">1366×768</button>
     <button id="w2" aria-pressed="false">1680×1050</button>
     <span id="geom">measuring…</span>
@@ -130,86 +118,84 @@
     <div class="frame">
       <nav class="rail" aria-label="Cascade">
         <button class="cat"><span class="glyph">✶</span>journal</button>
-        <button class="cat" id="pageCat" aria-expanded="false"><span class="glyph">▭</span>page</button>
-        <button class="cat"><span class="glyph">⌗</span>plan</button>
+        <button class="cat" id="pageCat" aria-expanded="true"><span class="glyph">▭</span>page</button>
+        <button class="cat" id="planCat" aria-expanded="false"><span class="glyph">⌗</span>plan</button>
         <button class="cat"><span class="glyph">☰</span>drawers</button>
         <button class="cat"><span class="glyph">⌂</span>shelf</button>
         <button class="cat"><span class="glyph">✕</span>trash</button>
         <button class="cat"><span class="glyph">⚙</span>settings</button>
         <button class="cat"><span class="glyph">◐</span>theme</button>
       </nav>
-
       <div class="band">
         <div class="crumb">Location&nbsp; <b>Boards · Storyboard — wall one</b></div>
         <div class="strip" role="list" aria-label="Rooms (map — SP3 pending)">
-          <span class="mode dark">Free Write</span>
-          <span class="mode dark">Draft</span>
-          <span class="mode dark">Revise</span>
-          <span class="mode dark">Workshop</span>
+          <span class="mode">Free Write</span><span class="mode">Draft</span>
+          <span class="mode">Revise</span><span class="mode">Workshop</span>
           <span class="mode door">Publish →</span>
         </div>
       </div>
-
       <div class="room" id="room">
         <div class="board" aria-label="The wall">
-          <div class="bcard" style="left:6%;top:8%">
+          <div class="bcard" style="left:34%;top:10%">
             <div class="kind">Free card</div>
             <div class="body">the platform sequence wants three beats, not five</div>
+            <button class="cgrip" aria-label="Card tools">‖</button>
           </div>
-          <div class="bcard sel" style="left:34%;top:30%" aria-selected="true">
+          <div class="bcard sel" style="left:58%;top:38%">
             <div class="kind">From a page · The coat on the train</div>
-            <div class="body">She doesn't run — the coat is already on the seat and the leaving is already done.</div>
-          </div>
-          <div class="bcard" style="left:64%;top:12%">
-            <div class="kind">Free card</div>
-            <div class="body">who else is on the platform, and who never shows</div>
+            <div class="body">She doesn't run — the leaving is already done.</div>
+            <button class="cgrip" aria-label="Card tools">‖</button>
           </div>
         </div>
 
-        <!-- the PAGE drawer — rail-flush, closed here -->
-        <div class="slabL" id="pageSlab">
-          <div class="bodywrap" id="pageWrap" style="width:0">
-            <aside class="dbody" style="width:200px;border-left:none" aria-label="Page">
-              <div class="scroll">
-                <div class="zone"><span class="zonehead">Page</span>
-                  <div class="prow"><span class="lab" style="color:var(--text-low)">— see the Free Write pair for this drawer in full</span></div>
+        <!-- the PAGE drawer on a board (R13.i / R13.ii) -->
+        <div class="cwrap" id="pageWrap" data-open="true">
+          <aside class="dbody" aria-label="Page">
+            <div class="scroll">
+              <div class="zone">
+                <span class="zonehead">Page</span>
+                <div class="prow doorrow" role="button" tabindex="0"><span class="lab">＋ New page</span><span>→</span></div>
+                <div class="prow doorrow" role="button" tabindex="0" aria-expanded="true" id="placeRow">
+                  <span class="lab">Place page on board</span><span>—</span></div>
+                <div class="placelist" id="placeList">
+                  <div class="sorts" role="radiogroup" aria-label="Sort recent pages">
+                    <button class="chip" aria-pressed="true">Date</button>
+                    <button class="chip" aria-pressed="false">Drawer</button>
+                    <button class="chip" aria-pressed="false">A–Z</button>
+                  </div>
+                  <div class="plist" aria-label="Recent pages — scrollable">
+                    <div class="pitem" role="button" tabindex="0"><span class="t">The coat on the train</span><span class="m">today · Loose</span></div>
+                    <div class="pitem" role="button" tabindex="0"><span class="t">Morning pages</span><span class="m">today · The Journal</span></div>
+                    <div class="pitem" role="button" tabindex="0"><span class="t">Platform smells</span><span class="m">yesterday · Novel</span></div>
+                    <div class="pitem" role="button" tabindex="0"><span class="t">Mara — first walk</span><span class="m">Jul 30 · Novel</span></div>
+                    <div class="pitem" role="button" tabindex="0"><span class="t">Coal dust notes</span><span class="m">Jul 28 · Research</span></div>
+                  </div>
                 </div>
               </div>
-            </aside>
-          </div>
+              <div class="zone">
+                <span class="zonehead">Page setup</span>
+                <div class="prow"><span class="lab" style="color:var(--text-low)">— per-page settings; see the Free Write pair</span></div>
+              </div>
+            </div>
+          </aside>
         </div>
 
-        <!-- the Tools drawer — railward on boards (no paper; R11 per-surface, at lock) -->
-        <div class="slabL" id="toolSlab">
-          <button class="handle" id="handle" aria-label="Close hand tools" aria-expanded="true">‖</button>
-          <div class="bodywrap" id="toolWrap" style="width:184px">
-            <aside class="dbody" style="width:184px" aria-label="Hand tools">
-              <div class="scroll">
-                <div class="zone">
-                  <span class="zonehead">Card</span>
-                  <div class="prow doorrow" role="button" tabindex="0"><span class="lab">Open the page</span><span>→</span></div>
-                  <div class="prow inert" role="button" aria-disabled="true"
-                       title="Inert by category law (BD2-A): a derived card is its page's shadow — the category refuses, no switch is off. Variant B renders absence instead.">
-                    <span class="lab">Delete</span></div>
-                </div>
-                <div class="zone">
-                  <span class="zonehead">Board</span>
-                  <div class="prow doorrow" role="button" tabindex="0"><span class="lab">＋ New card</span><span>→</span></div>
-                </div>
+        <!-- the PLAN drawer (variant B's subject) -->
+        <div class="cwrap" id="planWrap" data-open="false">
+          <aside class="dbody" aria-label="Plan">
+            <div class="scroll">
+              <div class="zone">
+                <span class="zonehead">Board</span>
+                <div class="prow doorrow" role="button" tabindex="0"><span class="lab">＋ New card</span><span>→</span></div>
+                <div class="prow doorrow" role="button" tabindex="0"><span class="lab">Import file</span><span>→</span></div>
+                <div class="prow doorrow" role="button" tabindex="0"
+                     title="BD1, re-homed by R13.iv — seat hardware-reserved"><span class="lab">Fit to content</span></div>
               </div>
-              <div class="foot">
-                <div class="instruments">
-                  <button class="inst" aria-pressed="true" aria-label="Typewriter — on"><span class="g">⌨</span>Typewriter<span class="dot" aria-hidden="true"></span></button>
-                  <button class="inst" aria-label="Progress"><span class="g">◔</span>Progress</button>
-                  <button class="inst" aria-label="Full Screen"><span class="g">⛶</span>Full Screen</button>
-                  <button class="inst" aria-label="Fit to content — BD1; seat hardware-reserved"><span class="g">⌗</span>Fit</button>
-                </div>
-              </div>
-            </aside>
-          </div>
+            </div>
+          </aside>
         </div>
 
-        <div class="note">BD2-A: Delete present, categorically inert (B: absent) · BD1: Fit joins the universal foot, seat hardware-reserved · no paper — dock railward, exclusion doesn't fire (at lock)</div>
+        <div class="note">R13: no Tools sliver on boards · PAGE: New page + Place page on board (sortable Date·Drawer·A–Z) · PLAN holds board acts + Fit (BD1 re-homed) · one cascade panel at a time</div>
       </div>
     </div>
   </div></div>
@@ -217,31 +203,32 @@
 <script>
   const stage=document.getElementById('stage'), geom=document.getElementById('geom'),
         room=document.getElementById('room'),
-        pageSlab=document.getElementById('pageSlab'), pageWrap=document.getElementById('pageWrap'),
-        toolSlab=document.getElementById('toolSlab'), toolWrap=document.getElementById('toolWrap'),
-        handle=document.getElementById('handle'), pageCat=document.getElementById('pageCat'),
+        pageWrap=document.getElementById('pageWrap'), planWrap=document.getElementById('planWrap'),
+        pageCat=document.getElementById('pageCat'), planCat=document.getElementById('planCat'),
+        placeRow=document.getElementById('placeRow'), placeList=document.getElementById('placeList'),
         B1=document.getElementById('w1'), B2=document.getElementById('w2');
-  const CASCADE_W=200, SLIVER_W=184;
   const SIZES={a:[1366,768], b:[1680,1050]};
-  let cur='a', pageOpen=false, toolOpen=true, scale=1;
+  let cur='a', scale=1;
 
-  function apply(){
-    pageWrap.style.width=(pageOpen?CASCADE_W:0)+'px';
-    toolWrap.style.width=(toolOpen?SLIVER_W:0)+'px';
-    toolSlab.style.left=(pageOpen?CASCADE_W:0)+'px';   /* railward stack: flush to rail or to PAGE */
-    pageCat.setAttribute('aria-expanded',String(pageOpen));
-    handle.setAttribute('aria-expanded',String(toolOpen));
-    handle.setAttribute('aria-label', toolOpen?'Close hand tools':'Open hand tools');
+  function openPanel(which){            /* the cascade's one-at-a-time law */
+    const openPage = which==='page' && pageWrap.dataset.open!=='true';
+    const openPlan = which==='plan' && planWrap.dataset.open!=='true';
+    pageWrap.dataset.open=String(openPage);
+    planWrap.dataset.open=String(openPlan);
+    pageCat.setAttribute('aria-expanded',String(openPage));
+    planCat.setAttribute('aria-expanded',String(openPlan));
+    requestAnimationFrame(readout);
   }
   function readout(){
     const rL=room.getBoundingClientRect().left;
-    const cascL=(pageSlab.getBoundingClientRect().left-rL)/scale;
-    const toolL=(toolSlab.getBoundingClientRect().left-rL)/scale;
-    const want=pageOpen?CASCADE_W:0;
-    const ok=Math.abs(cascL)<0.6 && Math.abs(toolL-want)<0.6;
+    const open = pageWrap.dataset.open==='true' ? pageWrap : (planWrap.dataset.open==='true' ? planWrap : null);
     const [W,H]=SIZES[cur];
+    if(!open){ geom.classList.remove('drift');
+      geom.textContent=`rendered ${W}×${H} @ ${(scale*100).toFixed(0)}% · cascade closed — the wall alone`; return; }
+    const L=(open.getBoundingClientRect().left-rL)/scale;
+    const ok=Math.abs(L)<0.6;
     geom.classList.toggle('drift',!ok);
-    geom.textContent=`rendered ${W}×${H} @ ${(scale*100).toFixed(0)}% · cascade-left ${cascL.toFixed(1)} · tools-left ${toolL.toFixed(1)} (want ${want}) `+(ok?'✓ flush railward':'✗ DRIFT')+` · both drawers may stand (no paper)`;
+    geom.textContent=`rendered ${W}×${H} @ ${(scale*100).toFixed(0)}% · cascade-left ${L.toFixed(1)} `+(ok?'✓ flush by layout':'✗ DRIFT')+` · one panel at a time`;
   }
   function layout(){
     const [W,H]=SIZES[cur];
@@ -249,11 +236,18 @@
     const fit=document.querySelector('.fit');
     scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
     stage.style.transform='scale('+scale+')';
-    apply(); requestAnimationFrame(readout);
+    requestAnimationFrame(readout);
   }
-  handle.onclick=()=>{toolOpen=!toolOpen; apply(); requestAnimationFrame(readout);};
-  pageCat.onclick=()=>{pageOpen=!pageOpen; apply(); requestAnimationFrame(readout);};
-  document.querySelectorAll('.rail .cat:not(#pageCat)').forEach(c=>c.title='mockup: the Page drawer only');
+  pageCat.onclick=()=>openPanel('page');
+  planCat.onclick=()=>openPanel('plan');
+  document.querySelectorAll('.rail .cat:not(#pageCat):not(#planCat)').forEach(c=>c.title='mockup: Page and Plan only');
+  placeRow.onclick=()=>{const o=placeRow.getAttribute('aria-expanded')==='true';
+    placeRow.setAttribute('aria-expanded',String(!o));
+    placeRow.querySelector('span:last-child').textContent=o?'＋':'—';
+    placeList.style.display=o?'none':'block'; requestAnimationFrame(readout);};
+  document.querySelectorAll('.sorts .chip').forEach(c=>c.onclick=()=>{
+    c.parentElement.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));
+    c.setAttribute('aria-pressed','true');});
   B1.onclick=()=>{cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');layout();};
   B2.onclick=()=>{cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout();};
   addEventListener('resize',layout);
