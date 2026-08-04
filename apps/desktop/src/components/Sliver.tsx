@@ -251,10 +251,25 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
             Interim, pending Nick's own revision of typewriter mode in a
             separate build; SC3 owns the option's return. Every other surface
             (prose Draft, Free Write, Journal, Board) is untouched. */}
+        {/* ITEM 83 M8 (R12) — THE FOOT IS UNIVERSAL ON PAGE-WRITING SURFACES.
+            The exclusion above is superseded by Nick's own word: "One small
+            change: TYPEWRITER mode should be available while writing a
+            screenplay, too." SC1 S3's disable was recorded as "pending Nick's
+            own revision of typewriter mode" — this IS that revision, arriving
+            at the design layer, and it resolves F9 (which had defaulted to a
+            per-surface foot) in the opposite direction.
+            SCOPE, exactly: the menu MOUNTS and its settings PERSIST here now.
+            The engine's screenplay hook-up — how the hold band meets the
+            Clock's 54-line body and the Courier register — is engine-touching
+            and travels as its own post-vacation brief (R12's own flag), so
+            nothing here reaches into useTypewriterFade. No grayed states: the
+            menu simply governs what it already governs.
+            R14 keeps this off CARD and BOARD tools — the universal foot is the
+            page-writing surfaces' (prose and screenplay), not everything's. */}
         <SliverInstrumentRow
           hasMilestones={hasMilestones}
           target={target}
-          typewriterAvailable={!(content.kind === 'draft' && content.structure === 'screenplay')}
+          typewriterAvailable
         />
       </div>
     </div>
