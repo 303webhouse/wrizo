@@ -189,6 +189,13 @@ export type DeskTermId =
   | 'pageSetupHeaders' | 'pageSetupFooters' | 'pageSetupHeaderText'
   | 'pageSetupFooterText' | 'pageSetupSaveDefaults' | 'pageSetupSavedDefaults'
   | 'pageSetupOn' | 'pageSetupOff' | 'pageSetupExportNote'
+  // ITEM 83 M4 — STYLING (R1), the Typewriter menu (R3, names per F1's
+  // default), and the three-instrument foot (R5/R12).
+  | 'stylingHeading' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
+  | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
+  | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
+  | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
+  | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
   // Trash Board — the SAME "one term, every surface" shape
   // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
@@ -634,6 +641,33 @@ const CANONICAL: Record<DeskTermId, string> = {
   // discovered: numbers/headers/footers are sheet furniture for printed and
   // exported output; the screen page stays one continuous sheet.
   pageSetupExportNote: 'Numbers, headers and footers appear on export and print — the page on screen stays continuous.',
+  // ITEM 83 M4 (R1) — Free Write's STYLING zone. Underline joins Bold and
+  // Italic by founder word, overruling Chamber 1's "nothing else".
+  stylingHeading: 'Styling',
+  stylingBold: 'Bold',
+  stylingItalic: 'Italic',
+  stylingUnderline: 'Underline',
+  // ITEM 83 M4 (R3) — the Typewriter menu. Names are Nick's latest (F1's
+  // default): "Forward Lock" and "Line Fade" govern; Chamber 1's "Forward
+  // Momentum"/"Text Fade" retire.
+  twMenuHeading: 'Typewriter',
+  twForwardLock: 'Forward Lock',
+  twForwardLockWindow: 'Window',
+  twUnitWords: 'Words',
+  twUnitSentences: 'Sentences',
+  twLineFade: 'Line Fade',
+  twLineFadeLines: 'Lines shown',
+  twWritingLine: 'Writing line',
+  twLineTop: 'Top',
+  twLineCenter: 'Centre',
+  twLineBottom: 'Bottom',
+  twPageScroll: 'Page Scroll',
+  // ITEM 83 M4 (R5/R12) — the foot's three instruments, on every
+  // page-writing surface. Theme leaves the foot for the rail's own category.
+  footTypewriter: 'Typewriter',
+  footProgress: 'Progress',
+  footFullScreen: 'Full Screen',
+  footTarget: 'Target',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',

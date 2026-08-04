@@ -11,7 +11,18 @@ export type StructureKind = 'prose' | 'screenplay';
 // ALSO reuse (PageEditor.tsx's applyFreeWriteFormat) — a single source of
 // truth for the literal marker characters, so a forward-only insertion and
 // a Draft-mode selection-wrap can never drift onto different conventions.
-export const FORMAT_MARK: Record<'bold' | 'italic', string> = { bold: '**', italic: '*' };
+// ITEM 83 M4 (R1 + F2) — Underline joins the founder's set. Nick overruled
+// Chamber 1's "nothing else" for Free Write by name: "I would like to add
+// buttons for bolding, italicizing, and underlining."
+//
+// THE CONVENTION, per F2's stated default: `__word__`. Markdown reads that as
+// a bold alternate; Wrizo drops that reading in-house, which is lawful because
+// the frozen set was always the FOUNDER's set — his word extends it, exactly as
+// the freeze provided. It stays plain-text honest (the storage law), the
+// dimmed-syntax register renders the markers as craft, and export strips them
+// like every other convention. One word from Nick re-tokens it.
+export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline', string> =
+  { bold: '**', italic: '*', underline: '__' };
 
 export interface FormatResult {
   text: string;

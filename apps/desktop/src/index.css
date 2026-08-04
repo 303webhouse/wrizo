@@ -4627,3 +4627,16 @@ a:focus-visible,
 .wz-page-setup-text:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 .wz-page-setup-note{ font-size:10px; color:var(--text-low); line-height:1.5; margin:2px 0 0; }
 .wz-page-setup-note--ok{ color:var(--accent-rest); }
+
+/* ITEM 83 M4 (R3) — the Typewriter menu's numeric adjustments, disclosed in
+   place inside the one pop-out (G4's depth ceiling holds). Same register as
+   PAGE SETUP: square corners, 1px --line, olive focus. */
+.wz-tw-number{ display:flex; align-items:center; gap:8px; margin:6px 0 2px; }
+.wz-tw-number > span{ flex:1 1 auto; font-size:11px; color:var(--text-mid); }
+.wz-tw-number input{ width:64px; background:var(--ink-950);
+  border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:3px 6px; border-radius:0; }
+.wz-tw-number input:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+/* The foot's Typewriter instrument marks its ON state in olive, never brass
+   (R7) — the same where-you-are law the drawer's toggles now follow. */
+.wz-sliver-instruments-btn[data-on='true']{ color:var(--accent-rest); }

@@ -131,7 +131,7 @@ function PageEditorView({ id }: { id: string }) {
   // the leading marker has been inserted, awaiting its closing press). See
   // applyFreeWriteFormat below for why this can't just reuse Draft's
   // selection-wrap (`applyRailFormat`) — forward-only has no mid-text caret.
-  const [freeWriteMarks, setFreeWriteMarks] = useState({ bold: false, italic: false });
+  const [freeWriteMarks, setFreeWriteMarks] = useState({ bold: false, italic: false, underline: false });
   // AB2 S4 — the Structure picker's one-time confirmation (prose page with
   // words -> screenplay). Switching an empty page is free (no modal).
   const [structureConfirm, setStructureConfirm] = useState(false);
@@ -568,7 +568,7 @@ function PageEditorView({ id }: { id: string }) {
   // ForwardOnlyEditor's own `insertMarkerRef` escape hatch instead — the
   // component's own `handleInput`, the EXACT function a real keystroke
   // calls, with no event-dispatch reliability gap at all.
-  const applyFreeWriteFormat = (action: 'bold' | 'italic') => {
+  const applyFreeWriteFormat = (action: 'bold' | 'italic' | 'underline') => {
     if (mode !== 'journal') return;
     const insert = freeWriteInsertRef.current;
     if (!insert) return;
@@ -650,8 +650,20 @@ function PageEditorView({ id }: { id: string }) {
           // this is exactly the sparse-rail complaint (Nick's own words) on
           // an ordinary (project/loose-origin) Free Write page, where
           // journalFurniture is false and the rail carried almost nothing.
-          format: { onFormat: applyFreeWriteFormat, boldOn: freeWriteMarks.bold, italicOn: freeWriteMarks.italic },
-          inkToolPlaceholder: true,
+          // ITEM 83 M4 (R1) — Underline joins Bold and Italic by founder word.
+          // The two-press bracket RETURNS with it and extends to it unchanged:
+          // a forward-only surface still cannot wrap a selection, so the button
+          // opens the mark and the second press closes it.
+          format: { onFormat: applyFreeWriteFormat, boldOn: freeWriteMarks.bold, italicOn: freeWriteMarks.italic, underlineOn: freeWriteMarks.underline },
+          // ITEM 83 M4 (R2 deferral + G3) — the inert Ink placeholder EXITS.
+          // FX7 S2 placed it as a reasoned disabled affordance; Chamber 1's
+          // roster then excluded it, and G3 names the grammar reason: a greyed
+          // control for an unbuilt capability is a locked door wearing paint.
+          // R2 rules Ink a REAL section when the stylus returns ("for when we
+          // get back to incorporating the stylus features"), and the brief's §0
+          // defers that mounting to the stylus arc — so nothing renders here
+          // now, rather than something rendering inert.
+          inkToolPlaceholder: false,
           captureItems: journalFurniture ? CAPTURE_ITEMS : [],
         }
       : {
