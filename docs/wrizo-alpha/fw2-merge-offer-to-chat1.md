@@ -15,13 +15,26 @@ window, and chat 1's poller takes it.
 
 **Commit `8c1a903`** + the parked-stamp commit that follows it.
 
+## ✅ STAMPS COMPLETE — 2026-08-04, slot 1. MERGE TARGET: branch `fw2-offer` @ `dad280e`.
+
 | | |
 |---|---|
-| unparked | **55/55 CLEAN** — `bundle=index-Cib2nzSw.js/525306b` |
-| parked | **NOT CLEAN — one NOVERDICT (`j4.mjs`), diagnosed, re-run OWED.** See below. |
+| unparked | **55/55 CLEAN** — `tree=dad280e bundle=index-Cib2nzSw.js/525306b` |
+| parked | **55/55 CLEAN** — `tree=dad280e bundle=index-Cib2nzSw.js/525306b` |
 | `item9192.mjs` | 16 checks; **10/16 red** against the pre-fix bundle; parked 1/1 |
 | `tsc` | clean |
 | schema | **zero** — no `apps/server` file in the diff |
+
+**Merge `fw2-offer`, not `fw2-boards-and-defaults`.** They differ by exactly one
+commit: item 87's code, which is unverified. `fw2-offer` was cut so the stamp
+describes precisely the software being merged — note the tree has **no `+Ndirty`
+suffix** and the bundle hash is **identical to the earlier green runs**, which is
+itself the proof that item 87 is not in the offered bundle.
+
+The `j4` NOVERDICT below is CLEARED: `j4.mjs` passed parked on this re-run, so the
+navigate-first fixture fix is no longer unrun — the race is closed by exercise
+rather than by argument. The diagnosis is kept below because the species is now
+registered and its edges matter.
 
 ### The parked run is not clean, and I am not clearing it
 
