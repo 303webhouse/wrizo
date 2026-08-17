@@ -175,6 +175,36 @@ DEPLOYED.** Production stays git `c23c380` · railway `ee0a9bf2`. Deploy waits o
 offers; deploys on Nick's explicit words only). When the ship word comes: suite of record at the
 merge HEAD both settings + full amended checklist + rollback ratchets to the P0 stamp.
 
+## FW2 — FABLE'S RATIFICATIONS — 2026-08-17 (formal merge order @ `641e946`)
+
+Landed with the formal merge `0dc6e75` (fw2-offer @ `641e946`): the fix lane's ADDENDUM proving
+the 2026-08-04 stamps still hold — the merged tree rebuilds to `index-Cib2nzSw.js`/525306b,
+**byte-identical** to the stamped bundle (the docs-only-carry precedent, `77(c)` making it
+provable). Three records, append-only:
+
+1. **The PARK is SUPERSEDED BY COMPLETION — both were right at their read-times.** The park
+   (condition 2, "the parked stamp is OWED") was decided at `08:08:42`; the fix lane's completed
+   re-run (unparked 55/55 CLEAN + parked 55/55 CLEAN, the `j4` NOVERDICT cleared) pushed at
+   `08:29:41` — **21 minutes later**. Neither read was wrong: the park read a true incomplete
+   stamp, the completion read a true green one. The ledger keeps both, in order — a park is not
+   an error when its successor completes it.
+
+2. **The S4 incident — the victim-side record, RATIFIED.** Stopping a suite mid-run orphans its
+   harness browsers, and the dirty-machine guard then refuses EVERY lane's next run (item 99, the
+   Orphan Reaper). When the fix lane's own run was compromised (a leg would hang to timeout and
+   read a red it would then have to excuse), it chose to **ABANDON and re-run WHOLE rather than
+   report a red it would have to explain away** — the abandon-don't-excuse decision. **Fable
+   RATIFIES it:** a compromised run yields no usable stamp, so a clean re-run outranks an excused
+   red. (Cheaper still, where possible: let a doomed run finish rather than stop it — see item 99.)
+
+3. **Item 87 remains BUILT-UNVERIFIED on its own branch.** Not in this merge. Item 87 (New Page
+   defaults) is complete and `tsc`-clean but has NO harness result — it stays on
+   `fw2-boards-and-defaults` (`DO NOT MERGE YET`) until the fix lane runs its falsification plus
+   both stamped suites and offers it on its own.
+
+Ship 2 still HOLDS for Nick's explicit ship word; production stays git `c23c380` · railway
+`ee0a9bf2`; the deploy runs its own fresh suite at the deploy HEAD per the amended checklist.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
