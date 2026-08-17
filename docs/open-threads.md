@@ -9080,6 +9080,115 @@ sitting closes them.
     in the fifth suite; that is an absence of evidence and nothing more. They are not cleared,
     not parked, and not to be cited as fixed by fix 1 — the family does not inherit the
     species' verdict in either direction. **`j5` is fix 2's target.**
+    **→ FIX (b) BUILT + VERIFIED; MERGE OFFERED — 2026-08-17 (SC-chain lane). Branch
+    `item82-fixb-j5-seam`, code commit `bc6f53c`, parented at `main` @ `7abd1e7` (the
+    fw2 merge `a18115c` beneath it).** `j5`'s `makePage` now seeds THROUGH
+    `window.wrizoCreateJournalPage`, so the row enters the cache and no flush can erase
+    it — the mechanism REMOVED, not out-timed, which is what Fable's (b)-over-(a) ruling
+    asked for. The seam gained an optional `JournalPageSeed` (`id` / `text` / `createdAt`
+    / `strokes`) — exactly the four things it minted for itself and `j5` therefore could
+    not use. **CENSUS, and it is why this is small: `createJournalPage` has ZERO call
+    sites in `apps/desktop/src`** — reachable only through the window seam (the two other
+    mentions are comments naming it as Catch's model). The product blast radius is EMPTY,
+    not merely small. Every field optional, every fallback the old expression, `strokes`
+    set only when seeded so an unseeded row stays byte-identical. **`updatedAt` is
+    deliberately NOT seedable and not faked** — `upsert` stamps it, and neither of the
+    file's orderings reads it (`notebookKey` is `orderIndex ?? createdAt`; the Spread's
+    "Newest" lens sorts `createdAt`), so ordering is unchanged by construction. Zero
+    schema, zero server, zero deps.
+    **THE MECHANISM RECORD GAINS ITS TRIGGER — the append Fable ordered, and the piece the
+    paragraphs above named only as "the next flush of that collection."** The flush is not
+    incidental to this file's navigation; `/journal` fires it two ways. (1) MOUNTING it
+    mints/reconciles the Journal system board (`JournalBoardGate` →
+    `getOrCreateSystemBoard` → `saveJournalEntry` → `scheduleFlush`), a 300ms debounced
+    write of `journalEntries`. (2) **UNMOUNTING it calls `flushNow()` UNCONDITIONALLY —
+    the bare call in the effect's cleanup, OUTSIDE the
+    `boxesRef.current !== lastSavedRef.current` guard that gates the `visibilitychange`
+    path immediately above it; `BoardEditor.tsx:983` at tree `bc6f53c`.** Cited by ANCHOR
+    as well as by line on purpose: it was `:982` when this lane measured it on 2026-08-03,
+    and fw2's merge moved it one line (a single import at `BoardEditor.tsx:11`) without
+    touching the effect. A line number is measured at a head and does not survive an edit
+    above it. `flush(name)` writes ONE collection; `flushNow()` writes EVERY collection.
+    Both serialize the cache WHOLESALE over rows the cache has never held.
+    **THE ARITHMETIC, which is why the item flipped on an unchanged tree.** `app.goto`
+    sleeps 200ms (`runtime-verify.mjs`); the mount's flush lands at 300ms; and
+    `scheduleFlush` does **NOT re-arm** (`if (flushTimers[name] !== null) return` — the
+    timer is 300ms from the FIRST write, not the last). A fixture that seeded raw and then
+    navigated to `/journal` therefore had roughly **80ms** to get its reload in. Win that
+    race and the pages survive; lose it and they are erased by a write the fixture never
+    made. **That one window produces BOTH recorded symptoms, and the amplitude is simply
+    how many rows had already been rehydrated into the cache when the flush landed** —
+    A–D erased at the first navigation gives the empty Spread and "No loose pages yet"
+    (the 2026-07-25 sighting); the same window one slice later takes E alone, with A–D and
+    G,H already cached, giving the POPULATED Spread missing exactly `j5-src-7` at
+    `j5.mjs:482` (the fifth suite of record). **The "empty vs partial is one mechanism at
+    two amplitudes" hypothesis recorded above is CONFIRMED, and the amplitude now has a
+    CAUSE** rather than being a description of it.
+    **THE FILE'S THREE OTHER RAW WRITES WERE CHECKED AND MOVED, under the seeding law's own
+    clause** (*"any edit to one of the 47 raw-writing harness files checks that file's own
+    exposure before it lands"*). All three were exposed; all three now seed from the Desk
+    and reload BEFORE navigating (the original M1 ordering rule), with every navigation
+    they performed KEPT and moved after the reload, and nothing asserted changed. **The
+    star/tag patch was not optional:** post-fix, A–D are safe in the cache but that patch's
+    `starred`/`tags` would have become the flush's NEW casualty — fix (b) would have traded
+    a page-loss race for a lens-flag race, and a seam page carrying a raw amendment is the
+    half-migrated shape the law forbids. The StoryPlan seed is narrower and recorded as
+    such (a scheduled `flush(name)` writes one collection, so the board's flush never
+    threatened `writer-studio-story-plans`; only a `flushNow()` does).
+    **TWO COMMENTS FALSIFIED AND CORRECTED IN PLACE** (prose, not committed assertions — no
+    park owed): *"Navigate away from the entry view FIRST"* (there has been no entry view
+    since FX14 S2, and the `/journal` it fled to is the hazard), and a `waitFor` labelled
+    **`'Journal Board (safe pre-seed landing)'`** — which named the hazard as the refuge,
+    and under which the board seed had been running inside a ~40ms margin. The B1 park
+    sweep's own navigation is KEPT; only the seed steps off it.
+    **`j5.mjs`'s `makePage -> wrizoCreateJournalPage` COMMENT IS TRUE AGAIN, BY
+    CONSTRUCTION** — annotated rather than silently repaired, so the record shows it was
+    false from FX14 S2 until this fix, that item 82's own diagnosis caught it, and that the
+    fix moved the CODE back rather than weakening the CLAIM.
+    **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=bc6f53c
+    bundle=index-Ch4juzEe.js/525431b` and PARKED `SUITE RESULT: CLEAN — tree=bc6f53c
+    bundle=index-Ch4juzEe.js/525431b`, 55/55 each, zero FAIL/TIMEOUT/NOVERDICT, no
+    contamination line, committed runner, rebuilt immediately before running, no
+    `--ignore-foreign`.** Identical tree AND bundle across both halves. `j5` PASS **37**
+    in both. Standalone repeats scaled to the observed rarity per DF1.1's law: **8/8 unset
+    + 8/8 parked at this head, and 37 consecutive standalone runs across both heads, zero
+    verdict failures.**
+    **A FIRST STAMPED PAIR WAS DISCARDED RATHER THAN CITED, and it was GREEN.** It ran at
+    tree `85a094c` (**54/54 CLEAN both settings**, `j5` PASS 37 both) and `main` moved
+    under it mid-sweep: chat 1 unparked and merged fw2 (`a18115c`). That stamp therefore
+    named a tree fw2 was not in — the unfalsifiable identity 77(c) exists to close — so it
+    is recorded here as a green observation and is **not** the offer's evidence. **This was
+    not ceremony: fw2 changed `BoardEditor.tsx` (+92), the very surface this mechanism
+    turns on, and the rebuild proves the software genuinely differed** (bundle
+    `index-Cj7zbELe.js` → `index-Ch4juzEe.js`). Checked before re-running rather than
+    assumed: fw2's hunks land at lines 11, 1160 and 2184 and leave the unmount cleanup
+    intact, so the mechanism stands and only its citation moved.
+    **ONE BOOT CRASH IS RECORDED RATHER THAN SWALLOWED, because the known-flake list is
+    EMPTY and "it passed on the retry" is a retired clearance argument.** The first
+    standalone attempt of the day died in 2s BEFORE any check ran:
+    `EBUSY … open '…\ws-runtime-verify-<pid>\DevToolsActivePort'`. The mechanism is legible
+    in shared infra and is NOT this fix's: `readCdpPort` (`runtime-verify.mjs:281-289`)
+    polls `existsSync` and then calls `readFileSync` **with no `try`/`catch`**, so a read
+    landing while the browser still holds that file dies instead of polling again. It is a
+    DIFFERENT species from DF1.1's stale-profile-dir root cause (that one is a fresh process
+    finding an OLD port file; this is a fresh dir whose file is mid-write), and the one-line
+    cure is obvious — but `runtime-verify.mjs` is shared infra, and patching it
+    mid-verification would taint this lane's own provenance. **Recorded unfixed and
+    unclaimed; a ticket is owed to whoever owns the harness floor.** It did not recur in 37
+    subsequent standalone runs or in any of the four sweeps.
+    **SCOPE HELD.** The star/tag patch and the seed Board row are **still raw writes** —
+    neither has a seam to migrate to (`starred`/`tags` are an AMENDMENT to an existing row
+    and no `wrizo*` seam exposes one; the seed Board is a `pageType:'board'` page with
+    pre-seeded `boxes`, and `createBoardPage` is neither exposed nor takes boxes).
+    Authoring those seams is **item 85 phase 2's** work and is not smuggled in here. The
+    census is NOT re-derived — chat 6's 47-of-52 keeps its caveat verbatim; this build
+    qualifies exactly one file. **`j4`, `b2-1` and `fx6` STAY UNATTRIBUTED** — `j4` uses the
+    identical raw vehicle with the CORRECT ordering (reloads at `j4.mjs:68` before
+    navigating), so this mechanism still does not explain it, and it inherits nothing from
+    this fix in either direction. **NO PARK IS OWED:** every check name preserved verbatim,
+    nothing weakened, count unchanged (37 live + 3 parked).
+    **WHAT THE GREEN PAIR DOES AND DOES NOT DO.** It closes `j5`'s attributed mechanism —
+    the one member fix 2 proved — and nothing else. **It does not close item 82.**
 
 85. **The raw-write remediation — harness seeding migrates to the app's seams.**
     **OPENED — 2026-08-01 (chat 6), on Fable's word, from item 82 fix 2's proven

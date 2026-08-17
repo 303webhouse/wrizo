@@ -1,16 +1,19 @@
 # Item 82 — fix (b): j5's `makePage` goes through the seam · 2026-08-03
 
-**Branch `item82-fixb-j5-seam`, parented at `origin/main` @ `4a638f1` (pinned by
-SHA at branch time, per the standing "origin/main moves mid-session" law).**
+**Branch `item82-fixb-j5-seam`, code commit `bc6f53c`, now parented at `main` @
+`7abd1e7` (the fw2 merge `a18115c` beneath it).** Branched 2026-08-03 at
+`origin/main` @ `4a638f1`, pinned by SHA per the standing "origin/main moves
+mid-session" law, then rebased forward twice — `4a638f1` → `d00bca9` → `7abd1e7`
+— both times conflict-free. §5b records why the second rebase was required.
 
 Fable approved fix (b) at item 82 fix 2's close — *"route `makePage` through the
 seam; it removes the mechanism rather than dodging the timing."* The minimal seam
 extension (optional params, `persistence.ts`, census disclosed, never
 seam-plus-raw) was pre-approved by Nick before this build.
 
-**Status: BUILT + STATICALLY VERIFIED. The suite is NOT run yet — this lane is
-browserless by Fable's order until chat 1's deploy stamp lands and the box passes.
-No merge offer until a stamped suite is green at both settings.**
+**Status: BUILT + VERIFIED + STAMPED — merge offered 2026-08-17. See §5b.**
+Built browserless on 2026-08-03 under Fable's order (no suite until chat 1's
+deploy stamp landed and the box passed); verified on the box 2026-08-17.
 
 ---
 
@@ -64,11 +67,16 @@ comments blamed**:
   `scheduleFlush`). That schedules a **300ms flush of `journalEntries`**, which
   serializes the cache **wholesale** over a localStorage that holds rows the
   cache has never seen.
-- **`BoardEditor.tsx:982` calls `flushNow()` on unmount UNCONDITIONALLY** —
-  outside the `boxesRef.current !== lastSavedRef.current` guard that gates the
+- **`BoardEditor`'s unmount cleanup calls `flushNow()` UNCONDITIONALLY** — the
+  bare call in the effect's cleanup, outside the
+  `boxesRef.current !== lastSavedRef.current` guard that gates the
   `visibilitychange` path two lines above. `flushNow()` writes **every**
   collection. So leaving `/journal` is a guaranteed wholesale rewrite, and
   `/journal` is the most dangerous surface in the app to hold a raw seed on.
+  It was `BoardEditor.tsx:982` when measured on 2026-08-03 and is **`:983` at
+  `bc6f53c`** — fw2's merge added one import above it without touching the
+  effect. Cited by anchor because a line number is measured at a head, never
+  carried across one.
 - `scheduleFlush` does **not** re-arm: `if (flushTimers[name] !== null) return`.
   The pending timer is 300ms from the FIRST write, not the last.
 
@@ -167,16 +175,52 @@ Done, browserless:
 - `pnpm run build:web` — **clean**, `index-Cj7zbELe.js` / 524.44 kB.
 - No eslint config exists in this workspace; there is no lint step to run.
 
-Owed, and blocking the merge offer:
+## 5b. VERIFICATION — DONE (2026-08-17, on the box)
 
-- `j5` standalone, both settings, repeated — the mechanism is a race, and DF1.1's
-  law binds: clearance evidence must scale to the observed rarity, so a single
-  green run is not the claim.
-- A full stamped suite at both settings, **tree SHA + served bundle hash** in
-  every verdict record per 77(c), rebuilt immediately before running, committed
-  runner, contamination guard satisfied honestly (no `--ignore-foreign`).
-- Coordinated window on the shared box — this lane does not launch a browser
-  until the box is handed to it.
+Branch rebased twice: `d65581e` → `85a094c` (on `d00bca9`) → **`bc6f53c`** (on
+`7abd1e7`, the fw2 merge `a18115c` beneath it). Both rebases were conflict-free —
+fw2 touched neither `persistence.ts` nor `j5.mjs`.
+
+**Standalone repeats, scaled to the observed rarity per DF1.1's law — 37
+consecutive runs, zero verdict failures:**
+
+| head | unset | parked |
+|---|---|---|
+| `85a094c` | 11/11 PASS (37 checks) | 10/10 PASS (37 + 3 parked) |
+| `bc6f53c` | 8/8 PASS (37 checks) | 8/8 PASS (37 + 3 parked) |
+
+**The stamped pair, at the true merge-candidate head:**
+
+```
+SUITE RESULT: CLEAN — tree=bc6f53c bundle=index-Ch4juzEe.js/525431b   (unset, 55/55)
+SUITE RESULT: CLEAN — tree=bc6f53c bundle=index-Ch4juzEe.js/525431b   (parked, 55/55)
+```
+
+Identical tree AND bundle across both halves. Zero FAIL/TIMEOUT/NOVERDICT. No
+contamination line, committed runner, rebuilt immediately before running, no
+`--ignore-foreign`. `j5` PASS 37 in both.
+
+**A FIRST PAIR WAS DISCARDED, AND IT WAS GREEN.** It ran at tree `85a094c` —
+**54/54 CLEAN both settings**, `j5` PASS 37 both — and `main` moved under it
+mid-sweep when chat 1 unparked and merged fw2. A stamp naming a tree fw2 was not
+in is the unfalsifiable identity 77(c) closes, so it is recorded as a green
+observation and is **not** this offer's evidence. Not ceremony: fw2 changed
+`BoardEditor.tsx` (+92), the surface this mechanism turns on, and the rebuild
+proves the software differed — `index-Cj7zbELe.js` → `index-Ch4juzEe.js`. Checked
+rather than assumed: fw2's hunks land at lines 11 / 1160 / 2184 and leave the
+unmount cleanup intact, so the mechanism stands and only its citation moved
+(`BoardEditor.tsx:982` → `:983`), which is why the ledger cites the anchor.
+
+**ONE BOOT CRASH, recorded not swallowed.** The day's first standalone attempt
+died in 2s before any check ran: `EBUSY … DevToolsActivePort`. `readCdpPort`
+(`runtime-verify.mjs:281-289`) polls `existsSync` then calls `readFileSync` with
+**no try/catch**, so a read landing while the browser still holds that file dies
+instead of polling again — a different species from DF1.1's stale-profile-dir
+cause (fresh dir, file mid-write, not a fresh process finding an old port file).
+The cure is one line, but `runtime-verify.mjs` is shared infra and patching it
+mid-verification would taint this lane's own provenance. **Unfixed, unclaimed — a
+ticket is owed to whoever owns the harness floor.** No recurrence in 37 standalone
+runs or four sweeps.
 
 **A note on what a green suite here does and does not prove.** It does not close
 item 82. It closes `j5`'s attributed mechanism, which is the one member fix 2
