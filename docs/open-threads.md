@@ -175,6 +175,34 @@ DEPLOYED.** Production stays git `c23c380` · railway `ee0a9bf2`. Deploy waits o
 offers; deploys on Nick's explicit words only). When the ship word comes: suite of record at the
 merge HEAD both settings + full amended checklist + rollback ratchets to the P0 stamp.
 
+## ITEM 100 — THE CDP PORT-FILE RACE (harness-infra) — OPENS 2026-08-17
+
+**OPENS on Fable's ruling, from the SC-chain lane's fix (b) verification.** A harness run can
+die **before any check executes**, in ~2s, with
+`EBUSY: resource busy or locked, open '…\ws-runtime-verify-<pid>\DevToolsActivePort'`.
+**MECHANISM, read in the source rather than inferred:** `readCdpPort`
+(`scripts/runtime-verify.mjs:281-289`) polls the port file in a 100-iteration loop, but the loop
+body is `if (existsSync(portFile)) { readFileSync(...) }` with **no `try`/`catch`** — so a read
+landing in the window where the browser has CREATED the file but still holds it **throws out of
+the poll loop instead of polling again**. The retry machinery is already there; the exception
+escapes it.
+**IT IS A DIFFERENT SPECIES FROM DF1.1's, and conflating them would re-spend that diagnosis.**
+DF1.1's stale-profile-dir root cause is a fresh process finding an **OLD** port file (dead port,
+`pageWsUrl` then polls nothing — cured by `removeDir(udd)` before launch, which is present and
+working). This is a **FRESH** dir whose file is **mid-write**. Same symptom class (dies before
+app load, reads like contention), opposite cause, and it reproduces on a quiet box — this
+sighting was on a machine verified quiet, with `removeDir` in the tree.
+**CURE: one line** — wrap the read (or the loop body) so a failed read continues the poll rather
+than throwing. **Deliberately NOT taken by the finding lane:** `runtime-verify.mjs` is shared
+infra used by all 55 harnesses, and patching it *mid-verification* would have made that lane's
+own stamped pair unfalsifiable — the exact defect 77(c) closed. **Left unfixed and unclaimed for
+the harness floor's owner, post-verification**, per Fable's ruling.
+**RARITY, measured not guessed:** 1 occurrence in 38 standalone `j5` runs plus four full sweeps
+(≈220 harness launches) on 2026-08-17 — no recurrence after the first. Fix-class, harness-only,
+zero product surface. Sibling of item 99 (both are harness-floor robustness); **not** a member of
+item 82's family — it produces a *boot crash with a stack*, never a check verdict, so it cannot
+be a hidden explanation for any of that item's reds. Registry: next free **101**.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
@@ -9151,17 +9179,28 @@ sitting closes them.
     contamination line, committed runner, rebuilt immediately before running, no
     `--ignore-foreign`.** Identical tree AND bundle across both halves. `j5` PASS **37**
     in both. Standalone repeats scaled to the observed rarity per DF1.1's law: **8/8 unset
-    + 8/8 parked at this head, and 37 consecutive standalone runs across both heads, zero
-    verdict failures.**
+    + 8/8 parked at this head, plus 11/11 unset + 10/10 parked at `85a094c` — 37
+    consecutive standalone runs across both heads, zero verdict failures.**
+    **THE PRE-REBASE STANDALONES CARRY, AND THE CARRY IS MEASURED RATHER THAN ARGUED**
+    (Fable's ruling, 2026-08-17): `git diff 85a094c bc6f53c -- apps/desktop/src/store/
+    persistence.ts apps/desktop/scripts/harness/j5.mjs` returns **EMPTY (0 lines)** —
+    fix (b)'s two files are byte-identical across the rebase, so fw2 never touched this
+    mechanism and the earlier rarity evidence describes the same software path. The 16 runs
+    at the new head are additional, not a replacement; the carry does not have to bear the
+    claim alone.
     **A FIRST STAMPED PAIR WAS DISCARDED RATHER THAN CITED, and it was GREEN.** It ran at
-    tree `85a094c` (**54/54 CLEAN both settings**, `j5` PASS 37 both) and `main` moved
-    under it mid-sweep: chat 1 unparked and merged fw2 (`a18115c`). That stamp therefore
-    named a tree fw2 was not in — the unfalsifiable identity 77(c) exists to close — so it
-    is recorded here as a green observation and is **not** the offer's evidence. **This was
-    not ceremony: fw2 changed `BoardEditor.tsx` (+92), the very surface this mechanism
-    turns on, and the rebuild proves the software genuinely differed** (bundle
-    `index-Cj7zbELe.js` → `index-Ch4juzEe.js`). Checked before re-running rather than
-    assumed: fw2's hunks land at lines 11, 1160 and 2184 and leave the unmount cleanup
+    tree `85a094c` (**54/54 CLEAN both settings**, `j5` PASS 37 both). **Sequence, stated
+    exactly because the ruling that reached this lane assumed a different one:** the pair
+    had already RUN TO COMPLETION before fw2's merge was detected — the discovery came from
+    the fetch performed immediately after reading its stamps, so there was no running sweep
+    left to abort and none was aborted. What was spent is ~90 minutes of box time whose
+    output cannot be cited; what was NOT spent is any evidence claimed at a stale head. That
+    stamp named a tree fw2 was not in — the unfalsifiable identity 77(c) exists to close —
+    so it is recorded here as a green observation and is **not** the offer's evidence.
+    **Re-running was not ceremony: fw2 changed `BoardEditor.tsx` (+92), the very surface
+    this mechanism turns on, and the rebuild proves the software genuinely differed**
+    (bundle `index-Cj7zbELe.js` → `index-Ch4juzEe.js`). Checked before re-running rather
+    than assumed: fw2's hunks land at lines 11, 1160 and 2184 and leave the unmount cleanup
     intact, so the mechanism stands and only its citation moved.
     **ONE BOOT CRASH IS RECORDED RATHER THAN SWALLOWED, because the known-flake list is
     EMPTY and "it passed on the retry" is a retired clearance argument.** The first
@@ -9175,7 +9214,10 @@ sitting closes them.
     cure is obvious — but `runtime-verify.mjs` is shared infra, and patching it
     mid-verification would taint this lane's own provenance. **Recorded unfixed and
     unclaimed; a ticket is owed to whoever owns the harness floor.** It did not recur in 37
-    subsequent standalone runs or in any of the four sweeps.
+    subsequent standalone runs or in any of the four sweeps. **→ OPENED AS ITEM 100 on
+    Fable's ruling (2026-08-17); see its own section in this ledger's top matter. It is NOT
+    a member of item 82's family** — it produces a boot crash with a stack trace and never a
+    check verdict, so it cannot be a hidden explanation for any of this item's reds.
     **SCOPE HELD.** The star/tag patch and the seed Board row are **still raw writes** —
     neither has a seam to migrate to (`starred`/`tags` are an AMENDMENT to an existing row
     and no `wrizo*` seam exposes one; the seed Board is a `pageType:'board'` page with
