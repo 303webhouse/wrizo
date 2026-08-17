@@ -160,6 +160,21 @@ here; the gate simply is not met (incomplete ≠ red). Item 87 was never in this
 SC-chain (merge + PARK only; P2c is the first post-vacation ship); **ZERO further deploys of any
 kind until Nick returns** (vacation handoff `docs/wrizo-alpha/vacation-handoff-2026-08-04.md`).
 
+## SHIP 2 (fw2) — UNPARKED + MERGED, HELD FOR SHIP WORD — 2026-08-17 (Nick back)
+
+Supersedes the PARK above. The fix lane completed the owed parked re-run: the offer doc's
+**✅ STAMPS COMPLETE** section (`fw2-merge-offer-to-chat1.md` @ `e281b73`) now shows **unparked
+55/55 CLEAN and parked 55/55 CLEAN** at `tree=dad280e bundle=index-Cib2nzSw.js/525306b` — the
+`j4.mjs` NOVERDICT is CLEARED (`j4` passed parked on the re-run). Nick's post-vacation word:
+*"fw2's completed offer → merge → hold for ship word."* **MERGED `a18115c`** (items 91+92 —
+`BoardEditor.tsx`, `unbornPage.ts`; harnesses; records). Zero schema; item 87 remains absent
+(`fw2-boards-and-defaults`, `DO NOT MERGE YET`). Ledger auto-merged clean, main-only sections
+preserved, registry next free **100**. `tsc` ×2 EXIT 0 on the merged tree. **HELD — NOT
+DEPLOYED.** Production stays git `c23c380` · railway `ee0a9bf2`. Deploy waits on Nick's
+**explicit per-package ship word** (post-vacation posture: merges resume on pre-authorized
+offers; deploys on Nick's explicit words only). When the ship word comes: suite of record at the
+merge HEAD both settings + full amended checklist + rollback ratchets to the P0 stamp.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
