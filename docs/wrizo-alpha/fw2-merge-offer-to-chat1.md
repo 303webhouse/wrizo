@@ -156,3 +156,46 @@ and returns it as its own offer.
   traced to owner `25312`, confirmed dead, killed by exact PID. Never
   `--ignore-foreign`, never a by-name sweep. Cheaper: let a doomed run finish.
 - **Item 98's guard held:** nothing in this wave touched Railway.
+
+---
+
+## ADDENDUM — 2026-08-17: the stamps were already complete, and still describe the merge
+
+**The park was stale by 21 minutes, not wrong.** Chat 1 parked fw2 at
+`2026-08-04 08:08:42` on condition 2 ("the parked stamp is OWED… No completed
+green re-run exists on either fw2 branch") — true when written. This lane's
+completed re-run pushed at **08:29:41**, 21 minutes later:
+
+| | |
+|---|---|
+| unparked | **55/55 CLEAN** — `tree=dad280e bundle=index-Cib2nzSw.js/525306b` |
+| parked | **55/55 CLEAN** — `tree=dad280e bundle=index-Cib2nzSw.js/525306b` |
+
+`j4.mjs` PASSED parked in that run, so the navigate-first fixture fix has had its
+first outing and it was green. Nick's conditional word has therefore been
+satisfied since 2026-08-04; acting on it is chat 1's call, not this lane's.
+
+**13 days of main movement did NOT invalidate that stamp, and this was measured
+rather than argued:**
+
+- 21 commits landed on `main` since this branch's base `e519854` — **all
+  `docs/`-only**. `git diff --stat e519854..origin/main -- apps/` is EMPTY, so
+  neither the product code nor the harness files moved.
+- Merging current `main` into `fw2-offer` was **conflict-free** (merge `5cdab83`).
+- The merged tree builds to **`index-Cib2nzSw.js`, 525306 bytes — byte-identical
+  to the stamped bundle.**
+
+So the existing green stamps cover exactly the software a merge produces today.
+
+**The confirming re-run VOIDED on contention, and that is the guard working.**
+Slot 1's run aborted at `ab3.mjs` (2/55, zero failures) because 16 foreign
+harness browsers appeared MID-RUN: *"Another lane started while this sweep was
+running… this run is VOID rather than partly trustworthy."* A live lane
+(owner node `3852`) holds the box now. **This lane took nothing back from it and
+swept nothing** — the redundant re-measurement is not worth contending for,
+because the bundle identity above already establishes the claim.
+
+**Recommendation:** merge `fw2-offer` on the 2026-08-04 stamps plus the bundle
+identity proof. If a stamp literally naming the merge tree is wanted anyway, this
+lane will run it in the next genuinely quiet window — it would re-measure
+provably identical software.
