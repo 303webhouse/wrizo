@@ -20,6 +20,16 @@ export interface UnbornDescriptor {
   origin: UnbornOrigin;
   kind: UnbornKind;
   binderId: string | null;
+  // ITEM 91 — the board this surface was opened FROM, to be pinned to at birth.
+  // `birth()` has always accepted `opts.pinToBoardId`, and `UnbornSurface`
+  // has always threaded it — but NO call site anywhere ever supplied it, so the
+  // whole capability was dead code. It was unreachable for a structural reason,
+  // not an oversight: the descriptor lives in the URL, and the descriptor had no
+  // field for it, so a door had no way to SAY "born pinned here." This is that
+  // field. It rides the address like every other part of the descriptor, so it
+  // survives a reload with no storage and no store row — the same property that
+  // makes the rest of PB1 reload-safe by construction.
+  pinBoardId: string | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -31,7 +41,13 @@ export function readDescriptor(search: string): UnbornDescriptor {
   const origin = q.get('origin') === 'journal' ? 'journal' : 'loose';
   const kind = q.get('kind') === 'board' ? 'board' : 'prose';
   const binderId = q.get('binder');
-  return { origin, kind, binderId: binderId && binderId.trim() ? binderId : null };
+  const pinBoardId = q.get('pin');
+  return {
+    origin,
+    kind,
+    binderId: binderId && binderId.trim() ? binderId : null,
+    pinBoardId: pinBoardId && pinBoardId.trim() ? pinBoardId : null,
+  };
 }
 
 export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
@@ -39,6 +55,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.origin && d.origin !== 'loose') q.set('origin', d.origin);
   if (d.kind && d.kind !== 'prose') q.set('kind', d.kind);
   if (d.binderId) q.set('binder', d.binderId);
+  if (d.pinBoardId) q.set('pin', d.pinBoardId);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
@@ -103,7 +120,17 @@ export function birth(
   saveJournalEntry(born);
   // Relationships that were part of the SAME act (ruling 2) are applied here,
   // so the row and its relationship are never observable apart.
-  if (opts.pinToBoardId) pinPageToBoard(born.id, opts.pinToBoardId);
+  //
+  // ITEM 91 — the descriptor is now a source for this, not just the explicit
+  // opt. `opts.pinToBoardId` still wins when a caller passes it, but a door that
+  // encoded the board in the ADDRESS no longer has to thread an option through
+  // every intermediate component to be honoured: the four `birthWith` call sites
+  // are untouched by this ticket and all four inherit the behaviour. That also
+  // means the pin survives a reload of the unborn surface, because the address
+  // does — a page opened from a board, left, and returned to is still born
+  // pinned to that board.
+  const pinTo = opts.pinToBoardId ?? d.pinBoardId;
+  if (pinTo) pinPageToBoard(born.id, pinTo);
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most
   // one unborn surface, and only while it is genuinely unborn."

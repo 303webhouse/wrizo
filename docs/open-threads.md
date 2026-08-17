@@ -30,12 +30,20 @@ Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's 
   (`getJournalEntry` falls through to the unborn slot). See item 88's falsification note
   and the 88a+88b close-out below.
 
-**P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible · S3/87 New
-Page defaults (Draft; hide presets in Free Write; typewriter off) · S4/88 panel affordance
+**P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible ·
+~~S3/87 New Page defaults~~ **FIXED — 2026-08-03 (fix lane, wave 2), as an AMENDMENT not a
+flip: the door declares the room (`?mode=draft`), so CD1 S8/A7's front-door ruling stands
+unreversed and Arrival's Write door is untouched. Clause 2 (hide presets in Free Write) DID
+NOT REPRODUCE — already true — so it is asserted, not "fixed." Zero parks owed, each
+candidate checked. See the item 87 close-out below.** · S4/88 panel affordance
 illegible (filing targets read as a page list) · S6/88b `fileTo` toasts success unconditionally
-· S11/**91** board→Page rail lands on the Wrizo landing (verdict: New Page auto-linked back to
-the board) · S12/**92** New Page Card from a board never appears on that board (Plan may mint a
-second board — S0 owed).
+· ~~S11/**91** board→Page rail lands on the Wrizo landing~~ + ~~S12/**92** New Page Card from a
+board never appears on that board~~ **BOTH FIXED — 2026-08-03 (fix lane, wave 2), as ONE fix;
+see the 91+92 close-out below.** 91 reproduced verbatim (`hash=#/` from the Journal board). 92's
+erasure needs an unsaved edit inside the 2000ms autosave window — the S0's "fires on the very
+navigate" was too strong, corrected append-style below. **"Plan may mint a second board" was NOT
+this symptom** — but a real second-board path exists and is now **item 97**, held open (product
+question: restore vs re-mint, Nick's call).
 
 **P2 (polish — waits till back):** S2/86 page size (ruled post-vacation) · S7/88c binder
 unidentifiable in Drawers · S9 shell won't reload offline (flight rule logged) · S10+S17/**90**
@@ -9222,6 +9230,216 @@ sitting closes them.
     carry it, which is exactly the seam Nick's item-91 verdict asks for ("a New Page
     carrying the board's binder/pin descriptor via `unbornHref`"). Building 91's descriptor
     is what would make 92's door able to say "born pinned here" in one act.
+87. **The New Page's defaults — a ruled default AMENDED, not flipped.** **P1 (S3) —
+    BUILT, `tsc` CLEAN, ***NOT VERIFIED*** — 2026-08-03 (fix lane, wave 2). DO NOT MERGE
+    with the 91+92 wave.** Fable's box schedule closed the browser window before
+    `item87.mjs` could run even ONCE: there is no harness result, no falsification run and
+    no suite, so under "stamps on every claim" this item has no claim to make. It waits on
+    this branch, in its own commit, for a window. Reclassified on 2026-08-03 as a
+    REVERSAL of a ruled default owing a full pass with parked assertions; this is that
+    pass, and the parks turned out to be none — which is a finding, not a shortcut.
+    **CLAUSE 1 — "New Page lands in Draft," built ADDITIVELY (Fable's ruling 4).** The
+    obvious patch — flip PageEditor's default so a loose-origin page opens in Draft —
+    would have REVERSED **CD1 S8 (A7)**, which opens loose pages in Free Write on purpose
+    to match the front-door posture, and which **Arrival's own Write door rides on**. A
+    New Page and the Write door produce the SAME loose-origin surface, so origin cannot
+    tell them apart; only the DOOR knows which it is. So the descriptor gains
+    `mode` (`?mode=draft`) and **the door declares the room it opens**: `PagePanel`'s New
+    Page and the board→Page door say Draft, every silent door keeps today's behaviour
+    byte-for-byte, and CD1 S8 stands UNREVERSED. The writer's own remembered per-page
+    mode still outranks the door — a door's opinion is about a page that does not exist
+    yet, so it can never overrule a page the writer has already set. `item87.mjs` S1(c)
+    is the CONTROL that proves Arrival's Write door was not collateral damage.
+    **CLAUSE 2 — "Free Write hides Structure presets": ASSERTED, NOT FIXED.** The S0 read
+    found it already true — PageEditor hands the sliver `kind: 'freewrite'` in Free Write
+    (`PageEditor.tsx:633-653`) and `Sliver.tsx:346` renders the Structure section only
+    under `content.kind === 'draft'`. Writing a fix for a clause that already holds would
+    have been a change with no defect under it and a green check proving nothing. S2 locks
+    the behaviour in from BOTH sides (absent in Free Write, still present in Draft) so a
+    later sliver change cannot quietly undo it. **The clause did not reproduce; recorded
+    rather than silently "fixed."**
+    **CLAUSE 3 — "typewriter off on fresh pages," an AMENDMENT to FX2 S2 at exactly one
+    point.** FX2 S2 ruled "Draft opens with typewriter ON unless the page already holds
+    10+ line-equivalents," reasoning that the line-following fade helps someone starting
+    and hinders someone editing. An EMPTY page seeds 0 line-equivalents, so it fell on the
+    ON side **by arithmetic rather than by intent** — and a page with nothing in it has no
+    lines to follow, which is the state Nick objected to. Only the empty case moves; the
+    threshold rule is untouched wherever it still applies, asserted directly (S3(b): a
+    ~3-line Draft page still opens ON) and independently proved by `fx2.mjs`'s own
+    unchanged ~3-line check.
+    **PARKS: NONE OWED — and every candidate was checked one by one rather than assumed.**
+    Two structural reasons. (i) **Free Write never seeds:** `PageEditor` calls
+    `seedTypewriterDefault` ONLY when the opening mode is Draft, so a fresh Free Write
+    page takes the global default and is untouched by clause 3 — that covers `fx2.mjs`
+    (both halves of "a fresh Free Write page opens with typewriter ON"), `hb2.mjs`
+    ("Open with NO last surface degrades to a fresh Free Write page ... typewriter on")
+    and `b1.mjs`'s cross-reference. (ii) `fx1.mjs`'s "a fresh prose page has typewriter ON
+    by default" runs on a MANUSCRIPT chapter, which opens in Free Write by the `pageType`
+    branch — case (i) again. And clause 1 parks nothing **because it is additive**:
+    `ab3.mjs`/`cd1.mjs`'s "origin:'loose' opens in Free Write by default" records stay
+    literally true. **Had this been built as the flip it first looked like, all of those
+    would have needed parking — the empty park list is evidence the shape was right.**
+    **A GAP FOUND BY READING, BECAUSE RUNNING WAS UNAVAILABLE.** `modeKey` is written
+    ONLY by `switchMode` (`PageEditor.tsx`), i.e. only on an explicit choice — so the
+    door's Draft was never persisted. The descriptor lives in the ADDRESS and birth
+    rewrites the address to `/page/:id`; the row is loose-origin; so the NEXT visit would
+    fall through to CD1 S8's rule and reopen the writer's Draft page in **Free Write**.
+    "New Page lands in Draft" would have been true exactly ONCE. Closed by persisting the
+    door's choice once the page is a ROOM (`!unborn`) — which keeps PB1 intact, since an
+    abandoned door still writes nothing and a reload mints a fresh unborn id (persisting
+    earlier would litter localStorage with keys for pages that never existed). The
+    `saved` guard means it can never overwrite a choice the writer has made. **This is
+    the kind of defect a harness run finds; a careful read found it instead, which is
+    what a browser freeze leaves available.**
+    **VERIFICATION — OWED, NOT DONE.** `scripts/harness/item87.mjs` exists with 7 checks,
+    three of them CONTROLS (Arrival's Write door still Free Write; a ~3-line Draft page
+    still ON; Draft still HAS the Structure presets) so the file cannot be satisfied by a
+    change that simply moves every default. **It has never been executed.** Owed when a
+    window opens: the falsification run against a pre-fix bundle, then both stamped
+    suites. Until then this item is BUILT, not verified, and is excluded from the merge
+    offer by name.
+91+92. **The board's Page door, and the card that survives.** **P1+P1 (S11+S12) — BUILT
+    + VERIFIED — 2026-08-03 (fix lane, wave 2).** One fix, because one S0 proved one
+    subject: a page made FROM a board must end up linked TO that board, and stay linked.
+    **S0 CORRECTION, append-style — the entry above stands, this amends it (Fable's
+    ruling 1).** That entry says the stale-boxes erasure fires "on the very `navigate`
+    that door performs." **Too strong.** `lastSavedRef = useRef(boxes)`
+    (`BoardEditor.tsx:741`) is initialized to the SAME array as `boxes`, so on a board
+    with no local edit the unmount guard `boxesRef.current !== lastSavedRef.current` is
+    FALSE and the stale write never happens. The erasure requires an **outstanding
+    unsaved edit inside the 2000ms autosave window** (`AUTOSAVE_MS`). That is not a
+    contrived race — it is a writer's ordinary rhythm: place a card, and within two
+    seconds reach for New Page Card. **The first draft of `item9192.mjs` asserted the
+    erasure on a CLEAN board and PASSED against the pre-fix bundle** — proving nothing,
+    and saying so. Staging the real precondition turned it red exactly as it should:
+    `pins=[]` with `kinds=["text"]`, the stale array writing back the plain card and
+    nothing else.
+    **THE STAGED CATCH — why staging exists.** Reproducing that precondition also
+    falsified THIS LANE'S OWN FIRST FIX. The first version assigned the store's array as
+    local truth (`setBoxes(updated.boxes)`). But at the moment that door is used the
+    STORE is a strict subset of what the writer sees — the diagnostic printed
+    `boxesInStore = []` while the board displayed a card — so that fix would have
+    preserved the pin and **silently discarded every unsaved card on the board**. One
+    loss traded for another, and it would have shipped green against a clean-board
+    scenario. **RATIFIED SHAPE (Fable):** append the pin to `boxesRef.current`, never a
+    store read as local truth — "this component's own live boxes, not a fresh store
+    read," in the deck-wizard comment's own words (`BoardEditor.tsx:665-676`, the law
+    this door reached around). `S1b (c)` now asserts the unsaved card survives too.
+    `pinPageToBoard` still BUILDS the box (it owns stacking placement, the idempotent
+    already-pinned check, the self-pin/system-board guards); only the telling-the-
+    component half was missing. `boxesRef.current` is assigned directly, not merely via
+    `setBoxes`, because it is assigned during RENDER and this handler batches its update
+    with a `navigate` that unmounts — there may be no further render, and the unmount
+    guard reads the REF. `lastSavedRef` is deliberately left alone so that guard still
+    writes the merged array on the way out.
+    **ITEM 91 — reproduced verbatim.** On the Journal board, PAGE → gave `hash=#/`: the
+    Wrizo landing, exactly Nick's S11. `backTo` is `'/'` for a system board
+    (`BoardEditor.tsx:1678`), so the Board's one universal control ejected the writer out
+    of the room. CD4 S1 reasoned an exit was honest for a permanently-unpaired board;
+    **Nick overruled it**, and this is the successor.
+    **THE KIND-SPLIT (RATIFIED, Fable's ruling 2) — "auto-linked back" is not one
+    thing, and getting it wrong is invisible until a card vanishes:** a **USER** board's
+    membership is AUTHORED, so the link is a PIN carried on the descriptor (`?pin=`) and
+    applied by `birth()`, with the board's binder riding along (Nick's "binder/pin
+    descriptor"); a **SYSTEM** board's membership is DERIVED and never authored (A16),
+    and `reconcileSystemBoard` DELETES any pin whose page does not qualify — a pin there
+    would be erased on the next reconcile, which is item 92's own defect — so the honest
+    link is MEMBERSHIP (Journal takes journal-origin, the Shelf takes loose, and the
+    board adopts it by itself); **TRASH** has no creatable membership and keeps the old
+    exit, named rather than left to be rediscovered.
+    **THE DEAD SEAM IS NOW LIVE.** `UnbornDescriptor` gains `pinBoardId`, serialized as
+    `?pin=`; `birth()` reads `opts.pinToBoardId ?? d.pinBoardId`, so all four existing
+    `birthWith` callers are UNTOUCHED and still inherit it. The pin rides the ADDRESS, so
+    it survives a reload of the unborn surface — a page opened from a board, left, and
+    returned to is still born pinned to that board. The door itself writes nothing: PB1
+    survives item 91 (asserted, S2(c)).
+    **VERIFICATION — `scripts/harness/item9192.mjs`, 16 checks, PROVEN TO BITE:** 10/16
+    FAILED against the pre-fix bundle, 16/16 with the fix. Two CONTROLS pass on both
+    builds and are labelled as such — the clean-board case (S1, which is why the first
+    draft proved nothing) and Trash's preserved exit (S4) — so the file cannot be
+    satisfied by a change that simply rewires every door.
+    **PARKS — item 91 reverses a ruled default (CD4 S1), so assertions PARK with
+    originals quoted and successors named, never silently flipped. THREE files, not
+    two.** `b2.mjs`'s Shelf backTo check is re-pointed live and parked **generation 2**
+    (its CD4-era park text quoted whole inside the new record name); `bm1.mjs`'s "on an
+    UNPAIRED board travels to the FX10 named return (leaves the board)" is parked with
+    its record byte-frozen — genuinely falsified, and for the right reason: the new
+    address CONTAINS the board id as `?pin=`, so the writer no longer leaves the board
+    behind, they take it with them. **`cd4.mjs` was the one this lane MISSED** on its
+    first sweep (a grep for the door selector found b2 and bm1; cd4 asserts the same exit
+    TWICE — the Shelf cold-load path and the unpaired-loose path) and its park section
+    was documented as "an empty no-op by design," so it had no `pok` scaffolding at all.
+    **The full suite is what found it**, at `[14/55] NOVERDICT` — the argument for
+    running the whole suite rather than the files you think you touched. All three parked
+    sections re-verified GREEN (b2 4/4, bm1 2/2, cd4 2/2, item9192 1/1).
+    **TOOLING NOTE, learned the expensive way and worth a standing habit:** stopping a
+    suite mid-run (`TaskStop`) ORPHANS its harness browsers, and the next run — ANY
+    lane's — is then refused by the dirty-machine guard. `run-suite` self-heals only its
+    OWN profile dir on the way in, so nothing reaps another run's leftovers. Recovery
+    stayed lawful and is the pattern to reuse: the profile dir encodes the launching node
+    PID (`ws-runtime-verify-<pid>`), so the 9 orphans were all traced to owner `25312`,
+    **confirmed dead** — belonging to no live run, therefore not another lane's in-flight
+    work — and killed BY EXACT PID. Never `--ignore-foreign`, never a by-name sweep.
+    Cheaper still: let a doomed run finish.
+    **SUITE — unparked `55/55` CLEAN**, `tree=e519854+7dirty
+    bundle=index-Cib2nzSw.js/525306b` (`item9192.mjs :: PASS (16 checks)`), plus `tsc`
+    clean. **PARKED: `54/55`, NOT CLEAN — one NOVERDICT (`j4.mjs`), and this lane is NOT
+    clearing it.** `j4.mjs` threw `SecurityError: Failed to read the 'localStorage'
+    property from 'Window'`. **The known-flake list stays EMPTY because the mechanism is
+    NAMED, not excused:** `j4.mjs`'s PARKED block calls `localStorage.clear()` as its
+    FIRST act, before any navigation — the only fixture in the suite that does — and
+    `withHarness` does not navigate, it LAUNCHES the browser at `${base}/#/`
+    (`runtime-verify.mjs:675`). Until that initial load commits, the document is still
+    `about:blank` and localStorage on it throws exactly this. Every other fixture
+    (`freshDesk`, everywhere) navigates first. **Pre-existing and untouched by this diff**
+    — nothing in this wave goes near `j4`'s subject — and the UNPARKED run of the
+    IDENTICAL bundle had `j4` green minutes earlier, which is the signature of a race
+    rather than a product change. **Fixed here** by navigating first, matching every other
+    fixture; **that fixture fix is itself UNRUN** (the box schedule closed the window).
+    **So the parked stamp for 91+92 is OWED, not claimed** — both settings get re-run the
+    moment a window opens, and the merge offer says so rather than presenting a half-stamp
+    as a whole one.
+    **↑ THE OWED STAMP IS NOW PAID — 2026-08-04, post-deploy-stamp, slot 1.** Re-run on a
+    CLEAN, NAMED tree (branch `fw2-offer` @ `dad280e`, item 87's code deliberately absent
+    so the stamp describes exactly the software being merged): **unparked `55/55` CLEAN
+    and parked `55/55` CLEAN, both `tree=dad280e
+    bundle=index-Cib2nzSw.js/525306b`** — no `+Ndirty` suffix, and the SAME asset hash as
+    the earlier runs, which is itself the proof that item 87's code is not in the offered
+    bundle. **`j4.mjs` PASSED parked**, so the navigate-first fixture fix is no longer
+    unrun — the first-parked-act race is closed by exercise, not by argument.
+    **ONE INCIDENT ON THE WAY, ATTRIBUTED AND NOT INHERITED:** the menus lane reported
+    (record: `docs/menus/incident-2026-08-04-s4.md`) that an S4 cleanup error killed a
+    browser belonging to this lane's first parked attempt. Its `e1` leg was left with a
+    live node child and no browser — it would have hung to timeout and read red. **That
+    run was ABANDONED and restarted rather than reported with an excused red**: chat 1
+    merges on these stamps, and "54/55 with one red we agreed to disregard" is a worse
+    thing to merge on than a clean 55/55. The restart cost the same wall-clock as waiting
+    for the bad result and re-running one leg. **`e1` passed on the clean re-run**,
+    confirming the red would indeed have been spurious. Stopping that run orphaned
+    NOTHING (its browser was already dead); the full owner-liveness check was run anyway
+    rather than assumed.
+    **REGISTERED BY FABLE (2026-08-03):** the honest half-stamp ships as described; this
+    diagnosis is entered as the **first-parked-act race species** (a fixture touching
+    `localStorage` before its first navigation, racing the browser's launch load). Two
+    boundaries recorded WITH it, because a species is only useful if its edges are drawn:
+    **(a) THE b2-1 CONVERGENCE IS A HYPOTHESIS, NOT AN ATTRIBUTION** — same pre-commit
+    window, different symptom, and its own probe is owed before anything is attributed to
+    it. **This lane's data constrains it and is offered as evidence, not as a verdict:
+    `b2-1.mjs` returned PASS (28 checks) in ALL SIX suite runs this lane executed —
+    unparked and parked, across four distinct bundles** (`index-iOcJ71l_`,
+    `index-CThKwy6K`, `index-Cib2nzSw` ×2 settings). So no b2-1 symptom is visible from
+    here; whoever runs the probe should know that this window's runs do not reproduce it.
+    **(b) THE ORIGINAL j4 RED (`:84` null-click, HARNESS_PARKED unset) STAYS
+    UNATTRIBUTED** — the species does not inherit backwards, and this lane adds nothing to
+    it either way: **that failure was never observed in any run this lane made.** j4
+    returned PASS in four of this lane's five runs that reached it; the single red is the
+    `:297` parked-block SecurityError diagnosed above, at a different line, a different
+    setting and a different symptom.
+    **ITEM 97 NOT RIDDEN — DECLINE ACCEPTED (Fable's ruling 3).** It did not fall out of
+    this read (this diff touches `BoardEditor` and `unbornPage`, not
+    `getOrCreatePlanBoard`), and it carries a product question — restore the trashed
+    board, or re-mint and clear the pointer — that is Nick's, not a build call. Stays
+    open, post-vacation.
 88a+88b. **The filing target is validated; the unborn page stops being born by a side
     door.** **P0 (S5) + P1 (S6) — FIXED — 2026-08-03 (fix lane).** Closes 88a and 88b as
     a pair, because both live in `setPageHome` and one return value fixes both.

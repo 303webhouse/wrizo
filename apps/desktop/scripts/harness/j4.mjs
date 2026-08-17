@@ -294,6 +294,20 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
+    // FIXTURE FIX (2026-08-03, fix lane) — reach the app's own document BEFORE
+    // touching localStorage. This block was the only fixture in the suite that
+    // called localStorage.clear() as its first act, and it was racing the
+    // browser's initial page load: `withHarness` does not navigate, it LAUNCHES
+    // the browser at `${base}/#/` (runtime-verify.mjs), so until that load
+    // commits the document is still about:blank and localStorage throws
+    // `SecurityError: Access is denied for this document`. Observed exactly
+    // once, in a PARKED run, on a bundle whose UNPARKED run had this file green
+    // minutes earlier — which is the signature of a race, not of a product
+    // change. Every other fixture in the repo (freshDesk, everywhere) navigates
+    // first; this now matches them. NOT filed as a flake: the mechanism is named,
+    // so the known-flake list stays empty.
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'app document before PARKED localStorage access' });
     await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PARKED board seed' });
