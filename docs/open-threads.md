@@ -8565,6 +8565,49 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## P2c DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship P2c")
+
+**P2c — item 82 fix (b) + SC2/item 62 (the Script's paginated floor).** Nick's explicit ship
+word: "Ship P2c." The merged-but-undeployed set since the fw2 live build (`fbdb27e`). Deploying
+the `main` HEAD (`b119365`) — this records commit's own SHA, stamped below immediately after
+`railway up`.
+
+**New PRODUCT code since the fw2 live build (`fbdb27e`) — apps/desktop/src, SIX FILES (verified
+`fbdb27e..HEAD`, +1046/−46), ZERO schema, ZERO server:**
+- item 82 **fix (b)** · merge `e9ea36c` (branch `item82-fixb-j5-seam`) — `persistence.ts` (+56):
+  `j5`'s `makePage` now seeds THROUGH the app's seam, never raw storage; the seam gained an
+  optional `JournalPageSeed`, and `createJournalPage` has ZERO call sites in `src` (product blast
+  radius empty). Unblocked SC2's sixth suite. Item 100 opened alongside (the CDP port-file race —
+  harness-only, sibling of item 99).
+- item 62 **SC2** · merge `32376b9` (branch `sc2-s5-memo`; DO-NOT-MERGE marker `eb74835`
+  honored-through per 77(c)) — the Script's paginated floor: `ScriptEditor.tsx` (+419),
+  `index.css` (+119), `scriptLedger.ts` (new, +181), `scriptMetrics.ts` (+61), `scriptPaginate.ts`
+  (new, +256). The caret-across-the-break fix (mechanism observed: a break-crossing is a DOM
+  delete+insert; the remembered offset is spent only on a same-session remount) + the
+  stored-nowhere, viewport-invariant paginator with a termination proof. **REVIEWED GREEN, item 62
+  CLOSED** (`docs/wrizo-alpha/sc2-review-fable.md`).
+- Harness delta: `j5.mjs` (fix b), `sc1.mjs` / `sc2.mjs` (SC2).
+
+**Docs since `fbdb27e` (records only, no deployed surface):** the fw2 review, the fix (b) + SC2
+records + riders (item 100, the item-89 `persistDirty` ~2ms-p95 observation, item 62 CLOSED), and
+this manifest. Confirmed: `fbdb27e..HEAD` touches `apps/desktop/src` in exactly the six files above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, machine-clean — **56/56 UNSET (CLEAN) and 56/56
+PARKED (CLEAN)** at `tree=b119365 bundle=index-GZdjfpTW.js/530759b` — the same bundle SC2 stamped
+at `ecd37bf` (the deploy HEAD's `apps/` is byte-identical to the SC2 stamped tree, which already
+carried fix b). `tsc` ×2 EXIT 0 (app+node); `build:web` clean; the guard confirmed no foreign
+browsers at start or mid-run (**NOT contaminated**). Item 82's family did NOT red (`j5` 37, `j4`
+24, `b2-1` 28, `fx6` 37, `th2` 42, `m4` 43 green here — an observation about this head, not a
+closure; `j4`/`b2-1`/`fx6` remain UNATTRIBUTED).
+
+**ROLLBACK TARGET: git `fbdb27e` · railway `0fdc8f94-c735-443b-8b3e-395e5b647c58`** — the current
+live production build (Ship 2 / fw2). Rollback is a redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
+`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
+(`index-GZdjfpTW.js`) + `/auth/me` 401 verified LIVE.
+
 ## SHIP 2 (fw2) DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship 2")
 
 **SHIP 2 — fw2, items 91+92 (the boards work).** Nick's explicit per-package ship word: "Ship 2."
