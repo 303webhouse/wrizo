@@ -8604,9 +8604,21 @@ closure; `j4`/`b2-1`/`fx6` remain UNATTRIBUTED).
 **ROLLBACK TARGET: git `fbdb27e` · railway `0fdc8f94-c735-443b-8b3e-395e5b647c58`** — the current
 live production build (Ship 2 / fw2). Rollback is a redeploy of that tree (`railway up`).
 
-**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
-`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
-(`index-GZdjfpTW.js`) + `/auth/me` 401 verified LIVE.
+**DEPLOY STAMP: git `643dd16` · railway `ec2b9755-1746-4b23-a3f8-e33130f984a9`** — DEPLOYED
+2026-08-17 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:9fe46e80`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-GZdjfpTW.js` / `index-62lZ1TCK.css`) — the same
+content hash the suite of record stamped, so what is LIVE is exactly what was tested — and
+`/auth/me` **401**. The prior fw2 build (`fbdb27e` · railway `0fdc8f94`) is now superseded as the
+live build; the rollback SOURCE remains git `fbdb27e` (redeploy that tree via `railway up`).
+
+**Item 82 fix (b) + item 62 (SC2): DEPLOYED** — the j5 seam and the Script's paginated floor are
+LIVE. Item 62 is CLOSED (reviewed GREEN); item 82's fix (b) is deployed with its `j5` red removed
+at the source (the family's other reds — `j4`/`b2-1`/`fx6` — remain UNATTRIBUTED, undeployed-code
+notwithstanding, and a green run is not their diagnosis). Item 82's family did NOT red in the
+suite of record; no red-suite clause was invoked. Item 100 (CDP port-file race) stays OPEN,
+harness-only, for the harness floor's owner. Rollback ratchet is now this stamp.
 
 ## SHIP 2 (fw2) DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship 2")
 
