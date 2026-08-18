@@ -7265,6 +7265,12 @@ be a hidden explanation for any of that item's reds. Registry: next free **101**
     **SIXTH SUITE OF RECORD — GREEN AT BOTH SETTINGS. THE GATE IS MET AND THE MERGE OFFER
     IS MADE — 2026-08-17 (SC-chain lane).** Head **`eb74835`**, `sc2-s5-memo` rebased onto
     `main` @ `8385ffd`.
+    **→ ITEM 62 MERGED `32376b9` — AWAITING FABLE'S REVIEW (2026-08-17, chat 1, on Fable's
+    merge order).** The `eb74835` DO-NOT-MERGE marker honored-through per 77(c): all commits
+    from the marker up are records-only (apps/=0), and the merged `apps/` tree is
+    byte-identical to the stamped tip `ecd37bf` — so the stamp carries (56/56 both settings,
+    bundle `index-GZdjfpTW.js`). Zero schema; `tsc` ×2 EXIT 0. **NO DEPLOY** — P2c holds for
+    Nick's word behind Fable's review; production stays git `fbdb27e` · railway `0fdc8f94`.
     **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=eb74835
     bundle=index-GZdjfpTW.js/530759b` and PARKED `SUITE RESULT: CLEAN — tree=eb74835
     bundle=index-GZdjfpTW.js/530759b`, 56/56 each** (main's 55 + `sc2.mjs`), identical tree
@@ -9922,6 +9928,14 @@ sitting closes them.
     both runs, so the two results describe the same software and not merely the same
     commit. `tsc` clean. *(The parked run was still in flight at the fix's own commit
     `8875343`, which said so rather than claiming it; this line closes that gap.)*
+    **OBSERVATION — 2026-08-17 (surfaced by SC2's sixth suite, item 62).** `persistDirty()`
+    called inside `flush()` (this fix) adds **~2ms p95 to flush-adjacent timing measurements** —
+    the absolute cost is trivial, but it MOVED THE BASELINE. **Re-derive baselines before any
+    future timing gate** rather than reusing a pre-`persistDirty` figure; a stale baseline would
+    conflate this ticket's cost with a lane's own measurement. SC2's sixth-suite records carry
+    the numbers (its 20-page p95 was measured against the post-`persistDirty` floor for exactly
+    this reason). Non-blocking; recorded so a later timing gate does not silently inherit a
+    moved floor.
 83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
     (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
     **vetoable by Nick on sight.** Authority: SV5 (`docs/wrizo-alpha/hd-arc-seed.md`)
