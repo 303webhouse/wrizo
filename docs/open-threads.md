@@ -7271,6 +7271,18 @@ be a hidden explanation for any of that item's reds. Registry: next free **101**
     byte-identical to the stamped tip `ecd37bf` — so the stamp carries (56/56 both settings,
     bundle `index-GZdjfpTW.js`). Zero schema; `tsc` ×2 EXIT 0. **NO DEPLOY** — P2c holds for
     Nick's word behind Fable's review; production stays git `fbdb27e` · railway `0fdc8f94`.
+    **→ REVIEWED, GREEN — ITEM 62 CLOSED (Fable, 2026-08-17)** —
+    `docs/wrizo-alpha/sc2-review-fable.md`; VERDICT PASS (7 files, +2403/−55, zero
+    schema/server). The caret fix's mechanism was OBSERVED not predicted (a break-crossing is
+    a DOM delete+insert; the fix spends a remembered live offset ONLY on a same-session remount,
+    genuine activations fall through unchanged); the paginator is a stored-nowhere projection,
+    viewport-invariant by construction, with `applyBreakRules` carrying a termination proof
+    ("an oscillation is not a wrong page count, it is a frozen editor"). Three non-blocking OBS,
+    all self-flagged or boundary-grade: the page-number trailing period (Nick's one word), the
+    caret bottom-edge breathing room (= Part 3 item 6 of Nick's sitting agenda), and the
+    54-line-action split (noted for SC2.1). **The SC arc's remaining obligations live in item 76
+    (dissolution + bound re-derivation) and the two standing conditions on the keystroke path**
+    — item 62 itself is CLOSED. The memo's effect stays verification-owed under Amendment 1.
     **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=eb74835
     bundle=index-GZdjfpTW.js/530759b` and PARKED `SUITE RESULT: CLEAN — tree=eb74835
     bundle=index-GZdjfpTW.js/530759b`, 56/56 each** (main's 55 + `sc2.mjs`), identical tree
