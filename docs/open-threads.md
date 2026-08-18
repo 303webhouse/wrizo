@@ -8443,6 +8443,46 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## SHIP 2 (fw2) DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship 2")
+
+**SHIP 2 — fw2, items 91+92 (the boards work).** Nick's explicit per-package ship word: "Ship 2."
+Merged `a18115c` (Nick's post-vacation word) + formal merge order `0dc6e75` (fw2-offer @
+`641e946`). Deploying the `main` HEAD (`bd4cdcb`) — this records commit's own SHA, stamped below
+immediately after `railway up`.
+
+**New PRODUCT code since the P0 live build (`c23c380`) — apps/desktop/src, TWO FILES, ALL fw2,
+nothing else (verified `c23c380..HEAD`, 118/−5):**
+- item 91 · **the board's Page door** — `BoardEditor.tsx`. An unpaired board's PAGE opened the
+  Wrizo landing (`backTo` = `/` for a system board); it now opens a New Page linked back, split
+  by board kind — PIN for a user board (authored membership), MEMBERSHIP for a system board
+  (derived), Trash keeps its exit.
+- item 92 · **the card that survives** — `BoardEditor.tsx` + `unbornPage.ts`. A New-page Card
+  written by `pinPageToBoard` was erased by BoardEditor's stale local `boxes` on unmount; the pin
+  now appends to `boxesRef.current` (never a store read as local truth), surviving the unmount.
+- **ZERO schema, ZERO server.** Merge `a18115c` (fw2-offer @ `e281b73`, Nick's word) + `0dc6e75`
+  (fw2-offer @ `641e946`, Fable's formal order — the addendum's bundle-identity proof).
+
+**Docs since `c23c380` (records only, no deployed surface):** the item 83/84 menus-arc design
+records + the item-84 lock sheet (on its own branch, unmerged), the fw2 offer + addendum +
+Fable's ratifications, the SHIP 2 park→unpark→merge ledger, the vacation + lane-status handoffs,
+and this manifest. Confirmed: `c23c380..HEAD` touches `apps/desktop/src` in exactly the two files
+above; item 87 is NOT here (built-unverified on `fw2-boards-and-defaults`).
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, machine-clean — **55/55 UNSET (CLEAN) and 55/55
+PARKED (CLEAN)** at `tree=bd4cdcb bundle=index-Cib2nzSw.js/525306b` — **byte-identical to the fix
+lane's 2026-08-04 stamp** (`tree=dad280e`), the docs-only-carry proven end to end. `tsc` ×2 EXIT 0
+(app+node); `build:web` clean; the guard confirmed no foreign browsers at start or mid-run (**NOT
+contaminated**). `item9192.mjs` 16 checks (10/16 red pre-fix); item 82's family did NOT red.
+
+**ROLLBACK TARGET: git `c23c380` · railway `ee0a9bf2`** — the current live production build (the
+P0 wave: offline-strand self-heal + filing validation). Rollback is a redeploy of that tree
+(`railway up`).
+
+**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
+`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
+(`index-Cib2nzSw.js`) + `/auth/me` 401 verified LIVE.
+
 ## P0 WAVE DEPLOY MANIFEST — 2026-08-03 (chat 1, on Nick's "Ship it"; Fable's amended checklist)
 
 **P0 WAVE — the offline-strand + filing fixes, plus the merged-but-undeployed carry.** Nick's
