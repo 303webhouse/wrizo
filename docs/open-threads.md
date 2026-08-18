@@ -7262,6 +7262,77 @@ be a hidden explanation for any of that item's reds. Registry: next free **101**
     **A CORRECTION THIS RUN FORCED, recorded at item 82:** the clean unset pass falsified
     this lane's earlier "j5 is the deterministic red" claim — `j5` and `j4` both PASS at
     unset here. Item 82 is one family of races, not a deterministic spine plus a family.
+    **SIXTH SUITE OF RECORD — GREEN AT BOTH SETTINGS. THE GATE IS MET AND THE MERGE OFFER
+    IS MADE — 2026-08-17 (SC-chain lane).** Head **`eb74835`**, `sc2-s5-memo` rebased onto
+    `main` @ `8385ffd`.
+    **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=eb74835
+    bundle=index-GZdjfpTW.js/530759b` and PARKED `SUITE RESULT: CLEAN — tree=eb74835
+    bundle=index-GZdjfpTW.js/530759b`, 56/56 each** (main's 55 + `sc2.mjs`), identical tree
+    AND bundle across halves, zero FAIL/TIMEOUT/NOVERDICT, no contamination line, committed
+    runner, rebuilt immediately before running, no `--ignore-foreign`, box verified quiet at
+    start. **`sc2.mjs` 72/72 and `sc1.mjs` 71/71 at BOTH settings** — SC2's own instruments
+    green for the fifth consecutive suite, and SC1's inherited merge-order obligation
+    satisfied at the new head.
+    **WHAT UNBLOCKED IT WAS ITEM 82 FIX (b), AND THE CHAIN IS WORTH NAMING.** The fifth
+    suite failed the gate on ONE red — `j5` NOVERDICT, parked — which fix (b) has since
+    root-caused and removed at the source (`j5` seeds through the app's seam; merged
+    `e9ea36c`). This rebase pulls that fix underneath SC2, and **the whole of item 82's
+    family is green here at both settings: `j5` 37, `j4` 24, `b2-1` 28, `fx6` 37, `th2` 42,
+    `m4` 43.** That is an observation about this head, not a closure of item 82 — `j4`,
+    `b2-1` and `fx6` remain UNATTRIBUTED and a green run is not a diagnosis.
+    **THE REBASE WAS A PURE REPLAY, and fidelity was measured rather than assumed.**
+    `--empty=keep` so the empty gate-commit survived as itself; **12/12 commits replayed,
+    ZERO conflicts; all SEVEN touched files byte-identical BLOBS pre→post.** The previous
+    rebase managed 6 of 7 because `index.css` was touched by both sides and had to
+    interleave; **main has not touched `index.css` since `6ec5a85`, so this time nothing
+    interleaved at all** — the stronger result, and it is stated with its reason so it is
+    not mistaken for extra care.
+    **THE SHA MAP (originals verbatim; no commit message was edited):** `adf7f82`→`48fa481`
+    (S0) · `94f068f`→`dc36b2e` (S0 re-issue) · **`e5b99d6`→`fd6bd7f` (S0 re-issue 2 — THE
+    FROZEN BASELINE the latency gate names)** · `f20e7af`→`8ef718c` (S1) ·
+    `ea61f13`→`801bb29` (S2a) · `f769254`→`fd9610a` (S2a.1) · `3dee058`→`9073019` (S2b) ·
+    `0dae0e1`→`22caa19` (S4) · `7c51a83`→`a609772` (S5 caret — the separable pre-memo head)
+    · `8728d34`→`fc7c18e` (the memo seam) · `acb7a0c`→`db71cd3` (the gate record) ·
+    `fd6713a`→`eb74835` (the WIP marker).
+    **ARCHIVE REF PUSHED BEFORE THE FORCE-PUSH, on the precedent this item set:
+    `origin/sc2-prerebase-archive-3` @ `fd6713a`.** The fifth suite's head is cited BY SHA
+    in item 82's own records and survived nowhere else once `sc2-s5-memo` was rewritten.
+    Verified rather than assumed: `merge-base --is-ancestor` TRUE for both `fd6713a` and the
+    frozen-baseline commit against the archive.
+    **PROVENANCE — WHICH APP WAS TESTED, and a false negative caught on the way.** Served
+    bundle `index-GZdjfpTW.js` + `index-62lZ1TCK.css`, with the two SC2-only discriminators
+    `script-sequence` and `script-page-number` PRESENT in the bundle, present in SC2's src
+    (`ScriptEditor.tsx`, `index.css`) and **ABSENT from `origin/main`'s src entirely**. The
+    first run of that check reported them absent from SC2's OWN source — a result that
+    contradicted the bundle. It was chased rather than shrugged at: the `git grep` pathspec
+    was relative to the wrong cwd, **which meant the NEGATIVE control was a false negative
+    too** and the whole check was re-run from the repo root. A discriminator that cannot
+    fail is not a control; this one was nearly published in that state.
+    **THE TIMING GATE — NOT OWED, AND NOT CLAIMED AS RE-PASSED.** The standing condition
+    (any src change touching the script keystroke path re-runs the interleaved gate) was
+    tested by measurement and is **NOT triggered**: every keystroke-path file
+    (`ScriptEditor.tsx`, `scriptPaginate`, `scriptLedger`, `scriptDoc`, `scriptText`,
+    `scriptKeys`, `scriptMetrics`, `scriptAutocomplete`, `scriptSmartText`) is BYTE-UNTOUCHED
+    by main since `6ec5a85`, and no hunk in the five files main did change
+    (`BoardEditor`, `PlacesPanel`, `persistence`, `sync`, `unbornPage`) carries a `script`
+    token on either side. **One caveat is raised rather than buried:** item 89 put
+    `persistDirty()` INSIDE `flush()`, so every debounced flush now costs an extra
+    `localStorage.setItem`. That is none of the three named surfaces and sits off a
+    keystroke's critical path, but it is a real route for typing cost to move.
+    `sc2.mjs` was therefore run under `SC2_TIMING=1` at this head anyway — **PASS 72/72 with
+    `RUNS=3`; 20-page p95 3.2ms, 5-page control p95 1.3ms, scaling ratio 2.46, run-to-run
+    spread 1.25× / 1.08×.** **What that does NOT establish, stated because the harness
+    itself warns of it:** `sc2.mjs` RECORDS these figures and asserts only correctness gates
+    (caret focused, all 240 keystrokes landed, input fired once each, all three runs
+    eligible) — **it does not assert the 2× bound**, which requires a pre-SC2 baseline
+    re-derived BACK TO BACK in the same session, and the file explicitly warns that gating
+    against a ratio recorded in another session is invalid. So this is an observation at the
+    tip, **not** a re-pass of Amendment 1's bound. The `17edc10`-era figures (1.10×; memo
+    0.84×) stand as the gate of record at the archived SHAs. **And the caveat cannot be
+    isolated by this instrument in any case** — the frozen baseline predates main's
+    `persistDirty` change, so a comparison against it would conflate SC2's cost with main's;
+    answering it properly is a main-vs-main question and belongs to whoever owns item 89's
+    surface, not to SC2's merge.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`

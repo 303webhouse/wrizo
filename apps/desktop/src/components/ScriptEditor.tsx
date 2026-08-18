@@ -1,10 +1,12 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsPinning } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
-import { WIDTH_CH, INDENT_CH, RIGHT_ALIGN_TYPES, UPPERCASE_TYPES } from '../store/scriptMetrics';
+import { WIDTH_CH, INDENT_CH, RIGHT_ALIGN_TYPES, UPPERCASE_TYPES, SPACE_BEFORE, widthChFor } from '../store/scriptMetrics';
+import { lineLedger, wrapToLines } from '../store/scriptLedger';
+import { paginate, type Page, type Placed } from '../store/scriptPaginate';
 import { ENTER_MAP, TAB_MAP, TYPE_CYCLE, cycleBackward } from '../store/scriptKeys';
 import { computeAutocomplete, applyAutocomplete, type AutocompleteState } from '../store/scriptAutocomplete';
 import { shouldPromoteToScene, applyAutoContd } from '../store/scriptSmartText';
@@ -73,15 +75,130 @@ function wordCount(text: string): number {
 
 // Shared geometry for both the active and static renders of an element — one
 // function so the two can never drift from each other visually.
-function elementStyle(t: ScriptElType): React.CSSProperties {
+// SC2 S1 — the page gains its vertical rhythm. Until now `elementStyle` set no
+// vertical margin at all and `SPACE_BEFORE` sat dormant beside `PAGE_LINES`, so
+// every element rendered flush against the next: a screenplay with no vertical
+// rhythm, which is incorrect on its face rather than a matter of taste.
+//
+// THE SPACING IS IN LINE UNITS, NEVER px OR em (Fable, 2026-07-25). N blank
+// lines of arithmetic must render as exactly N line-heights, so the margin is
+// `calc(var(--script-line) * N)` where `--script-line` is the sheet's own line
+// box (index.css). A px or em value could drift off the 12pt box and the
+// ledger's count would stop matching the page.
+//
+// SUPPRESSION IS NOT HERE, DELIBERATELY. "The first element of a page
+// contributes zero space" is the CONSUMER's rule, not the type's — this
+// function stays a pure function of the element type, which is also what lets
+// S5 freeze one style object per type for memoization. Document start is
+// handled in CSS (`.script-sheet > *:first-child`); S2's paginator will apply
+// the identical rule at every page top.
+//
+// SC2 S2b — ONE FROZEN OBJECT PER ELEMENT TYPE, precomputed at module level.
+// The function's shape is unchanged; what changes is that two elements of the
+// same type now receive the SAME object, not two equal ones. That is the
+// precondition for S5's `React.memo` on StaticScriptElement: a memo whose style
+// prop is a fresh object every render is a memo that never hits.
+//
+// It is ALSO the reason this must not become a function of position. S2b renders
+// a SEQUENCE of pages, and the obvious way to zero a page-top element's space
+// would be to branch this on "is it first on its page" — which would make the
+// style depend on pagination, defeat the freeze, and put the same element's
+// appearance at the mercy of a break above it. The page-top rule stays where it
+// already lived: in CSS (`.script-sheet > *:first-child`), which becomes
+// per-page for free the moment there is more than one sheet, and which the
+// paginator's own `spaceBefore: 0` at every page top agrees with by
+// construction.
+function buildElementStyle(t: ScriptElType): React.CSSProperties {
   const rightAlign = RIGHT_ALIGN_TYPES.has(t);
+  const space = SPACE_BEFORE[t];
   return {
     maxWidth: `${WIDTH_CH[t]}ch`,
     marginLeft: rightAlign ? 'auto' : `${INDENT_CH[t]}ch`,
     marginRight: rightAlign ? 0 : undefined,
+    marginTop: space > 0 ? `calc(var(--script-line) * ${space})` : 0,
     textAlign: rightAlign ? 'right' : 'left',
     textTransform: UPPERCASE_TYPES.has(t) ? 'uppercase' : 'none',
   };
+}
+
+const EL_STYLE: Partial<Record<ScriptElType, React.CSSProperties>> = {};
+const EL_STYLE_STATIC: Partial<Record<ScriptElType, React.CSSProperties>> = {};
+for (const t of ['scene', 'action', 'character', 'paren', 'dialogue', 'transition', 'shot', 'general'] as ScriptElType[]) {
+  EL_STYLE[t] = Object.freeze(buildElementStyle(t));
+  EL_STYLE_STATIC[t] = Object.freeze({ ...buildElementStyle(t), cursor: 'text' });
+}
+// A doc may carry a type this build has no row for (scriptMetrics.ts names the
+// mechanism and the live example). It gets `action`'s frame, computed once.
+const elementStyle = (t: ScriptElType): React.CSSProperties => EL_STYLE[t] ?? (EL_STYLE.action as React.CSSProperties);
+const elementStyleStatic = (t: ScriptElType): React.CSSProperties => EL_STYLE_STATIC[t] ?? (EL_STYLE_STATIC.action as React.CSSProperties);
+
+// -- SC2 S2b — THE SCRIPT PAGE'S VERTICAL POLICY, STATED ---------------------
+//
+// Until now this surface had no vertical policy; it had a SIDE EFFECT. The page
+// scrolled because `ActiveScriptElement` calls `node.focus()` on mount, and
+// focusing an element below the fold scrolls it into view — so every Enter moved
+// the box, and nobody had ever decided that it should. It is why the behaviour
+// broke on SC2 S1, a change that had nothing to do with scrolling (sc1.mjs's own
+// S3 park records the measurement). A paginated surface cannot leave that
+// undecided: crossing a page break MUST have a stated answer.
+//
+// THE RULE, in three clauses. It is a rule, not a description of what happens:
+//
+//   1. FOCUS NEVER SCROLLS. Every focus() on this surface passes
+//      `{ preventScroll: true }`. Placing the caret is not a request to move
+//      the paper.
+//   2. THE BOX MOVES ONLY TO KEEP THE CARET VISIBLE, AND ONLY BY THE MINIMUM.
+//      If the caret is inside the scroll box's visible band, the box does not
+//      move at all — not by a pixel, not to centre anything. If the caret is
+//      above the band, the box scrolls up until the caret's own top sits on the
+//      band's top edge; if below, down until its bottom sits on the band's
+//      bottom edge. Nothing else moves the page.
+//   3. NO ANIMATION, NO FRACTION, NO HOME. The page never repositions itself
+//      for aesthetic reasons — no typewriter line, no quarter-down start, no
+//      easing. A screenplay page stays where the writer put it.
+//
+// Clause 2 is measured off the CARET, not the element: an action block can be
+// taller than the whole visible band, and scrolling its top into view would send
+// the caret at its foot straight back off the bottom.
+//
+// OPEN AND DELIBERATELY UNANSWERED: whether a caret sitting flush on the band's
+// bottom edge wants breathing room above the edge. That is Nick's call, it is on
+// the ledger for the sitting, and inventing a number here would make it look
+// ruled. Clause 2 gives it exactly zero until he says otherwise.
+function scrollBoxOf(node: HTMLElement): HTMLElement | null {
+  for (let p = node.parentElement; p; p = p.parentElement) {
+    const oy = getComputedStyle(p).overflowY;
+    if (oy === 'auto' || oy === 'scroll') return p;
+  }
+  return null;
+}
+
+function caretRectIn(node: HTMLElement): DOMRect {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0);
+    if (node.contains(range.startContainer)) {
+      const r = range.getBoundingClientRect();
+      // A collapsed range in an EMPTY contenteditable can report all zeros;
+      // the element's own box is the honest fallback for "where the caret is".
+      if (r.height > 0 || r.width > 0 || r.top !== 0) return r;
+    }
+  }
+  return node.getBoundingClientRect();
+}
+
+function keepCaretVisible(node: HTMLElement): void {
+  const caret = caretRectIn(node);
+  const box = scrollBoxOf(node);
+  if (box) {
+    const view = box.getBoundingClientRect();
+    if (caret.top >= view.top && caret.bottom <= view.bottom) return;      // clause 2 — it does not move
+    box.scrollTop += caret.top < view.top ? caret.top - view.top : caret.bottom - view.bottom;
+    return;
+  }
+  // Below the framed gate there is no bounded cap; the window is the box.
+  if (caret.top >= 0 && caret.bottom <= window.innerHeight) return;
+  window.scrollBy(0, caret.top < 0 ? caret.top : caret.bottom - window.innerHeight);
 }
 
 // -- caret helpers: a live element here is always a single text node (or
@@ -129,13 +246,17 @@ type CaretHint = 'start' | 'end' | number;
 
 // -- the ONE live contenteditable block --------------------------------------
 function ActiveScriptElement({
-  el, caretHint, onInput, onKeyDown, elRef,
+  el, caretHint, onInput, onKeyDown, elRef, docIndex, sessionKey, liveCaret, noteCaret,
 }: {
   el: ScriptEl;
   caretHint: CaretHint;
   onInput: (text: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   elRef: React.MutableRefObject<HTMLDivElement | null>;
+  docIndex: number;
+  sessionKey: string;
+  liveCaret: React.MutableRefObject<{ key: string; offset: number } | null>;
+  noteCaret: () => void;
 }) {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [seed] = useState(() => el.text);
@@ -144,9 +265,47 @@ function ActiveScriptElement({
     const node = nodeRef.current;
     if (!node) return;
     node.textContent = seed;
-    node.focus();
-    const offset = caretHint === 'start' ? 0 : caretHint === 'end' ? seed.length : caretHint;
+    // SC2 S2b — clause 1 of the vertical policy (see the rule above). This
+    // single argument is the whole of the defect Fable charged to this slice:
+    // the page's scrolling was the browser's reflex to focus(), never a
+    // decision. Clause 2 then makes the decision, explicitly, one line down.
+    node.focus({ preventScroll: true });
+    // SC2 S5 — THE CARET ACROSS THE BREAK, and this line is the fix.
+    //
+    // OBSERVED, not predicted (2026-07-29). Sheets are DOM parents keyed by page
+    // index, so when the paginator moves the ACTIVE element to another sheet,
+    // React deletes it from one parent's child list and inserts it into the
+    // other's — it never moves a host node between parents. The live
+    // contenteditable is destroyed and a fresh one mounts in its place. Proved
+    // with an expando on the node (a property React cannot preserve across a
+    // delete+insert): one Tab on the last element of a page and the expando was
+    // gone, the element had crossed sheet 0 to sheet 1.
+    //
+    // What that cost: `caretHint` is written ONLY by `moveActive`, and `retype`,
+    // `handleInput` and `acceptAutocomplete` never call it — so on a crossing
+    // caused by a mutation rather than a navigation, the fresh instance restored
+    // the caret to a hint left over from the last ACTIVATION. Measured: caret at
+    // 12, restored to 9, and the writer's next two keystrokes landed at 9 —
+    // inside the word they had just typed.
+    //
+    // So the remount is preferred-over: if this mount is the SAME edit session
+    // as the one that just ended (same element id, same seedNonce — i.e. React
+    // rebuilt us for a reason of its own rather than because the writer moved),
+    // the live offset the writer actually had wins over the stale hint. On a
+    // genuine activation the key does not match and `caretHint` governs exactly
+    // as before.
+    //
+    // WHAT THIS DOES NOT FIX, stated so it is not read as more: a remount still
+    // destroys a new DOM node's worth of browser state that no offset can
+    // restore — an in-flight IME composition, a non-collapsed selection (only
+    // the caret's start offset travels), and the element's native undo stack.
+    // Those need the class dissolved, not the symptom closed.
+    const remembered = liveCaret.current && liveCaret.current.key === sessionKey ? liveCaret.current.offset : null;
+    const offset = remembered !== null
+      ? Math.max(0, Math.min(remembered, seed.length))
+      : caretHint === 'start' ? 0 : caretHint === 'end' ? seed.length : caretHint;
     setCaretOffset(node, offset);
+    keepCaretVisible(node);
 
     // I0 pen discipline: the pen points, never types, never inks — the
     // recognizer hazard returns exactly at a live contenteditable and is
@@ -206,22 +365,95 @@ function ActiveScriptElement({
       aria-label={`Script ${el.t} — active`}
       onInput={() => onInput(nodeRef.current?.textContent ?? '')}
       onKeyDown={onKeyDown}
+      onKeyUp={noteCaret}
+      onMouseUp={noteCaret}
       style={elementStyle(el.t)}
+      data-doc-index={docIndex}
     />
   );
 }
 
-function StaticScriptElement({ el, onActivate }: { el: ScriptEl; onActivate: (clientX: number, clientY: number) => void }) {
+// SC2 S2b — EVERY PROP IS NOW STABLE BY CONSTRUCTION, which is the whole point.
+// `onActivate` used to be a fresh `(x, y) => activateAt(i, x, y)` closure per
+// element per render — the second of the two things (with elementStyle's object)
+// that would have made S5's React.memo a no-op. It is gone: activation is one
+// delegated handler on the sequence, reading `data-doc-index` off the DOM, which
+// is stable by construction rather than by discipline.
+//
+// `text` is a prop rather than `el.text` because a page break can cut an action
+// block in half; for everything else it IS `el.text`, so identity is unchanged.
+// `docIndex` is the DOCUMENT index — `activateAt` addresses the flat element
+// array and must keep doing so; a page-local position would silently address
+// the wrong element the moment a break moved above it.
+//
+// SC2 S5 — AND HERE THE SEAM IS TAKEN. `React.memo` is the whole change; S2b
+// did the work that makes it bite, which is why this is an edit and not a
+// rewrite. Every prop is compared by the default shallow equality and every one
+// of them is stable when the element has not changed:
+//   `el`        — `setElements` maps with `prev.map((e, i) => i === idx ? {...}
+//                 : e)`, so an untouched element keeps its object identity;
+//   `text`      — `el.text` by identity for anything unsplit (textOfPart
+//                 returns it directly), a value-equal string for a split part;
+//   `docIndex`  — a number, and only changes when something above is inserted
+//                 or removed, which is exactly when this element must re-render;
+//   the flags   — booleans.
+// The style object is frozen per type at module level and the click handler is
+// delegated to the sequence, so neither reintroduces a fresh identity per
+// render. Those were the two things that would have made this a no-op.
+//
+// WHAT IT IS FOR, from the measurement rather than from intuition: sc2.mjs's S0
+// header records that the per-keystroke cost is React reconciling EVERY
+// StaticScriptElement, and that `groupIntoScenes` — the brief's original
+// suspect — does not run per keystroke at all (AUTOSAVE_MS = 2000, debounced).
+// A keystroke changes one element; with this, one element re-renders.
+//
+// !! VERIFICATION OWED AND NOT YET DONE !! The DIAGNOSIS is measured and on the
+// record; the EFFECT of this fix is not. Amendment 1's gate is a regression
+// bound judged by checking out the frozen baseline `c1cabe8` on the judging
+// machine, measuring, and measuring the tip in the SAME session INTERLEAVED —
+// and that is a browser run, held until the machine is quiet. Nothing here may
+// be reported as an improvement until that number exists. Four premises in this
+// arc read as obvious and were false when measured.
+const StaticScriptElement = memo(function StaticScriptElement({ el, text, docIndex, continues, continuedFrom }: {
+  el: ScriptEl;
+  text: string;
+  docIndex: number;
+  continues: boolean;
+  continuedFrom: boolean;
+}) {
   return (
     <div
       className="script-el"
       data-type={el.t}
-      onClick={e => onActivate(e.clientX, e.clientY)}
-      style={{ ...elementStyle(el.t), cursor: 'text' }}
+      data-doc-index={docIndex}
+      data-continues={continues ? 'true' : undefined}
+      data-continued-from={continuedFrom ? 'true' : undefined}
+      style={elementStyleStatic(el.t)}
     >
-      {el.text}
+      {text}
     </div>
   );
+});
+
+// SC2 S2b — the writer's own text for ONE part of a placed element.
+//
+// For everything that is not split this returns `el.text` BY IDENTITY, so the
+// overwhelmingly common case adds nothing at all — no allocation, no work, and
+// the prop identity S5's memo will depend on is unchanged.
+//
+// For the one permitted split (an action block longer than a whole page) it cuts
+// the text at exactly the line the paginator counted to, using the SAME wrap
+// function the count came from. That is why `wrapToLines` exists: a second
+// slicing routine would have been the obvious way to add this, and the obvious
+// way to end up rendering a break the arithmetic did not place.
+function textOfPart(el: ScriptEl, p: Placed): string {
+  if (!p.continues && !p.continuedFrom) return el.text;
+  // join('') — never '\n'. The lines concatenate back to the writer's text
+  // exactly (scriptLedger's own contract), so a part is a genuine SUBSTRING and
+  // `pre-wrap` re-wraps it into the identical lines. Joining with '\n' also
+  // renders correctly and is a lie about the text: it writes breaks the writer
+  // never typed into the DOM.
+  return wrapToLines(el.text, widthChFor(el.t)).slice(p.lineOffset, p.lineOffset + p.lines).join('');
 }
 
 function AutocompletePopover({ state, index, indentCh }: { state: AutocompleteState; index: number; indentCh: number }) {
@@ -320,6 +552,33 @@ export function ScriptEditor({ id }: { id: string }) {
   const scenesRef = useRef<Scene[]>(initialDoc.scenes);
   const lastSavedRef = useRef(elements);
   const activeElRef = useRef<HTMLDivElement | null>(null);
+  // SC2 S5 — where the writer's caret ACTUALLY is, as against `caretHint`, which
+  // is where the last ACTIVATION put it. Keyed by element id + seedNonce so it
+  // can only ever be spent on a remount of the very same edit session; a genuine
+  // activation carries a different key and falls through to the hint.
+  const liveCaret = useRef<{ key: string; offset: number } | null>(null);
+
+  // SC2 S2b — the projection. Derived from `elements` and nothing else, so it is
+  // recomputed exactly when the document changes and not when the caret hint,
+  // the autocomplete index or a dialog's open flag does. (This is NOT S5's
+  // memoization — that one is React.memo on the element components, and the
+  // seam for it is the frozen style objects and the delegated activation
+  // handler, both already in place above.)
+  const pages: Page[] = useMemo(() => {
+    const projected = paginate(lineLedger(elements));
+    // A screenplay is never nought pages: an empty document is one blank sheet.
+    return projected.length ? projected : [{ index: 0, placed: [], linesUsed: 0 }];
+  }, [elements]);
+
+  // Document index by element id. The projection preserves document order, so a
+  // running counter would also work — but it would be a counter whose
+  // correctness depended on the traversal order of two nested maps, and this
+  // cannot be got wrong by a later edit.
+  const docIndexById = useMemo(() => {
+    const m = new Map<string, number>();
+    elements.forEach((el, i) => { if (!m.has(el.id)) m.set(el.id, i); });
+    return m;
+  }, [elements]);
 
   const project: Project | null = initialEntry?.projectId ? getProject(initialEntry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
@@ -420,12 +679,20 @@ export function ScriptEditor({ id }: { id: string }) {
     setAcDismissed(null);
   };
 
+  const noteCaret = () => {
+    const node = activeElRef.current;
+    const el = elements[activeIndex];
+    if (!node || !el) return;
+    liveCaret.current = { key: `${el.id}:${seedNonce}`, offset: getCaretOffset(node) };
+  };
+
   const retype = (nextType: ScriptElType) => {
     setElements(prev => prev.map((e, i) => (i === activeIndex ? { ...e, t: nextType } : e)));
   };
 
   const handleInput = (text: string) => {
     noteFirstKeystroke();
+    noteCaret();
     if (framed) scriptDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setElements(prev => {
       const el = prev[activeIndex];
@@ -547,6 +814,20 @@ export function ScriptEditor({ id }: { id: string }) {
       } catch { /* best-effort */ }
     }
     moveActive(index, hint);
+  };
+
+  // SC2 S2b — ONE delegated handler for the whole sequence, replacing the
+  // per-element `(x, y) => activateAt(i, x, y)` closure. Two reasons, and the
+  // second is the load-bearing one: (a) N elements no longer mean N new function
+  // objects per render, which is the S5 memoization seam; (b) the index it reads
+  // is the DOCUMENT index off the DOM, so it cannot drift from the flat element
+  // array that `activateAt` addresses, however the pages above it break.
+  const onSequenceClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = (e.target as HTMLElement | null)?.closest?.('.script-el[data-doc-index]');
+    if (!target) return;
+    const index = Number(target.getAttribute('data-doc-index'));
+    if (!Number.isInteger(index) || index < 0 || index >= elements.length) return;
+    activateAt(index, e.clientX, e.clientY);
   };
 
   // copyScriptText is used by BOTH the legacy (<1100px) toolbar's own
@@ -671,31 +952,105 @@ export function ScriptEditor({ id }: { id: string }) {
   // to BOTH branches; an inline maxWidth here would be the one thing able to
   // override it. Legacy's markup shape is otherwise unchanged (no DeskFrame,
   // no `.mode-pagecol`, still `.script-page` — fx7.mjs S1's own assertion).
+  //
+  // SC2 S2b — THE SHEET SEQUENCE. The surface stops being one sheet that grows
+  // and becomes a sequence of true 11in pages: `paginate(lineLedger(elements))`
+  // projects the document into pages, and each page renders one `.script-sheet`.
+  //
+  // THE ELEMENTS ARRAY IS STILL THE EDIT MODEL; PAGES ARE ONLY A PROJECTION.
+  // Nothing about pagination is stored, put in state, or persisted — it is
+  // recomputed from `elements` and thrown away, which is what makes it unable to
+  // drift (store a page array and the first edit above it makes every later page
+  // a lie). It is also what makes the count viewport-invariant by construction:
+  // no width, font or DOM measurement is an input to the arithmetic, so the same
+  // document cannot paginate differently at 1100px and 2200px. A page count that
+  // moves with the window is a clock that lies.
+  //
+  // Page NUMBERS are not here: they are S4's slice (R1), and nothing in SC2
+  // shows an aggregate count anywhere.
   const scriptSheet = (
-    <div className="script-sheet" style={{ position: 'relative' }}>
-      {elements.map((el, i) => {
-        const active = i === activeIndex;
-        if (active) {
-          return (
-            <Fragment key={`${el.id}:${seedNonce}:wrap`}>
-              <ActiveScriptElement
-                key={`${el.id}:${seedNonce}`}
+    <div className="script-sequence" onClick={onSequenceClick}>
+      {pages.map((page) => (
+        <div className="script-sheet" data-page-index={page.index} style={{ position: 'relative' }} key={page.index}>
+          {/* SC2 S4 — THE PAGE NUMBER (R1, approved 2026-07-24). Top-right,
+              inside the top margin, PAGE ONE BARE, from page two on.
+
+              R1's bright line travels with it and is the harder half of this
+              slice: the number lives ON THE PAGE ARTIFACT ONLY. No total, no
+              "of N", no aggregate anywhere in the app — not in the sliver, not
+              in the Tutor, not in a title, not in an aria-label. The committee
+              put it plainly: a page number on a screenplay is not the app
+              counting the writer, it is the document's own furniture, as
+              intrinsic as a slugline's capitals. An aggregate would be the app
+              counting, and that is the line R1 amends by exactly one line and
+              nothing more. sc2.mjs asserts the absence as strictly as the
+              presence.
+
+              It is CHROME, not body: it sits in the top margin, outside the
+              54-line block, so it costs no line the paginator counted. That is
+              not asserted by inspection — page one carries no number and every
+              other page does, so the standing cross-check that all sheets share
+              one first-line offset IS the proof, and it fails the moment the
+              number takes a line.
+
+              The trailing period is the trade's own form (Final Draft, Fade In
+              and Highland all render "2."). R1 ruled the position and the bare
+              first page, not the punctuation — so this is a judgment call
+              inside its "per the standard" wording, named here rather than
+              left to look ruled, and vetoable in a line. */}
+          {page.index > 0 && <div className="script-page-number">{page.index + 1}.</div>}
+          {page.placed.map((p) => {
+            const i = docIndexById.get(p.entry.id);
+            const el = i === undefined ? undefined : elements[i];
+            if (!el || i === undefined) return null;
+            if (i === activeIndex) {
+              // THE ONE LIVE BLOCK, AND ITS ONE STATED EXCEPTION. A
+              // contenteditable cannot be cut in half, so an active element the
+              // projection splits renders WHOLE on the page where it begins and
+              // its continuation parts are skipped. The bound is exact and
+              // small: it applies only while the caret is inside an ACTION
+              // block longer than a full page (54 lines, ~3,200 characters),
+              // and only to that one element. Everything else on every page,
+              // and that element itself the moment the caret leaves it, renders
+              // the projection exactly. Stated rather than hidden — the
+              // alternative was to let pagination depend on where the caret is,
+              // which would move the page count as the writer clicked around.
+              if (p.continuedFrom) return null;
+              return (
+                <Fragment key={`${el.id}:${seedNonce}:wrap`}>
+                  <ActiveScriptElement
+                    key={`${el.id}:${seedNonce}`}
+                    el={el}
+                    docIndex={i}
+                    sessionKey={`${el.id}:${seedNonce}`}
+                    liveCaret={liveCaret}
+                    noteCaret={noteCaret}
+                    caretHint={caretHint}
+                    onInput={handleInput}
+                    onKeyDown={handleKeyDown}
+                    elRef={activeElRef}
+                  />
+                  {/* Fable R1 — rendered as the active element's own flow-sibling
+                      (not the sheet's last child) so its no-top/left absolute
+                      position resolves to right beneath THIS block, wherever it
+                      sits in the document, instead of the bottom of the sheet. */}
+                  {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}
+                </Fragment>
+              );
+            }
+            return (
+              <StaticScriptElement
+                key={p.continuedFrom ? `${el.id}:@${p.lineOffset}` : el.id}
                 el={el}
-                caretHint={caretHint}
-                onInput={handleInput}
-                onKeyDown={handleKeyDown}
-                elRef={activeElRef}
+                text={textOfPart(el, p)}
+                docIndex={i}
+                continues={p.continues}
+                continuedFrom={p.continuedFrom}
               />
-              {/* Fable R1 — rendered as the active element's own flow-sibling
-                  (not the sheet's last child) so its no-top/left absolute
-                  position resolves to right beneath THIS block, wherever it
-                  sits in the document, instead of the bottom of the sheet. */}
-              {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}
-            </Fragment>
-          );
-        }
-        return <StaticScriptElement key={el.id} el={el} onActivate={(x, y) => activateAt(i, x, y)} />;
-      })}
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 
