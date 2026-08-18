@@ -8525,6 +8525,14 @@ live build; the rollback SOURCE remains git `c23c380` (redeploy that tree via `r
 opens a linked New Page, not the Wrizo landing) and 92 (the New-page Card survives BoardEditor's
 unmount) were the sitting's board P1s. Item 82's family did NOT red in the suite of record; no
 red-suite clause was invoked. Item 87 remains built-unverified on `fw2-boards-and-defaults`.
+**→ POST-MERGE REVIEW (Fable, 2026-08-17): items 91, 92 → REVIEWED, GREEN** —
+`docs/wrizo-alpha/fw2-review-fable.md`; VERDICT PASS (7 code files, +593/−21, zero schema/server).
+92: the pin is APPENDED to the component's own live `boxes` (never assigned from the store);
+`boxesRef` set directly because the door's `navigate` unmounts before any further render;
+`pinPageToBoard` keeps sole ownership of what a pin is. 91: the door's split is argued not assumed
+— USER→PIN on the address (rides the binder), SYSTEM→MEMBERSHIP (A16), TRASH keeps the exit; the
+descriptor's dead-code pin field resolved as STRUCTURAL; reload-safety inherited from PB1 by
+construction, and S2(c) proves the door writes NOTHING. Flake list stays empty.
 
 ## P0 WAVE DEPLOY MANIFEST — 2026-08-03 (chat 1, on Nick's "Ship it"; Fable's amended checklist)
 
@@ -9195,7 +9203,11 @@ sitting closes them.
     species' verdict in either direction. **`j5` is fix 2's target.**
     **→ FIX (b) BUILT + VERIFIED; MERGE OFFERED — 2026-08-17 (SC-chain lane). Branch
     `item82-fixb-j5-seam`, code commit `bc6f53c`, parented at `main` @ `7abd1e7` (the
-    fw2 merge `a18115c` beneath it).** `j5`'s `makePage` now seeds THROUGH
+    fw2 merge `a18115c` beneath it).** **→ MERGED `e9ea36c` (2026-08-17, chat 1, on
+    Fable's merge order + Nick's "Merge it"): the merged `apps/` tree is BYTE-IDENTICAL to
+    the stamped `bc6f53c` (55/55 both settings, bundle `index-Ch4juzEe.js`); ITEM 100
+    opened, registry next free 101. NO DEPLOY — merge on green; fix (b) rides the next
+    ship (P2c) on Nick's word.** `j5`'s `makePage` now seeds THROUGH
     `window.wrizoCreateJournalPage`, so the row enters the cache and no flush can erase
     it — the mechanism REMOVED, not out-timed, which is what Fable's (b)-over-(a) ruling
     asked for. The seam gained an optional `JournalPageSeed` (`id` / `text` / `createdAt`
