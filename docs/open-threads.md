@@ -175,6 +175,11 @@ DEPLOYED.** Production stays git `c23c380` · railway `ee0a9bf2`. Deploy waits o
 offers; deploys on Nick's explicit words only). When the ship word comes: suite of record at the
 merge HEAD both settings + full amended checklist + rollback ratchets to the P0 stamp.
 
+**→ SHIPPED 2026-08-17 on Nick's word "Ship 2":** DEPLOYED **git `fbdb27e` · railway
+`0fdc8f94`** (suite of record 55/55 both settings at `bd4cdcb`, bundle `index-Cib2nzSw.js`
+verified LIVE). See the SHIP 2 (fw2) DEPLOY MANIFEST below. Rollback now ratchets to this stamp;
+the prior floor `c23c380` · `ee0a9bf2` is superseded as live.
+
 ## FW2 — FABLE'S RATIFICATIONS — 2026-08-17 (formal merge order @ `641e946`)
 
 Landed with the formal merge `0dc6e75` (fw2-offer @ `641e946`): the fix lane's ADDENDUM proving
@@ -8479,9 +8484,19 @@ contaminated**). `item9192.mjs` 16 checks (10/16 red pre-fix); item 82's family 
 P0 wave: offline-strand self-heal + filing validation). Rollback is a redeploy of that tree
 (`railway up`).
 
-**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
-`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
-(`index-Cib2nzSw.js`) + `/auth/me` 401 verified LIVE.
+**DEPLOY STAMP: git `fbdb27e` · railway `0fdc8f94-c735-443b-8b3e-395e5b647c58`** — DEPLOYED
+2026-08-17 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:a3d88259`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-Cib2nzSw.js` / `index-DfTiVdTQ.css`) — the same
+content hash the suite of record stamped, so what is LIVE is exactly what was tested — and
+`/auth/me` **401**. The prior P0 build (`c23c380` · railway `ee0a9bf2`) is now superseded as the
+live build; the rollback SOURCE remains git `c23c380` (redeploy that tree via `railway up`).
+
+**Items 91 / 92: GREEN + DEPLOYED** — fw2 (the boards work) is LIVE. 91 (the board's Page door
+opens a linked New Page, not the Wrizo landing) and 92 (the New-page Card survives BoardEditor's
+unmount) were the sitting's board P1s. Item 82's family did NOT red in the suite of record; no
+red-suite clause was invoked. Item 87 remains built-unverified on `fw2-boards-and-defaults`.
 
 ## P0 WAVE DEPLOY MANIFEST — 2026-08-03 (chat 1, on Nick's "Ship it"; Fable's amended checklist)
 
