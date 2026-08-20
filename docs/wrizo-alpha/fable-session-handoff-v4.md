@@ -157,7 +157,10 @@ no-op; answers OBS-1 by-defect; PACKAGES WITH item 87, mode+structure one seam o
 session; item 62 OBS pair ruled — R-PERIOD keep the period, R-BREATHING zero breathing room): 105
 (page-boundary presentation cluster — active-element "off-page text" + move-whole "undeletable
 gap"; discriminator pending) · 106 (empty-region caret clicks; Nick's verdict verbatim) opened.
-**Next free: 107.**
+**Next free: 107.** 2026-08-17: item 105 discriminator resolved (NARROWS to presentation/signaling
+only — no arithmetic defect); 107 (no cross-block selection / bulk deletion on the script surface —
+one-element-at-a-time architecture, post-vacation; design half routes to the menus arc) opened.
+**Next free: 108.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

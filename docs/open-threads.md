@@ -351,7 +351,13 @@ discriminator result is PENDING** — the measurement that rules out a genuine a
 underneath; **do not attribute until it lands.** **Fix family: presentation / signaling of lawful
 pagination** — the boundary must SHOW what it is doing (the active-element exception, the
 move-whole) rather than let the writer read it as broken. Not a paginator-arithmetic change unless
-the discriminator says otherwise. Registry: next free **106**.
+the discriminator says otherwise.
+**→ DISCRIMINATOR RESOLVED (Nick, follow-up, 2026-08-17): NARROWS to presentation / signaling
+ONLY.** The boundary mechanics WORK when writing forward — there is no genuine arithmetic defect
+underneath. The "gap" and "off-page" reads were the active-element whole-render exception PLUS the
+no-cross-block-selection finding (item 107, below). Item 105 is confirmed a **presentation /
+signaling** ticket, not an arithmetic one.
+Registry: next free **106**.
 
 ## ITEM 106 — CARET PLACEMENT ON EMPTY-REGION CLICKS — OPENS 2026-08-17
 
@@ -360,6 +366,19 @@ sheet space no-op** — the caret does not move there, and subsequent typing lan
 hidden) caret's prior position rather than where the writer clicked. **Nick's verdict, verbatim
 (from his screenshot, on file at Fable's desk):** *"the caret needs to move to wherever I click on
 the document."* Registry: next free **107**.
+
+## ITEM 107 — NO CROSS-BLOCK SELECTION / BULK DELETION ON THE SCRIPT SURFACE (architecture) — OPENS 2026-08-17
+
+**OPENS (Nick, live, Section A).** Cross-block selection and bulk deletion **do not exist** on the
+script surface: **one live element at a time** is the architecture — the exact class the caret fix
+**explicitly declined to dissolve** ("non-collapsed selection … those need the class dissolved, not
+the symptom closed," `docs/wrizo-alpha/sc2-review-fable.md`). **Nick's verdict:** fine moving
+forward, but *"clunky if the writer wants to remove blocks of dialogue at one time."*
+**ARCHITECTURE-CLASS, POST-VACATION** — dissolving the one-element-at-a-time class is a real
+change, not a quick fix. The **DESIGN half — block-select / delete / move as EXPLICIT operations —
+routes to the MENUS ARC**: block operations are natural tool-menu citizens. This finding is also
+part of what item 105's "undeletable gap" read reflected — there is no bulk delete to remove it.
+Registry: next free **108**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
