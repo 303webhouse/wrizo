@@ -255,6 +255,8 @@ from Free Write.** Logged two ways: as **item 96's charter (the Places Model) pr
 the exact "where is my room" comprehension gap it exists to close — and as **weight to item 87's
 ship**, because a Draft-default would have *opened the door* (the session would begin in the room
 the Screenplay door lives in). **Section-A retest is OWED, via the Draft → Structure path.**
+**→ IN PROGRESS (2026-08-17):** now running on the TRUE script surface (reachable via F5 after the
+kind-switch, per item 104's diagnosis — the surface works; only the live remount is the defect).
 
 **New items:**
 - **101 — Page panel's New Page appeared to do nothing.** **Repro PENDING** (possibly clicked
@@ -317,6 +319,17 @@ post-birth toggle race.
 (New Page defaults; the door declaring `?mode=draft`) and item 104 (the door declaring structure)
 are the same descriptor seam; they verify and ship together, not separately. Item 96's
 discoverability charter is the surrounding context (SITTING #2's undiscoverable Screenplay door).
+
+**→ DIAGNOSIS COMPLETE (Nick, live, 2026-08-17).** The "no-op silently" symptom above is REFINED,
+not confirmed: the doc **kind SAVES** and the **script surface WORKS** — an **F5 (reload) after
+the switch** mounts the Clock correctly, with elements AND pagination. So the defect is neither
+dead selection nor lost state; it is **precisely the LIVE REMOUNT on kind-switch** — the editor
+swap never fires without a reload. Persistence and the script surface are sound; only the on-screen
+editor fails to remount when the kind changes. **Well-bounded.** The fix family holds and narrows:
+the born-from-Screenplay-template path is served by the unborn descriptor carrying STRUCTURE (a
+fresh mount — correct by construction, which the F5 case proves); the added bounded piece is firing
+the editor remount when kind switches on an already-mounted page. Still packages with **item 87
+(87 + 104's doorway ship) — mode + structure, one seam, one ship.**
 
 Registry: next free **105**.
 

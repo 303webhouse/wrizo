@@ -66,5 +66,7 @@ in the same breath as the POSITIVE flare verdict.
 ## Owed
 
 **Section-A retest**, via the Draft → Structure path — the door that blocked this session.
+**→ IN PROGRESS (2026-08-17):** now running on the true script surface (reachable via F5 after the
+kind-switch; see item 104's diagnosis — the surface works, only the live remount is the defect).
 
 — relayed by Fable, recorded by chat 1, 2026-08-17
