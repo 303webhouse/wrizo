@@ -263,6 +263,15 @@ the Screenplay door lives in). **Section-A retest is OWED, via the Draft → Str
 - **103 — the typewriter fade band.** Nick's **five-line graduated spec, top and bottom.** **The
   verbatim five lines are NOT in this relay — recorded as OWED**; they attach verbatim and are the
   authority (nothing here reconstructs them).
+  **→ ATTACHED 2026-08-17 (verbatim, from Nick's screenshots on file at Fable's desk):** *"I think
+  the fade-out needs to be longer, probably --- let's say 5 lines, with the top line of the page
+  (no matter what the text there says or whether or not there are line breaks, etc.) being almost
+  nearly invisible while each line below is slightly more visible. Also, the same five line fade
+  should happen at the bottom of the page when a user scrolls up. The effect should be (when in
+  typewriter mode only, obviously) that the writer's focus is always on a central set of lines
+  near the center of the page, roughly a paragraph length, while the rest of the text fades out
+  into the past. The idea is to continually propel the writer forward so they don't get locked in
+  to constant revision and overthinking."*
 
 **Item 86 RECHARTERS → "the prose page — size AND pagination."** Nick expected prose to paginate
 (as the script now does); was S2/86 "page size (ruled post-vacation)", now covers size AND
@@ -270,6 +279,14 @@ pagination. **Committee pass on Nick's word.**
 
 **M-arc note:** ground legibility at high counts is the open concern; **the flare verdict is
 POSITIVE — in Nick's own words** (verbatim quote owed if wanted, not reconstructed here).
+**→ ATTACHED 2026-08-17 (verbatim, from Nick's screenshots on file at Fable's desk):** *"I did
+notice a few lines ago that the rhizomatic progress bar at the bottom of the screen (which at
+this point just looks like a bunch of scribbling) lit up orange briefly. That effect was nicely
+done and did give me a hit of dopamine that seems to have propelled me to continue writing as I
+continue to produce words at a fast rate despite just doing this review and needing to fill up
+space to test the new page feature."* **One quote, two ledger lines:** the tail carries the
+legibility finding *inside* the praise — *"just looks like a bunch of scribbling"* is the
+ground-legibility-at-high-counts concern, stated in the same breath as the POSITIVE flare verdict.
 
 Registry: next free **104**.
 
