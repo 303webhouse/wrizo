@@ -68,5 +68,14 @@ in the same breath as the POSITIVE flare verdict.
 **Section-A retest**, via the Draft → Structure path — the door that blocked this session.
 **→ IN PROGRESS (2026-08-17):** now running on the true script surface (reachable via F5 after the
 kind-switch; see item 104's diagnosis — the surface works, only the live remount is the defect).
+**→ SECTION A COMPLETE (Nick, live, 2026-08-17 — the Clock's first founder session).** CONFIRMED:
+block grammar · sheet sequence · page-top alignment · caret-across-the-break · scene + dialogue
+travel rules. Item 62's OBS pair RULED and CLOSED — **R-PERIOD** (trailing period stays, "2.",
+trade standard the code already implements) and **R-BREATHING** (flush at the band's bottom edge,
+zero breathing room, ratified as-is). Two new defects opened from the true surface: **item 105**
+(page-boundary presentation cluster — active-element whole-render "off-page text" + non-splittable
+move-whole "undeletable gap"; Nick's discriminator result pending; fix family = presentation /
+signaling of lawful pagination) and **item 106** (empty-region caret clicks — clicks on empty
+sheet space no-op; verdict: "the caret needs to move to wherever I click on the document").
 
 — relayed by Fable, recorded by chat 1, 2026-08-17

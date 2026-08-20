@@ -153,7 +153,11 @@ pending) · 102 (prose input model — Nick's verdicts attached) · 103 (typewri
 five-line spec owed verbatim) opened (live-test sitting #2). **Next free: 104.** 2026-08-17: 104
 (Screenplay selection DEAD on an unborn page — New Page template icon + Draft Structure toggle
 no-op; answers OBS-1 by-defect; PACKAGES WITH item 87, mode+structure one seam one ship) opened
-(sitting #2, cont'd). **Next free: 105.**
+(sitting #2, cont'd). **Next free: 105.** 2026-08-17 Section A complete (the Clock's first founder
+session; item 62 OBS pair ruled — R-PERIOD keep the period, R-BREATHING zero breathing room): 105
+(page-boundary presentation cluster — active-element "off-page text" + move-whole "undeletable
+gap"; discriminator pending) · 106 (empty-region caret clicks; Nick's verdict verbatim) opened.
+**Next free: 107.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

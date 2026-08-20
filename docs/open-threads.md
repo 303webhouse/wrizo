@@ -257,6 +257,11 @@ ship**, because a Draft-default would have *opened the door* (the session would 
 the Screenplay door lives in). **Section-A retest is OWED, via the Draft → Structure path.**
 **→ IN PROGRESS (2026-08-17):** now running on the TRUE script surface (reachable via F5 after the
 kind-switch, per item 104's diagnosis — the surface works; only the live remount is the defect).
+**→ SECTION A COMPLETE (Nick, live, 2026-08-17 — the Clock's first founder session).** CONFIRMED:
+block grammar · sheet sequence · page-top alignment · caret-across-the-break · scene + dialogue
+travel rules. Two rulings closed item 62's OBS pair (R-PERIOD → keep the period; R-BREATHING →
+zero breathing room ratified — see item 62's close-out). Two new defects opened from the true
+surface: **item 105** (page-boundary presentation) and **item 106** (empty-region caret clicks).
 
 **New items:**
 - **101 — Page panel's New Page appeared to do nothing.** **Repro PENDING** (possibly clicked
@@ -332,6 +337,29 @@ the editor remount when kind switches on an already-mounted page. Still packages
 (87 + 104's doorway ship) — mode + structure, one seam, one ship.**
 
 Registry: next free **105**.
+
+## ITEM 105 — THE PAGE-BOUNDARY PRESENTATION CLUSTER — OPENS 2026-08-17
+
+**OPENS (Nick, live, Section A — the Clock's first founder session).** Two LAWFUL pagination
+behaviours (item 62's rules) **read as DEFECTS to a writer** at a page boundary:
+- the **active-element whole-render exception** presents as **"off-page text"** — the active
+  element renders whole, so it can extend past the page edge;
+- the **non-splittable move-whole** presents as an **"undeletable gap"** — an element that moves
+  whole to the next page leaves an apparent gap that reads as un-removable.
+Both are correct by the paginator's rules; the *presentation* is what misleads. **Nick's
+discriminator result is PENDING** — the measurement that rules out a genuine arithmetic defect
+underneath; **do not attribute until it lands.** **Fix family: presentation / signaling of lawful
+pagination** — the boundary must SHOW what it is doing (the active-element exception, the
+move-whole) rather than let the writer read it as broken. Not a paginator-arithmetic change unless
+the discriminator says otherwise. Registry: next free **106**.
+
+## ITEM 106 — CARET PLACEMENT ON EMPTY-REGION CLICKS — OPENS 2026-08-17
+
+**OPENS (Nick, live, Section A).** Clicks on **elements** activate correctly; clicks on **empty
+sheet space no-op** — the caret does not move there, and subsequent typing lands at the (now
+hidden) caret's prior position rather than where the writer clicked. **Nick's verdict, verbatim
+(from his screenshot, on file at Fable's desk):** *"the caret needs to move to wherever I click on
+the document."* Registry: next free **107**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -7378,6 +7406,13 @@ Registry: next free **105**.
     54-line-action split (noted for SC2.1). **The SC arc's remaining obligations live in item 76
     (dissolution + bound re-derivation) and the two standing conditions on the keystroke path**
     — item 62 itself is CLOSED. The memo's effect stays verification-owed under Amendment 1.
+    **→ OBS PAIR CLOSED — Section A rulings (Nick, live, 2026-08-17):** **R-PERIOD** — the
+    page-number's **trailing period STAYS** ("2."), Nick deferring to the trade standard the code
+    already implements (OBS: page-number period → KEEP, no change). **R-BREATHING** — the caret's
+    **flush at the band's bottom edge STANDS, zero breathing room, RATIFIED as-is** (OBS: caret
+    bottom-edge breathing room / sitting-agenda Part 3 item 6 → zero, no change). Both are now
+    ruled and the code already implements each, so neither owes a patch. The third OBS (the
+    54-line-action split) stays noted for SC2.1.
     **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=eb74835
     bundle=index-GZdjfpTW.js/530759b` and PARKED `SUITE RESULT: CLEAN — tree=eb74835
     bundle=index-GZdjfpTW.js/530759b`, 56/56 each** (main's 55 + `sc2.mjs`), identical tree
