@@ -65,6 +65,10 @@ page," taught by the interface itself.** Item **93** (the pairing model) folds i
 question; **88c** (binder rendering in Drawers) and **S13** (cards vs pages) route HERE
 alongside the menus arc — seams coordinated through Nick. Post-vacation committee pass; no
 build under the freeze. Registry: next free **97**.
+**→ CHARTER PROVING ITSELF (live-test sitting #2, 2026-08-17):** the Screenplay door
+(Draft → tool panel → Structure) was UNDISCOVERABLE from Free Write — Nick's session never
+reached the script surface. The exact "where is my room, how do I get there" gap this item exists
+to close, now with a live-test witness. See the LIVE-TEST SITTING #2 section above.
 
 ## FIX-WAVE MERGE + LEDGER BUNDLE — 2026-08-03 (item 89/88 fix merged; Fable)
 
@@ -94,6 +98,9 @@ the toast when item 90 makes Trash items openable.
 **item 87 → RECLASSIFIED.** Not a defect-flip: a REVERSAL of a ruled default (FX2 S2 seeds
 typewriter ON). Owes a full pass WITH PARKED ASSERTIONS, not a one-line flip — the immutability
 law governs a ruled default as it governs a check.
+**→ WEIGHT TO ITS SHIP (live-test sitting #2, 2026-08-17):** the Screenplay door was
+undiscoverable from a Free Write start; a Draft-default (this item) would have OPENED it — the
+session would begin in the room the door lives in. See the LIVE-TEST SITTING #2 section above.
 
 **ITEM 97 OPENS — the trashed-plan-board dangling pointer.** A trashed plan board's pointer
 dangles (the soft-deleted board reads as ABSENT), so the next PLAN→ flip RE-MINTS a second
@@ -237,6 +244,34 @@ the harness floor's owner, post-verification**, per Fable's ruling.
 zero product surface. Sibling of item 99 (both are harness-floor robustness); **not** a member of
 item 82's family — it produces a *boot crash with a stack*, never a check verdict, so it cannot
 be a hidden explanation for any of that item's reds. Registry: next free **101**.
+
+## LIVE-TEST SITTING #2 (partial) — 2026-08-17 (Nick; relayed by Fable) — items 101–103 open
+
+Full log: `docs/wrizo-alpha/sitting-log-2026-08-17.md`. **PARTIAL — Nick's session never reached
+the script surface:** the **Screenplay door (Draft → tool panel → Structure) is UNDISCOVERABLE
+from Free Write.** Logged two ways: as **item 96's charter (the Places Model) proving itself** —
+the exact "where is my room" comprehension gap it exists to close — and as **weight to item 87's
+ship**, because a Draft-default would have *opened the door* (the session would begin in the room
+the Screenplay door lives in). **Section-A retest is OWED, via the Draft → Structure path.**
+
+**New items:**
+- **101 — Page panel's New Page appeared to do nothing.** **Repro PENDING** (possibly clicked
+  from an already-unborn page — nothing to birth). Confirm the reproduction before attributing.
+- **102 — the prose input model.** Enter-feels-dead-until-doubled · first-keystroke line drop ·
+  Tab escapes to browser chrome · "double-spaced" feel. **Nick's verdicts, attached:** the
+  paragraph-gap is **NOT** the default; **Tab indents.**
+- **103 — the typewriter fade band.** Nick's **five-line graduated spec, top and bottom.** **The
+  verbatim five lines are NOT in this relay — recorded as OWED**; they attach verbatim and are the
+  authority (nothing here reconstructs them).
+
+**Item 86 RECHARTERS → "the prose page — size AND pagination."** Nick expected prose to paginate
+(as the script now does); was S2/86 "page size (ruled post-vacation)", now covers size AND
+pagination. **Committee pass on Nick's word.**
+
+**M-arc note:** ground legibility at high counts is the open concern; **the flare verdict is
+POSITIVE — in Nick's own words** (verbatim quote owed if wanted, not reconstructed here).
+
+Registry: next free **104**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review

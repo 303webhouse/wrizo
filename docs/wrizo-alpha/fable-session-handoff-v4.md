@@ -147,7 +147,10 @@ survives a mechanism check = stop and hold, never deploy.
   opened. **Next free: 97.** 2026-08-03: 97 (trashed-plan-board dangling pointer) + 98
   (railway-worktree link guard, deploy-critical) opened. **Next free: 99.** 2026-08-03: 99 (THE
 ORPHAN REAPER — dead-owner harness-browser leak; manual authorized sweep now, runner-preflight
-sweep post-vacation) opened with the P0-wave deploy. **Next free: 100.**
+sweep post-vacation) opened with the P0-wave deploy. **Next free: 100.** 2026-08-17: 100 (CDP
+port-file race, harness-only) opened with P2c's fix (b); 101 (Page-panel New Page no-op — repro
+pending) · 102 (prose input model — Nick's verdicts attached) · 103 (typewriter fade band —
+five-line spec owed verbatim) opened (live-test sitting #2). **Next free: 104.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 
