@@ -103,10 +103,27 @@ undiscoverable from a Free Write start; a Draft-default (this item) would have O
 session would begin in the room the door lives in. See the LIVE-TEST SITTING #2 section above.
 **Now also PACKAGES WITH item 104** (Screenplay selection dead on an unborn page): mode +
 structure are one descriptor seam — item 87 verifies and ships WITH item 104, not separately.
+**→ AMENDED BY FOUNDER — item 87 RECHARTERS as THE NEW PAGE CHOOSER (Nick, 2026-08-17).** Spec
+verbatim (from Nick): *"Anywhere that a user can create a New Page, they should be given a toggled
+set of options that reveal themselves when 'New Page' is clicked: Free Write, Draft, Journal, Add
+to Board, Add to Drawer. If either 'Add to' options are selected, a pop-up should ask them which
+Board or Drawer they want to add it to. If none exist or if they want to create a new Board or
+Drawer for the New Page, they should have that option as well. When Free Write is selected, the
+user goes to a standard page with Free Write mode enabled; when Draft is pre-selected, they go to
+a standard page with Draft mode pre-selected."* **ROUTES to the menus arc as design work** — it is
+chrome; the **unborn-descriptor machinery from fw2 is its engine** (each toggle maps to a
+descriptor preset — mode / origin / binder / pin). **What ships from the OLD 87:** the
+typewriter-off + presets-assertion residue ships in the doorway wave. **SUPERSEDED and held:** the
+Draft-default piece (the RECLASSIFIED note above and the SITTING #2 "weight to its ship" framing)
+is superseded by the Chooser — item 104's descriptor-carries-STRUCTURE stays the engine, but
+mode/structure now arrive via the Chooser's presets, not a bare Draft-default.
 
 **ITEM 97 OPENS — the trashed-plan-board dangling pointer.** A trashed plan board's pointer
 dangles (the soft-deleted board reads as ABSENT), so the next PLAN→ flip RE-MINTS a second
 board. New ticket, fix-class.
+**→ RULED: RE-MINT (Nick, 2026-08-17).** PLAN→ on a page whose plan board is trashed MINTS a fresh
+board and CLEARS the stale pointer; the trashed board stays manually recoverable via the Trash
+overhaul (item 90). **Decision-complete; build queued in the doorway wave.**
 
 **ITEM 98 OPENS + STANDING GUARD (deploy-critical).** Railway commands run ONLY from the
 correctly-linked PRIMARY CHECKOUT, `railway status`-verified first. **Worktrees are absent from
@@ -322,7 +339,9 @@ post-birth toggle race.
 
 **PACKAGES WITH item 87's verification window — mode + structure are ONE seam, ONE ship.** Item 87
 (New Page defaults; the door declaring `?mode=draft`) and item 104 (the door declaring structure)
-are the same descriptor seam; they verify and ship together, not separately. Item 96's
+are the same descriptor seam; they verify and ship together, not separately. (Item 87 has since
+rechartered as THE NEW PAGE CHOOSER, 2026-08-17 — its toggles map to descriptor presets; item
+104's descriptor-carries-STRUCTURE remains the engine, the Draft-default framing superseded.) Item 96's
 discoverability charter is the surrounding context (SITTING #2's undiscoverable Screenplay door).
 
 **→ DIAGNOSIS COMPLETE (Nick, live, 2026-08-17).** The "no-op silently" symptom above is REFINED,
@@ -10262,6 +10281,17 @@ sitting closes them.
   read/true, so a stale claim is dated on its face and cannot be mistaken for a current one.
   The provenance stamp (77(c)) is this law made executable for suites; this states it for
   claims carried in prose.
+- **THE S4 LAW — a runner's live refusal outranks metadata (RATIFIED by Nick, 2026-08-17).**
+  Isolation-annotation form: *"A runner's live refusal outranks metadata; signature-kills are
+  never lawful — sweep only on a verified-dead owner."* A live process refusing (the runner's
+  dirty-machine VOID/REFUSE) is truth about the machine NOW and outranks any stamp or metadata
+  claiming quiet; a by-name / by-signature `--headless` kill is NEVER lawful (it murders other
+  lanes' in-flight runs); the only lawful sweep is of a browser whose owner node PID is VERIFIED
+  DEAD. Evidence: the 2026-08-04 orphan incident (item 99, the Orphan Reaper) + twice honored
+  since.
+- **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
+  standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
+  primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
@@ -10419,6 +10449,12 @@ documents + HTML mockups in `docs/menus/tutor/`; this lane never touches
 working-writers bench · (3) ≥2 Plateau mockups per mode, true tokens, true
 geometry at both reference widths inside the FX18 three-regime panel law ·
 (4) LOCK on Nick's word, sitting-informed; build tickets post-vacation.
+
+**→ PHASE 4 CLOSED AMENDED (Nick, 2026-08-17).** The lock record lives at the 84 desk (the lock
+sheet `docs/menus/tutor/tutor-menus-lock-sheet.md` on `item84/tutor-menus`, committed `5cd3968`);
+Nick's words landed with **lines 1, 4, and 5 AMENDED** and a **Revise re-pass ORDERED**. Phase 4
+is closed-amended — the Revise re-pass runs, then the lock record finalizes and build tickets
+follow; the 84 desk holds the amended lines verbatim.
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 
