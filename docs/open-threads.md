@@ -101,6 +101,8 @@ law governs a ruled default as it governs a check.
 **→ WEIGHT TO ITS SHIP (live-test sitting #2, 2026-08-17):** the Screenplay door was
 undiscoverable from a Free Write start; a Draft-default (this item) would have OPENED it — the
 session would begin in the room the door lives in. See the LIVE-TEST SITTING #2 section above.
+**Now also PACKAGES WITH item 104** (Screenplay selection dead on an unborn page): mode +
+structure are one descriptor seam — item 87 verifies and ships WITH item 104, not separately.
 
 **ITEM 97 OPENS — the trashed-plan-board dangling pointer.** A trashed plan board's pointer
 dangles (the soft-deleted board reads as ABSENT), so the next PLAN→ flip RE-MINTS a second
@@ -289,6 +291,34 @@ legibility finding *inside* the praise — *"just looks like a bunch of scribbli
 ground-legibility-at-high-counts concern, stated in the same breath as the POSITIVE flare verdict.
 
 Registry: next free **104**.
+
+## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17
+
+**OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
+DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
+toggle** each **no-op silently** — no mode change, no feedback. **Repro detail PENDING:** whether
+any text had been typed first (an unborn-vs-born distinction may gate it). **This answers the
+long-open OBS-1** (the PB1 review's "unborn-Screenplay surface flip," deferred to the next
+sitting) — **answered-by-defect:** the flip OBS-1 flagged is not a design question, it is a dead
+control.
+
+**Nick's verdict, verbatim (from his screenshot, on file at Fable's desk):** *"Screenplay mode
+should be auto-selected anyway when a user comes from a New Page where the 'Screenplay' template
+icon was selected."*
+
+**FIX FAMILY (named; S0-BEFORE-PATCH per law — diagnose before touching code):** the **unborn
+descriptor pattern** — origin / binder / pin, the address carrying what a page IS before it is
+born (established by fw2, items 91–92) — **extends to STRUCTURE.** The door declares the room
+WHOLE: a New Page born from the Screenplay template arrives already in Screenplay mode because
+the descriptor said so, exactly as item 91's board-kind pin rides the address. No sweeper, no
+post-birth toggle race.
+
+**PACKAGES WITH item 87's verification window — mode + structure are ONE seam, ONE ship.** Item 87
+(New Page defaults; the door declaring `?mode=draft`) and item 104 (the door declaring structure)
+are the same descriptor seam; they verify and ship together, not separately. Item 96's
+discoverability charter is the surrounding context (SITTING #2's undiscoverable Screenplay door).
+
+Registry: next free **105**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -8243,7 +8273,10 @@ Registry: next free **104**.
     **REVIEWED, GREEN (2026-07-30).** Merged `e8ae17d`; review at
     `docs/wrizo-alpha/pb1-review-fable.md`; gate MET. **Merged-but-undeployed —
     rides P2b, named in its manifest.** OBS-1 (unborn-Screenplay surface flip) to
-    the next sitting. Note: main now carries `pb1.mjs`, so chat 6's suite of record
+    the next sitting. **→ ANSWERED-BY-DEFECT (2026-08-17): item 104 — Screenplay selection is
+    DEAD on an unborn page (both the New Page template icon and the Draft Structure toggle no-op
+    silently). The flip is a dead control, not a design question; fix family is the unborn
+    descriptor carrying STRUCTURE, packaged with item 87.** Note: main now carries `pb1.mjs`, so chat 6's suite of record
     at its rebased head is **52 files, not 51**.
     **DEPLOYED with P2b — 2026-07-30** (git `c266cb3` · railway `dfa03148`); rode the FX17
     SHA per the stamp law. See the P2b DEPLOY MANIFEST.

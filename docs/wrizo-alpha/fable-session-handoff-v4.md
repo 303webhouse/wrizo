@@ -150,7 +150,10 @@ ORPHAN REAPER — dead-owner harness-browser leak; manual authorized sweep now, 
 sweep post-vacation) opened with the P0-wave deploy. **Next free: 100.** 2026-08-17: 100 (CDP
 port-file race, harness-only) opened with P2c's fix (b); 101 (Page-panel New Page no-op — repro
 pending) · 102 (prose input model — Nick's verdicts attached) · 103 (typewriter fade band —
-five-line spec owed verbatim) opened (live-test sitting #2). **Next free: 104.**
+five-line spec owed verbatim) opened (live-test sitting #2). **Next free: 104.** 2026-08-17: 104
+(Screenplay selection DEAD on an unborn page — New Page template icon + Draft Structure toggle
+no-op; answers OBS-1 by-defect; PACKAGES WITH item 87, mode+structure one seam one ship) opened
+(sitting #2, cont'd). **Next free: 105.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 
