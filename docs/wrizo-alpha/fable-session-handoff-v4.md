@@ -160,7 +160,10 @@ gap"; discriminator pending) · 106 (empty-region caret clicks; Nick's verdict v
 **Next free: 107.** 2026-08-17: item 105 discriminator resolved (NARROWS to presentation/signaling
 only — no arithmetic defect); 107 (no cross-block selection / bulk deletion on the script surface —
 one-element-at-a-time architecture, post-vacation; design half routes to the menus arc) opened.
-**Next free: 108.**
+**Next free: 108.** 2026-08-17: preset (B) RULED HYBRID (deck phase gate-free — first ungated
+item-84 build citizen; model phase = item 108); 108 (THE TUTOR MEMORY ARC — model-phase retrieval
++ carve-out sentence settle together; wire {messages, delta?, bible?} closed by architecture)
+opened; disclosure-v4 committee narrows to one sentence (the disclosure). **Next free: 109.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

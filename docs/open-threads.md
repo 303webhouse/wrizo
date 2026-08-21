@@ -399,6 +399,18 @@ routes to the MENUS ARC**: block operations are natural tool-menu citizens. This
 part of what item 105's "undeletable gap" read reflected — there is no bulk delete to remove it.
 Registry: next free **108**.
 
+## ITEM 108 — THE TUTOR MEMORY ARC (retrieval / the model phase) — OPENS 2026-08-17
+
+**OPENS (from item 84 preset (B)'s hybrid ruling).** The Tutor's **MODEL PHASE** — its
+memory / retrieval design: **what persists**, **how genre / type travel**, and the **deck→model
+threshold parameter** — **settles TOGETHER with its carve-out sentence** (one decision, not two).
+**The wire today is `{messages, delta?, bible?}` and NOTHING else — closed by architecture** (no
+silent widening of what the Tutor sends or stores); the `69911c3` seam note in the lock record on
+main is this arc's **founding census**. The **disclosure-v4 committee's agenda now narrows to ONE
+sentence — the disclosure itself** — drafting now at Fable's desk; that sentence is this arc's
+carve-out. Post-vacation / committee; the DECK phase (item 84's first ungated citizen) ships ahead
+of it. Registry: next free **109**.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
@@ -10463,6 +10475,12 @@ stimulus) → *"Stimulus"* — preset **(B) ruled lawful but builds NOTHING** un
 committee drafts its carve-out sentence and Nick ratifies it. Build tickets follow the Revise
 re-pass. (Relay labeled these Q1/Q2 in the reverse order; the record binds each word to the right
 question's substance.)
+**→ preset (B) RULED HYBRID — mechanism question CLOSED (Nick, merge `6b16783`, 2026-08-17).**
+Nick's mechanism ruling splits preset (B) into two phases: the **DECK PHASE is GATE-FREE** and
+enters the item-84 build brief as **its first ungated citizen** (it builds now — no disclosure
+sentence required); the **MODEL PHASE** (memory / retrieval) is **item 108 — the Tutor Memory
+Arc**, where the carve-out / disclosure sentence and the retrieval design settle together. Preset
+(B) is no longer wholly gated: the deck ships, the model waits on item 108.
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 
