@@ -367,6 +367,17 @@ the editor remount when kind switches on an already-mounted page. Still packages
 Registry: next free **105**.
 
 **→ FIXED + VERIFIED — 2026-08-17 (fix lane, the doorway ship). ONE DEFECT, NOT THREE.**
+**→ REVIEWED, GREEN — items 104, 87-subset, 97 (Fable, 2026-08-17)** —
+`docs/wrizo-alpha/doorway-review-fable.md`; VERDICT PASS (5 src +141, three harnesses +657,
+runtime-verify +12; zero schema). 104: the `UnbornPage` dispatch asks the ROW (`pageType` outranks
+`descriptor.kind`), prose falls through the SAME component under the SAME key (no remount, PB1
+preserved exactly). 87-subset: the empty case moves, the threshold rule stands; four clause-1
+design-supersession parks. 97: pointer cleared AT DETECTION, does-not-bite finding + named residual
+carried. **101 → S0 CLOSED benign** (a measurement, not a defect claim), feedback routed to item
+96's charter. **OBS (non-blocking, ×3, th2-comment class):** stale clause-1 prose ("declares Draft
+too" / "This door SAYS Draft" / "mode (item 87)") + inert `?mode=draft` fixtures describe the
+REMOVED mechanism — correct at the next touch of each file. **NO DEPLOY — the doorway ship holds
+for Nick's word.**
 **S0 BEFORE PATCH, proven by reading and then measured.** `UnbornPage`
 (`pages/PageEditor.tsx`) dispatched on **`descriptor.kind`** — what the ADDRESS said the door
 meant — while `PageEditor` (the BORN route) has always dispatched on **`entry.pageType`** — what
@@ -445,6 +456,10 @@ just-minted board is still in the dirty set ("local unsynced edit wins"); the sc
 and cleans first, exactly as a real second device would have.
 
 ## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
+
+**→ S0 CLOSED benign (Fable's review, 2026-08-17):** a measurement, not a defect claim — S4 green
+confirms same-route-navigation onto an identical door; **feedback routed to item 96's charter.** No
+code owed.
 
 **The ledger asked for exactly this before attributing anything** ("Repro PENDING … Confirm the
 reproduction before attributing a defect"), and the answer is that the suspicion in the ticket is
@@ -535,6 +550,13 @@ v4 in annotation form (v3 standing verbatim beneath)**; and per `sc2.mjs`'s prec
 becomes a **HARNESS OBLIGATION** on each gated counsel's build ticket — its spec asserts its wire
 carries exactly what its button names, nothing more. The disclosure is a testable claim, tested.
 This is THE DISCLOSURE, distinct from item 108's carve-out (a separate second sentence).
+**→ CONDITION (1) SATISFIED — TD4 / TR3 / BD4 UNBLOCKED (Fable, 2026-08-17).** Per the 83 desk's
+mechanism confirmation and census supplement (`menus-build 8a04a3a`), the payload census is
+confirmed; the counsels **UNBLOCK**. The disclosure sentence enters both build briefs verbatim, v3
+→ superseded by v4 (v3 verbatim beneath), and the harness obligation attaches to each counsel's
+ticket. **Two carried caveats:** TR3's **ask 2 OWES one payload-naming clause** (the 84 desk's
+wordsmith) before its ticket; **BD4's scope** is restated to **board-content-beyond-base — currently
+none.** Disclosure-v4 remains provisionally-binding; live testing may amend it, append-only.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
