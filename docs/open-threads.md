@@ -128,6 +128,11 @@ board. New ticket, fix-class.
 **→ RULED: RE-MINT (Nick, 2026-08-17).** PLAN→ on a page whose plan board is trashed MINTS a fresh
 board and CLEARS the stale pointer; the trashed board stays manually recoverable via the Trash
 overhaul (item 90). **Decision-complete; build queued in the doorway wave.**
+**→ BUILT + MERGED with the doorway ship (merge `cf9180a`, 2026-08-17); re-mint ratified in code,
+and the harness does NOT bite — that is the finding (see the ITEM 97 build section below). NAMED
+RESIDUAL:** the **tombstone-arrival window** — closing it would require unpairing at apply-time,
+which is **beyond this decision's authority**; **post-vacation class.** The re-mint decision stands
+as ruled; the residual is named, not silently carried.
 
 **ITEM 98 OPENS + STANDING GUARD (deploy-critical).** Railway commands run ONLY from the
 correctly-linked PRIMARY CHECKOUT, `railway status`-verified first. **Worktrees are absent from
