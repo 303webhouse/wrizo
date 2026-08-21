@@ -1725,7 +1725,40 @@ export function getOrCreatePlanBoard(pageId: string): JournalEntry | null {
   if (page.planBoardId) {
     const existing = getJournalEntry(page.planBoardId);
     if (existing) return existing;
-    // Pointer dangles (board hard-gone) — fall through and re-birth below.
+    // ITEM 97 — RE-MINT IS THE DESIGNED BEHAVIOUR (Nick, 2026-08-17), AND THE
+    // POINTER IS CLEARED AT DETECTION.
+    //
+    // BE CLEAR ABOUT WHAT THIS DID AND DID NOT CHANGE, because a harness proved
+    // it rather than a reading: `item97.mjs` is GREEN AGAINST THE PRE-FIX BUNDLE.
+    // Minting fresh and re-pointing the page ALREADY happened on this path; the
+    // decision ratifies behaviour that was there, it does not repair it.
+    //
+    // What changes is (i) intent and (ii) one edge. The old comment said "board
+    // hard-gone", describing only HALF of what reaches here: `getJournalEntry`
+    // returns null for a SOFT-DELETED row too, so a tombstoned board lands here
+    // as well — incidentally, not by design. Nick has ruled that treatment
+    // deliberate. And the stale pointer is cleared HERE, at detection, rather
+    // than only by the re-pair at the end of this function: that re-pair is
+    // conditional on re-reading the page, so if the page itself went absent in
+    // between, the old code left the dangle in place.
+    //
+    // SCOPE, recorded so no one re-derives it — and it corrects this lane's own
+    // 2026-08-03 finding, which read this function ALONE. The LOCAL trash path
+    // NEVER reaches this branch: `softDeleteEntry` already unpairs a trashed
+    // plan board before marking it deleted (BM1 S2 — "deleting a plan board
+    // unpairs"). This branch is reachable only where a board goes absent
+    // WITHOUT that path — chiefly a sync pull carrying another device's
+    // tombstone, which `applyRemoteRecords` applies with no unpair.
+    //
+    // RESIDUAL, named rather than hidden: the WINDOW between a tombstone
+    // arriving and the next flip is not closed by this. Closing it would mean
+    // unpairing at apply-time, which is a larger change than the decision
+    // authorised.
+    const stalePointerOwner = getJournalEntry(pageId);
+    if (stalePointerOwner) {
+      const { planBoardId: _stale, ...withoutPointer } = stalePointerOwner;
+      saveJournalEntry(withoutPointer as JournalEntry);
+    }
   }
   const now = new Date().toISOString();
   const board: JournalEntry = {
