@@ -8931,9 +8931,21 @@ did NOT red.
 live production build (P2c: item 82 fix (b) + SC2). Rollback is a redeploy of that tree
 (`railway up`).
 
-**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
-`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
-(`index-D8pFRr1k.js`) + `/auth/me` 401 verified LIVE.
+**DEPLOY STAMP: git `1cbda72` · railway `59d55924-f1b1-4792-a293-f834e3ad898d`** — DEPLOYED
+2026-08-21 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:34e414cb`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-D8pFRr1k.js` / `index-62lZ1TCK.css`) — the same
+content hash the suite of record stamped, so what is LIVE is exactly what was tested and reviewed
+GREEN — and `/auth/me` **401**. The prior P2c build (`643dd16` · railway `ec2b9755`) is now
+superseded as the live build; the rollback SOURCE remains git `643dd16`.
+
+**Items 104 / 87-subset / 97: DEPLOYED** (REVIEWED GREEN); **101: S0-closed benign, no code, feedback
+to item 96.** The doorway wave is LIVE — the room a door opens is the room you end up in; the
+New-Page template births in the right mode by descriptor; re-mint clears the stale pointer at
+detection. Item 82's family did NOT red; no red-suite clause invoked. Rollback ratchet is now this
+stamp. **S4 queues behind it.** Item 87's Draft-default remains HELD (New Page Chooser, menus arc);
+item 97's tombstone-arrival residual and item 108's Tutor-memory carve-out stay post-vacation.
 
 ## P2c DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship P2c")
 
