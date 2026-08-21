@@ -426,4 +426,37 @@ panel is real under hands.
 this record — and takes its ask strings from §3 and §4 of this document, never from
 the pass files or the mockup HTML.
 
+---
+
+## §9 · TR3 ASK TWO — THE PAYLOAD CLAUSE *(added before its ticket)*
+
+**The gap, verified on disk at `origin/main`.** TR3's wire prose names one payload
+for the whole roster — *"full `pageText` (or a revision-scope payload) as a read-only
+addition beside the existing keys"* — which serves ask one (*"Read it whole"*) and
+ask three (the selection row shared with Draft). **Ask two names none.** Pass 3
+records it as *"(the Interview's first ask, now checkable against the text)"* — and
+drift is measured between **two** terms, of which the pass names only one.
+
+**THE CLAUSE.** Ask two adds **no new payload**: its second term rides keys that
+already travel. *"What it's trying to be"* is **the writer's statement of intention,
+never the tutor's inference of it** — sourced from the Interview's own prior turn in
+`messages`, or from a fact the writer saved to the Bible. Both are lawful under v3 as
+it stands, so **ask two widens the gate by nothing beyond TR3's `pageText`.** Where
+neither source carries an intention, **the ask does not fire against an inferred
+one**: a tutor that supplies what the piece is trying to be and then measures drift
+against its own supposition has issued **a verdict wearing diagnosis's clothes**
+(TR4; TD1's never-supply, applied to the standard rather than to the prose). The
+lawful degraded form is the Interview's own question, returned — *ask the writer what
+it's trying to be, then measure.*
+
+**Consequence for the gate.** Of TR3's three asks, only **one and three put new bytes
+on the wire.** Ask two is gated with them solely because it needs the page to measure
+against — not because it discloses anything further. A sentence that covers TR3's
+`pageText` covers ask two entire.
+
+**Written without candidate B's text in hand.** This clause is derived from the ask's
+own mechanics and from v3's enumeration as it stands on disk — not from B. If B
+sources intention by some other route, **this clause is the thing to check against
+it** before ask two tickets.
+
 — the item-84 desk, 2026-08-04
