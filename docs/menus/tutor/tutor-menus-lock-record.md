@@ -51,8 +51,10 @@ mount survives the redesign unchanged.
 **Explicitly deferred, by his words:** the rules for these conversations. They are
 not designed here and must not be inferred by any build ticket.
 
-**Held:** preset **(B)** — see §6. It is the one preset that runs into the shipped
-composition bar, and it does not build until Nick rules.
+**Ruled lawful, still gated:** preset **(B)** — Nick's word *"Stimulus."* (§6 Q2). A
+prompt is a spur, not the writer's work. Its hold **converts** rather than lifts: it
+now awaits the disclosure-v4 committee's carve-out sentence and Nick's ratification
+of it. **(B) builds nothing until then.**
 
 ### 2 · DRAFT LENS DEFAULT — **KEEP B** *(closed clean)*
 
@@ -66,8 +68,9 @@ is real under hands.
 (assuming they were previously consulted)."**
 
 His condition required a confirmation from the record rather than an assurance from
-the desk. It is discharged in **§5**, including the one distinction that surfaces
-rather than locking silently, per his own instruction.
+the desk. It is discharged in **§5**, including the one distinction that surfaced
+rather than locking silently, per his own instruction — **and answered in §6 Q1 with
+his word *"Stands."*** Line 3 locks as phrased.
 
 **One line changes under line 4's authority, not under this line:** TD3's third ask.
 See §3 of this record.
@@ -232,9 +235,9 @@ carried to him in §6.
 
 ---
 
-## §6 · HELD FOR NICK'S WORD — two questions, neither defaulting
+## §6 · NICK'S ANSWERS — both questions CLOSED
 
-### Q1 · Does governing consultation satisfy line 3's condition?
+### Q1 · Does governing consultation satisfy line 3's condition? — **ANSWERED**
 
 Line 3 was kept *"assuming [the Experts] were previously consulted."* §5 shows
 consultation that governed all four phrasings and hand-authored one. **One word
@@ -242,7 +245,14 @@ settles it:** *satisfied* (line 3 locks as phrased, with TD3's third ask carryin
 its §3 amendment), or *not satisfied* (the three Architect-composed phrasings route
 to the Experts for word-by-word review before locking).
 
-### Q2 · Is a writing prompt lawful as stimulus? — preset (B) is HELD
+**NICK'S ANSWER — *(his word)* "Stands."** The governing-not-word-by-word
+consultation **satisfies lock 3's condition**; TD3's phrasings **lock clean**, with
+the impersonal amendment of §3 already applied.
+
+**Q1 is CLOSED.** Line 3 locks as phrased. The three Architect-composed phrasings do
+not route to the Experts for word-by-word review.
+
+### Q2 · Is a writing prompt lawful as stimulus? — **ANSWERED**
 
 Preset **(B) "Writing Prompt"** is held from any build until Nick's direction word.
 The reason is on disk, not in the desk's opinion. The shipped `SYSTEM_PROMPT`
@@ -272,6 +282,44 @@ the disclosure-v4 committee** — that committee's territory precisely — and *
 ad-hoc.** **FX15's deck-drawn-invite precedent rides as its argument:** content
 drawn by the writer's own act, never dealt on arrival.
 
+**NICK'S ANSWER — *(his word)* "Stimulus."** Preset **(B) is ruled lawful** — a
+prompt is a **spur, not the writer's work**.
+
+**THE HOLD CONVERTS — it does not lift.** (B) is no longer awaiting *direction*; it
+is now awaiting the **carve-out SENTENCE**, which belongs to the disclosure-v4
+committee (FX15's deck-drawn precedent riding), and then Nick's ratification of that
+sentence. **(B) builds nothing until then.**
+
+**Q2 is CLOSED** as a question of law. The category is settled; only the sentence
+remains.
+
+#### A disk note for the carve-out committee — the precedent's mechanism, verified
+
+FX15 rides as (B)'s argument, and on disk the precedent is **narrower than its name
+suggests**. Its rail reads, verbatim (`docs/wrizo-alpha/p1-wave.md` @ `6396e65`):
+
+> prove in code and harness: **deck-drawn, never model-drawn** (no send on page load — the ratified disclosure sentence forbids it)
+
+This is **not documentation only.** `apps/desktop/scripts/harness/fx15.mjs:113`
+asserts it live — the rendered line must be *"a verbatim member of the local
+NUDGE_POOL deck"* — and FX15's review records the seam's logic: *"a model line
+cannot be a POOL member."*
+
+**This does not touch Nick's ruling**, which settles the category: a spur is not the
+writer's work. It bears only on **mechanism**, and it splits (B) into two builds the
+committee should price separately:
+
+- **(B) deck-drawn** — a local pool of authored prompts, drawn on the writer's
+  press. Inherits FX15's mechanism whole: **sends nothing, composes nothing**, and
+  would need **no carve-out sentence at all**.
+- **(B) model-drawn** — the Tutor composes the prompt on request. Bytes travel, so a
+  sentence **is** genuinely required; and FX15 then supports the *category* but not
+  the *mechanism*, its own harness existing to forbid exactly that shape on the page
+  surface.
+
+**The sentence is only needed for the second.** Named here so the carve-out is not
+drafted wider than the build turns out to require.
+
 ---
 
 ## §7 · ROUTED INTO THE REVISE RE-PASS
@@ -299,12 +347,15 @@ gated asks as input.
 ## §8 · WHAT PHASE 4 CLOSES — AND WHAT IT DOES NOT
 
 **Closed clean:** lines 2, 6, 7 — the Draft lens default, the chip voice, and the
-ordering. **Closed amended:** lines 1, 4, 5.
+ordering. **Closed amended:** lines 1, 4, 5. **Both §6 questions ANSWERED** — Q1
+*"Stands."*, Q2 *"Stimulus."* **Phase 4 is answered whole.**
 
 **Standing open, by name:**
 
-- **Q1** — line 3's condition (§6).
-- **Q2** — preset (B)'s lawfulness (§6); build held.
+- **The carve-out sentence for preset (B)** — the disclosure-v4 committee's to
+  draft, then Nick's to ratify. (B) builds nothing until then (§6 Q2). Whether a
+  sentence is needed at all depends on deck-drawn vs model-drawn — see the disk note
+  in §6.
 - **The conversation rules** — deferred by Nick's own sentence at line 1. Not
   designed here; not to be inferred.
 - **The Revise re-pass** — running in parallel at this desk (§7).
