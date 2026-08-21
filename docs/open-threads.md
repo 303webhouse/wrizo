@@ -376,11 +376,11 @@ the amendment already rules that Screenplay BIRTHS at zero words, "which is also
 unborn script surface to hold." Every silent door still writes nothing — asserted, S3(a).
 Guarded three ways because a double birth would be worse than the defect: unborn only, address-
 asked only, once-per-mount latch (StrictMode double-invokes an empty-deps effect).
-**SUITE — unparked `59/59` CLEAN**, `tree=46509f4+10dirty
-bundle=index-D8pFRr1k.js/531254b` (`item104.mjs` 13, `item97.mjs` 7, `item87.mjs` 4 live + 4
-parked), plus `tsc` clean. The PARKED run is IN FLIGHT at this commit on the identical bundle —
-stated as in-flight rather than claimed; its result follows on this branch. **NO DEPLOY: the
-doorway ship holds for Nick's explicit word.**
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE.** Unparked `59/59` and parked `59/59`,
+both `tree=46509f4+10dirty bundle=index-D8pFRr1k.js/531254b` — the same asset hash on both runs,
+so the two results describe the same software and not merely the same commit. `item104.mjs` 13,
+`item97.mjs` 7, `item87.mjs` 4 live + **4 PARKED GREEN** (clause 1's records, byte-frozen). `tsc`
+clean. **NO DEPLOY: the doorway ship holds for Nick's explicit word.**
 **VERIFICATION — `scripts/harness/item104.mjs`, 13 checks, PROVEN TO BITE.** S1(c) is RED against
 the pre-fix bundle and green with the fix. Four checks are CONTROLS that pass on BOTH builds and
 are labelled as such: Nick's F5 (the born route was always right), PB1's write-nothing door, and

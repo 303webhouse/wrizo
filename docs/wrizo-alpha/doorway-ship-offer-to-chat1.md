@@ -16,7 +16,7 @@ Branch: **`doorway-ship`**. Base: `origin/main` @ **`b3cd56c`**, pinned by SHA.
 | | |
 |---|---|
 | unparked | **59/59 CLEAN** — `tree=46509f4+10dirty bundle=index-D8pFRr1k.js/531254b` |
-| parked | *(follows on this branch)* |
+| parked | **59/59 CLEAN** — `tree=46509f4+10dirty bundle=index-D8pFRr1k.js/531254b` (identical bundle; item 87's 4 parks green) |
 | `item104.mjs` | 13 checks — **S1(c) RED pre-fix**; 4 controls green on both builds |
 | `item87.mjs` | 4 live + 4 parked (was 8/8, **4/8 red pre-fix**, before the amendment) |
 | `item97.mjs` | 7 checks — **green on BOTH builds; a guard, not proof of a fix** |
