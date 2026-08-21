@@ -8895,6 +8895,46 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
+
+**THE DOORWAY WAVE — items 104 + 87-subset + 97 + 101's park.** Nick's word: "SHIP THE DOORWAY."
+The merged-but-undeployed set since the P2c live build (`643dd16`). Deploying the `main` HEAD
+(`42057a9`) — this records commit's own SHA, stamped below immediately after `railway up`.
+
+**New PRODUCT code since the P2c live build (`643dd16`) — apps/desktop/src, FIVE FILES (verified
+`643dd16..HEAD`, +141/−7), ZERO schema, ZERO server:**
+- item 104 · **the doorway** (the room a door opens is the room you end up in) — `PageEditor.tsx`
+  (+84), `unbornPage.ts` (+22): the `UnbornPage` dispatch asks the ROW (`pageType` outranks
+  `descriptor.kind`); prose falls through the SAME component under the SAME key (no remount, PB1
+  preserved); the structure door reuses `requestScreenplay`, guarded three ways.
+- item 87-subset · `persistence.ts` (+35): the empty case moves, the threshold rule stands
+  (`seedTypewriterDefault(!fresh && …)`); the Draft-default / `?mode=draft` is HELD (superseded by
+  the New Page Chooser, menus arc).
+- item 97 · **re-mint** — `BoardEditor.tsx` (+2), `CascadePanels.tsx` (+5): pointer cleared AT
+  DETECTION; named residual (tombstone-arrival window) recorded, post-vacation.
+- item 101 · **S0 park** — NO code (confirmed benign, feedback routed to item 96).
+- **REVIEWED GREEN** (`docs/wrizo-alpha/doorway-review-fable.md`).
+
+**Docs since `643dd16` (records only, no deployed surface):** the doorway records + review, the
+five founder rulings, item-84 lock record + hybrid + §9 (TR3 ask-2 clause), item 108, the
+disclosure-v4 committee + ratification + unblock, the SITTING #2 records + items 101–107, and this
+manifest. Confirmed: `643dd16..HEAD` touches `apps/desktop/src` in exactly the five files above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, machine-clear (the 83 desk's clearance log on record)
+— **59/59 UNSET (CLEAN) and 59/59 PARKED (CLEAN)** at `tree=42057a9 bundle=index-D8pFRr1k.js/531254b`
+— the same bundle the doorway offer stamped. `tsc` ×2 EXIT 0 (app+node); `build:web` clean; the
+guard confirmed no foreign browsers at start or mid-run (**NOT contaminated**). Item 82's family
+did NOT red.
+
+**ROLLBACK TARGET: git `643dd16` · railway `ec2b9755-1746-4b23-a3f8-e33130f984a9`** — the current
+live production build (P2c: item 82 fix (b) + SC2). Rollback is a redeploy of that tree
+(`railway up`).
+
+**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
+`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
+(`index-D8pFRr1k.js`) + `/auth/me` 401 verified LIVE.
+
 ## P2c DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship P2c")
 
 **P2c — item 82 fix (b) + SC2/item 62 (the Script's paginated floor).** Nick's explicit ship
