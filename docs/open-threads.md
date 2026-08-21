@@ -31,7 +31,11 @@ Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's 
   and the 88a+88b close-out below.
 
 **P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible ·
-~~S3/87 New Page defaults~~ **FIXED — 2026-08-03 (fix lane, wave 2), as an AMENDMENT not a
+~~S3/87 New Page defaults~~ **BUILT 2026-08-03; VERIFIED + SHIPPED 2026-08-17 (the doorway
+ship, with item 104). CORRECTION: this line said "FIXED" from 2026-08-03, which was WRONG for
+13 days — the code was written but its harness had never run once, and the item's own entry
+below said so while this summary did not. The lane that wrote both introduced the discrepancy;
+it is corrected here rather than quietly overwritten.** As an AMENDMENT not a
 flip: the door declares the room (`?mode=draft`), so CD1 S8/A7's front-door ruling stands
 unreversed and Arrival's Write door is untouched. Clause 2 (hide presets in Free Write) DID
 NOT REPRODUCE — already true — so it is asserted, not "fixed." Zero parks owed, each
@@ -356,6 +360,99 @@ the editor remount when kind switches on an already-mounted page. Still packages
 (87 + 104's doorway ship) — mode + structure, one seam, one ship.**
 
 Registry: next free **105**.
+
+**→ FIXED + VERIFIED — 2026-08-17 (fix lane, the doorway ship). ONE DEFECT, NOT THREE.**
+**S0 BEFORE PATCH, proven by reading and then measured.** `UnbornPage`
+(`pages/PageEditor.tsx`) dispatched on **`descriptor.kind`** — what the ADDRESS said the door
+meant — while `PageEditor` (the BORN route) has always dispatched on **`entry.pageType`** — what
+the ROW says the page IS. And `birthWith` corrects the address with `history.replaceState` ON
+PURPOSE (`components/UnbornSurface.tsx`): a real `navigate()` there unmounts the surface
+mid-keystroke and drops a typing burst, which PB1's own burst-integrity check caught once
+already. `replaceState` never notifies HashRouter, so no route change occurs — exactly right for
+prose birth, and exactly wrong here. The row became `pageType:'script'` while the callback kept
+re-rendering `PageEditorView`, because the descriptor said `prose` and always would. F5 re-read
+`#/page/<id>`, landed on the born route, and mounted ScriptEditor correctly. **That is precisely
+the asymmetry Nick measured** — the kind SAVES, F5 works, only the live swap fails.
+**TWO CORRECTIONS TO THE BRIEF, both measured rather than argued.**
+**(1) 104(a) DOES NOT REPRODUCE ON A BORN PAGE.** The brief named "kind-switch never remounts
+the editor" as its own defect; `item104.mjs` S2 is **GREEN AGAINST THE PRE-FIX BUNDLE**. The born
+route re-reads the row every render and App.tsx force-renders the routed tree on every write, so
+that swap always worked. (a) was the unborn case wearing a different hat.
+**(2) 104(c) WAS ALREADY WIRED.** The "New Page template icon" is `BeginningsRow`'s `screenplay`
+door, which already calls `requestScreenplay()`, which already births a script row. It looked
+dead for the SAME dispatch reason. So all three reported symptoms collapse to one line.
+**THE FIX.** The dispatch asks the ROOM once the room exists: a row's `pageType` decides, and the
+descriptor decides only while there is nothing else to ask. **Prose birth is deliberately
+untouched** — a prose row has no `pageType`, so it still falls through to the SAME
+`PageEditorView` with the SAME key: no remount, no lost focus, not one dropped keystroke. The
+burst-integrity property `replaceState` exists to protect is preserved exactly; only a genuine
+change of document KIND swaps the surface, which is when a swap is what the writer asked for.
+**THE DESCRIPTOR GAINS `structure`** (`?structure=screenplay`), per the brief and Nick's verdict:
+the door declares the room's KIND, not just its posture, and the intent rides the ADDRESS so it
+survives a reload. Applying it reuses `requestScreenplay` rather than inventing a second birth
+path, so the ruled amendment keeps ONE implementation. **This is not a new carve-out of PB1:**
+the amendment already rules that Screenplay BIRTHS at zero words, "which is also why there is no
+unborn script surface to hold." Every silent door still writes nothing — asserted, S3(a).
+Guarded three ways because a double birth would be worse than the defect: unborn only, address-
+asked only, once-per-mount latch (StrictMode double-invokes an empty-deps effect).
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE.** Unparked `59/59` and parked `59/59`,
+both `tree=46509f4+10dirty bundle=index-D8pFRr1k.js/531254b` — the same asset hash on both runs,
+so the two results describe the same software and not merely the same commit. `item104.mjs` 13,
+`item97.mjs` 7, `item87.mjs` 4 live + **4 PARKED GREEN** (clause 1's records, byte-frozen). `tsc`
+clean. **NO DEPLOY: the doorway ship holds for Nick's explicit word.**
+**VERIFICATION — `scripts/harness/item104.mjs`, 13 checks, PROVEN TO BITE.** S1(c) is RED against
+the pre-fix bundle and green with the fix. Four checks are CONTROLS that pass on BOTH builds and
+are labelled as such: Nick's F5 (the born route was always right), PB1's write-nothing door, and
+ordinary prose birth staying on the prose surface. So the file cannot be satisfied by a change
+that simply remounts everything.
+
+## ITEM 97 — RE-MINT RATIFIED; THE HARNESS DOES **NOT** BITE, AND THAT IS THE FINDING — 2026-08-17
+
+**Nick's decision (Fable relay, decision-complete): RE-MINT.** `getOrCreatePlanBoard` treats a
+soft-deleted board as absent DELIBERATELY, mints fresh, and CLEARS the stale pointer. Trashed
+boards stay recoverable via item 90's future work. Implemented.
+**BUT `scripts/harness/item97.mjs` IS 7/7 GREEN AGAINST THE PRE-FIX BUNDLE.** Minting fresh and
+re-pointing the page ALREADY happened on this path, so the decision **ratifies behaviour that was
+already there rather than repairing a defect**. Presented as such: the file is a **standing
+guard** on behaviour Nick has now ruled — if a future change makes a tombstoned board resolve, or
+leaves the page pointing at it, those checks go red — **it is not evidence of a fix and is not
+offered as any.**
+**THIS ALSO CORRECTS THIS LANE'S OWN 2026-08-03 FINDING**, which framed the re-mint as a bug. That
+reasoning read `getOrCreatePlanBoard` ALONE and missed the delete site: **`softDeleteEntry`
+already unpairs a trashed plan board** before marking it deleted (BM1 S2 — "deleting a plan board
+unpairs"). **The LOCAL trash path therefore never dangles and never reaches the branch at all.**
+The branch is reachable only where a board goes absent WITHOUT that path — chiefly a **sync pull
+carrying another device's tombstone**, which `applyRemoteRecords` applies with no unpair. That is
+the path the harness drives, so the guard is exercised rather than reviewed.
+**WHAT THE CODE CHANGE ACTUALLY ADDS**, stated precisely because the harness cannot show it:
+(i) INTENT — the soft-deleted case is named and deliberate instead of incidental (the old comment
+said "board hard-gone", describing only half of what reaches it); (ii) ONE EDGE — the stale
+pointer is cleared AT DETECTION, so it cannot survive an end-of-function re-pair that misses
+because the page itself went absent in between.
+**RESIDUAL, named rather than hidden:** the WINDOW between a tombstone arriving and the next flip
+is NOT closed. Closing it would mean unpairing at apply-time — a larger change than the decision
+authorised, and not one this lane made on its own authority.
+**HARNESS INFRA:** the sync double gains an armable `pull` (`/api/_sync_mode` `{ pull }`), on the
+exact precedent of this lane's own `{ fail }` and defaulting to the pre-existing empty pull. It
+exists because the remote-tombstone path is the ONLY way into the branch. A first draft armed the
+tombstone immediately and measured nothing — `applyCollection` correctly REFUSED it, since a
+just-minted board is still in the dirty set ("local unsynced edit wins"); the scenario now pushes
+and cleans first, exactly as a real second device would have.
+
+## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
+
+**The ledger asked for exactly this before attributing anything** ("Repro PENDING … Confirm the
+reproduction before attributing a defect"), and the answer is that the suspicion in the ticket is
+correct and benign. Measured through the CASCADE'S OWN New Page door — the control Nick used —
+on an already-unborn page (`item104.mjs` S4): the click **writes NO row**, the address is
+**unchanged** (`#/page/new?mode=draft` before and after), and the writer is left on an unborn
+door either way. It is a same-route navigation onto an **identical blank door**: nothing happened
+because nothing needed to happen, and **nothing is lost**.
+**RECORDED AND PARKED per the brief's own instruction** ("fix only if the mechanism is inside
+this same doorway seam, else record and park"). The mechanism IS in the doorway seam, but it is
+not a defect — what is arguably owed is FEEDBACK (a door that says "you are already on a new
+page"), which is a design call for item 96's discoverability charter, not a fix-class change this
+lane should invent. **No code written for item 101.**
 
 ## ITEM 105 — THE PAGE-BOUNDARY PRESENTATION CLUSTER — OPENS 2026-08-17
 
@@ -9904,13 +10001,43 @@ sitting closes them.
     `saved` guard means it can never overwrite a choice the writer has made. **This is
     the kind of defect a harness run finds; a careful read found it instead, which is
     what a browser freeze leaves available.**
-    **VERIFICATION — OWED, NOT DONE.** `scripts/harness/item87.mjs` exists with 7 checks,
-    three of them CONTROLS (Arrival's Write door still Free Write; a ~3-line Draft page
-    still ON; Draft still HAS the Structure presets) so the file cannot be satisfied by a
-    change that simply moves every default. **It has never been executed.** Owed when a
-    window opens: the falsification run against a pre-fix bundle, then both stamped
-    suites. Until then this item is BUILT, not verified, and is excluded from the merge
-    offer by name.
+    **VERIFICATION — DONE, 2026-08-17 (the doorway ship). 8/8 GREEN; 4/8 RED against the pre-fix
+bundle.** `scripts/harness/item87.mjs` ran for the FIRST TIME on this date, 13 days after the
+code was written. Clause 1 (S1 a/b/d) and clause 3 (S3a) are red pre-fix; both CONTROLS pass on
+BOTH builds — Arrival's Write door still opens Free Write (CD1 S8/A7 unreversed, not collateral
+damage) and a Draft page that already holds work still opens typewriter-ON (FX2 S2 amended at the
+EMPTY case only).
+**CLAUSE 2 IS NOW PROVEN NON-REPRODUCING BY MEASUREMENT, not by reading.** S2 passes on the
+pre-fix bundle too — Free Write already showed no Structure presets. The 2026-08-03 call to
+ASSERT it rather than "fix" it was right, and is now backed by a measurement instead of an
+argument.
+**THE FIRST RUN FOUND A FIXTURE BUG IN THIS FILE — which is exactly why "BUILT, NOT VERIFIED"
+was the honest label and not a formality.** S3(b) seeded its page with a RAW `localStorage`
+read-modify-write, which is precisely the seeding race **AGENTS.md's own harness law forbids**:
+`wrizoCreateJournalPage` writes the CACHE and flushes on a ~300ms debounce, so the raw write
+clobbered the row, the page was GONE after the reload, and the run landed on Arrival and timed
+out with NO verdict. Written during the browser freeze and never executed, so nothing caught it
+for 13 days. **Repaired by seeding through the app's own write path** (type one short sentence —
+1 line-equivalent, the same side of the 10-line threshold the original three lines tested), and
+the check's name was corrected to match what it now measures rather than left describing a
+fixture that no longer exists.
+**→ SCOPE CHANGED BY NICK — 2026-08-17 (Fable relay, DOORWAY BRIEF ADDENDUM).** Nick amended
+    the DESIGN: **clause 1 (the Draft-default door) is SUPERSEDED** by a New Page chooser coming
+    via the menus arc. It is **HELD, not deleted** — the built work stays on
+    `fw2-boards-and-defaults`, and its four assertions PARK in `item87.mjs` with records
+    byte-frozen. **A superseded DESIGN parks exactly as a superseded ruling does**; there is no
+    live successor named, because the successor is a design that does not exist yet.
+    **WHAT SHIPS from item 87 in the doorway wave: clause 3 (typewriter OFF on a fresh page —
+    Nick's sitting verdict, untouched by the amendment) + clause 2's assertion.** The descriptor's
+    `mode` field, `PageEditor`'s door-mode read and its persistence effect, and the two doors that
+    declared `?mode=draft` are all removed from the shipping subset; `structure` (item 104) is
+    unaffected and stays.
+    **THE 8/8 VERIFICATION STANDS AS EVIDENCE FOR THE WHOLE BRANCH** (Fable's ruling), including
+    the held clause — it is what proves the held work is sound rather than abandoned. The shipping
+    subset re-stamps at 4 live checks + 4 parked.
+    **ONE FINDING FROM CLAUSE 1 IS OWED FORWARD TO THE CHOOSER, and is parked with it rather than
+    lost:** a door-made choice that is never persisted is true exactly ONCE, because birth rewrites
+    the address away. Whatever the menus arc builds will meet that same wall.
 91+92. **The board's Page door, and the card that survives.** **P1+P1 (S11+S12) — BUILT
     + VERIFIED — 2026-08-03 (fix lane, wave 2).** One fix, because one S0 proved one
     subject: a page made FROM a board must end up linked TO that board, and stay linked.

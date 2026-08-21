@@ -30,6 +30,23 @@ export interface UnbornDescriptor {
   // survives a reload with no storage and no store row — the same property that
   // makes the rest of PB1 reload-safe by construction.
   pinBoardId: string | null;
+  // ITEM 104 — THE DOOR DECLARES THE ROOM'S KIND, not just its posture.
+  //
+  // `mode` (item 87) says which POSTURE a prose page opens in; this says what
+  // KIND of document it is. Nick's verdict, verbatim: "Screenplay mode should be
+  // auto-selected anyway when a user comes from a New Page where the
+  // 'Screenplay' template icon was selected." That is the same seam items 91-92
+  // established for the board pin and item 87 for the mode — the address
+  // carrying what a page IS before it is born — extended one field further.
+  //
+  // Applying it is NOT a new carve-out of PB1. The ruled AMENDMENT to Fable's
+  // ruling 2 already says Screenplay BIRTHS at zero words, "which is also why
+  // there is no unborn script surface to hold" (see `requestScreenplay` in
+  // PageEditor.tsx). A door declaring `structure=screenplay` therefore births on
+  // arrival for exactly the reason the toggle does: choosing Screenplay is a
+  // durable authorial commitment about what the document IS, not a decoration.
+  // Every silent door keeps writing nothing, so PB1's own law is untouched.
+  structure: 'prose' | 'screenplay' | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -42,11 +59,15 @@ export function readDescriptor(search: string): UnbornDescriptor {
   const kind = q.get('kind') === 'board' ? 'board' : 'prose';
   const binderId = q.get('binder');
   const pinBoardId = q.get('pin');
+  const rawStructure = q.get('structure');
   return {
     origin,
     kind,
     binderId: binderId && binderId.trim() ? binderId : null,
     pinBoardId: pinBoardId && pinBoardId.trim() ? pinBoardId : null,
+    // Anything unrecognised degrades to "no opinion", not to a guess — the
+    // address is a hint about a room that does not exist yet.
+    structure: rawStructure === 'screenplay' ? 'screenplay' : rawStructure === 'prose' ? 'prose' : null,
   };
 }
 
@@ -56,6 +77,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.kind && d.kind !== 'prose') q.set('kind', d.kind);
   if (d.binderId) q.set('binder', d.binderId);
   if (d.pinBoardId) q.set('pin', d.pinBoardId);
+  if (d.structure && d.structure !== 'prose') q.set('structure', d.structure);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }

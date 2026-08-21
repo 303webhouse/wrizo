@@ -235,6 +235,11 @@ function JournalPanel({ navigate, openSurvey }: CascadeContext) {
 function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: NavigateFunction }) {
   const { t } = useDeskLexicon();
   // PB1 (item 71) — no row until the first word.
+  // ITEM 87 (clause 1) — this door SAYS Draft. It and Arrival's Write door both
+  // open a loose-origin surface, so origin cannot tell them apart; the
+  // difference is what they mean. "New Page" means a page to work on; Write
+  // means the front-door writing posture, and CD1 S8's Free Write default for it
+  // is deliberate and untouched.
   const newPage = () => navigate(unbornHref({ origin: 'loose' }));
   return (
     <>

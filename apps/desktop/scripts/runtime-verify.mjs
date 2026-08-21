@@ -217,7 +217,18 @@ function startServer(dist) {
         } catch {}
         // Empty arrays = no-op pull, but the `journalEntries` KEY mirrors the new
         // server (the resync backfill triggers on its presence).
-        sendJson(res, { serverTime: new Date(0).toISOString(), pull: { journalEntries: [] } });
+        //
+        // ITEM 97 — `syncMode.pull` lets a scenario serve a REAL pull payload,
+        // on the same arm/disarm precedent as `fail` above and defaulting to the
+        // pre-existing empty pull when unset. Needed because the only path that
+        // reaches getOrCreatePlanBoard's absent-board branch is a REMOTE
+        // tombstone: the local trash path never gets there, since
+        // softDeleteEntry already unpairs (BM1 S2). Without this the branch
+        // could only be reviewed, not exercised.
+        const pull = syncMode.pull && typeof syncMode.pull === 'object'
+          ? syncMode.pull
+          : { journalEntries: [] };
+        sendJson(res, { serverTime: new Date(0).toISOString(), pull });
       });
       return;
     }

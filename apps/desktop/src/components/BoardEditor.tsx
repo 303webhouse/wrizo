@@ -2218,6 +2218,8 @@ export function BoardEditor({ id }: { id: string }) {
     if (systemKind === 'trash') return null;
     if (systemKind === 'journal') return unbornHref({ origin: 'journal' });
     if (systemKind === 'shelf') return unbornHref({ origin: 'loose' });
+    // ITEM 87 (clause 1) — a page opened FROM a board is a page to work on, so
+    // this door declares Draft too, the same as the cascade's New Page.
     return unbornHref({ origin: 'loose', binderId: project?.id ?? null, pinBoardId: id });
   };
   const travelToPage = () => {
