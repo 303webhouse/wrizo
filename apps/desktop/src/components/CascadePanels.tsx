@@ -240,7 +240,7 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
   // difference is what they mean. "New Page" means a page to work on; Write
   // means the front-door writing posture, and CD1 S8's Free Write default for it
   // is deliberate and untouched.
-  const newPage = () => navigate(unbornHref({ origin: 'loose', mode: 'draft' }));
+  const newPage = () => navigate(unbornHref({ origin: 'loose' }));
   return (
     <>
       {/* A Fragment, not a second `.wz-cascade-panel-body` wrapper —

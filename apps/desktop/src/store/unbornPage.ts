@@ -30,21 +30,23 @@ export interface UnbornDescriptor {
   // survives a reload with no storage and no store row — the same property that
   // makes the rest of PB1 reload-safe by construction.
   pinBoardId: string | null;
-  // ITEM 87 (clause 1) — THE DOOR DECLARES THE ROOM IT OPENS.
+  // ITEM 104 — THE DOOR DECLARES THE ROOM'S KIND, not just its posture.
   //
-  // Nick's S3: "New Page lands in Draft." The obvious patch — flip PageEditor's
-  // default so a loose page opens in Draft — would REVERSE a ruled default:
-  // CD1 S8 (A7) deliberately opens loose-origin pages in Free Write to match the
-  // front-door posture, and Arrival's own Write door depends on exactly that. A
-  // New Page and the Write door produce the SAME loose-origin surface, so origin
-  // alone cannot tell them apart; only the door knows which it is.
+  // `mode` (item 87) says which POSTURE a prose page opens in; this says what
+  // KIND of document it is. Nick's verdict, verbatim: "Screenplay mode should be
+  // auto-selected anyway when a user comes from a New Page where the
+  // 'Screenplay' template icon was selected." That is the same seam items 91-92
+  // established for the board pin and item 87 for the mode — the address
+  // carrying what a page IS before it is born — extended one field further.
   //
-  // So this is additive, and CD1 S8 stands unreversed: a door that means "a page
-  // to work on" SAYS so, and everything that stays silent keeps today's
-  // behaviour byte-for-byte. That is how a ruled default gets amended rather
-  // than flipped (Fable's ruling 4). Null means "no opinion" — the existing
-  // origin/pageType rule decides, untouched.
-  mode: 'freewrite' | 'draft' | null;
+  // Applying it is NOT a new carve-out of PB1. The ruled AMENDMENT to Fable's
+  // ruling 2 already says Screenplay BIRTHS at zero words, "which is also why
+  // there is no unborn script surface to hold" (see `requestScreenplay` in
+  // PageEditor.tsx). A door declaring `structure=screenplay` therefore births on
+  // arrival for exactly the reason the toggle does: choosing Screenplay is a
+  // durable authorial commitment about what the document IS, not a decoration.
+  // Every silent door keeps writing nothing, so PB1's own law is untouched.
+  structure: 'prose' | 'screenplay' | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -57,7 +59,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
   const kind = q.get('kind') === 'board' ? 'board' : 'prose';
   const binderId = q.get('binder');
   const pinBoardId = q.get('pin');
-  const rawMode = q.get('mode');
+  const rawStructure = q.get('structure');
   return {
     origin,
     kind,
@@ -65,7 +67,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     pinBoardId: pinBoardId && pinBoardId.trim() ? pinBoardId : null,
     // Anything unrecognised degrades to "no opinion", not to a guess — the
     // address is a hint about a room that does not exist yet.
-    mode: rawMode === 'draft' ? 'draft' : rawMode === 'freewrite' ? 'freewrite' : null,
+    structure: rawStructure === 'screenplay' ? 'screenplay' : rawStructure === 'prose' ? 'prose' : null,
   };
 }
 
@@ -75,7 +77,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.kind && d.kind !== 'prose') q.set('kind', d.kind);
   if (d.binderId) q.set('binder', d.binderId);
   if (d.pinBoardId) q.set('pin', d.pinBoardId);
-  if (d.mode) q.set('mode', d.mode);
+  if (d.structure && d.structure !== 'prose') q.set('structure', d.structure);
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }

@@ -97,42 +97,12 @@ function PageEditorView({ id }: { id: string }) {
   // filed-but-untyped support page (origin 'journal'/'project'/null) still
   // opens in Draft, unchanged.
   const modeKey = `wrizo-mode-page-${id}`;
-  // ITEM 87 (clause 1) — a door that DECLARED which room it opens wins over the
-  // origin/pageType rule, and only over it: the writer's own remembered choice
-  // still comes first (a door's opinion is about a page that does not exist
-  // yet, so it can never outrank a page the writer has already set a mode on).
-  // CD1 S8 (A7) is UNREVERSED below — a silent door still gets Free Write for a
-  // loose page. Only doors that say `?mode=draft` change, which is what makes
-  // "New Page lands in Draft" true without touching Arrival's Write door.
   const [mode, setMode] = useState<EditorMode>(() => {
     const saved = localStorage.getItem(modeKey);
     if (saved === 'journal' || saved === 'drafting') return saved;
-    if (unborn?.descriptor.mode === 'draft') return 'drafting';
-    if (unborn?.descriptor.mode === 'freewrite') return 'journal';
     return entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' : 'drafting';
   });
 
-  // ITEM 87 (clause 1) — THE DOOR'S CHOICE HAS TO OUTLIVE THE DOOR.
-  //
-  // Without this, "New Page lands in Draft" would be true exactly once. The
-  // descriptor lives in the ADDRESS, and birth corrects the address to
-  // `/page/:id`; the row itself is loose-origin, so the NEXT visit re-runs the
-  // initializer above with no descriptor and falls through to the origin rule —
-  // reopening the writer's Draft page in Free Write. `modeKey` is otherwise
-  // written only by `switchMode`, i.e. only when the writer chooses explicitly.
-  //
-  // So the door's opinion is persisted, but only once the page is a ROOM: the
-  // guard on `!unborn` is what keeps PB1 intact — a door the writer opens and
-  // abandons still writes NOTHING, and since a reload mints a fresh unborn id,
-  // persisting earlier would litter localStorage with keys for pages that never
-  // existed. The `saved` guard means this can never overwrite a choice the
-  // writer has made; it only records the one the door made on their behalf.
-  const doorModeRef = useRef<'freewrite' | 'draft' | null>(unborn?.descriptor.mode ?? null);
-  useEffect(() => {
-    if (unborn || !doorModeRef.current) return;
-    if (localStorage.getItem(modeKey)) return;
-    localStorage.setItem(modeKey, mode);
-  }, [unborn, mode, modeKey]);
 
   const initialText = entry?.text ?? '';
   const [text, setText] = useState(initialText);
@@ -650,6 +620,30 @@ function PageEditorView({ id }: { id: string }) {
     requestScreenplay();
   };
 
+  // ITEM 104 — A DOOR THAT DECLARED SCREENPLAY OPENS THE SCREENPLAY ROOM.
+  //
+  // Nick's verdict, verbatim: "Screenplay mode should be auto-selected anyway
+  // when a user comes from a New Page where the 'Screenplay' template icon was
+  // selected." This is that, and it deliberately reuses `requestScreenplay`
+  // rather than inventing a second birth path — so the ruled amendment (choosing
+  // Screenplay BIRTHS, at zero words) keeps ONE implementation and cannot drift.
+  //
+  // Guarded three ways, because a birth that fires twice or fires on the wrong
+  // surface would be a worse defect than the one being fixed: only while this
+  // surface is genuinely UNBORN (`unbornRef.current`), only when the ADDRESS
+  // asked for it, and only ONCE per mount (the ref latch — an effect with empty
+  // deps still re-runs under StrictMode's double-invoke, and `birthWith` on an
+  // already-born surface would be a second row).
+  const structureDoorRef = useRef(false);
+  useEffect(() => {
+    if (structureDoorRef.current) return;
+    if (!unbornRef.current) return;
+    if (unbornRef.current.descriptor.structure !== 'screenplay') return;
+    structureDoorRef.current = true;
+    requestScreenplay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // AB3 S4 — Journal furniture (ink/capture items) stays conditional on the
   // page's ORIGIN, not the editor's Free-Write MODE alone: a project- or
   // loose-origin page in Free Write mode gets none of it — only a
@@ -1009,11 +1003,44 @@ export function PageEditor() {
 export function UnbornPage() {
   return (
     <UnbornProvider>
-      {(id, descriptor) => (
-        descriptor.kind === 'board'
-          ? <BoardEditor key={id} id={id} />
-          : <PageEditorView key={id} id={id} />
-      )}
+      {(id, descriptor) => {
+        // ITEM 104 — THE ROOM OUTRANKS THE DOOR, ONCE THE ROOM EXISTS.
+        //
+        // This dispatch used to read `descriptor.kind` and nothing else, and
+        // that single fact produced every symptom Nick reported: Screenplay
+        // selection "dead" on an unborn page, from the New Page template icon
+        // AND from the Draft panel's Structure toggle.
+        //
+        // Neither control was dead. `requestScreenplay` births a real
+        // `pageType: 'script'` row (Nick's own refinement: the kind SAVES), and
+        // `birthWith` then corrects the address with `history.replaceState` ON
+        // PURPOSE — a real `navigate()` there unmounts the surface mid-keystroke
+        // and drops a typing burst, which PB1's burst-integrity check caught
+        // once already. But `replaceState` never notifies HashRouter, so no
+        // route change occurs and THIS callback kept re-rendering
+        // `PageEditorView`, because the descriptor said `prose` and always
+        // would. The row was a screenplay; the surface was not. F5 re-read
+        // `#/page/<id>`, landed on the BORN route below — which has always
+        // dispatched on the ROW — and mounted ScriptEditor correctly. That
+        // asymmetry is exactly what Nick measured.
+        //
+        // So the door's intent decides only while there is nothing else to ask.
+        // The moment a row exists it is the authority on what this page IS,
+        // which is the same rule `PageEditor` above has always followed.
+        //
+        // Prose birth is deliberately untouched by this: a prose row has no
+        // `pageType`, so it still falls through to the SAME `PageEditorView`
+        // with the SAME key — no remount, no lost focus, not one dropped
+        // keystroke. The burst-integrity property `replaceState` exists to
+        // protect is preserved exactly; only a genuine change of document KIND
+        // swaps the surface, which is precisely when a swap is what the writer
+        // asked for.
+        const row = getJournalEntry(id);
+        const kind = row?.pageType ?? (descriptor.kind === 'board' ? 'board' : undefined);
+        if (kind === 'script') return <ScriptEditor key={id} id={id} />;
+        if (kind === 'board') return <BoardEditor key={id} id={id} />;
+        return <PageEditorView key={id} id={id} />;
+      }}
     </UnbornProvider>
   );
 }

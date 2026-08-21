@@ -75,65 +75,14 @@ const openCascadePage = async (app) => {
 
 await withHarness(async (app) => {
   // ==========================================================================
-  // S1 — CLAUSE 1: New Page lands in Draft, and Arrival's Write door does not.
+  // S1 — REMOVED FROM THE LIVE SET, PARKED BELOW (Nick's amendment, 2026-08-17).
+  // Clause 1 (the door declaring `?mode=draft`) is SUPERSEDED by a New Page
+  // chooser coming via the menus arc. The built work is HELD, not deleted, and
+  // its assertions are parked with their records byte-frozen — a superseded
+  // DESIGN parks exactly as a superseded ruling does. What still ships from
+  // item 87 is clause 3 (typewriter off on a fresh page — Nick's sitting
+  // verdict, unaffected by the amendment) and clause 2's assertion.
   // ==========================================================================
-  await freshDesk(app);
-  // Reach the cascade's own New Page door from a real page, the way a writer
-  // does — not by typing the address, so the DOOR is what is under test.
-  const seedId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(`location.hash = '#/page/${seedId}'`);
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'a page to start from' });
-  await openCascadePage(app);
-  await app.evalJs(
-    "[...document.querySelectorAll('.wz-cascade-action-door')].find(b => /new page/i.test(b.textContent)).click()");
-  await waitSoft(app, "location.hash.includes('/page/new')", { label: 'New Page door -> unborn surface' });
-  const newPageHash = await app.evalJs('location.hash');
-  ok('S1 (a) — the New Page door DECLARES its room in the address',
-    /\/page\/new/.test(newPageHash) && /mode=draft/.test(newPageHash), `hash=${newPageHash}`);
-
-  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'unborn page surface' });
-  await sleep(300);
-  const newPageMode = await activeModeTab(app);
-  ok('S1 (b) — and a New Page therefore LANDS IN DRAFT [ITEM 87 CLAUSE 1]',
-    newPageMode === 'Draft', `activeMode=${String(newPageMode)}`);
-
-  // THE DOOR'S CHOICE MUST OUTLIVE THE DOOR. Found by reading, not by running —
-  // this lane was inside a browser freeze when it wrote the fix, so the code was
-  // reviewed instead. Without persistence, "New Page lands in Draft" is true
-  // exactly ONCE: the descriptor lives in the address, birth rewrites the
-  // address to /page/:id, the row is loose-origin, and the NEXT visit falls
-  // through to CD1 S8's rule and reopens the writer's Draft page in Free Write.
-  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
-  await app.typeKeys('Draft door persistence.');
-  await waitSoft(app,
-    "JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => (e.text||'').trim() === 'Draft door persistence.')",
-    { label: 'page born from the New Page door', timeout: 9000 });
-  const bornPageId = await app.evalJs(
-    "(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]')"
-    + ".find(e => (e.text||'').trim() === 'Draft door persistence.') || {}).id || ''");
-  await app.goto('/');
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk between visits' });
-  await app.evalJs(`location.hash = '#/page/${bornPageId}'`);
-  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'revisiting the born page' });
-  await sleep(300);
-  const revisitMode = await activeModeTab(app);
-  ok('S1 (d) — and it is STILL Draft on a later visit (the door\'s choice outlives the door)',
-    !!bornPageId && revisitMode === 'Draft', `bornId=${bornPageId} activeMode=${String(revisitMode)}`);
-
-  // THE CONTROL — CD1 S8 (A7) is unreversed. Arrival's Write door opens the
-  // same loose-origin surface and must still open in Free Write; if this ever
-  // goes red, the amendment has become the flip it was written to avoid.
-  await freshDesk(app);
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival' });
-  await app.evalJs(
-    "[...document.querySelectorAll('button, a')].find(b => b.textContent.trim() === 'Write')?.click()");
-  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'Write door surface' });
-  await sleep(300);
-  const writeMode = await activeModeTab(app);
-  const writeHash = await app.evalJs('location.hash');
-  ok('S1 (c) — CONTROL: Arrival\'s Write door still opens FREE WRITE (CD1 S8/A7 unreversed, not collateral damage)',
-    writeMode === 'Free Write' && !/mode=/.test(writeHash), `activeMode=${String(writeMode)} hash=${writeHash}`);
-
   // ==========================================================================
   // S2 — CLAUSE 2: Free Write hides the Structure presets. Already true; locked
   // in rather than "fixed", so a later sliver change cannot quietly undo it.
@@ -165,20 +114,35 @@ await withHarness(async (app) => {
     freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
 
   // A page that already holds a little work: FX2 S2's threshold rule, untouched.
+  //
+  // FIXTURE FIX (2026-08-17, first-ever run of this file): the original seeded
+  // the text with a RAW localStorage write, which is precisely the seeding-race
+  // AGENTS.md's own harness law forbids — `wrizoCreateJournalPage` writes the
+  // CACHE and flushes on a ~300ms debounce, so the raw read-modify-write
+  // clobbered the row and the page was GONE after the reload (the run landed on
+  // Arrival and timed out). Written during the browser freeze and never
+  // executed, so nothing caught it until now. Seeding through the app's own
+  // write path is both correct and simpler: one short sentence is 1
+  // line-equivalent, comfortably under DRAFT_TYPEWRITER_LINE_THRESHOLD (10),
+  // which is the same side of the rule the original three lines tested.
   await freshDesk(app);
   const shortId = await app.evalJs('window.wrizoCreateJournalPage().id');
-  await app.evalJs(
-    `(() => { const k = 'writer-studio-journal-entries';`
-    + ` const rows = JSON.parse(localStorage.getItem(k) || '[]');`
-    + ` const r = rows.find(e => e.id === ${JSON.stringify(shortId)});`
-    + ` if (r) { r.text = 'one\\ntwo\\nthree'; localStorage.setItem(k, JSON.stringify(rows)); } })()`);
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seeding text' });
   await app.evalJs(`location.hash = '#/page/${shortId}'`);
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'a ~3-line Draft page' });
-  await sleep(300);
+  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'seeding the short page' });
+  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.typeKeys('A little work already here.');
+  await waitSoft(app,
+    `JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => e.id === ${JSON.stringify(shortId)} && (e.text||'').includes('A little work'))`,
+    { label: 'short page text persisted', timeout: 9000 });
+  // Leave and return, so the page MOUNTS FRESH with that text as initialText —
+  // which is the only state in which the Draft-open seed runs at all.
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk between visits (S3b)' });
+  await app.evalJs(`location.hash = '#/page/${shortId}'`);
+  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a short Draft page' });
+  await sleep(400);
   const shortTypewriter = await typewriterDom(app);
-  ok('S3 (b) — CONTROL: a ~3-line Draft page still opens with the typewriter ON (FX2 S2 amended at the empty case only)',
+  ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
     shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
 });
 
@@ -212,6 +176,16 @@ console.log(JSON.stringify(checks, null, 2));
 // empty, and the empty list is evidence the shape was right.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // ITEM 87 CLAUSE 1 — PARKED 2026-08-17 on Nick amendment. These four are not
+  // wrong about what they measured; the DESIGN they measured has been superseded
+  // by a New Page chooser (menus arc). Records byte-frozen. No live successor in
+  // this file, because the successor is a design that does not exist yet — named
+  // rather than invented.
+  pok('PARKED (was "S1 (a) — the New Page door DECLARES its room in the address") — ITEM 87 AMENDMENT (Nick, 2026-08-17): the Draft-default door is superseded by a New Page chooser (menus arc), and the descriptor no longer carries mode. Successor: that chooser, unbuilt.', true, 'design superseded, not falsified');
+  pok('PARKED (was "S1 (b) — and a New Page therefore LANDS IN DRAFT [ITEM 87 CLAUSE 1]") — ITEM 87 AMENDMENT: same supersession; a New Page again opens per CD1 S8/A7, unchanged.', true, 'design superseded, not falsified');
+  pok('PARKED (was "S1 (d) — and it is STILL Draft on a later visit (the door choice outlives the door)") — ITEM 87 AMENDMENT: the door no longer makes a choice to outlive. THE FINDING IT ENCODED SURVIVES THE DESIGN and is owed to the chooser: a door-made choice that is never persisted is true exactly ONCE, because birth rewrites the address away.', true, 'design superseded; finding carried forward');
+  pok('PARKED (was "S1 (c) — CONTROL: Arrival Write door still opens FREE WRITE (CD1 S8/A7 unreversed, not collateral damage)") — ITEM 87 AMENDMENT: with clause 1 held, CD1 S8/A7 is not merely unreversed but untouched, so the control has nothing left to guard.', true, 'control retired with its subject');
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
