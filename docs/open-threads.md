@@ -408,8 +408,31 @@ threshold parameter** — **settles TOGETHER with its carve-out sentence** (one 
 silent widening of what the Tutor sends or stores); the `69911c3` seam note in the lock record on
 main is this arc's **founding census**. The **disclosure-v4 committee's agenda now narrows to ONE
 sentence — the disclosure itself** — drafting now at Fable's desk; that sentence is this arc's
-carve-out. Post-vacation / committee; the DECK phase (item 84's first ungated citizen) ships ahead
+carve-out. **[PRECISION — 2026-08-17, append-only:** the "=" just above CONFLATED two sentences.
+The committee's ONE sentence is **THE DISCLOSURE** (drafts now; gates TD4 / TR3 / BD4 across BOTH
+arcs, 84 and 83). The **CARVE-OUT is a SEPARATE second sentence, deferred INTO item 108** to settle
+with the retrieval design — it is NOT the disclosure. Disclosure now; carve-out with the model
+phase.]** Post-vacation / committee; the DECK phase (item 84's first ungated citizen) ships ahead
 of it. Registry: next free **109**.
+
+## DISCLOSURE v4 — RATIFIED (candidate B, provisionally-binding) — 2026-08-17
+
+Committee pass: `docs/wrizo-alpha/disclosure-v4-committee-fable.md`. **ONE sentence extending the
+ratified v3, gating the three designed counsels that read more than the standing wire — TD4 (the
+selection ask) · TR3 (the Reading) · BD4 (83's board counsel).** **Nick's word: candidate B**,
+verbatim: *"Nothing leaves your desk unasked: an ask sends your words, this page's recent changes,
+and your Bible; a counsel that reads more names it on the button and sends only that, only then."*
+**Nick's posture, verbatim:** *"It's hard to get more precise than that until I start testing it
+and see where the cracks are in the harness."* **LOCKS PROVISIONALLY-BINDING** — governs the builds
+now; live testing may amend it, and any amendment re-ratifies through the committee record,
+append-only.
+**Lock conditions:** (2) Nick's ratification — **MET**; (1) payload census confirmed by the 83 + 84
+desks against their pass files — **PENDING** (relayed to both). **On census confirmation:** TD4 /
+TR3 / BD4 UNBLOCK; the sentence enters both build briefs verbatim; disclosure **v3 → superseded by
+v4 in annotation form (v3 standing verbatim beneath)**; and per `sc2.mjs`'s precedent the sentence
+becomes a **HARNESS OBLIGATION** on each gated counsel's build ticket — its spec asserts its wire
+carries exactly what its button names, nothing more. The disclosure is a testable claim, tested.
+This is THE DISCLOSURE, distinct from item 108's carve-out (a separate second sentence).
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
