@@ -10455,6 +10455,14 @@ sheet `docs/menus/tutor/tutor-menus-lock-sheet.md` on `item84/tutor-menus`, comm
 Nick's words landed with **lines 1, 4, and 5 AMENDED** and a **Revise re-pass ORDERED**. Phase 4
 is closed-amended — the Revise re-pass runs, then the lock record finalizes and build tickets
 follow; the 84 desk holds the amended lines verbatim.
+**→ LOCK RECORD ON MAIN (merge `d67352e`, 2026-08-17).** Merged `item84/tutor-menus @ 2913a4d`
+(docs-only, zero apps/, zero ledger): the lock sheet + the lock record + Nick's §6 answers.
+**§6 ANSWERED, Phase 4 answered whole:** Q1 (governing consultation satisfies line 3) → *"Stands"*
+(TD3 phrasings lock clean with the impersonal amendment applied); Q2 (a prompt is lawful as
+stimulus) → *"Stimulus"* — preset **(B) ruled lawful but builds NOTHING** until the disclosure-v4
+committee drafts its carve-out sentence and Nick ratifies it. Build tickets follow the Revise
+re-pass. (Relay labeled these Q1/Q2 in the reverse order; the record binds each word to the right
+question's substance.)
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 
