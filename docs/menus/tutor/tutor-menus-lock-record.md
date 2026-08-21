@@ -51,10 +51,11 @@ mount survives the redesign unchanged.
 **Explicitly deferred, by his words:** the rules for these conversations. They are
 not designed here and must not be inferred by any build ticket.
 
-**Ruled lawful, still gated:** preset **(B)** — Nick's word *"Stimulus."* (§6 Q2). A
-prompt is a spur, not the writer's work. Its hold **converts** rather than lifts: it
-now awaits the disclosure-v4 committee's carve-out sentence and Nick's ratification
-of it. **(B) builds nothing until then.**
+**Ruled lawful, and ruled hybrid:** preset **(B)** — Nick's word *"Stimulus."*, then
+his mechanism ruling: **deck first, model once the work is in memory** (§6 Q2). A
+prompt is a spur, not the writer's work. **The deck phase is gated on nothing and may
+build.** The model phase awaits the disclosure-v4 committee's carve-out sentence,
+Nick's ratification of it, a threshold value, and the TU5 memory seam.
 
 ### 2 · DRAFT LENS DEFAULT — **KEEP B** *(closed clean)*
 
@@ -320,6 +321,59 @@ committee should price separately:
 **The sentence is only needed for the second.** Named here so the carve-out is not
 drafted wider than the build turns out to require.
 
+#### NICK'S MECHANISM RULING — the hybrid *(this closes the mechanism question)*
+
+*(Nick's own words)* —
+
+> "I'd like a hybrid. Deck when a user hasn't written much yet, model when the Tutor has the writer's work in its memory, in which case the Tutor shouldn't prompt based specifically on what the writer has written, necessarily (unless they ask for a prompt based specifically on their writing, which I don't see a problem with), but the genre or style of the writer + the type of writing they typically do could inform the prompts. And the Tutor could give up to three options, but only one should be given at a time. We don't want a user spending time debating which prompt to respond to — the goal in Free Write is to get writing without much deliberation."
+
+**Both phases are ruled in. The mechanism question is CLOSED.** What follows are the
+desk's annotations, carried beside his words — not extensions of them.
+
+**(1) THE DECK PHASE inherits FX15 whole and is buildable behind NO gate.** It sends
+nothing and composes nothing, so no carve-out sentence governs it. This is the one
+part of preset (B) that can be built before the disclosure-v4 committee reports.
+
+**(2) THE MODEL PHASE is what the carve-out sentence governs.** The committee drafts
+it **from these constraints, which are Nick's, not the desk's**:
+
+- **style/genre-level sourcing — never specific content**, unless the writer
+  explicitly asks for a prompt based on their writing (which he rules unproblematic);
+- **one prompt rendered at a time; ≤3 per ask.** The reason is his and belongs in the
+  brief: *"We don't want a user spending time debating which prompt to respond to."*
+  The ceiling is an anti-deliberation rule, not a layout preference — a build that
+  renders three at once satisfies the number and defeats the purpose.
+
+**(3) THE DECK→MODEL THRESHOLD IS OPEN — flagged, not invented.** "Hasn't written
+much yet" versus "has the writer's work in its memory" is a **build-brief parameter**
+with no value set here. No word count, no session count, no heuristic is implied by
+this record, and none should be inferred from it.
+
+**(4) THE MEMORY-SOURCING SEAM — TU5, verified on disk at `6396e65`.** The model
+phase assumes a Tutor "memory" that **does not exist today**, and the build brief
+needs the gap named exactly:
+
+- **The wire is `{ messages, delta?, bible? }`** — the conversation, new writing since
+  last read (tail-biased, client cap 16,000 chars), and the Bible. Nothing else
+  travels, and nothing persists between sessions except the Bible.
+- **The Bible is the only persistent store, and it is writer-authored only** — the
+  census records the send path *"reads and never writes; no parse-model-output path
+  exists (TU5 review, 'closed by architecture')."* **The Tutor therefore cannot
+  accumulate knowledge of the writer's work by itself.** Any "memory" of the work is
+  new architecture, not a setting.
+- **A `genre` value does exist in the app** — `StructureWizard.tsx` asks *"What genre
+  best describes your story?"* and the worldbuilding deck branches on it — **but it
+  does not travel on the Tutor's wire.** Routing it there is a new key, and a new key
+  is disclosure territory: v3's enumeration names three things, and genre is not one
+  of them.
+- **"The type of writing they typically do" has no store at all** on disk — no
+  cross-project corpus, habit, or style profile exists to read.
+
+**Consequence for the committee, stated plainly:** the model phase's sentence cannot
+be drafted against the wire as it stands, because the thing it would disclose is not
+yet on the wire. The sentence and the retrieval design have to be settled together —
+which is an argument for the deck phase shipping first, on its own, behind no gate.
+
 ---
 
 ## §7 · ROUTED INTO THE REVISE RE-PASS
@@ -352,10 +406,11 @@ ordering. **Closed amended:** lines 1, 4, 5. **Both §6 questions ANSWERED** —
 
 **Standing open, by name:**
 
-- **The carve-out sentence for preset (B)** — the disclosure-v4 committee's to
-  draft, then Nick's to ratify. (B) builds nothing until then (§6 Q2). Whether a
-  sentence is needed at all depends on deck-drawn vs model-drawn — see the disk note
-  in §6.
+- **Preset (B), MODEL PHASE** — the carve-out sentence is the disclosure-v4
+  committee's to draft, then Nick's to ratify; the deck→model threshold is an open
+  build-brief parameter; and the memory-sourcing seam (TU5) must be settled with the
+  sentence, since what the sentence would disclose is not yet on the wire (§6).
+  **The DECK PHASE is gated on none of this and may build first.**
 - **The conversation rules** — deferred by Nick's own sentence at line 1. Not
   designed here; not to be inferred.
 - **The Revise re-pass** — running in parallel at this desk (§7).
