@@ -144,11 +144,17 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/shelf'");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board (trusted exit)' });
   await sleep(220);
+  // ITEM 91 (2026-08-03) — Nick's S11 verdict overrules the exit: an unpaired
+  // board's PAGE → opens a New Page auto-linked back to the board. On a SYSTEM
+  // board the link is MEMBERSHIP, not a pin (A16 — derived membership is never
+  // authored, and reconcileSystemBoard would delete a non-qualifying pin), so
+  // the Shelf's door opens an unborn LOOSE page and T3's derivation adopts it.
+  // Original parked below with its record byte-frozen; this is the successor.
   await trustedClick(app, '.board-door[data-board-door="page"]');
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Shelf PAGE → -> backTo (trusted)' });
+  await app.waitFor("location.hash.includes('/page/new')", { label: 'Shelf PAGE → -> unborn page (trusted)' });
   const shelfHash = await app.evalJs('location.hash');
-  ok('S1 (trusted pointer): the Shelf Board\'s PAGE → door, cold-loaded, lands backTo \'/\' (the cold-load fallback, Arrival is a page)',
-    shelfHash === '' || shelfHash === '#/', shelfHash);
+  ok('S1 (ITEM 91 successor, trusted pointer): the Shelf Board\'s PAGE → door, cold-loaded, opens an UNBORN LOOSE page (the Shelf\'s own derived membership adopts it) instead of landing backTo \'/\'',
+    /\/page\/new/.test(shelfHash) && !/pin=/.test(shelfHash), shelfHash);
 
   // Trusted pointer — the PAIRED path: a prose page births its plan board (PLAN →),
   // and the board's PAGE → returns to the paired page.
@@ -167,9 +173,12 @@ await withHarness(async (app) => {
   await openBoard(app, 'cd4-unpaired');
   await trustedClick(app, '.board-door[data-board-door="page"]');
   await sleep(220);
-  const leftUnpaired = await app.evalJs("!location.hash.includes('cd4-unpaired')");
-  ok('S1 (trusted pointer): on an UNPAIRED loose board the PAGE → door travels the FX10 named return (leaves the board)',
-    leftUnpaired === true, await app.evalJs('location.hash'));
+  // ITEM 91 — same overrule, USER-board half: the link here is a PIN carried on
+  // the address, so the new hash CONTAINS the board id and the old
+  // "leaves the board" probe is falsified for the right reason. Parked below.
+  const unpairedHash = await app.evalJs('location.hash');
+  ok('S1 (ITEM 91 successor, trusted pointer): on an UNPAIRED loose board the PAGE → door opens an unborn page carrying that board as its pin target (it no longer leaves the board)',
+    /\/page\/new/.test(unpairedHash) && unpairedHash.includes('pin=cd4-unpaired'), unpairedHash);
 
   // ======================================================================
   // S2 — the elder "Plan" flight tab retires from the page bars
@@ -294,9 +303,44 @@ await withHarness(async (app) => {
 // === PARKED — gated behind HARNESS_PARKED=1. CD4's own park cycles do NOT live
 // here: they travel VERBATIM in the SAME commit inside the files they falsify
 // (b2.mjs, cd1.mjs, hb1.mjs, bm1.mjs). This file is purely additive. ==========
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   // eslint-disable-next-line no-console
-  console.log('\nCD4 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; CD4\'s own A4 park cycles travel in b2.mjs (S1 Board-Done → PAGE → door), cd1.mjs (S2 gen-3 bar → gen-4 ["Pages","Plan →"] + the script gen + probe updates), and the hb1.mjs/bm1.mjs cross-reference disclosures — all in the SAME commit as the removals. CD4.1 (the Last Two Words) adds the "Done"→"Close" relabels: its own park cycle lives in fx4.mjs (the board-popup-done check), the Spread click fixture in j5.mjs, and this file gained the no-"Done"-anywhere sweep as the standing guard. All still additive here — this file\'s own park section is an empty no-op.');
+  console.log('\nCD4 PARKED: HARNESS_PARKED=1 armed; CD4\'s own A4 park cycles travel in b2.mjs (S1 Board-Done → PAGE → door), cd1.mjs (S2 gen-3 bar → gen-4 ["Pages","Plan →"] + the script gen + probe updates), and the hb1.mjs/bm1.mjs cross-reference disclosures — all in the SAME commit as the removals. CD4.1 (the Last Two Words) adds the "Done"→"Close" relabels: its own park cycle lives in fx4.mjs (the board-popup-done check), the Spread click fixture in j5.mjs, and this file gained the no-"Done"-anywhere sweep as the standing guard.');
+  // ITEM 91 (2026-08-03) — this section is no longer empty. CD4 S1 ruled the
+  // PAGE → door's unpaired branch an EXIT; Nick's S11 verdict (2026-08-02)
+  // overrules it, so the two exit assertions this file owns are parked here with
+  // their records byte-frozen and their probes re-verifying the NEW truth — the
+  // same discipline b2.mjs's own CD4 cycle established. Neither was wrong about
+  // what it measured; the behaviour it measured has been overruled.
+  await withHarness(async (app) => {
+    await freshDesk(app, LAPTOP_W);
+    await app.evalJs("location.hash = '#/shelf'");
+    await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Shelf Board (item 91 park)' });
+    await sleep(220);
+    await trustedClick(app, '.board-door[data-board-door="page"]');
+    await sleep(300);
+    const shelfNow = await app.evalJs('location.hash');
+    pok('PARKED (was "S1 (trusted pointer): the Shelf Board\'s PAGE → door, cold-loaded, lands backTo \'/\' (the cold-load fallback, Arrival is a page)") — ITEM 91, Nick\'s S11 verdict: the door opens an UNBORN LOOSE page instead; a system board\'s link is MEMBERSHIP, never a pin (A16); live successor: this file\'s own live S1 section',
+      /\/page\/new/.test(shelfNow) && !/pin=/.test(shelfNow), shelfNow);
+
+    await freshDesk(app, LAPTOP_W);
+    await seedEntries(app, [{ id: 'cd4-unpaired', text: 'unpaired board', projectId: null, pageType: 'board', source: 'page', origin: 'loose', boxes: [], createdAt: '2026-07-02T00:00:00.000Z', updatedAt: '2026-07-02T00:00:00.000Z' }]);
+    await openBoard(app, 'cd4-unpaired');
+    await trustedClick(app, '.board-door[data-board-door="page"]');
+    await sleep(300);
+    const unpairedNow = await app.evalJs('location.hash');
+    pok('PARKED (was "S1 (trusted pointer): on an UNPAIRED loose board the PAGE → door travels the FX10 named return (leaves the board)") — ITEM 91: the door now opens an unborn page carrying that board as its pin target, so the address CONTAINS the board id and the writer no longer leaves the board at all; live successor: this file\'s own live S1 section',
+      /\/page\/new/.test(unpairedNow) && unpairedNow.includes('pin=cd4-unpaired'), unpairedNow);
+  });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nCD4 PARKED: PASS (${parkedChecks.length} checks) — the two exit records parked, originals quoted, successors named.`
+    : `\nCD4 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 // eslint-disable-next-line no-console

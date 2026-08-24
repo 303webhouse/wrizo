@@ -389,11 +389,19 @@ await withHarness(async (app) => {
     return { hasDoor: !!door, hasDone: !!done };
   })()`);
   ok('S1 (CD4 successor): the Shelf Board carries the PAGE → door and NO "Done" button — the same door every board carries, the system board\'s exit', shelfExit.hasDoor === true && shelfExit.hasDone === false, JSON.stringify(shelfExit));
+  // ITEM 91 (2026-08-03) — Nick's S11 verdict overrules CD4 S1's exit: an
+  // unpaired board's PAGE → opens a New Page auto-linked back to the board
+  // instead of ejecting to backTo. On a SYSTEM board the link is MEMBERSHIP, not
+  // a pin (A16 — a system board's membership is derived and never authored, and
+  // reconcileSystemBoard would delete any pin whose page does not qualify), so
+  // the Shelf's door opens an unborn LOOSE page: T3's own derivation then puts it
+  // on the Shelf by itself. The original backTo assertion is parked VERBATIM in
+  // this file's PARKED section (generation 2); this is its live successor.
   await app.evalJs("document.querySelector('.board-door[data-board-door=\"page\"]').click()");
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Shelf Board PAGE -> door -> backTo' });
-  const shelfBackToRoute = await app.evalJs('location.hash');
-  ok('S1 (CD4 successor): the Shelf Board\'s PAGE → door lands backTo \'/\' — the FX10 named return / cold-load fallback, the SAME system-board law B1 already proved, now via the door instead of Done',
-    shelfBackToRoute === '' || shelfBackToRoute === '#/', shelfBackToRoute);
+  await app.waitFor("location.hash.includes('/page/new')", { label: 'Shelf Board PAGE -> door -> unborn page' });
+  const shelfDoorRoute = await app.evalJs('location.hash');
+  ok('S1 (ITEM 91 successor): the Shelf Board\'s PAGE → door opens an UNBORN LOOSE page — the Shelf\'s own derived membership adopts it — instead of ejecting to backTo \'/\'; a pin is never written onto a derived board',
+    /\/page\/new/.test(shelfDoorRoute) && !/pin=/.test(shelfDoorRoute), shelfDoorRoute);
 
   // ==========================================================================
   // S3 — the legacy `shelved` flag retires: no UI read/write reachable;
@@ -1025,10 +1033,13 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S1 precondition: the Shelf Board carries a Done button (backTo check follows)") — CD4 S1: the Shelf Board carries the PAGE → door now, NO Done — the door is its exit; live successor: this file\'s own live S1 section',
       shelfDoorNow.hasDoor === true && shelfDoorNow.hasDone === false, JSON.stringify(shelfDoorNow));
     await app.evalJs("document.querySelector('.board-door[data-board-door=\"page\"]').click()");
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Shelf Board PAGE -> door -> backTo (CD4 park)' });
+    await app.waitFor("location.hash.includes('/page/new')", { label: 'Shelf Board PAGE -> door -> unborn page (item 91 park)' });
     const shelfBackToNow = await app.evalJs('location.hash');
-    pok('PARKED (was "S1: the Shelf Board\'s own Done button lands backTo \'/\' — the SAME system-board law B1 already proved, inherited by the same `isSystemBoard` branch") — CD4 S1: the Shelf Board\'s PAGE → door lands backTo \'/\' (the FX10 named return / cold-load fallback), the SAME system-board law, now via the door; live successor: this file\'s own live S1 section',
-      shelfBackToNow === '' || shelfBackToNow === '#/', shelfBackToNow);
+    pok('PARKED, generation 2 (was "PARKED (was \'S1: the Shelf Board\'s own Done button lands backTo \'/\' — the SAME system-board law B1 already proved, inherited by the same `isSystemBoard` branch\') — CD4 S1: the Shelf Board\'s PAGE → door lands backTo \'/\' (the FX10 named return / cold-load fallback), the SAME system-board law, now via the door") — ITEM 91, Nick\'s S11 verdict (2026-08-02) overrules the exit itself: the door now opens an UNBORN LOOSE page and the Shelf\'s derived membership adopts it; live successor: this file\'s own live S1 section',
+      /\/page\/new/.test(shelfBackToNow) && !/pin=/.test(shelfBackToNow), shelfBackToNow);
+    // The other parked twin above ("carries a Done button") is untouched by item
+    // 91 — the door is still present and Done is still gone; only where the door
+    // GOES has changed. Re-verified by its own probe, unchanged.
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

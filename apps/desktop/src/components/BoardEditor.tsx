@@ -11,6 +11,7 @@ import { StoryboardProjection, OutlineProjection } from './BoardProjection';
 import { withLanes } from '../store/boardStructure';
 import { BeginningsRow, type BeginningDoor } from './BeginningsRow';
 import { useUnborn } from './UnbornSurface';
+import { unbornHref } from '../store/unbornPage';
 import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
@@ -1175,9 +1176,57 @@ export function BoardEditor({ id }: { id: string }) {
   // Journal's own distinct capture UI. Travels straight to the fresh page
   // — matching Nick's own DoD wording, "makes a page-card on a board in
   // one act."
+  //
+  // ITEM 92 — THE CARD USED TO BE WRITTEN AND THEN ERASED BY THIS COMPONENT.
+  // `pinPageToBoard` writes the BOARD's row in the STORE. This component holds
+  // its cards in local state that is initialized once (`useState` above) and, on
+  // a user board, never re-read — the `subscribe()` that would refresh it lives
+  // inside the system-board-only reconcile effect. So after pinning, local
+  // `boxes` still held the PRE-PIN array, and the unmount cleanup below
+  // (`saveBoardBoxes(id, boxesRef.current)`) wrote that stale array straight back
+  // over the pin — on the very `navigate` this handler performs. The card was
+  // created and then destroyed by the surface that created it.
+  //
+  // This is the hazard the deck-wizard comment above already names: card
+  // creation goes through the component's own state so a later save cannot
+  // clobber it. The pin BOX itself is still built by `pinPageToBoard` — that
+  // function owns stacking placement, the idempotent already-pinned check, and
+  // the self-pin / system-board guards, and forking any of that into this
+  // handler would be a second source of truth for what a pin is. What was
+  // missing is the other half: telling this component what the store now says.
+  //
+  // The pin is APPENDED to this component's own live boxes — never assigned
+  // from the store's copy. That distinction is the difference between a fix and
+  // a second data-loss bug, and it was caught by staging item 92's actual
+  // precondition: at the moment this door is used, local `boxes` may hold cards
+  // the 2s autosave has not written yet, so the STORE's array is a strict subset
+  // of the truth. Replacing local state with `updated.boxes` would have silently
+  // dropped every unsaved card the writer had just placed. Appending to
+  // `boxesRef.current` — "this component's own live boxes, not a fresh store
+  // read", in the deck-wizard comment's own words — keeps both.
+  //
+  // `boxesRef.current` is assigned directly rather than only through `setBoxes`,
+  // because it is assigned during RENDER and this handler batches its update
+  // with a `navigate` that unmounts the component: there may be no further
+  // render, and the unmount guard reads the REF. `lastSavedRef` is deliberately
+  // left alone so that guard still sees a difference and writes the merged
+  // array on the way out.
+  //
+  // `pinPageToBoard` still builds the box — it owns stacking placement, the
+  // idempotent already-pinned check and the self-pin / system-board guards, and
+  // forking those here would be a second definition of what a pin is. Its
+  // placement is computed against the store's boxes, so a pin can land under an
+  // unsaved neighbour; that is cosmetic and movable, and strictly better than
+  // the alternatives (losing the card, or duplicating the placement rules).
   const onAddPageCard = () => {
     const page = createLooseHomePage();
-    pinPageToBoard(page.id, id);
+    const updated = pinPageToBoard(page.id, id);
+    const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === page.id);
+    if (pin) {
+      const next = [...boxesRef.current, pin];
+      setBoxes(next);
+      boxesRef.current = next;
+    }
     navigate(`/page/${page.id}`);
   };
 
@@ -2151,14 +2200,53 @@ export function BoardEditor({ id }: { id: string }) {
   // No new navigation logic — the existing unpaired branch, trusted-pointer
   // proven in bm1.mjs, is reused as-is.
   const pairedPageId = isSystemBoard ? null : getPairedPageId(id);
+  // ITEM 91 — AN UNPAIRED BOARD'S PAGE DOOR OPENS A PAGE, NOT AN EXIT.
+  //
+  // Nick's S11, verbatim: "board → Page rail lands on Wrizo landing (verdict:
+  // New Page auto-linked back to the board)." The landing is literally what the
+  // old `else` produced: `backTo` is `'/'` for a system board (see its own line
+  // above), so the one universal control on the Board ejected the writer out of
+  // the room instead of taking them to a page. CD4 S1 reasoned that an exit was
+  // the honest behaviour for a permanently-unpaired board; Nick has overruled
+  // that, and this is the successor. The b2.mjs assertions that encoded the old
+  // ruling are PARKED with their originals quoted, never silently flipped.
+  //
+  // "Auto-linked back" means different things on the two kinds of board, and
+  // getting that distinction wrong would fight a ruled law in one direction or
+  // the other:
+  //   - A USER board's membership is AUTHORED, so the link is a PIN, carried on
+  //     the descriptor and applied by `birth()` (item 91's own seam). The board's
+  //     binder rides along too, so a page made from a board inside a project is
+  //     born in that project — Nick's "the board's binder/pin descriptor."
+  //   - A SYSTEM board's membership is DERIVED and never authored (A16), and
+  //     `reconcileSystemBoard` deletes any pin whose page does not qualify. So a
+  //     pin here would be erased on the next reconcile — the exact class of
+  //     defect item 92 is. The honest link is MEMBERSHIP: give the new page the
+  //     origin that makes it belong, and the board adopts it by itself. Journal
+  //     takes journal-origin; the Shelf takes loose (T3's own derivation).
+  //   - TRASH has no creatable membership — a page cannot be authored already
+  //     deleted — so it keeps the old exit. Named here rather than left to be
+  //     rediscovered as a bug.
+  //
+  // Nothing is written by any of this: the door navigates to an UNBORN address,
+  // so a writer who opens it and leaves still leaves no row behind (PB1).
+  const unbornHrefFromThisBoard = (): string | null => {
+    if (systemKind === 'trash') return null;
+    if (systemKind === 'journal') return unbornHref({ origin: 'journal' });
+    if (systemKind === 'shelf') return unbornHref({ origin: 'loose' });
+    // ITEM 87 (clause 1) — a page opened FROM a board is a page to work on, so
+    // this door declares Draft too, the same as the cascade's New Page.
+    return unbornHref({ origin: 'loose', binderId: project?.id ?? null, pinBoardId: id });
+  };
   const travelToPage = () => {
     flushNow();
     if (pairedPageId) {
       const page = getJournalEntry(pairedPageId);
       navigate(page ? routeForEntry(page) : backTo);
-    } else {
-      navigate(backTo);
+      return;
     }
+    const href = unbornHrefFromThisBoard();
+    navigate(href ?? backTo);
   };
   // Board-side explicit pairing (S2 — "an existing board gains a Write face
   // only by explicit pairing from its side"): v1 uses the brief's create-new

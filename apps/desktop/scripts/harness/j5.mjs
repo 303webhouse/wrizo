@@ -99,47 +99,71 @@ await withHarness(async (app) => {
   await app.evalJs(POINTER_HELPER);
 
   // -- create 4 loose pages: A (text), B (text, to be starred+tagged), C
-  // (ink only), D (text + ink) [FIXTURE RE-POINT — FX14 S2] --------------
+  // (ink only), D (text + ink) [FIXTURE RE-POINT — FX14 S2; VEHICLE MIGRATED —
+  // ITEM 82 FIX (b)] ------------------------------------------------------
   // B1 already re-pointed this scaffolding off the RETIRED Journal LIST to the
-  // wrizoCreateJournalPage seam (see persistence.ts:654's own seam comment). FX14
-  // S2 now unroutes the JournalEntry EDITOR surface too (/journal/:id -> /page/:id
+  // wrizoCreateJournalPage seam (see persistence.ts's own seam comment). FX14
+  // S2 then unrouted the JournalEntry EDITOR surface too (/journal/:id -> /page/:id
   // redirect, App.tsx's JournalIdRedirect), so a page's CONTENT — the text the
-  // editor typed and the ink the pen drew — is seeded into persistence DIRECTLY
-  // (from a no-editor surface, per the seeding law: the cache re-hydrates on the
-  // reloads this scenario already performs before each Spread read; getNotebook-
-  // Pages reads cache). This is FIXTURE MAINTENANCE, not a park: J5's subject is
-  // the Spread console (lenses + Add to…) and filing, which FX14 does not touch —
-  // only the page-creation vehicle moved off the retired surface, exactly as B1's
-  // seam comment anticipates. Seed shape matches createJournalPage
-  // (persistence.ts:638: source:'page', origin:'journal'); the ink is the SAME
-  // wide bbox the old penStroke('.entry-full', ...) drew, in the persisted Stroke
-  // shape ({ points: [{x,y}] }, src/types). createdAt is STEPPED per page so the
-  // "Newest" lens order (D,C,B,A) stays deterministic — the old editor path spaced
-  // these out with real time gaps.
+  // editor typed and the ink the pen drew — was seeded into persistence by a RAW
+  // localStorage write. This is FIXTURE MAINTENANCE, not a park, in both passes:
+  // J5's subject is the Spread console (lenses + Add to…) and filing, which
+  // neither FX14 nor this touches — only the page-creation vehicle moves.
+  //
+  // ITEM 82 FIX (b) — THE RAW WRITE IS GONE; THIS IS THE ITEM'S OWN MECHANISM,
+  // REMOVED RATHER THAN OUT-TIMED. `persistence.ts` hydrates its cache ONCE at
+  // module init, never re-reads it, has no `storage` listener, and `flush()`
+  // re-serializes that cache WHOLESALE — so a row written to localStorage after
+  // boot is invisible to the app and is ERASED by the next flush of that
+  // collection, from any source. The killer here was never this file's own
+  // navigation: mounting `/journal` mints/reconciles the Journal system board
+  // (JournalBoardGate -> getOrCreateSystemBoard/reconcile -> saveJournalEntry ->
+  // scheduleFlush), and that 300ms flush writes a cache that never contained
+  // A–D. Reload first and they survive; lose that ~80ms race and the Spread
+  // renders "No loose pages yet" — item 82's recorded symptom — or, later in
+  // this file, renders POPULATED with exactly the one page whose write lost
+  // (the fifth suite's `j5-src-7` absence at the plan-link slice below).
+  // Seeding THROUGH the seam puts the row in the cache, so no flush can erase
+  // it. AGENTS.md's successor seeding law, obeyed rather than out-timed.
+  //
+  // The seam grew `id` / `text` / `createdAt` / `strokes` for exactly this
+  // (persistence.ts, `JournalPageSeed`): the fixture asserts pages BY id
+  // (`j5-src-N`), and createdAt is STEPPED per page so the "Newest" lens order
+  // (D,C,B,A) stays deterministic — the old editor path spaced these out with
+  // real time gaps. The ink is the SAME wide bbox the old penStroke(
+  // '.entry-full', ...) drew, in the persisted Stroke shape ({ points:
+  // [{x,y}] }, src/types). Nothing else about the seeded row changed: the seam
+  // is the same function that authored `source:'page', origin:'journal'` before,
+  // so the shape is now guaranteed by construction instead of by copy.
   let pageSeq = 0;
   const makePage = async (text, withInk) => {
     pageSeq += 1;
     const id = `j5-src-${pageSeq}`;
-    // Seed from the Desk/Arrival (no flush-on-unmount writing surface mounted) so
-    // the direct write is NEVER clobbered by a mounted surface's own unmount flush
-    // (MEMORY.md's "harness seeding vs. flushNow race" — seed from Desk, not while
-    // a writing surface is mounted). The old editor path was inherently on a
-    // surface; this scaffolding reaches the identical persisted state from the
-    // safe Desk state instead. The caller reloads before the Spread reads it
-    // (getNotebookPages reads the cache, which re-hydrates on reload).
+    // The Desk hop STAYS, and its reason has changed. It is no longer load-
+    // bearing against a flush (the seam closed that), but makePage's POST-
+    // CONDITION — "the browser is standing on the Desk when this returns" — is
+    // relied on by call sites further down that seed straight afterwards, so
+    // moving it would be a fixture change this ticket has no need to make.
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk before seeding ${id}` });
     const strokesJson = withInk ? JSON.stringify([{ points: [{ x: 0.2, y: 0.3 }, { x: 0.5, y: 0.35 }, { x: 0.8, y: 0.3 }] }]) : 'null';
     await app.evalJs(`(() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key) || '[]');
-      const created = new Date(Date.now() + ${pageSeq} * 1000).toISOString();
-      const entry = { id: ${JSON.stringify(id)}, text: ${JSON.stringify(text || '')}, projectId: null, source: 'page', origin: 'journal', createdAt: created, updatedAt: created };
+      const createdAt = new Date(Date.now() + ${pageSeq} * 1000).toISOString();
       const strokes = ${strokesJson};
-      if (strokes) entry.strokes = strokes;
-      list.push(entry);
-      localStorage.setItem(key, JSON.stringify(list));
+      const seed = { id: ${JSON.stringify(id)}, text: ${JSON.stringify(text || '')}, createdAt };
+      if (strokes) seed.strokes = strokes;
+      window.wrizoCreateJournalPage(seed);
     })()`);
+    // THE ONE BEHAVIOURAL DIFFERENCE the migration has to absorb: the raw write
+    // was synchronous to localStorage, the seam's is DEBOUNCED (scheduleFlush,
+    // 300ms). Every caller below reads `localJSON` immediately after calling
+    // this, so makePage restores its old post-condition — the row is on disk
+    // when it returns — by OBSERVING the row land, not by sleeping through the
+    // window (DF1.1 species 1: a guessed interval standing in for a settle).
+    await app.waitFor(
+      `JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').some(e => e.id === ${JSON.stringify(id)})`,
+      { label: `${id} reached localStorage (seam flush)` },
+    );
     return id;
   };
   const idA = await makePage('Alpha text only.', false);
@@ -155,10 +179,29 @@ await withHarness(async (app) => {
   ok('4 fixture pages created (text-only, text-only, ink-only, text+ink)', !!A && !!B && !!C && !!D, JSON.stringify({ A: !!A, B: !!B, C: !!C, D: !!D }));
 
   // Star + tag B directly (Slice 0: lens authoring is out of scope — the
-  // lenses CONSUME data J2/J6 already authors; this just seeds it). Navigate
-  // away from the entry view FIRST — its unmount flush would otherwise
-  // re-save its own stale in-memory copy over this direct patch.
-  await app.goto('/journal');
+  // lenses CONSUME data J2/J6 already authors; this just seeds it).
+  //
+  // ITEM 82 FIX (b) — ORDERING CORRECTED, and the old comment here was WRONG
+  // in a way worth recording. It read: "Navigate away from the entry view
+  // FIRST — its unmount flush would otherwise re-save its own stale in-memory
+  // copy over this direct patch", and it navigated to `/journal` to do so.
+  // There has been no entry view to leave since FX14 S2, and `/journal` is not
+  // a refuge — it is the single most dangerous surface in the app for a raw
+  // write, because mounting it mints/reconciles the Journal system board and
+  // schedules a 300ms wholesale flush of `journalEntries` from a cache this
+  // patch never touched. Pre-fix that flush erased A–D outright; post-fix A–D
+  // are in the cache and safe, but this patch's `starred`/`tags` would have
+  // become the new casualty — a seam page carrying a raw amendment is exactly
+  // the half-migrated shape the seeding law forbids.
+  //
+  // So: patch from the DESK (where makePage leaves us — no flush handler is
+  // mounted there), reload FROM there to re-hydrate, and only THEN navigate.
+  // That is AGENTS.md's original ordering rule verbatim, applied to a raw
+  // write that has no seam of its own — `starred`/`tags` are an AMENDMENT to
+  // an existing row, and no `wrizo*` seam exposes one. Migrating it properly
+  // is item 85's phase 2, and it is disclosed there; the ordering here closes
+  // the window in the meantime.
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the star/tag patch' });
   await app.evalJs(`
     (() => {
       const key = 'writer-studio-journal-entries';
@@ -172,6 +215,11 @@ await withHarness(async (app) => {
   // in-memory cache — reload so persistence.ts re-hydrates from it.
   await app.reload();
   await app.evalJs(POINTER_HELPER);
+  // The `/journal` visit that used to precede the patch is KEPT, moved to
+  // after the reload: it mints the Journal system board before the Spread is
+  // ever read, exactly as it did before, and by now the cache holds the
+  // starred row, so that board's own flush writes the truth.
+  await app.goto('/journal');
 
   // -- Slice 1: the lens matrix ----------------------------------------------
   await app.goto('/journal/spread');
@@ -308,7 +356,15 @@ await withHarness(async (app) => {
 
   // -- Slice 2: FILE to the Shelf (single page A) ----------------------------
   // Review fix (B2 S3, 2026-07-20) — a genuine truthfulness defect found
-  // live: A is journal-origin (makePage -> wrizoCreateJournalPage); under
+  // live: A is journal-origin (makePage -> wrizoCreateJournalPage — TRUE
+  // AGAIN, BY CONSTRUCTION, as of item 82 fix (b); this parenthesis was
+  // FALSE from FX14 S2 until that fix, because makePage was a raw
+  // localStorage write, and item 82's own diagnosis named it as the comment
+  // that would have told an auditor the deciding question's WRONG answer —
+  // "the app's save path is in use, therefore product risk." The claim it
+  // makes was always the right claim; only the code beneath it had drifted,
+  // and the fix moved the code back rather than weakening the comment);
+  // under
   // S7's own pinned law a journal-homed page can never leave Journal
   // membership by un-filing alone, and T3 disqualifies it from the Shelf
   // while it stays journal-homed — so this click was ALREADY a no-op
@@ -464,8 +520,23 @@ await withHarness(async (app) => {
   entries = await app.localJSON('writer-studio-journal-entries');
   const E = entries.find((e) => e.id === idE);
 
-  // Navigate away first — same clobbering hazard as the star/tag seed above.
-  await app.goto('/journal');
+  // ITEM 82 FIX (b) — same correction as the star/tag seed above, and this is
+  // the site the FIFTH SUITE OF RECORD died at (`waitFor timed out: spread row
+  // j5-src-7 present, then clicked`, the Spread POPULATED with five rows and E
+  // alone missing). The old comment — "Navigate away first — same clobbering
+  // hazard as the star/tag seed above" — had the hazard backwards: makePage
+  // already leaves us on the Desk, and the `/journal` hop it performed was the
+  // thing that killed E, by mounting the Journal board and scheduling the
+  // 300ms wholesale flush that erased a row the cache had never seen. E now
+  // comes from the seam and cannot be erased; the StoryPlan below still cannot
+  // (no `wrizo*` seam authors one — item 85 phase 2), so it seeds from the
+  // Desk and reloads before any navigation, per AGENTS.md's ordering rule.
+  // NOTE the collection difference, because it is why this one survived long
+  // enough to look safe: a scheduled `flush(name)` writes ONE collection, so
+  // the board's flush never threatened `writer-studio-story-plans` — only a
+  // `flushNow()` (every collection, unconditional, and BoardEditor's unmount
+  // fires one) does. Narrower exposure, same mechanism, same cure.
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding the StoryPlan' });
   await app.evalJs(`
     (() => {
       const now = new Date().toISOString();
@@ -475,6 +546,9 @@ await withHarness(async (app) => {
   `);
   await app.reload();
   await app.evalJs(POINTER_HELPER);
+  // The `/journal` visit is KEPT, moved after the reload (same as the star/tag
+  // seed): the navigation itself was never the problem, its ORDER was.
+  await app.goto('/journal');
 
   await app.goto('/journal/spread');
   await app.waitFor("!!document.querySelector('.spread-select-toggle')", { label: 'Spread (4)' });
@@ -510,12 +584,34 @@ await withHarness(async (app) => {
   // mounted — is exactly why the ORIGINAL check navigated here before the
   // next section's own seed+reload; dropping the navigation along with the
   // dead assertion would have silently reintroduced that exact race.
+  //
+  // ITEM 82 FIX (b) — THE PARAGRAPH ABOVE IS KEPT VERBATIM AND ITS LAST CLAUSE
+  // IS FALSIFIED HERE. The lesson it cites is real; the conclusion drawn from
+  // it — that landing on `/journal` is what makes the next section's seed safe
+  // — is exactly backwards. `/journal` MOUNTS the Journal Board, and mounting
+  // it mints/reconciles the system board (-> saveJournalEntry -> scheduleFlush)
+  // while BoardEditor's unmount calls `flushNow()` unconditionally
+  // (BoardEditor.tsx). Both write `cache.journalEntries` WHOLESALE, and the raw
+  // row below has never been in that cache. This landing was not a refuge; it
+  // was the hazard, and the seed under it has been running inside a ~40ms
+  // margin. The NAVIGATION STAYS — it is the parked check's own, and this
+  // ticket does not delete other tickets' fixture shape — but the seed now
+  // steps off it onto the Desk first, per AGENTS.md's ordering rule.
   await app.goto('/journal');
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (safe pre-seed landing)' });
+  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (parked sweep navigation)' });
 
   // -- Slice 3: board-append (append onto an EXISTING board, below content) -
   // Seed an existing board with one box so we can assert the new group lands
   // BELOW it (this exercises appendToBoard's new-code path specifically).
+  // Still a RAW write, and disclosed as such: this row is a `pageType:'board'`
+  // page carrying pre-seeded `boxes`, and no `wrizo*` seam authors one
+  // (`createJournalPage` makes loose journal pages; `createBoardPage` is not
+  // exposed and takes no boxes). Migrating it needs a seam that does not exist
+  // yet — item 85 phase 2's work, not a change to smuggle in under a fix. What
+  // IS fixed here is the ordering: seed from the Desk, reload from there, then
+  // navigate.
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding the board fixture' });
   const boardId = 'seed-board-' + Date.now();
   await app.evalJs(`
     (() => {

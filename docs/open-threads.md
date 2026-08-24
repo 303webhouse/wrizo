@@ -30,12 +30,24 @@ Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's 
   (`getJournalEntry` falls through to the unborn slot). See item 88's falsification note
   and the 88a+88b close-out below.
 
-**P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible · S3/87 New
-Page defaults (Draft; hide presets in Free Write; typewriter off) · S4/88 panel affordance
+**P1 (wrong but survivable — fix before vacation):** S1/79 markdown markers visible ·
+~~S3/87 New Page defaults~~ **BUILT 2026-08-03; VERIFIED + SHIPPED 2026-08-17 (the doorway
+ship, with item 104). CORRECTION: this line said "FIXED" from 2026-08-03, which was WRONG for
+13 days — the code was written but its harness had never run once, and the item's own entry
+below said so while this summary did not. The lane that wrote both introduced the discrepancy;
+it is corrected here rather than quietly overwritten.** As an AMENDMENT not a
+flip: the door declares the room (`?mode=draft`), so CD1 S8/A7's front-door ruling stands
+unreversed and Arrival's Write door is untouched. Clause 2 (hide presets in Free Write) DID
+NOT REPRODUCE — already true — so it is asserted, not "fixed." Zero parks owed, each
+candidate checked. See the item 87 close-out below.** · S4/88 panel affordance
 illegible (filing targets read as a page list) · S6/88b `fileTo` toasts success unconditionally
-· S11/**91** board→Page rail lands on the Wrizo landing (verdict: New Page auto-linked back to
-the board) · S12/**92** New Page Card from a board never appears on that board (Plan may mint a
-second board — S0 owed).
+· ~~S11/**91** board→Page rail lands on the Wrizo landing~~ + ~~S12/**92** New Page Card from a
+board never appears on that board~~ **BOTH FIXED — 2026-08-03 (fix lane, wave 2), as ONE fix;
+see the 91+92 close-out below.** 91 reproduced verbatim (`hash=#/` from the Journal board). 92's
+erasure needs an unsaved edit inside the 2000ms autosave window — the S0's "fires on the very
+navigate" was too strong, corrected append-style below. **"Plan may mint a second board" was NOT
+this symptom** — but a real second-board path exists and is now **item 97**, held open (product
+question: restore vs re-mint, Nick's call).
 
 **P2 (polish — waits till back):** S2/86 page size (ruled post-vacation) · S7/88c binder
 unidentifiable in Drawers · S9 shell won't reload offline (flight rule logged) · S10+S17/**90**
@@ -57,6 +69,10 @@ page," taught by the interface itself.** Item **93** (the pairing model) folds i
 question; **88c** (binder rendering in Drawers) and **S13** (cards vs pages) route HERE
 alongside the menus arc — seams coordinated through Nick. Post-vacation committee pass; no
 build under the freeze. Registry: next free **97**.
+**→ CHARTER PROVING ITSELF (live-test sitting #2, 2026-08-17):** the Screenplay door
+(Draft → tool panel → Structure) was UNDISCOVERABLE from Free Write — Nick's session never
+reached the script surface. The exact "where is my room, how do I get there" gap this item exists
+to close, now with a live-test witness. See the LIVE-TEST SITTING #2 section above.
 
 ## FIX-WAVE MERGE + LEDGER BUNDLE — 2026-08-03 (item 89/88 fix merged; Fable)
 
@@ -86,10 +102,37 @@ the toast when item 90 makes Trash items openable.
 **item 87 → RECLASSIFIED.** Not a defect-flip: a REVERSAL of a ruled default (FX2 S2 seeds
 typewriter ON). Owes a full pass WITH PARKED ASSERTIONS, not a one-line flip — the immutability
 law governs a ruled default as it governs a check.
+**→ WEIGHT TO ITS SHIP (live-test sitting #2, 2026-08-17):** the Screenplay door was
+undiscoverable from a Free Write start; a Draft-default (this item) would have OPENED it — the
+session would begin in the room the door lives in. See the LIVE-TEST SITTING #2 section above.
+**Now also PACKAGES WITH item 104** (Screenplay selection dead on an unborn page): mode +
+structure are one descriptor seam — item 87 verifies and ships WITH item 104, not separately.
+**→ AMENDED BY FOUNDER — item 87 RECHARTERS as THE NEW PAGE CHOOSER (Nick, 2026-08-17).** Spec
+verbatim (from Nick): *"Anywhere that a user can create a New Page, they should be given a toggled
+set of options that reveal themselves when 'New Page' is clicked: Free Write, Draft, Journal, Add
+to Board, Add to Drawer. If either 'Add to' options are selected, a pop-up should ask them which
+Board or Drawer they want to add it to. If none exist or if they want to create a new Board or
+Drawer for the New Page, they should have that option as well. When Free Write is selected, the
+user goes to a standard page with Free Write mode enabled; when Draft is pre-selected, they go to
+a standard page with Draft mode pre-selected."* **ROUTES to the menus arc as design work** — it is
+chrome; the **unborn-descriptor machinery from fw2 is its engine** (each toggle maps to a
+descriptor preset — mode / origin / binder / pin). **What ships from the OLD 87:** the
+typewriter-off + presets-assertion residue ships in the doorway wave. **SUPERSEDED and held:** the
+Draft-default piece (the RECLASSIFIED note above and the SITTING #2 "weight to its ship" framing)
+is superseded by the Chooser — item 104's descriptor-carries-STRUCTURE stays the engine, but
+mode/structure now arrive via the Chooser's presets, not a bare Draft-default.
 
 **ITEM 97 OPENS — the trashed-plan-board dangling pointer.** A trashed plan board's pointer
 dangles (the soft-deleted board reads as ABSENT), so the next PLAN→ flip RE-MINTS a second
 board. New ticket, fix-class.
+**→ RULED: RE-MINT (Nick, 2026-08-17).** PLAN→ on a page whose plan board is trashed MINTS a fresh
+board and CLEARS the stale pointer; the trashed board stays manually recoverable via the Trash
+overhaul (item 90). **Decision-complete; build queued in the doorway wave.**
+**→ BUILT + MERGED with the doorway ship (merge `cf9180a`, 2026-08-17); re-mint ratified in code,
+and the harness does NOT bite — that is the finding (see the ITEM 97 build section below). NAMED
+RESIDUAL:** the **tombstone-arrival window** — closing it would require unpairing at apply-time,
+which is **beyond this decision's authority**; **post-vacation class.** The re-mint decision stands
+as ruled; the residual is named, not silently carried.
 
 **ITEM 98 OPENS + STANDING GUARD (deploy-critical).** Railway commands run ONLY from the
 correctly-linked PRIMARY CHECKOUT, `railway status`-verified first. **Worktrees are absent from
@@ -130,6 +173,390 @@ handles them at the next run; noted for the reaper's scope, out of the kill-auth
 authorized action was executed against an empty target set — the honest, reviewable record
 (condition 2). The suite of record then ran CLEAN in the freed window at `aa07b9c`, bundle
 `index-CThKwy6K.js/524897b`, both settings 54/54.
+
+## SHIP 2 (fw2) — PARKED, NOT SHIPPED — 2026-08-04 (Nick's conditional word; condition 2)
+
+Nick's word: merge `fw2-offer @ dad280e` (items 91+92, zero schema, pre-authorized) and deploy
+under the amended checklist ONLY if the fix lane's parked re-run stamped GREEN both settings;
+if the re-run is red or incomplete → no merge, the offer parks as-is, report. **The parked
+re-run is INCOMPLETE.** Per the fix lane's own offer doc (`docs/wrizo-alpha/fw2-merge-offer-to-chat1.md`
+@ `dad280e`): unparked **55/55 CLEAN** (`bundle=index-Cib2nzSw.js/525306b`, `tsc` clean), but
+parked returned **one NOVERDICT (`j4.mjs`)** — a named *first-parked-act race* (`j4`'s parked
+block calls `localStorage.clear()` before the initial `about:blank`→app load; pre-existing and
+untouched by this diff; `j4` was green in the unparked run of the identical bundle minutes
+earlier). The one-line fixture fix (navigate-first) is itself **UNRUN** — the box schedule closed
+the window — so **the parked stamp is OWED, not claimed**; the fix lane explicitly does not ask
+for a merge on a half-stamp. **DECISION: no merge, no deploy; `fw2-offer` stays on its branch,
+parked as-is.** The RED-SUITE CLAUSE WAS NOT PRE-SPENT — no red of any identity was measured
+here; the gate simply is not met (incomplete ≠ red). Item 87 was never in this package
+(`fw2-offer` excludes it by construction; item 87 is built-not-verified on
+`fw2-boards-and-defaults`, `DO NOT MERGE YET`). **Production stays git `c23c380` · railway
+`ee0a9bf2`** (the P0 wave; rollback ratchet unchanged). Per Nick's word the box now passes to the
+SC-chain (merge + PARK only; P2c is the first post-vacation ship); **ZERO further deploys of any
+kind until Nick returns** (vacation handoff `docs/wrizo-alpha/vacation-handoff-2026-08-04.md`).
+
+## SHIP 2 (fw2) — UNPARKED + MERGED, HELD FOR SHIP WORD — 2026-08-17 (Nick back)
+
+Supersedes the PARK above. The fix lane completed the owed parked re-run: the offer doc's
+**✅ STAMPS COMPLETE** section (`fw2-merge-offer-to-chat1.md` @ `e281b73`) now shows **unparked
+55/55 CLEAN and parked 55/55 CLEAN** at `tree=dad280e bundle=index-Cib2nzSw.js/525306b` — the
+`j4.mjs` NOVERDICT is CLEARED (`j4` passed parked on the re-run). Nick's post-vacation word:
+*"fw2's completed offer → merge → hold for ship word."* **MERGED `a18115c`** (items 91+92 —
+`BoardEditor.tsx`, `unbornPage.ts`; harnesses; records). Zero schema; item 87 remains absent
+(`fw2-boards-and-defaults`, `DO NOT MERGE YET`). Ledger auto-merged clean, main-only sections
+preserved, registry next free **100**. `tsc` ×2 EXIT 0 on the merged tree. **HELD — NOT
+DEPLOYED.** Production stays git `c23c380` · railway `ee0a9bf2`. Deploy waits on Nick's
+**explicit per-package ship word** (post-vacation posture: merges resume on pre-authorized
+offers; deploys on Nick's explicit words only). When the ship word comes: suite of record at the
+merge HEAD both settings + full amended checklist + rollback ratchets to the P0 stamp.
+
+**→ SHIPPED 2026-08-17 on Nick's word "Ship 2":** DEPLOYED **git `fbdb27e` · railway
+`0fdc8f94`** (suite of record 55/55 both settings at `bd4cdcb`, bundle `index-Cib2nzSw.js`
+verified LIVE). See the SHIP 2 (fw2) DEPLOY MANIFEST below. Rollback now ratchets to this stamp;
+the prior floor `c23c380` · `ee0a9bf2` is superseded as live.
+
+## FW2 — FABLE'S RATIFICATIONS — 2026-08-17 (formal merge order @ `641e946`)
+
+Landed with the formal merge `0dc6e75` (fw2-offer @ `641e946`): the fix lane's ADDENDUM proving
+the 2026-08-04 stamps still hold — the merged tree rebuilds to `index-Cib2nzSw.js`/525306b,
+**byte-identical** to the stamped bundle (the docs-only-carry precedent, `77(c)` making it
+provable). Three records, append-only:
+
+1. **The PARK is SUPERSEDED BY COMPLETION — both were right at their read-times.** The park
+   (condition 2, "the parked stamp is OWED") was decided at `08:08:42`; the fix lane's completed
+   re-run (unparked 55/55 CLEAN + parked 55/55 CLEAN, the `j4` NOVERDICT cleared) pushed at
+   `08:29:41` — **21 minutes later**. Neither read was wrong: the park read a true incomplete
+   stamp, the completion read a true green one. The ledger keeps both, in order — a park is not
+   an error when its successor completes it.
+
+2. **The S4 incident — the victim-side record, RATIFIED.** Stopping a suite mid-run orphans its
+   harness browsers, and the dirty-machine guard then refuses EVERY lane's next run (item 99, the
+   Orphan Reaper). When the fix lane's own run was compromised (a leg would hang to timeout and
+   read a red it would then have to excuse), it chose to **ABANDON and re-run WHOLE rather than
+   report a red it would have to explain away** — the abandon-don't-excuse decision. **Fable
+   RATIFIES it:** a compromised run yields no usable stamp, so a clean re-run outranks an excused
+   red. (Cheaper still, where possible: let a doomed run finish rather than stop it — see item 99.)
+
+3. **Item 87 remains BUILT-UNVERIFIED on its own branch.** Not in this merge. Item 87 (New Page
+   defaults) is complete and `tsc`-clean but has NO harness result — it stays on
+   `fw2-boards-and-defaults` (`DO NOT MERGE YET`) until the fix lane runs its falsification plus
+   both stamped suites and offers it on its own.
+
+Ship 2 still HOLDS for Nick's explicit ship word; production stays git `c23c380` · railway
+`ee0a9bf2`; the deploy runs its own fresh suite at the deploy HEAD per the amended checklist.
+
+## ITEM 100 — THE CDP PORT-FILE RACE (harness-infra) — OPENS 2026-08-17
+
+**OPENS on Fable's ruling, from the SC-chain lane's fix (b) verification.** A harness run can
+die **before any check executes**, in ~2s, with
+`EBUSY: resource busy or locked, open '…\ws-runtime-verify-<pid>\DevToolsActivePort'`.
+**MECHANISM, read in the source rather than inferred:** `readCdpPort`
+(`scripts/runtime-verify.mjs:281-289`) polls the port file in a 100-iteration loop, but the loop
+body is `if (existsSync(portFile)) { readFileSync(...) }` with **no `try`/`catch`** — so a read
+landing in the window where the browser has CREATED the file but still holds it **throws out of
+the poll loop instead of polling again**. The retry machinery is already there; the exception
+escapes it.
+**IT IS A DIFFERENT SPECIES FROM DF1.1's, and conflating them would re-spend that diagnosis.**
+DF1.1's stale-profile-dir root cause is a fresh process finding an **OLD** port file (dead port,
+`pageWsUrl` then polls nothing — cured by `removeDir(udd)` before launch, which is present and
+working). This is a **FRESH** dir whose file is **mid-write**. Same symptom class (dies before
+app load, reads like contention), opposite cause, and it reproduces on a quiet box — this
+sighting was on a machine verified quiet, with `removeDir` in the tree.
+**CURE: one line** — wrap the read (or the loop body) so a failed read continues the poll rather
+than throwing. **Deliberately NOT taken by the finding lane:** `runtime-verify.mjs` is shared
+infra used by all 55 harnesses, and patching it *mid-verification* would have made that lane's
+own stamped pair unfalsifiable — the exact defect 77(c) closed. **Left unfixed and unclaimed for
+the harness floor's owner, post-verification**, per Fable's ruling.
+**RARITY, measured not guessed:** 1 occurrence in 38 standalone `j5` runs plus four full sweeps
+(≈220 harness launches) on 2026-08-17 — no recurrence after the first. Fix-class, harness-only,
+zero product surface. Sibling of item 99 (both are harness-floor robustness); **not** a member of
+item 82's family — it produces a *boot crash with a stack*, never a check verdict, so it cannot
+be a hidden explanation for any of that item's reds. Registry: next free **101**.
+
+## LIVE-TEST SITTING #2 (partial) — 2026-08-17 (Nick; relayed by Fable) — items 101–103 open
+
+Full log: `docs/wrizo-alpha/sitting-log-2026-08-17.md`. **PARTIAL — Nick's session never reached
+the script surface:** the **Screenplay door (Draft → tool panel → Structure) is UNDISCOVERABLE
+from Free Write.** Logged two ways: as **item 96's charter (the Places Model) proving itself** —
+the exact "where is my room" comprehension gap it exists to close — and as **weight to item 87's
+ship**, because a Draft-default would have *opened the door* (the session would begin in the room
+the Screenplay door lives in). **Section-A retest is OWED, via the Draft → Structure path.**
+**→ IN PROGRESS (2026-08-17):** now running on the TRUE script surface (reachable via F5 after the
+kind-switch, per item 104's diagnosis — the surface works; only the live remount is the defect).
+**→ SECTION A COMPLETE (Nick, live, 2026-08-17 — the Clock's first founder session).** CONFIRMED:
+block grammar · sheet sequence · page-top alignment · caret-across-the-break · scene + dialogue
+travel rules. Two rulings closed item 62's OBS pair (R-PERIOD → keep the period; R-BREATHING →
+zero breathing room ratified — see item 62's close-out). Two new defects opened from the true
+surface: **item 105** (page-boundary presentation) and **item 106** (empty-region caret clicks).
+
+**New items:**
+- **101 — Page panel's New Page appeared to do nothing.** **Repro PENDING** (possibly clicked
+  from an already-unborn page — nothing to birth). Confirm the reproduction before attributing.
+- **102 — the prose input model.** Enter-feels-dead-until-doubled · first-keystroke line drop ·
+  Tab escapes to browser chrome · "double-spaced" feel. **Nick's verdicts, attached:** the
+  paragraph-gap is **NOT** the default; **Tab indents.**
+- **103 — the typewriter fade band.** Nick's **five-line graduated spec, top and bottom.** **The
+  verbatim five lines are NOT in this relay — recorded as OWED**; they attach verbatim and are the
+  authority (nothing here reconstructs them).
+  **→ ATTACHED 2026-08-17 (verbatim, from Nick's screenshots on file at Fable's desk):** *"I think
+  the fade-out needs to be longer, probably --- let's say 5 lines, with the top line of the page
+  (no matter what the text there says or whether or not there are line breaks, etc.) being almost
+  nearly invisible while each line below is slightly more visible. Also, the same five line fade
+  should happen at the bottom of the page when a user scrolls up. The effect should be (when in
+  typewriter mode only, obviously) that the writer's focus is always on a central set of lines
+  near the center of the page, roughly a paragraph length, while the rest of the text fades out
+  into the past. The idea is to continually propel the writer forward so they don't get locked in
+  to constant revision and overthinking."*
+
+**Item 86 RECHARTERS → "the prose page — size AND pagination."** Nick expected prose to paginate
+(as the script now does); was S2/86 "page size (ruled post-vacation)", now covers size AND
+pagination. **Committee pass on Nick's word.**
+
+**M-arc note:** ground legibility at high counts is the open concern; **the flare verdict is
+POSITIVE — in Nick's own words** (verbatim quote owed if wanted, not reconstructed here).
+**→ ATTACHED 2026-08-17 (verbatim, from Nick's screenshots on file at Fable's desk):** *"I did
+notice a few lines ago that the rhizomatic progress bar at the bottom of the screen (which at
+this point just looks like a bunch of scribbling) lit up orange briefly. That effect was nicely
+done and did give me a hit of dopamine that seems to have propelled me to continue writing as I
+continue to produce words at a fast rate despite just doing this review and needing to fill up
+space to test the new page feature."* **One quote, two ledger lines:** the tail carries the
+legibility finding *inside* the praise — *"just looks like a bunch of scribbling"* is the
+ground-legibility-at-high-counts concern, stated in the same breath as the POSITIVE flare verdict.
+
+Registry: next free **104**.
+
+## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17
+
+**OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
+DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
+toggle** each **no-op silently** — no mode change, no feedback. **Repro detail PENDING:** whether
+any text had been typed first (an unborn-vs-born distinction may gate it). **This answers the
+long-open OBS-1** (the PB1 review's "unborn-Screenplay surface flip," deferred to the next
+sitting) — **answered-by-defect:** the flip OBS-1 flagged is not a design question, it is a dead
+control.
+
+**Nick's verdict, verbatim (from his screenshot, on file at Fable's desk):** *"Screenplay mode
+should be auto-selected anyway when a user comes from a New Page where the 'Screenplay' template
+icon was selected."*
+
+**FIX FAMILY (named; S0-BEFORE-PATCH per law — diagnose before touching code):** the **unborn
+descriptor pattern** — origin / binder / pin, the address carrying what a page IS before it is
+born (established by fw2, items 91–92) — **extends to STRUCTURE.** The door declares the room
+WHOLE: a New Page born from the Screenplay template arrives already in Screenplay mode because
+the descriptor said so, exactly as item 91's board-kind pin rides the address. No sweeper, no
+post-birth toggle race.
+
+**PACKAGES WITH item 87's verification window — mode + structure are ONE seam, ONE ship.** Item 87
+(New Page defaults; the door declaring `?mode=draft`) and item 104 (the door declaring structure)
+are the same descriptor seam; they verify and ship together, not separately. (Item 87 has since
+rechartered as THE NEW PAGE CHOOSER, 2026-08-17 — its toggles map to descriptor presets; item
+104's descriptor-carries-STRUCTURE remains the engine, the Draft-default framing superseded.) Item 96's
+discoverability charter is the surrounding context (SITTING #2's undiscoverable Screenplay door).
+
+**→ DIAGNOSIS COMPLETE (Nick, live, 2026-08-17).** The "no-op silently" symptom above is REFINED,
+not confirmed: the doc **kind SAVES** and the **script surface WORKS** — an **F5 (reload) after
+the switch** mounts the Clock correctly, with elements AND pagination. So the defect is neither
+dead selection nor lost state; it is **precisely the LIVE REMOUNT on kind-switch** — the editor
+swap never fires without a reload. Persistence and the script surface are sound; only the on-screen
+editor fails to remount when the kind changes. **Well-bounded.** The fix family holds and narrows:
+the born-from-Screenplay-template path is served by the unborn descriptor carrying STRUCTURE (a
+fresh mount — correct by construction, which the F5 case proves); the added bounded piece is firing
+the editor remount when kind switches on an already-mounted page. Still packages with **item 87
+(87 + 104's doorway ship) — mode + structure, one seam, one ship.**
+
+Registry: next free **105**.
+
+**→ FIXED + VERIFIED — 2026-08-17 (fix lane, the doorway ship). ONE DEFECT, NOT THREE.**
+**→ REVIEWED, GREEN — items 104, 87-subset, 97 (Fable, 2026-08-17)** —
+`docs/wrizo-alpha/doorway-review-fable.md`; VERDICT PASS (5 src +141, three harnesses +657,
+runtime-verify +12; zero schema). 104: the `UnbornPage` dispatch asks the ROW (`pageType` outranks
+`descriptor.kind`), prose falls through the SAME component under the SAME key (no remount, PB1
+preserved exactly). 87-subset: the empty case moves, the threshold rule stands; four clause-1
+design-supersession parks. 97: pointer cleared AT DETECTION, does-not-bite finding + named residual
+carried. **101 → S0 CLOSED benign** (a measurement, not a defect claim), feedback routed to item
+96's charter. **OBS (non-blocking, ×3, th2-comment class):** stale clause-1 prose ("declares Draft
+too" / "This door SAYS Draft" / "mode (item 87)") + inert `?mode=draft` fixtures describe the
+REMOVED mechanism — correct at the next touch of each file. **NO DEPLOY — the doorway ship holds
+for Nick's word.**
+**S0 BEFORE PATCH, proven by reading and then measured.** `UnbornPage`
+(`pages/PageEditor.tsx`) dispatched on **`descriptor.kind`** — what the ADDRESS said the door
+meant — while `PageEditor` (the BORN route) has always dispatched on **`entry.pageType`** — what
+the ROW says the page IS. And `birthWith` corrects the address with `history.replaceState` ON
+PURPOSE (`components/UnbornSurface.tsx`): a real `navigate()` there unmounts the surface
+mid-keystroke and drops a typing burst, which PB1's own burst-integrity check caught once
+already. `replaceState` never notifies HashRouter, so no route change occurs — exactly right for
+prose birth, and exactly wrong here. The row became `pageType:'script'` while the callback kept
+re-rendering `PageEditorView`, because the descriptor said `prose` and always would. F5 re-read
+`#/page/<id>`, landed on the born route, and mounted ScriptEditor correctly. **That is precisely
+the asymmetry Nick measured** — the kind SAVES, F5 works, only the live swap fails.
+**TWO CORRECTIONS TO THE BRIEF, both measured rather than argued.**
+**(1) 104(a) DOES NOT REPRODUCE ON A BORN PAGE.** The brief named "kind-switch never remounts
+the editor" as its own defect; `item104.mjs` S2 is **GREEN AGAINST THE PRE-FIX BUNDLE**. The born
+route re-reads the row every render and App.tsx force-renders the routed tree on every write, so
+that swap always worked. (a) was the unborn case wearing a different hat.
+**(2) 104(c) WAS ALREADY WIRED.** The "New Page template icon" is `BeginningsRow`'s `screenplay`
+door, which already calls `requestScreenplay()`, which already births a script row. It looked
+dead for the SAME dispatch reason. So all three reported symptoms collapse to one line.
+**THE FIX.** The dispatch asks the ROOM once the room exists: a row's `pageType` decides, and the
+descriptor decides only while there is nothing else to ask. **Prose birth is deliberately
+untouched** — a prose row has no `pageType`, so it still falls through to the SAME
+`PageEditorView` with the SAME key: no remount, no lost focus, not one dropped keystroke. The
+burst-integrity property `replaceState` exists to protect is preserved exactly; only a genuine
+change of document KIND swaps the surface, which is when a swap is what the writer asked for.
+**THE DESCRIPTOR GAINS `structure`** (`?structure=screenplay`), per the brief and Nick's verdict:
+the door declares the room's KIND, not just its posture, and the intent rides the ADDRESS so it
+survives a reload. Applying it reuses `requestScreenplay` rather than inventing a second birth
+path, so the ruled amendment keeps ONE implementation. **This is not a new carve-out of PB1:**
+the amendment already rules that Screenplay BIRTHS at zero words, "which is also why there is no
+unborn script surface to hold." Every silent door still writes nothing — asserted, S3(a).
+Guarded three ways because a double birth would be worse than the defect: unborn only, address-
+asked only, once-per-mount latch (StrictMode double-invokes an empty-deps effect).
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE.** Unparked `59/59` and parked `59/59`,
+both `tree=46509f4+10dirty bundle=index-D8pFRr1k.js/531254b` — the same asset hash on both runs,
+so the two results describe the same software and not merely the same commit. `item104.mjs` 13,
+`item97.mjs` 7, `item87.mjs` 4 live + **4 PARKED GREEN** (clause 1's records, byte-frozen). `tsc`
+clean. **NO DEPLOY: the doorway ship holds for Nick's explicit word.**
+**VERIFICATION — `scripts/harness/item104.mjs`, 13 checks, PROVEN TO BITE.** S1(c) is RED against
+the pre-fix bundle and green with the fix. Four checks are CONTROLS that pass on BOTH builds and
+are labelled as such: Nick's F5 (the born route was always right), PB1's write-nothing door, and
+ordinary prose birth staying on the prose surface. So the file cannot be satisfied by a change
+that simply remounts everything.
+
+## ITEM 97 — RE-MINT RATIFIED; THE HARNESS DOES **NOT** BITE, AND THAT IS THE FINDING — 2026-08-17
+
+**Nick's decision (Fable relay, decision-complete): RE-MINT.** `getOrCreatePlanBoard` treats a
+soft-deleted board as absent DELIBERATELY, mints fresh, and CLEARS the stale pointer. Trashed
+boards stay recoverable via item 90's future work. Implemented.
+**BUT `scripts/harness/item97.mjs` IS 7/7 GREEN AGAINST THE PRE-FIX BUNDLE.** Minting fresh and
+re-pointing the page ALREADY happened on this path, so the decision **ratifies behaviour that was
+already there rather than repairing a defect**. Presented as such: the file is a **standing
+guard** on behaviour Nick has now ruled — if a future change makes a tombstoned board resolve, or
+leaves the page pointing at it, those checks go red — **it is not evidence of a fix and is not
+offered as any.**
+**THIS ALSO CORRECTS THIS LANE'S OWN 2026-08-03 FINDING**, which framed the re-mint as a bug. That
+reasoning read `getOrCreatePlanBoard` ALONE and missed the delete site: **`softDeleteEntry`
+already unpairs a trashed plan board** before marking it deleted (BM1 S2 — "deleting a plan board
+unpairs"). **The LOCAL trash path therefore never dangles and never reaches the branch at all.**
+The branch is reachable only where a board goes absent WITHOUT that path — chiefly a **sync pull
+carrying another device's tombstone**, which `applyRemoteRecords` applies with no unpair. That is
+the path the harness drives, so the guard is exercised rather than reviewed.
+**WHAT THE CODE CHANGE ACTUALLY ADDS**, stated precisely because the harness cannot show it:
+(i) INTENT — the soft-deleted case is named and deliberate instead of incidental (the old comment
+said "board hard-gone", describing only half of what reaches it); (ii) ONE EDGE — the stale
+pointer is cleared AT DETECTION, so it cannot survive an end-of-function re-pair that misses
+because the page itself went absent in between.
+**RESIDUAL, named rather than hidden:** the WINDOW between a tombstone arriving and the next flip
+is NOT closed. Closing it would mean unpairing at apply-time — a larger change than the decision
+authorised, and not one this lane made on its own authority.
+**HARNESS INFRA:** the sync double gains an armable `pull` (`/api/_sync_mode` `{ pull }`), on the
+exact precedent of this lane's own `{ fail }` and defaulting to the pre-existing empty pull. It
+exists because the remote-tombstone path is the ONLY way into the branch. A first draft armed the
+tombstone immediately and measured nothing — `applyCollection` correctly REFUSED it, since a
+just-minted board is still in the dirty set ("local unsynced edit wins"); the scenario now pushes
+and cleans first, exactly as a real second device would have.
+
+## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
+
+**→ S0 CLOSED benign (Fable's review, 2026-08-17):** a measurement, not a defect claim — S4 green
+confirms same-route-navigation onto an identical door; **feedback routed to item 96's charter.** No
+code owed.
+
+**The ledger asked for exactly this before attributing anything** ("Repro PENDING … Confirm the
+reproduction before attributing a defect"), and the answer is that the suspicion in the ticket is
+correct and benign. Measured through the CASCADE'S OWN New Page door — the control Nick used —
+on an already-unborn page (`item104.mjs` S4): the click **writes NO row**, the address is
+**unchanged** (`#/page/new?mode=draft` before and after), and the writer is left on an unborn
+door either way. It is a same-route navigation onto an **identical blank door**: nothing happened
+because nothing needed to happen, and **nothing is lost**.
+**RECORDED AND PARKED per the brief's own instruction** ("fix only if the mechanism is inside
+this same doorway seam, else record and park"). The mechanism IS in the doorway seam, but it is
+not a defect — what is arguably owed is FEEDBACK (a door that says "you are already on a new
+page"), which is a design call for item 96's discoverability charter, not a fix-class change this
+lane should invent. **No code written for item 101.**
+
+## ITEM 105 — THE PAGE-BOUNDARY PRESENTATION CLUSTER — OPENS 2026-08-17
+
+**OPENS (Nick, live, Section A — the Clock's first founder session).** Two LAWFUL pagination
+behaviours (item 62's rules) **read as DEFECTS to a writer** at a page boundary:
+- the **active-element whole-render exception** presents as **"off-page text"** — the active
+  element renders whole, so it can extend past the page edge;
+- the **non-splittable move-whole** presents as an **"undeletable gap"** — an element that moves
+  whole to the next page leaves an apparent gap that reads as un-removable.
+Both are correct by the paginator's rules; the *presentation* is what misleads. **Nick's
+discriminator result is PENDING** — the measurement that rules out a genuine arithmetic defect
+underneath; **do not attribute until it lands.** **Fix family: presentation / signaling of lawful
+pagination** — the boundary must SHOW what it is doing (the active-element exception, the
+move-whole) rather than let the writer read it as broken. Not a paginator-arithmetic change unless
+the discriminator says otherwise.
+**→ DISCRIMINATOR RESOLVED (Nick, follow-up, 2026-08-17): NARROWS to presentation / signaling
+ONLY.** The boundary mechanics WORK when writing forward — there is no genuine arithmetic defect
+underneath. The "gap" and "off-page" reads were the active-element whole-render exception PLUS the
+no-cross-block-selection finding (item 107, below). Item 105 is confirmed a **presentation /
+signaling** ticket, not an arithmetic one.
+Registry: next free **106**.
+
+## ITEM 106 — CARET PLACEMENT ON EMPTY-REGION CLICKS — OPENS 2026-08-17
+
+**OPENS (Nick, live, Section A).** Clicks on **elements** activate correctly; clicks on **empty
+sheet space no-op** — the caret does not move there, and subsequent typing lands at the (now
+hidden) caret's prior position rather than where the writer clicked. **Nick's verdict, verbatim
+(from his screenshot, on file at Fable's desk):** *"the caret needs to move to wherever I click on
+the document."* Registry: next free **107**.
+
+## ITEM 107 — NO CROSS-BLOCK SELECTION / BULK DELETION ON THE SCRIPT SURFACE (architecture) — OPENS 2026-08-17
+
+**OPENS (Nick, live, Section A).** Cross-block selection and bulk deletion **do not exist** on the
+script surface: **one live element at a time** is the architecture — the exact class the caret fix
+**explicitly declined to dissolve** ("non-collapsed selection … those need the class dissolved, not
+the symptom closed," `docs/wrizo-alpha/sc2-review-fable.md`). **Nick's verdict:** fine moving
+forward, but *"clunky if the writer wants to remove blocks of dialogue at one time."*
+**ARCHITECTURE-CLASS, POST-VACATION** — dissolving the one-element-at-a-time class is a real
+change, not a quick fix. The **DESIGN half — block-select / delete / move as EXPLICIT operations —
+routes to the MENUS ARC**: block operations are natural tool-menu citizens. This finding is also
+part of what item 105's "undeletable gap" read reflected — there is no bulk delete to remove it.
+Registry: next free **108**.
+
+## ITEM 108 — THE TUTOR MEMORY ARC (retrieval / the model phase) — OPENS 2026-08-17
+
+**OPENS (from item 84 preset (B)'s hybrid ruling).** The Tutor's **MODEL PHASE** — its
+memory / retrieval design: **what persists**, **how genre / type travel**, and the **deck→model
+threshold parameter** — **settles TOGETHER with its carve-out sentence** (one decision, not two).
+**The wire today is `{messages, delta?, bible?}` and NOTHING else — closed by architecture** (no
+silent widening of what the Tutor sends or stores); the `69911c3` seam note in the lock record on
+main is this arc's **founding census**. The **disclosure-v4 committee's agenda now narrows to ONE
+sentence — the disclosure itself** — drafting now at Fable's desk; that sentence is this arc's
+carve-out. **[PRECISION — 2026-08-17, append-only:** the "=" just above CONFLATED two sentences.
+The committee's ONE sentence is **THE DISCLOSURE** (drafts now; gates TD4 / TR3 / BD4 across BOTH
+arcs, 84 and 83). The **CARVE-OUT is a SEPARATE second sentence, deferred INTO item 108** to settle
+with the retrieval design — it is NOT the disclosure. Disclosure now; carve-out with the model
+phase.]** Post-vacation / committee; the DECK phase (item 84's first ungated citizen) ships ahead
+of it. Registry: next free **109**.
+
+## DISCLOSURE v4 — RATIFIED (candidate B, provisionally-binding) — 2026-08-17
+
+Committee pass: `docs/wrizo-alpha/disclosure-v4-committee-fable.md`. **ONE sentence extending the
+ratified v3, gating the three designed counsels that read more than the standing wire — TD4 (the
+selection ask) · TR3 (the Reading) · BD4 (83's board counsel).** **Nick's word: candidate B**,
+verbatim: *"Nothing leaves your desk unasked: an ask sends your words, this page's recent changes,
+and your Bible; a counsel that reads more names it on the button and sends only that, only then."*
+**Nick's posture, verbatim:** *"It's hard to get more precise than that until I start testing it
+and see where the cracks are in the harness."* **LOCKS PROVISIONALLY-BINDING** — governs the builds
+now; live testing may amend it, and any amendment re-ratifies through the committee record,
+append-only.
+**Lock conditions:** (2) Nick's ratification — **MET**; (1) payload census confirmed by the 83 + 84
+desks against their pass files — **PENDING** (relayed to both). **On census confirmation:** TD4 /
+TR3 / BD4 UNBLOCK; the sentence enters both build briefs verbatim; disclosure **v3 → superseded by
+v4 in annotation form (v3 standing verbatim beneath)**; and per `sc2.mjs`'s precedent the sentence
+becomes a **HARNESS OBLIGATION** on each gated counsel's build ticket — its spec asserts its wire
+carries exactly what its button names, nothing more. The disclosure is a testable claim, tested.
+This is THE DISCLOSURE, distinct from item 108's carve-out (a separate second sentence).
+**→ CONDITION (1) SATISFIED — TD4 / TR3 / BD4 UNBLOCKED (Fable, 2026-08-17).** Per the 83 desk's
+mechanism confirmation and census supplement (`menus-build 8a04a3a`), the payload census is
+confirmed; the counsels **UNBLOCK**. The disclosure sentence enters both build briefs verbatim, v3
+→ superseded by v4 (v3 verbatim beneath), and the harness obligation attaches to each counsel's
+ticket. **Two carried caveats:** TR3's **ask 2 OWES one payload-naming clause** (the 84 desk's
+wordsmith) before its ticket; **BD4's scope** is restated to **board-content-beyond-base — currently
+none.** Disclosure-v4 remains provisionally-binding; live testing may amend it, append-only.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -7155,6 +7582,102 @@ authorized action was executed against an empty target set — the honest, revie
     **A CORRECTION THIS RUN FORCED, recorded at item 82:** the clean unset pass falsified
     this lane's earlier "j5 is the deterministic red" claim — `j5` and `j4` both PASS at
     unset here. Item 82 is one family of races, not a deterministic spine plus a family.
+    **SIXTH SUITE OF RECORD — GREEN AT BOTH SETTINGS. THE GATE IS MET AND THE MERGE OFFER
+    IS MADE — 2026-08-17 (SC-chain lane).** Head **`eb74835`**, `sc2-s5-memo` rebased onto
+    `main` @ `8385ffd`.
+    **→ ITEM 62 MERGED `32376b9` — AWAITING FABLE'S REVIEW (2026-08-17, chat 1, on Fable's
+    merge order).** The `eb74835` DO-NOT-MERGE marker honored-through per 77(c): all commits
+    from the marker up are records-only (apps/=0), and the merged `apps/` tree is
+    byte-identical to the stamped tip `ecd37bf` — so the stamp carries (56/56 both settings,
+    bundle `index-GZdjfpTW.js`). Zero schema; `tsc` ×2 EXIT 0. **NO DEPLOY** — P2c holds for
+    Nick's word behind Fable's review; production stays git `fbdb27e` · railway `0fdc8f94`.
+    **→ REVIEWED, GREEN — ITEM 62 CLOSED (Fable, 2026-08-17)** —
+    `docs/wrizo-alpha/sc2-review-fable.md`; VERDICT PASS (7 files, +2403/−55, zero
+    schema/server). The caret fix's mechanism was OBSERVED not predicted (a break-crossing is
+    a DOM delete+insert; the fix spends a remembered live offset ONLY on a same-session remount,
+    genuine activations fall through unchanged); the paginator is a stored-nowhere projection,
+    viewport-invariant by construction, with `applyBreakRules` carrying a termination proof
+    ("an oscillation is not a wrong page count, it is a frozen editor"). Three non-blocking OBS,
+    all self-flagged or boundary-grade: the page-number trailing period (Nick's one word), the
+    caret bottom-edge breathing room (= Part 3 item 6 of Nick's sitting agenda), and the
+    54-line-action split (noted for SC2.1). **The SC arc's remaining obligations live in item 76
+    (dissolution + bound re-derivation) and the two standing conditions on the keystroke path**
+    — item 62 itself is CLOSED. The memo's effect stays verification-owed under Amendment 1.
+    **→ OBS PAIR CLOSED — Section A rulings (Nick, live, 2026-08-17):** **R-PERIOD** — the
+    page-number's **trailing period STAYS** ("2."), Nick deferring to the trade standard the code
+    already implements (OBS: page-number period → KEEP, no change). **R-BREATHING** — the caret's
+    **flush at the band's bottom edge STANDS, zero breathing room, RATIFIED as-is** (OBS: caret
+    bottom-edge breathing room / sitting-agenda Part 3 item 6 → zero, no change). Both are now
+    ruled and the code already implements each, so neither owes a patch. The third OBS (the
+    54-line-action split) stays noted for SC2.1.
+    **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=eb74835
+    bundle=index-GZdjfpTW.js/530759b` and PARKED `SUITE RESULT: CLEAN — tree=eb74835
+    bundle=index-GZdjfpTW.js/530759b`, 56/56 each** (main's 55 + `sc2.mjs`), identical tree
+    AND bundle across halves, zero FAIL/TIMEOUT/NOVERDICT, no contamination line, committed
+    runner, rebuilt immediately before running, no `--ignore-foreign`, box verified quiet at
+    start. **`sc2.mjs` 72/72 and `sc1.mjs` 71/71 at BOTH settings** — SC2's own instruments
+    green for the fifth consecutive suite, and SC1's inherited merge-order obligation
+    satisfied at the new head.
+    **WHAT UNBLOCKED IT WAS ITEM 82 FIX (b), AND THE CHAIN IS WORTH NAMING.** The fifth
+    suite failed the gate on ONE red — `j5` NOVERDICT, parked — which fix (b) has since
+    root-caused and removed at the source (`j5` seeds through the app's seam; merged
+    `e9ea36c`). This rebase pulls that fix underneath SC2, and **the whole of item 82's
+    family is green here at both settings: `j5` 37, `j4` 24, `b2-1` 28, `fx6` 37, `th2` 42,
+    `m4` 43.** That is an observation about this head, not a closure of item 82 — `j4`,
+    `b2-1` and `fx6` remain UNATTRIBUTED and a green run is not a diagnosis.
+    **THE REBASE WAS A PURE REPLAY, and fidelity was measured rather than assumed.**
+    `--empty=keep` so the empty gate-commit survived as itself; **12/12 commits replayed,
+    ZERO conflicts; all SEVEN touched files byte-identical BLOBS pre→post.** The previous
+    rebase managed 6 of 7 because `index.css` was touched by both sides and had to
+    interleave; **main has not touched `index.css` since `6ec5a85`, so this time nothing
+    interleaved at all** — the stronger result, and it is stated with its reason so it is
+    not mistaken for extra care.
+    **THE SHA MAP (originals verbatim; no commit message was edited):** `adf7f82`→`48fa481`
+    (S0) · `94f068f`→`dc36b2e` (S0 re-issue) · **`e5b99d6`→`fd6bd7f` (S0 re-issue 2 — THE
+    FROZEN BASELINE the latency gate names)** · `f20e7af`→`8ef718c` (S1) ·
+    `ea61f13`→`801bb29` (S2a) · `f769254`→`fd9610a` (S2a.1) · `3dee058`→`9073019` (S2b) ·
+    `0dae0e1`→`22caa19` (S4) · `7c51a83`→`a609772` (S5 caret — the separable pre-memo head)
+    · `8728d34`→`fc7c18e` (the memo seam) · `acb7a0c`→`db71cd3` (the gate record) ·
+    `fd6713a`→`eb74835` (the WIP marker).
+    **ARCHIVE REF PUSHED BEFORE THE FORCE-PUSH, on the precedent this item set:
+    `origin/sc2-prerebase-archive-3` @ `fd6713a`.** The fifth suite's head is cited BY SHA
+    in item 82's own records and survived nowhere else once `sc2-s5-memo` was rewritten.
+    Verified rather than assumed: `merge-base --is-ancestor` TRUE for both `fd6713a` and the
+    frozen-baseline commit against the archive.
+    **PROVENANCE — WHICH APP WAS TESTED, and a false negative caught on the way.** Served
+    bundle `index-GZdjfpTW.js` + `index-62lZ1TCK.css`, with the two SC2-only discriminators
+    `script-sequence` and `script-page-number` PRESENT in the bundle, present in SC2's src
+    (`ScriptEditor.tsx`, `index.css`) and **ABSENT from `origin/main`'s src entirely**. The
+    first run of that check reported them absent from SC2's OWN source — a result that
+    contradicted the bundle. It was chased rather than shrugged at: the `git grep` pathspec
+    was relative to the wrong cwd, **which meant the NEGATIVE control was a false negative
+    too** and the whole check was re-run from the repo root. A discriminator that cannot
+    fail is not a control; this one was nearly published in that state.
+    **THE TIMING GATE — NOT OWED, AND NOT CLAIMED AS RE-PASSED.** The standing condition
+    (any src change touching the script keystroke path re-runs the interleaved gate) was
+    tested by measurement and is **NOT triggered**: every keystroke-path file
+    (`ScriptEditor.tsx`, `scriptPaginate`, `scriptLedger`, `scriptDoc`, `scriptText`,
+    `scriptKeys`, `scriptMetrics`, `scriptAutocomplete`, `scriptSmartText`) is BYTE-UNTOUCHED
+    by main since `6ec5a85`, and no hunk in the five files main did change
+    (`BoardEditor`, `PlacesPanel`, `persistence`, `sync`, `unbornPage`) carries a `script`
+    token on either side. **One caveat is raised rather than buried:** item 89 put
+    `persistDirty()` INSIDE `flush()`, so every debounced flush now costs an extra
+    `localStorage.setItem`. That is none of the three named surfaces and sits off a
+    keystroke's critical path, but it is a real route for typing cost to move.
+    `sc2.mjs` was therefore run under `SC2_TIMING=1` at this head anyway — **PASS 72/72 with
+    `RUNS=3`; 20-page p95 3.2ms, 5-page control p95 1.3ms, scaling ratio 2.46, run-to-run
+    spread 1.25× / 1.08×.** **What that does NOT establish, stated because the harness
+    itself warns of it:** `sc2.mjs` RECORDS these figures and asserts only correctness gates
+    (caret focused, all 240 keystrokes landed, input fired once each, all three runs
+    eligible) — **it does not assert the 2× bound**, which requires a pre-SC2 baseline
+    re-derived BACK TO BACK in the same session, and the file explicitly warns that gating
+    against a ratio recorded in another session is invalid. So this is an observation at the
+    tip, **not** a re-pass of Amendment 1's bound. The `17edc10`-era figures (1.10×; memo
+    0.84×) stand as the gate of record at the archived SHAs. **And the caveat cannot be
+    isolated by this instrument in any case** — the frozen baseline predates main's
+    `persistDirty` change, so a comparison against it would conflate SC2's cost with main's;
+    answering it properly is a main-vs-main question and belongs to whoever owns item 89's
+    surface, not to SC2's merge.
 
 63. **FX13 — the Board in the Room.** **P0 — OPENED + BUILDING, 2026-07-24
     (chat 3)**; brief `docs/wrizo-alpha/fx13-board-in-the-room-brief.md`
@@ -7995,7 +8518,10 @@ authorized action was executed against an empty target set — the honest, revie
     **REVIEWED, GREEN (2026-07-30).** Merged `e8ae17d`; review at
     `docs/wrizo-alpha/pb1-review-fable.md`; gate MET. **Merged-but-undeployed —
     rides P2b, named in its manifest.** OBS-1 (unborn-Screenplay surface flip) to
-    the next sitting. Note: main now carries `pb1.mjs`, so chat 6's suite of record
+    the next sitting. **→ ANSWERED-BY-DEFECT (2026-08-17): item 104 — Screenplay selection is
+    DEAD on an unborn page (both the New Page template icon and the Draft Structure toggle no-op
+    silently). The flip is a dead control, not a design question; fix family is the unborn
+    descriptor carrying STRUCTURE, packaged with item 87.** Note: main now carries `pb1.mjs`, so chat 6's suite of record
     at its rebased head is **52 files, not 51**.
     **DEPLOYED with P2b — 2026-07-30** (git `c266cb3` · railway `dfa03148`); rode the FX17
     SHA per the stamp law. See the P2b DEPLOY MANIFEST.
@@ -8368,6 +8894,171 @@ the P1 four (FX15, HB2-lite, M4, BG1) — Fable's desk.
 pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ever revoked,
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
+
+## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
+
+**THE DOORWAY WAVE — items 104 + 87-subset + 97 + 101's park.** Nick's word: "SHIP THE DOORWAY."
+The merged-but-undeployed set since the P2c live build (`643dd16`). Deploying the `main` HEAD
+(`42057a9`) — this records commit's own SHA, stamped below immediately after `railway up`.
+
+**New PRODUCT code since the P2c live build (`643dd16`) — apps/desktop/src, FIVE FILES (verified
+`643dd16..HEAD`, +141/−7), ZERO schema, ZERO server:**
+- item 104 · **the doorway** (the room a door opens is the room you end up in) — `PageEditor.tsx`
+  (+84), `unbornPage.ts` (+22): the `UnbornPage` dispatch asks the ROW (`pageType` outranks
+  `descriptor.kind`); prose falls through the SAME component under the SAME key (no remount, PB1
+  preserved); the structure door reuses `requestScreenplay`, guarded three ways.
+- item 87-subset · `persistence.ts` (+35): the empty case moves, the threshold rule stands
+  (`seedTypewriterDefault(!fresh && …)`); the Draft-default / `?mode=draft` is HELD (superseded by
+  the New Page Chooser, menus arc).
+- item 97 · **re-mint** — `BoardEditor.tsx` (+2), `CascadePanels.tsx` (+5): pointer cleared AT
+  DETECTION; named residual (tombstone-arrival window) recorded, post-vacation.
+- item 101 · **S0 park** — NO code (confirmed benign, feedback routed to item 96).
+- **REVIEWED GREEN** (`docs/wrizo-alpha/doorway-review-fable.md`).
+
+**Docs since `643dd16` (records only, no deployed surface):** the doorway records + review, the
+five founder rulings, item-84 lock record + hybrid + §9 (TR3 ask-2 clause), item 108, the
+disclosure-v4 committee + ratification + unblock, the SITTING #2 records + items 101–107, and this
+manifest. Confirmed: `643dd16..HEAD` touches `apps/desktop/src` in exactly the five files above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, machine-clear (the 83 desk's clearance log on record)
+— **59/59 UNSET (CLEAN) and 59/59 PARKED (CLEAN)** at `tree=42057a9 bundle=index-D8pFRr1k.js/531254b`
+— the same bundle the doorway offer stamped. `tsc` ×2 EXIT 0 (app+node); `build:web` clean; the
+guard confirmed no foreign browsers at start or mid-run (**NOT contaminated**). Item 82's family
+did NOT red.
+
+**ROLLBACK TARGET: git `643dd16` · railway `ec2b9755-1746-4b23-a3f8-e33130f984a9`** — the current
+live production build (P2c: item 82 fix (b) + SC2). Rollback is a redeploy of that tree
+(`railway up`).
+
+**DEPLOY STAMP: git `1cbda72` · railway `59d55924-f1b1-4792-a293-f834e3ad898d`** — DEPLOYED
+2026-08-21 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:34e414cb`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-D8pFRr1k.js` / `index-62lZ1TCK.css`) — the same
+content hash the suite of record stamped, so what is LIVE is exactly what was tested and reviewed
+GREEN — and `/auth/me` **401**. The prior P2c build (`643dd16` · railway `ec2b9755`) is now
+superseded as the live build; the rollback SOURCE remains git `643dd16`.
+
+**Items 104 / 87-subset / 97: DEPLOYED** (REVIEWED GREEN); **101: S0-closed benign, no code, feedback
+to item 96.** The doorway wave is LIVE — the room a door opens is the room you end up in; the
+New-Page template births in the right mode by descriptor; re-mint clears the stale pointer at
+detection. Item 82's family did NOT red; no red-suite clause invoked. Rollback ratchet is now this
+stamp. **S4 queues behind it.** Item 87's Draft-default remains HELD (New Page Chooser, menus arc);
+item 97's tombstone-arrival residual and item 108's Tutor-memory carve-out stay post-vacation.
+
+## P2c DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship P2c")
+
+**P2c — item 82 fix (b) + SC2/item 62 (the Script's paginated floor).** Nick's explicit ship
+word: "Ship P2c." The merged-but-undeployed set since the fw2 live build (`fbdb27e`). Deploying
+the `main` HEAD (`b119365`) — this records commit's own SHA, stamped below immediately after
+`railway up`.
+
+**New PRODUCT code since the fw2 live build (`fbdb27e`) — apps/desktop/src, SIX FILES (verified
+`fbdb27e..HEAD`, +1046/−46), ZERO schema, ZERO server:**
+- item 82 **fix (b)** · merge `e9ea36c` (branch `item82-fixb-j5-seam`) — `persistence.ts` (+56):
+  `j5`'s `makePage` now seeds THROUGH the app's seam, never raw storage; the seam gained an
+  optional `JournalPageSeed`, and `createJournalPage` has ZERO call sites in `src` (product blast
+  radius empty). Unblocked SC2's sixth suite. Item 100 opened alongside (the CDP port-file race —
+  harness-only, sibling of item 99).
+- item 62 **SC2** · merge `32376b9` (branch `sc2-s5-memo`; DO-NOT-MERGE marker `eb74835`
+  honored-through per 77(c)) — the Script's paginated floor: `ScriptEditor.tsx` (+419),
+  `index.css` (+119), `scriptLedger.ts` (new, +181), `scriptMetrics.ts` (+61), `scriptPaginate.ts`
+  (new, +256). The caret-across-the-break fix (mechanism observed: a break-crossing is a DOM
+  delete+insert; the remembered offset is spent only on a same-session remount) + the
+  stored-nowhere, viewport-invariant paginator with a termination proof. **REVIEWED GREEN, item 62
+  CLOSED** (`docs/wrizo-alpha/sc2-review-fable.md`).
+- Harness delta: `j5.mjs` (fix b), `sc1.mjs` / `sc2.mjs` (SC2).
+
+**Docs since `fbdb27e` (records only, no deployed surface):** the fw2 review, the fix (b) + SC2
+records + riders (item 100, the item-89 `persistDirty` ~2ms-p95 observation, item 62 CLOSED), and
+this manifest. Confirmed: `fbdb27e..HEAD` touches `apps/desktop/src` in exactly the six files above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, machine-clean — **56/56 UNSET (CLEAN) and 56/56
+PARKED (CLEAN)** at `tree=b119365 bundle=index-GZdjfpTW.js/530759b` — the same bundle SC2 stamped
+at `ecd37bf` (the deploy HEAD's `apps/` is byte-identical to the SC2 stamped tree, which already
+carried fix b). `tsc` ×2 EXIT 0 (app+node); `build:web` clean; the guard confirmed no foreign
+browsers at start or mid-run (**NOT contaminated**). Item 82's family did NOT red (`j5` 37, `j4`
+24, `b2-1` 28, `fx6` 37, `th2` 42, `m4` 43 green here — an observation about this head, not a
+closure; `j4`/`b2-1`/`fx6` remain UNATTRIBUTED).
+
+**ROLLBACK TARGET: git `fbdb27e` · railway `0fdc8f94-c735-443b-8b3e-395e5b647c58`** — the current
+live production build (Ship 2 / fw2). Rollback is a redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `643dd16` · railway `ec2b9755-1746-4b23-a3f8-e33130f984a9`** — DEPLOYED
+2026-08-17 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:9fe46e80`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-GZdjfpTW.js` / `index-62lZ1TCK.css`) — the same
+content hash the suite of record stamped, so what is LIVE is exactly what was tested — and
+`/auth/me` **401**. The prior fw2 build (`fbdb27e` · railway `0fdc8f94`) is now superseded as the
+live build; the rollback SOURCE remains git `fbdb27e` (redeploy that tree via `railway up`).
+
+**Item 82 fix (b) + item 62 (SC2): DEPLOYED** — the j5 seam and the Script's paginated floor are
+LIVE. Item 62 is CLOSED (reviewed GREEN); item 82's fix (b) is deployed with its `j5` red removed
+at the source (the family's other reds — `j4`/`b2-1`/`fx6` — remain UNATTRIBUTED, undeployed-code
+notwithstanding, and a green run is not their diagnosis). Item 82's family did NOT red in the
+suite of record; no red-suite clause was invoked. Item 100 (CDP port-file race) stays OPEN,
+harness-only, for the harness floor's owner. Rollback ratchet is now this stamp.
+
+## SHIP 2 (fw2) DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship 2")
+
+**SHIP 2 — fw2, items 91+92 (the boards work).** Nick's explicit per-package ship word: "Ship 2."
+Merged `a18115c` (Nick's post-vacation word) + formal merge order `0dc6e75` (fw2-offer @
+`641e946`). Deploying the `main` HEAD (`bd4cdcb`) — this records commit's own SHA, stamped below
+immediately after `railway up`.
+
+**New PRODUCT code since the P0 live build (`c23c380`) — apps/desktop/src, TWO FILES, ALL fw2,
+nothing else (verified `c23c380..HEAD`, 118/−5):**
+- item 91 · **the board's Page door** — `BoardEditor.tsx`. An unpaired board's PAGE opened the
+  Wrizo landing (`backTo` = `/` for a system board); it now opens a New Page linked back, split
+  by board kind — PIN for a user board (authored membership), MEMBERSHIP for a system board
+  (derived), Trash keeps its exit.
+- item 92 · **the card that survives** — `BoardEditor.tsx` + `unbornPage.ts`. A New-page Card
+  written by `pinPageToBoard` was erased by BoardEditor's stale local `boxes` on unmount; the pin
+  now appends to `boxesRef.current` (never a store read as local truth), surviving the unmount.
+- **ZERO schema, ZERO server.** Merge `a18115c` (fw2-offer @ `e281b73`, Nick's word) + `0dc6e75`
+  (fw2-offer @ `641e946`, Fable's formal order — the addendum's bundle-identity proof).
+
+**Docs since `c23c380` (records only, no deployed surface):** the item 83/84 menus-arc design
+records + the item-84 lock sheet (on its own branch, unmerged), the fw2 offer + addendum +
+Fable's ratifications, the SHIP 2 park→unpark→merge ledger, the vacation + lane-status handoffs,
+and this manifest. Confirmed: `c23c380..HEAD` touches `apps/desktop/src` in exactly the two files
+above; item 87 is NOT here (built-unverified on `fw2-boards-and-defaults`).
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs` (item 77(c) stamp), BOTH
+HARNESS_PARKED settings, read to completion, machine-clean — **55/55 UNSET (CLEAN) and 55/55
+PARKED (CLEAN)** at `tree=bd4cdcb bundle=index-Cib2nzSw.js/525306b` — **byte-identical to the fix
+lane's 2026-08-04 stamp** (`tree=dad280e`), the docs-only-carry proven end to end. `tsc` ×2 EXIT 0
+(app+node); `build:web` clean; the guard confirmed no foreign browsers at start or mid-run (**NOT
+contaminated**). `item9192.mjs` 16 checks (10/16 red pre-fix); item 82's family did NOT red.
+
+**ROLLBACK TARGET: git `c23c380` · railway `ee0a9bf2`** — the current live production build (the
+P0 wave: offline-strand self-heal + filing validation). Rollback is a redeploy of that tree
+(`railway up`).
+
+**DEPLOY STAMP: git `fbdb27e` · railway `0fdc8f94-c735-443b-8b3e-395e5b647c58`** — DEPLOYED
+2026-08-17 (`railway up --ci` from the primary checkout `c:/Users/nickh/writer-studio`, item 98
+guard status-verified; writer-studio / production / writer-studio-app; deployed image
+`sha256:a3d88259`). Verified LIVE at `https://writer-studio-app-production.up.railway.app`:
+`/healthz` **200**, the new bundle served (`index-Cib2nzSw.js` / `index-DfTiVdTQ.css`) — the same
+content hash the suite of record stamped, so what is LIVE is exactly what was tested — and
+`/auth/me` **401**. The prior P0 build (`c23c380` · railway `ee0a9bf2`) is now superseded as the
+live build; the rollback SOURCE remains git `c23c380` (redeploy that tree via `railway up`).
+
+**Items 91 / 92: GREEN + DEPLOYED** — fw2 (the boards work) is LIVE. 91 (the board's Page door
+opens a linked New Page, not the Wrizo landing) and 92 (the New-page Card survives BoardEditor's
+unmount) were the sitting's board P1s. Item 82's family did NOT red in the suite of record; no
+red-suite clause was invoked. Item 87 remains built-unverified on `fw2-boards-and-defaults`.
+**→ POST-MERGE REVIEW (Fable, 2026-08-17): items 91, 92 → REVIEWED, GREEN** —
+`docs/wrizo-alpha/fw2-review-fable.md`; VERDICT PASS (7 code files, +593/−21, zero schema/server).
+92: the pin is APPENDED to the component's own live `boxes` (never assigned from the store);
+`boxesRef` set directly because the door's `navigate` unmounts before any further render;
+`pinPageToBoard` keeps sole ownership of what a pin is. 91: the door's split is argued not assumed
+— USER→PIN on the address (rides the binder), SYSTEM→MEMBERSHIP (A16), TRASH keeps the exit; the
+descriptor's dead-code pin field resolved as STRUCTURAL; reload-safety inherited from PB1 by
+construction, and S2(c) proves the door writes NOTHING. Flake list stays empty.
 
 ## P0 WAVE DEPLOY MANIFEST — 2026-08-03 (chat 1, on Nick's "Ship it"; Fable's amended checklist)
 
@@ -9036,6 +9727,133 @@ sitting closes them.
     in the fifth suite; that is an absence of evidence and nothing more. They are not cleared,
     not parked, and not to be cited as fixed by fix 1 — the family does not inherit the
     species' verdict in either direction. **`j5` is fix 2's target.**
+    **→ FIX (b) BUILT + VERIFIED; MERGE OFFERED — 2026-08-17 (SC-chain lane). Branch
+    `item82-fixb-j5-seam`, code commit `bc6f53c`, parented at `main` @ `7abd1e7` (the
+    fw2 merge `a18115c` beneath it).** **→ MERGED `e9ea36c` (2026-08-17, chat 1, on
+    Fable's merge order + Nick's "Merge it"): the merged `apps/` tree is BYTE-IDENTICAL to
+    the stamped `bc6f53c` (55/55 both settings, bundle `index-Ch4juzEe.js`); ITEM 100
+    opened, registry next free 101. NO DEPLOY — merge on green; fix (b) rides the next
+    ship (P2c) on Nick's word.** `j5`'s `makePage` now seeds THROUGH
+    `window.wrizoCreateJournalPage`, so the row enters the cache and no flush can erase
+    it — the mechanism REMOVED, not out-timed, which is what Fable's (b)-over-(a) ruling
+    asked for. The seam gained an optional `JournalPageSeed` (`id` / `text` / `createdAt`
+    / `strokes`) — exactly the four things it minted for itself and `j5` therefore could
+    not use. **CENSUS, and it is why this is small: `createJournalPage` has ZERO call
+    sites in `apps/desktop/src`** — reachable only through the window seam (the two other
+    mentions are comments naming it as Catch's model). The product blast radius is EMPTY,
+    not merely small. Every field optional, every fallback the old expression, `strokes`
+    set only when seeded so an unseeded row stays byte-identical. **`updatedAt` is
+    deliberately NOT seedable and not faked** — `upsert` stamps it, and neither of the
+    file's orderings reads it (`notebookKey` is `orderIndex ?? createdAt`; the Spread's
+    "Newest" lens sorts `createdAt`), so ordering is unchanged by construction. Zero
+    schema, zero server, zero deps.
+    **THE MECHANISM RECORD GAINS ITS TRIGGER — the append Fable ordered, and the piece the
+    paragraphs above named only as "the next flush of that collection."** The flush is not
+    incidental to this file's navigation; `/journal` fires it two ways. (1) MOUNTING it
+    mints/reconciles the Journal system board (`JournalBoardGate` →
+    `getOrCreateSystemBoard` → `saveJournalEntry` → `scheduleFlush`), a 300ms debounced
+    write of `journalEntries`. (2) **UNMOUNTING it calls `flushNow()` UNCONDITIONALLY —
+    the bare call in the effect's cleanup, OUTSIDE the
+    `boxesRef.current !== lastSavedRef.current` guard that gates the `visibilitychange`
+    path immediately above it; `BoardEditor.tsx:983` at tree `bc6f53c`.** Cited by ANCHOR
+    as well as by line on purpose: it was `:982` when this lane measured it on 2026-08-03,
+    and fw2's merge moved it one line (a single import at `BoardEditor.tsx:11`) without
+    touching the effect. A line number is measured at a head and does not survive an edit
+    above it. `flush(name)` writes ONE collection; `flushNow()` writes EVERY collection.
+    Both serialize the cache WHOLESALE over rows the cache has never held.
+    **THE ARITHMETIC, which is why the item flipped on an unchanged tree.** `app.goto`
+    sleeps 200ms (`runtime-verify.mjs`); the mount's flush lands at 300ms; and
+    `scheduleFlush` does **NOT re-arm** (`if (flushTimers[name] !== null) return` — the
+    timer is 300ms from the FIRST write, not the last). A fixture that seeded raw and then
+    navigated to `/journal` therefore had roughly **80ms** to get its reload in. Win that
+    race and the pages survive; lose it and they are erased by a write the fixture never
+    made. **That one window produces BOTH recorded symptoms, and the amplitude is simply
+    how many rows had already been rehydrated into the cache when the flush landed** —
+    A–D erased at the first navigation gives the empty Spread and "No loose pages yet"
+    (the 2026-07-25 sighting); the same window one slice later takes E alone, with A–D and
+    G,H already cached, giving the POPULATED Spread missing exactly `j5-src-7` at
+    `j5.mjs:482` (the fifth suite of record). **The "empty vs partial is one mechanism at
+    two amplitudes" hypothesis recorded above is CONFIRMED, and the amplitude now has a
+    CAUSE** rather than being a description of it.
+    **THE FILE'S THREE OTHER RAW WRITES WERE CHECKED AND MOVED, under the seeding law's own
+    clause** (*"any edit to one of the 47 raw-writing harness files checks that file's own
+    exposure before it lands"*). All three were exposed; all three now seed from the Desk
+    and reload BEFORE navigating (the original M1 ordering rule), with every navigation
+    they performed KEPT and moved after the reload, and nothing asserted changed. **The
+    star/tag patch was not optional:** post-fix, A–D are safe in the cache but that patch's
+    `starred`/`tags` would have become the flush's NEW casualty — fix (b) would have traded
+    a page-loss race for a lens-flag race, and a seam page carrying a raw amendment is the
+    half-migrated shape the law forbids. The StoryPlan seed is narrower and recorded as
+    such (a scheduled `flush(name)` writes one collection, so the board's flush never
+    threatened `writer-studio-story-plans`; only a `flushNow()` does).
+    **TWO COMMENTS FALSIFIED AND CORRECTED IN PLACE** (prose, not committed assertions — no
+    park owed): *"Navigate away from the entry view FIRST"* (there has been no entry view
+    since FX14 S2, and the `/journal` it fled to is the hazard), and a `waitFor` labelled
+    **`'Journal Board (safe pre-seed landing)'`** — which named the hazard as the refuge,
+    and under which the board seed had been running inside a ~40ms margin. The B1 park
+    sweep's own navigation is KEPT; only the seed steps off it.
+    **`j5.mjs`'s `makePage -> wrizoCreateJournalPage` COMMENT IS TRUE AGAIN, BY
+    CONSTRUCTION** — annotated rather than silently repaired, so the record shows it was
+    false from FX14 S2 until this fix, that item 82's own diagnosis caught it, and that the
+    fix moved the CODE back rather than weakening the CLAIM.
+    **VERIFICATION (stamped, per 77(c)): DEFAULT `SUITE RESULT: CLEAN — tree=bc6f53c
+    bundle=index-Ch4juzEe.js/525431b` and PARKED `SUITE RESULT: CLEAN — tree=bc6f53c
+    bundle=index-Ch4juzEe.js/525431b`, 55/55 each, zero FAIL/TIMEOUT/NOVERDICT, no
+    contamination line, committed runner, rebuilt immediately before running, no
+    `--ignore-foreign`.** Identical tree AND bundle across both halves. `j5` PASS **37**
+    in both. Standalone repeats scaled to the observed rarity per DF1.1's law: **8/8 unset
+    + 8/8 parked at this head, plus 11/11 unset + 10/10 parked at `85a094c` — 37
+    consecutive standalone runs across both heads, zero verdict failures.**
+    **THE PRE-REBASE STANDALONES CARRY, AND THE CARRY IS MEASURED RATHER THAN ARGUED**
+    (Fable's ruling, 2026-08-17): `git diff 85a094c bc6f53c -- apps/desktop/src/store/
+    persistence.ts apps/desktop/scripts/harness/j5.mjs` returns **EMPTY (0 lines)** —
+    fix (b)'s two files are byte-identical across the rebase, so fw2 never touched this
+    mechanism and the earlier rarity evidence describes the same software path. The 16 runs
+    at the new head are additional, not a replacement; the carry does not have to bear the
+    claim alone.
+    **A FIRST STAMPED PAIR WAS DISCARDED RATHER THAN CITED, and it was GREEN.** It ran at
+    tree `85a094c` (**54/54 CLEAN both settings**, `j5` PASS 37 both). **Sequence, stated
+    exactly because the ruling that reached this lane assumed a different one:** the pair
+    had already RUN TO COMPLETION before fw2's merge was detected — the discovery came from
+    the fetch performed immediately after reading its stamps, so there was no running sweep
+    left to abort and none was aborted. What was spent is ~90 minutes of box time whose
+    output cannot be cited; what was NOT spent is any evidence claimed at a stale head. That
+    stamp named a tree fw2 was not in — the unfalsifiable identity 77(c) exists to close —
+    so it is recorded here as a green observation and is **not** the offer's evidence.
+    **Re-running was not ceremony: fw2 changed `BoardEditor.tsx` (+92), the very surface
+    this mechanism turns on, and the rebuild proves the software genuinely differed**
+    (bundle `index-Cj7zbELe.js` → `index-Ch4juzEe.js`). Checked before re-running rather
+    than assumed: fw2's hunks land at lines 11, 1160 and 2184 and leave the unmount cleanup
+    intact, so the mechanism stands and only its citation moved.
+    **ONE BOOT CRASH IS RECORDED RATHER THAN SWALLOWED, because the known-flake list is
+    EMPTY and "it passed on the retry" is a retired clearance argument.** The first
+    standalone attempt of the day died in 2s BEFORE any check ran:
+    `EBUSY … open '…\ws-runtime-verify-<pid>\DevToolsActivePort'`. The mechanism is legible
+    in shared infra and is NOT this fix's: `readCdpPort` (`runtime-verify.mjs:281-289`)
+    polls `existsSync` and then calls `readFileSync` **with no `try`/`catch`**, so a read
+    landing while the browser still holds that file dies instead of polling again. It is a
+    DIFFERENT species from DF1.1's stale-profile-dir root cause (that one is a fresh process
+    finding an OLD port file; this is a fresh dir whose file is mid-write), and the one-line
+    cure is obvious — but `runtime-verify.mjs` is shared infra, and patching it
+    mid-verification would taint this lane's own provenance. **Recorded unfixed and
+    unclaimed; a ticket is owed to whoever owns the harness floor.** It did not recur in 37
+    subsequent standalone runs or in any of the four sweeps. **→ OPENED AS ITEM 100 on
+    Fable's ruling (2026-08-17); see its own section in this ledger's top matter. It is NOT
+    a member of item 82's family** — it produces a boot crash with a stack trace and never a
+    check verdict, so it cannot be a hidden explanation for any of this item's reds.
+    **SCOPE HELD.** The star/tag patch and the seed Board row are **still raw writes** —
+    neither has a seam to migrate to (`starred`/`tags` are an AMENDMENT to an existing row
+    and no `wrizo*` seam exposes one; the seed Board is a `pageType:'board'` page with
+    pre-seeded `boxes`, and `createBoardPage` is neither exposed nor takes boxes).
+    Authoring those seams is **item 85 phase 2's** work and is not smuggled in here. The
+    census is NOT re-derived — chat 6's 47-of-52 keeps its caveat verbatim; this build
+    qualifies exactly one file. **`j4`, `b2-1` and `fx6` STAY UNATTRIBUTED** — `j4` uses the
+    identical raw vehicle with the CORRECT ordering (reloads at `j4.mjs:68` before
+    navigating), so this mechanism still does not explain it, and it inherits nothing from
+    this fix in either direction. **NO PARK IS OWED:** every check name preserved verbatim,
+    nothing weakened, count unchanged (37 live + 3 parked).
+    **WHAT THE GREEN PAIR DOES AND DOES NOT DO.** It closes `j5`'s attributed mechanism —
+    the one member fix 2 proved — and nothing else. **It does not close item 82.**
 
 85. **The raw-write remediation — harness seeding migrates to the app's seams.**
     **OPENED — 2026-08-01 (chat 6), on Fable's word, from item 82 fix 2's proven
@@ -9201,6 +10019,246 @@ sitting closes them.
     carry it, which is exactly the seam Nick's item-91 verdict asks for ("a New Page
     carrying the board's binder/pin descriptor via `unbornHref`"). Building 91's descriptor
     is what would make 92's door able to say "born pinned here" in one act.
+87. **The New Page's defaults — a ruled default AMENDED, not flipped.** **P1 (S3) —
+    BUILT, `tsc` CLEAN, ***NOT VERIFIED*** — 2026-08-03 (fix lane, wave 2). DO NOT MERGE
+    with the 91+92 wave.** Fable's box schedule closed the browser window before
+    `item87.mjs` could run even ONCE: there is no harness result, no falsification run and
+    no suite, so under "stamps on every claim" this item has no claim to make. It waits on
+    this branch, in its own commit, for a window. Reclassified on 2026-08-03 as a
+    REVERSAL of a ruled default owing a full pass with parked assertions; this is that
+    pass, and the parks turned out to be none — which is a finding, not a shortcut.
+    **CLAUSE 1 — "New Page lands in Draft," built ADDITIVELY (Fable's ruling 4).** The
+    obvious patch — flip PageEditor's default so a loose-origin page opens in Draft —
+    would have REVERSED **CD1 S8 (A7)**, which opens loose pages in Free Write on purpose
+    to match the front-door posture, and which **Arrival's own Write door rides on**. A
+    New Page and the Write door produce the SAME loose-origin surface, so origin cannot
+    tell them apart; only the DOOR knows which it is. So the descriptor gains
+    `mode` (`?mode=draft`) and **the door declares the room it opens**: `PagePanel`'s New
+    Page and the board→Page door say Draft, every silent door keeps today's behaviour
+    byte-for-byte, and CD1 S8 stands UNREVERSED. The writer's own remembered per-page
+    mode still outranks the door — a door's opinion is about a page that does not exist
+    yet, so it can never overrule a page the writer has already set. `item87.mjs` S1(c)
+    is the CONTROL that proves Arrival's Write door was not collateral damage.
+    **CLAUSE 2 — "Free Write hides Structure presets": ASSERTED, NOT FIXED.** The S0 read
+    found it already true — PageEditor hands the sliver `kind: 'freewrite'` in Free Write
+    (`PageEditor.tsx:633-653`) and `Sliver.tsx:346` renders the Structure section only
+    under `content.kind === 'draft'`. Writing a fix for a clause that already holds would
+    have been a change with no defect under it and a green check proving nothing. S2 locks
+    the behaviour in from BOTH sides (absent in Free Write, still present in Draft) so a
+    later sliver change cannot quietly undo it. **The clause did not reproduce; recorded
+    rather than silently "fixed."**
+    **CLAUSE 3 — "typewriter off on fresh pages," an AMENDMENT to FX2 S2 at exactly one
+    point.** FX2 S2 ruled "Draft opens with typewriter ON unless the page already holds
+    10+ line-equivalents," reasoning that the line-following fade helps someone starting
+    and hinders someone editing. An EMPTY page seeds 0 line-equivalents, so it fell on the
+    ON side **by arithmetic rather than by intent** — and a page with nothing in it has no
+    lines to follow, which is the state Nick objected to. Only the empty case moves; the
+    threshold rule is untouched wherever it still applies, asserted directly (S3(b): a
+    ~3-line Draft page still opens ON) and independently proved by `fx2.mjs`'s own
+    unchanged ~3-line check.
+    **PARKS: NONE OWED — and every candidate was checked one by one rather than assumed.**
+    Two structural reasons. (i) **Free Write never seeds:** `PageEditor` calls
+    `seedTypewriterDefault` ONLY when the opening mode is Draft, so a fresh Free Write
+    page takes the global default and is untouched by clause 3 — that covers `fx2.mjs`
+    (both halves of "a fresh Free Write page opens with typewriter ON"), `hb2.mjs`
+    ("Open with NO last surface degrades to a fresh Free Write page ... typewriter on")
+    and `b1.mjs`'s cross-reference. (ii) `fx1.mjs`'s "a fresh prose page has typewriter ON
+    by default" runs on a MANUSCRIPT chapter, which opens in Free Write by the `pageType`
+    branch — case (i) again. And clause 1 parks nothing **because it is additive**:
+    `ab3.mjs`/`cd1.mjs`'s "origin:'loose' opens in Free Write by default" records stay
+    literally true. **Had this been built as the flip it first looked like, all of those
+    would have needed parking — the empty park list is evidence the shape was right.**
+    **A GAP FOUND BY READING, BECAUSE RUNNING WAS UNAVAILABLE.** `modeKey` is written
+    ONLY by `switchMode` (`PageEditor.tsx`), i.e. only on an explicit choice — so the
+    door's Draft was never persisted. The descriptor lives in the ADDRESS and birth
+    rewrites the address to `/page/:id`; the row is loose-origin; so the NEXT visit would
+    fall through to CD1 S8's rule and reopen the writer's Draft page in **Free Write**.
+    "New Page lands in Draft" would have been true exactly ONCE. Closed by persisting the
+    door's choice once the page is a ROOM (`!unborn`) — which keeps PB1 intact, since an
+    abandoned door still writes nothing and a reload mints a fresh unborn id (persisting
+    earlier would litter localStorage with keys for pages that never existed). The
+    `saved` guard means it can never overwrite a choice the writer has made. **This is
+    the kind of defect a harness run finds; a careful read found it instead, which is
+    what a browser freeze leaves available.**
+    **VERIFICATION — DONE, 2026-08-17 (the doorway ship). 8/8 GREEN; 4/8 RED against the pre-fix
+bundle.** `scripts/harness/item87.mjs` ran for the FIRST TIME on this date, 13 days after the
+code was written. Clause 1 (S1 a/b/d) and clause 3 (S3a) are red pre-fix; both CONTROLS pass on
+BOTH builds — Arrival's Write door still opens Free Write (CD1 S8/A7 unreversed, not collateral
+damage) and a Draft page that already holds work still opens typewriter-ON (FX2 S2 amended at the
+EMPTY case only).
+**CLAUSE 2 IS NOW PROVEN NON-REPRODUCING BY MEASUREMENT, not by reading.** S2 passes on the
+pre-fix bundle too — Free Write already showed no Structure presets. The 2026-08-03 call to
+ASSERT it rather than "fix" it was right, and is now backed by a measurement instead of an
+argument.
+**THE FIRST RUN FOUND A FIXTURE BUG IN THIS FILE — which is exactly why "BUILT, NOT VERIFIED"
+was the honest label and not a formality.** S3(b) seeded its page with a RAW `localStorage`
+read-modify-write, which is precisely the seeding race **AGENTS.md's own harness law forbids**:
+`wrizoCreateJournalPage` writes the CACHE and flushes on a ~300ms debounce, so the raw write
+clobbered the row, the page was GONE after the reload, and the run landed on Arrival and timed
+out with NO verdict. Written during the browser freeze and never executed, so nothing caught it
+for 13 days. **Repaired by seeding through the app's own write path** (type one short sentence —
+1 line-equivalent, the same side of the 10-line threshold the original three lines tested), and
+the check's name was corrected to match what it now measures rather than left describing a
+fixture that no longer exists.
+**→ SCOPE CHANGED BY NICK — 2026-08-17 (Fable relay, DOORWAY BRIEF ADDENDUM).** Nick amended
+    the DESIGN: **clause 1 (the Draft-default door) is SUPERSEDED** by a New Page chooser coming
+    via the menus arc. It is **HELD, not deleted** — the built work stays on
+    `fw2-boards-and-defaults`, and its four assertions PARK in `item87.mjs` with records
+    byte-frozen. **A superseded DESIGN parks exactly as a superseded ruling does**; there is no
+    live successor named, because the successor is a design that does not exist yet.
+    **WHAT SHIPS from item 87 in the doorway wave: clause 3 (typewriter OFF on a fresh page —
+    Nick's sitting verdict, untouched by the amendment) + clause 2's assertion.** The descriptor's
+    `mode` field, `PageEditor`'s door-mode read and its persistence effect, and the two doors that
+    declared `?mode=draft` are all removed from the shipping subset; `structure` (item 104) is
+    unaffected and stays.
+    **THE 8/8 VERIFICATION STANDS AS EVIDENCE FOR THE WHOLE BRANCH** (Fable's ruling), including
+    the held clause — it is what proves the held work is sound rather than abandoned. The shipping
+    subset re-stamps at 4 live checks + 4 parked.
+    **ONE FINDING FROM CLAUSE 1 IS OWED FORWARD TO THE CHOOSER, and is parked with it rather than
+    lost:** a door-made choice that is never persisted is true exactly ONCE, because birth rewrites
+    the address away. Whatever the menus arc builds will meet that same wall.
+91+92. **The board's Page door, and the card that survives.** **P1+P1 (S11+S12) — BUILT
+    + VERIFIED — 2026-08-03 (fix lane, wave 2).** One fix, because one S0 proved one
+    subject: a page made FROM a board must end up linked TO that board, and stay linked.
+    **S0 CORRECTION, append-style — the entry above stands, this amends it (Fable's
+    ruling 1).** That entry says the stale-boxes erasure fires "on the very `navigate`
+    that door performs." **Too strong.** `lastSavedRef = useRef(boxes)`
+    (`BoardEditor.tsx:741`) is initialized to the SAME array as `boxes`, so on a board
+    with no local edit the unmount guard `boxesRef.current !== lastSavedRef.current` is
+    FALSE and the stale write never happens. The erasure requires an **outstanding
+    unsaved edit inside the 2000ms autosave window** (`AUTOSAVE_MS`). That is not a
+    contrived race — it is a writer's ordinary rhythm: place a card, and within two
+    seconds reach for New Page Card. **The first draft of `item9192.mjs` asserted the
+    erasure on a CLEAN board and PASSED against the pre-fix bundle** — proving nothing,
+    and saying so. Staging the real precondition turned it red exactly as it should:
+    `pins=[]` with `kinds=["text"]`, the stale array writing back the plain card and
+    nothing else.
+    **THE STAGED CATCH — why staging exists.** Reproducing that precondition also
+    falsified THIS LANE'S OWN FIRST FIX. The first version assigned the store's array as
+    local truth (`setBoxes(updated.boxes)`). But at the moment that door is used the
+    STORE is a strict subset of what the writer sees — the diagnostic printed
+    `boxesInStore = []` while the board displayed a card — so that fix would have
+    preserved the pin and **silently discarded every unsaved card on the board**. One
+    loss traded for another, and it would have shipped green against a clean-board
+    scenario. **RATIFIED SHAPE (Fable):** append the pin to `boxesRef.current`, never a
+    store read as local truth — "this component's own live boxes, not a fresh store
+    read," in the deck-wizard comment's own words (`BoardEditor.tsx:665-676`, the law
+    this door reached around). `S1b (c)` now asserts the unsaved card survives too.
+    `pinPageToBoard` still BUILDS the box (it owns stacking placement, the idempotent
+    already-pinned check, the self-pin/system-board guards); only the telling-the-
+    component half was missing. `boxesRef.current` is assigned directly, not merely via
+    `setBoxes`, because it is assigned during RENDER and this handler batches its update
+    with a `navigate` that unmounts — there may be no further render, and the unmount
+    guard reads the REF. `lastSavedRef` is deliberately left alone so that guard still
+    writes the merged array on the way out.
+    **ITEM 91 — reproduced verbatim.** On the Journal board, PAGE → gave `hash=#/`: the
+    Wrizo landing, exactly Nick's S11. `backTo` is `'/'` for a system board
+    (`BoardEditor.tsx:1678`), so the Board's one universal control ejected the writer out
+    of the room. CD4 S1 reasoned an exit was honest for a permanently-unpaired board;
+    **Nick overruled it**, and this is the successor.
+    **THE KIND-SPLIT (RATIFIED, Fable's ruling 2) — "auto-linked back" is not one
+    thing, and getting it wrong is invisible until a card vanishes:** a **USER** board's
+    membership is AUTHORED, so the link is a PIN carried on the descriptor (`?pin=`) and
+    applied by `birth()`, with the board's binder riding along (Nick's "binder/pin
+    descriptor"); a **SYSTEM** board's membership is DERIVED and never authored (A16),
+    and `reconcileSystemBoard` DELETES any pin whose page does not qualify — a pin there
+    would be erased on the next reconcile, which is item 92's own defect — so the honest
+    link is MEMBERSHIP (Journal takes journal-origin, the Shelf takes loose, and the
+    board adopts it by itself); **TRASH** has no creatable membership and keeps the old
+    exit, named rather than left to be rediscovered.
+    **THE DEAD SEAM IS NOW LIVE.** `UnbornDescriptor` gains `pinBoardId`, serialized as
+    `?pin=`; `birth()` reads `opts.pinToBoardId ?? d.pinBoardId`, so all four existing
+    `birthWith` callers are UNTOUCHED and still inherit it. The pin rides the ADDRESS, so
+    it survives a reload of the unborn surface — a page opened from a board, left, and
+    returned to is still born pinned to that board. The door itself writes nothing: PB1
+    survives item 91 (asserted, S2(c)).
+    **VERIFICATION — `scripts/harness/item9192.mjs`, 16 checks, PROVEN TO BITE:** 10/16
+    FAILED against the pre-fix bundle, 16/16 with the fix. Two CONTROLS pass on both
+    builds and are labelled as such — the clean-board case (S1, which is why the first
+    draft proved nothing) and Trash's preserved exit (S4) — so the file cannot be
+    satisfied by a change that simply rewires every door.
+    **PARKS — item 91 reverses a ruled default (CD4 S1), so assertions PARK with
+    originals quoted and successors named, never silently flipped. THREE files, not
+    two.** `b2.mjs`'s Shelf backTo check is re-pointed live and parked **generation 2**
+    (its CD4-era park text quoted whole inside the new record name); `bm1.mjs`'s "on an
+    UNPAIRED board travels to the FX10 named return (leaves the board)" is parked with
+    its record byte-frozen — genuinely falsified, and for the right reason: the new
+    address CONTAINS the board id as `?pin=`, so the writer no longer leaves the board
+    behind, they take it with them. **`cd4.mjs` was the one this lane MISSED** on its
+    first sweep (a grep for the door selector found b2 and bm1; cd4 asserts the same exit
+    TWICE — the Shelf cold-load path and the unpaired-loose path) and its park section
+    was documented as "an empty no-op by design," so it had no `pok` scaffolding at all.
+    **The full suite is what found it**, at `[14/55] NOVERDICT` — the argument for
+    running the whole suite rather than the files you think you touched. All three parked
+    sections re-verified GREEN (b2 4/4, bm1 2/2, cd4 2/2, item9192 1/1).
+    **TOOLING NOTE, learned the expensive way and worth a standing habit:** stopping a
+    suite mid-run (`TaskStop`) ORPHANS its harness browsers, and the next run — ANY
+    lane's — is then refused by the dirty-machine guard. `run-suite` self-heals only its
+    OWN profile dir on the way in, so nothing reaps another run's leftovers. Recovery
+    stayed lawful and is the pattern to reuse: the profile dir encodes the launching node
+    PID (`ws-runtime-verify-<pid>`), so the 9 orphans were all traced to owner `25312`,
+    **confirmed dead** — belonging to no live run, therefore not another lane's in-flight
+    work — and killed BY EXACT PID. Never `--ignore-foreign`, never a by-name sweep.
+    Cheaper still: let a doomed run finish.
+    **SUITE — unparked `55/55` CLEAN**, `tree=e519854+7dirty
+    bundle=index-Cib2nzSw.js/525306b` (`item9192.mjs :: PASS (16 checks)`), plus `tsc`
+    clean. **PARKED: `54/55`, NOT CLEAN — one NOVERDICT (`j4.mjs`), and this lane is NOT
+    clearing it.** `j4.mjs` threw `SecurityError: Failed to read the 'localStorage'
+    property from 'Window'`. **The known-flake list stays EMPTY because the mechanism is
+    NAMED, not excused:** `j4.mjs`'s PARKED block calls `localStorage.clear()` as its
+    FIRST act, before any navigation — the only fixture in the suite that does — and
+    `withHarness` does not navigate, it LAUNCHES the browser at `${base}/#/`
+    (`runtime-verify.mjs:675`). Until that initial load commits, the document is still
+    `about:blank` and localStorage on it throws exactly this. Every other fixture
+    (`freshDesk`, everywhere) navigates first. **Pre-existing and untouched by this diff**
+    — nothing in this wave goes near `j4`'s subject — and the UNPARKED run of the
+    IDENTICAL bundle had `j4` green minutes earlier, which is the signature of a race
+    rather than a product change. **Fixed here** by navigating first, matching every other
+    fixture; **that fixture fix is itself UNRUN** (the box schedule closed the window).
+    **So the parked stamp for 91+92 is OWED, not claimed** — both settings get re-run the
+    moment a window opens, and the merge offer says so rather than presenting a half-stamp
+    as a whole one.
+    **↑ THE OWED STAMP IS NOW PAID — 2026-08-04, post-deploy-stamp, slot 1.** Re-run on a
+    CLEAN, NAMED tree (branch `fw2-offer` @ `dad280e`, item 87's code deliberately absent
+    so the stamp describes exactly the software being merged): **unparked `55/55` CLEAN
+    and parked `55/55` CLEAN, both `tree=dad280e
+    bundle=index-Cib2nzSw.js/525306b`** — no `+Ndirty` suffix, and the SAME asset hash as
+    the earlier runs, which is itself the proof that item 87's code is not in the offered
+    bundle. **`j4.mjs` PASSED parked**, so the navigate-first fixture fix is no longer
+    unrun — the first-parked-act race is closed by exercise, not by argument.
+    **ONE INCIDENT ON THE WAY, ATTRIBUTED AND NOT INHERITED:** the menus lane reported
+    (record: `docs/menus/incident-2026-08-04-s4.md`) that an S4 cleanup error killed a
+    browser belonging to this lane's first parked attempt. Its `e1` leg was left with a
+    live node child and no browser — it would have hung to timeout and read red. **That
+    run was ABANDONED and restarted rather than reported with an excused red**: chat 1
+    merges on these stamps, and "54/55 with one red we agreed to disregard" is a worse
+    thing to merge on than a clean 55/55. The restart cost the same wall-clock as waiting
+    for the bad result and re-running one leg. **`e1` passed on the clean re-run**,
+    confirming the red would indeed have been spurious. Stopping that run orphaned
+    NOTHING (its browser was already dead); the full owner-liveness check was run anyway
+    rather than assumed.
+    **REGISTERED BY FABLE (2026-08-03):** the honest half-stamp ships as described; this
+    diagnosis is entered as the **first-parked-act race species** (a fixture touching
+    `localStorage` before its first navigation, racing the browser's launch load). Two
+    boundaries recorded WITH it, because a species is only useful if its edges are drawn:
+    **(a) THE b2-1 CONVERGENCE IS A HYPOTHESIS, NOT AN ATTRIBUTION** — same pre-commit
+    window, different symptom, and its own probe is owed before anything is attributed to
+    it. **This lane's data constrains it and is offered as evidence, not as a verdict:
+    `b2-1.mjs` returned PASS (28 checks) in ALL SIX suite runs this lane executed —
+    unparked and parked, across four distinct bundles** (`index-iOcJ71l_`,
+    `index-CThKwy6K`, `index-Cib2nzSw` ×2 settings). So no b2-1 symptom is visible from
+    here; whoever runs the probe should know that this window's runs do not reproduce it.
+    **(b) THE ORIGINAL j4 RED (`:84` null-click, HARNESS_PARKED unset) STAYS
+    UNATTRIBUTED** — the species does not inherit backwards, and this lane adds nothing to
+    it either way: **that failure was never observed in any run this lane made.** j4
+    returned PASS in four of this lane's five runs that reached it; the single red is the
+    `:297` parked-block SecurityError diagnosed above, at a different line, a different
+    setting and a different symptom.
+    **ITEM 97 NOT RIDDEN — DECLINE ACCEPTED (Fable's ruling 3).** It did not fall out of
+    this read (this diff touches `BoardEditor` and `unbornPage`, not
+    `getOrCreatePlanBoard`), and it carries a product question — restore the trashed
+    board, or re-mint and clear the pointer — that is Nick's, not a build call. Stays
+    open, post-vacation.
 88a+88b. **The filing target is validated; the unborn page stops being born by a side
     door.** **P0 (S5) + P1 (S6) — FIXED — 2026-08-03 (fix lane).** Closes 88a and 88b as
     a pair, because both live in `setPageHome` and one return value fixes both.
@@ -9349,6 +10407,14 @@ sitting closes them.
     both runs, so the two results describe the same software and not merely the same
     commit. `tsc` clean. *(The parked run was still in flight at the fix's own commit
     `8875343`, which said so rather than claiming it; this line closes that gap.)*
+    **OBSERVATION — 2026-08-17 (surfaced by SC2's sixth suite, item 62).** `persistDirty()`
+    called inside `flush()` (this fix) adds **~2ms p95 to flush-adjacent timing measurements** —
+    the absolute cost is trivial, but it MOVED THE BASELINE. **Re-derive baselines before any
+    future timing gate** rather than reusing a pre-`persistDirty` figure; a stale baseline would
+    conflate this ticket's cost with a lane's own measurement. SC2's sixth-suite records carry
+    the numbers (its 20-page p95 was measured against the post-`persistDirty` floor for exactly
+    this reason). Non-blocking; recorded so a later timing gate does not silently inherit a
+    moved floor.
 83. **Tool Pop-out Menus — the Two Hands arc OPENS.** **OPENED — 2026-08-01
     (menus lane, S0)**, naming this lane the arc's opening per Fable's ruling —
     **vetoable by Nick on sight.** Authority: SV5 (`docs/wrizo-alpha/hd-arc-seed.md`)
@@ -9456,6 +10522,17 @@ sitting closes them.
   read/true, so a stale claim is dated on its face and cannot be mistaken for a current one.
   The provenance stamp (77(c)) is this law made executable for suites; this states it for
   claims carried in prose.
+- **THE S4 LAW — a runner's live refusal outranks metadata (RATIFIED by Nick, 2026-08-17).**
+  Isolation-annotation form: *"A runner's live refusal outranks metadata; signature-kills are
+  never lawful — sweep only on a verified-dead owner."* A live process refusing (the runner's
+  dirty-machine VOID/REFUSE) is truth about the machine NOW and outranks any stamp or metadata
+  claiming quiet; a by-name / by-signature `--headless` kill is NEVER lawful (it murders other
+  lanes' in-flight runs); the only lawful sweep is of a browser whose owner node PID is VERIFIED
+  DEAD. Evidence: the 2026-08-04 orphan incident (item 99, the Orphan Reaper) + twice honored
+  since.
+- **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
+  standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
+  primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
@@ -9613,6 +10690,26 @@ documents + HTML mockups in `docs/menus/tutor/`; this lane never touches
 working-writers bench · (3) ≥2 Plateau mockups per mode, true tokens, true
 geometry at both reference widths inside the FX18 three-regime panel law ·
 (4) LOCK on Nick's word, sitting-informed; build tickets post-vacation.
+
+**→ PHASE 4 CLOSED AMENDED (Nick, 2026-08-17).** The lock record lives at the 84 desk (the lock
+sheet `docs/menus/tutor/tutor-menus-lock-sheet.md` on `item84/tutor-menus`, committed `5cd3968`);
+Nick's words landed with **lines 1, 4, and 5 AMENDED** and a **Revise re-pass ORDERED**. Phase 4
+is closed-amended — the Revise re-pass runs, then the lock record finalizes and build tickets
+follow; the 84 desk holds the amended lines verbatim.
+**→ LOCK RECORD ON MAIN (merge `d67352e`, 2026-08-17).** Merged `item84/tutor-menus @ 2913a4d`
+(docs-only, zero apps/, zero ledger): the lock sheet + the lock record + Nick's §6 answers.
+**§6 ANSWERED, Phase 4 answered whole:** Q1 (governing consultation satisfies line 3) → *"Stands"*
+(TD3 phrasings lock clean with the impersonal amendment applied); Q2 (a prompt is lawful as
+stimulus) → *"Stimulus"* — preset **(B) ruled lawful but builds NOTHING** until the disclosure-v4
+committee drafts its carve-out sentence and Nick ratifies it. Build tickets follow the Revise
+re-pass. (Relay labeled these Q1/Q2 in the reverse order; the record binds each word to the right
+question's substance.)
+**→ preset (B) RULED HYBRID — mechanism question CLOSED (Nick, merge `6b16783`, 2026-08-17).**
+Nick's mechanism ruling splits preset (B) into two phases: the **DECK PHASE is GATE-FREE** and
+enters the item-84 build brief as **its first ungated citizen** (it builds now — no disclosure
+sentence required); the **MODEL PHASE** (memory / retrieval) is **item 108 — the Tutor Memory
+Arc**, where the carve-out / disclosure sentence and the retrieval design settle together. Preset
+(B) is no longer wholly gated: the deck ships, the model waits on item 108.
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 

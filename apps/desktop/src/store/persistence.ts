@@ -735,11 +735,46 @@ function stampPageActivity(projectId: string, pageId: string): void {
 // same act — where the room is entered at the moment it is made — and for the
 // test/inspection seam below. If you are adding a door that just opens a blank
 // page, do not call this; navigate to unbornHref() instead.
-export function createJournalPage(): JournalEntry {
+//
+// ITEM 82 FIX (b) — the optional `seed`. Every field here exists for ONE
+// reason: to let a fixture reach the state it needs THROUGH this function
+// instead of writing the row behind the cache's back. AGENTS.md's successor
+// seeding law (2026-08-01) says seeding goes through the app's seams, and
+// `j5.mjs` could not obey it because its four fixture pages need a NAMED id
+// (`j5-src-N`, asserted by id all through the file), a STEPPED `createdAt`
+// (the Spread's notebook and "Newest" orders are both derived from it — see
+// pageOrder.notebookKey and Spread.tsx's newest sort), and `strokes` (the
+// ink-lens fixtures). This function minted all three itself, so the fixture
+// stayed a raw write — and a raw write is erased by the next flush of this
+// collection, which is item 82's proven mechanism.
+//
+// PRODUCT DOORS MUST NOT PASS `seed`. It is not a feature of page creation;
+// it is the seam's parameter list. Census at the time of writing: this
+// function has ZERO call sites in `apps/desktop/src` — it is reachable only
+// through `window.wrizoCreateJournalPage` below — so this extension has no
+// product blast radius at all. A future door that creates a page and a
+// durable relationship in one act calls this with NO argument, exactly as
+// the paragraph above describes.
+//
+// `updatedAt` is NOT seedable and is deliberately not faked: `upsert` stamps
+// it on every write (persistence.ts's one write path), and the seam does not
+// get a private clock the product does not have. Nothing in the notebook's
+// ordering reads it — `notebookKey` is `orderIndex ?? createdAt`, and the
+// Spread's "Newest" lens sorts on `createdAt` — so a seeded page orders
+// exactly as its raw-written predecessor did.
+export interface JournalPageSeed {
+  id?: string;
+  text?: string;
+  createdAt?: string;
+  strokes?: Stroke[];
+}
+
+export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   const now = new Date().toISOString();
+  const createdAt = seed?.createdAt ?? now;
   const entry: JournalEntry = {
-    id: generateId(),
-    text: '',
+    id: seed?.id ?? generateId(),
+    text: seed?.text ?? '',
     projectId: null,
     source: 'page',
     // AB3 S4 — the Journal/Catch door: this page homes in the Journal.
@@ -751,10 +786,19 @@ export function createJournalPage(): JournalEntry {
     // re-dress pages they have already written. `undefined` when the writer
     // has never set defaults — the grandfather fixed point, byte-identical to
     // a pre-M2 page.
+    //
+    // MERGE NOTE (S4, both sides kept): main gave this function a `seed`
+    // parameter (item 85's seam remediation) and renamed the timestamp to
+    // `createdAt`, so a seeded page can be born with a supplied time. That
+    // naming is taken verbatim below; birth-from-defaults is orthogonal to
+    // it and rides unchanged. Neither side lost anything.
     pageSettings: getUserPageDefaults() ?? undefined,
-    createdAt: now,
-    updatedAt: now,
+    createdAt,
+    updatedAt: createdAt,
   };
+  // Set only when seeded, so an unseeded page's row is byte-identical to the
+  // one this function wrote before fix (b) — `strokes` is absent, not empty.
+  if (seed?.strokes) entry.strokes = seed.strokes;
   saveJournalEntry(entry);
   return entry;
 }
@@ -769,6 +813,14 @@ export function createJournalPage(): JournalEntry {
 // This seam gives every one of those pre-existing scenarios an equally
 // direct path to the identical state, without resurrecting the retired
 // room's own UI just to keep old harness plumbing working.
+//
+// Item 82 fix (b): callers may pass a `JournalPageSeed` (id / text /
+// createdAt / strokes) — see that interface's own comment for why, and for
+// why product code never does. The write is DEBOUNCED like every other
+// product write (`scheduleFlush`, 300ms), so a fixture that reads
+// localStorage straight afterwards must wait for the row to land; the raw
+// write this replaces was synchronous, and that is the one behavioural
+// difference a migrating harness has to absorb.
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage = createJournalPage;
 }
@@ -1688,7 +1740,40 @@ export function getOrCreatePlanBoard(pageId: string): JournalEntry | null {
   if (page.planBoardId) {
     const existing = getJournalEntry(page.planBoardId);
     if (existing) return existing;
-    // Pointer dangles (board hard-gone) — fall through and re-birth below.
+    // ITEM 97 — RE-MINT IS THE DESIGNED BEHAVIOUR (Nick, 2026-08-17), AND THE
+    // POINTER IS CLEARED AT DETECTION.
+    //
+    // BE CLEAR ABOUT WHAT THIS DID AND DID NOT CHANGE, because a harness proved
+    // it rather than a reading: `item97.mjs` is GREEN AGAINST THE PRE-FIX BUNDLE.
+    // Minting fresh and re-pointing the page ALREADY happened on this path; the
+    // decision ratifies behaviour that was there, it does not repair it.
+    //
+    // What changes is (i) intent and (ii) one edge. The old comment said "board
+    // hard-gone", describing only HALF of what reaches here: `getJournalEntry`
+    // returns null for a SOFT-DELETED row too, so a tombstoned board lands here
+    // as well — incidentally, not by design. Nick has ruled that treatment
+    // deliberate. And the stale pointer is cleared HERE, at detection, rather
+    // than only by the re-pair at the end of this function: that re-pair is
+    // conditional on re-reading the page, so if the page itself went absent in
+    // between, the old code left the dangle in place.
+    //
+    // SCOPE, recorded so no one re-derives it — and it corrects this lane's own
+    // 2026-08-03 finding, which read this function ALONE. The LOCAL trash path
+    // NEVER reaches this branch: `softDeleteEntry` already unpairs a trashed
+    // plan board before marking it deleted (BM1 S2 — "deleting a plan board
+    // unpairs"). This branch is reachable only where a board goes absent
+    // WITHOUT that path — chiefly a sync pull carrying another device's
+    // tombstone, which `applyRemoteRecords` applies with no unpair.
+    //
+    // RESIDUAL, named rather than hidden: the WINDOW between a tombstone
+    // arriving and the next flip is not closed by this. Closing it would mean
+    // unpairing at apply-time, which is a larger change than the decision
+    // authorised.
+    const stalePointerOwner = getJournalEntry(pageId);
+    if (stalePointerOwner) {
+      const { planBoardId: _stale, ...withoutPointer } = stalePointerOwner;
+      saveJournalEntry(withoutPointer as JournalEntry);
+    }
   }
   const now = new Date().toISOString();
   const board: JournalEntry = {

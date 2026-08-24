@@ -147,7 +147,23 @@ survives a mechanism check = stop and hold, never deploy.
   opened. **Next free: 97.** 2026-08-03: 97 (trashed-plan-board dangling pointer) + 98
   (railway-worktree link guard, deploy-critical) opened. **Next free: 99.** 2026-08-03: 99 (THE
 ORPHAN REAPER — dead-owner harness-browser leak; manual authorized sweep now, runner-preflight
-sweep post-vacation) opened with the P0-wave deploy. **Next free: 100.**
+sweep post-vacation) opened with the P0-wave deploy. **Next free: 100.** 2026-08-17: 100 (CDP
+port-file race, harness-only) opened with P2c's fix (b); 101 (Page-panel New Page no-op — repro
+pending) · 102 (prose input model — Nick's verdicts attached) · 103 (typewriter fade band —
+five-line spec owed verbatim) opened (live-test sitting #2). **Next free: 104.** 2026-08-17: 104
+(Screenplay selection DEAD on an unborn page — New Page template icon + Draft Structure toggle
+no-op; answers OBS-1 by-defect; PACKAGES WITH item 87, mode+structure one seam one ship) opened
+(sitting #2, cont'd). **Next free: 105.** 2026-08-17 Section A complete (the Clock's first founder
+session; item 62 OBS pair ruled — R-PERIOD keep the period, R-BREATHING zero breathing room): 105
+(page-boundary presentation cluster — active-element "off-page text" + move-whole "undeletable
+gap"; discriminator pending) · 106 (empty-region caret clicks; Nick's verdict verbatim) opened.
+**Next free: 107.** 2026-08-17: item 105 discriminator resolved (NARROWS to presentation/signaling
+only — no arithmetic defect); 107 (no cross-block selection / bulk deletion on the script surface —
+one-element-at-a-time architecture, post-vacation; design half routes to the menus arc) opened.
+**Next free: 108.** 2026-08-17: preset (B) RULED HYBRID (deck phase gate-free — first ungated
+item-84 build citizen; model phase = item 108); 108 (THE TUTOR MEMORY ARC — model-phase retrieval
++ carve-out sentence settle together; wire {messages, delta?, bible?} closed by architecture)
+opened; disclosure-v4 committee narrows to one sentence (the disclosure). **Next free: 109.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

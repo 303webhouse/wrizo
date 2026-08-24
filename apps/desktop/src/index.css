@@ -1692,9 +1692,13 @@ a:focus-visible,
    `box-sizing:border-box` (this file's line 4) is load-bearing: `width:51em`
    is the page INCLUDING its margins, exactly as a sheet of paper is.
 
-   Height is `min-height`, not `height`: until SC2 derives page breaks, a
-   script that overflows 11in simply grows taller — the lawful interim,
-   disclosed in the SC1 brief. */
+   Height WAS `min-height`, not `height` — SC1's lawful interim, disclosed in
+   its own brief: until SC2 derived page breaks, a script that overflowed 11in
+   simply grew taller. SC2 S2b closes it. `height:66em` is now exact and every
+   sheet in the sequence is the same page: a sheet that could grow is a sheet
+   whose height is a function of its content, and then "page 12" is not a page,
+   it is however much text happened to land there. The arithmetic decides what
+   goes on a page; the paper never negotiates. */
 .script-sheet{
   color:var(--ink-on-paper); background:var(--paper); border:1px solid var(--ink-border);
   font-family:var(--font-script);
@@ -1712,15 +1716,106 @@ a:focus-visible,
   font-size:min(1rem, calc(100cqw / 51));
   line-height:1;                    /* exactly 6 lines/inch at 12pt */
   width:51em;                       /* 8.5in */
-  min-height:66em;                  /* 11in */
+  height:66em;                      /* 11in — EXACT, SC2 S2b (was min-height) */
   max-width:100%;
   padding:6em 6em 6em 9em;          /* 1in top/right/bottom, 1.5in left */
   margin:0 auto;
 }
+/* SC2 S2b — THE SEQUENCE, AND THE GAP BETWEEN SHEETS.
+   The gap is CHROME, never body. That distinction is the whole design of this
+   rule, and it is load-bearing in three ways:
+
+   1. It is expressed in `rem` — the app's own root unit — and NEVER in the
+      sheet's `em`. `em` on this surface is the PAGE's unit: 1em is one 12pt
+      line box and every dimension of the paper is written in it. A gap in `em`
+      would scale with the paper under SC1's scaling law, as though the space
+      between two sheets were part of a sheet. It is not; it is the desk showing
+      between them.
+   2. For the same reason it is not `var(--script-line)` or any multiple of it.
+      The line unit is what the ledger counts in, and a gap of N line units is a
+      gap a reader — or a later maintainer — can mistake for N blank lines of
+      screenplay. 24px against a 16px line box is 1.5 lines: not a whole number
+      of lines in any state, which is the point.
+   3. Nothing may be rendered INTO it. The sequence owns the gap as flex `gap`,
+      so it is space between flex items and cannot contain a child at all. That
+      is asserted rather than assumed (sc2.mjs: no `.script-el` lies between one
+      sheet's bottom border and the next's top, and no element's rect straddles
+      a sheet boundary).
+
+   `align-items:stretch` (the default) is what lets `.desk-frame-stage
+   .script-sheet{width:100%}` keep filling the column, exactly as it did when
+   the sheet was the column's own child. */
+.script-sequence{ --script-sheet-gap:1.5rem; display:flex; flex-direction:column; gap:var(--script-sheet-gap); }
 /* SC1 S1 — an empty element occupies exactly ONE line of the 6-lpi grid
    (was 1.2em, a prose-ish floor that put every blank element 20% off the
    grid the paginator will read in SC2). */
-.script-el{ white-space:pre-wrap; min-height:1em; }
+/* SC2 S1 — the line unit, and the three rules that keep the RENDER wrapping
+   exactly the way store/scriptLedger.ts's arithmetic says it does. The ledger
+   is the truth and this is what is checked against it (sc2.mjs compares an
+   over-measure element's rendered line count against the ledger's), so any
+   divergence here is a defect, not a difference.
+
+   --script-line is ONE LINE BOX. `.script-sheet` sets line-height:1 at 12pt, so
+   a line is exactly 1em of the sheet's own font-size and scales with it under
+   SC1's scaling law. Vertical spacing is expressed in THIS unit and never in px
+   or em, so N blank lines of arithmetic render as exactly N line-heights.
+
+   overflow-wrap:anywhere — a word longer than its measure must break AT the
+   measure (a 70-character URL in an action line occupies ceil(70/60) lines).
+   Without it the word would overflow the measure while claiming one line, and
+   the paginator would place a break the page contradicts.
+
+   hyphens:none — screenplays do not hyphenate, and a browser that decided to
+   would break every count by one, silently. */
+.script-sheet{ --script-line:1em; }
+.script-el{
+  white-space:pre-wrap;      /* trailing spaces hang; internal runs are preserved */
+  overflow-wrap:anywhere;
+  hyphens:none; -webkit-hyphens:none;
+  min-height:1em;            /* an empty element is exactly one line */
+}
+/* SC2 S1 — "the first element of a page contributes no space above it." At
+   document start that is this rule; S2's paginator applies the identical rule
+   at every page top. It lives in the CONSUMER, never in the ledger, which
+   reports each element's INTRINSIC spaceBefore so it stays position-independent
+   (and so elementStyle() stays a pure function of the type, which is what lets
+   S5 freeze one style object per type).
+
+   It is also geometry protection: a first child's margin-top would otherwise
+   push the whole sheet down, re-opening the very defect SC1 closed — SC-V4,
+   "the cursor starts by floating in the middle of the page." The screenplay
+   begins at the top margin, and this is one of the two things keeping it
+   there. */
+/* SC2 S4 — THE SELECTOR FOLLOWS THE DOM SHAPE, and this is the case the S2b
+   handoff flagged to VERIFY rather than assume. The page number is the sheet's
+   first child from page two on, so `*:first-child` would match IT instead of
+   the first script element, and every page but the first would begin one or two
+   blank lines lower than page one. The number is absolutely positioned, so it
+   moves nothing itself — the whole hazard was this selector, and the sibling
+   arm below closes it. It is not left to inspection either: page one has no
+   number and every other page does, so sc2.mjs's standing "page N's first line
+   sits at page one's own offset" check fails immediately if this arm is lost. */
+.script-sheet > *:first-child,
+.script-sheet > .script-page-number + *{ margin-top:0 !important; }
+/* SC2 S4 — the number itself. In the sheet's OWN type (Courier 12pt, inherited)
+   because it is the document's furniture and not the app's chrome — the one
+   place in the house where a number on the page is lawful (R1).
+
+   Absolutely positioned, so it is outside the flow entirely and cannot cost the
+   body a line: `top:3em` is 0.5in below the paper's edge, halfway into the 1in
+   top margin, and `right:6em` resolves against the padding box, putting the
+   number's right edge exactly on the text block's right edge — the 1in right
+   margin, the trade's own position.
+
+   `user-select:none` because it is not the writer's words. Selecting across two
+   pages must hand back a screenplay, not a screenplay with page numbers loose
+   in it. (The copy-out and export paths serialize from the DOCUMENT and never
+   the DOM, so they could not have picked it up regardless — this is the
+   selection a writer makes with their own hand.) */
+.script-page-number{
+  position:absolute; top:3em; right:6em;
+  color:var(--ink-on-paper); -webkit-user-select:none; user-select:none;
+}
 .script-el-active{
   outline:none; cursor:text; caret-color:var(--brass);
   border-bottom:1px solid var(--brass);
@@ -2760,8 +2855,20 @@ a:focus-visible,
    rule owns every dimension through its one em derivation, and a second
    `--paper-scale` copy here is precisely the drift that rule exists to
    prevent. */
+/* SC2 S2b — the flex item under `.mode-pagecol` is now `.script-sequence`, and
+   the sheets are its children. Two consequences, both deliberate:
+   - `--fx3-paper-fence` moves from the sheet to the SEQUENCE. It was always the
+     fence between the LAST paper and the room below it, not a per-sheet margin;
+     leaving it on the sheet would have made the space between two pages
+     "fence + gap", which is two different ideas stacked and neither of them
+     stated. Measured from the column, `col.bottom − lastSheet.bottom` is
+     unchanged — which is what fx3.mjs's own live SC1 successor asserts.
+   - `flex:0 0 auto` and `width:100%` stay exactly as SC1 wrote them, and still
+     mean what they meant: a true page is never stretched to fill leftover room,
+     and it fills the column that IS the page's 8.5in width. */
+.desk-frame-stage .script-sequence{ flex:0 0 auto; margin-bottom:var(--fx3-paper-fence); }
 .desk-frame-stage .script-sheet{
-  flex:0 0 auto; width:100%; margin:0 auto var(--fx3-paper-fence);
+  flex:0 0 auto; width:100%; margin:0 auto;
 }
 
 /* CD1 S2 — the sliver's anchor: an ABSOLUTELY POSITIONED overlay inside
