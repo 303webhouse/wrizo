@@ -460,3 +460,82 @@ sources intention by some other route, **this clause is the thing to check again
 it** before ask two tickets.
 
 — the item-84 desk, 2026-08-04
+
+---
+
+## §10 · TR3 ASK TWO — THE BUTTON-NAMING RULING *(a reversal, noted as such)*
+
+*Added 2026-08-24, after the doorway ship. The record above stands unaltered.*
+
+**§9 named ask two's payload. This names its button.** Both were needed: under
+candidate B a counsel's *wire* and its *label* are separately testable, and ask two
+passed on the first while failing on the second.
+
+### THE REVERSAL, RECORDED AS ONE
+
+The desk first read ask two as *"covered by construction — it adds nothing beyond
+TR3's `pageText`, which B's button clause authorizes when TR3's button names the
+page."* The lane held instead of confirming, on the ground that TR3 is three chips
+and not one button. **That hold was correct, and the desk's reading is WITHDRAWN.**
+Recorded as a reversal rather than quietly replaced, because the arc's confirmations
+are only worth what its dissents are.
+
+### THE SENTENCE THIS TURNS ON — disclosure v4, candidate B
+
+Ratified 2026-08-17 (Nick's word), **provisionally-binding**; committed at `1ef1659`,
+`docs/wrizo-alpha/disclosure-v4-committee-fable.md`. Verified against its own
+manifest before use — 1 sentence, **183 bytes**, md5
+`9287082c0e3c0a2b243c71ce01c89b43`, matching the bare sentence exactly:
+
+> Nothing leaves your desk unasked: an ask sends your words, this page's recent changes, and your Bible; a counsel that reads more names it on the button and sends only that, only then.
+
+Its three testable conditions, as the counsels are measured against them:
+**(a)** *names it on the button* · **(b)** *sends only that* · **(c)** *only then*.
+
+### THE LAW IT SETTLES
+
+> **A COUNSEL'S BUTTON NAMES WHAT ITS OWN PRESS SENDS.**
+
+Candidate B's condition (a) attaches to the **pressed button** — not to the counsel,
+not to the roster. **Per-press consent is the committee's own Expert law.** Ask one's
+naming cannot consent for ask two's wire when they are separate presses. **The
+harness obligation keeps its mechanical per-button form, unrelaxed** — each gated
+counsel's spec asserts that *its* wire carries exactly what *its* button names,
+nothing more.
+
+Standing, alongside §2's impersonal voice law. Both bind the Revise re-pass, which
+stays free to restate the roster but not to escape either constraint.
+
+### THE AMENDED ASK — ask two's lawful form under B
+
+| | |
+|---|---|
+| **Was** | "Where does it drift from what it's trying to be?" |
+| **Is** | **"Read it whole — where does it drift from what it's trying to be?"** |
+
+The added clause names the reading, mirroring ask one's construction. Payload is
+unchanged — **§9 stands as ratified**: no new bytes beyond TR3's `pageText`, the
+intention riding `messages` or the Bible, and never the tutor's own inference.
+**§3's rule governs here too: this is the string of record for ask two.**
+
+### TWO TICKET CONSTRAINTS CARRIED
+
+**TD4 — the wire adds the SELECTION ONLY.** `pageText` stays a **render prop, never a
+TD4 wire key.** The pass's phrase *"traveling beside `pageText`"* describes props and
+must not be read as the wire; a TD4 wire carrying the page would send more than its
+button names and fail its own harness obligation.
+
+**The shared-row label collision — ROUTED to the Revise re-pass.** Draft's chip reads
+*"Look at just this stretch — what's it doing?"*; Revise's TR3 calls the same row
+*"shared with Draft"* while carrying *"What work is this stretch doing?"* Under B's
+load-bearing buttons this is a real specification collision, not a wording
+preference. **The constraint the re-pass inherits: one shared row carries ONE string;
+divergent surfaces are two rows with two namings.**
+
+### CONDITION (1)
+
+**Closed from the 84 side on this section's landing.** TD4 confirmed · TR3 ask one
+confirmed · TR3 ask three confirmed (subject to the routed label collision) · **TR3
+ask two confirmed in its amended form.** BD4 is the 83 desk's and closed there.
+
+— the item-84 desk, 2026-08-24
