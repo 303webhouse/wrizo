@@ -557,6 +557,12 @@ confirmed; the counsels **UNBLOCK**. The disclosure sentence enters both build b
 ticket. **Two carried caveats:** TR3's **ask 2 OWES one payload-naming clause** (the 84 desk's
 wordsmith) before its ticket; **BD4's scope** is restated to **board-content-beyond-base — currently
 none.** Disclosure-v4 remains provisionally-binding; live testing may amend it, append-only.
+**→ CONDITION (1) CLOSED — BOTH DESKS; TD4 / TR3 / BD4 FULLY UNBLOCKED FOR BUILD (Fable,
+2026-08-24).** The 84 side now closes the census too: §10 (merge `19f0db7`) records the
+button-naming ruling — the ask-2 reversal recorded as one, the button law standing, candidate B
+quoted with its manifest — so **TR3's owed payload-naming clause is DELIVERED** and the last caveat
+clears. Both desks confirmed; **TD4, TR3, and BD4 are fully unblocked for build.** BD4's scope
+stays board-content-beyond-base (currently none). Disclosure-v4 stands provisionally-binding.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -7625,6 +7631,10 @@ none.** Disclosure-v4 remains provisionally-binding; live testing may amend it, 
     family is green here at both settings: `j5` 37, `j4` 24, `b2-1` 28, `fx6` 37, `th2` 42,
     `m4` 43.** That is an observation about this head, not a closure of item 82 — `j4`,
     `b2-1` and `fx6` remain UNATTRIBUTED and a green run is not a diagnosis.
+    **→ ITEM 82 WATCH (2026-08-24):** `m3` ran GREEN on a quiet box — a **second data point** (the
+    83 desk's S4). The watch records it; **NOTHING CLEARED.** A green run on a quiet box is exactly
+    the evidence class that does NOT attribute the family's reds — "the machine was quiet" is a
+    retired clearance argument; logged as a data point, not a diagnosis.
     **THE REBASE WAS A PURE REPLAY, and fidelity was measured rather than assumed.**
     `--empty=keep` so the empty gate-commit survived as itself; **12/12 commits replayed,
     ZERO conflicts; all SEVEN touched files byte-identical BLOBS pre→post.** The previous
