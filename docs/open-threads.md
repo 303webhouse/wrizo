@@ -502,6 +502,11 @@ re-rendering it short. That removes the fault CLASS, not the one instance this t
 
 **VERIFICATION — `item104.mjs` S6, PROVEN TO BITE:** 2/15 RED against the deployed bundle
 (`Minified React error #300`, `rootKids=0`), 15/15 green with the fix, other 13 unchanged.
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE:** unparked `59/59` and parked `59/59`,
+both `bundle=index-hZQhhS8W.js/531318b` on `tree=bddcbcf` — same asset hash on both runs, so the
+two results describe the same software and not merely the same commit. `tsc` clean.
+**NO DEPLOY: the hotfix waits on Nick's word; production is still `git 1cbda72 · railway
+59d55924`, which CARRIES the crash.**
 
 **OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
 this lane's cold-load-fine, at the same bundle.** Both are reported as measured; they disagree,
