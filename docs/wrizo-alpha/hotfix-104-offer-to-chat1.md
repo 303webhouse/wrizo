@@ -83,7 +83,18 @@ invariant; production prints "Minified React error #300").
 difference is StrictMode. If static production, they genuinely conflict and
 something environmental is unaccounted for.
 
-**Not reconciled here by choice:** settling it needs a dev server plus a browser,
-and this lane's stamped suite was mid-run — launching one would have contended
-for the shared pool and voided the sweep. **The fix does not depend on the
-answer;** the class fix removes the fault on both paths.
+**RECONCILIATION ATTEMPTED once the box was free — Fable's ruling 3 preferred it
+"if cheap" — AND IT IS NOT CHEAP. Recorded so the next lane does not repeat the
+dead end.** The obvious cheap route is to build a development bundle and
+cold-load it through the existing harness server, avoiding a dev server
+entirely. **That does not work:** `vite build --mode development` still emits a
+**production React** — verified on the ARTIFACT rather than assumed (the
+minified-error-decoder URL is present; the dev warning machinery is absent).
+`mode` selects env files; it does not set `NODE_ENV` for React. A genuine dev
+React needs either a `vite.config` `define` override — product configuration,
+which a hotfix branch should not carry — or real `vite dev` plus custom browser
+plumbing, since the harness always points at its own static server.
+**So it stays an ENVIRONMENTAL OPEN**, per that same ruling, and the
+discriminating question above is best answered at the 83 desk, where the scratch
+serve actually lives. **The fix does not depend on the answer** — the class fix
+removes the fault on both paths.
