@@ -1,6 +1,6 @@
 # MERGE OFFER TO CHAT 1 — ITEM 104 HOTFIX (the hooks-order crash)
 
-Branch: **`hotfix-104-hooks`** @ `74b6a7e`. Base: `origin/main` @ **`bddcbcf`**,
+Branch: **`hotfix-104-hooks`** @ `fde04c2`. Base: `origin/main` @ **`bddcbcf`**,
 pinned by SHA. **NO DEPLOY — the hotfix waits on Nick's word.**
 
 Production is currently on `git 1cbda72 · railway 59d55924` and **carries the
