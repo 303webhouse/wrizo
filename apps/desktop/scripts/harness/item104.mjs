@@ -241,6 +241,72 @@ await withHarness(async (app) => {
   const reloadScript = await onScriptSurface(app);
   ok('S5 (c) — the declared kind survives a reload (it rides the address, not storage)',
     reloadScript === true, `scriptSurface=${reloadScript}`);
+
+  // ==========================================================================
+  // S6 — THE HOOKS-ORDER CRASH (item 104 REOPEN, 2026-08-24). Live on
+  // production before this fix; React error #300, whole tree blanked.
+  //
+  // THE MECHANISM. PageEditorView carries hooks BELOW its `if (!entry) return`
+  // guard. React counts hooks per render, so the instant `entry` flips from a
+  // row to null the count changes and React throws "rendered fewer hooks than
+  // expected". The trigger is not a cold load and not a route: it is THE PAGE
+  // YOU ARE LOOKING AT BECOMING ABSENT WHILE YOU ARE STILL ON IT — reproduced
+  // here the way production reaches it, a tombstone arriving on a sync pull
+  // because another device deleted the page.
+  //
+  // WHY 59/59 PASSED AND SHIPPED IT ANYWAY — the coverage gap, named so it is
+  // fixed rather than re-suffered: NO committed scenario had ever driven
+  // `entry` non-null -> null while a surface stayed MOUNTED. Every file either
+  // sits on a page that exists or navigates away (which unmounts, and an
+  // unmount is exactly what makes the fault invisible). The harness could not
+  // even express "make this row vanish under the writer" until the armable
+  // sync pull landed with item 97 the week before. That is item 109's ticket.
+  //
+  // WHAT THE FIX IS, and why it is not only the obvious lift: a census of
+  // PageEditorView found THREE hooks below that guard, and `useCascade` is one
+  // of them — a position OLDER than the doorway ship. Lifting only this
+  // ticket's two hooks would have left the crash live, which the pre-doorway
+  // baseline proved by still crashing without them. So the vanished-page
+  // decision moved UP into the dispatchers, whose own hooks all sit above every
+  // return: the page unmounts instead of re-rendering short, which removes the
+  // CLASS rather than the instance.
+  // ==========================================================================
+  await freshDesk(app);
+  const doomedId = await app.evalJs('window.wrizoCreateJournalPage().id');
+  await app.evalJs(`location.hash = '#/page/${doomedId}'`);
+  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'the page about to vanish' });
+  await app.evalJs("window.__hookErrs = []; window.addEventListener('error', e => window.__hookErrs.push(String(e.message)));");
+
+  // Push and clean first: applyCollection refuses a remote row whose id is
+  // still locally dirty ("local unsynced edit wins"), so a just-made page
+  // cannot be tombstoned until the server has it.
+  await app.evalJs("window.dispatchEvent(new Event('online'))");
+  await waitSoft(app,
+    `fetch('/api/_state').then(r => r.json()).then(s => s.pushedJournalIds.includes(${JSON.stringify(doomedId)}))`,
+    { label: 'page pushed and cleaned', timeout: 15000 });
+  await sleep(600);
+
+  const doomedRow = await app.evalJs(
+    `JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').find(e => e.id === ${JSON.stringify(doomedId)})`);
+  await app.evalJs(
+    "fetch('/api/_sync_mode', { method: 'POST', body: JSON.stringify({ pull: { journalEntries: ["
+    + JSON.stringify({ ...(doomedRow || {}), deletedAt: '2026-12-31T00:00:00.000Z', updatedAt: '2026-12-31T00:00:00.000Z' })
+    + "] } }) }).then(r => r.json()).then(() => true)");
+  await app.evalJs("window.dispatchEvent(new Event('online'))");
+  await sleep(2500);
+  await app.evalJs("fetch('/api/_sync_mode', { method: 'POST', body: '{}' })");
+
+  const after = await app.evalJs(`(() => ({
+    rootKids: (document.getElementById('root') || { children: [] }).children.length,
+    errs: (window.__hookErrs || []).slice(0, 3),
+    arrival: !!document.querySelector('.wz-arrival'),
+  }))()`);
+  ok('S6 (a) — the page vanishing under the writer does NOT throw a hooks-order error [ITEM 104 REOPEN]',
+    Array.isArray(after.errs) && after.errs.length === 0,
+    `errs=${JSON.stringify(after.errs)}`);
+  ok('S6 (b) — and the tree is NOT blanked: the writer is carried somewhere real',
+    after.rootKids > 0,
+    `rootKids=${after.rootKids} arrival=${after.arrival}`);
 });
 
 // eslint-disable-next-line no-console

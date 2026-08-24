@@ -455,6 +455,87 @@ tombstone immediately and measured nothing — `applyCollection` correctly REFUS
 just-minted board is still in the dirty set ("local unsynced edit wins"); the scenario now pushes
 and cleans first, exactly as a real second device would have.
 
+## ITEM 104 REOPENED — THE HOOKS-ORDER CRASH: S0, AND AN ATTRIBUTION CORRECTION — 2026-08-24
+
+**The crash is real, was live, and is fixed. It was NOT introduced by the doorway ship, and that
+is measured, not argued.**
+
+**S0 — THE ONE QUESTION THAT GATED THE FIX: why did 59/59 pass?**
+Because **no committed scenario has ever driven `entry` from non-null to NULL while a surface
+stayed MOUNTED.** Every harness file either sits on a page that exists, or navigates away — and
+navigating away UNMOUNTS, which is precisely what hides this fault. The suite could not even
+EXPRESS "make this row vanish under the writer" until the armable sync pull landed with item 97
+the week before. **That gap is item 109, opened below.**
+
+**THE DISCRIMINATING CONDITION IS NOT COLD-VS-WARM.** The offered hypothesis (a cold direct load
+renders once with `entry` null, then the slot arrives) was TESTED AND DID NOT REPRODUCE: cold
+loads of `/page/new`, `/page/new?structure=screenplay`, and a missing page id all render
+correctly (`rootKids:4`, no error). The real condition is **the page you are looking at becoming
+ABSENT while you are still on it** — `entry` non-null → null in a mounted view. React counts
+hooks per render, so the count drops and it throws #300, blanking the tree (`rootKids:0`).
+
+**WHO IS HIT.** Not "only direct loads", and not every in-app writer. Reproduced via the path
+production actually reaches: **another device deletes a page this one has open, and the tombstone
+arrives on a sync pull** (`applyRemoteRecords`). Logout navigates away before the cache clears,
+and the in-app Delete verb (`BoardRowMenu`) deletes from a LIST, not the page underfoot — so the
+two-device case is the live one, which fits a founder working laptop-plus-Desktop.
+
+**ATTRIBUTION — CORRECTED.** The report named this lane's `structureDoorRef` effect. A census
+found **THREE** hooks below `PageEditorView`'s single `if (!entry)` guard, and **`useCascade` is
+one of them — a position OLDER than the doorway ship.** Built from PRE-DOORWAY src (with
+`structureDoorRef` absent, verified) the crash reproduces IDENTICALLY. The doorway ship added two
+hooks to an already-illegal region; it did not create the fault.
+**A FALSE NEGATIVE ON THE WAY THERE, RECORDED BECAUSE IT IS THE TRAP:** the first baseline
+attempt checked out the pre-doorway tree WHOLE — which also lacked this lane's own
+`/api/_sync_mode { pull }` double. With no way to deliver a tombstone, nothing transitioned and
+the baseline "passed", which would have wrongly confirmed the doorway ship as the cause. The
+baseline was redone with **pre-doorway SRC and current HARNESS INFRA**, and then it crashed.
+Harness infra is not product code and must not be reverted alongside it.
+
+**THE FIX — AND WHY THE ORDERED ONE-LINE LIFT WAS NECESSARY BUT NOT SUFFICIENT.** This lane's two
+hooks are lifted above the guard, as ordered. But the census says lifting only those leaves
+`useCascade` below it, and the pre-doorway baseline PROVES that is still a crash. So the
+vanished-page decision moves UP into both dispatchers (`PageEditor` and `UnbornPage`), whose own
+hooks all sit above every return: a vanished page now **UNMOUNTS** the view instead of
+re-rendering it short. That removes the fault CLASS, not the one instance this ticket found.
+`PageEditorView`'s own guard stays as defence.
+
+**VERIFICATION — `item104.mjs` S6, PROVEN TO BITE:** 2/15 RED against the deployed bundle
+(`Minified React error #300`, `rootKids=0`), 15/15 green with the fix, other 13 unchanged.
+
+**OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
+this lane's cold-load-fine, at the same bundle.** Both are reported as measured; they disagree,
+so neither is overwritten. What this lane measured: cold loads (full document load, then reload)
+of `/page/new`, `/page/new?structure=screenplay`, and `/page/<missing id>` all render correctly
+on the DEPLOYED bundle — `rootKids:4`, no console error. What the 83 desk measured: a void on a
+cold load across three trees.
+**MOST LIKELY RECONCILIATION, named as a hypothesis and not asserted: a DEV serve versus a
+PRODUCTION build.** `main.tsx` wraps the app in `React.StrictMode`, whose double-invoke of render
+and effects is **development-only** — it is stripped from a production build. Every probe this
+lane ran used `vite build` output served statically; a `vite dev` scratch serve would double-
+invoke, which is exactly the condition that can turn a single render-then-navigate into a
+detectable hook mismatch, and it also explains the error text differing (a dev build prints the
+full invariant, production prints "Minified React error #300").
+**THE DISCRIMINATING QUESTION for the 83 desk's re-check, so it settles in one run:** was the
+scratch serve `vite dev`, or a static serve of `dist-web`? If dev — the two findings agree and
+the difference is StrictMode, not the product. If static production — the findings genuinely
+conflict at the same bundle and something environmental is unaccounted for.
+**NOT reconciled here by choice:** settling it needs a dev server plus a browser, and this lane's
+stamped suite was mid-run; launching one would have contended for the shared pool and voided the
+sweep. Recorded as an environmental open rather than measured badly. The fix does not depend on
+the answer — the class fix removes the fault on both paths.
+
+## ITEM 109 — THE VANISHED-SUBJECT COVERAGE GAP (harness) — OPENS 2026-08-24
+
+**Written by item 104's S0.** The suite has 59 files and none of them ever makes a record
+DISAPPEAR beneath a mounted surface. Every scenario keeps its subject alive or leaves the room.
+That single blind spot let a tree-blanking crash ship green. **Charter:** a standing scenario
+class — for each surface that reads a subject through `getJournalEntry` (page, board, script),
+drive the subject to absent WHILE MOUNTED (remote tombstone via the armed pull; local delete
+where reachable) and assert the surface degrades without throwing. **Also owed:** a lint or
+census check for hooks below any early return, since that is the shape that made absence fatal
+rather than merely awkward. Registry: next free **110**.
+
 ## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
 
 **→ S0 CLOSED benign (Fable's review, 2026-08-17):** a measurement, not a defect claim — S4 green
