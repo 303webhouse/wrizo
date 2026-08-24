@@ -342,3 +342,83 @@ deliberately left alone — a by-name kill would murder another session's runs.
 reviews `menus-build` at dawn; the merge word and the deploy word are Nick's
 own, and gaps 1 and 2 above should meet a real database and a real hardware
 walk before either is given.*
+
+---
+
+# ADDENDUM — S4, RUN 2026-08-24 (after the doorway deploy)
+
+Run on Nick's word once the doorway stamp was down (`git 1cbda72 · railway
+59d55924`) and the box was free. Verified free before starting: 0 foreign
+harness browsers, 0 suite/harness node processes.
+
+## The expectation had moved before the run
+
+S4's runbook figure was **41/54 with thirteen mapped reds**, measured
+2026-08-04. By 08-24 main had advanced **67 commits / 22 code files**, and:
+
+- the suite is now **59 files, not 54** (main added five);
+- **four of the mapped reds' own files changed on main** — `sc1`, `b2`, `j4`,
+  `j5` — as did `runtime-verify.mjs`, which the probe rides on.
+
+So the branch was merged with main first (`e3cb0fd`) — S1's authorized
+pattern, merge commit, no force — because a smoke of a week-stale tree cannot
+inform a merge word. One conflict, `createJournalPage`, both sides kept: main
+gave it a `seed` parameter (item 85's seam remediation) and renamed the
+timestamp to `createdAt`; M2's birth-from-defaults line is orthogonal and rode
+unchanged.
+
+## Result
+
+**Suite: 46/59 OK, 13 red**, clean tree, no dirty flag.
+
+- **Twelve are the mapped Class A supersessions**, unchanged in cause: `ab2`,
+  `b2`, `cd1`, `fx1`, `fx2`, `fx3`, `fx4`, `fx6`, `fx7`, `m2`, `m4`, `sc1`.
+- **`m3` came back GREEN.** It was the thirteenth red on 08-04 and was
+  reported then as an item-82-family order/timing sighting, not cleared. It
+  passed here on a quiet box — a second data point for item 82's lane, still
+  not this lane's to clear.
+- **One red was NOT on the map: `item87.mjs`.**
+
+**Probe: 42/42 green** — three surfaces × two widths, dock open and closed
+where a dock exists, paper-rect invariance under both toggles. Fresh
+screenshots taken on the merged tree came out **byte-identical** to the 08-04
+set (git saw no change to commit), which is a small piece of evidence that the
+rendering is deterministic across a week and a 67-commit main.
+
+## The unmapped red, diagnosed to root cause
+
+```
+item87.mjs — S2 (b) "and Draft still HAS them (the presets were hidden, not deleted)"
+             activeMode=Draft  structureSectionPresent=false
+```
+
+`structureVisible()` queries **`.wz-sliver-structure`** — the Prose|Screenplay
+TABLIST's own class, which **DR3 retired in M5** when the tablist became the
+confirm-gated conversion row.
+
+Verified in source: Draft's Structure **section still renders** —
+`.wz-sliver-section`, the `railStructure` heading, and "Convert to
+Screenplay…". Only the tablist class is gone from the TSX. **The capability
+item87 guards is intact; its selector measures the form a ruling replaced.**
+
+So it is a **fourteenth Class A supersession** — with one difference that
+matters: **item87 belongs to another lane**, written during the doorway wave,
+after Pass 2 ruled DR3. Parking it means editing their harness, and this lane
+does not cross that boundary unilaterally — the last time it did, on this
+machine, it cost that lane its suite. **It goes to the park pass as a
+cross-lane item, on Nick's or Fable's word.**
+
+Also for that pass: `.wz-sliver-structure` and `.wz-sliver-structure-btn`
+survive in `index.css` as orphaned CSS. M10's sweep covered components, not
+stylesheets.
+
+## Standing
+
+Merged tree verified: desktop `tsc` clean, server `tsc` clean, `pnpm install
+--frozen-lockfile` clean, web build green. Box left clear.
+
+S4 is complete. What it changes about the merge word: nothing regressed — the
+one surprise is a stale selector in another lane's harness, and the fourteenth
+red is the same species as the twelve already mapped.
+
+*— the menus lane, 2026-08-24.*
