@@ -164,6 +164,9 @@ one-element-at-a-time architecture, post-vacation; design half routes to the men
 item-84 build citizen; model phase = item 108); 108 (THE TUTOR MEMORY ARC — model-phase retrieval
 + carve-out sentence settle together; wire {messages, delta?, bible?} closed by architecture)
 opened; disclosure-v4 committee narrows to one sentence (the disclosure). **Next free: 109.**
+2026-08-24: item 104 REOPENED (production crash — New Page door hooks-order violation from
+fe0252b; forward-fix, rollback named+held at P2c 643dd16 · ec2b9755); 109 (the coverage gap — no
+gate for a cold direct load of #/page/new; fix lane's S0 completes it) opened. **Next free: 110.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

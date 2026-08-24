@@ -327,6 +327,20 @@ Registry: next free **104**.
 
 ## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17
 
+**⚠ REOPENED — PRODUCTION DEFECT (Fable, 2026-08-24).** The doorway ship (deployed `1cbda72` ·
+railway `59d55924`) shipped a **crash**: the **New Page door crashes ON MOUNT** at the deployed
+SHA — a **hooks-order violation introduced by `fe0252b`** (item 104's own doorway commit), **proven
+by execution at three trees** (the 83 desk's scratch-worktree investigation; the lane untouched,
+the worktree removed after). It escaped the 59/59 suite of record AND the GREEN review through a
+**coverage gap** (no gate drove a cold direct load of `#/page/new` — now **item 109**). **RULING:
+FORWARD-FIX at the fix lane.** The **Railway rollback lever is NAMED AND HELD:** redeploy P2c's
+tree — **git `643dd16` · railway `ec2b9755-1746-4b23-a3f8-e33130f984a9`** — via `railway up` from
+the primary checkout (item-98 guard); **Nick's word executes it if the forward-fix stalls** — NOT
+executed now. **INTERIM RULE (relayed to Nick):** the New Page door is **avoided on production
+pending the hotfix stamp.** The FIXED / REVIEWED-GREEN records below stand as history — the fix
+removed the defect's mechanism but introduced a hook-position crash the review did not catch (see
+Fable's ownership append on the doorway review, `docs/wrizo-alpha/doorway-review-fable.md`).
+
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
 toggle** each **no-op silently** — no mode change, no feedback. **Repro detail PENDING:** whether
@@ -563,6 +577,18 @@ button-naming ruling — the ask-2 reversal recorded as one, the button law stan
 quoted with its manifest — so **TR3's owed payload-naming clause is DELIVERED** and the last caveat
 clears. Both desks confirmed; **TD4, TR3, and BD4 are fully unblocked for build.** BD4's scope
 stays board-content-beyond-base (currently none). Disclosure-v4 stands provisionally-binding.
+
+## ITEM 109 — THE COVERAGE GAP: NO GATE FOR A COLD DIRECT LOAD OF #/page/new — OPENS 2026-08-24
+
+**OPENS (from item 104's production crash).** The doorway ship crashed the New Page door on mount
+in production, and **59/59 both settings + a GREEN review both missed it** — because **no gate
+drives a COLD DIRECT LOAD of `#/page/new`** (the harnesses reach the door through navigation, never
+a fresh mount at that URL, which is where the hooks-order violation fires). The escape is the gap,
+not the check: a defect that only manifests on cold direct load has no instrument. **The fix lane's
+S0 answer completes this charter** — the S0 defines the gate that would have caught it (a cold
+direct-load harness for `#/page/new`, and the class of URLs that mount a component with early
+returns). Harness-infra, fix-class; sibling to item 99 / item 100 (harness-floor robustness).
+Registry: next free **110**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -8956,6 +8982,15 @@ New-Page template births in the right mode by descriptor; re-mint clears the sta
 detection. Item 82's family did NOT red; no red-suite clause invoked. Rollback ratchet is now this
 stamp. **S4 queues behind it.** Item 87's Draft-default remains HELD (New Page Chooser, menus arc);
 item 97's tombstone-arrival residual and item 108's Tutor-memory carve-out stay post-vacation.
+
+**→ POST-DEPLOY PRODUCTION DEFECT (2026-08-24): item 104 REOPENED.** The **New Page door crashes on
+mount** at this deployed SHA (`1cbda72`) — a hooks-order violation from `fe0252b`, which escaped
+the 59/59 suite of record and the GREEN review via the coverage gap now opened as **item 109** (no
+gate drives a cold direct load of `#/page/new`). **RULING: FORWARD-FIX at the fix lane; the Railway
+rollback lever is NAMED AND HELD** — redeploy P2c (**git `643dd16` · railway `ec2b9755`**) via
+`railway up` from the primary checkout, on Nick's word, IF the fix stalls (not executed now).
+**Interim:** New Page door avoided on production pending the hotfix stamp. See item 104's REOPENED
+banner above and item 109.
 
 ## P2c DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship P2c")
 
