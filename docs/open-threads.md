@@ -340,6 +340,16 @@ executed now. **INTERIM RULE (relayed to Nick):** the New Page door is **avoided
 pending the hotfix stamp.** The FIXED / REVIEWED-GREEN records below stand as history — the fix
 removed the defect's mechanism but introduced a hook-position crash the review did not catch (see
 Fable's ownership append on the doorway review, `docs/wrizo-alpha/doorway-review-fable.md`).
+**→ ATTRIBUTION CORRECTED (Fable, 2026-08-24):** the crash CLASS **PRE-DATES the doorway** — there
+are **three hooks below the guard** (including `useCascade`), and **pre-doorway `src` crashes
+IDENTICALLY**. `fe0252b` did NOT introduce the class; it **added instances to an existing illegal
+region** (read the banner's "introduced by `fe0252b`" as "added instances to"). **The doorway
+review's ownership note STANDS** — the review still should have caught the hook position; the
+correction is about the defect's age, not the review's duty.
+**→ EXPOSURE + INTERIM RULE REFINED (Fable, 2026-08-24):** the LIVE path is a **two-device
+tombstone** — a page **deleted elsewhere while open here**, so its entry vanishes under a mounted
+surface — NOT a cold direct load. **Refined interim rule: Nick avoids CROSS-DEVICE DELETES until
+the hotfix stamp** (supersedes "avoid the New Page door" above).
 
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
@@ -588,6 +598,12 @@ not the check: a defect that only manifests on cold direct load has no instrumen
 S0 answer completes this charter** — the S0 defines the gate that would have caught it (a cold
 direct-load harness for `#/page/new`, and the class of URLs that mount a component with early
 returns). Harness-infra, fix-class; sibling to item 99 / item 100 (harness-floor robustness).
+**→ CHARTER UPDATED (Fable, 2026-08-24): the gate is "ENTRY VANISHES UNDER A MOUNTED SURFACE," NOT
+cold loads.** The true live exposure is a **two-device tombstone** — a page deleted on another
+device while it is open here, so its backing entry disappears out from under the mounted surface
+and the below-guard hooks fire on the re-render. The header above ("cold direct load of
+`#/page/new`") was the first read; the gate the fix lane's S0 must build is **a mounted surface
+whose backing entry vanishes** — the broader class of which the cold-load case is one instance.
 Registry: next free **110**.
 
 ## NOW — blocks everything downstream
@@ -10578,6 +10594,13 @@ fixture that no longer exists.
 - **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
   standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
   primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
+- **A BASELINE IS OLD PRODUCT UNDER CURRENT INSTRUMENTS — standing law (Fable, 2026-08-24).** To
+  prove a fix bites, run the OLD PRODUCT but under the CURRENT harness / instruments — **harness
+  infra NEVER reverts with the product.** Reverting the instruments too yields a FALSE NEGATIVE
+  (the old harness lacks the check the new one adds), which reads as "the fix changed nothing."
+  Evidence: the fix lane's false-negative recovery on item 104 — a baseline that reverted both
+  showed no crash until the current harness was held against the old product. Move only the
+  product; keep the instruments current.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
