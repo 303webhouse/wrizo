@@ -562,6 +562,57 @@ stamped suite was mid-run; launching one would have contended for the shared poo
 sweep. Recorded as an environmental open rather than measured badly. The fix does not depend on
 the answer — the class fix removes the fault on both paths.
 
+## ITEM 104, THIRD REOPEN — S0 COMPLETE: WHERE, WHY, AND THE ENVIRONMENT — 2026-08-24
+
+**WHERE (the gating question).** `useCascade` at `PageEditor.tsx:428`, below the single early
+return at `:340`. **This corrects one item on the ruled-out list:** the brief stated "every hook in
+PageEditorView is top-level and above the guard" — a census on main's own tip says otherwise, and
+`useCascade` is the hook whose absence drops the count. Measured, not argued.
+
+**WHY `entry` FLIPS.** `UnbornProvider` registers the unborn slot during **RENDER** (a `useMemo`,
+so children resolve it on their first render) but tears it down in an **EFFECT CLEANUP**. Those
+lifecycles differ. React 18 StrictMode simulates unmount/remount by cycling EFFECTS while
+PRESERVING memo state — so the cleanup cleared the slot, the memo did not re-run (deps unchanged),
+and the next render found nothing. The file's own comment anticipated a double RENDER ("idempotent,
+so a double render costs nothing"); it did not anticipate a double EFFECT.
+
+**THE ENVIRONMENT THAT REPRODUCES — and it CLOSES the cold-load open.** A **dev build with
+StrictMode**. Proven both directions on the SAME dev server: StrictMode ON → "Rendered fewer hooks
+than expected", tree blanked; StrictMode OFF → renders correctly. Production bundles strip
+StrictMode's double-invoke, which is exactly why this lane's production-bundle harness read green
+while the menu lane's scratch serve read red. **The 83 desk's cold-load void and this lane's
+cold-load-fine were both correct measurements of different builds** — the open observation carried
+in the last offer is hereby RECONCILED, and the hypothesis it named (dev serve vs production) is
+confirmed.
+
+**WHY THE PREVIOUS (SECOND) FIX DID NOT CLOSE IT.** The dispatcher guards decide in the PARENT. A
+**child-local re-render** of `PageEditorView` never re-runs the parent, so the parent guard is
+never consulted. The invariant has to hold INSIDE the component: every hook above, the decision
+below. Recorded because it is the same lesson twice — a guard that lives one level up protects only
+the renders that pass through that level.
+
+**THE FIX, AND WHAT THE CENSUS FOUND.** `PageEditorView` now runs every hook unconditionally (a
+frozen `MISSING_ENTRY` stand-in keeps the render reaching the end of its hook list) with the
+redirect below the last hook. **A repo-wide census over 145 files then found the fault was NOT
+alone: `ScriptEditor` carried the identical shape — and it is the room the doorway sends writers
+INTO, so fixing only the reported surface would have MOVED the crash, not removed it.** Fixed the
+same way. A third, `JournalEntryView`, sits on a surface unrouted since FX14 and is recorded and
+left alone rather than touched.
+**The slot lifecycle is fixed at its root too:** the spurious teardown is retired (it was hygiene,
+never correctness, by its own comment) and registration is self-healing at render.
+
+**AN INTERMEDIATE WRONG STATE, RECORDED BECAUSE IT ALMOST SHIPPED.** With only the hook order
+fixed, the crash was gone but `#/page/new` **redirected to Arrival** (`prose:false`) — a crash
+traded for a dead door, which would have read as "fixed" to any check that only asserts "no error".
+It was caught by asserting what the writer should SEE, not merely the absence of a throw.
+
+**NEW STANDING GUARD — `scripts/harness/hooks-order.mjs`.** A STATIC census, because the crashing
+path is dev-only and a production-bundle CDP scenario CANNOT bite on it. Run against the pre-fix
+source it names both violations by file, function, hook and line; green after. It carries one
+reasoned allowlist entry (the unrouted `JournalEntry.tsx`) so anything NEW shows up immediately.
+**Nothing in the suite had ever asserted hook ORDER before — which is why this class shipped three
+times.**
+
 ## ITEM 109 — THE VANISHED-SUBJECT COVERAGE GAP (harness) — OPENS 2026-08-24
 
 **Written by item 104's S0.** The suite has 59 files and none of them ever makes a record
