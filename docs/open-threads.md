@@ -9079,9 +9079,25 @@ abandon-don't-excuse discipline.)*
 live production build (the doorway wave, crashing on the two-device-tombstone path). Rollback is a
 redeploy of that tree (`railway up`).
 
-**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
-`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
-(`index-hZQhhS8W.js`) + `/auth/me` 401 verified LIVE.
+**DEPLOY STAMP: git `63b875b` · railway `410033f9-678d-4b66-8679-e20d07cd5da3`** — DEPLOYED
+2026-08-25 (`railway up --ci` from the primary checkout, item-98 guard verified; deployed image
+`sha256:5e876f77`). Verified LIVE: `/healthz` **200**, `/auth/me` **401**, and the server IS up.
+
+**⚠ PROVENANCE GAP — served bundle ≠ suite-of-record bundle (do NOT read this as clean-verified).**
+The suite of record verified **`index-hZQhhS8W.js`** (my local build); Railway deployed and now
+serves **`index-4pj2Iqk-.js` / `index-07aGd89Y.css`** — a DIFFERENT hash (the CSS hash changed too,
+though the hotfix touched no CSS). **Root cause: build-environment drift — local Node `v24.13.0`
+vs Railway's pinned `nodejs_18`, with NO `.nvmrc`/engines pin in the repo.** Same source tree
+(`2a03ace`/`63b875b`) and same frozen lockfile (verified: `pnpm i --frozen-lockfile` changed
+nothing locally), so the source hotfix (`PageEditor.tsx` hook lift) IS in the live bundle and the
+crash is functionally fixed with high confidence — but the exact deployed bytes were NOT run through
+the suite. Prior deploys reproduced exactly because local node was 18 then; it was upgraded to 24
+during the multi-day span. **OWED before this deploy can be called clean-verified:** pin Node 18
+(so local == Railway again), rebuild → confirm the hash reproduces `index-4pj2Iqk-.js`, and re-run
+the suite of record against THAT bundle. **Until then the interim rules STAY IN FORCE** (avoid
+cross-device deletes) and the 83-desk ping is HELD — not lifted on a byte-unverified deploy.
+Rollback lever remains **git `1cbda72` · railway `59d55924`** (the doorway build). Raised to Fable
+(reproducibility is an infra defect worth an item + a node pin).
 
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 
