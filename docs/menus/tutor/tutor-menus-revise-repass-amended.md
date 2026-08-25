@@ -1,6 +1,9 @@
 # ITEM 84 — REVISE RE-PASS, AMENDED · THE ERROR LENS AND ITS BUILD ORDER
 ### The Tutor's menu · TRR12–TRR18 · 2026-08-25
-**STATUS: SHAPE AND ORDER RULED (2026-08-25).** The four re-pass items are closed
+**STATUS: RATIFIED (2026-08-25).** Nick's words are given and Fable has ratified this
+document as written — TRR12's absorption, TRR14's decoration finding and its CSS-only
+flag law, TRR15's A13 preservation, the seven-ticket shape, and the order
+T1→T3→T2→T4→T5→T6→T7 with the first walkable slice T1+T3+T2. The four re-pass items are closed
 by Nick's word (relayed via Fable): TRR1 ratified with the MODEL exception; the
 their/there ruling superseded and re-argued below; TRR5's fork opened — **TU4's
 deferral is LIFTED for Revise only, by Nick's word**; TRR8 rest confirmed. Nothing
@@ -34,13 +37,18 @@ nothing arrives. Revise is the mode a writer *enters in order to be shown what i
 wrong*; a flag there is not an interruption but the mode's own answer to the writer's
 own act of entering it. Every earlier prohibition reads intact under this law.
 
-**CROSS-LANE DIVERGENCE — SURFACED, AND RULED.** DR7 (item 83's candidate) reads on
-disk: *"NOTHING ARRIVES UNBIDDEN — PROSE-WIDE… binding every prose mode."* Revise is a
-prose mode, so this ruling **narrows DR7** rather than sitting beside it. Surfaced to
-Nick 2026-08-25; his word: **"Revise accepted."** The law is therefore **DR7 narrowed
-by Nick's word — Revise excepted**, and it is recorded as such here and owed to item
-83's lane, which holds DR7 and must carry the same sentence. This desk does not amend
-another lane's law; it records the ruling and hands it over.
+**CROSS-LANE DIVERGENCE — RULED AND NARROWED.** DR7 (item 83's) read on disk as
+*"NOTHING ARRIVES UNBIDDEN — PROSE-WIDE… binding every prose mode."* Revise is a prose
+mode, so this ruling narrows it. Surfaced to Nick 2026-08-25; his word: **"Revise
+accepted."** **The law now reads, in the words both lanes carry:**
+
+> **Nothing arrives unbidden — PROSE-WIDE, binding every prose mode, EXCEPT REVISE,
+> by Nick's word.**
+
+TRR13 above is its reasoning. Per Fable's cross-lane instruction, both lanes record the
+narrowing in these same words and neither amends the other's file: this lane writes it
+here, the menu lane writes it into 83's records on Fable's relay, and Nick's word is the
+authority both cite.
 
 ## §3 · TRR14 · THE DECORATION FINDING — VERIFIED, WITH ITS LAW
 
@@ -91,14 +99,20 @@ new clothes. Correct → an olive checkmark, the marking clears (olive marks whe
 are; nothing celebrates, so no orange). Still wrong → the Tutor is called again for a
 *different* explanation or modeling approach, never the same one louder.
 
-**THE BUILD QUESTION, NAMED NOT ANSWERED (Nick's own):** what adjudicates correctness
-— re-running the checker, or a model call? The desk records the trade rather than
-ruling it: the checker is instant, free, silent, and cannot judge whether the writer's
-new sentence *means* what they intended; a model call costs a turn on the meter and
-fires only on the writer's press but can read intent. A third shape exists and should
-be on the table when it is decided: **checker first, model only on disagreement** —
-the cheap instrument answers, and the expensive one is consulted only when the writer
-insists their edit is right and the checker still objects.
+**THE ADJUDICATION — RULED CONDITIONALLY (2026-08-25).** Nick's word, verbatim: *"Is
+it a relatively easy ask that the app will know if a sentence that was just asked about
+has now been fixed without consulting an AI API call? If this isn't hard to implement,
+then that's definitely the way to go. If this is quite a complicated ask, then let's
+just go with the API call for now."* The ruling is therefore **checker first, model
+only on disagreement — conditional on cost**, and **T6's S0 answers it EMPIRICALLY
+before building**: can the local checker re-evaluate the edited sentence and report
+flag-cleared cheaply? Yes → checker first, model on disagreement. No → the model call,
+recorded as a deliberate simplification with the checker path named as a later
+optimization.
+
+**The line the S0 must draw:** the checker answers *"is this sentence clean,"* never
+*"did the writer understand."* **That gap is the disagreement case** — and it is why the
+model is not merely a fallback but the instrument for a different question.
 
 Under the button law, the button names what its own press sends. Under the decline
 standard, a still-wrong result never returns a refusal sentence — only the returning
@@ -119,8 +133,10 @@ Socratic question.
 ## §7 · TRR18 · THE BUILD ORDER — RULED
 
 **T1 → T3 → T2 → T4 → T5 → T6 → T7.** Proposed by the desk, put to Nick 2026-08-25,
-his word: **"Your proposed build order is fine."** Ranked and closed; build tickets
-are written against this sequence.
+his word: **"Your proposed build order is fine."** Ratified by Fable with the reasoning
+credited — vocabulary before visible marking protects the first Revise sitting from
+drowning in false flags on invented names. Ranked and closed; build tickets are written
+against this sequence.
 
 One deviation from the obvious sequence, and it is deliberate: **Vocabulary before the
 marking.** Wrizo's writers are novelists; the first Revise sitting on a chapter full of
@@ -139,11 +155,12 @@ starts — the order is ruled, that question is not.
 
 ---
 
-*Held for Nick's word: the §2 SYSTEM_PROMPT amendment (drafted, not applied —
-`tutor-rules.md` untouched); TRR11's relevance gate (does the style-guide dropdown
-ride the citation ask's gate, or stand in Revise always); whether the citation ask
-checks form only or also ledger completeness; and T6's adjudication question (§5).
-OWED TO ITEM 83'S LANE: DR7's narrowing, ruled by Nick 2026-08-25 — "Revise
-accepted" — to be carried in the lane that holds the law (§2).*
+*Coming to Nick AS A BATCH, per Fable, once all three are drafted: the §2 SYSTEM_PROMPT
+amendment (drafted, not applied — `tutor-rules.md` untouched); TRR11's relevance gate
+(does the style-guide dropdown ride the citation ask's gate, or stand in Revise
+always); and citation depth (does the citation ask check form only, or also ledger
+completeness). OWED TO ITEM 83'S LANE: DR7's narrowing in §2's exact words, on Fable's
+relay. T6's adjudication is ruled conditionally — its S0 answers the cost question
+empirically (§5).*
 
 — the item-84 desk, 2026-08-25
