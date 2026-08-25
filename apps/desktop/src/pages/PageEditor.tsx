@@ -327,6 +327,25 @@ function PageEditorView({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ITEM 104 HOTFIX — THESE TWO HOOKS LIVE ABOVE THE GUARD BELOW, DELIBERATELY.
+  //
+  // React counts hooks per render. Any hook below an early return runs a
+  // DIFFERENT number of times depending on whether that return fired, and the
+  // moment `entry` flips the count changes and React throws #300 ("rendered
+  // fewer hooks than expected") — blanking the tree. The effect body still
+  // reads `requestScreenplay`, defined far below: safe, because an effect body
+  // runs AFTER the render function has finished, by which time that const is
+  // initialised. Only the REGISTRATION has to be unconditional, and now it is.
+  const structureDoorRef = useRef(false);
+  useEffect(() => {
+    if (structureDoorRef.current) return;
+    if (!unbornRef.current) return;
+    if (unbornRef.current.descriptor.structure !== 'screenplay') return;
+    structureDoorRef.current = true;
+    requestScreenplay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!entry) return <Navigate to="/" replace />;
 
   // Exit lands where the page lives: its binder, the Journal if journal-
@@ -643,15 +662,7 @@ function PageEditorView({ id }: { id: string }) {
   // asked for it, and only ONCE per mount (the ref latch — an effect with empty
   // deps still re-runs under StrictMode's double-invoke, and `birthWith` on an
   // already-born surface would be a second row).
-  const structureDoorRef = useRef(false);
-  useEffect(() => {
-    if (structureDoorRef.current) return;
-    if (!unbornRef.current) return;
-    if (unbornRef.current.descriptor.structure !== 'screenplay') return;
-    structureDoorRef.current = true;
-    requestScreenplay();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
 
   // AB3 S4 — Journal furniture (ink/capture items) stays conditional on the
   // page's ORIGIN, not the editor's Free-Write MODE alone: a project- or
@@ -1006,6 +1017,18 @@ export function PageEditor() {
   const entry = getJournalEntry(id);
   if (entry?.pageType === 'board') return <BoardEditor key={id} id={id} />;
   if (entry?.pageType === 'script') return <ScriptEditor key={id} id={id} />;
+  // ITEM 104 HOTFIX — THE VANISHED-PAGE DECISION BELONGS HERE, NOT INSIDE THE
+  // VIEW. PageEditorView still carries `useCascade` BELOW its own `if (!entry)`
+  // guard (a pre-existing position, older than the doorway ship), so if that
+  // view is left mounted while `entry` flips to null it re-renders with fewer
+  // hooks and React throws #300, blanking the whole tree. Deciding one level up
+  // — in a dispatcher whose own hooks all sit above every return — makes the
+  // vanished page UNMOUNT the view instead of re-rendering it, which removes
+  // the fault CLASS rather than the one instance this ticket found.
+  //
+  // Reachable in production: another device deletes a page this one has open,
+  // and the tombstone arrives on a sync pull. Reproduced, and red pre-fix.
+  if (!entry) return <Navigate to="/" replace />;
   return <PageEditorView key={id} id={id} />;
 }
 
@@ -1060,6 +1083,11 @@ export function UnbornPage() {
         const kind = row?.pageType ?? (descriptor.kind === 'board' ? 'board' : undefined);
         if (kind === 'script') return <ScriptEditor key={id} id={id} />;
         if (kind === 'board') return <BoardEditor key={id} id={id} />;
+        // ITEM 104 HOTFIX — the same vanished-page decision as the born route
+        // above. On this route `row` is normally the unborn slot, so null here
+        // is genuinely exceptional; unmounting is still the right answer, and
+        // it keeps both dispatchers honest about the same rule.
+        if (!row) return <Navigate to="/" replace />;
         return <PageEditorView key={id} id={id} />;
       }}
     </UnbornProvider>

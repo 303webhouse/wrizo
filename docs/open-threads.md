@@ -327,6 +327,33 @@ Registry: next free **104**.
 
 ## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17
 
+**⚠ REOPENED — PRODUCTION DEFECT (Fable, 2026-08-24).** The doorway ship (deployed `1cbda72` ·
+railway `59d55924`) shipped a **crash**: the **New Page door crashes ON MOUNT** at the deployed
+SHA — a **hooks-order violation introduced by `fe0252b`** (item 104's own doorway commit), **proven
+by execution at three trees** (the 83 desk's scratch-worktree investigation; the lane untouched,
+the worktree removed after). It escaped the 59/59 suite of record AND the GREEN review through a
+**coverage gap** (no gate drove a cold direct load of `#/page/new` — now **item 109**). **RULING:
+FORWARD-FIX at the fix lane.** The **Railway rollback lever is NAMED AND HELD:** redeploy P2c's
+tree — **git `643dd16` · railway `ec2b9755-1746-4b23-a3f8-e33130f984a9`** — via `railway up` from
+the primary checkout (item-98 guard); **Nick's word executes it if the forward-fix stalls** — NOT
+executed now. **INTERIM RULE (relayed to Nick):** the New Page door is **avoided on production
+pending the hotfix stamp.** The FIXED / REVIEWED-GREEN records below stand as history — the fix
+removed the defect's mechanism but introduced a hook-position crash the review did not catch (see
+Fable's ownership append on the doorway review, `docs/wrizo-alpha/doorway-review-fable.md`).
+**→ ATTRIBUTION CORRECTED (Fable, 2026-08-24):** the crash CLASS **PRE-DATES the doorway** — there
+are **three hooks below the guard** (including `useCascade`), and **pre-doorway `src` crashes
+IDENTICALLY**. `fe0252b` did NOT introduce the class; it **added instances to an existing illegal
+region** (read the banner's "introduced by `fe0252b`" as "added instances to"). **The doorway
+review's ownership note STANDS** — the review still should have caught the hook position; the
+correction is about the defect's age, not the review's duty.
+**→ EXPOSURE + INTERIM RULE REFINED (Fable, 2026-08-24):** the LIVE path is a **two-device
+tombstone** — a page **deleted elsewhere while open here**, so its entry vanishes under a mounted
+surface — NOT a cold direct load. **Refined interim rule: Nick avoids CROSS-DEVICE DELETES until
+the hotfix stamp** (supersedes "avoid the New Page door" above).
+**→ LIFTED 2026-08-25 (Fable's ruling): the hotfix is FUNCTIONALLY VERIFIED and DEPLOYED (git
+`63b875b` · railway `410033f9`); cross-device deletes are fine again, the crash class is removed,
+item 104 re-closed.** Byte-identity of the deployed bundle stays unverified cross-OS (item 111).
+
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
 toggle** each **no-op silently** — no mode change, no feedback. **Repro detail PENDING:** whether
@@ -455,6 +482,97 @@ tombstone immediately and measured nothing — `applyCollection` correctly REFUS
 just-minted board is still in the dirty set ("local unsynced edit wins"); the scenario now pushes
 and cleans first, exactly as a real second device would have.
 
+## ITEM 104 REOPENED — THE HOOKS-ORDER CRASH: S0, AND AN ATTRIBUTION CORRECTION — 2026-08-24
+
+**→ Fix lane's record of the reopen; converges with chat 1's REOPENED banner at item 104 (above,
+the SCREENPLAY-SELECTION section) — same reopen, recorded from both lanes.** The banner carries the
+ruling + the held rollback lever + Fable's corrections; this carries the S0, the census, and the
+fix. Read together, not as two defects.
+
+**The crash is real, was live, and is fixed. It was NOT introduced by the doorway ship, and that
+is measured, not argued.**
+
+**S0 — THE ONE QUESTION THAT GATED THE FIX: why did 59/59 pass?**
+Because **no committed scenario has ever driven `entry` from non-null to NULL while a surface
+stayed MOUNTED.** Every harness file either sits on a page that exists, or navigates away — and
+navigating away UNMOUNTS, which is precisely what hides this fault. The suite could not even
+EXPRESS "make this row vanish under the writer" until the armable sync pull landed with item 97
+the week before. **That gap is item 109, opened below.**
+
+**THE DISCRIMINATING CONDITION IS NOT COLD-VS-WARM.** The offered hypothesis (a cold direct load
+renders once with `entry` null, then the slot arrives) was TESTED AND DID NOT REPRODUCE: cold
+loads of `/page/new`, `/page/new?structure=screenplay`, and a missing page id all render
+correctly (`rootKids:4`, no error). The real condition is **the page you are looking at becoming
+ABSENT while you are still on it** — `entry` non-null → null in a mounted view. React counts
+hooks per render, so the count drops and it throws #300, blanking the tree (`rootKids:0`).
+
+**WHO IS HIT.** Not "only direct loads", and not every in-app writer. Reproduced via the path
+production actually reaches: **another device deletes a page this one has open, and the tombstone
+arrives on a sync pull** (`applyRemoteRecords`). Logout navigates away before the cache clears,
+and the in-app Delete verb (`BoardRowMenu`) deletes from a LIST, not the page underfoot — so the
+two-device case is the live one, which fits a founder working laptop-plus-Desktop.
+
+**ATTRIBUTION — CORRECTED.** The report named this lane's `structureDoorRef` effect. A census
+found **THREE** hooks below `PageEditorView`'s single `if (!entry)` guard, and **`useCascade` is
+one of them — a position OLDER than the doorway ship.** Built from PRE-DOORWAY src (with
+`structureDoorRef` absent, verified) the crash reproduces IDENTICALLY. The doorway ship added two
+hooks to an already-illegal region; it did not create the fault.
+**A FALSE NEGATIVE ON THE WAY THERE, RECORDED BECAUSE IT IS THE TRAP:** the first baseline
+attempt checked out the pre-doorway tree WHOLE — which also lacked this lane's own
+`/api/_sync_mode { pull }` double. With no way to deliver a tombstone, nothing transitioned and
+the baseline "passed", which would have wrongly confirmed the doorway ship as the cause. The
+baseline was redone with **pre-doorway SRC and current HARNESS INFRA**, and then it crashed.
+Harness infra is not product code and must not be reverted alongside it.
+
+**THE FIX — AND WHY THE ORDERED ONE-LINE LIFT WAS NECESSARY BUT NOT SUFFICIENT.** This lane's two
+hooks are lifted above the guard, as ordered. But the census says lifting only those leaves
+`useCascade` below it, and the pre-doorway baseline PROVES that is still a crash. So the
+vanished-page decision moves UP into both dispatchers (`PageEditor` and `UnbornPage`), whose own
+hooks all sit above every return: a vanished page now **UNMOUNTS** the view instead of
+re-rendering it short. That removes the fault CLASS, not the one instance this ticket found.
+`PageEditorView`'s own guard stays as defence.
+
+**VERIFICATION — `item104.mjs` S6, PROVEN TO BITE:** 2/15 RED against the deployed bundle
+(`Minified React error #300`, `rootKids=0`), 15/15 green with the fix, other 13 unchanged.
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE:** unparked `59/59` and parked `59/59`,
+both `bundle=index-hZQhhS8W.js/531318b` on `tree=bddcbcf` — same asset hash on both runs, so the
+two results describe the same software and not merely the same commit. `tsc` clean.
+**NO DEPLOY: the hotfix waits on Nick's word; production is still `git 1cbda72 · railway
+59d55924`, which CARRIES the crash.**
+
+**OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
+this lane's cold-load-fine, at the same bundle.** Both are reported as measured; they disagree,
+so neither is overwritten. What this lane measured: cold loads (full document load, then reload)
+of `/page/new`, `/page/new?structure=screenplay`, and `/page/<missing id>` all render correctly
+on the DEPLOYED bundle — `rootKids:4`, no console error. What the 83 desk measured: a void on a
+cold load across three trees.
+**MOST LIKELY RECONCILIATION, named as a hypothesis and not asserted: a DEV serve versus a
+PRODUCTION build.** `main.tsx` wraps the app in `React.StrictMode`, whose double-invoke of render
+and effects is **development-only** — it is stripped from a production build. Every probe this
+lane ran used `vite build` output served statically; a `vite dev` scratch serve would double-
+invoke, which is exactly the condition that can turn a single render-then-navigate into a
+detectable hook mismatch, and it also explains the error text differing (a dev build prints the
+full invariant, production prints "Minified React error #300").
+**THE DISCRIMINATING QUESTION for the 83 desk's re-check, so it settles in one run:** was the
+scratch serve `vite dev`, or a static serve of `dist-web`? If dev — the two findings agree and
+the difference is StrictMode, not the product. If static production — the findings genuinely
+conflict at the same bundle and something environmental is unaccounted for.
+**NOT reconciled here by choice:** settling it needs a dev server plus a browser, and this lane's
+stamped suite was mid-run; launching one would have contended for the shared pool and voided the
+sweep. Recorded as an environmental open rather than measured badly. The fix does not depend on
+the answer — the class fix removes the fault on both paths.
+
+## ITEM 109 — THE VANISHED-SUBJECT COVERAGE GAP (harness) — OPENS 2026-08-24
+
+**Written by item 104's S0.** The suite has 59 files and none of them ever makes a record
+DISAPPEAR beneath a mounted surface. Every scenario keeps its subject alive or leaves the room.
+That single blind spot let a tree-blanking crash ship green. **Charter:** a standing scenario
+class — for each surface that reads a subject through `getJournalEntry` (page, board, script),
+drive the subject to absent WHILE MOUNTED (remote tombstone via the armed pull; local delete
+where reachable) and assert the surface degrades without throwing. **Also owed:** a lint or
+census check for hooks below any early return, since that is the shape that made absence fatal
+rather than merely awkward. Registry: next free **110**.
+
 ## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
 
 **→ S0 CLOSED benign (Fable's review, 2026-08-17):** a measurement, not a defect claim — S4 green
@@ -557,6 +675,84 @@ confirmed; the counsels **UNBLOCK**. The disclosure sentence enters both build b
 ticket. **Two carried caveats:** TR3's **ask 2 OWES one payload-naming clause** (the 84 desk's
 wordsmith) before its ticket; **BD4's scope** is restated to **board-content-beyond-base — currently
 none.** Disclosure-v4 remains provisionally-binding; live testing may amend it, append-only.
+**→ CONDITION (1) CLOSED — BOTH DESKS; TD4 / TR3 / BD4 FULLY UNBLOCKED FOR BUILD (Fable,
+2026-08-24).** The 84 side now closes the census too: §10 (merge `19f0db7`) records the
+button-naming ruling — the ask-2 reversal recorded as one, the button law standing, candidate B
+quoted with its manifest — so **TR3's owed payload-naming clause is DELIVERED** and the last caveat
+clears. Both desks confirmed; **TD4, TR3, and BD4 are fully unblocked for build.** BD4's scope
+stays board-content-beyond-base (currently none). Disclosure-v4 stands provisionally-binding.
+
+## ITEM 109 — THE COVERAGE GAP: NO GATE FOR A COLD DIRECT LOAD OF #/page/new — OPENS 2026-08-24
+
+**→ CONVERGED — SAME ITEM as the fix lane's "ITEM 109 — THE VANISHED-SUBJECT COVERAGE GAP" above
+(reconciled at the hotfix merge, 2026-08-24).** Two lanes opened item 109 in parallel for the same
+coverage gap; the fix lane's **vanished-subject framing is CANONICAL** — it matches Fable's refined
+charter (the gate is "entry vanishes under a mounted surface," not a cold load). This section is
+chat 1's first read, kept as history. **ONE item 109; registry next free 110** (both records name
+the same pointer — the two markers are not two items).
+
+**OPENS (from item 104's production crash).** The doorway ship crashed the New Page door on mount
+in production, and **59/59 both settings + a GREEN review both missed it** — because **no gate
+drives a COLD DIRECT LOAD of `#/page/new`** (the harnesses reach the door through navigation, never
+a fresh mount at that URL, which is where the hooks-order violation fires). The escape is the gap,
+not the check: a defect that only manifests on cold direct load has no instrument. **The fix lane's
+S0 answer completes this charter** — the S0 defines the gate that would have caught it (a cold
+direct-load harness for `#/page/new`, and the class of URLs that mount a component with early
+returns). Harness-infra, fix-class; sibling to item 99 / item 100 (harness-floor robustness).
+**→ CHARTER UPDATED (Fable, 2026-08-24): the gate is "ENTRY VANISHES UNDER A MOUNTED SURFACE," NOT
+cold loads.** The true live exposure is a **two-device tombstone** — a page deleted on another
+device while it is open here, so its backing entry disappears out from under the mounted surface
+and the below-guard hooks fire on the re-render. The header above ("cold direct load of
+`#/page/new`") was the first read; the gate the fix lane's S0 must build is **a mounted surface
+whose backing entry vanishes** — the broader class of which the cold-load case is one instance.
+Registry: next free **110**.
+
+## ITEM 110 — ONE-CHECKOUT-PER-AGENT VIOLATED (worktree-assignment gap) — OPENS 2026-08-24
+
+**OPENS (deck-lane cross-lane contact report; Fable's ruling).** The deck lane built in the PRIMARY
+CHECKOUT during chat 1's in-flight hotfix suite, because it had **no worktree assignment in its
+brief**. Three contacts with chat 1's staging — all now repaired and **VERIFIED BY CHAT 1** (a
+relayed claim is not a verification): **(a)** `runtime-verify.mjs` edited mid-parked-run,
+additive-only — verified now byte-identical to chat 1's suite tree `2a03ace` (the edit reverted),
+and chat 1's re-run was complete (59/59 both settings, no gaps); **(b)** its 11 uncommitted files
+moved out — verified `git status` clean at the `63b875b` tree; **(c)** it overwrote
+`apps/desktop/dist-web` then rebuilt at clean HEAD — verified `index-hZQhhS8W.js`, **exactly 531318
+bytes**, matching chat 1's suite stamp. The deck lane moved to its own worktree
+(`.claude/worktrees/item84-deck`) and recorded the incident. **Fix: the brief template gains a
+worktree-assignment line** — one checkout per agent, assigned at brief time. Registry: next free
+**111**.
+
+## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24
+
+**OPENS (Fable's ruling, from the hotfix deploy's bundle mismatch).** The repo **pins no Node
+version**, so a local build and Railway's build can differ in OUTPUT BYTES from identical source:
+chat 1's suite verified `index-hZQhhS8W.js` (local Node **24**), Railway deployed `index-4pj2Iqk-.js`
+(pinned **nodejs_18**). Local node drifted 18→24 across the vacation span — why prior deploys
+reproduced exactly and this one did not (deps were NOT the cause; `pnpm i --frozen-lockfile` changed
+nothing). **Fix: `.nvmrc` = 18 + an `engines.node` field, matching Railway's `nodejs_18`.** CONFIG —
+**propose-never-ship:** land as its own commit, offer it, and **the pin moves DELIBERATELY WITH
+Railway, never independently** (both together or neither). Resolution owed before this deploy is
+clean-verified: rebuild under Node 18 → confirm it reproduces `index-4pj2Iqk-.js` byte-for-byte →
+re-run the suite of record against THAT bundle both settings (item 111 step b). Registry: next free
+**112**.
+**→ CORRECTION (chat 1, step-b executed 2026-08-25): the gap is OS-LEVEL, NOT the Node version.** A
+local rebuild under a portable Node 18 (`v18.20.5`) produced `index-hZQhhS8W.js` (531318 b) —
+**identical to the Node-24 build**, not Railway's `index-4pj2Iqk-.js`. Holding Node constant at 18:
+**Windows local → `hZQhhS8W`, Linux Railway → `4pj2Iqk-`** (and the CSS hash differs too). So the
+divergence is the **build OS** (Windows ↔ Railway's Linux / nixpacks), not node. The `.nvmrc`=18 pin
+stays as necessary hygiene (node should still match Railway) but is **NOT SUFFICIENT** to reproduce
+the deployed bytes from a Windows checkout. **Byte-verifying the Linux-built deployed bundle needs a
+Linux build environment** (WSL, or a nixpacks-matching Docker container) — build the suite-of-record
+artifact where Railway builds it. Absent that, the deploy rests on the **functional-equivalence
+argument**: identical source tree + frozen lockfile, the hotfix hook-lift is in both builds, so the
+crash is fixed; only exact-byte identity is unverifiable cross-OS. Interim rules HOLD. Raised to
+Fable for the reproducibility strategy.
+**→ FABLE'S RULING (2026-08-25): item 111 STAYS OPEN, reframed OS-level; the interim-rules HOLD
+above is SUPERSEDED — they are LIFTED (the hotfix is FUNCTIONALLY VERIFIED, option 2).** The
+durable fix is a **Linux suite-of-record environment** (WSL, or a nixpacks-matching container) so
+byte-identity is true again for every future ship — **scheduled POST-WALKTHROUGH, not now** (standing
+up a build env mid-arc costs a day). The `.nvmrc`=18 pin stays as correct hygiene, recorded as NOT
+closing 111. The Node hypothesis was chat 1's to test, not just execute — overturned with credit.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -7625,6 +7821,10 @@ none.** Disclosure-v4 remains provisionally-binding; live testing may amend it, 
     family is green here at both settings: `j5` 37, `j4` 24, `b2-1` 28, `fx6` 37, `th2` 42,
     `m4` 43.** That is an observation about this head, not a closure of item 82 — `j4`,
     `b2-1` and `fx6` remain UNATTRIBUTED and a green run is not a diagnosis.
+    **→ ITEM 82 WATCH (2026-08-24):** `m3` ran GREEN on a quiet box — a **second data point** (the
+    83 desk's S4). The watch records it; **NOTHING CLEARED.** A green run on a quiet box is exactly
+    the evidence class that does NOT attribute the family's reds — "the machine was quiet" is a
+    retired clearance argument; logged as a data point, not a diagnosis.
     **THE REBASE WAS A PURE REPLAY, and fidelity was measured rather than assumed.**
     `--empty=keep` so the empty gate-commit survived as itself; **12/12 commits replayed,
     ZERO conflicts; all SEVEN touched files byte-identical BLOBS pre→post.** The previous
@@ -8895,6 +9095,68 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## HOTFIX 104 DEPLOY MANIFEST — 2026-08-24 (chat 1, on Nick's "ship the hotfix on a clean suite")
+
+**HOTFIX 104 — the hooks-order crash class.** Nick's word: "ship the hotfix on a clean suite." The
+merged-but-undeployed set since the doorway live build (`1cbda72`). Deploying the `main` HEAD
+(`2a03ace`) — this records commit's own SHA, stamped below immediately after `railway up`.
+
+**New PRODUCT code since the doorway live build (`1cbda72`) — apps/desktop/src, ONE FILE (verified
+`1cbda72..HEAD`, +37/−9), ZERO schema, ZERO server:**
+- item 104 **hotfix** · merge `d620dc7` (branch `hotfix-104-hooks @ 2c36ad0`) — `PageEditor.tsx`:
+  the vanished-page decision moves into BOTH dispatchers, whose hooks sit above every return; a
+  vanished page UNMOUNTS the view instead of re-rendering it short. The **class removed** (three
+  hooks below the guard, `useCascade` among them, OLDER than the doorway), not the instance —
+  the doorway is exonerated as introducer. Proven: `item104.mjs` S6 red 2/15 at the deployed bundle
+  → 15/15 with the fix, on the exact two-device-tombstone path. **REVIEWED GREEN**
+  (`docs/wrizo-alpha/hotfix-104-review-fable.md`).
+
+**Docs since `1cbda72` (records only, no deployed surface):** the doorway review + Fable's ownership
+append, the item-104 reopen + item-109 records (both lanes, reconciled), the three founder-ruling
+corrections + the new standing law, item-84 §9/§10, the disclosure-v4 committee + ratification +
+both-desks close, the hotfix review, and this manifest. Confirmed: `1cbda72..HEAD` touches
+`apps/desktop/src` in exactly the one file above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs`, BOTH HARNESS_PARKED settings,
+read to completion, machine-clear — **59/59 UNSET (CLEAN) and 59/59 PARKED (CLEAN)** at
+`tree=2a03ace bundle=index-hZQhhS8W.js/531318b`, the same bundle the hotfix offer stamped. `tsc` ×2
+EXIT 0; `build:web` clean; NOT contaminated; item 82's family did NOT red. *(A first parked run had
+died on a machine-sleep / logoff environmental failure — 34 consecutive empty-output NOVERDICT
+browser-launch crashes, `0xC000026B`, no product red; re-run whole and clean here, per the
+abandon-don't-excuse discipline.)*
+
+**ROLLBACK TARGET: git `1cbda72` · railway `59d55924-f1b1-4792-a293-f834e3ad898d`** — the current
+live production build (the doorway wave, crashing on the two-device-tombstone path). Rollback is a
+redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `63b875b` · railway `410033f9-678d-4b66-8679-e20d07cd5da3`** — DEPLOYED
+2026-08-25 (`railway up --ci` from the primary checkout, item-98 guard verified; deployed image
+`sha256:5e876f77`). Verified LIVE: `/healthz` **200**, `/auth/me` **401**, and the server IS up.
+
+**⚠ PROVENANCE GAP — served bundle ≠ suite-of-record bundle (do NOT read this as clean-verified).**
+The suite of record verified **`index-hZQhhS8W.js`** (my local build); Railway deployed and now
+serves **`index-4pj2Iqk-.js` / `index-07aGd89Y.css`** — a DIFFERENT hash (the CSS hash changed too,
+though the hotfix touched no CSS). **Root cause: build-environment drift — local Node `v24.13.0`
+vs Railway's pinned `nodejs_18`, with NO `.nvmrc`/engines pin in the repo.** Same source tree
+(`2a03ace`/`63b875b`) and same frozen lockfile (verified: `pnpm i --frozen-lockfile` changed
+nothing locally), so the source hotfix (`PageEditor.tsx` hook lift) IS in the live bundle and the
+crash is functionally fixed with high confidence — but the exact deployed bytes were NOT run through
+the suite. Prior deploys reproduced exactly because local node was 18 then; it was upgraded to 24
+during the multi-day span. **OWED before this deploy can be called clean-verified:** pin Node 18
+(so local == Railway again), rebuild → confirm the hash reproduces `index-4pj2Iqk-.js`, and re-run
+the suite of record against THAT bundle. **Until then the interim rules STAY IN FORCE** (avoid
+cross-device deletes) and the 83-desk ping is HELD — not lifted on a byte-unverified deploy.
+Rollback lever remains **git `1cbda72` · railway `59d55924`** (the doorway build). Raised to Fable
+(reproducibility is an infra defect worth an item + a node pin).
+**→ RESOLVED (Fable's ruling, 2026-08-25): FUNCTIONALLY VERIFIED — not byte-verified.** Step (b)
+proved the gap is OS-level, not Node (a Windows Node-18 rebuild still produced `hZQhhS8W`, not
+Railway's `4pj2Iqk-`; item 111). **Basis:** identical source tree + frozen lockfile, the hook-lift
+provably in the deployed source, behavior-correct under any toolchain. The crash is fixed; the
+hotfix is **FUNCTIONALLY VERIFIED**, byte-identity of the deployed bundle **NOT** verified cross-OS
+(item 111, open, fix = a Linux suite-of-record env; scheduled post-walkthrough). **INTERIM RULES
+LIFTED** — cross-device deletes are fine again. **Build OS: local Windows; deploy Railway
+Linux/nixpacks (node 18).**
+
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 
 **THE DOORWAY WAVE — items 104 + 87-subset + 97 + 101's park.** Nick's word: "SHIP THE DOORWAY."
@@ -8946,6 +9208,15 @@ New-Page template births in the right mode by descriptor; re-mint clears the sta
 detection. Item 82's family did NOT red; no red-suite clause invoked. Rollback ratchet is now this
 stamp. **S4 queues behind it.** Item 87's Draft-default remains HELD (New Page Chooser, menus arc);
 item 97's tombstone-arrival residual and item 108's Tutor-memory carve-out stay post-vacation.
+
+**→ POST-DEPLOY PRODUCTION DEFECT (2026-08-24): item 104 REOPENED.** The **New Page door crashes on
+mount** at this deployed SHA (`1cbda72`) — a hooks-order violation from `fe0252b`, which escaped
+the 59/59 suite of record and the GREEN review via the coverage gap now opened as **item 109** (no
+gate drives a cold direct load of `#/page/new`). **RULING: FORWARD-FIX at the fix lane; the Railway
+rollback lever is NAMED AND HELD** — redeploy P2c (**git `643dd16` · railway `ec2b9755`**) via
+`railway up` from the primary checkout, on Nick's word, IF the fix stalls (not executed now).
+**Interim:** New Page door avoided on production pending the hotfix stamp. See item 104's REOPENED
+banner above and item 109.
 
 ## P2c DEPLOY MANIFEST — 2026-08-17 (chat 1, on Nick's "Ship P2c")
 
@@ -10533,6 +10804,26 @@ fixture that no longer exists.
 - **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
   standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
   primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
+- **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24).** A stamp
+  names the TREE, the BUNDLE, **and the TOOLCHAIN** that produced it — the same source under a
+  different Node builds different bytes, so a bundle hash without its build environment names its
+  source but not its software (item 77(c)'s lesson, extended to the toolchain). **Suite stamps and
+  deploy manifests gain a NODE VERSION line;** a served-bundle hash only verifies against the build
+  env that produced the suite's bundle. Proven by the hotfix-104 deploy: Node 24 local vs Node 18
+  Railway built different hashes from one source (item 111).
+  **AMENDED 2026-08-25 (Fable) — the bar stated openly, not broken silently:** **SERVED == TESTED
+  holds at the level of SOURCE + LOCKFILE; byte-identity of the bundle holds ONLY when the suite
+  runs in the DEPLOY's own OS.** Where it does not, the stamp says **FUNCTIONALLY VERIFIED** and
+  NAMES THE GAP — never silent. **Every stamp names its BUILD OS beside its toolchain.** (Correction
+  to the example above: the hotfix-104 divergence was OS-level — Windows suite host vs Railway's
+  Linux/nixpacks — NOT the node version; a Node-18 Windows rebuild still diverged. See item 111.)
+- **A BASELINE IS OLD PRODUCT UNDER CURRENT INSTRUMENTS — standing law (Fable, 2026-08-24).** To
+  prove a fix bites, run the OLD PRODUCT but under the CURRENT harness / instruments — **harness
+  infra NEVER reverts with the product.** Reverting the instruments too yields a FALSE NEGATIVE
+  (the old harness lacks the check the new one adds), which reads as "the fix changed nothing."
+  Evidence: the fix lane's false-negative recovery on item 104 — a baseline that reverted both
+  showed no crash until the current harness was held against the old product. Move only the
+  product; keep the instruments current.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1

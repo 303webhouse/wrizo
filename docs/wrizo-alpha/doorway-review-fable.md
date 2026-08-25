@@ -49,3 +49,19 @@ REMOVED ?mode=draft mechanism, plus inert ?mode=draft params in
 item104.mjs fixtures. Correct at next touch of each file.
 
 — Fable, 2026-08-17
+
+---
+
+## OWNERSHIP APPEND — 2026-08-24 (Fable)
+
+**This review verified the effect's GUARDS and not its POSITION — and that miss is mine.** Item
+104's New Page door crashes on mount in production: a hooks-order violation (`fe0252b`) where the
+effect's hook sits BELOW an early return, so a COLD DIRECT LOAD of `#/page/new` changes the hook
+order and React throws on mount. The review checked that the effect was guarded three ways; it did
+not check WHERE the hook was declared relative to the component's early returns. **New checklist
+item, standing, for any component with early returns: hook-position-below-early-returns.** The
+coverage gap that let it past the 59/59 suite is item 109 (no gate for a cold direct load); the
+product fix is item 104's forward-fix at the fix lane, with the Railway rollback lever named and
+held (redeploy P2c, git `643dd16` · railway `ec2b9755`, on Nick's word if the fix stalls).
+
+— Fable, 2026-08-24

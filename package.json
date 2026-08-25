@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "pnpm --filter=@writer-studio/desktop dev",
     "build": "pnpm --filter=@writer-studio/desktop build"
