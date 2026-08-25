@@ -11,6 +11,8 @@ import { computeStructureFacts, computeFragmentItems } from '../store/tutorLense
 import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstimates';
 import { addTutorSessionCost } from '../store/tutorMeter';
 import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
+import type { EditorMode } from './ForwardOnlyEditor';
+import { FREE_WRITE_POOLS, DRAW_CEILING, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -187,7 +189,30 @@ export interface TutorProps {
   // `.desk-frame-sliver-anchor--board` already established — is the whole
   // fix; no new geometry code, only a wider union and two CSS overrides).
   pageKind: 'prose' | 'screenplay' | 'board';
+  // ITEM 84, THE DECK PHASE — THE MODE SEAM. The census's headline finding
+  // was that this panel is MODE-BLIND: until this prop, not one branch in
+  // this file read the writing mode, and the panel rendered identically in
+  // Free Write, Draft and Revise. This is the first mode-aware layer the
+  // Tutor has ever carried — new law, not renovated law.
+  //
+  // OPTIONAL on purpose, and absent means "no mode": BoardEditor mounts this
+  // component from a surface that has no ModeStrip and no EditorMode at all,
+  // so it passes nothing rather than being made to invent a mode it doesn't
+  // have. The Free Write roster mounts on `'journal'` and NOWHERE else —
+  // Draft ('drafting'), screenplay (Draft-only by its own law) and Board all
+  // render exactly the panel they rendered before this ticket.
+  mode?: EditorMode;
 }
+
+// ITEM 84, THE DECK PHASE — the roster's three presets, in Nick's own ruled
+// order. `id` keys the local deck; `term` keys the string of record.
+const FREE_WRITE_PRESETS: { id: FreeWritePresetId; term: 'tutorFreeWritePrompt' | 'tutorFreeWriteUnblock' | 'tutorFreeWriteTips' }[] = [
+  { id: 'writingPrompt', term: 'tutorFreeWritePrompt' },
+  { id: 'unblock', term: 'tutorFreeWriteUnblock' },
+  { id: 'tips', term: 'tutorFreeWriteTips' },
+];
+
+const NO_DRAWS: Record<FreeWritePresetId, number> = { writingPrompt: 0, unblock: 0, tips: 0 };
 
 interface DisplayMessage {
   id: string;
@@ -195,7 +220,7 @@ interface DisplayMessage {
   text: string;
 }
 
-export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
+export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) {
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -235,6 +260,50 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
   const [meterState, setMeterState] = useState<{ text: string; fading: boolean } | null>(null);
   const meterFadeTimeoutRef = useRef<number | null>(null);
   const meterRemoveTimeoutRef = useRef<number | null>(null);
+
+  // ==========================================================================
+  // ITEM 84, THE DECK PHASE — the Free Write roster's own state.
+  // ==========================================================================
+  // Free Write is mode key 'journal' (ModeStrip.tsx maps t('modeFreeWrite') to
+  // exactly this value). Absent mode (Board) is not Free Write.
+  const freeWrite = mode === 'journal';
+
+  // THE STANDING DRAW — the whole of Nick's "only one is ever rendered at a
+  // time", expressed as a mechanism rather than a rule anyone has to remember.
+  // Exactly ONE drawn line can exist at once, for the WHOLE roster: a second
+  // press REPLACES it, never stacks beside it. His reason is on the record and
+  // belongs here: "We don't want a user spending time debating which prompt to
+  // respond to — the goal in Free Write is to get writing without much
+  // deliberation." A build that renders three at once satisfies the count and
+  // defeats the purpose, so there is deliberately no array here to render.
+  //
+  // It is COMPONENT STATE, not a persisted message, for a reason store/
+  // persistence.ts states in its own words: a Tutor thread "is born on its
+  // first real message and not one keystroke sooner." A press sends nothing
+  // and says nothing — it must not conjure a thread. The draw commits into the
+  // real thread only when the writer engages (send(), below), immediately
+  // ahead of their own message, so the model sees the spur it is answering and
+  // the conversation continues in this same window. An unanswered spur
+  // persists nothing, which is the honest outcome: it was a spur toward the
+  // page, and the page is where it was answered.
+  const [draw, setDraw] = useState<{ preset: FreeWritePresetId; text: string } | null>(null);
+  // The anti-deliberation ceiling: three draws behind one ask, then that ask is
+  // spent. Per preset, not per roster — "up to 3 prompts may exist behind an
+  // ask" is a property of the ask.
+  const [drawCounts, setDrawCounts] = useState<Record<FreeWritePresetId, number>>(NO_DRAWS);
+  // FX15/idleNudges' no-near-repeat ring, one per preset — per MOUNT, like the
+  // nudge engine's own recentRef (a deck that repeats itself within a sitting
+  // reads as broken; across sittings nobody notices, and a persisted draw
+  // history would be a store this feature has no business creating).
+  const recentDrawsRef = useRef<Record<FreeWritePresetId, string[]>>({ writingPrompt: [], unblock: [], tips: [] });
+  // pageText.length at the moment of the last draw — the re-arm marker. See
+  // the re-arm effect below for what it is for and why it is a ref.
+  const drawAnchorRef = useRef<number | null>(null);
+  // (A) of the roster — "blank space with a flashing cursor where anything can
+  // be asked." The composer already renders blank; what it never did was take
+  // focus, so there was no cursor until the writer clicked. See the focus
+  // effect below.
+  const composerRef = useRef<HTMLInputElement | null>(null);
 
   // The vanishing law with the dock rider (A15), inherited whole via the
   // SAME mechanism Cascade.tsx already established (an explicit keydown
@@ -416,6 +485,69 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
     if (meterRemoveTimeoutRef.current !== null) window.clearTimeout(meterRemoveTimeoutRef.current);
   }, []);
 
+  // ITEM 84, THE DECK PHASE — (A) of the roster: the composer takes focus when
+  // the panel opens in Free Write, so the roster's first member is genuinely
+  // "blank space with a flashing cursor where anything can be asked" and not
+  // just an input the writer must go find. Free Write only: this is the mode
+  // whose whole posture is "start writing," and it is the mode whose roster
+  // Nick redesigned around the cursor. `preventScroll` because the panel is its
+  // own scroll column (FX10 S1) and a focus must never jump it. Held off while
+  // the disclosure is up — that modal owns the room until it is acknowledged.
+  useEffect(() => {
+    if (!open || !freeWrite || showDisclosure) return;
+    composerRef.current?.focus({ preventScroll: true });
+  }, [open, freeWrite, showDisclosure]);
+
+  // ITEM 84, THE DECK PHASE — THE RE-ARM. What re-arms a spent ask is the one
+  // parameter Nick's record does not set, so it is built to the reading that
+  // serves his own stated reason and is flagged in the S0 as inferred, not
+  // invented: an ask re-arms WHEN THE WRITER MOVES ON. There are exactly two
+  // ways to move on, and this is one of them — new writing on the page since
+  // the draw. (The other is a send; see send().) An unlimited reroll would be
+  // deliberation with extra steps; a ceiling that never lifts would be a wall.
+  //
+  // The marker is a ref, not state, on purpose: it must not itself cause a
+  // render, and it is read-then-cleared inside the effect that watches the
+  // prop. `pageText` is this component's existing live, read-only prop (A13 —
+  // nothing here can write through it); growth means the writer wrote.
+  //
+  // The standing draw itself deliberately SURVIVES this: the writer is writing
+  // FROM it, and the panel dissolves on the first keystroke anyway (A15), so
+  // clearing it here would delete the spur at the exact moment it started
+  // working. Only the ceiling resets.
+  useEffect(() => {
+    if (drawAnchorRef.current === null) return;
+    if (pageText.length <= drawAnchorRef.current) return;
+    drawAnchorRef.current = null;
+    setDrawCounts(NO_DRAWS);
+  }, [pageText]);
+
+  // ITEM 84, THE DECK PHASE — THE PRESS. The whole of the deck law lives in
+  // these few lines, and what matters most is what is NOT here: no fetch, no
+  // await, no apiTutorChat, nothing asynchronous at all. The draw is a
+  // synchronous read of a frozen local array, so "this press sent nothing" is a
+  // structural fact rather than a promise — a model-composed line could not be
+  // a member of the pool the harness checks against.
+  //
+  // THE BUTTON LAW (lock record §10): "a counsel's button names what its own
+  // press sends." This press sends NOTHING, which is why this phase needs no
+  // disclosure gate and no carve-out sentence — and why the harness asserts
+  // zero network calls on press. That assertion IS this phase's disclosure
+  // obligation, discharged by proof rather than by prose.
+  const pressPreset = (id: FreeWritePresetId) => {
+    if (!freeWrite) return;
+    const used = drawCounts[id];
+    if (used >= DRAW_CEILING) return; // the ask is spent until the writer moves on
+    const pool = FREE_WRITE_POOLS[id];
+    const recent = recentDrawsRef.current[id];
+    const text = drawFrom(pool, recent);
+    recent.push(text);
+    if (recent.length > recentMemoryFor(pool)) recent.shift();
+    setDraw({ preset: id, text });          // REPLACES — never appends
+    setDrawCounts((c) => ({ ...c, [id]: c[id] + 1 }));
+    drawAnchorRef.current = pageText.length; // arm the re-arm marker
+  };
+
   const send = async () => {
     const text = composerText.trim();
     if (!text || sending) return;
@@ -431,6 +563,28 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
     const lastRead = getJournalEntry(entry.id)?.tutor?.lastRead;
     const { delta, truncated } = assembleTutorDelta(pageText, lastRead);
     if (truncated) setDeltaTruncated(true);
+    // ITEM 84, THE DECK PHASE — THE STANDING DRAW COMMITS HERE, and only here.
+    // Nick's requirement 3, verbatim: "Whether the user asks their own question
+    // or selects a preset, the Tutor's response should be in the same
+    // dialog/chat window where conversation can commence." The draw has been
+    // rendering in that window all along; this is the moment it becomes part of
+    // the thread, immediately AHEAD of the writer's own message, so the history
+    // this send replays reads in the order it actually happened — the spur,
+    // then the answer to it. Without this line the model would be answering a
+    // reply to a prompt it never saw.
+    //
+    // Note what travels and what does not: the press itself put nothing on any
+    // wire. The drawn line reaches the model here, on the writer's own Send, as
+    // an ordinary turn of the conversation — the same way every Tutor turn
+    // already travels in `messages` (TU2's wire law, unchanged; no new key, no
+    // new payload class, nothing this ticket adds to the disclosure's
+    // enumeration).
+    if (draw) {
+      appendTutorMessage(entry.id, { id: generateId(), role: 'tutor', text: draw.text, at: new Date().toISOString() });
+      setDraw(null);
+      setDrawCounts(NO_DRAWS);   // a send is the other way to move on — the asks re-arm
+      drawAnchorRef.current = null;
+    }
     const writerMsg = { id: generateId(), role: 'writer' as const, text, at: new Date().toISOString() };
     appendTutorMessage(entry.id, writerMsg);
     setSending(true);
@@ -519,18 +673,62 @@ export function Tutor({ entry, project, pageText, pageKind }: TutorProps) {
             <div className="wz-tutor-convo">
               <div className="wz-tutor-h">{t('tutorConversationTitle')}</div>
               <div className="wz-tutor-convo-log">
-                {messages.length === 0
+                {messages.length === 0 && !draw
                   ? <div className="wz-tutor-empty">{t('tutorConversationEmpty')}</div>
                   : messages.map((m) => (
                       <div key={m.id} className={`wz-tutor-msg wz-tutor-msg-${m.role}`}>{m.text}</div>
                     ))}
+                {/* ITEM 84, THE DECK PHASE — the standing draw, rendered as the
+                    last turn INSIDE this same log: Nick's requirement 3 is that
+                    a preset's response land "in the same dialog/chat window
+                    where conversation can commence," so it gets no window, no
+                    tray and no furniture of its own. There is ONE of these,
+                    always — the state it reads cannot hold two. It is not yet a
+                    persisted message (send() commits it); `data-drawn` is what
+                    the harness reads to prove the rendered line is a verbatim
+                    member of the local pool for the preset that was pressed. */}
+                {draw && (
+                  <div className="wz-tutor-msg wz-tutor-msg-tutor wz-tutor-draw" data-drawn={draw.preset}>{draw.text}</div>
+                )}
               </div>
               {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
               {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
               {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
+              {/* ITEM 84, THE DECK PHASE — THE FREE WRITE ROSTER. Mounted where
+                  the arc already ruled it mounts (lock record §1 line 1: the
+                  shared chip row inside "Talk it through", above the composer,
+                  below the messages) — the redesign changed the roster's
+                  contents, never its mount.
+                  MODE-AWARE, and this is the panel's first such branch: absent
+                  outright in Draft, on screenplay and on Board — absent, not
+                  disabled (G3), because a preset is not a transient gate on
+                  real capability there, it simply is not that mode's furniture.
+                  A spent ask IS the lawful `disabled` case: the capability is
+                  real and the gate lifts the moment the writer moves on. */}
+              {freeWrite && (
+                <div className="wz-tutor-fw-roster" role="group" aria-label={t('tutorFreeWriteRoster')}>
+                  {FREE_WRITE_PRESETS.map((p) => {
+                    const spent = drawCounts[p.id] >= DRAW_CEILING;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className="wz-tutor-fw-preset"
+                        data-preset={p.id}
+                        disabled={spent}
+                        title={spent ? t('tutorFreeWriteSpent') : undefined}
+                        onClick={() => pressPreset(p.id)}
+                      >
+                        {t(p.term)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="wz-tutor-convo-row">
                 <input
+                  ref={composerRef}
                   className="wz-tutor-convo-input"
                   type="text"
                   value={composerText}

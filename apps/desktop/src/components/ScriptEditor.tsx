@@ -1109,7 +1109,7 @@ export function ScriptEditor({ id }: { id: string }) {
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
-          tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" />}
+          tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" mode="drafting" />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
         >

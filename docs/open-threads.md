@@ -11569,6 +11569,44 @@ enters the item-84 build brief as **its first ungated citizen** (it builds now �
 sentence required); the **MODEL PHASE** (memory / retrieval) is **item 108 — the Tutor Memory
 Arc**, where the carve-out / disclosure sentence and the retrieval design settle together. Preset
 (B) is no longer wholly gated: the deck ships, the model waits on item 108.
+
+**→ THE DECK PHASE IS BUILT — offered, NOT merged, NOT deployed (2026-08-25, branch
+`item84-deck-phase` from `origin/main` @ `63b875b`).** The Free Write roster lands as Nick
+redesigned it at lock line 1: **(A)** the composer, which now takes focus in Free Write so
+it is genuinely "blank space with a flashing cursor" · **(B)** "Writing Prompt" ·
+**(C)** "Unblock" · **(D)** "Free Writing Tips" — all three **deck-drawn from local authored
+pools** (24 / 16 / 14 = 54 lines), inheriting FX15's mechanism *and* its harness shape whole.
+Records: `docs/menus/tutor/item84-deck-phase-s0.md` (the S0, with file:line evidence, landed
+before the first patch) and `item84-deck-phase-build.md` (the build record).
+- **The Tutor is no longer mode-blind.** The census's headline finding is answered by one
+  optional prop, `mode?: EditorMode`, threaded from the four mount sites; the roster renders
+  in Free Write and **nowhere else** (Draft, screenplay, Board all absent — G3, not disabled).
+  Board passes nothing, having no mode to pass.
+- **NOTHING TRAVELS, and it is proven rather than promised.** A preset press fires zero
+  outbound calls of any kind — asserted from both ends (a page-side counter over
+  fetch/XHR/beacon/WebSocket to any URL, plus the server double's new `tutorChatCount`).
+  **That assertion IS this phase's disclosure obligation, discharged by proof** — which is
+  why the phase carries no disclosure gate and no carve-out sentence, exactly as §6 Q2's
+  disk note said it would not need one.
+- **The anti-deliberation rule is a mechanism, not a reminder.** One standing draw for the
+  whole roster; a second press REPLACES it. There is no array to render, so no later edit
+  can stack three. Ceiling: three draws behind one ask.
+- **ONE INFERRED PARAMETER, flagged not buried:** what re-arms a spent ask is set nowhere on
+  disk. Built to Nick's stated reason — an ask re-arms when the writer moves on (new writing
+  on the page, or a Send). **Reversible by one word.**
+- **Verification: `item84.mjs`, 46 checks, and the harness BITES** — six deliberate mutations
+  across two runs killed exactly the checks belonging to each broken law (19/46 and 5/46), so
+  the green is a result and not a shape. **Suite of record CLEAN both settings, 60/60 each.**
+- **NOT BUILT, and not stubbed toward:** the model phase, its carve-out sentence, the
+  deck→model threshold, the memory seam — **item 108**, untouched. The conversation rules stay
+  deferred by Nick's own sentence at lock line 1.
+- **HELD FOR NICK'S WORD before the lock:** the 54-line starter deck (the prompts are the
+  product, not the plumbing) and the re-arm reading above.
+- **CROSS-LANE DISCLOSURE:** this lane began in the primary checkout while chat 1 was staging
+  the hotfix-104 deploy from it. All three contacts repaired and verified — see the build
+  record §7.1; `dist-web` was rebuilt to chat 1's exact stamped bundle
+  (`index-hZQhhS8W.js`/531318b) and the primary checkout left clean at `63b875b`.
+
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 

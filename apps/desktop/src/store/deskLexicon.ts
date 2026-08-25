@@ -136,6 +136,18 @@ export type DeskTermId =
   | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
   | 'tutorConversationEmpty' | 'tutorConversationSending'
   | 'tutorConversationOffline' | 'tutorConversationError'
+  // ITEM 84, THE DECK PHASE — the Tutor's Free Write roster. The three preset
+  // labels are STRINGS OF RECORD: they come from Nick's own lock word
+  // (docs/menus/tutor/tutor-menus-lock-record.md §1 line 1 — "(B) 'Writing
+  // Prompt' · (C) 'Unblock' · (D) 'Free Writing Tips'"), never from a pass file
+  // or the mockup HTML (that record's §3 rule). The roster's fourth member —
+  // "(A) blank space with a flashing cursor where anything can be asked" — is
+  // the existing composer taking focus in Free Write, so it needs no string of
+  // its own. `tutorFreeWriteSpent` is the ceiling's own quiet line: NOT a
+  // disabled unbuilt feature (G3's locked door wearing paint) but a transient
+  // gate on real capability, re-armed the moment the writer moves on.
+  | 'tutorFreeWriteRoster' | 'tutorFreeWritePrompt' | 'tutorFreeWriteUnblock'
+  | 'tutorFreeWriteTips' | 'tutorFreeWriteSpent'
   | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
   // TU2 S3 — the disclosure's v2 body, Nick's ratified string verbatim
   // (added, not overwritten in place, so the lexicon keeps v1's body
@@ -618,6 +630,13 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorConversationSending: 'Thinking…',
   tutorConversationOffline: 'The Tutor is offline or not configured right now — the lenses above still work.',
   tutorConversationError: 'The Tutor could not be reached. Try again in a moment.',
+  // ITEM 84, THE DECK PHASE — the three preset labels are Nick's own lock-word
+  // strings, byte-verbatim from the lock record §1 line 1.
+  tutorFreeWriteRoster: 'Free Write presets',
+  tutorFreeWritePrompt: 'Writing Prompt',
+  tutorFreeWriteUnblock: 'Unblock',
+  tutorFreeWriteTips: 'Free Writing Tips',
+  tutorFreeWriteSpent: 'Three drawn — the page is waiting.',
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',

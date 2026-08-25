@@ -106,6 +106,15 @@ function startServer(dist) {
   // offline discipline.
   let tutorMode = {};
   let lastTutorChatBody = null;
+  // ITEM 84 (the deck phase) — a REQUEST COUNTER for the Tutor's one route.
+  // `lastTutorChatBody` above can prove what a send CARRIED; it cannot prove
+  // that nothing was sent, because a body that was never posted and a body
+  // posted before the window of interest look identical from here. The deck
+  // phase's whole obligation is the negative claim — pressing a Free Write
+  // preset puts NOTHING on any wire — so it needs a count it can read before
+  // and after the press. Purely additive: every existing reader of
+  // `/api/_state` sees exactly the fields it saw before.
+  let tutorChatCount = 0;
   // ITEM 89 — the sync double's own controllable behavior, added on the exact
   // precedent of `tutorMode` above and defaulting the same way: `{}` (every
   // field falsy), so a file that never POSTs to `/api/_sync_mode` sees EXACTLY
@@ -136,7 +145,7 @@ function startServer(dist) {
     }
     // Test introspection: what the client has pushed + how many syncs ran.
     if (p === '/api/_state') {
-      return sendJson(res, { pushedJournalIds: [...pushedJournalIds], syncCount, lastTutorChatBody });
+      return sendJson(res, { pushedJournalIds: [...pushedJournalIds], syncCount, lastTutorChatBody, tutorChatCount });
     }
     // TU2 S6 — arm/disarm the tutor-chat double's next response(s). Body
     // shape: `{ configured?, fail?, reply?, usage?: {inputTokens,
@@ -174,6 +183,7 @@ function startServer(dist) {
       req.on('data', (c) => { body += c; });
       req.on('end', () => {
         try { lastTutorChatBody = JSON.parse(body || '{}'); } catch { lastTutorChatBody = null; }
+        tutorChatCount += 1; // ITEM 84 — counted the moment the body lands, before any branch below can shape the response
         if (tutorMode.fail) {
           res.writeHead(500, { 'content-type': 'application/json' });
           return res.end(JSON.stringify({ error: 'TU2 S6 simulated failure' }));
