@@ -186,3 +186,52 @@ must know how to be almost nothing *on a surface that edits* — the inverse of 
 Write's test. The SC seam stands: item 62 owns the surface; Pass 3 argues the menus'
 frame on it and claims nothing further. Chamber B's script-lens suggestions stay the
 Counsel contents question they were — the Tutor lane's, behind the seam.
+
+---
+
+## AMENDMENT — DR7 NARROWED, 2026-08-25 (append-only)
+
+**Authority:** Nick, 2026-08-25 — *"Revise accepted."* Received from the item-84
+desk via Fable; 84 records the same words in its re-pass §2. Neither lane amends
+the other's file.
+
+**The words both lanes carry, identical:**
+
+> Nothing arrives unbidden — PROSE-WIDE, binding every prose mode,
+> **EXCEPT REVISE**, by Nick's word.
+
+**DR7 above stands verbatim and is not rewritten.** As written it says "binding
+every prose mode, Draft included," and that remains the correct record of what
+Pass 2 argued. What changes is its SCOPE: Revise is now excepted.
+
+**The reasoning, recorded because it is the load-bearing part.** The
+anti-interruption thesis is carried by the **MODE BOUNDARY**, not by the absence
+of the feature (TRR13). Free Write and Draft stay silent — they are the modes
+that produce, and an arrival there is an interruption of making. Revise is the
+mode a writer *enters to be shown what is wrong*; silence there is not
+protection, it is the mode failing to do its job. The line was never about
+suppressing counsel everywhere; it was about not letting counsel reach the
+writer while they are generating. Drawing the boundary at the mode does that
+exactly, and buys Revise its own voice.
+
+**WHAT THIS CONTRADICTS IN THIS ARC'S OWN RECORDS — flagged, not silently
+fixed.** Pass 6 (Revise) asserts the un-narrowed line TWICE, and both now read
+false:
+
+- **`item83-pass6-revise.md`, body:** *"Inheritances ride, restated once: … 
+  nothing arrives unbidden."*
+- **`RV6 · INHERITANCES RIDE`:** *"…the foot with Time-unit goals native,
+  **nothing unbidden**; the Counsel frame only…"*
+
+Those live in Pass 6, not here. This desk was instructed to record the
+narrowing in the file that holds DR7, and has done exactly that; the Pass 6
+correction is named here so it cannot be lost, and awaits a word rather than
+being taken unilaterally — Revise's own record is also the surface the Tutor
+lane's re-pass touches.
+
+**Unaffected:** FW6 (Free Write) and DR7's own Draft clause both stand — they
+are the two modes the narrowing explicitly keeps silent. SP7 (screenplay), BD7
+(board) and CA7 (card) are non-prose surfaces and are outside the narrowing's
+subject entirely.
+
+*— the menus lane, 2026-08-25.*
