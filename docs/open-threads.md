@@ -540,8 +540,15 @@ two results describe the same software and not merely the same commit. `tsc` cle
 **NO DEPLOY: the hotfix waits on Nick's word; production is still `git 1cbda72 · railway
 59d55924`, which CARRIES the crash.**
 
-**OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
-this lane's cold-load-fine, at the same bundle.** Both are reported as measured; they disagree,
+**~~OPEN OBSERVATION~~ → CLOSED 2026-08-24 (Fable's note 2). The 83 desk's environmental open
+closes with it.** The hypothesis recorded below — a `vite dev` scratch serve versus a production
+build, StrictMode's double-invoke being development-only — is **CONFIRMED**, proven both directions
+on one dev server during item 104's third pass: StrictMode ON throws and blanks; StrictMode OFF
+renders correctly; production strips the double-invoke entirely. **Both desks measured correctly;
+they were measuring different builds.** Neither report was wrong and neither is overwritten.
+Original text preserved below.
+**~~OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
+this lane's cold-load-fine, at the same bundle.~~** Both are reported as measured; they disagree,
 so neither is overwritten. What this lane measured: cold loads (full document load, then reload)
 of `/page/new`, `/page/new?structure=screenplay`, and `/page/<missing id>` all render correctly
 on the DEPLOYED bundle — `rootKids:4`, no console error. What the 83 desk measured: a void on a
@@ -606,6 +613,11 @@ fixed, the crash was gone but `#/page/new` **redirected to Arrival** (`prose:fal
 traded for a dead door, which would have read as "fixed" to any check that only asserts "no error".
 It was caught by asserting what the writer should SEE, not merely the absence of a throw.
 
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE:** unparked `60/60` and parked `60/60`,
+both `bundle=index-CaW0zodg.js/531457b` on `tree=e5f3f25` — same asset hash on both runs, so the
+two results describe the same software and not merely the same commit. `tsc` clean.
+**NO DEPLOY.** Nick's interim rule stands until this stamps: the New Page door is avoided on
+production.
 **NEW STANDING GUARD — `scripts/harness/hooks-order.mjs`.** A STATIC census, because the crashing
 path is dev-only and a production-bundle CDP scenario CANNOT bite on it. Run against the pre-fix
 source it names both violations by file, function, hook and line; green after. It carries one
@@ -622,7 +634,19 @@ class — for each surface that reads a subject through `getJournalEntry` (page,
 drive the subject to absent WHILE MOUNTED (remote tombstone via the armed pull; local delete
 where reachable) and assert the surface degrades without throwing. **Also owed:** a lint or
 census check for hooks below any early return, since that is the shape that made absence fatal
-rather than merely awkward. Registry: next free **110**.
+rather than merely awkward.
+**→ PARTLY DELIVERED 2026-08-24: `scripts/harness/hooks-order.mjs`, SCOPE NAMED rather than implied
+(Fable's note 3).** It is the **GENERAL form, not file-scoped**: it walks every `.ts`/`.tsx` under
+`src` (145 files) and checks every function-declared component AND custom hook (150 of them).
+**Blind spots, measured and named, because a guard that overstates itself is worse than none:**
+arrow-defined components/hooks (`const Foo = () => {…}`) are not parsed — today exactly ONE such
+definition exists in the codebase and it contains NO hook calls, so the gap is currently EMPTY but
+structural; and multi-line early returns (a `return` on its own deeper-indented line inside an
+`if {`) are not matched, only top-level single-statement ones. Both faults this ticket fixed were
+of the matched shape. It is a line scanner, not an AST pass.
+**STILL OWED to this charter: the AST-based form**, which closes both blind spots and could run as
+a lint rather than a suite file.
+Registry: next free **110**.
 
 ## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
 
