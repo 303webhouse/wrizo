@@ -732,6 +732,18 @@ Railway, never independently** (both together or neither). Resolution owed befor
 clean-verified: rebuild under Node 18 → confirm it reproduces `index-4pj2Iqk-.js` byte-for-byte →
 re-run the suite of record against THAT bundle both settings (item 111 step b). Registry: next free
 **112**.
+**→ CORRECTION (chat 1, step-b executed 2026-08-25): the gap is OS-LEVEL, NOT the Node version.** A
+local rebuild under a portable Node 18 (`v18.20.5`) produced `index-hZQhhS8W.js` (531318 b) —
+**identical to the Node-24 build**, not Railway's `index-4pj2Iqk-.js`. Holding Node constant at 18:
+**Windows local → `hZQhhS8W`, Linux Railway → `4pj2Iqk-`** (and the CSS hash differs too). So the
+divergence is the **build OS** (Windows ↔ Railway's Linux / nixpacks), not node. The `.nvmrc`=18 pin
+stays as necessary hygiene (node should still match Railway) but is **NOT SUFFICIENT** to reproduce
+the deployed bytes from a Windows checkout. **Byte-verifying the Linux-built deployed bundle needs a
+Linux build environment** (WSL, or a nixpacks-matching Docker container) — build the suite-of-record
+artifact where Railway builds it. Absent that, the deploy rests on the **functional-equivalence
+argument**: identical source tree + frozen lockfile, the hotfix hook-lift is in both builds, so the
+crash is fixed; only exact-byte identity is unverifiable cross-OS. Interim rules HOLD. Raised to
+Fable for the reproducibility strategy.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
