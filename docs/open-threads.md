@@ -350,6 +350,9 @@ correction is about the defect's age, not the review's duty.
 tombstone** — a page **deleted elsewhere while open here**, so its entry vanishes under a mounted
 surface — NOT a cold direct load. **Refined interim rule: Nick avoids CROSS-DEVICE DELETES until
 the hotfix stamp** (supersedes "avoid the New Page door" above).
+**→ LIFTED 2026-08-25 (Fable's ruling): the hotfix is FUNCTIONALLY VERIFIED and DEPLOYED (git
+`63b875b` · railway `410033f9`); cross-device deletes are fine again, the crash class is removed,
+item 104 re-closed.** Byte-identity of the deployed bundle stays unverified cross-OS (item 111).
 
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
@@ -744,6 +747,12 @@ artifact where Railway builds it. Absent that, the deploy rests on the **functio
 argument**: identical source tree + frozen lockfile, the hotfix hook-lift is in both builds, so the
 crash is fixed; only exact-byte identity is unverifiable cross-OS. Interim rules HOLD. Raised to
 Fable for the reproducibility strategy.
+**→ FABLE'S RULING (2026-08-25): item 111 STAYS OPEN, reframed OS-level; the interim-rules HOLD
+above is SUPERSEDED — they are LIFTED (the hotfix is FUNCTIONALLY VERIFIED, option 2).** The
+durable fix is a **Linux suite-of-record environment** (WSL, or a nixpacks-matching container) so
+byte-identity is true again for every future ship — **scheduled POST-WALKTHROUGH, not now** (standing
+up a build env mid-arc costs a day). The `.nvmrc`=18 pin stays as correct hygiene, recorded as NOT
+closing 111. The Node hypothesis was chat 1's to test, not just execute — overturned with credit.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -9139,6 +9148,14 @@ the suite of record against THAT bundle. **Until then the interim rules STAY IN 
 cross-device deletes) and the 83-desk ping is HELD — not lifted on a byte-unverified deploy.
 Rollback lever remains **git `1cbda72` · railway `59d55924`** (the doorway build). Raised to Fable
 (reproducibility is an infra defect worth an item + a node pin).
+**→ RESOLVED (Fable's ruling, 2026-08-25): FUNCTIONALLY VERIFIED — not byte-verified.** Step (b)
+proved the gap is OS-level, not Node (a Windows Node-18 rebuild still produced `hZQhhS8W`, not
+Railway's `4pj2Iqk-`; item 111). **Basis:** identical source tree + frozen lockfile, the hook-lift
+provably in the deployed source, behavior-correct under any toolchain. The crash is fixed; the
+hotfix is **FUNCTIONALLY VERIFIED**, byte-identity of the deployed bundle **NOT** verified cross-OS
+(item 111, open, fix = a Linux suite-of-record env; scheduled post-walkthrough). **INTERIM RULES
+LIFTED** — cross-device deletes are fine again. **Build OS: local Windows; deploy Railway
+Linux/nixpacks (node 18).**
 
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 
@@ -10794,6 +10811,12 @@ fixture that no longer exists.
   deploy manifests gain a NODE VERSION line;** a served-bundle hash only verifies against the build
   env that produced the suite's bundle. Proven by the hotfix-104 deploy: Node 24 local vs Node 18
   Railway built different hashes from one source (item 111).
+  **AMENDED 2026-08-25 (Fable) — the bar stated openly, not broken silently:** **SERVED == TESTED
+  holds at the level of SOURCE + LOCKFILE; byte-identity of the bundle holds ONLY when the suite
+  runs in the DEPLOY's own OS.** Where it does not, the stamp says **FUNCTIONALLY VERIFIED** and
+  NAMES THE GAP — never silent. **Every stamp names its BUILD OS beside its toolchain.** (Correction
+  to the example above: the hotfix-104 divergence was OS-level — Windows suite host vs Railway's
+  Linux/nixpacks — NOT the node version; a Node-18 Windows rebuild still diverged. See item 111.)
 - **A BASELINE IS OLD PRODUCT UNDER CURRENT INSTRUMENTS — standing law (Fable, 2026-08-24).** To
   prove a fix bites, run the OLD PRODUCT but under the CURRENT harness / instruments — **harness
   infra NEVER reverts with the product.** Reverting the instruments too yields a FALSE NEGATIVE
