@@ -1,7 +1,9 @@
 # ITEM 84 — PASS 3B: THE REVISE RE-PASS (grammar, usage, and the mechanics question)
 ### Full committee · Tutor lane · 2026-08-24
-**STATUS: CANDIDATES ONLY.** Output comes to Nick for his word. Nothing here locks, and
-one candidate (TRR5) surfaces an adjacency that is his alone to rule.
+**STATUS: CANDIDATES ONLY — and the pass is HELD OPEN.** Two of its open items came back
+ruled (TRR10, TRR11, added 2026-08-24); four of its own candidates still await Nick's
+word and are named at the foot. Nothing here locks, and one candidate (TRR5) surfaces
+an adjacency that is his alone to rule.
 **Ordered by:** Nick's lock-5 word — Revise's options must differ from Draft's:
 *"grammar, usage, paragraph construction, style guide/bibliography formatting (when
 relevant)… Have the Experts provide recommendations for how an AI tutor could assist
@@ -265,16 +267,110 @@ its rule named, a few instances located — never an exhaustive inventory, never
 count, never a score. (Cognition bench; TR4 stands — a count is a grade wearing
 arithmetic.)
 
-**OPEN — carried, not answered:** **O-TD1** — the decline's copy standard, now a
-shipping requirement of this roster rather than a build-brief nicety. **The style
-guide's identity** — *which* guide (MLA, Chicago, APA) is not chosen here; the deck
-knows a project has citations, not which authority governs them. Nick's or a later
-pass's. **O1** (the chord) — still open, still not invented here.
+**TRR10 · THE DECLINE STANDARD — NO REFUSAL SENTENCE, ONLY THE RETURNING QUESTION.**
+*(O-TD1, RULED 2026-08-24.)* Nick's words, verbatim:
 
-**FOR NICK'S WORD:** (1) the roster as phrased, amendable line by line; (2) **TRR5's
-fork** — asks only, or does he want TU4's standing lens, which is a separate ticket;
-(3) TRR8's move of the lens default to rest, superseding TR5; (4) TRR1's test as the
-build-time line for every mechanics reply.
+> "The Tutor should never say 'No' or 'I can't do that' or 'That request is against my ruleset,' etc. Instead, the Tutor should redirect the User to ask a question that's within the scope of what the Tutor can do, and Socratic questioning should be the preferred way of responding to inappropriate requests (when possible). For example, if a user says, 'What should Character A respond with here,' the Tutor should ask a question back like, 'What does Character A want in this scene, and what is preventing her from getting it?'"
+
+**Elevated (Fable's ruling) to a standing constraint** — binding on **every Tutor
+decline everywhere**, not only this roster, and standing beside the voice law and the
+button law.
+
+**THE SEAM WITH THE SHIPPED PROMPT, named.** `tutor-rules.md:25` currently reads:
+*"decline warmly and briefly, in character, then ask a question that sends the writer
+back to their own page… just decline and redirect with a question."* **The shipped rule
+permits a decline sentence; Nick's ruling removes it.** Not a restatement — a
+narrowing. The amendment is drafted at §2 below and travels to Nick with the roster.
+
+**THE HARNESS PRECISION — a false-positive hazard, named before the ticket.** The
+assertion is testable, but a naive refusal-word ban **will fire on lawful tutoring**:
+*"the reader can't tell who is speaking"* is good craft counsel; *"this paragraph
+cannot carry both arguments"* is a diagnosis. **The assertion must target the Tutor's
+first-person refusals about itself** — reply-initial *No*, *I can't / I cannot*, *I'm
+not able*, *I'm unable*, *against my*, *my rules / guidelines / ruleset*, *I'm designed
+to* — never the modal verbs in isolation.
+
+**THE THIRD REGISTER — a structural note for the record.** The arc now legislates in
+three: **ask language** (the voice law, on chips), **button labels** (the button law,
+on consent), and now **reply language** (this standard). They point the same way — a
+refusal is inherently first-person about the Tutor itself, which is exactly what the
+voice law's *at the work, never at the writer* was already reaching for.
+
+**TRR11 · THE STYLE GUIDE CONTROL — MLA defaulted, visibly.** *(RULED 2026-08-24.)*
+Nick's words, verbatim:
+
+> "MLA should be the default unless otherwise specified. But we should list Chicago, APA, and AP as options while making it clear that MLA has been defaulted to. These should be clickable buttons under a 'STYLE GUIDE' dropdown toggle in the Revision menu."
+
+**The design.** A labeled **STYLE GUIDE** dropdown toggle in the Revise menu; four
+clickable buttons — **MLA · Chicago · APA · AP**; **MLA pre-selected and visibly named
+as the default**; the choice **stored per project, never inferred**.
+
+**Under the arc's laws.** The dropdown is a **control, not an ask**: pressing it sends
+nothing and sets a stored preference, so the button law does not bind it — nothing
+leaves the desk. But the active guide **does** bear on the citation ask, which checks
+form against a standard. So the guide **appears on the citation ask's own button**:
+
+> **"Read it whole — where does the citation form break from MLA?"**
+
+— becoming *"…from Chicago?"* when the writer switches. This satisfies the button law
+completely (the button names both what it reads **and** the standard it reads against)
+and delivers Nick's requirement at the point of use: the default is visible where the
+writer presses, not only inside the dropdown.
+
+**Relevance gate — surfaced, not decided.** TRR4 mounts the citation ask only for
+projects whose deck carries a citation ledger. **Recommendation:** the dropdown rides
+the same gate — both present or both absent, since a style guide on a novel is
+furniture with no use. **Alternative, named for Nick:** the dropdown stands in Revise
+for every project regardless of kind.
+
+**OPEN — carried, not answered:** **O1** (the chord) — still open, still not invented
+here. **The citation ask's depth** — the four authorities are now chosen, but whether
+the ask checks form only or also the completeness of the citation ledger is a
+build-brief question this pass does not settle.
+
+**FOR NICK'S WORD — the pass is HELD OPEN for these.** Still owed, the re-pass's own
+four: (1) the roster as phrased, amendable line by line; (2) **TRR5's fork** — asks
+only, or TU4's standing lens as its own ticket; (3) TRR8's move of the lens default to
+rest, superseding TR5; (4) **TRR1's paste test** as the build-time line for every
+mechanics reply, and with it the **their/there narrow ruling** (the hard case) — that
+naming a single-answer error stays lawful because the keystroke remains the writer's.
+
+Added 2026-08-24, arriving with the rulings above: (5) **the §2 prompt amendment** as
+drafted; (6) **TRR11's relevance gate** — does the STYLE GUIDE dropdown ride the
+citation ask's gate, or stand in Revise for every project?
+
+---
+
+## §2 · THE PROMPT AMENDMENT — drafted, travels to Nick with the roster
+
+**The shipped rule, verbatim** (`docs/wrizo-alpha/tutor-rules.md:25` @ `origin/main`):
+
+> If asked to write any part of the work, decline warmly and briefly, in character, then ask a question that sends the writer back to their own page. Never apologize at length; never explain the policy — just decline and redirect with a question.
+
+**What Nick's ruling changes:** the shipped line licenses **a decline sentence and then
+a question.** Nick removes the decline. **Only the question survives.**
+
+**PROPOSED REPLACEMENT — for Nick's word, not applied here:**
+
+> If asked to write any part of the work, do not refuse in words. Answer with a question that opens the problem the writer was trying to solve and sends them back to their own page. Never say no; never say what you cannot do; never name a rule, a limit, or a policy; never apologize. The question is the whole reply. Asked "What should Character A respond with here?", answer: "What does Character A want in this scene, and what is preventing her from getting it?"
+
+**Three notes on the draft.**
+
+1. **It keeps the old rule's job and removes only its licence to decline first.** The
+   redirect-with-a-question behaviour is unchanged; what disappears is permission to
+   narrate the refusal before it.
+2. **It carries Nick's worked example into the prompt itself.** An abstract ban on
+   refusal language leaks under pressure; a worked example is what makes the behaviour
+   reproducible at generation time. His example is used verbatim.
+3. **"Do not refuse in words" is deliberate, and the distinction is load-bearing.** The
+   Tutor still does not write the prose — the never-supply law is untouched. What
+   changes is that **the refusal is never spoken.** The conduct stays; only its
+   narration disappears. A build that read this as "the Tutor may now compose" would
+   have inverted it.
+
+**This amendment is drafted, not applied.** `tutor-rules.md` is untouched by this pass;
+the file changes only on Nick's word, in its own commit, with the shipped version
+standing verbatim beneath per the house's supersession practice.
 
 ---
 
