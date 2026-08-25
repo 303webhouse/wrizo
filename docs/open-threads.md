@@ -353,6 +353,15 @@ the hotfix stamp** (supersedes "avoid the New Page door" above).
 **→ LIFTED 2026-08-25 (Fable's ruling): the hotfix is FUNCTIONALLY VERIFIED and DEPLOYED (git
 `63b875b` · railway `410033f9`); cross-device deletes are fine again, the crash class is removed,
 item 104 re-closed.** Byte-identity of the deployed bundle stays unverified cross-OS (item 111).
+**⚠ REOPENED (THIRD) — `#/page/new` STILL CRASHES (Fable, 2026-08-25).** The MENU lane proved it in
+a HEADFUL scratch worktree at main's tip (`8210c37`): the New Page door still crashes on mount. The
+hotfix fixed the **two-device-tombstone path it was proven against**, but a **SEPARATE crash on the
+New Page route remains** — so the FUNCTIONALLY-VERIFIED line stands ONLY for the tombstone path, NOT
+the New Page route (corrected at the deploy stamp; Fable's review-sufficiency claim WITHDRAWN).
+**INTERIM RULE REINSTATED: the New Page door is AVOIDED on production.** Three ships (doorway, hotfix,
+and now) have passed over a dead door — item 109's sharpest instance (no gate drives `#/page/new`
+headfully). Production stays `63b875b` · `410033f9`; rollback lever unchanged (the doorway is also a
+crashing door).
 
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
@@ -705,6 +714,12 @@ device while it is open here, so its backing entry disappears out from under the
 and the below-guard hooks fire on the re-render. The header above ("cold direct load of
 `#/page/new`") was the first read; the gate the fix lane's S0 must build is **a mounted surface
 whose backing entry vanishes** — the broader class of which the cold-load case is one instance.
+**→ SHARPEST INSTANCE (Fable, 2026-08-25): no gate drives `#/page/new` HEADFULLY.** Three ships —
+doorway, hotfix, and the current head — have passed over a **DEAD DOOR** because no harness ever
+loads `#/page/new` in a REAL (headful) browser the way a writer does, which is the only place this
+crash manifests. This is item 109's sharpest, most-owed gate: **drive `#/page/new` headfully at the
+deployed bundle.** The vanished-subject class still stands; this is the un-gated route that keeps
+re-shipping a crashing New Page door (item 104, reopened a third time).
 Registry: next free **110**.
 
 ## ITEM 110 — ONE-CHECKOUT-PER-AGENT VIOLATED (worktree-assignment gap) — OPENS 2026-08-24
@@ -9165,6 +9180,13 @@ hotfix is **FUNCTIONALLY VERIFIED**, byte-identity of the deployed bundle **NOT*
 (item 111, open, fix = a Linux suite-of-record env; scheduled post-walkthrough). **INTERIM RULES
 LIFTED** — cross-device deletes are fine again. **Build OS: local Windows; deploy Railway
 Linux/nixpacks (node 18).**
+**→ CORRECTED (Fable, 2026-08-25): the FUNCTIONALLY-VERIFIED line stands for the TWO-DEVICE
+TOMBSTONE PATH it was proven against — NOT for the New Page route.** A THIRD reopen (item 104):
+`#/page/new` still crashes at main `8210c37` (MENU lane, headful scratch worktree). The hotfix
+removed the tombstone-path hooks crash, but a SEPARATE New-Page-route crash remains. **Fable's
+review-sufficiency claim is WITHDRAWN on the record** (`hotfix-104-review-fable.md`, sufficiency
+append). **Interim rule REINSTATED — the New Page door is avoided on production.** Root: no gate
+drives `#/page/new` headfully — item 109's sharpest instance.
 
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 

@@ -38,3 +38,18 @@ documented (--mode development is not dev React) — routed to the
 83 desk's scratch-serve environment post-merge.
 
 — Fable, 2026-08-24
+
+---
+
+## SUFFICIENCY WITHDRAWN — 2026-08-25 (Fable)
+
+**This review's VERDICT PASS is WITHDRAWN as a sufficiency claim.** It verified the hooks-class fix
+on the **two-device-tombstone path** (`item104.mjs` S6, 15/15) — but `#/page/new` STILL crashes at
+main `8210c37` (MENU lane, headful scratch worktree): a SEPARATE crash on the New Page route the
+review did not reach. **The tombstone-path finding stands; the claim to have established the New
+Page door fixed does not.** Root: no gate drives `#/page/new` headfully — item 109's sharpest
+instance. Item 104 REOPENED (third); interim rule reinstated (avoid the New Page door on
+production). "The review verified the effect's guards, not its position" (my ownership append)
+under-reached again — it verified one *path*, not the *door*.
+
+— Fable, 2026-08-25
