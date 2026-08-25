@@ -167,6 +167,9 @@ opened; disclosure-v4 committee narrows to one sentence (the disclosure). **Next
 2026-08-24: item 104 REOPENED (production crash — New Page door hooks-order violation from
 fe0252b; forward-fix, rollback named+held at P2c 643dd16 · ec2b9755); 109 (the coverage gap — no
 gate for a cold direct load of #/page/new; fix lane's S0 completes it) opened. **Next free: 110.**
+2026-08-24: 110 (one-checkout-per-agent violated — deck lane in the primary checkout; brief gains a
+worktree line) · 111 (build reproducibility gap — no Node pin; local 24 vs Railway 18; fix = .nvmrc
+18 + engines, propose-never-ship) opened with the hotfix-104 deploy's provenance gap. **Next free: 112.**
 
 ## Open questions parked for Nick (raise at the right moment, not all at once)
 

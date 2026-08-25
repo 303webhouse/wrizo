@@ -704,6 +704,35 @@ and the below-guard hooks fire on the re-render. The header above ("cold direct 
 whose backing entry vanishes** — the broader class of which the cold-load case is one instance.
 Registry: next free **110**.
 
+## ITEM 110 — ONE-CHECKOUT-PER-AGENT VIOLATED (worktree-assignment gap) — OPENS 2026-08-24
+
+**OPENS (deck-lane cross-lane contact report; Fable's ruling).** The deck lane built in the PRIMARY
+CHECKOUT during chat 1's in-flight hotfix suite, because it had **no worktree assignment in its
+brief**. Three contacts with chat 1's staging — all now repaired and **VERIFIED BY CHAT 1** (a
+relayed claim is not a verification): **(a)** `runtime-verify.mjs` edited mid-parked-run,
+additive-only — verified now byte-identical to chat 1's suite tree `2a03ace` (the edit reverted),
+and chat 1's re-run was complete (59/59 both settings, no gaps); **(b)** its 11 uncommitted files
+moved out — verified `git status` clean at the `63b875b` tree; **(c)** it overwrote
+`apps/desktop/dist-web` then rebuilt at clean HEAD — verified `index-hZQhhS8W.js`, **exactly 531318
+bytes**, matching chat 1's suite stamp. The deck lane moved to its own worktree
+(`.claude/worktrees/item84-deck`) and recorded the incident. **Fix: the brief template gains a
+worktree-assignment line** — one checkout per agent, assigned at brief time. Registry: next free
+**111**.
+
+## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24
+
+**OPENS (Fable's ruling, from the hotfix deploy's bundle mismatch).** The repo **pins no Node
+version**, so a local build and Railway's build can differ in OUTPUT BYTES from identical source:
+chat 1's suite verified `index-hZQhhS8W.js` (local Node **24**), Railway deployed `index-4pj2Iqk-.js`
+(pinned **nodejs_18**). Local node drifted 18→24 across the vacation span — why prior deploys
+reproduced exactly and this one did not (deps were NOT the cause; `pnpm i --frozen-lockfile` changed
+nothing). **Fix: `.nvmrc` = 18 + an `engines.node` field, matching Railway's `nodejs_18`.** CONFIG —
+**propose-never-ship:** land as its own commit, offer it, and **the pin moves DELIBERATELY WITH
+Railway, never independently** (both together or neither). Resolution owed before this deploy is
+clean-verified: rebuild under Node 18 → confirm it reproduces `index-4pj2Iqk-.js` byte-for-byte →
+re-run the suite of record against THAT bundle both settings (item 111 step b). Registry: next free
+**112**.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
@@ -10746,6 +10775,13 @@ fixture that no longer exists.
 - **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
   standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
   primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
+- **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24).** A stamp
+  names the TREE, the BUNDLE, **and the TOOLCHAIN** that produced it — the same source under a
+  different Node builds different bytes, so a bundle hash without its build environment names its
+  source but not its software (item 77(c)'s lesson, extended to the toolchain). **Suite stamps and
+  deploy manifests gain a NODE VERSION line;** a served-bundle hash only verifies against the build
+  env that produced the suite's bundle. Proven by the hotfix-104 deploy: Node 24 local vs Node 18
+  Railway built different hashes from one source (item 111).
 - **A BASELINE IS OLD PRODUCT UNDER CURRENT INSTRUMENTS — standing law (Fable, 2026-08-24).** To
   prove a fix bites, run the OLD PRODUCT but under the CURRENT harness / instruments — **harness
   infra NEVER reverts with the product.** Reverting the instruments too yields a FALSE NEGATIVE
