@@ -9045,6 +9045,44 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## HOTFIX 104 DEPLOY MANIFEST — 2026-08-24 (chat 1, on Nick's "ship the hotfix on a clean suite")
+
+**HOTFIX 104 — the hooks-order crash class.** Nick's word: "ship the hotfix on a clean suite." The
+merged-but-undeployed set since the doorway live build (`1cbda72`). Deploying the `main` HEAD
+(`2a03ace`) — this records commit's own SHA, stamped below immediately after `railway up`.
+
+**New PRODUCT code since the doorway live build (`1cbda72`) — apps/desktop/src, ONE FILE (verified
+`1cbda72..HEAD`, +37/−9), ZERO schema, ZERO server:**
+- item 104 **hotfix** · merge `d620dc7` (branch `hotfix-104-hooks @ 2c36ad0`) — `PageEditor.tsx`:
+  the vanished-page decision moves into BOTH dispatchers, whose hooks sit above every return; a
+  vanished page UNMOUNTS the view instead of re-rendering it short. The **class removed** (three
+  hooks below the guard, `useCascade` among them, OLDER than the doorway), not the instance —
+  the doorway is exonerated as introducer. Proven: `item104.mjs` S6 red 2/15 at the deployed bundle
+  → 15/15 with the fix, on the exact two-device-tombstone path. **REVIEWED GREEN**
+  (`docs/wrizo-alpha/hotfix-104-review-fable.md`).
+
+**Docs since `1cbda72` (records only, no deployed surface):** the doorway review + Fable's ownership
+append, the item-104 reopen + item-109 records (both lanes, reconciled), the three founder-ruling
+corrections + the new standing law, item-84 §9/§10, the disclosure-v4 committee + ratification +
+both-desks close, the hotfix review, and this manifest. Confirmed: `1cbda72..HEAD` touches
+`apps/desktop/src` in exactly the one file above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs`, BOTH HARNESS_PARKED settings,
+read to completion, machine-clear — **59/59 UNSET (CLEAN) and 59/59 PARKED (CLEAN)** at
+`tree=2a03ace bundle=index-hZQhhS8W.js/531318b`, the same bundle the hotfix offer stamped. `tsc` ×2
+EXIT 0; `build:web` clean; NOT contaminated; item 82's family did NOT red. *(A first parked run had
+died on a machine-sleep / logoff environmental failure — 34 consecutive empty-output NOVERDICT
+browser-launch crashes, `0xC000026B`, no product red; re-run whole and clean here, per the
+abandon-don't-excuse discipline.)*
+
+**ROLLBACK TARGET: git `1cbda72` · railway `59d55924-f1b1-4792-a293-f834e3ad898d`** — the current
+live production build (the doorway wave, crashing on the two-device-tombstone path). Rollback is a
+redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `<pending>` · railway `<pending>`** — stamped immediately after
+`railway up --ci` from the primary checkout (item 98), with `/healthz` 200 + served bundle
+(`index-hZQhhS8W.js`) + `/auth/me` 401 verified LIVE.
+
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 
 **THE DOORWAY WAVE — items 104 + 87-subset + 97 + 101's park.** Nick's word: "SHIP THE DOORWAY."
