@@ -721,6 +721,15 @@ bytes**, matching chat 1's suite stamp. The deck lane moved to its own worktree
 (`.claude/worktrees/item84-deck`) and recorded the incident. **Fix: the brief template gains a
 worktree-assignment line** — one checkout per agent, assigned at brief time. Registry: next free
 **111**.
+**→ MECHANISM NAMED + FIX WIDENED (Fable / TUTOR, 2026-08-25).** Strays arise because relays name a
+**PATH and never a WORKTREE**, so a builder writes wherever it stands. **The real remediation is a
+STANDING RULE — worktree named, ALWAYS:** every brief or ruling that causes a file to be written
+states its target worktree explicitly (TUTOR amended its relay format; Fable adopts the same for
+every brief/ruling). The brief-template line follows from it, not the reverse. **Clearance executed
+(TUTOR's procedure, 2026-08-25):** of the three stray copies, `-v2.md` matched v2 (`a3e1662`, on
+main) → deleted; the other two (identical content, md5 `2f5c3e55…`, git blob `8fcd4b6`) matched
+NEITHER v1 nor v2 → kept preserved in scratchpad, hash relayed to TUTOR, nothing deleted. (`-v2` was
+never a repo path — a working name during a relay; any file bearing it is a stray by definition.)
 
 ## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24
 
@@ -10804,6 +10813,11 @@ fixture that no longer exists.
 - **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
   standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
   primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
+- **WORKTREE NAMED, ALWAYS — standing law (Fable, 2026-08-25).** Every brief or ruling that causes
+  a file to be WRITTEN names its target WORKTREE, not just a path — a relay that names only a path
+  lets a builder write wherever it stands, which is how strays land in the primary checkout and
+  contaminate another lane's staging (item 110). A path without a worktree is an under-specified
+  instruction; TUTOR's amended relay format and Fable's briefs/rulings now state the worktree.
 - **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24).** A stamp
   names the TREE, the BUNDLE, **and the TOOLCHAIN** that produced it — the same source under a
   different Node builds different bytes, so a bundle hash without its build environment names its
