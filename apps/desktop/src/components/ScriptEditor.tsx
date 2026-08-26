@@ -630,7 +630,6 @@ export function ScriptEditor({ id }: { id: string }) {
   const firedFirstKeystroke = useRef(false);
   const noteFirstKeystroke = () => { if (!firedFirstKeystroke.current) { firedFirstKeystroke.current = true; noteSessionKeystroke(); } };
 
-  if (!initialEntry) return null;
 
   // CD1 S7 — star/tag mutations, mirroring PageEditor.tsx's own
   // patch-based closures (shared via store/persistence.ts's
@@ -671,6 +670,19 @@ export function ScriptEditor({ id }: { id: string }) {
   // CD2 S1/S5/S7 — the cascade, replacing the Drawer whole; mirrors the
   // prose wiring exactly (S7's own standing "mirror the wiring" convention).
   const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
+
+  // ITEM 104 (THIRD) — SAME INVARIANT AS PageEditorView: every hook above, the
+  // decision below. This guard used to sit ~40 lines up, ABOVE `useCascade`, so
+  // a render where the page had gone missing produced one fewer hook than the
+  // render before it and React threw "Rendered fewer hooks than expected".
+  //
+  // Found by a repo-wide census rather than by this crash: PageEditorView was
+  // the surface that was reported, but ScriptEditor carried the identical fault
+  // — and it is the room the doorway now sends writers INTO, so fixing only the
+  // reported one would have moved the crash rather than removed it. (The census
+  // found one other, `JournalEntryView`, on a surface that has been unrouted
+  // since FX14; it is left alone and recorded rather than touched.)
+  if (!initialEntry) return null;
 
   const moveActive = (nextIndex: number, hint: CaretHint) => {
     setActiveIndex(nextIndex);

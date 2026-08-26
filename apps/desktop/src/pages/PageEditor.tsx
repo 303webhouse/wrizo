@@ -30,6 +30,7 @@ import { GoalGlow } from '../components/GoalGlow';
 import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
+import type { JournalEntry } from '../types';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
@@ -67,6 +68,17 @@ function wordCount(text: string): number {
   return t ? t.split(/\s+/).length : 0;
 }
 
+// ITEM 104 (THIRD) — a stable stand-in for a page that is not there.
+//
+// It exists ONLY so the render can reach the end of its hook list. Nothing it
+// contains is ever shown: the guard below `useCascade` returns a redirect before
+// any of it paints. It is frozen so a stray write announces itself loudly
+// instead of silently mutating a shared object.
+const MISSING_ENTRY = Object.freeze({
+  id: '', text: '', projectId: null, source: 'page',
+  createdAt: '1970-01-01T00:00:00.000Z', updatedAt: '1970-01-01T00:00:00.000Z',
+}) as unknown as JournalEntry;
+
 function PageEditorView({ id }: { id: string }) {
   const navigate = useNavigate();
   const { t: lex, tMany: lexMany } = useLexicon();
@@ -80,7 +92,13 @@ function PageEditorView({ id }: { id: string }) {
   // ordinary one, untouched. `entry` resolves from the unborn slot meanwhile,
   // so the whole tree mounts exactly as it always did.
   const unborn = useUnborn(id);
-  const entry = getJournalEntry(id);
+  // ITEM 104 (THIRD) — `entry` MUST NOT be able to change this component's HOOK
+  // COUNT. `realEntry` is the truth; `entry` is a never-null stand-in so every
+  // hook below runs unconditionally, and the vanished-page decision happens
+  // AFTER the last hook (see the guard below `useCascade`). See that guard for
+  // the full mechanism.
+  const realEntry = getJournalEntry(id);
+  const entry = realEntry ?? MISSING_ENTRY;
   const project = entry?.projectId ? getProject(entry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
   // M1 — null on any plan-less project (Journal pages never reach this
@@ -337,7 +355,6 @@ function PageEditorView({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!entry) return <Navigate to="/" replace />;
 
   // Exit lands where the page lives: its binder, the Journal if journal-
   // homed, else the Shelf (B2 S3 — the legacy `shelved` flag retires from
@@ -426,6 +443,29 @@ function PageEditorView({ id }: { id: string }) {
   // header comment for why a hook, not a component, is the right shape
   // here.
   const cascade = useCascade({ subject: pageFaceSubject, project, navigate });
+
+  // ITEM 104 (THIRD) — THE GUARD LIVES BELOW THE LAST HOOK, DELIBERATELY.
+  //
+  // React counts hooks per render. While this check sat ABOVE `useCascade`, a
+  // render in which `entry` was missing produced ONE FEWER HOOK than the render
+  // before it, and React threw "Rendered fewer hooks than expected" — blanking
+  // the tree. Two earlier passes did not close it: lifting this ticket's own two
+  // hooks left `useCascade` behind, and moving the decision into the DISPATCHERS
+  // only helps when the PARENT re-renders — a child-local re-render of this
+  // component never re-runs the parent, so the parent guard is not consulted.
+  // The invariant has to hold HERE: every hook above, the decision below.
+  //
+  // WHAT MADE `entry` VANISH, measured: `UnbornProvider` registers the unborn
+  // slot during RENDER (a `useMemo`, so children see it on their first render)
+  // but tears it down in an EFFECT CLEANUP. Those lifecycles differ. React 18
+  // StrictMode simulates unmount/remount by cycling EFFECTS while PRESERVING
+  // memo state — so the cleanup clears the slot, the memo does not re-run, and
+  // the next render finds nothing. That is why this reproduces on a DEV serve
+  // and not on a production bundle (StrictMode's double-invoke is dev-only),
+  // which is also what reconciled the two desks' disagreeing cold-load reports.
+  // The slot lifecycle is worth fixing on its own; this guard makes the crash
+  // impossible either way.
+  if (!realEntry) return <Navigate to="/" replace />;
 
   // BG1 S2 — the page's beginnings: Screenplay · Sprout · Plan (P1 amendment 2,
   // Nick's word 2026-07-25 — three single words; "Start from a Spark" is
