@@ -122,6 +122,21 @@ export const FREE_WRITE_POOLS: Readonly<Record<FreeWritePresetId, readonly strin
 // spent until the writer moves on — because an unlimited reroll IS deliberation.
 export const DRAW_CEILING = 3;
 
+// NICK'S REFILL RULING, verbatim: "It should reset after 100 words have been written with
+// a note to the user if they try to use it a fourth time before writing 100 words."
+//
+// This SUPERSEDES the deck phase's own first reading, which re-armed on any new writing or
+// on a send. That reading was flagged in the S0 as inferred rather than invented, and this
+// is the word it was waiting for — recorded as a supersession, not quietly swapped.
+//
+// Two consequences the build carries, both his and neither the desk's:
+//   * A SEND NO LONGER RE-ARMS. He named exactly one refill condition, and conversation is
+//     not it — which is the rule agreeing with its own reason: the goal in Free Write is to
+//     get writing, and writing happens on the page.
+//   * THE FOURTH PRESS IS NOT A DEAD BUTTON. It answers — with a note instead of a prompt.
+//     So the preset stays pressable when spent; a `disabled` control could not speak.
+export const REFILL_WORDS = 100;
+
 // FX15's no-near-repeat draw (store/idleNudges.ts's pick(), same shape): pick uniformly
 // from the members NOT recently drawn, falling back to the whole pool once the exclusion
 // set would empty it. Synchronous, local, total — it cannot fail and it cannot send.
@@ -148,5 +163,6 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoTutorFreeWriteDeck?: unknown }).wrizoTutorFreeWriteDeck = {
     POOLS: FREE_WRITE_POOLS,
     DRAW_CEILING,
+    REFILL_WORDS,
   };
 }

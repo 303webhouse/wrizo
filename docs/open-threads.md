@@ -11591,9 +11591,23 @@ before the first patch) and `item84-deck-phase-build.md` (the build record).
 - **The anti-deliberation rule is a mechanism, not a reminder.** One standing draw for the
   whole roster; a second press REPLACES it. There is no array to render, so no later edit
   can stack three. Ceiling: three draws behind one ask.
-- **ONE INFERRED PARAMETER, flagged not buried:** what re-arms a spent ask is set nowhere on
-  disk. Built to Nick's stated reason — an ask re-arms when the writer moves on (new writing
-  on the page, or a Send). **Reversible by one word.**
+- **THE REFILL — NICK'S RULING, 2026-08-26** *(verbatim)*: *"It should reset after 100 words
+  have been written with a note to the user if they try to use it a fourth time before
+  writing 100 words."* This **supersedes** this lane's own inferred reading (any new writing
+  or a Send), which was flagged as inferred and is kept verbatim in the build record rather
+  than rewritten. Two consequences it does not state and the build cannot avoid: **a Send
+  refills nothing** (he named one condition, and conversation is not it), and **a spent
+  preset is no longer `disabled`** — a fourth press must *answer*, and a disabled control
+  cannot speak. A deliberate departure from G3's `disabled` specimen, on his word.
+  Instrument pinned, not invented: **HB1's own `useMonotonicWordCount`**, the app's existing
+  ratified reading of this exact number (F1's 100 whitespace-delimited words), counted from
+  the page's word count at the **third draw**. Caveat carried openly — `FirstRunGate.tsx`'s
+  header calls itself non-reusable; reuse was chosen over a fourth copy of a helper already
+  triplicated on disk, and the stale sentence is a correction owed to that file.
+- **STILL OPEN, one scope question:** the relay reads *"three draws exhaust the deck"*; the
+  lock record reads *"up to 3 prompts may exist behind an ask."* The build keeps **per ask**
+  on the lock record's wording, so three prompts + three unblocks + three tips are available
+  before any hundred is owed. Pinned rather than decided; one line to change.
 - **Verification: `item84.mjs`, 46 checks, and the harness BITES** — six deliberate mutations
   across two runs killed exactly the checks belonging to each broken law (19/46 and 5/46), so
   the green is a result and not a shape. **Suite of record CLEAN both settings, 60/60 each.**

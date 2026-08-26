@@ -84,11 +84,58 @@ edit can accidentally stack them.
 lawful `disabled` case (a transient gate on real capability, the selection-gated action
 row being the house specimen) — not an unbuilt feature wearing paint (G3).
 
-**THE ONE INFERRED PARAMETER, flagged rather than buried.** What *re-arms* a spent ask is
-set nowhere on disk. Built to the reading that serves Nick's own stated reason: an ask
-re-arms **when the writer moves on** — new writing on the page since the draw, or a Send.
-The standing line itself survives the re-arm, because the writer is writing *from* it and
-the panel dissolves on that same keystroke anyway (A15). **Reversible by one word.**
+**THE ONE INFERRED PARAMETER — SUPERSEDED BY NICK'S WORD, 2026-08-26.** The original
+paragraph is kept verbatim below rather than rewritten, per the house's
+corrected-not-rewritten practice: it is the record of what this lane inferred, and the
+inference being visible is what makes the ruling that replaced it legible.
+
+> *(SUPERSEDED — the original, verbatim)* **THE ONE INFERRED PARAMETER, flagged rather
+> than buried.** What *re-arms* a spent ask is set nowhere on disk. Built to the reading
+> that serves Nick's own stated reason: an ask re-arms **when the writer moves on** — new
+> writing on the page since the draw, or a Send. The standing line itself survives the
+> re-arm, because the writer is writing *from* it and the panel dissolves on that same
+> keystroke anyway (A15). **Reversible by one word.**
+
+**It was reversed by one word.** Nick's refill ruling, verbatim:
+
+> *"It should reset after 100 words have been written with a note to the user if they try
+> to use it a fourth time before writing 100 words."*
+
+| | |
+|---|---|
+| **Was** | any new writing **or** a Send re-arms the ask |
+| **Is** | **100 words** written refills it · a Send refills **nothing** · a fourth press before the hundred **shows a note** |
+
+**Two consequences the ruling does not state but the build cannot avoid,** named here
+rather than absorbed silently:
+
+1. **A SEND NO LONGER REFILLS.** He named exactly one refill condition and conversation is
+   not it — the rule agreeing with its own reason: Free Write wants the writer on the page,
+   and the page is not this composer.
+2. **THE FOURTH PRESS IS NOT A DEAD BUTTON — it answers.** So a spent preset is no longer
+   `disabled`; it stays pressable and goes quiet by `data-spent`. **A deliberate departure
+   from G3's `disabled` specimen, made on Nick's word rather than the desk's preference:**
+   a disabled control cannot speak, and a rule that cannot say itself reads as breakage.
+
+**The anchor and the instrument are pinned in the S0 addendum, not invented here:** the
+count runs from the page's word count at the **third draw** (the moment the ask was spent),
+measured by **HB1's own `useMonotonicWordCount`** — the app's existing ratified reading of
+this exact number (F1: 100 whitespace-delimited words), monotone for a reason Free Write
+needs more than the first-run gate did, since forward lock's derived text can transiently
+shrink. The one caveat — that `FirstRunGate.tsx`'s header calls itself non-reusable — is
+carried openly in the addendum rather than stepped over.
+
+**The note's copy is drafted and AWAITING NICK'S WORD**, surfaced with the 54-prompt deck
+for one combined approval. It names the threshold and carries **no progress number**: the
+rule may be named, the writer's distance from it may not (M1/CD4 — the meter stays the only
+number in this room, and it is a cost, not a score). A live countdown would be both barred
+content and a fresh source of the very deliberation the ceiling exists to prevent.
+
+**ONE SCOPE AMBIGUITY, PINNED RATHER THAN DECIDED.** The relay reads *"three draws exhaust
+the deck"*; the lock record reads *"up to 3 prompts may exist behind an ask."* The build
+keeps **per ask**, on the lock record's own wording — so three prompts, three unblocks and
+three tips are all available before any hundred is owed. Stated plainly so it can be ruled
+against; one line to change if the three are meant to be roster-wide.
 
 ---
 
@@ -172,13 +219,47 @@ and after (md5 `7f34ffd86d5918686147c38d8e0d7ac5`, confirmed identical each time
 | the standing draw never commits in `send()` | **requirement 3** | S5 commit-ahead-of-the-message · S5 conversation-continues · S5 the wire carries the spur · S5 the draw is spent by the send |
 | the Free Write composer never takes focus | **roster member (A)** | S6 "opening the panel in Free Write puts the cursor in the composer" |
 
+**MUTANT RUN 3 — the refill ruling's own three laws. Result: `FAIL — 7/56`.**
+
+| Mutation | Law broken | Checks that died |
+|---|---|---|
+| `REFILL_WORDS = 1` | **the hundred means something** | S0 threshold · S4 "fewer than 100 does NOT refill" |
+| the fourth press returns silently again | **a spent ask answers** | S4 note-instead-of-a-prompt · S4 no-progress-number · S5 note-after-a-send |
+| a send refills the deck (the superseded reading, restored) | **only a hundred words refills** | S5 spent-before-the-send precondition · S5 a-send-does-not-refill |
+
 **Every law this phase turns on has at least one check that provably dies when the law is
 broken, and each mutation killed the checks belonging to it and no others.**
 
+### §6.1a · A VACUOUS PASS CAUGHT BY THE SAME DISCIPLINE — recorded, not tidied away
+
+The refill ruling's first harness run came back **`FAIL — 1/56`**, and the failure was the
+TEST's, not the build's: the S5 fixture sent after a **single** draw, so the ask had never
+been spent, and *"a send does not refill it"* was proving nothing about a deck that was
+never empty. `spent[0]` was `'false'` for the wrong reason.
+
+**Fixed by exhausting the ask first, then sending** — and the fix is itself asserted, as a
+named precondition check (*"a send cannot be shown not to refill an ask that was never
+spent"*), so the vacuity cannot creep back. Written down because it is the exact failure
+mode the falsification pass exists to catch, and because a green first run is a claim about
+the harness that this arc has agreed not to take on trust.
+
 ### §6.2 · THE STAMPS — THE SUITE OF RECORD, CLEAN BOTH SETTINGS
 
-Run from the worktree `.claude/worktrees/item84-deck`, on the box alone (chat 1's own run
-had finished; zero foreign harness browsers, verified before taking it).
+Run from the worktree `.claude/worktrees/item84-deck`, on the box alone (zero foreign
+harness browsers, verified before taking it each time).
+
+**THE SUITE OF RECORD — after Nick's refill ruling (`item84.mjs`, 56 checks):**
+
+```
+SUITE DONE HARNESS_PARKED=unset — 60/60 of 60 returned a passing verdict
+SUITE RESULT: CLEAN — tree=b8c7e8c+8dirty bundle=index-BvOCtgWk.js/537798b
+
+SUITE DONE HARNESS_PARKED=1     — 60/60 of 60 returned a passing verdict
+SUITE RESULT: CLEAN — tree=b8c7e8c+8dirty bundle=index-BvOCtgWk.js/537798b
+```
+
+**The pre-refill stamp, kept rather than overwritten** — it is the true record of the
+46-check build at `b8c7e8c`, and a stamp is evidence, not a status field:
 
 ```
 SUITE DONE HARNESS_PARKED=unset — 60/60 of 60 returned a passing verdict
@@ -187,6 +268,26 @@ SUITE RESULT: CLEAN — tree=63b875b+11dirty bundle=index--cpkDas3.js/537384b
 SUITE DONE HARNESS_PARKED=1     — 60/60 of 60 returned a passing verdict
 SUITE RESULT: CLEAN — tree=63b875b+11dirty bundle=index--cpkDas3.js/537384b
 ```
+
+### §6.2a · THE STAMP EARNED ITS KEEP — a run that had to be thrown away
+
+**One full-suite run was killed mid-flight and is NOT reported as a result, because the
+stamp caught it testing the wrong software.** This lane's mutation-restore had used
+RELATIVE paths while the shell's working directory had silently reverted from the worktree
+to the primary checkout — a path that exists in both trees, so nothing errored, and the
+follow-up `grep` read back *the file it had just written* and confirmed a restore that had
+gone to the wrong tree entirely. The worktree stayed mutated; the suite rebuilt from it and
+stamped `bundle=index-BQW8VggJ.js` — the MUTANT's hash — against source believed clean.
+
+**That mismatch is the only thing that caught it,** and it is exactly the job item 77(c)
+gave the stamp: *"a tree SHA does not pin what ran."* Recorded here as the stamp's first
+save on this arc.
+
+The restore was redone with absolute paths under a
+`git -C "$WT" rev-parse --show-toplevel` guard and verified by **md5 and mtime**, not by
+grepping the path just written. The re-run's bundle — `index-BvOCtgWk.js/537798b` — matches
+the known-good clean single-file run exactly, which is both the proof the restore took and
+an incidental demonstration that the build is deterministic across runs.
 
 **The two runs name the SAME BUNDLE** — `index--cpkDas3.js/537384b` — which is the thing
 item 77(c) says actually pins what ran (*"a tree SHA does not pin what ran"*). Both
@@ -226,6 +327,13 @@ What the pictures confirm that a rect-read cannot:
   as in the assertion.
 - `'Nothing said yet.'` correctly yields to a standing draw, and olive rests everywhere —
   no resting orange anywhere in the roster.
+
+**Re-shot after the refill ruling**, on the fourth press: the spent preset (*Writing
+Prompt*) dims to `--text-low` while the other two hold olive, so **which** ask is spent is
+legible without a word; the third draw stands untouched above; and the note sits quietly
+between the roster and the composer, reading *"Three drawn — the page is waiting. The deck
+refills after a hundred words."* — the threshold named, no progress number anywhere near
+it. A rule the writer can see is a rule they will not read as breakage.
 
 ---
 
@@ -276,6 +384,30 @@ which is the artifact their stamp names. **Repaired and verified, not merely ass
 **The lasting fix, and the reason this is written down:** this lane now builds in its own
 worktree. Two lanes sharing one working tree while one of them is staging a production
 deploy is a hazard the arc should not meet twice.
+
+### §7.2 · IT MET IT TWICE — the second contact, and what actually caused both
+
+**It did happen again, and the honest report is that the worktree was not the whole fix.**
+The mutation-restore described in §6.2a wrote two files — `Tutor.tsx` and
+`tutorFreeWriteDeck.ts` — into the **primary checkout**, because the write used relative
+paths while the shell's cwd had reverted there.
+
+**Repaired, and proven before touching anything:** both stray files were md5-matched against
+this lane's own backups first, to establish they were mine and not another lane's, then
+`git checkout --`'d and removed. `docs/menus/tutor/item84-t1-s0-brief.md` — another lane's
+untracked work, sitting in the same tree — was identified and **left untouched**. The
+primary checkout's `dist-web` was checked and held `index-CaW0zodg.js`, the live production
+bundle, with **zero** of this lane's code: no artifact contamination on this occasion.
+
+**THE ROOT CAUSE OF BOTH, named properly.** It was never really "built in the wrong tree" —
+it was **relative paths plus a working directory that changes without being asked to**. A
+relative write cannot fail loudly when the same path exists in both trees, and a `grep` that
+reads back the file it just wrote will confirm any mistake with perfect confidence. The rule
+this lane now holds, and the one worth carrying to any lane sharing this machine:
+
+> **Never write a file by relative path. Guard every write with an explicit
+> `git -C "$WT" rev-parse --show-toplevel`, and verify a restore by md5 or mtime — never by
+> grepping the path you just wrote.**
 
 ---
 

@@ -12,7 +12,8 @@ import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstim
 import { addTutorSessionCost } from '../store/tutorMeter';
 import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
 import type { EditorMode } from './ForwardOnlyEditor';
-import { FREE_WRITE_POOLS, DRAW_CEILING, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
+import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
+import { useMonotonicWordCount } from './FirstRunGate';
 
 // TU1 S2/S3/S4/S5 — the Tutor. The sliver, mirrored, on the paper's RIGHT
 // edge — but rendered as TWO separate DeskFrame overlay anchors, not one
@@ -296,9 +297,22 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
   // reads as broken; across sittings nobody notices, and a persisted draw
   // history would be a store this feature has no business creating).
   const recentDrawsRef = useRef<Record<FreeWritePresetId, string[]>>({ writingPrompt: [], unblock: [], tips: [] });
-  // pageText.length at the moment of the last draw — the re-arm marker. See
-  // the re-arm effect below for what it is for and why it is a ref.
-  const drawAnchorRef = useRef<number | null>(null);
+  // THE REFILL ANCHOR — the page's word count at the moment each ask was SPENT
+  // (its third draw), or null while that ask still has draws left. Nick's
+  // hundred words are counted from here. A ref, not state, because it must not
+  // itself cause a render: it is written in the press handler and read by the
+  // effect that watches the count.
+  const spentAnchorRef = useRef<Record<FreeWritePresetId, number | null>>({ writingPrompt: null, unblock: null, tips: null });
+  // The note a spent ask answers a fourth press with — which preset was pressed,
+  // or null. Nick's own words: "a note to the user if they try to use it a
+  // fourth time before writing 100 words."
+  const [refillNote, setRefillNote] = useState<FreeWritePresetId | null>(null);
+  // HB1's own monotone reading of the page's words (F1's whitespace-delimited
+  // instrument, at F1's own 100-word threshold). `active: true` — this count has
+  // no gate to end; each ask's anchor is what turns the running max into a
+  // delta. Never gated on `freeWrite`: a hook cannot be called conditionally,
+  // and the cost is one word-count per page edit.
+  const pageWords = useMonotonicWordCount(pageText, true);
   // (A) of the roster — "blank space with a flashing cursor where anything can
   // be asked." The composer already renders blank; what it never did was take
   // focus, so there was no cursor until the writer clicked. See the focus
@@ -498,29 +512,48 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
     composerRef.current?.focus({ preventScroll: true });
   }, [open, freeWrite, showDisclosure]);
 
-  // ITEM 84, THE DECK PHASE — THE RE-ARM. What re-arms a spent ask is the one
-  // parameter Nick's record does not set, so it is built to the reading that
-  // serves his own stated reason and is flagged in the S0 as inferred, not
-  // invented: an ask re-arms WHEN THE WRITER MOVES ON. There are exactly two
-  // ways to move on, and this is one of them — new writing on the page since
-  // the draw. (The other is a send; see send().) An unlimited reroll would be
-  // deliberation with extra steps; a ceiling that never lifts would be a wall.
+  // ITEM 84, THE DECK PHASE — THE REFILL, on Nick's own ruling (verbatim):
+  // "It should reset after 100 words have been written with a note to the user
+  // if they try to use it a fourth time before writing 100 words."
   //
-  // The marker is a ref, not state, on purpose: it must not itself cause a
-  // render, and it is read-then-cleared inside the effect that watches the
-  // prop. `pageText` is this component's existing live, read-only prop (A13 —
-  // nothing here can write through it); growth means the writer wrote.
+  // WHAT THE COUNT IS ANCHORED TO: words written on THIS page since the THIRD
+  // draw — the moment the ask was spent — not since each draw and not since the
+  // panel opened. So the anchor is stamped exactly once per ask, when its third
+  // draw lands (see pressPreset below), and cleared when the hundred arrives.
   //
-  // The standing draw itself deliberately SURVIVES this: the writer is writing
-  // FROM it, and the panel dissolves on the first keystroke anyway (A15), so
-  // clearing it here would delete the spur at the exact moment it started
-  // working. Only the ceiling resets.
+  // THE INSTRUMENT IS HB1's, NOT A NEW ONE. `useMonotonicWordCount` is the
+  // app's own ratified reading of "a hundred words" (F1's whitespace-delimited
+  // instrument, at F1's own threshold of 100), and it is monotone for a reason
+  // this feature needs just as much as the first-run gate did: under forward
+  // lock the derived text can transiently SHRINK while a trailing run is struck
+  // (FirstRunGate.tsx's own F1 note), and a raw count would make the writer
+  // watch progress go backwards. `active` is passed `true` here because this
+  // count has no gate to end — the running max IS the reading, and each ask's
+  // own anchor is what makes it a delta. See the S0 addendum for the one caveat
+  // carried openly: that file's header calls itself non-reusable, written when
+  // it had a single caller.
+  //
+  // The standing draw deliberately SURVIVES a refill: the writer is writing
+  // FROM it, and the panel dissolves on that same keystroke anyway (A15), so
+  // clearing it would delete the spur at the moment it started working. Only
+  // the ceiling resets — and the note, having been answered.
   useEffect(() => {
-    if (drawAnchorRef.current === null) return;
-    if (pageText.length <= drawAnchorRef.current) return;
-    drawAnchorRef.current = null;
-    setDrawCounts(NO_DRAWS);
-  }, [pageText]);
+    const refilled: FreeWritePresetId[] = [];
+    for (const p of FREE_WRITE_PRESETS) {
+      const anchor = spentAnchorRef.current[p.id];
+      if (anchor !== null && pageWords - anchor >= REFILL_WORDS) {
+        spentAnchorRef.current[p.id] = null;
+        refilled.push(p.id);
+      }
+    }
+    if (refilled.length === 0) return;
+    setDrawCounts((c) => {
+      const next = { ...c };
+      for (const id of refilled) next[id] = 0;
+      return next;
+    });
+    setRefillNote((n) => (n !== null && refilled.includes(n) ? null : n));
+  }, [pageWords]);
 
   // ITEM 84, THE DECK PHASE — THE PRESS. The whole of the deck law lives in
   // these few lines, and what matters most is what is NOT here: no fetch, no
@@ -537,15 +570,23 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
   const pressPreset = (id: FreeWritePresetId) => {
     if (!freeWrite) return;
     const used = drawCounts[id];
-    if (used >= DRAW_CEILING) return; // the ask is spent until the writer moves on
+    // THE FOURTH PRESS ANSWERS. Nick's ruling asks for "a note to the user if
+    // they try to use it a fourth time before writing 100 words" — so a spent
+    // ask is not a dead control; it is one that says why. This is why the
+    // button below is never `disabled`: a disabled control cannot speak, and
+    // silence here would read as breakage rather than as a rule.
+    if (used >= DRAW_CEILING) { setRefillNote(id); return; }
     const pool = FREE_WRITE_POOLS[id];
     const recent = recentDrawsRef.current[id];
     const text = drawFrom(pool, recent);
     recent.push(text);
     if (recent.length > recentMemoryFor(pool)) recent.shift();
+    // The anchor is stamped on the THIRD draw only — the hundred words are
+    // counted from the moment the ask was spent, not from each draw.
+    if (used + 1 >= DRAW_CEILING) spentAnchorRef.current[id] = pageWords;
     setDraw({ preset: id, text });          // REPLACES — never appends
     setDrawCounts((c) => ({ ...c, [id]: c[id] + 1 }));
-    drawAnchorRef.current = pageText.length; // arm the re-arm marker
+    setRefillNote(null);                    // a real draw answers any standing note
   };
 
   const send = async () => {
@@ -579,11 +620,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
     // already travels in `messages` (TU2's wire law, unchanged; no new key, no
     // new payload class, nothing this ticket adds to the disclosure's
     // enumeration).
+    //
+    // A SEND DOES NOT REFILL THE DECK. Nick's refill ruling names exactly one
+    // condition — a hundred words written — and conversation is not it. That is
+    // the rule agreeing with its own reason: the goal in Free Write is to get
+    // writing, and writing happens on the page, not in this composer. So the
+    // draw commits here and the counts are left exactly as they stand.
     if (draw) {
       appendTutorMessage(entry.id, { id: generateId(), role: 'tutor', text: draw.text, at: new Date().toISOString() });
       setDraw(null);
-      setDrawCounts(NO_DRAWS);   // a send is the other way to move on — the asks re-arm
-      drawAnchorRef.current = null;
     }
     const writerMsg = { id: generateId(), role: 'writer' as const, text, at: new Date().toISOString() };
     appendTutorMessage(entry.id, writerMsg);
@@ -708,23 +753,33 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
                   real and the gate lifts the moment the writer moves on. */}
               {freeWrite && (
                 <div className="wz-tutor-fw-roster" role="group" aria-label={t('tutorFreeWriteRoster')}>
-                  {FREE_WRITE_PRESETS.map((p) => {
-                    const spent = drawCounts[p.id] >= DRAW_CEILING;
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        className="wz-tutor-fw-preset"
-                        data-preset={p.id}
-                        disabled={spent}
-                        title={spent ? t('tutorFreeWriteSpent') : undefined}
-                        onClick={() => pressPreset(p.id)}
-                      >
-                        {t(p.term)}
-                      </button>
-                    );
-                  })}
+                  {FREE_WRITE_PRESETS.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className="wz-tutor-fw-preset"
+                      data-preset={p.id}
+                      // NEVER `disabled`, and that is Nick's ruling rather than
+                      // a style call: a spent ask must answer a fourth press
+                      // with a note, and a disabled control cannot answer
+                      // anything. `data-spent` carries the quiet styling that
+                      // `:disabled` used to.
+                      data-spent={drawCounts[p.id] >= DRAW_CEILING ? 'true' : 'false'}
+                      onClick={() => pressPreset(p.id)}
+                    >
+                      {t(p.term)}
+                    </button>
+                  ))}
                 </div>
+              )}
+              {/* THE REFILL NOTE — what a spent ask says instead of drawing.
+                  One line, no number: a live countdown would be pace/progress
+                  content, which this mode bars outright (M1/CD4 — the meter
+                  stays the only number in the room, and it is a cost, not a
+                  score). The threshold is a rule, so it may be named; the
+                  writer's distance from it is a score, so it may not. */}
+              {freeWrite && refillNote !== null && (
+                <div className="wz-tutor-fw-note" data-note-for={refillNote}>{t('tutorFreeWriteRefill')}</div>
               )}
               <div className="wz-tutor-convo-row">
                 <input

@@ -185,3 +185,104 @@ scope. Conversation *rules* stay deferred by Nick's own sentence at lock line 1:
 builds the window, not the rules.
 
 — the item-84 deck-phase lane, 2026-08-25
+
+---
+
+# S0 ADDENDUM — NICK'S REFILL RULING
+### Added 2026-08-26. Everything above stands unaltered; this supersedes one item in it.
+
+**Nick's ruling, verbatim:** *"It should reset after 100 words have been written with a
+note to the user if they try to use it a fourth time before writing 100 words."*
+
+This answers the one parameter the S0 above flagged as **inferred, not invented** — and it
+answers it differently from the reading that was built. Recorded as a **supersession**, not
+a quiet swap:
+
+| | |
+|---|---|
+| **Was** (this lane's inferred reading) | an ask re-arms when the writer moves on: **any** new writing on the page, **or** a Send |
+| **Is** (Nick's ruling) | an ask refills after **100 words** written; a **Send does not refill it at all**; a fourth press before the hundred **shows a note** |
+
+Two consequences follow that the ruling does not state but the build cannot avoid, so they
+are named here rather than absorbed silently:
+
+1. **A SEND NO LONGER REFILLS.** He named exactly one refill condition and conversation is
+   not it. This is the rule agreeing with its own reason — the goal in Free Write is to get
+   writing, and writing happens on the page, not in the Tutor's composer.
+2. **THE FOURTH PRESS IS NOT A DEAD BUTTON.** It must *answer*. So a spent preset is no
+   longer `disabled` — a disabled control cannot speak. It stays pressable and goes quiet
+   by `data-spent` instead. This is a deliberate departure from the G3 `disabled` specimen,
+   made on Nick's word rather than on the desk's preference.
+
+---
+
+## (a) WHAT ANCHORS THE COUNT — pinned from disk, not invented
+
+**The anchor: the page's word count at the moment the ask was SPENT (its third draw).**
+Not at each draw, and not at panel-open. Nick's sentence counts words written *before a
+fourth press*, and the fourth press only becomes possible once the third draw has landed —
+so the third draw is the only moment the clock can honestly start. Stamped once per ask,
+cleared when the hundred arrives.
+
+**The instrument: `useMonotonicWordCount` — yes, and here is why, with its one caveat.**
+
+- It lives at `apps/desktop/src/components/FirstRunGate.tsx:21`, exported, and it is
+  **the app's existing ratified reading of "a hundred words"** — HB1's first-run gate uses
+  this exact hook at this exact threshold. Its own header names the instrument: *"the
+  brief's own instrument (100 whitespace-delimited words, F1)."* Nick's hundred and F1's
+  hundred are the same hundred; inventing a second reading of the same number would be the
+  defect.
+- **The monotone guard is not decoration here.** F1's own note (`FirstRunGate.tsx:14-20`):
+  *"The clean derived text forward lock reports can transiently SHRINK while a trailing run
+  is struck… exactly the backward flicker forward lock exists to keep a writer from
+  feeling."* Free Write **is** the forward-locked mode, so this feature meets that flicker
+  more than the first-run gate ever did. A raw count would make a writer watch their
+  hundred go backwards.
+- `active` is passed `true`: this count has no gate to end. The running max **is** the
+  reading, and each ask's own anchor is what turns it into a delta.
+
+> **THE CAVEAT, CARRIED OPENLY.** That file's header reads *"Nothing here is mode-specific
+> or reusable beyond that page."* It was written when the hook had one caller. Importing it
+> makes that sentence stale. The alternative was a **fourth** copy of `wordCount` — the
+> helper is already triplicated on disk (`FirstRunGate.tsx:10`, `HomeFlow.tsx:44`,
+> `ScriptEditor.tsx:71`), and adding to that is worse than making one header sentence
+> stale. **Reuse chosen; the stale sentence is a records correction owed to HB1's file, not
+> a licence taken quietly.** Reversible by one word if the ruling is that HB1's hook stays
+> HB1's.
+
+## (b) THE NOTE'S COPY — drafted, awaiting Nick's word
+
+Under the voice law (impersonal — at the work, never at the writer) and under **M1/CD4**,
+which bars pace, streak, count and completion content in this mode: *"the meter stays the
+only number, and it is a cost, not a score."*
+
+> **The threshold is a RULE and may be named. The writer's distance from it is a SCORE and
+> may not.** So the note says "a hundred words" and never "62 more words" — a live
+> countdown would be exactly the progress content this mode refuses, and it would also
+> reintroduce the deliberation the ceiling exists to prevent.
+
+**Drafted, in the app's voice — the recommendation is B:**
+
+- **A** · "Three drawn. The deck refills after a hundred words."
+- **B** · **"Three drawn — the page is waiting. The deck refills after a hundred words."**
+- **C** · "The deck is spent for now. It refills after a hundred words on the page."
+
+B is recommended because it carries the rule *and* the reason: the middle clause is the
+whole point of the ceiling, pointing back at the page rather than at the panel. It also
+reuses a phrase this lane already had standing.
+
+**Built with B in place, flagged as awaiting his word** — approval is a one-string edit
+(`tutorFreeWriteRefill`, `deskLexicon.ts`).
+
+## (c) ONE SCOPE AMBIGUITY, PINNED RATHER THAN DECIDED
+
+Fable's relay reads *"three draws exhaust **the deck**"*; Nick's own earlier lock words read
+*"up to 3 prompts may exist behind **an ask**."* The build keeps **per ask** — each preset
+carries its own three and its own hundred — because that is the lock record's own wording
+and because Unblock and Free Writing Tips are different asks, not prompts competing for the
+same choice. **Consequence, stated plainly so it can be ruled against:** a writer may draw
+three prompts *and* three unblocks *and* three tips before any hundred is owed. If the
+deck's three are meant to be roster-wide, that is one line to change. **Carried to Nick
+with the deck.**
+
+— the item-84 deck-phase lane, 2026-08-26

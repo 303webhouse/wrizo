@@ -41,7 +41,15 @@
 //        build that shows three at once satisfies the count and defeats the
 //        purpose, so the check is a NODE COUNT (exactly one, always), held
 //        across repeat presses of one preset AND across switches between
-//        presets. The ceiling and its re-arm are proven with it.
+//        presets. The ceiling rides with it, and so does NICK'S REFILL RULING
+//        (verbatim): "It should reset after 100 words have been written with a
+//        note to the user if they try to use it a fourth time before writing 100
+//        words." That ruling SUPERSEDES this lane's own first reading, which
+//        re-armed on any new writing or on a send — so the checks here straddle
+//        the hundred deliberately (40 words must NOT refill; 105 must), because a
+//        test that only proves "wrote, then re-armed" would pass the superseded
+//        build too. A spent ask must also stay PRESSABLE: a fourth press answers
+//        with a note, and a disabled control cannot answer anything.
 //
 //   S5 — REQUIREMENT 3, in Nick's own sentence: "Whether the user asks their own
 //        question or selects a preset, the Tutor's response should be in the
@@ -82,6 +90,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // record and never from a pass file or the mockup HTML (that record's §3 rule).
 const PRESET_LABELS = ['Writing Prompt', 'Unblock', 'Free Writing Tips'];
 const PRESET_IDS = ['writingPrompt', 'unblock', 'tips'];
+
+// NICK'S REFILL RULING, verbatim: "It should reset after 100 words have been
+// written with a note to the user if they try to use it a fourth time before
+// writing 100 words." The two typing fixtures below straddle that threshold on
+// purpose — the first must NOT refill, the second must. Short words keep the
+// keystroke count sane (typeKeys dispatches two CDP events per character) while
+// staying honest to the instrument, which is whitespace-delimited (F1).
+const REFILL_WORDS = 100;
+const shortOfHundred = Array.from({ length: 40 }, (_, i) => `w${i}`).join(' ');   // 40 words — under
+const restOfHundred = Array.from({ length: 65 }, (_, i) => `x${i}`).join(' ');    // +65 = 105 — over
 
 // --- tu1.mjs / tu2.mjs's own fixtures, copied verbatim --------------------
 const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = true } = {}) => {
@@ -163,6 +181,9 @@ const rosterState = (app) => app.evalJs(`(() => {
     labels: presets.map(b => b.textContent.trim()),
     ids: presets.map(b => b.dataset.preset),
     disabled: presets.map(b => b.disabled),
+    spent: presets.map(b => b.dataset.spent),
+    note: document.querySelector('.wz-tutor-fw-note')?.textContent ?? null,
+    noteFor: document.querySelector('.wz-tutor-fw-note')?.dataset.noteFor ?? null,
     drawCount: draws.length,
     drawText: draws[0] ? draws[0].textContent : null,
     drawPreset: draws[0] ? draws[0].dataset.drawn : null,
@@ -233,6 +254,7 @@ await withHarness(async (app) => {
         ids: Object.keys(d.POOLS),
         sizes: Object.keys(d.POOLS).map(k => d.POOLS[k].length),
         ceiling: d.DRAW_CEILING,
+        refillWords: d.REFILL_WORDS,
         allStrings: Object.keys(d.POOLS).every(k => d.POOLS[k].every(x => typeof x === 'string' && x.trim().length > 0)),
       };
     })()`);
@@ -241,6 +263,8 @@ await withHarness(async (app) => {
       JSON.stringify(deck));
     ok('S0: the anti-deliberation ceiling is 3 — "up to 3 prompts may exist behind an ask"',
       !!deck && deck.ceiling === 3, JSON.stringify(deck && deck.ceiling));
+    ok(`S0 (the refill ruling): the refill threshold is ${REFILL_WORDS} words — Nick's "it should reset after 100 words have been written"`,
+      !!deck && deck.refillWords === REFILL_WORDS, JSON.stringify(deck && deck.refillWords));
   }
 
   // ==========================================================================
@@ -254,8 +278,10 @@ await withHarness(async (app) => {
       fw.rosterPresent === true, JSON.stringify(fw));
     ok('S1: exactly THREE presets, carrying Nick\'s own lock strings in his ruled order — "Writing Prompt" · "Unblock" · "Free Writing Tips"',
       JSON.stringify(fw.labels) === JSON.stringify(PRESET_LABELS), JSON.stringify(fw.labels));
-    ok('S1: no preset is born disabled — the roster arrives usable',
-      fw.disabled.every(d => d === false), JSON.stringify(fw.disabled));
+    ok('S1: no preset is born spent, and none is EVER `disabled` — the roster arrives usable, and a spent ask stays pressable so it can answer',
+      fw.disabled.every(d => d === false) && fw.spent.every(sp => sp === 'false'), JSON.stringify({ disabled: fw.disabled, spent: fw.spent }));
+    ok('S1: and no refill note stands before anything has been pressed',
+      fw.note === null, JSON.stringify({ note: fw.note }));
     ok('S1: nothing is drawn before any press — the panel opens silent (A14: the room never knocks)',
       fw.drawCount === 0, JSON.stringify(fw));
 
@@ -385,30 +411,60 @@ await withHarness(async (app) => {
     await press(app, 'tips');
     const beforeThird = await rosterState(app);
     ok('S4: an ask is still live after two draws — the ceiling has not fired early',
-      beforeThird.disabled[2] === false, JSON.stringify(beforeThird.disabled));
+      beforeThird.spent[2] === 'false', JSON.stringify(beforeThird.spent));
     await press(app, 'tips');
     const spent = await rosterState(app);
     ok('S4: after the THIRD draw that ask is spent — the preset goes quiet (a transient gate on real capability, not an unbuilt feature wearing paint)',
-      spent.disabled[2] === true, JSON.stringify(spent.disabled));
+      spent.spent[2] === 'true', JSON.stringify(spent.spent));
     ok('S4: the other two presets are untouched by one ask being spent — the ceiling is per ask, exactly as "up to 3 prompts may exist behind an ask" says',
-      spent.disabled[0] === false && spent.disabled[1] === false, JSON.stringify(spent.disabled));
+      spent.spent[0] === 'false' && spent.spent[1] === 'false', JSON.stringify(spent.spent));
     await press(app, 'tips');
     const fourth = await rosterState(app);
     ok('S4: a fourth press changes nothing — the standing line is unmoved, and still exactly one',
       fourth.drawCount === 1 && fourth.drawText === spent.drawText, JSON.stringify({ spent: spent.drawText, fourth: fourth.drawText }));
 
-    // THE RE-ARM, way one: the writer writes. The panel dissolves on that same
-    // keystroke (A15), so reopening is part of the proof — and the standing line
-    // must survive it, because the writer is writing FROM it.
+    // THE FOURTH PRESS ANSWERS — Nick's ruling, verbatim: "a note to the user if
+    // they try to use it a fourth time before writing 100 words." A spent ask is
+    // not a dead control; it is one that says why. So it must NOT be `disabled`
+    // (a disabled button cannot speak) and the press must produce a note.
+    ok('S4 (the refill ruling): a spent preset is NOT disabled — it stays pressable, because a fourth press has to be able to answer',
+      fourth.disabled.every(d => d === false), JSON.stringify(fourth.disabled));
+    ok('S4 (the refill ruling): the fourth press shows a NOTE instead of a prompt, and draws nothing — the standing line is untouched',
+      fourth.note !== null && fourth.drawCount === 1 && fourth.drawText === spent.drawText,
+      JSON.stringify({ note: fourth.note, drawText: fourth.drawText }));
+    ok('S4 (the refill ruling): the note names the threshold and carries NO progress number — M1/CD4 bars pace/streak/completion content in this mode',
+      typeof fourth.note === 'string' && /hundred words/i.test(fourth.note) && !/\d/.test(fourth.note),
+      JSON.stringify({ note: fourth.note }));
+
+    // WRITING LESS THAN A HUNDRED WORDS DOES NOT REFILL IT. This is the check
+    // that makes the number mean something: before this ruling ANY new writing
+    // re-armed the ask, and that build would pass a "writes then re-arms" test
+    // while failing Nick's actual rule.
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-    await app.typeKeys('The writer moves on, which is the whole point.');
-    await sleep(300);
+    await app.typeKeys(shortOfHundred);
+    await sleep(350);
     await openTutor(app);
-    const rearmed = await rosterState(app);
-    ok('S4: the ask RE-ARMS once the writer has written — the ceiling is a nudge back to the page, never a wall',
-      rearmed.disabled.every(d => d === false), JSON.stringify(rearmed.disabled));
-    ok('S4: and the standing line SURVIVES that keystroke and the panel\'s dissolve — the spur is not deleted at the moment it starts working',
-      rearmed.drawCount === 1 && rearmed.drawText === spent.drawText, JSON.stringify({ before: spent.drawText, after: rearmed.drawText }));
+    const underRefill = await rosterState(app);
+    ok(`S4 (the refill ruling): writing FEWER than ${REFILL_WORDS} words does NOT refill the deck — the ask is still spent`,
+      underRefill.disabled.every(d => d === false) && underRefill.spent[2] === 'true', JSON.stringify(underRefill.spent));
+    ok('S4: and the standing line SURVIVES that writing and the panel\'s dissolve — the spur is not deleted at the moment it starts working',
+      underRefill.drawCount === 1 && underRefill.drawText === spent.drawText, JSON.stringify({ before: spent.drawText, after: underRefill.drawText }));
+
+    // A HUNDRED WORDS REFILLS IT.
+    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    await app.typeKeys(restOfHundred);
+    await sleep(500);
+    await openTutor(app);
+    const refilled = await rosterState(app);
+    ok(`S4 (the refill ruling): once ${REFILL_WORDS} words are written the deck REFILLS — the ceiling is a nudge back to the page, never a wall`,
+      refilled.spent.every(s => s === 'false'), JSON.stringify(refilled.spent));
+    ok('S4 (the refill ruling): the refill clears the note it answered — nothing stale is left standing',
+      refilled.note === null, JSON.stringify({ note: refilled.note }));
+    await press(app, 'tips');
+    const afterRefill = await rosterState(app);
+    ok('S4 (the refill ruling): and the refilled ask genuinely draws again — a real pool member, not a second note',
+      afterRefill.drawCount === 1 && afterRefill.note === null && afterRefill.drawText !== spent.drawText,
+      JSON.stringify({ drawText: afterRefill.drawText }));
   }
 
   // ==========================================================================
@@ -455,8 +511,32 @@ await withHarness(async (app) => {
     const settled = await rosterState(app);
     ok('S5: the standing draw is spent by the send — it is a real message now, so nothing is rendered twice',
       settled.drawCount === 0, JSON.stringify(settled));
-    ok('S5: and a send RE-ARMS the asks too — the other way the writer moves on',
-      settled.disabled.every(d => d === false), JSON.stringify(settled.disabled));
+    // Nick's refill ruling names exactly ONE refill condition — a hundred words
+    // written — and conversation is not it. Before that ruling this lane's own
+    // build re-armed on a send; that reading is SUPERSEDED, and this check is
+    // what holds the supersession in place rather than letting it drift back.
+    //
+    // The ask must be genuinely SPENT before a send can be shown not to refill
+    // it — one draw then a send proves nothing either way. Writing Prompt has
+    // had exactly one draw so far in this fixture (and the send did not reset
+    // it), so two more presses exhaust it.
+    await press(app, 'writingPrompt');
+    await press(app, 'writingPrompt');
+    const exhausted = await rosterState(app);
+    ok('S5: precondition — Writing Prompt is genuinely spent before the second send (a send cannot be shown not to refill an ask that was never spent)',
+      exhausted.spent[0] === 'true', JSON.stringify({ spent: exhausted.spent }));
+
+    await app.evalJs("document.querySelector('.wz-tutor-convo-input').focus()");
+    await app.typeKeys('Another turn, with no writing on the page.');
+    await app.evalJs("document.querySelector('.wz-tutor-convo-send').click()");
+    await sleep(600);
+    const afterSecondSend = await rosterState(app);
+    ok('S5 (the refill ruling): a SEND does NOT refill the deck — the only refill is a hundred words on the page, because that is where Free Write wants the writer',
+      afterSecondSend.spent[0] === 'true', JSON.stringify({ spent: afterSecondSend.spent }));
+    await press(app, 'writingPrompt');
+    const stillSpent = await rosterState(app);
+    ok('S5 (the refill ruling): and pressing it after that send still answers with the NOTE, not a prompt — conversation bought no draws',
+      stillSpent.note !== null && stillSpent.drawCount === 0, JSON.stringify({ note: stillSpent.note, drawCount: stillSpent.drawCount }));
     await armTutorMode(app, {}); // restore the double's default for anything after this
   }
 

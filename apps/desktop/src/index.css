@@ -3751,10 +3751,16 @@ a:focus-visible,
   cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
 .wz-tutor-fw-preset:hover:not(:disabled){ color:var(--brass); border-color:var(--brass); }
 .wz-tutor-fw-preset:active:not(:disabled){ color:var(--brass-press); border-color:var(--brass-press); }
-/* The spent ask — a TRANSIENT gate on real capability (the selection-gated
-   action row is the house specimen), never an unbuilt feature wearing paint.
-   It lifts the moment the writer moves on. */
-.wz-tutor-fw-preset:disabled{ color:var(--text-low); cursor:default; }
+/* The spent ask — a TRANSIENT gate on real capability, never an unbuilt feature
+   wearing paint. Styled by `data-spent`, NOT by `:disabled`, on Nick's refill
+   ruling: a spent ask must answer a fourth press with a note, and a disabled
+   control cannot answer anything. It stays pressable, and stays quiet until the
+   hundred words arrive. */
+.wz-tutor-fw-preset[data-spent='true']{ color:var(--text-low); border-color:var(--ink-border); }
+.wz-tutor-fw-preset[data-spent='true']:hover{ color:var(--text-mid); border-color:var(--ink-border-strong); }
+/* The refill note: one quiet line in the panel's own status register (the
+   .wz-tutor-convo-status kinship), carrying no number but the threshold. */
+.wz-tutor-fw-note{ font-size:11px; color:var(--text-low); line-height:1.45; }
 /* The standing draw wears the tutor-turn shape it will keep once it commits —
    one olive edge is the whole difference, marking the one line the writer's own
    press just drew. It is not a second message dialect. */

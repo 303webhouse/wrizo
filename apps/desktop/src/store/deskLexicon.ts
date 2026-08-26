@@ -147,7 +147,7 @@ export type DeskTermId =
   // disabled unbuilt feature (G3's locked door wearing paint) but a transient
   // gate on real capability, re-armed the moment the writer moves on.
   | 'tutorFreeWriteRoster' | 'tutorFreeWritePrompt' | 'tutorFreeWriteUnblock'
-  | 'tutorFreeWriteTips' | 'tutorFreeWriteSpent'
+  | 'tutorFreeWriteTips' | 'tutorFreeWriteRefill'
   | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
   // TU2 S3 — the disclosure's v2 body, Nick's ratified string verbatim
   // (added, not overwritten in place, so the lexicon keeps v1's body
@@ -636,7 +636,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorFreeWritePrompt: 'Writing Prompt',
   tutorFreeWriteUnblock: 'Unblock',
   tutorFreeWriteTips: 'Free Writing Tips',
-  tutorFreeWriteSpent: 'Three drawn — the page is waiting.',
+  // NICK'S REFILL RULING — what a spent ask answers a fourth press with, in
+  // place of a prompt. No number beyond the threshold itself: the rule may be
+  // named, the writer's distance from it may not (M1/CD4 bars pace, streak and
+  // completion content in this mode — the meter stays the only number in the
+  // room, and it is a cost, not a score). Impersonal per the voice law — at the
+  // work, never at the writer. AWAITING NICK'S WORD on the wording itself,
+  // surfaced with the 54-prompt deck for one combined approval.
+  tutorFreeWriteRefill: 'Three drawn — the page is waiting. The deck refills after a hundred words.',
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
