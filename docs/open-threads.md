@@ -362,6 +362,22 @@ the New Page route (corrected at the deploy stamp; Fable's review-sufficiency cl
 and now) have passed over a dead door — item 109's sharpest instance (no gate drives `#/page/new`
 headfully). Production stays `63b875b` · `410033f9`; rollback lever unchanged (the doorway is also a
 crashing door).
+**→ THIRD-PASS FIX SHIPPED (chat 1, 2026-08-25).** `hotfix-104-third @ 8e75e60` merged (`ade023a`)
+and DEPLOYED — **git `2256f58` · railway `b10fcc55`**, SERVED==TESTED byte-verified
+(`index-CaW0zodg.js`; the item-111 provenance gap did NOT recur — see the HOTFIX 104 (THIRD) DEPLOY
+MANIFEST). The guard now sits BELOW `useCascade` (every hook above, the decision below); the prior
+dispatcher-unmount fix is kept; the 145-file hooks-order class guard is LIVE (`hooks-order.mjs` PASS
+both settings, 60/60). Review VERDICT PASS (`hotfix-104-third-review-fable.md`). Production is now
+`2256f58` · `b10fcc55`; rollback target `63b875b` · `410033f9` (rolling back REINTRODUCES the crash).
+**→ DISPOSITION: MONITOR, NOT CLOSED (Fable, 2026-08-26).** The fix is proven at the invariant and
+the class guard is live — but the direct "the writer SEES the New Page" proof is a **DEV-SERVE
+verdict, not this production suite**; item 109 owes the headful gate, and this class has been reported
+**narrower than the fault THREE times**. **Item 104 CLOSES when EITHER: (a) item 109's headful
+`#/page/new` gate exists AND passes at a deployed bundle, OR (b) Nick's own walk confirms the door on
+production — whichever lands first.** The reinstated "avoid the New Page door on production" interim
+rule is SUPERSEDED by this disposition: close-condition (b) invites Nick to walk the door on
+production, so the door is live-with-the-fix and open to test — but UNPROVEN on production until (a)
+or (b). Monitored, not closed.
 
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
@@ -820,6 +836,15 @@ every brief/ruling). The brief-template line follows from it, not the reverse. *
 main) → deleted; the other two (identical content, md5 `2f5c3e55…`, git blob `8fcd4b6`) matched
 NEITHER v1 nor v2 → kept preserved in scratchpad, hash relayed to TUTOR, nothing deleted. (`-v2` was
 never a repo path — a working name during a relay; any file bearing it is a stray by definition.)
+**→ THIRD "STRAY" RULED NOT A STRAY (Fable, 2026-08-26).** `docs/menus/tutor/item84-t1-s0-brief.md`
+(git blob `484e7221`, md5 `01d76268…`, 7796 b) is the **DECK lane's T1 S0 brief**, not a TUTOR
+stray. That ticket is **PARKED on item 112 (Revise as a surface) per Nick's ruling**, so the file is
+**superseded-before-tracked.** ROUTED TO THE DECK LANE, not TUTOR — its author decides whether any of
+it survives into item 112's eventual brief. Preserved (scratchpad copy + blob written to the object
+store, recoverable `git cat-file -p 484e7221`); nothing deleted; the working-tree copy LEFT IN PLACE
+in the shared checkout for the DECK lane to find. *(Two earlier preserved item-84 strays also await
+their desks: the revise-repass draft `2f5c3e55`/`8fcd4b6`, and the held-batch predecessor
+`a092d53c`.)*
 
 ## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24
 
@@ -852,6 +877,15 @@ durable fix is a **Linux suite-of-record environment** (WSL, or a nixpacks-match
 byte-identity is true again for every future ship — **scheduled POST-WALKTHROUGH, not now** (standing
 up a build env mid-arc costs a day). The `.nvmrc`=18 pin stays as correct hygiene, recorded as NOT
 closing 111. The Node hypothesis was chat 1's to test, not just execute — overturned with credit.
+**→ SOURCE-DEPENDENCE OBSERVED (chat 1, 2026-08-26, from the hotfix-104-third deploy).** The OS
+divergence is **NOT universal.** Deploying tree `2256f58`: Railway's Linux/nixpacks build produced
+`index-CaW0zodg.js` + `index-62lZ1TCK.css` — **byte-identical to the local Windows suite build AND
+the served bundle** (Windows == Linux == served, both assets). So SERVED==TESTED held at full
+item-77(c) strength with NO Linux build env — the `hZQhhS8W`≠`4pj2Iqk-` split was specific to that
+earlier source tree. Item 111 STAYS OPEN (a Linux suite-of-record env is still the general fix; the
+divergence still MAY strike a future tree), but the standing rule is now **DIFF served-vs-stamped
+every ship and let the bytes rule — never assume a gap, never assume identity.** See the HOTFIX 104
+(THIRD) DEPLOY MANIFEST.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
