@@ -9194,6 +9194,77 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## HOTFIX 104 (THIRD) DEPLOY MANIFEST — 2026-08-25 (chat 1, on Nick's "execute and ship the New Page fix")
+
+**HOTFIX 104, THIRD PASS — the hooks-order class fixed at the invariant (the New Page door).** Fable's
+order: MERGE `hotfix-104-third @ 8e75e60`, then HOLD for Nick's ship word; Nick's word: "execute and
+ship the New Page fix." Deploying the `main` HEAD (`2256f58`) — merge `ade023a` of the fix +
+the item-84 docs take (`68c67a7`) + this review's records commit.
+
+**New PRODUCT code since the last live build (`63b875b`) — apps/desktop/src, THREE FILES (verified
+`63b875b..HEAD`, +107/−9 in shipped source), ZERO schema, ZERO server:**
+- `PageEditor.tsx` (+44) — PageEditorView's guard now sits BELOW `useCascade`: every hook above, the
+  vanished-page decision below. Why the two earlier passes missed it: lifting this ticket's own hooks
+  left `useCascade` behind, and the dispatcher decision only helps when the PARENT re-renders — a
+  child-local re-render never consults the parent. The prior dispatcher-unmount fix is KEPT, not
+  reverted (the two-device-tombstone path stays green); the view is now internally safe too. Belt and
+  braces, each argued.
+- `ScriptEditor.tsx` (+14) — the IDENTICAL fault, in the room the doorway sends writers INTO. A
+  reported-instance-only fix would have MOVED the crash here; the class fix closes it.
+- `UnbornSurface.tsx` (+49) — `UnbornProvider` registers its slot during RENDER (useMemo) and tears
+  down in an EFFECT CLEANUP; under StrictMode the cleanup wins and the memo cannot re-run — dev-only
+  by construction, which also RECONCILES the two desks' opposite cold-load reports at the same bundle.
+- **Also merged, NOT in the bundle:** `scripts/harness/hooks-order.mjs` (+98) — the 145-file
+  hooks-order guard (every function-declared component + custom hook). Census found THREE violations;
+  one deliberate reasoned allowlist entry (`JournalEntry.tsx`, unrouted since FX14, delete-the-line-
+  first-if-re-routed), plus a check asserting the allowlist still describes only unrouted surfaces.
+  The DURABLE PRIZE. Blind spots written into the file (arrow-defined components, multi-line early
+  returns, line-scanner-not-AST) — AST form owed to item 109.
+
+**REVIEWED GREEN** (`docs/wrizo-alpha/hotfix-104-third-review-fable.md`, Fable VERDICT PASS, read at
+raw bytes, offer `8e75e60`).
+
+**Docs since `63b875b` (records only, no deployed surface):** the item-84 take (`68c67a7` — Revise
+finding + re-plan + held batch), this third-pass review, and the ledger appends (item 104 third
+reopen + this manifest). Confirmed: `63b875b..HEAD` touches `apps/desktop/src` in exactly the three
+files above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs`, BOTH HARNESS_PARKED settings, read
+to completion, machine-clear (NOT contaminated) — **60/60 UNSET (CLEAN) and 60/60 PARKED (CLEAN)** at
+`tree=2256f58 bundle=index-CaW0zodg.js/531457b` (CSS `index-62lZ1TCK.css`), the same bundle the fix
+offer stamped. Among the 60: `hooks-order.mjs` (the new guard) PASS and `item104.mjs` (tombstone path)
+PASS. `tsc` ×2 EXIT 0; `build:web` clean. *(The stamp reads `+1dirty` — one untracked file,
+`docs/menus/tutor/item84-t1-s0-brief.md`, a preserved item-110 stray OUTSIDE the build path; the
+identical bundle hash proves it does not affect the artifact.)*
+
+**ROLLBACK TARGET: git `63b875b` · railway `410033f9-678d-4b66-8679-e20d07cd5da3`** — the prior live
+build (New Page route crashing). Rolling back REINTRODUCES the New Page crash, so it is only for a
+worse regression from THIS deploy. Rollback is a redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `2256f58` · railway build `b10fcc55-94d4-4429-a24e-bc889b1ef6a1`** — DEPLOYED
+2026-08-25 (`railway up --ci` from the primary checkout, item-98 guard verified: project
+`writer-studio` / env `production` / service `writer-studio-app`; deployed image `sha256:e7ead873`).
+Verified LIVE: `/healthz` **200**, served bundle **`index-CaW0zodg.js` + `index-62lZ1TCK.css`**,
+`/auth/me` **401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (the item-111 provenance gap did NOT recur).** Railway's
+Linux/nixpacks build (node 18) produced `index-CaW0zodg.js` + `index-62lZ1TCK.css` — the SAME JS and
+CSS hashes as my local Windows suite build AND as the served production bundle. Windows suite ==
+Linux Railway == served, on BOTH assets. So this deploy is byte-verified served==tested at full
+item-77(c) strength — NO functional-equivalence caveat needed (contrast the 2026-08-24 hotfix, which
+served `4pj2Iqk-` ≠ tested `hZQhhS8W`). **Refines item 111: the build-OS divergence is
+SOURCE-DEPENDENT, not universal — it did not manifest for this tree.** Item 111 stays open (a Linux
+suite-of-record env is still the general fix), but THIS deploy needed no such fallback. **Build OS:
+local Windows; deploy Railway Linux/nixpacks (node 18).**
+
+**BOUNDARY, stated honestly (the review's own risk carried forward):** the production suite still
+cannot drive `#/page/new` HEADFULLY — that gate is owed to item 109. The direct "the writer SEES the
+New Page" proof is the fix lane's DEV-SERVE verification recorded in the review (VERDICT PASS on the
+guard placement below `useCascade`), NOT this production suite. This deploy ships that
+reviewed-and-verified artifact byte-for-byte. Item 104's formal disposition (close vs monitor) is
+left to Fable. The ELEVATED STANDING HARNESS LAW from the review is registered: **"'nothing threw' is
+not a verdict; 'the writer sees the page' is."**
+
 ## HOTFIX 104 DEPLOY MANIFEST — 2026-08-24 (chat 1, on Nick's "ship the hotfix on a clean suite")
 
 **HOTFIX 104 — the hooks-order crash class.** Nick's word: "ship the hotfix on a clean suite." The
