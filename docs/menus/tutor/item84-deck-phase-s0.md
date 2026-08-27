@@ -286,3 +286,51 @@ deck's three are meant to be roster-wide, that is one line to change. **Carried 
 with the deck.**
 
 — the item-84 deck-phase lane, 2026-08-26
+
+---
+
+# THE FOUR RULINGS — decision-complete
+### 2026-08-26. Nick's words, verbatim where his. Nothing below is inferred.
+
+**1 · THE DECK IS APPROVED**, as committed — 54 entries, all three registers, no rework
+required to land. His posture, recorded because it governs what happens next: *"not worth
+holding up progress right now."* **Future rework therefore rides normal errata, not a
+re-approval** — the deck is landed content now, and a later line change is an edit to
+approved content rather than a gate reopening.
+
+**2 · THE NOTE'S COPY — Nick's own line supersedes all three candidates.**
+
+> **"Write 100 words to unlock more prompts"**
+
+Shipped verbatim. It is better than A, B and C for a reason worth naming: the candidates
+all *reported a state* (three drawn, the deck is spent) and then appended the rule. His
+**carries the unlock condition inside the copy** — it is one clause, and the clause is the
+way out. It satisfies the voice law by a route the desk's three missed: an **imperative
+aimed at the act** ("Write 100 words"), not at the writer. And it holds M1/CD4 without
+strain — the number in it is the *threshold*, which is a rule, and never the writer's
+distance from it, which would be a score.
+
+**3 · RATIONING — AS BUILT (per ask).** The scope ambiguity carried in (c) above is closed
+in favour of what was built, with Nick's own reasoning recorded:
+
+> *"Unblock and tips are different kinds of help. We can revisit putting limits there
+> later, but for now, I just don't want Users to be able to flip through an endless stream
+> of prompts — defeats the purpose of getting a nudge with the intent of getting started."*
+
+**The Writing Prompt deck is the rationed one**, and the ration exists to stop the endless
+flip, not to meter help. Unblock and Free Writing Tips carry the same mechanism today
+because they are the same mechanism — **a revisit note rides the record**: whether those two
+should be rationed at all is open, and open in the direction of *loosening*, not tightening.
+
+**4 · THE WORD COUNTER — REUSE, and fix the stale header in the same commit.** Nick's
+ruling names the principle: **a comment that lies about the code is a defect.** So
+`FirstRunGate.tsx`'s *"Nothing here is mode-specific or reusable beyond that page"* is
+corrected in the very commit that falsifies it — the same mirror law this house already
+applies to `tutor-rules.md` and its `SYSTEM_PROMPT`. The correction is precise about what
+changed: **the veil and the gate remain HB1's and remain first-run-only; it is the word
+COUNT that turned out to be general** — which is the honest shape of it, since Nick's
+hundred and F1's hundred are the same hundred.
+
+**THE DECK PHASE IS DECISION-COMPLETE.** Nothing in it now rests on an inference.
+
+— the item-84 deck-phase lane, 2026-08-26

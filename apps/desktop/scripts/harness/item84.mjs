@@ -101,6 +101,12 @@ const REFILL_WORDS = 100;
 const shortOfHundred = Array.from({ length: 40 }, (_, i) => `w${i}`).join(' ');   // 40 words — under
 const restOfHundred = Array.from({ length: 65 }, (_, i) => `x${i}`).join(' ');    // +65 = 105 — over
 
+// NICK'S OWN LINE, verbatim — he superseded the desk's three candidates with
+// this one, and it is the string of record. Asserted byte-for-byte rather than
+// by pattern, and asserted to be the SAME string at zero words and at forty:
+// that is what proves it is a rule and not a progress report.
+const REFILL_NOTE = 'Write 100 words to unlock more prompts';
+
 // --- tu1.mjs / tu2.mjs's own fixtures, copied verbatim --------------------
 const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = true } = {}) => {
   await app.goto('/');
@@ -432,9 +438,8 @@ await withHarness(async (app) => {
     ok('S4 (the refill ruling): the fourth press shows a NOTE instead of a prompt, and draws nothing — the standing line is untouched',
       fourth.note !== null && fourth.drawCount === 1 && fourth.drawText === spent.drawText,
       JSON.stringify({ note: fourth.note, drawText: fourth.drawText }));
-    ok('S4 (the refill ruling): the note names the threshold and carries NO progress number — M1/CD4 bars pace/streak/completion content in this mode',
-      typeof fourth.note === 'string' && /hundred words/i.test(fourth.note) && !/\d/.test(fourth.note),
-      JSON.stringify({ note: fourth.note }));
+    ok('S4 (the refill ruling): the note is NICK\'S OWN LINE, verbatim — "Write 100 words to unlock more prompts", carrying the unlock condition inside the copy',
+      fourth.note === REFILL_NOTE, JSON.stringify({ note: fourth.note, expected: REFILL_NOTE }));
 
     // WRITING LESS THAN A HUNDRED WORDS DOES NOT REFILL IT. This is the check
     // that makes the number mean something: before this ruling ANY new writing
@@ -449,6 +454,19 @@ await withHarness(async (app) => {
       underRefill.disabled.every(d => d === false) && underRefill.spent[2] === 'true', JSON.stringify(underRefill.spent));
     ok('S4: and the standing line SURVIVES that writing and the panel\'s dissolve — the spur is not deleted at the moment it starts working',
       underRefill.drawCount === 1 && underRefill.drawText === spent.drawText, JSON.stringify({ before: spent.drawText, after: underRefill.drawText }));
+
+    // THE NOTE IS A CONSTANT, NOT A PROGRESS REPORT — proven structurally rather
+    // than by pattern-matching for digits (Nick's own line contains "100", and a
+    // digit ban would have been the wrong test as well as a failing one). Press
+    // again now that FORTY of the hundred words are written: if the copy carried
+    // any progress content at all — "60 to go", a bar, a percentage — this line
+    // could not come back byte-identical. M1/CD4 holds: the threshold is a rule
+    // and may be named; the writer's distance from it is a score and may not.
+    await press(app, 'tips');
+    const notedAtForty = await rosterState(app);
+    ok('S4 (the refill ruling): the note is a CONSTANT — pressing again with 40 of the 100 words written returns the BYTE-IDENTICAL line, so it carries no countdown, no progress, no score',
+      notedAtForty.note === fourth.note && notedAtForty.note === REFILL_NOTE,
+      JSON.stringify({ atZero: fourth.note, atForty: notedAtForty.note }));
 
     // A HUNDRED WORDS REFILLS IT.
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");

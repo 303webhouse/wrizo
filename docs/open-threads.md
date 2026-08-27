@@ -11604,7 +11604,25 @@ before the first patch) and `item84-deck-phase-build.md` (the build record).
   the page's word count at the **third draw**. Caveat carried openly — `FirstRunGate.tsx`'s
   header calls itself non-reusable; reuse was chosen over a fourth copy of a helper already
   triplicated on disk, and the stale sentence is a correction owed to that file.
-- **STILL OPEN, one scope question:** the relay reads *"three draws exhaust the deck"*; the
+- **DECISION-COMPLETE — Nick's four rulings, 2026-08-26.** **(1) THE DECK IS APPROVED** as
+  committed (54 entries, three registers); his posture recorded — *"not worth holding up
+  progress right now"* — so **future rework rides normal errata, not a re-approval**.
+  **(2) THE NOTE'S COPY is Nick's own line**, superseding all three desk candidates and
+  shipped verbatim: **"Write 100 words to unlock more prompts"** — it carries the unlock
+  condition *inside* the copy rather than reporting a state, and satisfies the voice law by
+  an imperative aimed at the ACT, not the writer. **(3) RATIONING stands AS BUILT (per
+  ask)**, his reasoning recorded: *"Unblock and tips are different kinds of help. We can
+  revisit putting limits there later, but for now, I just don't want Users to be able to
+  flip through an endless stream of prompts — defeats the purpose of getting a nudge with
+  the intent of getting started."* **The Writing Prompt deck is the rationed one; REVISIT
+  NOTE rides the record** — whether Unblock and Tips should be rationed at all is open, and
+  open in the direction of loosening. **(4) THE WORD COUNTER is REUSED**, and
+  `FirstRunGate.tsx`'s stale *"not reusable beyond that page"* header is corrected **in the
+  same commit** on his principle that *a comment that lies about the code is a defect* —
+  the same mirror law this house already applies to `tutor-rules.md`. The correction is
+  precise: the veil and the gate stay HB1's and stay first-run-only; it is the word COUNT
+  that turned out to be general.
+- **(SUPERSEDED by ruling 3) the scope question:** the relay reads *"three draws exhaust the deck"*; the
   lock record reads *"up to 3 prompts may exist behind an ask."* The build keeps **per ask**
   on the lock record's wording, so three prompts + three unblocks + three tips are available
   before any hundred is owed. Pinned rather than decided; one line to change.

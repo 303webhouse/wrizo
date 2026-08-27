@@ -637,13 +637,19 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorFreeWriteUnblock: 'Unblock',
   tutorFreeWriteTips: 'Free Writing Tips',
   // NICK'S REFILL RULING — what a spent ask answers a fourth press with, in
-  // place of a prompt. No number beyond the threshold itself: the rule may be
-  // named, the writer's distance from it may not (M1/CD4 bars pace, streak and
-  // completion content in this mode — the meter stays the only number in the
-  // room, and it is a cost, not a score). Impersonal per the voice law — at the
-  // work, never at the writer. AWAITING NICK'S WORD on the wording itself,
-  // surfaced with the 54-prompt deck for one combined approval.
-  tutorFreeWriteRefill: 'Three drawn — the page is waiting. The deck refills after a hundred words.',
+  // place of a prompt. THIS LINE IS NICK'S OWN, verbatim: he superseded the
+  // desk's three candidates with his own, and it is better than all of them
+  // because it carries the unlock CONDITION inside the copy rather than merely
+  // reporting a state. Voice law satisfied by a route the candidates missed —
+  // an imperative aimed at the ACT ("Write 100 words"), never at the writer.
+  //
+  // A CONSTANT, and that is load-bearing: no interpolation, no remaining-count,
+  // nothing that varies with how much has been written. The threshold is a RULE
+  // and may be named; the writer's distance from it is a SCORE and may not
+  // (M1/CD4 — the meter stays the only number in this room, and it is a cost,
+  // not a score). item84.mjs asserts this structurally, by pressing at zero
+  // words and again at forty and requiring the two notes to be byte-identical.
+  tutorFreeWriteRefill: 'Write 100 words to unlock more prompts',
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
