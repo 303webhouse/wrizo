@@ -875,7 +875,11 @@ TRR15 — 21 hits for that vocabulary, 0 for the deck phase's), which the deck p
 is **NOT superseded by the deck phase**, and DECK has no standing to rule on its deletion. It belongs
 to whichever desk holds the **Revise re-pass / error-lens arc** (Fable's own T0 ruling would supersede
 its §1 ordering). **Still preserved (blob `484e7221`, scratchpad + object store); nothing deleted.**
-The reroute destination is Fable's to name — surfaced.
+**ROUTED TO TUTOR (Fable, 2026-08-26)** — the Revise re-pass desk; its subject is their error-lens
+arc. Record, Fable's words: *"routed to TUTOR; Fable's T0 ruling (Revise-as-surface precedes T1)
+supersedes the brief's §1 ordering; TUTOR rules what survives into item 112's eventual brief."* Nick
+relays the pointer (blob `484e7221`, `docs/menus/tutor/item84-t1-s0-brief.md`, preserved) on his next
+TUTOR touch. Still preserved; nothing deleted.
 
 ## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24 · CLOSED 2026-08-26 (founding evidence retracted — was contamination, not build-repro)
 
@@ -11179,29 +11183,18 @@ fixture that no longer exists.
   lets a builder write wherever it stands, which is how strays land in the primary checkout and
   contaminate another lane's staging (item 110). A path without a worktree is an under-specified
   instruction; TUTOR's amended relay format and Fable's briefs/rulings now state the worktree.
-- **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24).** A stamp
-  names the TREE, the BUNDLE, **and the TOOLCHAIN** that produced it — the same source under a
-  different Node builds different bytes, so a bundle hash without its build environment names its
-  source but not its software (item 77(c)'s lesson, extended to the toolchain). **Suite stamps and
-  deploy manifests gain a NODE VERSION line;** a served-bundle hash only verifies against the build
-  env that produced the suite's bundle. Proven by the hotfix-104 deploy: Node 24 local vs Node 18
-  Railway built different hashes from one source (item 111).
-  **AMENDED 2026-08-25 (Fable) — the bar stated openly, not broken silently:** **SERVED == TESTED
-  holds at the level of SOURCE + LOCKFILE; byte-identity of the bundle holds ONLY when the suite
-  runs in the DEPLOY's own OS.** Where it does not, the stamp says **FUNCTIONALLY VERIFIED** and
-  NAMES THE GAP — never silent. **Every stamp names its BUILD OS beside its toolchain.** (Correction
-  to the example above: the hotfix-104 divergence was OS-level — Windows suite host vs Railway's
-  Linux/nixpacks — NOT the node version; a Node-18 Windows rebuild still diverged. See item 111.)
-  **→ FOUNDING EVIDENCE RETRACTED (2026-08-26, per item 111's closure — DECK §9).** The hotfix-104
-  "cross-OS / cross-node divergence" cited above NEVER HAPPENED: the served `4pj2Iqk-` was built from
-  a CONTAMINATED tree (DECK's uncommitted mutations, uploaded by `railway up`), not clean source. Both
-  clean-source builds ever observed were BYTE-IDENTICAL cross-OS (`CaW0zodg`/531457 Windows == Linux
-  == served; the mutant `4pj2Iqk-`/537500 also Node-24-Windows == Node-18-Linux). So the
-  SOURCE+LOCKFILE-only / FUNCTIONALLY-VERIFIED carve-out rests on retracted evidence: **byte-identity
-  is the EXPECTATION, enforced by the every-ship served-vs-stamped DIFF + CLEAN TREE AT UPLOAD (below);
-  invoke FUNCTIONALLY-VERIFIED only if a future ship's diff actually shows divergence** (investigate
-  contamination FIRST, OS second). The law's surviving core — a stamp names tree+bundle+toolchain+OS,
-  and never let a hash mismatch pass silently — stands. Full re-draft of this entry flagged for Fable.
+- **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24; RE-DRAFTED
+  2026-08-26, the principle surviving its retracted founding example).** Every suite stamp and
+  deploy manifest names: **tree SHA · bundle hash+bytes · toolchain (node) · build OS · TREE CLEAN
+  AT UPLOAD.** Byte-identity of served vs stamped is the **EXPECTATION of every ship** and is
+  **diffed every ship.** Any divergence is diagnosed **CONTAMINATION-FIRST — the tree before the
+  toolchain** — because the one observed divergence was a dirty tree, never the environment.
+  **FUNCTIONALLY VERIFIED exists only as a stated, named fallback** when a diff diverges from
+  proven-clean source for an explained reason. *(Founding evidence: the item-110 shipping incident
+  — the contaminated `63b875b` · railway `410033f9` deploy that served `index-4pj2Iqk-.js`/537500b
+  built from DECK's uncommitted mutations (DECK §9) — and the retraction that CLOSED item 111, both
+  recorded in `e88def1`. The prior "Node 24 vs Node 18 / OS-level divergence" example is RETRACTED;
+  git history holds it.)*
 - **CLEAN TREE AT UPLOAD — standing law + item-98 guard amendment (Fable, 2026-08-26).** Immediately
   before `railway up`, `git status --porcelain` must be EMPTY — or every stray EXPLICITLY ENUMERATED
   AND AUTHORIZED — and the deploy stamp NAMES IT: *"tree clean at upload."* `railway up` uploads the
