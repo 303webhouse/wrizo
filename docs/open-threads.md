@@ -875,7 +875,11 @@ TRR15 — 21 hits for that vocabulary, 0 for the deck phase's), which the deck p
 is **NOT superseded by the deck phase**, and DECK has no standing to rule on its deletion. It belongs
 to whichever desk holds the **Revise re-pass / error-lens arc** (Fable's own T0 ruling would supersede
 its §1 ordering). **Still preserved (blob `484e7221`, scratchpad + object store); nothing deleted.**
-The reroute destination is Fable's to name — surfaced.
+**ROUTED TO TUTOR (Fable, 2026-08-26)** — the Revise re-pass desk; its subject is their error-lens
+arc. Record, Fable's words: *"routed to TUTOR; Fable's T0 ruling (Revise-as-surface precedes T1)
+supersedes the brief's §1 ordering; TUTOR rules what survives into item 112's eventual brief."* Nick
+relays the pointer (blob `484e7221`, `docs/menus/tutor/item84-t1-s0-brief.md`, preserved) on his next
+TUTOR touch. Still preserved; nothing deleted.
 
 ## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24 · CLOSED 2026-08-26 (founding evidence retracted — was contamination, not build-repro)
 
@@ -932,6 +936,137 @@ incident. **The every-ship SERVED-vs-STAMPED DIFF stays STANDING LAW — it is t
 this class:** a contaminated build shows up as a served hash ≠ the suite's stamped hash, exactly as
 it did here. See item 110's contamination incident + the INCIDENT RECORD at the HOTFIX 104 DEPLOY
 MANIFEST (2026-08-24), and the new CLEAN TREE AT UPLOAD standing law. Item 111 CLOSED.
+
+## ITEM 112 — REVISE AS A SURFACE (surface; the error lens is PARKED here) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
+
+**NOT a ticket — a SURFACE.** Revise is **vocabulary without liveness** today (`ModeStrip`:
+`live:false`, `aria-disabled`, flashes coming-soon). This item covers **its doorway, its rail
+posture, its FX18 geometry, and its own harness** — **"presence is not composition" governs from day
+one.**
+
+**THE ERROR LENS IS PARKED ON THIS ITEM** — fully argued and merged (item 84's Revise re-pass:
+**T1–T7, TRR12–TRR18, DR7 as narrowed, the CSS-only flag law, the ruled order**). **Nothing re-argues
+when the surface exists** — the lens lands onto the surface this item stands up.
+
+**SCOPE QUESTION HELD FOR NICK:** **small T0** (Draft's page + the lens + the Revise roster) **vs full
+Revise** (its own furniture). His lean pending.
+
+## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
+
+**BUILD-CLASS, SERVER.** Lands in **`apps/server/src/tutor.ts` → `SYSTEM_PROMPT`** AND its
+**byte-verbatim mirror `docs/wrizo-alpha/tutor-rules.md` — IN THE SAME COMMIT** (the mirror's own
+header is the reason: record and running system can never quietly diverge). Not chat 1's lane to write
+(server code, propose-never-ship); recorded here as the approved spec for the build lane.
+
+**Nick-approved insertion, VERBATIM, for §2 of the prompt:**
+
+> Modeling is lawful; repair is not. You may compose a short parallel example — a sentence of your own,
+> similar in structure and correctly punctuated — to demonstrate a rule. You may never return the
+> writer's own sentence repaired, in whole or in part, however brief. The test: could the writer paste
+> your words into their page and be done? If yes, you have written for them. A model is a specimen
+> about grammar; a repair is their next revision performed by you.
+>
+> Speak at the work, never at the writer. The sentence has a problem; the writer does not have a
+> problem.
+>
+> When you are asked again about the same error, the writer's edit did not clear it. Do not repeat your
+> previous explanation. Take a different angle — a different model sentence, a different order of
+> explanation, a different name for the rule. Never the same explanation louder.
+>
+> You do not refuse. If a request would cross into composition, do not answer with a refusal sentence.
+> Return the question that leads back to the writer's own act.
+
+## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
+
+Two-part live walk, relayed by Fable. New items **114–118** open below; two Part-1 defects join
+existing families (item 102, item 79); the design rulings + wave defects are **owed to the MENU lane
+as errata** (recorded here, routing noted).
+
+### PART 1 — DRAFT + FREE WRITE (menus build)
+
+**DEFECTS:**
+- **(a) Bullet lists don't continue** — Enter after a bullet yields a plain line. **Joins item 102's
+  prose-input family as its LIST CLAUSE.** (S0 at the prose-input fix lane.)
+- **(b) Align buttons INSERT literal glyphs** (`>>`, `><`) with **NO visible alignment applied** —
+  **item 79's renderer class WIDENED to alignment markers.** Repro note = the S0's first question:
+  does alignment **apply-but-show-markers**, or **fail entirely**?
+
+**DESIGN RULINGS — verbatim to MENU as WAVE ERRATA:**
+- the pop-out **FADE TIMING** rule;
+- the **MENU LAYOUT** rule — the **Structure block to the tab's BOTTOM**; **Full screen ALIGNS WITH
+  THE PROGRESS BAR**;
+- **INDENT SEMANTICS** — **Tab = indent**; the **menu arrow indents a WHOLE PARAGRAPH, repeatably,
+  for outlines.**
+
+**UX NOTE (M-arc, onboarding) — NOT a defect.** Forward lock works and startles. Nick's verdict — the
+feature **STANDS**: *"as long as the writer feels compelled to keep moving forward... I will have
+accomplished my goal."* Whether first-run needs a one-line introduction is a design question for the
+onboarding notes, not a defect.
+
+**CONFIRMED WORKING:** B/I/U styling applies · paragraph breaks · indent option · heading via H ·
+Forward lock's strike-not-delete.
+
+### PART 2 — BOARDS
+
+Board findings are grouped as **item 118** (the fix cluster, defects a–f) plus committee/feature items
+**115–117**, all opened below. **WAVE DEFECTS — to MENU as errata:**
+- the **TWO-HANDS RULE not working** — a far-left open does NOT shut the tool sliver — a ruled wave
+  requirement, now a wave defect;
+- the **TUTOR PANEL does not stay anchored to the board's RIGHT EDGE under board resize** — Nick's
+  ruling: it should.
+
+## ITEM 114 — RESEARCH PAGES & STYLE GUIDES (feature; placeholders NOW, behavior deferred) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 1, 2026-08-26).** The Structure redesign makes **"Research" a THIRD
+PAGE KIND** beside Normal and Screenplay. Under it, **style-guide buttons — MLA (default) · APA ·
+Chicago · AP** — are revealed, and **the selection SHAPES THE REVISE MENU** (e.g. Chicago → Footnotes
+appears). **Nick's instruction: build the buttons NOW as placeholders** — *"so we don't forget to go
+back to it"* — full behavior DEFERRED. **Cross-refs:** item 112 (the Revise linkage); item 87's
+chooser (a third kind = a third preset); the **MLA-default ruling — SUPERSEDED as to placement:** the
+buttons live **under Research in Structure**, not in the earlier dropdown location.
+
+## ITEM 115 — CARD TAGS & METADATA (committee) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** Charter, Nick's words (the Westeros example whole,
+on file at Fable's desk): **cards carry METADATA for quick lookup** — a cited source's name; a place
+or character. A **"Tags" dialogue box at each card's FOOT** lists the card's linked tags; **links
+between cards note their connecting tags**; and **tags are searchable FROM THE DRAFT SCREEN**,
+returning every card carrying the tag *"without having to run an AI check."* **Charter posture,
+verbatim:** *"devise an intuitive way for writers to be able to group information without getting too
+bogged down in the logistics."* Committee.
+
+## ITEM 116 — IMPORT TO BOARDS (committee-light) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** **Replaces the dead New Page Card control** (ruled
+removed — item 118(f)). **Any major file type placed on a board** (mood boards, PDFs); **double-click
+opens an appropriate viewer.** Committee-light — Nick's posture, verbatim: *"emphasis on maintaining
+progress, not trying to iron out every minor detail."*
+
+## ITEM 117 — PAGE↔BOARD LINKING & THE BOARD SHELF (feature) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** A **Page links to one or more Boards.** Linked
+Boards render as **scrollable THUMBNAILS in the Tools Menu**; clicking one opens a **second pop-out
+LEFTWARD** listing every card/doc as thumbnails, scrollable; **double-click opens the card/doc in the
+same popup used on the Board** (faded ground); **EDITS SYNC BOTH WAYS.** **Sub-note (to-dos, not
+now):** Storyboard/Outline boards will also display here, formatting may differ. **Cross-refs:** item
+93's pairing model **folds INTO this charter**; the **menus arc owns the chrome.**
+
+## ITEM 118 — THE BOARD INTERACTION FIX CLUSTER (fix-class) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** Six board-interaction defects, one cluster:
+- **(a) B/I/U completely broken in the card editor** — literal `****` / `**` / `___` markers, **NO
+  styling applied** — worse than the page (where style applies under visible markers). Likely its own
+  renderer path; S0 confirms.
+- **(b) Cards resize ONCE** — the handle never re-arms until the writer clicks another card first.
+- **(c) Cards moved to the board's edge begin to DISAPPEAR** — edge containment absent.
+- **(d) Board resizing DECAYS** — works at first, then stops after a resize or as cards accumulate.
+  Nick's ruling, verbatim: *"A user should be able to double-click on the board to activate the
+  resizing option at any time."*
+- **(e) Cards link but CANNOT BE UNLINKED.**
+- **(f) The New Page Card control is DEAD — and RULED REMOVED** (replaced by item 116, Import to
+  Boards).
+
+Registry: next free **119**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -11087,29 +11222,18 @@ fixture that no longer exists.
   lets a builder write wherever it stands, which is how strays land in the primary checkout and
   contaminate another lane's staging (item 110). A path without a worktree is an under-specified
   instruction; TUTOR's amended relay format and Fable's briefs/rulings now state the worktree.
-- **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24).** A stamp
-  names the TREE, the BUNDLE, **and the TOOLCHAIN** that produced it — the same source under a
-  different Node builds different bytes, so a bundle hash without its build environment names its
-  source but not its software (item 77(c)'s lesson, extended to the toolchain). **Suite stamps and
-  deploy manifests gain a NODE VERSION line;** a served-bundle hash only verifies against the build
-  env that produced the suite's bundle. Proven by the hotfix-104 deploy: Node 24 local vs Node 18
-  Railway built different hashes from one source (item 111).
-  **AMENDED 2026-08-25 (Fable) — the bar stated openly, not broken silently:** **SERVED == TESTED
-  holds at the level of SOURCE + LOCKFILE; byte-identity of the bundle holds ONLY when the suite
-  runs in the DEPLOY's own OS.** Where it does not, the stamp says **FUNCTIONALLY VERIFIED** and
-  NAMES THE GAP — never silent. **Every stamp names its BUILD OS beside its toolchain.** (Correction
-  to the example above: the hotfix-104 divergence was OS-level — Windows suite host vs Railway's
-  Linux/nixpacks — NOT the node version; a Node-18 Windows rebuild still diverged. See item 111.)
-  **→ FOUNDING EVIDENCE RETRACTED (2026-08-26, per item 111's closure — DECK §9).** The hotfix-104
-  "cross-OS / cross-node divergence" cited above NEVER HAPPENED: the served `4pj2Iqk-` was built from
-  a CONTAMINATED tree (DECK's uncommitted mutations, uploaded by `railway up`), not clean source. Both
-  clean-source builds ever observed were BYTE-IDENTICAL cross-OS (`CaW0zodg`/531457 Windows == Linux
-  == served; the mutant `4pj2Iqk-`/537500 also Node-24-Windows == Node-18-Linux). So the
-  SOURCE+LOCKFILE-only / FUNCTIONALLY-VERIFIED carve-out rests on retracted evidence: **byte-identity
-  is the EXPECTATION, enforced by the every-ship served-vs-stamped DIFF + CLEAN TREE AT UPLOAD (below);
-  invoke FUNCTIONALLY-VERIFIED only if a future ship's diff actually shows divergence** (investigate
-  contamination FIRST, OS second). The law's surviving core — a stamp names tree+bundle+toolchain+OS,
-  and never let a hash mismatch pass silently — stands. Full re-draft of this entry flagged for Fable.
+- **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24; RE-DRAFTED
+  2026-08-26, the principle surviving its retracted founding example).** Every suite stamp and
+  deploy manifest names: **tree SHA · bundle hash+bytes · toolchain (node) · build OS · TREE CLEAN
+  AT UPLOAD.** Byte-identity of served vs stamped is the **EXPECTATION of every ship** and is
+  **diffed every ship.** Any divergence is diagnosed **CONTAMINATION-FIRST — the tree before the
+  toolchain** — because the one observed divergence was a dirty tree, never the environment.
+  **FUNCTIONALLY VERIFIED exists only as a stated, named fallback** when a diff diverges from
+  proven-clean source for an explained reason. *(Founding evidence: the item-110 shipping incident
+  — the contaminated `63b875b` · railway `410033f9` deploy that served `index-4pj2Iqk-.js`/537500b
+  built from DECK's uncommitted mutations (DECK §9) — and the retraction that CLOSED item 111, both
+  recorded in `e88def1`. The prior "Node 24 vs Node 18 / OS-level divergence" example is RETRACTED;
+  git history holds it.)*
 - **CLEAN TREE AT UPLOAD — standing law + item-98 guard amendment (Fable, 2026-08-26).** Immediately
   before `railway up`, `git status --porcelain` must be EMPTY — or every stray EXPLICITLY ENUMERATED
   AND AUTHORIZED — and the deploy stamp NAMES IT: *"tree clean at upload."* `railway up` uploads the
