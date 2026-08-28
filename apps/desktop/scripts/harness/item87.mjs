@@ -59,7 +59,23 @@ const freshDesk = async (app, width = 1400, height = 900) => {
 
 const activeModeTab = (app) => app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
 const typewriterDom = (app) => app.evalJs("document.querySelector('.mode-scroll')?.dataset.typewriter");
-const structureVisible = (app) => app.evalJs("!!document.querySelector('.wz-sliver-structure')");
+// Asserts the STRUCTURE ZONE, not whichever control currently fills it.
+//
+// This used to query `.wz-sliver-structure` — the tablist's own class. The
+// SUBJECT (Draft has Structure, Free Write does not) is alive and correct, but
+// that selector measures one particular FORM of the control, and the menus arc's
+// DR3 replaces the tablist with a confirm-gated "Convert to Screenplay…" row.
+// Checked before changing: DR3 has NOT shipped — the tablist is still the live
+// render on `origin/main` and on every remote ref, so the old selector was not
+// dead, merely brittle. Re-pointing to the section's own heading measures the
+// thing the assertion is actually about and survives the swap either way, so it
+// needs no second edit on the day DR3 lands.
+//
+// `railStructure` has a single lexicon definition ('Structure') with no theme
+// overrides, so the heading text is stable to match on.
+const structureVisible = (app) => app.evalJs(
+  "[...document.querySelectorAll('.wz-sliver-section')].some(sec =>"
+  + " /^structure$/i.test(((sec.querySelector('.wz-sliver-h') || {}).textContent || '').trim()))");
 
 const waitSoft = async (app, expr, opts) => {
   try { await app.waitFor(expr, opts); } catch { /* the assertion reports the truth */ }
