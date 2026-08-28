@@ -11639,6 +11639,55 @@ before the first patch) and `item84-deck-phase-build.md` (the build record).
   record §7.1; `dist-web` was rebuilt to chat 1's exact stamped bundle
   (`index-hZQhhS8W.js`/531318b) and the primary checkout left clean at `63b875b`.
 
+**→ THE DECK PHASE IS OFFERED TO CHAT 1 — branch `item84-deck-phase`, rebased onto
+`origin/main` @ `23ffadb` (fast-forward). MERGE OFFER ONLY; no deploy word is asked for or
+given.** Records: `docs/menus/tutor/item84-deck-phase-build.md` (§12 is the offer itself)
+and `item84-deck-phase-s0.md`. Decision-complete on Nick's four rulings; nothing rests on
+an inference. Verification: `item84.mjs`, 57 checks, and the harness BITES — nine
+deliberate mutations across three runs, each killing exactly the checks belonging to the
+law it broke, including one that caught a VACUOUS check of this lane's own.
+
+**TWO FINDINGS THIS OFFER CARRIES THAT ARE NOT ABOUT THIS TICKET, and both are owed to
+other desks:**
+
+**(a) ITEM 111's PREMISE IS FALSE, and this lane caused it** (build record §9). Item 111
+was opened on the reading that hotfix-104's served bundle differed from its suite-of-record
+bundle given *"same source + same frozen lockfile"* — but the source was NOT the same: this
+lane's uncommitted files, including four deliberate harness mutations, were in the primary
+checkout when `railway up --ci` uploaded it. Proven from production: the served bundle
+carried a string that existed nowhere but in mutation MUT2, and its hash and byte count
+(`index-4pj2Iqk-.js`/537500b) matched this lane's own mutant build stamp exactly. **And the
+Node-drift reading is contradicted, not merely unproven:** Railway genuinely rebuilds
+(`railway.json` runs `build:web` under NIXPACKS; `dist-web/` is gitignored with no
+`.railwayignore`, so no artifact is uploaded), and TWO independent trees each built
+byte-identically across Windows/Node 24 → Linux/Node 18 — the contaminated tree, and clean
+`23ffadb` (`index-CaW0zodg.js`/531457b, which is what production serves). **A standing
+house note that Windows and Railway builds diverge from identical source is falsified as of
+2026-08-26 and should be re-tested, not trusted.** The unbidden-send build is no longer
+live; production was re-verified by download.
+
+**(b) `m3.mjs`'s ROAMS CHECK IS NON-DETERMINISTIC — owed its own ticket to the Rhizome
+desk** (build record §11/§11a/§11b). This lane's default suite came back 60/61 on that one
+check. It was investigated rather than re-run away: mechanism (every expensive thing the
+Tutor does is gated on `panelVisible`, and m3 never opens the panel), a matched full-suite
+control on clean main (60/60 CLEAN), and a sampled distribution of six runs per tree —
+**clean main produced the worst outlier, not this branch** (main 4.9·8.0·7.3·6.3·7.9·137.3
+vs branch 12.1·3.1·9.6·3.3·8.1·5.4, threshold 183.3). The check asserts a geometric
+property of growth seeded from `Date.now()` at app load (`RhizomeField.tsx:50`,`:165`) from
+a SINGLE live seed, while the same file proves its sibling paper-avoidance law across a
+40-seed sweep. **This lane did not touch it** — editing another lane's assertion to green
+its own suite is what the immutability law exists to prevent. Suggested shapes, the choice
+being that desk's: drive ROAMS from the same multi-seed sweep, pin `SESSION_START` behind a
+harness seam, or widen the bound to the real tail.
+
+**ALSO ROUTED, and DECLINED with evidence** (build record §10): `item84-t1-s0-brief.md` was
+routed to this lane as its author. **This lane did not write it.** The session's own opening
+`git status` listed it as already untracked before this lane's first action, and its subject
+is the Revise error lens (T1→T3→T2…, `draftDecoration.ts`, TRR15) — 21 hits on that
+vocabulary, 0 on anything of this lane's. **It is not superseded by the deck phase and must
+not be deleted on this lane's word.** It belongs to the Revise re-pass desk, whose own T0
+ruling would supersede its §1 ordering.
+
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 

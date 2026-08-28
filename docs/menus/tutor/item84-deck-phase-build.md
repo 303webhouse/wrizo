@@ -80,9 +80,10 @@ one `draw` slot in component state, for the whole roster. A second press — of 
 preset or a different one — **replaces** it. There is no array to render, so no future
 edit can accidentally stack them.
 
-**The ceiling:** three draws behind one ask, then that preset goes quiet. This is the
-lawful `disabled` case (a transient gate on real capability, the selection-gated action
-row being the house specimen) — not an unbuilt feature wearing paint (G3).
+**The ceiling:** three draws behind one ask, then that preset goes quiet — a transient
+gate on real capability, never an unbuilt feature wearing paint (G3). *(Built first as the
+lawful `disabled` case; Nick's refill ruling below moved it off `disabled` entirely, since
+a spent ask must be able to ANSWER a fourth press.)*
 
 **THE ONE INFERRED PARAMETER — SUPERSEDED BY NICK'S WORD, 2026-08-26.** The original
 paragraph is kept verbatim below rather than rewritten, per the house's
@@ -125,8 +126,9 @@ needs more than the first-run gate did, since forward lock's derived text can tr
 shrink. The one caveat — that `FirstRunGate.tsx`'s header calls itself non-reusable — is
 carried openly in the addendum rather than stepped over.
 
-**The note's copy is drafted and AWAITING NICK'S WORD**, surfaced with the 54-prompt deck
-for one combined approval. It names the threshold and carries **no progress number**: the
+**The note's copy is NICK'S OWN LINE, ruled 2026-08-26** — *"Write 100 words to unlock more
+prompts"* — superseding the desk's three candidates. It names the threshold and carries
+**no progress number**: the
 rule may be named, the writer's distance from it may not (M1/CD4 — the meter stays the only
 number in this room, and it is a cost, not a score). A live countdown would be both barred
 content and a fresh source of the very deliberation the ceiling exists to prevent.
@@ -421,3 +423,285 @@ conversation rules stay deferred by Nick's own sentence at lock line 1.
 product, not the plumbing), and the re-arm reading of §3.
 
 — the item-84 deck-phase lane, 2026-08-25
+
+---
+
+## §9 · THE ITEM-111 CORRECTION — this lane's error, stated on disk
+
+**Recorded here rather than relayed, per the standing rule that a correction which exists
+only in a session is a correction that does not exist.** Item 111 was opened as a
+*build-reproducibility gap*. **Its founding premise is false, and the false premise is this
+lane's doing.**
+
+### WHAT ITEM 111 RECORDS
+
+The hotfix-104 deploy commit (`6b279c6`) reports that the served bundle
+(`index-4pj2Iqk-.js` / `index-07aGd89Y.css`) was **not** the suite-of-record bundle
+(`index-hZQhhS8W.js`), and diagnoses: *"Root cause: build-env drift — local Node v24.13.0
+vs Railway nodejs_18, no node pin in the repo. Same source (2a03ace) + same frozen
+lockfile."* Item 111 and the `.nvmrc`/`engines` pin (`7407f97`) follow from that reading.
+
+### WHY IT IS WRONG — THE SOURCE WAS NOT THE SAME
+
+`railway up --ci` ran from the **primary checkout** while **this lane's uncommitted item-84
+files were sitting in that working tree** — including **four deliberate falsification
+mutations** applied to `Tutor.tsx` for the harness-bites pass. Railway uploaded the working
+directory and built *that*.
+
+**Proven from production, not inferred:**
+
+| Evidence | Value |
+|---|---|
+| Served bundle | `index-4pj2Iqk-.js`, **537,500 bytes** |
+| This lane's own mutant-run-1 stamp | `bundle=index-4pj2Iqk-.js/537500b` — **the same hash and the same byte count** |
+| String in the live bundle | `A line composed on the spot, in no pool.` — existed **nowhere** but in mutation MUT2 |
+| Also in the live bundle | `wrizoTutorFreeWriteDeck`, `wz-tutor-fw-preset`, `Free Writing Tips` |
+| `/api/tutor/chat` call sites | **2** — the lawful send path, plus MUT4's unbidden `fetch` on a preset press |
+
+### THE CONSEQUENCE FOR ITEM 111, STATED PLAINLY
+
+**The Node-version reading is not merely unproven — this incident is evidence AGAINST it,**
+and the chain is worth setting out because the obvious objection has to be closed first.
+
+**First, the objection: did Railway even rebuild, or did it serve an uploaded `dist-web`?**
+If the latter, an identical hash would be trivial and would prove nothing. **It rebuilt.**
+`railway.json`'s `buildCommand` is
+`pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && ...` under
+the **NIXPACKS** (Linux) builder, and `dist-web/` is in `.gitignore` with **no
+`.railwayignore` in the repo** — so the artifact is never uploaded at all. Railway built it,
+on Linux, from source.
+
+**Then the finding, on two independent trees:**
+
+| Tree | Built locally (Windows, Node 24) | Built by Railway (Linux, nixpacks) |
+|---|---|---|
+| the contaminated tree | `index-4pj2Iqk-.js` / 537,500 b | `index-4pj2Iqk-.js` — **identical** |
+| clean `23ffadb` | `index-CaW0zodg.js` / 531,457 b | `index-CaW0zodg.js` / 531,457 b — **identical**, and it is what production serves today |
+
+The second row was not sought — it fell out of building the m3 control worktree at clean
+main, and it is the stronger of the two because nothing about it is entangled with this
+lane's mutations.
+
+**Two independent sources, each reproducing byte-for-byte across Windows/Node 24 ->
+Linux/Node 18.** The bundles differed in the incident because **the sources differed**, not
+because the toolchains did.
+
+**A STANDING BELIEF THIS FALSIFIES, flagged rather than left to rot:** this house has
+carried a working note that a Windows local build yields a DIFFERENT bundle hash from an
+identical source than Railway's Linux build does. **Both observations above contradict it
+as of 2026-08-26.** Whatever once caused that divergence is not present now. The belief
+should be re-tested rather than trusted, and item 111's premise re-examined with it.
+
+**The `.nvmrc` / `engines` pin may still be worth keeping on its own merits** — pinning the
+build toolchain to the deploy target is good practice regardless. But it should be kept for
+those reasons, and **item 111 should not continue to rest on this incident as its
+evidence.** The gap it was opened to describe was not observed here.
+
+### AND WHAT WAS ACTUALLY LIVE
+
+For roughly ninety minutes production served a build in which pressing a Tutor preset fired
+an **unbidden `POST /api/tutor/chat`** — a direct violation of the ratified disclosure
+sentence (*"Nothing is ever sent unless you ask"*), on a surface where the roster also
+rendered in every mode. **It is no longer live:** production now serves
+`index-CaW0zodg.js` (531,457 b) with **zero** of those markers and exactly **one**
+`/api/tutor/chat` — the lawful send path. Verified by download, not assumed.
+
+**Responsibility is this lane's**, and the root cause is recorded in §7.2: a file written by
+relative path while the shell's working directory had reverted to the primary checkout.
+
+---
+
+## §10 · A MISATTRIBUTION, DECLINED — `item84-t1-s0-brief.md`
+
+**This file was routed to this lane as its author. This lane did not write it, and cannot
+rule on it.** Recorded because an authorship claim is what a deletion decision would rest
+on, and the claim is false.
+
+**The evidence, and it is decisive:**
+
+1. **It predates this lane entirely.** The session's own opening `git status` snapshot —
+   captured before this lane's first action of any kind — already listed
+   `?? docs/menus/tutor/item84-t1-s0-brief.md` as untracked in the primary checkout.
+   Nothing this lane later did could have created a file that was already there.
+2. **Its subject is a different arc.** It is *"TICKET T1 — THE CHECKER AND ITS ERROR
+   CLASSES"*: the **Revise error lens**, its T1→T3→T2→T4→T5→T6→T7 ordering,
+   `store/draftDecoration.ts`, TRR15, and a third-party-checker adoption ruling. Grepped:
+   **21** hits for the Revise/T-series/error-lens vocabulary, **0** for anything of this
+   lane's (`Free Write roster`, `deck-drawn`, `Writing Prompt`, `preset`, `NUDGE_POOL`,
+   `REFILL`).
+3. **This lane's own subject is the opposite one** — the Free Write roster. The two share
+   only the string "item 84" in a filename.
+4. **A Fable relay for that same arc was misrouted to this lane earlier** (the T0 ruling
+   — *"STAND REVISE UP AS A LIVE MODE… precedes T1"*, and *"doc 2 HOLDS unlanded"*), and
+   was declined then for the same reason. **The two misroutes are the same misroute**, and
+   the filename's `item84-` prefix is the likely cause of both.
+
+**THE RULING THIS LANE CAN GIVE, and the only one it can:** it is **not superseded by
+anything in the deck phase**, because the deck phase does not touch the error lens, the
+Revise surface, or any T-series ticket. **Nothing of it should be deleted on this lane's
+word, because this lane has no standing to give that word.** It belongs to whichever desk
+holds the Revise re-pass / error-lens arc — and note that Fable's own T0 ruling would
+supersede its **§1 ordering** ("T1 is first of seven"), which is exactly the kind of call
+that desk must make with its own record in hand.
+
+**Preserve it.** Chat 1 was right to keep it; the only correction is to whom it goes next.
+
+— the item-84 deck-phase lane, 2026-08-26
+
+---
+
+## §11 · THE M3 RED — investigated, not waved through
+
+**The offer's own suite came back `60/61 NOT CLEAN` on the default setting.** `item84.mjs`
+passed 57/57 in both settings; the red was **`m3.mjs`**, one check of thirty-one:
+
+```
+Live: the saturated live ground ROAMS — its rendered extent reaches near all four stage margins
+{"minY":222.18, "maxY":729.72, "minX":3.98, "maxX":1199.04, "stageW":1203.22, "stageH":733}
+                        needs minY < 0.25 * 733 = 183.25   → short by ~39px
+```
+
+**It is disclosed here rather than summarised away.** The same pair's PARKED run returned
+`61/61 CLEAN`, and both earlier full runs of this lane returned m3 green — and under this
+house's own law **none of that is a clearance argument.** The known-flake list is EMPTY
+after DF1.1, and "passes in isolation" and "the machine was quiet" are both retired. A red
+suite means something is wrong until it is shown otherwise.
+
+### WHAT THE SOURCE SAYS
+
+The Rhizome's growth is seeded from the wall clock:
+
+- `RhizomeField.tsx:50` — `const SESSION_START = Date.now(); // frozen once per app-load/session`
+- `RhizomeField.tsx:165` — `rngRef.current = mulberry32(hashSeed(\`${seedKey}:${SESSION_START}\`))`
+
+**So the growth pattern differs on every app load, by design.** `minY` is the topmost extent
+of that growth, and whether it reaches into the top quarter of the stage is a property of a
+clock-derived seed. Nothing in this ticket can reach `Date.now()` at app load or the
+mulberry32 stream. **An asymmetry inside m3's own file is worth naming:** its
+paper-avoidance law is proven *across a 40-seed sweep*, while this ROAMS check rides a
+**single** live session seed.
+
+### WHAT WAS ACTUALLY RUN — because reading the source is not proof
+
+**Control 1 — m3 alone on clean `23ffadb`, no item-84 code, four runs: PASS ×4.**
+That does NOT disprove causality (four passes are consistent with a modest failure rate),
+and it carries a **confound this lane names rather than hides**: the failing run was file
+**49 of 61** in a full suite, while those controls were isolated single-file runs. Growth is
+time-staggered (`BURST_STAGGER_MS = 600`), so accumulated machine load is a live variable
+and the conditions were not matched.
+
+**Control 2 — the matched one: a FULL suite on clean `23ffadb`.** Result recorded in §11a.
+
+**This lane does not claim a flake.** It claims an investigation, with the mechanism named
+on disk and a matched control run. If the matched control also reds m3, the finding belongs
+to m3 — a single-seed assertion over a clock-seeded generator — and is owed its own ticket,
+not a shrug. If the matched control is green, the question comes back to this branch and
+this lane keeps looking.
+
+### §11a · THE MATCHED CONTROL, AND THE SAMPLED DISTRIBUTION
+
+**Control 2 — the matched one. A FULL suite on clean `23ffadb`, no item-84 code:**
+
+```
+SUITE DONE HARNESS_PARKED=unset — 60/60 of 60 returned a passing verdict
+SUITE RESULT: CLEAN — tree=23ffadb bundle=index-CaW0zodg.js/531457b
+m3 ROAMS: PASS  {"minY":3.18, ...}
+```
+
+Green — and `minY` of **3.2** against this lane's failing **222.2**. That gap is far too
+large to be threshold jitter, so **one sample per tree settles nothing**, and this lane did
+not stop there.
+
+**Control 3 — the sampled distribution. `m3` alone, six runs on each tree:**
+
+| | runs (minY, px; threshold 183.3) |
+|---|---|
+| **clean main** `23ffadb` | 4.9 · 8.0 · 7.3 · 6.3 · 7.9 · **137.3** |
+| **this branch** `ab90598` | 12.1 · 3.1 · 9.6 · 3.3 · 8.1 · 5.4 |
+
+**THE FINDING, and it is the opposite of convenient for a lane hoping to be excused:**
+clean main produced the **outlier**, not this branch. Main's 137.3 is ~20x its own median
+and within striking distance of the 183.3 threshold; this branch's six samples are
+**tighter and lower** (3.1–12.1) than main's. There is no shift attributable to this
+ticket — if anything the branch samples are better, which is itself meaningless noise and
+is reported as such rather than claimed as evidence of quality.
+
+### §11b · THE DISPOSITION — the defect is m3's assertion, and it is owed a ticket
+
+Three independent lines agree, and each was run rather than reasoned:
+
+1. **Mechanism.** Every expensive thing the Tutor does — the three lens computations and
+   the live-entry read — is gated on `panelVisible = open` (`Tutor.tsx:454-456`). **m3
+   never opens the panel.** This ticket's addition therefore costs one `wordCount` at mount
+   plus a re-render of a closed component. There is no route from that to ~200px of lost
+   growth.
+2. **The matched control is green** at the same suite position under the same load.
+3. **The distribution is long-tailed on BOTH trees**, and the worst sample observed came
+   from the tree without this ticket in it.
+
+> **THE DEFECT IS IN `m3.mjs`'s ROAMS CHECK, NOT IN THIS BRANCH.** It asserts a geometric
+> property of a growth seeded from `Date.now()` at app load
+> (`RhizomeField.tsx:50`, `:165`) — **a different seed every run** — and it does so from a
+> **single** live session. The same file proves its paper-avoidance law across a **40-seed
+> stress sweep**; the ROAMS margins get one seed and a hard bound. That asymmetry is the
+> bug: the check is sound about what it wants and unsound about how it samples.
+
+**THIS LANE DOES NOT FIX IT, and does not touch it.** m3 belongs to the Rhizome arc, the
+check is not falsified by anything here (so the park law does not apply — this is
+non-determinism, not supersession), and a lane editing another lane's assertion to turn its
+own suite green is precisely the move the immutability law exists to prevent.
+
+**OWED — a ticket for the m3 desk, with the shape suggested and the choice left to them:**
+drive the ROAMS check from the same **multi-seed sweep** its sibling law already uses, or
+pin `SESSION_START` behind a harness seam so the live check is deterministic, or widen the
+bound to the distribution's real tail. Any of the three closes it; the first is most in
+keeping with the file's own existing practice.
+
+**AND THE HONEST RESIDUE:** the known-flake list is EMPTY by law, and this lane is not
+adding to it. What it is adding is a **named, mechanically-explained defect with an owed
+ticket** — which is the opposite of a flake entry, and is why the red is reported in §6.2
+rather than re-run away.
+
+
+---
+
+## §12 · THE OFFER — to chat 1, as a committed record
+
+**Branch `item84-deck-phase`, rebased onto `origin/main` @ `23ffadb` (a fast-forward: main
+is an ancestor of the branch tip). MERGE OFFER ONLY — not merged, and NOT a deploy
+request.** No deploy word has been given for any of this, and this lane asks for none.
+
+**No peer messaging was attempted, by law: lanes do not identify or message each other.**
+This record IS the offer; Nick relays the pointer. That is also why the item-111 correction
+(§9) lives here in full rather than in a message — a correction that exists only in a
+session is a correction that does not exist.
+
+### WHAT MERGES
+
+| | |
+|---|---|
+| Product | the Free Write roster: the composer's cursor, three deck-drawn presets, the standing draw, the refill |
+| Seam | `mode?: EditorMode` on `TutorProps` — the Tutor's **first mode-aware layer** |
+| New files | `store/tutorFreeWriteDeck.ts` (54 authored lines), `scripts/harness/item84.mjs` (57 checks) |
+| Touched | `Tutor.tsx`, `deskLexicon.ts`, `index.css`, three mount sites (one prop each), `FirstRunGate.tsx` (stale-header correction), `runtime-verify.mjs` (one additive field) |
+| Records | this file, `item84-deck-phase-s0.md`, the ledger rider |
+| **Not touched** | `BoardEditor.tsx` (no mode to pass), any server file, any schema, any wire key |
+
+### WHAT A REVIEWER SHOULD PUT WEIGHT ON
+
+1. **The zero-network proof (§2)** — this phase's disclosure obligation is discharged by
+   that assertion and by nothing else. If it does not convince, the phase does not ship.
+2. **The falsification passes (§6.1)** — nine mutations across three runs; every law has a
+   check that provably dies when the law is broken. Including the one that caught a
+   **vacuous** check of this lane's own (§6.1a).
+3. **§9, the item-111 correction** — this lane's error, and it changes another item's
+   premise. It should be read before item 111 proceeds.
+4. **§10** — the `item84-t1-s0-brief.md` misattribution is DECLINED with evidence, and the
+   file must be preserved, not deleted.
+5. **§11, the m3 red** — disclosed, investigated, and not called a flake.
+
+### WHAT IS NOT IN THIS BRANCH
+
+The model phase, its carve-out sentence, the deck->model threshold, the memory seam —
+**item 108**, untouched and unstubbed. The conversation rules, deferred by Nick's own
+sentence at lock line 1. Nothing here reaches toward either.
