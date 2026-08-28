@@ -858,8 +858,26 @@ store, recoverable `git cat-file -p 484e7221`); nothing deleted; the working-tre
 in the shared checkout for the DECK lane to find. *(Two earlier preserved item-84 strays also await
 their desks: the revise-repass draft `2f5c3e55`/`8fcd4b6`, and the held-batch predecessor
 `a092d53c`.)*
+**→ GRAVEST CONSEQUENCE — CONTAMINATION CAN SHIP (Fable, 2026-08-26; DECK §9, verified by chat 1).**
+Item 110 was opened as a merge hazard (a stray blocks or clobbers a merge). DECK §9 proves it is
+worse: **`railway up` uploads the WORKING DIRECTORY, not committed HEAD**, so the hotfix-104 deploy
+shipped DECK's uncommitted `Tutor.tsx` falsification mutations to PRODUCTION for ~90 minutes (served
+`4pj2Iqk-` / 537,500 b == DECK's own mutant-run-1 stamp; an unbidden `POST /api/tutor/chat` fired on
+a preset press — a disclosure violation). See the INCIDENT RECORD at the HOTFIX 104 DEPLOY MANIFEST
+(2026-08-24), item 111 (CLOSED — the mismatch was this, not OS), and the new CLEAN TREE AT UPLOAD
+law. Contamination doesn't just block merges — it can SHIP.
+**→ THE "DECK-LANE T1 S0 BRIEF" ATTRIBUTION CORRECTED (DECK §10, verified by chat 1, 2026-08-26).**
+The routing recorded above (`item84-t1-s0-brief.md` = the DECK lane's T1 S0 brief) is WRONG. DECK
+DECLINES authorship on disk (§10): the file appears in the session's OPENING `git status` snapshot —
+before the DECK lane's first action — so DECK could not have created it; its subject is the **Revise
+error-lens** (*"TICKET T1 — THE CHECKER AND ITS ERROR CLASSES"*, T1→T3→…, `store/draftDecoration.ts`,
+TRR15 — 21 hits for that vocabulary, 0 for the deck phase's), which the deck phase does not touch. It
+is **NOT superseded by the deck phase**, and DECK has no standing to rule on its deletion. It belongs
+to whichever desk holds the **Revise re-pass / error-lens arc** (Fable's own T0 ruling would supersede
+its §1 ordering). **Still preserved (blob `484e7221`, scratchpad + object store); nothing deleted.**
+The reroute destination is Fable's to name — surfaced.
 
-## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24
+## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24 · CLOSED 2026-08-26 (founding evidence retracted — was contamination, not build-repro)
 
 **OPENS (Fable's ruling, from the hotfix deploy's bundle mismatch).** The repo **pins no Node
 version**, so a local build and Railway's build can differ in OUTPUT BYTES from identical source:
@@ -899,6 +917,21 @@ earlier source tree. Item 111 STAYS OPEN (a Linux suite-of-record env is still t
 divergence still MAY strike a future tree), but the standing rule is now **DIFF served-vs-stamped
 every ship and let the bytes rule — never assume a gap, never assume identity.** See the HOTFIX 104
 (THIRD) DEPLOY MANIFEST.
+
+**→ CLOSED — FOUNDING EVIDENCE RETRACTED (Fable, 2026-08-26, from DECK §9; verified by chat 1).** The
+premise of this whole item is FALSE, and BOTH corrections above (the step-b "OS-level divergence"
+reading AND chat 1's "source-dependence" note) are SUPERSEDED. The served `index-4pj2Iqk-.js`
+(537,500 b) was NOT a clean-source Linux build — `railway up` uploaded the primary checkout carrying
+DECK's uncommitted `Tutor.tsx` falsification mutations, and Railway built THAT. DECK's own Node-24
+Windows mutant build produced the SAME `4pj2Iqk-` / 537,500 b, byte-identical to Railway's Node-18
+Linux build — a demonstration of cross-version / cross-OS REPRODUCIBILITY, not a failure of it. The
+bundles differed because the SOURCES differed (contaminated vs clean), never because of node or OS.
+**No build-repro divergence has ever been observed.** The `.nvmrc` / `engines` pin STAYS on its own
+merits (pin the toolchain to the deploy target — good practice), recorded as NOT resting on this
+incident. **The every-ship SERVED-vs-STAMPED DIFF stays STANDING LAW — it is the rule that catches
+this class:** a contaminated build shows up as a served hash ≠ the suite's stamped hash, exactly as
+it did here. See item 110's contamination incident + the INCIDENT RECORD at the HOTFIX 104 DEPLOY
+MANIFEST (2026-08-24), and the new CLEAN TREE AT UPLOAD standing law. Item 111 CLOSED.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -9381,6 +9414,27 @@ review-sufficiency claim is WITHDRAWN on the record** (`hotfix-104-review-fable.
 append). **Interim rule REINSTATED — the New Page door is avoided on production.** Root: no gate
 drives `#/page/new` headfully — item 109's sharpest instance.
 
+**⚠ INCIDENT RECORD — CONTAMINATED DEPLOY (DECK §9, verified by chat 1, 2026-08-26).** This deploy's
+served bundle was NOT built from clean `63b875b` source. `railway up --ci` uploaded the PRIMARY
+CHECKOUT while the DECK lane's uncommitted item-84 files were sitting in it — including FOUR
+deliberate falsification mutations to `Tutor.tsx` (the harness-bites pass). Railway built the working
+directory. **Proven from production** (DECK's build record §9,
+`.claude/worktrees/item84-deck/docs/menus/tutor/item84-deck-phase-build.md`): served
+`index-4pj2Iqk-.js` = **537,500 b**, byte-identical to DECK's own mutant-run-1 stamp
+(`bundle=index-4pj2Iqk-.js/537500b`); the live bundle carried MUT2's string *"A line composed on the
+spot, in no pool."* (existed nowhere else) plus a SECOND `/api/tutor/chat` call site (MUT4's unbidden
+`fetch` on a preset press). For ~90 minutes production served a build where pressing a Tutor preset
+fired an **unbidden `POST /api/tutor/chat`** — a violation of the ratified disclosure (*"Nothing is
+ever sent unless you ask"*). **The hotfix hook-lift itself WAS committed source and genuinely live**
+(item 104's tombstone-path fix shipped) — but the **FUNCTIONALLY-VERIFIED basis below ("identical
+source tree + frozen lockfile") is CORRECTED: the source was NOT identical.** The `4pj2Iqk-` ≠
+`hZQhhS8W` split was CONTAMINATION, not OS/node drift (item 111 CLOSED on this). **Exposure window
+CLOSED by the third-pass deploy `2256f58` · `b10fcc55` (byte-verified):** production now serves
+`index-CaW0zodg.js` (531,457 b) with ZERO mutation markers and exactly ONE `/api/tutor/chat` —
+re-verified by chat 1's own download 2026-08-26. Responsibility: DECK's lane (root cause its §7.2 — a
+relative-path write while the shell cwd had reverted to the primary checkout). Gravest consequence
+recorded at item 110; prevention is the new CLEAN TREE AT UPLOAD standing law.
+
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 
 **THE DOORWAY WAVE — items 104 + 87-subset + 97 + 101's park.** Nick's word: "SHIP THE DOORWAY."
@@ -11046,6 +11100,26 @@ fixture that no longer exists.
   NAMES THE GAP — never silent. **Every stamp names its BUILD OS beside its toolchain.** (Correction
   to the example above: the hotfix-104 divergence was OS-level — Windows suite host vs Railway's
   Linux/nixpacks — NOT the node version; a Node-18 Windows rebuild still diverged. See item 111.)
+  **→ FOUNDING EVIDENCE RETRACTED (2026-08-26, per item 111's closure — DECK §9).** The hotfix-104
+  "cross-OS / cross-node divergence" cited above NEVER HAPPENED: the served `4pj2Iqk-` was built from
+  a CONTAMINATED tree (DECK's uncommitted mutations, uploaded by `railway up`), not clean source. Both
+  clean-source builds ever observed were BYTE-IDENTICAL cross-OS (`CaW0zodg`/531457 Windows == Linux
+  == served; the mutant `4pj2Iqk-`/537500 also Node-24-Windows == Node-18-Linux). So the
+  SOURCE+LOCKFILE-only / FUNCTIONALLY-VERIFIED carve-out rests on retracted evidence: **byte-identity
+  is the EXPECTATION, enforced by the every-ship served-vs-stamped DIFF + CLEAN TREE AT UPLOAD (below);
+  invoke FUNCTIONALLY-VERIFIED only if a future ship's diff actually shows divergence** (investigate
+  contamination FIRST, OS second). The law's surviving core — a stamp names tree+bundle+toolchain+OS,
+  and never let a hash mismatch pass silently — stands. Full re-draft of this entry flagged for Fable.
+- **CLEAN TREE AT UPLOAD — standing law + item-98 guard amendment (Fable, 2026-08-26).** Immediately
+  before `railway up`, `git status --porcelain` must be EMPTY — or every stray EXPLICITLY ENUMERATED
+  AND AUTHORIZED — and the deploy stamp NAMES IT: *"tree clean at upload."* `railway up` uploads the
+  WORKING DIRECTORY, not committed HEAD, so an uncommitted mutation in the shared checkout SHIPS to
+  production (item 110's gravest consequence; proven by the hotfix-104 contaminated deploy — 90 minutes
+  of an unbidden send path live). **The item-98 guard now checks PROJECT *and* TREE** (was:
+  primary-checkout / project only). Enforced together with the every-ship served-vs-stamped diff — the
+  diff catches a contaminated build after the fact; the clean tree PREVENTS it. (The third-pass deploy
+  `2256f58` retroactively complied: its one stray, `item84-t1-s0-brief.md`, was explicitly enumerated
+  in the manifest and is outside the build path — the byte-identical bundle proved no contamination.)
 - **A BASELINE IS OLD PRODUCT UNDER CURRENT INSTRUMENTS — standing law (Fable, 2026-08-24).** To
   prove a fix bites, run the OLD PRODUCT but under the CURRENT harness / instruments — **harness
   infra NEVER reverts with the product.** Reverting the instruments too yields a FALSE NEGATIVE
