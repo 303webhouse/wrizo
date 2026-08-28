@@ -53,6 +53,43 @@ const selectAllInEditor = (sel) => `(() => {
 // the sliver's is reach-to-open).
 const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
 
+// ITEM 83 M5 / DR3 RE-POINT (fix lane, 2026-08-28) — read the STRUCTURE ZONE by
+// its own heading, never by whichever control currently fills it. DR3 replaced
+// the Prose|Screenplay tablist with one confirm-gated verb row; the ZONE and its
+// heading survived the swap, so anchoring here is what keeps these reads honest
+// through the next change of clothes too. `railStructure` has a single lexicon
+// definition ('Structure') with no theme overrides.
+const structureZone = (app) => app.evalJs(
+  "[...document.querySelectorAll('.wz-sliver-section')].some(sec =>"
+  + " /^structure$/i.test(((sec.querySelector('.wz-sliver-h') || {}).textContent || '').trim()))");
+
+// The verb row's own rendered label, scoped to that zone (`.wz-cascade-action`
+// is a generic class used all over the cascade, so it is not a handle on its own).
+const structureRowLabel = (app) => app.evalJs(
+  "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
+  + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
+  + " if (!sec) return null; const b = sec.querySelector('button');"
+  + " return b ? (b.textContent || '').trim() : null; })()");
+
+// The conversion driver, scoped to the ZONE rather than to the label.
+//
+// MENU's park pass replaced the retired tablist click with
+// `[...querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(...)).click()`
+// — correct against today's copy, but it re-creates the exact fragility that
+// retired the original: it binds to LABEL TEXT. Proved live while falsifying the
+// labelling claim below — reducing the label to a bare "Convert" made `find()`
+// return undefined and `.click()` THREW, which ABORTS THE WHOLE FILE rather than
+// failing one assertion. A harness that dies cannot report, and an aborted run
+// hides every check after it. Finding the row by its zone is label-independent;
+// the label is then asserted deliberately, in one place, by the checks that are
+// actually about it.
+const clickStructureRow = (app) => app.evalJs(
+  "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
+  + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
+  + " const b = sec && sec.querySelector('button');"
+  + " if (!b) throw new Error('no Structure row button in the sliver');"
+  + " b.click(); return true; })()");
+
 await withHarness(async (app) => {
   // === S1/CD1 S2 — the hand tools: per-mode registry, and only the active
   // mode's tools render (the relevance law), now inside the sliver
@@ -98,8 +135,16 @@ await withHarness(async (app) => {
     forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
     captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
     format: !!document.querySelector('.wz-sliver-format'),
-    structure: !!document.querySelector('.wz-sliver-structure'),
   })`);
+  // DR3 RE-POINT (fix lane): this read used to be
+  // `structure: !!document.querySelector('.wz-sliver-structure')`, inline above.
+  // The offer's §3 left it live and correct — it degrades to a truthful `false`
+  // — but with the tablist class gone from EVERY surface it can no longer FAIL,
+  // so the assertion below ("structure stays absent in Free Write") had stopped
+  // discriminating and would pass even if the zone appeared here tomorrow.
+  // §3 permits keeping or retargeting these; retargeting is what restores the
+  // claim's teeth.
+  freeWriteRail.structure = await structureZone(app);
   ok('FX7 S2 (was "CD1 S2 (was \\"FX1 S3: ...\\")"): Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture) and NOW Bold/Italic format too (mode furniture too, FX7 S2) — still none of the Journal-only furniture (ink/capture items absent); structure stays absent (Draft, not Free Write)',
     !freeWriteRail.ink && freeWriteRail.forwardLock
       && freeWriteRail.captureItems.length === 0
@@ -196,7 +241,25 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
+  // ---- DR3 RE-POINT: THE LABELLING CLAIM, RESTORED (fix lane, 2026-08-28) ----
+  // The offer's §3 named exactly one thing this ticket owes. The BEHAVIOUR the
+  // parked drivers covered — that structure converts and the surface's dress
+  // follows — is already exercised by the successors below. What died with the
+  // tablist and had not been re-made anywhere is the LABELLING claim: that both
+  // destinations are named to the writer, in the writer's own words, AT THE
+  // POINT OF CHOICE. The old tablist made it by showing 'Prose' and
+  // 'Screenplay' side by side; one verb row has to make it across two states,
+  // so it is asserted here on prose and again on the script surface below.
+  //
+  // The negative half matters as much as the positive: a bare 'Convert' is the
+  // bench's named enemy, so the assertion requires the DESTINATION in the label
+  // and not merely the verb.
+  const proseRowLabel = await structureRowLabel(app);
+  ok('DR3 (labelling claim restored): on a PROSE page the Structure row names its DESTINATION — "Convert to Screenplay…", never a bare "Convert"',
+    typeof proseRowLabel === 'string' && /^Convert to Screenplay/.test(proseRowLabel) && proseRowLabel !== 'Convert',
+    `label=${JSON.stringify(proseRowLabel)}`);
+
+  await clickStructureRow(app);
   await sleep(150);
   ok('S4: a non-empty page requesting Screenplay shows the confirmation (gated, does not act yet)',
     await app.evalJs("!!document.querySelector('.structure-confirm-modal')"));
@@ -218,12 +281,21 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
+  await clickStructureRow(app);
   await sleep(150);
   await app.evalJs("document.querySelector('.structure-confirm-screenplay').click()");
   await sleep(300);
   ok('S4: Convert produces a script surface (script-sheet mounts, forward-only-editor is gone)',
     await app.evalJs("!!document.querySelector('.script-sheet') && !document.querySelector('.forward-only-editor')"));
+
+  // The other half of the same claim, on the other side of the conversion.
+  // ScriptEditor hands the sliver `kind: 'draft'` with `structure: 'screenplay'`,
+  // so the SAME row renders with the RETURN destination named. Asserting only the
+  // prose side would leave the claim half-made — which is how it was lost.
+  const scriptRowLabel = await structureRowLabel(app);
+  ok('DR3 (labelling claim restored): on the SCRIPT surface the same row names the RETURN destination — "Convert to Prose…"',
+    typeof scriptRowLabel === 'string' && /^Convert to Prose/.test(scriptRowLabel),
+    `label=${JSON.stringify(scriptRowLabel)}`);
   const scriptRect = await app.evalJs(rectOf('.script-sheet'));
   ok('F2 geometry: framed script sheet renders a sane width (>=400)', scriptRect.width >= 400, JSON.stringify(scriptRect));
   const convertedElements = await app.evalJs("[...document.querySelectorAll('.script-el')].map(e => ({ type: e.dataset.type, text: (e.textContent||'').trim() }))");
@@ -252,7 +324,7 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
+  await clickStructureRow(app);
   await sleep(300);
   const emptySwitchState = await app.evalJs(`({
     modal: !!document.querySelector('.structure-confirm-modal'),
@@ -289,7 +361,7 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Prose').click()");
   // ----------------------------------------------------------------------
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
+  await clickStructureRow(app);
   await sleep(150);
   ok('S4: a non-empty script requesting Prose shows the one-way warning (gated)',
     await app.evalJs("!!document.querySelector('.structure-confirm-modal') && document.body.innerText.includes('one-way')"));
@@ -392,7 +464,7 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
   // ----------------------------------------------------------------------
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
+  await clickStructureRow(app);
   await sleep(150);
   await app.evalJs("document.querySelector('.structure-confirm-screenplay')?.click()");
   await sleep(300);
