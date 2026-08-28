@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
 import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
 import { countLineEquivalents } from '../store/lineEquivalents';
-import { TypewriterToggle } from './WritingIncentives';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
 // the sliver's own foot (below); rather than duplicate SettingsPanel/
 // ThemePanel/Seg/GearIcon's JSX here, they're exported from ModeStage.tsx
@@ -13,7 +13,9 @@ import { TypewriterToggle } from './WritingIncentives';
 // scoped CSS override (index.css's `.wz-sliver-instruments .mode-settings`)
 // repositioning their popover to sit inline in the sliver's own scrolling
 // panel instead of ModeStage's absolute stage-corner placement.
-import { SettingsPanel, ThemePanel, Seg, GearIcon } from './ModeStage';
+import { SettingsPanel, Seg, GearIcon } from './ModeStage';
+import { FullscreenToggle } from './ChromeControls';
+import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 
 // CD1 S2/S7 — the sliver. A slim grip riding the paper's left edge on every
@@ -70,10 +72,15 @@ export type SliverContent =
       // leading marker inserted, awaiting its closing press) — a forward-
       // only surface can't wrap a selection after the fact, so the rail
       // button doubles as a two-press bracket instead.
+      // ITEM 83 M4 (R1) — Underline joins the pair by founder word ("I would
+      // like to add buttons for bolding, italicizing, and underlining"),
+      // overruling Chamber 1's "nothing else" for Free Write and Pass 1's FW3.
+      // The bracket semantics extend to it unchanged.
       format?: {
-        onFormat: (action: 'bold' | 'italic') => void;
+        onFormat: (action: 'bold' | 'italic' | 'underline') => void;
         boldOn: boolean;
         italicOn: boolean;
+        underlineOn: boolean;
       };
       // FX7 S2 — Journal's own ink-tool toggle (the pen/eraser glyph,
       // JournalEntry.tsx's own on-sheet `.ink-tool-toggle`), mirrored here
@@ -154,15 +161,31 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // item 83 M1 (R9/R11) — the two-drawer law. Opening announces itself; the
+  // store answers whether the cascade must yield, and does the measuring (see
+  // store/menusDrawers.ts on why a POLICY may measure where an anchor may not).
+  // Closing is announced too, so the store never believes a drawer is open
+  // after the writer has shut it.
+  const toggleOpen = () => setOpen(o => {
+    const next = !o;
+    if (next) requestOpen('tools');   // the store closes the cascade if the band is short
+    else noteClosed('tools');
+    return next;
+  });
+
+  // Register this drawer's own close path, so an exclusion handoff shuts it
+  // exactly the way the writer's own click would.
+  useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '/' || !(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
-      setOpen(o => !o);
+      toggleOpen();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  });
 
   // Review fix (post-CD1) — mirrors ModeStage's own pre-existing "opt-in
   // session timer" semantic (`firstWriteRef`: elapsed since the FIRST
@@ -188,9 +211,15 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
 
   return (
-    <div className="wz-sliver" ref={rootRef} data-open={open ? 'true' : 'false'}>
+    // item 83 M1 — the wave's own contract markers. scripts/menus-probe.mjs
+    // binds to these, not to the `wz-` classes, so the acceptance instrument
+    // keeps testing the RULED INVARIANT (the dock's right edge is the paper's
+    // left edge; the handle rides the drawer's left) even if the class names
+    // are refactored later. Behaviour-free attributes: nothing styles them.
+    <div className="wz-sliver" ref={rootRef} data-open={open ? 'true' : 'false'} data-menus-dock="">
       <button
         type="button"
+        data-menus-handle=""
         className="wz-sliver-grip"
         aria-expanded={open}
         aria-label={open ? t('sliverClose') : t('sliverOpen')}
@@ -221,10 +250,25 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
             Interim, pending Nick's own revision of typewriter mode in a
             separate build; SC3 owns the option's return. Every other surface
             (prose Draft, Free Write, Journal, Board) is untouched. */}
+        {/* ITEM 83 M8 (R12) — THE FOOT IS UNIVERSAL ON PAGE-WRITING SURFACES.
+            The exclusion above is superseded by Nick's own word: "One small
+            change: TYPEWRITER mode should be available while writing a
+            screenplay, too." SC1 S3's disable was recorded as "pending Nick's
+            own revision of typewriter mode" — this IS that revision, arriving
+            at the design layer, and it resolves F9 (which had defaulted to a
+            per-surface foot) in the opposite direction.
+            SCOPE, exactly: the menu MOUNTS and its settings PERSIST here now.
+            The engine's screenplay hook-up — how the hold band meets the
+            Clock's 54-line body and the Courier register — is engine-touching
+            and travels as its own post-vacation brief (R12's own flag), so
+            nothing here reaches into useTypewriterFade. No grayed states: the
+            menu simply governs what it already governs.
+            R14 keeps this off CARD and BOARD tools — the universal foot is the
+            page-writing surfaces' (prose and screenplay), not everything's. */}
         <SliverInstrumentRow
           hasMilestones={hasMilestones}
           target={target}
-          typewriterAvailable={!(content.kind === 'draft' && content.structure === 'screenplay')}
+          typewriterAvailable
         />
       </div>
     </div>
@@ -287,14 +331,17 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           state (see the SliverContent comment above). */}
       {content.kind === 'freewrite' && content.format && (
         <div className="wz-sliver-section">
-          <div className="wz-sliver-h">{t('railFormat')}</div>
+          {/* ITEM 83 M4 (R1) — the zone is STYLING now, not Format: Nick's own
+              word for it, and it distinguishes this from Draft's much larger
+              FORMAT roster (R4). Underline joins B and I. */}
+          <div className="wz-sliver-h">{t('stylingHeading')}</div>
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             <button
               type="button"
               className="mode-tbtn"
               data-on={content.format.boldOn ? 'true' : 'false'}
               aria-pressed={content.format.boldOn}
-              title="Bold"
+              title={t('stylingBold')}
               onClick={() => content.format!.onFormat('bold')}
             ><b>B</b></button>
             <button
@@ -302,9 +349,17 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               className="mode-tbtn"
               data-on={content.format.italicOn ? 'true' : 'false'}
               aria-pressed={content.format.italicOn}
-              title="Italic"
+              title={t('stylingItalic')}
               onClick={() => content.format!.onFormat('italic')}
             ><i>I</i></button>
+            <button
+              type="button"
+              className="mode-tbtn"
+              data-on={content.format.underlineOn ? 'true' : 'false'}
+              aria-pressed={content.format.underlineOn}
+              title={t('stylingUnderline')}
+              onClick={() => content.format!.onFormat('underline')}
+            ><u>U</u></button>
           </div>
         </div>
       )}
@@ -335,11 +390,30 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           {/* onMouseDown preventDefault — a sliver button is OUTSIDE the
               contenteditable, so a normal click's mousedown would blur it
               and collapse whatever text was selected (moved verbatim). */}
+          {/* ITEM 83 M5 (R1) — STYLING's B·I·U leads Draft too, so the two
+              prose modes read as one hand with different reach. */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title="Bold" onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
-            <button type="button" className="mode-tbtn" title="Italic" onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
-            <button type="button" className="mode-tbtn" title="Heading" onClick={() => content.format!.onFormat('heading')}>H</button>
-            <button type="button" className="mode-tbtn" title="Spacing" onClick={() => content.format!.onFormat('spacing')}>&para;</button>
+            <button type="button" className="mode-tbtn" title={t('stylingBold')} onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
+            <button type="button" className="mode-tbtn" title={t('stylingItalic')} onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
+            <button type="button" className="mode-tbtn" title={t('stylingUnderline')} onClick={() => content.format!.onFormat('underline')}><u>U</u></button>
+            <button type="button" className="mode-tbtn" title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+          </div>
+          {/* ITEM 83 M5 (R4) — the roster Nick named: bulleted lists,
+              indentation/block quote, alignment, line spacing. Lists and
+              quotes ride conventions that already exist (`- `, `> `); indent
+              and alignment become line-prefix directives per F3's default
+              (store/draftFormat.ts documents the tokens and why they are not
+              metadata). */}
+          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
+            <button type="button" className="mode-tbtn" title={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}>•</button>
+            <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
+            <button type="button" className="mode-tbtn" title={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}>&rarr;</button>
+            <button type="button" className="mode-tbtn" title={t('draftSpacing')} onClick={() => content.format!.onFormat('spacing')}>&para;</button>
+          </div>
+          <div className="wz-sliver-format" role="group" aria-label={t('draftAlignment')} onMouseDown={e => e.preventDefault()}>
+            <button type="button" className="mode-tbtn" title={t('draftAlignLeft')} onClick={() => content.format!.onFormat('align-left')}>&#8676;</button>
+            <button type="button" className="mode-tbtn" title={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}>&#8596;</button>
+            <button type="button" className="mode-tbtn" title={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}>&#8677;</button>
           </div>
         </div>
       )}
@@ -347,26 +421,24 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
       {content.kind === 'draft' && (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railStructure')}</div>
-          <div className="wz-sliver-structure" role="tablist" aria-label={t('railStructure')}>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={content.structure === 'prose'}
-              className={`wz-sliver-structure-btn${content.structure === 'prose' ? ' active' : ''}`}
-              onClick={() => content.onSwitchStructure('prose')}
-            >
-              {t('railStructureProse')}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={content.structure === 'screenplay'}
-              className={`wz-sliver-structure-btn${content.structure === 'screenplay' ? ' active' : ''}`}
-              onClick={() => content.onSwitchStructure('screenplay')}
-            >
-              {t('railStructureScreenplay')}
-            </button>
-          </div>
+          {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
+              Screenplay TABLIST retires from the panel. A tablist's dress
+              promises free switching; conversion is a consequential one-way
+              act behind its own confirm dialog. Its HOME was always right (an
+              instrument acting on the work — G1 puts it in the hand); only its
+              clothes were mode clothes on a non-mode. One verb row now, with
+              its destination named in the control itself — never a bare
+              "Convert", which is the bench's named enemy. The surface itself
+              says where you are: the courier measure announces screenplay
+              louder than any tab could. */}
+          <button
+            type="button"
+            className="wz-cascade-action"
+            aria-haspopup="dialog"
+            onClick={() => content.onSwitchStructure(content.structure === 'prose' ? 'screenplay' : 'prose')}
+          >
+            {content.structure === 'prose' ? t('draftConvertToScreenplay') : t('draftConvertToProse')}
+          </button>
         </div>
       )}
 
@@ -543,51 +615,114 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const [gearOpen, setGearOpen] = useState(false);
   const [instrumentsOpen, setInstrumentsOpen] = useState(false);
 
+  // ITEM 83 M4 (R5/R12) — THE FOOT IS THREE INSTRUMENTS: Typewriter ·
+  // Progress · Full Screen, on every page-writing surface.
+  //
+  // Nick's ruling: "I don't want a separate 'Instruments' toggle/menu. All of
+  // the options in it should be set in one of the other settings options. Here
+  // are the three I want at the bottom of every pop-out tool menu: TYPEWRITER,
+  // PROGRESS, and FULL SCREEN."
+  //
+  // WHERE EVERYTHING WENT, named rather than left to be discovered:
+  //  · the gear RETIRES from the foot. Its Progress/Timer rows move into
+  //    PROGRESS; its Fade depth folds into the Typewriter menu's Line Fade
+  //    (O-FW2, resolved by merger); Theme leaves the foot entirely for the
+  //    rail's own theme category, which already stands (R5).
+  //  · the Instruments panel RETIRES WHOLE. Its Show/Unit/Target rows are
+  //    absorbed into PROGRESS, so nothing it offered is lost — a second
+  //    surface onto the same goal becomes one surface.
+  // One instrument may be open at a time: these are pop-outs from a foot in a
+  // narrow drawer, and two open at once would scroll rather than disclose.
+  const [open, setOpen] = useState<null | 'typewriter' | 'progress'>(null);
+  const pick = (which: 'typewriter' | 'progress') => setOpen(o => (o === which ? null : which));
+
   return (
     <div className="wz-sliver-instruments">
       <div className="wz-sliver-instruments-row">
-        {typewriterAvailable && <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />}
-        <button
-          type="button"
-          className="wz-sliver-instruments-btn"
-          aria-label="Writing settings"
-          aria-expanded={gearOpen}
-          onClick={() => { setGearOpen(o => !o); setInstrumentsOpen(false); }}
-        >
+        {typewriterAvailable && (
+          <button type="button" className="wz-sliver-instruments-btn"
+            aria-label={t('footTypewriter')} title={t('footTypewriter')}
+            aria-expanded={open === 'typewriter'} data-on={settings.typewriter ? 'true' : 'false'}
+            onClick={() => pick('typewriter')}>
+            <TypewriterGlyph />
+          </button>
+        )}
+        <button type="button" className="wz-sliver-instruments-btn"
+          aria-label={t('footProgress')} title={t('footProgress')}
+          aria-expanded={open === 'progress'}
+          onClick={() => pick('progress')}>
           <GearIcon />
         </button>
-        <button
-          type="button"
-          className="wz-sliver-instruments-btn"
-          aria-label={t('sliverInstruments')}
-          title={t('sliverInstruments')}
-          aria-expanded={instrumentsOpen}
-          onClick={() => { setInstrumentsOpen(o => !o); setGearOpen(false); }}
-        >
-          <InstrumentsIcon />
-        </button>
+        {/* R5 verbatim: "everything but the page disappears — the browser
+            window included". FullscreenToggle already owns the OS-fullscreen
+            request and its own label; it RELOCATES here from the cascade's
+            settings category rather than being reimplemented. */}
+        <FullscreenToggle />
       </div>
-      {gearOpen && (
-        <SettingsPanel
-          settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
-          hasMilestones={hasMilestones}
-          framed
-          typewriterAvailable={typewriterAvailable}
-        />
+      {open === 'typewriter' && <TypewriterMenu />}
+      {open === 'progress' && (
+        <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} />
       )}
-      {gearOpen && <ThemePanel />}
-      {instrumentsOpen && <InstrumentsPanel target={target} />}
     </div>
   );
 }
 
-// The instruments panel — S5's own working-value list, verbatim: on/off,
-// unit preference (words/lines/time), target value. Reuses .mode-settings'
-// look (via Seg/the shared class, index.css scopes its position when
-// nested here) and the SAME goal edit affordance SliverGoalFoot's inline
-// edit already uses (store/writingGoal.ts) — this is a second surface onto
-// the SAME target, not an independent value.
-function InstrumentsPanel({ target }: { target: number | null }) {
+// ITEM 83 M4 (R3) — THE TYPEWRITER MENU. One pop-out, exactly one level
+// beyond the panel (G4's ceiling, met by the ruling's own shape — "the
+// Typewriter icon opens"). Each behaviour carries its toggle AND its
+// adjustments, disclosed IN PLACE beneath it, so the depth never grows.
+function TypewriterMenu() {
+  const { t } = useDeskLexicon();
+  const settings = useWritingSettings();
+  const forwardLock = useForwardLock();
+
+  return (
+    <div className="mode-settings wz-sliver-instruments-panel" role="menu">
+      <h4>{t('twMenuHeading')}</h4>
+
+      {/* The typewriter itself — the instrument this menu belongs to. */}
+      <Seg label={t('footTypewriter')} value={settings.typewriter ? 'on' : 'off'}
+        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+        onPick={v => setTypewriterExplicit(v === 'on')} />
+
+      {/* ITEM 83 S3 — TRUTH-FIX. The ON/OFF toggles below STAY, because each
+          drives a real engine today: Forward Lock writes store/forwardLock.ts
+          (the live forward-only boundary), Line Fade and Page Scroll write
+          writingSettings, which useTypewriterFade already reads.
+          THE ADJUSTMENT ROWS ARE UNMOUNTED — Forward Lock's window unit and
+          count, Line Fade's line count, and the writing-line position. They
+          PERSISTED but drove nothing: no engine reads forwardLockUnit,
+          forwardLockCount, lineFadeLines or writingLine. A control that
+          remembers your choice and then ignores it is worse than an absent
+          one, because it teaches a writer the feature works.
+          NOT grayed, ABSENT (G3) — a disabled control for an unbuilt
+          capability is a locked door wearing paint. The settings themselves
+          stay in the store, defaulted to today's behaviour, so the rows
+          return the moment the engine brief connects them; nothing about
+          this is a retreat from R3, only from claiming it early. That brief
+          is R12's own flagged engine-touching work. */}
+      <Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}
+        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+        onPick={v => setForwardLock(v === 'on')} />
+
+      {/* O-FW2 resolved by merger: the gear's old "Fade depth" lives here now,
+          as Line Fade's own on/off. No second fade home. */}
+      <Seg label={t('twLineFade')} value={settings.lineFadeOn ? 'on' : 'off'}
+        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+        onPick={v => setWritingSettings({ lineFadeOn: v === 'on' })} />
+
+      <Seg label={t('twPageScroll')} value={settings.pageScroll ? 'on' : 'off'}
+        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+        onPick={v => setWritingSettings({ pageScroll: v === 'on' })} />
+    </div>
+  );
+}
+
+// ITEM 83 M4 (R5) — PROGRESS absorbs the gear's Progress/Timer rows AND the
+// whole Instruments panel (Show · Unit · Target · Style). One surface onto the
+// one goal, where there were two.
+function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
+  { target: number | null; hasMilestones?: boolean; typewriterAvailable?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const unit = useGoalUnit();
@@ -597,58 +732,52 @@ function InstrumentsPanel({ target }: { target: number | null }) {
     const n = Number(draft);
     setWritingGoal(Number.isFinite(n) && n > 0 ? Math.round(n) : null);
   };
-  const clear = () => setWritingGoal(null);
-
-  const unitOpts: [string, string][] = [['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']];
 
   return (
     <div className="mode-settings wz-sliver-instruments-panel" role="menu">
-      <h4>{t('sliverInstruments')}</h4>
-      <Seg
-        label={t('sliverInstrumentsShow')}
-        value={settings.instrumentsOn ? 'on' : 'off'}
-        opts={[['on', 'On'], ['off', 'Off']]}
-        onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })}
+      <h4>{t('footProgress')}</h4>
+      <Seg label={t('sliverInstrumentsShow')} value={settings.instrumentsOn ? 'on' : 'off'}
+        opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
+        onPick={v => setWritingSettings({ instrumentsOn: v === 'on' })} />
+      <Seg label={t('sliverInstrumentsUnit')} value={unit}
+        opts={[['lines', 'Lines'], ['words', 'Words'], ['time', 'Time']]}
+        onPick={v => setGoalUnit(v as GoalUnit)} />
+      <label className="wz-tw-number">
+        <span>{t('footTarget')}</span>
+        <input type="number" min={1} value={draft}
+          onChange={e => setDraft(e.target.value)} onBlur={commit} />
+      </label>
+      {/* The gear's own Progress/Timer/Style rows, re-homed verbatim. The
+          SettingsPanel component still owns their behaviour — this is a
+          re-parenting, not a reimplementation, so nothing about how they
+          persist changes. Theme is deliberately NOT rendered: it left the
+          foot for the rail's theme category (R5). */}
+      <SettingsPanel
+        settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
+        hasMilestones={hasMilestones}
+        framed
+        typewriterAvailable={typewriterAvailable}
       />
-      <Seg
-        label={t('sliverInstrumentsUnit')}
-        value={unit}
-        opts={unitOpts}
-        onPick={v => setGoalUnit(v as GoalUnit)}
-      />
-      <div className="wz-sliver-goal-edit-row">
-        <input
-          className="wz-sliver-goal-edit-input"
-          type="number"
-          min={1}
-          value={draft}
-          onChange={e => setDraft(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }}
-        />
-        <button type="button" className="wz-sliver-goal-edit-commit" onClick={commit}>{t('goalSet')}</button>
-        <button type="button" className="wz-sliver-goal-edit-clear" onClick={clear}>{t('goalClear')}</button>
-      </div>
-      {/* Honest working-value note (store/writingGoalUnit.ts's own header
-          comment has the full reasoning) — the unit above doesn't yet
-          change how the target number itself is computed; it only labels
-          it. The committee pass is the ticket that will wire real
-          per-unit conversion. */}
-      <div className="mode-settings-hint">
-        {target != null ? `${t('goalLabel')}: ${target} ${unit === 'lines' ? t('goalUnitLines') : unit}` : t('goalEdit')}
-      </div>
     </div>
   );
 }
 
-function InstrumentsIcon() {
+// A quiet stroke typewriter glyph, matching this file's own icon style
+// (viewBox 0 0 24 24, stroke=currentColor) — the foot's instruments are
+// glyphs, not words, at this width.
+function TypewriterGlyph() {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="5" y1="4" x2="5" y2="20" />
-      <circle cx="5" cy="9" r="2.2" />
-      <line x1="12" y1="4" x2="12" y2="20" />
-      <circle cx="12" cy="15" r="2.2" />
-      <line x1="19" y1="4" x2="19" y2="20" />
-      <circle cx="19" cy="7" r="2.2" />
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
+      <path d="M6 4h12v5H6z" /><path d="M4 9h16v7H4z" /><path d="M8 16h8v4H8z" />
     </svg>
   );
 }
+
+// ITEM 83 M4 (R5) — RETIRED: InstrumentsPanel and InstrumentsIcon.
+// Nick: "I don't want a separate Instruments toggle/menu. All of the options
+// in it should be set in one of the other settings options." Its whole roster
+// (Show · Unit · Target) is absorbed into the foot's PROGRESS menu above, so
+// nothing it offered is lost — two surfaces onto one goal became one. Deleted
+// rather than parked because it is a COMPONENT, not a harness assertion: the
+// park-never-edit law governs checks, and the checks that covered these rows
+// still pass against their new home.

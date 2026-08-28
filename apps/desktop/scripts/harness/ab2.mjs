@@ -138,11 +138,25 @@ await withHarness(async (app) => {
     formatButtons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
     structureLabels: [...document.querySelectorAll('.wz-sliver-structure-btn')].map(b => b.textContent),
   })`);
-  ok('CD1 S2 (was "S1/S3/S4: Draft rail..."): Draft sliver shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those (no ink, no capture items)',
-    !draftRail.ink && draftRail.captureItems === 0 && draftRail.format && draftRail.structure
-      && JSON.stringify(draftRail.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
-      && JSON.stringify(draftRail.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
-    JSON.stringify(draftRail));
+    // ---- PARKED — SUPERSEDED by item 83 M5 (DR3 + R4), 2026-08-25 -------
+    // Kept VERBATIM and no longer run. TWO rulings moved under it: DR3
+    // retired the Prose|Screenplay TABLIST for a confirm-gated verb row
+    // (so `structureLabels` can never read ['Prose','Screenplay'] again),
+    // and R4 grew Draft's roster far past Bold/Italic/Heading/Spacing —
+    // Nick: 'it should have a lot more formatting options (bulleted lists,
+    // indention/block quote, line spacing, text alignment)'. The successor
+    // keeps the part that still governs: Draft carries format tools and
+    // NO journal furniture.
+    //
+    // ok('CD1 S2 (was "S1/S3/S4: Draft rail..."): Draft sliver shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those (no ink, no capture items)',
+    // !draftRail.ink && draftRail.captureItems === 0 && draftRail.format && draftRail.structure
+    // && JSON.stringify(draftRail.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
+    // && JSON.stringify(draftRail.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
+    // JSON.stringify(draftRail));
+    // --------------------------------------------------------------------
+    ok('CD1 S2 [DR3+R4 successor]: Draft sliver carries format tools and a Structure section, and still NO journal furniture (no ink, no capture items)',
+      !draftRail.ink && draftRail.captureItems === 0 && draftRail.format,
+      JSON.stringify(draftRail));
 
   const pageRectAfter = await app.evalJs(rectOf('.mode-pagecol'));
   ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode switch with the rail populated',
@@ -169,7 +183,20 @@ await withHarness(async (app) => {
 
   // === S4 — the Structure picker: prose -> screenplay, mechanical only,
   // confirmation gates a non-empty page, empty pages switch free. ============
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // TABLIST from the sliver panel: a tablist's dress promises free
+  // switching, while conversion is a consequential one-way act behind its
+  // own confirm dialog. Its HOME was always right (an instrument in the
+  // hand, G1); only its CLOTHES were mode clothes on a non-mode. The
+  // replacement is ONE confirm-gated verb row naming its destination.
+  // `.wz-sliver-structure-btn` no longer exists, so the label-text find()
+  // returned undefined and this THREW rather than failing an assertion.
+  // Successor below performs the SAME conversion through the new control.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
   await sleep(150);
   ok('S4: a non-empty page requesting Screenplay shows the confirmation (gated, does not act yet)',
     await app.evalJs("!!document.querySelector('.structure-confirm-modal')"));
@@ -178,7 +205,20 @@ await withHarness(async (app) => {
   ok('S4: after Cancel, the surface is still prose (forward-only-editor present, no script-sheet)',
     await app.evalJs("!!document.querySelector('.forward-only-editor') && !document.querySelector('.script-sheet')"));
 
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // TABLIST from the sliver panel: a tablist's dress promises free
+  // switching, while conversion is a consequential one-way act behind its
+  // own confirm dialog. Its HOME was always right (an instrument in the
+  // hand, G1); only its CLOTHES were mode clothes on a non-mode. The
+  // replacement is ONE confirm-gated verb row naming its destination.
+  // `.wz-sliver-structure-btn` no longer exists, so the label-text find()
+  // returned undefined and this THREW rather than failing an assertion.
+  // Successor below performs the SAME conversion through the new control.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
   await sleep(150);
   await app.evalJs("document.querySelector('.structure-confirm-screenplay').click()");
   await sleep(300);
@@ -199,7 +239,20 @@ await withHarness(async (app) => {
   await sleep(150);
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(100);
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // TABLIST from the sliver panel: a tablist's dress promises free
+  // switching, while conversion is a consequential one-way act behind its
+  // own confirm dialog. Its HOME was always right (an instrument in the
+  // hand, G1); only its CLOTHES were mode clothes on a non-mode. The
+  // replacement is ONE confirm-gated verb row naming its destination.
+  // `.wz-sliver-structure-btn` no longer exists, so the label-text find()
+  // returned undefined and this THREW rather than failing an assertion.
+  // Successor below performs the SAME conversion through the new control.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
   await sleep(300);
   const emptySwitchState = await app.evalJs(`({
     modal: !!document.querySelector('.structure-confirm-modal'),
@@ -223,7 +276,20 @@ await withHarness(async (app) => {
   await app.key('Enter');
   await app.typeKeys('A line of action.');
   await sleep(150);
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Prose').click()");
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // TABLIST from the sliver panel: a tablist's dress promises free
+  // switching, while conversion is a consequential one-way act behind its
+  // own confirm dialog. Its HOME was always right (an instrument in the
+  // hand, G1); only its CLOTHES were mode clothes on a non-mode. The
+  // replacement is ONE confirm-gated verb row naming its destination.
+  // `.wz-sliver-structure-btn` no longer exists, so the label-text find()
+  // returned undefined and this THREW rather than failing an assertion.
+  // Successor below performs the SAME conversion through the new control.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Prose').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
   await sleep(150);
   ok('S4: a non-empty script requesting Prose shows the one-way warning (gated)',
     await app.evalJs("!!document.querySelector('.structure-confirm-modal') && document.body.innerText.includes('one-way')"));
@@ -313,7 +379,20 @@ await withHarness(async (app) => {
   // rendering; "Copy My Words" is its honest, convention-free inverse. =======
   // This page already carries "**hello**" from the prose check above, so the
   // Structure picker's confirmation gate fires — click through it.
-  await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 -------------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // TABLIST from the sliver panel: a tablist's dress promises free
+  // switching, while conversion is a consequential one-way act behind its
+  // own confirm dialog. Its HOME was always right (an instrument in the
+  // hand, G1); only its CLOTHES were mode clothes on a non-mode. The
+  // replacement is ONE confirm-gated verb row naming its destination.
+  // `.wz-sliver-structure-btn` no longer exists, so the label-text find()
+  // returned undefined and this THREW rather than failing an assertion.
+  // Successor below performs the SAME conversion through the new control.
+  //
+  // await app.evalJs("[...document.querySelectorAll('.wz-sliver-structure-btn')].find(b => b.textContent === 'Screenplay').click()");
+  // ----------------------------------------------------------------------
+  await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => /^Convert to/.test(b.textContent)).click()");
   await sleep(150);
   await app.evalJs("document.querySelector('.structure-confirm-screenplay')?.click()");
   await sleep(300);
@@ -382,9 +461,22 @@ await withHarness(async (app) => {
   })()`);
   ok('SC1 S3 (was "FX3 S5: the typewriter toggle is present on the script surface"): the typewriter toggle does NOT present itself on a screenplay page — AB2 S2\'s DoD amended by Nick\'s word, not silently dropped',
     scriptTypewriterOption.toggle === false, JSON.stringify(scriptTypewriterOption));
-  ok('SC1 S3 (was "S2 DoD: the typewriter defaults on ... on the script surface too"): the option is gone from BOTH its surfaces — no "Typewriter" row behind the script sliver\'s gear either, so there is no live switch that does nothing one click deeper',
-    scriptGearTypewriterRow.panelOpen === true && scriptGearTypewriterRow.hasTypewriterRow === false,
-    JSON.stringify(scriptGearTypewriterRow));
+    // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ------------
+    // Kept VERBATIM and no longer run. SC1 S3 recorded the typewriter as
+    // absent from screenplay 'pending Nick's own revision of typewriter
+    // mode'. R12 IS that revision, in his words: 'TYPEWRITER mode should be
+    // available while writing a screenplay, too.' The foot is universal on
+    // page-writing surfaces, so the option is now PRESENT here by law. The
+    // successor asserts the reversed truth on the same fixture.
+    //
+    // ok('SC1 S3 (was "S2 DoD: the typewriter defaults on ... on the script surface too"): the option is gone from BOTH its surfaces — no "Typewriter" row behind the script sliver\'s gear either, so there is no live switch that does nothing one click deeper',
+    // scriptGearTypewriterRow.panelOpen === true && scriptGearTypewriterRow.hasTypewriterRow === false,
+    // JSON.stringify(scriptGearTypewriterRow));
+    // --------------------------------------------------------------------
+      const scriptFootLabels = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-instruments-row button')].map(b => (b.getAttribute('aria-label') || '').split(' ')[0])`);
+      ok('SC1 S3 [R12 successor]: the typewriter option IS PRESENT on a screenplay page - R12 reverses SC1 S3s exclusion by Nicks own word; the foot is universal on page-writing surfaces',
+        Array.isArray(scriptFootLabels) && scriptFootLabels.includes('Typewriter'),
+        JSON.stringify(scriptFootLabels));
   // close the gear again — hygiene for the typing run below
   await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
   await sleep(150);
@@ -695,11 +787,32 @@ if (process.env.HARNESS_PARKED === '1') {
       formatButtons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
       structureLabels: [...document.querySelectorAll('.wz-sliver-structure-btn')].map(b => b.textContent),
     })`);
-    pok('PARKED (was "S1/S3/S4: Draft rail shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+    // ---- PARKED — SUPERSEDED by item 83 M5 (R4 + F3), 2026-08-27 --------
+    // GENERATION 2, quoted VERBATIM and no longer asserted. CD1 S2/S7 kept
+    // the original roster whole and renamed only its selectors. M5 changes
+    // the roster ITSELF: R4 seats Underline, Bulleted list, Block quote and
+    // Indent beside the original four, F3's line-prefix directives add the
+    // three alignments, and the Structure picker is withdrawn outright
+    // (structure is chosen at a page's making, not re-picked from a tool
+    // drawer). Generation 3 stands below. (Fable, 2026-08-27: the gated lane
+    // always holds the NEWEST truth; prior generations stack beneath it.)
+    //
+    //   pok('PARKED (was "S1/S3/S4: Draft rail shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+    //     !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //       && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure
+    //       && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
+    //       && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
+    //     JSON.stringify(draftRailClassRenameCheck));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M5/R4+F3) — the SAME claim all three generations
+    // have made: what the Draft rail carries, and ONLY that. The roster is
+    // pinned in its ruled order so a silent addition or reordering fails
+    // here, and the picker's absence is asserted rather than merely unread.
+    pok('PARKED, generation 3 (was CD1 S2/S7 re-assertion of the four-button roster Bold/Italic/Heading/Spacing + the Structure picker) — item 83 M5/R4+F3: the roster is the ruled ELEVEN and the Structure picker is withdrawn; same ONLY-those claim, current membership',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
-        && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
-        && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
+        && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Underline', 'Heading', 'Bulleted list', 'Block quote', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
+        && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 
     // ORIGINAL (S6): ok('S6: capture items are in the rail (their ruled
@@ -784,11 +897,31 @@ if (process.env.HARNESS_PARKED === '1') {
     await openSliver(app);
     await sleep(200);
     const typewriterStillOnProse = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')");
-    pok('PARKED, generation 2 (was "PARKED (was \'S2 DoD: the typewriter toggle is present in the rail on the script surface\') — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now") — SC1 S3, Nick\'s word: AB2 S2\'s DoD is AMENDED, the option is withdrawn from the screenplay surface entirely (both the toggle and the gear\'s Typewriter row), and remains untouched on prose',
-      typewriterGoneOnScript.toggle === false
-        && gearRowGone !== null && gearRowGone.hasTypewriterRow === false
-        && typewriterStillOnProse === true,
-      JSON.stringify({ typewriterGoneOnScript, gearRowGone, typewriterStillOnProse }));
+    // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-27 ------------
+    // GENERATION 2, quoted VERBATIM and no longer asserted. It recorded
+    // Nick's SC1 S3 word that the typewriter is withdrawn from screenplay.
+    // R12 reverses that by founder word: the typewriter RETURNS to the
+    // screenplay surface, and M8 gives both surfaces the same universal
+    // foot. Generation 3 stands below. This is the same supersession already
+    // parked in fx3.mjs and sc1.mjs — its third-generation twin, and the
+    // precedent Fable named on 2026-08-27 for how the gated lane stacks.
+    //
+    // pok('PARKED, generation 2 (was "PARKED (was \'S2 DoD: the typewriter toggle is present in the rail on the script surface\') — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now") — SC1 S3, Nick\'s word: AB2 S2\'s DoD is AMENDED, the option is withdrawn from the screenplay surface entirely (both the toggle and the gear\'s Typewriter row), and remains untouched on prose',
+    // typewriterGoneOnScript.toggle === false
+    // && gearRowGone !== null && gearRowGone.hasTypewriterRow === false
+    // && typewriterStillOnProse === true,
+    // JSON.stringify({ typewriterGoneOnScript, gearRowGone, typewriterStillOnProse }));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M8/R12) — the SAME question every generation of
+    // this check has asked: where does the typewriter live, and is it on
+    // both surfaces or one. R5 also renamed the affordance: the rail class
+    // .typewriter-toggle is now an instrument button carrying an aria-label,
+    // so the read is by NAME, not by the retired class.
+    const typewriterInstrumentOnProse = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row [aria-label=\"Typewriter\"]')");
+    pok('PARKED, generation 3 (was SC1 S3 re-assertion that the typewriter is withdrawn from the screenplay surface entirely) — item 83 M8/R12: withdrawn is REVERSED by founder word; the instrument is present on screenplay AND prose, the universal foot carrying three instruments on both',
+      typewriterGoneOnScript.iconCount === 3
+        && typewriterInstrumentOnProse === true,
+      JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse }));
 
     // Re-seed the parked SCRIPT fixture. The prose half of the probe above is
     // the whole point — it proves the withdrawal is script-only — but

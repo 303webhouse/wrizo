@@ -439,7 +439,17 @@ await withHarness(async (app) => {
   // Bold/Italic ONLY, reusing draftFormat's markdown conventions with the
   // iA dimmed-syntax display register (.md-mark/.md-bold/.md-italic).
   const toolCount = await app.evalJs("document.querySelectorAll('.board-popup-tool').length");
-  ok('S5: the card\'s own strip carries Bold and Italic ONLY (the frozen markdown set does not unfreeze)', toolCount === 2, String(toolCount));
+  // ---- PARKED — SUPERSEDED by item 83 M9 (R13.v) + R1, 2026-08-25 ---
+  // Kept VERBATIM and no longer run. Two changes under it: the styling
+  // tools moved OUT of the popup strip into the card's own left-edge dock
+  // (R13.v/R14 - the dock is the card's companion), and Underline joined
+  // B and I by R1, so the count is 3 and it is read from the dock.
+  //
+  // ok('S5: the card\'s own strip carries Bold and Italic ONLY (the frozen markdown set does not unfreeze)', toolCount === 2, String(toolCount));
+  // ------------------------------------------------------------------
+  const dockToolCount = await app.evalJs("document.querySelectorAll('.board-popup-dock .mode-tbtn').length");
+  ok('S5 [R13.v+R1 successor]: the opened cards DOCK carries exactly B/I/U - three styling tools, moved off the strip and grown by Underline',
+    dockToolCount === 3, String(dockToolCount));
 
   await app.evalJs(`(() => {
     const ed = document.querySelector('.board-popup-editor');
@@ -469,8 +479,20 @@ await withHarness(async (app) => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     return { focusableCount: focusable.length, wrappedToFirst: document.activeElement === first };
   })()`);
-  ok('S5: Tab is contained within the popup\'s own focusable elements (hb1.1\'s UnlockCeremony pattern, reused) — from the last element, Tab wraps to the first',
-    focusTrapProof.focusableCount === 4 && focusTrapProof.wrappedToFirst, JSON.stringify(focusTrapProof));
+  // ---- PARKED — SUPERSEDED by item 83 M9 (R13.v), 2026-08-25 --------
+  // Kept VERBATIM and no longer run. This pinned the focusable COUNT at 4;
+  // M9's dock adds buttons inside `.board-popup`, so the count is now 5.
+  // THE TRAP ITSELF IS INTACT - it queries live over every button in the
+  // dialog, so the dock's buttons are trapped automatically (measured:
+  // {focusableCount:5, wrappedToFirst:true}). The successor asserts the
+  // PROPERTY (Tab wraps) rather than the count, which is what the check was
+  // ever really for.
+  //
+  // ok('S5: Tab is contained within the popup\'s own focusable elements (hb1.1\'s UnlockCeremony pattern, reused) — from the last element, Tab wraps to the first',
+  // focusTrapProof.focusableCount === 4 && focusTrapProof.wrappedToFirst, JSON.stringify(focusTrapProof));
+  // ------------------------------------------------------------------
+  ok('S5 [R13.v successor]: Tab is still contained within the popups own focusable elements - from the last element Tab wraps to the first, whatever the dock adds to the count',
+    focusTrapProof.wrappedToFirst === true, JSON.stringify(focusTrapProof));
 
   // CD4.1 (2026-07-24) — the card-edit popup's close button is relabeled "Done"
   // -> "Close" (Fable's ruling; the DoD says no surface says Done). Read the label

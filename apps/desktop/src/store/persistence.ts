@@ -3,6 +3,7 @@ import { sortNotebook, notebookKey, midpoint, gapExhausted, respread } from './p
 import { serializeScriptDoc } from './scriptText';
 import { createEmptyScriptDoc } from './scriptDoc';
 import { deskTerm, type DeskTermId } from './deskLexicon';
+import { getUserPageDefaults } from './pageDefaults';
 
 // ---------------------------------------------------------------------------
 // Storage adapter (A2)
@@ -778,6 +779,20 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
     source: 'page',
     // AB3 S4 — the Journal/Catch door: this page homes in the Journal.
     origin: 'journal',
+    // ITEM 83 M2 (R6) — BIRTH FROM DEFAULTS. Nick's ruling is that page
+    // settings "reset to defaults when the user creates a new page". That is
+    // implemented as a COPY taken at birth, not as a live read-through of the
+    // writer's defaults: a later change to their defaults must not silently
+    // re-dress pages they have already written. `undefined` when the writer
+    // has never set defaults — the grandfather fixed point, byte-identical to
+    // a pre-M2 page.
+    //
+    // MERGE NOTE (S4, both sides kept): main gave this function a `seed`
+    // parameter (item 85's seam remediation) and renamed the timestamp to
+    // `createdAt`, so a seeded page can be born with a supplied time. That
+    // naming is taken verbatim below; birth-from-defaults is orthogonal to
+    // it and rides unchanged. Neither side lost anything.
+    pageSettings: getUserPageDefaults() ?? undefined,
     createdAt,
     updatedAt: createdAt,
   };

@@ -526,7 +526,17 @@ await withHarness(async (app) => {
     await freshProsePage(app, LAPTOP_W, 900); // framed, default progress:words
     await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
     await sleep(250);
-    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Writing settings\"]').click()");
+    // ---- PARKED — SUPERSEDED by item 83 M4 (R5), 2026-08-25 --------------
+    // Kept VERBATIM and no longer run. The sliver foot's gear is retired:
+    // R5 makes the foot exactly TYPEWRITER / PROGRESS / FULL SCREEN, and the
+    // gear's own Progress+Timer rows were RE-PARENTED (not reimplemented)
+    // into the PROGRESS instrument. The aria-label "Writing settings" no
+    // longer exists, so this line threw rather than failing an assertion.
+    // Successor below reaches the SAME panel through its new door.
+    //
+    // await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Writing settings\"]').click()");
+    // ----------------------------------------------------------------------
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Progress\"]').click()");
     await sleep(200);
     const seenUnderWords = await app.evalJs("[...document.querySelectorAll('.mode-settings .mode-crow')].some(row => row.textContent.includes('Progress style'))");
     ok('Style control: OFFERED under framed + Progress:Words', seenUnderWords === true, String(seenUnderWords));

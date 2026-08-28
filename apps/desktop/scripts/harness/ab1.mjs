@@ -434,14 +434,34 @@ if (process.env.HARNESS_PARKED === '1') {
     // AB2 S2 — the typewriter returns from parking into the rail (still
     // "inside the frame"); progress-bar/milestones/ambient-glow are
     // untouched by this ticket and stay absent.
+    // ---- PARKED — SUPERSEDED by item 83 M4 (R5), 2026-08-27 -------------
+    // GENERATION 2, quoted VERBATIM and no longer asserted. AB2 S2's own
+    // re-assertion gave the typewriter a RAIL home and pinned it there by
+    // the `.typewriter-toggle` class. R5 moves it again — out of the rail,
+    // into the sliver foot's TYPEWRITER instrument — so this generation's
+    // truth is spent in its turn. Generation 3 stands below it. (Fable's
+    // ruling, 2026-08-27: the gated lane always holds the NEWEST truth;
+    // prior generations stack verbatim beneath it.)
+    //
+    //   pok('PARKED (was "S2: no flourish mounts inside the frame") — AB2 S2 gives the typewriter a rail home: it now DOES mount inside the frame; progress-bar/milestones/ambient-glow remain absent, unchanged',
+    //     flourishesNow.typewriterToggle === true && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
+    //     JSON.stringify(flourishesNow));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M4/R5) — the SAME claim the original made and
+    // the same one AB2 re-made: what mounts inside the frame. The typewriter
+    // is still inside it, at its new address; the other three flourishes are
+    // untouched by this wave and stay absent, exactly as generations 1 and 2
+    // both said.
     const flourishesNow = await app.evalJs(`({
       typewriterToggle: !!document.querySelector('.desk-frame .typewriter-toggle'),
+      typewriterInstrument: !!document.querySelector('.desk-frame .wz-sliver-instruments-row [aria-label="Typewriter"]'),
       progressBar: !!document.querySelector('.desk-frame .mode-incentive-row'),
       milestones: !!document.querySelector('.desk-frame .mode-milestone'),
       ambientGlow: !!document.querySelector('.desk-frame .mode-glow'),
     })`);
-    pok('PARKED (was "S2: no flourish mounts inside the frame") — AB2 S2 gives the typewriter a rail home: it now DOES mount inside the frame; progress-bar/milestones/ambient-glow remain absent, unchanged',
-      flourishesNow.typewriterToggle === true && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
+    pok('PARKED, generation 3 (was AB2 S2 re-assertion "the typewriter now DOES mount inside the frame", pinned to the rail class .typewriter-toggle) — item 83 M4/R5: the rail home is retired and the affordance mounts in the sliver foot TYPEWRITER instrument instead; still inside the frame, still the only flourish there',
+      flourishesNow.typewriterInstrument === true && flourishesNow.typewriterToggle === false
+        && !flourishesNow.progressBar && !flourishesNow.milestones && !flourishesNow.ambientGlow,
       JSON.stringify(flourishesNow));
 
     // ORIGINAL (AB1): ok('S2: the pen/format bar (ink tools) still renders

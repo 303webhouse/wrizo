@@ -320,7 +320,17 @@ await withHarness(async (app) => {
     s.removeAllRanges();
     s.addRange(range);
   })()`);
-  await app.evalJs("document.querySelector('.board-popup-strip .mode-tbtn[title=\"Bold\"]').click()");
+  // ---- PARKED — SUPERSEDED by item 83 M9 (R13.v/R14), 2026-08-25 ----
+  // Kept VERBATIM and no longer run. The opened card's styling tools moved
+  // OUT of `.board-popup-strip` into the card's own left-edge dock
+  // (`.board-popup-dock`, anchored at right:100% - the card is the paper
+  // there), and Underline joined B and I by R1. The old selector matched
+  // nothing, so .click() THREW. The successor performs the same Bold press
+  // through the dock.
+  //
+  // await app.evalJs("document.querySelector('.board-popup-strip .mode-tbtn[title=\"Bold\"]').click()");
+  // ------------------------------------------------------------------
+  await app.evalJs("document.querySelector('.board-popup-dock .mode-tbtn[title=\"Bold\"]').click()");
   await sleep(150);
   const popupBolded = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
   await app.keyCombo('z');

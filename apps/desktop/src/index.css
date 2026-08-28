@@ -2782,7 +2782,12 @@ a:focus-visible,
 .desk-frame-stage .mode-page{
   height:auto; flex:1 1 auto; min-height:0;
   margin-bottom:var(--fx3-paper-fence);
-  padding:calc(30px * var(--paper-scale)) calc(38px * var(--paper-scale));
+  /* ITEM 83 M3 (R6) — PAGE SETUP's margin choice rides in as a base measure
+     (--wz-page-pad-x, set inline by ModeStage from store/pageDress.ts) and is
+     scaled HERE, so --paper-scale keeps its single owner. The fallback is the
+     exact 38px this rule carried before M3, so a page with no dress renders
+     byte-identically to today. */
+  padding:calc(30px * var(--paper-scale)) calc(var(--wz-page-pad-x, 38px) * var(--paper-scale));
 }
 /* The script sheet has no bounded height of its own by design (see
    .desk-frame-scroll-cap's own comment below — it wraps content that grows
@@ -3440,7 +3445,12 @@ a:focus-visible,
    sliver's eyebrow labels (READING/STRUCTURE/CAPTURE/etc.) are
    informational, not evental: olive marks where you are, orange marks what
    you do, and an eyebrow label is neither — it's just quiet. */
-.wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* item 83 M1 (R7, "menus rest olive") — Nick's word: "the accent color on
+   the menus should be the olive green, not brass." The engraved zone heading
+   is the menus' one resting-accent site (Pass 0's G5, as amended by R7 from
+   the ember to the olive register); it was --text-mid, which read as body
+   copy rather than an engraving. */
+.wz-sliver-h{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
 .wz-sliver-inks{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
 .wz-sliver-item{ font-size:14px; color:var(--text-mid); padding:10px 11px; border:1px solid transparent; }
 /* AB4 S5 — "Add card," the board sliver's one non-toggle tool: a real
@@ -3480,20 +3490,22 @@ a:focus-visible,
   border:1px solid var(--ink-border-strong); border-radius:0; background:var(--ink-950); transition:.15s; }
 .wz-sliver-toggle-switch::after{ content:''; position:absolute; top:1px; left:1px; width:12px; height:12px;
   border-radius:50%; background:var(--text-low); transition:.15s; }
-.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:var(--brass); border-color:var(--brass); }
-.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ left:13px; background:var(--on-brass); }
+/* item 83 M1 (R7) — an ON toggle is a WHERE-YOU-ARE state, not an act, so it
+   rests olive. This was the menus' most literal breach of "no resting orange":
+   a brass-filled switch sat lit for the whole session on every page with a
+   toggle on. Olive marks state, brass stays evental (the :active flash, F7's
+   retained default). The knob rides --ink-950 for contrast on olive, where it
+   previously used --on-brass. */
+.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:var(--accent-rest); border-color:var(--accent-rest); }
+.wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ left:13px; background:var(--ink-950); }
 
-/* The Structure picker (S4) — a two-way segmented control, Prose | Screenplay.
-   FX1 S6 — the active state was a solid brass fill (an evental treatment for
-   a where-you-are marker); moved to the F3/mode-tab species instead
-   (--accent-rest — see .desk-mode-tab.active above), the same lawful active
-   pattern .wz-strip-item.active (CD2, below) now carries forward. */
-.wz-sliver-structure{ display:flex; border:1px solid var(--ink-border); }
-.wz-sliver-structure-btn{ flex:1; background:none; border:0; border-bottom:2px solid transparent; color:var(--text-mid);
-  font-family:var(--font-ui); font-size:12px; padding:8px 6px 6px; cursor:pointer; transition:.15s; }
-.wz-sliver-structure-btn:hover{ color:var(--text-hi); background:var(--ink-800); }
-.wz-sliver-structure-btn.active{ background:none; color:var(--text-hi); border-bottom-color:var(--accent-rest); }
-.wz-sliver-structure-btn + .wz-sliver-structure-btn{ border-left:1px solid var(--ink-border); }
+/* SWEPT (item 83, R13.iv/M6-M11) — the Structure picker (S4) and its
+   two-way Prose | Screenplay segmented control were withdrawn from the
+   sliver: structure is chosen at the page's making, not re-picked from a
+   tool drawer. The rules below it had no markup left to style, so they go
+   with it rather than lingering as dead weight. Its FX1 S6 active-state
+   reasoning (brass -> --accent-rest) survives at .desk-mode-tab.active and
+   .wz-strip-item.active, which is where that law now lives. */
 
 /* CD1 S6 — the goal block, the sliver's foot. Timer numeral (opt-in,
    --text-mid, quiet); the 2px progress hairline; one inline goal edit.
@@ -3544,7 +3556,8 @@ a:focus-visible,
    fills brass — correct at the stage's OWN gear (a corner popover, not
    itself part of the sliver's established visual law), but a resting
    "where you are" marker inside the sliver should read olive, matching
-   `.wz-sliver-structure-btn.active`/every other sliver "active" state
+   `.desk-mode-tab.active`/every other sliver "active" state
+   (the Structure picker itself was swept with R13.iv — see the note above)
    already swept under FX1 S6. Scoped the same way as the position override
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }
@@ -3782,7 +3795,13 @@ a:focus-visible,
 .wz-strip-item{ display:flex; flex-direction:column; align-items:center; gap:3px;
   width:100%; padding:10px 4px; background:none; border:0; border-left:2px solid transparent; cursor:pointer;
   color:var(--text-hi); font-family:var(--font-ui); transition:.15s; }
-.wz-strip-item:hover{ color:var(--brass); background:var(--ink-900); }
+/* item 83 M1 (R7) — hover is not an act. The two-regime law the menus now
+   run: olive marks where you are, brass marks what you DO — and "what you do"
+   is the press, not the approach. Hover lifts to --text-hi (the mockups' own
+   `.row:hover`); the brass moves to :active, where the founding invariant's
+   sub-second flash belongs (F7 default: the flash stays). */
+.wz-strip-item:hover{ color:var(--text-hi); background:var(--ink-900); }
+.wz-strip-item:active{ color:var(--brass); }
 /* Olive marks the OPEN category (S1: "olive on the open category") — the
    same lawful --accent-rest-not-brass pattern every other where-you-are
    marker in this app already uses (DeskRail's own .desk-rail-item.active,
@@ -3869,8 +3888,22 @@ a:focus-visible,
      centering has pushed the stage away from the strip's fixed screen
      position, landing this anchor's screen-left exactly on the strip's
      own screen-right + one --frame-gap, at every viewport. */
+  /* SUPERSEDED IN ONE TERM — item 83 M1 (R10.i, "flush drawers"). FX7 S3's
+     derivation above stands verbatim and is still the reason this anchor
+     cancels the grid's centering at all; only its DESTINATION changes.
+     Nick, twice, on rendered screenshots: "there is still a large gap
+     between the left menu strip and the opened Page tab." Measured on this
+     tree before the change (menus-probe, prose, 1366 AND 1680): strip.right
+     = 84.0, panel.left = 112.0 — a 28.0px gap, i.e. exactly the
+     `+ var(--frame-gap)` term below. FX7's "flush" meant flush-to-strip
+     PLUS one gap, which was that ticket's intent; R10(i) retires the gap
+     for drawers ("an open drawer sits FLUSH against what it opened from").
+     The term is dropped, nothing else. The anchor stays pure layout math
+     over the SAME two tokens the strip's own rule uses (`--strip-width`,
+     `--frame-host-pad-x`, .desk-frame-strip above) — one source of truth,
+     so this cannot drift from the strip it targets. */
   --fx7-cascade-grid-margin: max(0px, calc((100vw - 2 * var(--frame-host-pad-x) - var(--frame-max)) / 2));
-  left: calc(var(--strip-width) + var(--frame-gap) - var(--frame-host-pad-x) - var(--fx7-cascade-grid-margin));
+  left: calc(var(--strip-width) - var(--frame-host-pad-x) - var(--fx7-cascade-grid-margin));
   display:flex; align-items:stretch; pointer-events:none;
   font-size:calc(1rem * var(--paper-scale));
   /* Same canonical-half-width formula .desk-frame-sliver-anchor already
@@ -3895,6 +3928,12 @@ a:focus-visible,
   height:100%; overflow-y:auto; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-radius:var(--radius-md);
   margin-right:10px;
+  /* item 83 M1 (R10.i) — the drawer now sits FLUSH on the rail, so the seam
+     is the rail's own border-right; a border-left here would paint a second
+     1px line against it and read as a hairline gap at exactly the join the
+     ruling was written to close. The left corners square off for the same
+     reason: a radius at a flush seam is a visible notch. */
+  border-left:none; border-top-left-radius:0; border-bottom-left-radius:0;
   opacity:1; transition:width 180ms ease, opacity 180ms ease, margin-right 180ms ease, border-width 180ms ease;
 }
 /* The dock's own close animation (T5, the canon's third ratification
@@ -3912,7 +3951,9 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){ .wz-cascade-panel{ transition:none; } }
 .wz-cascade-panel-head{ display:flex; align-items:center; justify-content:space-between; gap:8px;
   padding:12px 14px 10px; border-bottom:1px solid var(--ink-border); }
-.wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-mid); }
+/* item 83 M1 (R7) — the cascade drawer's engraved heading, same register as
+   .wz-sliver-h above: one accent site per menu, olive, at rest. */
+.wz-cascade-panel-title{ font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent-rest); }
 /* The dock's own quiet close affordance (S2: "a quiet close affordance") —
    text-scale, never brass (this is chrome, not an evental action). */
 .wz-cascade-dock-btn{ background:none; border:0; color:var(--text-low); font-family:var(--font-ui);
@@ -4662,3 +4703,84 @@ a:focus-visible,
 .wz-beginnings[data-beginnings='projection']{ padding:22px 0 6px; }
 
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
+
+/* ITEM 83 M3 (R6) — PAGE SETUP, in the cascade's Page drawer.
+   Register per R7/§1.4: engraved heading olive (inherited from
+   .wz-cascade-panel-title), sentence-case rows, square corners, 1px --line,
+   olive marks the chosen chip, brass only on press. No new motion. */
+.wz-page-setup{ display:flex; flex-direction:column; gap:8px; }
+.wz-page-setup-row{ display:flex; align-items:center; gap:8px; }
+.wz-page-setup-label{ flex:1 1 auto; font-size:12px; color:var(--text-mid); }
+.wz-page-setup-value{ font-size:11px; color:var(--text-low);
+  font-variant-numeric:tabular-nums; min-width:2.2em; text-align:right; }
+.wz-page-setup-seg{ display:flex; gap:4px; }
+.wz-page-setup-seg--wrap{ flex-wrap:wrap; padding-bottom:2px; }
+.wz-page-setup-chip{ background:none; border:1px solid var(--ink-border);
+  color:var(--text-mid); font-family:var(--font-ui); font-size:11px;
+  padding:4px 8px; cursor:pointer; border-radius:0; transition:.15s; }
+.wz-page-setup-chip:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
+.wz-page-setup-chip:active{ color:var(--brass); border-color:var(--brass); }
+/* Olive marks where you are — the chosen value, at rest (R7). */
+.wz-page-setup-chip[aria-checked='true'], .wz-page-setup-chip[aria-pressed='true']{
+  color:var(--text-hi); border-color:var(--accent-rest); }
+.wz-page-setup-chip:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+.wz-page-setup-range{ flex:1 1 auto; accent-color:var(--accent-rest); }
+.wz-page-setup-text{ width:100%; background:var(--ink-950);
+  border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:5px 7px; border-radius:0; }
+.wz-page-setup-text:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+.wz-page-setup-note{ font-size:10px; color:var(--text-low); line-height:1.5; margin:2px 0 0; }
+.wz-page-setup-note--ok{ color:var(--accent-rest); }
+
+/* ITEM 83 M4 (R3) — the Typewriter menu's numeric adjustments, disclosed in
+   place inside the one pop-out (G4's depth ceiling holds). Same register as
+   PAGE SETUP: square corners, 1px --line, olive focus. */
+.wz-tw-number{ display:flex; align-items:center; gap:8px; margin:6px 0 2px; }
+.wz-tw-number > span{ flex:1 1 auto; font-size:11px; color:var(--text-mid); }
+.wz-tw-number input{ width:64px; background:var(--ink-950);
+  border:1px solid var(--ink-border); color:var(--text-hi);
+  font-family:var(--font-ui); font-size:12px; padding:3px 6px; border-radius:0; }
+.wz-tw-number input:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+/* The foot's Typewriter instrument marks its ON state in olive, never brass
+   (R7) — the same where-you-are law the drawer's toggles now follow. */
+.wz-sliver-instruments-btn[data-on='true']{ color:var(--accent-rest); }
+
+/* ITEM 83 M6 (R13.ii) — the board's Place-page list. Scrollable but bounded:
+   a limit STOPS, it never relocates, so the list caps its own height rather
+   than pushing the drawer's other zones off. */
+.wz-place-page{ display:flex; flex-direction:column; gap:6px; }
+.wz-place-page-list{ display:flex; flex-direction:column; max-height:240px; overflow-y:auto; }
+.wz-place-page-row{ display:flex; align-items:baseline; gap:8px; width:100%;
+  background:none; border:0; border-bottom:1px solid var(--ink-border);
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px;
+  padding:6px 2px; cursor:pointer; text-align:left; transition:.15s; }
+.wz-place-page-row:last-child{ border-bottom:none; }
+.wz-place-page-row:hover{ color:var(--text-hi); }
+.wz-place-page-row:active{ color:var(--brass); }
+.wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+.wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
+
+/* ITEM 83 M7 (PP2) — THE STATE SPEAKS FIRST. The page's current home wears a
+   1px olive left hairline and hi text, so the Home zone reads as
+   "where it is → where it could go" instead of a menu of doors. Static, no
+   motion; olive at rest, never orange (R7's ceiling holds in cascade chrome). */
+.wz-places-radio[data-current='true']{
+  color:var(--text-hi); box-shadow:inset 1px 0 0 0 var(--accent-rest); }
+
+/* ITEM 83 M9 (R13.v/R14) — the opened card's Tools dock.
+   `right:100%` on a child of `.board-popup` puts the dock's right edge exactly
+   on the card's left edge — the anchor law at card scale, by layout, nothing
+   scripted. R14: centred to the card, and FREE TO EXCEED ITS HEIGHT (no
+   height/max-height tie), because "the dock is the card's companion, not its
+   prisoner". No foot here: page instruments stay on page-writing surfaces. */
+.board-popup{ position:relative; }
+.board-popup-dock{
+  position:absolute; right:100%; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:stretch; gap:4px;
+  padding:8px 6px; margin-right:-1px;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-right:none; border-radius:var(--radius-md) 0 0 var(--radius-md); }
+.board-popup-dock-h{ font-size:9px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--accent-rest); text-align:center; padding-bottom:2px; }
+@media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }

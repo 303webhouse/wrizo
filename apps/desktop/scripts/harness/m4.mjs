@@ -251,7 +251,17 @@ await withHarness(async (app) => {
     // flipping it live swaps which instrument occupies the one lane.
     await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
     await sleep(250);
-    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Writing settings\"]').click()");
+    // ---- PARKED — SUPERSEDED by item 83 M4 (R5), 2026-08-25 --------------
+    // Kept VERBATIM and no longer run. The sliver foot's gear is retired:
+    // R5 makes the foot exactly TYPEWRITER / PROGRESS / FULL SCREEN, and the
+    // gear's own Progress+Timer rows were RE-PARENTED (not reimplemented)
+    // into the PROGRESS instrument. The aria-label "Writing settings" no
+    // longer exists, so this line threw rather than failing an assertion.
+    // Successor below reaches the SAME panel through its new door.
+    //
+    // await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Writing settings\"]').click()");
+    // ----------------------------------------------------------------------
+    await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Progress\"]').click()");
     await sleep(250);
     const clicked = await app.evalJs(`(() => {
       const row = [...document.querySelectorAll('.mode-settings .mode-crow')].find(r => r.textContent.includes('Progress style'));

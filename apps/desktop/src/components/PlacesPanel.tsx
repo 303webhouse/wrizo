@@ -112,18 +112,38 @@ export function PlacesPanel({ entry: entryProp }: { entry: JournalEntry }) {
     <div className="wz-places">
       <div className="wz-cascade-panel-title wz-places-title">{t('placesTitle')}</div>
 
+      {/* ITEM 83 M7 (PP1) — PROMOTE THE ARIA TO THE EYE.
+          Pass 7's census found the defect: this panel's honest language already
+          existed and was spoken ONLY to screen readers. The Home zone carried
+          aria-label "Home" and rendered NO VISIBLE HEADING at all, while the
+          Boards zone below carried both. The sighted eye got a panel titled
+          "Places" over a bare column of place-nouns — and everywhere else in
+          Wrizo a column of place-nouns IS navigation. That gap is exactly what
+          Nick's hardware reported (S4/88: "a list of binder names ... reads as
+          'places I can GO' and is in fact 'places I can PUT THIS'").
+          The heading is a VERB PHRASE naming the act, carried ONCE where the
+          eye lands — never verb-prefixed per row (the bench's repeated-word
+          tax; CA1's noun/verb agreement inverted correctly, heading carries the
+          verb, rows carry the nouns). */}
+      <div className="wz-cascade-panel-title wz-places-title">{t('placesHomeHeading')}</div>
       <div className="wz-places-home" role="radiogroup" aria-label={t('placesHomeZoneLabel')}>
-        <label className="wz-places-radio">
+        {/* PP2 — THE STATE SPEAKS FIRST: the current home wears distinct dress
+            (hi text + a 1px olive left hairline, index.css) so the zone reads
+            as "where it is → where it could go" rather than as a menu of
+            doors. Olive, never orange — the resting ceiling holds here as
+            everywhere (R7). data-current is dress only; `checked` is
+            unchanged and still the single source of truth. */}
+        <label className="wz-places-radio" data-current={inJournal ? 'true' : 'false'}>
           <input type="radio" name={`places-home-${entry.id}`} checked={inJournal} onChange={selectJournal} />
           {t('drawerPlaceJournal')}
         </label>
         {projects.map(p => (
-          <label key={p.id} className="wz-places-radio">
+          <label key={p.id} className="wz-places-radio" data-current={filedProjectId === p.id ? 'true' : 'false'}>
             <input type="radio" name={`places-home-${entry.id}`} checked={filedProjectId === p.id} onChange={() => selectProject(p.id, p.title)} />
             {p.title || 'Untitled'}
           </label>
         ))}
-        <label className="wz-places-radio">
+        <label className="wz-places-radio" data-current={isLoose ? 'true' : 'false'}>
           <input type="radio" name={`places-home-${entry.id}`} checked={isLoose} onChange={selectLoose} />
           {t('placesLoose')}
         </label>

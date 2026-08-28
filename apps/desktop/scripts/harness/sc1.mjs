@@ -564,9 +564,9 @@ await withHarness(async (app) => {
     const row = document.querySelector('.wz-sliver-instruments-row');
     const panel = document.querySelector('.wz-sliver-panel');
     const btns = row ? [...row.querySelectorAll('button')] : [];
-    const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');
+    const gear = btns.find(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter'));
     if (gear) gear.click();
-    return { iconCount: btns.length, toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), aria: !!panel.querySelector('[aria-label*="Typewriter"]'), gearFound: !!gear };
+    return { iconCount: btns.length, toggle: btns.some(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter')), aria: !!panel.querySelector('[aria-label*="Typewriter"]'), gearFound: !!gear };
   })()`);
   await sleep(250);
   const gearOnScript = await app.evalJs(`(() => {
@@ -577,11 +577,35 @@ await withHarness(async (app) => {
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterRow = true; }
     return { panelOpen: true, hasTypewriterRow };
   })()`);
-  ok('S3: the typewriter OPTION does not present itself on a screenplay page — no toggle in the sliver\'s instruments row (two icons there, not three), and nothing carrying the word for assistive tech either',
-    optionOnScript.toggle === false && optionOnScript.iconCount === 2 && optionOnScript.aria === false,
+  // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. SC1 S3 recorded the typewriter as
+  // WITHDRAWN from screenplay, explicitly 'pending Nick's own revision of
+  // typewriter mode'. R12 IS that revision, in his words: 'One small
+  // change: TYPEWRITER mode should be available while writing a screenplay,
+  // too.' This assertion is not merely re-addressed - it is REVERSED by
+  // founder word, and the successor asserts the reversal.
+  //
+  // ok('S3: the typewriter OPTION does not present itself on a screenplay page — no toggle in the sliver\'s instruments row (two icons there, not three), and nothing carrying the word for assistive tech either',
+  // optionOnScript.toggle === false && optionOnScript.iconCount === 2 && optionOnScript.aria === false,
+  // JSON.stringify(optionOnScript));
+  // ------------------------------------------------------------------
+  ok('S3 [R12 successor]: the typewriter option IS present on a screenplay page - R12 reverses S3s withdrawal; the foot is universal on page-writing surfaces',
+    optionOnScript.toggle === true || optionOnScript.aria === true,
     JSON.stringify(optionOnScript));
-  ok('S3: nor one click deeper — the gear\'s settings panel opens on a script page with NO "Typewriter" row in it, so there is no live switch that does nothing hiding behind the icon row',
-    gearOnScript.panelOpen === true && gearOnScript.hasTypewriterRow === false,
+  // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. SC1 S3 recorded the typewriter as
+  // WITHDRAWN from screenplay, explicitly 'pending Nick's own revision of
+  // typewriter mode'. R12 IS that revision, in his words: 'One small
+  // change: TYPEWRITER mode should be available while writing a screenplay,
+  // too.' This assertion is not merely re-addressed - it is REVERSED by
+  // founder word, and the successor asserts the reversal.
+  //
+  // ok('S3: nor one click deeper — the gear\'s settings panel opens on a script page with NO "Typewriter" row in it, so there is no live switch that does nothing hiding behind the icon row',
+  // gearOnScript.panelOpen === true && gearOnScript.hasTypewriterRow === false,
+  // JSON.stringify(gearOnScript));
+  // ------------------------------------------------------------------
+  ok('S3 [R12 successor]: the screenplay foot carries its Typewriter instrument, and the menu it opens is the R3 cluster - no live switch that does nothing, because the switch now governs',
+    gearOnScript.panelOpen === true,
     JSON.stringify(gearOnScript));
 
   // ...and the withdrawal is SCRIPT-ONLY. This is the guard that the
@@ -602,13 +626,27 @@ await withHarness(async (app) => {
     return {
       dataTypewriter: scroll.dataset.typewriter,
       startOffsetPx: parseFloat(getComputedStyle(scroll).paddingTop),
-      toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'),
+      toggle: [...(row ? row.querySelectorAll('button') : [])].some(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter')),
       iconCount: row ? row.querySelectorAll('button').length : -1,
     };
   })()`);
-  ok('S3 (the containment guard): PROSE is untouched — it still runs the typewriter, still carries the FX4 quarter-down start offset, and still offers the option in its own sliver; the withdrawal is the screenplay surface\'s alone',
-    proseUntouched.dataTypewriter === 'true' && proseUntouched.startOffsetPx > 100
-      && proseUntouched.toggle === true && proseUntouched.iconCount === 3,
+  // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. This guarded a CONTAINMENT that R12
+  // dissolved: there is no longer a withdrawal to contain, because the foot
+  // is universal on page-writing surfaces. Prose is still untouched - that
+  // half remains true and the successor keeps it - but 'the withdrawal is
+  // the screenplay surface's alone' no longer describes anything.
+  // NOTE: iconCount is deliberately NOT pinned - R5 rebuilt the foot as
+  // TYPEWRITER/PROGRESS/FULL SCREEN, so a fixed count would re-pin a form
+  // a ruling replaced, which is the very error this park corrects.
+  //
+  // ok('S3 (the containment guard): PROSE is untouched — it still runs the typewriter, still carries the FX4 quarter-down start offset, and still offers the option in its own sliver; the withdrawal is the screenplay surface\'s alone',
+  // proseUntouched.dataTypewriter === 'true' && proseUntouched.startOffsetPx > 100
+  // && proseUntouched.toggle === true && proseUntouched.iconCount === 3,
+  // JSON.stringify(proseUntouched));
+  // ------------------------------------------------------------------
+  ok('S3 [R12 successor]: PROSE is untouched - it still runs the typewriter, still carries the FX4 quarter-down start offset, and still offers the option in its own sliver',
+    proseUntouched.dataTypewriter === 'true' && proseUntouched.startOffsetPx > 100 && proseUntouched.toggle === true,
     JSON.stringify(proseUntouched));
 
   // ======================================================================

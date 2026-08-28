@@ -178,3 +178,62 @@ rediscovers); the 96 seam open through Nick; and S13's verbs-teach-kind standing
 as the arc's own precedent for GO-versus-PUT legibility. After Pass 7: Phase 3
 renders the pairs at both widths in Plateau tokens, and the lock-sheet
 consolidation puts every owed word on one page.
+
+---
+
+## ERRATA — RV6 NARROWED BY DR7'S REVISE EXCEPTION, 2026-08-25 (append-only)
+
+**Authority:** Nick, 2026-08-25 — *"Revise accepted."* Relayed from the item-84
+desk via Fable, and recorded in this arc's DR7 file the same day
+(`item83-pass2-draft.md`, amendment of 2026-08-25). This errata carries it to
+the file where the now-false statements live.
+
+**THE TWO LINES THIS PASS GOT WRONG.** Both stand verbatim above and are not
+rewritten; they are quoted here exactly as they read:
+
+> **Inheritances ride, restated once:** the shared foot (Time-unit goals serve
+> revision sessions natively — no change needed); the Typewriter cluster per DR6's
+> outcome, whichever way Nick's word falls; Publish per DR4's door; nothing
+> arrives unbidden.
+
+> **RV6 · INHERITANCES RIDE.** DR6's cluster outcome, DR4's Publish door, the foot
+> with Time-unit goals native, nothing unbidden; the Counsel frame only — Revise
+> contents are the Tutor lane's hardest wall-test, behind the seam.
+
+**THE SUPERSESSION.** The line both statements inherit now reads, in the words
+both lanes carry identically:
+
+> Nothing arrives unbidden — PROSE-WIDE, binding every prose mode,
+> **EXCEPT REVISE**, by Nick's word.
+
+So "nothing unbidden" no longer rides into Revise. **Free Write and Draft are
+unmoved** — FW6 and DR7's own Draft clause stand exactly as written; they are
+the two modes the narrowing deliberately keeps silent. Every other inheritance
+RV6 names (DR6's cluster outcome, DR4's Publish door, the foot with Time-unit
+goals native, the Counsel frame's presence) is untouched by this and still
+rides.
+
+**THE REASONING, which is the part worth keeping.** The anti-interruption
+thesis is carried by the **MODE BOUNDARY**, not by the absence of the feature
+(TRR13). Free Write and Draft are where making happens, and an arrival there
+interrupts the making. Revise is the mode a writer *enters to be shown what is
+wrong* — silence there is not protection, it is the mode declining to do its
+job. The line was never about suppressing counsel everywhere; it was about
+keeping counsel away while the writer generates. Drawing the boundary at the
+mode achieves that exactly, and buys Revise its own voice.
+
+**WHAT THIS LANE DOES NOT CLAIM.** *What* arrives in Revise, and *by what
+gesture*, stays the Tutor lane's (item 84) — its roster, its wire, its
+disclosure obligations under candidate B, its timing. This desk records the
+BOUNDARY and nothing further. 84 records the same narrowing in its own re-pass
+§2; neither lane amends the other's file.
+
+**WHERE IT LANDS ON THE PAPER.** RV5's birth-certificate render is the sheet
+84's arrival appears beside: Revise's Desk is one Type section — face · size,
+page-level — above the shared foot, with alignment and indentation absent by
+the chamber's own deferral. That is the room, and it is now a room where
+something may speak. The Phase 3 Revise pair (`item83-mock-revise-a.html` /
+`-b.html`) renders it; whatever 84 mounts arrives beside that paper, not
+instead of it.
+
+*— the menus lane, 2026-08-25.*

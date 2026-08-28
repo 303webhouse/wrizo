@@ -47,6 +47,33 @@ export interface WritingSettings {
   // losing the stored target. Default true: byte-identical to pre-FX3
   // behavior (both instruments already showed whenever a target existed).
   instrumentsOn: boolean;
+  // ITEM 83 M4 (R3) — THE TYPEWRITER MENU's own adjustments. Nick's ruling:
+  // "the Typewriter toggle button should also include an option to open
+  // additional Typewriter settings, which is where options like the 'Forward
+  // Lock' and 'Line Fade' should be able to be turned on/off and adjusted
+  // (Forward Lock should be customizable by number of words, number of
+  // sentences, etc. Line Fade should be customizable by number of lines that
+  // show, if the current line being written should be in the center of the
+  // page or closer to the top or closer to the bottom)."
+  //
+  // NAMING, per F1's default: his latest words govern — "Forward Lock" and
+  // "Line Fade", retiring Chamber 1's "Forward Momentum"/"Text Fade".
+  //
+  // Every default below reproduces TODAY's behaviour, so a device with a
+  // pre-M4 stored blob (which has none of these keys) resolves through load()'s
+  // `{ ...DEFAULTS, ...parsed }` merge to exactly what it does now.
+  forwardLockUnit: 'words' | 'sentences';
+  forwardLockCount: number;
+  // O-FW2 RESOLVED BY MERGER (R3): the gear's old `fadeDepth` folds in here.
+  // `fadeDepth` above is kept — it still drives useTypewriterFade — but its
+  // CONTROL leaves the gear and becomes Line Fade's on/off + line count. No
+  // second fade home survives.
+  lineFadeOn: boolean;
+  lineFadeLines: number;
+  // Where the line being written sits on the sheet. 'center' is the built
+  // behaviour (useTypewriterFade's ~62% hold band), so it is the default.
+  writingLine: 'top' | 'center' | 'bottom';
+  pageScroll: boolean;
 }
 
 const KEY = 'wrizo-writing-settings';
@@ -71,6 +98,16 @@ const DEFAULTS: WritingSettings = {
   // mode (the `{ ...DEFAULTS, ...parsed }` merge in `load()` below means a
   // pre-M2 stored blob, which never had this key, resolves here too).
   progressStyle: 'bar',
+  // ITEM 83 M4 (R3) — every value here reproduces today's behaviour, so a
+  // pre-M4 stored blob merges to byte-identical rendering.
+  forwardLockUnit: 'words',
+  forwardLockCount: 1,
+  // Line Fade ON matches the shipped typewriter fade (fadeDepth 'partial');
+  // the count is the band useTypewriterFade already holds.
+  lineFadeOn: true,
+  lineFadeLines: 3,
+  writingLine: 'center',
+  pageScroll: true,
 };
 
 function load(): WritingSettings {

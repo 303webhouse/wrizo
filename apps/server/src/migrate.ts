@@ -129,4 +129,42 @@ export async function runMigrations(): Promise<void> {
   // touched by the bible reads null → JS undefined → byte-identical to today
   // (the grandfather fixed point). Never a new table; the bible rides its project.
   await pool.query(`alter table projects add column if not exists tutor jsonb`);
+
+  // ITEM 83 M2 (R6, the Page menu's charter) — THE menus wave's one schema
+  // addition, and the only ticket in that brief that touches schema at all.
+  // Nick's own words: the Page menu carries "general page options that govern
+  // the opened page (margins, line spacing, page numbers + their placement,
+  // headers, footers, etc.) ... linked to the current page a user is on but
+  // reset to defaults when the user creates a new page", plus "a setting for
+  // the user to set their own default page settings".
+  //
+  // TWO nullable jsonb columns, the exact `journal_entries.tutor` /
+  // `projects.tutor` recipe already proven above: no default, no CHECK, no
+  // backfill, additive-only. Null on every existing row — a page never dressed
+  // reads null → JS undefined → the app's own defaults → byte-identical to
+  // today. That is the same grandfather fixed point every additive column in
+  // this file relies on.
+  //
+  // WHY THE PAIR, and not one table. `page_settings` is the OPEN PAGE's own
+  // dress (per-entry). `page_defaults` is the WRITER's chosen starting dress
+  // (per-user). "Reset to defaults on a new page" is implemented as BIRTH FROM
+  // DEFAULTS — a new page copies the user's defaults into its own
+  // page_settings at creation — so a later change to the writer's defaults
+  // never silently re-dresses pages they already wrote. That is the reading
+  // R6 requires ("reset to defaults", not "follow defaults forever"), and it
+  // is why the writer's copy cannot simply be read through at render time.
+  //
+  // Shape, both columns (documented here because jsonb has no shape of its
+  // own; types/index.ts carries the TS mirror):
+  //   { margins: 'normal'|'narrow'|'wide',
+  //     lineSpacing: number,
+  //     pageNumbers: { on: boolean,
+  //                    placement: 'bottom-center'|'bottom-right'|'top-right' },
+  //     headers:     { on: boolean, text: string },
+  //     footers:     { on: boolean, text: string } }
+  //
+  // Note the table name: `journal_entries`, not the brief's `entries` — the
+  // brief named a table this schema does not have. Disk wins (§1.10).
+  await pool.query(`alter table journal_entries add column if not exists page_settings jsonb`);
+  await pool.query(`alter table users add column if not exists page_defaults jsonb`);
 }

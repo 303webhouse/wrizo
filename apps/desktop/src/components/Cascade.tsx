@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { CascadeSurvey } from './CascadeSurvey';
 import { renderCategoryPanel, buildSurvey, type CategoryId, type CascadeSurveyKind, type CascadeContext } from './CascadePanels';
 import type { PageFaceSubject } from './PageFace';
@@ -138,17 +139,25 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   const [state, setState] = useState<CascadeState>(REST);
   const currentEntryId = subject.entry.id;
 
+  // item 83 M1 (R9/R11) — the two-drawer law. This drawer registers its own
+  // close path so an exclusion handoff shuts it exactly as a writer's click
+  // would (same slide, no second animation), and announces its opens so the
+  // Tools drawer yields when the measured band cannot hold both.
+  useEffect(() => registerDrawer('cascade', () => setState(REST)), []);
+
   const toggleCategory = (id: CategoryId) => {
     setState((s) => {
       if (s.category === id) {
         // S2: reopening the SAME category while docked restores the panel
         // (undock), rather than the ordinary toggle-closed behavior.
-        if (s.docked) return { ...s, docked: false };
+        if (s.docked) { requestOpen('cascade'); return { ...s, docked: false }; }
+        noteClosed('cascade');
         return REST;
       }
       // A category switch dismisses a docked survey (the vanishing-law
       // rider's own words: "dismissed only by explicit close, category
       // switch, or Escape").
+      requestOpen('cascade');
       return { category: id, survey: null, docked: false };
     });
   };
@@ -163,7 +172,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     });
   };
 
-  const dismissSurvey = () => setState(REST);
+  const dismissSurvey = () => { noteClosed('cascade'); setState(REST); };
 
   const onEscape = () => {
     setState((s) => {

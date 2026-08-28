@@ -177,6 +177,37 @@ export type DeskTermId =
   // one act. 'boardCanvasEmpty' is the empty board's own quiet one-line
   // pointer at both board-side tools (S2c).
   | 'cascadePageNewPage' | 'cascadePlanJustAPage' | 'boardNewPageCard' | 'boardCanvasEmpty'
+  // ITEM 83 M3 (R6) — the Page drawer's PAGE SETUP zone: the sheet's own
+  // dimension (margins, leading, numbers, headers, footers), as opposed to
+  // Revise's face+size, which is the page's VOICE (the F5 split). Every
+  // string here is themable by construction — a literal in JSX would be
+  // invisible to Flux and to every register after it (§1.4).
+  | 'pageSetupHeading' | 'pageSetupMargins' | 'pageSetupMarginsNormal'
+  | 'pageSetupMarginsNarrow' | 'pageSetupMarginsWide' | 'pageSetupLineSpacing'
+  | 'pageSetupNumbers' | 'pageSetupNumbersPlacementBottomCenter'
+  | 'pageSetupNumbersPlacementBottomRight' | 'pageSetupNumbersPlacementTopRight'
+  | 'pageSetupHeaders' | 'pageSetupFooters' | 'pageSetupHeaderText'
+  | 'pageSetupFooterText' | 'pageSetupSaveDefaults' | 'pageSetupSavedDefaults'
+  | 'pageSetupOn' | 'pageSetupOff' | 'pageSetupExportNote'
+  // ITEM 83 M4 — STYLING (R1), the Typewriter menu (R3, names per F1's
+  // default), and the three-instrument foot (R5/R12).
+  | 'stylingHeading' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
+  | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
+  | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
+  | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
+  | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
+  // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
+  | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftSpacing'
+  | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
+  | 'draftConvertToScreenplay' | 'draftConvertToProse'
+  // ITEM 83 M6 (R13.ii) — the board's Place-page list. The heading is a VERB
+  // PHRASE by S13's precedent: a bare noun list in a drawer reproduces the
+  // GO-versus-PUT confusion the Places redesign exists to close.
+  | 'placePageHeading' | 'placePageSort' | 'placeSortDate' | 'placeSortDrawer'
+  | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
+  // ITEM 83 M7 (PP1) — the Home zone's heading, which until now existed only
+  // as an aria-label the eye could not hear.
+  | 'placesHomeHeading'
   // B1 — the Journal Reborn (+ the Trash). 'drawerPlaceTrash' names the
   // Trash Board — the SAME "one term, every surface" shape
   // 'drawerPlaceJournal' already carries (the cascade's own section-C entry,
@@ -598,6 +629,82 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorMeterTokensOnly: 'This turn (tokens only — no cost estimate for this model), est.:',
   tutorMeterTokensUnit: 'tokens',
   cascadePageNewPage: 'New Page',
+  // ITEM 83 M3 (R6). Sentence case on rows, engraved-uppercase on the heading
+  // (§1.4) — the heading's dress is CSS, so the term itself stays readable.
+  pageSetupHeading: 'Page setup',
+  pageSetupMargins: 'Margins',
+  pageSetupMarginsNormal: 'Normal',
+  pageSetupMarginsNarrow: 'Narrow',
+  pageSetupMarginsWide: 'Wide',
+  pageSetupLineSpacing: 'Line spacing',
+  pageSetupNumbers: 'Page numbers',
+  pageSetupNumbersPlacementBottomCenter: 'Bottom centre',
+  pageSetupNumbersPlacementBottomRight: 'Bottom right',
+  pageSetupNumbersPlacementTopRight: 'Top right',
+  pageSetupHeaders: 'Headers',
+  pageSetupFooters: 'Footers',
+  pageSetupHeaderText: 'Header text',
+  pageSetupFooterText: 'Footer text',
+  pageSetupSaveDefaults: 'Set as my default page settings',
+  pageSetupSavedDefaults: 'Saved as your default.',
+  pageSetupOn: 'On',
+  pageSetupOff: 'Off',
+  // F6's default, said plainly on the surface rather than left to be
+  // discovered: numbers/headers/footers are sheet furniture for printed and
+  // exported output; the screen page stays one continuous sheet.
+  pageSetupExportNote: 'Numbers, headers and footers appear on export and print — the page on screen stays continuous.',
+  // ITEM 83 M4 (R1) — Free Write's STYLING zone. Underline joins Bold and
+  // Italic by founder word, overruling Chamber 1's "nothing else".
+  stylingHeading: 'Styling',
+  stylingBold: 'Bold',
+  stylingItalic: 'Italic',
+  stylingUnderline: 'Underline',
+  // ITEM 83 M4 (R3) — the Typewriter menu. Names are Nick's latest (F1's
+  // default): "Forward Lock" and "Line Fade" govern; Chamber 1's "Forward
+  // Momentum"/"Text Fade" retire.
+  twMenuHeading: 'Typewriter',
+  twForwardLock: 'Forward Lock',
+  twForwardLockWindow: 'Window',
+  twUnitWords: 'Words',
+  twUnitSentences: 'Sentences',
+  twLineFade: 'Line Fade',
+  twLineFadeLines: 'Lines shown',
+  twWritingLine: 'Writing line',
+  twLineTop: 'Top',
+  twLineCenter: 'Centre',
+  twLineBottom: 'Bottom',
+  twPageScroll: 'Page Scroll',
+  // ITEM 83 M4 (R5/R12) — the foot's three instruments, on every
+  // page-writing surface. Theme leaves the foot for the rail's own category.
+  footTypewriter: 'Typewriter',
+  footProgress: 'Progress',
+  footFullScreen: 'Full Screen',
+  footTarget: 'Target',
+  // ITEM 83 M5 (R4) — Draft's roster. Destination-named verbs (DR3's bench
+  // law): never a bare 'Convert'.
+  draftHeading: 'Heading',
+  draftBullet: 'Bulleted list',
+  draftQuote: 'Block quote',
+  draftIndent: 'Indent',
+  draftSpacing: 'Line spacing',
+  draftAlignment: 'Alignment',
+  draftAlignLeft: 'Align left',
+  draftAlignCenter: 'Align centre',
+  draftAlignRight: 'Align right',
+  draftConvertToScreenplay: 'Convert to Screenplay…',
+  draftConvertToProse: 'Convert to Prose…',
+  placePageHeading: 'Place page on board',
+  placePageSort: 'Sort recent pages',
+  placeSortDate: 'Date',
+  placeSortDrawer: 'Drawer',
+  placeSortAZ: 'A–Z',
+  placePageEmpty: 'No pages yet.',
+  planNewCard: '＋ New card',
+  planFitToContent: 'Fit to content',
+  // ITEM 83 M7 (PP1) — a VERB PHRASE naming the act, not a noun. The old
+  // accessible name was the bare noun 'Home'; promoted to the eye it would
+  // have read as a destination, which is the confusion being closed.
+  placesHomeHeading: 'This page lives in…',
   cascadePlanJustAPage: 'Just need a page? New Page is in the Page section.',
   boardNewPageCard: 'New page card',
   boardCanvasEmpty: 'Nothing here yet — Add card, or New page card, from the tools.',
@@ -613,11 +720,18 @@ const CANONICAL: Record<DeskTermId, string> = {
   placesTitle: 'Places',
   placesHomeZoneLabel: 'Home',
   placesLoose: 'Loose',
-  placesNewDrawer: '+ New Drawer',
+  // ITEM 83 M7 (PP4) — names the act, not just the object: this is a
+  // put-family gesture (create the place AND file here in one move), and it
+  // sits among put-family rows. The flow itself is unchanged.
+  placesNewDrawer: 'File to a new drawer…',
   placesNewDrawerPlaceholder: 'Drawer name',
   placesNewDrawerCreate: 'Create',
   placesNewDrawerCancel: 'Cancel',
-  placesBoardsTitle: 'Boards',
+  // ITEM 83 M7 (PP1) — the Boards zone already had a visible heading, but it
+  // was the bare noun 'Boards' while its ACCESSIBLE name was the honest
+  // 'Boards this page can join'. Same defect, milder: the eye got the noun,
+  // the ear got the sentence. Standing memberships, said plainly.
+  placesBoardsTitle: 'Pinned to boards…',
   placesBoardsZoneLabel: 'Boards this page can join',
   placesBoardsEmpty: 'No boards yet.',
   drawersKindBoard: 'Board',

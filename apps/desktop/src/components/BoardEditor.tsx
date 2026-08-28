@@ -287,6 +287,9 @@ function BoardCardPopup({
   const elRef = useRef<HTMLDivElement | null>(null);
   const textRef = useRef(initialText);
   const { t: lex } = useLexicon();
+  // ITEM 83 M9 — the desk lexicon, for the dock's own strings (§1.4: every
+  // user-facing string is themable, never a literal in JSX).
+  const { t: dt } = useDeskLexicon();
   // FX6 S1 — the real undo/redo stack (store/textUndo.ts's own header
   // comment carries the full mechanism-choice + coalescing-granularity +
   // em-dash-shim-fold reasoning, shared verbatim with ForwardOnlyEditor.
@@ -547,16 +550,29 @@ function BoardCardPopup({
         aria-label={`Edit ${lex('board').toLowerCase()} card`}
         onClick={e => e.stopPropagation()}
       >
+        {/* ITEM 83 M9 (R13.v/R14) — THE OPENED CARD'S TOOLS DOCK.
+            The card is the paper here, so the dock is a CHILD OF THE CARD at
+            `right:100%` — its right edge IS the card's left edge, by layout,
+            at every size. Same anchor law as the page's Tools drawer; nothing
+            is scripted, so nothing can drift.
+            R14, verbatim: "the opened card's side menu is centered to the
+            card's size, whatever it is, and may extend vertically beyond the
+            card's height when its options need the room — the dock is the
+            card's companion, not its prisoner." So: translateY(-50%) centring,
+            and no height tie to the card.
+            CONTENTS: styling only. NO FOOT — R14 keeps Typewriter/Progress/
+            Full Screen on page-writing surfaces, and a card is not one.
+            Links/tags are F10's default (IN) but need a data model no ticket
+            in this brief creates, so they are deferred by §0 rather than
+            faked; nothing renders for them. */}
+        <div className="board-popup-dock" onMouseDown={e => e.preventDefault()}>
+          <div className="board-popup-dock-h">{dt('stylingHeading')}</div>
+          <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingBold')} onClick={() => applyBoardFormat('bold')}><b>B</b></button>
+          <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingItalic')} onClick={() => applyBoardFormat('italic')}><i>I</i></button>
+          <button type="button" className="mode-tbtn board-popup-tool" title={dt('stylingUnderline')} onClick={() => applyBoardFormat('underline')}><u>U</u></button>
+        </div>
         <div className="board-popup-strip">
           <span className="eyebrow board-popup-eyebrow">Card</span>
-          {/* onMouseDown preventDefault — a strip button sits OUTSIDE the
-              contenteditable, so a normal click's mousedown would blur it
-              and collapse whatever text was selected (the SAME reason
-              Sliver.tsx's own Draft-format row does this). */}
-          <div onMouseDown={e => e.preventDefault()} style={{ display: 'flex', gap: 4 }}>
-            <button type="button" className="mode-tbtn board-popup-tool" title="Bold" onClick={() => applyBoardFormat('bold')}><b>B</b></button>
-            <button type="button" className="mode-tbtn board-popup-tool" title="Italic" onClick={() => applyBoardFormat('italic')}><i>I</i></button>
-          </div>
         </div>
         <div
           ref={elRef}
@@ -2344,6 +2360,24 @@ export function BoardEditor({ id }: { id: string }) {
 
         <div style={{ height: 16 }} />
 
+        {/* ITEM 83 M11 — R13.iv IS DEFERRED, AND THIS IS WHY.
+            M6 removed the board's Tools sliver on R13.iv ("no Tools sliver on
+            boards"), because R13 moves the board's acts into the cascade's own
+            PAGE and PLAN faces. The Place-page list (R13.ii) was built; the
+            ACTS WERE NOT RE-HOMED. The sliver was the only home for Add card,
+            New page card, Existing page…, From a deck… and the
+            connections-footer toggle, so removing it deleted real capability
+            rather than relocating it — and the suite said so immediately, in
+            ten separate files (fx13, b1, b2, b3, fx4, fx5, fx6, fx7 S9, m2,
+            m4), every one of them reaching for a board tool that no longer
+            existed.
+            Implementing half of a ruling is worse than deferring it: the
+            ruling says the acts MOVE, and until they have somewhere to move
+            to, the sliver is where they live. Restored deliberately, with the
+            harnesses as the evidence. R13.iv should land in one ticket
+            TOGETHER with the Plan face's `＋ New card` and the rest — the
+            absence and the new home in the same commit, so no state of the
+            tree is ever missing a board's own tools. */}
         <DeskFrame
           pageKind="board"
           strip={cascade.strip}

@@ -14,6 +14,7 @@ import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
+import { usePageDress, dressVars } from '../store/pageDress';
 
 const ASSIST_INTRO_KEY = 'wrizo-assist-introduced';      // first pop-out fired (once)
 const ASSIST_COLLAPSED_KEY = 'wrizo-assist-collapsed';   // persisted panel state
@@ -109,6 +110,8 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
+  // ITEM 83 M3 — the dress the visible sheet should wear (store/pageDress.ts).
+  const pageDress = usePageDress();
   const { t: lex } = useLexicon();
   // Typewriter engages in Free Write and Draft (writing postures) — never in
   // Format/Workshop/Publish (convention/delivery, revision-shaped work the
@@ -429,6 +432,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             ref={surfaceRef}
             className={`mode-page${focused ? ' focused' : ''}`}
             data-page={pageNum}
+            /* ITEM 83 M3 (R6) — the paper is the preview: PAGE SETUP's margins
+               and leading land here as CSS custom properties, live, as the
+               writer chooses them. Empty object when the page carries no dress,
+               so index.css's own values govern and the sheet renders exactly as
+               it did before M3. */
+            style={dressVars(pageDress)}
           >
             <div
               aria-hidden="true"

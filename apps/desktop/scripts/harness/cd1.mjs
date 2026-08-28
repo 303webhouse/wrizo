@@ -198,7 +198,18 @@ await withHarness(async (app) => {
   await openSliver(app);
   await sleep(200);
   const scriptStructureCheck = await app.evalJs("!!document.querySelector('.wz-sliver-structure')");
-  ok('S2/S7: opening the sliver on script carries the structure picker (script\'s own hand tool)', scriptStructureCheck, String(scriptStructureCheck));
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // tablist for one confirm-gated verb row naming its destination, so
+  // `.wz-sliver-structure` no longer exists. The SUBJECT survives whole —
+  // the script sliver still carries its structure control — and the
+  // successor asserts exactly that against the shipped markup.
+  //
+  // ok('S2/S7: opening the sliver on script carries the structure picker (script\'s own hand tool)', scriptStructureCheck, String(scriptStructureCheck));
+  // ------------------------------------------------------------------
+  const scriptStructureRow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].some(b => /^Convert to/.test(b.textContent))");
+  ok('S2/S7 [DR3 successor]: opening the sliver on script still carries its structure control - now the confirm-gated Convert row, not the retired tablist',
+    scriptStructureRow, String(scriptStructureRow));
 
   // ==========================================================================
   // S7 — ScriptEditor gains the drawer too (Page + Places), mirroring prose.
