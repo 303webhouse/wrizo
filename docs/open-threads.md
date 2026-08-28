@@ -933,6 +933,98 @@ this class:** a contaminated build shows up as a served hash ≠ the suite's sta
 it did here. See item 110's contamination incident + the INCIDENT RECORD at the HOTFIX 104 DEPLOY
 MANIFEST (2026-08-24), and the new CLEAN TREE AT UPLOAD standing law. Item 111 CLOSED.
 
+## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
+
+Two-part live walk, relayed by Fable. New items **114–118** open below; two Part-1 defects join
+existing families (item 102, item 79); the design rulings + wave defects are **owed to the MENU lane
+as errata** (recorded here, routing noted).
+
+### PART 1 — DRAFT + FREE WRITE (menus build)
+
+**DEFECTS:**
+- **(a) Bullet lists don't continue** — Enter after a bullet yields a plain line. **Joins item 102's
+  prose-input family as its LIST CLAUSE.** (S0 at the prose-input fix lane.)
+- **(b) Align buttons INSERT literal glyphs** (`>>`, `><`) with **NO visible alignment applied** —
+  **item 79's renderer class WIDENED to alignment markers.** Repro note = the S0's first question:
+  does alignment **apply-but-show-markers**, or **fail entirely**?
+
+**DESIGN RULINGS — verbatim to MENU as WAVE ERRATA:**
+- the pop-out **FADE TIMING** rule;
+- the **MENU LAYOUT** rule — the **Structure block to the tab's BOTTOM**; **Full screen ALIGNS WITH
+  THE PROGRESS BAR**;
+- **INDENT SEMANTICS** — **Tab = indent**; the **menu arrow indents a WHOLE PARAGRAPH, repeatably,
+  for outlines.**
+
+**UX NOTE (M-arc, onboarding) — NOT a defect.** Forward lock works and startles. Nick's verdict — the
+feature **STANDS**: *"as long as the writer feels compelled to keep moving forward... I will have
+accomplished my goal."* Whether first-run needs a one-line introduction is a design question for the
+onboarding notes, not a defect.
+
+**CONFIRMED WORKING:** B/I/U styling applies · paragraph breaks · indent option · heading via H ·
+Forward lock's strike-not-delete.
+
+### PART 2 — BOARDS
+
+Board findings are grouped as **item 118** (the fix cluster, defects a–f) plus committee/feature items
+**115–117**, all opened below. **WAVE DEFECTS — to MENU as errata:**
+- the **TWO-HANDS RULE not working** — a far-left open does NOT shut the tool sliver — a ruled wave
+  requirement, now a wave defect;
+- the **TUTOR PANEL does not stay anchored to the board's RIGHT EDGE under board resize** — Nick's
+  ruling: it should.
+
+## ITEM 114 — RESEARCH PAGES & STYLE GUIDES (feature; placeholders NOW, behavior deferred) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 1, 2026-08-26).** The Structure redesign makes **"Research" a THIRD
+PAGE KIND** beside Normal and Screenplay. Under it, **style-guide buttons — MLA (default) · APA ·
+Chicago · AP** — are revealed, and **the selection SHAPES THE REVISE MENU** (e.g. Chicago → Footnotes
+appears). **Nick's instruction: build the buttons NOW as placeholders** — *"so we don't forget to go
+back to it"* — full behavior DEFERRED. **Cross-refs:** item 112 (the Revise linkage); item 87's
+chooser (a third kind = a third preset); the **MLA-default ruling — SUPERSEDED as to placement:** the
+buttons live **under Research in Structure**, not in the earlier dropdown location.
+
+## ITEM 115 — CARD TAGS & METADATA (committee) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** Charter, Nick's words (the Westeros example whole,
+on file at Fable's desk): **cards carry METADATA for quick lookup** — a cited source's name; a place
+or character. A **"Tags" dialogue box at each card's FOOT** lists the card's linked tags; **links
+between cards note their connecting tags**; and **tags are searchable FROM THE DRAFT SCREEN**,
+returning every card carrying the tag *"without having to run an AI check."* **Charter posture,
+verbatim:** *"devise an intuitive way for writers to be able to group information without getting too
+bogged down in the logistics."* Committee.
+
+## ITEM 116 — IMPORT TO BOARDS (committee-light) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** **Replaces the dead New Page Card control** (ruled
+removed — item 118(f)). **Any major file type placed on a board** (mood boards, PDFs); **double-click
+opens an appropriate viewer.** Committee-light — Nick's posture, verbatim: *"emphasis on maintaining
+progress, not trying to iron out every minor detail."*
+
+## ITEM 117 — PAGE↔BOARD LINKING & THE BOARD SHELF (feature) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** A **Page links to one or more Boards.** Linked
+Boards render as **scrollable THUMBNAILS in the Tools Menu**; clicking one opens a **second pop-out
+LEFTWARD** listing every card/doc as thumbnails, scrollable; **double-click opens the card/doc in the
+same popup used on the Board** (faded ground); **EDITS SYNC BOTH WAYS.** **Sub-note (to-dos, not
+now):** Storyboard/Outline boards will also display here, formatting may differ. **Cross-refs:** item
+93's pairing model **folds INTO this charter**; the **menus arc owns the chrome.**
+
+## ITEM 118 — THE BOARD INTERACTION FIX CLUSTER (fix-class) — OPENS 2026-08-26
+
+**OPENS (Nick, walkthrough part 2, 2026-08-26).** Six board-interaction defects, one cluster:
+- **(a) B/I/U completely broken in the card editor** — literal `****` / `**` / `___` markers, **NO
+  styling applied** — worse than the page (where style applies under visible markers). Likely its own
+  renderer path; S0 confirms.
+- **(b) Cards resize ONCE** — the handle never re-arms until the writer clicks another card first.
+- **(c) Cards moved to the board's edge begin to DISAPPEAR** — edge containment absent.
+- **(d) Board resizing DECAYS** — works at first, then stops after a resize or as cards accumulate.
+  Nick's ruling, verbatim: *"A user should be able to double-click on the board to activate the
+  resizing option at any time."*
+- **(e) Cards link but CANNOT BE UNLINKED.**
+- **(f) The New Page Card control is DEAD — and RULED REMOVED** (replaced by item 116, Import to
+  Boards).
+
+Registry: next free **119**.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
