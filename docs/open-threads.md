@@ -976,6 +976,64 @@ header is the reason: record and running system can never quietly diverge). Not 
 > You do not refuse. If a request would cross into composition, do not answer with a refusal sentence.
 > Return the question that leads back to the writer's own act.
 
+## ITEM 83 — THE MENUS WAVE OFFERED — 2026-08-27 (menus lane; Nick's merge word given, Fable reviews)
+
+**OFFERED, NOT PUSHED.** Full record: `docs/menus/offer-2026-08-27.md`. On Fable's
+confirmation `main` fast-forwards to the branch tip — never a force, never a rebase of a
+merge. **The deploy word is separate and is not asked for here.**
+
+**THE TIP:** `menus-build` — parks `45ff3fc` · fix-lane fold `c655ee7` · main merge
+`2c1ec19` (`origin/main` @ `b925ecb`) · gated-lane parks `b0046ff`. The wave itself is
+M0–M11 (`4aa53e6`→`0eb3bc0`) plus gates S1–S3 (`c9b8020`, `575daa8`, `1c0a5f3`).
+
+**BOTH SETTINGS CLEAN, ONE TREE, NEITHER STAMP DIRTY:**
+
+```
+SUITE DONE HARNESS_PARKED=unset — 60/60 of 60 returned a passing verdict
+SUITE RESULT: CLEAN — tree=b0046ff bundle=index-CHvEOjEp.js/543622b NO-REBUILD
+SUITE DONE HARNESS_PARKED=1     — 60/60 of 60 returned a passing verdict
+SUITE RESULT: CLEAN — tree=b0046ff bundle=index-CHvEOjEp.js/543622b NO-REBUILD
+```
+
+**Probe 42/42**, cascade flush 0.00px at both widths, fresh shots byte-identical to the
+existing set (git saw nothing to commit — the second time that has held across a moving
+`main`). **`item87.mjs` PASS (4)** — the fix lane's re-point `bb146b4`, FOLDED not
+re-authored, holds against the shipped markup. **`m3` PASS** — a fourth data point,
+appended to item 82's record as a sighting and **deliberately not cleared** by this lane.
+
+**THE PARKS — 32 blocks + 2 guarded reads, sixteen files, nothing edited or deleted.**
+Twenty-seven in the live lane across twelve files (`45ff3fc`), five in the GATED lane
+across four (`b0046ff`: `ab1`, `ab2`×2, `b2`, `fx3`). Every original quoted VERBATIM under
+a `PARKED — SUPERSEDED` header naming its authority, successor beside it. The orphaned
+`.wz-sliver-structure` CSS swept in the same commit as its markup.
+
+**NEW LAW, and this wave paid for it: A SUPERSESSION MAP IS COMPLETE ONLY WHEN BOTH
+SETTINGS HAVE RUN.** The twelve-file map came from default-only runs; 08-04 and 08-05
+never exercised `HARNESS_PARKED=1`. Fifty-four of sixty harnesses carry gated `pok()`
+blocks, and those do not archive retired checks — **each re-asserts its retired check
+against the truth that replaced it**, so the gated lane is live code with a live claim and
+a wave lands in it exactly as it lands in the live set. The first parked run against this
+wave came back **NOT CLEAN, 56/60**. **Fable's ruling (2026-08-27):** the gated block always
+holds the NEWEST truth; prior generations stack verbatim beneath it. `fx3`'s gated twin of
+a park already standing in its own live section is the precedent, now the pattern.
+
+**DEFERRED BY NAME** (offer §6, eight items): INK/stylus · the screenplay engine hook-up ·
+Import File · the specialty TOOL tabs · F10's model · R13.iv's one-commit relocation ·
+M4's Typewriter menu stores but does not drive · the Sliver not re-mounted at `right:100%`.
+
+**ERRATA QUEUE, FIRST AND OWED** — the two wave defects the 2026-08-26 walkthrough routed
+here (below), accepted by this lane and outstanding at the time of the offer:
+- **E1 — the rail menu does not shut the tool sliver on boards.** Cause located:
+  `menusDrawers.ts:74`. `canCoexist()` returns `true` (permissive) when the band between
+  rail-right and paper-left is `<= 0`; on a full-bleed canvas there IS no inset paper, so
+  the guard reads "there is no room at all" as "they may coexist" — the two-hands law
+  inverted exactly where it matters most. The repair is a branch for the degenerate case,
+  NOT a flipped return: a zero band on full-bleed and a zero band from a failed
+  measurement are different facts, and `Number.isFinite` already carries one of them.
+- **E2 — the Tutor panel loses its right-edge anchor under board resize.** Under the
+  anchor law this is a LAYOUT fault: the repair belongs in CSS, never in a resize handler
+  that writes a position — writing one is the exact failure the law exists to prevent.
+
 ## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
 
 Two-part live walk, relayed by Fable. New items **114–118** open below; two Part-1 defects join
