@@ -64,17 +64,62 @@ function measuredWidth(sel: string, fallback: number): number {
  * a wrong "no" is visible to the writer, a wrong "yes" self-corrects on the
  * next layout pass.
  */
+/**
+ * THE PAPER, PER SURFACE — single-sourced with scripts/menus-probe.mjs.
+ *
+ * item 83 errata E1 (2026-08-28). This list used to read
+ * `.mode-page, .board-canvas, .script-page`, and BOTH of its non-prose
+ * entries named a box the writer never sees:
+ *
+ *   - `.board-canvas` is the element INSIDE `.board-canvas-wrap`'s 1px
+ *     border. The dock is anchored against the WRAP, so the policy was
+ *     measuring a different box from the one the anchor is verified against.
+ *   - `.script-page` is the screenplay's outer wrapper, and on the FRAMED
+ *     screenplay surface it does not render at all. `querySelector` returned
+ *     null, `canCoexist` took its `!paper` early return, and the two-drawer
+ *     law was therefore DISABLED OUTRIGHT on screenplay — measured, not
+ *     inferred: the diagnostic read `OLD l=undefined band=null` at both
+ *     reference widths while `.script-sheet` read a real band of 191/348px.
+ *
+ * The probe's own comment records that naming the wrong box has caught this
+ * project three times. The rule it landed on is the rule here: NAME THE BOX
+ * THE WRITER SEES, NOT THE NEAREST ONE WITH A MATCHING CLASS.
+ */
+const PAPER_SEL = '.mode-page, .board-canvas-wrap, .script-sheet';
+
 export function canCoexist(): boolean {
   if (typeof document === 'undefined') return true;
-  const paper = document.querySelector('.mode-page, .board-canvas, .script-page');
+  const paper = document.querySelector(PAPER_SEL);
   const rail = document.querySelector('.desk-frame-strip');
   if (!paper || !rail) return true;
 
-  const band = paper.getBoundingClientRect().left - rail.getBoundingClientRect().right;
-  if (!Number.isFinite(band) || band <= 0) return true;
+  const paperBox = paper.getBoundingClientRect();
+  const railBox = rail.getBoundingClientRect();
+
+  // THE MEASUREMENT MUST PROVE ITSELF BEFORE ITS ANSWER COUNTS.
+  //
+  // Fable's ruling on this repair, and its first law: THE FIX MUST NOT HIDE
+  // A FAILED MEASUREMENT BEHIND A FULL-BLEED CANVAS. A box that has not been
+  // laid out yet reports 0x0, and a band computed from one means nothing. So
+  // the permissive answer is reached ONLY by proving the boxes are real —
+  // never by inferring it from the band's sign, which is exactly how a
+  // failed measurement would come to wear a full-bleed canvas's clothes.
+  const laidOut = paperBox.width > 0 && paperBox.height > 0
+    && railBox.width > 0 && railBox.height > 0;
+  if (!laidOut) return true;   // measurement failed — say yes, self-corrects next pass
+
+  const band = paperBox.left - railBox.right;
+  if (!Number.isFinite(band)) return true;   // measurement failed — same reason
+
+  // Measured, and real. A band at or below zero is a surface whose paper
+  // begins at or before the rail's own right edge — a full-bleed canvas has
+  // no room to give, and 'no room' is a NO, not a shrug. This is the branch
+  // the old code lacked: it returned TRUE here, which said 'they may coexist'
+  // when the honest reading was 'there is no room at all'.
+  if (band <= 0) return false;
 
   const tools = measuredWidth('.wz-sliver[data-open="true"]', CLOSED_TOOLS_W);
-  const cascade = measuredWidth('.wz-cascade-panel', CLOSED_CASCADE_W);
+  const cascade = measuredWidth('.wz-cascade-panel[data-visible="true"]', CLOSED_CASCADE_W);
   return band >= tools + cascade;
 }
 

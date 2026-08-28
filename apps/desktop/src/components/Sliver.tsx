@@ -166,12 +166,36 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   // store/menusDrawers.ts on why a POLICY may measure where an anchor may not).
   // Closing is announced too, so the store never believes a drawer is open
   // after the writer has shut it.
-  const toggleOpen = () => setOpen(o => {
-    const next = !o;
-    if (next) requestOpen('tools');   // the store closes the cascade if the band is short
+  // item 83 errata E1 (2026-08-28) — THE ANNOUNCEMENT IS STRUCTURAL.
+  //
+  // This used to announce from INSIDE the setState updater. Two things were
+  // wrong with that, and the second one is the defect Nick felt on a tablet:
+  //
+  //   1. A state updater must be PURE. `requestOpen` closes the other drawer
+  //      by calling ITS setState, so the old code set state on a different
+  //      component from inside this one's render phase. React is entitled to
+  //      call an updater more than once, or to discard the work.
+  //   2. It only announced on the paths that went THROUGH this function. The
+  //      grip's own onClick called `setOpen(o => !o)` directly — the
+  //      affordance a writer actually taps — so opening the sliver by grip
+  //      left the store believing NOTHING was open. Measured, not inferred:
+  //      with the sliver visibly `data-open="true"`, the store still read
+  //      `openDrawer: null`, so `requestOpen('cascade')` found no other
+  //      drawer to displace and the far-left open never shut the sliver.
+  //      The law was never wrong; it was never told.
+  //
+  // Announcing from an EFFECT keyed on `open` fixes both at once: it is a
+  // commit-phase side effect where a side effect belongs, and EVERY path that
+  // changes `open` announces — the grip, the shortcut, the exclusion handoff,
+  // and any path added later. A silent open path is no longer possible to
+  // write, which is the difference between fixing this bug and closing its
+  // class.
+  useEffect(() => {
+    if (open) requestOpen('tools');
     else noteClosed('tools');
-    return next;
-  });
+  }, [open]);
+
+  const toggleOpen = () => setOpen(o => !o);
 
   // Register this drawer's own close path, so an exclusion handoff shuts it
   // exactly the way the writer's own click would.
@@ -224,7 +248,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         aria-expanded={open}
         aria-label={open ? t('sliverClose') : t('sliverOpen')}
         title={`${open ? t('sliverClose') : t('sliverOpen')} (${SLIVER_SHORTCUT_LABEL})`}
-        onClick={() => setOpen(o => !o)}
+        onClick={toggleOpen}
       >
         <span className="wz-sliver-grip-glyph" aria-hidden="true">{open ? '›' : '‹'}</span>
       </button>
