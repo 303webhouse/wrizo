@@ -325,7 +325,7 @@ ground-legibility-at-high-counts concern, stated in the same breath as the POSIT
 
 Registry: next free **104**.
 
-## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17
+## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17 · CLOSED 2026-08-26 (founder's walk on production)
 
 **⚠ REOPENED — PRODUCTION DEFECT (Fable, 2026-08-24).** The doorway ship (deployed `1cbda72` ·
 railway `59d55924`) shipped a **crash**: the **New Page door crashes ON MOUNT** at the deployed
@@ -378,6 +378,14 @@ production — whichever lands first.** The reinstated "avoid the New Page door 
 rule is SUPERSEDED by this disposition: close-condition (b) invites Nick to walk the door on
 production, so the door is live-with-the-fix and open to test — but UNPROVEN on production until (a)
 or (b). Monitored, not closed.
+**→ CLOSED on condition (b) (Fable, 2026-08-26).** Nick **walked `#/page/new` on production**
+(`2256f58` · `b10fcc55`) and **THE DOOR OPENS** — paper rendered, invite line drawn, templates
+present; screenshot on file (Fable's desk). Close-condition (b) is met, the MONITOR disposition
+RESOLVES, and **item 104 is CLOSED** — the founder's own walk is the acceptance criterion the whole
+house was built around. **Item 109's headful `#/page/new` gate STAYS OWED** as the durable coverage
+fix (so the next regression is caught by a gate, not by a founder) — but it **no longer gates 104.**
+The longest-running defect of the project — opened 2026-08-17, three reopens across doorway / hotfix
+/ third-pass — is closed by the walk it was always going to take.
 
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
@@ -811,6 +819,11 @@ loads `#/page/new` in a REAL (headful) browser the way a writer does, which is t
 crash manifests. This is item 109's sharpest, most-owed gate: **drive `#/page/new` headfully at the
 deployed bundle.** The vanished-subject class still stands; this is the un-gated route that keeps
 re-shipping a crashing New Page door (item 104, reopened a third time).
+**→ 104 CLOSED, 109 STILL OWED (Fable, 2026-08-26).** Item 104 closed 2026-08-26 on the founder's own
+walk of `#/page/new` on production (`2256f58` · `b10fcc55` — the door opens, paper rendered). The
+headful gate above **no longer gates 104**, but it **STAYS OWED** as the durable coverage fix — so
+the next regression on this route is caught by an instrument, not by a founder. **Item 109 remains
+OPEN.**
 Registry: next free **110**.
 
 ## ITEM 110 — ONE-CHECKOUT-PER-AGENT VIOLATED (worktree-assignment gap) — OPENS 2026-08-24
