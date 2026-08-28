@@ -950,6 +950,12 @@ when the surface exists** — the lens lands onto the surface this item stands u
 
 **SCOPE QUESTION HELD FOR NICK:** **small T0** (Draft's page + the lens + the Revise roster) **vs full
 Revise** (its own furniture). His lean pending.
+**→ SCOPE RULED (Nick, 2026-08-28): FULL REVISE.** Its own surface with revision-specific furniture,
+**designed before built**; the small-T0 alternative is **RETIRED.** The **design charter routes to
+TUTOR** (it holds the Revise arc whole), with **item 83's geometry laws as BINDING INPUTS** — the
+anchor law, cabinet geometry, the Two Hands grammar, and DR7-as-narrowed. **Sequencing:** the charter
+drafts **AFTER the deck ship and TUTOR's Draft-roster brief** — design begins without stalling the
+build queue. The error lens (T1–T7) **remains parked on this item, fully argued.**
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
