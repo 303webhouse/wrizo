@@ -9467,6 +9467,64 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## MENUS WAVE DEPLOY MANIFEST — 2026-08-28 (chat 1, on Nick's "Ship it" — Fable PASS + Nick's schema word)
+
+**THE MENUS WAVE — the item-83/84 menus build (Draft + Free Write + boards product) + its harness
+park set + the two-column page-settings schema.** Gate chain: Nick's conditional word ("deploy as
+soon as CC is done and you give the clear") → Fable's post-merge review **VERDICT PASS**
+(`docs/wrizo-alpha/menus-wave-review-fable.md`) → Nick's explicit ship/schema word ("Ship it").
+Deploying `main` HEAD **`89b8ff5`** — merge `0aa986c` (`menus-build @ e01c482`) + the review record.
+
+**New PRODUCT code since the last live build (`2256f58` · railway `b10fcc55`) — verified
+`2256f58..89b8ff5`, 33 files, +2132/−240, incl. SERVER:**
+- Desktop: `Sliver.tsx` (+351), `CascadePanels.tsx` (+186), `index.css` (+162), `deskLexicon.ts`,
+  `draftFormat.ts`, `BoardEditor.tsx`, `PageEditor.tsx`, `Cascade.tsx`, `ModeStage.tsx`,
+  `PlacesPanel.tsx`, `types/index.ts`, `persistence.ts`, and new stores `menusDrawers.ts` /
+  `pageDefaults.ts` / `pageDress.ts` / `writingSettings.ts`.
+- Harness: the 14-file immutability park set + new `menus-probe.mjs` (+231).
+
+**⚠ SCHEMA MIGRATION NAMED (M2/R6; Fable reviewed ROLLBACK-SAFE):** `apps/server/src/migrate.ts`
+(+38) adds **TWO ADDITIVE NULLABLE JSONB COLUMNS** — `journal_entries.page_settings` and
+`users.page_defaults` — via `add column if not exists … jsonb` (no default, no backfill, idempotent),
+on the proven `journal_entries.tutor` recipe. `sync.ts` (+49) reads them null→undefined→app-defaults;
+birth-from-defaults is a COPY at creation (R6); the defaults endpoint is a `requireAuth` non-`/sync`
+singleton. **ROLLBACK-SAFE:** prior builds IGNORE the new columns, existing rows stay byte-identical,
+and rolling back leaves the columns in place harmlessly (NO down-migration). Applied at server
+startup — `/healthz` **200** confirms it ran clean.
+
+**Records since `2256f58` (docs, no deployed surface):** item-104 CLOSED (founder's walk); DECK §9
+contamination incident + item-111 CLOSED + CLEAN TREE AT UPLOAD law + BUILD ENVIRONMENT law re-draft;
+the 2026-08-26 walkthrough (items 114–118); items 112/113 sectioned; the item84-brief reroute to
+TUTOR; the menus-wave merge + review. (The item-112 FULL-REVISE scope ruling records immediately
+after this stamp.)
+
+**Verified — fresh suite of record at the deploy HEAD (`89b8ff5`), BOTH settings, read to completion,
+machine-clear (NOT contaminated):** **60/60 UNSET (CLEAN) and 60/60 PARKED (CLEAN)** at
+`tree=89b8ff5 bundle=index-CHvEOjEp.js/543622b` (CSS `index-ZVa8FRdm.css`) — the SAME bundle the menus
+offer stamped (`CHvEOjEp`/543622b, both settings). `tsc` ×2 EXIT 0; `build:web` clean. **TREE CLEAN
+AT UPLOAD:** `git status --porcelain` EMPTY at the moment of `railway up` (the one untracked stray,
+`item84-t1-s0-brief.md` routed to TUTOR, moved aside to scratchpad for the ship — blob `484e7221`,
+restored after; NOT uploaded).
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `2256f58` · railway `b10fcc55-94d4-4429-a24e-bc889b1ef6a1`** —
+the third-pass hotfix (New Page fix). Rollback is a redeploy of that tree; **the two new JSONB columns
+remain and are harmlessly ignored by that build** (additive, nullable — NO down-migration needed).
+
+**DEPLOY STAMP: git `89b8ff5` · railway build `250bcf0e-c190-47d7-9102-8f2d958cd0b0`** — DEPLOYED
+2026-08-28 (`railway up --ci` from the primary checkout; item-98 guard verified PROJECT + TREE:
+`writer-studio` / `production` / `writer-studio-app`, tree clean at upload; image `sha256:e5284f6f`).
+Verified LIVE: `/healthz` **200**, served bundle **`index-CHvEOjEp.js` + `index-ZVa8FRdm.css`**,
+`/auth/me` **401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-CHvEOjEp.js` =
+**543,622 b**, md5 `11fb08cedf95c5b8cdc019dc548088a6` == the local suite build's md5; served CSS
+`index-ZVa8FRdm.css` md5 `c53e74a9d6aa01f09bebbdb96ef7c6d6` == local. Windows suite build == Linux
+Railway build == served — full item-77(c) strength, no functional-equivalence caveat needed. The
+every-ship served-vs-stamped diff: **MATCH.**
+
 ## HOTFIX 104 (THIRD) DEPLOY MANIFEST — 2026-08-25 (chat 1, on Nick's "execute and ship the New Page fix")
 
 **HOTFIX 104, THIRD PASS — the hooks-order class fixed at the invariant (the New Page door).** Fable's
