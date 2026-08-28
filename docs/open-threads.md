@@ -1132,6 +1132,38 @@ now):** Storyboard/Outline boards will also display here, formatting may differ.
 
 Registry: next free **119**.
 
+**→ S0 PASS 1 — 2026-08-28 (fix lane). TWO OF THE THREE "SMALLEST" DEFECTS DID NOT REPRODUCE, AND
+NOTHING IS OFFERED AS FIXED.** The brief named (b) resize-once, (e) unlink and (c) edge-vanish as
+the likely-smallest subset. Driven headlessly against the shipped bundle
+(`index-CHvEOjEp.js`), mouse pointer, 1400x900, one **text** card on a fresh user board:
+- **(b) RESIZE-ONCE — NOT REPRODUCED.** Resize #1 grew the card 435x87 → 525x157; resize #2, run
+  IMMEDIATELY after with **no intervening click on another card**, grew it again 525x157 → 615x227.
+  The handle re-armed and tracked to the new corner (631,336 → 721,406). Under these conditions the
+  handle does not need re-arming.
+- **(c) EDGE-VANISH — NOT REPRODUCED.** A card dragged far past the top-left edge (target 170px
+  left and 130px above the canvas origin) **clamped** to (146,168) against a canvas origin of
+  (146,167) and stayed rendered. Edge containment is present on this path.
+- **(e) UNLINK — NOT REACHED.** The setup failed before the defect could be tested: a move-drag on
+  a second card did not move it, and the double-click-then-drag thread gesture minted **no
+  connection** (0 connection elements). So (e) is UNTESTED, not absent.
+**THIS IS A STATEMENT ABOUT THE INSTRUMENT AS MUCH AS THE PRODUCT, and it is not a claim that
+Nick was wrong.** He reported these from his own walkthrough; four variables differ between his
+conditions and the probe's, and any of them could carry the defects: **pointer type** (the gesture
+code has pen-specific paths and a hold-timer; the probe drove a MOUSE), **card kind** (the probe
+used a `text` card — a `page-pin` card takes a different `canResize`/aspect path), **card count**
+(defect (d) says board resizing decays "as cards accumulate", which points at state that one card
+cannot produce), and **viewport/DPR**. The probe's own move-drag failing is direct evidence that
+the harness does not yet drive this surface faithfully.
+**WHAT IS OWED BEFORE ANY OF THIS CLUSTER IS BUILT:** a reproduction under Nick's own conditions —
+at minimum pointer type and card kind named — because a fix built against a defect that does not
+reproduce is a fix aimed at nothing. **NOTHING FROM ITEM 118 IS OFFERED**, per the brief's own
+"anything not green parks with records". No product code was written for it.
+**ONE THING THE PROBE DID SETTLE, worth keeping:** board `boxes` live in BoardEditor's local React
+state and reach `localStorage` only on the 2s autosave or unmount, so the first probe drafted here
+read `[]` and would have "confirmed" resize-once against two empty arrays. Re-instrumented to the
+DOM, the same run showed both resizes working. **Any future item-118 harness must measure the
+rendered card, never the stored row** — the same trap item 92 met from the other side.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
