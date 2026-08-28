@@ -3499,17 +3499,13 @@ a:focus-visible,
 .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch{ background:var(--accent-rest); border-color:var(--accent-rest); }
 .wz-sliver-toggle[data-on='true'] .wz-sliver-toggle-switch::after{ left:13px; background:var(--ink-950); }
 
-/* The Structure picker (S4) — a two-way segmented control, Prose | Screenplay.
-   FX1 S6 — the active state was a solid brass fill (an evental treatment for
-   a where-you-are marker); moved to the F3/mode-tab species instead
-   (--accent-rest — see .desk-mode-tab.active above), the same lawful active
-   pattern .wz-strip-item.active (CD2, below) now carries forward. */
-.wz-sliver-structure{ display:flex; border:1px solid var(--ink-border); }
-.wz-sliver-structure-btn{ flex:1; background:none; border:0; border-bottom:2px solid transparent; color:var(--text-mid);
-  font-family:var(--font-ui); font-size:12px; padding:8px 6px 6px; cursor:pointer; transition:.15s; }
-.wz-sliver-structure-btn:hover{ color:var(--text-hi); background:var(--ink-800); }
-.wz-sliver-structure-btn.active{ background:none; color:var(--text-hi); border-bottom-color:var(--accent-rest); }
-.wz-sliver-structure-btn + .wz-sliver-structure-btn{ border-left:1px solid var(--ink-border); }
+/* SWEPT (item 83, R13.iv/M6-M11) — the Structure picker (S4) and its
+   two-way Prose | Screenplay segmented control were withdrawn from the
+   sliver: structure is chosen at the page's making, not re-picked from a
+   tool drawer. The rules below it had no markup left to style, so they go
+   with it rather than lingering as dead weight. Its FX1 S6 active-state
+   reasoning (brass -> --accent-rest) survives at .desk-mode-tab.active and
+   .wz-strip-item.active, which is where that law now lives. */
 
 /* CD1 S6 — the goal block, the sliver's foot. Timer numeral (opt-in,
    --text-mid, quiet); the 2px progress hairline; one inline goal edit.
@@ -3560,7 +3556,8 @@ a:focus-visible,
    fills brass — correct at the stage's OWN gear (a corner popover, not
    itself part of the sliver's established visual law), but a resting
    "where you are" marker inside the sliver should read olive, matching
-   `.wz-sliver-structure-btn.active`/every other sliver "active" state
+   `.desk-mode-tab.active`/every other sliver "active" state
+   (the Structure picker itself was swept with R13.iv — see the note above)
    already swept under FX1 S6. Scoped the same way as the position override
    above, for the same reason. */
 .wz-sliver-instruments .mode-seg button.on{ background:var(--accent-rest); color:var(--on-brass); }

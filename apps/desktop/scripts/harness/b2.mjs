@@ -683,8 +683,19 @@ await withHarness(async (app) => {
   // "New Page" door; the live ok below re-verifies the new one-door roster. Original ok,
   // quoted verbatim (immutable):
   //   PARKED (was "S5: the Page pop-out's roster reorders to New Journal Entry, New Page (in that order), before the Page face + Places")
-  ok('S5 [FX15 S3]: the Page pop-out\'s roster is now the single "New Page" door, before the Page face + Places',
-    JSON.stringify(rosterOrder.doorLabels) === JSON.stringify(['New Page']), JSON.stringify(rosterOrder));
+  // ---- PARKED — SUPERSEDED by item 83 M3 (R6) + M6 (R13.ii), 2026-08-25
+  // Kept VERBATIM and no longer run. The Page drawer's roster GREW by two
+  // founder rulings: R6 charters PAGE SETUP inside it ('general page options
+  // that govern the opened page ... margins, line spacing, page numbers'),
+  // and R13.ii adds Place-page-on-board on board surfaces. 'the single New
+  // Page door' is no longer the roster. What SURVIVES is the door's primacy:
+  // New Page still leads, before the Page face and Places.
+  //
+  // ok('S5 [FX15 S3]: the Page pop-out\'s roster is now the single "New Page" door, before the Page face + Places',
+  // JSON.stringify(rosterOrder.doorLabels) === JSON.stringify(['New Page']), JSON.stringify(rosterOrder));
+  // ------------------------------------------------------------------
+  ok('S5 [R6+R13.ii successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
+    rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
   ok('S5: Places renders for the page underfoot, after the Page face', rosterOrder.placesAfterPageFace === true, JSON.stringify(rosterOrder));
 
   // "New Journal Entry" door checks [PARKED — FX15 S3]: the door is RETIRED, so its

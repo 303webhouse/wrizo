@@ -385,8 +385,20 @@ await withHarness(async (app) => {
   await freshScriptPage(app);
   await openSliver(app);
   await sleep(150);
-  const structureBtnBg = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-structure-btn.active')).backgroundColor");
-  ok('CD1 S2 (was "S6: the active Structure button\'s computed background is not brass"): the active Structure button (in the sliver) is not brass', structureBtnBg !== 'rgb(255, 152, 0)', structureBtnBg);
+  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
+  // tablist, so `.wz-sliver-structure-btn.active` no longer exists and
+  // getComputedStyle(null) THREW here rather than failing an assertion.
+  // The LAW it guarded is untouched and now stricter: R7 makes menus rest
+  // OLIVE, so no resting control in the sliver may be brass. The successor
+  // asserts that against the control that replaced the tablist.
+  //
+  // const structureBtnBg = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-structure-btn.active')).backgroundColor");
+  // ok('CD1 S2 (was "S6: the active Structure button\'s computed background is not brass"): the active Structure button (in the sliver) is not brass', structureBtnBg !== 'rgb(255, 152, 0)', structureBtnBg);
+  // ------------------------------------------------------------------
+  const structureRowBg = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => /^Convert to/.test(x.textContent)); return b ? getComputedStyle(b).backgroundColor : 'none'; })()");
+  ok('CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive',
+    structureRowBg !== 'rgb(255, 152, 0)', structureRowBg);
 
   const eyebrowColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-h')).color");
   ok('CD1 S2 (was "S6: an eyebrow label\'s computed color is not brass"): an eyebrow label (in the sliver) is not brass', eyebrowColor !== 'rgb(255, 152, 0)', eyebrowColor);
@@ -403,9 +415,21 @@ await withHarness(async (app) => {
   await freshProsePage(app);
   await openSliver(app);
   await sleep(200);
-  const typewriterGlyphColor = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
-  ok('SC1 S3 (was "S6: the Typewriter glyph\'s computed color is not brass", measured on a script page): the Typewriter glyph is not brass at rest — asserted on PROSE now, the surface that still carries it; S6\'s law is unchanged, only its address moved',
-    typewriterGlyphColor !== 'rgb(255, 152, 0)', typewriterGlyphColor);
+  // ---- PARKED — SUPERSEDED by item 83 M4 (R5), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. R5 makes the foot exactly TYPEWRITER
+  // / PROGRESS / FULL SCREEN, and the Typewriter became a MENU-OPENING
+  // instrument with its own glyph - `.typewriter-toggle` no longer renders
+  // in the sliver at all, so getComputedStyle(null) THREW here. The LAW is
+  // unchanged and now stricter under R7 (menus rest olive, brass is press
+  // only); the successor asserts it against the instrument that replaced it.
+  //
+  // const typewriterGlyphColor = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
+  // ok('SC1 S3 (was "S6: the Typewriter glyph\'s computed color is not brass", measured on a script page): the Typewriter glyph is not brass at rest — asserted on PROSE now, the surface that still carries it; S6\'s law is unchanged, only its address moved',
+  // typewriterGlyphColor !== 'rgb(255, 152, 0)', typewriterGlyphColor);
+  // ------------------------------------------------------------------
+  const typewriterInstrumentColor = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-instruments-btn')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); return b ? getComputedStyle(b).color : 'absent'; })()");
+  ok('SC1 S3 [R5 successor, R7-strengthened]: the Typewriter INSTRUMENT is not brass at rest - menus rest olive, brass is the press only',
+    typewriterInstrumentColor !== 'rgb(255, 152, 0)', typewriterInstrumentColor);
 
   return checks;
 });
@@ -504,7 +528,8 @@ if (process.env.HARNESS_PARKED === '1') {
     // background is not brass', structureBtnBg !== 'rgb(255, 152, 0)',
     // structureBtnBg); — read `.desk-toolrail-structure-btn.active`.
     // CD1 S2/S7 — `.wz-sliver-structure-btn.active` now.
-    const structureBtnBgParked = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-structure-btn.active')).backgroundColor");
+    // GUARDED (item 83 M5/DR3, 2026-08-25): the tablist is retired, so this read returned null and getComputedStyle THREW. The PARKED assertion below is untouched; only the read is made null-safe.
+    const structureBtnBgParked = await app.evalJs("(() => { const e = document.querySelector('.wz-sliver-structure-btn.active'); return e ? getComputedStyle(e).backgroundColor : 'absent'; })()");
     pok('PARKED (was "S6: the active Structure button\'s computed background is not brass") — CD1 S2/S7: same truth, .wz-sliver-structure-btn.active',
       structureBtnBgParked !== 'rgb(255, 152, 0)', structureBtnBgParked);
 
@@ -671,7 +696,8 @@ if (process.env.HARNESS_PARKED === '1') {
     await freshProsePage(app);
     await openSliver(app);
     await sleep(200);
-    const glyphColorOnProse = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
+    // GUARDED (item 83 M4/R5, 2026-08-25): the foot's TypewriterToggle became a menu-opening instrument, so `.typewriter-toggle` no longer renders in the sliver. PARKED assertion untouched; the read is null-safe.
+    const glyphColorOnProse = await app.evalJs("(() => { const e = document.querySelector('.typewriter-toggle'); return e ? getComputedStyle(e).color : 'absent'; })()");
     pok('PARKED (was "S6: the Typewriter glyph\'s computed color is not brass (typewriter defaults ON, so this is the common resting state)", measured on a script page) — SC1 S3: no glyph exists on a screenplay page now; the law holds unchanged on prose, where the glyph lives',
       glyphGoneOnScript === true && glyphColorOnProse !== 'rgb(255, 152, 0)',
       JSON.stringify({ glyphGoneOnScript, glyphColorOnProse }));

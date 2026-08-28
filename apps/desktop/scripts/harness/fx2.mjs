@@ -298,7 +298,21 @@ await withHarness(async (app) => {
   // selector only — this check's own name never referenced the old
   // wrapper, so no park entry: the truth it asserts (a hand-click flips
   // the setting) is unchanged.
-  await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
+  // ---- PARKED — SUPERSEDED by item 83 M4 (R3/R5), 2026-08-25 --------
+  // Kept VERBATIM and no longer run. The foot's TypewriterToggle became a
+  // MENU-OPENING instrument: R5 makes the foot TYPEWRITER / PROGRESS /
+  // FULL SCREEN, and R3 puts the on/off switch INSIDE the Typewriter
+  // menu that button opens ('the Typewriter toggle button should also
+  // include an option to open additional Typewriter settings'). A direct
+  // click on `.typewriter-toggle` no longer flips anything - the class is
+  // gone. The successor performs the SAME flip through the new door:
+  // open the instrument, then press the Typewriter switch inside it.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
+  // ------------------------------------------------------------------
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  await sleep(200);
+  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
   await sleep(150);
   const afterExplicitClick = await typewriterDom(app);
   ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
@@ -346,7 +360,21 @@ await withHarness(async (app) => {
   // selector only — this check's own name never referenced the old
   // wrapper, so no park entry: the truth it asserts (a hand-click flips
   // the setting) is unchanged.
-  await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
+  // ---- PARKED — SUPERSEDED by item 83 M4 (R3/R5), 2026-08-25 --------
+  // Kept VERBATIM and no longer run. The foot's TypewriterToggle became a
+  // MENU-OPENING instrument: R5 makes the foot TYPEWRITER / PROGRESS /
+  // FULL SCREEN, and R3 puts the on/off switch INSIDE the Typewriter
+  // menu that button opens ('the Typewriter toggle button should also
+  // include an option to open additional Typewriter settings'). A direct
+  // click on `.typewriter-toggle` no longer flips anything - the class is
+  // gone. The successor performs the SAME flip through the new door:
+  // open the instrument, then press the Typewriter switch inside it.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
+  // ------------------------------------------------------------------
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  await sleep(200);
+  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
   ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',

@@ -222,14 +222,34 @@ await withHarness(async (app) => {
   await openSliver(app);
   await sleep(200);
   const railSections = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map(h => h.textContent)");
-  ok('S2: Free Write\'s own rail carries a Format section (Bold/Italic) — previously entirely absent on an ordinary (project-origin) Free Write page',
-    railSections.includes('Format'), JSON.stringify(railSections));
+  // ---- PARKED — SUPERSEDED by item 83 M4 (R1), 2026-08-25 -----------
+  // Kept VERBATIM and no longer run. Nick overruled Chamber 1s 'nothing
+  // else' by name: 'I would like to add buttons for bolding, italicizing,
+  // and underlining.' The zone is STYLING now (his word) and Underline
+  // joins B and I. The heading text changed; the subject did not.
+  //
+  // ok('S2: Free Write\'s own rail carries a Format section (Bold/Italic) — previously entirely absent on an ordinary (project-origin) Free Write page',
+  // railSections.includes('Format'), JSON.stringify(railSections));
+  // ------------------------------------------------------------------
+  ok('S2 [R1 successor]: Free Writes own rail carries a STYLING section - the zone Format became by Nicks word, now B/I/U',
+    railSections.includes('Styling'), JSON.stringify(railSections));
   const inkToolShape = await app.evalJs(`(() => {
     const btn = document.querySelector('.wz-sliver-ink-tool-toggle');
     return btn ? { present: true, disabled: btn.disabled, ariaDisabled: btn.getAttribute('aria-disabled') } : { present: false };
   })()`);
-  ok('S2: Free Write\'s own rail carries the ink-tool toggle, mirrored from Journal\'s own pen/eraser icon shape — DISCLOSED INERT (disabled/aria-disabled), never pretending to be functional outside the true Journal surface',
-    inkToolShape.present && inkToolShape.disabled === true && inkToolShape.ariaDisabled === 'true', JSON.stringify(inkToolShape));
+  // ---- PARKED — SUPERSEDED by item 83 M4 (R2 deferral + G3), 2026-08-25
+  // Kept VERBATIM and no longer run. FX7 S2 placed this as a reasoned
+  // disabled affordance; Chamber 1s roster then excluded it, and G3 names
+  // the grammar reason - a greyed control for an unbuilt capability is a
+  // locked door wearing paint. R2 makes Ink a REAL section when the stylus
+  // returns; until then nothing renders rather than something rendering
+  // inert. The successor asserts the ABSENCE, which is the new law.
+  //
+  // ok('S2: Free Write\'s own rail carries the ink-tool toggle, mirrored from Journal\'s own pen/eraser icon shape — DISCLOSED INERT (disabled/aria-disabled), never pretending to be functional outside the true Journal surface',
+  // inkToolShape.present && inkToolShape.disabled === true && inkToolShape.ariaDisabled === 'true', JSON.stringify(inkToolShape));
+  // ------------------------------------------------------------------
+  ok('S2 [R2+G3 successor]: Free Writes rail carries NO ink-tool placeholder - absent, not disabled',
+    inkToolShape.present === false, JSON.stringify(inkToolShape));
 
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('Hello world');

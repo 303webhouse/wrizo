@@ -278,12 +278,28 @@ await withHarness(async (app) => {
   // The middle check (no literal "Typewriter" text node) is untouched — it was
   // true before and is more true now. Prose keeps all three; the prose block
   // just below is where the surviving aria-label claim now lives.
-  ok('SC1 S3 (was "S5 (script): the sliver foot row is present with exactly THREE icons"): the script sliver\'s foot row carries exactly TWO icons — the typewriter\'s is withdrawn with the option itself; gear and instruments remain',
-    footRow.iconCount === 2, JSON.stringify(footRow));
+  // ---- PARKED - SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. R12 returns the typewriter to the
+  // screenplay surface by founder word, so the script foot carries THREE
+  // instruments again (TYPEWRITER / PROGRESS / FULL SCREEN, R5's roster).
+  //
+  // ok('SC1 S3 (was "S5 (script): the sliver foot row is present with exactly THREE icons"): the script sliver\'s foot row carries exactly TWO icons — the typewriter\'s is withdrawn with the option itself; gear and instruments remain',
+  // footRow.iconCount === 2, JSON.stringify(footRow));
+  // ------------------------------------------------------------------
+  ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
+    footRow.iconCount === 3, JSON.stringify(footRow));
   ok('S5 (script): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRow.hasTypewriterTextNode, JSON.stringify(footRow));
-  ok('SC1 S3 (was "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech"): there is no typewriter aria-label on a script page because there is no toggle — the affordance is absent to assistive tech exactly as it is to the eye, never merely hidden from one of them',
-    !footRow.typewriterAriaLabelPresent, JSON.stringify(footRow));
+  // ---- PARKED - SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
+  // Kept VERBATIM and no longer run. The affordance returns to screenplay
+  // by R12, so it is present to assistive tech exactly as it is to the eye
+  // - which is the symmetry this check always cared about.
+  //
+  // ok('SC1 S3 (was "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech"): there is no typewriter aria-label on a script page because there is no toggle — the affordance is absent to assistive tech exactly as it is to the eye, never merely hidden from one of them',
+  // !footRow.typewriterAriaLabelPresent, JSON.stringify(footRow));
+  // ------------------------------------------------------------------
+  ok('SC1 S3 [R12 successor]: the typewriter aria-label IS present on a script page - the affordance returns to both the eye and assistive tech together',
+    footRow.typewriterAriaLabelPresent === true, JSON.stringify(footRow));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -311,10 +327,25 @@ await withHarness(async (app) => {
   // -- The instruments panel: opens, carries the three controls (on/off,
   // unit preference, target value), and closes on a keystroke through the
   // SAME vanishing engine the sliver panel itself already rides. ----------
+  // ---- PARKED - SUPERSEDED by item 83 M4 (R5), 2026-08-25 ------------
+  // Kept VERBATIM and no longer run. This DRIVER reached the Instruments
+  // panel by ordinal - the third icon in a TYPEWRITER / GEAR / INSTRUMENTS
+  // foot. R5 retired both the gear and the Instruments panel, so the third
+  // slot is now FULL SCREEN and this ordinal would fire the wrong control.
+  // The successor names the button instead of counting to it.
+  //
+  // const opened = await app.evalJs(`(() => {
+  //   const row = document.querySelector('.wz-sliver-instruments-row');
+  //   const btns = [...row.querySelectorAll('button')];
+  //   btns[2].click(); // typewriter, gear, INSTRUMENTS (third icon)
+  //   return btns.length;
+  // })()`);
+  // ------------------------------------------------------------------
   const opened = await app.evalJs(`(() => {
     const row = document.querySelector('.wz-sliver-instruments-row');
     const btns = [...row.querySelectorAll('button')];
-    btns[2].click(); // typewriter, gear, INSTRUMENTS (third icon)
+    const b = btns.find(x => (x.getAttribute('aria-label')||'') === 'Progress');
+    if (b) b.click();
     return btns.length;
   })()`);
   await sleep(200);
@@ -329,11 +360,33 @@ await withHarness(async (app) => {
       hasSetClear: !!panel.querySelector('.wz-sliver-goal-edit-commit') && !!panel.querySelector('.wz-sliver-goal-edit-clear'),
     };
   })()`);
-  ok('S5: the instruments panel opens', !!instrumentsPanel && instrumentsPanel.present, JSON.stringify({ opened, instrumentsPanel }));
-  ok('S5: the instruments panel carries the on/off control AND the unit-preference control (two Seg rows)',
-    !!instrumentsPanel && instrumentsPanel.segCount === 2, JSON.stringify(instrumentsPanel));
-  ok('S5: the instruments panel carries the target-value control (a number input, Set + Clear)',
-    !!instrumentsPanel && instrumentsPanel.hasNumberInput && instrumentsPanel.hasSetClear, JSON.stringify(instrumentsPanel));
+  // ---- PARKED - SUPERSEDED by item 83 M4 (R5), 2026-08-25 ------------
+  // Kept VERBATIM and no longer run. Nick: 'I do not want a separate
+  // Instruments toggle/menu. All of the options in it should be set in one
+  // of the other settings options.' The panel is RETIRED WHOLE and its
+  // roster - Show, Unit, Target - was ABSORBED into the foot's PROGRESS
+  // instrument, so nothing it offered was lost: two surfaces onto one goal
+  // became one. The successors assert the same three controls at their new
+  // address.
+  //
+  // ok('S5: the instruments panel opens', !!instrumentsPanel && instrumentsPanel.present, JSON.stringify({ opened, instrumentsPanel }));
+  // ok('S5: the instruments panel carries the on/off control AND the unit-preference control (two Seg rows)',
+  // !!instrumentsPanel && instrumentsPanel.segCount === 2, JSON.stringify(instrumentsPanel));
+  // ok('S5: the instruments panel carries the target-value control (a number input, Set + Clear)',
+  // !!instrumentsPanel && instrumentsPanel.hasNumberInput && instrumentsPanel.hasSetClear, JSON.stringify(instrumentsPanel));
+  // ------------------------------------------------------------------
+  const progressPanel = await app.evalJs(`(() => {
+    const panel = document.querySelector('.wz-sliver-instruments-panel');
+    if (!panel) return { present: false };
+    return { present: true, segCount: panel.querySelectorAll('.mode-crow').length,
+             hasNumberInput: !!panel.querySelector('input[type=\"number\"]') };
+  })()`);
+  ok('S5 [R5 successor]: the PROGRESS instrument opens - the Instruments panel retired, its roster absorbed here',
+    progressPanel.present === true, JSON.stringify(progressPanel));
+  ok('S5 [R5 successor]: PROGRESS carries the absorbed controls - Show, Unit and the goal rows (Instruments own roster, re-homed)',
+    progressPanel.present && progressPanel.segCount >= 2, JSON.stringify(progressPanel));
+  ok('S5 [R5 successor]: PROGRESS carries the target-value control (a number input)',
+    progressPanel.present && progressPanel.hasNumberInput === true, JSON.stringify(progressPanel));
 
   // Closes on keystroke — the ONE vanishing engine (chrome-fade/desk-
   // dissolve), not a second bespoke close handler: the panel is a
