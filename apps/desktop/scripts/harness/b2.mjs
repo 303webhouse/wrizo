@@ -1012,18 +1012,42 @@ if (process.env.HARNESS_PARKED === '1') {
         boardsTitle: t('placesBoardsTitle'),
       };
     })()`);
-    pok('PARKED (was "S8: every new B2 string resolves through deskLexicon (window.wrizoDeskLexicon), the canonical Plateau values") — B2.1 S6: the SAME 9-way comparison, shelfHome now "The Shelf Board — has no drawer home" (the word swap changes only that one conjunct); live successor: b2-1.mjs',
+    // ---- PARKED — SUPERSEDED by item 83 M7 (PP1/PP2/PP4), 2026-08-27 ----
+    // GENERATION 2, quoted VERBATIM and no longer asserted. B2.1 S6 re-made
+    // the 9-way lexicon comparison after the shelfHome copy change. M7
+    // supersedes two more of its conjuncts: Places now speaks in VERBS, so
+    // `newDrawer` reads 'File to a new drawer…' rather than the noun-plus-
+    // plus label '+ New Drawer', and `boardsTitle` reads 'Pinned to boards…'
+    // rather than the bare noun 'Boards'. Seven terms are untouched and are
+    // still pinned below — the point of the check is that NOTHING drifts
+    // silently, so the seven matter as much as the two. Generation 3 stands
+    // below. (Fable, 2026-08-27.)
+    //
+    // pok('PARKED (was "S8: every new B2 string resolves through deskLexicon (window.wrizoDeskLexicon), the canonical Plateau values") — B2.1 S6: the SAME 9-way comparison, shelfHome now "The Shelf Board — has no drawer home" (the word swap changes only that one conjunct); live successor: b2-1.mjs',
+    // lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
+    // && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
+    // && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+    // // FX15 S3: cascadePageNewJournalEntry retired (dead SV6 vocabulary) — its
+    // // conjunct is dropped here; the probe follows current reality while the frozen
+    // // record name above (a "9-way comparison") is left unchanged per the codicil.
+    // && lexiconTermsNow.addExisting === 'Existing page…'
+    // && lexiconTermsNow.placesTitle === 'Places'
+    // && lexiconTermsNow.placesLoose === 'Loose'
+    // && lexiconTermsNow.newDrawer === '+ New Drawer'
+    // && lexiconTermsNow.boardsTitle === 'Boards',
+    // JSON.stringify(lexiconTermsNow));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M7/PP1+PP2+PP4) — the SAME no-silent-drift claim,
+    // against the verb copy Places speaks in now.
+    pok('PARKED, generation 3 (was B2.1 S6 re-assertion of the 9-way deskLexicon comparison) — item 83 M7/PP1+PP2+PP4: Places speaks in verbs, so newDrawer and boardsTitle carry their new copy; the other seven terms are unchanged and still pinned',
       lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
         && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-        // FX15 S3: cascadePageNewJournalEntry retired (dead SV6 vocabulary) — its
-        // conjunct is dropped here; the probe follows current reality while the frozen
-        // record name above (a "9-way comparison") is left unchanged per the codicil.
         && lexiconTermsNow.addExisting === 'Existing page…'
         && lexiconTermsNow.placesTitle === 'Places'
         && lexiconTermsNow.placesLoose === 'Loose'
-        && lexiconTermsNow.newDrawer === '+ New Drawer'
-        && lexiconTermsNow.boardsTitle === 'Boards',
+        && lexiconTermsNow.newDrawer === 'File to a new drawer…'
+        && lexiconTermsNow.boardsTitle === 'Pinned to boards…',
       JSON.stringify(lexiconTermsNow));
 
     // CD4 S1 (2026-07-24) — the Shelf Board's own "Done" is REMOVED and replaced

@@ -651,8 +651,28 @@ if (process.env.HARNESS_PARKED === '1') {
       const panel = document.querySelector('.wz-sliver-panel');
       return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
     })()`);
-    pok('PARKED (was "S5 (script): the sliver foot row is present with exactly THREE icons" + "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech") — SC1 S3, Nick\'s word: the option is withdrawn from the screenplay surface, so script carries TWO icons and no aria-label; prose keeps three and the label',
-      scriptFootParked.iconCount === 2 && scriptFootParked.aria === false
+    // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-27 ------------
+    // GENERATION 2, quoted VERBATIM and no longer asserted. It held Nick's
+    // SC1 S3 word — the typewriter withdrawn from screenplay, so the script
+    // foot carried TWO icons and no aria-label while prose kept three and
+    // the label. R12 reverses the withdrawal by founder word and M8 gives
+    // both surfaces the SAME universal foot. Generation 3 stands below.
+    // This entry is the gated twin of the two live parks already standing
+    // in this file's own S5 section; the twin needed the ruling of
+    // 2026-08-27 to be found at all, because only the default setting had
+    // ever been run against this wave.
+    //
+    // pok('PARKED (was "S5 (script): the sliver foot row is present with exactly THREE icons" + "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech") — SC1 S3, Nick\'s word: the option is withdrawn from the screenplay surface, so script carries TWO icons and no aria-label; prose keeps three and the label',
+    // scriptFootParked.iconCount === 2 && scriptFootParked.aria === false
+    // && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
+    // JSON.stringify({ scriptFootParked, proseFootParked }));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M8/R12) — the SAME symmetry claim generations 1
+    // and 2 both made, and the one this check has always really been about:
+    // that the eye and assistive tech are told the same story. They are —
+    // and now they are told it on BOTH surfaces, not one.
+    pok('PARKED, generation 3 (was SC1 S3 re-assertion: script two icons and no aria-label, prose three and the label) — item 83 M8/R12: the withdrawal is REVERSED by founder word; script and prose carry the identical three-instrument foot, and the aria-label is present on both',
+      scriptFootParked.iconCount === 3 && scriptFootParked.aria === true
         && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
       JSON.stringify({ scriptFootParked, proseFootParked }));
 

@@ -787,11 +787,32 @@ if (process.env.HARNESS_PARKED === '1') {
       formatButtons: [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].map(b => b.title),
       structureLabels: [...document.querySelectorAll('.wz-sliver-structure-btn')].map(b => b.textContent),
     })`);
-    pok('PARKED (was "S1/S3/S4: Draft rail shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+    // ---- PARKED — SUPERSEDED by item 83 M5 (R4 + F3), 2026-08-27 --------
+    // GENERATION 2, quoted VERBATIM and no longer asserted. CD1 S2/S7 kept
+    // the original roster whole and renamed only its selectors. M5 changes
+    // the roster ITSELF: R4 seats Underline, Bulleted list, Block quote and
+    // Indent beside the original four, F3's line-prefix directives add the
+    // three alignments, and the Structure picker is withdrawn outright
+    // (structure is chosen at a page's making, not re-picked from a tool
+    // drawer). Generation 3 stands below. (Fable, 2026-08-27: the gated lane
+    // always holds the NEWEST truth; prior generations stack beneath it.)
+    //
+    //   pok('PARKED (was "S1/S3/S4: Draft rail shows Bold/Italic/Heading/Spacing + the Structure picker, and ONLY those...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
+    //     !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
+    //       && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure
+    //       && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
+    //       && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
+    //     JSON.stringify(draftRailClassRenameCheck));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M5/R4+F3) — the SAME claim all three generations
+    // have made: what the Draft rail carries, and ONLY that. The roster is
+    // pinned in its ruled order so a silent addition or reordering fails
+    // here, and the picker's absence is asserted rather than merely unread.
+    pok('PARKED, generation 3 (was CD1 S2/S7 re-assertion of the four-button roster Bold/Italic/Heading/Spacing + the Structure picker) — item 83 M5/R4+F3: the roster is the ruled ELEVEN and the Structure picker is withdrawn; same ONLY-those claim, current membership',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
-        && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Heading', 'Spacing'])
-        && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify(['Prose', 'Screenplay']),
+        && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Underline', 'Heading', 'Bulleted list', 'Block quote', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
+        && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 
     // ORIGINAL (S6): ok('S6: capture items are in the rail (their ruled
@@ -876,11 +897,31 @@ if (process.env.HARNESS_PARKED === '1') {
     await openSliver(app);
     await sleep(200);
     const typewriterStillOnProse = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')");
-    pok('PARKED, generation 2 (was "PARKED (was \'S2 DoD: the typewriter toggle is present in the rail on the script surface\') — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now") — SC1 S3, Nick\'s word: AB2 S2\'s DoD is AMENDED, the option is withdrawn from the screenplay surface entirely (both the toggle and the gear\'s Typewriter row), and remains untouched on prose',
-      typewriterGoneOnScript.toggle === false
-        && gearRowGone !== null && gearRowGone.hasTypewriterRow === false
-        && typewriterStillOnProse === true,
-      JSON.stringify({ typewriterGoneOnScript, gearRowGone, typewriterStillOnProse }));
+    // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-27 ------------
+    // GENERATION 2, quoted VERBATIM and no longer asserted. It recorded
+    // Nick's SC1 S3 word that the typewriter is withdrawn from screenplay.
+    // R12 reverses that by founder word: the typewriter RETURNS to the
+    // screenplay surface, and M8 gives both surfaces the same universal
+    // foot. Generation 3 stands below. This is the same supersession already
+    // parked in fx3.mjs and sc1.mjs — its third-generation twin, and the
+    // precedent Fable named on 2026-08-27 for how the gated lane stacks.
+    //
+    // pok('PARKED, generation 2 (was "PARKED (was \'S2 DoD: the typewriter toggle is present in the rail on the script surface\') — CD1 S2/S7 moved it to the sliver, FX3 S5 moved it again (icon-only, sliver foot) — present there now") — SC1 S3, Nick\'s word: AB2 S2\'s DoD is AMENDED, the option is withdrawn from the screenplay surface entirely (both the toggle and the gear\'s Typewriter row), and remains untouched on prose',
+    // typewriterGoneOnScript.toggle === false
+    // && gearRowGone !== null && gearRowGone.hasTypewriterRow === false
+    // && typewriterStillOnProse === true,
+    // JSON.stringify({ typewriterGoneOnScript, gearRowGone, typewriterStillOnProse }));
+    // ---------------------------------------------------------------------
+    // GENERATION 3 (item 83 M8/R12) — the SAME question every generation of
+    // this check has asked: where does the typewriter live, and is it on
+    // both surfaces or one. R5 also renamed the affordance: the rail class
+    // .typewriter-toggle is now an instrument button carrying an aria-label,
+    // so the read is by NAME, not by the retired class.
+    const typewriterInstrumentOnProse = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row [aria-label=\"Typewriter\"]')");
+    pok('PARKED, generation 3 (was SC1 S3 re-assertion that the typewriter is withdrawn from the screenplay surface entirely) — item 83 M8/R12: withdrawn is REVERSED by founder word; the instrument is present on screenplay AND prose, the universal foot carrying three instruments on both',
+      typewriterGoneOnScript.iconCount === 3
+        && typewriterInstrumentOnProse === true,
+      JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse }));
 
     // Re-seed the parked SCRIPT fixture. The prose half of the probe above is
     // the whole point — it proves the withdrawal is script-only — but

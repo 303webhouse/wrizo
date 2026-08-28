@@ -10539,6 +10539,25 @@ sitting closes them.
     **WHAT THE GREEN PAIR DOES AND DOES NOT DO.** It closes `j5`'s attributed mechanism —
     the one member fix 2 proved — and nothing else. **It does not close item 82.**
 
+    **SIGHTING APPENDED — `m3`, three data points, from the MENUS lane (item 83),
+    2026-08-27.** Not a park and not a clearance: reported here because it is this
+    family's signature and this lane has no standing to rule on it.
+    **The assertion:** *"the saturated live ground ROAMS — its rendered extent reaches
+    near all four stage margins"* — the Rhizome's ambient growth layer.
+    **The three runs, on code that never touched the rhizome:** 2026-08-04 run 1 PASS;
+    2026-08-04 run 2 **FAIL**, identical bundle, same box, minutes apart; 2026-08-05
+    (S4, merged tree) PASS. An assertion on an ANIMATED extent that alternates between
+    runs of the same bytes is exactly the order/timing-dependent species this item
+    characterized (m4, th2, j4, j5, b2-1, fx6).
+    **DELIBERATELY NOT CLEARED.** The known-flake list is empty by DF1.1, and both
+    *"it passed in isolation"* and *"the machine was quiet"* are retired as clearance
+    arguments — so two greens around one red do not settle it. What the menus lane can
+    say is narrower and is all it says: **nothing in the menus wave touches the rhizome**
+    (proven by diff), so this red is not the wave's and the wave inherits nothing from
+    it in either direction. Whether the assertion should pin an animated extent at all,
+    or should measure the roam over a window instead of at an instant, is item 82's
+    question to answer, not this lane's.
+
 85. **The raw-write remediation — harness seeding migrates to the app's seams.**
     **OPENED — 2026-08-01 (chat 6), on Fable's word, from item 82 fix 2's proven
     mechanism.** Post-vacation. Harness-only in phase 2; phase 1 is analysis.
