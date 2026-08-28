@@ -1164,6 +1164,47 @@ read `[]` and would have "confirmed" resize-once against two empty arrays. Re-in
 DOM, the same run showed both resizes working. **Any future item-118 harness must measure the
 rendered card, never the stored row** — the same trap item 92 met from the other side.
 
+**→ S0 PASS 2 — 2026-08-28: DEFECT (a), READ IN SOURCE. IT IS THREE FAULTS, NOT ONE, AND THE
+CHARTER'S GUESS IS WRONG IN AN INSTRUCTIVE WAY.** The charter says B/I/U is "likely its own renderer
+path". It is not: the card popup shares the page's engine correctly (`applyFormat` +
+`decorateEditorFor`). The breakage is elsewhere, and it splits three ways — no browser needed for
+any of this, it is all readable in the shipped source.
+- **(a-i) UNDERLINE HAS NO RENDERER, ANYWHERE — AND IS OFFERED ON TWO SURFACES.** The card dock
+  ships a `U` button (`BoardEditor.tsx:572`) and so does the page rail (`Sliver.tsx:361`, `:398` →
+  `PageEditor.tsx:645`). Both call `applyFormat('underline')`, which writes `__word__`
+  (`draftFormat.ts:33`). **Nothing renders it.** `draftDecoration.ts` contains the string
+  "underline" ZERO times; `decorateInlineForCard` (`:83`) and `decorateInline` handle only `**` and
+  `*`; `index.css` has `.md-bold` and `.md-italic` (`:4200-4201`) and **no `.md-underline`**. So
+  underline is literal, unstyled, on the page as well as the card. This is Nick's `___`. **The
+  shipped UI and the shipped renderer disagree with each other, and `draftDecoration.ts`'s own
+  header says so out loud — "Bold/Italic ONLY" — above a dock that ships three buttons.**
+- **(a-ii) THE RESTING CARD NEVER CALLS THE ENGINE AT ALL.** `BoardTextBox`
+  (`BoardEditor.tsx:252-260`) returns `{initialText}` as a bare text node. Decoration happens ONLY
+  inside the popup. So on the BOARD — the surface the writer actually looks at — every marker is
+  literal and nothing is styled, bold and italic included. This is Nick's "**NO styling applied**".
+  The ported-card branch (`sourceEntryId`, `:245-252`) is raw too.
+- **(a-iii) B/I/U ON AN EMPTY SELECTION PRODUCE BARE MARKERS, BY DESIGN.** `wrapSelection`
+  (`draftFormat.ts:56-59`) with `selected.length === 0` emits `****` and parks the caret between the
+  pairs; the card register is **reveal-adjacent-to-caret**, so both marks then render VISIBLY with
+  no text between them. That is Nick's `****`. It is working as specified — **and the specification
+  is what reads as broken**: the writer clicks B meaning "type bold from here" and receives four
+  asterisks. Worth a ruling, not a patch: this is a design report wearing a bug's clothes.
+**WHAT THIS CHANGES ABOUT THE FIX.** (a-ii) needs no ruling — FX5 S6's own recorded verdict already
+governs it ("asterisks visible on a card is a bug, not a style choice — the popup shows words, not
+syntax"), and that argument applies with MORE force to the resting card than to the popup it was
+written for. The repair is one call: render through `decorateMarkdownForCard(text, null)`, whose
+null caret collapses every marker (`md-mark-hidden`) and leaves styled words. **One risk to prove,
+not assume:** cards auto-size from the rendered DOM's `scrollHeight` (`measureRef`), and collapsed
+marks are `font-size:0`, so decorated text measures SHORTER than raw — card heights will move, and
+the harness must check that before this is offered.
+**(a-i) NEEDS A RULING BEFORE IT IS BUILT, AND I AM NOT TAKING THE CHOICE.** Two lawful repairs
+point opposite ways: **retire the U buttons** (honour the frozen Bold/Italic set the decorator was
+written to) or **give underline a renderer** (honour the UI that has been shipping to the writer).
+Nick named U as broken, which leans toward the second — but the frozen-markdown-set ruling is a
+standing design ruling and a fix lane does not unfreeze one on its own initiative. **Routed to
+Fable.** Whichever way it goes, it is one change in the SHARED engine and it lands on the page and
+the card together — class-over-instance, not a board-local patch.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
