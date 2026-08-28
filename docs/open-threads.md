@@ -325,7 +325,7 @@ ground-legibility-at-high-counts concern, stated in the same breath as the POSIT
 
 Registry: next free **104**.
 
-## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17
+## ITEM 104 — SCREENPLAY SELECTION DEAD ON AN UNBORN PAGE (defect) — OPENS 2026-08-17 · CLOSED 2026-08-26 (founder's walk on production)
 
 **⚠ REOPENED — PRODUCTION DEFECT (Fable, 2026-08-24).** The doorway ship (deployed `1cbda72` ·
 railway `59d55924`) shipped a **crash**: the **New Page door crashes ON MOUNT** at the deployed
@@ -353,6 +353,39 @@ the hotfix stamp** (supersedes "avoid the New Page door" above).
 **→ LIFTED 2026-08-25 (Fable's ruling): the hotfix is FUNCTIONALLY VERIFIED and DEPLOYED (git
 `63b875b` · railway `410033f9`); cross-device deletes are fine again, the crash class is removed,
 item 104 re-closed.** Byte-identity of the deployed bundle stays unverified cross-OS (item 111).
+**⚠ REOPENED (THIRD) — `#/page/new` STILL CRASHES (Fable, 2026-08-25).** The MENU lane proved it in
+a HEADFUL scratch worktree at main's tip (`8210c37`): the New Page door still crashes on mount. The
+hotfix fixed the **two-device-tombstone path it was proven against**, but a **SEPARATE crash on the
+New Page route remains** — so the FUNCTIONALLY-VERIFIED line stands ONLY for the tombstone path, NOT
+the New Page route (corrected at the deploy stamp; Fable's review-sufficiency claim WITHDRAWN).
+**INTERIM RULE REINSTATED: the New Page door is AVOIDED on production.** Three ships (doorway, hotfix,
+and now) have passed over a dead door — item 109's sharpest instance (no gate drives `#/page/new`
+headfully). Production stays `63b875b` · `410033f9`; rollback lever unchanged (the doorway is also a
+crashing door).
+**→ THIRD-PASS FIX SHIPPED (chat 1, 2026-08-25).** `hotfix-104-third @ 8e75e60` merged (`ade023a`)
+and DEPLOYED — **git `2256f58` · railway `b10fcc55`**, SERVED==TESTED byte-verified
+(`index-CaW0zodg.js`; the item-111 provenance gap did NOT recur — see the HOTFIX 104 (THIRD) DEPLOY
+MANIFEST). The guard now sits BELOW `useCascade` (every hook above, the decision below); the prior
+dispatcher-unmount fix is kept; the 145-file hooks-order class guard is LIVE (`hooks-order.mjs` PASS
+both settings, 60/60). Review VERDICT PASS (`hotfix-104-third-review-fable.md`). Production is now
+`2256f58` · `b10fcc55`; rollback target `63b875b` · `410033f9` (rolling back REINTRODUCES the crash).
+**→ DISPOSITION: MONITOR, NOT CLOSED (Fable, 2026-08-26).** The fix is proven at the invariant and
+the class guard is live — but the direct "the writer SEES the New Page" proof is a **DEV-SERVE
+verdict, not this production suite**; item 109 owes the headful gate, and this class has been reported
+**narrower than the fault THREE times**. **Item 104 CLOSES when EITHER: (a) item 109's headful
+`#/page/new` gate exists AND passes at a deployed bundle, OR (b) Nick's own walk confirms the door on
+production — whichever lands first.** The reinstated "avoid the New Page door on production" interim
+rule is SUPERSEDED by this disposition: close-condition (b) invites Nick to walk the door on
+production, so the door is live-with-the-fix and open to test — but UNPROVEN on production until (a)
+or (b). Monitored, not closed.
+**→ CLOSED on condition (b) (Fable, 2026-08-26).** Nick **walked `#/page/new` on production**
+(`2256f58` · `b10fcc55`) and **THE DOOR OPENS** — paper rendered, invite line drawn, templates
+present; screenshot on file (Fable's desk). Close-condition (b) is met, the MONITOR disposition
+RESOLVES, and **item 104 is CLOSED** — the founder's own walk is the acceptance criterion the whole
+house was built around. **Item 109's headful `#/page/new` gate STAYS OWED** as the durable coverage
+fix (so the next regression is caught by a gate, not by a founder) — but it **no longer gates 104.**
+The longest-running defect of the project — opened 2026-08-17, three reopens across doorway / hotfix
+/ third-pass — is closed by the walk it was always going to take.
 
 **OPENS (Nick, live-test sitting #2, 2026-08-17).** On an UNBORN page, Screenplay selection is
 DEAD both ways: the **New Page "Screenplay" template icon** and the **Draft panel's Structure
@@ -540,8 +573,15 @@ two results describe the same software and not merely the same commit. `tsc` cle
 **NO DEPLOY: the hotfix waits on Nick's word; production is still `git 1cbda72 · railway
 59d55924`, which CARRIES the crash.**
 
-**OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
-this lane's cold-load-fine, at the same bundle.** Both are reported as measured; they disagree,
+**~~OPEN OBSERVATION~~ → CLOSED 2026-08-24 (Fable's note 2). The 83 desk's environmental open
+closes with it.** The hypothesis recorded below — a `vite dev` scratch serve versus a production
+build, StrictMode's double-invoke being development-only — is **CONFIRMED**, proven both directions
+on one dev server during item 104's third pass: StrictMode ON throws and blanks; StrictMode OFF
+renders correctly; production strips the double-invoke entirely. **Both desks measured correctly;
+they were measuring different builds.** Neither report was wrong and neither is overwritten.
+Original text preserved below.
+**~~OPEN OBSERVATION, CARRIED TO THE OFFER (Fable's ruling 3) — the 83 desk's cold-load void vs
+this lane's cold-load-fine, at the same bundle.~~** Both are reported as measured; they disagree,
 so neither is overwritten. What this lane measured: cold loads (full document load, then reload)
 of `/page/new`, `/page/new?structure=screenplay`, and `/page/<missing id>` all render correctly
 on the DEPLOYED bundle — `rootKids:4`, no console error. What the 83 desk measured: a void on a
@@ -562,6 +602,62 @@ stamped suite was mid-run; launching one would have contended for the shared poo
 sweep. Recorded as an environmental open rather than measured badly. The fix does not depend on
 the answer — the class fix removes the fault on both paths.
 
+## ITEM 104, THIRD REOPEN — S0 COMPLETE: WHERE, WHY, AND THE ENVIRONMENT — 2026-08-24
+
+**WHERE (the gating question).** `useCascade` at `PageEditor.tsx:428`, below the single early
+return at `:340`. **This corrects one item on the ruled-out list:** the brief stated "every hook in
+PageEditorView is top-level and above the guard" — a census on main's own tip says otherwise, and
+`useCascade` is the hook whose absence drops the count. Measured, not argued.
+
+**WHY `entry` FLIPS.** `UnbornProvider` registers the unborn slot during **RENDER** (a `useMemo`,
+so children resolve it on their first render) but tears it down in an **EFFECT CLEANUP**. Those
+lifecycles differ. React 18 StrictMode simulates unmount/remount by cycling EFFECTS while
+PRESERVING memo state — so the cleanup cleared the slot, the memo did not re-run (deps unchanged),
+and the next render found nothing. The file's own comment anticipated a double RENDER ("idempotent,
+so a double render costs nothing"); it did not anticipate a double EFFECT.
+
+**THE ENVIRONMENT THAT REPRODUCES — and it CLOSES the cold-load open.** A **dev build with
+StrictMode**. Proven both directions on the SAME dev server: StrictMode ON → "Rendered fewer hooks
+than expected", tree blanked; StrictMode OFF → renders correctly. Production bundles strip
+StrictMode's double-invoke, which is exactly why this lane's production-bundle harness read green
+while the menu lane's scratch serve read red. **The 83 desk's cold-load void and this lane's
+cold-load-fine were both correct measurements of different builds** — the open observation carried
+in the last offer is hereby RECONCILED, and the hypothesis it named (dev serve vs production) is
+confirmed.
+
+**WHY THE PREVIOUS (SECOND) FIX DID NOT CLOSE IT.** The dispatcher guards decide in the PARENT. A
+**child-local re-render** of `PageEditorView` never re-runs the parent, so the parent guard is
+never consulted. The invariant has to hold INSIDE the component: every hook above, the decision
+below. Recorded because it is the same lesson twice — a guard that lives one level up protects only
+the renders that pass through that level.
+
+**THE FIX, AND WHAT THE CENSUS FOUND.** `PageEditorView` now runs every hook unconditionally (a
+frozen `MISSING_ENTRY` stand-in keeps the render reaching the end of its hook list) with the
+redirect below the last hook. **A repo-wide census over 145 files then found the fault was NOT
+alone: `ScriptEditor` carried the identical shape — and it is the room the doorway sends writers
+INTO, so fixing only the reported surface would have MOVED the crash, not removed it.** Fixed the
+same way. A third, `JournalEntryView`, sits on a surface unrouted since FX14 and is recorded and
+left alone rather than touched.
+**The slot lifecycle is fixed at its root too:** the spurious teardown is retired (it was hygiene,
+never correctness, by its own comment) and registration is self-healing at render.
+
+**AN INTERMEDIATE WRONG STATE, RECORDED BECAUSE IT ALMOST SHIPPED.** With only the hook order
+fixed, the crash was gone but `#/page/new` **redirected to Arrival** (`prose:false`) — a crash
+traded for a dead door, which would have read as "fixed" to any check that only asserts "no error".
+It was caught by asserting what the writer should SEE, not merely the absence of a throw.
+
+**SUITE — BOTH SETTINGS CLEAN ON THE IDENTICAL BUNDLE:** unparked `60/60` and parked `60/60`,
+both `bundle=index-CaW0zodg.js/531457b` on `tree=e5f3f25` — same asset hash on both runs, so the
+two results describe the same software and not merely the same commit. `tsc` clean.
+**NO DEPLOY.** Nick's interim rule stands until this stamps: the New Page door is avoided on
+production.
+**NEW STANDING GUARD — `scripts/harness/hooks-order.mjs`.** A STATIC census, because the crashing
+path is dev-only and a production-bundle CDP scenario CANNOT bite on it. Run against the pre-fix
+source it names both violations by file, function, hook and line; green after. It carries one
+reasoned allowlist entry (the unrouted `JournalEntry.tsx`) so anything NEW shows up immediately.
+**Nothing in the suite had ever asserted hook ORDER before — which is why this class shipped three
+times.**
+
 ## ITEM 109 — THE VANISHED-SUBJECT COVERAGE GAP (harness) — OPENS 2026-08-24
 
 **Written by item 104's S0.** The suite has 59 files and none of them ever makes a record
@@ -571,7 +667,19 @@ class — for each surface that reads a subject through `getJournalEntry` (page,
 drive the subject to absent WHILE MOUNTED (remote tombstone via the armed pull; local delete
 where reachable) and assert the surface degrades without throwing. **Also owed:** a lint or
 census check for hooks below any early return, since that is the shape that made absence fatal
-rather than merely awkward. Registry: next free **110**.
+rather than merely awkward.
+**→ PARTLY DELIVERED 2026-08-24: `scripts/harness/hooks-order.mjs`, SCOPE NAMED rather than implied
+(Fable's note 3).** It is the **GENERAL form, not file-scoped**: it walks every `.ts`/`.tsx` under
+`src` (145 files) and checks every function-declared component AND custom hook (150 of them).
+**Blind spots, measured and named, because a guard that overstates itself is worse than none:**
+arrow-defined components/hooks (`const Foo = () => {…}`) are not parsed — today exactly ONE such
+definition exists in the codebase and it contains NO hook calls, so the gap is currently EMPTY but
+structural; and multi-line early returns (a `return` on its own deeper-indented line inside an
+`if {`) are not matched, only top-level single-statement ones. Both faults this ticket fixed were
+of the matched shape. It is a line scanner, not an AST pass.
+**STILL OWED to this charter: the AST-based form**, which closes both blind spots and could run as
+a lint rather than a suite file.
+Registry: next free **110**.
 
 ## ITEM 101 — S0 COMPLETE: CONFIRMED **NOT** A DATA DEFECT — 2026-08-17
 
@@ -705,6 +813,17 @@ device while it is open here, so its backing entry disappears out from under the
 and the below-guard hooks fire on the re-render. The header above ("cold direct load of
 `#/page/new`") was the first read; the gate the fix lane's S0 must build is **a mounted surface
 whose backing entry vanishes** — the broader class of which the cold-load case is one instance.
+**→ SHARPEST INSTANCE (Fable, 2026-08-25): no gate drives `#/page/new` HEADFULLY.** Three ships —
+doorway, hotfix, and the current head — have passed over a **DEAD DOOR** because no harness ever
+loads `#/page/new` in a REAL (headful) browser the way a writer does, which is the only place this
+crash manifests. This is item 109's sharpest, most-owed gate: **drive `#/page/new` headfully at the
+deployed bundle.** The vanished-subject class still stands; this is the un-gated route that keeps
+re-shipping a crashing New Page door (item 104, reopened a third time).
+**→ 104 CLOSED, 109 STILL OWED (Fable, 2026-08-26).** Item 104 closed 2026-08-26 on the founder's own
+walk of `#/page/new` on production (`2256f58` · `b10fcc55` — the door opens, paper rendered). The
+headful gate above **no longer gates 104**, but it **STAYS OWED** as the durable coverage fix — so
+the next regression on this route is caught by an instrument, not by a founder. **Item 109 remains
+OPEN.**
 Registry: next free **110**.
 
 ## ITEM 110 — ONE-CHECKOUT-PER-AGENT VIOLATED (worktree-assignment gap) — OPENS 2026-08-24
@@ -721,6 +840,24 @@ bytes**, matching chat 1's suite stamp. The deck lane moved to its own worktree
 (`.claude/worktrees/item84-deck`) and recorded the incident. **Fix: the brief template gains a
 worktree-assignment line** — one checkout per agent, assigned at brief time. Registry: next free
 **111**.
+**→ MECHANISM NAMED + FIX WIDENED (Fable / TUTOR, 2026-08-25).** Strays arise because relays name a
+**PATH and never a WORKTREE**, so a builder writes wherever it stands. **The real remediation is a
+STANDING RULE — worktree named, ALWAYS:** every brief or ruling that causes a file to be written
+states its target worktree explicitly (TUTOR amended its relay format; Fable adopts the same for
+every brief/ruling). The brief-template line follows from it, not the reverse. **Clearance executed
+(TUTOR's procedure, 2026-08-25):** of the three stray copies, `-v2.md` matched v2 (`a3e1662`, on
+main) → deleted; the other two (identical content, md5 `2f5c3e55…`, git blob `8fcd4b6`) matched
+NEITHER v1 nor v2 → kept preserved in scratchpad, hash relayed to TUTOR, nothing deleted. (`-v2` was
+never a repo path — a working name during a relay; any file bearing it is a stray by definition.)
+**→ THIRD "STRAY" RULED NOT A STRAY (Fable, 2026-08-26).** `docs/menus/tutor/item84-t1-s0-brief.md`
+(git blob `484e7221`, md5 `01d76268…`, 7796 b) is the **DECK lane's T1 S0 brief**, not a TUTOR
+stray. That ticket is **PARKED on item 112 (Revise as a surface) per Nick's ruling**, so the file is
+**superseded-before-tracked.** ROUTED TO THE DECK LANE, not TUTOR — its author decides whether any of
+it survives into item 112's eventual brief. Preserved (scratchpad copy + blob written to the object
+store, recoverable `git cat-file -p 484e7221`); nothing deleted; the working-tree copy LEFT IN PLACE
+in the shared checkout for the DECK lane to find. *(Two earlier preserved item-84 strays also await
+their desks: the revise-repass draft `2f5c3e55`/`8fcd4b6`, and the held-batch predecessor
+`a092d53c`.)*
 
 ## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24
 
@@ -753,6 +890,15 @@ durable fix is a **Linux suite-of-record environment** (WSL, or a nixpacks-match
 byte-identity is true again for every future ship — **scheduled POST-WALKTHROUGH, not now** (standing
 up a build env mid-arc costs a day). The `.nvmrc`=18 pin stays as correct hygiene, recorded as NOT
 closing 111. The Node hypothesis was chat 1's to test, not just execute — overturned with credit.
+**→ SOURCE-DEPENDENCE OBSERVED (chat 1, 2026-08-26, from the hotfix-104-third deploy).** The OS
+divergence is **NOT universal.** Deploying tree `2256f58`: Railway's Linux/nixpacks build produced
+`index-CaW0zodg.js` + `index-62lZ1TCK.css` — **byte-identical to the local Windows suite build AND
+the served bundle** (Windows == Linux == served, both assets). So SERVED==TESTED held at full
+item-77(c) strength with NO Linux build env — the `hZQhhS8W`≠`4pj2Iqk-` split was specific to that
+earlier source tree. Item 111 STAYS OPEN (a Linux suite-of-record env is still the general fix; the
+divergence still MAY strike a future tree), but the standing rule is now **DIFF served-vs-stamped
+every ship and let the bytes rule — never assume a gap, never assume identity.** See the HOTFIX 104
+(THIRD) DEPLOY MANIFEST.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -9095,6 +9241,77 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## HOTFIX 104 (THIRD) DEPLOY MANIFEST — 2026-08-25 (chat 1, on Nick's "execute and ship the New Page fix")
+
+**HOTFIX 104, THIRD PASS — the hooks-order class fixed at the invariant (the New Page door).** Fable's
+order: MERGE `hotfix-104-third @ 8e75e60`, then HOLD for Nick's ship word; Nick's word: "execute and
+ship the New Page fix." Deploying the `main` HEAD (`2256f58`) — merge `ade023a` of the fix +
+the item-84 docs take (`68c67a7`) + this review's records commit.
+
+**New PRODUCT code since the last live build (`63b875b`) — apps/desktop/src, THREE FILES (verified
+`63b875b..HEAD`, +107/−9 in shipped source), ZERO schema, ZERO server:**
+- `PageEditor.tsx` (+44) — PageEditorView's guard now sits BELOW `useCascade`: every hook above, the
+  vanished-page decision below. Why the two earlier passes missed it: lifting this ticket's own hooks
+  left `useCascade` behind, and the dispatcher decision only helps when the PARENT re-renders — a
+  child-local re-render never consults the parent. The prior dispatcher-unmount fix is KEPT, not
+  reverted (the two-device-tombstone path stays green); the view is now internally safe too. Belt and
+  braces, each argued.
+- `ScriptEditor.tsx` (+14) — the IDENTICAL fault, in the room the doorway sends writers INTO. A
+  reported-instance-only fix would have MOVED the crash here; the class fix closes it.
+- `UnbornSurface.tsx` (+49) — `UnbornProvider` registers its slot during RENDER (useMemo) and tears
+  down in an EFFECT CLEANUP; under StrictMode the cleanup wins and the memo cannot re-run — dev-only
+  by construction, which also RECONCILES the two desks' opposite cold-load reports at the same bundle.
+- **Also merged, NOT in the bundle:** `scripts/harness/hooks-order.mjs` (+98) — the 145-file
+  hooks-order guard (every function-declared component + custom hook). Census found THREE violations;
+  one deliberate reasoned allowlist entry (`JournalEntry.tsx`, unrouted since FX14, delete-the-line-
+  first-if-re-routed), plus a check asserting the allowlist still describes only unrouted surfaces.
+  The DURABLE PRIZE. Blind spots written into the file (arrow-defined components, multi-line early
+  returns, line-scanner-not-AST) — AST form owed to item 109.
+
+**REVIEWED GREEN** (`docs/wrizo-alpha/hotfix-104-third-review-fable.md`, Fable VERDICT PASS, read at
+raw bytes, offer `8e75e60`).
+
+**Docs since `63b875b` (records only, no deployed surface):** the item-84 take (`68c67a7` — Revise
+finding + re-plan + held batch), this third-pass review, and the ledger appends (item 104 third
+reopen + this manifest). Confirmed: `63b875b..HEAD` touches `apps/desktop/src` in exactly the three
+files above.
+
+**Verified — suite of record:** DF1.1's committed `run-suite.mjs`, BOTH HARNESS_PARKED settings, read
+to completion, machine-clear (NOT contaminated) — **60/60 UNSET (CLEAN) and 60/60 PARKED (CLEAN)** at
+`tree=2256f58 bundle=index-CaW0zodg.js/531457b` (CSS `index-62lZ1TCK.css`), the same bundle the fix
+offer stamped. Among the 60: `hooks-order.mjs` (the new guard) PASS and `item104.mjs` (tombstone path)
+PASS. `tsc` ×2 EXIT 0; `build:web` clean. *(The stamp reads `+1dirty` — one untracked file,
+`docs/menus/tutor/item84-t1-s0-brief.md`, a preserved item-110 stray OUTSIDE the build path; the
+identical bundle hash proves it does not affect the artifact.)*
+
+**ROLLBACK TARGET: git `63b875b` · railway `410033f9-678d-4b66-8679-e20d07cd5da3`** — the prior live
+build (New Page route crashing). Rolling back REINTRODUCES the New Page crash, so it is only for a
+worse regression from THIS deploy. Rollback is a redeploy of that tree (`railway up`).
+
+**DEPLOY STAMP: git `2256f58` · railway build `b10fcc55-94d4-4429-a24e-bc889b1ef6a1`** — DEPLOYED
+2026-08-25 (`railway up --ci` from the primary checkout, item-98 guard verified: project
+`writer-studio` / env `production` / service `writer-studio-app`; deployed image `sha256:e7ead873`).
+Verified LIVE: `/healthz` **200**, served bundle **`index-CaW0zodg.js` + `index-62lZ1TCK.css`**,
+`/auth/me` **401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (the item-111 provenance gap did NOT recur).** Railway's
+Linux/nixpacks build (node 18) produced `index-CaW0zodg.js` + `index-62lZ1TCK.css` — the SAME JS and
+CSS hashes as my local Windows suite build AND as the served production bundle. Windows suite ==
+Linux Railway == served, on BOTH assets. So this deploy is byte-verified served==tested at full
+item-77(c) strength — NO functional-equivalence caveat needed (contrast the 2026-08-24 hotfix, which
+served `4pj2Iqk-` ≠ tested `hZQhhS8W`). **Refines item 111: the build-OS divergence is
+SOURCE-DEPENDENT, not universal — it did not manifest for this tree.** Item 111 stays open (a Linux
+suite-of-record env is still the general fix), but THIS deploy needed no such fallback. **Build OS:
+local Windows; deploy Railway Linux/nixpacks (node 18).**
+
+**BOUNDARY, stated honestly (the review's own risk carried forward):** the production suite still
+cannot drive `#/page/new` HEADFULLY — that gate is owed to item 109. The direct "the writer SEES the
+New Page" proof is the fix lane's DEV-SERVE verification recorded in the review (VERDICT PASS on the
+guard placement below `useCascade`), NOT this production suite. This deploy ships that
+reviewed-and-verified artifact byte-for-byte. Item 104's formal disposition (close vs monitor) is
+left to Fable. The ELEVATED STANDING HARNESS LAW from the review is registered: **"'nothing threw' is
+not a verdict; 'the writer sees the page' is."**
+
 ## HOTFIX 104 DEPLOY MANIFEST — 2026-08-24 (chat 1, on Nick's "ship the hotfix on a clean suite")
 
 **HOTFIX 104 — the hooks-order crash class.** Nick's word: "ship the hotfix on a clean suite." The
@@ -9156,6 +9373,13 @@ hotfix is **FUNCTIONALLY VERIFIED**, byte-identity of the deployed bundle **NOT*
 (item 111, open, fix = a Linux suite-of-record env; scheduled post-walkthrough). **INTERIM RULES
 LIFTED** — cross-device deletes are fine again. **Build OS: local Windows; deploy Railway
 Linux/nixpacks (node 18).**
+**→ CORRECTED (Fable, 2026-08-25): the FUNCTIONALLY-VERIFIED line stands for the TWO-DEVICE
+TOMBSTONE PATH it was proven against — NOT for the New Page route.** A THIRD reopen (item 104):
+`#/page/new` still crashes at main `8210c37` (MENU lane, headful scratch worktree). The hotfix
+removed the tombstone-path hooks crash, but a SEPARATE New-Page-route crash remains. **Fable's
+review-sufficiency claim is WITHDRAWN on the record** (`hotfix-104-review-fable.md`, sufficiency
+append). **Interim rule REINSTATED — the New Page door is avoided on production.** Root: no gate
+drives `#/page/new` headfully — item 109's sharpest instance.
 
 ## DOORWAY DEPLOY MANIFEST — 2026-08-21 (chat 1, on Nick's "SHIP THE DOORWAY")
 
@@ -10804,6 +11028,11 @@ fixture that no longer exists.
 - **ROAD-DEPLOY AMENDMENT — RETIRED (Nick, 2026-08-17).** Moot now travel is over; there is no
   standing road-deploy carve-out. Re-draft fresh if travel looms again — until then the item-98
   primary-checkout guard and the explicit-per-package deploy-word gate stand unamended.
+- **WORKTREE NAMED, ALWAYS — standing law (Fable, 2026-08-25).** Every brief or ruling that causes
+  a file to be WRITTEN names its target WORKTREE, not just a path — a relay that names only a path
+  lets a builder write wherever it stands, which is how strays land in the primary checkout and
+  contaminate another lane's staging (item 110). A path without a worktree is an under-specified
+  instruction; TUTOR's amended relay format and Fable's briefs/rulings now state the worktree.
 - **THE BUILD ENVIRONMENT IS PART OF THE ARTIFACT — standing law (Fable, 2026-08-24).** A stamp
   names the TREE, the BUNDLE, **and the TOOLCHAIN** that produced it — the same source under a
   different Node builds different bytes, so a bundle hash without its build environment names its
