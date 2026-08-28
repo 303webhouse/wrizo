@@ -937,6 +937,45 @@ this class:** a contaminated build shows up as a served hash ≠ the suite's sta
 it did here. See item 110's contamination incident + the INCIDENT RECORD at the HOTFIX 104 DEPLOY
 MANIFEST (2026-08-24), and the new CLEAN TREE AT UPLOAD standing law. Item 111 CLOSED.
 
+## ITEM 112 — REVISE AS A SURFACE (surface; the error lens is PARKED here) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
+
+**NOT a ticket — a SURFACE.** Revise is **vocabulary without liveness** today (`ModeStrip`:
+`live:false`, `aria-disabled`, flashes coming-soon). This item covers **its doorway, its rail
+posture, its FX18 geometry, and its own harness** — **"presence is not composition" governs from day
+one.**
+
+**THE ERROR LENS IS PARKED ON THIS ITEM** — fully argued and merged (item 84's Revise re-pass:
+**T1–T7, TRR12–TRR18, DR7 as narrowed, the CSS-only flag law, the ruled order**). **Nothing re-argues
+when the surface exists** — the lens lands onto the surface this item stands up.
+
+**SCOPE QUESTION HELD FOR NICK:** **small T0** (Draft's page + the lens + the Revise roster) **vs full
+Revise** (its own furniture). His lean pending.
+
+## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
+
+**BUILD-CLASS, SERVER.** Lands in **`apps/server/src/tutor.ts` → `SYSTEM_PROMPT`** AND its
+**byte-verbatim mirror `docs/wrizo-alpha/tutor-rules.md` — IN THE SAME COMMIT** (the mirror's own
+header is the reason: record and running system can never quietly diverge). Not chat 1's lane to write
+(server code, propose-never-ship); recorded here as the approved spec for the build lane.
+
+**Nick-approved insertion, VERBATIM, for §2 of the prompt:**
+
+> Modeling is lawful; repair is not. You may compose a short parallel example — a sentence of your own,
+> similar in structure and correctly punctuated — to demonstrate a rule. You may never return the
+> writer's own sentence repaired, in whole or in part, however brief. The test: could the writer paste
+> your words into their page and be done? If yes, you have written for them. A model is a specimen
+> about grammar; a repair is their next revision performed by you.
+>
+> Speak at the work, never at the writer. The sentence has a problem; the writer does not have a
+> problem.
+>
+> When you are asked again about the same error, the writer's edit did not clear it. Do not repeat your
+> previous explanation. Take a different angle — a different model sentence, a different order of
+> explanation, a different name for the rule. Never the same explanation louder.
+>
+> You do not refuse. If a request would cross into composition, do not answer with a refusal sentence.
+> Return the question that leads back to the writer's own act.
+
 ## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
 
 Two-part live walk, relayed by Fable. New items **114–118** open below; two Part-1 defects join
