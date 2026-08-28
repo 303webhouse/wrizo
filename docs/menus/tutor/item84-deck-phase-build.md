@@ -271,6 +271,38 @@ SUITE DONE HARNESS_PARKED=1     — 60/60 of 60 returned a passing verdict
 SUITE RESULT: CLEAN — tree=63b875b+11dirty bundle=index--cpkDas3.js/537384b
 ```
 
+### §6.2b · THE OFFER'S OWN STAMPS — at the offer SHA, on current main
+
+Taken at **`tree=1df8f75`** — a CLEAN tree, rebased onto `origin/main` @ `b609b51` (which
+carries the menus wave, merged and deployed):
+
+```
+SUITE DONE HARNESS_PARKED=unset — 61/61 of 61 returned a passing verdict
+SUITE RESULT: CLEAN — tree=1df8f75 bundle=index-DkYc0b8V.js/550017b
+  item84.mjs :: ITEM84 VERIFY: PASS (57 checks)
+
+SUITE DONE HARNESS_PARKED=1     — 61/61 of 61 returned a passing verdict
+SUITE RESULT: CLEAN — tree=1df8f75 bundle=index-DkYc0b8V.js/550017b
+  item84.mjs :: ITEM84 VERIFY: PASS (57 checks)
+```
+
+**Same bundle both settings**, so both provably measured the same software. `tsc --noEmit`
+EXIT 0. `m3.mjs` green in both — consistent with §11b's finding that its ROAMS check is
+seed-variable rather than broken by this branch, and NOT to be read as the finding being
+withdrawn: the owed ticket stands.
+
+**HOW THESE STAMPS WERE OBTAINED, because the method matters.** Three earlier attempts
+returned **VOID**, not red — the runner aborted each mid-sweep with *"Another lane started
+while this sweep was running… a sweep cannot be half-clean."* Waiting for a quiet window at
+the START is not sufficient on a box several lanes share; another can begin at any point in
+a 25-minute run. The stamps above came from a retry loop that waits for quiet, runs, and
+re-runs **only on VOID**.
+
+> **The distinction is the whole legitimacy of the method: VOID IS NOT A VERDICT.** The loop
+> halts immediately on a `NOT CLEAN` result and reports the failing files, because re-running
+> a RED until it turns green is precisely the discipline this house has retired. Retrying
+> contention is measuring again; retrying a red is shopping for an answer.
+
 ### §6.2a · THE STAMP EARNED ITS KEEP — a run that had to be thrown away
 
 **One full-suite run was killed mid-flight and is NOT reported as a result, because the
