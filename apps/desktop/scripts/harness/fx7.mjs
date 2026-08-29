@@ -416,6 +416,23 @@ await withHarness(async (app) => {
   // needed per theme.
   await app.evalJs("document.documentElement.setAttribute('data-theme','flux')");
   await sleep(100);
+  // DRIVER RE-POINTED (item 83 errata E1, 2026-08-28) — the ASSERTION below
+  // is untouched; only the fixture that reaches its subject changed, and the
+  // reason is worth recording because the fixture was relying on a DEFECT.
+  //
+  // This block opens the cascade (measured above), then opens the SLIVER,
+  // then came back here to read `.wz-cascade-panel` again. That only ever
+  // worked because the two-drawer law was silently broken: opening the sliver
+  // by its own path never announced itself, so the cascade was never
+  // displaced and both stood at LAPTOP_W — a width whose band cannot hold
+  // them both. With E1 repaired the law fires correctly, the cascade yields
+  // to the sliver as R9/R11 rule, and `querySelector` returned null here
+  // (the harness crashed on getComputedStyle(null), NOVERDICT, no false
+  // green). Re-opening the category restores the subject this check is
+  // actually about — a cascade panel's THEMED SCROLLBAR — which the repair
+  // never touched. Nothing is parked: no assertion here was falsified.
+  await openPageCategory(app);
+  await sleep(200);
   const fluxCascadeColor = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-panel')).scrollbarColor");
   const fluxInkBorderStrong = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-border-strong').trim()");
   ok('S4: Flux resolves its OWN scrollbar color (a different --ink-border-strong value) with zero theme-specific scrollbar CSS of its own — genuinely "consistent with the colors and mood of each unique theme"',
