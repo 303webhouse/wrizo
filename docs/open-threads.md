@@ -1205,6 +1205,31 @@ standing design ruling and a fix lane does not unfreeze one on its own initiativ
 Fable.** Whichever way it goes, it is one change in the SHARED engine and it lands on the page and
 the card together — class-over-instance, not a board-local patch.
 
+**→ BUILT AND OFFERED — 2026-08-28: (a-ii) ONLY. `ae1f600`, branch `fix-ab2-repoint`, offer doc
+`docs/wrizo-alpha/offer-item118-a2-2026-08-28.md`.** One file, one JSX element: `BoardTextBox` now
+renders through `decorateMarkdownForCard(initialText, null)` instead of returning `{initialText}`
+raw. No new renderer — the popup's own engine, with a null caret, so nothing is adjacent to
+anything and every marker collapses. Governed by FX5 S6's existing verdict; **no ruling taken**.
+`dangerouslySetInnerHTML` is safe on the same grounds as `decorateEditorFor` (every slice through
+`escHtml`; the engine emits only its own `<span class="md-*">`). Storage untouched and ASSERTED —
+marks collapse via `font-size:0`, never `display`/`visibility`, so `textContent` still carries the
+stored bytes; the check exists so a future "simplification" to `display:none` fails loudly in the
+harness instead of quietly in a writer's saved words. Card heights cannot shrink (the measure
+effect is one-directional) — asserted, not argued.
+**NEW HARNESS: `apps/desktop/scripts/harness/item118.mjs`, 6 checks. Suite files 60 → 61.**
+**FALSIFIED FIRST** against the reverted product at the same build: `ITEM118 VERIFY: FAIL — 3/6
+failed` — the three DEFECT assertions, while the storage invariant, the no-collapse guard and the
+popup regression passed before AND after (they are guards, not defect claims; a guard that only
+passes after the fix proves nothing). Fix restored: `PASS (6 checks)`.
+**THE HARNESS ASSERTS NOTHING ABOUT (b), (c) OR (e)** — deliberately. They did not reproduce, and a
+harness that "passes" against an unreproduced defect is worse than none.
+**DELIBERATELY OUT OF SCOPE, NAMED NOT SKIPPED:** `BoardPinBox` and the ported-card branch render a
+`notecardExcerpt` title+excerpt — a derived SUMMARY of a page, not the card's own words. Whether a
+summary carries styling is a design question. **Owed follow-up.**
+**STANDING AFTER THIS:** (a-i) and (a-iii) ROUTED TO FABLE for rulings; (b), (c), (e) PARKED
+UNBUILT; (d) not reached; (f) already ruled removed. **The single cheapest unblock for (b)/(c)/(e)
+is one line from Nick naming the POINTER TYPE and the CARD KIND he was using.**
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
