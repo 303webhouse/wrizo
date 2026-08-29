@@ -976,6 +976,68 @@ header is the reason: record and running system can never quietly diverge). Not 
 > You do not refuse. If a request would cross into composition, do not answer with a refusal sentence.
 > Return the question that leads back to the writer's own act.
 
+## ITEM 83 ERRATA — E1 REPAIRED, E2 HELD — 2026-08-28 (menus errata lane; branch `menus-errata`)
+
+**OFFERED, NOT MERGED.** Full record: `docs/menus/errata-e1-2026-08-28.md`. Branched from
+the offered wave tip `e01c482`. **E1 `6bbdd9f`** (the fix + `item83e.mjs`) · **`bd5072c`**
+(fx7 driver re-point). **BOTH SETTINGS CLEAN, 61/61 each, tree `bd5072c`, neither stamp
+dirty; probe 42/42, shots byte-identical — the repair moved no pixels.**
+
+**E1 — THE OFFER'S RECORDED CAUSE WAS WRONG, and is corrected not dropped.** The offer
+named a permissive `band <= 0` return on a full-bleed canvas. Measured, the board's band is
+**+50px at 1366 and +207px at 1680** — never `<= 0`, so that branch never ran. It was a
+READING of the code carrying the confidence of a measurement. **NEW LAW: READING CODE IS A
+HYPOTHESIS, RUNNING IT IS A MEASUREMENT** — this lane's own "maps are research, disk wins",
+turned on its own diagnosis.
+
+**THE ACTUAL MECHANISM.** A diagnostic read the store with the sliver visibly
+`data-open="true"`: `{ openDrawer: null, coexist: false }`. The policy was right all along
+and was never consulted. `Sliver.tsx` announced only from `toggleOpen` (the Ctrl+/ path);
+the grip's own onClick called `setOpen(o => !o)` directly — and the grip is what a writer
+TAPS ON A TABLET, which is where Nick felt it. **The law was never wrong; it was never
+told.** REPAIRED AT THE INVARIANT: both drawers now announce from an effect keyed on their
+own open state, so every path announces, including paths not yet written — **a silent open
+path is no longer possible to write.** Also fixes an impurity (announcing from inside a
+setState updater set state on another component during render).
+
+**TWO MORE OF THE SAME FAMILY, found only by measuring:** (a) `canCoexist` looked for
+`.script-page`, which does not render on the framed screenplay surface, so **the two-drawer
+law was DISABLED OUTRIGHT there** (`band=null`); now single-sourced with the probe's
+corrected list, `.board-canvas` → `.board-canvas-wrap` for the same reason. (b) `closePanel`
+docking a survey never announced a close.
+
+**FABLE'S CONSTRAINT IS NOW THE CODE'S FIRST LAW AT THAT SITE** — the permissive answer is
+reached only by PROVING both boxes are laid out, never by inferring it from the band's sign;
+a measured `band <= 0` returns FALSE (no room is a NO, not a shrug). That the branch was not
+E1's cause does not retire the constraint.
+
+**BITES PRE-FIX: 4 of 13** on a bundle rebuilt from unfixed source. Carries CONTROLS so a
+green cannot be a coincidence: each narrow close is paired with "the band is genuinely too
+short", and the 2600px case asserts both drawers STAND with coexistence proven EARNED
+(`band >= tools + cascade`) — the guard on Nick's other half against a fix that just always
+closes.
+
+**THE SUITE CAUGHT A FIXTURE THAT HAD ENCODED THE BUG.** `fx7` returned NOVERDICT (crash on
+`getComputedStyle(null)`): its S4 opens the cascade, then the sliver, then re-reads the
+cascade — which only ever worked because the law was broken. Independent confirmation the
+repair is real, and the harness failed LOUDLY rather than green-on-a-changed-world. **Driver
+re-pointed, assertion untouched, nothing parked** (nothing falsified); FX7 PASS (45), same
+count as before.
+
+**E2 — HELD FOR A RULING, NOT A DEFECT.** It does not reproduce as a slipping anchor: the
+panel is **0.0px** from the stage's right edge at rest, with the board canvas shrunk to
+588px, grown to 1488px, across four viewport-resize transitions, and after scrolling. (An
+early 6px reading was a TRANSITION ARTIFACT — measured mid-animation; recorded so it is not
+rediscovered as a phantom.) The panel is a constant **250px** right of the board's own edge
+and does not follow the board — **because it was never anchored to it. That is FX18 S2
+regime (3) working as ruled** ("bounded to the app edge by the flex-end dock"). Nick's ask
+therefore REVERSES A STANDING RULING, which is not this lane's act. The change is small,
+CSS-only and needs no JS-measured position; **an hour on the word.** Two things for a
+reviewer first: the board panel overlays the canvas by design at narrow widths (regime (3)'s
+own exception), and `.board-canvas-wrap`'s right edge does NOT move when the canvas is
+resized — so "follows the board" must be defined against the wrap, and even then will not
+track a canvas resize. If Nick wants it tracking the CANVAS, that is a larger change.
+
 ## ITEM 83 — THE MENUS WAVE OFFERED — 2026-08-27 (menus lane; Nick's merge word given, Fable reviews)
 
 **OFFERED, NOT PUSHED.** Full record: `docs/menus/offer-2026-08-27.md`. On Fable's
