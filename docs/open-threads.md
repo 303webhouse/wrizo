@@ -1106,6 +1106,12 @@ here (below), accepted by this lane and outstanding at the time of the offer:
   the WRITING SURFACE, not the screen). E2 is NOT repaired independently; **the interim screen-anchor
   stands until item 119 ships.**
 
+- **E3 — the Tutor pop-out does NOT fade out on close (the Tools menu does).** Nick's finding +
+  ruling, 2026-08-31: **fade in AND fade out on BOTH pop-outs, and on ALL menus that slide in/out.**
+  The Tutor/Tools asymmetry is item 119's ANIMATION-mirror clause made concrete (the Counsel's
+  animation must exactly mirror the Desk's); the broader ruling — every slide-in/out menu fades both
+  ways — is a general MENU-lane animation law. Owed to MENU; feeds item 119's charter.
+
 ## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
 
 Two-part live walk, relayed by Fable. New items **114–118** open below; two Part-1 defects join
@@ -8294,6 +8300,14 @@ Registry: next free **120**.
     83 desk's S4). The watch records it; **NOTHING CLEARED.** A green run on a quiet box is exactly
     the evidence class that does NOT attribute the family's reds — "the machine was quiet" is a
     retired clearance argument; logged as a data point, not a diagnosis.
+    **→ ITEM 82 WATCH (2026-08-31, DECK's ROAMS measurement):** the family's non-determinism is now
+    MEASURED, not merely watched. `m3.mjs`'s ROAMS check — a geometric growth property seeded from a
+    SINGLE `Date.now()` live seed — returned 60/61 on DECK's default suite. Investigated, NOT re-run:
+    a six-runs-per-tree sampled distribution showed **clean MAIN produced the WORST outlier, not the
+    branch** (main tail 137.3 vs branch max 12.1; threshold 183.3). **The flake is MAIN's, owed to the
+    Rhizome desk** (drive ROAMS from a multi-seed sweep / pin `SESSION_START` behind a harness seam /
+    widen the bound to the real tail) — NOT a branch red, NOT a clearance. Full record: deck-phase
+    build §11.
     **THE REBASE WAS A PURE REPLAY, and fidelity was measured rather than assumed.**
     `--empty=keep` so the empty gate-commit survived as itself; **12/12 commits replayed,
     ZERO conflicts; all SEVEN touched files byte-identical BLOBS pre→post.** The previous
@@ -11483,6 +11497,13 @@ fixture that no longer exists.
   Evidence: the fix lane's false-negative recovery on item 104 — a baseline that reverted both
   showed no crash until the current harness was held against the old product. Move only the
   product; keep the instruments current.
+- **THE RETRY-LOOP METHOD — VOID IS NOT A VERDICT — canon (DECK, ratified by Fable 2026-08-31).** A
+  suite retry loop may wait for quiet and **re-run ONLY on VOID** (contention — a foreign-browser
+  abort, a machine-sleep NOVERDICT); it **HALTS IMMEDIATELY on `NOT CLEAN`** and reports the failing
+  files. Re-running a red until it turns green is the discipline this house has retired. The lane's
+  own sentence, quoted to canon: **"Retrying contention is measuring again; retrying a red is shopping
+  for an answer."** (Source: deck-phase build record §6.2; stands beside the S4 LAW and the
+  known-flake discipline — item 82's watch.)
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
