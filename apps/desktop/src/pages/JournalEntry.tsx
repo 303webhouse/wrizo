@@ -1171,7 +1171,7 @@ function JournalEntryView() {
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
-          tutor={<Tutor entry={entry} project={homeProject} pageText={goalText} pageKind="prose" />}
+          tutor={<Tutor entry={entry} project={homeProject} pageText={goalText} pageKind="prose" mode="journal" />}
           goalGlow={<GoalGlow text={goalText} />}
           // M2 S2 — the Rhizome's own growth layer. Authored pages only (a
           // read-only capture isn't a session in progress — the SAME gate

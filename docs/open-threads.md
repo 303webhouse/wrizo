@@ -11660,6 +11660,125 @@ enters the item-84 build brief as **its first ungated citizen** (it builds now �
 sentence required); the **MODEL PHASE** (memory / retrieval) is **item 108 — the Tutor Memory
 Arc**, where the carve-out / disclosure sentence and the retrieval design settle together. Preset
 (B) is no longer wholly gated: the deck ships, the model waits on item 108.
+
+**→ THE DECK PHASE IS BUILT — offered, NOT merged, NOT deployed (2026-08-25, branch
+`item84-deck-phase` from `origin/main` @ `63b875b`).** The Free Write roster lands as Nick
+redesigned it at lock line 1: **(A)** the composer, which now takes focus in Free Write so
+it is genuinely "blank space with a flashing cursor" · **(B)** "Writing Prompt" ·
+**(C)** "Unblock" · **(D)** "Free Writing Tips" — all three **deck-drawn from local authored
+pools** (24 / 16 / 14 = 54 lines), inheriting FX15's mechanism *and* its harness shape whole.
+Records: `docs/menus/tutor/item84-deck-phase-s0.md` (the S0, with file:line evidence, landed
+before the first patch) and `item84-deck-phase-build.md` (the build record).
+- **The Tutor is no longer mode-blind.** The census's headline finding is answered by one
+  optional prop, `mode?: EditorMode`, threaded from the four mount sites; the roster renders
+  in Free Write and **nowhere else** (Draft, screenplay, Board all absent — G3, not disabled).
+  Board passes nothing, having no mode to pass.
+- **NOTHING TRAVELS, and it is proven rather than promised.** A preset press fires zero
+  outbound calls of any kind — asserted from both ends (a page-side counter over
+  fetch/XHR/beacon/WebSocket to any URL, plus the server double's new `tutorChatCount`).
+  **That assertion IS this phase's disclosure obligation, discharged by proof** — which is
+  why the phase carries no disclosure gate and no carve-out sentence, exactly as §6 Q2's
+  disk note said it would not need one.
+- **The anti-deliberation rule is a mechanism, not a reminder.** One standing draw for the
+  whole roster; a second press REPLACES it. There is no array to render, so no later edit
+  can stack three. Ceiling: three draws behind one ask.
+- **THE REFILL — NICK'S RULING, 2026-08-26** *(verbatim)*: *"It should reset after 100 words
+  have been written with a note to the user if they try to use it a fourth time before
+  writing 100 words."* This **supersedes** this lane's own inferred reading (any new writing
+  or a Send), which was flagged as inferred and is kept verbatim in the build record rather
+  than rewritten. Two consequences it does not state and the build cannot avoid: **a Send
+  refills nothing** (he named one condition, and conversation is not it), and **a spent
+  preset is no longer `disabled`** — a fourth press must *answer*, and a disabled control
+  cannot speak. A deliberate departure from G3's `disabled` specimen, on his word.
+  Instrument pinned, not invented: **HB1's own `useMonotonicWordCount`**, the app's existing
+  ratified reading of this exact number (F1's 100 whitespace-delimited words), counted from
+  the page's word count at the **third draw**. Caveat carried openly — `FirstRunGate.tsx`'s
+  header calls itself non-reusable; reuse was chosen over a fourth copy of a helper already
+  triplicated on disk, and the stale sentence is a correction owed to that file.
+- **DECISION-COMPLETE — Nick's four rulings, 2026-08-26.** **(1) THE DECK IS APPROVED** as
+  committed (54 entries, three registers); his posture recorded — *"not worth holding up
+  progress right now"* — so **future rework rides normal errata, not a re-approval**.
+  **(2) THE NOTE'S COPY is Nick's own line**, superseding all three desk candidates and
+  shipped verbatim: **"Write 100 words to unlock more prompts"** — it carries the unlock
+  condition *inside* the copy rather than reporting a state, and satisfies the voice law by
+  an imperative aimed at the ACT, not the writer. **(3) RATIONING stands AS BUILT (per
+  ask)**, his reasoning recorded: *"Unblock and tips are different kinds of help. We can
+  revisit putting limits there later, but for now, I just don't want Users to be able to
+  flip through an endless stream of prompts — defeats the purpose of getting a nudge with
+  the intent of getting started."* **The Writing Prompt deck is the rationed one; REVISIT
+  NOTE rides the record** — whether Unblock and Tips should be rationed at all is open, and
+  open in the direction of loosening. **(4) THE WORD COUNTER is REUSED**, and
+  `FirstRunGate.tsx`'s stale *"not reusable beyond that page"* header is corrected **in the
+  same commit** on his principle that *a comment that lies about the code is a defect* —
+  the same mirror law this house already applies to `tutor-rules.md`. The correction is
+  precise: the veil and the gate stay HB1's and stay first-run-only; it is the word COUNT
+  that turned out to be general.
+- **(SUPERSEDED by ruling 3) the scope question:** the relay reads *"three draws exhaust the deck"*; the
+  lock record reads *"up to 3 prompts may exist behind an ask."* The build keeps **per ask**
+  on the lock record's wording, so three prompts + three unblocks + three tips are available
+  before any hundred is owed. Pinned rather than decided; one line to change.
+- **Verification: `item84.mjs`, 46 checks, and the harness BITES** — six deliberate mutations
+  across two runs killed exactly the checks belonging to each broken law (19/46 and 5/46), so
+  the green is a result and not a shape. **Suite of record CLEAN both settings, 60/60 each.**
+- **NOT BUILT, and not stubbed toward:** the model phase, its carve-out sentence, the
+  deck→model threshold, the memory seam — **item 108**, untouched. The conversation rules stay
+  deferred by Nick's own sentence at lock line 1.
+- **HELD FOR NICK'S WORD before the lock:** the 54-line starter deck (the prompts are the
+  product, not the plumbing) and the re-arm reading above.
+- **CROSS-LANE DISCLOSURE:** this lane began in the primary checkout while chat 1 was staging
+  the hotfix-104 deploy from it. All three contacts repaired and verified — see the build
+  record §7.1; `dist-web` was rebuilt to chat 1's exact stamped bundle
+  (`index-hZQhhS8W.js`/531318b) and the primary checkout left clean at `63b875b`.
+
+**→ THE DECK PHASE IS OFFERED TO CHAT 1 — branch `item84-deck-phase`, rebased onto
+`origin/main` @ `23ffadb` (fast-forward). MERGE OFFER ONLY; no deploy word is asked for or
+given.** Records: `docs/menus/tutor/item84-deck-phase-build.md` (§12 is the offer itself)
+and `item84-deck-phase-s0.md`. Decision-complete on Nick's four rulings; nothing rests on
+an inference. Verification: `item84.mjs`, 57 checks, and the harness BITES — nine
+deliberate mutations across three runs, each killing exactly the checks belonging to the
+law it broke, including one that caught a VACUOUS check of this lane's own.
+
+**TWO FINDINGS THIS OFFER CARRIES THAT ARE NOT ABOUT THIS TICKET, and both are owed to
+other desks:**
+
+**(a) ITEM 111's PREMISE IS FALSE, and this lane caused it** (build record §9). Item 111
+was opened on the reading that hotfix-104's served bundle differed from its suite-of-record
+bundle given *"same source + same frozen lockfile"* — but the source was NOT the same: this
+lane's uncommitted files, including four deliberate harness mutations, were in the primary
+checkout when `railway up --ci` uploaded it. Proven from production: the served bundle
+carried a string that existed nowhere but in mutation MUT2, and its hash and byte count
+(`index-4pj2Iqk-.js`/537500b) matched this lane's own mutant build stamp exactly. **And the
+Node-drift reading is contradicted, not merely unproven:** Railway genuinely rebuilds
+(`railway.json` runs `build:web` under NIXPACKS; `dist-web/` is gitignored with no
+`.railwayignore`, so no artifact is uploaded), and TWO independent trees each built
+byte-identically across Windows/Node 24 → Linux/Node 18 — the contaminated tree, and clean
+`23ffadb` (`index-CaW0zodg.js`/531457b, which is what production serves). **A standing
+house note that Windows and Railway builds diverge from identical source is falsified as of
+2026-08-26 and should be re-tested, not trusted.** The unbidden-send build is no longer
+live; production was re-verified by download.
+
+**(b) `m3.mjs`'s ROAMS CHECK IS NON-DETERMINISTIC — owed its own ticket to the Rhizome
+desk** (build record §11/§11a/§11b). This lane's default suite came back 60/61 on that one
+check. It was investigated rather than re-run away: mechanism (every expensive thing the
+Tutor does is gated on `panelVisible`, and m3 never opens the panel), a matched full-suite
+control on clean main (60/60 CLEAN), and a sampled distribution of six runs per tree —
+**clean main produced the worst outlier, not this branch** (main 4.9·8.0·7.3·6.3·7.9·137.3
+vs branch 12.1·3.1·9.6·3.3·8.1·5.4, threshold 183.3). The check asserts a geometric
+property of growth seeded from `Date.now()` at app load (`RhizomeField.tsx:50`,`:165`) from
+a SINGLE live seed, while the same file proves its sibling paper-avoidance law across a
+40-seed sweep. **This lane did not touch it** — editing another lane's assertion to green
+its own suite is what the immutability law exists to prevent. Suggested shapes, the choice
+being that desk's: drive ROAMS from the same multi-seed sweep, pin `SESSION_START` behind a
+harness seam, or widen the bound to the real tail.
+
+**ALSO ROUTED, and DECLINED with evidence** (build record §10): `item84-t1-s0-brief.md` was
+routed to this lane as its author. **This lane did not write it.** The session's own opening
+`git status` listed it as already untracked before this lane's first action, and its subject
+is the Revise error lens (T1→T3→T2…, `draftDecoration.ts`, TRR15) — 21 hits on that
+vocabulary, 0 on anything of this lane's. **It is not superseded by the deck phase and must
+not be deleted on this lane's word.** It belongs to the Revise re-pass desk, whose own T0
+ruling would supersede its §1 ordering.
+
 Theme adaptations only AFTER Plateau locks and builds, as their own passes
 under the cross-theme seam laws.
 

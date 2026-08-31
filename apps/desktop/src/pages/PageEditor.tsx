@@ -932,7 +932,7 @@ function PageEditorView({ id }: { id: string }) {
           // DeskFrame.tsx provides ITS anchor div outside the veil; the
           // Tutor provides its own anchors internally, so a veil wrapper
           // here would swallow them both.
-          tutor={gateActive || unborn ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" />}
+          tutor={gateActive || unborn ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
           // contract exactly), fed the gate's own word fraction instead of

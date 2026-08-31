@@ -3731,6 +3731,40 @@ a:focus-visible,
 .wz-tutor-convo-send:hover:not(:disabled){ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-tutor-convo-send:disabled{ color:var(--text-low); cursor:default; }
 .wz-tutor-convo-status{ font-size:11px; color:var(--text-low); }
+/* ITEM 84, THE DECK PHASE — the Free Write roster (three presets) and the one
+   standing draw. Rendered ONLY in Free Write (Tutor.tsx's `freeWrite` branch);
+   in Draft, on screenplay and on Board this block has nothing to style, which
+   is G3's "absent, not disabled" holding at the CSS layer too.
+   G5's ember ceiling: ZERO resting orange. The presets rest OLIVE
+   (`--accent-rest` — "olive marks where you are"), go brass on hover and
+   `--brass-press` on press ("orange marks what you do"), exactly the
+   olive-rest / brass-hover / orange-press ladder the mockups carried.
+   Figtree, not Crimson Pro: lock line 6's chip-voice ruling covers chips that
+   BECOME the writer's words; these are UI labels naming a preset, and the line
+   the preset draws is rendered as an ordinary tutor turn below.
+   Deliberately no `overflow` of any kind — the panel scrolls as ONE column
+   (FX10 S1), and fx10.mjs asserts computed overflow across every panel
+   descendant, this row now included. It wraps instead. */
+.wz-tutor-fw-roster{ display:flex; flex-wrap:wrap; gap:6px; }
+.wz-tutor-fw-preset{ background:none; border:1px solid var(--ink-border); color:var(--accent-rest);
+  font-family:var(--font-ui); font-size:12px; letter-spacing:.3px; padding:6px 10px;
+  cursor:pointer; border-radius:var(--radius-sm); transition:.15s; }
+.wz-tutor-fw-preset:hover:not(:disabled){ color:var(--brass); border-color:var(--brass); }
+.wz-tutor-fw-preset:active:not(:disabled){ color:var(--brass-press); border-color:var(--brass-press); }
+/* The spent ask — a TRANSIENT gate on real capability, never an unbuilt feature
+   wearing paint. Styled by `data-spent`, NOT by `:disabled`, on Nick's refill
+   ruling: a spent ask must answer a fourth press with a note, and a disabled
+   control cannot answer anything. It stays pressable, and stays quiet until the
+   hundred words arrive. */
+.wz-tutor-fw-preset[data-spent='true']{ color:var(--text-low); border-color:var(--ink-border); }
+.wz-tutor-fw-preset[data-spent='true']:hover{ color:var(--text-mid); border-color:var(--ink-border-strong); }
+/* The refill note: one quiet line in the panel's own status register (the
+   .wz-tutor-convo-status kinship), carrying no number but the threshold. */
+.wz-tutor-fw-note{ font-size:11px; color:var(--text-low); line-height:1.45; }
+/* The standing draw wears the tutor-turn shape it will keep once it commits —
+   one olive edge is the whole difference, marking the one line the writer's own
+   press just drew. It is not a second message dialect. */
+.wz-tutor-draw{ border-left:2px solid var(--accent-rest); }
 /* FX10 S1 — the lens/nudge sections now read as furniture AROUND the
    conversation (below it in DOM order, Tutor.tsx) rather than the panel's
    own lead content: a quiet divider + slightly tighter rhythm than the
