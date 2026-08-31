@@ -145,19 +145,37 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // Tools drawer yields when the measured band cannot hold both.
   useEffect(() => registerDrawer('cascade', () => setState(REST)), []);
 
+  // item 83 errata E1 (2026-08-28) — THE ANNOUNCEMENT IS STRUCTURAL, the
+  // same repair the Sliver takes and for the same two reasons: a setState
+  // updater must be pure (announcing from inside one closed the OTHER
+  // drawer from within this component's render phase), and an announcement
+  // written per-path is only ever as complete as the paths someone
+  // remembered. `closePanel` docking a survey was already a silent one —
+  // `data-visible="false"` withdraws the panel from the band, so the store
+  // should hear a close, and it never did.
+  //
+  // OPEN, for this drawer, means the panel is actually OCCUPYING the band:
+  // a category is chosen AND the panel is not docked away. Keying the effect
+  // on that one derived truth means every path — toggle, switch, dock,
+  // Escape, dismiss, and the exclusion handoff itself — announces correctly
+  // without any of them having to remember to.
+  const cascadeOccupiesBand = !!state.category && !state.docked;
+  useEffect(() => {
+    if (cascadeOccupiesBand) requestOpen('cascade');
+    else noteClosed('cascade');
+  }, [cascadeOccupiesBand]);
+
   const toggleCategory = (id: CategoryId) => {
     setState((s) => {
       if (s.category === id) {
         // S2: reopening the SAME category while docked restores the panel
         // (undock), rather than the ordinary toggle-closed behavior.
-        if (s.docked) { requestOpen('cascade'); return { ...s, docked: false }; }
-        noteClosed('cascade');
+        if (s.docked) return { ...s, docked: false };
         return REST;
       }
       // A category switch dismisses a docked survey (the vanishing-law
       // rider's own words: "dismissed only by explicit close, category
       // switch, or Escape").
-      requestOpen('cascade');
       return { category: id, survey: null, docked: false };
     });
   };
@@ -172,7 +190,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     });
   };
 
-  const dismissSurvey = () => { noteClosed('cascade'); setState(REST); };
+  const dismissSurvey = () => setState(REST);   // the effect above announces
 
   const onEscape = () => {
     setState((s) => {
