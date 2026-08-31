@@ -1039,6 +1039,10 @@ here (below), accepted by this lane and outstanding at the time of the offer:
 - **E2 — the Tutor panel loses its right-edge anchor under board resize.** Under the
   anchor law this is a LAYOUT fault: the repair belongs in CSS, never in a resize handler
   that writes a position — writing one is the exact failure the law exists to prevent.
+  **→ RESOLVED-BY-SUPERSESSION into item 119 (Nick's Mirrored Hands ruling, 2026-08-31).** The
+  Tutor-panel anchor question folds into item 119's surface-anchoring charter (both hands attach to
+  the WRITING SURFACE, not the screen). E2 is NOT repaired independently; **the interim screen-anchor
+  stands until item 119 ships.**
 
 ## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
 
@@ -1131,6 +1135,31 @@ now):** Storyboard/Outline boards will also display here, formatting may differ.
   Boards).
 
 Registry: next free **119**.
+
+## ITEM 119 — THE MIRRORED HANDS (design-class; the Counsel mirrors the Desk, both anchored to the writing surface) — OPENS 2026-08-31
+
+**THE MIRRORED HANDS RULING (Nick, 2026-08-31)** — supersedes **FX18 S2 regime (3)** for the Tutor
+panel; **E2 resolves INTO this.** Nick's words, verbatim:
+
+> "I want the tools menu pop-out and the Tutor interface pop-out to be exactly mirrored to each other
+> and both anchored to any Page, Board, or Card on which the User does any kind of writing."
+
+**THE CHARTER, three faces:**
+- **SYMMETRY** — the Counsel's geometry, animation, anchor, and coexistence behavior **exactly mirror
+  the Desk's** (the tools hand). Two hands, one grammar.
+- **ANCHORING** — both hands attach to the **WRITING SURFACE** — page paper, board canvas, opened
+  card — **not the screen.**
+- **COVERAGE** — **every surface that accepts writing carries both hands**, the opened-card popup
+  included.
+
+**Design-class WITH KNOWN BUILD WEIGHT:** the **canvas-scrolls-inside-a-fixed-frame** finding means
+surface-anchoring on boards needs real plumbing — the measurement is on record at **menus-errata**.
+
+**BINDING INPUTS:** the **drawer coexistence law** (both-open only when the surface has room; graceful
+yield); the **announce-from-effect invariant**; **item 83's geometry laws**; and **item 117's
+board-shelf chrome** — the two **must be designed together, one charter pass covers both.**
+
+Registry: next free **120**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
