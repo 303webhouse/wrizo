@@ -1217,6 +1217,104 @@ now):** Storyboard/Outline boards will also display here, formatting may differ.
 
 Registry: next free **119**.
 
+**→ S0 PASS 1 — 2026-08-28 (fix lane). TWO OF THE THREE "SMALLEST" DEFECTS DID NOT REPRODUCE, AND
+NOTHING IS OFFERED AS FIXED.** The brief named (b) resize-once, (e) unlink and (c) edge-vanish as
+the likely-smallest subset. Driven headlessly against the shipped bundle
+(`index-CHvEOjEp.js`), mouse pointer, 1400x900, one **text** card on a fresh user board:
+- **(b) RESIZE-ONCE — NOT REPRODUCED.** Resize #1 grew the card 435x87 → 525x157; resize #2, run
+  IMMEDIATELY after with **no intervening click on another card**, grew it again 525x157 → 615x227.
+  The handle re-armed and tracked to the new corner (631,336 → 721,406). Under these conditions the
+  handle does not need re-arming.
+- **(c) EDGE-VANISH — NOT REPRODUCED.** A card dragged far past the top-left edge (target 170px
+  left and 130px above the canvas origin) **clamped** to (146,168) against a canvas origin of
+  (146,167) and stayed rendered. Edge containment is present on this path.
+- **(e) UNLINK — NOT REACHED.** The setup failed before the defect could be tested: a move-drag on
+  a second card did not move it, and the double-click-then-drag thread gesture minted **no
+  connection** (0 connection elements). So (e) is UNTESTED, not absent.
+**THIS IS A STATEMENT ABOUT THE INSTRUMENT AS MUCH AS THE PRODUCT, and it is not a claim that
+Nick was wrong.** He reported these from his own walkthrough; four variables differ between his
+conditions and the probe's, and any of them could carry the defects: **pointer type** (the gesture
+code has pen-specific paths and a hold-timer; the probe drove a MOUSE), **card kind** (the probe
+used a `text` card — a `page-pin` card takes a different `canResize`/aspect path), **card count**
+(defect (d) says board resizing decays "as cards accumulate", which points at state that one card
+cannot produce), and **viewport/DPR**. The probe's own move-drag failing is direct evidence that
+the harness does not yet drive this surface faithfully.
+**WHAT IS OWED BEFORE ANY OF THIS CLUSTER IS BUILT:** a reproduction under Nick's own conditions —
+at minimum pointer type and card kind named — because a fix built against a defect that does not
+reproduce is a fix aimed at nothing. **NOTHING FROM ITEM 118 IS OFFERED**, per the brief's own
+"anything not green parks with records". No product code was written for it.
+**ONE THING THE PROBE DID SETTLE, worth keeping:** board `boxes` live in BoardEditor's local React
+state and reach `localStorage` only on the 2s autosave or unmount, so the first probe drafted here
+read `[]` and would have "confirmed" resize-once against two empty arrays. Re-instrumented to the
+DOM, the same run showed both resizes working. **Any future item-118 harness must measure the
+rendered card, never the stored row** — the same trap item 92 met from the other side.
+
+**→ S0 PASS 2 — 2026-08-28: DEFECT (a), READ IN SOURCE. IT IS THREE FAULTS, NOT ONE, AND THE
+CHARTER'S GUESS IS WRONG IN AN INSTRUCTIVE WAY.** The charter says B/I/U is "likely its own renderer
+path". It is not: the card popup shares the page's engine correctly (`applyFormat` +
+`decorateEditorFor`). The breakage is elsewhere, and it splits three ways — no browser needed for
+any of this, it is all readable in the shipped source.
+- **(a-i) UNDERLINE HAS NO RENDERER, ANYWHERE — AND IS OFFERED ON TWO SURFACES.** The card dock
+  ships a `U` button (`BoardEditor.tsx:572`) and so does the page rail (`Sliver.tsx:361`, `:398` →
+  `PageEditor.tsx:645`). Both call `applyFormat('underline')`, which writes `__word__`
+  (`draftFormat.ts:33`). **Nothing renders it.** `draftDecoration.ts` contains the string
+  "underline" ZERO times; `decorateInlineForCard` (`:83`) and `decorateInline` handle only `**` and
+  `*`; `index.css` has `.md-bold` and `.md-italic` (`:4200-4201`) and **no `.md-underline`**. So
+  underline is literal, unstyled, on the page as well as the card. This is Nick's `___`. **The
+  shipped UI and the shipped renderer disagree with each other, and `draftDecoration.ts`'s own
+  header says so out loud — "Bold/Italic ONLY" — above a dock that ships three buttons.**
+- **(a-ii) THE RESTING CARD NEVER CALLS THE ENGINE AT ALL.** `BoardTextBox`
+  (`BoardEditor.tsx:252-260`) returns `{initialText}` as a bare text node. Decoration happens ONLY
+  inside the popup. So on the BOARD — the surface the writer actually looks at — every marker is
+  literal and nothing is styled, bold and italic included. This is Nick's "**NO styling applied**".
+  The ported-card branch (`sourceEntryId`, `:245-252`) is raw too.
+- **(a-iii) B/I/U ON AN EMPTY SELECTION PRODUCE BARE MARKERS, BY DESIGN.** `wrapSelection`
+  (`draftFormat.ts:56-59`) with `selected.length === 0` emits `****` and parks the caret between the
+  pairs; the card register is **reveal-adjacent-to-caret**, so both marks then render VISIBLY with
+  no text between them. That is Nick's `****`. It is working as specified — **and the specification
+  is what reads as broken**: the writer clicks B meaning "type bold from here" and receives four
+  asterisks. Worth a ruling, not a patch: this is a design report wearing a bug's clothes.
+**WHAT THIS CHANGES ABOUT THE FIX.** (a-ii) needs no ruling — FX5 S6's own recorded verdict already
+governs it ("asterisks visible on a card is a bug, not a style choice — the popup shows words, not
+syntax"), and that argument applies with MORE force to the resting card than to the popup it was
+written for. The repair is one call: render through `decorateMarkdownForCard(text, null)`, whose
+null caret collapses every marker (`md-mark-hidden`) and leaves styled words. **One risk to prove,
+not assume:** cards auto-size from the rendered DOM's `scrollHeight` (`measureRef`), and collapsed
+marks are `font-size:0`, so decorated text measures SHORTER than raw — card heights will move, and
+the harness must check that before this is offered.
+**(a-i) NEEDS A RULING BEFORE IT IS BUILT, AND I AM NOT TAKING THE CHOICE.** Two lawful repairs
+point opposite ways: **retire the U buttons** (honour the frozen Bold/Italic set the decorator was
+written to) or **give underline a renderer** (honour the UI that has been shipping to the writer).
+Nick named U as broken, which leans toward the second — but the frozen-markdown-set ruling is a
+standing design ruling and a fix lane does not unfreeze one on its own initiative. **Routed to
+Fable.** Whichever way it goes, it is one change in the SHARED engine and it lands on the page and
+the card together — class-over-instance, not a board-local patch.
+
+**→ BUILT AND OFFERED — 2026-08-28: (a-ii) ONLY. `ae1f600`, branch `fix-ab2-repoint`, offer doc
+`docs/wrizo-alpha/offer-item118-a2-2026-08-28.md`.** One file, one JSX element: `BoardTextBox` now
+renders through `decorateMarkdownForCard(initialText, null)` instead of returning `{initialText}`
+raw. No new renderer — the popup's own engine, with a null caret, so nothing is adjacent to
+anything and every marker collapses. Governed by FX5 S6's existing verdict; **no ruling taken**.
+`dangerouslySetInnerHTML` is safe on the same grounds as `decorateEditorFor` (every slice through
+`escHtml`; the engine emits only its own `<span class="md-*">`). Storage untouched and ASSERTED —
+marks collapse via `font-size:0`, never `display`/`visibility`, so `textContent` still carries the
+stored bytes; the check exists so a future "simplification" to `display:none` fails loudly in the
+harness instead of quietly in a writer's saved words. Card heights cannot shrink (the measure
+effect is one-directional) — asserted, not argued.
+**NEW HARNESS: `apps/desktop/scripts/harness/item118.mjs`, 6 checks. Suite files 60 → 61.**
+**FALSIFIED FIRST** against the reverted product at the same build: `ITEM118 VERIFY: FAIL — 3/6
+failed` — the three DEFECT assertions, while the storage invariant, the no-collapse guard and the
+popup regression passed before AND after (they are guards, not defect claims; a guard that only
+passes after the fix proves nothing). Fix restored: `PASS (6 checks)`.
+**THE HARNESS ASSERTS NOTHING ABOUT (b), (c) OR (e)** — deliberately. They did not reproduce, and a
+harness that "passes" against an unreproduced defect is worse than none.
+**DELIBERATELY OUT OF SCOPE, NAMED NOT SKIPPED:** `BoardPinBox` and the ported-card branch render a
+`notecardExcerpt` title+excerpt — a derived SUMMARY of a page, not the card's own words. Whether a
+summary carries styling is a design question. **Owed follow-up.**
+**STANDING AFTER THIS:** (a-i) and (a-iii) ROUTED TO FABLE for rulings; (b), (c), (e) PARKED
+UNBUILT; (d) not reached; (f) already ruled removed. **The single cheapest unblock for (b)/(c)/(e)
+is one line from Nick naming the POINTER TYPE and the CARD KIND he was using.**
+
 ## ITEM 119 — THE MIRRORED HANDS (design-class; the Counsel mirrors the Desk, both anchored to the writing surface) — OPENS 2026-08-31
 
 **THE MIRRORED HANDS RULING (Nick, 2026-08-31)** — supersedes **FX18 S2 regime (3)** for the Tutor
