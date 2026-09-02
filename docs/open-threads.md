@@ -1117,6 +1117,16 @@ here (below), accepted by this lane and outstanding at the time of the offer:
   Symptom-only per law. Candidate S0 neighborhood (HYPOTHESIS, not finding): the announce/mount
   family E1 just repaired on the LEFT hand — the right hand may want the same effect-keyed announce.
   Routes to the next armed fix window.
+  **→ S0 CLOSES THE HYPOTHESIS (Fable, 2026-09-02, append-style):** the announce/mount candidate above
+  is **FALSIFIED.** The mechanism is the **UNBORN GATE at `PageEditor.tsx:935`** — the Tutor AND the
+  rhizome are suppressed by the SAME expression. (The hypothesis is kept verbatim as the reasoning
+  path, per park-never-edit.)
+  **→ E4 CHARTER GROWS (part of E4, NOT a new number):** the boards' latent **SILENT-VANISH** finding
+  — item 88b's class — a send on an UNBORN surface clears the composer while the append returns null.
+  Folded into E4's charter.
+  **→ MERGE ROUTING (Fable, 2026-09-02):** FIX's two completed offers — the ab2 re-point (`c871c08`)
+  and 118(a-ii) — do NOT merge separately; they RIDE the `fix-wave-e34-118` offer, which already
+  carries them. One suite at current main verifies the whole set; one merge, one ship (on Nick's word).
 - **STYLING FAMILY, new sub-finding (item 79/102) — B/I/U stay HIGHLIGHTED after the writer moves
   on** (Nick, production `c927e9c`, 2026-09-02, same screenshot): the active state is STUCK, not
   tracking the caret. Joins the styling-controls family. (Item 79's visible `***_` markers are
