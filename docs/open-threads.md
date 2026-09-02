@@ -1117,6 +1117,46 @@ here (below), accepted by this lane and outstanding at the time of the offer:
   Symptom-only per law. Candidate S0 neighborhood (HYPOTHESIS, not finding): the announce/mount
   family E1 just repaired on the LEFT hand — the right hand may want the same effect-keyed announce.
   Routes to the next armed fix window.
+
+  **-> S0 - 2026-09-02 (fix lane). REPRODUCED. THE HYPOTHESIS IS FALSIFIED. THE CAUSE IS PB1's
+  `unborn`, AND THE NAIVE FIX IS WRONG.**
+  **REPRODUCED headlessly** against a fresh build, 1400x900, a new page off `#/page/new`:
+  `.wz-tutor-grip` absent and **`.wz-tutor-zone` count = 0** - the Tutor is not in the DOM at all,
+  while the LEFT sliver and its grip are both present. Exactly Nick's symptom.
+  **THE ANNOUNCE/MOUNT HYPOTHESIS IS FALSIFIED, not merely unsupported.** The two theories make
+  different predictions and were made to compete: an announce/mount timing fault should be
+  perturbed by a re-render, so the probe forced two (a `resize` event and a keydown) **without
+  writing a word** - the grip stayed absent, zone count still 0. It appeared at **BIRTH** and only
+  at birth: the address flipped `#/page/new` -> `#/page/mtkfv3mgbvv1ktjf5` in the same step.
+  **The clincher:** `rhizome` flipped `false -> true` at that same instant - a DIFFERENT feature,
+  suppressed by the SAME condition in the SAME expression. One cause, two symptoms.
+  **THE CAUSE:** `PageEditor.tsx:935` - `tutor={gateActive || unborn ? undefined : <Tutor .../>}`.
+  The `unborn` half arrived with PB1 (`66593d9`, "Born on the First Word"). A page is unborn until
+  its first word, so a freshly opened page has no right hand. Nick's *"it appeared only after
+  interacting with styling and typewriter controls"* is the same fact from the other side: a
+  styling click writes `****` into the text (FX6 S1 - "a Bold/Italic toolbar click is a genuine
+  edit"), which BIRTHS the page, which mounts the Tutor.
+  **THE ASYMMETRY IS THE FINDING.** The LEFT hand is rendered even while gated - merely veiled
+  (`:921`). The RIGHT hand is not rendered at all. And the other three mount sites -
+  `BoardEditor.tsx:2428`, `ScriptEditor.tsx:1112`, `JournalEntry.tsx:1174` - mount the Tutor
+  **unconditionally**, including on an UNBORN BOARD. So this is not a principled PB1 law applied
+  evenly; it is a page-only condition, and the board already ships the behaviour Nick is asking for.
+  **THE NAIVE FIX - DELETE `unborn` - IS WRONG, and this is the reason S0 exists.** On an unborn
+  page `getJournalEntry(id)` misses, so `entry` resolves to **`MISSING_ENTRY`, whose `id` is the
+  EMPTY STRING** (`PageEditor.tsx:78-81`, `:102`). Un-gating alone would mount every unborn page's
+  Tutor against one shared empty identity. **Note also a stale comment:** `:91-94` still says
+  *"`entry` resolves from the unborn slot meanwhile"* - item 104's third pass changed `entry` to
+  `realEntry ?? MISSING_ENTRY` and the comment was not updated with it.
+  **`gateActive` MUST STAY.** It is documented twice over - TU1's non-goal ("the Tutor on the
+  threshold, first-run stays pure") and a real geometry hazard (`.hb1-veil`'s `filter:blur(4px)`
+  establishes a containing block that would break the Tutor's two absolute anchors). It is also the
+  one-time first-run ceremony, **not** "first load", so it is not what Nick hit on production with
+  an existing account.
+  **LATENT DEFECT FOUND EN ROUTE, SHIPPED TODAY ON BOARDS:** on any unborn surface, `Tutor.send()`
+  clears the composer and calls `appendTutorMessage`, which **early-returns `null` when the row is
+  missing** (`persistence.ts:1088-1090`). The writer's message AND the reply both vanish, silently.
+  Same class as item 88b's "reported a filing that never happened". Un-gating pages without closing
+  this would spread it from boards to pages - **so closing it is part of E4, not scope creep.**
 - **STYLING FAMILY, new sub-finding (item 79/102) — B/I/U stay HIGHLIGHTED after the writer moves
   on** (Nick, production `c927e9c`, 2026-09-02, same screenshot): the active state is STUCK, not
   tracking the caret. Joins the styling-controls family. (Item 79's visible `***_` markers are
