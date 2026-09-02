@@ -11760,6 +11760,13 @@ weekend batch (production `c927e9c` · railway `3979dcaa`), and **CONFIRMED LIVE
 production**: the Free Write deck draws, the note shows, the presets work (screenshot on file). **The
 deck phase's acceptance criterion is MET.** (The "offered, NOT merged, NOT deployed" line above is
 the record at build time — kept as history.)
+**→ DECK LANE RETIRED WITH HONORS (Fable, 2026-09-02).** The phase shipped and is founder-confirmed;
+the lane is retired. **Worktree cleaned per item-110 hygiene (chat 1):** local branch
+`item84-deck-phase` deleted (was merged), `.claude/worktrees/item84-deck` removed; `b308ddd` stays
+reachable via main's merge `6a1b4b5` and `origin/item84-deck-phase`. **Tonight's posture (Fable):**
+FIX arms the E3/E4/118 wave; TUTOR drafts the Draft-roster brief then the item-112 charter; the
+committee cluster (115 + 117 + 119) queues behind TUTOR's charter as Fable's next design act. Chat 1
+standing: merge green pre-authorized offers; deploy ONLY on Nick's per-package word.
 - **The Tutor is no longer mode-blind.** The census's headline finding is answered by one
   optional prop, `mode?: EditorMode`, threaded from the four mount sites; the roster renders
   in Free Write and **nowhere else** (Draft, screenplay, Board all absent — G3, not disabled).
