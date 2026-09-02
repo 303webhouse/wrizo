@@ -972,6 +972,15 @@ pre-specified only the "no grip" branch: *if "no grip," the Desk hand's machiner
 (anchor, coexistence, announce — RS2 satisfied structurally) but renders NO grip until 112-C provides
 the drawer's content; G3's absence-over-grayed is the authority; the mirror completes at 112-C.* Held
 open pending Nick's actual word.
+**→ 112-A DESK-GRIP RULED (Nick, 2026-09-02) — the "no grip" recommendation is OVERRIDDEN.** Nick's
+words: *"the desk grips on both sides should always be visible and open the tabs even if we haven't
+filled in any tools/options yet."* So at 112-A **BOTH grips (Desk and Counsel) render from birth and
+are always visible, and each OPENS its tab even when the drawer holds no tools/options yet** — an
+empty drawer OPENS (it is not a locked door), so G3's absence-over-grayed does NOT govern this case,
+by Nick's word. Consequence: the two-hand mirror is visually complete at **112-A** (both grips
+present), not deferred to 112-C; 112-C still fills the Desk drawer's content later. **Owed to the
+112-A builder lane** (supersedes the build brief's "render no Desk grip until 112-C" recommendation);
+Fable to route.
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
