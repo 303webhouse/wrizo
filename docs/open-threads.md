@@ -11777,6 +11777,15 @@ reachable via main's merge `6a1b4b5` and `origin/item84-deck-phase`. **Tonight's
 FIX arms the E3/E4/118 wave; TUTOR drafts the Draft-roster brief then the item-112 charter; the
 committee cluster (115 + 117 + 119) queues behind TUTOR's charter as Fable's next design act. Chat 1
 standing: merge green pre-authorized offers; deploy ONLY on Nick's per-package word.
+**→ NICK'S STANDING SHIP WORD (Fable relay, 2026-09-02): "ship whatever we can."** PRE-AUTHORIZES the
+ship of TWO named packages, each under the full gates: **(1) FIX's `fix-wave-e34-118`** (E4 + E3 + the
+ab2 re-point `c871c08` + 118(a-ii), ONE merge) and **(2) the ROSTER build's eventual offer.** Per
+package: verify per habits → **MERGE on green** → Fable's review at the merge → **on Fable's PASS,
+DEPLOY** under the full checklist (fresh suite BOTH settings at the deploy HEAD; tree clean at upload;
+build-OS/toolchain on the stamp; served-vs-stamped byte diff; manifest SHA-enumerated since the prior
+live SHA; each package its own manifest). **Rollback ratchets from `c927e9c` · `3979dcaa`** (advances
+per ship). **ZERO SCHEMA expected — if any offer carries schema, STOP and surface to Nick.** Any red
+anywhere, or a verdict short of PASS: **STOP and report — Nick's word never covers a red.**
 - **The Tutor is no longer mode-blind.** The census's headline finding is answered by one
   optional prop, `mode?: EditorMode`, threaded from the four mount sites; the roster renders
   in Free Write and **nowhere else** (Draft, screenplay, Board all absent — G3, not disabled).
