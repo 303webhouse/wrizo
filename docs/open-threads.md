@@ -880,6 +880,11 @@ arc. Record, Fable's words: *"routed to TUTOR; Fable's T0 ruling (Revise-as-surf
 supersedes the brief's §1 ordering; TUTOR rules what survives into item 112's eventual brief."* Nick
 relays the pointer (blob `484e7221`, `docs/menus/tutor/item84-t1-s0-brief.md`, preserved) on his next
 TUTOR touch. Still preserved; nothing deleted.
+**→ RULED AND CLOSED (Nick ratified the item-112 charter 2026-09-02; Fable's word).**
+`item84-t1-s0-brief.md` is no longer routed to TUTOR: **RS7 of the item-112 charter ADOPTS its
+surviving matter** (local-only checker filter, five-class taxonomy, the false-flag baseline, the
+rule-set inventory) and **its routing check dies SUPERSEDED.** Preserved copies CLEANED (working-tree
+copy + scratchpad); **blob `484e7221` remains the recovery path.** DROPPED from chat 1's open threads.
 
 ## ITEM 111 — THE BUILD REPRODUCIBILITY GAP (config) — OPENS 2026-08-24 · CLOSED 2026-08-26 (founding evidence retracted — was contamination, not build-repro)
 
@@ -956,6 +961,17 @@ TUTOR** (it holds the Revise arc whole), with **item 83's geometry laws as BINDI
 anchor law, cabinet geometry, the Two Hands grammar, and DR7-as-narrowed. **Sequencing:** the charter
 drafts **AFTER the deck ship and TUTOR's Draft-roster brief** — design begins without stalling the
 build queue. The error lens (T1–T7) **remains parked on this item, fully argued.**
+**→ CHARTER RATIFIED + LANDED (Nick ratified 2026-09-02; merged `7b49404`).** The full-Revise charter
+(RS1–RS7) and the 112-A build brief are on main — `docs/menus/tutor/item112-revise-charter.md` +
+`item112a-build-brief.md` (the builder lane's reach to 112-A). RS7 adopts the surviving matter of the
+old `item84-t1-s0-brief` (local-only checker filter, five-class taxonomy, false-flag baseline,
+rule-set inventory); that brief's routing check dies superseded — see the item-110 close below.
+**⚠ 112-A DESK-GRIP QUESTION — AWAITING NICK'S WORD (NOT recorded).** Fable's relay carried a literal
+placeholder ("[Nick's word here]") in place of the resolution, so chat 1 has NOT recorded it. Fable
+pre-specified only the "no grip" branch: *if "no grip," the Desk hand's machinery mounts at birth
+(anchor, coexistence, announce — RS2 satisfied structurally) but renders NO grip until 112-C provides
+the drawer's content; G3's absence-over-grayed is the authority; the mirror completes at 112-C.* Held
+open pending Nick's actual word.
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
