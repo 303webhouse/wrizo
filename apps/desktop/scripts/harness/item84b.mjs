@@ -315,6 +315,35 @@ const sendComposer = async (app) => {
   await sleep(600);
 };
 
+// FIXTURE REPAIR (found by this file's own first stamped run, and recorded here
+// rather than quietly fixed). S8's baseline read the page's PERSISTED entry
+// straight after draftPageWithText and got "" — then the same read after the
+// presses returned the full page, which reads at a glance like the roster wrote
+// to the paper and is nothing of the kind:
+//
+//   * the four per-press DOM assertions passed throughout — the page's own text
+//     never moved, which IS the A13 claim;
+//   * the text that "appeared" in storage is byte-identical to the text that was
+//     already ON SCREEN before any press, so no press introduced it;
+//   * item84.mjs's own S7 uses this same pattern and passes — it has no mode
+//     switch, which is the whole difference. Switching modes re-seeds the editor
+//     and re-persists on store/persistence.ts's own 300ms debounce (FLUSH_DELAY),
+//     so a fixture that snapshots immediately after switching can catch the entry
+//     mid-write.
+//
+// So the hazard was in the measurement, not in the thing measured. Settling the
+// baseline removes the race AND strengthens the check: it now also proves the
+// page was genuinely on disk before the roster was pressed, which is what makes
+// the after-comparison mean anything.
+const settlePersisted = async (app, pageId, expected, tries = 40) => {
+  for (let i = 0; i < tries; i++) {
+    const t = (await rawEntry(app, pageId))?.text;
+    if (t === expected) return { settled: true, waitedMs: i * 100 };
+    await sleep(100);
+  }
+  return { settled: false, waitedMs: tries * 100, last: (await rawEntry(app, pageId))?.text };
+};
+
 // A prose page carrying PAGE_TEXT, switched into Draft, Tutor open.
 const draftPageWithText = async (app, width = 1400, height = 900) => {
   await freshProsePage(app, width, height);
@@ -622,6 +651,9 @@ await withHarness(async (app) => {
     await draftPageWithText(app);
     const pageId = await app.evalJs("location.hash.split('/page/')[1]");
     const pageBefore = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+    const settle = await settlePersisted(app, pageId, PAGE_TEXT);
+    ok('S8 (precondition): the page is genuinely ON DISK before the roster is pressed — a settled baseline, so the comparison below measures the presses and nothing else (see settlePersisted\'s own note: an unsettled baseline made this look like a write that never happened)',
+      settle.settled === true, JSON.stringify(settle));
     const storedBefore = (await rawEntry(app, pageId))?.text;
     await selectStretch(app, '.forward-only-editor', STRETCH); // so TD4 is pressable too
 
