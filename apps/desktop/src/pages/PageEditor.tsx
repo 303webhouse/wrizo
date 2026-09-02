@@ -932,7 +932,36 @@ function PageEditorView({ id }: { id: string }) {
           // DeskFrame.tsx provides ITS anchor div outside the veil; the
           // Tutor provides its own anchors internally, so a veil wrapper
           // here would swallow them both.
-          tutor={gateActive || unborn ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} />}
+          // E4 — THE RIGHT HAND MOUNTS FROM FIRST PAINT. `|| unborn` is gone.
+          // Nick's mirrored-hands ruling is the authority: an unborn page IS "a
+          // Page on which the User does any kind of writing", so both hands
+          // mount. The EXISTENCE PROOF is already in the tree — BoardEditor
+          // (:2428), ScriptEditor (:1112) and JournalEntry (:1174) all mount
+          // this panel unconditionally, unborn boards included; only this line
+          // gated it, and only on pages. The left hand was never gated this way
+          // either: it renders while gated and is merely VEILED (see `sliver`
+          // above). Measured symptom, pre-fix: `.wz-tutor-zone` count 0 on a new
+          // page, unmoved by forced re-renders, appearing only at BIRTH.
+          //
+          // IDENTITY IS ALREADY REAL, NOT `MISSING_ENTRY`. `UnbornProvider`
+          // registers a record in persistence's unborn slot before children
+          // render, and `getJournalEntry` falls through to it, so `entry` here
+          // carries the MINTED PER-SURFACE id — verified by measurement, not by
+          // reading: the row a Tutor send used to create was stamped with that
+          // very id. `MISSING_ENTRY` cannot reach this line at all; the
+          // vanished-page case returns at the dispatcher (`PageEditor()`) one
+          // level up, before this view ever mounts.
+          //
+          // `gateActive` STAYS, for both of its recorded reasons above (TU1's
+          // "first-run stays pure" non-goal, and the FirstRunVeil blur that
+          // would establish a containing block and break the Tutor's own two
+          // absolute anchors). That gate is the one-time first-run ceremony,
+          // not "first load" — it is not what this ticket is about.
+          //
+          // Tutor.send() refuses out loud on an unborn surface (see its own
+          // comment): un-gating here without that would have spread a live
+          // PB1 violation from boards to pages.
+          tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
           // contract exactly), fed the gate's own word fraction instead of

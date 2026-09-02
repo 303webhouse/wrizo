@@ -1157,6 +1157,42 @@ here (below), accepted by this lane and outstanding at the time of the offer:
   missing** (`persistence.ts:1088-1090`). The writer's message AND the reply both vanish, silently.
   Same class as item 88b's "reported a filing that never happened". Un-gating pages without closing
   this would spread it from boards to pages - **so closing it is part of E4, not scope creep.**
+
+  **-> S0 CORRECTION - 2026-09-02, BEFORE BUILDING. TWO CLAIMS IN THE S0 ABOVE WERE WRONG, AND ONE
+  OF THEM IS THE PREMISE FABLE'S RULING (a) WAS WRITTEN ON. Both are corrected by MEASUREMENT.**
+  1. **`entry` is NOT `MISSING_ENTRY` on an unborn page, and the comment I called stale is
+     ACCURATE.** `UnbornProvider` registers a record-shaped object in persistence's UNBORN SLOT
+     before children render (`UnbornSurface.tsx:77-78`), and `getJournalEntry` falls through to that
+     slot when the store has no row (`persistence.ts:1667-1673`). So `entry` carries the **minted
+     per-surface id** all along. `MISSING_ENTRY` cannot even reach that line: the vanished-page case
+     returns at the dispatcher one level up (`PageEditor.tsx:1072`). **I withdraw the "stale
+     comment" claim.** Consequence for the ruling: **requirement (a) needs no work — it is already
+     satisfied by construction**, and it is verified below rather than asserted.
+  2. **The latent defect is the OPPOSITE of what I recorded. Not a silent vanish - a PREMATURE
+     BIRTH.** Because `getJournalEntry` resolves from the slot, `appendTutorMessage` does NOT
+     early-return; it reaches `saveJournalEntry`, which upserts a real row. **Measured on the
+     SHIPPED build, on an unborn BOARD** (the surface that has mounted the Tutor unconditionally all
+     along): store rows went **0 -> 1** on a single Tutor send, and the row was
+     **`{id:"mtkg9k2hqyy088qt9", pageType:"board", text:"", boxes:0, tutorMsgs:1}`** - a board with
+     no words and no cards, **born by a chat message**. That is a live PB1 violation
+     ("the row is written by the first word"), shipped today, and it is worse than the silence I
+     predicted. The measurement also settles (1): the row carried the MINTED id, not `''`.
+  **WHY THIS DIDN'T CHANGE THE FIX DIRECTION, ONLY ITS INSIDES.** Fable's ruling (b) - "a send on an
+  unborn surface must either work or visibly refuse; silence is the defect" - is satisfied by
+  REFUSING: PB1 is a standing law and a fix lane does not overturn one to make a send succeed. The
+  composer is deliberately NOT cleared, so the writer's sentence survives the refusal.
+
+  **-> BUILT - 2026-09-02. `PageEditor.tsx` un-gated (`|| unborn` removed, `gateActive` kept),
+  `Tutor.tsx` refuses out loud on an unborn surface, one new lexicon string. NEW HARNESS `e4.mjs`,
+  19 checks.** FALSIFIED against the reverted product: **9/15 failed**. The board check is the one
+  that catches the PB1 violation - the page checks structurally cannot, because pre-fix there is no
+  Tutor on a page to send from. The falsification pass also exposed a fault in my own first draft of
+  the harness: a bare `.click()` on the absent grip THREW and killed the file instead of failing a
+  check, reporting nothing about anything downstream. Hardened via `clickOrFail` - the same lesson
+  ab2.mjs's label-coupled drivers taught, applied before shipping rather than after.
+  **DELIBERATELY NOT TOUCHED, NAMED NOT SKIPPED:** `rhizome` (`:958`) carries the SAME `|| unborn`
+  condition and still pops in at birth. It is the progress instrument, not a hand, so Nick's
+  mirrored-hands ruling does not reach it. **Owed as a question, not assumed either way.**
 - **STYLING FAMILY, new sub-finding (item 79/102) — B/I/U stay HIGHLIGHTED after the writer moves
   on** (Nick, production `c927e9c`, 2026-09-02, same screenshot): the active state is STUCK, not
   tracking the caret. Joins the styling-controls family. (Item 79's visible `***_` markers are

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
-import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor } from '../store/persistence';
+import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor, isUnborn } from '../store/persistence';
 import { getTutorDisclosureSeen, setTutorDisclosureSeen } from '../store/tutorDisclosure';
 import { apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
@@ -237,7 +237,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
   const [showDisclosure, setShowDisclosure] = useState(false);
   const [composerText, setComposerText] = useState('');
   const [sending, setSending] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'offline' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'offline' | 'error' | 'unborn'>('idle');
   // TU2 S2 — set per-send, alongside `status`; true only when THIS send's
   // delta had to be tail-capped. Not sticky across turns for the same
   // reason `status` isn't: it describes what just happened, not a
@@ -592,6 +592,24 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
   const send = async () => {
     const text = composerText.trim();
     if (!text || sending) return;
+    // E4 — THE UNBORN SURFACE REFUSES OUT LOUD, AND KEEPS THE WRITER'S WORDS.
+    // Measured on the shipped build, on an unborn BOARD (which has mounted this
+    // panel unconditionally all along): sending here wrote a REAL ROW —
+    // `{pageType:'board', text:'', boxes:0, tutorMsgs:1}`. `getJournalEntry`
+    // falls through to the unborn slot (persistence.ts:1667-1673), so
+    // `appendTutorMessage` finds a record, and `saveJournalEntry` upserts it.
+    // The surface was BORN BY A CHAT MESSAGE, with nothing written on it —
+    // which is precisely what PB1 exists to prevent ("the row is written by the
+    // first word"). E4 un-gates this panel on unborn PAGES too, so this had to
+    // close first or the ticket would have spread the fault from boards to
+    // pages.
+    //
+    // Refusing is the lawful branch of Fable's ruling ("must either work or
+    // visibly refuse; silence is the defect"): PB1 is a standing law and a fix
+    // lane does not overturn one to make a send succeed. The composer is NOT
+    // cleared — the writer's sentence survives the refusal and sends itself the
+    // moment there is a page to attach it to.
+    if (isUnborn(entry.id)) { setStatus('unborn'); return; }
     setComposerText('');
     setStatus('idle');
     setDeltaTruncated(false);
@@ -738,6 +756,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
               </div>
               {status === 'offline' && <div className="wz-tutor-convo-status">{t('tutorConversationOffline')}</div>}
               {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
+              {status === 'unborn' && <div className="wz-tutor-convo-status">{t('tutorConversationUnborn')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
               {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
               {/* ITEM 84, THE DECK PHASE — THE FREE WRITE ROSTER. Mounted where
