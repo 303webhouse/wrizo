@@ -1111,6 +1111,19 @@ here (below), accepted by this lane and outstanding at the time of the offer:
   The Tutor/Tools asymmetry is item 119's ANIMATION-mirror clause made concrete (the Counsel's
   animation must exactly mirror the Desk's); the broader ruling — every slide-in/out menu fades both
   ways — is a general MENU-lane animation law. Owed to MENU; feeds item 119's charter.
+- **E4 — the Tutor GRIP is ABSENT on first load (fix-class, errata queue).** Nick, production
+  `c927e9c`, 2026-09-02: the RIGHT hand's tab did NOT render when the page loaded; it appeared only
+  after interacting with styling and typewriter controls. The LEFT hand was present throughout.
+  Symptom-only per law. Candidate S0 neighborhood (HYPOTHESIS, not finding): the announce/mount
+  family E1 just repaired on the LEFT hand — the right hand may want the same effect-keyed announce.
+  Routes to the next armed fix window.
+- **STYLING FAMILY, new sub-finding (item 79/102) — B/I/U stay HIGHLIGHTED after the writer moves
+  on** (Nick, production `c927e9c`, 2026-09-02, same screenshot): the active state is STUCK, not
+  tracking the caret. Joins the styling-controls family. (Item 79's visible `***_` markers are
+  confirmed still present in the same shot — the KNOWN class, NOT re-opened.)
+- **OBS (Tutor-surface records, for whoever next touches Fragments):** the Fragments panel lists the
+  same fragment TWICE with a malformed lead (`"Testing theJournal… . L"` ×2). Screenshot-visible
+  2026-09-02, unflagged by Nick — logged, not ticketed.
 
 ## WALKTHROUGH — 2026-08-26 · NICK'S FINDINGS (menus build + boards; screenshots on file at Fable's desk)
 
@@ -11742,6 +11755,11 @@ it is genuinely "blank space with a flashing cursor" · **(B)** "Writing Prompt"
 pools** (24 / 16 / 14 = 54 lines), inheriting FX15's mechanism *and* its harness shape whole.
 Records: `docs/menus/tutor/item84-deck-phase-s0.md` (the S0, with file:line evidence, landed
 before the first patch) and `item84-deck-phase-build.md` (the build record).
+**→ MERGED, SHIPPED, and FOUNDER-CONFIRMED LIVE (2026-09-02).** Merged `6a1b4b5`, shipped in the
+weekend batch (production `c927e9c` · railway `3979dcaa`), and **CONFIRMED LIVE by the founder on
+production**: the Free Write deck draws, the note shows, the presets work (screenshot on file). **The
+deck phase's acceptance criterion is MET.** (The "offered, NOT merged, NOT deployed" line above is
+the record at build time — kept as history.)
 - **The Tutor is no longer mode-blind.** The census's headline finding is answered by one
   optional prop, `mode?: EditorMode`, threaded from the four mount sites; the roster renders
   in Free Write and **nowhere else** (Draft, screenplay, Board all absent — G3, not disabled).
