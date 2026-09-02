@@ -136,6 +136,7 @@ export type DeskTermId =
   | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
   | 'tutorConversationEmpty' | 'tutorConversationSending'
   | 'tutorConversationOffline' | 'tutorConversationError'
+  | 'tutorConversationUnborn'
   // ITEM 84, THE DECK PHASE — the Tutor's Free Write roster. The three preset
   // labels are STRINGS OF RECORD: they come from Nick's own lock word
   // (docs/menus/tutor/tutor-menus-lock-record.md §1 line 1 — "(B) 'Writing
@@ -630,6 +631,12 @@ const CANONICAL: Record<DeskTermId, string> = {
   tutorConversationSending: 'Thinking…',
   tutorConversationOffline: 'The Tutor is offline or not configured right now — the lenses above still work.',
   tutorConversationError: 'The Tutor could not be reached. Try again in a moment.',
+  // E4 — the honest refusal on an UNBORN surface. Same words-family as the
+  // one PlacesPanel/AddToSheet already use for the same class of lie (item
+  // 88b): name what is missing, name that nothing happened, and say what to
+  // do about it. PB1 keeps a page out of the store until its first word, so
+  // there is genuinely nothing here for the Tutor to talk about yet.
+  tutorConversationUnborn: 'Write a word first — this page isn’t saved yet, so nothing was sent.',
   // ITEM 84, THE DECK PHASE — the three preset labels are Nick's own lock-word
   // strings, byte-verbatim from the lock record §1 line 1.
   tutorFreeWriteRoster: 'Free Write presets',
