@@ -264,8 +264,16 @@ await withHarness(async (app) => {
   })`);
   ok('Unborn absences: the Page face still renders (its home line reads the descriptor) but Star and the tag input are ABSENT — patchJournalEntry would silently no-op on a page with no row, and a star that does not stick is half-work',
     absences.face === true && absences.star === false && absences.tagInput === false, JSON.stringify(absences));
-  ok('Unborn absences: the Tutor is absent (no projectId, no thread, no text), via the same precedent the first-run gate already uses — and opening the panel wrote nothing',
-    absences.tutor === false && absences.rows === 0, JSON.stringify(absences));
+  // E4 + Nick's MIRRORED-HANDS ruling supersede the ABSENCE half of this
+  // check; its original is parked verbatim below, never edited in place.
+  // What SURVIVES is the half PB1 actually exists to protect, and it now
+  // carries more weight than it did: "opening the panel wrote nothing" used
+  // to be a trivial consequence of the panel not being there at all, and is
+  // now a live guarantee about a MOUNTED panel sitting on an unwritten page
+  // — which is exactly the property whose violation this wave found shipped
+  // on boards (a Tutor send there wrote a real row: text:'', boxes:0).
+  ok('Unborn absences, successor: the Tutor is PRESENT on an unborn page (mirrored hands — both hands mount from first paint) and opening it STILL WROTE NOTHING — the surviving half of the parked absence check, now a claim about a mounted panel rather than an absent one',
+    absences.tutor === true && absences.rows === 0, JSON.stringify(absences));
 
   // ==========================================================================
   // An unborn page is invisible to every derived view — structurally, because
@@ -380,15 +388,34 @@ console.log(JSON.stringify(checks, null, 2));
 //     now assert BOTH stages, the unborn address and then the room's own.
 //   cd2 — Star is absent on an unborn page by design, so its fixture births the
 //     page before reaching for it.
-// PB1 itself parks no assertion of its own.
+// PB1 parks ONE assertion of its own, as of E4 (2026-09-02): its unborn-Tutor
+// ABSENCE check. Nick's mirrored-hands ruling makes an unborn page a surface
+// that carries BOTH hands, so the absence half is superseded BY DESIGN, not by
+// accident — and BoardEditor had been mounting the Tutor on unborn boards all
+// along, so the board was already shipping the ruling. The original is quoted
+// byte-for-byte below with its successors named; the "wrote nothing" half was
+// NOT superseded and is re-made live above.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  await withHarness(async (app) => {
+    await freshDesk(app, LAPTOP_W, 900);
+    await app.goto('/page/new?origin=loose');
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'unborn page (parked absences)' });
+    await sleep(500);
+    const now = await app.evalJs(`({
+      tutor: !!document.querySelector('.wz-tutor, .wz-tutor-panel'),
+      rows: JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').length,
+    })`);
+    pok('PARKED (was \"Unborn absences: the Tutor is absent (no projectId, no thread, no text), via the same precedent the first-run gate already uses — and opening the panel wrote nothing\") — E4 + Nick\'s MIRRORED-HANDS ruling (2026-08-31 / 2026-09-02) supersede the ABSENCE half BY DESIGN: an unborn page IS \"a Page on which the User does any kind of writing\", so both hands mount from first paint, and BoardEditor had already been mounting the Tutor on unborn boards all along. THE OTHER HALF SURVIVES AND MATTERS MORE THAN IT DID: \"opening the panel wrote nothing\" was a trivial consequence of absence and is now a live guarantee about a MOUNTED panel. Successors: this file\'s own live \"Unborn absences, successor\" check, plus e4.mjs S1 (the grip renders at first paint), S3 (mounting writes no row) and S4 (a send on an unborn surface refuses out loud instead of birthing the row — which is how a real PB1 violation, shipped on boards, was found and closed).',
+      now.tutor === true && now.rows === 0, JSON.stringify(now));
+  });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nPB1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; PB1 parks nothing (it falsifies no committed assertion; the bare-room doors never had one, which is why the regression went unseen).`
+    ? `\nPB1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; PB1 parks ONE: its unborn-Tutor ABSENCE check, superseded BY DESIGN under Nick's mirrored-hands ruling (E4). The 'wrote nothing' half was not superseded and is re-made live.`
     : `\nPB1 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
