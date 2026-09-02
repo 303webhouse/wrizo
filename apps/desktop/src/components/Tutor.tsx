@@ -714,7 +714,35 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
         <div className="wz-tutor-panel" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px` } : undefined}>
-          {open && (
+          {/* E3 — THE COUNSEL FADES OUT, BECAUSE THERE IS NOW SOMETHING TO FADE.
+              `{open && …}` used to wrap this body, so on close the CONTENT
+              unmounted synchronously while the panel's own opacity transition
+              ran on an EMPTY BOX. Measured, pre-fix: at the first frame after
+              the close click the body was already gone (`content:false`) with
+              panel opacity still `1.00`, which then faded 1.00 -> 0.13 over
+              ~108ms. The writer sees the contents blink out and an empty
+              rectangle dissolve — i.e. "it does not fade out" (E3, Nick
+              2026-08-31).
+              THE MIRROR WAS ALREADY EXACT EVERYWHERE ELSE. `.wz-sliver-panel`
+              — the tool pop-out this panel is the mirror of — carries the
+              identical transition (FX10 S1 copied it after reading it LIVE:
+              `opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s)
+              ease`), the identical `aria-hidden={!open}`, and the identical
+              `pointer-events:none` when closed. The ONE difference was that
+              Sliver.tsx renders `<SliverToolsBody />` UNCONDITIONALLY inside
+              its faded panel. So this is that same shape, not a new one: no
+              timing is copied here and no transition is added, because the
+              fade this ticket wants has been declared on `.wz-tutor-panel` all
+              along and simply had nothing inside it to carry.
+              A11Y POSTURE IS INHERITED, NOT INVENTED: mounted-but-`aria-hidden`
+              with `pointer-events:none` is exactly what the left hand has
+              shipped since FX1. Adding anything further here (a `visibility`
+              rule, an `inert`) would be DIVERGING from the mirror, which is
+              the opposite of the ruling.
+              The panel's own effects are already gated on `open`
+              (`if (!open) return;`), so a closed body costs a render and no
+              work — nothing is fetched, drawn, or measured while it is hidden. */}
+          {(
             <div className="wz-tutor-body">
             <div className="wz-tutor-head">
               <span className="wz-tutor-head-title">{t('tutorTitle')}</span>
