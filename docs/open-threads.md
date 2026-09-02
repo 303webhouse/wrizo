@@ -1111,6 +1111,34 @@ here (below), accepted by this lane and outstanding at the time of the offer:
   The Tutor/Tools asymmetry is item 119's ANIMATION-mirror clause made concrete (the Counsel's
   animation must exactly mirror the Desk's); the broader ruling — every slide-in/out menu fades both
   ways — is a general MENU-lane animation law. Owed to MENU; feeds item 119's charter.
+
+  **-> S0 + BUILT - 2026-09-02 (fix lane). THE FADE WAS NEVER MISSING. IT WAS FADING AN EMPTY BOX.**
+  `.wz-tutor-panel` has carried `opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s)
+  ease` since FX10 S1 copied it off `.wz-sliver-panel` **after reading that rule live** - so the
+  Counsel's fade and the tool pop-out's were already character-identical. **MEASURED, pre-fix,
+  sampling every frame after the close click:** the first frame reads
+  `{t:1, opacity:"1.00", content:false}` - `.wz-tutor-body` is **ALREADY GONE** before the fade has
+  moved at all, and the panel then fades `1.00 -> 0.13` over ~108ms. The writer sees the contents
+  blink out and an empty rectangle dissolve. That is "it does not fade out".
+  **THE CAUSE, one conditional:** `Tutor.tsx` wrapped its body in `{open && ...}`, so the content
+  unmounted synchronously on close. **`Sliver.tsx` renders `<SliverToolsBody />` UNCONDITIONALLY**
+  inside its faded panel - the mirror was exact everywhere except this one line.
+  **THE FIX IS THEREFORE A MOUNT CHANGE, NOT A TIMING CHANGE.** No duration is copied anywhere in
+  this ticket and no transition was added, which is the brief's own instruction ("reuse the existing
+  fade, never copy timing") satisfied literally: the fade was already declared and simply had
+  nothing inside it to carry. **Post-fix, same instrument:** content present across the whole
+  transition, `1.00 -> 0.20` over ~102ms, fully faded at 169ms.
+  **A11Y POSTURE INHERITED, NOT INVENTED.** A closed panel is mounted + `aria-hidden` +
+  `pointer-events:none` - exactly what the left hand has shipped since FX1. Adding a `visibility`
+  rule or `inert` here was considered and REJECTED: it would diverge from the mirror, which is the
+  opposite of the ruling. The panel's effects are already gated on `open`, so a closed body costs a
+  render and no work.
+  **NEW HARNESS `e3.mjs`, 9 checks. FALSIFIED: 3/9 failed** against the reverted mount. The two that
+  passed BOTH ways are honest and deliberate: fade-IN never was broken (opening mounts the body,
+  then it fades), and the **mirror check** (S3: both panels resolve to the same duration, properties
+  and timing function) is a GUARD against a future "tuning" of one hand, not a defect claim.
+  **STILL OWED TO MENU, unchanged by this:** the broader half of the ruling - *every* slide-in/out
+  menu fades both ways. This ticket closes the Counsel only.
 - **E4 — the Tutor GRIP is ABSENT on first load (fix-class, errata queue).** Nick, production
   `c927e9c`, 2026-09-02: the RIGHT hand's tab did NOT render when the page loaded; it appeared only
   after interacting with styling and typewriter controls. The LEFT hand was present throughout.
