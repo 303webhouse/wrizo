@@ -79,15 +79,24 @@ a real tablet-tap defect: the policy was right and was never told, because the g
 own `onClick` bypassed the announcing path. **Wire it as an effect at birth so a silent
 open path is not possible to write.** Do not announce from inside a `setState` updater.
 
-**THE ONE OPEN DECISION — surface, do not decide.** The Counsel hand has content on day
-one: the existing Tutor panel renders its conversation, lenses, and Bible as it does on
-any page. **The Desk hand does not** — its Type section is 112-C. So: does the Desk
-grip render at all on an empty drawer? **G3's discipline says absence over grayed**, and
-an always-empty drawer is close to the locked-door paint the grammar forbids. **The
-desk's recommendation for Nick: mount the Desk hand's machinery — anchoring,
-coexistence, announce — but render no Desk grip until 112-C gives it a drawer.** The
-mirror is then completed by 112-C rather than faked by an empty one. **Surface this;
-do not settle it in the build.**
+**THE EMPTY-DRAWER QUESTION — RULED BY NICK, 2026-09-02.** The Counsel hand has content
+on day one: the existing Tutor panel renders its conversation, lenses, and Bible as it
+does on any page. **The Desk hand does not** — its Type section is 112-C. Nick's ruling:
+
+> **BOTH GRIPS — Desk and Counsel — are always visible from 112-A, and both OPEN their
+> tabs, even onto an empty drawer.**
+
+**His reasoning, recorded:** an empty drawer **opens** — it is not a locked door, so
+**G3's absence-over-grayed does not govern this case.** The mirror is **visually
+complete at 112-A**; 112-C fills the Desk drawer's content later. Build to this.
+
+**THE SUPERSEDED RECOMMENDATION, kept per corrected-not-rewritten.** The desk had
+recommended mounting the Desk hand's machinery — anchoring, coexistence, announce — while
+rendering **no** Desk grip until 112-C gave it a drawer, on the ground that a permanently
+empty drawer approached the locked-door paint G3 forbids. **That reasoning collapsed
+"empty" with "locked."** G3 forbids paint on a door that will not open; a grip that opens
+onto an empty drawer is an open room, not a locked one. The recommendation is
+**withdrawn**, and Nick's ruling governs.
 
 ## §5 · THE GEOMETRY FLOOR
 
@@ -132,14 +141,17 @@ The ticket carries its own checks. At minimum:
 6. **The announce invariant:** every open path announces, including one exercised
    directly rather than through the toggle handler — the check exists precisely to catch
    a future path that forgets.
-7. **Emptiness:** no Type section, no Revise roster, no flags render in Revise.
-8. Free Write and Draft are unchanged — their own harnesses stay green.
+7. **Both grips render and both open** — Desk and Counsel, per Nick's ruling; the Desk
+   drawer opens onto empty content without error, and the announce invariant fires on
+   that path as on any other.
+8. **Emptiness:** no Type section, no Revise roster, no flags render in Revise.
+9. Free Write and Draft are unchanged — their own harnesses stay green.
 
 ## §8 · EXIT
 
-112-A is done when a writer can enter Revise, write freely in it, open and close both
-hands' machinery per 119, and walk it at both reference widths with the paper's measure
-untouched — and when the editor-path answer of §3 is on the record for the parked lens.
+112-A is done when a writer can enter Revise, write freely in it, open and close **both
+hands by their own grips** per 119 and Nick's empty-drawer ruling, and walk it at both
+reference widths with the paper's measure untouched — and when the editor-path answer of §3 is on the record for the parked lens.
 Then 112-C dresses the room.
 
 ---
