@@ -112,9 +112,16 @@ export async function apiTutorChat(
   messages: { role: 'writer' | 'tutor'; text: string }[],
   delta?: string,
   bible?: string,
+  // ITEM 84, TD4 — the selection ask's own payload, and the ONLY wire key this
+  // ticket adds. Optional on exactly `delta`/`bible`'s terms: absent (never an
+  // empty string) on every send TD4 did not arm, so JSON.stringify drops the key
+  // entirely and asks 1-3 travel byte-identically to how they travelled before
+  // this ticket existed. `pageText` is NOT here and never becomes a key — the
+  // lock record's own wire precision (§10): it stays a render prop.
+  selection?: string,
 ): Promise<TutorChatResult> {
   try {
-    const res = await postJson('/api/tutor/chat', { messages, delta, bible });
+    const res = await postJson('/api/tutor/chat', { messages, delta, bible, selection });
     if (!res.ok) return { ok: false, configured: true };
     const data = (await res.json()) as {
       configured: boolean;

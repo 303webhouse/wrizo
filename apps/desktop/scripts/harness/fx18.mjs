@@ -29,7 +29,7 @@ const freshDesk = async (app, width, height) => {
   // plus the legacy boolean) so opening the Tutor does NOT raise the privacy disclosure —
   // whose full-screen backdrop (.wz-tutor-disclosure-backdrop) would otherwise cover the grip
   // and every panel-vs-paper geometry we mean to test. Mirrors fx10/tu1's own skipDisclosure.
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');");
+  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
   await app.emulateDpr(1, width, height);

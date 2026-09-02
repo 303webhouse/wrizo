@@ -5,6 +5,7 @@ import { setPageDress } from '../store/pageDress';
 import { describePageHome } from '../store/pageHome';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
+import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
 import { useWarmStart } from '../components/useWarmStart';
@@ -129,6 +130,14 @@ function PageEditorView({ id }: { id: string }) {
     if (saved === 'journal' || saved === 'drafting') return saved;
     return entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' : 'drafting';
   });
+
+  // ITEM 84, TD4 — the selected stretch, read HERE (this surface's owner) and
+  // handed to the Tutor as a plain read-only string. The panel gets text, never a
+  // reference: A13 says it may hold no editor ref and no text setter, and the
+  // build brief's §5 names the prop as the lawful shape. Gated on Draft because
+  // that is the only mode whose roster can ask about a selection — Free Write
+  // does no listening at all, and a selection drag fires per character.
+  const draftSelection = useSurfaceSelection('.forward-only-editor', mode === 'drafting');
 
 
   const initialText = entry?.text ?? '';
@@ -932,7 +941,7 @@ function PageEditorView({ id }: { id: string }) {
           // DeskFrame.tsx provides ITS anchor div outside the veil; the
           // Tutor provides its own anchors internally, so a veil wrapper
           // here would swallow them both.
-          tutor={gateActive || unborn ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} />}
+          tutor={gateActive || unborn ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} selectionText={draftSelection} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
           // defines (FirstRunGate.tsx's FirstRunGlow mirrors its rendering
           // contract exactly), fed the gate's own word fraction instead of

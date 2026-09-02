@@ -52,7 +52,9 @@ Absolute rules:
 
 TU2 S2 — conduct rule 37 (this prompt carries no numbering scheme of its own, so this lands as its own clearly demarcated paragraph rather than a fabricated "37" bullet): a writer's send may now carry a delimited block of the page's own new-since-last-read writing, below their own message. That block is context, not an assignment — never volunteer unsolicited critique of it, never comment on it unasked. Answer what the writer actually asked, informed by what you read.
 
-A writer's send may carry their book's Bible — short facts they chose to save. The Bible is context, not an assignment: use it to stay consistent with the writer's own decisions; never volunteer critique of it; never treat a fact as an invitation to compose. You may suggest, in plain words, that the writer note something in their Bible; you cannot write to it — the Bible is theirs alone.`;
+A writer's send may carry their book's Bible — short facts they chose to save. The Bible is context, not an assignment: use it to stay consistent with the writer's own decisions; never volunteer critique of it; never treat a fact as an invitation to compose. You may suggest, in plain words, that the writer note something in their Bible; you cannot write to it — the Bible is theirs alone.
+
+A writer's send may carry one delimited stretch they selected on the page and pressed a chip to ask about. Answer about THAT stretch — it is the whole of what they pointed at, and you have not been given the surrounding page, so never claim to know what comes before or after it. It is context, not an assignment: name what the stretch is doing, question it, point — never rewrite it, never offer a replacement, not even a fragment.`;
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
@@ -72,15 +74,24 @@ const MAX_DELTA_CHARS = 17000;
 // header line if trimmed; 9000 covers that with headroom. Like the delta, the
 // bible travels as its OWN top-level field, never folded into `messages`.
 const MAX_BIBLE_CHARS = 9000;
+// ITEM 84, TD4 — the selection ask's own backstop, mirroring the delta's. The
+// client caps the selected stretch at 16000 chars plus a short truncation-honesty
+// header (Tutor.tsx's SELECTION_CHAR_CAP); 17000 covers that with headroom. It
+// travels as its OWN top-level field for the same reason the delta does — folding
+// a stretch of prose into `messages` would trip MAX_MESSAGE_CHARS on the first
+// real selection — and, more importantly here, because a counsel's payload must be
+// separately visible to be separately testable: item84b.mjs asserts this key
+// carries the selection and that the page never rides with it.
+const MAX_SELECTION_CHARS = 17000;
 
 interface InboundMessage {
   role: 'writer' | 'tutor';
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string } {
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string } {
   if (!body || typeof body !== 'object') return false;
-  const { messages, delta, bible } = body as { messages?: unknown; delta?: unknown; bible?: unknown };
+  const { messages, delta, bible, selection } = body as { messages?: unknown; delta?: unknown; bible?: unknown; selection?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
   const messagesValid = messages.every((m) =>
     m && typeof m === 'object'
@@ -96,6 +107,9 @@ function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta
   // empty string) when the project has no facts; a real string otherwise,
   // within the server backstop cap.
   if (bible !== undefined && (typeof bible !== 'string' || bible.length === 0 || bible.length > MAX_BIBLE_CHARS)) return false;
+  // ITEM 84, TD4 — selection is optional on exactly those same terms: absent
+  // (never an empty string) unless the writer pressed the one chip that names it.
+  if (selection !== undefined && (typeof selection !== 'string' || selection.length === 0 || selection.length > MAX_SELECTION_CHARS)) return false;
   return true;
 }
 
@@ -156,6 +170,22 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
       content: `<page-since-last-read>\n${delta}\n</page-since-last-read>`,
+    });
+  }
+
+  // ITEM 84, TD4 — the selected stretch, spliced LAST of the three so it sits
+  // immediately before the writer's own latest message: it is the most specific
+  // context of the three, the one thing the writer physically pointed at, and the
+  // ask that carries it reads "look at just this stretch." Same discipline as the
+  // other two otherwise — delimited, never appended as if the writer had said it,
+  // never persisted. It arrives ONLY when the writer pressed the chip whose own
+  // words name it; the button law (lock record §10) is enforced on the client,
+  // where the press happens, and this route simply never invents the key.
+  const selection: string | undefined = req.body.selection;
+  if (selection) {
+    messages.splice(messages.length - 1, 0, {
+      role: 'user' as const,
+      content: `<selected-stretch>\n${selection}\n</selected-stretch>`,
     });
   }
 

@@ -31,9 +31,13 @@ import { useMonotonicWordCount } from './FirstRunGate';
 // A12 — the two-sides law: this is the ONE surface in the whole app the
 // writer goes to when they DON'T know what they need. A13 is enforced
 // architecturally, not just by prompt: this component receives only
-// `entry`/`project`/`pageText` — never an editor ref, never a page-text
-// setter, never anything that could route a byte of Tutor output onto a
-// writing surface. Every control below is inert with respect to the page:
+// `entry`/`project`/`pageText`/`selectionText` — never an editor ref, never a
+// page-text setter, never anything that could route a byte of Tutor output onto
+// a writing surface. ITEM 84's TD4 added the fourth of those and changed nothing
+// about the wall: `selectionText` is a STRING the host computed (see
+// useSurfaceSelection.ts), read-only here exactly as `pageText` has always been.
+// The Draft roster's own presses write to `composerText` — this panel's own
+// input — and to nothing else. Every control below is inert with respect to the page:
 // the grip/dock buttons toggle local UI state; the fragment items call
 // `navigate()` (travel, not text insertion); the composer's own input
 // talks ONLY to appendTutorMessage/apiTutorChat. No control in this file
@@ -69,6 +73,17 @@ const USABLE_PANEL_FLOOR_PX = 280;
 const DELTA_TOKEN_CAP = 4000;
 const CHARS_PER_TOKEN_APPROX = 4;
 const DELTA_CHAR_CAP = DELTA_TOKEN_CAP * CHARS_PER_TOKEN_APPROX;
+
+// ITEM 84, TD4 — the selected stretch's own cap, mirroring the delta's two-tier
+// shape (client cap here, server backstop in tutor.ts). HEAD-BIASED, and that is
+// the one place it deliberately differs from the delta: the delta keeps its TAIL
+// because the newest writing is its whole point, while a selection's point is the
+// stretch the writer started pointing at, so an over-long one keeps its OPENING.
+// The header below is plain data read by the MODEL and is deliberately not a
+// deskLexicon entry — its writer-facing twin is `tutorSelectionTruncated` — the
+// same distinction DELTA_TRUNCATION_HEADER above already draws.
+const SELECTION_CHAR_CAP = DELTA_CHAR_CAP;
+const SELECTION_TRUNCATION_HEADER = 'opening of the selected stretch only; the rest was too long to travel';
 
 // TU2 S5 — the session meter's own timing. Split into a fully-opaque hold
 // plus a separate fade-out span (rather than one flat 4000ms) so the
@@ -112,6 +127,15 @@ function assembleTutorDelta(pageText: string, lastRead: { at: string; chars: num
   const kept = truncated ? newText.slice(newText.length - DELTA_CHAR_CAP) : newText; // tail bias: keep the most recent writing
   const delta = truncated ? `[${DELTA_TRUNCATION_HEADER}]\n${kept}` : kept;
   return { delta, truncated };
+}
+
+// ITEM 84, TD4 — the stretch, capped. Pure and synchronous, called once at PRESS
+// time and never again: what travels is frozen the moment the writer pressed the
+// button that names it, which is also why this takes the stretch as an argument
+// rather than reading any live selection of its own.
+function capSelection(stretch: string): { text: string; truncated: boolean } {
+  if (stretch.length <= SELECTION_CHAR_CAP) return { text: stretch, truncated: false };
+  return { text: `[${SELECTION_TRUNCATION_HEADER}]\n${stretch.slice(0, SELECTION_CHAR_CAP)}`, truncated: true };
 }
 
 // TU5 S4 — the book's Bible's own send-time assembly, mirroring the delta's
@@ -203,6 +227,16 @@ export interface TutorProps {
   // Draft ('drafting'), screenplay (Draft-only by its own law) and Board all
   // render exactly the panel they rendered before this ticket.
   mode?: EditorMode;
+  // ITEM 84, TD4 — THE SELECTION, and it is a STRING. The build brief's §5 draws
+  // this line and the component keeps to it exactly: "a read-only selection value
+  // may reach the component as a prop; a reference to the editor may not." The
+  // host owns the surface and computes this (useSurfaceSelection.ts); the panel
+  // only ever reads it, exactly as it only ever reads `pageText`.
+  //
+  // OPTIONAL, and absent means "no stretch": Board and Free Write pass nothing,
+  // because neither mounts the Draft roster. Absent leaves TD4's chip
+  // disabled-visible, which is its lawful resting state.
+  selectionText?: string;
 }
 
 // ITEM 84, THE DECK PHASE — the roster's three presets, in Nick's own ruled
@@ -215,13 +249,33 @@ const FREE_WRITE_PRESETS: { id: FreeWritePresetId; term: 'tutorFreeWritePrompt' 
 
 const NO_DRAWS: Record<FreeWritePresetId, number> = { writingPrompt: 0, unblock: 0, tips: 0 };
 
+// ITEM 84, THE DRAFT ROSTER — the four asks in the lock record's own order, and
+// FIXED in it: no reshuffling between visits, because re-scanning is the tax the
+// cognition bench named. `term` keys the string of record (deskLexicon, which
+// carries the provenance note); `sendsSelection` marks TD4, the one chip that
+// adds a payload. It is a per-ask boolean rather than an id comparison on
+// purpose: the button law is per-press, so each button declares its own wire
+// right here beside the words that name it, and any chip added later has to
+// answer the question rather than inherit an answer.
+type DraftAskId = 'drag' | 'loadBearing' | 'threadSlip' | 'stretch';
+const DRAFT_ASKS: {
+  id: DraftAskId;
+  term: 'tutorDraftAskDrag' | 'tutorDraftAskLoadBearing' | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch';
+  sendsSelection: boolean;
+}[] = [
+  { id: 'drag', term: 'tutorDraftAskDrag', sendsSelection: false },
+  { id: 'loadBearing', term: 'tutorDraftAskLoadBearing', sendsSelection: false },
+  { id: 'threadSlip', term: 'tutorDraftAskThreadSlip', sendsSelection: false },
+  { id: 'stretch', term: 'tutorDraftAskStretch', sendsSelection: true },
+];
+
 interface DisplayMessage {
   id: string;
   role: 'writer' | 'tutor';
   text: string;
 }
 
-export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) {
+export function Tutor({ entry, project, pageText, pageKind, mode, selectionText }: TutorProps) {
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -318,6 +372,50 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
   // focus, so there was no cursor until the writer clicked. See the focus
   // effect below.
   const composerRef = useRef<HTMLInputElement | null>(null);
+
+  // ==========================================================================
+  // ITEM 84, THE DRAFT ROSTER — the Draft asks' own state.
+  // ==========================================================================
+  // Draft is mode key 'drafting' (ModeStrip.tsx maps t('modeDraft') to exactly
+  // this value). The two rosters are SIBLINGS on one branch and can never
+  // co-render: Free Write is not Draft, and an absent mode (Board) is neither.
+  // Revise cannot reach here at all — `EditorMode` has no 'revise' member
+  // (ForwardOnlyEditor.tsx) and the Revise tab is `live: false` (ModeStrip.tsx),
+  // so the brief's "cannot render in Revise" holds by the TYPE, not by a branch.
+  const drafting = mode === 'drafting';
+
+  // THE ARMED SELECTION — the whole of the disclosure's "only then", expressed as
+  // a mechanism rather than a rule anyone has to remember. It is FROZEN AT THE
+  // PRESS, and it has to be: pressing a button collapses the page's own DOM
+  // selection, so a send-time read would send nothing at all, or something else
+  // the writer never pointed at. Null on every other path, so the wire key is
+  // simply absent and asks 1-3 travel byte-identically to how they travelled
+  // before this ticket existed.
+  const [armedSelection, setArmedSelection] = useState<string | null>(null);
+  // Set at the press that armed an over-long stretch, cleared by any press that
+  // arms nothing — it describes what is standing ready to travel, so unlike
+  // `deltaTruncated` (which describes what just happened) it is set BEFORE the
+  // send rather than during it.
+  const [selectionTruncated, setSelectionTruncated] = useState(false);
+  const stretch = (selectionText ?? '').trim();
+  const hasStretch = stretch.length > 0;
+
+  // Staging must arrive VISIBLY EDITABLE — "cursor in the text, never styled as
+  // final" — so the press places a real caret at the end of the staged string.
+  // A TICK rather than a watch on `composerText`: pressing the same chip twice
+  // stages an identical string, React bails on the identical value, and an effect
+  // keyed on the text would silently skip placing the caret exactly then. The
+  // effect runs after the DOM already carries the new value, so no timer is
+  // needed and none is used (an animation frame here would be a race).
+  const [stageTick, setStageTick] = useState(0);
+  useEffect(() => {
+    if (stageTick === 0) return; // nothing has been staged this mount
+    const el = composerRef.current;
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    const end = el.value.length;
+    el.setSelectionRange(end, end);
+  }, [stageTick]);
 
   // The vanishing law with the dock rider (A15), inherited whole via the
   // SAME mechanism Cascade.tsx already established (an explicit keydown
@@ -589,12 +687,50 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
     setRefillNote(null);                    // a real draw answers any standing note
   };
 
+  // ITEM 84, THE DRAFT ROSTER — THE PRESS. Staging, not sending: the ask lands in
+  // the composer as ordinary editable text and NOTHING goes on the wire. As with
+  // the deck phase's own press, what matters most is what is NOT here — no fetch,
+  // no await, nothing asynchronous at all — so "this press sent nothing" is a
+  // structural fact rather than a promise. The writer edits if they wish and
+  // presses Send, which is the existing, unchanged send path. No auto-send exists
+  // anywhere in this feature, ask 4 included.
+  //
+  // THE BUTTON LAW (lock record §10): "a counsel's button names what its own press
+  // sends", and consent is PER-PRESS. That is why the else-branch below clears the
+  // arm rather than leaving it: ask 1's button names no selection, so ask 1's press
+  // must not inherit ask 4's payload. One chip cannot consent for another's wire,
+  // and here that is a line of code rather than a paragraph of intent.
+  const pressAsk = (ask: typeof DRAFT_ASKS[number]) => {
+    if (!drafting) return;
+    const text = t(ask.term);
+    if (ask.sendsSelection) {
+      // The chip is `disabled` without a stretch; this is the belt to that brace.
+      if (!hasStretch) return;
+      const capped = capSelection(stretch);
+      setArmedSelection(capped.text);       // FROZEN — see the state's own note
+      setSelectionTruncated(capped.truncated);
+    } else {
+      setArmedSelection(null);
+      setSelectionTruncated(false);
+    }
+    setComposerText(text);                  // REPLACES — the composer stages one ask
+    setStageTick((n) => n + 1);
+  };
+
   const send = async () => {
     const text = composerText.trim();
     if (!text || sending) return;
     setComposerText('');
     setStatus('idle');
     setDeltaTruncated(false);
+    // ITEM 84, TD4 — THE ARMED SELECTION IS CONSUMED HERE, and cleared in the same
+    // breath it is read. "Only then" means one press, one send: a second send
+    // cannot re-carry a stretch the writer pressed for once, and a failed send
+    // does not leave the wire armed behind it. Read into a local first for the
+    // same reason `composerText` is — the state clear below must not race the
+    // request that is about to be assembled from it.
+    const selection = armedSelection;
+    setArmedSelection(null);
     // TU2 S2 — read the cursor BEFORE this send's own appendTutorMessage
     // call below (which, via its lastRead-preserving spread, wouldn't
     // disturb it anyway — but reading it first keeps the delta's
@@ -638,7 +774,11 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
     // project's saved facts fresh and join them; absent when there are none, so
     // JSON.stringify drops the key and the wire stays byte-free of any bible.
     const bible = entry.projectId ? assembleBible(getBibleFacts(entry.projectId)) : null;
-    const result = await apiTutorChat(history, delta ?? undefined, bible ?? undefined);
+    // ITEM 84, TD4 — `selection` is the ONE key this ticket adds, and it is absent
+    // (never an empty string) unless the chip whose own words name it was the
+    // press that staged this ask. `pageText` is not passed and never becomes a
+    // key: it stays a render prop, per the lock record's own wire precision.
+    const result = await apiTutorChat(history, delta ?? undefined, bible ?? undefined, selection ?? undefined);
     setSending(false);
     if (!result.ok) { setStatus('error'); return; }
     if (!result.configured) { setStatus('offline'); return; }
@@ -740,6 +880,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
               {status === 'error' && <div className="wz-tutor-convo-status">{t('tutorConversationError')}</div>}
               {sending && <div className="wz-tutor-convo-status">{t('tutorConversationSending')}</div>}
               {deltaTruncated && <div className="wz-tutor-convo-status">{t('tutorDeltaTruncated')}</div>}
+              {selectionTruncated && <div className="wz-tutor-convo-status">{t('tutorSelectionTruncated')}</div>}
               {/* ITEM 84, THE DECK PHASE — THE FREE WRITE ROSTER. Mounted where
                   the arc already ruled it mounts (lock record §1 line 1: the
                   shared chip row inside "Talk it through", above the composer,
@@ -780,6 +921,44 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
                   writer's distance from it is a score, so it may not. */}
               {freeWrite && refillNote !== null && (
                 <div className="wz-tutor-fw-note" data-note-for={refillNote}>{t('tutorFreeWriteRefill')}</div>
+              )}
+              {/* ITEM 84, THE DRAFT ROSTER — mounted where the arc ruled the shared
+                  chip row mounts (lock record §1 line 1: inside "Talk it through",
+                  above the composer, below the messages), the same slot the Free
+                  Write roster takes in its own mode. Chips render WITH the panel
+                  and never animate in; the order is fixed and never reshuffles
+                  between visits. Absent outright in Free Write and on Board — the
+                  two rosters are one branch's two sides and never co-render. */}
+              {drafting && (
+                <div className="wz-tutor-draft-roster" role="group" aria-label={t('tutorDraftRoster')}>
+                  {DRAFT_ASKS.map((ask) => {
+                    // TD4 is the ONE lawful disabled-visible chip in this roster:
+                    // its gate flips by the second as the writer selects and
+                    // deselects, and layout stability outranks purity of absence
+                    // for that case, so it holds its slot instead of appearing and
+                    // vanishing. It is a TRANSIENT gate on real capability (never
+                    // G3's locked door wearing paint), and it says why — the title
+                    // below is the reason a disabled control otherwise cannot give.
+                    const gated = ask.sendsSelection && !hasStretch;
+                    return (
+                      <button
+                        key={ask.id}
+                        type="button"
+                        className="wz-tutor-draft-ask"
+                        data-ask={ask.id}
+                        // What the harness reads to prove, per button, that the
+                        // wire carries exactly what the button names.
+                        data-sends-selection={ask.sendsSelection ? 'true' : 'false'}
+                        data-gated={gated ? 'true' : 'false'}
+                        disabled={gated}
+                        title={gated ? t('tutorDraftStretchNeedsSelection') : undefined}
+                        onClick={() => pressAsk(ask)}
+                      >
+                        {t(ask.term)}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
               <div className="wz-tutor-convo-row">
                 <input
@@ -933,11 +1112,28 @@ export function Tutor({ entry, project, pageText, pageKind, mode }: TutorProps) 
         <div className="wz-tutor-disclosure-backdrop wz-tutor-zone">
           <div className="wz-tutor-disclosure" role="dialog" aria-modal="true" aria-label={t('tutorDisclosureTitle')}>
             <div className="wz-tutor-disclosure-title">{t('tutorDisclosureTitle')}</div>
-            {/* TU5 S6 — v3 body (deskLexicon's tutorDisclosureBodyV3), not the
-                v2/v1 strings it supersedes: the panel always shows
-                CURRENT_DISCLOSURE_VERSION's own copy, never an older version's —
-                see store/tutorDisclosure.ts's header comment for why a
-                v1/v2-acknowledged device still sees this exactly once. */}
+            {/* ITEM 84 — v4, in ANNOTATION FORM. open-threads.md's own ruling is
+                "v3 → superseded by v4 in annotation form (v3 standing verbatim
+                beneath)", so the ratified sentence leads and v3's text stands
+                under it. v3 is REUSED HERE BY ID — never copied, never edited —
+                which is what makes "verbatim" a fact about this line rather than a
+                claim about it, and it is also why nothing v3 promised is withdrawn
+                by the addition. The panel still shows exactly
+                CURRENT_DISCLOSURE_VERSION's own copy; that copy is now these two
+                lines together, and a v1/v2/v3-acknowledged device sees it exactly
+                once (store/tutorDisclosure.ts's integer compare, unchanged).
+
+                WHY V3 KEEPS `.wz-tutor-disclosure-body` AND V4 TAKES A NEW CLASS.
+                "Annotation form" says which of these two is which: v3's
+                enumeration remains THE BODY — the standing promise, unwithdrawn —
+                and v4 is the sentence written above it. Naming them that way round
+                is the structure the ruling describes, and it has the honest side
+                effect that tu2/tu5's existing "the modal carries v3's wording
+                exactly" checks stay TRUE rather than needing to be parked: v3's
+                wording IS still carried, exactly, which is the whole point of
+                "verbatim beneath". Only the two version-NUMBER checks park, because
+                only they stop being true. */}
+            <div className="wz-tutor-disclosure-annotation">{t('tutorDisclosureBodyV4')}</div>
             <div className="wz-tutor-disclosure-body">{t('tutorDisclosureBodyV3')}</div>
             <button type="button" className="wz-tutor-disclosure-ack" onClick={acknowledgeDisclosure} autoFocus>
               {t('tutorDisclosureAck')}

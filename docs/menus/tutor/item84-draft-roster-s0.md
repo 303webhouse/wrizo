@@ -216,6 +216,18 @@ don't-re-derive-fixtures law. Against brief §8:
    **and must not carry the page under any key**, with the page's own text asserted
    **not** to be a substring of the serialized body; and a send armed by asks 1-3 must
    carry **no `selection` key at all**.
+
+   > **AMENDED at build time, and named rather than silently corrected.** As written
+   > above, the substring sweep would have been WRONG: on a first send the `delta`
+   > legitimately carries the whole page - it is v3's own second named traveler - so
+   > "the page is not a substring of the body" is false for a lawful build and the
+   > check would have failed honest code. The built check is stronger and actually
+   > measures what §5 claims: **the first send burns the delta** (a successful reply
+   > advances the Tutor's cursor to the page's full length), so the TD4 send that
+   > follows has **no delta at all** and its body must be **exactly
+   > `{ messages, selection }`** - the key set proves the page cannot be there, and
+   > the substring sweep over the two sentences *surrounding* the selected stretch
+   > then proves it did not ride in disguise either. See `item84b.mjs` S4.
 4. **mode boundary** - present in Draft, absent in Free Write and on Board, and the Free
    Write roster's own mode branch still holds (the two rosters never co-render).
 5. **both reference widths** - 1100 and 1366, paper measure unchanged.
@@ -261,5 +273,21 @@ resolved, by §9:** the shared-row label collision - Draft ships its own string 
 reconciliation waits for Revise to exist.
 
 **No deploy.** Nothing ships without Nick's word.
+
+### AMENDMENTS AFTER THE PATCH
+
+- **(h)3** - the wire check's shape, corrected above where it stands.
+- **(i)** - the park sweep GREW. The disclosure bump to v4 parks four more checks,
+  all of them version-NUMBER assertions: one in `tu1.mjs`, one in `tu2.mjs`, two in
+  `tu5.mjs`, each parked verbatim with a fresh re-assertion against the v4 key. The
+  ten skip-the-disclosure **fixture seeds** moved `3` -> `4`, which is a **fixture
+  repair on TU5 S6's own recorded precedent** (`tu1.mjs:98`) and not a park: the
+  fixture's intent ("this device has already acknowledged") is unchanged.
+  **No WORDING assertion parks anywhere** - v4 renders in annotation form with v3's
+  string reused by id beneath it, so `tu2`/`tu5`'s "the modal carries v3's wording
+  exactly" checks remain true as written. That DOM shape was chosen because it is
+  what "annotation form" describes (v3 remains the body; v4 is the sentence written
+  above it) - and it is named here that the reduced churn was a consequence of that
+  choice, not the reason for it.
 
 - the item-84 Draft-roster build lane, 2026-09-02

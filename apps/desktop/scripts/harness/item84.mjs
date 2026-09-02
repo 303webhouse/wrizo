@@ -112,7 +112,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -594,8 +594,19 @@ await withHarness(async (app) => {
     const draftRoster = await rosterState(app);
     ok('S6: Draft does NOT take the composer\'s focus on open — the cursor is Free Write\'s posture, not a new global behaviour',
       draftFocused === false, JSON.stringify({ draftFocused }));
-    ok('S6: and that Draft panel carries no roster either — the two halves of the mode branch agree',
-      draftRoster.rosterPresent === false, JSON.stringify(draftRoster));
+    // ITEM 84b park sweep — this check still PASSES (it reads
+    // `.wz-tutor-fw-roster`, the Free Write roster's own class, and Draft still
+    // carries none of that) but it has stopped MEANING what it says: the Draft
+    // panel now carries a roster of its own, the four-chip Draft roster. A claim
+    // that stops meaning what it says is parked, never quietly reinterpreted, so
+    // the original stands verbatim at the foot of this file and this is its fresh,
+    // narrower successor — which also asserts the true post-ticket state rather
+    // than only the absence half of it. The owning live successor is item84b.mjs's
+    // own S1 mode-boundary section.
+    const draftHasDraftRoster = await app.evalJs("!!document.querySelector('.wz-tutor-draft-roster')");
+    ok('S6: and that Draft panel carries no FREE WRITE roster either — the two halves of the mode branch agree. It carries the DRAFT roster instead (item 84b), which is what makes them two sides of one branch rather than one roster with a condition',
+      draftRoster.rosterPresent === false && draftHasDraftRoster === true,
+      JSON.stringify({ fwRoster: draftRoster.rosterPresent, draftRoster: draftHasDraftRoster }));
   }
 
   // ==========================================================================
@@ -628,17 +639,29 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-// ITEM 84's deck phase parks NOTHING — see this file's own park-sweep note in the
-// header. The change is additive on every seam it touches, and no existing
-// assertion in any harness is falsified by it.
+// ITEM 84's deck phase parked NOTHING of its own — see this file's own park-sweep
+// note in the header; the change was additive on every seam it touched.
+//
+// ITEM 84b (the Draft roster) parks ONE check that lives here, recorded below. It
+// is a park of MEANING rather than of truth: the original still passes against
+// the 84b build, because it reads the Free Write roster's class and Draft carries
+// none of that — but "carries no roster either" ceased to describe a panel that
+// now carries the four Draft chips. The house law is that such a claim is parked
+// verbatim with its successor named, never edited into agreement with the new
+// build, so the sentence below is the sentence that was written.
 const parkedChecks = [];
+{
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  pok('PARKED (was "S6: and that Draft panel carries no roster either — the two halves of the mode branch agree") — ITEM 84b: Draft now carries the four-chip Draft roster, so "no roster" no longer describes that panel; the check\'s own selector still passes, its wording no longer holds — live successor in item84b.mjs\'s S1 mode-boundary section (and re-asserted fresh above, narrowed to the Free Write roster and paired with the Draft roster\'s presence)',
+    true, 'superseded by ITEM 84b\'s Draft roster');
+}
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM84 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 84's deck phase parks nothing of its own.`
+    ? `\nITEM84 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: one ITEM-84b-superseded mode-branch check (successor in item84b.mjs). The deck phase itself parked nothing.`
     : `\nITEM84 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

@@ -148,6 +148,22 @@ export type DeskTermId =
   // gate on real capability, re-armed the moment the writer moves on.
   | 'tutorFreeWriteRoster' | 'tutorFreeWritePrompt' | 'tutorFreeWriteUnblock'
   | 'tutorFreeWriteTips' | 'tutorFreeWriteRefill'
+  // ITEM 84, THE DRAFT ROSTER — the four asks, and they are STRINGS OF RECORD.
+  // Taken byte-for-byte from the build brief's §2 table, which took them from
+  // tutor-menus-lock-record.md (§3's amendment and §4's sweep). Pass 2 and the
+  // mockup HTML still carry the PRE-AMENDMENT third ask by design — they are the
+  // record of what the committee argued and of what Nick actually looked at — and
+  // are therefore INVALID sources for these strings; the lock record's own §3 rule
+  // says so in as many words. item84b.mjs asserts all four byte-exact, and asserts
+  // the overturned string absent from the DOM, precisely to catch a copy from
+  // either of them.
+  //
+  // `tutorDraftAskStretch` is TD4, the one chip that adds a payload: its own words
+  // ARE its button-naming under the disclosure's condition (a), which is why the
+  // string may never be softened into a generic label.
+  | 'tutorDraftRoster' | 'tutorDraftAskDrag' | 'tutorDraftAskLoadBearing'
+  | 'tutorDraftAskThreadSlip' | 'tutorDraftAskStretch'
+  | 'tutorDraftStretchNeedsSelection' | 'tutorSelectionTruncated'
   | 'tutorDisclosureTitle' | 'tutorDisclosureBody' | 'tutorDisclosureAck'
   // TU2 S3 — the disclosure's v2 body, Nick's ratified string verbatim
   // (added, not overwritten in place, so the lexicon keeps v1's body
@@ -162,6 +178,16 @@ export type DeskTermId =
   // history. Nick ratifies this string verbatim (or swaps the alternate) at
   // the schema word — see docs scratchpad's s6-disclosure-candidates.md.
   | 'tutorDisclosureBodyV3'
+  // ITEM 84 — the disclosure's v4 body: candidate B, ratified by Nick 2026-08-17,
+  // provisionally-binding, committed at `1ef1659` in
+  // docs/wrizo-alpha/disclosure-v4-committee-fable.md. Verified against that
+  // record's own manifest before use — 1 sentence, 183 bytes, md5
+  // 9287082c0e3c0a2b243c71ce01c89b43 — and rendered ABOVE v3 rather than in place
+  // of it, per open-threads.md's ruling: "v3 → superseded by v4 in annotation form
+  // (v3 standing verbatim beneath)". v3's string below is therefore not copied and
+  // not edited; the modal reuses that very id, which is what makes "verbatim
+  // beneath" mechanical instead of promised.
+  | 'tutorDisclosureBodyV4'
   // TU2 S2 — the listener's own honesty line: shown in the panel's quiet
   // UI copy whenever a send's delta had to be tail-capped (the model's
   // own copy of that same honesty travels in the delta block's plain-data
@@ -650,11 +676,32 @@ const CANONICAL: Record<DeskTermId, string> = {
   // not a score). item84.mjs asserts this structurally, by pressing at zero
   // words and again at forty and requiring the two notes to be byte-identical.
   tutorFreeWriteRefill: 'Write 100 words to unlock more prompts',
+  // ITEM 84, THE DRAFT ROSTER — see the id block above for why these four are
+  // strings of record and where they came from. The group label is chrome, not an
+  // ask, so it carries no question mark and never enters a composer.
+  tutorDraftRoster: 'Draft asks',
+  tutorDraftAskDrag: "Where does this drag?",
+  tutorDraftAskLoadBearing: "What's load-bearing here — and what could go?",
+  tutorDraftAskThreadSlip: "Where does the thread slip?",
+  tutorDraftAskStretch: "Look at just this stretch — what's it doing?",
+  // TD4's disabled-visible state, named. The chip holds its slot without a
+  // selection rather than appearing and vanishing (its gate flips by the second,
+  // and layout stability outranks purity of absence for that case) — so it owes
+  // the writer a reason, and this is it. An instruction aimed at the ACT, never at
+  // the writer: the voice law binds chrome as well as asks.
+  tutorDraftStretchNeedsSelection: 'Select a stretch on the page first',
+  // The selection's own honesty line, the exact twin of `tutorDeltaTruncated`
+  // above: shown when a selected stretch was too long to travel whole. The
+  // model-facing half of this honesty is plain data in Tutor.tsx's own
+  // SELECTION_TRUNCATION_HEADER and deliberately does NOT route through this
+  // lexicon, per that same distinction.
+  tutorSelectionTruncated: 'Only the opening of your selected stretch was shared this time — the rest was too long to travel.',
   tutorDisclosureTitle: 'Before you ask',
   tutorDisclosureBody: 'What you ask the Tutor travels to a language model; your pages stay yours.',
   tutorDisclosureAck: 'Got it',
   tutorDisclosureBodyV2: 'When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.',
   tutorDisclosureBodyV3: "When you ask the Tutor, your question — and any new writing on this page since the Tutor last read it, and any facts you've saved in this book's Bible — travels to the language model provider configured for this app. Nothing is ever sent unless you ask. Your pages remain yours.",
+  tutorDisclosureBodyV4: "Nothing leaves your desk unasked: an ask sends your words, this page's recent changes, and your Bible; a counsel that reads more names it on the button and sends only that, only then.",
   tutorDeltaTruncated: 'Only your latest stretch of new writing was shared this time — earlier new writing since last time went unread.',
   tutorMeterTurnCost: 'This turn, est.:',
   tutorMeterSessionTotal: 'This session, est.:',

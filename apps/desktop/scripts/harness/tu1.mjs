@@ -95,8 +95,9 @@ const BEAT_NAME = THREE_ACT.beats[0].name; // 'Setup'
 // crashes outright (TypeError: Cannot read properties of null (reading
 // 'click')) at the S2 dock-rider section's own `.wz-tutor-dock-btn` click,
 // several sections past the first accidental disclosure pop. Seeding the
-// NEW version key ('wrizo-tutor-disclosure-seen-version', '3' —
-// CURRENT_DISCLOSURE_VERSION at TU2's own ratification) alongside the old
+// NEW version key ('wrizo-tutor-disclosure-seen-version', '4' —
+// CURRENT_DISCLOSURE_VERSION, moved 2 -> 3 by TU5 S6 and 3 -> 4 by ITEM 84's
+// Draft roster, whose TD4 made the first counsel to read past v3's three) alongside the old
 // one keeps this helper doing exactly what its own name and header comment
 // already promised ("every fixture that isn't testing the disclosure
 // itself" gets a device that has already seen it) — no check below this
@@ -105,7 +106,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -286,9 +287,14 @@ await withHarness(async (app) => {
   // below (A4, quoted verbatim, confirmed false live against the TU5 build) and
   // re-asserted fresh here against the CURRENT ('3') key — never rewritten in
   // place. Live successor also in tu5.mjs's own disclosure v3 section.
-  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v3 key)',
+  // ITEM 84 park sweep — the '3'-key re-assertion is itself now superseded:
+  // CURRENT_DISCLOSURE_VERSION is 4 (TD4, the selection ask, reads past v3's
+  // three named travelers). Parked below verbatim and re-asserted fresh here
+  // against the CURRENT ('4') key — never rewritten in place. Live successor
+  // also in item84b.mjs's own disclosure section.
+  ok('S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v4 key)',
     (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '3');
+    && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
   // Close, then open a SECOND time — the brief's own "exactly once across two opens".
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
   await sleep(200);
@@ -714,6 +720,15 @@ if (process.env.HARNESS_PARKED === '1') {
   // above against the '3' key; the owning live successor is tu5.mjs.
   pok('PARKED (was "S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v2 key)") — TU5 S6: CURRENT_DISCLOSURE_VERSION is 3 now, so the ack writes version 3, not 2 — live successor in tu5.mjs\'s own disclosure v3 section (and re-asserted fresh here against the v3 key)',
     true, 'superseded by TU5 S6\'s disclosure v3');
+
+  // ITEM 84 (the Draft roster) bumped CURRENT_DISCLOSURE_VERSION 3 -> 4: TD4, the
+  // selection ask, is the first counsel to put bytes on the wire beyond v3's three
+  // named travelers, so v4's ratified sentence now leads the modal (v3 standing
+  // verbatim beneath it). The '3'-key re-assertion TU5 S6 left live here reads
+  // false against this build — the ack writes '4'. Re-asserted fresh above against
+  // the v4 key; the owning live successor is item84b.mjs.
+  pok('PARKED (was "S5 disclosure: dismissed by its own explicit ack, and the seen flag persists (v3 key)") — ITEM 84: CURRENT_DISCLOSURE_VERSION is 4 now, so the ack writes version 4, not 3 — live successor in item84b.mjs\'s own disclosure section (and re-asserted fresh here against the v4 key)',
+    true, 'superseded by ITEM 84\'s disclosure v4');
 
   // FX12 S1 — the "Waiting for you" nudges section unrenders everywhere and the
   // nudge-generation engine sleeps entire (no computation, no injection). Both S4
