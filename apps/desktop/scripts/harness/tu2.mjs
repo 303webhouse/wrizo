@@ -764,6 +764,17 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "Disclosure v2 (v1-seeded device) — THE single most important disclosure check: the OLD v1 flag does NOT suppress v2 — it still shows, once, with v2\'s own wording") — TU5 S6: the v1 flag still does not suppress it, but the wording shown is now v3 — live successor in tu5.mjs\'s disclosure v3 section',
     true, 'superseded by TU5 S6 disclosure v3');
 
+  // ITEM 84 (the Draft roster) bumped CURRENT_DISCLOSURE_VERSION 3 -> 4: TD4, the
+  // selection ask, is the first counsel to put bytes on the wire beyond v3's three
+  // named travelers. The '3'-key assertion TU5 S6 left live in this file reads
+  // false against that build (the ack writes '4'), so it is parked here verbatim
+  // and re-asserted fresh above against the v4 key. This file's v3 WORDING checks
+  // are NOT parked and are not affected: v4 renders in annotation form, so v3's
+  // body still carries v3's wording exactly, which is what those checks claim.
+  pok("PARKED (was \"Disclosure v3: the ack dismisses it and writes the CURRENT version (3) under the version key — the \"(2)\" assertion this replaces is parked below, superseded by TU5 S6\") — ITEM 84: CURRENT_DISCLOSURE_VERSION is 4 now, so the ack writes version 4, not 3 — live successor in item84b.mjs's own disclosure section (and re-asserted fresh above against the v4 key)",
+    true,
+    "superseded by ITEM 84 disclosure v4");
+
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
