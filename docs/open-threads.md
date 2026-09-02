@@ -9578,6 +9578,58 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## WEEKEND BATCH DEPLOY MANIFEST — 2026-09-01 (chat 1, on Nick's "Ship the batch" — Fable PASS ×2)
+
+**THE WEEKEND BATCH — E1 + family (menus-errata) + the deck phase (Free Write roster).** Gate chain:
+Fable's two reviews **VERDICT PASS** (`docs/wrizo-alpha/errata-e1-review-fable.md` @ `955384c`;
+`docs/wrizo-alpha/deck-phase-review-fable.md` @ `6a1b4b5`) → Nick's ship word ("Ship the batch").
+**ZERO SCHEMA / ZERO SERVER this time.** Deploying `main` HEAD **`c927e9c`**.
+
+**Deploy-ships-a-SHA enumeration (`89b8ff5..c927e9c`):**
+- `955384c` — Merge menus-errata @ `8444cb8` (E1 fix `6bbdd9f` + `item83e.mjs`; fx7 driver re-point `bd5072c`)
+- `6a1b4b5` — Merge item84-deck-phase @ `b308ddd` (Free Write roster; deck S0/build records §9/§10)
+- `fe31643` — Records: batch riders (retry-loop → canon; m3 ROAMS → item 82 watch; E3 fade)
+- `c927e9c` — Records: Fable's two batch reviews (both PASS)
+
+**New PRODUCT code since the last live build (`89b8ff5` · railway `250bcf0e`) — verified
+`89b8ff5..c927e9c`, 15 files, +1509/−22, ZERO schema, ZERO server (`apps/server` byte-untouched
+in-range):**
+- E1 family: `menusDrawers.ts` (+53 — band≤0-is-a-NO + announce-from-effect), `Sliver.tsx`,
+  `Cascade.tsx` (structural announcement from an effect keyed on each drawer's derived truth), the
+  corrected paper selector (`.board-canvas-wrap` / `.script-sheet`, single-sourced with the probe).
+- Deck phase: `Tutor.tsx` (+257 — the Free Write roster, hooks ungated, synchronous draw, NOTHING
+  TRAVELS proven), new store `tutorFreeWriteDeck.ts` (+168), `deskLexicon.ts`, `FirstRunGate.tsx`,
+  `index.css`.
+- Harness (not in bundle): `item83e.mjs`, `item84.mjs`, fx7 re-point, `runtime-verify.mjs`.
+
+**Records since `89b8ff5` (docs, no deployed surface):** the Mirrored Hands ruling + item 119;
+item-112 FULL-REVISE scope; the batch riders; both Fable reviews; this manifest.
+
+**Verified — fresh suite of record at the deploy HEAD (`c927e9c`), BOTH settings, machine-clear (NOT
+contaminated):** **62/62 UNSET (CLEAN) and 62/62 PARKED (CLEAN)** at `tree=c927e9c
+bundle=index-BWxL4YTx.js/550161b` (CSS `index-FXF7LihM.css`) — 62 files (the two merges added
+`item83e.mjs` + `item84.mjs`). `tsc` ×2 EXIT 0; `build:web` clean. **TREE CLEAN AT UPLOAD:**
+`git status --porcelain` EMPTY at `railway up` (the one untracked stray `item84-t1-s0-brief.md`,
+routed to TUTOR, moved aside — blob `484e7221`, restored after; NOT uploaded).
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `89b8ff5` · railway `250bcf0e`** — the menus wave. Zero schema
+this batch, so rollback is a clean redeploy of that tree (no columns to consider).
+
+**DEPLOY STAMP: git `c927e9c` · railway build `3979dcaa-f023-4337-a735-57ac480125dd`** — DEPLOYED
+2026-09-01 (`railway up --ci` from the primary checkout; item-98 guard PROJECT + TREE verified:
+`writer-studio` / `production` / `writer-studio-app`, tree clean at upload; image `sha256:77aae9b9`).
+Verified LIVE: `/healthz` **200**, served **`index-BWxL4YTx.js` + `index-FXF7LihM.css`**, `/auth/me`
+**401**. *(Railway CLI auth had expired between the merges and the ship; re-authed by Nick, then
+deployed — HEAD unchanged at `c927e9c`, the suite of record still valid.)*
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-BWxL4YTx.js` =
+**550,161 b**, md5 `3d60f514fc7986cbda7b36e12f244f46` == local suite build; served CSS
+`index-FXF7LihM.css` md5 `632380f0803ef583beb6f05e02da989a` == local. Windows suite == Linux Railway
+== served — full item-77(c) strength. Every-ship served-vs-stamped diff: **MATCH.**
+
 ## MENUS WAVE DEPLOY MANIFEST — 2026-08-28 (chat 1, on Nick's "Ship it" — Fable PASS + Nick's schema word)
 
 **THE MENUS WAVE — the item-83/84 menus build (Draft + Free Write + boards product) + its harness
