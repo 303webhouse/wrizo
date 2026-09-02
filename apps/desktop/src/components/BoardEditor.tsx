@@ -251,13 +251,42 @@ function BoardTextBox({
       </div>
     );
   }
+  // ITEM 118 (a-ii) — THE RESTING CARD RENDERS THROUGH THE DECORATION ENGINE.
+  // This returned `{initialText}` as a bare text node, so decoration only ever
+  // ran inside the opened popup: on the board itself every markdown marker was
+  // literal and nothing was styled, bold and italic alike. That is the "NO
+  // styling applied" half of Nick's own walkthrough report.
+  //
+  // The repair is not a new renderer — it is the popup's OWN engine
+  // (decorateMarkdownForCard, already imported above for BoardCardPopup),
+  // called with a NULL caret. The card register is reveal-adjacent-to-caret;
+  // a resting card has no caret, so nothing is adjacent to anything and every
+  // marker collapses to `.md-mark-hidden`. The writer gets words, not syntax —
+  // FX5 S6's own recorded verdict ("asterisks visible on a card is a bug, not
+  // a style choice"), which was written for the popup and applies with more
+  // force to the card sitting in plain view.
+  //
+  // dangerouslySetInnerHTML is safe here for the same reason it is safe in
+  // decorateEditorFor, which writes this identical HTML into a live
+  // contenteditable: every text slice goes through escHtml (draftDecoration.ts
+  // :13) and the only tags the engine can emit are its own <span class="md-*">.
+  //
+  // STORAGE IS UNTOUCHED. The marks are collapsed via `font-size:0`, never
+  // display/visibility, so they remain real rendered characters — this
+  // element's textContent still carries the stored text byte-for-byte. That
+  // matters beyond tidiness: draftDecoration.ts's header records that an
+  // always-hidden marker vanishes from innerText, which is how markdown
+  // characters would get silently stripped out of a writer's saved words.
+  //
+  // Card auto-sizing is one-directional (the measure effect returns the box
+  // unchanged unless measured > stored), so shorter decorated text can never
+  // shrink a card. Asserted in item118.mjs rather than left as reasoning.
   return (
     <div
       ref={el => measureRef(boxId, el)}
       className="board-text"
-    >
-      {initialText}
-    </div>
+      dangerouslySetInnerHTML={{ __html: decorateMarkdownForCard(initialText, null) }}
+    />
   );
 }
 
