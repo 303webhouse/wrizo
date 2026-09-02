@@ -36,8 +36,10 @@ the error lens (T1–T7, parked), TD5's lens-default change if it is separately 
 mockup HTML. It was amended under the voice law and **the amended form is the only
 lawful string.** Copy from this table.
 
-Punctuation is part of the string: the em dash in ask 2 is `—` (U+2014), the apostrophe
-in `What's` and `it's` is `'` (U+2019). Ship the bytes as written.
+Punctuation is part of the string, including the em dash in ask 2. Copy the bytes from
+the table itself rather than retyping them — no codepoint is named here on purpose, so
+that the table stays the single source and no second description can go stale against
+it.
 
 ## §3 · THE STANDING LAWS THIS BUILD OBEYS
 
