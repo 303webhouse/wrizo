@@ -11864,6 +11864,15 @@ fixture that no longer exists.
   own sentence, quoted to canon: **"Retrying contention is measuring again; retrying a red is shopping
   for an answer."** (Source: deck-phase build record §6.2; stands beside the S4 LAW and the
   known-flake discipline — item 82's watch.)
+- **A MISSING PARK IS INVISIBLE TO A PASS/FAIL RUN — THE COUNT IS THE CHECK — canon (ROSTER's catch,
+  ratified by Fable 2026-09-02).** A park sweep can be INCOMPLETE while both suites read CLEAN: an
+  assertion rewritten in place with no parked predecessor (its `pok()` never pushed) simply runs one
+  fewer check, and **a green run cannot see the check that is no longer there.** So **a green suite
+  does NOT prove a park sweep complete — only COUNTING does.** Audit the park COUNT against the
+  sweep's own claim; never trust the green as proof of completeness. Evidence: item-84 roster's tu2
+  v4 bump stamped `TU2 PARKED: PASS (9 checks)` — the same 9 as before the ticket, against a summary
+  claiming ten; caught by ARITHMETIC, not by a red. Stands beside the immutability law
+  (park-never-edit) and the retry-loop doctrine.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
