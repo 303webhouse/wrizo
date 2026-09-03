@@ -505,11 +505,19 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           another `content.kind`, so on a Draft page the rendered sequence is
           FORMAT then STRUCTURE, with the goal foot as the next sibling — see
           docs/menus/item83-errata-s0-survey.md (c). What this errata adds is
-          the NAME (`wz-sliver-structure`) that lets the acceptance instrument
+          the NAME (`wz-sliver-structure-zone`) that lets the acceptance instrument
           measure the claim at all, and the guard that keeps it true as E4 grows
-          this zone. Nothing moved, and the offer says so. */}
+          this zone. Nothing moved, and the offer says so.
+
+          THE `-zone` SUFFIX IS LOAD-BEARING, not decoration. The first cut of
+          this named the div `wz-sliver-structure` — which is the RETIRED
+          tablist's own class, swept by the menus wave's own "orphaned
+          .wz-sliver-structure sweep". ab2.mjs still probes that exact class,
+          and reads its ABSENCE as the proof the picker is gone; reusing the
+          name made a live assertion false without any ruling having changed.
+          Caught by the suite. The picker's name stays retired. */}
       {content.kind === 'draft' && (
-        <div className="wz-sliver-section wz-sliver-structure">
+        <div className="wz-sliver-section wz-sliver-structure-zone">
           <div className="wz-sliver-h">{t('railStructure')}</div>
 
           {/* ITEM 114 (item 83 errata E4) — THE PAGE'S DECLARED KIND.

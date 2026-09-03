@@ -97,7 +97,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
 // (~1100ms on this box), so this waits on the RENDERED result, not a sleep.
 const toDraft = async (app) => {
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
-  await app.waitFor("!!document.querySelector('.wz-sliver-structure')", { label: 'Draft sliver Structure zone' });
+  await app.waitFor("!!document.querySelector('.wz-sliver-structure-zone')", { label: 'Draft sliver Structure zone' });
   await sleep(250);
 };
 
@@ -326,7 +326,7 @@ await withHarness(async (app) => {
     const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
     return {
       headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
-      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure'),
+      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure-zone'),
       panelKids,
     };
   })()`);
@@ -431,7 +431,7 @@ await withHarness(async (app) => {
   await toDraft(app);
 
   const roster = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure');
+    const zone = document.querySelector('.wz-sliver-structure-zone');
     const kinds = [...zone.querySelectorAll('[data-page-kind]')];
     return {
       labels: kinds.map(b => b.textContent),
@@ -454,13 +454,13 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-page-kind=\"research\"]').click()");
   await sleep(350);
   const revealed = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure');
+    const zone = document.querySelector('.wz-sliver-structure-zone');
     const guides = [...zone.querySelectorAll('[data-style-guide]')];
     return {
       labels: guides.map(b => b.textContent),
       checked: guides.filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
       anyDisabled: guides.some(b => b.disabled || b.getAttribute('aria-disabled') === 'true'),
-      depth: guides.length ? guides[0].closest('.wz-sliver-structure') === zone : false,
+      depth: guides.length ? guides[0].closest('.wz-sliver-structure-zone') === zone : false,
     };
   })()`);
   ok('E4: choosing RESEARCH reveals the four style guides IN PLACE, at the same depth, with MLA preselected and nothing greyed',
@@ -494,7 +494,7 @@ await withHarness(async (app) => {
   await sleep(250);
   await toDraft(app);
   const afterReload = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure');
+    const zone = document.querySelector('.wz-sliver-structure-zone');
     return {
       kind: [...zone.querySelectorAll('[data-page-kind]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.pageKind),
       guide: [...zone.querySelectorAll('[data-style-guide]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.styleGuide),
@@ -586,7 +586,7 @@ await withHarness(async (app) => {
     const id = (location.hash.match(/#\\/page\\/([^?/]+)/) || [])[1];
     const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     const e = rows.find(r => r.id === id) || null;
-    const zone = document.querySelector('.wz-sliver-structure');
+    const zone = document.querySelector('.wz-sliver-structure-zone');
     return {
       id,
       rowExists: !!e,
@@ -610,7 +610,7 @@ await withHarness(async (app) => {
   // meantime, and that neither was renamed or merged to get there.
   // ==========================================================================
   const seam = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure');
+    const zone = document.querySelector('.wz-sliver-structure-zone');
     const chip = zone.querySelector('[data-page-kind="screenplay"]');
     const act = zone.querySelector('.wz-cascade-action');
     const subs = [...zone.querySelectorAll('.wz-sliver-sub')].map(s => s.textContent);
@@ -651,7 +651,7 @@ await withHarness(async (app) => {
   await openSliver(app);
   await sleep(300);
   const onScript = await app.evalJs(`(() => {
-    const zone = document.querySelector('.wz-sliver-structure');
+    const zone = document.querySelector('.wz-sliver-structure-zone');
     return {
       structureZonePresent: !!zone,
       kindChips: document.querySelectorAll('[data-page-kind]').length,

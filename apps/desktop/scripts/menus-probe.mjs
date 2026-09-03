@@ -186,7 +186,7 @@ async function checkSurface(app, surface, width, height, out) {
 const FOOT_SEL = {
   hairline: '.wz-sliver-goal-hairline',
   fullscreen: '[data-foot-fullscreen] button',
-  structure: '.wz-sliver-structure',
+  structure: '.wz-sliver-structure-zone',
   goal: '.wz-sliver-goal',
 };
 

@@ -65,10 +65,26 @@ const structureZone = (app) => app.evalJs(
 
 // The verb row's own rendered label, scoped to that zone (`.wz-cascade-action`
 // is a generic class used all over the cascade, so it is not a handle on its own).
+//
+// DRIVER RE-POINTED — item 83 errata E4, 2026-09-03. ASSERTIONS UNTOUCHED,
+// NOTHING PARKED: nothing this file claims was falsified, only the way these
+// two helpers REACHED the control was.
+//
+// They took `sec.querySelector('button')` — the FIRST button in the Structure
+// zone. That was the conversion row for exactly as long as the zone held one
+// control. Item 114's kind chips now lead it, so the first button became
+// "Normal": `structureRowLabel` read the wrong control's text, and
+// `clickStructureRow` clicked a radio chip and then crashed the file at the
+// confirm-modal read that followed. Found by the suite, not by inspection.
+//
+// The fix is the correction this lane keeps having to make — NAME the control
+// instead of counting to it. `.wz-cascade-action` scoped to this zone is that
+// name; the comment above is right that the class is generic app-wide, which is
+// precisely why the zone scope is kept and only the ordinal is dropped.
 const structureRowLabel = (app) => app.evalJs(
   "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
   + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
-  + " if (!sec) return null; const b = sec.querySelector('button');"
+  + " if (!sec) return null; const b = sec.querySelector('.wz-cascade-action');"
   + " return b ? (b.textContent || '').trim() : null; })()");
 
 // The conversion driver, scoped to the ZONE rather than to the label.
@@ -86,8 +102,8 @@ const structureRowLabel = (app) => app.evalJs(
 const clickStructureRow = (app) => app.evalJs(
   "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
   + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
-  + " const b = sec && sec.querySelector('button');"
-  + " if (!b) throw new Error('no Structure row button in the sliver');"
+  + " const b = sec && sec.querySelector('.wz-cascade-action');"
+  + " if (!b) throw new Error('no Structure conversion row in the sliver');"
   + " b.click(); return true; })()");
 
 await withHarness(async (app) => {
