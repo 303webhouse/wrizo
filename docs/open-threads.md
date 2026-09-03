@@ -9830,6 +9830,71 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## ROSTER (Draft four-chip) DEPLOY MANIFEST — 2026-09-03 (chat 1, on Nick's standing "ship whatever we can" — Fable PASS)
+
+**THE DRAFT ROSTER — the four-chip row in Draft (three staging asks + TD4's selection ask), the v4
+disclosure in annotation form, `useSurfaceSelection`, and the server-side selection handling.** Gate
+chain: Nick's standing ship word ("ship whatever we can") → Fable's review **VERDICT PASS**
+(`docs/wrizo-alpha/roster-review-fable.md` @ merge `679015b`). **ZERO SCHEMA.** Deploying `main` HEAD
+**`7b78090`** (merge `679015b` of `item84-roster @ 8685d3f` + the arithmetic-catch canon rider + the
+review record).
+
+**⚠ SERVER-BEHAVIOR CHANGE — REVIEWED AND BLESSED (Fable, 2026-09-02):** `apps/server/src/tutor.ts`
+(+36) now accepts ONE optional `selection` field on the Bible's exact validation terms (absent / never
+empty / capped at `MAX_SELECTION_CHARS` with the delta's backstop), spliced delimited as
+`<selected-stretch>`, last-of-three, NEVER persisted; the button law is enforced client-side (the
+server never invents the key). A production server-behavior change (unlike the fix wave's zero-server),
+reviewed whole and blessed by Fable. **ZERO SCHEMA** (no DDL / column / migration; `apps/server/migrations`
+untouched).
+
+**Deploy-ships-a-SHA enumeration (`a9d3ae1..7b78090`):**
+- `679015b` — Merge item84-roster @ `8685d3f` (four-chip roster + selection ask + v4 disclosure +
+  item84b.mjs + tu2 park)
+- `843d5df` — Records: the arithmetic-catch canon rider (docs)
+- `7b78090` — Records: the roster review (docs)
+
+**New PRODUCT code since the last live build (`a9d3ae1` · railway `8cbc0b18`) — verified
+`a9d3ae1..7b78090`, 20 files, +1219/−44, ZERO schema:**
+- `Tutor.tsx` (+216 — the four-chip roster + selection wiring), `useSurfaceSelection.ts` (new +61 —
+  the selection hook, A13-safe: a plain string crosses, nothing writable), `deskLexicon.ts` (+47 —
+  roster strings + v4 disclosure), `tutorDisclosure.ts` (+13 — v4 annotation form), `api.ts` (+9 —
+  client selection field), `ScriptEditor.tsx` (+12), `PageEditor.tsx` (+11), `index.css` (+37).
+- **SERVER:** `tutor.ts` (+36) — the selection field (reviewed + blessed, above).
+- Harness (not in bundle): `item84b.mjs` (new +692, 60 checks) + parks
+  (tu1 / tu2 / tu5 / item84 / fx12 / fx18 / m2 / m3 / m4).
+
+**Records since `a9d3ae1` (docs):** the canon rider + the roster review + this manifest.
+
+**Verified — fresh suite of record at the deploy HEAD (`7b78090`), BOTH settings, machine-clear (NOT
+contaminated):** **66/66 UNSET (CLEAN) and 66/66 PARKED (CLEAN)** at
+`bundle=index-Z119zo1S.js/553267b` (CSS `index-Ch_dAVk5.css`) — the SAME bundle the offer stamped.
+`tsc` ×2 EXIT 0 (desktop + server); `build:web` clean.
+
+**TREE AT UPLOAD — one stray, ENUMERATED AND AUTHORIZED (Fable, 2026-09-03):**
+`docs/menus/item83-errata-build-brief.md` — the MENU desk's ratified errata build brief (downloaded by
+Nick), docs-only and INERT to the bundle (proven: the parked stamp's `+1dirty` carried the IDENTICAL
+bundle `Z119zo1S` as the clean default `+0dirty` run). Authorized under the CLEAN TREE AT UPLOAD law's
+exception clause; NOT deleted; committed post-stamp as a records commit (MENU-desk authorship).
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `a9d3ae1` · railway `8cbc0b18`** — the fix wave. Zero schema
+this ship, so rollback is a clean redeploy of that tree. *(Server-change rollback note: the
+`selection` field is optional and additive — a rollback build simply never reads it; no client depends
+on a changed server response shape.)*
+
+**DEPLOY STAMP: git `7b78090` · railway build `815091f6-e0bc-4e71-8941-7e04e677749e`** — DEPLOYED
+2026-09-03 (`railway up --ci` from the primary checkout; item-98 guard PROJECT + TREE verified:
+`writer-studio` / `production` / `writer-studio-app`, tree = one enumerated/authorized docs stray;
+image `sha256:f0d56028`). Verified LIVE: `/healthz` **200**, served **`index-Z119zo1S.js` +
+`index-Ch_dAVk5.css`**, `/auth/me` **401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-Z119zo1S.js` =
+**553,267 b**, md5 `c19b36a807ef1384558bdbafd304408a` == local suite build; served CSS
+`index-Ch_dAVk5.css` md5 `9f13a0c520cddcb2ed5fbc73b8e8cc96` == local. Windows suite == Linux Railway
+== served. Every-ship served-vs-stamped diff: **MATCH.**
+
 ## FIX WAVE (E4 + E3 + 118a-ii + ab2) DEPLOY MANIFEST — 2026-09-02 (chat 1, on Nick's standing "ship whatever we can" — Fable PASS)
 
 **THE FIX WAVE — E4 (the right hand mounts from first paint) + E3 (the Counsel fades out) + item
