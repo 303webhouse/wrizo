@@ -405,3 +405,25 @@ this seam to chat 1 verbatim.**
 
 **Nothing was migrated. Nothing was renamed. Nothing was merged. Two seams stand
 open for Nick's word, and one item (E3) is held on the first of them.**
+
+---
+
+## CORRECTION — APPENDED 2026-09-03, NOT REWRITTEN
+
+**S0 read §E3's seam clause too widely, and the table above is wrong on one
+row.** It says *"E3 — HELD ON NICK'S WORD."* The brief holds **the outdent
+question**, not the item: §E3 carries its own commit line
+(`Errata: indent — the arrow indents a whole paragraph, repeatable (item 102's
+Tab untouched)`), so the ruled behaviour was always meant to be built, and only
+the partner control is the invention I must not make.
+
+**E3 IS BUILT** — paragraph-scoped and repeatable, at `draftFormat.ts`'s new
+`indentParagraphs`. **The outdent question stands open exactly as (d) states
+it**, with the same recommendation, for Nick's word.
+
+**One thing (d) did not have in front of it, and it changes the severity, not
+the question.** `applyRailFormat` records an atomic step into the editor's own
+undo stack for every rail click (`PageEditor.tsx:606`, FX6 S1), so **Ctrl+Z
+walks an indent level back reliably.** The way back after this ticket is UNDO,
+and undo alone. That is a real way back — it is not a dedicated one, and it is
+not discoverable from the drawer. The recommendation in (d) stands unchanged.

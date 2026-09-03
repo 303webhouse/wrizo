@@ -123,6 +123,19 @@ const settle = async (app, predicate) => {
 
 const focusEditor = (app) => app.evalJs("document.querySelector('.forward-only-editor').focus()");
 
+// Click a Draft format button BY TITLE — the roster is long and a ruling can
+// reorder it, so counting to one is the failure mode fx3's own parked driver
+// already recorded. The row's own onMouseDown preventDefault keeps the caret,
+// exactly as a writer's own click does.
+const clickFormat = async (app, title) => {
+  await app.evalJs(`(() => {
+    const b = [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].find(x => x.getAttribute('title') === ${JSON.stringify(title)});
+    if (b) b.click();
+    return !!b;
+  })()`);
+  await sleep(250);
+};
+
 // Words, spelled out so a reader can count them against the ruling.
 const W = (n) => Array.from({ length: n }, (_, i) => `w${i + 1}`).join(' ') + ' ';
 
@@ -306,6 +319,83 @@ await withHarness(async (app) => {
       && zoneOrder.panelKids[2].includes('wz-sliver-instruments'),
     JSON.stringify(zoneOrder));
 
+  // ==========================================================================
+  // E3 — THE ARROW INDENTS A WHOLE PARAGRAPH, REPEATABLY.
+  //
+  // Two discriminators carry this section, and neither passes against the
+  // superseded behaviour: PARAGRAPH SCOPE (the old control tabbed the caret's
+  // LINE, so a two-line paragraph came back half-indented) and REPEATABILITY
+  // (the old control was a toggle, so the second press REMOVED the tab it had
+  // just added). Everything else here is a guard.
+  //
+  // The text is read back with textContent, not innerText: the decorator is
+  // character-preserving 1:1 by contract (draftDecoration.ts), so textContent
+  // IS the page's plain text, while innerText would normalise the very
+  // whitespace this section is about.
+  // ==========================================================================
+  await freshProsePage(app, 1400, 900);
+  await toDraft(app);
+  await focusEditor(app);
+  await app.typeKeys('Alpha one\nAlpha two');
+  await sleep(300);
+
+  const typed = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  ok('E3 (fixture): a two-line paragraph is in the page, with the caret on its second line',
+    typed === 'Alpha one\nAlpha two', JSON.stringify(typed));
+
+  await clickFormat(app, 'Indent');
+  const e3AfterOne = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  ok('E3: one press indents the WHOLE PARAGRAPH, not the caret line — both lines take the tab, which is the discriminator against the superseded line-scoped control',
+    e3AfterOne === '\tAlpha one\n\tAlpha two', JSON.stringify(e3AfterOne));
+
+  await clickFormat(app, 'Indent');
+  const e3AfterTwo = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  ok('E3: pressing again INCREASES the level — the second discriminator, since the superseded toggle would have removed the tab it just added',
+    e3AfterTwo === '\t\tAlpha one\n\t\tAlpha two', JSON.stringify(e3AfterTwo));
+
+  const marker = await app.evalJs(`(() => {
+    const ed = document.querySelector('.forward-only-editor');
+    const marks = [...ed.querySelectorAll('.md-mark')].map(m => m.textContent);
+    return { marks, textLength: ed.textContent.length };
+  })()`);
+  ok('E3: the level renders as indent with the MARKER LOW-INK — the leading tabs are wrapped in the same .md-mark register every other convention wears, and the character count stays 1:1 so the caret offset still restores',
+    marker.marks.length === 2 && marker.marks.every(m => m === '\t\t') && marker.textLength === e3AfterTwo.length,
+    JSON.stringify(marker));
+
+  // A blank line is a paragraph SEPARATOR, never structure: a second paragraph
+  // must be reachable without dragging the first one with it.
+  await focusEditor(app);
+  await app.typeKeys('\n\nBeta one');
+  await sleep(250);
+  await clickFormat(app, 'Indent');
+  const twoParas = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  ok('E3: a caret in the SECOND paragraph indents only that paragraph, and the blank separator between them takes no tab — a tab on a separator is invisible litter, never structure',
+    twoParas === '\t\tAlpha one\n\t\tAlpha two\n\n\tBeta one', JSON.stringify(twoParas));
+
+  // ITEM 102'S TAB IS NOT BUILT HERE — the brief's own fence, asserted rather
+  // than promised. Nothing in this wave touches a key handler.
+  await focusEditor(app);
+  const beforeTab = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  await app.key('Tab');
+  await sleep(250);
+  const afterTab = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  ok('E3 (fence): pressing TAB changes nothing — Tab-as-indent is item 102 and was NOT built here; the arrow is the only door this wave opens',
+    afterTab === beforeTab, JSON.stringify({ beforeTab, afterTab }));
+
+  // The control: E3 rewired ONE action. The other line-prefix directives still
+  // run through toggleLinePrefix and still toggle, so the change did not leak
+  // into the shared helper.
+  await freshProsePage(app, 1400, 900);
+  await toDraft(app);
+  await focusEditor(app);
+  await app.typeKeys('Gamma');
+  await sleep(250);
+  await clickFormat(app, 'Bulleted list');
+  const bulletOn = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  await clickFormat(app, 'Bulleted list');
+  const bulletOff = await app.evalJs("document.querySelector('.forward-only-editor').textContent");
+  ok('E3 (control): the OTHER line directives are untouched — Bulleted list still toggles on and back off, so E3 rewired one action and not the shared helper beneath them all',
+    bulletOn === '- Gamma' && bulletOff === 'Gamma', JSON.stringify({ bulletOn, bulletOff }));
   return checks;
 }, { label: 'item83f' });
 
