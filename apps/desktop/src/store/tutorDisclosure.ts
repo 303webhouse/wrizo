@@ -48,7 +48,18 @@ const LEGACY_BOOLEAN_KEY = 'wrizo-tutor-disclosure-seen';
 // alongside the question and the page delta. Every device with seenVersion < 3
 // sees v3 exactly once — a v2-acknowledged device included — with no bespoke
 // branch (the integer compare in `load()`/needsShowing below does it all).
-export const CURRENT_DISCLOSURE_VERSION = 3;
+// ITEM 84 (the Draft roster) — bumped 3 -> 4 the day TD4, the selection ask,
+// became the first counsel to put bytes on the wire beyond the three v3
+// enumerates. A selection is none of v3's three travelers: it can be text the
+// Tutor has already read, or text outside the delta entirely, so TD4 shipped
+// under v3 would send what the shown sentence does not name. v4 is Nick's
+// ratified candidate B (2026-08-17, provisionally-binding) and it is what
+// authorizes the shape — "a counsel that reads more names it on the button and
+// sends only that, only then." Rendered in ANNOTATION FORM with v3 standing
+// verbatim beneath it (open-threads.md's own ruling), so nothing v3 promised is
+// withdrawn. Every device with seenVersion < 4 sees it exactly once, by the same
+// integer compare as every bump before it — no version-specific branch.
+export const CURRENT_DISCLOSURE_VERSION = 4;
 
 function load(): number {
   try {

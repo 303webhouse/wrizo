@@ -130,7 +130,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.goto('/');
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -417,9 +417,9 @@ await withHarness(async (app) => {
       shownText === v3Body, shownText);
     await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
     await sleep(250);
-    ok('Disclosure v3: the ack dismisses it and writes the CURRENT version (3) under the version key — the "(2)" assertion this replaces is parked below, superseded by TU5 S6',
+    ok('Disclosure v4: the ack dismisses it and writes the CURRENT version (4) under the version key — the "(3)" assertion this replaces is parked below, superseded by ITEM 84',
       (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '3');
+      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
     await sleep(200);
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // open #2
@@ -735,6 +735,12 @@ console.log(JSON.stringify(checks, null, 2));
 // passes byte-identical against FX10's build — cursor/delta, disclosure
 // v2, the A13 board walk, the session meter, and the quiet-degrade path are
 // all untouched by this ticket's own diff.
+// ITEM 84 (the Draft roster) bumped CURRENT_DISCLOSURE_VERSION 3 -> 4. The
+// '3'-key assertion TU5 S6 left live in this file reads false against that build
+// (the ack writes '4'); it is parked verbatim below and re-asserted fresh above
+// against the v4 key. The wording checks in this file are NOT parked and are not
+// affected: v4 renders in annotation form, so v3's body still carries v3's
+// wording exactly, which is what those checks claim.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -758,12 +764,23 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "Disclosure v2 (v1-seeded device) — THE single most important disclosure check: the OLD v1 flag does NOT suppress v2 — it still shows, once, with v2\'s own wording") — TU5 S6: the v1 flag still does not suppress it, but the wording shown is now v3 — live successor in tu5.mjs\'s disclosure v3 section',
     true, 'superseded by TU5 S6 disclosure v3');
 
+  // ITEM 84 (the Draft roster) bumped CURRENT_DISCLOSURE_VERSION 3 -> 4: TD4, the
+  // selection ask, is the first counsel to put bytes on the wire beyond v3's three
+  // named travelers. The '3'-key assertion TU5 S6 left live in this file reads
+  // false against that build (the ack writes '4'), so it is parked here verbatim
+  // and re-asserted fresh above against the v4 key. This file's v3 WORDING checks
+  // are NOT parked and are not affected: v4 renders in annotation form, so v3's
+  // body still carries v3's wording exactly, which is what those checks claim.
+  pok("PARKED (was \"Disclosure v3: the ack dismisses it and writes the CURRENT version (3) under the version key — the \"(2)\" assertion this replaces is parked below, superseded by TU5 S6\") — ITEM 84: CURRENT_DISCLOSURE_VERSION is 4 now, so the ack writes version 4, not 3 — live successor in item84b.mjs's own disclosure section (and re-asserted fresh above against the v4 key)",
+    true,
+    "superseded by ITEM 84 disclosure v4");
+
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: six FX10-superseded width checks (successors in fx10.mjs) + three TU5-superseded disclosure-v2 checks (successors in tu5.mjs)`
+    ? `\nTU2 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: six FX10-superseded width checks (successors in fx10.mjs) + three TU5-superseded disclosure-v2 checks (successors in tu5.mjs) + one ITEM-84-superseded disclosure-v3 version check (successor in item84b.mjs)`
     : `\nTU2 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 

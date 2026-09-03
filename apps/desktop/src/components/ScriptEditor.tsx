@@ -24,6 +24,7 @@ import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
 import { Sliver, type SliverContent } from './Sliver';
 import { Tutor } from './Tutor';
+import { useSurfaceSelection } from './useSurfaceSelection';
 import { GoalGlow } from './GoalGlow';
 import { useCascade } from './Cascade';
 import type { PageFaceSubject } from './PageFace';
@@ -509,6 +510,15 @@ export function ScriptEditor({ id }: { id: string }) {
   // unconditional 183px pushing a brand-new page's caret to 38.2% of the
   // box). See index.css's own rule.
   const scrollCapRef = useRef<HTMLDivElement>(null);
+  // ITEM 84, TD4 — the selected stretch, read by this surface's owner exactly as
+  // PageEditor reads its own, and handed to the Tutor as a plain read-only string.
+  // A screenplay page IS a Draft page (this file mounts the Tutor with
+  // mode="drafting" unconditionally), so the Draft roster renders here too and TD4
+  // must have a real stretch to point at — a chip gated on a value this surface
+  // never supplied would be permanently disabled, which is the one thing the
+  // brief's transient gate is not. `true` rather than a mode test for the same
+  // reason: there is no other mode to be in here.
+  const scriptSelection = useSurfaceSelection('.script-sequence', true);
   // FX2 S2 gave this surface the Draft-open typewriter seed: on mount it wrote
   // the GLOBAL typewriter setting from the page's own line count, exactly as
   // PageEditor.tsx does for prose.
@@ -1109,7 +1119,7 @@ export function ScriptEditor({ id }: { id: string }) {
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
           sliver={<Sliver content={sliverContent} goalText={goalText} />}
-          tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" mode="drafting" />}
+          tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" mode="drafting" selectionText={scriptSelection} />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
         >

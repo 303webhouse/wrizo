@@ -61,7 +61,7 @@ const freshDesk = async (app, width = 1400, height = 900, { skipDisclosure = tru
   await app.evalJs(
     "localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1');"
     // TU5 S6 — seed version '3' (was '2' in tu2.mjs): the disclosure is v3 now.
-    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '3');" : ''),
+    + (skipDisclosure ? " localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');" : ''),
   );
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
@@ -370,9 +370,13 @@ await withHarness(async (app) => {
       shown === v3Body && shown.includes('Bible'), shown);
     await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()");
     await sleep(250);
-    ok('Disclosure v3: the ack dismisses it and writes the CURRENT version (3) under the version key',
+    // ITEM 84 park sweep — CURRENT_DISCLOSURE_VERSION is 4 now; the '3' form of
+    // this check is parked verbatim at the foot of this file, re-asserted fresh
+    // here. The v3 WORDING checks around it are untouched and still true: v4
+    // renders in annotation form, so v3's body still carries v3's words exactly.
+    ok('Disclosure v4: the ack dismisses it and writes the CURRENT version (4) under the version key',
       (await app.evalJs("!document.querySelector('.wz-tutor-disclosure')"))
-      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '3');
+      && (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); await sleep(200);
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); await sleep(300);
     ok('Disclosure v3: does NOT reappear on the second open (same device, same version)',
@@ -396,7 +400,7 @@ await withHarness(async (app) => {
     ok('Disclosure v3 (v2-seeded device): 2 < 3, so v3 STILL shows exactly once, with v3\'s own wording — no bespoke branch',
       v2SeededShown === v3Body, v2SeededShown);
     await app.evalJs("document.querySelector('.wz-tutor-disclosure-ack').click()"); await sleep(250);
-    ok('Disclosure v3 (v2-seeded device): the ack advances the version to 3', (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '3');
+    ok('Disclosure v4 (v2-seeded device): the ack advances the version to 4', (await app.evalJs("localStorage.getItem('wrizo-tutor-disclosure-seen-version')")) === '4');
 
     // (c) The OLD v1 boolean flag alone.
     await freshDesk(app, LAPTOP_W, 900, { skipDisclosure: false });
@@ -586,11 +590,27 @@ console.log(JSON.stringify(checks, null, 2));
 // per the immutability law: park in the file that owns the check, name the
 // superseding authority, point at the live successor here.)
 const parkedChecks = [];
+{
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  // ITEM 84 (the Draft roster) bumped CURRENT_DISCLOSURE_VERSION 3 -> 4: TD4, the
+  // selection ask, is the first counsel to read past v3's three named travelers,
+  // so the ack now writes '4'. Both of this file's version-NUMBER assertions are
+  // parked verbatim here and re-asserted fresh above against the v4 key. This
+  // file's v3 WORDING assertions are NOT parked: v4 renders in annotation form
+  // (v3 standing verbatim beneath), so they remain true exactly as written.
+  pok('PARKED (was "Disclosure v3: the ack dismisses it and writes the CURRENT version (3) under the version key") — ITEM 84: CURRENT_DISCLOSURE_VERSION is 4 now, so the ack writes 4, not 3 — live successor in item84b.mjs\'s own disclosure section (and re-asserted fresh above against the v4 key)',
+    true, 'superseded by ITEM 84\'s disclosure v4');
+  pok('PARKED (was "Disclosure v3 (v2-seeded device): the ack advances the version to 3") — ITEM 84: a v2-acknowledged device now advances to 4, not 3 — live successor in item84b.mjs\'s own disclosure section (and re-asserted fresh above)',
+    true, 'superseded by ITEM 84\'s disclosure v4');
+}
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
-  console.log(`\nTU5 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; tu5.mjs parks nothing of its own (see tu2.mjs's PARKED section for the disclosure-v2 checks TU5 S6 superseded).`);
+  console.log(parkedPass
+    ? `\nTU5 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: two ITEM-84-superseded disclosure-v3 version checks (successor in item84b.mjs). See tu2.mjs's PARKED section for the disclosure-v2 checks TU5 S6 itself superseded.`
+    : `\nTU5 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);
