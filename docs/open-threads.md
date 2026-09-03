@@ -981,6 +981,10 @@ by Nick's word. Consequence: the two-hand mirror is visually complete at **112-A
 present), not deferred to 112-C; 112-C still fills the Desk drawer's content later. **Owed to the
 112-A builder lane** (supersedes the build brief's "render no Desk grip until 112-C" recommendation);
 Fable to route.
+**→ AMENDED BRIEF LANDED (chat 1, 2026-09-03, merge `904595a`).** `item112a-build-brief.md` is now the
+ruling-consistent version (`9619b2a6`) on main — both grips always visible, opening even-empty tabs —
+superseding the pre-ruling "render no Desk grip until 112-C"; TUTOR-amended @ `2579cba`. The 112-A
+build lane can launch.
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
@@ -1480,6 +1484,15 @@ yield); the **announce-from-effect invariant**; **item 83's geometry laws**; and
 board-shelf chrome** — the two **must be designed together, one charter pass covers both.**
 
 Registry: next free **120**.
+
+**→ 115 / 117 / 119 CHARTERED AS ONE CLUSTER — the connected-board cluster (Fable's desk, 2026-09-02;
+pass beginning).** One system in three numbers: **115 the DATA** of connection (tags), **117 the
+GEOGRAPHY** (the board shelf), **119 the GRAMMAR** (mirrored hands) — designed together in one full
+committee double-pass, output one design document with a ticketed build order to Nick for his word.
+Charter: `docs/wrizo-alpha/cluster-charter-tags-shelf-hands.md`. Item 116's import mechanics ride
+BEHIND the cluster (its own small charter once the shelf exists). *(Committed post the roster stamp,
+batched with the MENU desk's item-83 errata build brief — `docs/menus/item83-errata-build-brief.md`,
+AUTHORED BY THE MENU DESK, committed to main by chat 1 so the errata builder can launch.)*
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
