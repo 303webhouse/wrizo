@@ -17,6 +17,16 @@ import { SettingsPanel, Seg, GearIcon } from './ModeStage';
 import { FullscreenToggle } from './ChromeControls';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
+import type { PageKindSetting, StyleGuide } from '../types';
+
+// ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
+// place each, so the buttons cannot drift from the type or from the words. The
+// ORDER is the ruling's order: Normal (preselected) · Screenplay · Research,
+// and MLA (default) · APA · Chicago · AP.
+const PAGE_KINDS: readonly PageKindSetting[] = ['normal', 'screenplay', 'research'];
+const STYLE_GUIDES: readonly StyleGuide[] = ['mla', 'apa', 'chicago', 'ap'];
+const KIND_LABEL = { normal: 'kindNormal', screenplay: 'kindScreenplay', research: 'kindResearch' } as const;
+const STYLE_GUIDE_LABEL = { mla: 'styleGuideMla', apa: 'styleGuideApa', chicago: 'styleGuideChicago', ap: 'styleGuideAp' } as const;
 
 // CD1 S2/S7 — the sliver. A slim grip riding the paper's left edge on every
 // framed writing surface (prose AND script — S7 mirrors the wiring exactly).
@@ -101,6 +111,30 @@ export type SliverContent =
       structure: StructureKind;
       onSwitchStructure: (next: StructureKind) => void;
       format?: { onFormat: (action: FormatAction) => void };
+      // ITEM 114 (item 83 errata E4) — the page's DECLARED kind and, under
+      // Research, its style guide. Note the two neighbouring words this union
+      // now carries and which must not be confused: `kind: 'draft'` is which
+      // SLIVER CONTENT this is, and `pageKind` is what the writer says the PAGE
+      // is. A third sense, DeskFrame's own `pageKind` prop, means which surface
+      // renders. Named here because three senses of one word in one file is
+      // exactly how a later hand marries two of them by accident.
+      //
+      // OPTIONAL, AND THE ABSENCE IS A SCOPE DECISION — disclosed in the offer
+      // record rather than left to be discovered. Two hosts pass `kind:'draft'`
+      // content: PageEditor's prose Draft, which passes these, and
+      // ScriptEditor's framed screenplay surface, which passes NONE of them, so
+      // the chips are genuinely absent from the DOM there (never greyed — G3).
+      // The reason is that a script page has ALREADY declared what it is: its
+      // pageType is 'script' and its courier measure says so louder than any
+      // chip could. Offering a kind row there would let a writer mark a
+      // screenplay "Normal" and would then PERSIST that contradiction. Nick's
+      // walkthrough opened item 114 out of the DRAFT structure redesign; if he
+      // wants the row on screenplay too, it is four props and a default, and
+      // the offer says so.
+      pageKind?: PageKindSetting;
+      onPickKind?: (next: PageKindSetting) => void;
+      styleGuide?: StyleGuide;
+      onPickStyleGuide?: (next: StyleGuide) => void;
     }
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
@@ -477,6 +511,89 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
       {content.kind === 'draft' && (
         <div className="wz-sliver-section wz-sliver-structure">
           <div className="wz-sliver-h">{t('railStructure')}</div>
+
+          {/* ITEM 114 (item 83 errata E4) — THE PAGE'S DECLARED KIND.
+              PLACEHOLDERS, by Nick's own word: they render and they persist per
+              page, and nothing downstream is wired — the Revise linkage and
+              footnotes are deferred by his word, not by omission. Nothing is
+              greyed, because what isn't built doesn't render (G3).
+
+              ► THE SCREENPLAY NAME COLLISION — HALF-ANSWERED HERE, NOT
+              RESOLVED. A kind chip reading "Screenplay" now stands in the same
+              zone as `Convert to Screenplay…`, which is a consequential one-way
+              act behind a confirm dialog. The collision is REPORTED TO NICK
+              with a recommendation and is his to settle; what this markup does
+              is make the two unmistakable in the meantime, and it does it three
+              ways at once rather than by renaming either control:
+                · SEPARATE SUB-LABELS that name the difference in words — "This
+                  page is" over the chips, "Change the page itself" over the
+                  act. That is the distinction, said out loud.
+                · A DIFFERENT CONTROL SHAPE. The kinds are a radiogroup of small
+                  chips wearing the olive at-rest selection law; the act is the
+                  full-width bordered `.wz-cascade-action` it has always been,
+                  still ending in the ellipsis that promises a dialog.
+                · A RULE BETWEEN THEM, so the eye reads two zones and not one
+                  list.
+              Neither control is renamed and neither is merged. Merging would
+              make a reversible setting inherit a destructive act's confirm, or
+              an act inherit a setting's silence.
+
+              And a note the M5 comment below earns: the chips ARE, visually,
+              the Prose | Screenplay tablist that R13.iv withdrew from this very
+              zone for "promising free switching". The difference is that free
+              switching is now the TRUTH — a kind chip really is a reversible
+              per-page setting that touches not one character of the writer's
+              text. The tablist's sin was dressing a conversion as a switch;
+              these chips are a switch dressed as a switch. */}
+          {content.pageKind && content.onPickKind && (<>
+          <div className="wz-sliver-sub" id="wz-structure-kind-label">{t('structureKindLabel')}</div>
+          <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-structure-kind-label">
+            {PAGE_KINDS.map(k => (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                className="wz-page-setup-chip"
+                data-page-kind={k}
+                aria-checked={content.pageKind === k}
+                onClick={() => content.onPickKind!(k)}
+              >
+                {t(KIND_LABEL[k])}
+              </button>
+            ))}
+          </div>
+
+          {/* G4's IN-PLACE DISCLOSURE: the style guides appear only when
+              Research is the kind, beneath it, at the same depth — never a
+              second level, and never four greyed buttons waiting for a reason.
+              MLA is preselected on the first reveal by reading through
+              STYLE_GUIDE_DEFAULT, which is a READ default: nothing is written
+              to the page until the writer picks, so revealing this row does not
+              dirty a page by itself. */}
+          {content.pageKind === 'research' && (
+            <>
+              <div className="wz-sliver-sub" id="wz-structure-guide-label">{t('structureStyleGuideLabel')}</div>
+              <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-labelledby="wz-structure-guide-label">
+                {STYLE_GUIDES.map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    role="radio"
+                    className="wz-page-setup-chip"
+                    data-style-guide={g}
+                    aria-checked={content.styleGuide === g}
+                    onClick={() => content.onPickStyleGuide!(g)}
+                  >
+                    {t(STYLE_GUIDE_LABEL[g])}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          </>)}
+
+          <div className="wz-sliver-rule" aria-hidden="true" />
+          <div className="wz-sliver-sub">{t('structureActLabel')}</div>
           {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
               Screenplay TABLIST retires from the panel. A tablist's dress
               promises free switching; conversion is a consequential one-way
@@ -486,7 +603,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               its destination named in the control itself — never a bare
               "Convert", which is the bench's named enemy. The surface itself
               says where you are: the courier measure announces screenplay
-              louder than any tab could. */}
+              louder than any tab could.
+              ITEM 83 ERRATA E4 — UNCHANGED, deliberately. The name stays
+              (destination-named verbs are the bench law that put it there), the
+              ellipsis stays, the confirm stays. Only its neighbourhood grew a
+              label saying what it is. */}
           <button
             type="button"
             className="wz-cascade-action"

@@ -3463,6 +3463,21 @@ a:focus-visible,
 @media (prefers-reduced-motion:reduce){ .wz-sliver-panel{ transition:none; } }
 .wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
 .wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
+/* ITEM 114 (item 83 errata E4) — the Structure zone's SUB-LABELS and the rule
+   between its two halves. This is the visual half of the answer to the
+   Screenplay name collision: one zone now reads as two, so a kind chip named
+   "Screenplay" cannot be mistaken for the conversion door beside it. Quieter
+   than `.wz-sliver-h` on purpose — the eyebrow names the ZONE, these name the
+   two questions inside it, and a second engraved heading would read as a second
+   zone rather than a distinction within one.
+   No accent anywhere here: olive marks where you are and orange marks what you
+   do (R7/FX1 S6), and a sub-label is neither. The chips themselves reuse
+   `.wz-page-setup-chip` verbatim — the same control family, already carrying
+   the olive-at-rest selection law — rather than a second chip that would drift
+   from it. */
+.wz-sliver-sub{ font-family:var(--font-ui); font-size:11px; color:var(--text-low);
+  letter-spacing:.2px; margin-top:2px; }
+.wz-sliver-rule{ height:1px; background:var(--ink-border); margin:4px 0 2px; }
 /* FX1 S6 (Nick's first-sitting verdict, "the orange-at-rest sweep") — the
    sliver's eyebrow labels (READING/STRUCTURE/CAPTURE/etc.) are
    informational, not evental: olive marks where you are, orange marks what
