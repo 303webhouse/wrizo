@@ -1634,6 +1634,17 @@ BEHIND the cluster (its own small charter once the shelf exists). *(Committed po
 batched with the MENU desk's item-83 errata build brief — `docs/menus/item83-errata-build-brief.md`,
 AUTHORED BY THE MENU DESK, committed to main by chat 1 so the errata builder can launch.)*
 
+## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
+
+**OPENS (Fable, from the errata wave's measurement, 2026-09-03).** R6's **birth-from-defaults** — the
+page-defaults COPY at creation (M2's ruling) — **does NOT reach the UNBORN route**, the ordinary way a
+page is made. **MEASURED by the errata lane, not read:** M2's own ruling is bypassed on the ordinary
+birth path. **Pre-existing** — outside the errata wave's brief, so surfaced not fixed there (see the
+errata records above: *"► SURFACED, NOT FIXED — R6's BIRTH-FROM-DEFAULTS DOES NOT REACH THE UNBORN
+ROUTE"*). **Fix-class, owed to the next FIX window.** The outdent partner (E3's SEAM 1) and the
+Screenplay-collision seam remain **HELD FOR NICK** (recommendations on file in the errata offer;
+neither blocked this merge). Registry: next free **121**.
+
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
    returned GREEN; Nick relayed "Merge `j4-board` to `main` and deploy." CC
