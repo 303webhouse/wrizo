@@ -226,6 +226,9 @@ export interface TutorProps {
   // have. The Free Write roster mounts on `'journal'` and NOWHERE else —
   // Draft ('drafting'), screenplay (Draft-only by its own law) and Board all
   // render exactly the panel they rendered before this ticket.
+  //
+  // ITEM 112-A — 'revise' joins the union, and it deliberately selects NEITHER
+  // roster (see the `drafting` branch below). Revise's own roster is 112-D.
   mode?: EditorMode;
   // ITEM 84, TD4 — THE SELECTION, and it is a STRING. The build brief's §5 draws
   // this line and the component keeps to it exactly: "a read-only selection value
@@ -379,9 +382,21 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // Draft is mode key 'drafting' (ModeStrip.tsx maps t('modeDraft') to exactly
   // this value). The two rosters are SIBLINGS on one branch and can never
   // co-render: Free Write is not Draft, and an absent mode (Board) is neither.
-  // Revise cannot reach here at all — `EditorMode` has no 'revise' member
-  // (ForwardOnlyEditor.tsx) and the Revise tab is `live: false` (ModeStrip.tsx),
-  // so the brief's "cannot render in Revise" holds by the TYPE, not by a branch.
+  //
+  // ITEM 112-A — CORRECTED, BECAUSE ITS REASON EXPIRED. This comment used to
+  // read: "Revise cannot reach here at all — `EditorMode` has no 'revise' member
+  // and the Revise tab is `live: false`, so the brief's 'cannot render in Revise'
+  // holds by the TYPE, not by a branch." Both halves of that reason are now false:
+  // 'revise' IS an EditorMode and the tab IS live, so Revise reaches this line on
+  // every render of a Revise page.
+  //
+  // THE CONCLUSION IS UNCHANGED, and now it holds by the branch. `drafting` is
+  // false in Revise and `freeWrite` is false in Revise, so NEITHER roster renders
+  // — which is what 112-A requires: the Revise Counsel roster is 112-D, and §6
+  // forbids any of it appearing early. The panel itself DOES mount in Revise,
+  // carrying its conversation, lenses and Bible exactly as on any other page —
+  // that is the Counsel hand having content on day one (§4), and it is why only
+  // the DESK drawer opens empty.
   const drafting = mode === 'drafting';
 
   // THE ARMED SELECTION — the whole of the disclosure's "only then", expressed as
