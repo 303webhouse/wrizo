@@ -306,6 +306,17 @@ await withHarness(async (app) => {
     ok(`S7 (@ ${w}x${h}): and the Desk drawer is empty OF TENANTS — zero tool sections render (no Type section, no Draft rail inherited down the else-branch) while the drawer itself still stands open`,
       deskBody.toolsBody === 0 && deskBody.sections === 0 && deskBody.goalFoot === true,
       JSON.stringify(deskBody));
+
+    // §8's exit names OPEN AND CLOSE by their own grips, so the close is asserted
+    // as well. A drawer that opens and will not shut is not a walkable room, and
+    // the empty Desk drawer is exactly where that failure would hide: an empty
+    // panel gives the writer no content to notice is stuck.
+    await openSliverByGrip(app);   // the same grip, a second press
+    await openTutorByGrip(app);
+    const shut = await app.evalJs(DRAWERS);
+    ok(`S7 (§8 @ ${w}x${h}): BOTH HANDS CLOSE BY THEIR OWN GRIPS — a second press on each shuts it, the empty Desk drawer included. §8's exit names open AND close`,
+      shut.sliverOpen === 'false' && shut.tutorOpen === 'false',
+      JSON.stringify({ open, shut }));
   }
 
   // =========================================================================
@@ -669,20 +680,41 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // ---------------------------------------------------------------------------
-// PARKS — NONE, and the count is the claim (item 84's arithmetic catch: a green
-// suite does not prove a park sweep complete; audit the COUNT).
+// PARKS — ONE, IN item84b.mjs, AND THIS FILE'S OWN FIRST COUNT WAS WRONG.
 //
-// 112-A falsifies no existing assertion. It was checked file by file, not assumed:
-//   - No harness asserted Revise was deferred. `deferred`/aria-disabled assertions in
-//     the suite name Workshop, or the Free Write key on the SCRIPT surface — both
-//     still true, and the script surface is explicitly held to its Draft-only law by
-//     `reviseEnabled={false}`.
+// THE CORRECTION, recorded rather than quietly amended. This block originally read
+// "PARKS — NONE ... PARKED COUNT: 0", on the strength of a sweep that searched the
+// suite for `deferred` / `aria-disabled` assertions naming Revise and found only
+// Workshop and the script surface's Free Write key. That sweep was real and its
+// reasoning was sound as far as it went — and it MISSED ONE, because the assertion
+// it should have found is not phrased in that vocabulary at all:
+//
+//     item84b.mjs S1: "the Revise tab is inert — clicking it does not leave Draft,
+//     so the roster cannot render in Revise because Revise has no live surface to
+//     render on"
+//
+// It says "inert", never "deferred", so a grep aimed at the deferred vocabulary
+// could not see it. THE SUITE CAUGHT IT — a red at item84b.mjs (1/60) on the first
+// full run, which is exactly the arithmetic item 84 itself put into canon: a park
+// sweep's own claim is a NUMBER TO BE AUDITED, not a silence to be trusted, and the
+// audit here was done by the run rather than by the sweep. Left standing as the
+// lesson: a vocabulary-shaped grep proves only that a vocabulary is absent.
+//
+// WHERE THE PARK LIVES. In item84b.mjs, the file that OWNS the assertion — not here.
+// The original stands there verbatim under SUPERSEDED with a successor pointer, and
+// its live successor is in that same file's S1 mode-boundary section, re-asserting
+// the same conclusion (the Draft roster does not render in Revise) against the
+// harder case: a Revise that is now genuinely live and must be DECLINED rather than
+// merely unreachable. Two further checks were added there with it.
+//
+// The rest of the original sweep still holds, and was re-checked after the red:
 //   - No harness asserted `EditorMode` had two members, or that ModeSwitcher rendered
 //     exactly three tabs (its Revise tab is opt-in and QuickSprint does not opt in).
 //   - fx18/item83e/tu1 assert on Draft and Free Write surfaces, which this ticket
 //     leaves byte-identical; their fixtures never enter Revise.
-// PARKED COUNT: 0. If that is wrong, it is wrong by a MISSING park, which a pass/fail
-// run cannot see — so it is stated here as a number to be audited, not as a silence.
+//   - menus-probe.mjs is not in scripts/harness and is not run by run-suite.mjs.
+//
+// PARKED COUNT FOR THIS TICKET: 1 (in item84b.mjs). THIS FILE parks 0 of its own.
 // ---------------------------------------------------------------------------
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
@@ -691,7 +723,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; 112-A parks nothing, and 0 is the audited count.`
+    ? `\nITEM112A PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; this FILE parks 0 of its own. The ticket's ONE park is in item84b.mjs (the file that owns the assertion): "the Revise tab is inert", superseded by Revise standing up. See this file's park block for why the first sweep counted 0 and how the suite corrected it.`
     : `\nITEM112A PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);

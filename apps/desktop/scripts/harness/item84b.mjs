@@ -396,14 +396,30 @@ await withHarness(async (app) => {
     ok('S1: switching back to Draft restores it — the mode branch is live, not decided once at mount',
       back.rosterPresent === true && JSON.stringify(back.labels) === JSON.stringify(ASKS), JSON.stringify(back.labels));
 
-    // REVISE cannot be entered, and that is the brief's "no live surface" proven
-    // from the outside rather than asserted from the type.
+    // REVISE — SUCCESSOR CHECK (ITEM 112-A). The original assertion here proved the
+    // roster could not render in Revise by proving REVISE ITSELF COULD NOT BE
+    // ENTERED (`live: false` on the strip). Item 112-A stood Revise up as a real
+    // mode by Nick's ruling, so that premise is gone — the tab switches now. The
+    // ORIGINAL is parked verbatim at the foot of this file; this is its successor.
+    //
+    // THE CONCLUSION IS UNCHANGED AND IS NOW WORTH MORE, because it is no longer
+    // true by construction: Revise is a live surface that the Draft roster must
+    // decline to render on. Before, an accidental roster leak into Revise was
+    // unreachable; now it is one branch away, and this check is what stands in
+    // front of it. The Revise Counsel roster is 112-D.
     await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent.trim() === 'Revise')?.click()");
     await sleep(400);
     const afterRevise = await rosterState(app);
     const modeNow = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.classList.contains('active'))?.textContent.trim()");
-    ok('S1 (REVISE): the Revise tab is inert — clicking it does not leave Draft, so the roster cannot render in Revise because Revise has no live surface to render on',
-      modeNow === 'Draft' && afterRevise.rosterPresent === true, JSON.stringify({ modeNow, roster: afterRevise.rosterPresent }));
+    ok('S1 (REVISE, ITEM 112-A successor): Revise IS a live surface now — the tab switches — and the Draft roster still does NOT render there. The mode boundary holds by the BRANCH, where it used to hold by the tab being inert; a roster leak into Revise is reachable for the first time, and this is the check that forbids it',
+      modeNow === 'Revise' && afterRevise.rosterPresent === false,
+      JSON.stringify({ modeNow, roster: afterRevise.rosterPresent }));
+    ok('S1 (REVISE, ITEM 112-A successor): and no OTHER roster takes its place — Free Write\'s deck does not render in Revise either. Revise\'s own roster is 112-D, and until then the Counsel panel carries conversation, lenses and Bible and no asks at all',
+      afterRevise.fwRosterPresent === false && afterRevise.labels.length === 0,
+      JSON.stringify(afterRevise));
+    ok('S1 (REVISE, ITEM 112-A successor): the Counsel panel itself is otherwise UNTOUCHED in Revise — the conversation and its composer still render, so the two absences above are emptiness of TENANTS and not a panel that failed to mount',
+      afterRevise.convoPresent === true, JSON.stringify(afterRevise));
+    await switchMode(app, 'Draft');
   }
 
   {
@@ -674,17 +690,28 @@ await withHarness(async (app) => {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
-// ITEM 84b parks nothing OF ITS OWN — it is the successor file. The assertions
-// this ticket parked live in the files that own them: item84.mjs (the deck
+// ITEM 84b parked nothing OF ITS OWN when it landed — it was the successor file.
+// The assertions IT parked live in the files that own them: item84.mjs (the deck
 // phase's Draft-panel-carries-no-roster check) and tu1/tu2/tu5 (the disclosure
 // version-NUMBER checks the 3 -> 4 bump superseded). See this file's own header
 // park sweep.
+//
+// ITEM 112-A ADDS ONE PARK HERE, and the file it belongs in is this one because
+// this is the file that owns the assertion.
 const parkedChecks = [];
+{
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+  pok('PARKED (was, VERBATIM: "S1 (REVISE): the Revise tab is inert — clicking it does not leave Draft, so the roster cannot render in Revise because Revise has no live surface to render on") — SUPERSEDED BY ITEM 112-A, on Nick\'s ruling that Revise stands up as a real mode (item112-revise-charter.md RS1, ratified 2026-09-02). The original\'s CONCLUSION survives untouched — the Draft roster still does not render in Revise — but its PREMISE is gone: the tab is `live: true` now and clicking it genuinely leaves Draft, so "inert" no longer describes it and the check could no longer pass as written. Not rewritten in place: the original stands here verbatim, and its LIVE SUCCESSOR is in this same file\'s S1 mode-boundary section, re-asserting the same conclusion against the harder case (a live Revise the roster must decline to render on, plus two new checks that no other roster takes its place and that the Counsel panel is otherwise untouched).',
+    true, 'superseded by ITEM 112-A (Revise stands up); successor in this file\'s S1 mode-boundary section');
+}
 if (process.env.HARNESS_PARKED === '1') {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
-  console.log(`\nITEM84B PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item84b.mjs parks nothing of its own (it is the successor: see item84.mjs, tu1.mjs, tu2.mjs and tu5.mjs for the checks this ticket parked).`);
+  console.log(parkedPass
+    ? `\nITEM84B PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed: one ITEM-112-A-superseded Revise-is-inert check, successor live in this same file. The checks item84b ITSELF parked are in item84.mjs, tu1.mjs, tu2.mjs and tu5.mjs.`
+    : `\nITEM84B PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
