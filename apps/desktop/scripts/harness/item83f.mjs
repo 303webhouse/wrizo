@@ -674,14 +674,16 @@ if (process.env.HARNESS_PARKED === '1') {
   // Nothing to park. This file is NEW and supersedes no assertion of its own.
   // The assertions this WAVE superseded live where they were written and are
   // parked there, in their own files, beside their successors:
-  //   · fx3.mjs S5 — two checks, the pop-out's keystroke-dissolve (E1 reverses
-  //     the trigger; the successors stand in fx3 itself, and the gate's full
-  //     proof with its controls is E1 S1-S5 above).
+  //   · fx3.mjs — FIVE: S5's two keystroke-dissolve checks (E1 reverses the
+  //     trigger), S5's two three-icons-per-row counts (E2 moves Full Screen out
+  //     of that row), and the gated generation-3 count.
+  //   · ab2.mjs — ONE: its own gated generation-3 count, same E2 reason.
+  //   Each stands verbatim beside its successor, in its own file.
   // The count is the check, not the colour: an empty list here is a CLAIM that
   // this file falsified nothing, and it is auditable against the wave's own
   // offer record, which names every park by file and count.
   // eslint-disable-next-line no-console
-  console.log('\nITEM83F PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing of its own. The wave\'s parks live in fx3.mjs beside their successors.');
+  console.log('\nITEM83F PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; this file parks nothing of its own. The wave\'s six parks live in fx3.mjs (five) and ab2.mjs (one), each beside its successor.');
 }
 
 const allChecks = checks.concat(parkedChecks);

@@ -236,6 +236,16 @@ async function checkFoot(app, surface, width, add) {
         add('Structure is the last zone before the foot (GUARD - already true at the branch point)', false,
             `structure=${!!st} goal=${!!goal}`);
       }
+      // PUT THE SURFACE BACK. Reaching Structure means switching the page to
+      // DRAFT, and this probe also takes the wave's SHOTS — so without this the
+      // prose shots would silently change from Free Write to Draft and every
+      // future comparison against the wave's own set would be against a
+      // different picture of a different mode. Caught by taking the shots and
+      // finding all six changed on a wave that moved almost no pixels.
+      await app.evalJs(
+        `(() => { const t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write');
+          if (t) t.click(); return !!t; })()`);
+      await sleep(400);
     }
   }
 
