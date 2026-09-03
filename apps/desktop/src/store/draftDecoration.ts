@@ -45,15 +45,34 @@ function decorateInline(text: string): string {
 const H2 = /^(##\s+)([\s\S]*)$/;
 const H1 = /^(#\s+)([\s\S]*)$/;
 
+// ITEM 83 ERRATA E3 (2026-09-03) — the indent's leading tabs are MARKERS, not
+// content. The indent itself needs no renderer: the editor is
+// `white-space:pre-wrap` (ForwardOnlyEditor.tsx), so a leading tab already
+// draws the level the writer asked for, and inventing a second indent
+// mechanism on top of it would be two formulas for one number. What was
+// missing is the REGISTER — every other convention in this file wears
+// `.md-mark`, and the tab did not, so it read as text the writer had typed
+// rather than as craft a control had applied.
+//
+// Split off ahead of the heading match, for two reasons. Character count stays
+// 1:1 (only spans are added), which is what lets the caller restore a
+// plain-text caret offset. And `# ` on an INDENTED line still reads as a
+// heading — a whole-line `^#` match against a tab-prefixed line would silently
+// have stopped matching the moment E3 made indents repeatable and common.
+const LEADING_TABS = /^(\t+)([\s\S]*)$/;
+
 export function decorateMarkdown(text: string): string {
   return text
     .split('\n')
-    .map(line => {
+    .map(rawLine => {
+      const ind = rawLine.match(LEADING_TABS);
+      const indent = ind ? `<span class="md-mark">${escHtml(ind[1])}</span>` : '';
+      const line = ind ? ind[2] : rawLine;
       const h2 = line.match(H2);
-      if (h2) return `<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInline(h2[2])}</span>`;
+      if (h2) return `${indent}<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInline(h2[2])}</span>`;
       const h1 = line.match(H1);
-      if (h1) return `<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInline(h1[2])}</span>`;
-      return decorateInline(line);
+      if (h1) return `${indent}<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInline(h1[2])}</span>`;
+      return indent + decorateInline(line);
     })
     .join('\n');
 }

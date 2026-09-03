@@ -65,10 +65,26 @@ const structureZone = (app) => app.evalJs(
 
 // The verb row's own rendered label, scoped to that zone (`.wz-cascade-action`
 // is a generic class used all over the cascade, so it is not a handle on its own).
+//
+// DRIVER RE-POINTED — item 83 errata E4, 2026-09-03. ASSERTIONS UNTOUCHED,
+// NOTHING PARKED: nothing this file claims was falsified, only the way these
+// two helpers REACHED the control was.
+//
+// They took `sec.querySelector('button')` — the FIRST button in the Structure
+// zone. That was the conversion row for exactly as long as the zone held one
+// control. Item 114's kind chips now lead it, so the first button became
+// "Normal": `structureRowLabel` read the wrong control's text, and
+// `clickStructureRow` clicked a radio chip and then crashed the file at the
+// confirm-modal read that followed. Found by the suite, not by inspection.
+//
+// The fix is the correction this lane keeps having to make — NAME the control
+// instead of counting to it. `.wz-cascade-action` scoped to this zone is that
+// name; the comment above is right that the class is generic app-wide, which is
+// precisely why the zone scope is kept and only the ordinal is dropped.
 const structureRowLabel = (app) => app.evalJs(
   "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
   + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
-  + " if (!sec) return null; const b = sec.querySelector('button');"
+  + " if (!sec) return null; const b = sec.querySelector('.wz-cascade-action');"
   + " return b ? (b.textContent || '').trim() : null; })()");
 
 // The conversion driver, scoped to the ZONE rather than to the label.
@@ -86,8 +102,8 @@ const structureRowLabel = (app) => app.evalJs(
 const clickStructureRow = (app) => app.evalJs(
   "(() => { const sec = [...document.querySelectorAll('.wz-sliver-section')].find(s =>"
   + " /^structure$/i.test(((s.querySelector('.wz-sliver-h') || {}).textContent || '').trim()));"
-  + " const b = sec && sec.querySelector('button');"
-  + " if (!b) throw new Error('no Structure row button in the sliver');"
+  + " const b = sec && sec.querySelector('.wz-cascade-action');"
+  + " if (!b) throw new Error('no Structure conversion row in the sliver');"
   + " b.click(); return true; })()");
 
 await withHarness(async (app) => {
@@ -954,7 +970,9 @@ if (process.env.HARNESS_PARKED === '1') {
       const btns = row ? [...row.querySelectorAll('button')] : [];
       const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');
       if (gear) gear.click();
-      return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length };
+      return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length,
+               // item 83 errata E2 - the foot spans two lines now; the row's count alone no longer counts the foot.
+               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     await sleep(200);
     const gearRowGone = await app.evalJs(`(() => {
@@ -990,10 +1008,33 @@ if (process.env.HARNESS_PARKED === '1') {
     // .typewriter-toggle is now an instrument button carrying an aria-label,
     // so the read is by NAME, not by the retired class.
     const typewriterInstrumentOnProse = await app.evalJs("!!document.querySelector('.wz-sliver-instruments-row [aria-label=\"Typewriter\"]')");
-    pok('PARKED, generation 3 (was SC1 S3 re-assertion that the typewriter is withdrawn from the screenplay surface entirely) — item 83 M8/R12: withdrawn is REVERSED by founder word; the instrument is present on screenplay AND prose, the universal foot carrying three instruments on both',
-      typewriterGoneOnScript.iconCount === 3
-        && typewriterInstrumentOnProse === true,
-      JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse }));
+    // ---------------------------------------------------------------------
+    // PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03. GENERATION 3,
+    // quoted VERBATIM and no longer asserted. Its QUESTION is untouched - where
+    // does the typewriter live, and is it on both surfaces or one - and the
+    // answer is still "both". Only the arithmetic it answered with is
+    // superseded: Nick's walkthrough ruling moves FULL SCREEN out of the
+    // instruments row onto the progress bar's own line, so the row that held
+    // three instruments holds two, while the foot still holds all three.
+    // Generation 4 stands below and names the third instrument instead of
+    // counting to it - the same correction fx3.mjs's own generation 4 makes,
+    // for the same reason.
+    //
+    // pok('PARKED, generation 3 (was SC1 S3 re-assertion that the typewriter is withdrawn from the screenplay surface entirely) - item 83 M8/R12: withdrawn is REVERSED by founder word; the instrument is present on screenplay AND prose, the universal foot carrying three instruments on both',
+    // typewriterGoneOnScript.iconCount === 3
+    // && typewriterInstrumentOnProse === true,
+    // JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse }));
+    // ---------------------------------------------------------------------
+    // GENERATION 4 (item 83 errata E2) - the same question, asked of the whole
+    // foot rather than of one row: the typewriter is present on BOTH surfaces,
+    // and the third instrument it shares the foot with is still there, one line
+    // down on the progress bar.
+    const fullScreenInFootScript = typewriterGoneOnScript.fullScreenInFoot;
+    const fullScreenInFootProse = await app.evalJs("!!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button')");
+    pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) - item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each row holds TWO while the foot still holds THREE; the typewriter is present on screenplay AND prose exactly as R12 restored it',
+      typewriterGoneOnScript.iconCount === 2 && fullScreenInFootScript === true
+        && typewriterInstrumentOnProse === true && fullScreenInFootProse === true,
+      JSON.stringify({ typewriterGoneOnScript, typewriterInstrumentOnProse, fullScreenInFootScript, fullScreenInFootProse }));
 
     // Re-seed the parked SCRIPT fixture. The prose half of the probe above is
     // the whole point — it proves the withdrawal is script-only — but

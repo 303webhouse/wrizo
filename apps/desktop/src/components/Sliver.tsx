@@ -17,6 +17,16 @@ import { SettingsPanel, Seg, GearIcon } from './ModeStage';
 import { FullscreenToggle } from './ChromeControls';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
+import type { PageKindSetting, StyleGuide } from '../types';
+
+// ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
+// place each, so the buttons cannot drift from the type or from the words. The
+// ORDER is the ruling's order: Normal (preselected) · Screenplay · Research,
+// and MLA (default) · APA · Chicago · AP.
+const PAGE_KINDS: readonly PageKindSetting[] = ['normal', 'screenplay', 'research'];
+const STYLE_GUIDES: readonly StyleGuide[] = ['mla', 'apa', 'chicago', 'ap'];
+const KIND_LABEL = { normal: 'kindNormal', screenplay: 'kindScreenplay', research: 'kindResearch' } as const;
+const STYLE_GUIDE_LABEL = { mla: 'styleGuideMla', apa: 'styleGuideApa', chicago: 'styleGuideChicago', ap: 'styleGuideAp' } as const;
 
 // CD1 S2/S7 — the sliver. A slim grip riding the paper's left edge on every
 // framed writing surface (prose AND script — S7 mirrors the wiring exactly).
@@ -101,6 +111,30 @@ export type SliverContent =
       structure: StructureKind;
       onSwitchStructure: (next: StructureKind) => void;
       format?: { onFormat: (action: FormatAction) => void };
+      // ITEM 114 (item 83 errata E4) — the page's DECLARED kind and, under
+      // Research, its style guide. Note the two neighbouring words this union
+      // now carries and which must not be confused: `kind: 'draft'` is which
+      // SLIVER CONTENT this is, and `pageKind` is what the writer says the PAGE
+      // is. A third sense, DeskFrame's own `pageKind` prop, means which surface
+      // renders. Named here because three senses of one word in one file is
+      // exactly how a later hand marries two of them by accident.
+      //
+      // OPTIONAL, AND THE ABSENCE IS A SCOPE DECISION — disclosed in the offer
+      // record rather than left to be discovered. Two hosts pass `kind:'draft'`
+      // content: PageEditor's prose Draft, which passes these, and
+      // ScriptEditor's framed screenplay surface, which passes NONE of them, so
+      // the chips are genuinely absent from the DOM there (never greyed — G3).
+      // The reason is that a script page has ALREADY declared what it is: its
+      // pageType is 'script' and its courier measure says so louder than any
+      // chip could. Offering a kind row there would let a writer mark a
+      // screenplay "Normal" and would then PERSIST that contradiction. Nick's
+      // walkthrough opened item 114 out of the DRAFT structure redesign; if he
+      // wants the row on screenplay too, it is four props and a default, and
+      // the offer says so.
+      pageKind?: PageKindSetting;
+      onPickKind?: (next: PageKindSetting) => void;
+      styleGuide?: StyleGuide;
+      onPickStyleGuide?: (next: StyleGuide) => void;
     }
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
@@ -234,6 +268,11 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const lines = countLineEquivalents(goalText);
   const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
 
+  // item 83 errata E1 — the foot's own gate reports up to the panel that
+  // carries the fade classes. `setPopoutHold` is a useState setter, so it is
+  // referentially stable and safe as an effect dependency downstream.
+  const [popoutHold, setPopoutHold] = useState(false);
+
   return (
     // item 83 M1 — the wave's own contract markers. scripts/menus-probe.mjs
     // binds to these, not to the `wz-` classes, so the acceptance instrument
@@ -253,7 +292,23 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         <span className="wz-sliver-grip-glyph" aria-hidden="true">{open ? '›' : '‹'}</span>
       </button>
 
-      <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'}>
+      {/* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD.
+          `data-popout-hold` is the ONE new signal: true while a foot pop-out
+          is open and its composed-text gate has not yet fired (SliverInstrumentRow
+          below does the counting; index.css's own
+          `.wz-sliver-panel[data-popout-hold='true']` rule does the holding).
+          WHY IT RIDES THE PANEL AND NOT THE TRAY, recorded so it is not
+          "corrected" later: an opacity on this panel caps every descendant's —
+          a child cannot be more opaque than a faded ancestor — so a tray held
+          visible inside a dissolved drawer is not expressible in CSS at all.
+          Lifting the tray OUT of the panel is the other escape, and the anchor
+          law bars it (R11: the tray is the FOOT's own raised tray, drawer-width;
+          a portal would have to COMPUTE where the foot is, and an anchor may not
+          be computed). It is also simply what a drawer does — you cannot leave a
+          tray standing out of a shut drawer. The hold is scoped to exactly that
+          state: with no pop-out open this attribute reads 'false' and every fade
+          on this surface behaves byte-identically to before. */}
+      <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
         <SliverToolsBody content={content} />
         <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
@@ -293,6 +348,8 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           hasMilestones={hasMilestones}
           target={target}
           typewriterAvailable
+          goalText={goalText}
+          onPopoutHold={setPopoutHold}
         />
       </div>
     </div>
@@ -442,9 +499,109 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
 
+      {/* item 83 errata E2 — STRUCTURE IS THE TAB'S LAST ZONE BEFORE THE FOOT.
+          Recorded plainly rather than claimed as work: it ALREADY WAS, at this
+          wave's branch point. Every remaining section in this body is gated to
+          another `content.kind`, so on a Draft page the rendered sequence is
+          FORMAT then STRUCTURE, with the goal foot as the next sibling — see
+          docs/menus/item83-errata-s0-survey.md (c). What this errata adds is
+          the NAME (`wz-sliver-structure-zone`) that lets the acceptance instrument
+          measure the claim at all, and the guard that keeps it true as E4 grows
+          this zone. Nothing moved, and the offer says so.
+
+          THE `-zone` SUFFIX IS LOAD-BEARING, not decoration. The first cut of
+          this named the div `wz-sliver-structure` — which is the RETIRED
+          tablist's own class, swept by the menus wave's own "orphaned
+          .wz-sliver-structure sweep". ab2.mjs still probes that exact class,
+          and reads its ABSENCE as the proof the picker is gone; reusing the
+          name made a live assertion false without any ruling having changed.
+          Caught by the suite. The picker's name stays retired. */}
       {content.kind === 'draft' && (
-        <div className="wz-sliver-section">
+        <div className="wz-sliver-section wz-sliver-structure-zone">
           <div className="wz-sliver-h">{t('railStructure')}</div>
+
+          {/* ITEM 114 (item 83 errata E4) — THE PAGE'S DECLARED KIND.
+              PLACEHOLDERS, by Nick's own word: they render and they persist per
+              page, and nothing downstream is wired — the Revise linkage and
+              footnotes are deferred by his word, not by omission. Nothing is
+              greyed, because what isn't built doesn't render (G3).
+
+              ► THE SCREENPLAY NAME COLLISION — HALF-ANSWERED HERE, NOT
+              RESOLVED. A kind chip reading "Screenplay" now stands in the same
+              zone as `Convert to Screenplay…`, which is a consequential one-way
+              act behind a confirm dialog. The collision is REPORTED TO NICK
+              with a recommendation and is his to settle; what this markup does
+              is make the two unmistakable in the meantime, and it does it three
+              ways at once rather than by renaming either control:
+                · SEPARATE SUB-LABELS that name the difference in words — "This
+                  page is" over the chips, "Change the page itself" over the
+                  act. That is the distinction, said out loud.
+                · A DIFFERENT CONTROL SHAPE. The kinds are a radiogroup of small
+                  chips wearing the olive at-rest selection law; the act is the
+                  full-width bordered `.wz-cascade-action` it has always been,
+                  still ending in the ellipsis that promises a dialog.
+                · A RULE BETWEEN THEM, so the eye reads two zones and not one
+                  list.
+              Neither control is renamed and neither is merged. Merging would
+              make a reversible setting inherit a destructive act's confirm, or
+              an act inherit a setting's silence.
+
+              And a note the M5 comment below earns: the chips ARE, visually,
+              the Prose | Screenplay tablist that R13.iv withdrew from this very
+              zone for "promising free switching". The difference is that free
+              switching is now the TRUTH — a kind chip really is a reversible
+              per-page setting that touches not one character of the writer's
+              text. The tablist's sin was dressing a conversion as a switch;
+              these chips are a switch dressed as a switch. */}
+          {content.pageKind && content.onPickKind && (<>
+          <div className="wz-sliver-sub" id="wz-structure-kind-label">{t('structureKindLabel')}</div>
+          <div className="wz-page-setup-seg" role="radiogroup" aria-labelledby="wz-structure-kind-label">
+            {PAGE_KINDS.map(k => (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                className="wz-page-setup-chip"
+                data-page-kind={k}
+                aria-checked={content.pageKind === k}
+                onClick={() => content.onPickKind!(k)}
+              >
+                {t(KIND_LABEL[k])}
+              </button>
+            ))}
+          </div>
+
+          {/* G4's IN-PLACE DISCLOSURE: the style guides appear only when
+              Research is the kind, beneath it, at the same depth — never a
+              second level, and never four greyed buttons waiting for a reason.
+              MLA is preselected on the first reveal by reading through
+              STYLE_GUIDE_DEFAULT, which is a READ default: nothing is written
+              to the page until the writer picks, so revealing this row does not
+              dirty a page by itself. */}
+          {content.pageKind === 'research' && (
+            <>
+              <div className="wz-sliver-sub" id="wz-structure-guide-label">{t('structureStyleGuideLabel')}</div>
+              <div className="wz-page-setup-seg wz-page-setup-seg--wrap" role="radiogroup" aria-labelledby="wz-structure-guide-label">
+                {STYLE_GUIDES.map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    role="radio"
+                    className="wz-page-setup-chip"
+                    data-style-guide={g}
+                    aria-checked={content.styleGuide === g}
+                    onClick={() => content.onPickStyleGuide!(g)}
+                  >
+                    {t(STYLE_GUIDE_LABEL[g])}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          </>)}
+
+          <div className="wz-sliver-rule" aria-hidden="true" />
+          <div className="wz-sliver-sub">{t('structureActLabel')}</div>
           {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
               Screenplay TABLIST retires from the panel. A tablist's dress
               promises free switching; conversion is a consequential one-way
@@ -454,7 +611,11 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
               its destination named in the control itself — never a bare
               "Convert", which is the bench's named enemy. The surface itself
               says where you are: the courier measure announces screenplay
-              louder than any tab could. */}
+              louder than any tab could.
+              ITEM 83 ERRATA E4 — UNCHANGED, deliberately. The name stays
+              (destination-named verbs are the bench law that put it there), the
+              ellipsis stays, the confirm stays. Only its neighbourhood grew a
+              label saying what it is. */}
           <button
             type="button"
             className="wz-cascade-action"
@@ -585,11 +746,29 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
     <div className="wz-sliver-goal" data-target={target ?? ''} data-lines={lines}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {target != null && settings.instrumentsOn && (
-        <div className="wz-sliver-goal-hairline" aria-hidden="true">
-          <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
-        </div>
-      )}
+      {/* item 83 errata E2 — THE PROGRESS BAR'S OWN LINE, which Full Screen
+          now shares. Aligned BY LAYOUT (one flex row, `align-items:center`),
+          never by a nudged margin: the hairline is 2px and the toggle is a
+          text button, so any hand-tuned offset would be a number that drifts
+          the moment either changes. The hairline flexes and Full Screen does
+          not, so the bar gives up exactly the width the toggle needs.
+          The row stands whether or not the hairline is in it — a writer who
+          clears the goal loses the bar (its own pre-existing law), and Full
+          Screen must not go with it. */}
+      <div className="wz-sliver-goal-line">
+        {target != null && settings.instrumentsOn && (
+          <div className="wz-sliver-goal-hairline" aria-hidden="true">
+            <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
+          </div>
+        )}
+        {/* `data-foot-fullscreen` is a behaviour-free contract marker in this
+            file's own `data-menus-*`/`data-*` idiom, so scripts/menus-probe.mjs
+            can name the toggle's own box. FullscreenToggle itself is NOT
+            touched: it is shared with App.tsx's corner cluster and the
+            Cascade's Settings category (ChromeControls.tsx), so its class-less,
+            inline-styled shape stays exactly as it is everywhere. */}
+        <span className="wz-sliver-goal-fullscreen" data-foot-fullscreen=""><FullscreenToggle /></span>
+      </div>
 
       {editing ? (
         <div className="wz-sliver-goal-edit-row">
@@ -633,7 +812,56 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
 // pass refines this" caveat in full). All three buttons are `--text-mid`/
 // olive at rest (`.wz-sliver-instruments-btn`, index.css) — brass appears
 // only on hover, matching the sliver's own pre-existing law elsewhere.
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean }) {
+// item 83 errata E1 (2026-09-03) — POP-OUTS FADE ON WRITTEN WORDS, NEVER ON A
+// CLOCK. Nick's walkthrough ruling: a foot pop-out fades only after FIFTEEN
+// WORDS have been written, or a PERIOD has been entered, counted from the
+// moment it opened. Idle never fades it — a writer thinking is not a writer
+// done.
+//
+// WHAT IT REPLACES, named exactly (S0's survey, `docs/menus/item83-errata-s0-survey.md`):
+// the pop-out had no fade of its own and no timer of its own. It is a child of
+// `.wz-sliver-panel`, which carries `chrome-fade desk-dissolve`, so it rode the
+// room's ambient dissolve — armed by `useChromeDissolve.noteWrite()` on the
+// FIRST forward keystroke (ModeStage.tsx -> useChromeDissolve.ts), receding over
+// FADE_OUT_S = 2.8s. One character typed and the tray was gone. The "short
+// timer" a writer feels is that 2.8s curve; no setTimeout ever hid the tray.
+//
+// SCOPE, and why it is not a second engine. Nothing here touches
+// useChromeDissolve, its constants, or any other chrome surface: the vanish
+// engine's own recede/summon fades are untouched, and drawers keep R10's
+// slide-only open/close. The ONLY change is WHEN this one surface receives the
+// fade it already had — the same `.desk-dissolve` rule, the same `--fade-dur`
+// curve, the same `prefers-reduced-motion` opt-out. The trigger changed; the
+// fade path did not.
+//
+// FIFTEEN, and why it is a plain module constant: it is a ruled number, not a
+// tuned one. It carries no setting, so it needs no store; naming it here keeps
+// it beside the code that reads it.
+const POPOUT_FADE_WORDS = 15;
+
+// The house word count, the same shape PageEditor/JournalEntry/ScriptEditor/
+// QuickSprint/HomeFlow/FirstRunGate each keep privately (six copies already —
+// this reads like its neighbours rather than inventing a seventh home for it).
+function wordCount(text: string): number {
+  const t = text.trim();
+  return t ? t.split(/\s+/).length : 0;
+}
+
+// "A period entered" is measured as a period the document did not have when the
+// tray opened. Counting occurrences rather than watching keystrokes is what
+// makes this work on BOTH prose surfaces: Draft is freely editable (a keystroke
+// watcher would miss a period pasted, or one typed mid-paragraph), and the
+// Sliver already receives the page's live text on every change, so no new
+// signal has to be threaded from three hosts. The one case it deliberately
+// treats as a wash — delete a period, type it back — is genuinely no new period
+// in the writer's document, which is the thing the ruling names.
+function countPeriods(text: string): number {
+  let n = 0;
+  for (const ch of text) if (ch === '.') n++;
+  return n;
+}
+
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const [gearOpen, setGearOpen] = useState(false);
@@ -660,6 +888,39 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const [open, setOpen] = useState<null | 'typewriter' | 'progress'>(null);
   const pick = (which: 'typewriter' | 'progress') => setOpen(o => (o === which ? null : which));
 
+  // item 83 errata E1 — the composed-text gate. `held` is true from the moment a
+  // tray opens until the writer has committed POPOUT_FADE_WORDS words, or
+  // entered a period, since that moment.
+  const [held, setHeld] = useState(false);
+  const openMark = useRef<{ words: number; periods: number } | null>(null);
+
+  // THE MARK IS TAKEN AT THE OPEN, AND ONLY AT THE OPEN. `goalText` is
+  // deliberately absent from this dependency list: re-marking on every keystroke
+  // would reset the count as fast as the writer raised it, and the gate would be
+  // unreachable — a control that can never fire, which is worse than the timer
+  // it replaces. Every path that changes `open` re-marks (both foot buttons, and
+  // any path added later), the same "announce from an effect so no silent path
+  // is writable" discipline this file's own two-drawer announcement keeps.
+  useEffect(() => {
+    if (open === null) { openMark.current = null; setHeld(false); return; }
+    openMark.current = { words: wordCount(goalText), periods: countPeriods(goalText) };
+    setHeld(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // The release. Runs on text change only — there is NO timer here, and that
+  // absence is the ruling: "idle never fades it." A writer who opens a tray and
+  // sits thinking keeps it, however long they sit.
+  useEffect(() => {
+    const mark = openMark.current;
+    if (!held || !mark) return;
+    const written = wordCount(goalText) - mark.words;
+    const periodEntered = countPeriods(goalText) > mark.periods;
+    if (written >= POPOUT_FADE_WORDS || periodEntered) setHeld(false);
+  }, [goalText, held]);
+
+  useEffect(() => { onPopoutHold(held); }, [held, onPopoutHold]);
+
   return (
     <div className="wz-sliver-instruments">
       <div className="wz-sliver-instruments-row">
@@ -677,12 +938,24 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           onClick={() => pick('progress')}>
           <GearIcon />
         </button>
-        {/* R5 verbatim: "everything but the page disappears — the browser
-            window included". FullscreenToggle already owns the OS-fullscreen
-            request and its own label; it RELOCATES here from the cascade's
-            settings category rather than being reimplemented. */}
-        <FullscreenToggle />
+        {/* item 83 errata E2 (2026-09-03) — FULL SCREEN LEAVES THIS CELL.
+            Nick's walkthrough ruling: "Full screen ALIGNS WITH THE PROGRESS
+            BAR." It now sits on the hairline's own line, in SliverGoalFoot
+            below — a MOVE, not a copy, and not a second instance: R5's
+            reasoning that FullscreenToggle owns the OS-fullscreen request and
+            its own label is untouched, it is simply reached from one line
+            higher. The instruments row is TYPEWRITER · PROGRESS now; the foot
+            still carries all three instruments, on two lines instead of one.
+            The check that used to count three buttons in THIS row is parked
+            verbatim in fx3.mjs and ab2.mjs beside its successor. */}
       </div>
+      {/* item 83 errata E1 — the trays carry their own behaviour-free contract
+          marker (`data-menus-popout`, this file's own `data-menus-*` idiom —
+          nothing styles it), so the acceptance instrument can name a pop-out
+          without binding to a `wz-` class or to `.mode-settings`, which the tray
+          shares with ModeStage's own unrelated corner popover. Marked ON the
+          trays rather than on a wrapper: a wrapper would be a new DOM node in a
+          measured foot, and this wave measures that foot. */}
       {open === 'typewriter' && <TypewriterMenu />}
       {open === 'progress' && (
         <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} />
@@ -701,7 +974,7 @@ function TypewriterMenu() {
   const forwardLock = useForwardLock();
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu">
+    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="typewriter">
       <h4>{t('twMenuHeading')}</h4>
 
       {/* The typewriter itself — the instrument this menu belongs to. */}
@@ -758,7 +1031,7 @@ function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
   };
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu">
+    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="progress">
       <h4>{t('footProgress')}</h4>
       <Seg label={t('sliverInstrumentsShow')} value={settings.instrumentsOn ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}

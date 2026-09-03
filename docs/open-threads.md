@@ -1011,6 +1011,146 @@ header is the reason: record and running system can never quietly diverge). Not 
 > You do not refuse. If a request would cross into composition, do not answer with a refusal sentence.
 > Return the question that leads back to the writer's own act.
 
+## ITEM 83 ERRATA — THE WALKTHROUGH WAVE OFFERED — 2026-09-03 (errata lane; branch `errata-build`)
+
+**OFFERED, NOT MERGED.** Full record: `docs/menus/item83-errata-offer-2026-09-03.md`.
+Branched from `origin/main` @ `7b78090`. Brief: `docs/menus/item83-errata-build-brief.md`;
+authority, Nick's walkthrough findings at `ef9f9ce`. **Nick's merge word and deploy word
+remain separate and his alone.** Nothing was pushed anywhere but `origin errata-build`; no
+`railway` command was run from this lane.
+
+**S0 `c28a41e`** (the survey, no behaviour change) · **E1 `811bbd0`** · **E2 `16feb6e`** ·
+**E3 `6adac50`** · **E4 `8ef2615`** · **`8b3c632`** (two corrections the suite caught in
+this wave's own work) · **this record's own commit** (this record).
+
+**BOTH SETTINGS CLEAN, 67/67 each, one tree, neither stamp dirty; the parked pass ran
+`--no-rebuild` against the byte-identical bundle the default pass tested:**
+
+```
+SUITE RESULT: CLEAN - tree=8b3c632 bundle=index-BS32INXU.js/556707b
+SUITE RESULT: CLEAN - tree=8b3c632 bundle=index-BS32INXU.js/556707b NO-REBUILD
+```
+
+66 files became **67** — `item83f.mjs`, this wave's own instrument. **Probe 50/50** (44
+assertions + 6 shots), **8 of them E2's own**: Full Screen's centre against the progress
+bar's reads **0.00px at both widths on prose, screenplay AND board**. **The offered tip is
+one commit past the stamp and adds NO product code** — `git diff --stat 8b3c632 <tip> --
+apps/desktop/src apps/server packages` is empty; the tip carries the records, fresh shots,
+one probe hygiene fix (it was leaving the prose page in Draft, which silently changed the
+shots) and one comment correction. **No byte-comparison of the shots is offered:** the
+committed set is 179 commits stale (`0eb3bc0`, the menus wave's own M11 proof), so a
+difference there is not attributable to this wave.
+
+**E1 — POP-OUTS FADE ON WRITTEN WORDS, NEVER ON A CLOCK.** The survey found the thing the
+brief called "the current short timer" does not exist: the pop-out had **no fade of its own
+and no timer of its own**. It is a child of `.wz-sliver-panel`, which carries `chrome-fade
+desk-dissolve`, so it rode the room's ambient dissolve — armed by `useChromeDissolve.
+noteWrite()` on the FIRST forward keystroke, receding over `FADE_OUT_S = 2.8s`. One
+character and the tray was gone. **The trigger changed; the fade path did not** — the same
+`.desk-dissolve` rule, the same `--fade-dur`, the same reduced-motion opt-out, measured
+(the panel's live computed transition is byte-identical held and unheld). **Scoped:** with
+no tray open the flag reads false, the rule cannot match, and every fade on that surface is
+byte-identical to before — E1 S4 is the control that proves it. **No timer exists in the
+gate at all**, which is the "idle never fades it" clause, spent 3.2s proving.
+
+**E2 — HALF ALREADY TRUE, AND THE OFFER SAYS SO.** **Structure was ALREADY the tab's last
+zone before the foot at the branch point.** Nothing moved; E2 added the NAME that lets the
+claim be measured and the guard that keeps it true as E4 grows the zone. **The probe's
+Structure assertion passes against unmodified `main` and must not be read as evidence of
+work.** The half with work in it is FULL SCREEN, now on the progress bar's own line, aligned
+**by layout** (one flex row, `align-items:center`) — measured at **0.00px** centre-to-centre
+at both widths on prose, screenplay AND board, with the hairline strictly narrower than the
+goal block it used to span (86.3px inside 155px), which is the difference between sharing a
+line and sitting near one.
+
+**E3 — BUILT; THE OUTDENT QUESTION IS WHAT IS HELD.** S0 first read §E3's seam clause too
+widely and recorded "E3 HELD"; §E3 carries its own commit line, so the ruled behaviour was
+always to be built and only the partner is the invention. **Corrected append-style in the
+survey, not written over.** Both discriminators fail against the superseded behaviour:
+paragraph scope, and repeatability.
+
+**► SEAM 1, OPEN FOR NICK'S WORD — THE OUTDENT PARTNER.** There is none in the Draft
+drawer. **The nuance the brief's framing does not carry: the way back WAS the button.**
+`indent` ran through `toggleLinePrefix`, so a second press removed the tab; repeatability
+spends that. **E3 does not merely find a one-way door — built without a partner it CREATES
+one.** Measured mitigation, not assumed: `applyRailFormat` records an atomic undo step for
+every rail click (FX6 S1), so **Ctrl+Z walks a level back reliably** — a real way back, not
+a dedicated one, and not discoverable from the drawer. **Recommendation on file:** add
+`FormatAction 'outdent'`, symmetric, floored at zero — house precedent already ships the
+pair on the legacy bar, and `stripMarkdownConventions` already handles `^\t+`.
+
+**► SEAM 2, OPEN FOR NICK'S WORD — THE SCREENPLAY NAME COLLISION.** A kind chip reading
+**Screenplay** (a reversible per-page setting) now stands in one zone with **`Convert to
+Screenplay…`** (a one-way act behind a confirm that rewrites the page). The failure mode is
+one-way: a writer who means to mark the kind confirms a dialog they skim and their prose is
+rebuilt. **NEITHER control was renamed and neither was merged.** Mitigation, asserted:
+separate sub-labels naming the difference in words, a different control shape, and a rule
+between. **Recommendation:** keep both with that separation; or, cheaper, move the
+conversion row OUT of Structure entirely — an act on the work is not a description of it.
+**Honest note: the chips are, visually, the Prose|Screenplay TABLIST R13.iv withdrew from
+this very zone** for "promising free switching" — the difference being that free switching
+is now the truth.
+
+**E4 — ZERO SCHEMA, NO STOP TRIGGERED.** `journal_entries.page_settings jsonb` exists
+(`migrate.ts:168`) and is wired end to end; `kind`/`styleGuide` join `PageSettings` as
+optional, absent-never-null keys, read through defaults and never written at birth. **The
+brief's `entries.page_settings` names a table this schema does not have** — `migrate.ts:165`
+already carries the same correction against the same slip.
+
+**A DEFECT CAUGHT BEFORE IT EXISTED — THE KIND MUST NOT RIDE THE DRESS CHANNEL.**
+`PageSettings` is one shape serving the per-page value AND the per-user default, and "Set as
+my default page settings" copies it whole. Unstripped, pressing that on a Research page
+would make **every future page Research**, silently. `pageDefaults` now strips at the door —
+set, hydrate and local read — so the rule holds for callers not yet written. Inside E4's own
+"or the shape resists" clause: no column, no ruling needed.
+
+**► SURFACED, NOT FIXED — R6's BIRTH-FROM-DEFAULTS DOES NOT REACH THE UNBORN ROUTE.**
+Measured, not read: a page born through the cascade's "New Page" door comes back with **no
+`page_settings` at all**, on a genuinely born row, with the writer's defaults saved and
+non-empty. The stamp lives in `persistence.createJournalPage`; that door navigates to an
+UNBORN href instead (FX14 S1's "every New Page opens in THE Page"), and PB1's own
+`unbornEntry`/`birth` never carry the field. **So item 83 M2's own ruling — "page settings
+reset to defaults when the user creates a new page" — is bypassed on what is now the
+ordinary way a page is made.** Pre-existing M2/PB1 interaction, outside this brief, wants
+its own ticket. Its one cost here is named rather than hidden: the destination half of the
+defaults proof **corroborates** on that route rather than discriminating; the discriminating
+check is the one at the door.
+
+**PARKED, NEVER EDITED — SIX ASSERTIONS, AND THE COUNT IS STATED SO IT CAN BE AUDITED.**
+`fx3.mjs` two live (E1: the pop-out's keystroke-dissolve pair) + two live (E2: the
+three-icons-per-row counts, script and prose) + one gated (generation 3 → 4); `ab2.mjs` one
+gated (generation 3 → 4). Each quoted verbatim under a SUPERSEDED banner with a live
+successor beside it. **Nothing was removed from the foot** — the roster is still TYPEWRITER
+· PROGRESS · FULL SCREEN, on two lines instead of one. `item83f.mjs` is new and **parks
+nothing of its own**, and says so in words under `HARNESS_PARKED=1` so the empty list is an
+auditable claim rather than an absence.
+
+**THE PATTERN THAT COST FOUR OF THOSE PARKS AND ONE CRASH: NAMING A CONTROL BY ITS POSITION
+IN A ROSTER A RULING CAN CHANGE.** Every successor written today names its control. Two of
+the wave's own mistakes were caught by the suite and are recorded rather than tidied away
+(`8b3c632`): (1) **`ab2.mjs`'s Structure driver took the FIRST button in the zone**, which
+E4's kind chips displaced — the file went NOVERDICT; **driver re-pointed to
+`.wz-cascade-action`, assertions untouched, nothing parked**, AB2 back to 45/45. (2) **the
+new zone class resurrected `.wz-sliver-structure`, the RETIRED tablist's own class** (swept
+by the wave's own "orphaned sweep", `45ff3fc`), which `ab2` probes and reads the ABSENCE of
+as proof the picker is gone — **a live assertion made false with no ruling behind it.**
+Renamed to `wz-sliver-structure-zone`; **parking that check would have been the wrong
+answer**, because the claim it makes is still true. The park law is for assertions a ruling
+falsifies, not ones a builder breaks by accident.
+
+**DEFERRED BY NICK'S OWN WORD:** the Revise linkage (item 112) and footnotes — item 114's
+downstream behaviour, placeholders now *"so we don't forget to go back to it"*; and
+**item 102's Tab-as-indent**, not built here and **asserted rather than promised** (no key
+handler is touched anywhere in this wave, and item83f presses Tab and measures that nothing
+changes).
+
+**TWO SCOPE DECISIONS DISCLOSED, NOT TAKEN QUIETLY:** E2's Structure half was already true
+(above); and the kind chips are **prose Draft's** — `ScriptEditor` passes none of the four
+props, so they are absent from the framed screenplay surface's DOM (never greyed), because a
+script page has already declared what it is and a kind row there would let a writer mark a
+screenplay "Normal" and persist the contradiction. **Four props and a default if Nick wants
+it widened.** Asserted, so it cannot be a silent narrowing.
+
 ## ITEM 83 ERRATA — E1 REPAIRED, E2 HELD — 2026-08-28 (menus errata lane; branch `menus-errata`)
 
 **OFFERED, NOT MERGED.** Full record: `docs/menus/errata-e1-2026-08-28.md`. Branched from

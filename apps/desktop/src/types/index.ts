@@ -282,12 +282,47 @@ export interface JournalEntry {
 // confirm). One shape serves both the per-page value and the per-user
 // default, because "set as my default" is literally a copy of the open page's
 // own settings — two shapes would let them drift.
+// ITEM 114 — THE PAGE'S DECLARED KIND, AND THE STYLE GUIDE UNDER RESEARCH.
+// Built as PLACEHOLDERS by Nick's own word ("so we don't forget to go back to
+// it"): they render and they persist per page, and NOTHING downstream is wired
+// — the Revise linkage and footnotes are deferred by his word, not by omission.
+// Nothing is greyed either: what isn't built doesn't render (G3).
+//
+// WHY IT IS NOT CALLED `PageKind`, named so a later hand does not marry them:
+// `DeskFrame.pageKind` already exists and means something else entirely —
+// 'prose' | 'screenplay' | 'board', which SURFACE is rendering. This is what
+// the writer DECLARES the page to be. Two different questions; the app should
+// never answer one with the other.
+//
+// ZERO SCHEMA. Both keys ride the existing `journal_entries.page_settings`
+// jsonb (apps/server/src/migrate.ts) as OPTIONAL, absent-never-null members of
+// PageSettings below — the same grandfather fixed point `tutor`/`origin`/
+// `planBoardId` all keep, so an untouched page is byte-identical and reads
+// `undefined` -> the defaults here. No column, no migration, no backfill.
+export type PageKindSetting = 'normal' | 'screenplay' | 'research';
+export type StyleGuide = 'mla' | 'apa' | 'chicago' | 'ap';
+
+// Preselected, per the ruling: Normal is the page's kind until a writer says
+// otherwise, and MLA is the style guide on Research's FIRST reveal. Read
+// through `?? PAGE_KIND_DEFAULT`, never written at birth — writing them would
+// dirty every page that never asked.
+export const PAGE_KIND_DEFAULT: PageKindSetting = 'normal';
+export const STYLE_GUIDE_DEFAULT: StyleGuide = 'mla';
+
 export interface PageSettings {
   margins: 'normal' | 'narrow' | 'wide';
   lineSpacing: number;
   pageNumbers: { on: boolean; placement: 'bottom-center' | 'bottom-right' | 'top-right' };
   headers: { on: boolean; text: string };
   footers: { on: boolean; text: string };
+  // ITEM 114 (item 83 errata E4) — see the note above these two types. Optional
+  // and ABSENT (never null) on every page that never chose, which is what keeps
+  // a grandfathered row byte-identical. Deliberately NOT added to
+  // PAGE_SETTINGS_FALLBACK below: the fallback is the app's DRESS floor, and a
+  // page's kind is not its dress — the readers default through
+  // PAGE_KIND_DEFAULT / STYLE_GUIDE_DEFAULT instead.
+  kind?: PageKindSetting;
+  styleGuide?: StyleGuide;
 }
 
 // The app's own floor, used wherever a page carries no settings and no user
