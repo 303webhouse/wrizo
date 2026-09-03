@@ -266,6 +266,10 @@ await withHarness(async (app) => {
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterTextNode = true; }
     return {
       iconCount: row ? row.querySelectorAll('button').length : -1,
+      // item 83 errata E2 — the foot's roster is on TWO lines now (Full Screen
+      // moved to the progress bar's own line), so counting one row no longer
+      // counts the foot. Both numbers are reported: the row's, and the foot's.
+      fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button'),
       hasTypewriterTextNode,
       typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]'),
     };
@@ -286,8 +290,23 @@ await withHarness(async (app) => {
   // ok('SC1 S3 (was "S5 (script): the sliver foot row is present with exactly THREE icons"): the script sliver\'s foot row carries exactly TWO icons — the typewriter\'s is withdrawn with the option itself; gear and instruments remain',
   // footRow.iconCount === 2, JSON.stringify(footRow));
   // ------------------------------------------------------------------
-  ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
-    footRow.iconCount === 3, JSON.stringify(footRow));
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. Nick's walkthrough ruling moves FULL
+  // SCREEN out of the instruments row and onto the progress bar's own line
+  // ("Full screen ALIGNS WITH THE PROGRESS BAR"), so the ROW carries two
+  // buttons where it carried three. Nothing was removed from the foot — the
+  // roster is still TYPEWRITER · PROGRESS · FULL SCREEN, on two lines instead
+  // of one — so the claim survives whole and only its address changed. That is
+  // exactly what the successor asserts, and it asserts it more strictly than
+  // the parked check could: by naming the third instrument instead of counting
+  // to it. (fx3's own parked driver a few lines above is the standing warning
+  // about counting to a control in a foot whose roster a ruling can change.)
+  //
+  // ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
+  // footRow.iconCount === 3, JSON.stringify(footRow));
+  // ------------------------------------------------------------------
+  ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
+    footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
   ok('S5 (script): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRow.hasTypewriterTextNode, JSON.stringify(footRow));
   // ---- PARKED - SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
@@ -312,10 +331,20 @@ await withHarness(async (app) => {
     const walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
     let hasTypewriterTextNode = false;
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterTextNode = true; }
-    return { iconCount: row ? row.querySelectorAll('button').length : -1, hasTypewriterTextNode, typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]') };
+    return { iconCount: row ? row.querySelectorAll('button').length : -1, hasTypewriterTextNode, typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]'),
+             fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
   })()`);
-  ok('S5 (prose): the sliver foot row is present with exactly THREE icons',
-    footRowProse.iconCount === 3, JSON.stringify(footRowProse));
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. The prose twin of the script park above,
+  // superseded by the same ruling for the same reason: Full Screen leaves the
+  // row for the progress bar's line, so the row holds two and the foot still
+  // holds three.
+  //
+  // ok('S5 (prose): the sliver foot row is present with exactly THREE icons',
+  // footRowProse.iconCount === 3, JSON.stringify(footRowProse));
+  // ------------------------------------------------------------------
+  ok('S5 (prose) [E2 successor]: the prose sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN on the progress bar line',
+    footRowProse.iconCount === 2 && footRowProse.fullScreenInFoot === true, JSON.stringify(footRowProse));
   ok('S5 (prose): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRowProse.hasTypewriterTextNode, JSON.stringify(footRowProse));
   // SC1 S3 — FX3 S5's aria-label claim survives whole; it just lives on the
@@ -683,7 +712,8 @@ if (process.env.HARNESS_PARKED === '1') {
     const scriptFootParked = await app.evalJs(`(() => {
       const row = document.querySelector('.wz-sliver-instruments-row');
       const panel = document.querySelector('.wz-sliver-panel');
-      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
+      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]'),
+               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     await freshProsePage(app, 1400, 900);
     await openSliver(app);
@@ -691,7 +721,8 @@ if (process.env.HARNESS_PARKED === '1') {
     const proseFootParked = await app.evalJs(`(() => {
       const row = document.querySelector('.wz-sliver-instruments-row');
       const panel = document.querySelector('.wz-sliver-panel');
-      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
+      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]'),
+               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-27 ------------
     // GENERATION 2, quoted VERBATIM and no longer asserted. It held Nick's
@@ -713,9 +744,30 @@ if (process.env.HARNESS_PARKED === '1') {
     // and 2 both made, and the one this check has always really been about:
     // that the eye and assistive tech are told the same story. They are —
     // and now they are told it on BOTH surfaces, not one.
-    pok('PARKED, generation 3 (was SC1 S3 re-assertion: script two icons and no aria-label, prose three and the label) — item 83 M8/R12: the withdrawal is REVERSED by founder word; script and prose carry the identical three-instrument foot, and the aria-label is present on both',
-      scriptFootParked.iconCount === 3 && scriptFootParked.aria === true
-        && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
+    // ---------------------------------------------------------------------
+    // PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03. GENERATION 3,
+    // quoted VERBATIM and no longer asserted. Nothing about the SYMMETRY claim
+    // it makes is superseded — only the arithmetic it counts with. Full Screen
+    // moves out of the instruments row onto the progress bar's own line by
+    // Nick's walkthrough ruling, so a row that held three now holds two on both
+    // surfaces, while the foot still carries all three instruments. Generation
+    // 4 stands below and asks the same question by NAMING the third instrument
+    // rather than counting to it, which is the failure mode this check has now
+    // hit twice.
+    //
+    // pok('PARKED, generation 3 (was SC1 S3 re-assertion: script two icons and no aria-label, prose three and the label) — item 83 M8/R12: the withdrawal is REVERSED by founder word; script and prose carry the identical three-instrument foot, and the aria-label is present on both',
+    // scriptFootParked.iconCount === 3 && scriptFootParked.aria === true
+    // && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
+    // JSON.stringify({ scriptFootParked, proseFootParked }));
+    // ---------------------------------------------------------------------
+    // GENERATION 4 (item 83 errata E2) — the SAME symmetry claim all four
+    // generations have made: that the eye and assistive tech are told the same
+    // story, on both surfaces. They still are, and the foot still carries the
+    // identical three instruments on each — two in the row, and Full Screen on
+    // the progress bar's own line.
+    pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) — item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each surface row holds TWO and its foot still holds THREE; the aria-label symmetry R12 restored is untouched',
+      scriptFootParked.iconCount === 2 && scriptFootParked.aria === true && scriptFootParked.fullScreenInFoot === true
+        && proseFootParked.iconCount === 2 && proseFootParked.aria === true && proseFootParked.fullScreenInFoot === true,
       JSON.stringify({ scriptFootParked, proseFootParked }));
 
     return parkedChecks;

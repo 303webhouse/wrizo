@@ -72,6 +72,16 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
 
 const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
 
+// Draft is a MODE of the same page, reached through the strip the writer uses —
+// never by writing the mode key into localStorage, which would prove only that
+// the store round-trips. The re-persist after a mode switch is measured late
+// (~1100ms on this box), so this waits on the RENDERED result, not a sleep.
+const toDraft = async (app) => {
+  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  await app.waitFor("!!document.querySelector('.wz-sliver-structure')", { label: 'Draft sliver Structure zone' });
+  await sleep(250);
+};
+
 // Open a foot pop-out BY NAME, never by ordinal — fx3.mjs's own parked driver
 // is the standing warning about counting to a control in a foot whose roster a
 // ruling can change (and this wave changes it again).
@@ -225,6 +235,76 @@ await withHarness(async (app) => {
   ok('E1 S5: the panel\'s own live computed transition is IDENTICAL held and unheld — the hold changes WHEN the fade is reached, never what the fade is',
     JSON.stringify(unheldTransition) === JSON.stringify(heldTransition),
     JSON.stringify({ unheldTransition, heldTransition }));
+
+  // ==========================================================================
+  // E2 — LAYOUT. The measured half (Full Screen's centre against the progress
+  // bar's) is the PROBE's, at both reference widths, per the brief. What lives
+  // here is what the probe cannot see: that the toggle MOVED rather than being
+  // copied, that the bar genuinely yielded the width, and the DOM-order form of
+  // the Structure guard.
+  // ==========================================================================
+  await freshProsePage(app, 1400, 900);
+  await openSliver(app);
+  await sleep(250);
+
+  const footShape = await app.evalJs(`(() => {
+    const row = document.querySelector('.wz-sliver-instruments-row');
+    const goal = document.querySelector('.wz-sliver-goal');
+    const line = document.querySelector('.wz-sliver-goal-line');
+    const bar = document.querySelector('.wz-sliver-goal-hairline');
+    const gs = goal ? getComputedStyle(goal) : null;
+    return {
+      rowLabels: row ? [...row.querySelectorAll('button')].map(b => (b.getAttribute('aria-label') || '').trim()) : null,
+      fullScreenInRow: !!(row && row.querySelector('[data-foot-fullscreen]')),
+      fullScreenInGoalLine: !!(line && line.querySelector('[data-foot-fullscreen] button')),
+      fullScreenTotal: document.querySelectorAll('.wz-sliver-panel [data-foot-fullscreen] button').length,
+      barWidth: bar ? bar.getBoundingClientRect().width : null,
+      goalInnerWidth: goal ? goal.getBoundingClientRect().width - parseFloat(gs.paddingLeft) - parseFloat(gs.paddingRight) : null,
+      lineAlign: line ? getComputedStyle(line).alignItems : null,
+      lineDisplay: line ? getComputedStyle(line).display : null,
+    };
+  })()`);
+
+  ok('E2: the instruments row is TYPEWRITER · PROGRESS — Full Screen has left the cell it used to occupy',
+    JSON.stringify(footShape.rowLabels) === JSON.stringify(['Typewriter', 'Progress'])
+      && footShape.fullScreenInRow === false,
+    JSON.stringify(footShape));
+
+  ok('E2: Full Screen sits on the progress bar line itself, and there is EXACTLY ONE of it in the panel — a move, never a second instance left behind',
+    footShape.fullScreenInGoalLine === true && footShape.fullScreenTotal === 1,
+    JSON.stringify(footShape));
+
+  ok('E2: the bar genuinely yielded the room — the hairline is strictly narrower than the goal block it used to span, which is the difference between sharing a line and merely sitting near one',
+    footShape.barWidth !== null && footShape.goalInnerWidth !== null
+      && footShape.barWidth > 0 && footShape.barWidth < footShape.goalInnerWidth - 1,
+    JSON.stringify(footShape));
+
+  ok('E2: the alignment is LAYOUT — a flex row with align-items:center, not a nudged margin (the fence the brief sets; the probe measures the resulting centres at both widths)',
+    footShape.lineDisplay === 'flex' && footShape.lineAlign === 'center',
+    JSON.stringify(footShape));
+
+  // The Structure half, in DOM-order form. Recorded as a GUARD, not as work:
+  // it was already true at the branch point (S0 (c)). It can still fail, which
+  // is why it is here — E4 grows this zone, and a later hand could append a
+  // section beneath it.
+  await toDraft(app);
+  const zoneOrder = await app.evalJs(`(() => {
+    const body = document.querySelector('.wz-sliver-body');
+    const sections = [...body.querySelectorAll(':scope > .wz-sliver-section')];
+    const panelKids = [...document.querySelector('.wz-sliver-panel').children].map(el => el.className);
+    return {
+      headings: sections.map(s => (s.querySelector('.wz-sliver-h') || {}).textContent),
+      structureIsLast: sections.length > 0 && sections[sections.length - 1].classList.contains('wz-sliver-structure'),
+      panelKids,
+    };
+  })()`);
+  ok('E2 (GUARD, already true at the branch point): Structure is the LAST zone of the tab body, with the goal foot and the instruments row following it — so it is the last thing before the foot',
+    zoneOrder.structureIsLast === true
+      && zoneOrder.panelKids.length === 3
+      && zoneOrder.panelKids[0].includes('wz-sliver-body')
+      && zoneOrder.panelKids[1].includes('wz-sliver-goal')
+      && zoneOrder.panelKids[2].includes('wz-sliver-instruments'),
+    JSON.stringify(zoneOrder));
 
   return checks;
 }, { label: 'item83f' });

@@ -149,6 +149,8 @@ async function checkSurface(app, surface, width, height, out) {
     }
   }
 
+  await checkFoot(app, surface, width, add);
+
   if (SHOTS) {
     mkdirSync(SHOTS, { recursive: true });
     const png = await app.screenshot();
@@ -156,6 +158,89 @@ async function checkSurface(app, surface, width, height, out) {
     writeFileSync(f, Buffer.from(png, 'base64'));
     out.push({ surface, width, name: 'screenshot', pass: true, detail: path.basename(f) });
   }
+}
+
+/* ---------- the foot (item 83 errata E2) ----------------------------------
+ * TWO INDEPENDENTLY RENDERED BOXES, again. Nick's walkthrough ruling — "Full
+ * screen ALIGNS WITH THE PROGRESS BAR" — is a claim about two elements whose
+ * positions nothing computes: the hairline and the toggle are flex siblings
+ * under `align-items:center`, so the assertion below genuinely fails if that
+ * layout is ever replaced by a hand-tuned margin, which is the whole point.
+ * Comparing either box against a JS constant would prove only that the browser
+ * honoured an assignment.
+ *
+ * THE OTHER ASSERTION IS A GUARD, AND IS LABELLED AS ONE. Structure was
+ * ALREADY the tab's last zone before the foot at this wave's branch point
+ * (docs/menus/item83-errata-s0-survey.md (c)), so it passes against unmodified
+ * `main`. It earns its place because E4 grows that zone with kind buttons and
+ * style guides, and because a later hand could drop a section beneath it — but
+ * a reader must not mistake its green for evidence that E2 moved anything. The
+ * offer record says the same thing in the same words.
+ *
+ * The drawer is OPENED first. A closed panel still has a real rect (it is
+ * absolutely positioned and merely faded), so these numbers can be read off a
+ * shut drawer — and would then be measuring a box the writer never sees, which
+ * is the error this probe's own PAPER_SEL comment has already had to correct
+ * three times.
+ */
+const FOOT_SEL = {
+  hairline: '.wz-sliver-goal-hairline',
+  fullscreen: '[data-foot-fullscreen] button',
+  structure: '.wz-sliver-structure',
+  goal: '.wz-sliver-goal',
+};
+
+const centreY = (b) => b.t + b.h / 2;
+
+async function checkFoot(app, surface, width, add) {
+  const setDrawer = (open) => app.evalJs(
+    `(() => { const d = document.querySelector('[data-menus-dock], .wz-sliver');
+      if (!d) return false;
+      if ((d.dataset.open === 'true') === ${open}) return true;
+      const h = document.querySelector(${JSON.stringify(HANDLE_SEL)}); if (!h) return false;
+      h.click(); return true; })()`);
+
+  if (!(await setDrawer(true))) {
+    add('foot absent (lawful on this surface)', true, 'no tools dock — nothing to measure');
+    return;
+  }
+  await sleep(420);
+
+  const bar = await rect(app, FOOT_SEL.hairline);
+  const fs = await rect(app, FOOT_SEL.fullscreen);
+  if (bar && fs) {
+    const d = centreY(fs) - centreY(bar);
+    add('Full Screen shares the progress bar line', Math.abs(d) <= TOL,
+        `fullScreen.centreY ${centreY(fs).toFixed(2)} − bar.centreY ${centreY(bar).toFixed(2)} = ${d.toFixed(2)}px`);
+  } else {
+    add('Full Screen shares the progress bar line', false,
+        `hairline=${!!bar} fullScreen=${!!fs} — both must render for the claim to mean anything`);
+  }
+
+  // Structure lives on Draft, which is a MODE of the prose page — reached
+  // through the strip the writer uses, never by writing the mode key.
+  if (surface === 'prose') {
+    const switched = await app.evalJs(
+      `(() => { const t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft');
+        if (!t) return false; t.click(); return true; })()`);
+    if (switched) {
+      await app.waitFor(`!!document.querySelector('${FOOT_SEL.structure}')`, { label: 'Draft Structure zone' });
+      await sleep(250);
+      const st = await rect(app, FOOT_SEL.structure);
+      const goal = await rect(app, FOOT_SEL.goal);
+      if (st && goal) {
+        add('Structure is the last zone before the foot (GUARD - already true at the branch point)',
+            st.b <= goal.t + TOL,
+            `structure.bottom ${st.b.toFixed(1)} <= goal.top ${goal.t.toFixed(1)} (${(goal.t - st.b).toFixed(2)}px clear)`);
+      } else {
+        add('Structure is the last zone before the foot (GUARD - already true at the branch point)', false,
+            `structure=${!!st} goal=${!!goal}`);
+      }
+    }
+  }
+
+  await setDrawer(false);
+  await sleep(420);
 }
 
 /* ---------- surface setups (seams, never raw storage — AGENTS.md) ---------- */

@@ -465,8 +465,17 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
         </div>
       )}
 
+      {/* item 83 errata E2 — STRUCTURE IS THE TAB'S LAST ZONE BEFORE THE FOOT.
+          Recorded plainly rather than claimed as work: it ALREADY WAS, at this
+          wave's branch point. Every remaining section in this body is gated to
+          another `content.kind`, so on a Draft page the rendered sequence is
+          FORMAT then STRUCTURE, with the goal foot as the next sibling — see
+          docs/menus/item83-errata-s0-survey.md (c). What this errata adds is
+          the NAME (`wz-sliver-structure`) that lets the acceptance instrument
+          measure the claim at all, and the guard that keeps it true as E4 grows
+          this zone. Nothing moved, and the offer says so. */}
       {content.kind === 'draft' && (
-        <div className="wz-sliver-section">
+        <div className="wz-sliver-section wz-sliver-structure">
           <div className="wz-sliver-h">{t('railStructure')}</div>
           {/* ITEM 83 M5 (DR3's default, per the brief's §0) — the Prose |
               Screenplay TABLIST retires from the panel. A tablist's dress
@@ -608,11 +617,29 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
     <div className="wz-sliver-goal" data-target={target ?? ''} data-lines={lines}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {target != null && settings.instrumentsOn && (
-        <div className="wz-sliver-goal-hairline" aria-hidden="true">
-          <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
-        </div>
-      )}
+      {/* item 83 errata E2 — THE PROGRESS BAR'S OWN LINE, which Full Screen
+          now shares. Aligned BY LAYOUT (one flex row, `align-items:center`),
+          never by a nudged margin: the hairline is 2px and the toggle is a
+          text button, so any hand-tuned offset would be a number that drifts
+          the moment either changes. The hairline flexes and Full Screen does
+          not, so the bar gives up exactly the width the toggle needs.
+          The row stands whether or not the hairline is in it — a writer who
+          clears the goal loses the bar (its own pre-existing law), and Full
+          Screen must not go with it. */}
+      <div className="wz-sliver-goal-line">
+        {target != null && settings.instrumentsOn && (
+          <div className="wz-sliver-goal-hairline" aria-hidden="true">
+            <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
+          </div>
+        )}
+        {/* `data-foot-fullscreen` is a behaviour-free contract marker in this
+            file's own `data-menus-*`/`data-*` idiom, so scripts/menus-probe.mjs
+            can name the toggle's own box. FullscreenToggle itself is NOT
+            touched: it is shared with App.tsx's corner cluster and the
+            Cascade's Settings category (ChromeControls.tsx), so its class-less,
+            inline-styled shape stays exactly as it is everywhere. */}
+        <span className="wz-sliver-goal-fullscreen" data-foot-fullscreen=""><FullscreenToggle /></span>
+      </div>
 
       {editing ? (
         <div className="wz-sliver-goal-edit-row">
@@ -782,11 +809,16 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           onClick={() => pick('progress')}>
           <GearIcon />
         </button>
-        {/* R5 verbatim: "everything but the page disappears — the browser
-            window included". FullscreenToggle already owns the OS-fullscreen
-            request and its own label; it RELOCATES here from the cascade's
-            settings category rather than being reimplemented. */}
-        <FullscreenToggle />
+        {/* item 83 errata E2 (2026-09-03) — FULL SCREEN LEAVES THIS CELL.
+            Nick's walkthrough ruling: "Full screen ALIGNS WITH THE PROGRESS
+            BAR." It now sits on the hairline's own line, in SliverGoalFoot
+            below — a MOVE, not a copy, and not a second instance: R5's
+            reasoning that FullscreenToggle owns the OS-fullscreen request and
+            its own label is untouched, it is simply reached from one line
+            higher. The instruments row is TYPEWRITER · PROGRESS now; the foot
+            still carries all three instruments, on two lines instead of one.
+            The check that used to count three buttons in THIS row is parked
+            verbatim in fx3.mjs and ab2.mjs beside its successor. */}
       </div>
       {/* item 83 errata E1 — the trays carry their own behaviour-free contract
           marker (`data-menus-popout`, this file's own `data-menus-*` idiom —

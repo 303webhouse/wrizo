@@ -3537,6 +3537,20 @@ a:focus-visible,
 .wz-sliver-goal{ display:flex; flex-direction:column; gap:8px; padding:14px; margin-top:auto;
   border-top:1px solid var(--ink-border); }
 .wz-sliver-goal-timer{ font-family:var(--font-mono); font-size:12px; color:var(--text-mid); letter-spacing:.3px; }
+/* item 83 errata E2 (2026-09-03) — THE PROGRESS BAR'S LINE, SHARED WITH FULL
+   SCREEN. Nick's walkthrough ruling: "Full screen ALIGNS WITH THE PROGRESS
+   BAR." One flex row with `align-items:center` puts the 2px hairline's own
+   vertical centre and the toggle's on the same line BY LAYOUT — the brief's
+   own fence, "aligned by layout, not by nudged margins". A hand-tuned offset
+   would be a number hand-synced against a font size and a border width, which
+   is the exact class of drift the anchor law was written against; the probe
+   asserts the two rendered centres agree within 0.6px instead of trusting one.
+   The hairline flexes and the toggle does not, so the bar yields exactly the
+   width the toggle needs, at any drawer width. `min-width:0` because a flex
+   item's default `min-width:auto` would refuse to shrink below its content. */
+.wz-sliver-goal-line{ display:flex; align-items:center; gap:10px; }
+.wz-sliver-goal-line .wz-sliver-goal-hairline{ flex:1 1 auto; min-width:0; }
+.wz-sliver-goal-fullscreen{ display:flex; align-items:center; flex:0 0 auto; }
 .wz-sliver-goal-hairline{ height:2px; background:var(--ink-border); }
 .wz-sliver-goal-hairline-fill{ height:100%; background:var(--accent-rest); transition:width .4s ease; }
 @media (prefers-reduced-motion:reduce){ .wz-sliver-goal-hairline-fill{ transition:none; } }
