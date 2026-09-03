@@ -377,3 +377,29 @@ Open for Nick's word, in the order they block:
 3. **Whether the kind chips should reach the screenplay surface** (§4b).
 4. **Whether R6's birth-from-defaults should be repaired on the unborn route**
    (§6) — not this lane's, and it wants its own ticket.
+
+---
+
+## §11 · THE MERGE PICTURE, CHECKED AT OFFER TIME
+
+`origin/main` moved while this lane worked — **`7b78090` → `89c5955`**, four
+commits. Checked rather than assumed, because a shared remote-tracking ref
+advancing under a lane is exactly the thing that turns a clean merge into a
+surprise:
+
+- **All four are DOCS-ONLY.** Product-code drift since this branch's base is
+  nil: `git diff --stat 7b78090 origin/main -- apps packages` is **empty**. So
+  the suite result above still describes `main`'s product code plus this wave's
+  changes, with nothing in between.
+- **The merge is clean.** `git merge-tree` against the merge-base reports **zero
+  conflict markers**. The only file both sides touch is `docs/open-threads.md`,
+  and the two additions sit in different places.
+- One of those four commits lands `docs/menus/item83-errata-build-brief.md` on
+  `main` — this lane's own charter, which was an untracked file in the primary
+  checkout when the lane opened. Nothing outstanding there; noted only so the
+  provenance is closed.
+
+**Still chat 1's act, and still a merge.** This lane pushed one branch and
+nothing else. **Never a rebase:** flattening a `--no-ff` merge is the standing
+hazard here, and there is nothing to rebase onto anyway — `origin/main` carries
+no product change this branch has not seen.
