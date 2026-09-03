@@ -9830,6 +9830,62 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## FIX WAVE (E4 + E3 + 118a-ii + ab2) DEPLOY MANIFEST — 2026-09-02 (chat 1, on Nick's standing "ship whatever we can" — Fable PASS)
+
+**THE FIX WAVE — E4 (the right hand mounts from first paint) + E3 (the Counsel fades out) + item
+118(a-ii) (the resting card via the popup decoration engine) + the ab2 re-point + the lawful PB1
+park.** Gate chain: Nick's standing ship word ("ship whatever we can") → Fable's review **VERDICT
+PASS** (`docs/wrizo-alpha/fix-wave-review-fable.md` @ merge `a20b51f`). **ZERO SCHEMA / ZERO SERVER.**
+Deploying `main` HEAD **`a9d3ae1`** (merge `a20b51f` of `fix-wave-e34-118 @ 17c1274` + the review
+record).
+
+**Deploy-ships-a-SHA enumeration (`c927e9c..a9d3ae1`) — product-bearing commit:**
+- `a20b51f` — Merge fix-wave-e34-118 @ `17c1274` (E4/E3/118(a-ii)/ab2 re-point `c871c08`/pb1 park
+  `91bddf8`). Everything else in-range is docs-only (`7b49404` item-112 charter merge, `e65eed4`
+  draft-roster brief merge, + records commits).
+
+**New PRODUCT code since the last live build (`c927e9c` · railway `3979dcaa`) — verified
+`c927e9c..a9d3ae1`, 9 files, +782/−17, ZERO schema, ZERO server:**
+- `PageEditor.tsx` (+31) — E4: `|| unborn` removed at the one page-gating line; `gateActive` kept
+  (both reasons recorded); `MISSING_ENTRY` cannot reach the line (dispatcher returns one level up).
+- `Tutor.tsx` (+53) — E4: `send()` REFUSES OUT LOUD on an unborn surface, composer NOT cleared (PB1
+  held; the measured premature-birth row quoted); E3: the counsel body's `{open && …}` wrapper
+  removed so the body fades for itself.
+- `BoardEditor.tsx` (+35) — item 118(a-ii): the resting card renders through the popup's own
+  decoration engine (null caret, no new renderer; markers collapse via `font-size:0`, never
+  display/visibility, so `textContent` carries the stored text byte-for-byte).
+- `deskLexicon.ts` (+7) — one new refusal string.
+- Harness (not in bundle): `e4.mjs` (+214), `e3.mjs` (+176), `item118.mjs` (+164), `ab2.mjs` (+84
+  re-point), `pb1.mjs` (+35 — the lawful park of the ruling-superseded absence check).
+
+**Records since `c927e9c` (docs, no deployed surface):** the item-112 charter (RATIFIED) + 112-A build
+brief + the 112-A desk-grip ruling; the E4 S0; the standing ship word; the DECK-retirement/posture;
+the fix-wave review + this manifest.
+
+**Verified — fresh suite of record at the deploy HEAD (`a9d3ae1`), BOTH settings, machine-clear (NOT
+contaminated):** **65/65 UNSET (CLEAN) and 65/65 PARKED (CLEAN)** at `tree=a9d3ae1
+bundle=index-CaN2tPMJ.js/550462b` (CSS `index-FXF7LihM.css`) — the SAME bundle the offer stamped. The
+lawful PB1 park stands (the ruling-driven red recorded beside the green). `tsc` ×2 EXIT 0; `build:web`
+clean. **TREE CLEAN AT UPLOAD:** `git status --porcelain` EMPTY at `railway up` (no strays — the
+t1-s0-brief was closed).
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `c927e9c` · railway `3979dcaa`** — the weekend batch. Zero
+schema this wave, so rollback is a clean redeploy of that tree.
+
+**DEPLOY STAMP: git `a9d3ae1` · railway build `8cbc0b18-2388-4aa9-9ef0-8b6a1fc897a2`** — DEPLOYED
+2026-09-02 (`railway up --ci` from the primary checkout; item-98 guard PROJECT + TREE verified:
+`writer-studio` / `production` / `writer-studio-app`, tree clean at upload; image `sha256:1a7c25c1`).
+Verified LIVE: `/healthz` **200**, served **`index-CaN2tPMJ.js` + `index-FXF7LihM.css`**, `/auth/me`
+**401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-CaN2tPMJ.js` =
+**550,462 b**, md5 `f57dc938400a10ac2a14b34270c5baa8` == local suite build; served CSS
+`index-FXF7LihM.css` md5 `632380f0803ef583beb6f05e02da989a` == local (unchanged — the wave touched no
+CSS). Windows suite == Linux Railway == served. Every-ship served-vs-stamped diff: **MATCH.**
+
 ## WEEKEND BATCH DEPLOY MANIFEST — 2026-09-01 (chat 1, on Nick's "Ship the batch" — Fable PASS ×2)
 
 **THE WEEKEND BATCH — E1 + family (menus-errata) + the deck phase (Free Write roster).** Gate chain:
