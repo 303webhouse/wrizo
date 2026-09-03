@@ -234,6 +234,11 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const lines = countLineEquivalents(goalText);
   const fraction = target != null && target > 0 ? Math.max(0, Math.min(1, lines / target)) : 0;
 
+  // item 83 errata E1 — the foot's own gate reports up to the panel that
+  // carries the fade classes. `setPopoutHold` is a useState setter, so it is
+  // referentially stable and safe as an effect dependency downstream.
+  const [popoutHold, setPopoutHold] = useState(false);
+
   return (
     // item 83 M1 — the wave's own contract markers. scripts/menus-probe.mjs
     // binds to these, not to the `wz-` classes, so the acceptance instrument
@@ -253,7 +258,23 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
         <span className="wz-sliver-grip-glyph" aria-hidden="true">{open ? '›' : '‹'}</span>
       </button>
 
-      <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'}>
+      {/* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD.
+          `data-popout-hold` is the ONE new signal: true while a foot pop-out
+          is open and its composed-text gate has not yet fired (SliverInstrumentRow
+          below does the counting; index.css's own
+          `.wz-sliver-panel[data-popout-hold='true']` rule does the holding).
+          WHY IT RIDES THE PANEL AND NOT THE TRAY, recorded so it is not
+          "corrected" later: an opacity on this panel caps every descendant's —
+          a child cannot be more opaque than a faded ancestor — so a tray held
+          visible inside a dissolved drawer is not expressible in CSS at all.
+          Lifting the tray OUT of the panel is the other escape, and the anchor
+          law bars it (R11: the tray is the FOOT's own raised tray, drawer-width;
+          a portal would have to COMPUTE where the foot is, and an anchor may not
+          be computed). It is also simply what a drawer does — you cannot leave a
+          tray standing out of a shut drawer. The hold is scoped to exactly that
+          state: with no pop-out open this attribute reads 'false' and every fade
+          on this surface behaves byte-identically to before. */}
+      <div className="wz-sliver-panel chrome-fade desk-dissolve" aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
         <SliverToolsBody content={content} />
         <SliverGoalFoot target={target} lines={lines} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
@@ -293,6 +314,8 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           hasMilestones={hasMilestones}
           target={target}
           typewriterAvailable
+          goalText={goalText}
+          onPopoutHold={setPopoutHold}
         />
       </div>
     </div>
@@ -633,7 +656,56 @@ function SliverGoalFoot({ target, lines, fraction, timerOn, firstWriteAt }: { ta
 // pass refines this" caveat in full). All three buttons are `--text-mid`/
 // olive at rest (`.wz-sliver-instruments-btn`, index.css) — brass appears
 // only on hover, matching the sliver's own pre-existing law elsewhere.
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean }) {
+// item 83 errata E1 (2026-09-03) — POP-OUTS FADE ON WRITTEN WORDS, NEVER ON A
+// CLOCK. Nick's walkthrough ruling: a foot pop-out fades only after FIFTEEN
+// WORDS have been written, or a PERIOD has been entered, counted from the
+// moment it opened. Idle never fades it — a writer thinking is not a writer
+// done.
+//
+// WHAT IT REPLACES, named exactly (S0's survey, `docs/menus/item83-errata-s0-survey.md`):
+// the pop-out had no fade of its own and no timer of its own. It is a child of
+// `.wz-sliver-panel`, which carries `chrome-fade desk-dissolve`, so it rode the
+// room's ambient dissolve — armed by `useChromeDissolve.noteWrite()` on the
+// FIRST forward keystroke (ModeStage.tsx -> useChromeDissolve.ts), receding over
+// FADE_OUT_S = 2.8s. One character typed and the tray was gone. The "short
+// timer" a writer feels is that 2.8s curve; no setTimeout ever hid the tray.
+//
+// SCOPE, and why it is not a second engine. Nothing here touches
+// useChromeDissolve, its constants, or any other chrome surface: the vanish
+// engine's own recede/summon fades are untouched, and drawers keep R10's
+// slide-only open/close. The ONLY change is WHEN this one surface receives the
+// fade it already had — the same `.desk-dissolve` rule, the same `--fade-dur`
+// curve, the same `prefers-reduced-motion` opt-out. The trigger changed; the
+// fade path did not.
+//
+// FIFTEEN, and why it is a plain module constant: it is a ruled number, not a
+// tuned one. It carries no setting, so it needs no store; naming it here keeps
+// it beside the code that reads it.
+const POPOUT_FADE_WORDS = 15;
+
+// The house word count, the same shape PageEditor/JournalEntry/ScriptEditor/
+// QuickSprint/HomeFlow/FirstRunGate each keep privately (six copies already —
+// this reads like its neighbours rather than inventing a seventh home for it).
+function wordCount(text: string): number {
+  const t = text.trim();
+  return t ? t.split(/\s+/).length : 0;
+}
+
+// "A period entered" is measured as a period the document did not have when the
+// tray opened. Counting occurrences rather than watching keystrokes is what
+// makes this work on BOTH prose surfaces: Draft is freely editable (a keystroke
+// watcher would miss a period pasted, or one typed mid-paragraph), and the
+// Sliver already receives the page's live text on every change, so no new
+// signal has to be threaded from three hosts. The one case it deliberately
+// treats as a wash — delete a period, type it back — is genuinely no new period
+// in the writer's document, which is the thing the ruling names.
+function countPeriods(text: string): number {
+  let n = 0;
+  for (const ch of text) if (ch === '.') n++;
+  return n;
+}
+
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const [gearOpen, setGearOpen] = useState(false);
@@ -660,6 +732,39 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const [open, setOpen] = useState<null | 'typewriter' | 'progress'>(null);
   const pick = (which: 'typewriter' | 'progress') => setOpen(o => (o === which ? null : which));
 
+  // item 83 errata E1 — the composed-text gate. `held` is true from the moment a
+  // tray opens until the writer has committed POPOUT_FADE_WORDS words, or
+  // entered a period, since that moment.
+  const [held, setHeld] = useState(false);
+  const openMark = useRef<{ words: number; periods: number } | null>(null);
+
+  // THE MARK IS TAKEN AT THE OPEN, AND ONLY AT THE OPEN. `goalText` is
+  // deliberately absent from this dependency list: re-marking on every keystroke
+  // would reset the count as fast as the writer raised it, and the gate would be
+  // unreachable — a control that can never fire, which is worse than the timer
+  // it replaces. Every path that changes `open` re-marks (both foot buttons, and
+  // any path added later), the same "announce from an effect so no silent path
+  // is writable" discipline this file's own two-drawer announcement keeps.
+  useEffect(() => {
+    if (open === null) { openMark.current = null; setHeld(false); return; }
+    openMark.current = { words: wordCount(goalText), periods: countPeriods(goalText) };
+    setHeld(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // The release. Runs on text change only — there is NO timer here, and that
+  // absence is the ruling: "idle never fades it." A writer who opens a tray and
+  // sits thinking keeps it, however long they sit.
+  useEffect(() => {
+    const mark = openMark.current;
+    if (!held || !mark) return;
+    const written = wordCount(goalText) - mark.words;
+    const periodEntered = countPeriods(goalText) > mark.periods;
+    if (written >= POPOUT_FADE_WORDS || periodEntered) setHeld(false);
+  }, [goalText, held]);
+
+  useEffect(() => { onPopoutHold(held); }, [held, onPopoutHold]);
+
   return (
     <div className="wz-sliver-instruments">
       <div className="wz-sliver-instruments-row">
@@ -683,6 +788,13 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
             settings category rather than being reimplemented. */}
         <FullscreenToggle />
       </div>
+      {/* item 83 errata E1 — the trays carry their own behaviour-free contract
+          marker (`data-menus-popout`, this file's own `data-menus-*` idiom —
+          nothing styles it), so the acceptance instrument can name a pop-out
+          without binding to a `wz-` class or to `.mode-settings`, which the tray
+          shares with ModeStage's own unrelated corner popover. Marked ON the
+          trays rather than on a wrapper: a wrapper would be a new DOM node in a
+          measured foot, and this wave measures that foot. */}
       {open === 'typewriter' && <TypewriterMenu />}
       {open === 'progress' && (
         <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} />
@@ -701,7 +813,7 @@ function TypewriterMenu() {
   const forwardLock = useForwardLock();
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu">
+    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="typewriter">
       <h4>{t('twMenuHeading')}</h4>
 
       {/* The typewriter itself — the instrument this menu belongs to. */}
@@ -758,7 +870,7 @@ function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
   };
 
   return (
-    <div className="mode-settings wz-sliver-instruments-panel" role="menu">
+    <div className="mode-settings wz-sliver-instruments-panel" role="menu" data-menus-popout="progress">
       <h4>{t('footProgress')}</h4>
       <Seg label={t('sliverInstrumentsShow')} value={settings.instrumentsOn ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}

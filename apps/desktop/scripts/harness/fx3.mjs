@@ -405,25 +405,67 @@ await withHarness(async (app) => {
   // signal ("closed" = unreachable) without the race.
   const dissolveState = await app.evalJs(`({
     frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
+    popoutHold: document.querySelector('.wz-sliver-panel')?.dataset.popoutHold,
     panelPointerEvents: getComputedStyle(document.querySelector('.wz-sliver-panel')).pointerEvents,
   })`);
-  ok('S5: the instruments panel closes (dissolves) on a keystroke, via the sliver panel\'s own existing chrome-fade/desk-dissolve mechanism',
-    dissolveState.frameWriting === 'true' && dissolveState.panelPointerEvents === 'none',
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E1, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. Nick's walkthrough ruling reverses the
+  // TRIGGER these two checks encode: a foot pop-out fades only after FIFTEEN
+  // WORDS WRITTEN or A PERIOD ENTERED, counted from the moment it opened —
+  // never on the first keystroke. 'dissolve probe' is two words and carries
+  // no period, so under the ruling the tray is HELD, and both assertions
+  // below would now assert the very defect Nick reported.
+  //
+  // WHAT IS *NOT* SUPERSEDED, and is why the successors sit right beneath:
+  // the claim these checks were really making — that the pop-out is hidden by
+  // the ONE vanishing engine and never by a second bespoke close handler — is
+  // untouched, and is still proven, one gate later. E1 adds no fade of its
+  // own: the same `.desk-dissolve` rule, the same `--fade-dur` curve, the
+  // same reduced-motion opt-out (Sliver.tsx's `data-popout-hold` and
+  // index.css's rule for it). Full proof of the gate, with its controls, is
+  // in item83f.mjs.
+  //
+  // ok('S5: the instruments panel closes (dissolves) on a keystroke, via the sliver panel\'s own existing chrome-fade/desk-dissolve mechanism',
+  // dissolveState.frameWriting === 'true' && dissolveState.panelPointerEvents === 'none',
+  // JSON.stringify(dissolveState));
+  // ------------------------------------------------------------------
+  ok('S5 [E1 successor]: a keystroke NO LONGER closes the instruments panel — the room genuinely dissolves (data-writing=true) while the tray stays HELD and interactive, because two words is not fifteen and carries no period',
+    dissolveState.frameWriting === 'true' && dissolveState.panelPointerEvents === 'auto'
+      && dissolveState.popoutHold === 'true',
     JSON.stringify(dissolveState));
-  // ...and confirm it settles all the way to the ambient fade-min opacity
-  // (not just mid-transition) once the transition has had time to finish —
-  // this DOES want the longer wait, as an eventual-consistency check, not a
-  // pass/fail race. Polled (not a single fixed sleep) since the exact
-  // dissolve-trigger delay is an implementation detail of useChromeDissolve
-  // this file shouldn't have to hand-tune a magic number against.
+
+  // ...and the other half of the same arc: the engine that hides it is still
+  // the SAME one. Entering a period fires the gate, the hold lifts, and the
+  // panel recedes to the ambient fade-min through the mechanism it always
+  // used. Polled (not a single fixed sleep) since the exact dissolve-trigger
+  // delay is an implementation detail of useChromeDissolve this file
+  // shouldn't have to hand-tune a magic number against.
+  await app.typeKeys('.');
+  await sleep(150);
+  const releasedState = await app.evalJs(`({
+    frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
+    popoutHold: document.querySelector('.wz-sliver-panel')?.dataset.popoutHold,
+    panelPointerEvents: getComputedStyle(document.querySelector('.wz-sliver-panel')).pointerEvents,
+  })`);
   let settledOpacity = '1';
   for (let i = 0; i < 20; i++) {
     settledOpacity = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-panel')).opacity");
     if (parseFloat(settledOpacity) < 0.15) break;
     await sleep(200);
   }
-  ok('S5: ...and settles to the ambient fade-min opacity once the transition finishes (not stuck mid-fade)',
-    parseFloat(settledOpacity) < 0.15, settledOpacity);
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E1, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. The same reversal as its twin above:
+  // the settle it waited for now happens after the GATE, not after the first
+  // keystroke, so against the ruled build this wait would run its full 4s and
+  // still read 1. The successor waits for the same settle at its new trigger.
+  //
+  // ok('S5: ...and settles to the ambient fade-min opacity once the transition finishes (not stuck mid-fade)',
+  // parseFloat(settledOpacity) < 0.15, settledOpacity);
+  // ------------------------------------------------------------------
+  ok('S5 [E1 successor]: ...and once a PERIOD fires the gate, the hold lifts and the panel settles to the ambient fade-min opacity — the same vanishing engine, reached at the ruled moment instead of at the first keystroke',
+    releasedState.popoutHold === 'false' && releasedState.panelPointerEvents === 'none'
+      && parseFloat(settledOpacity) < 0.15,
+    JSON.stringify({ releasedState, settledOpacity }));
 
   return checks;
 });

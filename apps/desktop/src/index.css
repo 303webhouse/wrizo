@@ -3438,6 +3438,28 @@ a:focus-visible,
   overflow-y:auto; background:var(--desk-ground); border:1px solid var(--ink-border); border-right:none;
   opacity:0; pointer-events:none; transform:translateX(6px); transition:opacity var(--fade-dur,.2s) ease, transform var(--fade-dur,.2s) ease; }
 .wz-sliver-panel[data-open='true']{ opacity:1; pointer-events:auto; transform:translateX(0); }
+/* item 83 errata E1 (2026-09-03) — THE POP-OUT HOLD. Nick's ruling: a foot
+   pop-out fades after FIFTEEN WORDS WRITTEN or A PERIOD ENTERED, never on a
+   clock. Sliver.tsx counts and sets `data-popout-hold`; this rule is the whole
+   of what the flag does.
+
+   IT ADDS NO FADE AND NO CURVE. The transition already declared on
+   `.wz-sliver-panel` above governs both directions, so releasing the hold
+   recedes on the SAME `--fade-dur` the vanish engine writes (2.8s on a write)
+   and the SAME reduced-motion opt-out below kills it. What the rule does is
+   narrower than a fade: while the flag stands it OUT-SPECIFIES the two ambient
+   recede rules that would otherwise hide this panel —
+     `.desk-frame[data-writing='true'] .desk-dissolve`      (0,3,0)
+     `[data-chrome-receded='true'] .chrome-fade`            (0,2,0)
+   — at 0,5,0 and 0,4,0, so neither can win by source order later.
+
+   `[data-open='true']` is load-bearing, not decoration: a CLOSED drawer must
+   stay closed, so the hold can never resurrect one. And with no tray open the
+   flag reads 'false' and this rule does not match at all — every fade on this
+   surface is byte-identical to before. */
+.desk-frame[data-writing='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true'],
+[data-chrome-receded='true'] .wz-sliver-panel[data-open='true'][data-popout-hold='true']{
+  opacity:1; pointer-events:auto; transform:translateX(0); }
 @media (prefers-reduced-motion:reduce){ .wz-sliver-panel{ transition:none; } }
 .wz-sliver-body{ display:flex; flex-direction:column; gap:20px; padding:16px 14px; }
 .wz-sliver-section{ display:flex; flex-direction:column; gap:8px; }
