@@ -12159,3 +12159,112 @@ dependency on it and is complete.
 
 **Gates:** committee passes await Nick's ruling on the item-83 question;
 no lock before the sitting log lands.
+
+
+## ITEM 84 — THE DRAFT ROSTER: BUILT, STAMPED, OFFERED — 2026-09-02 (roster build lane)
+
+**Offer:** `docs/wrizo-alpha/item84-roster-offer-to-chat1.md`. **Branch:**
+`item84-roster` (worktree `.claude/worktrees/item84-roster`, never the primary
+checkout — item 110). **S0:** `docs/menus/tutor/item84-draft-roster-s0.md`.
+**Both settings CLEAN at `tree=4e8e1e8`, 66/66, bundle
+`index-Z119zo1S.js/553267b`, no `+Ndirty`, identical bundle across the pair.**
+`tsc` clean desktop AND server; `hooks-order` PASS; **ZERO SCHEMA** (migrations
+untouched; the one `apps/server` file is a route-level request-body change).
+
+**WHAT SHIPPED.** The four-chip Draft roster inside *Talk it through*, above the
+composer — the mount the lock record already ruled (§1 line 1), gated on
+`mode === 'drafting'`. Asks 1-3 STAGE into the composer (editable, caret placed)
+and put nothing on any wire, measured from both ends. **TD4 adds exactly one wire
+key, `selection`**, frozen at the press (a button press collapses the DOM
+selection, so a send-time read would send the wrong thing or nothing);
+`pageText` stays a render prop and never becomes a key. Per-press consent is
+mechanical: pressing asks 1-3 DISARMS, and one press funds exactly one send.
+A13 intact — the hosts compute the selection and hand down a read-only string
+(`useSurfaceSelection.ts`); no editor ref, no text setter.
+
+**STRINGS OF RECORD.** All four EXTRACTED programmatically from the build brief's
+§2 table into both the lexicon and the harness — never retyped, so no keystroke
+exists in which ask 2's em dash (U+2014) could degrade — and cross-verified
+byte-for-byte against this record's own §3/§4. The overturned ask 3 stands
+untouched in Pass 2 and the mockup HTML (corrected-not-rewritten) and is asserted
+**absent** from the rendered app.
+
+**DISCLOSURE v3 -> v4 EXECUTED, and it is this ledger's own ruling carried out.**
+v3 names three travelers and a selection is none of them, so TD4 under v3 would
+send what the shown sentence does not name — the brief's §6 stop. This ledger had
+already ruled the disposition (see DISCLOSURE v4 above, the "annotation form"
+line), so `CURRENT_DISCLOSURE_VERSION` is **4**: v4's ratified sentence leads the
+modal (verified against its manifest — 183 bytes, md5
+`9287082c0e3c0a2b243c71ce01c89b43`) and **v3's string is REUSED BY ID beneath it,
+never copied and never edited**, which makes "verbatim beneath" a fact about the
+line rather than a claim about it. **Fable ratified the reach** as the ledger's
+supersession ruling executed, not scope invented. **BD4 collision surface stands
+for chat 1 to verify at merge** — item 83's BD4 mounts on this same sentence.
+
+**SCREENPLAY CARRIES THE ROSTER — RULED, stands as built.** `ScriptEditor` passes
+`mode="drafting"` unconditionally, so a screenplay page IS a Draft page; the
+roster renders there and the selection is threaded to that surface. Fable: the
+roster follows the MODE, which is the design's own gate, and a dead TD4 chip on
+script pages would have been the worse shape (G3's locked door). One predicate to
+overrule at the desk's leisure; not blocking.
+
+**PARK SWEEP — 5, each verbatim with a successor named.** `item84.mjs` 1 (a
+**park of MEANING**: *"that Draft panel carries no roster either"* still PASSES,
+reading the Free Write class, but stopped describing a panel that now carries
+four chips — Fable registered this as the immutability law's subtlest form);
+`tu1.mjs` +1, `tu2.mjs` +1, `tu5.mjs` +2 (the disclosure version-NUMBER
+assertions only). **No WORDING assertion parks anywhere** — annotation form keeps
+v3's body carrying v3's words exactly. The **ten fixture seeds moved 3 -> 4**: a
+fixture repair on TU5 S6's own precedent (`tu1.mjs:98`), not a park.
+
+**TWO DEFECTS THE LANE FOUND IN ITSELF — both recorded, neither quietly fixed.**
+
+1. **A fixture hazard that read like an A13 breach.** `item84b.mjs` S8 returned
+   `storedBefore:"" / storedAfter:<the page>`. It was not a breach: the four
+   per-press DOM assertions passed throughout (that IS the A13 claim), the text
+   that "appeared" was byte-identical to what was already on screen before any
+   press, and `item84.mjs`'s S7 runs the same pattern and passes — the difference
+   is a MODE SWITCH, which re-seeds the editor and re-persists on
+   `persistence.ts`'s debounce. **MEASURED: the baseline takes 1100ms to settle,
+   notably longer than `FLUSH_DELAY` (300ms) alone would suggest — the mode
+   switch's re-persist is genuinely late, not one debounce tick. Any future
+   fixture that switches modes and then reads the store can trip on this.**
+
+2. **A hole in the lane's own park sweep, found by auditing the stamp rather than
+   trusting it.** The v4 bump edited `tu2.mjs`'s live version check 3 -> 4 and
+   updated its PARKED summary to claim an item-84 entry — **but the `pok()` call
+   was never pushed**, leaving an assertion rewritten in place with no parked
+   predecessor. **Both suites were CLEAN with the hole open.** The tell was
+   arithmetic, not a failure: `TU2 PARKED: PASS (9 checks)`, the same 9 as before
+   the ticket, against a summary claiming ten. **A GREEN SUITE DOES NOT PROVE A
+   PARK SWEEP COMPLETE; ONLY COUNTING DOES** — worth the house's memory.
+
+**BASE DRIFT HANDLED IN-LANE.** `origin/main` advanced to `a20b51f` (fix wave
+E4/E3/118) mid-stamp, touching three of this ticket's files. The lane MERGED main
+in and re-stamped rather than offering a green taken against a base that no longer
+existed — E4's change is the unborn gate at the very line this ticket's Tutor
+mounts on. One conflict (`PageEditor.tsx`), resolved keeping E4's un-gating whole
+and carrying `selectionText` through it; the `send()` auto-merge was read rather
+than trusted, and E4's `isUnborn` refusal correctly returns before the arm is
+consumed, so an unborn surface keeps both the writer's sentence and the stretch it
+points at.
+
+**ONE MIS-TARGETED RUN, named:** a relative script path with a stale cwd ran the
+PRIMARY checkout's suite (`62/62 tree=32c1ebd`). Not this lane's result and not
+quoted as one. Primary's `git status` verified clean; the only trace is gitignored
+`dist-web`, rebuilt from the primary's own source, and five of this ticket's
+unique strings were grepped against that bundle — **all absent**, with the
+worktree's bundle as a positive control. **Nothing of this lane can reach a deploy
+from that tree.** Superseded stamp pairs, so none is mistaken for current:
+`6aa9144` (NOT CLEAN — defect 1), `7fc1d86` (stale base), `cd2d30f` (park hole
+open). **Offered: `4e8e1e8` only.**
+
+**STILL OPEN, unchanged by this build:** the Free Write roster's model phase
+(carve-out sentence + threshold + TU5 memory seam), the conversation rules
+(deferred by Nick), the Revise re-pass / item 112, and **the shared-row label
+collision — ROUTED to Revise, not resolved here**: Draft ships its own string
+(*"Look at just this stretch — what's it doing?"*) and the reconciliation happens
+when Revise exists.
+
+**Gates:** merge on green -> Fable's review -> ship on PASS under Nick's word, own
+manifest, rollback from whatever is live. **No deploy from this lane.**
