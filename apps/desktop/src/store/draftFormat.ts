@@ -130,6 +130,86 @@ function toggleLinePrefix(text: string, at: number, prefix: string, exclusiveWit
   return { text: next, start: caret, end: caret };
 }
 
+// ITEM 83 ERRATA E3 (2026-09-03) — THE ARROW INDENTS A WHOLE PARAGRAPH,
+// REPEATABLY. Nick's walkthrough ruling, for outline use: the menu arrow
+// applies to the paragraph containing the caret (or every paragraph the
+// selection touches), not the line, and pressing again INCREASES the level.
+//
+// TAB-AS-INDENT IS ITEM 102'S AND IS NOT BUILT HERE. Nothing in this wave
+// touches a key handler; the arrow is the only door.
+//
+// WHAT A PARAGRAPH IS, in a model that has no paragraphs. `entry.text` is
+// plain text with conventions, and the only structural mark it has is the
+// blank line `insertSpacing` writes. So a paragraph is a run of consecutive
+// NON-BLANK lines, and the expansion below reads exactly that: from the first
+// touched line, walk up while the line above has ink; from the last, walk down
+// while the line below has ink. A selection spanning several paragraphs
+// indents all of them and leaves the blank lines between them alone — a tab on
+// a separator is invisible litter, never structure.
+//
+// LEVELS ARE COUNTED IN TABS, not stored anywhere. One press adds one leading
+// tab to every line of the paragraph, so the level IS the tab count and it
+// round-trips as plain text on F3's leading-tab convention with nothing to
+// keep in step. `stripMarkdownConventions` already strips `^\t+` — plural,
+// before this ticket — so multi-level indents export clean with no change.
+//
+// THE TOGGLE IS GONE, AND THAT IS THE POINT — AND THE COST. Until now `indent`
+// ran through `toggleLinePrefix`, so a second press REMOVED the tab: the
+// writer's way back was the button itself. Repeatability consumes that. There
+// is no outdent partner in this drawer (FormatAction has no such member, and
+// the only outdent controls in the app are the outline board's tree control
+// and the legacy execCommand bar), so after this ticket the ways back are
+// UNDO and undo alone — `applyRailFormat` records an atomic step into the
+// editor's own undo stack for every rail click, so Ctrl+Z walks a level back
+// reliably. That is a real way back, and it is not a dedicated one.
+// **THE OUTDENT QUESTION IS SURFACED, NOT RESOLVED** — it is held for Nick's
+// word, with a recommendation, in docs/menus/item83-errata-s0-survey.md (d).
+// Nothing here invents the partner.
+function indentParagraphs(text: string, selStart: number, selEnd: number): FormatResult {
+  const lines = text.split('\n');
+  const startsAt: number[] = [];
+  let off = 0;
+  for (const l of lines) { startsAt.push(off); off += l.length + 1; }
+  const lineOf = (pos: number) => {
+    let i = 0;
+    while (i + 1 < lines.length && startsAt[i + 1] <= pos) i++;
+    return i;
+  };
+  const hasInk = (i: number) => lines[i].trim().length > 0;
+
+  let first = lineOf(selStart);
+  let last = lineOf(selEnd);
+  // A selection that ends exactly ON a line's first character has not touched
+  // that line — the ordinary editor convention. Without this, selecting a whole
+  // paragraph by dragging to the next line's start would silently indent the
+  // paragraph after it too.
+  if (selEnd > selStart && last > first && selEnd === startsAt[last]) last--;
+
+  if (hasInk(first)) while (first > 0 && hasInk(first - 1)) first--;
+  if (hasInk(last)) while (last < lines.length - 1 && hasInk(last + 1)) last++;
+
+  const affected = new Set<number>();
+  for (let i = first; i <= last; i++) if (hasInk(i)) affected.add(i);
+  // A caret alone on a blank line has no paragraph to indent. Indent that line
+  // anyway, so a writer can set the level BEFORE typing into it — which is what
+  // the single-line control always did, and the one behaviour of it worth
+  // keeping.
+  if (affected.size === 0) affected.add(first);
+
+  const TAB = LINE_DIRECTIVE.indent;
+  const next = lines.map((l, i) => (affected.has(i) ? TAB + l : l)).join('\n');
+  // Every tab inserted at or above a position pushes it right by one, so the
+  // caret keeps the character it was sitting on — including a caret parked at
+  // the very start of an indented line, which lands after its new tab.
+  const shift = (pos: number) => {
+    const ln = lineOf(pos);
+    let n = 0;
+    for (const i of affected) if (i <= ln) n++;
+    return n * TAB.length;
+  };
+  return { text: next, start: selStart + shift(selStart), end: selEnd + shift(selEnd) };
+}
+
 const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-right']] as const;
 
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
@@ -141,7 +221,10 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   if (action === 'heading') return cycleHeading(text, start);
   if (action === 'bullet') return toggleLinePrefix(text, start, LINE_DIRECTIVE.bullet);
   if (action === 'quote') return toggleLinePrefix(text, start, LINE_DIRECTIVE.quote);
-  if (action === 'indent') return toggleLinePrefix(text, start, LINE_DIRECTIVE.indent);
+  // ITEM 83 ERRATA E3 — paragraph-scoped and repeatable now, no longer a
+  // single-line toggle. See indentParagraphs above for the whole reasoning,
+  // including the way back and the outdent question held for Nick's word.
+  if (action === 'indent') return indentParagraphs(text, start, end);
   if (action === 'align-center') return toggleLinePrefix(text, start, LINE_DIRECTIVE['align-center'], ALIGN_PREFIXES);
   if (action === 'align-right') return toggleLinePrefix(text, start, LINE_DIRECTIVE['align-right'], ALIGN_PREFIXES);
   // 'align-left' is the UNMARKED state, not a third token: clearing both

@@ -266,6 +266,10 @@ await withHarness(async (app) => {
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterTextNode = true; }
     return {
       iconCount: row ? row.querySelectorAll('button').length : -1,
+      // item 83 errata E2 — the foot's roster is on TWO lines now (Full Screen
+      // moved to the progress bar's own line), so counting one row no longer
+      // counts the foot. Both numbers are reported: the row's, and the foot's.
+      fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button'),
       hasTypewriterTextNode,
       typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]'),
     };
@@ -286,8 +290,23 @@ await withHarness(async (app) => {
   // ok('SC1 S3 (was "S5 (script): the sliver foot row is present with exactly THREE icons"): the script sliver\'s foot row carries exactly TWO icons — the typewriter\'s is withdrawn with the option itself; gear and instruments remain',
   // footRow.iconCount === 2, JSON.stringify(footRow));
   // ------------------------------------------------------------------
-  ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
-    footRow.iconCount === 3, JSON.stringify(footRow));
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. Nick's walkthrough ruling moves FULL
+  // SCREEN out of the instruments row and onto the progress bar's own line
+  // ("Full screen ALIGNS WITH THE PROGRESS BAR"), so the ROW carries two
+  // buttons where it carried three. Nothing was removed from the foot — the
+  // roster is still TYPEWRITER · PROGRESS · FULL SCREEN, on two lines instead
+  // of one — so the claim survives whole and only its address changed. That is
+  // exactly what the successor asserts, and it asserts it more strictly than
+  // the parked check could: by naming the third instrument instead of counting
+  // to it. (fx3's own parked driver a few lines above is the standing warning
+  // about counting to a control in a foot whose roster a ruling can change.)
+  //
+  // ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
+  // footRow.iconCount === 3, JSON.stringify(footRow));
+  // ------------------------------------------------------------------
+  ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
+    footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
   ok('S5 (script): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRow.hasTypewriterTextNode, JSON.stringify(footRow));
   // ---- PARKED - SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
@@ -312,10 +331,20 @@ await withHarness(async (app) => {
     const walker = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
     let hasTypewriterTextNode = false;
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterTextNode = true; }
-    return { iconCount: row ? row.querySelectorAll('button').length : -1, hasTypewriterTextNode, typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]') };
+    return { iconCount: row ? row.querySelectorAll('button').length : -1, hasTypewriterTextNode, typewriterAriaLabelPresent: !!panel.querySelector('[aria-label*="Typewriter"]'),
+             fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
   })()`);
-  ok('S5 (prose): the sliver foot row is present with exactly THREE icons',
-    footRowProse.iconCount === 3, JSON.stringify(footRowProse));
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. The prose twin of the script park above,
+  // superseded by the same ruling for the same reason: Full Screen leaves the
+  // row for the progress bar's line, so the row holds two and the foot still
+  // holds three.
+  //
+  // ok('S5 (prose): the sliver foot row is present with exactly THREE icons',
+  // footRowProse.iconCount === 3, JSON.stringify(footRowProse));
+  // ------------------------------------------------------------------
+  ok('S5 (prose) [E2 successor]: the prose sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN on the progress bar line',
+    footRowProse.iconCount === 2 && footRowProse.fullScreenInFoot === true, JSON.stringify(footRowProse));
   ok('S5 (prose): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRowProse.hasTypewriterTextNode, JSON.stringify(footRowProse));
   // SC1 S3 — FX3 S5's aria-label claim survives whole; it just lives on the
@@ -405,25 +434,67 @@ await withHarness(async (app) => {
   // signal ("closed" = unreachable) without the race.
   const dissolveState = await app.evalJs(`({
     frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
+    popoutHold: document.querySelector('.wz-sliver-panel')?.dataset.popoutHold,
     panelPointerEvents: getComputedStyle(document.querySelector('.wz-sliver-panel')).pointerEvents,
   })`);
-  ok('S5: the instruments panel closes (dissolves) on a keystroke, via the sliver panel\'s own existing chrome-fade/desk-dissolve mechanism',
-    dissolveState.frameWriting === 'true' && dissolveState.panelPointerEvents === 'none',
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E1, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. Nick's walkthrough ruling reverses the
+  // TRIGGER these two checks encode: a foot pop-out fades only after FIFTEEN
+  // WORDS WRITTEN or A PERIOD ENTERED, counted from the moment it opened —
+  // never on the first keystroke. 'dissolve probe' is two words and carries
+  // no period, so under the ruling the tray is HELD, and both assertions
+  // below would now assert the very defect Nick reported.
+  //
+  // WHAT IS *NOT* SUPERSEDED, and is why the successors sit right beneath:
+  // the claim these checks were really making — that the pop-out is hidden by
+  // the ONE vanishing engine and never by a second bespoke close handler — is
+  // untouched, and is still proven, one gate later. E1 adds no fade of its
+  // own: the same `.desk-dissolve` rule, the same `--fade-dur` curve, the
+  // same reduced-motion opt-out (Sliver.tsx's `data-popout-hold` and
+  // index.css's rule for it). Full proof of the gate, with its controls, is
+  // in item83f.mjs.
+  //
+  // ok('S5: the instruments panel closes (dissolves) on a keystroke, via the sliver panel\'s own existing chrome-fade/desk-dissolve mechanism',
+  // dissolveState.frameWriting === 'true' && dissolveState.panelPointerEvents === 'none',
+  // JSON.stringify(dissolveState));
+  // ------------------------------------------------------------------
+  ok('S5 [E1 successor]: a keystroke NO LONGER closes the instruments panel — the room genuinely dissolves (data-writing=true) while the tray stays HELD and interactive, because two words is not fifteen and carries no period',
+    dissolveState.frameWriting === 'true' && dissolveState.panelPointerEvents === 'auto'
+      && dissolveState.popoutHold === 'true',
     JSON.stringify(dissolveState));
-  // ...and confirm it settles all the way to the ambient fade-min opacity
-  // (not just mid-transition) once the transition has had time to finish —
-  // this DOES want the longer wait, as an eventual-consistency check, not a
-  // pass/fail race. Polled (not a single fixed sleep) since the exact
-  // dissolve-trigger delay is an implementation detail of useChromeDissolve
-  // this file shouldn't have to hand-tune a magic number against.
+
+  // ...and the other half of the same arc: the engine that hides it is still
+  // the SAME one. Entering a period fires the gate, the hold lifts, and the
+  // panel recedes to the ambient fade-min through the mechanism it always
+  // used. Polled (not a single fixed sleep) since the exact dissolve-trigger
+  // delay is an implementation detail of useChromeDissolve this file
+  // shouldn't have to hand-tune a magic number against.
+  await app.typeKeys('.');
+  await sleep(150);
+  const releasedState = await app.evalJs(`({
+    frameWriting: document.querySelector('.desk-frame')?.dataset.writing,
+    popoutHold: document.querySelector('.wz-sliver-panel')?.dataset.popoutHold,
+    panelPointerEvents: getComputedStyle(document.querySelector('.wz-sliver-panel')).pointerEvents,
+  })`);
   let settledOpacity = '1';
   for (let i = 0; i < 20; i++) {
     settledOpacity = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-panel')).opacity");
     if (parseFloat(settledOpacity) < 0.15) break;
     await sleep(200);
   }
-  ok('S5: ...and settles to the ambient fade-min opacity once the transition finishes (not stuck mid-fade)',
-    parseFloat(settledOpacity) < 0.15, settledOpacity);
+  // ---- PARKED - SUPERSEDED by item 83 ERRATA E1, 2026-09-03 -----------
+  // Kept VERBATIM and no longer run. The same reversal as its twin above:
+  // the settle it waited for now happens after the GATE, not after the first
+  // keystroke, so against the ruled build this wait would run its full 4s and
+  // still read 1. The successor waits for the same settle at its new trigger.
+  //
+  // ok('S5: ...and settles to the ambient fade-min opacity once the transition finishes (not stuck mid-fade)',
+  // parseFloat(settledOpacity) < 0.15, settledOpacity);
+  // ------------------------------------------------------------------
+  ok('S5 [E1 successor]: ...and once a PERIOD fires the gate, the hold lifts and the panel settles to the ambient fade-min opacity — the same vanishing engine, reached at the ruled moment instead of at the first keystroke',
+    releasedState.popoutHold === 'false' && releasedState.panelPointerEvents === 'none'
+      && parseFloat(settledOpacity) < 0.15,
+    JSON.stringify({ releasedState, settledOpacity }));
 
   return checks;
 });
@@ -641,7 +712,8 @@ if (process.env.HARNESS_PARKED === '1') {
     const scriptFootParked = await app.evalJs(`(() => {
       const row = document.querySelector('.wz-sliver-instruments-row');
       const panel = document.querySelector('.wz-sliver-panel');
-      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
+      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]'),
+               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     await freshProsePage(app, 1400, 900);
     await openSliver(app);
@@ -649,7 +721,8 @@ if (process.env.HARNESS_PARKED === '1') {
     const proseFootParked = await app.evalJs(`(() => {
       const row = document.querySelector('.wz-sliver-instruments-row');
       const panel = document.querySelector('.wz-sliver-panel');
-      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]') };
+      return { iconCount: row ? row.querySelectorAll('button').length : -1, aria: !!panel.querySelector('[aria-label*="Typewriter"]'),
+               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
     })()`);
     // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-27 ------------
     // GENERATION 2, quoted VERBATIM and no longer asserted. It held Nick's
@@ -671,9 +744,30 @@ if (process.env.HARNESS_PARKED === '1') {
     // and 2 both made, and the one this check has always really been about:
     // that the eye and assistive tech are told the same story. They are —
     // and now they are told it on BOTH surfaces, not one.
-    pok('PARKED, generation 3 (was SC1 S3 re-assertion: script two icons and no aria-label, prose three and the label) — item 83 M8/R12: the withdrawal is REVERSED by founder word; script and prose carry the identical three-instrument foot, and the aria-label is present on both',
-      scriptFootParked.iconCount === 3 && scriptFootParked.aria === true
-        && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
+    // ---------------------------------------------------------------------
+    // PARKED - SUPERSEDED by item 83 ERRATA E2, 2026-09-03. GENERATION 3,
+    // quoted VERBATIM and no longer asserted. Nothing about the SYMMETRY claim
+    // it makes is superseded — only the arithmetic it counts with. Full Screen
+    // moves out of the instruments row onto the progress bar's own line by
+    // Nick's walkthrough ruling, so a row that held three now holds two on both
+    // surfaces, while the foot still carries all three instruments. Generation
+    // 4 stands below and asks the same question by NAMING the third instrument
+    // rather than counting to it, which is the failure mode this check has now
+    // hit twice.
+    //
+    // pok('PARKED, generation 3 (was SC1 S3 re-assertion: script two icons and no aria-label, prose three and the label) — item 83 M8/R12: the withdrawal is REVERSED by founder word; script and prose carry the identical three-instrument foot, and the aria-label is present on both',
+    // scriptFootParked.iconCount === 3 && scriptFootParked.aria === true
+    // && proseFootParked.iconCount === 3 && proseFootParked.aria === true,
+    // JSON.stringify({ scriptFootParked, proseFootParked }));
+    // ---------------------------------------------------------------------
+    // GENERATION 4 (item 83 errata E2) — the SAME symmetry claim all four
+    // generations have made: that the eye and assistive tech are told the same
+    // story, on both surfaces. They still are, and the foot still carries the
+    // identical three instruments on each — two in the row, and Full Screen on
+    // the progress bar's own line.
+    pok('PARKED, generation 4 (was the generation-3 three-icons-per-row count) — item 83 errata E2: Full Screen leaves the instruments row for the progress bar line, so each surface row holds TWO and its foot still holds THREE; the aria-label symmetry R12 restored is untouched',
+      scriptFootParked.iconCount === 2 && scriptFootParked.aria === true && scriptFootParked.fullScreenInFoot === true
+        && proseFootParked.iconCount === 2 && proseFootParked.aria === true && proseFootParked.fullScreenInFoot === true,
       JSON.stringify({ scriptFootParked, proseFootParked }));
 
     return parkedChecks;

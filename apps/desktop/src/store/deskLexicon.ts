@@ -239,6 +239,15 @@ export type DeskTermId =
   | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftSpacing'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
+  // ITEM 114 (item 83 errata E4) — the page's declared KIND and, under
+  // Research, its style guide. Two sub-labels join them, and they are the
+  // load-bearing half of the answer to the Screenplay name collision: one zone
+  // now says plainly which of its controls describes the page and which one
+  // ACTS on it, so a kind chip reading "Screenplay" cannot be read as the
+  // conversion door standing beside it.
+  | 'structureKindLabel' | 'structureActLabel' | 'structureStyleGuideLabel'
+  | 'kindNormal' | 'kindScreenplay' | 'kindResearch'
+  | 'styleGuideMla' | 'styleGuideApa' | 'styleGuideChicago' | 'styleGuideAp'
   // ITEM 83 M6 (R13.ii) — the board's Place-page list. The heading is a VERB
   // PHRASE by S13's precedent: a bare noun list in a drawer reproduces the
   // GO-versus-PUT confusion the Places redesign exists to close.
@@ -779,6 +788,21 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftAlignRight: 'Align right',
   draftConvertToScreenplay: 'Convert to Screenplay…',
   draftConvertToProse: 'Convert to Prose…',
+  // ITEM 114 (item 83 errata E4). The two sub-labels are written as the
+  // DIFFERENCE between the controls they head, not as decoration: one names
+  // what the page IS, the other names an act performed ON it. See Sliver.tsx's
+  // Structure zone for the whole reasoning, and the offer record for the seam
+  // this half-answers and does not resolve.
+  structureKindLabel: 'This page is',
+  structureActLabel: 'Change the page itself',
+  structureStyleGuideLabel: 'Style guide',
+  kindNormal: 'Normal',
+  kindScreenplay: 'Screenplay',
+  kindResearch: 'Research',
+  styleGuideMla: 'MLA',
+  styleGuideApa: 'APA',
+  styleGuideChicago: 'Chicago',
+  styleGuideAp: 'AP',
   placePageHeading: 'Place page on board',
   placePageSort: 'Sort recent pages',
   placeSortDate: 'Date',

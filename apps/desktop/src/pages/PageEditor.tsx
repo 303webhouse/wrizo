@@ -32,7 +32,8 @@ import { GoalGlow } from '../components/GoalGlow';
 import { DeskInstrument } from '../components/DeskInstrument';
 import { useCascade } from '../components/Cascade';
 import type { PageFaceSubject } from '../components/PageFace';
-import type { JournalEntry } from '../types';
+import type { JournalEntry, PageKindSetting, PageSettings, StyleGuide } from '../types';
+import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '../types';
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
@@ -747,6 +748,20 @@ function PageEditorView({ id }: { id: string }) {
   // persisted setting.
   const journalFurniture = entry.origin == null || entry.origin === 'journal';
 
+  // ITEM 114 (item 83 errata E4) — the one funnel for this page's own
+  // page_settings, mirroring CascadePanels.tsx's PageSetupZone.patch EXACTLY,
+  // including its `?? PAGE_SETTINGS_FALLBACK` base. That base materialises the
+  // app's own current dress onto a page that had none, which is a real write —
+  // and it is the established policy for this column, chosen there and reused
+  // here rather than invented a second time. A second merge policy on one jsonb
+  // column is how two writers of the same field drift apart; the values written
+  // are the ones the app already renders, so nothing about the page changes but
+  // its row.
+  const patchPageSettings = (next: Partial<PageSettings>) => {
+    const base = entry.pageSettings ?? PAGE_SETTINGS_FALLBACK;
+    saveJournalEntry({ ...entry, pageSettings: { ...base, ...next }, updatedAt: new Date().toISOString() });
+  };
+
   const sliverContent: SliverContent = !framed
     ? { kind: 'empty' }
     : mode === 'journal'
@@ -782,6 +797,13 @@ function PageEditorView({ id }: { id: string }) {
             structure: 'prose',
             onSwitchStructure,
             format: { onFormat: applyRailFormat },
+            // ITEM 114 (item 83 errata E4) — READ THROUGH THE DEFAULT, never
+            // written at birth. A page that has never chosen carries no `kind`
+            // key at all, reads 'normal' here, and stays byte-identical on disk.
+            pageKind: entry.pageSettings?.kind ?? PAGE_KIND_DEFAULT,
+            onPickKind: kind => patchPageSettings({ kind }),
+            styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
+            onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
           }
         // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
         //
@@ -797,6 +819,12 @@ function PageEditorView({ id }: { id: string }) {
         // leakage (§6): `applyRailFormat` guards on `mode !== 'drafting'` and
         // returns, so those controls would have rendered LIVE-LOOKING AND INERT,
         // which is precisely the locked door wearing paint G3 forbids.
+        //
+        // MERGE NOTE (origin/main 1c8edd3, item 114 / errata E4): main added the
+        // page-kind and style-guide pickers to the DRAFT branch above while this
+        // ticket was in flight. They stay Draft's. They are not 83's Type section
+        // (face and size, RV1-RV4) — that is still 112-C — and either way 112-A
+        // ships NO tenants, so Revise's drawer stays empty of both.
         //
         // `kind: 'empty'` is the shape SliverToolsBody already answers with
         // `return null`. The drawer itself still opens and still carries the
