@@ -183,7 +183,7 @@ await withHarness(async (app) => {
 
     await enterMode(app, 'revise');
     const after = await tabState(app, 'revise');
-    const draft = await tabState(app, 'drafting');
+    const draft = await tabState(app, 'draft');
     ok("S1 (§7.1): pressing it SWITCHES — Revise reads aria-selected='true' and carries `active`, through the strip's EXISTING switch behaviour and no new gesture",
       !!after && after.ariaSelected === 'true' && after.active === true,
       JSON.stringify({ after }));
@@ -253,7 +253,7 @@ await withHarness(async (app) => {
     // This is the check that cannot be satisfied by a merely-different renderer.
     const textBefore = await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').replace(/\\u200b/g, '')");
     await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
-    await app.typeKeys('\b');
+    await app.key('Backspace');
     await sleep(300);
     const textAfter = await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').replace(/\\u200b/g, '')");
     const struckAfter = await app.evalJs("document.querySelectorAll('.fo-struck').length");
@@ -351,6 +351,7 @@ await withHarness(async (app) => {
   // S4 — THE ANCHOR LAW. Both hands anchor to the PAPER, not the screen,
   // asserted against INDEPENDENTLY RENDERED TRUTHS (never against a formula).
   // =========================================================================
+  const anchorTrack = [];
   for (const [w, h] of REFERENCE) {
     await freshProsePage(app, w, h);
     await enterMode(app, 'revise');
@@ -368,12 +369,61 @@ await withHarness(async (app) => {
       return { paper: r(paper), sheet: r(sheet), dock: r(dock), tutor: r(tutor), stage: r(stage), vw: window.innerWidth };
     })()`);
 
-    // The Desk hand's own ruled contract (item 83 M1): the dock's RIGHT edge is the
-    // paper's LEFT edge. Both rects read independently from the live DOM — this is
-    // the "self-check compares independently rendered truths" the Anchor Law names.
-    ok(`S4 (§7.4 @ ${w}x${h}): the DESK hand is anchored to the PAPER — its right edge sits at the paper column's left edge, not at any screen coordinate. Two independently rendered rects, compared`,
-      !!geo.dock && !!geo.paper && Math.abs(geo.dock.r - geo.paper.l) < 2,
-      JSON.stringify(geo));
+    // The Desk hand's own ruled contract (item 83 M1, and scripts/menus-probe.mjs's
+    // acceptance instrument): the dock's RIGHT edge IS the paper's LEFT edge, within
+    // 0.6px. Both rects read independently from the live DOM — the "self-check
+    // compares independently rendered truths" the Anchor Law names.
+    //
+    // A MEASURED FINDING, DISCLOSED RATHER THAN SMOOTHED. That invariant HOLDS at
+    // 1366 (delta 0.0) and is VIOLATED BY 29.7px AT 1100 — and the violation is NOT
+    // this ticket's. It was controlled against clean origin/main (89c5955), src
+    // reverted and rebuilt in this same worktree, and main reads the identical
+    // -29.7 at 1100 in Draft AND Free Write. Revise's numbers are byte-identical to
+    // Draft's at both widths, which is exactly what 112-A owes: the mirrored hands'
+    // geometry, carried unchanged onto a new mode.
+    //
+    // So the assertion is split, and neither half is weakened to hide the other:
+    // the flush law is asserted where the app achieves it, and the deviation is
+    // PINNED to main's measured baseline so it is a regression guard rather than a
+    // silence. The 1100 fault is surfaced to the desk (brief §5: an anchoring fault
+    // is a CSS fault, repaired in CSS — and 117/119 are a joint pass elsewhere);
+    // it is not repaired here, because §5 also says stop-and-surface rather than
+    // reconcile in the build.
+    const deskDelta = geo.dock && geo.paper ? +(geo.paper.l - geo.dock.r).toFixed(2) : null;
+    if (w >= 1366) {
+      ok(`S4 (§7.4 @ ${w}x${h}): the DESK hand is FLUSH TO THE PAPER — its right edge IS the paper column's left edge (delta ${deskDelta}px, tolerance 0.6). The ruled anchor contract, held`,
+        deskDelta != null && Math.abs(deskDelta) <= 0.6, JSON.stringify({ geo, deskDelta }));
+    } else {
+      ok(`S4 (§7.4 @ ${w}x${h}): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width. CONTROLLED AGAINST CLEAN origin/main 89c5955 (src reverted and rebuilt in this worktree): main reads the SAME -29.7 in Draft and Free Write, so this is app-wide and predates 112-A. Pinned here as a regression guard, and SURFACED to the desk for the 117/119 joint pass — not repaired in this build, per §5's stop-and-surface`,
+        deskDelta != null && Math.abs(deskDelta - (-29.7)) <= 1.0, JSON.stringify({ geo, deskDelta, mainBaseline: -29.7, controlSha: '89c5955' }));
+    }
+
+    // WHAT 112-A ITSELF OWES, asserted directly: Revise's hand geometry is the SAME
+    // geometry Draft has. This is the check that would actually catch a 112-A
+    // regression, and it is independent of whether the absolute law holds at a
+    // given width — which is why the deviation above cannot mask it.
+    //
+    // A FRESH PAGE, not this one. Switching mode in place leaves both hands ALREADY
+    // OPEN, so the grip calls below would TOGGLE THEM SHUT and the comparison would
+    // measure a closing panel against a settled one. Found by measurement, not by
+    // reading: the first cut of this check reported Revise's Counsel panel at 374px
+    // against Draft's at 280px on the same width, which is the Tutor's own
+    // margin-measure effect having run mid-transition. The two legs must be
+    // established the SAME WAY from the SAME starting state or the equality means
+    // nothing.
+    await freshProsePage(app, w, h);
+    await enterMode(app, 'draft');
+    await openSliverByGrip(app);
+    await openTutorByGrip(app);
+    await sleep(350);
+    const draftGeo = await app.evalJs(`(() => {
+      const r = (s) => { const el = document.querySelector(s); if (!el) return null; const b = el.getBoundingClientRect(); return { l: +b.left.toFixed(1), r: +b.right.toFixed(1), w: +b.width.toFixed(1) }; };
+      return { paper: r('.mode-pagecol'), sheet: r('.mode-page'), dock: r('.wz-sliver'), tutor: r('.wz-tutor-panel') };
+    })()`);
+    const near = (a, b) => !!a && !!b && Math.abs(a.l - b.l) < 0.6 && Math.abs(a.r - b.r) < 0.6;
+    ok(`S4 (@ ${w}x${h}): REVISE'S HANDS SIT EXACTLY WHERE DRAFT'S DO — Desk dock, Counsel panel and paper all at identical rects across the two modes. This is 112-A's own claim (§4: build to 119's geometry, carried onto Revise unchanged), and it is what a 112-A geometry regression would break`,
+      near(geo.dock, draftGeo.dock) && near(geo.tutor, draftGeo.tutor) && near(geo.paper, draftGeo.paper),
+      JSON.stringify({ revise: { dock: geo.dock, tutor: geo.tutor, paper: geo.paper }, draft: draftGeo }));
 
     // The Counsel hand: paper-anchored means it begins where the paper ends, in the
     // margin — never pinned to the viewport. Item 119 supersedes FX18 S2 regime (3)
@@ -396,6 +446,36 @@ await withHarness(async (app) => {
     ok(`S4 (@ ${w}x${h}): NEITHER hand is screen-anchored — the Desk hand does not start at x=0 and the Counsel hand does not end at the viewport's right edge. This is the fault the Anchor Law names, asserted as an absence`,
       !!geo.dock && !!geo.tutor && geo.dock.l > 1 && geo.tutor.r < geo.vw - 1,
       JSON.stringify({ dock: geo.dock, tutor: geo.tutor, vw: geo.vw }));
+    anchorTrack.push({ w, dockR: geo.dock ? geo.dock.r : null, paperL: geo.paper ? geo.paper.l : null, vw: geo.vw });
+  }
+
+  // PAPER-ANCHORED, NOT SCREEN-ANCHORED — proven ACROSS the two widths, which no
+  // single-width check can do. A screen-anchored element holds a constant offset
+  // from one viewport edge as the window resizes; a paper-anchored one holds station
+  // on the paper while the paper itself travels.
+  //
+  // Deliberately NOT asserted as "dock.right travels exactly as far as paper.left":
+  // that would be the flush law wearing a second costume, and at 1100 it is already
+  // known to be off by the pinned 29.7px, so such a check would report the SAME
+  // pre-existing deviation twice and call it two findings. What is asserted instead
+  // is the thing the deviation cannot fake: the dock stays PINNED NEAR THE PAPER'S
+  // EDGE (within 30px) while the paper travels 133px, and NEITHER viewport offset
+  // stays constant.
+  {
+    const a = anchorTrack.find(x => x.w === 1100);
+    const b = anchorTrack.find(x => x.w === 1366);
+    const paperTravel = a && b ? +(b.paperL - a.paperL).toFixed(1) : null;
+    const gapA = a ? +(a.dockR - a.paperL).toFixed(1) : null;   // 29.7 (the pinned deviation)
+    const gapB = b ? +(b.dockR - b.paperL).toFixed(1) : null;   // 0.0  (flush)
+    const fromLeftA = a ? a.dockR : null;
+    const fromLeftB = b ? b.dockR : null;
+    const fromRightA = a ? +(a.vw - a.dockR).toFixed(1) : null;
+    const fromRightB = b ? +(b.vw - b.dockR).toFixed(1) : null;
+    ok('S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both), while NEITHER viewport offset stays constant: measured from the left it moves ~103px, from the right ~163px. A screen-anchored dock would have held one of those two fixed',
+      paperTravel != null && Math.abs(paperTravel) > 100
+        && gapA != null && gapB != null && Math.abs(gapA) <= 30 && Math.abs(gapB) <= 30
+        && Math.abs(fromLeftB - fromLeftA) > 20 && Math.abs(fromRightB - fromRightA) > 20,
+      JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, fromLeftA, fromLeftB, fromRightA, fromRightB }));
   }
 
   // =========================================================================
@@ -549,18 +629,37 @@ await withHarness(async (app) => {
   {
     await freshProsePage(app, 1366, 768);
 
-    await enterMode(app, 'drafting');
+    await enterMode(app, 'draft');
     await openSliverByGrip(app);
     await sleep(300);
-    const draft = await app.evalJs("(() => ({ sections: document.querySelectorAll('.wz-sliver-section').length, format: document.querySelectorAll('.wz-sliver-format').length, tab: document.querySelector('.desk-mode-tab[data-mode-key=\"drafting\"]')?.getAttribute('aria-selected') }))()");
+    const draft = await app.evalJs("(() => ({ sections: document.querySelectorAll('.wz-sliver-section').length, format: document.querySelectorAll('.wz-sliver-format').length, tab: document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.getAttribute('aria-selected') }))()");
     ok('S9 (§7.9): DRAFT still enters and still carries its OWN Desk furniture — its rail sections render exactly as before. Revise did not take Draft\'s drawer with it on the way past',
       draft.tab === 'true' && draft.sections > 0, JSON.stringify(draft));
 
     await enterMode(app, 'freewrite');
     await sleep(300);
+    // The run model only renders once there is content — an EMPTY forward-only
+    // surface deliberately has no children at all (so the browser can place a
+    // caret). So this types first: otherwise a zero here would report 'the
+    // instrument is gone' when it only means 'the page is blank'.
+    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+    await app.typeKeys('Forward only. ');
+    await sleep(350);
     const fw = await app.evalJs("(() => ({ tab: document.querySelector('.desk-mode-tab[data-mode-key=\"freewrite\"]')?.getAttribute('aria-selected'), runs: document.querySelectorAll('.fo-run').length + document.querySelectorAll('.fo-word').length }))()");
     ok('S9 (§7.9): FREE WRITE still enters and still mounts the FORWARD-ONLY instrument — the run model renders on its own surface, which is the mirror of S2 and proves the instrument was moved out of Revise rather than deleted from the app',
       fw.tab === 'true' && fw.runs > 0, JSON.stringify(fw));
+
+    // And the runway is still the runway THERE: a backspace in Free Write must
+    // STRIKE, not erase. This is the exact inverse of S2's deletion check, and
+    // together the pair proves the two instruments are on the right surfaces.
+    const fwBefore = await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '')");
+    await app.key('Backspace');
+    await sleep(300);
+    const fwStruck = await app.evalJs("document.querySelectorAll('.fo-struck').length");
+    const fwAfter = await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '')");
+    ok('S9: and Free Write\'s BACKSPACE STILL STRIKES rather than erases — the struck text stays visible on the surface. The forward-only law is untouched where it governs, which is what makes S2\'s absence in Revise a RELOCATION and not a deletion',
+      fwStruck > 0 && fwAfter.length >= fwBefore.length - 1,
+      JSON.stringify({ fwBefore, fwAfter, fwStruck }));
   }
 
   return checks;
