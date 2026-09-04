@@ -170,6 +170,10 @@ const SELF = process.pid;
   ok('S6: withHarness inherits the reaper for every standalone entry (the probe, selftest-quiescence, a harness run directly) and skips it under the suite, which already swept once',
     rv.includes("process.env.WS_REAPER_PREFLIGHT_DONE !== '1'") && runner.includes("env.WS_REAPER_PREFLIGHT_DONE = '1'"),
     'withHarness gate + runner flag both present');
+  ok('S6: a reaper FAILURE can never take down a harness run — the sweep is wrapped, reported and stepped over, because a hygiene tool that outages the box is the very thing item 99 exists to end',
+    /try \{[\s\S]{0,400}reapOrphans\([\s\S]{0,200}\} catch/.test(rv)
+      && rv.includes('the sweep itself failed'),
+    'withHarness wraps the reap');
   ok('S6: the enumerator is SINGLE-SOURCED — the runner delegates to the reaper module rather than keeping a second copy of the profile-signature query',
     runner.includes('const harnessBrowsers = enumerateHarnessBrowsers;')
       && !runner.includes("Get-CimInstance Win32_Process -Filter"),

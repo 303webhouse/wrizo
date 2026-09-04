@@ -678,10 +678,20 @@ export async function withHarness(scenario, opts = {}) {
   // information. Owner liveness would spare them every time, but the safest
   // sweep is the one that does not need to be right 67 times.
   if (process.env.WS_REAPER_PREFLIGHT_DONE !== '1' && process.env.WS_NO_REAP !== '1') {
-    const { reapOrphans } = await import('./orphan-reaper.mjs');
-    // stderr, never stdout: a harness's stdout is its verdict, and the runner
-    // scans it. The suite redirects both to one file, so nothing is lost.
-    await reapOrphans({ log: (line) => console.error(line) });
+    // THE REAPER IS AN AID, NEVER A DEPENDENCY. It is wrapped because the one
+    // thing worse than an orphan is a hygiene tool that takes down every
+    // harness run on the box when it has a bad day — that would turn a
+    // convenience into a new outage of exactly the kind item 99 exists to end.
+    // A failure here is reported and stepped over; the run proceeds, and the
+    // dirty-machine guard still governs whether it should.
+    try {
+      const { reapOrphans } = await import('./orphan-reaper.mjs');
+      // stderr, never stdout: a harness's stdout is its verdict, and the runner
+      // scans it. The suite redirects both to one file, so nothing is lost.
+      await reapOrphans({ log: (line) => console.error(line) });
+    } catch (e) {
+      console.error(`REAPER: SKIPPED — the sweep itself failed (${e && e.message}). The run continues; the dirty-machine guard still governs it.`);
+    }
   }
   const browserPath = findBrowser();
   const udd = path.join(os.tmpdir(), `ws-runtime-verify-${process.pid}`);
