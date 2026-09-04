@@ -230,6 +230,42 @@ const SELF = process.pid;
     JSON.stringify({ mismatch: cleared.mismatch, reaped: cleared.reaped, survivors: cleared.survivors.length }));
 }
 
+// ===========================================================================
+// S8 — THE TWO REMAINING SAFETY PATHS, both previously unexercised.
+// ===========================================================================
+{
+  // (a) ENUMERATION FAILURE. A reaper that cannot see the machine must do
+  // NOTHING — not guess, not fall back to a name match, not treat an empty
+  // answer as "clean". This is the path where a wider instrument would be most
+  // tempting and least defensible.
+  const lines = [];
+  const blind = await reapOrphans({ log: (l) => lines.push(l), enumerate: () => null, kill: () => { throw new Error('the blind reaper tried to kill something'); } });
+  ok('S8: when enumeration FAILS, the reaper kills nothing and says so — it does not guess, does not fall back to a signature, and does not read an unreadable machine as a quiet one',
+    blind.enumerated === null && blind.reaped.length === 0 && blind.mismatch === false
+      && lines.some((l) => l.includes('SKIPPED') && l.includes('no owner can be verified dead')),
+    JSON.stringify({ report: { enumerated: blind.enumerated, reaped: blind.reaped }, lines }));
+
+  // (b) THE BACKLOG. Item 99 opened on 54 stale dirs sitting in TEMP. One dir
+  // proves the rule; a batch proves the sweep does not stop at the first, and
+  // that draining a real backlog is cheap enough to do on every run.
+  const tmp = os.tmpdir();
+  const made = [];
+  for (let i = 0; i < 20; i++) {
+    const d = path.join(tmp, `ws-runtime-verify-${deadPid()}`);
+    mkdirSync(d, { recursive: true });
+    writeFileSync(path.join(d, 'DevToolsActivePort'), '0');
+    made.push(d);
+  }
+  const t0 = Date.now();
+  const drained = await reapOrphans({ log: () => {} });
+  const ms = Date.now() - t0;
+  const left = made.filter((d) => existsSync(d));
+  ok('S8: a BACKLOG of dead-owner profile dirs drains in one pass — item 99 opened on 54 of them, and a sweep that stopped at the first would leave the guard blocked exactly as before',
+    left.length === 0 && drained.dirs && drained.dirs.removed.length >= 20,
+    JSON.stringify({ made: made.length, stillThere: left.length, removed: drained.dirs ? drained.dirs.removed.length : null, ms }));
+  for (const d of made) rmSync(d, { recursive: true, force: true });
+}
+
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
