@@ -1,6 +1,14 @@
 # ITEM 112-A · BUILD RECORD — REVISE STANDS UP
 ### Lane `item112a` · branch `item112a` off origin/main `89c5955` · worktree `.claude/worktrees/item112a`
 
+**MERGE STATE:** this branch carries origin/main `1c8edd3` merged in (commit `7f48238`).
+One conflict, in `PageEditor.tsx`'s `sliverContent` — item 114 (errata E4) added page-kind
+and style-guide pickers to the Draft branch while this ticket was in flight. Resolved by
+keeping 112-A's three-branch shape with main's fields inside **Draft**; Revise's drawer
+stays empty. Those pickers are not 83's Type section (face and size, RV1-RV4 — still
+112-C), and 112-A ships no tenants either way. **Merging this branch to main remains
+chat 1's act, not this lane's.**
+
 **Brief:** `docs/menus/tutor/item112a-build-brief.md`, blob `75e81367`, **md5 `9619b2a6`** — the
 AMENDED tip, Nick's empty-drawer ruling folded. Verified against the blob, not the working
 file (a CRLF checkout gives md5 `415742bf`; the LF blob is the byte of record).
@@ -11,17 +19,45 @@ file (a CRLF checkout gives md5 `415742bf`; the LF blob is the byte of record).
 
 ---
 
-## THE STAMP
+## THE STAMP — of record, on the MERGED tree
 
 ```
-SUITE (default)  67/67  CLEAN   tree=1dede79  bundle=index-6xniJdoe.js/553583b
-SUITE (parked)   67/67  CLEAN   tree=1dede79  bundle=index-6xniJdoe.js/553583b
+SUITE (default)  68/68  CLEAN   tree=7f48238  bundle=index-CK6B8dF1.js/557023b
+SUITE (parked)   68/68  CLEAN   tree=7f48238  bundle=index-CK6B8dF1.js/557023b
 ```
 
-Both settings, back to back, **clean tree at both uploads** (no `+Ndirty` on either stamp —
-nothing was written to the tree between the two runs). Ticket harness `item112a.mjs`:
-**55 checks, PASS**. `item84b.mjs`: **62 PASS + 1 PARKED**. Suite-wide parked total: 158
-armed across 38 files, all passing.
+`7f48238` is 112-A **merged with origin/main `1c8edd3`** (the errata wave, which landed
+mid-build). 68 files, not 67 — main's merge brought `item83f.mjs` with it. Clean tree at
+both uploads (no `+Ndirty` on either stamp; nothing was written to the tree between the
+two runs). Ticket harness `item112a.mjs`: **55 PASS**. `item84b.mjs`: **62 PASS + 1
+PARKED**, armed.
+
+**The superseded pre-merge stamp, kept rather than overwritten:** `68/68` replaces
+`67/67 CLEAN tree=1dede79 bundle=index-6xniJdoe.js/553583b`, which was the stamp for
+112-A **before** origin/main moved. It was a true result for a tree that no longer
+exists, and it is recorded here so the two numbers cannot be confused later.
+
+### THE RED THAT WAS NOT A RED, AND HOW IT WAS CLEARED
+
+The first pair at `7f48238` came back **NOT CLEAN twice** — `bm1.mjs` FAIL in the
+default run, `s1.mjs` TIMEOUT in the parked run. Neither is this ticket's file, and
+neither reproduced.
+
+**Cause: nine orphaned harness browsers**, every one owned by PID `32156`, verified
+**dead** — the previous session's runner, which exited without cleaning up. That is the
+known leak whose symptom is indistinguishable from a flake: browser starvation surfaces
+as a timeout, or as a fixture that never establishes. The evidence fit it exactly —
+`bm1`'s failure detail was `paired=false`, its PRECONDITION never setting up rather than
+its assertion returning a wrong answer.
+
+Reaped under the verified-dead-owner rule (single owner, confirmed dead, logged:
+`36776, 27496, 15772, 42252, 28644, 26792, 42352, 2428, 44608`), machine confirmed at
+zero harness browsers, pair re-run. Both files pass on the clean machine — `bm1.mjs`
+36 checks, `s1.mjs` 86/87 — and the whole suite is clean in both settings.
+
+**The clearance is the clean-machine RUN, not the diagnosis.** "Passes in isolation" and
+"the machine was quiet" are both retired as clearance arguments in this project, so the
+orphan finding stayed a hypothesis until a full clean pair confirmed it.
 
 ---
 
@@ -141,6 +177,16 @@ Building §7.4 turned up a **pre-existing, app-wide anchor fault**. The ruled co
 `origin/main` **89c5955**, src reverted and rebuilt in this same worktree: main reads the
 identical **−29.7** at 1100 in **both** Draft and Free Write. Revise's rects are byte-identical
 to Draft's at both widths.
+
+**RE-VERIFIED AFTER THE MERGE, and it survived.** The errata wave changed `Sliver.tsx`
+(+305) and `index.css` (+51) — either could have moved the dock and invalidated the pinned
+baseline. It did not: all 55 checks pass on the merged tree, the pinned −29.7 check
+included. E2's own probe work was about the sliver's FOOT, not the dock/paper anchor. The
+fault stands, unchanged, and still belongs to the 117/119 joint pass.
+
+**The lens seam was re-checked too.** The wave touched `draftDecoration.ts` (+27), which is
+where §3's recorded answer lives. `decorateEditorFor`'s fifth `decorate` parameter is
+unchanged, so the answer above still holds against current main.
 
 Handled per §5's own instruction — *an anchoring fault is a CSS fault, repaired in CSS*, and
 *stop and surface, do not reconcile in the build*. **Not repaired here.** The harness asserts
