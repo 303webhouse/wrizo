@@ -50,6 +50,12 @@ import { openSync, closeSync, readFileSync, statSync, mkdirSync, writeFileSync, 
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+// ITEM 99 — the canonical dead-owner sweep. Imported, never re-implemented: the
+// runner used to carry its own copy of the enumerator, which is exactly the
+// "two formulas for one number" shape this repo keeps having to unpick. One
+// definition now, inherited by every lane through this runner AND through
+// runtime-verify's own withHarness.
+import { enumerateHarnessBrowsers, reapOrphans } from './orphan-reaper.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HARNESS_DIR = path.join(HERE, 'harness');
@@ -61,6 +67,9 @@ const valOf = (f) => { const i = argv.indexOf(f); return i >= 0 ? argv[i + 1] : 
 
 const PARKED = has('--parked');
 const IGNORE_FOREIGN = has('--ignore-foreign');
+// ITEM 99 — the reaper is ON by default; --no-reap is the escape hatch for a
+// lane that wants the machine left exactly as found (a forensic run).
+const NO_REAP = has('--no-reap');
 const NO_REBUILD = has('--no-rebuild');
 const PER_FILE_TIMEOUT_MS = Number(valOf('--timeout') || 15 * 60 * 1000);
 const ONLY = (valOf('--only') || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -148,27 +157,11 @@ writeFileSync(path.join(OUT_DIR, 'manifest.json'), JSON.stringify({
 // `owner` is the node pid that launched it, parsed out of the profile dir name.
 // Deliberately matches ONLY that profile signature, so an ordinary browser
 // window belonging to the human at this desk is structurally invisible here.
-function harnessBrowsers() {
-  try {
-    if (process.platform === 'win32') {
-      const ps = "Get-CimInstance Win32_Process -Filter \"Name='msedge.exe' OR Name='chrome.exe'\" | "
-        + "Where-Object { $_.CommandLine -like '*ws-runtime-verify-*' } | "
-        + "ForEach-Object { if ($_.CommandLine -match 'ws-runtime-verify-(\\d+)') { \"$($_.ProcessId) $($Matches[1])\" } }";
-      const out = execFileSync('powershell.exe', ['-NoProfile', '-Command', ps], { encoding: 'utf8', timeout: 30000 });
-      return out.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
-        const [pid, owner] = l.split(/\s+/);
-        return { pid: Number(pid), owner: Number(owner) };
-      });
-    }
-    const out = execFileSync('ps', ['-eo', 'pid=,args='], { encoding: 'utf8', timeout: 30000 });
-    return out.split('\n').map((l) => {
-      const m = l.match(/^\s*(\d+)\s+.*ws-runtime-verify-(\d+)/);
-      return m ? { pid: Number(m[1]), owner: Number(m[2]) } : null;
-    }).filter(Boolean);
-  } catch {
-    return null; // enumeration itself failed — reported, never silently "clean"
-  }
-}
+// ITEM 99 — SINGLE-SOURCED. This was a verbatim copy of the enumerator that now
+// lives in orphan-reaper.mjs. The reaper has to enumerate in order to decide,
+// and this runner has to enumerate in order to refuse; two copies of one query
+// is how a convention drifts in one file and not the other.
+const harnessBrowsers = enumerateHarnessBrowsers;
 
 // Kill ONLY this runner's own child and that child's own browser profile.
 function killOwn(childPid) {
@@ -184,9 +177,51 @@ function killOwn(childPid) {
   return killed;
 }
 
+// --- ITEM 99 PREFLIGHT: reap dead-owner orphans, THEN judge the machine -----
+//
+// ORDER IS THE WHOLE DESIGN. The reap runs BEFORE guard 3 reads the machine, so
+// the guard judges the machine as it actually is rather than as a dead lane
+// left it. It runs AFTER the log is opened, so every run carries the sweep's
+// own record — count, PIDs, owners — including the runs that reap nothing.
+//
+// AND THE GUARD IS NOT WEAKENED BY IT. The reaper removes corpses only; a
+// browser whose owner is ALIVE is untouched, so it is still sitting there when
+// guard 3 looks, and the refusal below still fires. That is the S4 law's first
+// clause working as intended: a runner's live refusal outranks metadata, and it
+// outranks this reaper too.
+writeFileSync(LOG, '');
+let reapReport = null;
+if (NO_REAP) {
+  say('REAPER: SKIPPED by --no-reap — the machine is left exactly as found.');
+} else {
+  reapReport = await reapOrphans({ log: say });
+  // S4 clause 3, enforced rather than merely documented. A reaped PID that is
+  // still present means the model of this machine is wrong, and the one thing
+  // this runner must never do at that moment is reach for a wider net. It stops
+  // — and --ignore-foreign deliberately does NOT cover this, because "run
+  // anyway" is exactly the reflex that cost another lane a suite on 2026-08-04.
+  if (reapReport.mismatch) {
+    say('SUITE REFUSED: the reaper reported a post-sweep count mismatch (above). This is the');
+    say('  stop-and-report case from the S4 incident, and it is not overridable by');
+    say('  --ignore-foreign. Investigate by hand before running anything on this box.');
+    process.exit(2);
+  }
+  // The sweep belongs in the machine-readable record too, beside the stamp.
+  try {
+    const mf = path.join(OUT_DIR, 'manifest.json');
+    const prior = JSON.parse(readFileSync(mf, 'utf8'));
+    writeFileSync(mf, JSON.stringify({ ...prior, reaper: {
+      enumerated: reapReport.enumerated,
+      reaped: reapReport.reaped,
+      reapFailed: reapReport.reapFailed || [],
+      liveOwnersUntouched: reapReport.liveOwners,
+      profileDirsRemoved: reapReport.dirs ? reapReport.dirs.removed : null,
+    } }, null, 2));
+  } catch { /* the log already carries it; the manifest is a convenience */ }
+}
+
 // --- guard 3: refuse to start on a dirty machine ---------------------------
 const preexisting = harnessBrowsers();
-writeFileSync(LOG, '');
 if (preexisting === null) {
   say('SUITE REFUSED: could not enumerate processes, so "is this machine quiet?" cannot be answered.');
   say('  A suite result that cannot state its own conditions is not evidence. Fix enumeration or pass --ignore-foreign knowingly.');
@@ -219,6 +254,10 @@ function runOne(file) {
     const fd = openSync(outFile, 'w');
     const env = { ...process.env };
     if (PARKED) env.HARNESS_PARKED = '1'; else delete env.HARNESS_PARKED;
+    // ITEM 99 — this runner already reaped, once, in its own preflight. Tell the
+    // children so withHarness does not re-sweep 67 times while this suite's own
+    // siblings are alive on the box.
+    env.WS_REAPER_PREFLIGHT_DONE = '1';
     const child = spawn(process.execPath, [path.join('scripts/harness', file)], {
       cwd: DESKTOP, env, stdio: ['ignore', fd, fd],
     });

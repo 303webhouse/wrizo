@@ -32,6 +32,11 @@ import http from 'node:http';
 import { spawn, execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
+// ITEM 99 — the canonical dead-owner sweep. Imported here as well as in
+// run-suite.mjs because EVERY browser this repo launches comes through
+// withHarness below: the probe, selftest-quiescence, and any harness a lane
+// runs directly all inherit the reaper from this one call, without each entry
+// point having to remember it.
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -663,6 +668,21 @@ export async function withHarness(scenario, opts = {}) {
   if (!existsSync(path.join(dist, 'index.html'))) {
     throw new Error(`No built bundle at ${dist}. Run: pnpm --filter @writer-studio/desktop build:web`);
   }
+  // ITEM 99 — REAP BEFORE LAUNCHING. A dead lane's orphans are what starve this
+  // one, so the sweep happens before the first process of this run exists.
+  //
+  // SKIPPED UNDER run-suite.mjs, which does its own preflight once and then
+  // spawns 67 children: re-reaping per child would be 67 redundant process
+  // enumerations, and — worse — it would run the sweep repeatedly WHILE this
+  // suite's own siblings are alive, which is a great deal of risk taken for no
+  // information. Owner liveness would spare them every time, but the safest
+  // sweep is the one that does not need to be right 67 times.
+  if (process.env.WS_REAPER_PREFLIGHT_DONE !== '1' && process.env.WS_NO_REAP !== '1') {
+    const { reapOrphans } = await import('./orphan-reaper.mjs');
+    // stderr, never stdout: a harness's stdout is its verdict, and the runner
+    // scans it. The suite redirects both to one file, so nothing is lost.
+    await reapOrphans({ log: (line) => console.error(line) });
+  }
   const browserPath = findBrowser();
   const udd = path.join(os.tmpdir(), `ws-runtime-verify-${process.pid}`);
 
@@ -692,6 +712,14 @@ export async function withHarness(scenario, opts = {}) {
     // again. Deliberately NOT a mass sweep of TEMP — a dir belonging to a LIVE
     // run in another lane is not this process's to delete, the same provenance
     // rule the process cleanup obeys.
+    //
+    // ITEM 99 REFINES THIS, and does not overturn it. The reaper above now also
+    // removes stale dirs — but only those whose owner PID is VERIFIED DEAD and
+    // which no enumerated browser still holds. The sentence above is about a
+    // LIVE run's dir, and that is still untouchable; the liveness test is
+    // precisely what tells the two apart, which is the whole of what item 99
+    // adds. This line stays because a dir this process owns is its own to clear
+    // whatever the reaper did or did not find.
     await removeDir(udd);
     proc = launchBrowser(browserPath, udd, `${base}/#/`);
     const cdpPort = await readCdpPort(udd);
