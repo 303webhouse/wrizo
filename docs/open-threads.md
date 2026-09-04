@@ -9994,6 +9994,58 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## ERRATA WAVE (walkthrough E1–E4) DEPLOY MANIFEST — 2026-09-04 (chat 1, on Nick's ship word — Fable PASS)
+
+**THE WALKTHROUGH ERRATA WAVE — E1 fade-on-words + E2 probe-asserted layout (Structure to the tab
+foot, Full Screen to the progress bar) + E3 paragraph indent + E4 item-114 placeholders (render+persist
+only).** Gate chain: Fable's review **VERDICT PASS** (`docs/wrizo-alpha/errata-wave-review-fable.md` @
+merge `845259f`) → Nick's ship word (this relay). **ZERO SCHEMA** (`page_settings` pre-existing; no new
+migration). Deploying `main` HEAD **`1c8edd3`**.
+
+**Deploy-ships-a-SHA enumeration (`7b78090..1c8edd3`):**
+- `845259f` — Merge errata-build @ `793e80f` (E1/E2/E3/E4 + S0/corrections)
+- `4d178bb` — Records: item 120 opens (rider) (docs)
+- `1c8edd3` — Records: errata review (docs)
+
+**New PRODUCT code since the last live build (`7b78090` · railway `815091f6`) — verified
+`7b78090..1c8edd3`, 8 src files, +568/−25, ZERO schema, ZERO server:**
+- `Sliver.tsx` (+305 — fade timing / foot layout), `draftFormat.ts` (+85 — the paragraph indent),
+  `pageDefaults.ts` (+42 — reads the pre-existing `page_settings`), `draftDecoration.ts` (+27),
+  `deskLexicon.ts` (+24), `PageEditor.tsx` (+24), `index.css` (+51), `types/index.ts` (+35).
+- **SERVER: none. SCHEMA: none** (`page_settings` is the menus-wave column, not new).
+- Harness (not in bundle): `item83f.mjs`, `menus-probe.mjs` + the wave's harness.
+
+**Records since `7b78090` (docs):** item 120 opened (rider) + the errata review + this manifest.
+
+**Verified — fresh suite of record at the deploy HEAD (`1c8edd3`), BOTH settings, machine-clear (NOT
+contaminated):** **67/67 UNSET (CLEAN) and 67/67 PARKED (CLEAN)** at `bundle=index-BS32INXU.js/556707b`
+(CSS `index-D4fKPwmq.css`) — the SAME bundle the offer stamped. `tsc` ×2 EXIT 0; `build:web` clean.
+**TREE CLEAN AT UPLOAD:** `git status --porcelain` EMPTY.
+
+**Quiet-window note (box contention handled lawfully):** the suite of record ran under heavy
+contention — the item-112a build lane's re-stamp pair had box priority. A hardened retry loop **waited
+out the live pair** and **swept DEAD-OWNER ORPHAN browsers** (owner PID `32156`, verified dead — the
+Orphan Reaper, item 99) that had been REFUSING every attempt; both settings then ran CLEAN on the
+first attempt in the quiet window. No VOID/REFUSED was ever counted as a pass — the retry-loop doctrine
+(retry contention, halt a red) held throughout.
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `7b78090` · railway `815091f6`** — the roster. Zero schema this
+wave, so rollback is a clean redeploy of that tree.
+
+**DEPLOY STAMP: git `1c8edd3` · railway build `798fb798-6c49-4ddc-915f-82cc2b02173c`** — DEPLOYED
+2026-09-04 (`railway up --ci` from the primary checkout; item-98 guard PROJECT + TREE verified:
+`writer-studio` / `production` / `writer-studio-app`, tree clean at upload; image `sha256:bad16481`).
+Verified LIVE: `/healthz` **200**, served **`index-BS32INXU.js` + `index-D4fKPwmq.css`**, `/auth/me`
+**401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-BS32INXU.js` =
+**556,707 b**, md5 `613766a6fcb829073f8885b632cb35a8` == local suite build; served CSS
+`index-D4fKPwmq.css` md5 `fd61adfbe35d29acc695c622686e4bd9` == local. Windows suite == Linux Railway
+== served. Every-ship served-vs-stamped diff: **MATCH.**
+
 ## ROSTER (Draft four-chip) DEPLOY MANIFEST — 2026-09-03 (chat 1, on Nick's standing "ship whatever we can" — Fable PASS)
 
 **THE DRAFT ROSTER — the four-chip row in Draft (three staging asks + TD4's selection ask), the v4
