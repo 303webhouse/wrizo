@@ -315,3 +315,36 @@ declared the result **VOID** rather than partly trustworthy. Zero of the 56 file
 that had run failed, and `item99.mjs` passed 29/29 inside it. That is the
 mid-run guard doing precisely its job — *a sweep cannot be half-clean* — so the
 answer was to run it again whole rather than salvage it.
+
+---
+
+## §9 · THE MERGE PICTURE FOR THIS FOLLOW-UP, CHECKED AT OFFER TIME
+
+`origin/main` moved while the rulings were being applied: **`1c8edd3` →
+`cbd0614`**, and it now **contains the first offer** (merged at **`bb21df8`**).
+Chat 1 retired its loop per ruling 1 and recorded the one-line divergence note,
+and `cbd0614` says in as many words: *"EXPECT ERRATA's item-99 follow-up: the
+tri-state owner resolution … post-dates the reaper on main; merge as its own
+harness-only offer when reported."* **This is that offer.**
+
+Checked rather than assumed:
+
+- **Product-code drift since this branch's base is nil** —
+  `git diff --stat 1c8edd3 origin/main -- apps/desktop/src apps/server packages`
+  is empty, so the stamped pair above still describes `main`'s product code plus
+  this wave.
+- **The tri-state is genuinely not on `main` yet** — `origin/main`'s copy of
+  `orphan-reaper.mjs` contains no `resolveOwner`, which is exactly the state chat
+  1 predicted.
+- **The merge is clean.** `git merge-tree` against the merge-base reports **zero
+  conflict markers**, including in `docs/open-threads.md`, which both sides have
+  been writing to.
+
+**Three commits are being offered:** `3d2bd6a` (the rulings landed), `4b2468b`
+(the records), `d37937b` (a placeholder SHA filled). Still chat 1's act, still a
+merge, never a rebase.
+
+**On the deploy:** `2820727` records Nick's conditional ship word for 112-A with
+a checklist naming **112-A and item 99**. That is chat 1's execution from the
+primary checkout on Nick's word — **not this lane's**, and nothing here asks for
+it. This lane has run no `railway` command and pushed nothing but its own branch.
