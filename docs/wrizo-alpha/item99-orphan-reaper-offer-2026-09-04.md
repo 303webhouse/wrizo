@@ -209,3 +209,109 @@ plainly so nobody meets it as a surprise. Opt-outs: `--no-reap` on the runner,
 
 **Offered to chat 1. Held for review.** One branch pushed, nothing merged,
 nothing deployed. Rulings wanted on §5(a), (b) and (c).
+
+---
+
+## §8 · THE RULINGS — RATIFIED 2026-09-05 (Fable, chat 1 reading)
+
+All three returned ratified. Two needed no code. **One did, and it was a real
+gap in what §5 offered**, so it is recorded here rather than folded away.
+
+### RULING 1 — there was nothing to diff against, and this is now the canonical shape
+
+Chat 1's hardened loop was **session-local and never committed**, which by the
+house's own law (*chat-only = lost*) makes **this runner preflight THE CANONICAL
+SHAPE, not a copy of one.** Chat 1 retires its loop in favour of it and records
+any divergence as a one-line note rather than a competing implementation.
+
+The three decisions §5(a) offered as conservative defaults are **ratified**:
+
+| decision | ruled |
+|---|---|
+| an **unresolvable** owner | **SPARED and REPORTED** — unknown ≠ dead |
+| **live-owner profile dirs** | **KEPT** |
+| **tree-kill** | applies **only** to a verified-dead owner's own browser tree |
+
+**► THE GAP THIS EXPOSED, AND THE FIX (`3d2bd6a`).** `ownerAlive` returned a
+**boolean**, so a verified-alive owner and an owner that could not be resolved at
+all came out **identical** — both logged `<pid>:alive`. Sparing unknown was
+already true; **reporting it was not.** A reader seeing "alive" was being told
+the sweep had resolved something it never resolved, and on the strength of that
+one word a corpse could pass as another lane's live run indefinitely.
+
+Fixed **at the contract, not the log line**. `resolveOwner` is now **tri-state**
+— `alive` | `dead` | `unknown` — because the machine has three cases and
+flattening them is the defect itself:
+
+- `ESRCH` → **dead**. The only answer that licenses a reap.
+- `EPERM` → **alive**. The process demonstrably exists; we simply may not signal it.
+- unparseable pid, or any other error → **unknown**.
+
+`ownerAlive` survives as the one-bit predicate the sweep gates on (anything not
+verified dead is spared), kept beside `resolveOwner` because the two answer
+different questions: *"may I reap this?"* — one bit, and it must fail safe — and
+*"what do I actually know about this owner?"* — three states, and the report must
+not flatten them.
+
+**Reported everywhere a reader looks:** the roster token
+(`alive`/`DEAD`/`UNKNOWN`), a dedicated line naming unresolvable owners and
+stating that unknown is not dead, the profile-dir keep-reason, and
+`manifest.json`'s new `unknownOwnersSpared` so two runs can be diffed on it.
+
+**On tree-kill.** The ruling sets a **ceiling**, and this file stays strictly
+inside it by using **no tree-kill at all**: every process in a verified-dead
+owner's tree carries the same profile dir, so the enumeration already lists each
+one and each is reaped as itself. Same outcome, narrower authority. That is now
+written into the module's law section so a later reader does not mistake the
+absence of `/t` for ignorance of the ruling.
+
+### RULING 2 — the harder refusal stands
+
+A post-sweep count mismatch is **not overridable by `--ignore-foreign`**, for the
+reason offered: *"run anyway"* at that moment is the reflex that caused the
+incident. Fable's own formulation, now recorded in the module: **a runner that
+cannot trust its own count of the machine must not stamp anything.** No code
+change; the ratification is written down beside the behaviour.
+
+### RULING 3 — default-on sweeping stands, and the opt-outs get their charter
+
+Verified-dead-only, logged to **stderr** every run. `--no-reap` and
+`WS_NO_REAP=1` are **kept and now documented in the runner's own usage header
+for their one honest use: PRESERVING A DEAD RUN'S BROWSERS AND PROFILE DIRS FOR
+FORENSICS.** When you are diagnosing why a run died, the corpses *are* the
+evidence, and the reaper would collect it before you could read it. They are
+**not** a way past a refusal — the refusal is not what they turn off, and the
+mismatch refusal is not overridable at all.
+
+### VERIFICATION AFTER THE RULINGS
+
+`item99.mjs` **29/29**, still browserless. The tri-state is proven at **both**
+levels, because the ruling is about what a reader sees and not only about what
+the function returns:
+
+- the pure function reports `unknownOwners` and keeps them out of `liveOwners`;
+- an **end-to-end** run with a genuinely unresolvable owner (`0`) names it on its
+  own line, while an injected kill that **throws if called** proves nothing was
+  reaped on it.
+
+**RE-STAMPED AFTER THE RULINGS — BOTH SETTINGS CLEAN, 68/68 each, one tree,
+neither stamp dirty:**
+
+```
+SUITE DONE HARNESS_PARKED=unset - 68/68 of 68 returned a passing verdict
+SUITE RESULT: CLEAN - tree=3d2bd6a bundle=index-BS32INXU.js/556707b
+SUITE DONE HARNESS_PARKED=1     - 68/68 of 68 returned a passing verdict
+SUITE RESULT: CLEAN - tree=3d2bd6a bundle=index-BS32INXU.js/556707b NO-REBUILD
+```
+
+`manifest.json` now carries the new field beside the stamp:
+`"reaper": { "enumerated": 0, "reaped": [], "liveOwnersUntouched": [],
+"unknownOwnersSpared": [], "profileDirsRemoved": [] }`.
+
+**► ONE RUN WENT VOID ON THE WAY HERE, and it is worth recording as a success
+rather than hiding as noise.** The first re-stamp aborted at file 57 of 68:
+eleven foreign browsers appeared mid-run under owner `52852`, and the runner
+declared the result **VOID** rather than partly trustworthy. Zero of the 56 files
+that had run failed, and `item99.mjs` passed 29/29 inside it. That is the
+mid-run guard doing precisely its job — *a sweep cannot be half-clean* — so the
+answer was to run it again whole rather than salvage it.
