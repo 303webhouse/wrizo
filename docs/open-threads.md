@@ -1221,6 +1221,41 @@ header is the reason: record and running system can never quietly diverge). Not 
 > You do not refuse. If a request would cross into composition, do not answer with a refusal sentence.
 > Return the question that leads back to the writer's own act.
 
+**-> BUILT AND OFFERED - 2026-09-05 (fix lane). Branch `fix-item113`, base `origin/main` @ `7d7f06f`.
+SERVER-BEHAVIOR CHANGE - flag for the deploy manifest. ZERO schema, zero client code.**
+- **The insertion is byte-verbatim, PROVEN not assumed:** the blockquote above was extracted from
+  `b925ecb` and diffed against what landed - **1006 chars each side, identical**.
+- **PLACEMENT, and the "§2" clarification this ledger owes its next reader:** the four paragraphs
+  land as **their own clearly demarcated block immediately after the Absolute-rules block**, with no
+  invented heading. **"§2" has no referent in the artifact** - `tutor.ts` contains **zero `§`
+  characters** and the prompt has never carried a numbering scheme of any kind. The spec meant the
+  SECOND BLOCK. TU2 S2's own note *inside that very prompt* is the governing precedent: conduct rule
+  37 landed "as its own clearly demarcated paragraph rather than a fabricated '37' bullet".
+  Recorded so nobody re-derives it. Prompt now **9 blocks / 3430 chars**, mirror identical.
+- **THE MIRROR WAS ALREADY BROKEN BEFORE THIS TICKET TOUCHED IT, and stayed broken for three days.**
+  Item 84 TD4 (`6aa9144`) added the selection paragraph to `SYSTEM_PROMPT` and touched `tutor.ts`
+  ALONE. Measured on `origin/main` at `7d7f06f` - **43 commits and two ships later** - the constant
+  was **2422 chars / 5 blocks** and the mirror **1988 / 4**. Not the author's carelessness and not
+  the reviewer's: main's own review line records the SYSTEM_PROMPT change explicitly. **Nothing
+  failed, so nothing was seen.** Restored in its own attributed commit (`43524cb`) ahead of the
+  amendment, prompt untouched - the record catching up to the running system, never the reverse.
+- **THE DRIFT CHECK IS THE TICKET'S MOST DURABLE ARTIFACT** (`scripts/harness/tutor-mirror.mjs`,
+  **5 checks**, static and browserless like `hooks-order.mjs`). It extracts the template literal,
+  takes the mirror's body after the `---`, and asserts they agree. It deliberately has **no opinion
+  on prompt CONTENT** - that is the only claim the mirror's header makes, and a check that grew
+  opinions about wording would fail for reasons nobody signed up for.
+- **FALSIFIED TWICE, and the first is not hypothetical:** (A) against `origin/main`'s REAL state -
+  **2/5 failed**, reporting `prompt=2422 mirror=1988` and `prompt=5 blocks mirror=4`; (B) against
+  113 applied to the prompt with the mirror forgotten - **2/5 failed**. A is the defect that
+  actually shipped; B is the future the check exists to prevent.
+- **THE FALSIFICATION CAUGHT A BUG IN THE CHECK ITSELF, BEFORE IT SHIPPED.** The first draft split
+  on an LF-only separator; this repo runs `core.autocrlf=true` with no `.gitattributes`, so a
+  checkout writes CRLF, the separator never matched, and **the equality check never ran at all**
+  (3 checks instead of 5) while reporting a misleading "no separator" failure. **It went red for the
+  wrong reason, which is its own kind of lying.** Line endings are now normalised to LF before
+  anything is compared - comparing what git STORES rather than what a checkout happens to write, so
+  the check cannot disagree with itself across machines.
+
 ## ITEM 83 ERRATA — THE WALKTHROUGH WAVE OFFERED — 2026-09-03 (errata lane; branch `errata-build`)
 
 **OFFERED, NOT MERGED.** Full record: `docs/menus/item83-errata-offer-2026-09-03.md`.
