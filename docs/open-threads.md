@@ -155,7 +155,7 @@ Branched from `origin/main` @ `1c8edd3`. Harness-only; **ZERO PRODUCT CODE** —
 `git diff --stat 1c8edd3 <tip> -- apps/desktop/src apps/server packages` is empty. No deploy
 implied or asked for. **`0f14b72`** (the module + the wiring + `item99.mjs`) · **`d5f5048`**
 (the sweep made non-fatal) · **`51eb9b6`** (blind-enumeration + backlog paths covered) ·
-**`__OFFER__`** (this record).
+**`248fff7`** (this record).
 
 **BOTH SETTINGS CLEAN, 68/68 each, one tree, neither stamp dirty; the parked pass ran
 `--no-rebuild` against the byte-identical bundle:**
