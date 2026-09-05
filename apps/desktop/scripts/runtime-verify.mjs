@@ -295,9 +295,18 @@ async function removeDir(dir) {
   }
 }
 
-function launchBrowser(browser, udd, url) {
+// ITEM 109 — HEADFUL, OPT-IN. The charter's sharpest instance asks for
+// `#/page/new` driven "in a REAL (headful) browser the way a writer does", so the
+// capability has to exist rather than be argued about. It is OPT-IN (`headful:
+// true`, or WS_HEADFUL=1) and never the default: a suite of 69 files that threw a
+// visible window onto the desk every run would be unusable, and a headful launch
+// needs a display, which a CI box may not have. What the default DOES keep is the
+// property that actually catches this crash class — a genuine cold document load
+// at the URL — which item109.mjs measures rather than assumes.
+function launchBrowser(browser, udd, url, { headful = process.env.WS_HEADFUL === '1' } = {}) {
   const proc = spawn(browser, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    ...(headful ? [] : ['--headless=new']),
+    '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--disable-extensions', '--disable-background-networking',
     `--user-data-dir=${udd}`, '--remote-debugging-port=0', url,
   ], { stdio: 'ignore' });
@@ -664,8 +673,16 @@ function makeApp(base, cdp, waitEvent) {
  * propagate after cleanup.
  */
 export async function withHarness(scenario, opts = {}) {
+  // ITEM 109 — `targetUrl` aims the harness at an ORIGIN ALREADY SERVING the app
+  // (a deployment) instead of a locally served dist. Opt-in and never the
+  // default, for two reasons that both matter: a standing suite file must not
+  // depend on a network or on production being up, and a gate pointed at
+  // production tests a build nobody in this run made. Its one honest use is the
+  // deploy checklist — three ships passed over a DEAD DOOR in production, and
+  // this is how the same instrument gets aimed there.
+  const targetUrl = opts.targetUrl || process.env.WS_TARGET_URL || null;
   const dist = opts.dist || DEFAULT_DIST;
-  if (!existsSync(path.join(dist, 'index.html'))) {
+  if (!targetUrl && !existsSync(path.join(dist, 'index.html'))) {
     throw new Error(`No built bundle at ${dist}. Run: pnpm --filter @writer-studio/desktop build:web`);
   }
   // ITEM 99 — REAP BEFORE LAUNCHING. A dead lane's orphans are what starve this
@@ -696,8 +713,8 @@ export async function withHarness(scenario, opts = {}) {
   const browserPath = findBrowser();
   const udd = path.join(os.tmpdir(), `ws-runtime-verify-${process.pid}`);
 
-  const { server, port } = await startServer(dist);
-  const base = `http://127.0.0.1:${port}`;
+  const served = targetUrl ? null : await startServer(dist);
+  const base = targetUrl ? targetUrl.replace(/\/+$/, '') : `http://127.0.0.1:${served.port}`;
   let proc;
   let ws;
   try {
@@ -731,7 +748,7 @@ export async function withHarness(scenario, opts = {}) {
     // adds. This line stays because a dir this process owns is its own to clear
     // whatever the reaper did or did not find.
     await removeDir(udd);
-    proc = launchBrowser(browserPath, udd, `${base}/#/`);
+    proc = launchBrowser(browserPath, udd, `${base}/#/`, { headful: opts.headful ?? (process.env.WS_HEADFUL === '1') });
     const cdpPort = await readCdpPort(udd);
     const wsUrl = await pageWsUrl(cdpPort);
     const conn = connect(wsUrl);
@@ -748,7 +765,7 @@ export async function withHarness(scenario, opts = {}) {
     killBrowser(proc, udd);
     await sleep(300);
     await removeDir(udd);
-    server.close();
+    if (served) served.server.close();
   }
 }
 
