@@ -1077,6 +1077,18 @@ Fable to route.
 ruling-consistent version (`9619b2a6`) on main — both grips always visible, opening even-empty tabs —
 superseding the pre-ruling "render no Desk grip until 112-C"; TUTOR-amended @ `2579cba`. The 112-A
 build lane can launch.
+**→ NICK'S CONDITIONAL SHIP WORD — "SHIP THE FLOOR" (112-A, Fable relay, 2026-09-05).** Fires WHEN the
+112-A offer lands (its clean-machine re-stamp at `7f48238` or successor, pushed-with-stamp). Then:
+verify per habits (**ZERO SCHEMA expected — Revise going `live:true` is client-side; any schema STOPS
+and surfaces**) → **MERGE on green** → Fable's review at the merge → **on PASS, DEPLOY** the full
+checklist: fresh suite BOTH settings at the deploy HEAD; tree clean at upload; build-OS/toolchain on
+the stamp; served-vs-stamped byte diff; **manifest SHA-enumerated since `1c8edd3` naming 112-A AND item
+99** (the reaper rides this ship, harness-only); **rollback ratchets from `1c8edd3` · `798fb798`.** Any
+red anywhere, or a verdict short of PASS: **STOP — the word never covers a red.**
+**→ RIDER (Nick's word, the mode strip): `revise` → `mark`.** Draft's stale sub-label `revise` is
+REPLACED with `mark` — the strip reads by the ratified sentence (**Draft MARKS, Revise DRESSES**).
+Lexicon change only, one line; **rides the next window (112-B or the next errata), NON-BLOCKING for the
+floor's ship.** Recorded as RULED.
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
@@ -1725,6 +1737,9 @@ Charter: `docs/wrizo-alpha/cluster-charter-tags-shelf-hands.md`. Item 116's impo
 BEHIND the cluster (its own small charter once the shelf exists). *(Committed post the roster stamp,
 batched with the MENU desk's item-83 errata build brief — `docs/menus/item83-errata-build-brief.md`,
 AUTHORED BY THE MENU DESK, committed to main by chat 1 so the errata builder can launch.)*
+**→ BINDING INPUT RATIFIED (Nick's word, 2026-09-05): THE 1100 ANCHOR.** The **29.7px dock overhang at
+the frame's MINIMUM width** — pre-existing in EVERY mode, pinned as 112-A's baseline — is CONFIRMED
+among the 115/117/119 cluster pass's binding inputs. Ratified.
 
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
