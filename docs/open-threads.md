@@ -232,6 +232,14 @@ the liveness test is exactly what tells the two apart); `killOwn`'s `/t` on its 
 unchanged and out of scope; and no orphans were reaped by hand — the only sweeps this lane
 performed were the reaper's own, under its own rules, logged.
 
+**→ MERGED `bb21df8` (chat 1, 2026-09-05); the ad-hoc errata-deploy loop RETIRES per ruling 1 — the
+runner's preflight owns the sweep now.** ONE-LINE DIVERGENCE: my loop swept the identical
+dead-owner-only `ws-runtime-verify` orphans but from OUTSIDE the runner (a between-attempts wrapper,
+plus a wait-for-live-lane layer the runner deliberately lacks) and did NOT enforce the canonical
+reaper's post-sweep count-mismatch REFUSAL (S4 clause 3) — the in-preflight sweep is stricter and
+self-recording; only the deploy's retry/wait orchestration stays mine. Item 99 rides the NEXT deploy
+(harness-only, no user-facing change; to be named in that manifest).
+
 ## ITEM 99 — THE ORPHAN REAPER (harness-infra; deploy-forensic) — OPENS 2026-08-03
 
 **OPENS.** Crashed and killed harness runs have leaked headless browsers AND their node parents
