@@ -47,6 +47,32 @@
 //      the caller's guard still refuses, and it should — another lane is
 //      genuinely mid-suite and this machine is genuinely contended.
 //
+// ---------------------------------------------------------------------------
+// RATIFIED BY FABLE, 2026-09-05 (chat 1 reading). This file is not a copy of an
+// existing sweep — chat 1's hardened loop was SESSION-LOCAL and never committed,
+// which by the house's own law (chat-only = lost) makes THIS PREFLIGHT THE
+// CANONICAL SHAPE, and chat 1 retires its loop in favour of it. The three
+// decisions offered as conservative defaults are ruled, not merely chosen:
+//
+//   · AN UNRESOLVABLE OWNER IS SPARED **AND REPORTED** — unknown is not dead.
+//     `resolveOwner` is deliberately TRI-STATE for this reason, and the sweep
+//     names unresolvable owners on their own line. A sweep that logged them as
+//     "alive" would claim a resolution it never made.
+//   · LIVE-OWNER PROFILE DIRS ARE KEPT — and so are unresolvable ones, for the
+//     same reason and reported the same way.
+//   · TREE-KILL APPLIES ONLY TO A VERIFIED-DEAD OWNER'S OWN BROWSER TREE. That
+//     is the ceiling. This file stays strictly INSIDE it and uses no tree-kill
+//     at all: every process in such a tree carries the same profile dir, so the
+//     enumeration already lists them individually and each is reaped as itself.
+//     Same outcome, narrower authority — recorded so a later reader does not
+//     mistake the absence of `/t` for ignorance of the ruling.
+//
+// ALSO RATIFIED: the harder refusal (a post-sweep count mismatch is NOT
+// overridable by --ignore-foreign — "a runner that cannot trust its own count
+// of the machine must not stamp anything"), and default-on sweeping,
+// verified-dead-only, logged to stderr every run.
+// ---------------------------------------------------------------------------
+//
 // A NOTE ON PID RECYCLING, because it is the subtle half. Windows recycles
 // PIDs, so "the owner PID does not name a live process" and "this browser is an
 // orphan" are DIFFERENT CLAIMS, and the incident record is explicit that
@@ -118,14 +144,27 @@ export function enumerateHarnessBrowsers() {
  *                        never be spent as "it was dead".
  *   · unparseable pid  — alive, same reason.
  */
-export function ownerAlive(pid) {
-  if (!Number.isInteger(pid) || pid <= 0) return true;
+export function resolveOwner(pid) {
+  if (!Number.isInteger(pid) || pid <= 0) return 'unknown';   // unparseable — nothing was resolved
   try {
     process.kill(pid, 0);
-    return true;
+    return 'alive';
   } catch (e) {
-    return e && e.code === 'ESRCH' ? false : true;
+    if (e && e.code === 'ESRCH') return 'dead';               // the ONLY answer that licenses a reap
+    if (e && e.code === 'EPERM') return 'alive';              // it exists; we simply may not signal it
+    return 'unknown';                                          // we could not tell, and must say so
   }
+}
+
+/**
+ * The predicate the sweep actually gates on: anything that is not a VERIFIED
+ * DEAD is spared. Kept beside `resolveOwner` rather than folded into it because
+ * the two answer different questions — "may I reap this?" (one bit, and it must
+ * fail safe) and "what do I know about this owner?" (three states, and the
+ * report must not flatten them).
+ */
+export function ownerAlive(pid) {
+  return resolveOwner(pid) !== 'dead';
 }
 
 /**
@@ -143,18 +182,25 @@ export function ownerAlive(pid) {
  * own PID. Only `isAlive(owner) === false` — an explicit, verified NO — is a
  * licence, and it is the only one.
  */
-export function selectReapTargets(browsers, { self = process.pid, isAlive = ownerAlive } = {}) {
+export function selectReapTargets(browsers, { self = process.pid, resolve = resolveOwner } = {}) {
   const owners = [...new Set(browsers.map((b) => b.owner))];
-  const alive = new Map(owners.map((o) => [o, isAlive(o)]));
-  const targets = browsers.filter((b) => b.owner !== self && alive.get(b.owner) === false);
+  // Our own PID is recorded as what it is and then excluded on its own line
+  // below — flattening it into "alive" would hide the self-protection rather
+  // than state it.
+  const states = new Map(owners.map((o) => [o, resolve(o)]));
+  const targets = browsers.filter((b) => b.owner !== self && states.get(b.owner) === 'dead');
   const spared = browsers.filter((b) => !targets.includes(b));
   return {
     owners,
-    alive,
+    states,
     targets,
     spared,
-    liveOwners: owners.filter((o) => alive.get(o) !== false),
-    deadOwners: owners.filter((o) => o !== self && alive.get(o) === false),
+    liveOwners: owners.filter((o) => states.get(o) === 'alive'),
+    deadOwners: owners.filter((o) => o !== self && states.get(o) === 'dead'),
+    // RATIFIED 2026-09-05: unknown is SPARED **and REPORTED** — unknown is not
+    // dead, and a sweep that logs it as "alive" has quietly told the reader it
+    // resolved something it never resolved.
+    unknownOwners: owners.filter((o) => states.get(o) === 'unknown'),
   };
 }
 
@@ -206,7 +252,13 @@ function reapStaleProfileDirs(heldOwners) {
     enumerated++;
     const owner = Number(m[1]);
     const full = path.join(os.tmpdir(), d.name);
-    if (ownerAlive(owner)) { kept.push({ dir: d.name, why: `owner ${owner} ALIVE` }); continue; }
+    // Same tri-state honesty as the process sweep: a dir is kept when its owner
+    // is alive AND when it is merely unresolvable, and the reason says which.
+    // "Live-owner profile dirs are KEPT" is the ratified rule; an unknown owner
+    // is not a live one, and reporting it as ALIVE would claim a resolution
+    // that never happened.
+    const state = resolveOwner(owner);
+    if (state !== 'dead') { kept.push({ dir: d.name, why: `owner ${owner} ${state.toUpperCase()}` }); continue; }
     if (heldOwners.has(owner)) { kept.push({ dir: d.name, why: `a browser still holds owner ${owner}` }); continue; }
     try {
       if (!statSync(full).isDirectory()) { kept.push({ dir: d.name, why: 'not a directory' }); continue; }
@@ -248,27 +300,37 @@ export async function reapOrphans({
 
   if (before === null) {
     log('REAPER: SKIPPED — could not enumerate processes, so no owner can be verified dead. Nothing killed.');
-    return { enumerated: null, reaped: [], survivors: null, liveOwners: [], mismatch: false, dirs: null };
+    return { enumerated: null, reaped: [], survivors: null, liveOwners: [], unknownOwners: [], mismatch: false, dirs: null };
   }
 
   // Resolve each DISTINCT owner once — the answer is a property of the owner,
   // not of each of its nine child processes — and decide through the one pure
   // function the harness proves.
-  const { owners, alive, targets, spared, liveOwners } = selectReapTargets(before);
+  const { owners, states, targets, spared, liveOwners, unknownOwners } = selectReapTargets(before);
 
   // THE LOG IS NOT CONDITIONAL. The 2026-08-03 authorized sweep executed
   // against an empty target set and recorded exactly that; an empty, dated,
   // reviewable record is the honest one, and it is also the only way a later
   // reader can tell "the reaper found nothing" from "the reaper never ran."
   log(`REAPER: ${before.length} harness browser(s), ${owners.length} owner(s) — `
-    + owners.map((o) => `${o}:${alive.get(o) === false ? 'DEAD' : 'alive'}`).join(' ')
+    + owners.map((o) => `${o}:${states.get(o) === 'dead' ? 'DEAD' : states.get(o) === 'unknown' ? 'UNKNOWN' : 'alive'}`).join(' ')
     + ` | dead-owner targets=${targets.length}${dryRun ? ' (DRY RUN)' : ''}`);
+  // RATIFIED 2026-09-05 — UNKNOWN IS SPARED AND REPORTED. Saying it on its own
+  // line, rather than letting it hide inside the roster above, is the whole
+  // point: an owner we could not resolve is the one case where a reader might
+  // otherwise assume the sweep had checked and found it live. It did not check;
+  // it failed to, and said so. Nothing is reaped on an unknown, ever.
+  if (unknownOwners.length > 0) {
+    log(`REAPER: ${unknownOwners.length} owner(s) UNRESOLVABLE and therefore SPARED — ${unknownOwners.join(',')}`);
+    log('  unknown is not dead. Their browsers are left standing, and if they are in fact corpses');
+    log('  the dirty-machine guard will refuse this run — which is the correct, conservative cost.');
+  }
 
   if (targets.length === 0) {
     const dirs = dryRun ? null : reapStaleProfileDirs(new Set(before.map((b) => b.owner)));
     if (dirs) logDirs(log, dirs);
     log(`REAPER: nothing to reap${spared.length ? ` — ${spared.length} browser(s) belong to LIVE owner(s) ${liveOwners.join(',')} and are untouched` : ''}.`);
-    return { enumerated: before.length, reaped: [], reapFailed: [], survivors: spared, liveOwners, mismatch: false, dirs, ms: Date.now() - started };
+    return { enumerated: before.length, reaped: [], reapFailed: [], survivors: spared, liveOwners, unknownOwners, mismatch: false, dirs, ms: Date.now() - started };
   }
 
   log(`REAPER: reaping ${targets.length} browser(s) of verified-dead owner(s) `
@@ -321,7 +383,7 @@ export async function reapOrphans({
     + ` survivors=${survivors.length}${liveOwners.length ? ` (live owners ${liveOwners.join(',')}, untouched)` : ''}`
     + ` in ${Date.now() - started}ms`);
 
-  return { enumerated: before.length, reaped, reapFailed, survivors, liveOwners, mismatch, dirs, ms: Date.now() - started };
+  return { enumerated: before.length, reaped, reapFailed, survivors, liveOwners, unknownOwners, mismatch, dirs, ms: Date.now() - started };
 }
 
 function logDirs(log, dirs) {

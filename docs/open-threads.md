@@ -148,6 +148,72 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 99 — THE THREE RULINGS RATIFIED; THE REAPER RE-STAMPED — 2026-09-05 (errata lane; branch `item99-orphan-reaper`)
+
+**Fable's rulings, chat 1 reading. All three RATIFIED.** Full record appended as §8 of
+`docs/wrizo-alpha/item99-orphan-reaper-offer-2026-09-04.md`. Still **OFFERED, NOT MERGED**;
+still **ZERO PRODUCT CODE**. **`3d2bd6a`** (the rulings landed) · **`4b2468b`** (this record).
+
+**RE-STAMPED — BOTH SETTINGS CLEAN, 68/68 each, one tree, neither stamp dirty:**
+
+```
+SUITE RESULT: CLEAN - tree=3d2bd6a bundle=index-BS32INXU.js/556707b
+SUITE RESULT: CLEAN - tree=3d2bd6a bundle=index-BS32INXU.js/556707b NO-REBUILD
+```
+
+**RULING 1 — THERE WAS NOTHING TO DIFF AGAINST, AND THIS IS NOW THE CANONICAL SHAPE.** Chat 1's
+hardened loop was **session-local and never committed**, which by the house's own law
+(*chat-only = lost*) makes the runner preflight THE CANONICAL SHAPE rather than a copy; chat 1
+retires its loop in favour of it and records any divergence as a one-line note, never a
+competing implementation. The three offered defaults are ruled: an **unresolvable owner is
+SPARED and REPORTED** (unknown ≠ dead); **live-owner profile dirs are KEPT**; **tree-kill applies
+only to a verified-dead owner's own browser tree.**
+
+**► THE GAP THAT RULING EXPOSED, and it was real.** `ownerAlive` returned a BOOLEAN, so a
+verified-alive owner and one that could not be resolved at all came out IDENTICAL — both logged
+`<pid>:alive`. Sparing unknown was already true; **REPORTING it was not.** A reader seeing
+"alive" was told the sweep had resolved something it never resolved, and on that one word a
+corpse could pass as another lane's live run indefinitely. **Fixed at the CONTRACT, not the log
+line:** `resolveOwner` is now TRI-STATE — `alive` | `dead` | `unknown` — because the machine has
+three cases and flattening them IS the defect. `ESRCH` ⇒ dead (the only licence); `EPERM` ⇒ alive
+(it demonstrably exists, we simply may not signal it); unparseable or any other error ⇒ unknown.
+`ownerAlive` survives as the one-bit predicate the sweep gates on, kept beside it because the two
+answer different questions — *"may I reap this?"* (one bit, must fail safe) and *"what do I
+actually know?"* (three states, must not be flattened). Reported in the roster token, on a
+dedicated line, in the profile-dir keep-reason, and in `manifest.json`'s new
+`unknownOwnersSpared` so two runs can be diffed on it.
+
+**On tree-kill:** the ruling sets a CEILING, and this file stays strictly inside it by using
+**no tree-kill at all** — every process in such a tree carries the same profile dir, so
+enumeration already lists each and each is reaped as itself. Same outcome, narrower authority;
+written into the module's law section so a later reader does not mistake the absence of `/t` for
+ignorance of the ruling.
+
+**RULING 2 — THE HARDER REFUSAL STANDS.** A post-sweep count mismatch is not overridable by
+`--ignore-foreign`. Fable's formulation, now recorded beside the behaviour: **a runner that
+cannot trust its own count of the machine must not stamp anything.** No code change.
+
+**RULING 3 — DEFAULT-ON SWEEPING STANDS,** verified-dead-only, logged to stderr every run. The
+opt-outs `--no-reap` / `WS_NO_REAP=1` are kept and **now documented in the runner's own usage
+header for their ONE honest use: preserving a dead run's browsers and profile dirs for
+FORENSICS** — when you are diagnosing why a run died, the corpses ARE the evidence and the reaper
+would collect it before you could read it. They are not a way past a refusal, and the mismatch
+refusal is not overridable at all.
+
+**VERIFICATION: `item99.mjs` 29/29, still browserless.** The tri-state is proven at BOTH levels,
+because the ruling is about what a READER sees and not only what a function returns: the pure
+function reports `unknownOwners` and keeps them out of `liveOwners`, and an end-to-end run with a
+genuinely unresolvable owner (`0`) names it on its own line while an injected kill that THROWS if
+called proves nothing was reaped on it.
+
+**► ONE RUN WENT VOID ON THE WAY, recorded as a success rather than hidden as noise.** The first
+re-stamp aborted at file 57 of 68 — eleven foreign browsers appeared mid-run under owner
+`52852` — and the runner declared it **VOID** rather than partly trustworthy. Zero of the 56 that
+ran failed and `item99.mjs` passed 29/29 inside it; a second attempt aborted at `ab2.mjs` for the
+same reason. **A sweep cannot be half-clean,** so each was re-run WHOLE rather than salvaged. The
+clean pair above is the third attempt and the first parked attempt. On a five-lane box that is
+the mid-run guard earning its keep, not an obstacle to it.
+
 ## ITEM 99 — THE ORPHAN REAPER: BUILT AND OFFERED — 2026-09-04 (errata lane; branch `item99-orphan-reaper`)
 
 **OFFERED, NOT MERGED.** Full record: `docs/wrizo-alpha/item99-orphan-reaper-offer-2026-09-04.md`.

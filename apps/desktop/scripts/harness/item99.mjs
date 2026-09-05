@@ -22,7 +22,7 @@ import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { selectReapTargets, ownerAlive, reapOrphans } from '../orphan-reaper.mjs';
+import { selectReapTargets, ownerAlive, resolveOwner, reapOrphans } from '../orphan-reaper.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -53,10 +53,11 @@ const SELF = process.pid;
     { pid: 31, owner: UNKNOWN },
     { pid: 41, owner: SELF },
   ];
-  // `isAlive` models exactly what ownerAlive returns: an explicit false ONLY
-  // for the verified-dead one; an unresolvable owner reads alive (fail-safe).
-  const isAlive = (o) => (o === DEAD_A ? false : true);
-  const r = selectReapTargets(table, { self: SELF, isAlive });
+  // The resolver is TRI-STATE, as ratified: 'dead' is the only licence, and
+  // 'unknown' is a distinct answer that must survive into the report rather
+  // than being flattened into 'alive'.
+  const resolve = (o) => (o === DEAD_A ? 'dead' : o === UNKNOWN ? 'unknown' : 'alive');
+  const r = selectReapTargets(table, { self: SELF, resolve });
 
   ok('S1: only the VERIFIED-DEAD owner is targeted — all three of its browsers, and nothing else',
     JSON.stringify(r.targets.map((t) => t.pid).sort((a, b) => a - b)) === JSON.stringify([11, 12, 13]),
@@ -70,9 +71,19 @@ const SELF = process.pid;
   ok('S1: an UNRESOLVABLE owner is spared — "I could not tell" is never spent as "it was dead"',
     r.targets.every((t) => t.owner !== UNKNOWN), JSON.stringify(r.targets));
 
+  // RATIFIED 2026-09-05 — spared AND REPORTED. The sparing was already true;
+  // the REPORTING is the half this ruling added, and it is the half a reader
+  // depends on: an owner listed as "alive" claims a resolution that never
+  // happened, and would let a corpse pass as another lane's live run forever.
+  ok('S1: an UNRESOLVABLE owner is REPORTED AS SUCH, not flattened into "alive" — unknown is not dead, and it is not alive either',
+    JSON.stringify(r.unknownOwners) === JSON.stringify([UNKNOWN])
+      && r.states.get(UNKNOWN) === 'unknown'
+      && !r.liveOwners.includes(UNKNOWN),
+    JSON.stringify({ unknownOwners: r.unknownOwners, liveOwners: r.liveOwners, state: r.states.get(UNKNOWN) }));
+
   ok('S1: our OWN browsers are spared even if the liveness probe were to lie about us',
-    selectReapTargets(table, { self: SELF, isAlive: () => false }).targets.every((t) => t.owner !== SELF),
-    JSON.stringify(selectReapTargets(table, { self: SELF, isAlive: () => false }).targets.map((t) => t.pid)));
+    selectReapTargets(table, { self: SELF, resolve: () => 'dead' }).targets.every((t) => t.owner !== SELF),
+    JSON.stringify(selectReapTargets(table, { self: SELF, resolve: () => 'dead' }).targets.map((t) => t.pid)));
 }
 
 // ===========================================================================
@@ -84,7 +95,7 @@ const SELF = process.pid;
 {
   const LIVE = 910001;
   const onlyLive = [{ pid: 51, owner: LIVE }, { pid: 52, owner: LIVE }, { pid: 53, owner: LIVE }];
-  const r = selectReapTargets(onlyLive, { self: SELF, isAlive: () => true });
+  const r = selectReapTargets(onlyLive, { self: SELF, resolve: () => 'alive' });
   ok('S2 (the guard on the guard): a box holding ONLY live-owner browsers yields ZERO targets — the reaper leaves the run blocked rather than clearing the board to unblock itself',
     r.targets.length === 0 && r.spared.length === 3 && r.liveOwners.length === 1,
     JSON.stringify({ targets: r.targets.length, spared: r.spared.length, liveOwners: r.liveOwners }));
@@ -98,8 +109,12 @@ const SELF = process.pid;
   ok('S3: a VERIFIED-DEAD pid (a child spawned and reaped by this file) reads DEAD — the one answer that licenses a reap',
     ownerAlive(DEAD) === false, `deadPid=${DEAD}`);
   const junk = [0, -1, NaN, 1.5, undefined, null];
-  ok('S3: every unparseable owner reads ALIVE — the fail-safe direction, so a malformed profile name can never license a kill',
+  ok('S3: every unparseable owner is SPARED — the fail-safe direction, so a malformed profile name can never license a kill',
     junk.every((j) => ownerAlive(j) === true), JSON.stringify(junk.map((j) => `${String(j)}:${ownerAlive(j)}`)));
+  ok('S3: ...and each is reported as UNKNOWN rather than as alive — the resolver has three answers because the machine has three cases, and collapsing them is how a corpse passes as a live lane',
+    junk.every((j) => resolveOwner(j) === 'unknown')
+      && resolveOwner(SELF) === 'alive' && resolveOwner(DEAD) === 'dead',
+    JSON.stringify({ junk: junk.map((j) => `${String(j)}:${resolveOwner(j)}`), self: resolveOwner(SELF), dead: resolveOwner(DEAD) }));
 }
 
 // ===========================================================================
@@ -244,6 +259,27 @@ const SELF = process.pid;
     blind.enumerated === null && blind.reaped.length === 0 && blind.mismatch === false
       && lines.some((l) => l.includes('SKIPPED') && l.includes('no owner can be verified dead')),
     JSON.stringify({ report: { enumerated: blind.enumerated, reaped: blind.reaped }, lines }));
+
+  // (a2) UNKNOWN, END TO END. The ruling is about what a READER sees, so it is
+  // proven at the log rather than only at the pure function: an owner that
+  // genuinely fails to resolve (0 is unparseable, so resolveOwner says
+  // 'unknown') must be spared, named on its own line, and never counted as a
+  // live owner. A kill that THROWS if called is the guard that this path
+  // reaps nothing.
+  const ulines = [];
+  const unk = await reapOrphans({
+    log: (l) => ulines.push(l),
+    enumerate: () => [{ pid: 81, owner: 0 }, { pid: 82, owner: 0 }],
+    kill: () => { throw new Error('the reaper killed on an UNKNOWN owner'); },
+    pollMs: 5, polls: 2,
+  });
+  ok('S8: an owner that genuinely fails to resolve is SPARED and REPORTED BY NAME on its own line — spared was already true; being reported is what the 2026-09-05 ruling added, and it is what stops a corpse passing as another lane forever',
+    unk.reaped.length === 0
+      && JSON.stringify(unk.unknownOwners) === JSON.stringify([0])
+      && unk.liveOwners.length === 0
+      && ulines.some((l) => l.includes('UNRESOLVABLE and therefore SPARED'))
+      && ulines.some((l) => l.includes('unknown is not dead')),
+    JSON.stringify({ reaped: unk.reaped, unknownOwners: unk.unknownOwners, liveOwners: unk.liveOwners, line: ulines.find((l) => l.includes('UNRESOLVABLE')) }));
 
   // (b) THE BACKLOG. Item 99 opened on 54 stale dirs sitting in TEMP. One dir
   // proves the rule; a batch proves the sweep does not stop at the first, and
