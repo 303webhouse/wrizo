@@ -152,7 +152,7 @@ other lanes' in-flight runs). One browser pool, one runner at a time.
 
 **Fable's rulings, chat 1 reading. All three RATIFIED.** Full record appended as §8 of
 `docs/wrizo-alpha/item99-orphan-reaper-offer-2026-09-04.md`. Still **OFFERED, NOT MERGED**;
-still **ZERO PRODUCT CODE**. **`3d2bd6a`** (the rulings landed) · **`__AMEND__`** (this record).
+still **ZERO PRODUCT CODE**. **`3d2bd6a`** (the rulings landed) · **`4b2468b`** (this record).
 
 **RE-STAMPED — BOTH SETTINGS CLEAN, 68/68 each, one tree, neither stamp dirty:**
 
