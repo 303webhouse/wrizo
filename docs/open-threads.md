@@ -148,6 +148,90 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 99 — THE ORPHAN REAPER: BUILT AND OFFERED — 2026-09-04 (errata lane; branch `item99-orphan-reaper`)
+
+**OFFERED, NOT MERGED.** Full record: `docs/wrizo-alpha/item99-orphan-reaper-offer-2026-09-04.md`.
+Branched from `origin/main` @ `1c8edd3`. Harness-only; **ZERO PRODUCT CODE** —
+`git diff --stat 1c8edd3 <tip> -- apps/desktop/src apps/server packages` is empty. No deploy
+implied or asked for. **`0f14b72`** (the module + the wiring + `item99.mjs`) · **`d5f5048`**
+(the sweep made non-fatal) · **`51eb9b6`** (blind-enumeration + backlog paths covered) ·
+**`__OFFER__`** (this record).
+
+**BOTH SETTINGS CLEAN, 68/68 each, one tree, neither stamp dirty; the parked pass ran
+`--no-rebuild` against the byte-identical bundle:**
+
+```
+SUITE RESULT: CLEAN - tree=51eb9b6 bundle=index-BS32INXU.js/556707b
+SUITE RESULT: CLEAN - tree=51eb9b6 bundle=index-BS32INXU.js/556707b NO-REBUILD
+```
+
+67 files became **68** — `item99.mjs`, and it is the cheapest in the suite: **2 seconds, no
+browser.**
+
+**WHAT LANDED.** `scripts/orphan-reaper.mjs` — the canonical dead-owner sweep, ONE definition.
+`run-suite.mjs` gains a PREFLIGHT that runs BEFORE guard 3 reads the machine (so the guard
+judges the box as it is, not as a dead lane left it), loses its private copy of the enumerator
+to the module's, and gains `--no-reap` as a forensic escape hatch; the sweep is recorded in
+`manifest.json` beside the 77(c) stamp. `runtime-verify.mjs`'s `withHarness` inherits it too —
+which is where EVERY browser this repo launches comes from, so the probe, `selftest-quiescence`
+and any harness a lane runs directly get it without each entry point remembering. Skipped under
+the suite, which already swept once: re-sweeping per child would run 67 times WHILE this
+suite's own siblings are alive, and the safest sweep is the one that does not have to be right
+67 times.
+
+**THE S4 LAW IS THE CONSTRAINT, NOT A PREFERENCE.** Four consequences, each load-bearing:
+(1) ENUMERATE, THEN KILL BY PID — the signature FINDS candidates and never DECIDES them;
+`taskkill /f` and pointedly **not** `/t`, because a tree reaches processes the sweep never
+listed (every child carries the same profile dir, so each is already enumerated in its own
+right). (2) A DEAD OWNER IS THE ONLY LICENCE — owner alive, unresolvable, or our own are all
+spared; every uncertain path fails toward NOT killing. (3) A COUNT THAT DOES NOT FALL MEANS THE
+MODEL IS WRONG — the 2026-08-04 harm was not the dead-owner sweeps (the incident's own author
+calls those defensible) but the ESCALATION when the count held; on a mismatch this reports and
+STOPS, and the runner refuses. (4) THE REFUSAL SURVIVES THE REAP — corpses only; one live-owner
+browser still blocks the run.
+
+**PID RECYCLING, the subtle half:** "the owner PID does not name a live process" and "this
+browser is an orphan" are DIFFERENT CLAIMS, and the incident record is explicit that treating
+the weaker as the stronger is what went wrong. Safe in the direction that matters — a recycled
+PID reads ALIVE, so a corpse is MISSED (costing a refusal), never a live run killed; the
+reverse error is unreachable.
+
+**IT WAS TESTED LIVE BY ACCIDENT, and better than anything staged.** Mid-build, **item 112-A's
+suite held sixteen harness browsers under ONE owner** — the exact shape of the 2026-08-04
+incident, which faced sixteen under owner `23588` and escalated. The reaper read owner `44044`
+**ALIVE**, reaped **0**, spared all of them, kept the profile dir, and guard 3 then REFUSED this
+run. That lane finished undisturbed. Clauses 2 and 4 working together, on a real machine,
+against a real lane.
+
+**VERIFIED WITHOUT TAKING THE BOX — `item99.mjs` launches NO browser, 26/26.** A reaper whose
+safety can only be shown by killing real browsers on a shared box is one whose safety is never
+shown. So the kill DECISION is a pure function driven by fabricated tables, and `reapOrphans`
+takes `enumerate`/`kill` seams so the STOP-AND-REPORT clause is exercised deterministically (a
+kill that claims success but changes nothing ⇒ `mismatch`, each target attempted exactly ONCE,
+no widening) **with a control** proving it is not a reaper that always cries wolf. S5 asserts
+against the module's own source that no wider instrument exists to reach for; S8 proves the
+blind-enumeration path kills nothing (injected kill THROWS if called) and that a 20-dir backlog
+drains in one pass, 688ms.
+
+**► THREE THINGS FOR CHAT 1 TO RULE ON, not discover.** (a) **The reference shape could not be
+found.** The ticket names "the sweep logic chat 1's hardened loop uses" as the reference; there
+is **no committed artifact** for it — no loop script anywhere in the tree, nothing in `docs/`
+describing its internals — so this was built from the three authoritative COMMITTED sources
+(item 99's charter, `docs/menus/incident-2026-08-04-s4.md`, the ratified S4 LAW). The decisions
+where a divergence would matter are named in the offer: `/t` usage, live-owner dirs, and how an
+unresolvable owner is treated. (b) **The runner is now MORE refusing in exactly one case,
+deliberately** — a post-sweep count mismatch refuses and `--ignore-foreign` does NOT override
+it, because "run anyway" at that moment is the reflex that cost another lane a suite. One line
+to reopen if Fable disagrees. (c) **Every standalone harness run now sweeps**, emitting
+`REAPER:` lines on **stderr** (never stdout — a harness's stdout is its verdict) and possibly
+removing another dead lane's stale dirs. Opt-outs: `--no-reap`, `WS_NO_REAP=1`.
+
+**WHAT WAS NOT DONE:** no product code; no mass sweep of TEMP (`withHarness`'s standing note
+declining one is REFINED IN PLACE, not overturned — a live run's dir is still untouchable, and
+the liveness test is exactly what tells the two apart); `killOwn`'s `/t` on its OWN child is
+unchanged and out of scope; and no orphans were reaped by hand — the only sweeps this lane
+performed were the reaper's own, under its own rules, logged.
+
 ## ITEM 99 — THE ORPHAN REAPER (harness-infra; deploy-forensic) — OPENS 2026-08-03
 
 **OPENS.** Crashed and killed harness runs have leaked headless browsers AND their node parents
