@@ -1089,6 +1089,42 @@ red anywhere, or a verdict short of PASS: **STOP — the word never covers a red
 REPLACED with `mark` — the strip reads by the ratified sentence (**Draft MARKS, Revise DRESSES**).
 Lexicon change only, one line; **rides the next window (112-B or the next errata), NON-BLOCKING for the
 floor's ship.** Recorded as RULED.
+**→ 112-A OFFERED (build lane, 2026-09-05) — branch `item112a`, offered SHA `a672317`.** Record:
+`docs/menus/tutor/item112a-offer-2026-09-05.md` (+ `item112a-s0.md`, `item112a-build-record.md`).
+**REVISE IS LIVE**: `live:true`, real active state, the strip's EXISTING switch behaviour and no new
+gesture; free-editing surface; both hands from birth per 119 and Nick's empty-drawer ruling (both grips
+visible, both OPEN, the Desk drawer onto empty content); geometry floor asserted at BOTH reference
+widths. **BOTH SETTINGS CLEAN, one tree, one bundle, neither stamp dirty — 69/69 each: `tree=a672317
+bundle=index-CK6B8dF1.js/557023b`** (parked ran `--no-rebuild`, so both stamps name the same software).
+`item112a.mjs` 55 · `item84b.mjs` 62+1 parked · **probe 44/44**. **ZERO SCHEMA** (client-side only;
+product delta 7 files, +198/−45) — the ship word's precondition, checkable: `git diff 2820727..a672317
+-- apps/server packages apps/desktop/src/store/persistence.ts apps/desktop/src/types` is empty.
+**AWAITS chat 1's armed sequence** per the conditional ship word above. **OFFERED, NOT MERGED; no deploy
+asked.**
+**→ 112-A's S0 ANSWERS, on the record (the brief's two required checks).** (1) **Mode persists PER PAGE**
+— `localStorage`, `wrizo-mode-page-<id>`, behind a validity allowlist; Revise was ADMITTED to that
+existing rule (no new key/default/lifetime). The allowlist was the whole risk: an un-named `'revise'`
+falls through to the default, so Revise would have silently forgotten itself on reload while Draft
+remembered. (2) **THE EDITOR PATH, and the answer the parked lens needs — YES.** Revise renders through
+`ForwardOnlyEditor`'s FREE-EDIT branch, so its text runs through `decorateEditorFor` every keystroke, and
+that function ALREADY carries the decorator override the flag decorator will use (5th param `decorate`,
+already load-bearing for `BoardCardPopup`). **The lens needs an ARGUMENT, not new routing** — with two
+constraints: character count must stay 1:1 (the caret restore depends on it — independent corroboration
+of the CSS-only flag law), and a marker may never be `display:none`/`visibility:hidden` (it vanishes from
+STORED text via `innerText`). Re-verified after the errata wave touched `draftDecoration.ts`: unchanged.
+**→ 112-A RIDER, OPEN FOR THE DESK (non-blocking): Revise BELOW 1100.** The floor is charter-law at 1100
+and 1366, both framed. Below the gate Revise is live on **Draft's exact terms** (§2: "make Revise behave
+exactly as Draft does"); it has no hands and no geometry floor there — but neither does Draft, and a
+narrower rule would have been invention. **If the desk prefers a framed-only Revise, it is ONE PROP**
+(`reviseEnabled` on `ModeSwitcher`, already the seam) **and no other line moves.** Not decided by the
+build lane.
+**→ 112-A PARK: ONE, and the lane's own first count was WRONG (recorded as the lesson).** `item84b.mjs`
+S1 — *"the Revise tab is inert…"* — is SUPERSEDED by Revise standing up; original kept verbatim in the
+file that owns it, successor live in the same file and STRONGER (the conclusion used to hold *by
+construction* — Revise could not be entered — and now names a live surface the Draft roster must actively
+decline; +2 further checks). The lane's sweep grepped `deferred`/`aria-disabled` and **missed it because
+the assertion says "inert"**; the SUITE caught it (red at item84b, 1/60). Item 84's arithmetic, applied
+to the lane that wrote it: the park COUNT is a number to be audited, not a silence to be trusted.
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
