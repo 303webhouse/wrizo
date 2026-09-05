@@ -11,6 +11,14 @@
 //   node scripts/run-suite.mjs --parked        # HARNESS_PARKED=1
 //   node scripts/run-suite.mjs --only tu2.mjs,j5.mjs
 //   node scripts/run-suite.mjs --no-rebuild    # quick iteration; STAMPED as such
+//   node scripts/run-suite.mjs --no-reap       # leave the machine exactly as found
+//
+// --no-reap (and WS_NO_REAP=1, which reaches withHarness's own sweep) exist for
+// ONE honest use, ratified 2026-09-05: PRESERVING A DEAD RUN'S BROWSERS AND
+// PROFILE DIRS FOR FORENSICS. If you are diagnosing why a run died, the corpses
+// ARE the evidence and the reaper would collect it before you could read it.
+// They are not a way to get past a refusal — the refusal is not what they turn
+// off, and a mismatch refusal is not overridable at all.
 // Exit 0 only if EVERY file returned a verdict AND every verdict passed.
 //
 // Every verdict record carries a PROVENANCE STAMP — `tree=<sha> bundle=<asset
@@ -215,6 +223,10 @@ if (NO_REAP) {
       reaped: reapReport.reaped,
       reapFailed: reapReport.reapFailed || [],
       liveOwnersUntouched: reapReport.liveOwners,
+      // RATIFIED 2026-09-05 — unknown is spared AND reported, in the
+      // machine-readable record as well as the log. A reader diffing two runs
+      // must be able to see that an owner went unresolved.
+      unknownOwnersSpared: reapReport.unknownOwners || [],
       profileDirsRemoved: reapReport.dirs ? reapReport.dirs.removed : null,
     } }, null, 2));
   } catch { /* the log already carries it; the manifest is a convenience */ }
