@@ -10211,6 +10211,64 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## THE FLOOR (112-A) + ITEM 99 DEPLOY MANIFEST — 2026-09-05 (chat 1, on Nick's standing "ship the floor" — Fable PASS)
+
+**THE FLOOR — item 112-A: REVISE STANDS UP as a live surface (empty by design) — riding with item 99's
+Orphan Reaper, both versions.** Gate chain: Nick's standing word **"SHIP THE FLOOR"** (conditional,
+recorded `2820727`) → Fable's review **VERDICT PASS** (`docs/wrizo-alpha/item112a-review-fable.md` @
+merge `1ebd2df`). **ZERO SCHEMA** — Revise going `live:true` is client-side. Deploying `main` HEAD
+**`10c2d0f`**.
+
+**Deploy-ships-a-SHA enumeration (`1c8edd3..10c2d0f`):**
+- `1ebd2df` — Merge item112a @ `609828a` (112-A: Revise live; 7 client files; `item112a.mjs`; the
+  b2.mjs fixture race closed loudly, assertion unchanged, no park owed)
+- `bb21df8` — Merge item99-orphan-reaper @ `83ab228` — **item 99 v1**: the canonical dead-owner
+  preflight sweep in the runner (aid-never-dependency; post-sweep count-mismatch refusal) [harness-only]
+- `00eeb63` — Merge item99-orphan-reaper @ `85949af` — **item 99 v2**: the TRI-STATE owner resolution
+  (`alive | dead | unknown`) [harness-only]
+- Records: `9ed3d51` (item-99 divergence + the ad-hoc loop's retirement), `2820727` (the standing ship
+  word + `revise`→`mark` ruling + the 1100-anchor ratification), `cbd0614` (probe width matrix gains
+  1100 + expect-the-tri-state), `10c2d0f` (the 112-A review).
+
+**New PRODUCT code since the last live build (`1c8edd3` · railway `798fb798`) — verified
+`1c8edd3..10c2d0f`, 7 client files, +198/−45, ZERO schema, ZERO server:**
+- `PageEditor.tsx` (+72 — the three-branch `sliverContent` shape), `ForwardOnlyEditor.tsx` (+57 —
+  `'revise'` joins `EditorMode` as the SAME free-editing branch as Draft, deliberately not a third),
+  `ModeStrip.tsx` (+45), `ModeSwitcher.tsx` (+25 — both strips agree, framed and unframed),
+  `Tutor.tsx` (+21), `ModeStage.tsx` (+15), `ScriptEditor.tsx` (+8, QuickSprint gated out).
+- **ITEM 99 rides this ship in BOTH versions — harness-only, ZERO product code, no user-facing
+  change:** v1 the canonical preflight sweep; v2 the tri-state resolution where **`ESRCH`→dead is the
+  ONLY licence to reap, `EPERM`→alive, and an unresolvable owner is `unknown` — SPARED and REPORTED.**
+
+**Records since `1c8edd3` (docs):** 112-A's offer + build record + S0 + its ledger entry; item-99's
+records and offers; the standing ship word, the `revise`→`mark` ruling, the 1100-anchor ratification,
+the probe-width-matrix ruling; the 112-A review; this manifest.
+
+**Verified — fresh suite of record at the deploy HEAD (`10c2d0f`), BOTH settings, machine-clear (NOT
+contaminated):** **69/69 UNSET (CLEAN) and 69/69 PARKED (CLEAN)** at `bundle=index-CK6B8dF1.js/557023b`
+(CSS `index-D4fKPwmq.css`) — the SAME bundle the offer stamped, neither stamp dirty. **The reaper's
+preflight ran on BOTH settings and logged its own zero** — *"REAPER: 0 harness browser(s), 0 owner(s)
+— dead-owner targets=0 / nothing to reap"* — so the new instrument is exercised in the very ship that
+carries it. `tsc` ×2 EXIT 0; `build:web` clean. **TREE CLEAN AT UPLOAD:** `git status --porcelain`
+EMPTY.
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `1c8edd3` · railway `798fb798`** — the errata wave. Zero schema,
+so rollback is a clean redeploy of that tree.
+
+**DEPLOY STAMP: git `10c2d0f` · railway build `de639860-3b85-4148-bcf6-d6f60759dfdd`** — DEPLOYED
+2026-09-05 (`railway up --ci` from the primary checkout; item-98 guard PROJECT + TREE verified:
+`writer-studio` / `production` / `writer-studio-app`, tree clean at upload; image `sha256:70375f93`).
+Verified LIVE: `/healthz` **200**, served **`index-CK6B8dF1.js` + `index-D4fKPwmq.css`**, `/auth/me`
+**401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-CK6B8dF1.js` =
+**557,023 b**, md5 `7b49086f7afe2399c922fa7a98556459` == local suite build; served CSS
+`index-D4fKPwmq.css` md5 `fd61adfbe35d29acc695c622686e4bd9` == local (unchanged — 112-A touched no
+CSS). Windows suite == Linux Railway == served. Every-ship served-vs-stamped diff: **MATCH.**
+
 ## ERRATA WAVE (walkthrough E1–E4) DEPLOY MANIFEST — 2026-09-04 (chat 1, on Nick's ship word — Fable PASS)
 
 **THE WALKTHROUGH ERRATA WAVE — E1 fade-on-words + E2 probe-asserted layout (Structure to the tab
