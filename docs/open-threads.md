@@ -1159,6 +1159,18 @@ red anywhere, or a verdict short of PASS: **STOP — the word never covers a red
 REPLACED with `mark` — the strip reads by the ratified sentence (**Draft MARKS, Revise DRESSES**).
 Lexicon change only, one line; **rides the next window (112-B or the next errata), NON-BLOCKING for the
 floor's ship.** Recorded as RULED.
+**→ WORD SPENT + LANE RETIRED (chat 1, 2026-09-05).** "SHIP THE FLOOR" **FIRED AND IS SPENT** — the
+floor shipped `10c2d0f` · railway `de639860` (see THE FLOOR (112-A) + ITEM 99 DEPLOY MANIFEST). **The
+112-A lane is RETIRED WITH HONORS:** worktree cleaned per item-110 hygiene — branch `item112a` deleted
+(was `609828a`, merged), `.claude/worktrees/item112a` removed; `609828a` stays reachable via main's
+merge `1ebd2df` and `origin/item112a`.
+
+**⛔ STANDING POSTURE — ALL SHIPS HELD (Nick, 2026-09-05), until his walk verdicts are in.** While
+Nick tests the floor on production: **GREEN OFFERS MERGE as they arrive** (verify per habits → merge →
+Fable's review as usual) — **but NOTHING DEPLOYS.** This SUPERSEDES every prior standing/conditional
+ship word ("ship whatever we can", "ship the floor"): all are spent, and **no deploy fires on a stale
+word.** A new ship needs Nick's fresh word after the walk verdicts land. Production stays `10c2d0f` ·
+`de639860`; rollback ratchet unchanged (`1c8edd3` · `798fb798`).
 **→ 112-A OFFERED (build lane, 2026-09-05) — branch `item112a`, offered SHA `a672317`.** Record:
 `docs/menus/tutor/item112a-offer-2026-09-05.md` (+ `item112a-s0.md`, `item112a-build-record.md`).
 **REVISE IS LIVE**: `live:true`, real active state, the strip's EXISTING switch behaviour and no new
