@@ -261,10 +261,49 @@ await withHarness(async (app) => {
   ok('S2: a selected Shelf card offers "Pin to a Board…" in the action row (the existing PinToBoardSheet — nothing new invented)', pinBtnPresent === true, String(pinBtnPresent));
   await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Pin to a Board…').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (Shelf)' });
-  await app.evalJs("[...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes('S2 Project'))?.click()");
-  await sleep(150);
-  await app.evalJs("[...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes('S2 Board'))?.click()");
-  await sleep(300);
+  // ---------------------------------------------------------------------------
+  // FIXTURE RACE, CLOSED (found by the item 112-A lane, 2026-09-05; harness-only,
+  // and NOT that lane's file — recorded in its offer as a correction made outside
+  // its own scope).
+  //
+  // These two clicks used `?.click()` behind a bare 150ms sleep. The destination
+  // sheet renders in TWO stages — projects first, then that project's boards once
+  // one is chosen — so a row that had not rendered yet made the optional call a
+  // SILENT NO-OP: no pin happened, and the assertion below then reported a bare
+  // `[]` with nothing to say the row had simply been missing.
+  //
+  // MEASURED, not suspected: this file failed exactly that way ONCE under full-
+  // suite load (1 red in 6 observed runs at one tree — the parked run of the SAME
+  // tree and bundle passed it, and it passed 3/3 standalone). A broken pin PATH
+  // would fail every time; an unrendered row fails only when the box is busy.
+  //
+  // THE REPAIR IS THE LOUD FAILURE, not the wait. Waiting alone would have made
+  // the red rarer without making it legible. Each row is now waited for AND
+  // clicked in a form that asserts it was found, so a genuinely missing row fails
+  // HERE, saying which row — and can never again be laundered into a confusing
+  // empty-boxes result further down.
+  const waitQuietly = async (expr, label) => {
+    // Non-fatal by design: app.waitFor THROWS on timeout, which would abort the
+    // whole file. A real failure must reach the ok() below as a reported check,
+    // not as a stack trace that loses every remaining assertion in this file.
+    try { await app.waitFor(expr, { timeout: 5000, label }); return true; }
+    catch { return false; }
+  };
+  const clickDestRow = async (label) => {
+    const sel = `[...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes(${JSON.stringify(label)}))`;
+    const appeared = await waitQuietly(`!!(${sel})`, `dest row: ${label}`);
+    const clicked = appeared && await app.evalJs(`(() => { const el = ${sel}; if (!el) return false; el.click(); return true; })()`);
+    ok(`S2 (fixture): the "${label}" destination row rendered and was clicked — asserted rather than optional-chained, so a missing row fails HERE and names itself instead of silently producing an empty pin below`,
+      clicked === true, JSON.stringify({ appeared, clicked }));
+  };
+  await clickDestRow('S2 Project');
+  await clickDestRow('S2 Board');
+  // The pin's own write, waited for rather than slept at. Quiet on timeout so the
+  // ruled assertion below stays the one that reports the verdict.
+  await waitQuietly(
+    "(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'b2-s2-board')?.boxes ?? []).length > 0",
+    'pin reached storage',
+  );
 
   const targetBoardAfterPin = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'b2-s2-board')");
   ok('S2: pinning from the Shelf genuinely pins the page onto the chosen board', (targetBoardAfterPin?.boxes ?? []).some((b) => b.kind === 'page-pin' && b.entryId === 'b2-t3-qualifies'), JSON.stringify(targetBoardAfterPin?.boxes));

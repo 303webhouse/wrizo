@@ -125,10 +125,21 @@ function PageEditorView({ id }: { id: string }) {
   // posture; this is deliberately narrower than "any untyped page" — a
   // filed-but-untyped support page (origin 'journal'/'project'/null) still
   // opens in Draft, unchanged.
+  // ITEM 112-A (§2's S0 check, answered and recorded in
+  // docs/menus/tutor/item112a-s0.md) — MODE PERSISTS PER PAGE, under this key,
+  // written on every switch and read once at mount behind the allowlist below.
+  // Revise is ADMITTED TO THAT RULE and given no rule of its own: no new key, no
+  // new default, no new lifetime. The allowlist is the whole mechanism, and that
+  // is exactly why it had to change — a stored 'revise' not named here falls
+  // through to the DEFAULT, so Revise would have silently forgotten itself on
+  // every reload while Draft remembered. The default expression is untouched:
+  // nothing opens INTO Revise, which is the brief's "no new entry point" holding
+  // — a writer reaches Revise by the strip, and only ever returns to it because
+  // they themselves left the page in it.
   const modeKey = `wrizo-mode-page-${id}`;
   const [mode, setMode] = useState<EditorMode>(() => {
     const saved = localStorage.getItem(modeKey);
-    if (saved === 'journal' || saved === 'drafting') return saved;
+    if (saved === 'journal' || saved === 'drafting' || saved === 'revise') return saved;
     return entry?.pageType === 'manuscript' || entry?.origin === 'loose' ? 'journal' : 'drafting';
   });
 
@@ -780,19 +791,47 @@ function PageEditorView({ id }: { id: string }) {
           inkToolPlaceholder: false,
           captureItems: journalFurniture ? CAPTURE_ITEMS : [],
         }
-      : {
-          kind: 'draft',
-          structure: 'prose',
-          onSwitchStructure,
-          format: { onFormat: applyRailFormat },
-          // ITEM 114 (item 83 errata E4) — READ THROUGH THE DEFAULT, never
-          // written at birth. A page that has never chosen carries no `kind`
-          // key at all, reads 'normal' here, and stays byte-identical on disk.
-          pageKind: entry.pageSettings?.kind ?? PAGE_KIND_DEFAULT,
-          onPickKind: kind => patchPageSettings({ kind }),
-          styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
-          onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
-        };
+      : mode === 'drafting'
+        ? {
+            kind: 'draft',
+            structure: 'prose',
+            onSwitchStructure,
+            format: { onFormat: applyRailFormat },
+            // ITEM 114 (item 83 errata E4) — READ THROUGH THE DEFAULT, never
+            // written at birth. A page that has never chosen carries no `kind`
+            // key at all, reads 'normal' here, and stays byte-identical on disk.
+            pageKind: entry.pageSettings?.kind ?? PAGE_KIND_DEFAULT,
+            onPickKind: kind => patchPageSettings({ kind }),
+            styleGuide: entry.pageSettings?.styleGuide ?? STYLE_GUIDE_DEFAULT,
+            onPickStyleGuide: styleGuide => patchPageSettings({ styleGuide }),
+          }
+        // ITEM 112-A — REVISE'S DESK DRAWER OPENS, AND IT OPENS ONTO NOTHING.
+        //
+        // Nick's ruling (2026-09-02): both grips are visible from 112-A and both
+        // OPEN their tabs, even onto an empty drawer — an empty drawer opens, so
+        // it is not a locked door and G3's absence-over-grayed does not govern
+        // it. The mirror is visually complete now; 112-C fills this drawer with
+        // 83's Type section.
+        //
+        // THIS BRANCH IS NEW AND IT IS LOAD-BEARING. Before it, this was a
+        // two-branch ternary and Revise fell down the `else` — inheriting Draft's
+        // Structure control and Draft's format rail. Worse than mere tenant
+        // leakage (§6): `applyRailFormat` guards on `mode !== 'drafting'` and
+        // returns, so those controls would have rendered LIVE-LOOKING AND INERT,
+        // which is precisely the locked door wearing paint G3 forbids.
+        //
+        // MERGE NOTE (origin/main 1c8edd3, item 114 / errata E4): main added the
+        // page-kind and style-guide pickers to the DRAFT branch above while this
+        // ticket was in flight. They stay Draft's. They are not 83's Type section
+        // (face and size, RV1-RV4) — that is still 112-C — and either way 112-A
+        // ships NO tenants, so Revise's drawer stays empty of both.
+        //
+        // `kind: 'empty'` is the shape SliverToolsBody already answers with
+        // `return null`. The drawer itself still opens and still carries the
+        // sliver's OWN standing furniture — the goal block, the instruments row —
+        // which belong to the drawer on every surface and are not Revise tenants.
+        // Empty of TENANTS is what was ruled; empty of everything was not.
+        : { kind: 'empty' };
 
   const structureConfirmDialog = structureConfirm && (
     <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>
@@ -1054,9 +1093,14 @@ function PageEditorView({ id }: { id: string }) {
           {entry.importedAt && <span className="page-imported-tag" title={`Imported into this ${lex('binder').toLowerCase()}`}>Imported</span>}
         </div>
 
+        {/* ITEM 112-A — the unframed Page's strip agrees with the framed one
+            (brief §2, "both sides must agree"). Opt-in rather than default,
+            so QuickSprint — which shares this component, keeps its own separate
+            mode key, and is named nowhere in this charter — is untouched. */}
         <ModeSwitcher
           mode={mode}
           onSwitch={switchMode}
+          reviseEnabled
           actions={[
             { label: 'Workshop', sub: 'coming soon', deferred: true },
             { label: lex('publish'), sub: 'export', onClick: () => setShowPublish(true) },

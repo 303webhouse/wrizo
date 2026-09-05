@@ -50,6 +50,21 @@ const RAILS: Record<EditorMode, RailDef> = {
   // "Pages" is intentionally NOT here (B5): the one pages door is ProjectHome,
   // reached via the Pages⟷Plan toggle — the SECTIONS stub was a duplicate.
   drafting: { heading: 'sections', items: ['Structure', 'Notes & Worldbuilding', 'Find'], ai: 'open', tools: 'format' },
+  // ITEM 112-A — Revise's entry, and it is REQUIRED rather than decorative: this
+  // record is TOTAL over EditorMode and is indexed UNGUARDED below (`const rail =
+  // RAILS[mode]`), including on the framed path, where `rail.tools` decides whether
+  // the editor is handed a pen ink. A missing key here is a TypeError on first
+  // render, not a cosmetic gap.
+  //
+  // EMPTY `items` IS THE POINT, not an oversight. Revise's Desk-hand furniture is
+  // 83's Type section, which is 112-C — this ticket ships the room, not the tenants
+  // (§1) — and a stub row naming an unbuilt capability is the locked door wearing
+  // paint that G3 forbids. `tools: 'format'` is what keeps the pen ink AWAY from
+  // Revise (only 'pen' hands one down); it does not give Revise Draft's format bar
+  // on the framed surface, where this whole legacy toolbar does not mount at all.
+  // `ai: 'open'` matches Draft: the Counsel is never sealed on a surface that
+  // accepts writing (item 119).
+  revise: { heading: 'revise', items: [], ai: 'open', tools: 'format' },
 };
 
 interface Props {

@@ -28,7 +28,27 @@ const KEEP_WRITING = 'keep writing — you can shape it later';
 //              with the clean text; onChange reports its live textContent. Switch
 //              modes by remounting with the current clean text (parent keys by
 //              mode), so prose carries across and the caret lands at the end.
-export type EditorMode = 'journal' | 'drafting';
+//   revise   — ITEM 112-A (charter RS3). The SAME free-editing branch as
+//              drafting, and deliberately NOT a third one: Revise is where the
+//              writer works BACKWARDS through finished text, which is the
+//              identical instrument Draft already needs, so it shares the code
+//              rather than copying it.
+//
+//              THE CHARTER'S "the forward-only instrument does not mount in
+//              Revise — not disabled, not configured off: absent" IS SATISFIED
+//              BY THAT SHARING, STRUCTURALLY. On this branch the runway's
+//              native listeners are never attached, the caret effect returns at
+//              its first line, insertMarkerRef is nulled, and no run span is
+//              ever rendered. Nothing is switched off here, because nothing was
+//              ever switched on. `forwardLock` is journal-only and is not read
+//              on this path at all.
+//
+//              What separates Revise from Draft lives in the HOSTS —
+//              PageEditor's sliverContent (Revise's Desk drawer is empty until
+//              112-C), its rail-format guard, and the Tutor's roster branch —
+//              never in this file. That is the point: the surfaces differ in
+//              what they PERMIT, not in how text is edited.
+export type EditorMode = 'journal' | 'drafting' | 'revise';
 
 interface Props {
   initialText: string;
@@ -42,8 +62,9 @@ interface Props {
   ariaLabel?: string;
   penColor?: string;           // Journal pen ink (sets text + caret colour); from the pen bar
   // AB2 S2 — the forward lock, exposed in Free Write's tool rail
-  // (store/forwardLock.ts). Only meaningful in journal mode (drafting is
-  // always free-edit already). Default true matches today's shipped Free
+  // (store/forwardLock.ts). Only meaningful in journal mode (the free-edit
+  // modes — Draft and Revise — are always free-edit already, and never read
+  // this at all). Default true matches today's shipped Free
   // Write behavior exactly: every backspace strikes via the existing runway.
   // false swaps to a REAL one-character erase (eraseTail) — still never a
   // select-then-replace, still never touches already-struck history.
@@ -63,8 +84,10 @@ interface Props {
   // text) — so the marker visibly appears for a moment, then the very NEXT
   // real keystroke's own re-render (built from the still-stale model)
   // silently wipes it. This ref sidesteps event dispatch altogether. Set
-  // only outside `drafting` mode (Draft's own rail already has its own,
-  // separate `applyRailFormat` mechanism, PageEditor.tsx).
+  // only outside the FREE-EDIT modes (Draft's own rail already has its own,
+  // separate `applyRailFormat` mechanism, PageEditor.tsx; Revise ships no
+  // rail-driven insertion at all this ticket — its Desk drawer is empty
+  // until 112-C).
   insertMarkerRef?: React.MutableRefObject<((text: string) => void) | null>;
 }
 
@@ -72,7 +95,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   { initialText, onChange, mode = 'journal', onForward, onFocus, onBlur, autoFocus, placeholder, ariaLabel, penColor, forwardLock = true, style, insertMarkerRef },
   ref,
 ) {
-  const drafting = mode === 'drafting';
+  // ITEM 112-A — the branch this flag selects is FREE-EDIT vs FORWARD-ONLY, and
+  // now that two modes take the free-edit side it is named for the instrument
+  // rather than for one of its callers. A RENAME, not a re-scope: every use
+  // below is the same use it was, and Draft's behaviour is byte-identical.
+  const freeEdit = mode === 'drafting' || mode === 'revise';
   // content (committed runs) + word (uncommitted active word) are the model.
   // Refs are the truth read by the input handlers (no stale closures); state
   // mirrors them for rendering. force() re-renders on a model change.
@@ -124,13 +151,13 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // file's own Props comment for the full "why not execCommand" writeup).
   // `handleInput` only ever touches refs/the stable `force` dispatch/ref-
   // held callbacks, so a closure captured once at mount stays correct
-  // forever — no dependency on `mode`/`drafting` being current at CALL
-  // time needed, only at mount (drafting never calls this ref at all,
-  // PageEditor.tsx's own applyFreeWriteFormat guards on its own `mode`
-  // state before ever touching it).
+  // forever — no dependency on `mode`/`freeEdit` being current at CALL
+  // time needed, only at mount (a free-edit mode never calls this ref at
+  // all, PageEditor.tsx's own applyFreeWriteFormat guards on its own
+  // `mode` state before ever touching it).
   useEffect(() => {
     if (!insertMarkerRef) return;
-    insertMarkerRef.current = drafting ? null : handleInput;
+    insertMarkerRef.current = freeEdit ? null : handleInput;
     return () => { insertMarkerRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -189,7 +216,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // valid post-decoration). Guarded off mid-IME-composition (composing text
     // must stay browser-owned, exactly like the journal path below) and off
     // whenever the selection isn't inside the host (nothing to restore).
-    if (drafting) {
+    if (freeEdit) {
       let composingDraft = false;
       // FX5 S7 — the em-dash autocorrect's own trigger flag: only genuinely
       // set when the JUST-PROCESSED edit was a plain typed space (checked at
@@ -528,7 +555,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // blank line), collapsing straight to the container's end lands the
     // caret in exactly the trailing-newline-at-EOF state the Chromium quirk
     // (see draftDecoration.ts) corrupts on the very next keystroke.
-    if (drafting) {
+    if (freeEdit) {
       const el = hostRef.current;
       if (el) decorateEditorFor(el, initialText, initialText.length, setPlainOffset);
     }
@@ -544,7 +571,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   useEffect(() => {
     const el = hostRef.current;
     if (!el || document.activeElement !== el) return;
-    if (drafting) return;             // drafting is free-edit: the browser owns the caret
+    if (freeEdit) return;             // free-edit (Draft, Revise): the browser owns the caret
     if (composingRef.current) return; // never move the caret mid-composition
     // Empty surface: trust the browser's own focus caret (forcing a selection
     // into the empty/placeholder-only host parks it in a non-editable spot and
@@ -587,7 +614,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // 'input' listener below re-decorates imperatively on every keystroke instead,
   // AB2 S0/S3's iA register). Journal renders its runs (struck spans stay
   // visible, drop from derived).
-  const html = drafting
+  const html = freeEdit
     ? decorateMarkdown(initialText)
     : isEmpty
       ? ''

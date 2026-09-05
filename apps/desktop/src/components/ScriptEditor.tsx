@@ -1089,7 +1089,13 @@ export function ScriptEditor({ id }: { id: string }) {
         {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
             chrome that never recessed with the rest of the room. */}
         <div className="chrome-fade chrome-top sprint-nav">
-          <ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} />
+          {/* ITEM 112-A — `reviseEnabled={false}` for the SAME reason
+              `freeWriteEnabled={false}` is already here: this surface is Draft
+              law only (S1) and its `onSwitch` is a no-op, so a live Revise tab
+              would be a posture that does nothing when pressed. Revise flashes
+              coming-soon here, exactly as Free Write does. The screenplay
+              surface is byte-identical to pre-112-A in every other respect. */}
+          <ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} reviseEnabled={false} />
           <div className="sprint-actions">
             {/* cd1.1 (Fable review erratum) — the Pages/Plan flight toggle
                 belongs beside Done on both hosts; a script page IS a "Pages"
