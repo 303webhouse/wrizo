@@ -148,6 +148,98 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 99 — THE ORPHAN REAPER: BUILT AND OFFERED — 2026-09-04 (errata lane; branch `item99-orphan-reaper`)
+
+**OFFERED, NOT MERGED.** Full record: `docs/wrizo-alpha/item99-orphan-reaper-offer-2026-09-04.md`.
+Branched from `origin/main` @ `1c8edd3`. Harness-only; **ZERO PRODUCT CODE** —
+`git diff --stat 1c8edd3 <tip> -- apps/desktop/src apps/server packages` is empty. No deploy
+implied or asked for. **`0f14b72`** (the module + the wiring + `item99.mjs`) · **`d5f5048`**
+(the sweep made non-fatal) · **`51eb9b6`** (blind-enumeration + backlog paths covered) ·
+**`248fff7`** (this record).
+
+**BOTH SETTINGS CLEAN, 68/68 each, one tree, neither stamp dirty; the parked pass ran
+`--no-rebuild` against the byte-identical bundle:**
+
+```
+SUITE RESULT: CLEAN - tree=51eb9b6 bundle=index-BS32INXU.js/556707b
+SUITE RESULT: CLEAN - tree=51eb9b6 bundle=index-BS32INXU.js/556707b NO-REBUILD
+```
+
+67 files became **68** — `item99.mjs`, and it is the cheapest in the suite: **2 seconds, no
+browser.**
+
+**WHAT LANDED.** `scripts/orphan-reaper.mjs` — the canonical dead-owner sweep, ONE definition.
+`run-suite.mjs` gains a PREFLIGHT that runs BEFORE guard 3 reads the machine (so the guard
+judges the box as it is, not as a dead lane left it), loses its private copy of the enumerator
+to the module's, and gains `--no-reap` as a forensic escape hatch; the sweep is recorded in
+`manifest.json` beside the 77(c) stamp. `runtime-verify.mjs`'s `withHarness` inherits it too —
+which is where EVERY browser this repo launches comes from, so the probe, `selftest-quiescence`
+and any harness a lane runs directly get it without each entry point remembering. Skipped under
+the suite, which already swept once: re-sweeping per child would run 67 times WHILE this
+suite's own siblings are alive, and the safest sweep is the one that does not have to be right
+67 times.
+
+**THE S4 LAW IS THE CONSTRAINT, NOT A PREFERENCE.** Four consequences, each load-bearing:
+(1) ENUMERATE, THEN KILL BY PID — the signature FINDS candidates and never DECIDES them;
+`taskkill /f` and pointedly **not** `/t`, because a tree reaches processes the sweep never
+listed (every child carries the same profile dir, so each is already enumerated in its own
+right). (2) A DEAD OWNER IS THE ONLY LICENCE — owner alive, unresolvable, or our own are all
+spared; every uncertain path fails toward NOT killing. (3) A COUNT THAT DOES NOT FALL MEANS THE
+MODEL IS WRONG — the 2026-08-04 harm was not the dead-owner sweeps (the incident's own author
+calls those defensible) but the ESCALATION when the count held; on a mismatch this reports and
+STOPS, and the runner refuses. (4) THE REFUSAL SURVIVES THE REAP — corpses only; one live-owner
+browser still blocks the run.
+
+**PID RECYCLING, the subtle half:** "the owner PID does not name a live process" and "this
+browser is an orphan" are DIFFERENT CLAIMS, and the incident record is explicit that treating
+the weaker as the stronger is what went wrong. Safe in the direction that matters — a recycled
+PID reads ALIVE, so a corpse is MISSED (costing a refusal), never a live run killed; the
+reverse error is unreachable.
+
+**IT WAS TESTED LIVE BY ACCIDENT, and better than anything staged.** Mid-build, **item 112-A's
+suite held sixteen harness browsers under ONE owner** — the exact shape of the 2026-08-04
+incident, which faced sixteen under owner `23588` and escalated. The reaper read owner `44044`
+**ALIVE**, reaped **0**, spared all of them, kept the profile dir, and guard 3 then REFUSED this
+run. That lane finished undisturbed. Clauses 2 and 4 working together, on a real machine,
+against a real lane.
+
+**VERIFIED WITHOUT TAKING THE BOX — `item99.mjs` launches NO browser, 26/26.** A reaper whose
+safety can only be shown by killing real browsers on a shared box is one whose safety is never
+shown. So the kill DECISION is a pure function driven by fabricated tables, and `reapOrphans`
+takes `enumerate`/`kill` seams so the STOP-AND-REPORT clause is exercised deterministically (a
+kill that claims success but changes nothing ⇒ `mismatch`, each target attempted exactly ONCE,
+no widening) **with a control** proving it is not a reaper that always cries wolf. S5 asserts
+against the module's own source that no wider instrument exists to reach for; S8 proves the
+blind-enumeration path kills nothing (injected kill THROWS if called) and that a 20-dir backlog
+drains in one pass, 688ms.
+
+**► THREE THINGS FOR CHAT 1 TO RULE ON, not discover.** (a) **The reference shape could not be
+found.** The ticket names "the sweep logic chat 1's hardened loop uses" as the reference; there
+is **no committed artifact** for it — no loop script anywhere in the tree, nothing in `docs/`
+describing its internals — so this was built from the three authoritative COMMITTED sources
+(item 99's charter, `docs/menus/incident-2026-08-04-s4.md`, the ratified S4 LAW). The decisions
+where a divergence would matter are named in the offer: `/t` usage, live-owner dirs, and how an
+unresolvable owner is treated. (b) **The runner is now MORE refusing in exactly one case,
+deliberately** — a post-sweep count mismatch refuses and `--ignore-foreign` does NOT override
+it, because "run anyway" at that moment is the reflex that cost another lane a suite. One line
+to reopen if Fable disagrees. (c) **Every standalone harness run now sweeps**, emitting
+`REAPER:` lines on **stderr** (never stdout — a harness's stdout is its verdict) and possibly
+removing another dead lane's stale dirs. Opt-outs: `--no-reap`, `WS_NO_REAP=1`.
+
+**WHAT WAS NOT DONE:** no product code; no mass sweep of TEMP (`withHarness`'s standing note
+declining one is REFINED IN PLACE, not overturned — a live run's dir is still untouchable, and
+the liveness test is exactly what tells the two apart); `killOwn`'s `/t` on its OWN child is
+unchanged and out of scope; and no orphans were reaped by hand — the only sweeps this lane
+performed were the reaper's own, under its own rules, logged.
+
+**→ MERGED `bb21df8` (chat 1, 2026-09-05); the ad-hoc errata-deploy loop RETIRES per ruling 1 — the
+runner's preflight owns the sweep now.** ONE-LINE DIVERGENCE: my loop swept the identical
+dead-owner-only `ws-runtime-verify` orphans but from OUTSIDE the runner (a between-attempts wrapper,
+plus a wait-for-live-lane layer the runner deliberately lacks) and did NOT enforce the canonical
+reaper's post-sweep count-mismatch REFUSAL (S4 clause 3) — the in-preflight sweep is stricter and
+self-recording; only the deploy's retry/wait orchestration stays mine. Item 99 rides the NEXT deploy
+(harness-only, no user-facing change; to be named in that manifest).
+
 ## ITEM 99 — THE ORPHAN REAPER (harness-infra; deploy-forensic) — OPENS 2026-08-03
 
 **OPENS.** Crashed and killed harness runs have leaked headless browsers AND their node parents
@@ -985,6 +1077,18 @@ Fable to route.
 ruling-consistent version (`9619b2a6`) on main — both grips always visible, opening even-empty tabs —
 superseding the pre-ruling "render no Desk grip until 112-C"; TUTOR-amended @ `2579cba`. The 112-A
 build lane can launch.
+**→ NICK'S CONDITIONAL SHIP WORD — "SHIP THE FLOOR" (112-A, Fable relay, 2026-09-05).** Fires WHEN the
+112-A offer lands (its clean-machine re-stamp at `7f48238` or successor, pushed-with-stamp). Then:
+verify per habits (**ZERO SCHEMA expected — Revise going `live:true` is client-side; any schema STOPS
+and surfaces**) → **MERGE on green** → Fable's review at the merge → **on PASS, DEPLOY** the full
+checklist: fresh suite BOTH settings at the deploy HEAD; tree clean at upload; build-OS/toolchain on
+the stamp; served-vs-stamped byte diff; **manifest SHA-enumerated since `1c8edd3` naming 112-A AND item
+99** (the reaper rides this ship, harness-only); **rollback ratchets from `1c8edd3` · `798fb798`.** Any
+red anywhere, or a verdict short of PASS: **STOP — the word never covers a red.**
+**→ RIDER (Nick's word, the mode strip): `revise` → `mark`.** Draft's stale sub-label `revise` is
+REPLACED with `mark` — the strip reads by the ratified sentence (**Draft MARKS, Revise DRESSES**).
+Lexicon change only, one line; **rides the next window (112-B or the next errata), NON-BLOCKING for the
+floor's ship.** Recorded as RULED.
 
 ## ITEM 113 — THE TUTOR'S DECLINE + MODELING PROMPT AMENDMENT (build-class, SERVER) — OPENS 2026-08-26 (Fable's charter; re-send of a lost opening relay)
 
@@ -1633,6 +1737,9 @@ Charter: `docs/wrizo-alpha/cluster-charter-tags-shelf-hands.md`. Item 116's impo
 BEHIND the cluster (its own small charter once the shelf exists). *(Committed post the roster stamp,
 batched with the MENU desk's item-83 errata build brief — `docs/menus/item83-errata-build-brief.md`,
 AUTHORED BY THE MENU DESK, committed to main by chat 1 so the errata builder can launch.)*
+**→ BINDING INPUT RATIFIED (Nick's word, 2026-09-05): THE 1100 ANCHOR.** The **29.7px dock overhang at
+the frame's MINIMUM width** — pre-existing in EVERY mode, pinned as 112-A's baseline — is CONFIRMED
+among the 115/117/119 cluster pass's binding inputs. Ratified.
 
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
@@ -9993,6 +10100,58 @@ the P1 four (FX15, HB2-lite, M4, BG1) — Fable's desk.
 pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ever revoked,
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
+
+## ERRATA WAVE (walkthrough E1–E4) DEPLOY MANIFEST — 2026-09-04 (chat 1, on Nick's ship word — Fable PASS)
+
+**THE WALKTHROUGH ERRATA WAVE — E1 fade-on-words + E2 probe-asserted layout (Structure to the tab
+foot, Full Screen to the progress bar) + E3 paragraph indent + E4 item-114 placeholders (render+persist
+only).** Gate chain: Fable's review **VERDICT PASS** (`docs/wrizo-alpha/errata-wave-review-fable.md` @
+merge `845259f`) → Nick's ship word (this relay). **ZERO SCHEMA** (`page_settings` pre-existing; no new
+migration). Deploying `main` HEAD **`1c8edd3`**.
+
+**Deploy-ships-a-SHA enumeration (`7b78090..1c8edd3`):**
+- `845259f` — Merge errata-build @ `793e80f` (E1/E2/E3/E4 + S0/corrections)
+- `4d178bb` — Records: item 120 opens (rider) (docs)
+- `1c8edd3` — Records: errata review (docs)
+
+**New PRODUCT code since the last live build (`7b78090` · railway `815091f6`) — verified
+`7b78090..1c8edd3`, 8 src files, +568/−25, ZERO schema, ZERO server:**
+- `Sliver.tsx` (+305 — fade timing / foot layout), `draftFormat.ts` (+85 — the paragraph indent),
+  `pageDefaults.ts` (+42 — reads the pre-existing `page_settings`), `draftDecoration.ts` (+27),
+  `deskLexicon.ts` (+24), `PageEditor.tsx` (+24), `index.css` (+51), `types/index.ts` (+35).
+- **SERVER: none. SCHEMA: none** (`page_settings` is the menus-wave column, not new).
+- Harness (not in bundle): `item83f.mjs`, `menus-probe.mjs` + the wave's harness.
+
+**Records since `7b78090` (docs):** item 120 opened (rider) + the errata review + this manifest.
+
+**Verified — fresh suite of record at the deploy HEAD (`1c8edd3`), BOTH settings, machine-clear (NOT
+contaminated):** **67/67 UNSET (CLEAN) and 67/67 PARKED (CLEAN)** at `bundle=index-BS32INXU.js/556707b`
+(CSS `index-D4fKPwmq.css`) — the SAME bundle the offer stamped. `tsc` ×2 EXIT 0; `build:web` clean.
+**TREE CLEAN AT UPLOAD:** `git status --porcelain` EMPTY.
+
+**Quiet-window note (box contention handled lawfully):** the suite of record ran under heavy
+contention — the item-112a build lane's re-stamp pair had box priority. A hardened retry loop **waited
+out the live pair** and **swept DEAD-OWNER ORPHAN browsers** (owner PID `32156`, verified dead — the
+Orphan Reaper, item 99) that had been REFUSING every attempt; both settings then ran CLEAN on the
+first attempt in the quiet window. No VOID/REFUSED was ever counted as a pass — the retry-loop doctrine
+(retry contention, halt a red) held throughout.
+
+**Build OS + toolchain:** suite host Windows / Node `v24.13.0`; deploy build Railway Linux/nixpacks /
+Node 18.
+
+**ROLLBACK TARGET (ratchet from): git `7b78090` · railway `815091f6`** — the roster. Zero schema this
+wave, so rollback is a clean redeploy of that tree.
+
+**DEPLOY STAMP: git `1c8edd3` · railway build `798fb798-6c49-4ddc-915f-82cc2b02173c`** — DEPLOYED
+2026-09-04 (`railway up --ci` from the primary checkout; item-98 guard PROJECT + TREE verified:
+`writer-studio` / `production` / `writer-studio-app`, tree clean at upload; image `sha256:bad16481`).
+Verified LIVE: `/healthz` **200**, served **`index-BS32INXU.js` + `index-D4fKPwmq.css`**, `/auth/me`
+**401**.
+
+**✔ SERVED == TESTED, BYTE-IDENTICAL (md5-verified, both assets).** Served JS `index-BS32INXU.js` =
+**556,707 b**, md5 `613766a6fcb829073f8885b632cb35a8` == local suite build; served CSS
+`index-D4fKPwmq.css` md5 `fd61adfbe35d29acc695c622686e4bd9` == local. Windows suite == Linux Railway
+== served. Every-ship served-vs-stamped diff: **MATCH.**
 
 ## ROSTER (Draft four-chip) DEPLOY MANIFEST — 2026-09-03 (chat 1, on Nick's standing "ship whatever we can" — Fable PASS)
 
