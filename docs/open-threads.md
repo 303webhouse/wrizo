@@ -239,6 +239,10 @@ plus a wait-for-live-lane layer the runner deliberately lacks) and did NOT enfor
 reaper's post-sweep count-mismatch REFUSAL (S4 clause 3) — the in-preflight sweep is stricter and
 self-recording; only the deploy's retry/wait orchestration stays mine. Item 99 rides the NEXT deploy
 (harness-only, no user-facing change; to be named in that manifest).
+**→ EXPECT A FOLLOW-UP OFFER (ERRATA, item 99): the TRI-STATE OWNER RESOLUTION.** `alive | dead |
+unknown` (re-stamped at `3d2bd6a`) **POST-DATES** the reaper version merged here at `bb21df8` — so the
+version now on main resolves owners two-state. Chat 1 merges the fix as **its own small harness-only
+offer when reported.**
 
 ## ITEM 99 — THE ORPHAN REAPER (harness-infra; deploy-forensic) — OPENS 2026-08-03
 
@@ -1776,6 +1780,10 @@ AUTHORED BY THE MENU DESK, committed to main by chat 1 so the errata builder can
 **→ BINDING INPUT RATIFIED (Nick's word, 2026-09-05): THE 1100 ANCHOR.** The **29.7px dock overhang at
 the frame's MINIMUM width** — pre-existing in EVERY mode, pinned as 112-A's baseline — is CONFIRMED
 among the 115/117/119 cluster pass's binding inputs. Ratified.
+**→ RULED (Fable, 2026-09-05): THE PROBE'S WIDTH MATRIX GAINS 1100.** The frame's MINIMUM width joins
+the probe's width matrix as a **STANDING member** — *an instrument that never visits the width where
+the layout law bites cannot certify the law.* Small probe amendment (MENU's instrument); **rides the
+next probe touch**, and stands as a **BINDING NOTE for the 115/117/119 cluster pass.**
 
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
