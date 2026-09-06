@@ -1308,6 +1308,11 @@ spends that. **E3 does not merely find a one-way door — built without a partne
 one.** Measured mitigation, not assumed: `applyRailFormat` records an atomic undo step for
 every rail click (FX6 S1), so **Ctrl+Z walks a level back reliably** — a real way back, not
 a dedicated one, and not discoverable from the drawer. **Recommendation on file:** add
+**► COVERAGE ON THE RECORD (2026-09-05): E3's INDENT SHIPPED WITH NO HARNESS.** The indent went to
+production uncovered; **`outdent.mjs` is the PAIR's FIRST coverage**, and it is written as **claims
+about the PAIR** (indent and outdent together), not as a test of the new half alone — so the shipped
+half finally acquires assertions at the same moment its partner does.
+
 `FormatAction 'outdent'`, symmetric, floored at zero — house precedent already ships the
 pair on the legacy bar, and `stripMarkdownConventions` already handles `^\t+`.
 
@@ -1764,6 +1769,13 @@ now):** Storyboard/Outline boards will also display here, formatting may differ.
   live on main — `Math.max(0, b.x + dx)` / `Math.max(0, b.y + dy)`, load-bearing by its own comments —
   and the ruled-three merge does NOT touch `BoardEditor.tsx`, so the fix landed in earlier shipped
   code, not here.)*
+  **→ PRECISION, and chat 1's verification CORRECTED (Fable, 2026-09-05): (c) IS NOT FIXED ON MAIN.**
+  The clamp chat 1 read on main — `Math.max(0, b.x + dx)` — is the **pre-existing LOWER-bound** clamp
+  (the left/top edge). **The edge-vanish fix is the UPPER-bound (RIGHT-EDGE) clamp, and it lives in
+  FIX's window offer at `829fbc7` — NOT merged, NOT shipped.** Reading "a clamp" as "the clamp"
+  conflated two different bounds; the note above stands as written, corrected here. **The ledger does
+  NOT claim (c) fixed until that offer merges and ships** — the disposition is REPRODUCED AND FIXED
+  IN AN OFFER, pending its window merge, where this line is completed.
 - **(e) unlink → RE-CLASSED: a DESIGN ADD, not a defect.** Routed to the cluster's **C4** (tags on
   cards). **Delete/Backspace is recorded as the EXISTING exit** for a selected thread — the capability
   is already there; what is wanted is a designed affordance for it.
@@ -12584,6 +12596,14 @@ fixture that no longer exists.
   heredoc: the heredoc collapses `\\n` to `\n` in transit. **Evidence: that collapse corrupted a drift
   check once and came near to corrupting `draftFormat.ts`.** The file path is not the cautious option
   here; it is the only one that preserves the bytes.
+- **DRIVERS NEVER ASSUME EXISTENCE — standing harness law (2026-09-05).** A driver never acts on a
+  target it has not established. **A missing target is a RECORDED FAILURE THAT NAMES ITSELF — never a
+  throw that kills the file.** A bare `.click()` on an absent node aborts the run and reports nothing
+  about anything downstream, so the one run where reporting mattered most is the run that says least.
+  Probe for the target, fail a CHECK that names it, and let the remaining assertions still speak.
+  **Evidence: three instances in one lane — `ab2`, `e4`, and the outdent driver — each on the run
+  where reporting mattered most.** Stands beside the probe guard below: a driver can lie by DYING, or
+  by silently DOING NOTHING; both are the instrument describing itself.
 - **PROBES DRIVE REAL POINTER EVENTS — standing guard (ERRATA, 2026-09-05).** A probe drives
   **`pointerdown` / `pointerup`** — real pointer events — and **NEVER a synthetic `click`**. A
   synthetic click skips the pointer pipeline the product actually listens on, so the probe measures a
