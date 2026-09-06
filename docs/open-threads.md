@@ -1856,7 +1856,7 @@ next probe touch**, and stands as a **BINDING NOTE for the 115/117/119 cluster p
 **OFFERED, NOT MERGED.** Full record: `docs/wrizo-alpha/ruled-three-offer-2026-09-05.md`. Branched
 from `origin/main` @ `7d7f06f`. **`ad76e42`** (sub-label) · **`2fc7481`** (probe gains 1100) ·
 **`1bbf465`** (item 109's gate) · **`40aae87`** (the AST guard) · **`d7c0e1a`** (a stray `.bak`
-removed) · **`__OFFER__`** (this record). **All four follow-up rulings ratified; none required a
+removed) · **`5f941dc`** (this record). **All four follow-up rulings ratified; none required a
 code change** — they rule on findings the build had already surfaced.
 
 **BOTH SETTINGS CLEAN, 71/71 each, one tree, neither stamp dirty; parked ran `--no-rebuild`
