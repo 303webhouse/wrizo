@@ -1324,6 +1324,30 @@ a dedicated one, and not discoverable from the drawer. **Recommendation on file:
 `FormatAction 'outdent'`, symmetric, floored at zero — house precedent already ships the
 pair on the legacy bar, and `stripMarkdownConventions` already handles `^\t+`.
 
+**-> SEAM 1 CLOSED - 2026-09-05. THE OUTDENT PARTNER IS BUILT** (Nick's ruling: *a symmetric outdent
+arrow, the exact decrement of E3's paragraph indent, levels on F3's convention*). `FormatAction`
+gains `'outdent'`; `outdentParagraphs` mirrors `indentParagraphs` on the same leading-tab
+convention.
+**"EXACT DECREMENT" IS MADE STRUCTURAL RATHER THAN ASPIRATIONAL:** the selection-to-paragraph
+expansion is lifted into a shared `paragraphScope()` helper that BOTH functions call. Computed
+separately, one side could later learn a rule the other did not and the pair would stop being a
+pair **without anything failing**.
+**FLOORED AT ZERO PER LINE, not per press** - a line with no leading tab is untouched rather than
+borrowing from a neighbour, so a mixed-level paragraph flattens toward zero without any line going
+negative or losing text. The **caret clamp** is the one place this is not a pure sign flip, and the
+code says so.
+**GLYPH:** the left arrow, mirroring Indent's right arrow - **NOT** the legacy bar's `⇤`, which is
+already **Align left's** mark in this very drawer. A control wearing another control's mark in the
+same panel is a defect however correct its behaviour. **ORDER:** before Indent, the legacy bar's own
+ordering and the direction this drawer's alignment row already reads.
+**NEW HARNESS `outdent.mjs`, 9 checks, COVERING THE PAIR:** E3's indent shipped with **no harness
+anywhere** (nothing in the harness directory matched `indent`, `draftIndent` or `indentParagraphs`),
+so the round-trip checks are the **first coverage that control has ever had**.
+**FALSIFIED: 13/14 failed** against the reverted product; the survivor is the indent half, which
+already worked. The falsification first **ABORTED** on a `.click()` against the absent button -
+the fourth sighting of that class in this lane - so `press()` now probes, records a failed check
+naming the absent selector, and returns.
+
 **► SEAM 2, OPEN FOR NICK'S WORD — THE SCREENPLAY NAME COLLISION.** A kind chip reading
 **Screenplay** (a reversible per-page setting) now stands in one zone with **`Convert to
 Screenplay…`** (a one-way act behind a confirm that rewrites the page). The failure mode is
@@ -1844,6 +1868,119 @@ summary carries styling is a design question. **Owed follow-up.**
 **STANDING AFTER THIS:** (a-i) and (a-iii) ROUTED TO FABLE for rulings; (b), (c), (e) PARKED
 UNBUILT; (d) not reached; (f) already ruled removed. **The single cheapest unblock for (b)/(c)/(e)
 is one line from Nick naming the POINTER TYPE and the CARD KIND he was using.**
+
+**-> S0 PASS 3 + BUILT - 2026-09-05, ON NICK'S OWN STAGE.** The repro line arrived
+(relayed 2026-09-02, screenshots 2026-08-26): **MOUSE, desktop** - so pointer type was never the
+missing variable. **Board POPULATION was**: ~10 text cards in two columns, multiple LINKED pairs,
+cards near the canvas edges, and both card-resize and BOARD-resize in play. Staged exactly, with
+two setup failures from pass 1 fixed by reading source rather than retrying: connections are minted
+by a **double-click on the brass HANDLE** of a selected card (FX4 S6), not a card-to-card drag -
+which is why pass 1 minted zero - so the stage seeds `kind:'connection'` boxes directly; and
+"board-resize in play" is a persisted `board-meta` box carrying `canvasW`/`canvasH` (FX4 S4).
+
+**(c) EDGE-VANISH - REPRODUCED AND FIXED. PASS 1'S "NOT REPRODUCED" WAS A WRONG ANSWER, and its
+reason matters more than the fix:** pass 1 dragged toward the **TOP-LEFT**, the corner that has
+always clamped (`Math.max(0, ...)`), so it "proved" a containment that does not exist on the other
+side. On the populated stage a card dragged 900px right hung **750px PAST the canvas**, width
+unchanged at 1500.
+**THE TWO AXES ARE DIFFERENT STORIES AND WERE NEARLY FILED AS ONE.** Re-measured per axis with the
+canvas re-read AFTER each drag: the **right** edge cannot grow (`pageWidthPx`) and the card escaped;
+the **bottom** GREW to fit (**canvas 1455 -> 2070px**, card contained at `overBottom -120`) and is
+working as designed. Reporting them together would have produced a clamp that **froze the growing
+canvas** - a regression wearing a fix's clothes.
+**THE REPAIR IS FX17 S3'S OWN SHAPE ON THE AXIS IT SKIPPED** - that slice hard-stopped the BOTTOM
+and named the gap in its own first sentence (*"the way the x-axis's own `Math.max(0, ...)` does"*).
+Clamped on the SHARED delta so a multi-card selection holds its shape; floored at 0 so a card
+already outside is never yanked back. A stop, never a correction. **750px -> 0.**
+`item118.mjs` **6 -> 10 checks**; two of the four new ones assert the fix did NOT over-reach.
+**FALSIFIED: 1/10 failed**, exactly the escape check - the guards passed both ways, as guards must.
+
+**(b) RESIZE-ONCE - PARKED: NOT REPRODUCED UNDER FOUNDER CONDITIONS, STAGE RECORDED.** Three shapes
+on the full stage: a plain card twice, a **LINKED** card twice, and a card resized after two prior
+resizes. Every one: handle re-armed, second resize grew the card (510x195 -> 580x245 -> 650x295).
+**Nick re-tests live after the ship; the stage above is the setup to start from.**
+**A NEAR-MISS RECORDED BECAUSE IT WOULD HAVE BEEN A FALSE POSITIVE:** the first populated run
+reported *"NO HANDLE after select"* for all three shapes, which reads exactly like (b) reproducing.
+It was the probe - `BoardEditor` sets `selectedId` on **pointerdown**, and the probe dispatched a
+plain `click`. Real pointer events showed the handle arming every time. **A driver can lie by dying
+OR by doing nothing.**
+
+**(e) UNLINK - RE-CLASSED TO A DESIGN ADD; ROUTES TO THE CLUSTER PASS'S C4. No new item number.
+NOTHING BUILT.** Measured: clicking a thread selects it (`data-selected="true"`), **Delete/Backspace
+removes it** (connections 3 -> 2), and there are **ZERO affordances** - no button, no menu item,
+nothing naming unlink anywhere, `buttonsInsideSvg: 0`. **The mechanism exists; the affordance does
+not.** Nick's "cards link but CANNOT BE UNLINKED" is accurate from the writer's side because there
+is no way to discover it. **Delete/Backspace is recorded as THE EXISTING EXIT**, so C4's work is
+*"make the gesture visible,"* not *"build removal."*
+**THE SAME GAP FROM TWO SIDES:** the connections `<svg>` is `aria-hidden="true"` - threads are
+invisible to assistive technology AND undiscoverable to sighted writers.
+
+**(d) BOARD-RESIZE DECAY - still NOT REACHED.** Out of this window's scope.
+
+## B/I/U ON NICK'S SHIP WORD - S0 2026-09-06 (fix lane). THE REQUEST INVERTS: THE SURFACE HE WAS ON DOES NOT DECORATE AT ALL
+
+**Nick's words with the ship: _"Can we please get the bold, italic, and underlining buttons fixed with
+this ship. It seems like an easy fix."_** S0 first, because "easy" is a hypothesis. It did not hold -
+though not for the reason anyone expected.
+
+**THE HAZARD TEST PASSED, DECISIVELY, AND ITS CONTROLS PROVE THE INSTRUMENT.** `draftDecoration.ts`'s
+header records that a marker hidden with `display`/`visibility` vanishes from `Element.innerText`,
+and the live page editor derives STORED text from `el.innerText` on every keystroke
+(`ForwardOnlyEditor.tsx:261/287/386/397` via `readEditorPlainText`) - so the wrong hiding technique
+would silently strip markdown out of a writer's saved words. Item 118 (a-ii) proved nothing about
+this: it applied the collapse to a READ-ONLY resting card that never round-trips. Measured in a bare
+contenteditable on the live page:
+
+| technique | `innerText` | markers |
+|---|---|---|
+| `font-size:0; opacity:0` (shipped) | `"**word** tail"` | **survive** |
+| `display:none` (forbidden) | `"word"` | **lost** |
+| `visibility:hidden` (forbidden) | `"word"` | **lost** |
+
+So the recorded hazard is real AND the shipped technique is safe through a live round-trip.
+
+**BUT THE SURFACE NICK WAS USING DOES NOT DECORATE.** `ForwardOnlyEditor` forks on
+**`freeEdit = mode === 'drafting' || mode === 'revise'`**: Draft and Revise render through
+`decorateMarkdown`; **FREE WRITE renders raw `.fo-run` spans** with no decoration at all. That is
+exactly why markers appear at **FULL INK** there rather than at Draft's dimmed `.md-mark{opacity:.38}`.
+
+**AND HE IS PINNED TO FREE WRITE BY CONSTRUCTION, NOT INFERENCE.** The active-state
+(`data-on`/`aria-pressed`) exists ONLY on the Free Write rail
+(`format: { onFormat: applyFreeWriteFormat, boldOn, italicOn, underlineOn }`, `PageEditor.tsx:782`).
+The Draft rail passes `{ onFormat: applyRailFormat }` with **no highlight state whatsoever**
+(`:799`). **A stuck highlight is IMPOSSIBLE on Draft**, so the third fault locates the report.
+
+**THE THREE FAULTS, RE-ANATOMISED:**
+- **(1) full-ink markers - NOT CONTAINED.** On Free Write there are no marks to collapse; there is
+  no decoration. Fixing it means teaching the forward-only **Run model** (struck runs,
+  word-in-progress, forward-lock) to interleave markdown decoration - a rendering-model merge, not a
+  CSS change. **Reported, not built. Next window's first job.**
+- **(2) underline has no renderer - CONTAINED, BUILT.** See the underline record below.
+- **(3) stuck active state - A DESIGN QUESTION, NOT A BUG.** `freeWriteMarks` is the **two-press
+  bracket's OPEN state**: forward-only has no caret to place, so Bold is "press once to open, press
+  again to close" and the button stays armed by design while the bracket is open. It cannot track a
+  caret that does not exist. **Reported, not built.**
+
+**SAID PLAINLY, BECAUSE IT WOULD OTHERWISE READ AS "NOT FIXED": underline changes NOTHING Nick saw**,
+because it lands on Draft/Revise and cards, and his surface does not decorate. **Free Write's styling
+is a design question now on Nick's desk.**
+
+**-> UNDERLINE BUILT - 2026-09-06 (`00feda1`).** A `__` case in BOTH inline passes (Draft's, and the
+card's reveal-adjacent-to-caret register) plus `.md-underline`. Matched before `*` on the same
+earliest-opening rule `**` already uses; a SINGLE `_` is not a marker in this convention, which is
+what leaves `snake_case`, `file_names` and mid-word emphasis untouched. **NEW HARNESS
+`underline.mjs`, 7 checks; FALSIFIED 3/7** - the three defect assertions, while four guards (bold and
+italic still render, the storage invariant, `snake_case` alone, an unpaired `__` losing nothing)
+passed BOTH ways.
+
+**-> NEXT WINDOW, QUEUED BY RULING (Nick, 2026-09-06):** **(1) DRAFT B/I/U MUST WORK** - bold renders
+bold with NO visible markers on the live page; **required, not optional**; the S0 hazard finding above
+governs the METHOD, not the requirement, and if the CSS-only path is unsafe the S0 proposes the real
+rendering approach and it **routes to design before build**. **(2) STRIKETHROUGH** joins Draft's
+styling row (`~~` convention, renderer case, button, and a **generation-5 park on `ab2.mjs` quoting
+generation 4** for the roster count). **(3) SELECTION HIGHLIGHT = BRASS ORANGE** - `::selection` takes
+the theme's brass token, because the writer selecting is the writer ACTING. The stuck active-state fix
+rides with (1). Zero schema.
 
 ## ITEM 119 — THE MIRRORED HANDS (design-class; the Counsel mirrors the Desk, both anchored to the writing surface) — OPENS 2026-08-31
 
