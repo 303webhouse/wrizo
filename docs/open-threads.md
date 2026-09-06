@@ -1851,6 +1851,76 @@ the probe's width matrix as a **STANDING member** — *an instrument that never 
 the layout law bites cannot certify the law.* Small probe amendment (MENU's instrument); **rides the
 next probe touch**, and stands as a **BINDING NOTE for the 115/117/119 cluster pass.**
 
+## THREE RULED ITEMS — BUILT, RULED, OFFERED — 2026-09-05 (errata lane; branch `ruled-three`)
+
+**OFFERED, NOT MERGED.** Full record: `docs/wrizo-alpha/ruled-three-offer-2026-09-05.md`. Branched
+from `origin/main` @ `7d7f06f`. **`ad76e42`** (sub-label) · **`2fc7481`** (probe gains 1100) ·
+**`1bbf465`** (item 109's gate) · **`40aae87`** (the AST guard) · **`d7c0e1a`** (a stray `.bak`
+removed) · **`__OFFER__`** (this record). **All four follow-up rulings ratified; none required a
+code change** — they rule on findings the build had already surfaced.
+
+**BOTH SETTINGS CLEAN, 71/71 each, one tree, neither stamp dirty; parked ran `--no-rebuild`
+against the byte-identical bundle:**
+
+```
+SUITE RESULT: CLEAN - tree=d7c0e1a bundle=index-BxYTLPxH.js/557021b
+SUITE RESULT: CLEAN - tree=d7c0e1a bundle=index-BxYTLPxH.js/557021b NO-REBUILD
+```
+
+69 files became **71**; both new ones are the cheapest in the suite — `hooks-order-ast.mjs` **1s,
+no browser**; `item109.mjs` **11s**. Both **park nothing and say so in words**: neither supersedes
+an assertion.
+
+**(1) THE SUB-LABEL — `revise` → `mark`. SCOPE ACCEPTED AS DISCLOSED, NOT AMENDED.** Ruled: *the
+shared MODES table is the truth and QuickSprint's Draft IS Draft — "revise" was equally false
+there.* So the change reaches QuickSprint's RENDER while `QuickSprint.tsx` stays byte-identical, and
+no per-surface prop was invented to keep the falsehood on the surface that had it. Two things stay
+on the record: the string is **not in the lexicon** (inline in `MODES` beside three equally-inline
+siblings), and "one line" and "reaches two surfaces" are both true while only the first is obvious.
+Nothing parked — no harness asserts any sub-label.
+
+**(2) THE PROBE AT 1100 — AND THE TRIO THAT CORRECTS THE CLUSTER PASS.** The frame's MINIMUM width
+is now a standing matrix member (*an instrument that never visits the width where the layout law
+bites cannot certify the law*). It bites unevenly: **prose −29.69px · screenplay −38.00px · board
+0.00px flush**, each reproduced twice. **RULED: "pre-existing in every mode" holds as a CLASS and
+fails as a NUMBER — and the board being FLUSH is the EXISTENCE PROOF of C2's target state.** ►
+**BINDING-INPUT AMENDMENT (chat 1 records): C2 designs against the MEASURED TRIO, not 29.7.** C2 is
+therefore closing a gap, not inventing a geometry. The KNOWN instrument is ruled *"exactly the
+right one"*: keyed to **surface + width + check + the MEASURED PIXEL VALUE** within ±0.75px, so
+drift, a partial fix, **or a full one** all re-red, and the owner clears the entry in the same
+change that clears the defect. **Probe 62/66 green, 4 KNOWN (owned), 0 RED** — 16 new checks, four
+findings that were always true and never visible.
+
+**(3) ITEM 109 — THE GATE, AND THE MECHANISM THE SAGA LACKED. BOTH CORRECTIONS ACCEPTED.**
+(a) The gate asserts **BG1's beginnings row, not the sleeping F6 invite** — *asserting a retired
+behavior would gate the past*; FX15 (the Quiet Page) put the invite to sleep by default, measured
+absent on a fresh profile while the beginnings row is present. (b) ► **CHARTER AMENDMENT: the
+load-bearing property is the COLD DOCUMENT LOAD.** `app.goto()` navigates to a URL differing only
+in its HASH, which is a SAME-DOCUMENT navigation — proven with a sentinel planted on `window` that
+**SURVIVES** it. Ten files reach that door and none has ever mounted the app at it, which is exactly
+why a mount-time fault shipped green three times. Ruled *"the mechanism the whole three-reopen saga
+lacked"*; **headful stays an honest opt-in.** IT CAN FAIL, demonstrated: against a deliberately dead
+door (an origin serving a bare `<div id="root">`) the gate fails **6/9** with `paper:null`,
+`rootKids:0` — the exact tree-blanking signature. `WS_HEADFUL=1` and `WS_TARGET_URL` are real and
+**verified** (the headful run passes 9/9 and records `headful:true` on its own face), neither
+default. No defect was found that reproduces headful and not headless, and none was claimed.
+
+**(4) THE AST HOOK-ORDER GUARD — REGISTERED as *the discriminator law applied to a guard about
+guards*.** It nearly shipped as a decoration: the first run read `arrowForms: 0` and a clean census,
+which looks like success and is not — **both blind spots are EMPTY in the tree today** (the line
+scanner's "exactly one arrow definition" is `const Crumb = (<div …>)`, a JSX ELEMENT, not a
+function), so the census exercises NEITHER new path and would read clean whether the guard worked or
+did nothing. Four fixtures make it real: the ARROW shape flags (`Panel`/`useState`, arrowForms 1),
+the MULTI-LINE-return shape flags (`Surface`/`useEffect`), a clean control stays 0 (without it a
+detector that flagged everything would pass), and a nested-CALLBACK control stays 0 (one verdict,
+one claim). Census **157 components/hooks across 150 files, zero violations**; TypeScript was already
+a devDependency so the parser cost no new one. `hooks-order.mjs` untouched and still passing —
+additive, nothing parked; if the two ever disagree, that disagreement is itself a finding.
+
+**NOT DONE, deliberately:** no fix to the 1100 overhang (ruled out of scope, owned by the cluster
+pass; reported, not gated); no per-surface sub-label prop; no suppression beyond the keyed,
+measured, drift-sensitive one; no merge and no deploy.
+
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
 **OPENS (Fable, from the errata wave's measurement, 2026-09-03).** R6's **birth-from-defaults** — the
