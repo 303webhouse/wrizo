@@ -29,7 +29,9 @@ size, page-level.** One section. Nothing else.
 **Explicitly NOT in this ticket:** the Revise Counsel roster (→ 112-D) · error flagging
 in any form (T1–T7, parked) · alignment and indentation (**absent by RV1's own
 deferral**) · span-level typography (**barred by RV2**) · RV3's custom-font gesture
-(**Nick's, unchosen — see §6**) · any change to Free Write, Draft, or Board.
+(**Nick's, unchosen — see §6**) · any change to Free Write, Draft, or Board · **the
+page's *sheet*** — margins, line spacing, page numbers, headers, footers — which R6
+gives to the Page menu, not to Revise (see §4).
 
 ## §2 · RV1–RV4, VERBATIM FROM ITEM 83'S PASS 6/6
 
@@ -102,22 +104,42 @@ that never chose**, read through module-level defaults, written only by the writ
 act. `patchPageSettings` in PageEditor already performs the merge-and-save; Draft's
 `onPickKind` / `onPickStyleGuide` are the working precedent to copy.
 
-**S0 CHECK — the dress boundary, and it is a real fork.** `store/pageDefaults.ts` carries
-`dressOnly()`, which strips `kind` and `styleGuide` and keeps the rest as **dress** that
-flows into the user's "set as default" for new pages. `margins`, `lineSpacing`,
-`pageNumbers`, `headers` and `footers` are already dress. **Face and size are plainly
-dress too** — which means, if added as ordinary `PageSettings` fields, a writer's chosen
-face would propagate to every new page through the user-defaults path.
+**THE DRESS BOUNDARY — RULED (Fable, 2026-09-05): R6 GOVERNS.** A page's face/size choice
+is **that page's**. It reaches the user's defaults **only** through the explicit defaults
+act — R6's *"set your own defaults" control at the bottom of the PAGE menu* — and **never
+by propagation.**
 
-**That may be exactly right, and it is not this desk's call.** Determine and record which
-of the two the ticket implements, and surface it rather than picking silently:
-1. **Dress** — face/size flow through `dressOnly` into user page defaults. A writer who
-   sets their face once gets it on new pages. Consistent with what dress means today.
-2. **Per-page only** — face/size are stripped like `kind`, and every page starts at the
-   default face. Consistent with RV1's "page-level" read strictly.
+**The brief's earlier draft called this a fork. It is not one, and the disk already
+implements the ruling.** Verified at origin/main 2026-09-05:
 
-RV1 says *page-level*, which settles the **scope of application** (not span-level) but
-does **not** settle whether the choice seeds new pages. **Stop and surface.**
+- `setUserPageDefaults(current)` has **exactly one caller** —
+  `CascadePanels.tsx:437`, inside an `onClick`. It is a button press, not a side effect.
+- `dressOnly()` only **filters what may enter that store**; it is not a propagation
+  trigger and nothing calls it on a page edit.
+- `persistence.ts:795` reads `getUserPageDefaults()` at **page birth**, which is R6's own
+  *"resetting to defaults on a new page"* — the saved default seeding a NEW page, not one
+  page's choice leaking into another.
+
+So face and size may be ordinary `PageSettings` dress with no special handling. **The S0
+check narrows accordingly:** confirm the three facts above still hold at build time. **If
+`dressOnly` or any caller is found to auto-propagate dress, that is a DEFECT against R6 —
+stop and surface it as one, not as a design choice.**
+
+**R6 ALSO FIXES THIS TICKET'S OUTER BOUNDARY.** Its own words, verbatim — emphasis is
+R6's, not this brief's:
+
+> Revise keeps the page's *voice* — face and size; the Page menu owns the page's *sheet*
+
+Margins, line spacing, page numbers, headers and footers are **the Page menu's, not
+Revise's.** 112-C adds no sheet control.
+
+**AND THE SCHEMA FLAG R6 ANTICIPATED IS ALREADY SPENT.** R6 warned that *"per-page layout
+fields plus a user-defaults record are schema-class."* Those columns landed:
+`migrate.ts` carries `alter table journal_entries add column if not exists page_settings
+jsonb` and `alter table users add column if not exists page_defaults jsonb`, and
+`sync.ts` stores the value with `JSON.stringify(e.pageSettings ?? null)`. **Face and size
+are new keys inside an existing jsonb blob — no column, no migration, no schema flag.**
+Item 114 added `kind` and `styleGuide` the same way.
 
 ## §5 · THE SECTION — WHAT RENDERS
 
@@ -170,10 +192,23 @@ with `aria-checked`, persisted as `pageSettings.styleGuide`.
 pickers arrive and correctly ruled *"They stay Draft's"* for its own scope — but nobody
 has reconciled them against TRR11.
 
-**This ticket does not resolve it, and must not duplicate it.** 112-C builds **face and
-size only**; it adds no style-guide control of any kind. The reconciliation — whether
-TRR11's Revise-side dropdown is superseded by Draft's, or whether the two coexist for
-different purposes — **goes to Nick and to the item-84 desk**, not into this build.
+**RESOLVED (Fable, 2026-09-05): DRAFT PICKS, REVISE REFLECTS.** On Nick's own item-114
+words — *"whatever the user selects will then affect what gets displayed in the Revise
+menu tab"* — the shipped Draft control under Research is **the single picker**, and
+**TRR11's Revise-side control is SUPERSEDED as a control.** Revise does not offer a
+choice; it **reads** `pageSettings.styleGuide` to shape its own menu — the citation ask,
+footnotes when Chicago. **No duplicate picker anywhere.**
+
+**What that means for THIS ticket: nothing to build.** 112-C ships **face and size only**
+and adds no style-guide control and no style-guide reading. The *reflecting* behaviour
+belongs to the Counsel roster, which is **112-D** — the citation ask is a Counsel ask,
+not Desk furniture. A builder who finds themselves reading `styleGuide` in this ticket
+has crossed into 112-D.
+
+**One provenance note, surfaced not smoothed:** the quoted item-114 sentence is **not on
+disk** — it does not appear in `docs/` at origin/main as of 2026-09-05. It travels on
+Fable's relay of Nick's words, and the resolution rests on it. Recorded so that whoever
+later looks for its source finds this line instead of assuming a bad search.
 
 ## §8 · THE WALLS
 
