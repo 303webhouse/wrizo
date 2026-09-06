@@ -4321,6 +4321,12 @@ a:focus-visible,
 .md-mark-hidden{ font-size:0; opacity:0; }
 .md-bold{ font-weight:700; }
 .md-italic{ font-style:italic; }
+/* ITEM 79 FAMILY — underline's own mark. The engine emitted no underline
+   case and this rule did not exist, so a U press on either surface wrote
+   __word__ into the writer's text and rendered it as literal underscores.
+   text-decoration (never a border) so it inherits the run's own colour and
+   rides descenders the way the typeface intends. */
+.md-underline{ text-decoration:underline; text-underline-offset:2px; }
 .md-h1{ font-size:1.3em; font-weight:600; }
 .md-h2{ font-size:1.14em; font-weight:600; }
 
