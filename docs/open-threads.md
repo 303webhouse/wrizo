@@ -988,6 +988,12 @@ the next regression on this route is caught by an instrument, not by a founder. 
 OPEN.**
 Registry: next free **110**.
 
+**→ CHARTER LANGUAGE AMENDED (Fable, 2026-09-05).** Item 109's property is **"the COLD DOCUMENT LOAD
+of `#/page/new`"** — that is what the gate must drive. **HEADFUL is an OPT-IN INSTRUMENT, not the
+property:** the earlier "no gate drives `#/page/new` HEADFULLY" named a MEANS and mistook it for the
+thing measured. The charter now reads by the property; headful stays available as an instrument for
+when a property needs a real browser to show itself.
+
 ## ITEM 110 — ONE-CHECKOUT-PER-AGENT VIOLATED (worktree-assignment gap) — OPENS 2026-08-24
 
 **OPENS (deck-lane cross-lane contact report; Fable's ruling).** The deck lane built in the PRIMARY
@@ -1171,6 +1177,10 @@ Fable's review as usual) — **but NOTHING DEPLOYS.** This SUPERSEDES every prio
 ship word ("ship whatever we can", "ship the floor"): all are spent, and **no deploy fires on a stale
 word.** A new ship needs Nick's fresh word after the walk verdicts land. Production stays `10c2d0f` ·
 `de639860`; rollback ratchet unchanged (`1c8edd3` · `798fb798`).
+**→ EXPECTED OFFERS UNDER THE HOLD (Fable, 2026-09-05):** FIX's **item 113** (the Tutor decline +
+modeling-prompt amendment — **SERVER-behavior**, so it ships **ONLY on Nick's word POST-WALK**) and
+ERRATA's **ruled-three**. Both **MERGE on green as they arrive**; **NEITHER DEPLOYS** while the hold
+stands. The hold lifts only on Nick's walk verdicts.
 **→ 112-A OFFERED (build lane, 2026-09-05) — branch `item112a`, offered SHA `a672317`.** Record:
 `docs/menus/tutor/item112a-offer-2026-09-05.md` (+ `item112a-s0.md`, `item112a-build-record.md`).
 **REVISE IS LIVE**: `live:true`, real active state, the strip's EXISTING switch behaviour and no new
@@ -1681,6 +1691,12 @@ back to it"* — full behavior DEFERRED. **Cross-refs:** item 112 (the Revise li
 chooser (a third kind = a third preset); the **MLA-default ruling — SUPERSEDED as to placement:** the
 buttons live **under Research in Structure**, not in the earlier dropdown location.
 
+**→ RULED (Nick, 2026-09-05): DRAFT PICKS, REVISE REFLECTS.** The style-guide reconciliation is
+settled in Nick's own 114 words — the buttons live **under Research in Structure**, and **"the
+selection SHAPES THE REVISE MENU"** (e.g. Chicago → Footnotes appears). So **DRAFT PICKS the guide;
+REVISE REFLECTS it.** **TRR11's control is SUPERSEDED** — its style-authority control does not own the
+pick; the pick's home is item 114's Research row, and Revise renders what that names.
+
 ## ITEM 115 — CARD TAGS & METADATA (committee) — OPENS 2026-08-26
 
 **OPENS (Nick, walkthrough part 2, 2026-08-26).** Charter, Nick's words (the Westeros example whole,
@@ -1875,6 +1891,10 @@ plan board + every board pinning it — the link already exists, zero schema) ·
 **Item 116 rides BEHIND C5** as its own small charter. **112-B DISSOLVES INTO C1+C2** — Revise's hands
 are the same hands — pending Nick's word. **HELD FOR NICK:** Q1 linking = pinning? · Q2 confirm the
 tags/Tutor deferral to item 108, or charter it now · Q3 Find's home = Draft's existing Find section?
+**→ AMENDED (Fable, 2026-09-05): C2's INPUT IS THE MEASURED TRIO.** ERRATA's probe at 1100 measures
+the overhang PER SURFACE, not as one figure: **prose −29.69 · screenplay −38.00 · board 0.00 (flush).**
+C2 (surface anchoring) is specified against those three; the single "−29.7px" above is the PROSE row
+only — kept as written, corrected here.
 
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
