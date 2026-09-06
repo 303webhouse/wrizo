@@ -1862,6 +1862,19 @@ among the 115/117/119 cluster pass's binding inputs. Ratified.
 the probe's width matrix as a **STANDING member** — *an instrument that never visits the width where
 the layout law bites cannot certify the law.* Small probe amendment (MENU's instrument); **rides the
 next probe touch**, and stands as a **BINDING NOTE for the 115/117/119 cluster pass.**
+**→ PASS DRAFTED (Fable's desk, 2026-09-05): CANDIDATES C1–C6, three questions held for Nick.** The
+committee pass is on disk — `docs/wrizo-alpha/cluster-pass-tags-shelf-hands.md`. **STATUS: CANDIDATES
+ONLY**, output to Nick for his word. The cluster's law: **TAGS ARE NAMES, STRUCTURE COMES FROM LINKS**
+— search is LOOKUP, never inference (Nick's "without having to run an AI check" read as architecture);
+no tag types, colors, required tags or hierarchy; tags do NOT reach the Tutor in this pass (deferred to
+item 108 by architecture). **Ticketed order:** **C1** the mirror as ONE component (one drawer, a side
+prop — fade/slide/announce/coexistence shared by construction) · **C2** surface anchoring (paper /
+board WRAP / card popup; closes the −29.7px overhang at 1100) · **C3** hands on the card · **C4** tags
+on cards (strings in `entry.boxes`, ZERO schema, local census) · **C5** the shelf (a page's shelf = its
+plan board + every board pinning it — the link already exists, zero schema) · **C6** find from Draft.
+**Item 116 rides BEHIND C5** as its own small charter. **112-B DISSOLVES INTO C1+C2** — Revise's hands
+are the same hands — pending Nick's word. **HELD FOR NICK:** Q1 linking = pinning? · Q2 confirm the
+tags/Tutor deferral to item 108, or charter it now · Q3 Find's home = Draft's existing Find section?
 
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
