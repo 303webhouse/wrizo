@@ -1181,6 +1181,26 @@ word.** A new ship needs Nick's fresh word after the walk verdicts land. Product
 modeling-prompt amendment — **SERVER-behavior**, so it ships **ONLY on Nick's word POST-WALK**) and
 ERRATA's **ruled-three**. Both **MERGE on green as they arrive**; **NEITHER DEPLOYS** while the hold
 stands. The hold lifts only on Nick's walk verdicts.
+
+**✅ NICK'S WALK — VERDICTS ON THE RECORD (2026-09-05), and THE HOLD LIFTS.**
+- **The empty Revise floor reads CLEAN.** The floor shipped at `10c2d0f` · `de639860` is accepted by
+  the founder's own walk — the empty-by-design surface reads as intended, not as an unfinished room.
+- **The two hands read as ONE GRAMMAR.** **112-B DISSOLVES into cluster C1+C2 — CONFIRMED** (Revise's
+  hands are the same hands; the mirror is one component, not a second implementation).
+- **112-C (the Type section) is NEXT in the Revise arc.**
+- **Cards overlapping the board: CONFIRMED LIVE by the founder — so (c)'s FIX SHIPS.** This is the
+  founder reproduction item 118 (c) was waiting on; FIX's window offer `829fbc7` (the UPPER-bound
+  right-edge clamp) carries it, and the (c) line completes when that offer merges and ships.
+
+**⛴ SHIP WORD — "SHIP THE POST-WALK PACKAGE" (Nick, 2026-09-05). THE HOLD IS LIFTED.** The package is
+**FIX's window offer + item 113 + ruled-three's lexicon change** (`revise`→`mark`, already merged at
+`e17dd6e`), **plus the B/I/U addendum IF its S0 fits — FIX decides, and the package NEVER WAITS ON A
+HYPOTHESIS.** Assembly first: each component MERGES on green with Fable's review as usual; the ship
+fires once the package is assembled — **not piecemeal**, and not before. Then the **FULL CHECKLIST**:
+fresh suite both settings at the deploy HEAD, tree clean at upload, build-OS/toolchain on the stamp,
+served-vs-stamped byte diff, manifest SHA-enumerated since `10c2d0f` with **113's SERVER-BEHAVIOUR
+NAMED**. **Rollback ratchets from `10c2d0f` · `de639860`.** Any red anywhere, or a verdict short of
+PASS: STOP — the word never covers a red.
 **→ 112-A OFFERED (build lane, 2026-09-05) — branch `item112a`, offered SHA `a672317`.** Record:
 `docs/menus/tutor/item112a-offer-2026-09-05.md` (+ `item112a-s0.md`, `item112a-build-record.md`).
 **REVISE IS LIVE**: `live:true`, real active state, the strip's EXISTING switch behaviour and no new
@@ -1937,6 +1957,20 @@ tags/Tutor deferral to item 108, or charter it now · Q3 Find's home = Draft's e
 the overhang PER SURFACE, not as one figure: **prose −29.69 · screenplay −38.00 · board 0.00 (flush).**
 C2 (surface anchoring) is specified against those three; the single "−29.7px" above is the PROSE row
 only — kept as written, corrected here.
+
+**✅ THE PASS IS RATIFIED (Nick, 2026-09-05), and the three held questions are ANSWERED:**
+- **Q1 → PINNING.** Linking IS the existing pin (reuse, zero schema), as the pass leaned. **AND a new
+  design arc opens with it: the PAGE/PLAN WORKFLOW arc at MENU — three mockups, DOUBLE PASS, under a
+  MINIMUM-SETUP LAW.** **C5 (the shelf) and C6 (find from Draft) WAIT ON IT** — the geography is not
+  built until the workflow that uses it is designed.
+- **Q2 → CHARTER IT.** Tags DO reach the Tutor: it becomes **item 108's FIRST REQUIREMENT**, chartered
+  at **TUTOR**. (This lifts the pass's architectural deferral — the wire question is answered by
+  chartering it, not by postponing it.)
+- **Q3 → FIND LIVES UNDER THE TUTOR'S COMPOSER** — **local, ZERO-NETWORK.** (Supersedes the pass's
+  "Draft's existing Find section" lean: the door is the composer, and the no-wire posture is explicit.)
+
+**112-B DISSOLVES into C1+C2 — CONFIRMED by Nick's walk** (see the walk verdicts above): the two hands
+read as one grammar, so Revise's hands are built once, as the mirror component.
 
 ## THREE RULED ITEMS — BUILT, RULED, OFFERED — 2026-09-05 (errata lane; branch `ruled-three`)
 
