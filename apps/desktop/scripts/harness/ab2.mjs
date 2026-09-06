@@ -896,10 +896,10 @@ if (process.env.HARNESS_PARKED === '1') {
     // have made: what the Draft rail carries, and ONLY that. The roster is
     // pinned in its ruled order so a silent addition or reordering fails
     // here, and the picker's absence is asserted rather than merely unread.
-    pok('PARKED, generation 3 (was CD1 S2/S7 re-assertion of the four-button roster Bold/Italic/Heading/Spacing + the Structure picker) — item 83 M5/R4+F3: the roster is the ruled ELEVEN and the Structure picker is withdrawn; same ONLY-those claim, current membership',
+    pok('PARKED, generation 4 (was \"PARKED, generation 3 (was CD1 S2/S7 re-assertion of the four-button roster Bold/Italic/Heading/Spacing + the Structure picker) — item 83 M5/R4+F3: the roster is the ruled ELEVEN and the Structure picker is withdrawn; same ONLY-those claim, current membership\") — NICK\'S OUTDENT RULING (2026-09-05) supersedes the COUNT, by design: the Draft roster is the ruled TWELVE now, because item 83 errata E3\'s held seam closed and Indent gained the partner it had been shipping without. The ELEVEN was never wrong; it was complete for its moment. What this check has always ACTUALLY claimed — that the rail carries exactly its ruled roster, in its ruled order, with no silent addition and no Structure picker — is UNCHANGED, and is re-made below at the current membership with Outdent seated immediately before Indent. Successor: outdent.mjs\'s own S1 checks (the control exists, sits before Indent, and does not wear Align left\'s glyph).',
       !draftRailClassRenameCheck.ink && draftRailClassRenameCheck.captureItems === 0
         && draftRailClassRenameCheck.format && draftRailClassRenameCheck.structure === false
-        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Underline', 'Heading', 'Bulleted list', 'Block quote', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
+        && JSON.stringify(draftRailClassRenameCheck.formatButtons) === JSON.stringify(['Bold', 'Italic', 'Underline', 'Heading', 'Bulleted list', 'Block quote', 'Outdent', 'Indent', 'Line spacing', 'Align left', 'Align centre', 'Align right'])
         && JSON.stringify(draftRailClassRenameCheck.structureLabels) === JSON.stringify([]),
       JSON.stringify(draftRailClassRenameCheck));
 
