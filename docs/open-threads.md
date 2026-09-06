@@ -1754,6 +1754,20 @@ now):** Storyboard/Outline boards will also display here, formatting may differ.
 - **(f) The New Page Card control is DEAD — and RULED REMOVED** (replaced by item 116, Import to
   Boards).
 
+**→ RULED DISPOSITIONS (Fable / ERRATA, 2026-09-05) — three of the cluster answered:**
+- **(b) resize-once → PARKED, NOT REPRODUCED UNDER FOUNDER CONDITIONS.** The repro STAGE is recorded
+  (mouse/desktop; the missing variable was board POPULATION — ~10 cards, linked pairs, cards at the
+  edges). **Nick re-tests live after the ship**; it re-opens on a founder reproduction, never on
+  argument.
+- **(c) edge-vanish → REPRODUCED AND FIXED at the X-AXIS CLAMP.** FX17's **shared-delta shape is
+  mirrored**, and the **two-axes finding** stands on the record. *(Verified by chat 1: the clamp is
+  live on main — `Math.max(0, b.x + dx)` / `Math.max(0, b.y + dy)`, load-bearing by its own comments —
+  and the ruled-three merge does NOT touch `BoardEditor.tsx`, so the fix landed in earlier shipped
+  code, not here.)*
+- **(e) unlink → RE-CLASSED: a DESIGN ADD, not a defect.** Routed to the cluster's **C4** (tags on
+  cards). **Delete/Backspace is recorded as the EXISTING exit** for a selected thread — the capability
+  is already there; what is wanted is a designed affordance for it.
+
 Registry: next free **119**.
 
 **→ S0 PASS 1 — 2026-08-28 (fix lane). TWO OF THE THREE "SMALLEST" DEFECTS DID NOT REPRODUCE, AND
@@ -12570,6 +12584,11 @@ fixture that no longer exists.
   heredoc: the heredoc collapses `\\n` to `\n` in transit. **Evidence: that collapse corrupted a drift
   check once and came near to corrupting `draftFormat.ts`.** The file path is not the cautious option
   here; it is the only one that preserves the bytes.
+- **PROBES DRIVE REAL POINTER EVENTS — standing guard (ERRATA, 2026-09-05).** A probe drives
+  **`pointerdown` / `pointerup`** — real pointer events — and **NEVER a synthetic `click`**. A
+  synthetic click skips the pointer pipeline the product actually listens on, so the probe measures a
+  path no writer ever takes. **Evidence: two probe artifacts nearly became findings today.** A finding
+  produced by the wrong instrument is not a finding — it is the instrument describing itself.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
