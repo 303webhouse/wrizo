@@ -488,6 +488,20 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             <button type="button" className="mode-tbtn" title={t('draftBullet')} onClick={() => content.format!.onFormat('bullet')}>•</button>
             <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
+            {/* ITEM 83 ERRATA E3, THE OUTDENT PARTNER (Nick's ruling) — the exact
+                decrement of Indent beside it, floored at zero, levels counted in
+                tabs on F3's leading-tab convention (store/draftFormat.ts shares
+                one paragraph-scope helper between the two so they cannot drift).
+                ORDER: outdent BEFORE indent, so the pair reads left-to-right as
+                a pair — the same order the legacy bar has always used
+                (ModeStage.tsx's Outdent/Indent), and the same direction this
+                drawer's own alignment row already reads.
+                GLYPH: the left arrow, mirroring Indent's own right arrow. NOT
+                the legacy bar's ⇤ — that glyph is already spoken for in this
+                very drawer by Align left, and a control that wears another
+                control's mark in the same panel is a defect however correct its
+                behaviour. */}
+            <button type="button" className="mode-tbtn" title={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}>&larr;</button>
             <button type="button" className="mode-tbtn" title={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}>&rarr;</button>
             <button type="button" className="mode-tbtn" title={t('draftSpacing')} onClick={() => content.format!.onFormat('spacing')}>&para;</button>
           </div>

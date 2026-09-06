@@ -236,7 +236,7 @@ export type DeskTermId =
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
   | 'twPageScroll' | 'footProgress' | 'footFullScreen' | 'footTypewriter' | 'footTarget'
   // ITEM 83 M5 (R4/DR3) — Draft's grown roster and its conversion verb.
-  | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftSpacing'
+  | 'draftHeading' | 'draftBullet' | 'draftQuote' | 'draftIndent' | 'draftOutdent' | 'draftSpacing'
   | 'draftAlignment' | 'draftAlignLeft' | 'draftAlignCenter' | 'draftAlignRight'
   | 'draftConvertToScreenplay' | 'draftConvertToProse'
   // ITEM 114 (item 83 errata E4) — the page's declared KIND and, under
@@ -781,6 +781,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   draftBullet: 'Bulleted list',
   draftQuote: 'Block quote',
   draftIndent: 'Indent',
+  draftOutdent: 'Outdent',
   draftSpacing: 'Line spacing',
   draftAlignment: 'Alignment',
   draftAlignLeft: 'Align left',

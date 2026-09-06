@@ -150,6 +150,82 @@ await withHarness(async (app) => {
     popup.bold && popup.italic, JSON.stringify(popup));
 });
 
+// ============================================================================
+// (c) EDGE ESCAPE — THE RIGHT EDGE, ON A POPULATED BOARD (S0 pass 3).
+//
+// S0 pass 1 drove ONE card on a default board and reported (c) NOT REPRODUCED.
+// It was testing the wrong corner: the TOP-LEFT clamps (Math.max(0, …) has
+// always been there), so a single top-left drag "proved" containment that does
+// not exist on the other side. Under Nick's own stage — populated board, mouse
+// — a card dragged right ended up hanging 750px PAST the canvas.
+//
+// THE TWO AXES ARE DIFFERENT BUGS AND ONLY ONE IS A BUG. The canvas HEIGHT is
+// content-driven and grows to fit (measured: 1455 -> 2070px to contain a card
+// dragged down), so downward travel needs only the far-away BOARD_MAX_Y cap
+// FX17 S3 gave it. The WIDTH cannot grow — it is pageWidthPx — so a card past
+// the right edge is outside a board that will never reach it. Both halves are
+// asserted below, because a fix that stopped the card AND froze the growing
+// board would be a regression wearing a fix's clothes.
+// ============================================================================
+await withHarness(async (app) => {
+  const stage = [];
+  let n = 0;
+  for (let row = 0; row < 5; row++) for (let col = 0; col < 2; col++) {
+    n += 1;
+    stage.push({ id: `i118c-${n}`, kind: 'text', x: col === 0 ? 0.06 : 0.52, y: 0.04 + row * 0.18,
+      w: 0.34, h: 0.13, z: n, text: `Card ${n}` });
+  }
+  stage.push({ id: 'i118c-right', kind: 'text', x: 0.60, y: 0.30, w: 0.30, h: 0.10, z: 22, text: 'Right traveller.' });
+  stage.push({ id: 'i118c-down', kind: 'text', x: 0.10, y: 0.60, w: 0.30, h: 0.10, z: 23, text: 'Down traveller.' });
+  stage.push({ id: 'i118c-link', kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: 30, connA: 'i118c-1', connB: 'i118c-2' });
+  stage.push({ id: 'i118c-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, canvasW: 1500, canvasH: 1100 });
+
+  await freshBoard(app, 'i118c-board', stage);
+  await app.evalJs(`
+    window.__pt = function(el, type, x, y) {
+      el.dispatchEvent(new PointerEvent(type, {clientX:x, clientY:y, pointerId:1, pointerType:'mouse',
+        bubbles:true, cancelable:true, isPrimary:true, button:0, buttons: type==='pointerup'?0:1}));
+    };
+    window.__drag = function(id, dx, dy) {
+      const el = document.querySelector('[data-box-id="' + id + '"]');
+      const r = el.getBoundingClientRect();
+      const x0 = r.left + r.width/2, y0 = r.top + r.height/2;
+      window.__pt(el, 'pointerdown', x0, y0);
+      for (let i=1;i<=12;i++) window.__pt(el, 'pointermove', x0 + dx*i/12, y0 + dy*i/12);
+      window.__pt(el, 'pointerup', x0+dx, y0+dy);
+    };
+    window.__geo = function(id) {
+      const c = document.querySelector('.board-canvas').getBoundingClientRect();
+      const b = document.querySelector('[data-box-id="' + id + '"]').getBoundingClientRect();
+      return { canvasW: Math.round(c.width), canvasH: Math.round(c.height),
+               overRight: Math.round(b.right - c.right), overBottom: Math.round(b.bottom - c.bottom) };
+    };
+  `);
+  await sleep(300);
+
+  const xBefore = await app.evalJs("window.__geo('i118c-right')");
+  await app.evalJs("window.__drag('i118c-right', 900, 0)");
+  await sleep(600);
+  const xAfter = await app.evalJs("window.__geo('i118c-right')");
+
+  ok('(c): a card dragged hard RIGHT stops at the canvas edge instead of sliding past it — the hard stop FX17 S3 gave the bottom, now on the side that could not grow to compensate',
+    xAfter.overRight <= 1, JSON.stringify({ xBefore, xAfter }));
+
+  ok('(c): and the canvas did NOT silently widen to swallow the drag — the stop is a stop, not a board that grew sideways (width cannot grow; that is the whole reason the card had to be held)',
+    xAfter.canvasW === xBefore.canvasW, JSON.stringify({ before: xBefore.canvasW, after: xAfter.canvasW }));
+
+  const yBefore = await app.evalJs("window.__geo('i118c-down')");
+  await app.evalJs("window.__drag('i118c-down', 0, 900)");
+  await sleep(600);
+  const yAfter = await app.evalJs("window.__geo('i118c-down')");
+
+  ok('(c) NOT OVER-FIXED: dragging DOWN still grows the board, exactly as before — the vertical axis was never the defect, and a clamp that froze the growing canvas would be a regression wearing a fix\'s clothes',
+    yAfter.canvasH > yBefore.canvasH, JSON.stringify({ before: yBefore.canvasH, after: yAfter.canvasH }));
+
+  ok('(c) NOT OVER-FIXED: the downward card is still CONTAINED by the board it grew — it neither escapes nor gets pinned short of where the writer dropped it',
+    yAfter.overBottom <= 1, JSON.stringify(yAfter));
+});
+
 for (const c of checks) {
   // eslint-disable-next-line no-console
   console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

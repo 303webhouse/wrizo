@@ -1571,7 +1571,7 @@ export function BoardEditor({ id }: { id: string }) {
       }
       if (phase === 'dragging') {
         e.preventDefault();
-        const dx = (e.clientX - startX) / pageWidthPx;
+        const dxRaw = (e.clientX - startX) / pageWidthPx;
         const dyRaw = (e.clientY - startY) / pageWidthPx;
         const ids = new Set(movingIds);
         // FX17 S3 (SV22) — THE HARD STOP, applied to the DELTA rather than to
@@ -1599,6 +1599,35 @@ export function BoardEditor({ id }: { id: string }) {
         const lowestBottom = Math.max(...movingStart.map(b => b.y + b.h));
         const dyLimit = (BOARD_MAX_Y - BOARD_BREATHING_ROOM) - lowestBottom;
         const dy = Math.min(dyRaw, Math.max(0, dyLimit));
+        // ITEM 118 (c) — THE RIGHT EDGE GETS THE SAME HARD STOP THE BOTTOM HAS.
+        // FX17 S3 above fixed the DOWNWARD travel and said so in its own first
+        // sentence — "the way the x-axis's own Math.max(0, …) does" — leaving
+        // sideways travel with a lower bound and no upper one at all. Measured
+        // on a populated board (item 118 S0 pass 3, Nick's own stage): a card
+        // dragged 900px right ended up hanging 750px PAST the canvas, with the
+        // canvas width unchanged at 1500. That is defect (c): "cards moved to
+        // the board's edge begin to DISAPPEAR."
+        //
+        // WHY THE TWO AXES ARE NOT THE SAME BUG, measured rather than assumed.
+        // The canvas HEIGHT is content-driven and grows to fit (the same probe
+        // watched it go 1455 -> 2070px to contain a card dragged down, which is
+        // why the bottom needed a far-away cap rather than a fitted one). The
+        // WIDTH cannot grow: it is pageWidthPx, the container's width or the
+        // writer's own canvasW override. So a card past the right edge is
+        // outside a board that will never reach it — permanently clipped,
+        // unreachable, and gone from the writer's view.
+        //
+        // The bound is therefore the canvas's own right edge, which in these
+        // units is exactly 1 (x and w are both fractions of pageWidthPx).
+        // Everything else here is FX17 S3's shape, deliberately: clamped on the
+        // SHARED delta so a multi-card selection holds its shape instead of
+        // deforming as its rightmost card lands, and floored at 0 so a card
+        // already sitting past the edge — an older save, a deck load — is never
+        // yanked back the instant the writer touches it. A stop, never a
+        // correction; no card is relocated by the arrival of a limit.
+        const rightmost = Math.max(...movingStart.map(b => b.x + b.w));
+        const dxLimit = 1 - rightmost;
+        const dx = Math.min(dxRaw, Math.max(0, dxLimit));
         setBoxes(startBoxes.map(b => (ids.has(b.id) ? { ...b, x: Math.max(0, b.x + dx), y: Math.max(0, b.y + dy) } : b)));
         return;
       }
