@@ -1691,6 +1691,22 @@ back to it"* — full behavior DEFERRED. **Cross-refs:** item 112 (the Revise li
 chooser (a third kind = a third preset); the **MLA-default ruling — SUPERSEDED as to placement:** the
 buttons live **under Research in Structure**, not in the earlier dropdown location.
 
+**→ PROVENANCE GAP CLOSED (TUTOR surfaced it; recorded 2026-09-05).** The founder sentence this item
+and the DRAFT-PICKS/REVISE-REFLECTS ruling both rest on was **only PARAPHRASED on disk, never verbatim**
+— *a founder ruling the record only paraphrased is a ruling the record can lose.* **Nick's words as
+given during the 2026-08-26 walkthrough, verbatim:**
+
+> Instead of 'Convert to Screenplay,' just have a button that says 'Screenplay,' one that says 'Normal'
+> which is preselected unless the User started a different style of page to initiate the Page, and a
+> 'Research' option. When 'Research' is selected, four new buttons should appear that say 'MLA'
+> (default), 'APA,' 'Chicago,' and 'AP.' Whatever the user selects will then affect what gets displayed
+> in the Revise menu tab (a Footnotes option should appear, e.g. when 'Chicago' style is selected.) We
+> don't need to build all of this out yet, but I want the style guide buttons in so we don't forget to
+> go back to it.
+
+This is the primary text for item 114, for the **DRAFT PICKS / REVISE REFLECTS** ruling, and for item
+87's chooser (the three kind buttons, Normal preselected-unless-otherwise-started).
+
 **→ RULED (Nick, 2026-09-05): DRAFT PICKS, REVISE REFLECTS.** The style-guide reconciliation is
 settled in Nick's own 114 words — the buttons live **under Research in Structure**, and **"the
 selection SHAPES THE REVISE MENU"** (e.g. Chicago → Footnotes appears). So **DRAFT PICKS the guide;
@@ -12474,6 +12490,16 @@ fixture that no longer exists.
   v4 bump stamped `TU2 PARKED: PASS (9 checks)` — the same 9 as before the ticket, against a summary
   claiming ten; caught by ARITHMETIC, not by a red. Stands beside the immutability law
   (park-never-edit) and the retry-loop doctrine.
+- **BACKTICK-BEARING CONTENT TRAVELS BY SCRIPT FILE — standing guard (both lanes, earned 2026-09-05).**
+  Content containing backticks is WRITTEN TO A FILE and the file is run/read; it NEVER goes through a
+  shell as `python -c` (or any `-c`/inline form). The shell eats backticks as command substitution
+  before the interpreter ever sees them, so the corruption happens upstream of every check you would
+  use to catch it.
+- **BACKSLASH ESCAPES GO THROUGH A FILE, NEVER A HEREDOC — standing guard (both lanes, earned
+  2026-09-05).** Any content carrying backslash escapes is written to a FILE, never piped through a
+  heredoc: the heredoc collapses `\\n` to `\n` in transit. **Evidence: that collapse corrupted a drift
+  check once and came near to corrupting `draftFormat.ts`.** The file path is not the cautious option
+  here; it is the only one that preserves the bytes.
 - **THE S0-PUSH RULE — ratified 2026-07-21 (Nick, "Sure, ratify
   S0-push rule"), proposed by Fable's own FX7 review citing the
   shared-tree collision class's THIRD occurrence** (the two CD1.1/HB1
