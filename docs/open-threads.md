@@ -1187,7 +1187,11 @@ stands. The hold lifts only on Nick's walk verdicts.
   the founder's own walk — the empty-by-design surface reads as intended, not as an unfinished room.
 - **The two hands read as ONE GRAMMAR.** **112-B DISSOLVES into cluster C1+C2 — CONFIRMED** (Revise's
   hands are the same hands; the mirror is one component, not a second implementation).
-- **112-C (the Type section) is NEXT in the Revise arc.**
+- **112-C (the Type section) is NEXT in the Revise arc.** **AMENDED 2026-09-06 by the ANALOG LAW (see
+  the band):** since the FONT control lives in **Draft AND Revise, not Free Write**, 112-C's Type
+  section mounts in **BOTH Draft's and Revise's Desk drawers — ONE COMPONENT, TWO MOUNTINGS**,
+  page-level as RV1 governs. **Only the section's PLACEMENT clause amends; its SUBSTANCE does not.**
+  **112-C also gains RV3's ruling — the SYSTEM-FONT ADDER.**
 - **Cards overlapping the board: CONFIRMED LIVE by the founder — so (c)'s FIX SHIPS.** This is the
   founder reproduction item 118 (c) was waiting on; FIX's window offer `829fbc7` (the UPPER-bound
   right-edge clamp) carries it, and the (c) line completes when that offer merges and ships.
@@ -1968,6 +1972,9 @@ only — kept as written, corrected here.
   chartering it, not by postponing it.)
 - **Q3 → FIND LIVES UNDER THE TUTOR'S COMPOSER** — **local, ZERO-NETWORK.** (Supersedes the pass's
   "Draft's existing Find section" lean: the door is the composer, and the no-wire posture is explicit.)
+  **→ TUTOR'S FIND DESIGN PASS (FN1–FN8) RATIFIED (Fable, 2026-09-06)** — the pass that answers Q3.
+  **Chat 1 merges its branch tip when TUTOR reports it** (verified per habits as usual); **Nick's words
+  on the PLACEHOLDER and on SCOPE append** to that record when it lands.
 
 **112-B DISSOLVES into C1+C2 — CONFIRMED by Nick's walk** (see the walk verdicts above): the two hands
 read as one grammar, so Revise's hands are built once, as the mirror component.
@@ -2052,6 +2059,30 @@ errata records above: *"► SURFACED, NOT FIXED — R6's BIRTH-FROM-DEFAULTS DOE
 ROUTE"*). **Fix-class, owed to the next FIX window.** The outdent partner (E3's SEAM 1) and the
 Screenplay-collision seam remain **HELD FOR NICK** (recommendations on file in the errata offer;
 neither blocked this merge). Registry: next free **121**.
+
+## ITEM 121 — FREE WRITE INK MODE (design) — OPENS 2026-09-06
+
+**OPENS (Fable, 2026-09-06).** A **Text / Ink toggle** with **brush options**, **REPLACING the Styling
+section** in Free Write. **Design pass at MENU; S0 against the EXISTING Journal drawing layer** (the
+capability is already in the house — the S0 establishes what it can do before anything is designed on
+top of it). Governed by the analog law (below): Free Write is a typewriter for text and a journal
+page / sketch pad for drawing — Ink is that second half made real, not a new decoration surface.
+
+## ITEM 122 — THE STYLING COMPLETION WAVE (fix-class) — OPENS 2026-09-06
+
+**OPENS (Fable, 2026-09-06) — FIX's next window.** Draft's **B/I/U MADE TO WORK** (item 79's marker
+class, **now REQUIRED** — no longer a tolerated artifact), **STRIKETHROUGH**, and the **BRASS SELECTION
+HIGHLIGHT.**
+
+**B/I/U DISPOSITION (Fable, 2026-09-06), three ways:**
+- **UNDERLINE RIDES THE POST-WALK PACKAGE** — it is ready and ships with the package.
+- **The MARKERS and the STUCK-HIGHLIGHT go to the NEXT WINDOW, with their S0 findings** — they are
+  this item's substance, not the package's.
+- **Free Write's NON-DECORATING SURFACE is a DESIGN QUESTION FOR NICK: decorate, or remove?** Not a
+  defect and not a builder's call — under the analog law it is a question about what a typewriter
+  should do, which is why it goes to the founder rather than into a fix.
+
+Registry: next free **123**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -12630,6 +12661,28 @@ fixture that no longer exists.
   heredoc: the heredoc collapses `\\n` to `\n` in transit. **Evidence: that collapse corrupted a drift
   check once and came near to corrupting `draftFormat.ts`.** The file path is not the cautious option
   here; it is the only one that preserves the bytes.
+- **THE ANALOG LAW — Free Write's governing theme — standing DESIGN law (Nick, VERBATIM, 2026-09-06).**
+  Recorded beside the mode sentence it completes — **"Free Write produces, Draft marks, Revise
+  dresses"** — in Nick's own words:
+
+  > The theme that should define everything about Free Write mode is that it is analog: a typewriter
+  > for text and a journal page/sketch pad for drawing or notetaking.
+
+  **Every Free Write chrome decision answers to this law.** It EXPLAINS, retroactively, the rules
+  already standing — **forward-only**, **strike-not-delete**, **no paste-in**, and **the deck**: none
+  of them arbitrary, each one what a typewriter or a journal page simply does. **RULED with it: the
+  FONT control lives in DRAFT and REVISE, NOT Free Write** (a typewriter does not offer you a
+  typeface). **CONSEQUENCE FOR 112-C:** the Type section mounts in **BOTH Draft's and Revise's Desk
+  drawers — ONE COMPONENT, TWO MOUNTINGS**, page-level as RV1 governs. **The section's PLACEMENT clause
+  AMENDS; its SUBSTANCE does not.**
+- **THE PARKED RUN SEES WHAT THE UNPARKED RUN CANNOT — canon (2026-09-06).** **Evidence: ab2's
+  GENERATION-4 park** — Nick's **outdent ruling** superseded the **ruled-eleven roster**, and the park
+  carries **generation 3 quoted verbatim INSIDE generation 4**, successors named (the immutability law
+  COMPOUNDING rather than flattening). **The PARKED run caught TWO RULING-DRIVEN CHANGES the unparked
+  run could not see.** A ruling that supersedes an assertion is invisible to a pass/fail sweep of LIVE
+  checks; only the parked setting — which carries superseded claims forward BY NAME — can register
+  that a RULING, not a defect, moved them. **The two settings are not redundancy: they answer
+  different questions.**
 - **DRIVERS NEVER ASSUME EXISTENCE — standing harness law (2026-09-05).** A driver never acts on a
   target it has not established. **A missing target is a RECORDED FAILURE THAT NAMES ITSELF — never a
   throw that kills the file.** A bare `.click()` on an absent node aborts the run and reports nothing
