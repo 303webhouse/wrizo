@@ -25,17 +25,26 @@ import { useLexicon } from '../store/themeLexicon';
 // exactly the lever ModeStrip already uses for Free Write on the script surface.
 // QuickSprint passes nothing and is byte-identical to pre-112-A.
 //
-// THE SUB-LABEL, SURFACED AND NOT SETTLED. Draft's own sub reads 'revise' —
-// written when revise was a STAGE of Draft rather than a room of its own. It is
-// left exactly as it stands: removing it changes what Draft's own strip reads,
-// which the brief names a stop-and-surface, so it is raised in
-// docs/menus/tutor/item112a-s0.md rather than decided here. Revise's own sub is
-// 'dress', from the charter's organizing sentence — "Free Write produces, Draft
-// marks, Revise dresses" — not coined by this build.
+// THE SUB-LABEL — SETTLED 2026-09-05 (Fable's ruling): DRAFT MARKS, REVISE
+// DRESSES. Draft's sub read 'revise', written when revise was a STAGE of Draft
+// rather than a room of its own; 112-A made Revise a room and left the word
+// behind, pointing at a door that had moved. It now reads 'mark', from the
+// charter's own organizing sentence — "Free Write produces, Draft marks, Revise
+// dresses" — the same sentence Revise's 'dress' already came from. The
+// stop-and-surface raised in docs/menus/tutor/item112a-s0.md is answered.
+//
+// THIS TABLE IS SHARED, and the change therefore reaches BOTH of its mounts —
+// PageEditor's strip below the 1100px gate AND QuickSprint's. That is deliberate
+// and it is the honest outcome: the word was equally wrong on both, and Draft
+// marks on every surface that has a Draft. QuickSprint.tsx itself is untouched
+// (it passes no props into this and renders no Revise tab, since `reviseEnabled`
+// defaults false), so what changes there is one word of a sub-label and nothing
+// else. Recorded because "one line" and "reaches two surfaces" are both true and
+// only one of them is obvious.
 interface ModeDef { key: string; term?: 'freewrite'; label: string; sub: string; live: boolean }
 const MODES: ModeDef[] = [
   { key: 'journal', term: 'freewrite', label: 'Free write', sub: 'generate', live: true },
-  { key: 'drafting', label: 'Draft', sub: 'revise', live: true },
+  { key: 'drafting', label: 'Draft', sub: 'mark', live: true },
   { key: 'revise', label: 'Revise', sub: 'dress', live: true },
   { key: 'formatting', label: 'Format', sub: 'convention', live: false },
 ];

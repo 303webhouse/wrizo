@@ -50,8 +50,75 @@ const argOf = (flag, dflt = null) => {
 };
 const ONLY = argOf('--surface');
 const SHOTS = argOf('--shots');
-const WIDTHS = [[1366, 768], [1680, 1050]];
+// RULED 2026-09-05 (Fable): the frame's MINIMUM width is a STANDING member of
+// this matrix. An instrument that never visits the width where the layout law
+// bites cannot certify the law.
+const WIDTHS = [[1100, 768], [1366, 768], [1680, 1050]];
 const TOL = 0.6;
+
+/* ---------- KNOWN, OWNED FINDINGS (ruled 2026-09-05) -----------------------
+ * The frame's MINIMUM width joins the matrix above as a standing member, on the
+ * ruling that *an instrument that never visits the width where the layout law
+ * bites cannot certify the law.* Visiting it makes the probe SEE, for the first
+ * time, a defect that has been there all along: the dock overhangs the paper at
+ * 1100. It is PRE-EXISTING, it is RATIFIED as a binding input to the 115/117/119
+ * cluster pass, and it is expressly NOT this lane's to fix.
+ *
+ * SO IT MUST BE REPORTED WITHOUT GATING — and that is a dangerous shape to
+ * build, because a suppression list is exactly how an instrument stops being
+ * one. Three constraints keep this honest:
+ *
+ *   1. IT IS KEYED TO THE EXACT FACT, not to a check name. Surface, width, check
+ *      AND the measured pixel value, matched within ±0.75px (the probe's own
+ *      0.6px tolerance plus rounding). The same check at another width, or the
+ *      same width at another value, is NOT this finding and goes RED.
+ *   2. DRIFT RE-REDS. If the overhang changes by even a pixel — a regression, or
+ *      a partial fix — the value leaves the band and the probe fails. A known
+ *      finding is a pinned MEASUREMENT, never a permanent excuse.
+ *   3. IT IS PRINTED LOUDLY AND COUNTED SEPARATELY. `KNOWN` is its own column,
+ *      it names the item that owns it, and the summary line states the count
+ *      even when it is the only thing standing between the probe and "all
+ *      green". Nothing here is silent.
+ *
+ * A finding that gets FIXED will also fail — the value goes to 0.00 and leaves
+ * the band. That is intended: the owner removes its entry here in the same
+ * change, and until then the probe says the world moved.
+ */
+const KNOWN_FINDINGS = [
+  {
+    surface: 'prose', width: 1100, name: 'dock flush at paper (open)', px: -29.69,
+    owner: 'items 115/117/119 — the 1100 anchor, ratified 2026-09-05 (Nick)',
+  },
+  {
+    surface: 'prose', width: 1100, name: 'dock flush at paper (closed)', px: -29.69,
+    owner: 'items 115/117/119 — the 1100 anchor, ratified 2026-09-05 (Nick)',
+  },
+  // NOT the ratified number, and recorded as its own entry precisely so the
+  // difference cannot hide inside a shared label. The ratification names ONE
+  // figure — 29.7px, "pre-existing in EVERY mode" — and the instrument's first
+  // visit to 1100 measures the screenplay surface at 38.00px instead. Both are
+  // real, both are pre-existing, and a cluster pass designing against 29.7 would
+  // be wrong here by 8.3px. Reported in the offer as a finding of this touch.
+  {
+    surface: 'screenplay', width: 1100, name: 'dock flush at paper (open)', px: -38.00,
+    owner: 'items 115/117/119 — the 1100 anchor (magnitude differs from the ratified 29.7px; see the offer)',
+  },
+  {
+    surface: 'screenplay', width: 1100, name: 'dock flush at paper (closed)', px: -38.00,
+    owner: 'items 115/117/119 — the 1100 anchor (magnitude differs from the ratified 29.7px; see the offer)',
+  },
+];
+
+const KNOWN_BAND = 0.75;
+
+/** A failed check that IS a registered finding, matched on its measured value.
+ *  Returns the owning entry, or null — and null is the ordinary answer, which is
+ *  why the default of this whole mechanism is "this is RED". */
+function knownFinding(r) {
+  if (r.pass || typeof r.value !== 'number') return null;
+  return KNOWN_FINDINGS.find((k) => k.surface === r.surface && k.width === r.width
+    && k.name === r.name && Math.abs(r.value - k.px) <= KNOWN_BAND) || null;
+}
 
 /* ---------- measurement helpers: rendered boxes only ---------- */
 
@@ -93,7 +160,7 @@ const CAT_SEL = '[data-cascade-cat], .wz-strip-item';
 const RAIL_SEL = '.desk-frame-strip';
 
 async function checkSurface(app, surface, width, height, out) {
-  const add = (name, pass, detail) => out.push({ surface, width, name, pass, detail });
+  const add = (name, pass, detail, value) => out.push({ surface, width, name, pass, detail, value });
 
   await app.emulateDpr(1, width, height);
   await sleep(350);
@@ -107,7 +174,7 @@ async function checkSurface(app, surface, width, height, out) {
   if (dock) {
     const d = paper.l - dock.r;
     add('dock flush at paper (open)', Math.abs(d) <= TOL,
-        `paper.left ${paper.l.toFixed(1)} − dock.right ${dock.r.toFixed(1)} = ${d.toFixed(2)}px`);
+        `paper.left ${paper.l.toFixed(1)} − dock.right ${dock.r.toFixed(1)} = ${d.toFixed(2)}px`, d);
 
     // and again with the drawer closed — R11's "closed, the handle rests on
     // the paper's edge" is a separate state, not the same assertion twice.
@@ -119,7 +186,7 @@ async function checkSurface(app, surface, width, height, out) {
       if (p2 && d2) {
         const dd = p2.l - d2.r;
         add('dock flush at paper (closed)', Math.abs(dd) <= TOL,
-            `paper.left ${p2.l.toFixed(1)} − dock.right ${d2.r.toFixed(1)} = ${dd.toFixed(2)}px`);
+            `paper.left ${p2.l.toFixed(1)} − dock.right ${d2.r.toFixed(1)} = ${dd.toFixed(2)}px`, dd);
         add('paper rect invariant under dock toggle', Math.abs(p2.l - paper.l) <= TOL && Math.abs(p2.w - paper.w) <= TOL,
             `left ${paper.l.toFixed(1)}→${p2.l.toFixed(1)}, w ${paper.w.toFixed(1)}→${p2.w.toFixed(1)}`);
       }
@@ -318,9 +385,26 @@ const results = await withHarness(async (app) => {
 });
 
 let red = 0;
+let known = 0;
+const knownSeen = [];
 for (const r of results) {
-  if (!r.pass) red++;
-  console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.surface.padEnd(11)} ${String(r.width).padEnd(5)} ${r.name.padEnd(38)} ${r.detail}`);
+  const k = knownFinding(r);
+  if (!r.pass && k) { known++; knownSeen.push({ r, k }); }
+  else if (!r.pass) red++;
+  const tag = r.pass ? 'PASS' : k ? 'KNOWN' : 'FAIL';
+  console.log(`${tag.padEnd(5)} ${r.surface.padEnd(11)} ${String(r.width).padEnd(5)} ${r.name.padEnd(38)} ${r.detail}`);
 }
-console.log(`\n${results.length - red}/${results.length} checks green` + (red ? `  — ${red} RED` : ''));
+if (known) {
+  console.log(`\nKNOWN FINDINGS — ${known}, reported and NOT gating, each owned elsewhere:`);
+  for (const { r, k } of knownSeen) {
+    console.log(`  ${r.surface} @ ${r.width}: ${r.name} = ${r.value.toFixed(2)}px (pinned ${k.px}px, band ±${KNOWN_BAND})`);
+    console.log(`    owned by ${k.owner}`);
+  }
+  console.log('  These are PINNED MEASUREMENTS, not excuses: a value outside its band — a regression, a');
+  console.log('  partial fix, or a full one — leaves the band and goes RED, and the owner clears the entry');
+  console.log('  in the same change that clears the defect.');
+}
+console.log(`\n${results.length - red - known}/${results.length} checks green`
+  + (known ? `  — ${known} KNOWN (owned)` : '')
+  + (red ? `  — ${red} RED` : ''));
 process.exit(red ? 1 : 0);
