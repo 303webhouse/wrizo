@@ -1982,6 +1982,26 @@ generation 4** for the roster count). **(3) SELECTION HIGHLIGHT = BRASS ORANGE**
 the theme's brass token, because the writer selecting is the writer ACTING. The stuck active-state fix
 rides with (1). Zero schema.
 
+**-> SCOPE CORRECTION, SAME DAY (Nick's analog law, relayed 2026-09-06). THE FREE WRITE HALF IS MOOT,
+NOT DEFERRED.** The S0 above closed by calling Free Write's styling *"a design question now on Nick's
+desk."* His ruling answers it by REMOVAL: **B/I/U leave the Free Write menu entirely**, replaced by a
+**Text/Ink toggle** - **item 121, design at MENU**.
+
+**What that changes, precisely:**
+- **(1)'s Free Write half does not route to design; it CEASES.** There is no marker-collapse to build
+  on a surface whose styling buttons are being withdrawn. The forward-only Run model never has to
+  learn markdown decoration - which was the whole reason that half was NOT CONTAINED.
+- **(1) and (3) are now DRAFT-ONLY**, and Draft is the half this S0 already measured as **contained**:
+  Draft decorates (`decorateMarkdown`), the collapse technique is **proven safe through a live
+  `innerText` round-trip**, and `decorateEditorFor` already accepts the caret-aware override the
+  card register uses.
+- **The next window is therefore FULLY CONTAINED by ruling**, with no design gate in front of it.
+
+**AND THE UNDERLINE CAVEAT DISSOLVES.** This offer records that underline changes nothing on Free
+Write because that surface does not decorate. Under item 121 that stops being a gap and becomes a
+**surface being retired** - the honest framing, and the reason the caveat should not read as an
+apology.
+
 ## ITEM 119 — THE MIRRORED HANDS (design-class; the Counsel mirrors the Desk, both anchored to the writing surface) — OPENS 2026-08-31
 
 **THE MIRRORED HANDS RULING (Nick, 2026-08-31)** — supersedes **FX18 S2 regime (3)** for the Tutor
