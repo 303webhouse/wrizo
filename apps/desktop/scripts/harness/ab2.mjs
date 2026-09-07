@@ -70,6 +70,16 @@ const structureZone = (app) => app.evalJs(
 // NOTHING PARKED: nothing this file claims was falsified, only the way these
 // two helpers REACHED the control was.
 //
+// ITEM 121 I6, 2026-09-07 — THE "NOTHING PARKED" ABOVE IS LEFT STANDING
+// VERBATIM (it was, and remains, true of the E4 driver re-point it describes)
+// AND CORRECTED HERE RATHER THAN REWRITTEN: this file now DOES park one
+// assertion. R15 retires STYLING from Free Write, which falsified the
+// "format PRESENT" clause of the FX7 S2 successor further down; the original
+// is kept verbatim at its own mount with a successor beside it. Recorded up
+// here because a file whose header says it parks nothing is exactly where a
+// park-count audit stops looking — and the count, not the green, is the check.
+// THIS FILE PARKS 1 (item 121).
+//
 // They took `sec.querySelector('button')` — the FIRST button in the Structure
 // zone. That was the conversion row for exactly as long as the zone held one
 // control. Item 114's kind chips now lead it, so the first button became
@@ -161,10 +171,27 @@ await withHarness(async (app) => {
   // §3 permits keeping or retargeting these; retargeting is what restores the
   // claim's teeth.
   freeWriteRail.structure = await structureZone(app);
-  ok('FX7 S2 (was "CD1 S2 (was \\"FX1 S3: ...\\")"): Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture) and NOW Bold/Italic format too (mode furniture too, FX7 S2) — still none of the Journal-only furniture (ink/capture items absent); structure stays absent (Draft, not Free Write)',
+  // ---- PARKED — SUPERSEDED by ITEM 121 I6 (R15), 2026-09-07 ----------
+  // Kept VERBATIM and no longer run. Nick's analog law: Free Write is a
+  // typewriter for text, and "no digital styling, no fonts, no formatting on
+  // that surface" — so STYLING (the `.wz-sliver-format` this asserted PRESENT)
+  // is REMOVED from Free Write. FX7 S2's "mode furniture too" reading is not
+  // wrong about the mechanism; it is superseded on the RULING. R1 governed
+  // when this was written and R15 supersedes R1 for this one surface.
+  // The successor keeps every clause that still governs — forward lock present,
+  // Journal-only furniture absent, structure absent — and INVERTS exactly the
+  // one the ruling moved, so the check still discriminates in both directions.
+  //
+  // ok('FX7 S2 (was "CD1 S2 (was \\"FX1 S3: ...\\")"): Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture) and NOW Bold/Italic format too (mode furniture too, FX7 S2) — still none of the Journal-only furniture (ink/capture items absent); structure stays absent (Draft, not Free Write)',
+  //   !freeWriteRail.ink && freeWriteRail.forwardLock
+  //     && freeWriteRail.captureItems.length === 0
+  //     && freeWriteRail.format && !freeWriteRail.structure,
+  //   JSON.stringify(freeWriteRail));
+  // -------------------------------------------------------------------
+  ok('FX7 S2 [ITEM 121 I6 / R15 successor]: Free Write sliver on a PROJECT-origin page shows the forward lock PRESENT (mode furniture) and NO format zone at all — STYLING is retired from this surface by the analog law, by ABSENCE and not by a disabled mount; still none of the Journal-only furniture (ink/capture items absent); structure stays absent (Draft, not Free Write)',
     !freeWriteRail.ink && freeWriteRail.forwardLock
       && freeWriteRail.captureItems.length === 0
-      && freeWriteRail.format && !freeWriteRail.structure,
+      && !freeWriteRail.format && !freeWriteRail.structure,
     JSON.stringify(freeWriteRail));
 
   // -- PAGE IS PRIMARY across a mode switch, rail POPULATED this time (AB1

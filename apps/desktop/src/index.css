@@ -4627,7 +4627,18 @@ a:focus-visible,
    the text's own colour, its layout, or a single stored byte. The editable is
    also blurred on entry (PageEditor's own effect), so there is nothing to type
    INTO either — this is the visible half of a state that is already true. */
-.mode-page[data-instrument='ink'] .forward-only-editor{ caret-color:transparent; }
+.mode-page[data-instrument='ink'] .forward-only-editor{ caret-color:transparent !important; }
+/* `!important` IS LOAD-BEARING HERE, not a shortcut, and the harness is what
+   found it: ForwardOnlyEditor sets `caretColor: penColor` as an INLINE style
+   (its own `penColor` prop, which ModeStage still hands down in journal mode
+   for the legacy/unframed pen bar). An inline style beats any selector, so
+   without this the caret went on blinking in INK — the typewriter was "put
+   down" everywhere except the one place the writer was looking. The honest
+   alternatives were both worse: stopping the penColor pass would silently
+   change Free Write's TEXT colour too (that prop sets `color` as well), which
+   R15 did not ask for and this lane will not do; and reaching into
+   ForwardOnlyEditor to special-case a mode is a shared component learning
+   about one surface's instrument. */
 /* The stratum's own layers never intercept — routing belongs to the sheet
    (InkStratum.tsx's header). Stated in CSS too so a later hand that reaches
    for `pointer-events:auto` here meets the reason first. */

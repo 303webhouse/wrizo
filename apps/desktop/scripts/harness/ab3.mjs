@@ -469,8 +469,28 @@ await withHarness(async (app) => {
     forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
     captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
   })`);
-  ok('CD1 S2/S7 (was "S4 A2 (grandfather clause): ..."): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — ink/forward-lock/capture items all present (now in the sliver)',
-    legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
+  // ---- PARKED - SUPERSEDED by ITEM 121 I6 (R15), 2026-09-07 ----------
+  // Kept VERBATIM and no longer run. `legacyRail.ink` read the zone headed
+  // "Ink" in Free Write’s drawer - which was NOT ink: its three hardcoded
+  // hex swatches coloured the TYPED TEXT and caret (ForwardOnlyEditor’s own
+  // penColor), beside a "nib · fine" button that did nothing. Under R15’s
+  // analog law that is digital styling on a surface that does not decorate -
+  // the same class as the B/I/U removed alongside it, differing only in which
+  // property it set - so it RETIRES, on Nick’s word (2026-09-07), and "Ink"
+  // on this surface now names the pen’s real ink.
+  // A2’S GRANDFATHER CLAUSE IS NOT TOUCHED, which is why the successor keeps
+  // the other two clauses verbatim: A2’s law is that a NULL-origin row
+  // behaves exactly like every other page, and it still does. What changed is
+  // what EVERY Free Write page carries, not what a LEGACY one carries. A
+  // successor that dropped the whole check would have retired a live law
+  // along with a dead assertion.
+  //
+  // ok('CD1 S2/S7 (was "S4 A2 (grandfather clause): ..."): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — ink/forward-lock/capture items all present (now in the sliver)',
+  // legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
+  // JSON.stringify(legacyRail));
+  // -------------------------------------------------------------------
+  ok('CD1 S2/S7 [ITEM 121 I6 / R15 successor]: a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — forward lock and capture items present, and the old text-colour "Ink" swatches now ABSENT on this page exactly as on every other (A2\'s grandfather clause is untouched: a legacy row still behaves like every other page; what moved is what ALL Free Write pages carry)',
+    !legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
     JSON.stringify(legacyRail));
 
   // === ab3.1 R2 (Fable review) — presence is not function. The forward-lock
