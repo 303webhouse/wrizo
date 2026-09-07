@@ -16,12 +16,39 @@ function escHtml(s: string): string {
 
 // Inline pass over one line: bold (`**..**`) before italic (`*..*`) so a
 // bold run's own asterisks are never re-matched as italic markers.
+// ITEM 79 FAMILY — UNDERLINE GETS A RENDERER (Nick's ship word: "the bold,
+// italic, and underlining buttons"). Until now this engine handled `**` and `*`
+// and nothing else, while the rail and the card dock BOTH shipped a U button
+// writing `__word__` (draftFormat.ts's FORMAT_MARK.underline). The UI and the
+// renderer disagreed, and the writer got literal underscores with no styling.
+//
+// `__` IS MATCHED BEFORE `*` FOR THE SAME REASON `**` IS MATCHED BEFORE `*`:
+// whichever marker opens EARLIEST in the line wins, and a tie goes to the
+// longer marker. Underscore and asterisk cannot collide with each other, so
+// the only new ordering question is `__` against a single `_`, and a single
+// `_` is not a marker in this convention at all — FORMAT_MARK.underline is the
+// PAIR. That matters for prose: snake_case identifiers, file_names and
+// mid-word emphasis keep exactly one underscore and are left alone, because an
+// unpaired `__` falls through to the plain-text branch like any other text.
 function decorateInline(text: string): string {
   let out = '';
   let i = 0;
   while (i < text.length) {
     const boldStart = text.indexOf('**', i);
     const italicStart = text.indexOf('*', i);
+    const underStart = text.indexOf('__', i);
+    // Underline first when it opens earliest — a `__` before any asterisk.
+    if (underStart !== -1
+        && (boldStart === -1 || underStart < boldStart)
+        && (italicStart === -1 || underStart < italicStart)) {
+      const close = text.indexOf('__', underStart + 2);
+      if (close === -1) { out += escHtml(text.slice(i)); break; }
+      out += escHtml(text.slice(i, underStart));
+      out += `<span class="md-underline"><span class="md-mark">__</span>${escHtml(text.slice(underStart + 2, close))}<span class="md-mark">__</span></span>`;
+      i = close + 2;
+      continue;
+    }
+    if (boldStart === -1 && italicStart === -1 && underStart === -1) { out += escHtml(text.slice(i)); break; }
     if (boldStart === -1 && italicStart === -1) { out += escHtml(text.slice(i)); break; }
     if (boldStart !== -1 && (italicStart === -1 || boldStart <= italicStart)) {
       const close = text.indexOf('**', boldStart + 2);
@@ -105,6 +132,26 @@ function decorateInlineForCard(text: string, caret: number | null): string {
   while (i < text.length) {
     const boldStart = text.indexOf('**', i);
     const italicStart = text.indexOf('*', i);
+    const underStart = text.indexOf('__', i);
+    // Same precedence as the Draft pass above, plus this register's own
+    // reveal-adjacent-to-caret rule: the marks collapse unless the caret is
+    // within or beside the run. Collapsed via `md-mark-hidden` (font-size:0),
+    // never display/visibility — see this file's header for why that choice is
+    // load-bearing rather than stylistic.
+    if (underStart !== -1
+        && (boldStart === -1 || underStart < boldStart)
+        && (italicStart === -1 || underStart < italicStart)) {
+      const close = text.indexOf('__', underStart + 2);
+      if (close === -1) { out += escHtml(text.slice(i)); break; }
+      out += escHtml(text.slice(i, underStart));
+      const end = close + 2;
+      const reveal = caret !== null && caret >= underStart && caret <= end;
+      const markCls = reveal ? 'md-mark' : 'md-mark md-mark-hidden';
+      out += `<span class="md-underline"><span class="${markCls}">__</span>${escHtml(text.slice(underStart + 2, close))}<span class="${markCls}">__</span></span>`;
+      i = end;
+      continue;
+    }
+    if (boldStart === -1 && italicStart === -1 && underStart === -1) { out += escHtml(text.slice(i)); break; }
     if (boldStart === -1 && italicStart === -1) { out += escHtml(text.slice(i)); break; }
     if (boldStart !== -1 && (italicStart === -1 || boldStart <= italicStart)) {
       const close = text.indexOf('**', boldStart + 2);

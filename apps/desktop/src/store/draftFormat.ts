@@ -11,7 +11,7 @@
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
   | 'bold' | 'italic' | 'underline' | 'heading' | 'spacing'
-  | 'bullet' | 'quote' | 'indent'
+  | 'bullet' | 'quote' | 'indent' | 'outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
 
@@ -165,8 +165,14 @@ function toggleLinePrefix(text: string, at: number, prefix: string, exclusiveWit
 // **THE OUTDENT QUESTION IS SURFACED, NOT RESOLVED** — it is held for Nick's
 // word, with a recommendation, in docs/menus/item83-errata-s0-survey.md (d).
 // Nothing here invents the partner.
-function indentParagraphs(text: string, selStart: number, selEnd: number): FormatResult {
-  const lines = text.split('\n');
+// ITEM 83 ERRATA E3, THE OUTDENT PARTNER (Nick's ruling) — the selection-to-
+// paragraph expansion, lifted out of indentParagraphs UNCHANGED so the pair
+// cannot drift. "The exact decrement" is a claim about SCOPE as much as about
+// tabs: if the two computed their affected lines separately, one could later
+// learn a rule the other did not and the pair would stop being a pair without
+// anything failing. Sharing the code is the only version of that guarantee
+// that survives the next edit.
+function paragraphScope(lines: string[], selStart: number, selEnd: number) {
   const startsAt: number[] = [];
   let off = 0;
   for (const l of lines) { startsAt.push(off); off += l.length + 1; }
@@ -180,9 +186,7 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
   let first = lineOf(selStart);
   let last = lineOf(selEnd);
   // A selection that ends exactly ON a line's first character has not touched
-  // that line — the ordinary editor convention. Without this, selecting a whole
-  // paragraph by dragging to the next line's start would silently indent the
-  // paragraph after it too.
+  // that line — the ordinary editor convention.
   if (selEnd > selStart && last > first && selEnd === startsAt[last]) last--;
 
   if (hasInk(first)) while (first > 0 && hasInk(first - 1)) first--;
@@ -190,11 +194,63 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
 
   const affected = new Set<number>();
   for (let i = first; i <= last; i++) if (hasInk(i)) affected.add(i);
-  // A caret alone on a blank line has no paragraph to indent. Indent that line
-  // anyway, so a writer can set the level BEFORE typing into it — which is what
-  // the single-line control always did, and the one behaviour of it worth
-  // keeping.
+  // A caret alone on a blank line has no paragraph to indent. Act on that line
+  // anyway, so a writer can set the level BEFORE typing into it.
   if (affected.size === 0) affected.add(first);
+
+  return { affected, lineOf };
+}
+
+// THE OUTDENT PARTNER — the exact decrement of indentParagraphs below, on the
+// SAME paragraph scope (shared above) and the same F3 leading-tab convention:
+// the level IS the tab count, so one press removes one tab.
+//
+// FLOORED AT ZERO, and the floor is per LINE, not per press. A line with no
+// leading tab is returned untouched rather than borrowing from a neighbour, so
+// a paragraph whose lines sit at different levels flattens toward zero without
+// any line going negative or losing real text. A press that finds nothing to
+// remove is a no-op that still records an undo step — harmless, and cheaper
+// than teaching the rail which presses "count".
+//
+// WHY THIS EXISTS, recorded because the cost was argued before the partner was
+// ruled: `indent` used to run through toggleLinePrefix, so a second press
+// removed the tab and the writer's way back WAS the button. E3 made indent
+// repeatable, which spent that — and a repeatable one-way door is a door this
+// drawer BUILDS, not merely one it finds. Undo walked a level back reliably
+// (applyRailFormat records an atomic step per rail click, FX6 S1), but undo is
+// a general way back, not a dedicated one, and it is not discoverable here.
+function outdentParagraphs(text: string, selStart: number, selEnd: number): FormatResult {
+  const lines = text.split('\n');
+  const { affected, lineOf } = paragraphScope(lines, selStart, selEnd);
+
+  const TAB = LINE_DIRECTIVE.indent;
+  const removed = new Set<number>();
+  const nextLines = lines.map((l, i) => {
+    if (affected.has(i) && l.startsWith(TAB)) { removed.add(i); return l.slice(TAB.length); }
+    return l;
+  });
+  const next = nextLines.join('\n');
+
+  // The caret keeps the character it was sitting on, mirroring indent's own
+  // shift — every tab removed at or above a position pulls it left by one.
+  // Clamped to the line's NEW start, so a caret parked before a tab (or inside
+  // the tab itself) lands at the start of its own line rather than on the
+  // previous one. That clamp is the single place this is not a pure sign flip.
+  const newStartsAt: number[] = [];
+  let o = 0;
+  for (const l of nextLines) { newStartsAt.push(o); o += l.length + 1; }
+  const moved = (pos: number) => {
+    const ln = lineOf(pos);
+    let n = 0;
+    for (const i of removed) if (i <= ln) n++;
+    return Math.max(newStartsAt[ln], pos - n * TAB.length);
+  };
+  return { text: next, start: moved(selStart), end: moved(selEnd) };
+}
+
+function indentParagraphs(text: string, selStart: number, selEnd: number): FormatResult {
+  const lines = text.split('\n');
+  const { affected, lineOf } = paragraphScope(lines, selStart, selEnd);
 
   const TAB = LINE_DIRECTIVE.indent;
   const next = lines.map((l, i) => (affected.has(i) ? TAB + l : l)).join('\n');
@@ -225,6 +281,7 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   // single-line toggle. See indentParagraphs above for the whole reasoning,
   // including the way back and the outdent question held for Nick's word.
   if (action === 'indent') return indentParagraphs(text, start, end);
+  if (action === 'outdent') return outdentParagraphs(text, start, end);
   if (action === 'align-center') return toggleLinePrefix(text, start, LINE_DIRECTIVE['align-center'], ALIGN_PREFIXES);
   if (action === 'align-right') return toggleLinePrefix(text, start, LINE_DIRECTIVE['align-right'], ALIGN_PREFIXES);
   // 'align-left' is the UNMARKED state, not a third token: clearing both
