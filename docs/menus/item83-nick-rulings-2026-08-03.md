@@ -351,3 +351,29 @@ the PAGE drawer beside the sliver (R6's charter sketched in place). a/b remain
 on the record as the pre-ruling pair, superseded and unedited. Draft's pair
 renders R4; the Places pair renders R6's face in full. The consolidated lock
 sheet folds this file in whole.*
+
+---
+
+**R15 · FREE WRITE IS ANALOG — the switch in the band.** Nick's analog
+law stands as the governing frame, verbatim: Free Write is "a
+typewriter for text and a journal page/sketch pad for drawing or
+notetaking." STYLING is removed from Free Write (R1 superseded for
+that surface; Draft keeps B·I·U); R2's INK charter is absorbed.
+The TEXT | INK switch is a mode of the page, seated in the band
+beside the location line (mockup B), readable with the drawer
+shut; the Tools drawer carries only the ink options — TIP (pen ·
+pencil · marker) · NIB (fine · regular · broad, stops not a
+slider) · INK (the theme's four) · the eraser as the Journal
+built it — revealed in place in INK only, nothing grayed in TEXT.
+The ink stratum lies over the text, sheet-anchored (J9's tradeoff
+ported knowingly); the Journal's J-series capture, persistence,
+undo and S-Pen hardening port whole; per-stroke tip/nib/ink is
+new and schema-shaped. Mockup A (the desk's head) is superseded
+and stays on the record.
+
+Still open: the eraser's tip binding (pencil-only vs as built —
+default as built); typewriter as behavior or also as face (Nick's
+word with the theme arc); the S-Pen barrel-button flip
+(hardware-reserved).
+
+NICK'S WORD, 2026-09-06: "B is approved." Append authorized.
