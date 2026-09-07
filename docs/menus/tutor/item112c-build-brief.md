@@ -1,5 +1,6 @@
 # ITEM 112-C · BUILD BRIEF — THE TYPE SECTION (Revise's Desk drawer, first tenant)
 ### Build-ready · authored 2026-09-05 by the item-84 desk · for a BUILDER lane
+**AMENDED 2026-09-06 — §11 carries two later rulings by Nick that change §1's scope and settle §6. Read §11 before building.**
 **WORKTREE: named by the builder lane's own assignment, and NEVER the primary
 checkout** (item 110, standing). This brief is docs-authored; the build touches `apps/`
 and belongs to a builder lane, not to the design lane that wrote it.
@@ -257,3 +258,79 @@ Then 112-D brings the Counsel roster, and the parked lens waits on its own seven
 brief is complete either way.*
 
 — the item-84 desk, 2026-09-05
+
+---
+
+## §11 · AMENDMENTS — NICK'S RULINGS OF 2026-09-06
+
+*Appended, not rewritten. §1 and §6 above stand as written and are amended here.*
+
+**AMENDMENT 1 — TWO MOUNTINGS, NOT ONE. This changes §1's scope.** Nick's ruling,
+relayed via Fable: **the Type section mounts in BOTH Draft's and Revise's Desk drawers.
+Free Write is excluded by the analog law. One component, two mountings — the
+reuse-never-copy law. The page-level scope and the system-font adder are unchanged. A
+font chosen in Draft IS the page's font in Revise, since it is the page's, not the
+mode's.**
+
+§1's exclusion of *"any change to Free Write, Draft, or Board"* is narrowed accordingly:
+**Free Write and Board stand excluded; Draft does not.**
+
+**The consequence that governs the build:** because type is the **page's** property and
+not the mode's, the two mountings are two views of **one stored value on one store
+path** — not two controls kept in sync. *One control, rendered twice.* A second store
+path, a mode-scoped default, or any per-mode override breaks the ruling silently and is
+a **stop-and-surface**.
+
+**Sequencing that falls out of it:** Draft's Desk drawer exists today, so **the Draft
+mounting is unblocked** and may ship first; only the Revise mounting depends on 112-A's
+drawer. A Draft-first split is available at no design cost — the component is the same
+either way.
+
+**CROSS-LANE:** where the section sits among Draft's existing zones is **item 83's
+layout call**, not this brief's. Coordinate with MENU before mounting in Draft.
+
+**On the analog law:** cited because Fable cited it. **This desk could not locate that
+law's text on disk under that name and therefore does not paraphrase it.** Its on-disk
+consonance is RV2's own sentence — *Free Write produces, Draft marks, Revise dresses* —
+and Free Write's analog instrument set (ink, typewriter, forward-lock). The builder
+should cite the law by its own words once located; until then the exclusion rests on
+Nick's ruling and RV2.
+
+**AMENDMENT 2 — RV3 IS RULED. This settles §6.** Nick's ruling: the face control offers
+*"a few basic fonts plus the option for users to add their own system fonts."* The custom
+door is a **SYSTEM-FONT ADDER** — the writer names a font already installed on their
+machine and it joins the list. **The exact picker mechanics are the builder's S0 against
+the platform**, by Nick's word; the desk does not specify them.
+
+**Settled either way:** the door leads to a system-font adder, **not an upload** — no file
+ingestion, no font hosting, no webfont fetch. **Nothing leaves the machine**, which keeps
+this control clear of every disclosure question in the arc.
+
+**⚠ DIVERGENCE — SURFACED, NOT RESOLVED. RV3 is item 83's law and this desk does not
+amend another lane's law.** RV3 as ratified reads *"custom font upload renders no row and
+is never offered… opens only to seeking."* Nick's ruling describes **"the option for
+users to add their own system fonts"** — and an *offered option* is, on its face, a
+**rendered row**, which RV3 forbids. Two readings, neither chosen here:
+
+- **(a) RV3 is narrowed** by Nick's word — as DR7 was for Revise — and the adder renders
+  as a visible row. The narrowing would be recorded in both lanes in identical words,
+  per the DR7 precedent.
+- **(b) RV3 stands** and "the option" means the sought door as ratified: present and
+  reachable, rendering no row until sought.
+
+**The builder must not pick.** This goes to Nick and the 83 desk before the face control
+is built. Everything else in this brief proceeds meanwhile.
+
+**AMENDMENT 3 — HARNESS ADDITIONS.** §9's checks stand and gain three:
+- **One store path:** a face or size set in Draft is the page's face or size in Revise,
+  read back from the persisted page — **asserted across a real mode switch**, not by
+  inspecting two components' props.
+- **No second path:** no mode-scoped default, no per-mode override, no duplicated state.
+- **The section does not render in Free Write** — asserted, not assumed.
+
+*A stale duplicate of this brief (`item112c-type-section-brief.md`, drafted 2026-09-02
+against pre-112-A assumptions) was withdrawn before landing on the build lane's flag: it
+carried these rulings but knew nothing of shipped code, the real mount point, or the
+style-guide collision of §7. Its only surviving content is the three amendments above.*
+
+— the item-84 desk, 2026-09-06
