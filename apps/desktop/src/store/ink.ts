@@ -91,6 +91,45 @@ export function strokeColor(stroke: Stroke, fallback: string): string {
   return INKS.includes(stroke.ink as StrokeInk) ? inkColorOf(stroke.ink as StrokeInk) : fallback;
 }
 
+// ITEM 121 I5 — TIP RENDER PROFILES, inside the isolation J9 promised.
+//
+// NIB WIDTHS ARE PER TIP, three constants each, because a nib is a property of
+// the instrument: a broad marker and a broad pen are not the same broad. The
+// one number that is NOT free is `pen · regular` — it MUST stay
+// INK_LINE_WIDTH, because that is what every stroke drawn before item 121
+// renders at, and an old page moving even a fraction of a pixel would falsify
+// the no-migration claim this whole wave rests on.
+const NIB_WIDTHS: Record<StrokeTip, Record<StrokeNib, number>> = {
+  //                fine   regular             broad
+  pen:    { fine: 0.9, regular: INK_LINE_WIDTH, broad: 2.4 },
+  pencil: { fine: 0.8, regular: 1.15,           broad: 2.0 },
+  marker: { fine: 3.2, regular: 5.4,            broad: 8.6 },
+};
+
+// How each tip lays its ink down. Alpha and composite only — the COLOUR is
+// always the stroke's own ink, never the tip's, so a pencil in oxblood is
+// oxblood, lighter. Nothing outside this file knows any of these numbers.
+const TIP_ALPHA: Record<StrokeTip, number> = {
+  pen: 1,
+  // Graphite sits lighter on paper than ink does. This is also what makes
+  // pencil and pen distinguishable at a glance (and samplable in the harness)
+  // when their widths are close.
+  pencil: 0.62,
+  // A marker is translucent by nature — that translucency IS the overlap.
+  marker: 0.4,
+};
+
+/**
+ * ITEM 121 I5 — the painted width of a stroke, tip and nib resolved through
+ * the read-boundary defaults. Exported because the thumbnail renderer needs
+ * the same number, and two places computing a width independently is exactly
+ * how a marker ends up thin in browse and broad on the page.
+ */
+export function strokeWidth(stroke: Stroke): number {
+  if (stroke.eraser) return ERASER_WIDTH; // the eraser ignores tip and nib
+  return NIB_WIDTHS[tipOf(stroke)][nibOf(stroke)];
+}
+
 // Render one stroke. Points are stored normalized (0..1 by the sheet's width);
 // denormalize by the current sheet width — the same scale on both axes — so a
 // circle stays a circle at any width. Smoothing: quadratic midpoints through the
@@ -105,7 +144,7 @@ export function renderStroke(
   stroke: Stroke,
   sheetW: number,
   color: string,
-  lineWidth: number = stroke.eraser ? ERASER_WIDTH : INK_LINE_WIDTH,
+  lineWidth: number = strokeWidth(stroke),
 ): void {
   const pts = stroke.points;
   if (!pts || pts.length === 0) return;
@@ -115,11 +154,28 @@ export function renderStroke(
   // `destination-out`, where only the alpha matters and the hue is irrelevant,
   // and an eraser has no ink of its own (nor tip, nor nib) by ruling.
   const paint = stroke.eraser ? color : strokeColor(stroke, color);
+  const tip = tipOf(stroke);
   if (stroke.eraser) ctx.globalCompositeOperation = 'destination-out';
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   ctx.lineWidth = lineWidth;
   ctx.strokeStyle = paint;
+  // ITEM 121 I5 — the tip's own hand. An ERASE is exempt from every line of
+  // this: it has no tip by ruling, and destination-out with a reduced alpha
+  // would erase only partially, which is a rubber that does not rub.
+  if (!stroke.eraser) {
+    ctx.globalAlpha = TIP_ALPHA[tip];
+    if (tip === 'marker') {
+      // A square cap and mitred joins give the chisel end its flat edge, and
+      // `multiply` is what makes two marker strokes DARKEN where they cross
+      // instead of the later one simply covering the earlier. Both are state
+      // the save/restore below returns, so the next stroke in the loop starts
+      // clean — this file's callers paint mixed strokes without resetting.
+      ctx.lineCap = 'square';
+      ctx.lineJoin = 'miter';
+      ctx.globalCompositeOperation = 'multiply';
+    }
+  }
 
   const P = pts.map(p => ({ x: p.x * sheetW, y: p.y * sheetW }));
   if (P.length === 1) {
@@ -140,6 +196,21 @@ export function renderStroke(
   const last = P[P.length - 1];
   ctx.lineTo(last.x, last.y);
   ctx.stroke();
+  // ITEM 121 I5 — PENCIL'S GRAIN, the brief's "a subtle grain IF cheap", and
+  // it is cheap: one extra pass over a path already built. A dash ALONE would
+  // read as a dotted line, not as graphite, so the solid pass above stays and
+  // this lays a finer, broken pass on top of it — continuous line, mottled
+  // core, which is what tooth actually looks like. Dash lengths scale with the
+  // nib so a broad pencil is not a row of beads. `restore()` below returns
+  // lineDash with the rest of the state, so nothing leaks into the next
+  // stroke; a smoother dropping into this file later can replace the whole
+  // pass without touching capture or persistence, exactly as J9 intended.
+  if (!stroke.eraser && tip === 'pencil') {
+    ctx.globalAlpha = TIP_ALPHA.pencil * 0.55;
+    ctx.lineWidth = lineWidth * 0.45;
+    ctx.setLineDash([lineWidth * 1.9, lineWidth * 0.85]);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -178,10 +249,15 @@ export function renderThumbnail(canvas: HTMLCanvasElement, strokes: Stroke[], si
   ctx.translate(size / 2, size / 2);
   ctx.scale(scale, scale);
   ctx.translate(-cx, -cy);
+  // ITEM 121 I5 — the two branches this used to have (eraser vs. ink) collapse
+  // into one, because strokeWidth() already answers "how wide is this stroke"
+  // for both. `1.3 / scale` is the thumbnail's own "one INK_LINE_WIDTH" unit
+  // after the bbox fit, so every tip keeps its RELATIVE weight in browse: a
+  // broad marker reads broad in a thumbnail exactly as it does on the page.
+  // Alpha and composite come along for free — they are renderStroke's, not a
+  // second copy of the profile table living out here.
   for (const stroke of strokes) {
-    const lw = stroke.eraser
-      ? Math.max(0.4, (ERASER_WIDTH / INK_LINE_WIDTH) * (1.3 / scale))
-      : Math.max(0.4, 1.3 / scale);
+    const lw = Math.max(0.4, (strokeWidth(stroke) / INK_LINE_WIDTH) * (1.3 / scale));
     renderStroke(ctx, stroke, 1, ink, lw);
   }
   ctx.restore();
