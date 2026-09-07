@@ -34,7 +34,6 @@ export type DeskTermId =
   // `inkToolPlaceholder` — see that file's header comment for the full
   // "why disabled" reasoning). The tooltip is the one place this ticket
   // discloses the inert state directly to the writer.
-  | 'railInkTool' | 'railInkToolInert'
   // ITEM 121 (I3/I4) — the Ink wave's own strings. The switch names the two
   // instruments the page can be; the drawer's ink zone names the three groups
   // (TIP / NIB / INK) and the three tips and three nibs by name. Every one of
@@ -572,8 +571,6 @@ const CANONICAL: Record<DeskTermId, string> = {
   railReading: 'Reading',
   railTypewriter: 'Typewriter',
   railFormat: 'Format',
-  railInkTool: 'Ink tool',
-  railInkToolInert: 'Ink — coming soon outside the Journal',
   inkInstrument: 'The page’s instrument',
   inkModeText: 'Text',
   inkModeInk: 'Ink',

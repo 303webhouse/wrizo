@@ -18,6 +18,9 @@ import { FullscreenToggle } from './ChromeControls';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
+import type { InkPen } from './InkStratum';
+import { INKS, NIBS, TIPS } from '../store/ink';
+import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 
 // ITEM 114 (item 83 errata E4) — the rosters and their lexicon keys, in one
 // place each, so the buttons cannot drift from the type or from the words. The
@@ -64,46 +67,26 @@ export type SliverContent =
   | { kind: 'empty' }
   | {
       kind: 'freewrite';
-      ink?: {
-        penColor: string;
-        inks: readonly string[];
-        onChoosePen: (ink: string) => void;
-      };
       forwardLock?: {
         on: boolean;
         onToggle: (next: boolean) => void;
       };
-      // FX7 S2 — Bold/Italic, reused from Draft's own draftFormat.ts marker
-      // convention (FORMAT_MARK) rather than a second mechanism. Restricted
-      // to the two marks a forward-only, append-only surface can support via
-      // pure INSERTION alone — see PageEditor.tsx's own applyFreeWriteFormat
-      // for why Heading/Spacing's line-rewrite semantics don't fit here.
-      // boldOn/italicOn reflect whether that mark is currently OPEN (the
-      // leading marker inserted, awaiting its closing press) — a forward-
-      // only surface can't wrap a selection after the fact, so the rail
-      // button doubles as a two-press bracket instead.
-      // ITEM 83 M4 (R1) — Underline joins the pair by founder word ("I would
-      // like to add buttons for bolding, italicizing, and underlining"),
-      // overruling Chamber 1's "nothing else" for Free Write and Pass 1's FW3.
-      // The bracket semantics extend to it unchanged.
-      format?: {
-        onFormat: (action: 'bold' | 'italic' | 'underline') => void;
-        boldOn: boolean;
-        italicOn: boolean;
-        underlineOn: boolean;
+      // ITEM 121 I4 — THE INK OPTIONS. Present ONLY when the page is in INK:
+      // PageEditor passes this member in INK and omits it in TEXT, so in TEXT
+      // the zone is ABSENT FROM THE DOM ENTIRELY — not hidden, not greyed. The
+      // analog law is the reason and G3 is the precedent: a typewriter has no
+      // nibs, and a greyed control for a capability the surface does not have
+      // right now is a locked door wearing paint.
+      inkOptions?: {
+        pen: InkPen;
+        // One handler for all three groups: a partial pen, merged by the host.
+        // Three separate callbacks would let tip, nib and ink drift into three
+        // independently-shaped seams for one object the writer thinks of as
+        // "the pen I am holding."
+        onPick: (next: Partial<InkPen>) => void;
+        eraserArmed: boolean;
+        onToggleEraser: () => void;
       };
-      // FX7 S2 — Journal's own ink-tool toggle (the pen/eraser glyph,
-      // JournalEntry.tsx's own on-sheet `.ink-tool-toggle`), mirrored here
-      // as an always-present rail affordance so a Free Write page's tool
-      // rail is never left ink-less. Disclosed, not silently assumed: the
-      // underlying draw-ink feature is still fully inert on THIS surface
-      // (ForwardOnlyEditor's own I0 pen discipline neutralizes every pen
-      // pointer event here, and no ink canvas is mounted on a Page at all)
-      // — so this renders disabled/present, never functional, until ink is
-      // reinstated app-wide. JournalEntry.tsx's own sliverContent omits
-      // this flag entirely (its real tool already lives on the sheet, so a
-      // second, inert copy in ITS OWN sliver would be actively misleading).
-      inkToolPlaceholder?: boolean;
       captureItems: readonly string[];
     }
   | {
@@ -356,6 +339,134 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   );
 }
 
+// ITEM 121 I4 — THE TIPS, as inline SVG (R8: the desk's glyphs are drawn, not
+// typed — an emoji or a font glyph would wear whatever the OS decided today).
+// 16x16, currentColor, stroke-only so they inherit the zone's own rest/chosen
+// colours exactly like every other control here.
+const TIP_ICONS: Record<StrokeTip, React.ReactNode> = {
+  // A nib pen: barrel to a point, with the nib's slit.
+  pen: (
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+      <path d="M11.5 2.2 4.3 9.4 3 13l3.6-1.3 7.2-7.2z" strokeLinejoin="round" />
+      <path d="M4.3 9.4 6.6 11.7" />
+    </svg>
+  ),
+  // A pencil: the same barrel, but with the sharpened collar a pencil has.
+  pencil: (
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+      <path d="M11.2 2.5 3.9 9.8 2.7 13.3l3.5-1.2 7.3-7.3z" strokeLinejoin="round" />
+      <path d="M9.6 4.1 11.9 6.4" />
+      <path d="M2.7 13.3 5 11" />
+    </svg>
+  ),
+  // A marker: a fat barrel with a chisel wedge — the shape the square cap makes.
+  marker: (
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+      <path d="M12.6 2.6 7.4 7.8l-2.6 1 -1 2.6 2.6-1 1-2.6 5.2-5.2z" strokeLinejoin="round" />
+      <path d="M2.6 13.4 4.8 11.2" strokeLinecap="round" />
+    </svg>
+  ),
+};
+
+// ITEM 121 I4 — THE INK OPTIONS ZONE. One zone, three groups and the eraser,
+// rendered only when the host passes `inkOptions` — which it does only in INK.
+//
+// EVERY GROUP IS A RADIOGROUP OF STOPS. Nib especially: "Fine · Regular ·
+// Broad" is three buttons and NOT a slider, because a slider is a digital
+// control and a nib is chosen, not dialled (ink pass §0.4). Ink is four
+// swatches and NOT a picker, because a journal has the inks that are on the
+// desk (§0.5). The swatches read the theme's own tokens, so what the writer
+// picks is a NAME (walnut, iron, oxblood, sea) and a theme change re-colours
+// every stroke ever drawn — see store/ink.ts.
+function SliverInkZone({ opts }: { opts: NonNullable<Extract<SliverContent, { kind: 'freewrite' }>['inkOptions']> }) {
+  const { t } = useDeskLexicon();
+  const nibLabel: Record<StrokeNib, string> = { fine: t('inkNibFine'), regular: t('inkNibRegular'), broad: t('inkNibBroad') };
+  const tipLabel: Record<StrokeTip, string> = { pen: t('inkTipPen'), pencil: t('inkTipPencil'), marker: t('inkTipMarker') };
+  const inkLabel: Record<StrokeInk, string> = { walnut: t('inkWalnut'), iron: t('inkIron'), oxblood: t('inkOxblood'), sea: t('inkSea') };
+  return (
+    <>
+      <div className="wz-sliver-section">
+        <div className="wz-sliver-h">{t('inkTip')}</div>
+        <div className="wz-sliver-format wz-ink-tips" role="radiogroup" aria-label={t('inkTip')}>
+          {TIPS.map(tip => (
+            <button
+              key={tip}
+              type="button"
+              role="radio"
+              className="mode-tbtn wz-ink-tip"
+              aria-checked={opts.pen.tip === tip}
+              data-on={opts.pen.tip === tip ? 'true' : 'false'}
+              title={tipLabel[tip]}
+              aria-label={tipLabel[tip]}
+              onClick={() => opts.onPick({ tip })}
+            >
+              {TIP_ICONS[tip]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="wz-sliver-section">
+        <div className="wz-sliver-h">{t('inkNib')}</div>
+        {/* STOPS, NOT A SLIDER — see this component's own comment. */}
+        <div className="wz-sliver-format wz-ink-nibs" role="radiogroup" aria-label={t('inkNib')}>
+          {NIBS.map(nib => (
+            <button
+              key={nib}
+              type="button"
+              role="radio"
+              className="mode-tbtn wz-ink-nib"
+              aria-checked={opts.pen.nib === nib}
+              data-on={opts.pen.nib === nib ? 'true' : 'false'}
+              onClick={() => opts.onPick({ nib })}
+            >
+              {nibLabel[nib]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="wz-sliver-section">
+        <div className="wz-sliver-h">{t('railInk')}</div>
+        <div className="wz-sliver-inks" role="radiogroup" aria-label={t('railInk')}>
+          {INKS.map(ink => (
+            <button
+              key={ink}
+              type="button"
+              role="radio"
+              /* The swatch paints from the THEME TOKEN, never a literal — the
+                 same var() the renderer resolves, so the chip and the stroke
+                 can never disagree about what "oxblood" means. */
+              className={`mode-swatch wz-ink-swatch${opts.pen.ink === ink ? ' active' : ''}`}
+              style={{ background: `var(--ink-${ink})` }}
+              aria-checked={opts.pen.ink === ink}
+              aria-label={inkLabel[ink]}
+              title={inkLabel[ink]}
+              onClick={() => opts.onPick({ ink })}
+            />
+          ))}
+          {/* J2's eraser, as the Journal built it: a real two-state toggle, and
+              TIP-AGNOSTIC — it erases whatever tip laid the ink down. The
+              stricter analog reading (a pencil erases, a pen and a marker do
+              not) is Nick's open word; "as built" is the default and this wave
+              deliberately does not spend it. */}
+          <button
+            type="button"
+            className="mode-tbtn wz-ink-eraser"
+            aria-pressed={opts.eraserArmed}
+            data-on={opts.eraserArmed ? 'true' : 'false'}
+            aria-label={t('inkEraser')}
+            title={t('inkEraser')}
+            onClick={opts.onToggleEraser}
+          >
+            <span aria-hidden="true">&#9107;</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function SliverToolsBody({ content }: { content: SliverContent }) {
   const { t } = useDeskLexicon();
 
@@ -363,87 +474,45 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
 
   return (
     <div className="wz-sliver-body">
-      {content.kind === 'freewrite' && (content.ink || content.inkToolPlaceholder) && (
-        <div className="wz-sliver-section">
-          <div className="wz-sliver-h">{t('railInk')}</div>
-          {/* FX7 S2 — Journal's own pen/eraser toggle SHAPE, mirrored here.
-              Always disabled on this surface (see this file's own
-              SliverContent comment for the full disclosed-inert reasoning)
-              — present so the affordance is discoverable ahead of ink's
-              app-wide reinstatement, never pretending to be functional. */}
-          {content.inkToolPlaceholder && (
-            <button
-              type="button"
-              className="wz-sliver-ink-tool-toggle"
-              disabled
-              aria-disabled="true"
-              aria-label={t('railInkTool')}
-              title={t('railInkToolInert')}
-            >
-              <span aria-hidden="true">✎</span>
-            </button>
-          )}
-          {content.ink && (
-            <div className="wz-sliver-inks">
-              {content.ink.inks.map(ink => (
-                <button
-                  key={ink}
-                  type="button"
-                  className={`mode-swatch${content.ink!.penColor === ink ? ' active' : ''}`}
-                  style={{ background: ink }}
-                  aria-label={`Ink ${ink}`}
-                  aria-pressed={content.ink!.penColor === ink}
-                  onClick={() => content.ink!.onChoosePen(ink)}
-                />
-              ))}
-              <button type="button" className="mode-nib wz-sliver-nib" title="Nib styles — coming soon">nib · fine ▾</button>
-            </div>
-          )}
-        </div>
-      )}
+      {/* ITEM 121 I4/I6 — THE INK ZONE, AND WHAT IT REPLACED.
+          Until item 121 this zone was headed "Ink" and was NOT ink: its
+          swatches were three hardcoded hex values that coloured the TYPED TEXT
+          and caret (ForwardOnlyEditor's own `penColor`), and beside them sat a
+          fake "nib · fine" button that did nothing. Under R15 that is digital
+          styling on a surface that does not decorate — the same class as the
+          B/I/U this ticket removes below, differing only in which property it
+          set — so it RETIRES WITH STYLING, on Nick's word (2026-09-07). "Ink"
+          now means one thing on this surface, and it means the true one.
+          SCOPE, exactly: only the `freewrite` arm's feed is gone. PEN_INKS,
+          ModeStage's own unframed pen bar, and QuickSprint keep the text-colour
+          mechanism untouched — R15 names neither, and this lane does not reach
+          past the surface it was chartered for.
+          ABSENT IN TEXT, never greyed: `inkOptions` is passed only in INK, so
+          in TEXT none of this exists in the DOM at all (G3 — a greyed control
+          for a capability the surface does not currently have is a locked door
+          wearing paint; the typewriter has no nibs). */}
+      {content.kind === 'freewrite' && content.inkOptions && <SliverInkZone opts={content.inkOptions} />}
 
-      {/* FX7 S2 — Bold/Italic on Free Write's own rail (Nick's "the tools
-          options on a Free Write Page are way too sparse" verdict): reuses
-          Draft's own `.wz-sliver-format`/`.mode-tbtn` markup verbatim (the
-          same visual family, just two buttons instead of four — see this
-          file's own SliverContent comment for why Heading/Spacing are
-          excluded), so a writer sees the identical control shape in either
-          mode. data-on reflects the two-press bracket's own open/closed
-          state (see the SliverContent comment above). */}
-      {content.kind === 'freewrite' && content.format && (
-        <div className="wz-sliver-section">
-          {/* ITEM 83 M4 (R1) — the zone is STYLING now, not Format: Nick's own
-              word for it, and it distinguishes this from Draft's much larger
-              FORMAT roster (R4). Underline joins B and I. */}
-          <div className="wz-sliver-h">{t('stylingHeading')}</div>
-          <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button
-              type="button"
-              className="mode-tbtn"
-              data-on={content.format.boldOn ? 'true' : 'false'}
-              aria-pressed={content.format.boldOn}
-              title={t('stylingBold')}
-              onClick={() => content.format!.onFormat('bold')}
-            ><b>B</b></button>
-            <button
-              type="button"
-              className="mode-tbtn"
-              data-on={content.format.italicOn ? 'true' : 'false'}
-              aria-pressed={content.format.italicOn}
-              title={t('stylingItalic')}
-              onClick={() => content.format!.onFormat('italic')}
-            ><i>I</i></button>
-            <button
-              type="button"
-              className="mode-tbtn"
-              data-on={content.format.underlineOn ? 'true' : 'false'}
-              aria-pressed={content.format.underlineOn}
-              title={t('stylingUnderline')}
-              onClick={() => content.format!.onFormat('underline')}
-            ><u>U</u></button>
-          </div>
-        </div>
-      )}
+      {/* ITEM 121 I6 (R15/G3) — STYLING IS RETIRED FROM FREE WRITE.
+          Nick's analog law: Free Write is a typewriter for text — "no digital
+          styling, no fonts, no formatting on that surface." B/I/U leave, and
+          they leave by ABSENCE, not by a hidden or disabled mount: what the
+          analog page cannot do, the chrome does not offer. This supersedes M4
+          (R1) FOR THIS SURFACE ONLY.
+          DRAFT IS UNTOUCHED — R4 keeps its much larger FORMAT roster below,
+          `stylingBold`/`stylingItalic`/`stylingUnderline` are SHARED with it
+          and must survive, and `__u__`/the marker conventions in
+          store/draftFormat.ts are Draft's, not this surface's.
+          NO LEXICON KEY ORPHANS BY THIS REMOVAL, and the S0 survey's claim that
+          `stylingHeading` would is CORRECTED HERE RATHER THAN QUIETLY DROPPED:
+          Draft's own zone does head with `railFormat`, but BoardEditor's card
+          popup dock heads with `stylingHeading`, so sweeping it would have
+          broken the Board. Checked before sweeping, not after. The keys that
+          DO orphan are `railInkTool`/`railInkToolInert` — the inert
+          placeholder's, and that placeholder is now gone outright.
+          The menus wave's tests that asserted Free Write's B·I·U get the park
+          treatment: original assertions kept verbatim with a successor
+          pointer, never rewritten in place. */}
 
       {content.kind === 'freewrite' && content.forwardLock && (
         <div className="wz-sliver-section">

@@ -3526,14 +3526,34 @@ a:focus-visible,
    the sliver's own established rest-state law (FX1 S6, above), never brass
    (brass stays reserved for an evental action, not a held state). */
 .mode-tbtn[data-on='true']{ border-color:var(--accent-rest); color:var(--accent-rest); }
-/* FX7 S2 — Journal's own ink-tool toggle, mirrored as a disclosed-inert
-   placeholder (Sliver.tsx's own `inkToolPlaceholder`): same small icon-
-   button footprint as the sliver's other controls, visibly disabled
-   (dimmed, not-allowed cursor) rather than styled as if it worked. */
-.wz-sliver-ink-tool-toggle{ width:28px; height:28px; padding:0; background:none;
-  border:1px solid var(--ink-border); color:var(--text-low); font-size:14px;
-  cursor:not-allowed; opacity:.55; }
+/* ITEM 121 I6 — `.wz-sliver-ink-tool-toggle` (FX7 S2's disclosed-inert ink
+   placeholder) is REMOVED: M4/G3 had already stopped rendering it, and item
+   121 removes the member itself, so the rule had nothing left to style. Its
+   lexicon keys (railInkTool/railInkToolInert) go with it. */
 .wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
+
+/* ============================================================================
+   ITEM 121 I4 — THE INK OPTIONS ZONE (TIP · NIB · INK · eraser).
+   Everything here reuses the sliver's EXISTING control grammar rather than
+   inventing a second one: `.wz-sliver-h` for the engraved olive group head,
+   `.mode-tbtn[data-on='true']` for the chosen olive hairline, `.mode-swatch`
+   for the ink chips. A writer meets the same shapes in this zone that they
+   already know from Draft's, which is the whole reason to reuse them.
+   ==========================================================================*/
+/* The tips carry drawn glyphs (R8), so they need a square box that centres an
+   SVG rather than .mode-tbtn's text metrics. */
+.wz-ink-tip{ display:inline-flex; align-items:center; justify-content:center; min-width:30px; padding:0 6px; }
+.wz-ink-tip svg{ display:block; }
+/* NIB IS STOPS, NOT A SLIDER (ink pass §0.4 — a nib is chosen, not dialled),
+   so the three read as three equal buttons: no track, no thumb, no continuum. */
+.wz-ink-nib{ min-width:0; padding:0 9px; font-size:11px; letter-spacing:.04em; }
+/* The chosen swatch wears the same brass outline .mode-swatch.active already
+   defines; this only stops a very dark ink from vanishing into the panel. */
+.wz-ink-swatch{ border-color:var(--ink-border-strong); }
+.wz-ink-eraser{ margin-left:auto; }
+/* Evental press across the whole zone — brass on the way down, never at rest
+   (the plateau register: olive rests, brass is the press). */
+.wz-ink-tip:active, .wz-ink-nib:active, .wz-ink-eraser:active{ color:var(--brass); border-color:var(--brass); }
 .wz-sliver-typewriter-label{ font-size:13px; color:var(--text-mid); }
 
 /* A labeled on/off switch — the forward-lock control (S2). Deliberately its
