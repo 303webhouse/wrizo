@@ -153,11 +153,41 @@ export interface StrokePoint {
   p?: number; // pressure 0..1; absent when the device reports none
 }
 
+// ITEM 121 I1 — the instrument a stroke was drawn with. Three enums, all
+// three OPTIONAL, and the absence of each is the whole migration story: an
+// absent field reads as `pen · regular · the theme's default ink`, which is
+// EXACTLY what every stroke drawn before this ticket already renders as. No
+// backfill, no DDL, no data migration — see docs/menus/item121-s0-survey.md
+// §2 for the proof that `strokes` is an existing jsonb column on the single
+// page table, so growing the shape INSIDE the blob is invisible to Postgres.
+export type StrokeTip = 'pen' | 'pencil' | 'marker';
+export type StrokeNib = 'fine' | 'regular' | 'broad';
+// ITEM 121 I1 — the ink is stored BY TOKEN NAME, never as a hex. Themes
+// re-colour their inks; a stored hex would freeze one theme's palette into
+// the page forever, so a page drawn under Plateau would keep Plateau's
+// oxblood after a theme change instead of wearing the new theme's. The names
+// are the Plateau inks the ink pass named (item83-ink-pass.md §0.5); the
+// values live in index.css as --ink-walnut/-iron/-oxblood/-sea, and a theme
+// pack re-points them the way it re-points every other token.
+export type StrokeInk = 'walnut' | 'iron' | 'oxblood' | 'sea';
+
 export interface Stroke {
   points: StrokePoint[];
   // J2 — an erase IS a stroke: same geometry, painted destination-out (ink.ts).
   // Additive/optional; absent on every ink stroke drawn before this ticket.
   eraser?: true;
+  // ITEM 121 I1 — the instrument, stamped at capture from the drawer's current
+  // pen. All three absent on every Journal stroke ever drawn, and on every
+  // erase (an eraser ignores tip, nib and ink — J2's geometry is the whole of
+  // it). Unknown values are not a hazard: store/ink.ts coerces anything it
+  // does not recognise back to the defaults at PAINT time, so a row written by
+  // a newer or older client can never mis-paint a page. That read-boundary
+  // coercion is deliberately where validation lives — the server does not
+  // re-validate a shape the client owns (apps/server/src/sync.ts's own stated
+  // law for this whole jsonb column family), so this wave touches no server.
+  tip?: StrokeTip;
+  nib?: StrokeNib;
+  ink?: StrokeInk;
 }
 
 // Journal entry (J1) — a permanent, timestamped record of a completed sprint's

@@ -24,6 +24,28 @@
   --ink-on-paper: #2B2014;
   --ink-on-paper-low: #8A7C68;
   --ink-stroke: #1A1206; /* pen ink — very dark brown, almost black (J9) */
+  /* ITEM 121 I1/I4 — THE DESK'S FOUR INKS (item83-ink-pass.md §0.5: "a journal
+     has the inks on the desk", never a colour picker). Plateau's four, named
+     by the pass itself: walnut · iron · oxblood · sea. Strokes store the NAME,
+     not the value (types/index.ts's StrokeInk), so a theme pack re-points
+     these four and every stroke ever drawn re-colours with it.
+     --ink-walnut IS --ink-stroke's own value, byte-for-byte, and that is
+     load-bearing rather than a coincidence: an OLD stroke (no `ink` field)
+     paints through --ink-stroke and a NEW stroke that chose walnut paints
+     through this, so the default and the first swatch are the same ink and a
+     page drawn before this ticket is pixel-identical after it. --ink-stroke
+     itself is deliberately NOT redefined here — the whole no-migration
+     argument rests on it not moving.
+     ITEM 121 S0 §5.3 — THE FLUX VALUES ARE A STOP, HELD FOR NICK. No ruling
+     or canon names an ink for any theme but Plateau, and TH2 explicitly
+     declined to give Flux a pen ink at all ("Journal ink is its own sealed
+     domain, out of TH2's scope", below). Flux therefore INHERITS these four
+     rather than this lane inventing a theme's colours. Four values in one
+     existing block whenever the word comes; no component line moves. */
+  --ink-walnut:  #1A1206; /* the default ink — see above, must equal --ink-stroke */
+  --ink-iron:    #39414A; /* cold graphite-blue near-black */
+  --ink-oxblood: #6B1F1C; /* deep red-brown */
+  --ink-sea:     #17454E; /* deep blue-green */
   --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
 
   /* FX4 S7 — Stacked (board-card-studies.html variant B): the board's own
