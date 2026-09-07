@@ -2272,6 +2272,96 @@ capability is already in the house — the S0 establishes what it can do before 
 top of it). Governed by the analog law (below): Free Write is a typewriter for text and a journal
 page / sketch pad for drawing — Ink is that second half made real, not a new decoration surface.
 
+**► OFFERED (ink lane, 2026-09-07) — branch `item121-ink`, **offered SHA `cd325ab`** — the tip of the SOFTWARE, and the exact tree BOTH stamps name; this records commit sits on top of it and adds only docs.** Record:
+`docs/menus/item121-offer-2026-09-07.md` (+ `item121-s0-survey.md`). Free Write becomes what the
+analog law says it is: a **TEXT | INK switch in the band**, the Journal's whole J-series drawing
+pipeline **ported onto the framed page**, per-stroke **tip · nib · ink**, and a drawer zone
+(**TIP · NIB · INK · eraser**) that is **absent — never greyed — in TEXT**. **STYLING leaves Free
+Write**, and so does the older zone headed "Ink" that in fact coloured the typed text.
+**BOTH SETTINGS CLEAN, one tree, one bundle, neither stamp dirty — 75/75 each:
+`tree=cd325ab bundle=index-DkZ73BNk.js/567050b`** (parked ran `--no-rebuild`, so both stamps name
+the same software). 2487 passing checks unparked, 2747 parked. `item121.mjs` **43**.
+**ZERO SCHEMA AND ZERO SERVER**, checkable and checked: `git diff 2b8e5b4..HEAD -- apps/server
+packages` is **empty**. **OFFERED, NOT MERGED; no deploy asked.** Merge and deploy are separate
+words and both Nick's.
+
+**→ ITEM 121's S0 ANSWER, on the record — THE SCHEMA STOP DID NOT FIRE.** `strokes` is an existing
+`jsonb` column in `journal_entries`' ORIGINAL table body (`migrate.ts:56`), and `journal_entries` is
+the single row-per-page table every page kind lives in — `pageType` sits on the same interface as
+`strokes`. Three optional keys INSIDE that blob are invisible to Postgres: no DDL, no backfill, no
+migration. Nick's own framing, satisfied literally: *inside an existing blob is zero schema.*
+
+**→ ONE STOP STANDS, HELD FOR NICK: FLUX'S FOUR INK VALUES.** The ink pass names Plateau's four
+(walnut · iron · oxblood · sea) and no ruling or canon names an ink for any other theme — TH2
+explicitly declined to give Flux a pen ink at all (*"Journal ink is its own sealed domain, out of
+TH2's scope"*). **Flux inherits Plateau's four under the cascade rather than this lane inventing a
+theme's colours.** Storing the ink **BY TOKEN NAME** is what makes the stop cheap: four values in
+one existing block whenever the word comes, and every stroke ever drawn re-colours with no data
+touched. A stored hex would have frozen Plateau into the page forever.
+
+**→ THE PARKS: 8 ASSERTIONS TOUCHED, AND THE COUNT IS ITSELF THE FINDING.** 5 live (`ab2` 1,
+`ab3` 1, `fx7` 3) + **3 parked-section re-derivations** (`ab2` 2, `ab3` 1), plus 1 re-pointed.
+**THE I7 COMMIT CLAIMED 5, AND THE THREE IT MISSED WERE INVISIBLE TO A GREEN UNPARKED RUN — that
+suite was 75/75 CLEAN with all three already false.** They live in the `HARNESS_PARKED` sections,
+re-deriving the CURRENT membership of Free Write's drawer, which item 121 moved. Corrected on the
+record in `cd325ab` rather than quietly restated. **Item 84's arithmetic, applied to this lane: the
+two settings are two gates, and the park COUNT is a number to be audited, not a silence to trust.**
+Nothing rewritten in place — each parked entry keeps its whole supersession chain verbatim and gains
+one link (ab2's own "generation 4" precedent); the ab2 pair have now been moved by AB3, FX1 S3, FX7
+S2 and R15, **twice in opposite directions on the same clause**.
+
+**→ `fx7` DID NOT FAIL — IT THREW, AND THE SUITE RECORDED `NOVERDICT`.** A `.click()` against a
+button R15 removed aborted the file, so **not one of its 44 checks reported, pass or fail**. Logged
+as the live case of the standing law: *a driver can lie by dying as easily as by doing nothing*, and
+a probe belongs in front of every gesture. `item121.mjs` routes every gesture through one.
+
+**→ TWO DEFECTS THE HARNESS FOUND THAT READING DID NOT.** (1) **The caret was not actually dormant
+in INK** — `ForwardOnlyEditor` sets `caretColor` as an INLINE style, which beats any selector, so
+the caret went on blinking: the typewriter "put down" everywhere except where the writer was
+looking. (2) **The first eraser check passed for the wrong reason** — `penStroke`'s `y` is a
+fraction of element HEIGHT while a stored point's `y` is normalized by WIDTH, so the sampler read
+empty paper. It now reads the persisted stroke's own mid-point (alpha 102 → 0).
+
+**→ FOUR SEAMS SURFACED, NOT BUILT, each disclosed in the offer §4:** (a) I1's **server-side enum
+validation** was NOT built — `sync.ts` states a no-revalidation law for this jsonb column family,
+and building it there would contradict that law AND turn a zero-schema wave into a SERVER-BEHAVIOUR
+ship; validation lives at the **read boundary**, which is stronger for the property that matters.
+(b) The brief's **I2 mount does not fit the live geometry** — Free Write's `.mode-page` is
+fixed-height with an inner scroller, so `inset:0` would nail ink to the viewport; the stratum mounts
+inside `.mode-scroll` and I7's anchor check is re-aimed at that box. (c) **The framed band has no
+location line** (CD1 S1 retired the crumb; mockup B still shows one) — the switch keeps its position
+relative to the mode strip, and the crumb was NOT resurrected. (d) **Ink is framed-only (≥1100px)**
+per the 112-A rider — **a reach cost, and Nick's to weigh: a tablet in portrait below 1100 gets
+today's page and no ink.**
+
+**→ UNDO IS NOT UNIFIED, AND THAT IS A FINDING RATHER THAN A GAP.** The brief asked for one level
+across a typed run and a stroke. Free Write is **FORWARD-ONLY**, and `ForwardOnlyEditor`'s undo
+stack (FX6 S1) is gated to the free-edit modes by that law — a typed-run undo here would breach
+forward-only permanence, an older ruling than this wave. **The pen gets an undo; the typewriter
+keeps its permanence.** Both halves are asserted (S8).
+
+**→ ONE WORD SPENT, AND IT WAS ASKED FOR RATHER THAN TAKEN (Nick, 2026-09-07).** Free Write's drawer
+already carried a zone headed **"Ink" that was not ink** — three hardcoded hex values colouring the
+TYPED TEXT and caret, beside a "nib · fine" button that did nothing — live on journal-origin and
+legacy pages, i.e. most of them. **R15 names STYLING and does not name this**, so it went to the
+founder rather than into a build. His word: **retire it with STYLING.** `PEN_INKS`, ModeStage's
+unframed pen bar and QuickSprint keep the mechanism untouched.
+
+**→ THE THREE OPEN WORDS ARE UNSPENT**, as instructed: the **eraser's tip binding** (tip-agnostic
+AS BUILT — the zero-work default), the **typewriter FACE** (Nick's, with the theme arc), and the
+**S-Pen barrel button** (hardware-reserved; `buttons & 32`, the eraser bit, is read exactly as J2
+always read it — the barrel is not). **Pressure** rides a later slice, and the S0 correction is on
+the record: pressure is ALREADY STORED (`StrokePoint.p`); what was true is that nothing reads it.
+
+**→ ⚠ THE GATE THE HARNESS CANNOT REPLACE — THE REAL-DEVICE SITTING ON NICK'S TABLET.** Three
+things are hardware and are **unasserted deliberately rather than by omission**: (1) **a finger not
+drawing while a stylus is attached** — CDP has no stylus-present state, so S5 asserts THE APP'S OWN
+BRANCH (once a pen has been seen, a touch makes no stroke) and says so in the check's own name; (2)
+**palm rejection** on a real hand; (3) **the OS handwriting path** on OneUI/Chrome, the whole reason
+I0 slice 2 exists — S6 asserts the guard's signature and the no-text OUTCOME, but only the device
+can prove the recognizer never fired. A softer fourth: **whether the three tips LOOK right** is an
+eye's verdict, not a suite's.
+
 ## ITEM 122 — THE STYLING COMPLETION WAVE (fix-class) — OPENS 2026-09-06
 
 **OPENS (Fable, 2026-09-06) — FIX's next window.** Draft's **B/I/U MADE TO WORK** (item 79's marker
