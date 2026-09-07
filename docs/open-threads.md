@@ -1034,6 +1034,18 @@ shipped DECK's uncommitted `Tutor.tsx` falsification mutations to PRODUCTION for
 a preset press — a disclosure violation). See the INCIDENT RECORD at the HOTFIX 104 DEPLOY MANIFEST
 (2026-08-24), item 111 (CLOSED — the mismatch was this, not OS), and the new CLEAN TREE AT UPLOAD
 law. Contamination doesn't just block merges — it can SHIP.
+**→ COUNT GOES UP ONE (2026-09-06): THREE MORE STRAYS, CLEARED ON FABLE'S ORDER.** The mechanism is
+UNCHANGED — **relay bytes landing in the wrong tree.** None was live work; all three were preserved
+(scratchpad + object store) BEFORE deletion, per the habit, and the identity table is the record:
+| path | md5 | git-blob | what it was |
+|---|---|---|---|
+| `docs/item112c-type-section-brief.md` | `b7e2b43b` | `55e115ec` | the WITHDRAWN 112-C brief |
+| `docs/menus/tutor/item112c-type-section-brief.md` | `b7e2b43b` | `55e115ec` | identical copy of the same |
+| `docs/menus/tutor/item84-find-row-design.md` | `f6efaafc` | `e83fcfe2` | a STALE draft (the manifest's pre-correction checksum) |
+**Recovery paths verified intact after deletion** (`git cat-file -e 55e115ec` · `e83fcfe2`). Clearing
+the third also unblocked the Find-pass merge, which lands that path TRACKED at `f60b13c`. *(Note for
+the table's next reader: Fable's identities are md5; chat 1's habitual `git hash-object` is the
+git-blob column — the two disagreed on sight and agreed on measurement.)*
 **→ THE "DECK-LANE T1 S0 BRIEF" ATTRIBUTION CORRECTED (DECK §10, verified by chat 1, 2026-08-26).**
 The routing recorded above (`item84-t1-s0-brief.md` = the DECK lane's T1 S0 brief) is WRONG. DECK
 DECLINES authorship on disk (§10): the file appears in the session's OPENING `git status` snapshot —
