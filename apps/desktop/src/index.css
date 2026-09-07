@@ -4564,6 +4564,54 @@ a:focus-visible,
 .crumb-sep{ color:var(--ink-border-strong); }
 .crumb-here{ color:var(--text-mid); font-weight:600; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+/* ============================================================================
+   ITEM 121 I3 — THE TEXT | INK SWITCH, in the band.
+
+   THE BAND MUST NOT GROW. `.sprint-nav` above has NO fixed height: it is a
+   wrapping flex row whose height is content-derived, so the failure mode at
+   1366 is not a few stray pixels, it is A WHOLE SECOND ROW. Every number below
+   is chosen to sit UNDER the band's existing tallest control
+   (`.sprint-toggle-btn`: 13px type, 5px/12px padding) rather than beside it at
+   its own preferred size: 10.5px type and 4px/10px padding put this switch's
+   border-box comfortably inside that. `min-width:0` + `flex-shrink:1` mean the
+   band gives ground here before it ever wraps. Paper never reflows for chrome.
+
+   THE DRESS (mockup B): engraved uppercase, letter-spaced, olive at rest; the
+   ACTIVE side wears the olive hairline; the press is evental brass. Only
+   colour transitions, so `prefers-reduced-motion` needs no branch here.
+   ==========================================================================*/
+.wz-ink-switch{
+  display:flex; align-items:stretch; min-width:0; flex-shrink:1;
+  border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden;
+}
+.wz-ink-switch-side{
+  background:none; border:0; border-bottom:1px solid transparent;
+  color:var(--text-low); font-family:var(--font-chromeLabel, var(--font-ui));
+  font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+  padding:4px 10px 3px; cursor:pointer; white-space:nowrap;
+  transition:color var(--t-state) var(--ease), border-color var(--t-state) var(--ease);
+}
+.wz-ink-switch-side + .wz-ink-switch-side{ border-left:1px solid var(--ink-border); }
+.wz-ink-switch-side:hover{ color:var(--text-mid); }
+/* The chosen side wears the olive hairline — the drawer's own chosen-state
+   grammar, so a writer reads "selected" the same way in both places. */
+.wz-ink-switch-side[data-on='true']{ color:var(--text-hi); border-bottom-color:var(--accent-rest); }
+/* Evental press (brass), never a rest colour — the flip is the event. */
+.wz-ink-switch-side:active{ color:var(--brass); }
+
+/* ITEM 121 I3 — THE TYPEWRITER IS PUT DOWN, VISIBLY. The instrument change has
+   to be legible on the paper, not only in the switch, so in INK the caret goes
+   dormant. `caret-color:transparent` rather than a blur or an overlay: it is
+   the one property that removes the blinking insertion point without touching
+   the text's own colour, its layout, or a single stored byte. The editable is
+   also blurred on entry (PageEditor's own effect), so there is nothing to type
+   INTO either — this is the visible half of a state that is already true. */
+.mode-page[data-instrument='ink'] .forward-only-editor{ caret-color:transparent; }
+/* The stratum's own layers never intercept — routing belongs to the sheet
+   (InkStratum.tsx's header). Stated in CSS too so a later hand that reaches
+   for `pointer-events:auto` here meets the reason first. */
+.wz-ink-sheet > .ink-canvas{ pointer-events:none; }
 /* FX3 S4 — TRIAL (Nick's own working-value experiment; not settled law).
    The modes move toward the right instead of sitting flush left; Done
    stays the rightmost element with a fixed gap (not auto-margin) keeping

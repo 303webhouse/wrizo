@@ -29,6 +29,16 @@ export const NIBS: readonly StrokeNib[] = ['fine', 'regular', 'broad'];
 // ink is one entry here plus one token in index.css.
 export const INKS: readonly StrokeInk[] = ['walnut', 'iron', 'oxblood', 'sea'];
 
+// ITEM 121 I4 — the pen a page starts with: the defaults, which are also
+// exactly what a stroke with no fields renders as, so the first stroke a
+// writer ever draws is indistinguishable from every stroke drawn before this
+// ticket. INKS[0] is walnut, whose token IS --ink-stroke's value.
+export const INK_DEFAULT_PEN: { tip: StrokeTip; nib: StrokeNib; ink: StrokeInk } = {
+  tip: TIP_DEFAULT,
+  nib: NIB_DEFAULT,
+  ink: INKS[0],
+};
+
 // ITEM 121 I1 — VALIDATION LIVES HERE, AT THE READ BOUNDARY, and this is a
 // decision with a reason (S0 §2.3). The server does not re-validate a shape
 // the client owns — its own stated law for this entire jsonb column family

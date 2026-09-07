@@ -35,6 +35,14 @@ export type DeskTermId =
   // "why disabled" reasoning). The tooltip is the one place this ticket
   // discloses the inert state directly to the writer.
   | 'railInkTool' | 'railInkToolInert'
+  // ITEM 121 (I3/I4) — the Ink wave's own strings. The switch names the two
+  // instruments the page can be; the drawer's ink zone names the three groups
+  // (TIP / NIB / INK) and the three tips and three nibs by name. Every one of
+  // them enters the lexicon rather than the JSX, per the standing seam rule.
+  | 'inkInstrument' | 'inkModeText' | 'inkModeInk'
+  | 'inkTip' | 'inkNib' | 'inkTipPen' | 'inkTipPencil' | 'inkTipMarker'
+  | 'inkNibFine' | 'inkNibRegular' | 'inkNibBroad'
+  | 'inkEraser' | 'inkWalnut' | 'inkIron' | 'inkOxblood' | 'inkSea'
   // CD1 S2/S6 — the sliver's goal block (components/Sliver.tsx's foot). The
   // sliver's own keyboard shortcut (Ctrl/Cmd+/, SLIVER_SHORTCUT_LABEL in
   // that file) is a chord constant, not user-facing prose, so it does NOT
@@ -566,6 +574,22 @@ const CANONICAL: Record<DeskTermId, string> = {
   railFormat: 'Format',
   railInkTool: 'Ink tool',
   railInkToolInert: 'Ink — coming soon outside the Journal',
+  inkInstrument: 'The page’s instrument',
+  inkModeText: 'Text',
+  inkModeInk: 'Ink',
+  inkTip: 'Tip',
+  inkNib: 'Nib',
+  inkTipPen: 'Pen',
+  inkTipPencil: 'Pencil',
+  inkTipMarker: 'Marker',
+  inkNibFine: 'Fine',
+  inkNibRegular: 'Regular',
+  inkNibBroad: 'Broad',
+  inkEraser: 'Eraser',
+  inkWalnut: 'Walnut',
+  inkIron: 'Iron',
+  inkOxblood: 'Oxblood',
+  inkSea: 'Sea',
   railStructure: 'Structure',
   railStructureProse: 'Prose',
   railStructureScreenplay: 'Screenplay',

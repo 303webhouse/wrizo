@@ -8,6 +8,9 @@ import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEdi
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
+import { InkStratum, type InkPen } from '../components/InkStratum';
+import { InkSwitch } from '../components/InkSwitch';
+import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { useFirstLineInvite } from '../components/useFirstLineInvite';
@@ -15,6 +18,7 @@ import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, getSelectionOffsets } from '../store/caretOffset';
+import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
 import { BoardEditor } from '../components/BoardEditor';
@@ -166,6 +170,59 @@ function PageEditorView({ id }: { id: string }) {
   // falls back to its own internal state when this isn't passed
   // (unframed/below-the-gate, untouched).
   const [penColor, setPenColor] = useState(PEN_INKS[0]);
+
+  // ── ITEM 121 · THE INK WAVE ────────────────────────────────────────────────
+  // R15: Free Write is a typewriter for text and a journal page / sketch pad
+  // for drawing. `instrument` is which of the two the page currently IS.
+  //
+  // DEFAULT TEXT, AND NOT PERSISTED. A page is a typewriter until the writer
+  // picks up the pen — session-scoped, exactly like J2's pen re-arm on open,
+  // and deliberately NOT stored per page the way `mode` is: a page that
+  // remembered INK would open unable to type, which is the wrong failure for a
+  // writing app, and one word reverses this if Nick wants it remembered.
+  const [instrument, setInstrument] = useState<'text' | 'ink'>('text');
+  // The page's ink, seeded from the row. Held in state (not read from `entry`
+  // each render) for the same reason the Journal holds it: the stratum owns
+  // the paint loop and a re-seed mid-stroke would fight it.
+  const [strokes, setStrokes] = useState<Stroke[]>(() => getJournalEntry(id)?.strokes ?? []);
+  // I4 — the drawer's "current pen", last-used, session-scoped like the mode.
+  const [inkPen, setInkPen] = useState<InkPen>(INK_DEFAULT_PEN);
+  const [eraserArmed, setEraserArmed] = useState(false);
+  const inkSheetRef = useRef<HTMLDivElement>(null);
+
+  // Persist strokes, merging the LIVE text so a pending typed run is never
+  // clobbered — the Journal's own rule (its `persist`), and load-bearing here
+  // too because Free Write's text autosave is debounced.
+  //
+  // PB1 — AN UNBORN PAGE HAS NO ROW, and a stroke is content. The row is
+  // written WITH the ink in the same synchronous act (`birthWith`), never
+  // created empty and filled in afterwards, which is the whole of PB1's law;
+  // `strokes` joins `text`/`boxes`/`script` in BirthContent for exactly that.
+  // Ink is a birth trigger because ink is writing: F6's own DoD 4 already
+  // ruled that an ink-only page is NOT empty.
+  const persistStrokes = (next: Stroke[]) => {
+    setStrokes(next);
+    if (unbornRef.current) {
+      if (next.length === 0) return; // nothing drawn, nothing to be born for
+      unbornRef.current.birthWith({ text: textRef.current, strokes: next });
+      return;
+    }
+    const latest = getJournalEntry(id);
+    if (!latest) return;
+    saveJournalEntry({ ...latest, text: textRef.current, strokes: next });
+  };
+
+  // Entering INK puts the typewriter down: the editable is blurred, so the
+  // caret is visibly dormant and keystrokes have nowhere to type. Leaving INK
+  // does NOT auto-focus — the writer taps to resume, which is the same
+  // "restored but blurred" rule the Journal's own stroke hardening uses, and
+  // it keeps a mode flip from stealing focus out from under a click.
+  useEffect(() => {
+    if (instrument !== 'ink') return;
+    const el = inkSheetRef.current?.querySelector<HTMLElement>('.forward-only-editor');
+    try { el?.blur(); } catch { /* */ }
+    try { window.getSelection()?.removeAllRanges(); } catch { /* */ }
+  }, [instrument]);
   const forwardLock = useForwardLock();
   // FX7 S2 — Free Write's own Bold/Italic two-press bracket state (open =
   // the leading marker has been inserted, awaiting its closing press). See
@@ -538,7 +595,20 @@ function PageEditorView({ id }: { id: string }) {
   // AB1-framed ModeStage instance, factored out so the two branches below
   // can't drift.
   const editorBody = ({ noteWrite, penColor }: { noteWrite: () => void; penColor?: string }) => (
-    <div ref={warmWrapRef} style={{ position: 'relative', width: '100%', minHeight: '100%' }}>
+    <div
+      /* ITEM 121 I2 — THIS DIV IS THE SHEET. It is the scroller's own content
+         wrapper: already position:relative, already full width, and it GROWS
+         with the editor, so an absolutely positioned canvas at inset:0 covers
+         the whole scrollable page and scrolls WITH the text as one sheet.
+         `.mode-page` could not serve — it is a fixed-height window
+         (min(60vh,580px), overflow:hidden) whose inner `.mode-scroll` does the
+         scrolling, so a canvas there would nail the ink to the viewport and
+         let screen two's ink land on screen one's. See InkStratum.tsx's own
+         header and item121-s0-survey.md §3. */
+      ref={el => { warmWrapRef.current = el; inkSheetRef.current = el; }}
+      className="wz-ink-sheet"
+      style={{ position: 'relative', width: '100%', minHeight: '100%' }}
+    >
       <ForwardOnlyEditor
         key={`${id}-${mode}`}
         ref={editorRef}
@@ -586,6 +656,27 @@ function PageEditorView({ id }: { id: string }) {
           aria-hidden="true"
           className={`wz-warm${warm.settled ? ' wz-warm--settled' : ''}`}
           style={{ position: 'absolute', top: warm.rect.top, left: warm.rect.left, width: warm.rect.width, height: warm.rect.height }}
+        />
+      )}
+      {/* ITEM 121 I2 — the ink stratum, OVER the text (a later sibling, so it
+          paints on top — the analog act is writing ON the page with a pen, and
+          ink UNDER type would simply be hidden by the type). Free Write only,
+          framed only: Draft and Revise are not sketch pads (R15 is a ruling
+          about this one surface), and below the 1100px gate the page keeps its
+          pre-item-121 terms exactly, per the 112-A rider's precedent.
+          MOUNTED IN BOTH MODES, not just INK: ink drawn in INK must stay on the
+          page while the writer types in TEXT. It is `active` that decides
+          whether anything is intercepted — in TEXT no listener is attached at
+          all and both canvases stay pointer-events:none, so the surface is
+          byte-identical to the page before this ticket. */}
+      {framed && mode === 'journal' && (
+        <InkStratum
+          active={instrument === 'ink'}
+          sheetRef={inkSheetRef}
+          strokes={strokes}
+          onCommit={persistStrokes}
+          pen={inkPen}
+          eraserArmed={eraserArmed}
         />
       )}
     </div>
@@ -955,6 +1046,16 @@ function PageEditorView({ id }: { id: string }) {
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
         <FirstRunVeil active={gateActive}>
           <div className="chrome-fade chrome-top sprint-nav">
+            {/* ITEM 121 I3 — the TEXT | INK switch, in the band, immediately
+                before the mode strip. R15/mockup B seat it "beside the location
+                line"; the framed band has none (CD1 S1 retired the crumb, and
+                the Page face carries the where-it-lives chain now), so what
+                ports is its position RELATIVE to the strip — the one landmark
+                the mockup and the live band share. FREE WRITE ONLY: Draft and
+                Revise are not sketch pads, and a switch offering an instrument
+                the surface does not have would be the locked door wearing
+                paint. Absent, never disabled. */}
+            {mode === 'journal' && <InkSwitch value={instrument} onChange={setInstrument} />}
             <ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)} />
             <div className="sprint-actions">
               {project && (
@@ -1066,6 +1167,11 @@ function PageEditorView({ id }: { id: string }) {
             chromeRootRef={pageRef}
             milestones={milestones}
             penColor={penColor}
+            /* ITEM 121 I3 — the paper wears the instrument, so the change is
+               visible ON THE PAGE (the caret sleeps) and not only in the
+               switch. Undefined outside Free Write, which keeps the attribute
+               off Draft's and Revise's paper entirely. */
+            instrument={mode === 'journal' ? instrument : undefined}
             framed
             firstRunGateActive={gateActive}
           >
