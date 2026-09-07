@@ -289,12 +289,30 @@ either way.
 **CROSS-LANE:** where the section sits among Draft's existing zones is **item 83's
 layout call**, not this brief's. Coordinate with MENU before mounting in Draft.
 
-**On the analog law:** cited because Fable cited it. **This desk could not locate that
-law's text on disk under that name and therefore does not paraphrase it.** Its on-disk
-consonance is RV2's own sentence — *Free Write produces, Draft marks, Revise dresses* —
-and Free Write's analog instrument set (ink, typewriter, forward-lock). The builder
-should cite the law by its own words once located; until then the exclusion rests on
-Nick's ruling and RV2.
+**THE ANALOG LAW — LOCATED, AND CITED BY ITS OWN WORDS.** Standing design law (Nick,
+verbatim, 2026-09-06), recorded in the ledger's laws band at `9188979` beside the mode
+sentence it completes — *"Free Write produces, Draft marks, Revise dresses"*:
+
+> The theme that should define everything about Free Write mode is that it is analog: a typewriter for text and a journal page/sketch pad for drawing or notetaking.
+
+**Every Free Write chrome decision answers to this law.** It explains, retroactively, the
+rules already standing — **forward-only**, **strike-not-delete**, **no paste-in**, and
+**the deck**: none of them arbitrary, each one what a typewriter or a journal page simply
+does.
+
+**Ruled with it: the FONT control lives in DRAFT and REVISE, NOT Free Write** — *a
+typewriter does not offer you a typeface.* That is the reason behind Amendment 1's
+exclusion, and it is a reason rather than a fiat: Free Write is not missing the control,
+it is a machine that never had one.
+
+**The amendment's exact reach, in the law's own terms: the section's PLACEMENT clause
+AMENDS; its SUBSTANCE does not.** RV1's page-level scope, RV2's wall, RV4's live preview
+and §4's persistence idiom are all untouched — only where the section mounts changed.
+
+*(This replaces the caveat first written here, which recorded that the desk could not
+locate the law's text on disk under that name. The caveat was true when written; the law
+has since been recorded in the laws band, and the citation above is read from it rather
+than from the relay.)*
 
 **AMENDMENT 2 — RV3 IS RULED. This settles §6.** Nick's ruling: the face control offers
 *"a few basic fonts plus the option for users to add their own system fonts."* The custom
