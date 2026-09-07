@@ -808,8 +808,16 @@ if (process.env.HARNESS_PARKED === '1') {
       forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
       captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
     })`);
-    pok('PARKED (was "S4 A2 (grandfather clause): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write...") — CD1 S2/S7: same truth, .wz-sliver-* selectors',
-      legacyRailClassRenameCheck.ink && legacyRailClassRenameCheck.forwardLock
+    // ITEM 121 I6 (R15), 2026-09-07 — this entry re-derives the CURRENT
+    // membership of Free Write’s drawer, and item 121 moved it: the old
+    // text-colour swatches leave with STYLING. A2’s grandfather clause is
+    // NOT what changed - a NULL-origin row still behaves exactly like every
+    // other page, which is the whole of A2, and the forward-lock and capture
+    // clauses are re-derived here unchanged to keep proving it.
+    // FOUND BY THE PARKED RUN ONLY: the unparked suite was 75/75 CLEAN with
+    // this already false. That is why the two settings are two gates.
+    pok('PARKED (was "S4 A2 (grandfather clause): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write...") — CD1 S2/S7: same truth, .wz-sliver-* selectors) — ITEM 121 I6 / R15 RE-SUPERSEDES: the zone headed "Ink" here was never ink (it coloured the TYPED TEXT), and it leaves with STYLING; the grandfather clause itself is untouched, so what a legacy row keeps is still exactly what every page keeps',
+      !legacyRailClassRenameCheck.ink && legacyRailClassRenameCheck.forwardLock
         && JSON.stringify(legacyRailClassRenameCheck.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
       JSON.stringify(legacyRailClassRenameCheck));
 

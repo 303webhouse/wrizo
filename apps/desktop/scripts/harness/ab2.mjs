@@ -797,9 +797,17 @@ if (process.env.HARNESS_PARKED === '1') {
     // (present regardless of origin); ink/capture items and structure stay
     // unchanged law. Live successor: this file's own unparked S1 block
     // (named "FX7 S2 (was ...)"), same fixture.
-    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)", then FX1-S3-superseded to "...forward lock present, format/structure still absent") — FX7 S2 re-supersedes: format is present too now (mode furniture); ink/capture items stay absent, structure stays absent (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)',
+    // ITEM 121 I6 (R15) RE-SUPERSEDES IT AGAIN, back the other way, 2026-09-07:
+    // the format zone LEAVES Free Write, because the analog law says a
+    // typewriter does not decorate. The chain above is kept whole rather than
+    // collapsed — this claim has now been moved by AB3, FX1 S3, FX7 S2 and
+    // R15, and the sequence is the record of what the surface was asked to be
+    // at each moment. What the check has ALWAYS claimed is unchanged: the rail
+    // carries exactly its ruled furniture and nothing else. Only the roster
+    // moved. Live successor: this file's own unparked S1 block.
+    pok('PARKED (was "AB3 S4: Free Write rail on a PROJECT-origin page shows none of the Journal furniture (ink/forward-lock/capture items absent); format/structure stay absent too (Free Write, not Draft)", then FX1-S3-superseded to "...forward lock present, format/structure still absent") — FX7 S2 re-supersedes: format is present too now (mode furniture); ink/capture items stay absent, structure stays absent (then CD1 S2/S7\'s class rename: .desk-toolrail-* -> .wz-sliver-*, same truth, mechanics only)) — ITEM 121 I6 / R15 RE-SUPERSEDES AGAIN: format LEAVES Free Write (the analog law: a typewriter does not decorate), ink/capture items and structure still absent',
       !freeWriteRailFull.ink && freeWriteRailFull.forwardLock && freeWriteRailFull.captureItems.length === 0
-        && freeWriteRailFull.format && !freeWriteRailFull.structure,
+        && !freeWriteRailFull.format && !freeWriteRailFull.structure,
       JSON.stringify(freeWriteRailFull));
 
     // ORIGINAL (AB2 S2): ok('S2: the rail toggle flips to off',
@@ -877,10 +885,13 @@ if (process.env.HARNESS_PARKED === '1') {
     // half too — format joins the forward lock as mode furniture (present
     // regardless of origin). Live successor: this file's own unparked S1
     // block (named "FX7 S2 (was ...)"), same fixture.
-    pok('PARKED (was "FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT...", then CD1-S2/S7-superseded to the .wz-sliver-* selector rename) — FX7 S2 re-supersedes: format is present too now (mode furniture); structure stays absent',
+    // ITEM 121 I6 (R15) RE-SUPERSEDES IT AGAIN, 2026-09-07: format LEAVES
+    // Free Write. Same reasoning as the sibling entry above; same unchanged
+    // underlying claim (exactly the ruled furniture, nothing else).
+    pok('PARKED (was "FX1 S3: Free Write rail on a PROJECT-origin page shows the forward lock PRESENT...", then CD1-S2/S7-superseded to the .wz-sliver-* selector rename) — FX7 S2 re-supersedes: format is present too now (mode furniture); structure stays absent) — ITEM 121 I6 / R15 RE-SUPERSEDES AGAIN: format LEAVES Free Write, forward lock stays, structure still absent',
       !freeWriteRailClassRenameCheck.ink && freeWriteRailClassRenameCheck.forwardLock
         && freeWriteRailClassRenameCheck.captureItems.length === 0
-        && freeWriteRailClassRenameCheck.format && !freeWriteRailClassRenameCheck.structure,
+        && !freeWriteRailClassRenameCheck.format && !freeWriteRailClassRenameCheck.structure,
       JSON.stringify(freeWriteRailClassRenameCheck));
 
     // ORIGINAL (S1/S3/S4): ok('S1/S3/S4: Draft rail shows Bold/Italic/
