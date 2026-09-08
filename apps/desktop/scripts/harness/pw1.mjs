@@ -518,6 +518,42 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
+  // S3 — THE TWO SIDES OF ONE FUNCTION. `pinPageToBoard` serves both a PAGE-side
+  // membership act and a BOARD-side arrangement act, and item 125 wants opposite
+  // answers from them: a membership declared from a page is not displayed (the
+  // writer chose no position), while a card asked for ON a board's own canvas is
+  // arrangement the writer authored and must appear where they asked.
+  //
+  // Asserted because it is a BUILDER'S JUDGMENT, not a line of the brief — the
+  // brief rules that new memberships are not displayed and does not enumerate
+  // the board-side doors. It is worth a check precisely because it could be
+  // overturned by a word, and then this check should fail loudly.
+  // ==========================================================================
+  {
+    await app.evalJs("location.hash = '#/page/pw1-absence-board'");
+    await waitOr(app, "!!document.querySelector('.board-canvas')", 'the board, for the board-side placement act');
+    await sleep(400);
+    const before = await app.evalJs("document.querySelectorAll('.board-box').length");
+    await app.evalJs("window.wrizoCreateJournalPage({ id: 'pw1-boardside-target', text: 'Placed from the board itself', origin: 'loose', projectId: null })");
+    await settle(app, "(() => JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => e.id === 'pw1-boardside-target'))()");
+    // The board-side seam, with the display intent the four board doors carry.
+    await app.evalJs("window.wrizoPinPageToBoard('pw1-boardside-target', 'pw1-absence-board', { display: true })");
+    await sleep(500);
+    await app.evalJs("location.hash = '#/'");
+    await sleep(200);
+    await app.evalJs("location.hash = '#/page/pw1-absence-board'");
+    await waitOr(app, "!!document.querySelector('.board-canvas')", 'the board again, after the board-side placement');
+    await sleep(500);
+    const shape = await app.evalJs(`(() => {
+      const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'pw1-absence-board');
+      const b = (e.boxes||[]).find(b => b.entryId === 'pw1-boardside-target');
+      return { onCanvas: b ? b.onCanvas : null, rendered: b ? !!document.querySelector('[data-box-id="' + b.id + '"]') : false, boxesNow: document.querySelectorAll('.board-box').length };
+    })()`);
+    ok('S3 (the two sides of one act): a page placed from the BOARD’s own side lands ON the canvas — arrangement the writer authored, on the surface they were looking at — while a membership declared from a PAGE stays undisplayed. Same function, opposite answers, because they are opposite acts',
+      shape.onCanvas === true && shape.rendered === true && shape.boxesNow > before, JSON.stringify({ ...shape, before }));
+  }
+
+  // ==========================================================================
   // S4(ii) — THE CHIP NAMES THE SURFACE ACTUALLY LEFT. A writer who reached a
   // page through the rail never stood on a board; the chip must not send them
   // somewhere they have never been.
@@ -691,13 +727,28 @@ console.log(JSON.stringify(checks, null, 2));
 //   ab4.mjs   3 instances /  3 names   (the membership line's wording; the two
 //                                       unpin checks, which now display the
 //                                       membership first)
+//   tu1.mjs   1 instance  /  1 name    (the Structure lens's membership line —
+//                                       the same word, one surface over)
+//   SUBTOTAL  4 instances /  4 names
 //
-//   TOTAL RETIRED  19 instances / 16 names
+//   TOTAL RETIRED  20 instances / 17 names
 //
-// The three ab4 additions were found by RUNNING the suite, not by reading it:
-// the unpin driver's bare `querySelector(...).dispatchEvent(...)` threw on a
-// card that item 125 no longer puts on the canvas, and aborted the file. That
-// is the driver law earning its keep on this lane's own diff.
+// AND ONE FILE THAT NEEDED NO PARK AT ALL, recorded because the distinction is
+// the whole point: `item9192.mjs`'s "the board RENDERS a card, not merely a row
+// in storage" went red, and it was RIGHT. Its journey is the board's own
+// "New page card" door — the writer standing on the canvas asking for a card
+// there — and this build had made that card invisible. The check was not
+// superseded; the BUILD was wrong, and the fix is in the product
+// (`pinPageToBoard`'s board-side/page-side split), not in the harness. A check
+// that goes red is not automatically a check to retire.
+//
+// FOUR OF THESE FIVE WERE FOUND BY RUNNING THE SUITE, NOT BY READING IT. The
+// S0's sweep grepped for the STRINGS this slice changed and so found ab4 alone;
+// what it missed were the two BEHAVIOURS it changed — that a fresh page-side
+// pin no longer renders, and that the membership line's word moved. tu1 and
+// item9192 assert those behaviours without ever naming the strings. The lesson,
+// left here because it will apply again: sweep for what the change DOES, not
+// for what it renames.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // Nothing parked in this file — see the note above for where PW1's sweep

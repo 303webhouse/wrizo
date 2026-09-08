@@ -30,7 +30,8 @@ export function ExistingPagePicker({ boardId, onClose }: { boardId: string; onCl
   ));
 
   const choose = (pageId: string) => {
-    pinPageToBoard(pageId, boardId);
+    // PW1 S3 — BOARD-SIDE ("Add an existing page", from the board's own sheet).
+    pinPageToBoard(pageId, boardId, { display: true });
     onClose();
   };
 

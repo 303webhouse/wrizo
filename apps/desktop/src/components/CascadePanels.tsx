@@ -334,7 +334,10 @@ function PlacePageOnBoard({ boardId }: { boardId: string }) {
     return b.createdAt.localeCompare(a.createdAt);
   });
 
-  const place = (pageId: string) => { pinPageToBoard(pageId, boardId); force(); };
+  // PW1 S3 — BOARD-SIDE ("Place page on board", R13.ii): the writer is on the
+  // board putting a page ON it, so it lands on the wall rather than becoming an
+  // invisible membership they would have to display a second time.
+  const place = (pageId: string) => { pinPageToBoard(pageId, boardId, { display: true }); force(); };
 
   return (
     <div className="wz-cascade-panel-body wz-place-page">

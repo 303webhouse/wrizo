@@ -1251,7 +1251,9 @@ export function BoardEditor({ id }: { id: string }) {
   // the alternatives (losing the card, or duplicating the placement rules).
   const onAddPageCard = () => {
     const page = createLooseHomePage();
-    const updated = pinPageToBoard(page.id, id);
+    // PW1 S3 — BOARD-SIDE: the writer pressed a door ON THIS CANVAS asking for
+    // a card here, so the card appears here. Arrangement they authored.
+    const updated = pinPageToBoard(page.id, id, { display: true });
     const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === page.id);
     if (pin) {
       const next = [...boxesRef.current, pin];

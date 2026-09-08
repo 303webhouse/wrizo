@@ -1049,7 +1049,28 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
 const BOARD_PIN_W = 0.28;
 const BOARD_PIN_H = 0.12;
 
-export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEntry | null {
+// PW1 S3 (item 125) — `display` splits the two acts that share this function.
+//
+// PAGE-SIDE (the default, `false`): the writer is standing on a PAGE and
+// declaring a membership — the Places checkbox, "Pin to a Board…". Membership
+// without display is the default there, exactly as item 125 rules, because the
+// writer has not chosen a position on that board's wall and the app must not
+// choose one for them.
+//
+// BOARD-SIDE (`display: true`): the writer is standing ON THE BOARD and putting
+// something on it — "New page card", "Place page on board", "Add an existing
+// page", or opening a new page from a board's own door. That IS arrangement the
+// writer authored, on the surface they are looking at, so withholding it would
+// make the card they just asked for VANISH. Item 125's own reason points this
+// way: the rule exists so a canvas never "arrives pre-furnished [with]
+// arrangement the writer did not author" — here they authored it.
+//
+// Named as a judgment call, not smuggled: the brief rules that new memberships
+// are not displayed, and does not enumerate the board-side doors. This split is
+// what keeps `item9192`'s own regression control true (a card that vanishes
+// from the board it was just made on is the symptom item 92 was about), and it
+// is a one-word change to overturn if Fable or Nick reads it otherwise.
+export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { display?: boolean }): JournalEntry | null {
   // FX6 S3 (a1, ab4-review's own advisory) — self-pin closed at THIS end
   // too (belt and suspenders alongside PinToBoardSheet.tsx's own leaf
   // exclusion): a board can never pin itself to itself, even via a direct
@@ -1076,7 +1097,7 @@ export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEn
   // nobody chose — the exact arrangement-the-writer-did-not-author the display
   // opt-in exists to prevent (A16; BD7). The x/y/z above still compute, so a
   // later `Display on Board` from the menu has a lawful default seat to take.
-  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId, onCanvas: false };
+  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId, onCanvas: opts?.display === true };
   saveJournalEntry({ ...board, boxes: [...existing, pin] });
   return getJournalEntry(boardEntryId);
 }
