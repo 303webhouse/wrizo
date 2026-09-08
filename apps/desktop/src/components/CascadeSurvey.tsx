@@ -112,6 +112,13 @@ function SurveyThumb({ item, onTravel, renderMenu, dragPayload }: { item: Survey
   const { t } = useDeskLexicon();
   const [menuOpen, setMenuOpen] = useState(false);
   const payload = dragPayload ? dragPayload(item) : null;
+  // PW1 S2/S3 — a row only wears a `⋯` if that `⋯` HAS something in it. The
+  // plan-board survey passes one `renderMenu` for the whole column, but only
+  // its membership rows have an act (Display/Hide); a card's would open empty.
+  // G3's own principle at the scale of a menu: absent, never a door onto
+  // nothing. Calling `renderMenu` here builds an ELEMENT, it does not render
+  // one, so no hook runs until the menu is actually opened.
+  const menuContent = renderMenu ? renderMenu(item) : null;
   return (
     <div className={`wz-cascade-thumb${item.current ? ' current' : ''}`}
       // PW1 S3 — right-click is the SECOND display act (Nick, Q4), and it is
@@ -119,7 +126,7 @@ function SurveyThumb({ item, onTravel, renderMenu, dragPayload }: { item: Survey
       // carries. Every act stays reachable by the keyboard and the unfamiliar
       // hand through that same `⋯`, which is the whole point of the twin law
       // (PW22) — a gesture may be a shortcut, never the only path.
-      onContextMenu={renderMenu ? (e) => { e.preventDefault(); setMenuOpen(true); } : undefined}
+      onContextMenu={menuContent ? (e) => { e.preventDefault(); setMenuOpen(true); } : undefined}
       draggable={payload ? true : undefined}
       onDragStart={payload ? (e) => { e.dataTransfer.setData(SURVEY_DRAG_TYPE, payload); e.dataTransfer.effectAllowed = 'move'; } : undefined}
     >
@@ -140,10 +147,10 @@ function SurveyThumb({ item, onTravel, renderMenu, dragPayload }: { item: Survey
           distinguishable to a reader and to a harness alike. */}
       {item.note && <div className="wz-cascade-thumb-note">{item.note}</div>}
       {item.current && <div className="wz-cascade-thumb-row"><span style={{ fontSize: 10, letterSpacing: 1, color: 'var(--accent-rest)' }}>{t('cascadeSurveyCurrent')}</span></div>}
-      {renderMenu && (
+      {menuContent && (
         <>
           <button type="button" className="wz-cascade-thumb-menu-btn" aria-label="More" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}>⋯</button>
-          {menuOpen && <div className="wz-cascade-thumb-menu">{renderMenu(item)}</div>}
+          {menuOpen && <div className="wz-cascade-thumb-menu">{menuContent}</div>}
         </>
       )}
     </div>

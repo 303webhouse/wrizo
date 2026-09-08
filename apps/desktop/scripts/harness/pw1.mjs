@@ -319,6 +319,15 @@ await withHarness(async (app) => {
       ok('S2 (Q14, RULED): cards read in THE BOARD\'S OWN ARRANGEMENT — y then x — against a fixture whose creation order is deliberately C,A,B. An order nobody chose is an order nobody can rely on',
         JSON.stringify(cardOrder) === JSON.stringify(['FIRST by arrangement', 'SECOND by arrangement', 'THIRD by arrangement']),
         JSON.stringify(survey.titles));
+      // G3 at the scale of a menu: only rows with an act wear a `⋯`.
+      const menuShape = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb')].map(t => ({
+        title: t.querySelector('.wz-cascade-thumb-title')?.textContent,
+        isMember: !!t.querySelector('.wz-cascade-thumb-note'),
+        hasMenu: !!t.querySelector('.wz-cascade-thumb-menu-btn'),
+      }))`);
+      ok('S2/S3 (G3 at menu scale): only rows that HAVE an act wear a `⋯` — the membership rows carry Display/Hide, and the board-owned cards, which have no display to toggle, carry no empty menu at all. Absent, never a door onto nothing',
+        Array.isArray(menuShape) && menuShape.length > 0 && menuShape.every((r) => r.hasMenu === r.isMember), JSON.stringify(menuShape));
+
       // Every second line in the survey is relation/state, never a count.
       const noteDigits = await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-note')].map(n => n.textContent)");
       ok('S2/PW10: no digit appears in any membership state line either — the no-count law holds across BOTH row populations',
