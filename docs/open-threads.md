@@ -2286,7 +2286,204 @@ HIGHLIGHT.**
   defect and not a builder's call — under the analog law it is a question about what a typewriter
   should do, which is why it goes to the founder rather than into a fix.
 
-Registry: next free **123**.
+## THE THREE SPACES — STANDING DESIGN CANON (Nick, VERBATIM, 2026-09-07)
+
+**Nick, in his own words (relayed by Fable, two messages, 2026-09-07):**
+
+> There are three spaces, let's call them: writing surfaces, containers, and displays. Surfaces are
+> where writing or drawing is created and revised (Pages, Cards, imported documents). Containers are
+> where surfaces and other containers are stored and organized (Boards, Drawers, Shelf, Journal,
+> Trash). Displays are the way that surfaces or containers get displayed (the two-hand menus, Board
+> presets, the way the Journal shows and organizes pages, Drawers are a essentially a list of Pages
+> and Boards that is displayed as a side menu instead of a desk-like surface, etc.).
+
+> Let's keep cards as board-owned pieces but let's create an open for Cards to be Transferrable to
+> other boards... it's fine to keep all cards linked to at least one Board. And Boards should be
+> thought of as containers, not pages. No writing or drawing is made on a board — it merely holds
+> cards/pages/imported docs and helps the user organize and visualize certain kinds of written or
+> drawn material.
+
+**EFFECTS, as ruled:**
+
+- **(1) ITEM 96 (the Places model) is ANSWERED by the three spaces.** Every design desk reads against
+  this canon from here. **The rail's job clarifies: CONTAINERS on the rail; a surface's own
+  connections shown ON THE SURFACE.**
+- **(2) STORAGE IS UNCHANGED — a board stays a page-kind row.** The **concept**, the **naming**, and
+  the **rail** treat it as a container. This is a conceptual ruling, not a migration: **zero schema.**
+- **FABLE'S ANNOTATIONS ON THE RECORD:** **Shelf and Trash are displays of a CONDITION** (loose;
+  deleted), **not places.** **The Plan-board pairing is a SURFACE OWNING A CONTAINER** and must be
+  named as such wherever it shows.
+- **(5) MIRRORED-HANDS CLARIFICATION: hands mount on boards** — **Desk = container tools**,
+  **Counsel = the contained surfaces.**
+
+**THREE RIDERS ON THE CANON (Fable, 2026-09-07):**
+
+- **BOARDS NEST. Nick's word: *"Boards can nest, too. Yeah."*** A board is a **RECURSIVE CONTAINER**.
+  See **item 128**.
+- **PAGE CARDS ON A BOARD ARE ASPECT-LOCKED — CONFIRMED.** **Resizable by SCALE, never stretched.**
+- **FREE WRITE STYLING IS GATED ON THE TYPEWRITER — CONFIRMED.** **B/I/U + FONT appear ONLY when
+  Typewriter is OFF.** **Typewriter ON = analog** (no styling, the typed face); **OFF = a plain page
+  with basic styling.**
+  - **A READING FOR THE BUILDER'S S0 — explicitly NOT a ruling (Fable):** Typewriter-off Free Write
+    is **free editing**, so it **likely shares Draft's editor and inherits its decoration path for
+    free** — which **DISSOLVES the "forward-only cannot decorate" wall rather than breaching it.**
+    **The S0 confirms or refutes this; it is not settled here.**
+
+## ITEM 123 — CARD TRANSFER (design + build, small) — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07), from Nick's words above.** Copy a card from one board to another.
+**COPY SEMANTICS: the original stays; there is NO SHARED IDENTITY — edits do not follow.** **Tags
+travel with the copy; THREADS DO NOT.** **Every card keeps >= 1 board.** Cluster **C7**.
+
+## ITEM 124 — THE BOARD HAS NO TEXT OF ITS OWN (fix-class) — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07).** Retire **the board's own text leg on the Tutor wire** — **BD4's census
+found it rides today.** Under the three-space canon a board is a container and holds no writing, so
+**the Counsel on a board reads the CONTAINED CARDS**, never a board-level text of its own.
+
+## ITEM 125 — PAGE<->BOARD MEMBERSHIP, DISTINCT FROM CANVAS DISPLAY — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07).** **Membership is not display.** Two display acts: **"Display on Board"
+(right-click)** and **drag-thumbnail-to-board**. **CLUSTER AMENDMENT that produced it: LINKING =
+MEMBERSHIP, and the pin-card is a DISPLAY of that membership** — the cluster pass's Q1 **flips to
+"distinct relation" by Nick's Q4 words**. (The nine answers are recorded verbatim at the PLAN desk's
+pass; **Q1 corrected as Fable's number, retired.**)
+
+**SCHEMA FLAG — the builder's S0 decides, and one branch STOPS.** Storage home is the S0's to
+establish: **zero schema expected inside the board's own blob; A COLUMN STOPS for Nick's word** under
+the standing schema law. **Not a builder's call.**
+
+## ITEM 126 — INK ACROSS MODES (item 121-B) — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07). Nick, VERBATIM:**
+
+> both text and ink should be editable and able to be overlapping in Free Write mode. Once the user
+> switches to Draft or Revise mode, INK no longer becomes directly editable but can be moved around
+> if the User double clicks on it. Text is not movable — only editable by standard in-line word
+> processing led by a cursor.
+
+**RULED FROM IT:** the **ink stratum RENDERS IN EVERY MODE** — it is **the page's ink**, not Free
+Write's decoration. **Editable in Free Write. Locked-but-MOVABLE on double-click in Draft/Revise.**
+**Text is never movable, in any mode.**
+
+## ITEM 127 — THE TYPED FACE, AND THE FREE WRITE MENU ROSTER — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07).** Free Write **"both acts like a typewriter and looks typed"** (Nick) —
+**a typewriter FACE for Free Write's text, PER-THEME** (Plateau's default a monospace typewriter);
+**the theme arc supplies the faces.** **THE TYPED FACE APPLIES TO TYPEWRITER *ON* ONLY; with
+Typewriter OFF the page uses its own chosen face.**
+
+**FREE WRITE MENU ROSTER, ruled (final form, after Nick's confirm):**
+**Typewriter on/off · when OFF, B/I/U + FONT · INK — nothing else.**
+
+**THE FONT QUESTION — RAISED AS A CONFLICT, RESOLVED BY NICK THE SAME DAY.** Chat 1 refused to record
+the roster's first form as *"ruled"* because it placed **FONT inside Free Write** against a **standing
+law** carrying Nick's own reason. **Nick's confirm (2026-09-07): B/I/U + FONT in Free Write "only
+when Typewriter is OFF" — "yes".** **The analog law's FONT clause is NOT REVERSED; it is SCOPED**, and
+is **parked in the immutability form beside the law itself** (see the band). **The resolution is the
+point: the conflict was surfaced, not smoothed over, and the founder settled it in one relay.**
+
+## ITEM 128 — NESTED BOARDS — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07), on Nick's word: *"Boards can nest, too. Yeah."*** **A board is a
+RECURSIVE CONTAINER.** **The board-card kind on a parent board; DOUBLE-CLICK TRAVELS IN;** membership
+**per item 125**. **The desk designs the journey.**
+
+## ITEM 121 — DESIGN CLOSES — 2026-09-07
+
+**CLOSED at design (Fable, 2026-09-07): Nick approved MOCKUP B.** **R15 recorded as the desk stated
+it** — **the switch in the band; ink options in the drawer, INK-only reveal; the stratum over text,
+sheet-anchored; the J-series ported whole.**
+
+**THREE OPENS recorded:** **the eraser's tip binding** (default: as the Journal built it);
+**typewriter as behavior or also face** (Nick's word — **answered by item 127**); **the S-Pen barrel-
+button flip** (hardware-reserved, noted).
+
+**THE INK OFFER IS QUEUED, NOT MERGED:** `item121-ink @ cd325ab`, **75/75 both settings**, **zero
+schema by measurement** (`strokes` is an **existing jsonb column**). **Merges after the post-walk
+ship resolves; Fable's review at its merge.**
+
+**THE TWO SCHEMA FLAGS, RESTATED AS STANDING (Fable, 2026-09-07).** **Item 125's membership home** and
+**item 121's per-stroke tip/nib/ink**: **zero schema expected inside the EXISTING blobs; A COLUMN
+STOPS for Nick's word; NEITHER is built through on a builder's judgment.**
+
+## THE BM1 S2 RED, THE PROBE, AND THE (B) VERDICT — 2026-09-07 (chat 1, deploy halt)
+
+**THE RED.** The post-walk package's **parked** leg at `6d7cdec` returned **NOT CLEAN**: `bm1.mjs`,
+**1/36** — *"S2 orphan: a paired board is off the Shelf; deleting its page orphans it onto the Shelf,
+nothing cascades"*, detail **`before=false after=false paired=false`**. **The DEFAULT leg passed the
+same check at the IDENTICAL tree and bundle**, so the fault was **non-deterministic at that tree.**
+**THE SHIP HALTED. The word never covers a red.**
+
+**THE PACKAGE WAS EXONERATED BY MEASUREMENT, NOT ARGUMENT.** The three files carrying `shelf()` /
+`isPaired` / `planBoardId` — `persistence.ts`, `PageEditor.tsx`, `types/index.ts` — are **untouched
+since the last live SHA `10c2d0f`**, and **`bm1.mjs` itself was unchanged** since then.
+
+**THE PROBE ASKED A DIFFERENT QUESTION — this is the method, and it is the point.** Re-running the
+fixture hoping for green is **shopping for an answer**; the probe instead asked **"does the
+`bm1-oboard` ROW SURVIVE?"**, which **discriminates** the two candidate causes: **(A) a CASCADE** (the
+board deleted with its page — a data-loss defect that would outrank every queue) versus **(B) a
+derivation RACE** (the board alive, the read too early).
+
+**VERDICT: (B).** The row survives — **`deletedAt: null`**, `planBoardId` gone from both rows,
+**`shelf() = ["bm1-oboard"]`**, and **only the page carries a `deletedAt`**. **NOTHING CASCADED; the
+product is correct.** The probe **did not reproduce the red at all** (the immediate read returned
+`true`, settled at the first 200ms poll) — **itself the signature of a race rather than a defect.**
+
+**THE CURE — and why it is deliberately NARROW.** `bm1.mjs` gains a bounded **`settle()`** poll that
+**RETURNS the value rather than throwing**, so a genuine failure **still records a check that names
+itself** (the band's **drivers-never-assume-existence** law). **The assertion's claim is
+byte-identical — only the read TIMING changed — so NO PARK IS OWED.** It was **not** sprayed across
+the green checks: **`settle()` waits FOR TRUE, so applying it broadly would convert "eventually true"
+into a pass and could MASK A SLOW REGRESSION.** **Siblings of the same class are left alone and
+REPORTED, not silently hardened** (the derived reads after the line-105 reload; nearest candidate the
+`journal().includes` check).
+
+**BAND — A GREEN RE-RUN IS NOT A DIAGNOSIS.** A red is cleared by **an explanation that names the
+mechanism**, never by a second measurement that happens to pass. When a check fails in one setting
+and passes in another **at an identical tree and bundle**, the discriminator is **a different
+question asked of the same state**, not the same question asked again.
+
+## THE VOID, AND THE SHARED-CHECKOUT COLLISION — 2026-09-07 (chat 1)
+
+**The re-stamped PARKED leg at `0bd5ef4` came back VOID — aborted mid-run at `fx7.mjs`**, stamped
+**`tree=0bd5ef4+3dirty`**. **VOID is not a red and not a pass: it is NO VERDICT**, and **NOVERDICT is
+never a pass.** Two contaminants landed at once:
+
+- **CONTENTION (lawful, S4).** A foreign lane — **owner node PID `50824`** — started **five harness
+  browsers** mid-run. The reaper **refused to measure under contention** and voided rather than
+  report a partly-trustworthy result: *"a sweep cannot be half-clean."* **A live lane's run outranks
+  everything; nothing was killed.**
+- **A TREE WRITE DURING A STAMPED PAIR (item 110's mechanism again).** The **PLAN desk wrote into the
+  shared primary checkout while the pair was running** — two tracked files modified, one new file —
+  which is exactly what the **standing law** forbids, and why the second stamp read `+3dirty`.
+
+**RECORDED CONSEQUENCE — THE RECORDS HOLD HAS A COST, AND IT CAME DUE HERE.** Chat 1 had been holding
+every queued record until after the stamp (a tree write between the legs marks `+Ndirty`). The PLAN
+desk then **searched the ledger for the three-space canon, could not find it — because it was being
+held — and said so in its own addendum**, producing a design pass **conditional on a text it could
+not read.** **RULED (chat 1, owning it): when a re-stamp is required anyway, the hold is released
+FIRST and the records go in, because the same re-stamp covers them at no extra cost. A hold that
+blocks another desk's work is only justified while it is actually buying a stamp.**
+
+## ITEM 110 — COUNT +1 (the menus downloads) — 2026-09-07
+
+**Five untracked docs** landed in the primary checkout's `docs/menus/` (Nick's downloads from the
+MENU desk: the Ink pass, its three mockups, `item121-ink-build-brief.md`) **during an in-flight
+deploy.** **Same mechanism as every prior item-110 stray: bytes arriving in the shared staging
+checkout by a route that is not a merge.** Fable **enumerated and authorized** them for
+tree-clean-at-upload; **chat 1 instead RECONCILED them away before the upload** — each was
+**blob-identical (md5) to what CC-MENU landed at `2b8e5b4`**, so they were **duplicates**, deleted,
+and local `main` fast-forwarded so the same bytes ride **TRACKED**. **The tree went BARE rather than
+ENUMERATED — strictly better under the clean-tree law.**
+
+**A SECOND DOOR, NAMED: `2b8e5b4` WAS PUSHED STRAIGHT TO `main` BY CC-MENU.** **Fable's standing
+restatement, on the record: CC lanes push their BRANCHES; merges to `main` are chat 1's, EVEN FOR
+DOCS — and `main` MUST NOT MOVE UNDER A DEPLOY.** It was harmless **only** because it was **docs-only
+and a true fast-forward**, both of which chat 1 **verified before continuing, not after** (`apps/`
+untouched; `6d7cdec` an ancestor). **The verification is the reason it is a note and not an
+incident.**
+Registry: next free **129**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -12879,6 +13076,18 @@ fixture that no longer exists.
   typeface). **CONSEQUENCE FOR 112-C:** the Type section mounts in **BOTH Draft's and Revise's Desk
   drawers — ONE COMPONENT, TWO MOUNTINGS**, page-level as RV1 governs. **The section's PLACEMENT clause
   AMENDS; its SUBSTANCE does not.**
+  - **PARKED — SUPERSEDED (SCOPED, NOT REVERSED) — 2026-09-07, on Nick's confirm.** The FONT clause
+    above is **preserved verbatim and NOT edited**; its successor stands beside it.
+    - **PREDECESSOR, verbatim (2026-09-06):** *"the FONT control lives in DRAFT and REVISE, NOT Free
+      Write (a typewriter does not offer you a typeface)."*
+    - **SUCCESSOR (2026-09-07):** *"FONT lives in Draft and Revise, and in Free Write ONLY when
+      Typewriter is OFF — a typewriter does not offer you a typeface; a plain page does."*
+    - **NICK'S CONFIRM, the words that settled it:** B/I/U + FONT in Free Write **"only when
+      Typewriter is OFF"** — **"yes"**.
+    - **HOW IT AROSE:** item 127's roster first reached the desk placing FONT inside Free Write.
+      **Chat 1 refused to record it as "ruled" against a standing law and surfaced the contradiction
+      instead of reconciling it silently**; Nick settled it in one relay. **The law was never edited
+      in place, and the successor did not pretend the predecessor had not been said.** See item 127.
 - **THE PARKED RUN SEES WHAT THE UNPARKED RUN CANNOT — canon (2026-09-06).** **Evidence: ab2's
   GENERATION-4 park** — Nick's **outdent ruling** superseded the **ruled-eleven roster**, and the park
   carries **generation 3 quoted verbatim INSIDE generation 4**, successors named (the immutability law

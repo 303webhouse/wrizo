@@ -8,9 +8,29 @@
   THE PAGE/PLAN WORKFLOW ARC · JOURNEY A · "the return trip"
   PLAN desk · 2026-09-07 · candidates only, nothing locks.
 
-  Eight STEPS, each one a real screen at a real width. Every step names the
+  Nine STEPS, each one a real screen at a real width. Every step names the
   action the writer takes and carries a running press count. Renders the
   candidates PW1-PW7 and PW10 from pw-pass-page-plan-workflow.md.
+
+  STEP 9 ADDED 2026-09-07 — CARD TRANSFER, per Nick's three-space canon
+  (item 123: Boards are containers; cards are board-owned but copyable
+  across boards). See pw-addendum-three-space-canon.md §4. The thumb markup
+  was restructured to the survey's OWN built shape (a div, a title button,
+  and the wz-cascade-thumb-menu-btn "..." disclosure) so the transfer tray
+  rides the mechanism that already ships rather than a new one.
+
+  AMENDED 2026-09-07 (second relay) — Nick's nine answers; see
+  pw-rulings-fold.md. The prior render is readable at its landed SHA
+  (1edeec3). What changed here:
+  - Q2: the zone heading is now BOARDS CONNECTED.
+  - Q3/Q4: the side menu carries thumbnails AND TITLES, in two sections —
+    Cards, then Pages linked to this board beneath them.
+  - Q4/PW20: MEMBERSHIP IS NOT DISPLAY. Linked pages are members; only an
+    explicitly displayed one is on the canvas. Each row says which it is.
+  - Q4/PW22: the "Open the board ->" door row RETIRES — the board
+    thumbnail's own double-click travels, menu twin in the "...".
+  - Q1: the three-action THRESHOLD is retired. Counts are still reported
+    on every step; they are evidence now, not a gate.
 
   Geometry is real: rail 84px (--strip-width as measured on main), cascade
   panel 300px FLUSH on the rail (R10.i — zero gap, asserted by the readout),
@@ -151,16 +171,47 @@
          border:1px solid var(--accent-door);color:var(--text-mid);font-family:inherit;font-size:11.5px;
          padding:8px 11px;margin-bottom:9px;cursor:pointer}
   .sdoor:hover{color:var(--text-hi);border-color:var(--accent-rest)}
-  .thumb{display:block;width:100%;text-align:left;background:none;border:1px solid var(--line);
-         font-family:inherit;padding:9px 11px;margin-bottom:7px;cursor:pointer}
+  /* the thumb's built shape: a div, a title button, and the ⋯ per-row quiet
+     disclosure the survey already ships (BoardRowMenu's own pattern) */
+  .thumb{position:relative;border:1px solid var(--line);padding:9px 11px;margin-bottom:7px}
+  .tt{display:block;width:100%;text-align:left;background:none;border:0;padding:0;
+      font-family:inherit;cursor:pointer}
   .thumb .k{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-            color:var(--text-low);margin-bottom:4px}
+            color:var(--text-low);margin-bottom:4px;padding-right:16px}
   .thumb .t{display:block;font-family:var(--prose);font-size:14px;line-height:1.4;color:var(--text-mid)}
   .thumb:hover{border-color:var(--text-low)}.thumb:hover .t{color:var(--text-hi)}
-  .thumb:active .t{color:var(--brass)}
+  .tt:active .t{color:var(--brass)}
   .thumb.cur{border-color:var(--accent-rest)}
   .thumb.cur .k{color:var(--accent-rest)}
   .thumb .was{float:right;font-size:9px;letter-spacing:.1em;color:var(--accent-rest);text-transform:none}
+  /* PW17 — a copy declares its lineage in PW10's own one-line slot */
+  .lin{display:block;font-size:9.5px;color:var(--text-low);letter-spacing:.03em;margin-top:5px;font-style:italic}
+  /* the ⋯ disclosure + its tray (wz-cascade-thumb-menu-btn / -menu, as built) */
+  .xbtn{position:absolute;right:5px;top:4px;background:none;border:0;color:var(--text-low);
+        font:inherit;font-size:13px;line-height:1;cursor:pointer;padding:2px 3px}
+  .xbtn:hover{color:var(--text-hi)}
+  .xmenu{display:none;flex-direction:column;gap:2px;margin-top:7px;padding-top:7px;
+         border-top:1px solid var(--line)}
+  .stage[data-xfer="1"] #thNed .xmenu{display:flex}
+  .stage[data-xfer="1"] #thNed{border-color:var(--accent-rest)}
+  .xhead{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);padding:1px 0 3px}
+  .xrow{display:flex;align-items:baseline;justify-content:space-between;gap:8px;background:none;
+        border:0;text-align:left;font-family:inherit;font-size:11.5px;color:var(--text-mid);
+        padding:5px 2px;cursor:pointer}
+  .xrow:hover{color:var(--text-hi);background:#241305}
+  .xrow .xm{font-size:9.5px;color:var(--text-low);white-space:nowrap}
+  .xnote{font-size:9.5px;color:var(--text-low);line-height:1.45;padding:5px 2px 1px}
+  /* Q3/Q4 — the side menu's two sections: cards, then linked pages with titles */
+  .sect{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);
+        padding:4px 2px 7px;margin-top:4px}
+  .pgt{display:block;font-size:12.5px;color:var(--text-mid);letter-spacing:.01em}
+  .thumb.pg:hover .pgt{color:var(--text-hi)}
+  /* PW21 (reading a) — a page-card keeps the PAGE's proportions and is not resizable;
+     shape, not colour, teaches the kind. Rendered here at the list's own scale. */
+  .thumb.pg{display:flex;align-items:flex-start;gap:9px}
+  .thumb.pg:before{content:'';flex:0 0 auto;width:19px;height:25px;background:var(--paper);
+                   opacity:.82;margin-top:1px}
+  .thumb.pg .tt{flex:1;min-width:0}
 
   /* ---- the card popup: the SAME popup the board uses (item 117) ---- */
   .pop{position:absolute;inset:0;z-index:12;display:none;place-items:center;background:rgba(12,5,0,.62)}
@@ -239,7 +290,7 @@
       <div class="cwrap"><aside class="cbody" aria-label="Plan">
         <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
         <div class="cscroll">
-          <span class="zhead">This page's boards</span>
+          <span class="zhead">Boards connected</span>
           <button class="brow" id="rowOwn"><span class="t">The coat on the train — plan</span><span class="m">its own plan board</span></button>
           <button class="brow" id="rowStark"><span class="t">Stark</span><span class="m">Novel</span></button>
           <button class="brow" id="rowWint"><span class="t">Winterfell timeline</span><span class="m">Research</span></button>
@@ -254,15 +305,50 @@
         <div class="shead"><button class="sback" aria-label="Back to the board list">‹</button>
           <span class="stitle">Stark</span></div>
         <div class="sscroll">
-          <button class="sdoor"><span>Open the board</span><span aria-hidden="true">→</span></button>
-          <button class="thumb" id="thNed"><span class="k">Card</span>
-            <span class="t">Ned's refusal is not stubbornness. He simply cannot see the shape of the room he is standing in.</span></button>
-          <button class="thumb" id="thCoat"><span class="k">From a page<span class="was" id="wasCoat"></span></span>
-            <span class="t">The coat on the train — she doesn't run; the leaving is already done.</span></button>
-          <button class="thumb"><span class="k">Card</span>
-            <span class="t">Winterfell — the crypt is colder than the yard, and everyone pretends not to notice.</span></button>
-          <button class="thumb" id="thCat"><span class="k">From a page</span>
-            <span class="t">Catelyn's letter — three drafts, none of them sent, all of them true.</span></button>
+          <div class="sect">Cards</div>
+
+          <!-- a FREE card: board-owned content. Carries the copy verb (PW16). -->
+          <div class="thumb" id="thNed">
+            <button class="tt"><span class="k">Card</span>
+              <span class="t">Ned's refusal is not stubbornness. He simply cannot see the shape of the room he is standing in.</span></button>
+            <button class="xbtn" id="xNed" aria-label="More" aria-expanded="false">⋯</button>
+            <div class="xmenu">
+              <div class="xhead">Copy to…</div>
+              <button class="xrow"><span>Winterfell timeline</span><span class="xm">Research</span></button>
+              <button class="xrow"><span>The coat on the train — plan</span><span class="xm">its own plan board</span></button>
+              <div class="xnote">A copy is a new card, owned by the board it lands on. It does not sync back.</div>
+            </div>
+          </div>
+
+          <!-- a copy that ARRIVED here: its lineage is stated (PW17) -->
+          <div class="thumb">
+            <button class="tt"><span class="k">Card</span>
+              <span class="t">Winterfell — the crypt is colder than the yard, and everyone pretends not to notice.</span>
+              <span class="lin">copied from Winterfell timeline</span></button>
+            <button class="xbtn" aria-label="More" aria-expanded="false">⋯</button>
+          </div>
+
+          <!-- Q4 — linked PAGES list BENEATH the cards, with page titles.
+               These are MEMBERSHIPS. None of them is on the canvas (PW20). -->
+          <div class="sect">Pages linked to this board</div>
+
+          <!-- a membership that IS displayed — one relation, two displays -->
+          <div class="thumb pg" id="thCoat">
+            <button class="tt"><span class="pgt">The coat on the train<span class="was" id="wasCoat"></span></span>
+              <span class="lin">member · shown on the board</span></button>
+            <button class="xbtn" aria-label="More" aria-expanded="false">⋯</button>
+          </div>
+
+          <div class="thumb pg" id="thCat">
+            <button class="tt"><span class="pgt">Catelyn's letter</span>
+              <span class="lin">member · not shown on the board</span></button>
+            <button class="xbtn" aria-label="More" aria-expanded="false">⋯</button>
+          </div>
+          <div class="thumb pg">
+            <button class="tt"><span class="pgt">Ned — the last ride</span>
+              <span class="lin">member · not shown on the board</span></button>
+            <button class="xbtn" aria-label="More" aria-expanded="false">⋯</button>
+          </div>
         </div>
       </aside></div>
 
@@ -305,7 +391,7 @@
 
     { act:'press <i>Stark</i>', out:2, back:0,
       surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:null,
-      cap:'<b>Step 3 · Stark’s cards.</b> The built survey, one pop-out deep — G4’s ceiling exactly, and the engine already ships (<code>buildSurvey</code>, back arrow, current mark, docking). <b>PW4</b> — the board’s own door is a <em>row of its own</em> in door dress, never a second act on a card row (PP4’s mis-click law). One press, not double-click: the rail’s grammar (<b>Q3</b>, departing from item 117 by name).' },
+      cap:'<b>Step 3 · Stark’s side menu — Nick’s Q3/Q4 as written.</b> <em>“One click to open a new scrolling side menu that displays thumbnails of all Cards and their titles”</em> — one press, ratified. Two sections: <b>Cards</b> (board-owned content), then <b>Pages linked to this board</b> beneath them, with page titles (Q4). <b>PW22</b> — the old <code>Open the board →</code> door row <b>retires</b>: the board thumbnail’s own <em>double-click</em> travels now, with a menu twin in the <code>⋯</code> so nothing is reachable only by a gesture. <b>PW20 in one glance:</b> every page here is a <em>member</em>; only one of them is <em>shown on the board</em>. <b>PW21</b> — the page marks keep a page’s proportions and never a card’s: shape teaches the kind, and it spends no colour.' },
 
     { act:'press the card <i>Ned’s refusal</i>', out:3, back:0,
       surface:'coat', panel:1, survey:1, popup:1, cat:'plan', row:'stark', cur:null, dim:1,
@@ -315,7 +401,7 @@
       surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:null,
       cap:'<b>Step 5 · back, and the caret never moved.</b> <b>3 out, 1 back.</b> The rail is still open on Stark, so the next card is one press away. This is the whole thesis: the cheapest surface switch is the one the writer does not have to make.' },
 
-    { act:'— same lap, other flavour: from step 3, press <i>From a page · Catelyn’s letter</i>', out:3, back:0,
+    { act:'— same lap, other flavour: from step 3, press the linked page <i>Catelyn’s letter</i>', out:3, back:0,
       surface:'catelyn', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:'coat',
       cap:'<b>Step 6 · a page-pin is travelled to, not opened.</b> The built distinction (a text card opens; a page-pin travels) becomes the rail’s grammar too — the verbs teach the kind. <b>PW6, the trail is the rail:</b> the cascade arrives still open, still on Stark, and the row the writer came <em>from</em> wears the survey’s own <code>current</code> mark. On <code>main</code> today a cascade travel leaves <em>no</em> way back at all.' },
 
@@ -325,7 +411,11 @@
 
     { act:'later that session — press <i>Plan</i>', out:1, back:0,
       surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:'coat',
-      cap:'<b>Step 8 · the panel opens where it was left.</b> <b>PW7</b> — per-page memory of the last board opened. Not a configured relationship: the machine declining to forget, restoring only what the writer themselves opened. Every visit after the first is <b>2 out, 1 back</b>. The ‹ in the survey head is always the way back to the list.' }
+      cap:'<b>Step 8 · the panel opens where it was left.</b> <b>PW7</b> — per-page memory of the last board opened. Not a configured relationship: the machine declining to forget, restoring only what the writer themselves opened. Every visit after the first is <b>2 out, 1 back</b>. The ‹ in the survey head is always the way back to the list.' },
+
+    { act:'card transfer — from step 3, press the card’s <i>⋯</i>, then <i>Copy to…</i>, then <i>Winterfell timeline</i>', out:3, back:0,
+      surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:null, xfer:1,
+      cap:'<b>Step 9 · moving content between containers — 3 presses, and no return trip is owed.</b> The writer never travelled, so there is nothing to come back from (PW5). The tray is the survey’s own built per-row disclosure — the <code>⋯</code> that already carries Move/Delete on <em>board</em> rows, one level down; PP4 is not breached, because a quiet disclosure is not a competing primary act. <b>The verbs teach the kind (CA1):</b> the free card carries <em>Copy to…</em>; the linked <em>pages</em> beneath carry no copy verb at all — a membership is not content, and “copying” one would just be a second membership, which Journey B makes with a checkbox. <b>Nick’s nesting overrule extends this unchanged:</b> a board-card is a membership too, so it carries no copy verb either. <b>PW16</b> — a copy is a new board-owned card and does not sync, and the tray says so in its own words rather than letting the writer assume. <b>PW17</b> — the third card shows the other side of it: an arrived copy states its lineage in PW10’s one-line slot. <b>COPY only:</b> Nick’s sentence says <em>copyable</em>; Move would transfer ownership, which is a different act in a canon built on ownership — <b>Q12</b>, not this desk’s to infer.' }
   ];
 
   var stage=document.getElementById('stage'), geom=document.getElementById('geom'),
@@ -337,7 +427,7 @@
       catPage=document.getElementById('catPage'), catPlan=document.getElementById('catPlan'),
       rowStark=document.getElementById('rowStark'), rowOwn=document.getElementById('rowOwn'),
       rowWint=document.getElementById('rowWint'), thCoat=document.getElementById('thCoat'),
-      wasCoat=document.getElementById('wasCoat'),
+      wasCoat=document.getElementById('wasCoat'), xNed=document.getElementById('xNed'),
       B1=document.getElementById('w1'), B2=document.getElementById('w2');
 
   var SIZES={a:[1366,768], b:[1680,1050]}, cur='a', scale=1, i=0;
@@ -350,7 +440,8 @@
   function render(){
     var s=STEPS[i];
     stage.dataset.panel=s.panel; stage.dataset.survey=s.survey;
-    stage.dataset.popup=s.popup; stage.dataset.dim=s.dim||0;
+    stage.dataset.popup=s.popup; stage.dataset.xfer=s.xfer||0;
+    xNed.setAttribute('aria-expanded', s.xfer ? 'true':'false');
 
     paper.innerHTML = s.surface==='coat' ? COAT : CATELYN;
     crumb.innerHTML = s.surface==='coat'

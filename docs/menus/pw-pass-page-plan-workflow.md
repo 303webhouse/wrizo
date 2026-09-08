@@ -2,6 +2,14 @@
 ### The arc Nick opened with Q1's answer: *"a new design arc opens with it: the
 ### PAGE/PLAN WORKFLOW arc — three mockups, DOUBLE PASS, under a MINIMUM-SETUP LAW."*
 
+> **⚠ AMENDED — SEE `pw-addendum-three-space-canon.md` (2026-09-07).** Nick ratified a
+> three-space canon (surfaces / containers / displays; Boards as containers; cards
+> board-owned but copyable across boards — item 123). **Nothing below is rewritten.**
+> The addendum re-reads this pass against it, adds candidates **PW15–PW18** and card
+> transfer as a journey, and records **one correction: §THE ARCHITECTS A9's
+> "edits sync both ways for free" is FALSIFIED AS A GENERAL CLAIM** by copyable cards —
+> left standing verbatim there, superseded by PW16 in the addendum.
+
 **STATUS: CANDIDATES ONLY — output to Nick for his word. Nothing locks.**
 C5 (the shelf) and C6 (find from Draft) wait on this arc by Nick's own ruling
 (open-threads, item 119 band, 2026-09-05). This pass is design only: no code,
