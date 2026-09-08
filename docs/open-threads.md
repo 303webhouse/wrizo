@@ -2528,7 +2528,26 @@ traversal must defend against forever.**
 
 **RULED (Fable, 2026-09-07): the board has its own READING ORDER.** Recorded here as the ruling; the
 PLAN desk's `pw-q14-q17-fold.md` carries the desk's working-out, **candidates only.**
-Registry: next free **129**.
+## ITEM 129 — BM1 S2's FIXTURE-STATE NON-DETERMINISM — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07). FIX-OWNED. PARK-THEN-FIX.** The `settle()` cure chat 1 applied at the
+deploy halt is **the PARK, not the fix**: it makes the check read the derivation instead of sampling
+it, but **the underlying fixture-state non-determinism is still there** and belongs to FIX.
+
+**ERRATA's item-99 offer HOLDS for the park + its re-stamp; it merges on that green.**
+
+## CANON — "A SENTENCE ABOUT A RUN IS NOT A RUN" (ERRATA's own catch, 2026-09-07)
+
+**The item-99 live-suite precondition's FIRST CUT matched shell wrappers that merely NAMED harness
+paths** — a command line mentioning `run-suite.mjs` is not a running suite. **It would have made the
+box read PERMANENTLY BUSY**, and a reaper that can never reap is **the worst guard failure there is:
+REPORTING A SAFETY IT IS NOT PROVIDING.** A guard that always says "unsafe" is indistinguishable from
+a guard that always says "safe" — both have stopped measuring.
+
+**MEASURING CAUGHT IT.** Not review, not reasoning about the regex: **running it against the real
+process table.** This is the same lesson the deploy halt taught from the other end — **a green re-run
+is not a diagnosis, and a plausible guard is not a working one. Both are settled by measurement.**
+Registry: next free **130**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -10881,8 +10900,15 @@ moment.
 
 ## THE POST-WALK PACKAGE DEPLOY MANIFEST — 2026-09-07 (chat 1, on Nick's standing ship word — Fable PASS)
 
-**LIVE: `4ba3670`.** **Previous live: `10c2d0f` · railway `de639860`, serving `index-CK6B8dF1.js`** —
-**that is the rollback ratchet**, measured at this deploy's start rather than remembered.
+**LIVE: `4ba3670` · railway `ba29d04d`** — deployment `ba29d04d-940a-4541-8d40-043051b68e5a`,
+service `writer-studio-app`, status **SUCCESS**, serving `index-DOYnMkS6.js`.
+**ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+*(Amendment, same day: the first cut of this manifest carried the git SHA and the container digest
+but NOT the railway build id — the ratchet's actual handle. Named here on Fable's catch. A rollback
+target you cannot address is not a rollback target.)*
+**PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `10c2d0f` · railway `de639860`, serving
+`index-CK6B8dF1.js`** — measured at this deploy's start rather than remembered.
 
 **WHAT SHIPPED — three things, named:**
 - **FIX's WINDOW OFFER** (`829fbc7`): **item 118 (c) — the RIGHT-EDGE hard stop**, the **UPPER-bound**
