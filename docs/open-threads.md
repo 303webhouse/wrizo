@@ -2528,7 +2528,50 @@ traversal must defend against forever.**
 
 **RULED (Fable, 2026-09-07): the board has its own READING ORDER.** Recorded here as the ruling; the
 PLAN desk's `pw-q14-q17-fold.md` carries the desk's working-out, **candidates only.**
-Registry: next free **129**.
+## ITEM 129 - bm1.mjs S2 IS NON-DETERMINISTIC (harness-class) - OPENS 2026-09-07
+
+**ACT 1 DONE, AND IT FOUND THE TICKET'S PREMISE TOO NARROW.** The park is in
+(`bm1.mjs` S2 orphan, KNOWN-NONDETERMINISTIC, original quoted verbatim, evidence beside it, a
+deterministic successor holding the coverage). **But it does NOT stop the coin flip, and the offer
+lane should not be told otherwise.**
+
+**WHAT WAS MEASURED HERE, not taken on trust.**
+- **The rate reproduces:** 2 fails in 4 full `bm1` runs (quiet box, `WS_NO_REAP=1`), against ERRATA's
+  5 in 10. Same order.
+- **The failing TERM is always the same:** `before=false after=false paired=false`. Only `after` is
+  ever wrong, and it is **still wrong after the 4000ms settle poll**. The board does not reach the
+  Shelf LATE - in those runs it never reaches it at all. **That rules out the read's race AND the
+  orphaning, and it is why the settle-poll repair already in the file is insufficient by
+  construction rather than by tuning.**
+- **ISOLATION CONTROL:** the identical flow from a genuinely fresh desk passed **3 of 3, with TWO
+  rows in the store**. The product orphans correctly; the fixture is the variable.
+
+**THEN THE PARK'S OWN VERIFICATION WIDENED THE TICKET.** Four post-park runs: three green, and one
+**red at 2/35 - on two DIFFERENT S2 checks**, neither of them the orphan:
+- `"S2 explicit pairing: board-side pair succeeds once, 1:1 refuses a second"` - detail empty
+- `"S2 unpair: the page loses its planBoardId key entirely"` - **detail `null`**
+
+`rawEntryStr` returns `null` only when the row is **absent from localStorage**. So in that run the
+seeded page was **GONE**. **The non-determinism is not "the orphan check flakes" - it is that bm1's
+SEEDED ROWS INTERMITTENTLY VANISH, and the orphan check is merely where it shows most often.**
+
+**THE MECHANISM IS ALREADY A RECORDED LAW OF THIS CODEBASE.** `bm1`'s `seedEntries` writes **raw
+`localStorage`** and reloads. The standing seeding law says seed through the seams
+(`window.wrizoCreateJournalPage` and friends), **never raw `localStorage`** - *"the cache, not the
+surface, is the hazard"*: the store reads an in-memory cache, and a flush of that cache can land
+**after** the raw write and clobber it. That is exactly the shape of a row that is present on one
+run and absent on the next, with no timing signature a settle poll can catch.
+
+**SO ACT 2'S S0 HAS ITS QUESTION SHARPENED BEFORE IT STARTS:** not *"what does S2 inherit from
+S0/S1"* alone, but **"which seeded rows survive to S2, and what flushes over them"** - with the
+repair almost certainly *seed through the seams* rather than *clear the fixture harder*. Naming it
+early because the two repairs look alike and only one of them holds.
+
+**STANDING:** the flake list stays EMPTY by law. This is a **TICKETED** non-determinism, not a
+tolerated one, and it is **not yet closed** - `bm1` can still go red on the pairing/unpair pair.
+Offers citing `bm1` should say so until act 2 lands.
+
+Registry: next free **130**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
