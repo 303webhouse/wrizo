@@ -2483,6 +2483,51 @@ DOCS — and `main` MUST NOT MOVE UNDER A DEPLOY.** It was harmless **only** bec
 and a true fast-forward**, both of which chat 1 **verified before continuing, not after** (`apps/`
 untouched; `6d7cdec` an ancestor). **The verification is the reason it is a note and not an
 incident.**
+## THE DEPLOY WINDOW — STANDING LAW (Fable, granted 2026-09-07)
+
+**From the moment a deploy's SUITE OF RECORD is launched until its STAMP LANDS:**
+- **NO LANE RUNS A HARNESS.** *"The reaper cannot sweep a live owner — the S4 law's other half is
+  RESTRAINT."*
+- **NOTHING IS WRITTEN INTO THE PRIMARY CHECKOUT BY ANY HAND — DOWNLOADS INCLUDED.**
+- **Chat 1 announces the window's OPEN and CLOSE through Nick, the only courier.**
+- **Docs arriving mid-window WAIT IN DOWNLOADS** and commit post-stamp under the enumeration habit.
+
+**WHY IT EXISTS, from the two attempts that died without it:** attempt 2's parked leg **VOIDED** when
+a foreign lane opened five harness browsers mid-run, and the same pair carried **`+3dirty`** because
+a design desk was writing into the deploy's staging tree. **A window that lets the box go quiet is
+what makes RESTRAINT AFFORDABLE** — without it, the pressure to sweep a live lane grows every time a
+stamp dies, and that pressure is exactly what the S4 law forbids yielding to.
+
+## ITEM 99 — THE ORPHAN REAPER: TWO AMENDMENTS — 2026-09-07 (ERRATA building)
+
+**The licence to reap now requires THREE facts, outermost and cheapest first:**
+1. **THE LIVE-SUITE PRECONDITION — no reap while ANY foreign `run-suite` process is alive.**
+2. **DEAD OWNER** (`ESRCH`; `EPERM` is alive; anything else is `unknown`, spared **and reported**).
+3. **THE AGE FLOOR — the browser must also be STALE.**
+
+**WHY EACH EXISTS, measured rather than argued:**
+- **The age floor guards against PID REUSE.** A dead owner's PID can be **recycled** by an unrelated
+  new process; a reaper trusting `ESRCH` alone would then sweep a **live stranger's** browsers on a
+  technicality. **Age makes the licence require two independent facts.**
+- **The live-suite precondition guards against a hazard THIS SESSION MEASURED.** During the 2026-09-07
+  ship, harness browsers were found whose parent PIDs (`54232`, `56932`) were **already dead while
+  chat 1's own suite was still running** — **browser trees outlive the per-harness child that spawned
+  them.** Under dead-owner-plus-age alone, those read as orphans, and a reaper would have swept the
+  browsers of a **RUNNING** lane. **The outermost gate is the cheapest to check and the one that
+  would have caused the worst harm.**
+
+## ITEM 128 — THE ANCESTOR-WALK INVARIANT (charter amendment) — 2026-09-07
+
+**The charter gains: AN ANCESTOR WALK AT EVERY WRITE.** A board is a **recursive container**, so
+without it, nesting A into B and later B into A admits a **CYCLE** — and every reader afterward
+(rendering, membership, the Counsel reading contained cards) either **loops forever or silently
+truncates.** **Checked at WRITE time, not read time: a cycle admitted once is a cycle every
+traversal must defend against forever.**
+
+## Q14 — RULED: THE BOARD'S OWN READING ORDER — 2026-09-07
+
+**RULED (Fable, 2026-09-07): the board has its own READING ORDER.** Recorded here as the ruling; the
+PLAN desk's `pw-q14-q17-fold.md` carries the desk's working-out, **candidates only.**
 Registry: next free **129**.
 
 ## NOW — blocks everything downstream
@@ -10834,6 +10879,69 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## THE POST-WALK PACKAGE DEPLOY MANIFEST — 2026-09-07 (chat 1, on Nick's standing ship word — Fable PASS)
+
+**LIVE: `4ba3670`.** **Previous live: `10c2d0f` · railway `de639860`, serving `index-CK6B8dF1.js`** —
+**that is the rollback ratchet**, measured at this deploy's start rather than remembered.
+
+**WHAT SHIPPED — three things, named:**
+- **FIX's WINDOW OFFER** (`829fbc7`): **item 118 (c) — the RIGHT-EDGE hard stop**, the **UPPER-bound**
+  clamp the bottom already had (the pre-existing `Math.max(0, ...)` is the LOWER bound and was never
+  the fix); **the OUTDENT PARTNER** + Indent's decrement via one shared `paragraphScope` helper; and
+  **UNDERLINE's renderer** (`00feda1`) in both decoration paths.
+- **ITEM 113** (`6daf087`): the Tutor's **decline/modeling block in `SYSTEM_PROMPT`**, Nick's four
+  paragraphs **byte-verbatim**, its **MIRROR restored and updated IN THE SAME COMMIT**, and
+  **`tutor-mirror.mjs` making the mirror law self-enforcing** after **43 silent commits of
+  divergence**. **SERVER-BEHAVIOUR, REVIEWED AND BLESSED. Zero schema.**
+- **RULED-THREE'S LEXICON CHANGE** (`ad76e42`, merged `e17dd6e`): the mode strip's Draft sub-label,
+  **`revise` becomes `mark`**.
+
+**SHA ENUMERATION: 40 commits `10c2d0f..4ba3670`.** **Product-bearing (touching `apps/*/src`): FOUR**
+— `00feda1`, `829fbc7`, `ad76e42`, `6daf087`. Everything else is **harness, records and docs.**
+
+**PRODUCT DELTA — 8 files, +195/-22:** `BoardEditor.tsx` (+31), `ModeSwitcher.tsx` (+25),
+`Sliver.tsx` (+14), `index.css` (+6), `deskLexicon.ts` (+3), `draftDecoration.ts` (+47),
+`draftFormat.ts` (+77), **`apps/server/src/tutor.ts` (+12/-2 — the ONLY server byte).**
+
+**SCHEMA: ZERO, by measurement** (no `*.sql`, no migrations, no server schema path in the range).
+
+**SUITE OF RECORD — BOTH SETTINGS, FRESH AT THE DEPLOY HEAD:**
+- **DEFAULT: 74/74 CLEAN** — `tree=4ba3670 bundle=index-DOYnMkS6.js/558457b`
+- **PARKED: 74/74 CLEAN** — `tree=4ba3670 bundle=index-DOYnMkS6.js/558457b`
+- **PARK AUDIT (count, not green): 62 files reporting parks, 158 parked checks** — **identical to the
+  pre-repair run**, so the fixture repair removed no park.
+- **THE ROSTER IS 74, NOT THE 72 IN THE REVIEW.** `hooks-order-ast.mjs` (`40aae87`) and `item109.mjs`
+  (`1bbf465`) entered **main-side** with the errata wave at `e17dd6e`, **after FIX cut `ef06835`**.
+  The review's `72/72 at tree=0bb9371` is a **PRE-MERGE** stamp on the offer's side of the union;
+  **this deploy-head pair is the first measurement of the merged whole.** Arithmetic, not drift.
+
+**TWO STAMP ATTEMPTS FAILED BEFORE THIS ONE, and both are on the record above:** a **RED**
+(`bm1.mjs` S2, diagnosed to a read race by a probe, cured narrowly) and a **VOID** (foreign browsers
+mid-run + a tree write during the pair). **Neither was cleared by re-running for green.**
+
+**TREE CLEAN AT UPLOAD: BARE** — `git status --porcelain` empty, **no enumerated strays at all.** The
+five MENU-desk downloads that had been authorized to ride were instead **reconciled away**
+(blob-identical to `2b8e5b4`, deleted, main fast-forwarded so the bytes ride tracked).
+
+**ITEM-98 GUARD (project AND tree):** `writer-studio` / `production` / `writer-studio-app`; toplevel
+`C:/Users/nickh/writer-studio`; **`HEAD == origin/main == 4ba3670`.** **tsc x2 exit 0** at the deploy
+head (`tsconfig.json` + `tsconfig.node.json`).
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**;
+Railway image **linux/amd64**, container digest
+`sha256:8fd1c7279694cae605dca32ffe993f90c53a4b6a8fe8e54f6d6cfe652cf2745a`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served bundle **`index-DOYnMkS6.js`**
+(was `index-CK6B8dF1.js`).
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
+- `index-DOYnMkS6.js` — served `ed45d933877e4443eedf2e9345935a7e` **==** stamped
+  `ed45d933877e4443eedf2e9345935a7e`
+- `index-Ggv_wk8Y.css` — served `b706338535fadb076a221a82a62a9629` **==** stamped
+  `b706338535fadb076a221a82a62a9629`
+
+**THE DEPLOY WINDOW WAS OPEN FOR THIS SHIP** (announced through Nick, the only courier) and **closed
+at the stamp.** It is the first ship under that law, and it is the reason attempt 3 survived.
 ## THE FLOOR (112-A) + ITEM 99 DEPLOY MANIFEST — 2026-09-05 (chat 1, on Nick's standing "ship the floor" — Fable PASS)
 
 **THE FLOOR — item 112-A: REVISE STANDS UP as a live surface (empty by design) — riding with item 99's
