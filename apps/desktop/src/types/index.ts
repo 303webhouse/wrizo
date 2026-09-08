@@ -442,6 +442,28 @@ export interface Box {
   // not a coordinate); costs nothing extra anywhere board-meta was already
   // filtered out of position-based computations.
   footerOn?: boolean;
+  // PW1 S3 (item 125) — MEMBERSHIP IS NOT DISPLAY. A 'page-pin' Box is the
+  // MEMBERSHIP RECORD; the card on the canvas is one DISPLAY of it. This flag
+  // gates the canvas and nothing else — `getBoardsPinning` reads membership by
+  // the pin's PRESENCE and never consults it, so a withheld card is still, in
+  // every list and every sentence, a member of the board.
+  //
+  // ABSENCE MEANS DISPLAYED — the build law, and the storage shape serves it
+  // rather than the reverse. Every board a writer has already arranged predates
+  // this field entirely, so `undefined` MUST read as "on the canvas": no
+  // backfill, no migration, and a first launch after this ships is byte-for-byte
+  // the arrangement they left. Only an explicit `false` withholds. New
+  // memberships write `false` EXPLICITLY (pinPageToBoard), because opting in to
+  // a position is the writer's act — the whole reason display is opt-in.
+  //
+  // The exact shape `footerOn` above already established (and canvasW/canvasH/
+  // systemKind/seq/laneId/parentId/lanes before it): an additive optional field
+  // inside the board's own `boxes` jsonb. S0 measured the round trip — sync.ts
+  // writes `JSON.stringify(e.boxes ?? null)` and reads `r.boxes ?? undefined`,
+  // a WHOLE-BLOB mapper with no per-field enumeration at either end — so this
+  // costs zero schema, zero migration, and zero server change. Approved as the
+  // storage home by Fable, on this S0's measurement (item 125).
+  onCanvas?: boolean;   // kind 'page-pin' — absent/true: on the canvas; false: member only
   // B1 S1 — A system Board is a REAL board page (pageType 'board'), created
   // find-or-create idempotently on first approach, marked by a new optional
   // field on the existing 'board-meta' element in its own boxes: systemKind:

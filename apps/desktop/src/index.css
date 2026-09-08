@@ -4204,6 +4204,53 @@ a:focus-visible,
 .wz-cascade-thumb-menu-item{ background:none; border:0; color:var(--text-mid); text-align:left;
   font-family:var(--font-ui); font-size:12px; cursor:pointer; padding:4px 6px; }
 .wz-cascade-thumb-menu-item:hover{ color:var(--text-hi); }
+
+/* ===== PW1 — BOARDS CONNECTED (the Page/Plan workflow, phase 1) ===========
+   S1: the Plan panel's connections zone. The heading reuses the engraved
+   register `.wz-cascade-panel-title` already establishes (10px/2px/uppercase/
+   olive) — the LEXICON carries Nick's sentence case ("Boards connected"), the
+   REGISTER carries the voice. One accent site per menu, and this zone is it
+   (G5). No new motion anywhere in this block: the panel's own 180ms collapse
+   and the survey's slide are the built engine, and this arc adds none. */
+.wz-cascade-plan-zone{ display:flex; flex-direction:column; gap:2px; }
+.wz-cascade-plan-title{ padding:0 0 4px; }
+.wz-cascade-plan-rule{ height:1px; background:var(--ink-border); margin:8px 0 2px; }
+/* A board row: title over its relation/drawer line. `.wz-cascade-list-item`'s
+   own hover/rhythm, with a second line the list rows never needed. */
+.wz-cascade-boardrow{ position:relative; display:flex; align-items:flex-start; justify-content:space-between;
+  gap:6px; padding:6px 8px; border-radius:var(--radius-sm); }
+.wz-cascade-boardrow:hover{ background:var(--ink-800); }
+.wz-cascade-boardrow-open{ background:none; border:0; padding:0; cursor:pointer; text-align:left;
+  flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; font-family:var(--font-ui); }
+.wz-cascade-boardrow-title{ font-size:13px; color:var(--text-mid); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.wz-cascade-boardrow-open:hover .wz-cascade-boardrow-title{ color:var(--text-hi); }
+/* The second line NAMES THE RELATION OR THE DRAWER, never a count (PW10;
+   A14/A18; BD4's "listed, never counted"). Quiet by construction — text-low,
+   smaller — so it reads as provenance, not as a metric competing for the eye. */
+.wz-cascade-boardrow-relation{ font-size:11px; color:var(--text-low); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.wz-cascade-boardrow-menu-btn{ flex:0 0 auto; }
+/* S2 — the two sections (Cards; Pages linked to this board). Same engraved
+   register as every other heading in this chrome, one step quieter than the
+   panel's own so the survey does not compete with the panel it came from. */
+.wz-cascade-survey-section{ font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text-low); padding:8px 2px 2px; }
+.wz-cascade-survey-section:first-child{ padding-top:0; }
+/* S3 — the membership row's own state line. Deliberately NOT the excerpt's
+   class: content and provenance stay distinguishable to a reader and to a
+   harness alike. */
+.wz-cascade-thumb-note{ font-size:11px; color:var(--text-low); margin-top:2px; }
+/* S6 — the address line, in the shape the Board already proved. The framed
+   host right-aligns its nav row (`.desk-frame-host .sprint-nav`), so the crumb
+   claims the left with `margin-right:auto` exactly as BoardEditor's own framed
+   crumb does inline. One rule, three surfaces — reuse, never copy. */
+.desk-frame-host .sprint-crumb{ margin-right:auto; }
+/* The home label standing in for an absent chain ("Loose — belongs nowhere
+   yet"): the chain never renders empty, and what fills it reads as a state
+   rather than as a place-name it is not. */
+.wz-crumb-home{ font-style:italic; color:var(--text-low); }
+
 /* Destructive color lives ONLY inside the confirm (T4's own ruling —
    "Destructive color appears only inside the confirm, never at rest") —
    the Delete disclosure item itself stays --text-mid like its Move

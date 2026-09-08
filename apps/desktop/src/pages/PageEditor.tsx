@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
 import { describePageHome } from '../store/pageHome';
+import { LocationCrumb } from '../components/LocationCrumb';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
@@ -463,6 +464,15 @@ function PageEditorView({ id }: { id: string }) {
   // Framed-only, matching the invariant that legacy (<1100px) stays
   // byte-identical — only the `if (framed)` branch below reads this.
   const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
+  // PW1 S4(ii) — THE CHIP NAMES THE SURFACE ACTUALLY LEFT. `fromBoardTitle`
+  // has been carried on this very state object since BoardEditor's own travel
+  // (`state: { fromBoardId: id, fromBoardTitle: title }`) and was never read:
+  // the chip said "Back to the board" to everyone. A writer who reached this
+  // surface through the RAIL never stood on a board, and sending them somewhere
+  // they have never been is the destination-blind verb the Card pass named as
+  // the enemy (CA1). The title is a plain read; the fallback keeps every
+  // pre-existing caller's wording byte-identical.
+  const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
   const pageTitle = text.trim() ? firstLine(text).slice(0, 40) : 'Untitled';
 
   // PB1 — the durable-relationship doors (Fable's ruling 2). Pairing, porting
@@ -998,6 +1008,19 @@ function PageEditorView({ id }: { id: string }) {
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
         <FirstRunVeil active={gateActive}>
           <div className="chrome-fade chrome-top sprint-nav">
+            {/* PW1 S6 (Nick, Q7) — THE ADDRESS COMES BACK, in the shape the
+                Board already proved: crumb (marginRight:auto) · strip ·
+                actions. CD1 S1's own reasoning for removing it is quoted in
+                LocationCrumb.tsx and stands as reasoning; Nick's hardware
+                falsified the trade it bought, and Q7 returns it. A ruled trade
+                overtaken by evidence, not a defect.
+
+                This ALSO gives item 121's own I3 note its missing landmark:
+                the note below says R15 seats the INK switch "beside the
+                location line" and that "the framed band has none." It has one
+                again — and the switch keeps its ported position RELATIVE to
+                the strip, which is what actually ported. */}
+            <LocationCrumb entry={entry} project={project} drawer={drawer} title={pageTitle} />
             {/* ITEM 121 I3 — the TEXT | INK switch, in the band, immediately
                 before the mode strip. R15/mockup B seat it "beside the location
                 line"; the framed band has none (CD1 S1 retired the crumb, and
@@ -1022,7 +1045,7 @@ function PageEditorView({ id }: { id: string }) {
               )}
               {fromBoard && (
                 <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flush(); flushNow(); navigate(`/page/${fromBoard}`); }}>
-                  ‹ Back to the board
+                  {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
                 </button>
               )}
               {/* BM1 S3 — the PLAN → door, at the end of the page's bar (same

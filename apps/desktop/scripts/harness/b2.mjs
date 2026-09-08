@@ -1076,9 +1076,38 @@ if (process.env.HARNESS_PARKED === '1') {
     // && lexiconTermsNow.boardsTitle === 'Boards',
     // JSON.stringify(lexiconTermsNow));
     // ---------------------------------------------------------------------
-    // GENERATION 3 (item 83 M7/PP1+PP2+PP4) — the SAME no-silent-drift claim,
-    // against the verb copy Places speaks in now.
-    pok('PARKED, generation 3 (was B2.1 S6 re-assertion of the 9-way deskLexicon comparison) — item 83 M7/PP1+PP2+PP4: Places speaks in verbs, so newDrawer and boardsTitle carry their new copy; the other seven terms are unchanged and still pinned',
+    // ---- PARKED, GENERATION 3 — SUPERSEDED by PW1 S3/PW27, 2026-09-08 ------
+    // Quoted VERBATIM and no longer asserted. One conjunct flips:
+    // `boardsTitle` reads 'Also connected to…' rather than 'Pinned to boards…'.
+    //
+    // THE AUTHORITY, and the reason — Fable's ruling 4 on the PW1 lane, on item
+    // 125's own finding: MEMBERSHIP IS NOT DISPLAY. The pin-card is one DISPLAY
+    // of a membership, and a page can now be a member of a board without
+    // appearing on its canvas at all. So a heading over THIS checkbox — which
+    // makes MEMBERSHIP — could no longer say "pinned": it named a card that may
+    // not exist. ("Also appears on…" would have lied outright, for the same
+    // reason one step louder.) The new word matches the Plan panel's own
+    // "Boards connected" heading and the Page face's "Also connected to" —
+    // one connecting word, three faces.
+    //
+    // The other seven terms are untouched and are still pinned in generation 4
+    // below. The point of the check is that NOTHING drifts silently, so the
+    // seven matter as much as the one.
+    //
+    // pok('PARKED, generation 3 (was B2.1 S6 re-assertion of the 9-way deskLexicon comparison) — item 83 M7/PP1+PP2+PP4: Places speaks in verbs, so newDrawer and boardsTitle carry their new copy; the other seven terms are unchanged and still pinned',
+    //   lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
+    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
+    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
+    //     && lexiconTermsNow.addExisting === 'Existing page…'
+    //     && lexiconTermsNow.placesTitle === 'Places'
+    //     && lexiconTermsNow.placesLoose === 'Loose'
+    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
+    //     && lexiconTermsNow.boardsTitle === 'Pinned to boards…',
+    //   JSON.stringify(lexiconTermsNow));
+    // ------------------------------------------------------------------------
+    // GENERATION 4 (PW1 S3/PW27) — the SAME no-silent-drift claim, against the
+    // connecting word the membership ruling requires.
+    pok('PARKED, generation 4 (was the generation-3 re-assertion of the 9-way deskLexicon comparison) — PW1 S3/PW27: membership is not display, so boardsTitle reads "Also connected to…"; the other seven terms are unchanged and still pinned',
       lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
         && lexiconTermsNow.shelfOpen === 'Open the Shelf'
@@ -1086,7 +1115,7 @@ if (process.env.HARNESS_PARKED === '1') {
         && lexiconTermsNow.placesTitle === 'Places'
         && lexiconTermsNow.placesLoose === 'Loose'
         && lexiconTermsNow.newDrawer === 'File to a new drawer…'
-        && lexiconTermsNow.boardsTitle === 'Pinned to boards…',
+        && lexiconTermsNow.boardsTitle === 'Also connected to…',
       JSON.stringify(lexiconTermsNow));
 
     // CD4 S1 (2026-07-24) — the Shelf Board's own "Done" is REMOVED and replaced

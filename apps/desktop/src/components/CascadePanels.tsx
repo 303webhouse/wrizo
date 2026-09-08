@@ -5,9 +5,11 @@ import { firstLine } from '../store/entryText';
 import { useSectionFold } from '../store/sectionFold';
 import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
-  createQuickSprintProject, softDeleteEntry,
+  createQuickSprintProject, softDeleteEntry, getProject,
   getJournalEntry, getOrCreateSystemBoard, saveJournalEntry, pinPageToBoard,
+  getPlanBoardId, getBoardsPinning, setPinDisplayed,
 } from '../store/persistence';
+import { rememberLastPlanBoard, getLastPlanBoard } from '../store/planTrail';
 import { unbornHref } from '../store/unbornPage';
 import { setUserPageDefaults } from '../store/pageDefaults';
 import { PAGE_SETTINGS_FALLBACK, type PageSettings } from '../types';
@@ -62,14 +64,27 @@ function openShelfBoard(navigate: NavigateFunction): void {
 // any manual re-fetch.
 export type CascadeSurveyKind =
   | { category: 'journal' }
-  | { category: 'plan'; projectId: string }
-  // AB4 S1 — the CD2 erratum comes true: picking a board in the 'plan'
-  // survey (the board list) swaps this SAME column one layer deeper, to
-  // that board's own cards. A nested kind rather than a second piece of
-  // Cascade.tsx state — `survey` already generalizes to "whatever the
-  // writer is currently browsing," and reusing it means dock/undock/
-  // Escape/keystroke-dissolve all keep working with zero new plumbing.
-  | { category: 'plan-board'; projectId: string; boardId: string; boardTitle: string };
+  // AB4 S1 — the CD2 erratum comes true: picking a board swaps this SAME
+  // column one layer deeper, to that board's own cards. A nested kind rather
+  // than a second piece of Cascade.tsx state — `survey` already generalizes
+  // to "whatever the writer is currently browsing," and reusing it means
+  // dock/undock/Escape/keystroke-dissolve all keep working with zero new
+  // plumbing.
+  //
+  // PW1 S1/PW3 — THE `'plan'` VARIANT RETIRES WITH THE `Open…` LINK THAT WAS
+  // ITS ONLY DOOR. It surveyed `getBinderPages(projectId)` — the boards that
+  // merely LIVE IN THIS PAGE'S DRAWER — which is co-location, not connection,
+  // and is the wrong subject this whole slice exists to correct. The board
+  // list is now the PANEL itself (PW3: "the panel IS the list"), so a board
+  // row is pressed one layer higher up and this kind is reached directly.
+  // ORIGINAL, quoted so the retirement is legible rather than silent:
+  //   | { category: 'plan'; projectId: string }
+  // `projectId` retires from 'plan-board' with it — its ONLY reader was that
+  // branch's `onBack`, which now walks back to the panel (the list) instead of
+  // to a second survey. Dropping it is also what lets a LOOSE page open its
+  // own connected board: there is no project to name, and there never needed
+  // to be one.
+  | { category: 'plan-board'; boardId: string; boardTitle: string };
 // B2 S1/S3/S7 — 'shelf' and 'drawers' BOTH retire from this union: the
 // Shelf category's own panel is now a single quiet door (ShelfPanel,
 // mirroring Trash — no nested list to survey), and the Drawers panel (S7)
@@ -83,6 +98,15 @@ export interface CascadeContext {
   project: Project | null;
   navigate: NavigateFunction;
   openSurvey: (kind: CascadeSurveyKind) => void;
+  // PW1 S1/S5 — walk back from a survey to the PANEL, which is now the list
+  // (PW3). The survey's `‹` used to open a second survey; with the board list
+  // living one layer up there is nothing to open, only a layer to close.
+  closeSurvey: () => void;
+  // PW1 S4 — travel that KEEPS THE RAIL. Stages the cascade's current shape so
+  // the destination mounts with the same category and survey open, then
+  // navigates. Every travel originated from inside the cascade goes through
+  // here; ordinary navigation elsewhere is untouched.
+  travelFromCascade: (entry: JournalEntry) => void;
 }
 
 function itemTitle(entry: JournalEntry): string {
@@ -450,7 +474,122 @@ function boardTitle(entry: JournalEntry): string {
   return firstLine(entry.text).slice(0, 60);
 }
 
-function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
+// PW1 S1 — BOARDS CONNECTED. THE SUBJECT CHANGES, and that is the whole slice.
+// The panel used to list `getBinderPages(project.id)` — which containers live
+// inside this page's DRAWER — when the writer asked which containers hold THIS
+// PAGE. Co-location is not connection. The right set was already computed and
+// already rendered, as a SENTENCE, inside a drawer, where it could not be
+// pressed: `planBoardId` ∪ `getBoardsPinning`. Zero schema; both functions
+// built, local, and already called this same render.
+interface ConnectedBoard {
+  id: string;
+  title: string;
+  /** The second line: the RELATION or the DRAWER. Never a count (PW10; A14/A18; BD4). */
+  relation: string;
+  /** The page's own paired plan board — a SURFACE OWNING A CONTAINER (the three-space canon). */
+  own: boolean;
+}
+
+// PW1 S1 — the untitled plan board is titled FROM ITS PAGE. `getOrCreatePlanBoard`
+// mints `text: ''`, so a plan board is normally nameless; the pairing is 1:1, so
+// the page's own name is a TRUE name for it rather than a guess, and it spares
+// the writer a naming step the minimum-setup law forbids (PW10's clause).
+function planBoardTitleFor(board: JournalEntry, page: JournalEntry): string {
+  if (board.text.trim()) return boardTitle(board);
+  const pageTitle = firstLine(page.text).slice(0, 60) || 'Untitled';
+  return `${pageTitle} ${deskTerm('cascadePlanOwnSuffix')}`;
+}
+
+// The drawer a pinning board itself lives in — "which is also, quietly, half
+// the answer to 'where is it stored'" (PW10). A board with no drawer says so
+// honestly rather than borrowing a name it does not have.
+function drawerNameFor(board: JournalEntry): string {
+  if (!board.projectId) return deskTerm('cascadePlanNoDrawer');
+  return getProject(board.projectId)?.title || 'Untitled';
+}
+
+// PW1 S1 + Fable's ruling 2 — computed from the PAGE ALONE, deliberately
+// independent of `project`. A loose page can own a plan board (minted with
+// `projectId: null`) and can be pinned to boards; hiding its real connections
+// behind creation doors because it has no drawer yet would answer a question
+// the writer did not ask with doors they did not need.
+function connectedBoardsFor(page: JournalEntry): ConnectedBoard[] {
+  const rows: ConnectedBoard[] = [];
+  const seen = new Set<string>();
+  const planId = getPlanBoardId(page.id);
+  if (planId) {
+    // `getPlanBoardId` is a raw pointer read with no existence check — a board
+    // that was deleted (or soft-deleted; getJournalEntry excludes both) must
+    // NOT become a row onto nothing. G3, at the level of a single row.
+    const board = getJournalEntry(planId);
+    if (board) {
+      rows.push({ id: board.id, title: planBoardTitleFor(board, page), relation: deskTerm('cascadePlanRelationOwn'), own: true });
+      seen.add(board.id);
+    }
+  }
+  for (const pinned of getBoardsPinning(page.id)) {
+    if (seen.has(pinned.id)) continue; // ∪ — a page pinned to its OWN plan board is one row, named by the truer relation
+    seen.add(pinned.id);
+    const board = getJournalEntry(pinned.id);
+    if (!board) continue;
+    rows.push({ id: board.id, title: pinned.title, relation: drawerNameFor(board), own: false });
+  }
+  return rows;
+}
+
+// PW1 S5 — STICKINESS (Nick, Q6: YES). The Plan panel reopens on the board
+// whose contents were last open, PER PAGE. Not a configured relationship — the
+// machine declining to forget, restoring only what the writer THEMSELVES
+// opened. Second and later visits cost two presses instead of three.
+//
+// Resolved at the moment the category OPENS (Cascade.tsx's own toggle), which
+// is what makes it stick without fighting the writer: pressing the survey's `‹`
+// walks back to the list and STAYS there, because nothing re-resolves until the
+// panel is opened afresh. The `‹` is always the way back to the list.
+//
+// The remembered board is re-validated against the LIVE connection set every
+// time, so a board that was deleted, or unpinned from this page since, simply
+// does not restore — a stale id can never become a survey onto nothing (G3).
+export function resolveStickyPlanSurvey(page: JournalEntry): CascadeSurveyKind | null {
+  const lastId = getLastPlanBoard(page.id);
+  if (!lastId) return null;
+  const row = connectedBoardsFor(page).find((r) => r.id === lastId);
+  return row ? { category: 'plan-board', boardId: row.id, boardTitle: row.title } : null;
+}
+
+// PW1 S1/S2 — one board row. ONE ACT PER ROW (PP4): a press opens that board's
+// contents and does nothing else. Double-click TRAVELS to the board (Nick, Q4),
+// and — PW22, the twin law — that gesture is never the only path: `Open the
+// board` rides the same `⋯` the row already carries, so the keyboard and the
+// unfamiliar hand keep a way in. The preceding single click merely opens the
+// survey, which the travel then supersedes; nothing is lost either way.
+function BoardConnectedRow({ row, onOpenContents, onTravel }: { row: ConnectedBoard; onOpenContents: () => void; onTravel: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  return (
+    <div className="wz-cascade-boardrow" data-own={row.own ? 'true' : 'false'}>
+      <button
+        type="button"
+        className="wz-cascade-boardrow-open"
+        onClick={onOpenContents}
+        onDoubleClick={onTravel}
+        onContextMenu={(e) => { e.preventDefault(); setMenuOpen(true); }}
+      >
+        <span className="wz-cascade-boardrow-title">{row.title}</span>
+        <span className="wz-cascade-boardrow-relation">{row.relation}</span>
+      </button>
+      <button type="button" className="wz-cascade-thumb-menu-btn wz-cascade-boardrow-menu-btn" aria-label="More" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}>⋯</button>
+      {menuOpen && (
+        <div className="wz-cascade-thumb-menu">
+          {/* PW22's twin: the menu carries what the double-click does. */}
+          <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-open-board" onClick={() => { setMenuOpen(false); onTravel(); }}>{deskTerm('cascadeOpenBoard')}</button>
+          <BoardRowMenu id={row.id} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }: CascadeContext) {
   const { t } = useDeskLexicon();
 
   // CD2 build call (flag at review): a page with no project yet has no
@@ -461,6 +600,37 @@ function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
   // promotion path; "Open…" has nothing to survey yet, so it's simply
   // absent (not greyed — M1's own "no plan to project" silent-degrade law,
   // reused here for "no project to plan").
+  // PW1 S1 — the connections, computed BEFORE the no-project fork so both
+  // branches can render them (Fable's ruling 2). ABSENT, NEVER EMPTY (PW9;
+  // G3): no connections → the zone does not render at all. Not a zone
+  // containing "No boards yet." — nothing announces a capability the writer
+  // has not reached for; the zone arrives the moment they pin, because THEY
+  // pinned. `cascadePlanEmpty` retires from this path with it.
+  const rows = connectedBoardsFor(subject.entry);
+  const openContents = (row: ConnectedBoard) => {
+    // PW1 S5 — stickiness: remember what the writer THEMSELVES opened, so the
+    // second and every later visit costs two presses instead of three.
+    rememberLastPlanBoard(subject.entry.id, row.id);
+    openSurvey({ category: 'plan-board', boardId: row.id, boardTitle: row.title });
+  };
+  const travelToBoard = (row: ConnectedBoard) => {
+    const board = getJournalEntry(row.id);
+    if (board) travelFromCascade(board);
+  };
+  const zone = rows.length > 0 ? (
+    <div className="wz-cascade-plan-zone" role="group" aria-label={t('cascadePlanBoardsConnected')}>
+      {/* The engraved heading. Presentation uppercase rides the zone register
+          in CSS; the LEXICON term carries Nick's own sentence case (Q2). No
+          verb heading — here the nouns mean GO, and the writer's learned
+          grammar is already right (PW1; PP1 applied, opposite output). */}
+      <div className="wz-cascade-panel-title wz-cascade-plan-title">{t('cascadePlanBoardsConnected')}</div>
+      {rows.map((row) => (
+        <BoardConnectedRow key={row.id} row={row} onOpenContents={() => openContents(row)} onTravel={() => travelToBoard(row)} />
+      ))}
+      <div className="wz-cascade-plan-rule" role="separator" />
+    </div>
+  ) : null;
+
   if (!project) {
     const seedTitle = firstLine(subject.entry.text).slice(0, 60) || 'Untitled';
     const promote = () => createQuickSprintProject(subject.entry.text, seedTitle);
@@ -471,6 +641,12 @@ function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
     const plotStory = () => { const proj = promote(); navigate(`/project/${proj.id}/wizard`); };
     return (
       <div className="wz-cascade-panel-body">
+        {/* PW1, Fable's ruling 2 — a LOOSE page's real connections come FIRST,
+            above the creation doors. A page with no drawer can still own a plan
+            board (minted projectId: null) and can still be pinned; answering
+            "which boards is this page on" with "make a project first" was the
+            panel telling a writer to build what they had already built. */}
+        {zone}
         <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>
         <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
         <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
@@ -483,21 +659,39 @@ function PlanPanel({ subject, project, navigate, openSurvey }: CascadeContext) {
     );
   }
 
-  const boards = getBinderPages(project.id).filter((p) => p.pageType === 'board');
   // PB1 (item 71) — no row until the board has a box (see the door census).
   const createBoard = () => navigate(unbornHref({ kind: 'board', binderId: project.id }));
   const plotStory = () => navigate(`/project/${project.id}/wizard`);
 
+  // PW1 S1/PW3 — THE PANEL *IS* THE LIST, and "Open…" retires with the zone
+  // that replaces it. That footer link was the arc's most expensive press: it
+  // bought nothing, and it was the reason the geography read as absent. The
+  // creation doors move BELOW the connections under a rule — travel is the
+  // common act, creation the rare one, and the panel's order now says so.
+  //
+  // PARKED, quoted verbatim so the retirement is legible (A4). Its own set was
+  // the wrong subject; both it and the "No boards yet." empty state go:
+  //   const boards = getBinderPages(project.id).filter((p) => p.pageType === 'board');
+  //   <div className="wz-cascade-panel-footer">
+  //     <button type="button" className="wz-cascade-link" onClick={() => openSurvey({ category: 'plan', projectId: project.id })}>
+  //       {t('cascadePlanOpen')}
+  //     </button>
+  //     {boards.length === 0 && <div className="wz-cascade-empty">{t('cascadePlanEmpty')}</div>}
+  //   </div>
+  //
+  // PW1 S1, Fable's ruling 3 — THE `Open the drawer →` FOOT ROW IS ABSENT IN
+  // THIS SLICE, and this is where it would sit. Nick's Q17 word was that the
+  // row is COMPOSED, and it stands; what it opens does not exist yet. S0
+  // measured it: there is no drawer-board surface anywhere in src — no
+  // drawerBoardId, no drawer-board kind; `/drawers` is the drawers LIST page,
+  // not a drawer's own board. G3 binds: absent, never a door onto nothing. The
+  // row arrives in PW2 together with the surface it opens. Sequenced, not
+  // dropped.
   return (
     <div className="wz-cascade-panel-body">
+      {zone}
       <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
       <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
-      <div className="wz-cascade-panel-footer">
-        <button type="button" className="wz-cascade-link" onClick={() => openSurvey({ category: 'plan', projectId: project.id })}>
-          {t('cascadePlanOpen')}
-        </button>
-        {boards.length === 0 && <div className="wz-cascade-empty">{t('cascadePlanEmpty')}</div>}
-      </div>
     </div>
   );
 }
@@ -806,24 +1000,28 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     const items: SurveyItem[] = pages.map((e) => ({ id: e.id, title: itemTitle(e), excerpt: itemExcerpt(e), current: e.id === currentEntryId }));
     return { title: deskTerm('drawerPlaceJournal'), items, onTravel: (id) => { const e = pages.find((p) => p.id === id); if (e) ctx.navigate(routeForEntry(e)); } };
   }
-  if (kind.category === 'plan') {
-    // The board list (S3's own literal wording). AB4 S1 — the CD2 erratum
-    // comes true: picking a board no longer travels away, it swaps this
-    // SAME survey column to that board's own cards (one layer deeper) —
-    // see the 'plan-board' branch below. The board itself stays reachable
-    // one click further in (a non-pin card there opens it).
-    const boards = getBinderPages(kind.projectId).filter((p) => p.pageType === 'board').sort(byRecent);
-    const items: SurveyItem[] = boards.map((e) => ({ id: e.id, title: boardTitle(e) }));
-    return {
-      title: deskTerm('stripPlan'),
-      items,
-      onTravel: (id) => {
-        const b = boards.find((x) => x.id === id);
-        if (b) ctx.openSurvey({ category: 'plan-board', projectId: kind.projectId, boardId: id, boardTitle: boardTitle(b) });
-      },
-      renderMenu: (item) => <BoardRowMenu id={item.id} />,
-    };
-  }
+  // PW1 S1/PW3 — THE `'plan'` BRANCH RETIRES. It surveyed
+  // `getBinderPages(projectId)` — every board in this page's DRAWER — which is
+  // the wrong subject (co-location, not connection) and the exact defect this
+  // slice exists to correct. The board list is now the PANEL (PlanPanel's own
+  // "Boards connected" zone), so this layer is reached directly from a board
+  // row one layer up and nothing opens a board LIST survey any more. Its
+  // `renderMenu` moves with it: BoardRowMenu now rides the panel's board rows,
+  // where it gained `Open the board` as the double-click's twin (PW22).
+  // PARKED, quoted verbatim (A4) — the successor is PlanPanel above:
+  //   if (kind.category === 'plan') {
+  //     const boards = getBinderPages(kind.projectId).filter((p) => p.pageType === 'board').sort(byRecent);
+  //     const items: SurveyItem[] = boards.map((e) => ({ id: e.id, title: boardTitle(e) }));
+  //     return {
+  //       title: deskTerm('stripPlan'),
+  //       items,
+  //       onTravel: (id) => {
+  //         const b = boards.find((x) => x.id === id);
+  //         if (b) ctx.openSurvey({ category: 'plan-board', projectId: kind.projectId, boardId: id, boardTitle: boardTitle(b) });
+  //       },
+  //       renderMenu: (item) => <BoardRowMenu id={item.id} />,
+  //     };
+  //   }
   // 'plan-board' — one board's own cards (S1: "large thumbnails — title
   // plus a two-line excerpt... with a quiet back affordance to the board
   // list"). Connections are hairlines, not cards — filtered out here, the
@@ -832,21 +1030,95 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   // plain text/ink card travels to the board itself (nothing else to open),
   // so the board stays reachable from the survey exactly as the old
   // board-list click used to be, just one layer further in.
-  const boxes = (getJournalEntry(kind.boardId)?.boxes ?? []).filter((b) => b.kind !== 'connection');
-  const cardItems: SurveyItem[] = boxes.map((b) => boardCardItem(b, currentEntryId));
+  const allBoxes = (getJournalEntry(kind.boardId)?.boxes ?? []).filter((b) => b.kind !== 'connection' && b.kind !== 'board-meta');
+
+  // PW1 S2, Q14 — THE BOARD'S OWN READING ORDER. Sort by `y`, THEN `x`: the
+  // arrangement the writer authored, read the way a page is read. What shipped
+  // before was the boxes ARRAY's order — creation order — and Fable's words on
+  // it bind: "an order nobody chose is an order nobody can rely on." This rail
+  // is a FOURTH display of a container and may not contradict the other three.
+  const byArrangement = (a: Box, b: Box) => (a.y - b.y) || (a.x - b.x);
+
+  // PW1 S2, Q4 — TWO SECTIONS. The board's own Cards first (board-owned
+  // content), then the Pages linked to this board beneath them, with page
+  // titles. A page-pin is a MEMBERSHIP (item 125), which is why it reads under
+  // its own heading rather than as one more card in the pile.
+  const cards = allBoxes.filter((b) => b.kind !== 'page-pin').sort(byArrangement);
+  const pins = allBoxes.filter((b) => b.kind === 'page-pin').sort(byArrangement);
+
+  const items: SurveyItem[] = [
+    ...cards.map((b) => ({ ...boardCardItem(b, currentEntryId), sectionTitle: deskTerm('cascadePlanSectionCards') })),
+    ...pins.map((b) => ({
+      ...boardCardItem(b, currentEntryId),
+      sectionTitle: deskTerm('cascadePlanSectionPages'),
+      // PW1 S2 — "the built `excerpt` YIELDS to the title" (Q3), and on a
+      // membership row it yields to the STATE line specifically: S3 puts that
+      // state in the SECOND-LINE SLOT, and a row cannot have two second lines.
+      // The page's own body text is one press away on the page itself; which
+      // board it is displayed on is knowable nowhere else.
+      excerpt: undefined,
+      // PW1 S3 — each row states its state. ABSENCE MEANS DISPLAYED, read here
+      // exactly as the canvas reads it: only an explicit `false` is "not shown".
+      note: b.onCanvas === false ? deskTerm('cascadePinNotShown') : deskTerm('cascadePinShown'),
+    })),
+  ];
+
   return {
     title: kind.boardTitle,
-    items: cardItems,
+    items,
     onTravel: (id) => {
-      const box = boxes.find((b) => b.id === id);
+      const box = allBoxes.find((b) => b.id === id);
       if (!box) return;
       if (box.kind === 'page-pin' && box.entryId) {
         const entry = getJournalEntry(box.entryId);
-        if (entry) ctx.navigate(routeForEntry(entry));
+        // PW1 S4 — travel that KEEPS THE RAIL: the destination mounts with this
+        // same survey open, on this same board, and the origin row wears the
+        // `current` mark this builder already computes. The trail is the rail.
+        if (entry) ctx.travelFromCascade(entry);
         return;
       }
-      ctx.navigate(`/page/${kind.boardId}`);
+      const board = getJournalEntry(kind.boardId);
+      if (board) ctx.travelFromCascade(board);
     },
-    onBack: () => ctx.openSurvey({ category: 'plan', projectId: kind.projectId }),
+    // PW1 S3 — the MENU act, on the membership rows only. This is the path that
+    // must be COMPLETE: the drag half needs a canvas and so exists only on a
+    // board, while `Display on Board` works everywhere the row does.
+    renderMenu: (item) => {
+      const box = pins.find((b) => b.id === item.id);
+      if (!box || !box.entryId) return null;
+      return <PinDisplayMenu boardId={kind.boardId} entryId={box.entryId} displayed={box.onCanvas !== false} />;
+    },
+    // PW1 S3 — the DRAG half (Nick, Q4): drag a membership row onto the canvas
+    // and it lands WHERE DROPPED. Only membership rows are draggable (a card is
+    // already on the wall), and the payload names BOTH the board and the box so
+    // the canvas can refuse a drop from some OTHER board's survey — moving a
+    // card between boards is card transfer (item 123), not display, and this
+    // act must not quietly become it.
+    dragPayload: (item) => {
+      const box = pins.find((b) => b.id === item.id);
+      return box && box.entryId ? `${kind.boardId}:${box.entryId}` : null;
+    },
+    // PW1 S1/S5 — the `‹` walks back to the LIST, and the list is now the panel
+    // (PW3). It used to open a second survey of the drawer's own boards; there
+    // is no such layer any more, so this closes one instead. "The survey's `‹`
+    // is always the way back to the list" holds — the list simply moved up.
+    onBack: () => ctx.closeSurvey(),
   };
+}
+
+// PW1 S3 (item 125) — the two display acts, menu half (Nick, Q4). Membership is
+// made elsewhere (the Places checkbox); this only ever moves an EXISTING
+// membership on and off the canvas, which is why there is no "unlink" here and
+// why removing display never removes the member.
+function PinDisplayMenu({ boardId, entryId, displayed }: { boardId: string; entryId: string; displayed: boolean }) {
+  const { t } = useDeskLexicon();
+  return (
+    <button
+      type="button"
+      className="wz-cascade-thumb-menu-item wz-cascade-pin-display"
+      onClick={() => setPinDisplayed(boardId, entryId, !displayed)}
+    >
+      {displayed ? t('cascadePinHide') : t('cascadePinDisplay')}
+    </button>
+  );
 }

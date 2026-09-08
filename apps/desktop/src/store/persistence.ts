@@ -1068,9 +1068,53 @@ export function pinPageToBoard(entryId: string, boardEntryId: string): JournalEn
   if (existing.some(b => b.kind === 'page-pin' && b.entryId === entryId)) return board; // already pinned — idempotent
   const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
   const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
-  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId };
+  // PW1 S3 (item 125) — the pin is the MEMBERSHIP record, and a new membership
+  // is NOT displayed until the writer places it. `onCanvas: false` is written
+  // EXPLICITLY here, never left to absence: absence means DISPLAYED (the build
+  // law that keeps every already-arranged board reading unchanged), so a new
+  // pin that merely omitted the field would land on the canvas at a position
+  // nobody chose — the exact arrangement-the-writer-did-not-author the display
+  // opt-in exists to prevent (A16; BD7). The x/y/z above still compute, so a
+  // later `Display on Board` from the menu has a lawful default seat to take.
+  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId, onCanvas: false };
   saveJournalEntry({ ...board, boxes: [...existing, pin] });
   return getJournalEntry(boardEntryId);
+}
+
+// PW1 S3 (item 125) — the DISPLAY act, the menu half. Sets a membership's
+// canvas flag; `at` (normalized x/y) is the drag half's landing point — the
+// writer chooses the position, which is the whole reason display is opt-in.
+// Absent `at`, the pin keeps the seat pinPageToBoard already computed for it.
+// A no-op when the membership does not exist: this never CREATES one, so the
+// two relations stay distinct at the seam as well as in the schema.
+export function setPinDisplayed(boardEntryId: string, entryId: string, displayed: boolean, at?: { x: number; y: number }): JournalEntry | null {
+  const board = getJournalEntry(boardEntryId);
+  if (!board || board.pageType !== 'board') return null;
+  const boxes = board.boxes ?? [];
+  const idx = boxes.findIndex(b => b.kind === 'page-pin' && b.entryId === entryId);
+  if (idx < 0) return null;
+  const topZ = boxes.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  const next = boxes.slice();
+  next[idx] = { ...next[idx], onCanvas: displayed, ...(at ? { x: at.x, y: at.y, z: topZ } : {}) };
+  saveJournalEntry({ ...board, boxes: next });
+  return getJournalEntry(boardEntryId);
+}
+
+// PW1 S3 — is this page's membership of this board DISPLAYED on its canvas?
+// The one reader of the flag outside the canvas itself, feeding the survey
+// row's own state line ("member · shown/not shown on the board"). Absence
+// means displayed, in this reader exactly as on the canvas — one law, read
+// the same way everywhere it is read.
+export function isPinDisplayed(boardEntryId: string, entryId: string): boolean {
+  const pin = (getJournalEntry(boardEntryId)?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === entryId);
+  return !!pin && pin.onCanvas !== false;
+}
+
+// PW1 S3 — test/inspection seam, the wrizoPinPageToBoard neighbour below's own
+// established shape. The harness must be able to write a pin in the PRE-EXISTING
+// grandfathered shape (no flag at all) to prove absence still means displayed.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = setPinDisplayed;
 }
 
 // FX6 S4 — test/inspection seam (this file's own established pattern —

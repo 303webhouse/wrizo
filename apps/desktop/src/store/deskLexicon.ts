@@ -91,6 +91,15 @@ export type DeskTermId =
   // strings CD2 itself introduces.
   | 'cascadeJournalOpen' | 'cascadeJournalNewPage' | 'cascadeJournalRecent' | 'cascadeJournalAll'
   | 'cascadePlanCreateBoard' | 'cascadePlanPlotStory' | 'cascadePlanOpen' | 'cascadePlanEmpty'
+  // PW1 S1/S2/S3 — "Boards connected" and what a board row, a section heading
+  // and a membership row say. `cascadePlanOpen`/`cascadePlanEmpty` are RETIRED
+  // from every render path (PW3: the panel is the list; PW9: absent, never
+  // empty) — the ids stay so the retirement reads as deliberate rather than as
+  // a term that went missing.
+  | 'cascadePlanBoardsConnected' | 'cascadePlanRelationOwn' | 'cascadePlanOwnSuffix'
+  | 'cascadePlanNoDrawer' | 'cascadeOpenBoard'
+  | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
+  | 'cascadePinShown' | 'cascadePinNotShown' | 'cascadePinDisplay' | 'cascadePinHide'
   | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
   | 'cascadeBoardDeleteCancel' | 'cascadeBoardDeleteQuestion'
   | 'cascadeDrawersChoose' | 'cascadeDrawersEmpty'
@@ -601,7 +610,14 @@ const CANONICAL: Record<DeskTermId, string> = {
   pageFaceMoveCopy: 'Move to… / Copy to…',
   pageFacePortToBoard: 'Port to a Board…',
   pageFacePin: 'Pin to a Board…',
-  pageFacePinnedTo: 'Also pinned to',
+  // PW1 S3 (item 125), Fable's ruling 4 — the Page face's prose line takes the
+  // ONE connecting word the whole slice speaks in. "Pinned to" named the
+  // pin-card, which is now only ONE DISPLAY of the relation; a page can be a
+  // member of a board and not appear on its canvas at all, so the old word
+  // would describe a card that may not exist. "Connected" names the
+  // membership itself, and matches S1's own "Boards connected" heading —
+  // one connecting word, two faces. Sentence shape kept.
+  pageFacePinnedTo: 'Also connected to',
   placeFaceOpen: 'Open',
   placeFaceFileSend: 'File/Send',
   placeFacePeek: 'Peek',
@@ -627,8 +643,30 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeJournalAll: 'All pages →',
   cascadePlanCreateBoard: 'Create a Board',
   cascadePlanPlotStory: 'Plot a Story',
+  // PW1 — RETIRED from every render path (PW3/PW9); values kept so the
+  // retirement is legible and no lookup can silently resolve to nothing.
   cascadePlanOpen: 'Open…',
   cascadePlanEmpty: 'No boards yet.',
+  // PW1 S1 — Nick's exact term (Q2), in HIS sentence case. The zone's
+  // presentation uppercase rides the CSS register, never the string: the
+  // lexicon holds the word, the register holds the voice.
+  cascadePlanBoardsConnected: 'Boards connected',
+  // PW10 + the three-space canon: "the Plan-board pairing is a SURFACE OWNING A
+  // CONTAINER and must be named as such wherever it shows."
+  cascadePlanRelationOwn: 'its own plan board',
+  cascadePlanOwnSuffix: '— plan',
+  cascadePlanNoDrawer: 'Not in a drawer',
+  cascadeOpenBoard: 'Open the board',
+  cascadePlanSectionCards: 'Cards',
+  cascadePlanSectionPages: 'Pages linked to this board',
+  // PW1 S3 — display state is a fact ON THE ROW, never inferred from the wall.
+  cascadePinShown: 'member · shown on the board',
+  cascadePinNotShown: 'member · not shown on the board',
+  cascadePinDisplay: 'Display on Board',
+  // Deliberately NOT "Remove": the board card's OWN verb is already Remove,
+  // and it deletes the MEMBERSHIP. Two acts a keystroke apart, one ending a
+  // relation and one only ending its display, must not share a word.
+  cascadePinHide: 'Hide from the board',
   cascadePlanNoProject: 'File this page to a drawer first to plan around it.',
   cascadeBoardMove: 'Move to… / Copy to…',
   cascadeBoardDelete: 'Delete',
@@ -863,7 +901,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   // was the bare noun 'Boards' while its ACCESSIBLE name was the honest
   // 'Boards this page can join'. Same defect, milder: the eye got the noun,
   // the ear got the sentence. Standing memberships, said plainly.
-  placesBoardsTitle: 'Pinned to boards…',
+  // PW1 S3/PW27 — same ruling, the Places zone's own face. "Also appears
+  // on…" would now LIE outright (appearing means being displayed, and this
+  // checkbox makes MEMBERSHIP), and "Pinned to boards…" carries the same
+  // card-shaped implication one step quieter.
+  placesBoardsTitle: 'Also connected to…',
   placesBoardsZoneLabel: 'Boards this page can join',
   placesBoardsEmpty: 'No boards yet.',
   drawersKindBoard: 'Board',

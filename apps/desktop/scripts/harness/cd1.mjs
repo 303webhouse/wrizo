@@ -142,8 +142,13 @@ await withHarness(async (app) => {
   ok('S1: the top line reads the exact ratified strings, left-set inside the header row',
     JSON.stringify(topLine.stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']) && topLine.stripInHeader,
     JSON.stringify(topLine.stripLabels));
-  ok('S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)',
-    topLine.noCrumb, JSON.stringify(topLine));
+  // PW1 S6 (2026-09-08) — PARKED. The framed Page carries a location crumb
+  // again (Nick, Q7), so this check's claim is false by ruling, not by defect.
+  // Quoted verbatim with its successor in this file's own PARKED section
+  // below. `topLine.noCrumb` is still GATHERED above (its sibling conjuncts
+  // are untouched) — only the assertion on it retires.
+  //   ok('S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)',
+  //     topLine.noCrumb, JSON.stringify(topLine));
   // CD3 harness-discipline fix (2026-07-22) — successor of the ORIGINAL
   // check (quoted verbatim, PARKED below, A4): Nick's own ruling scraps
   // Done from the Page/Script top bars (Publish, the rail, and free
@@ -396,6 +401,46 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
+
+  // ==========================================================================
+  // PW1 S6 (2026-09-08) — THE CRUMB COMES BACK. ONE CHECK PARKED.
+  //
+  // This is the check whose own ruling PW1 overturns, so it is worth stating
+  // plainly rather than burying: CD1 S1 removed the framed Page's location
+  // crumb DELIBERATELY, and its reasoning was sound at the time — the crumb
+  // duplicated a chain the Page face already carried via `describePageHome`.
+  //
+  // What falsified it was not an argument but HARDWARE. The Page face lives in
+  // a cascade drawer, so on the framed desk (>=1100px — the surface Nick
+  // actually works on) "where does this page live" cost two presses and a
+  // drawer, and the writer had to already know which drawer to open. Nick's
+  // Q7 returns the crumb to the band, in the shape the Board never gave up.
+  //
+  // A RULED TRADE OVERTAKEN BY EVIDENCE, NOT A DEFECT — recorded that way here
+  // so nobody re-derives the original reasoning and mistakes its reversal for a
+  // regression. Live successor: pw1.mjs's own S6 section, which asserts the
+  // crumb on the framed Page at BOTH reference widths, on the framed
+  // Screenplay, and — the half CD1 never had — that the chain never renders
+  // empty (a page with no drawer and no project reads its home label rather
+  // than a bare title).
+  //
+  // ORIGINAL, QUOTED VERBATIM AND NO LONGER ASSERTED (A4):
+  //   ok('S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)',
+  //     topLine.noCrumb, JSON.stringify(topLine));
+  {
+    await freshProsePage(app, 1280, 900);
+    await sleep(300);
+    const crumbNow = await app.evalJs(`(() => {
+      const c = document.querySelector('.desk-frame-host .sprint-crumb');
+      if (!c) return null;
+      const nav = document.querySelector('.desk-frame-host .sprint-nav');
+      const cr = c.getBoundingClientRect(); const nr = nav.getBoundingClientRect();
+      return { text: c.innerText.replace(/\\s+/g, ' ').trim(), leftSet: cr.left - nr.left < 60 };
+    })()`);
+    pok('PARKED (was "S1: no title/breadcrumb node in the header (the paper names itself; the Page face carries it)") — PW1 S6 / Nick Q7: the framed Page carries the location crumb again, left-set in the row shape the Board already proved. CD1 S1 removed it deliberately and its reasoning stands as reasoning; the trade it bought was falsified by hardware, which is a ruled trade overtaken by evidence, not a defect',
+      !!crumbNow && crumbNow.leftSet === true && crumbNow.text.length > 0, JSON.stringify(crumbNow));
+  }
+
     await freshProsePage(app);
 
     // ORIGINAL (this file's own live section, pre-CD2): const trackPage =
