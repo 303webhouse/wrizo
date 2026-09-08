@@ -24,6 +24,28 @@
   --ink-on-paper: #2B2014;
   --ink-on-paper-low: #8A7C68;
   --ink-stroke: #1A1206; /* pen ink — very dark brown, almost black (J9) */
+  /* ITEM 121 I1/I4 — THE DESK'S FOUR INKS (item83-ink-pass.md §0.5: "a journal
+     has the inks on the desk", never a colour picker). Plateau's four, named
+     by the pass itself: walnut · iron · oxblood · sea. Strokes store the NAME,
+     not the value (types/index.ts's StrokeInk), so a theme pack re-points
+     these four and every stroke ever drawn re-colours with it.
+     --ink-walnut IS --ink-stroke's own value, byte-for-byte, and that is
+     load-bearing rather than a coincidence: an OLD stroke (no `ink` field)
+     paints through --ink-stroke and a NEW stroke that chose walnut paints
+     through this, so the default and the first swatch are the same ink and a
+     page drawn before this ticket is pixel-identical after it. --ink-stroke
+     itself is deliberately NOT redefined here — the whole no-migration
+     argument rests on it not moving.
+     ITEM 121 S0 §5.3 — THE FLUX VALUES ARE A STOP, HELD FOR NICK. No ruling
+     or canon names an ink for any theme but Plateau, and TH2 explicitly
+     declined to give Flux a pen ink at all ("Journal ink is its own sealed
+     domain, out of TH2's scope", below). Flux therefore INHERITS these four
+     rather than this lane inventing a theme's colours. Four values in one
+     existing block whenever the word comes; no component line moves. */
+  --ink-walnut:  #1A1206; /* the default ink — see above, must equal --ink-stroke */
+  --ink-iron:    #39414A; /* cold graphite-blue near-black */
+  --ink-oxblood: #6B1F1C; /* deep red-brown */
+  --ink-sea:     #17454E; /* deep blue-green */
   --paper-glow: 0 0 0 1px rgba(243, 237, 225, 0.06), 0 4px 32px rgba(212, 162, 78, 0.10), 0 2px 12px rgba(0, 0, 0, 0.45);
 
   /* FX4 S7 — Stacked (board-card-studies.html variant B): the board's own
@@ -3504,14 +3526,34 @@ a:focus-visible,
    the sliver's own established rest-state law (FX1 S6, above), never brass
    (brass stays reserved for an evental action, not a held state). */
 .mode-tbtn[data-on='true']{ border-color:var(--accent-rest); color:var(--accent-rest); }
-/* FX7 S2 — Journal's own ink-tool toggle, mirrored as a disclosed-inert
-   placeholder (Sliver.tsx's own `inkToolPlaceholder`): same small icon-
-   button footprint as the sliver's other controls, visibly disabled
-   (dimmed, not-allowed cursor) rather than styled as if it worked. */
-.wz-sliver-ink-tool-toggle{ width:28px; height:28px; padding:0; background:none;
-  border:1px solid var(--ink-border); color:var(--text-low); font-size:14px;
-  cursor:not-allowed; opacity:.55; }
+/* ITEM 121 I6 — `.wz-sliver-ink-tool-toggle` (FX7 S2's disclosed-inert ink
+   placeholder) is REMOVED: M4/G3 had already stopped rendering it, and item
+   121 removes the member itself, so the rule had nothing left to style. Its
+   lexicon keys (railInkTool/railInkToolInert) go with it. */
 .wz-sliver-typewriter{ display:flex; align-items:center; gap:8px; }
+
+/* ============================================================================
+   ITEM 121 I4 — THE INK OPTIONS ZONE (TIP · NIB · INK · eraser).
+   Everything here reuses the sliver's EXISTING control grammar rather than
+   inventing a second one: `.wz-sliver-h` for the engraved olive group head,
+   `.mode-tbtn[data-on='true']` for the chosen olive hairline, `.mode-swatch`
+   for the ink chips. A writer meets the same shapes in this zone that they
+   already know from Draft's, which is the whole reason to reuse them.
+   ==========================================================================*/
+/* The tips carry drawn glyphs (R8), so they need a square box that centres an
+   SVG rather than .mode-tbtn's text metrics. */
+.wz-ink-tip{ display:inline-flex; align-items:center; justify-content:center; min-width:30px; padding:0 6px; }
+.wz-ink-tip svg{ display:block; }
+/* NIB IS STOPS, NOT A SLIDER (ink pass §0.4 — a nib is chosen, not dialled),
+   so the three read as three equal buttons: no track, no thumb, no continuum. */
+.wz-ink-nib{ min-width:0; padding:0 9px; font-size:11px; letter-spacing:.04em; }
+/* The chosen swatch wears the same brass outline .mode-swatch.active already
+   defines; this only stops a very dark ink from vanishing into the panel. */
+.wz-ink-swatch{ border-color:var(--ink-border-strong); }
+.wz-ink-eraser{ margin-left:auto; }
+/* Evental press across the whole zone — brass on the way down, never at rest
+   (the plateau register: olive rests, brass is the press). */
+.wz-ink-tip:active, .wz-ink-nib:active, .wz-ink-eraser:active{ color:var(--brass); border-color:var(--brass); }
 .wz-sliver-typewriter-label{ font-size:13px; color:var(--text-mid); }
 
 /* A labeled on/off switch — the forward-lock control (S2). Deliberately its
@@ -4542,6 +4584,65 @@ a:focus-visible,
 .crumb-sep{ color:var(--ink-border-strong); }
 .crumb-here{ color:var(--text-mid); font-weight:600; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+/* ============================================================================
+   ITEM 121 I3 — THE TEXT | INK SWITCH, in the band.
+
+   THE BAND MUST NOT GROW. `.sprint-nav` above has NO fixed height: it is a
+   wrapping flex row whose height is content-derived, so the failure mode at
+   1366 is not a few stray pixels, it is A WHOLE SECOND ROW. Every number below
+   is chosen to sit UNDER the band's existing tallest control
+   (`.sprint-toggle-btn`: 13px type, 5px/12px padding) rather than beside it at
+   its own preferred size: 10.5px type and 4px/10px padding put this switch's
+   border-box comfortably inside that. `min-width:0` + `flex-shrink:1` mean the
+   band gives ground here before it ever wraps. Paper never reflows for chrome.
+
+   THE DRESS (mockup B): engraved uppercase, letter-spaced, olive at rest; the
+   ACTIVE side wears the olive hairline; the press is evental brass. Only
+   colour transitions, so `prefers-reduced-motion` needs no branch here.
+   ==========================================================================*/
+.wz-ink-switch{
+  display:flex; align-items:stretch; min-width:0; flex-shrink:1;
+  border:1px solid var(--ink-border); border-radius:var(--radius-sm); overflow:hidden;
+}
+.wz-ink-switch-side{
+  background:none; border:0; border-bottom:1px solid transparent;
+  color:var(--text-low); font-family:var(--font-chromeLabel, var(--font-ui));
+  font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+  padding:4px 10px 3px; cursor:pointer; white-space:nowrap;
+  transition:color var(--t-state) var(--ease), border-color var(--t-state) var(--ease);
+}
+.wz-ink-switch-side + .wz-ink-switch-side{ border-left:1px solid var(--ink-border); }
+.wz-ink-switch-side:hover{ color:var(--text-mid); }
+/* The chosen side wears the olive hairline — the drawer's own chosen-state
+   grammar, so a writer reads "selected" the same way in both places. */
+.wz-ink-switch-side[data-on='true']{ color:var(--text-hi); border-bottom-color:var(--accent-rest); }
+/* Evental press (brass), never a rest colour — the flip is the event. */
+.wz-ink-switch-side:active{ color:var(--brass); }
+
+/* ITEM 121 I3 — THE TYPEWRITER IS PUT DOWN, VISIBLY. The instrument change has
+   to be legible on the paper, not only in the switch, so in INK the caret goes
+   dormant. `caret-color:transparent` rather than a blur or an overlay: it is
+   the one property that removes the blinking insertion point without touching
+   the text's own colour, its layout, or a single stored byte. The editable is
+   also blurred on entry (PageEditor's own effect), so there is nothing to type
+   INTO either — this is the visible half of a state that is already true. */
+.mode-page[data-instrument='ink'] .forward-only-editor{ caret-color:transparent !important; }
+/* `!important` IS LOAD-BEARING HERE, not a shortcut, and the harness is what
+   found it: ForwardOnlyEditor sets `caretColor: penColor` as an INLINE style
+   (its own `penColor` prop, which ModeStage still hands down in journal mode
+   for the legacy/unframed pen bar). An inline style beats any selector, so
+   without this the caret went on blinking in INK — the typewriter was "put
+   down" everywhere except the one place the writer was looking. The honest
+   alternatives were both worse: stopping the penColor pass would silently
+   change Free Write's TEXT colour too (that prop sets `color` as well), which
+   R15 did not ask for and this lane will not do; and reaching into
+   ForwardOnlyEditor to special-case a mode is a shared component learning
+   about one surface's instrument. */
+/* The stratum's own layers never intercept — routing belongs to the sheet
+   (InkStratum.tsx's header). Stated in CSS too so a later hand that reaches
+   for `pointer-events:auto` here meets the reason first. */
+.wz-ink-sheet > .ink-canvas{ pointer-events:none; }
 /* FX3 S4 — TRIAL (Nick's own working-value experiment; not settled law).
    The modes move toward the right instead of sitting flush left; Done
    stays the rightmost element with a fixed gap (not auto-margin) keeping

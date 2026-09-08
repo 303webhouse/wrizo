@@ -231,8 +231,20 @@ await withHarness(async (app) => {
   // ok('S2: Free Write\'s own rail carries a Format section (Bold/Italic) — previously entirely absent on an ordinary (project-origin) Free Write page',
   // railSections.includes('Format'), JSON.stringify(railSections));
   // ------------------------------------------------------------------
-  ok('S2 [R1 successor]: Free Writes own rail carries a STYLING section - the zone Format became by Nicks word, now B/I/U',
-    railSections.includes('Styling'), JSON.stringify(railSections));
+  // ---- PARKED - SUPERSEDED by ITEM 121 I6 (R15), 2026-09-07 ----------
+  // Kept VERBATIM and no longer run. THIS ASSERTION HAS NOW BEEN SUPERSEDED
+  // TWICE BY THE SAME FOUNDER, in opposite directions, and both moves sit on
+  // this file: R1 renamed Format to STYLING and added Underline (the park
+  // immediately above), and R15 removes the zone from this surface
+  // altogether - Free Write is a typewriter for text, and a surface that does
+  // not decorate offers no styling buttons. The successor asserts the
+  // ABSENCE, which is the new law.
+  //
+  // ok('S2 [R1 successor]: Free Writes own rail carries a STYLING section - the zone Format became by Nicks word, now B/I/U',
+  // railSections.includes('Styling'), JSON.stringify(railSections));
+  // -------------------------------------------------------------------
+  ok('S2 [ITEM 121 I6 / R15 successor]: Free Write’s own rail carries NO Styling section at all - the zone R1 created and R15 retired, gone by ABSENCE rather than by a disabled mount (what the analog page cannot do, the chrome does not offer)',
+    !railSections.includes('Styling'), JSON.stringify(railSections));
   const inkToolShape = await app.evalJs(`(() => {
     const btn = document.querySelector('.wz-sliver-ink-tool-toggle');
     return btn ? { present: true, disabled: btn.disabled, ariaDisabled: btn.getAttribute('aria-disabled') } : { present: false };
@@ -254,37 +266,76 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('Hello world');
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
-  await sleep(200);
-  await app.typeKeys('bold text');
-  await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
-  await sleep(200);
-  const boldText = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
-  ok('S2: Bold\'s two-press bracket genuinely survives a real keystroke run typed BETWEEN the two clicks (the exact case the execCommand approach silently lost) — both ** markers present around the typed text',
-    boldText === 'Hello world**bold text**', boldText);
-
-  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Italic\"]').click()");
-  await sleep(150);
-  await app.typeKeys('em');
-  await sleep(150);
-  await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Italic\"]').click()");
-  await sleep(150);
-  const italicText = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
-  ok('S2: Italic\'s own bracket works too, immediately chained after Bold\'s own closing marker',
-    italicText === 'Hello world**bold text***em*', italicText);
+  // ---- PARKED - SUPERSEDED by ITEM 121 I6 (R15), 2026-09-07 ----------
+  // Kept VERBATIM and no longer run. These drove Free Write’s own B/I
+  // two-press bracket through the STYLING zone, which R15 removes from this
+  // surface. The MECHANISM they proved is NOT retired: the marker convention
+  // (store/draftFormat.ts’s FORMAT_MARK) and ForwardOnlyEditor’s
+  // insertMarkerRef escape hatch are DRAFT’s, they still exist, and
+  // ab2.mjs / item83f.mjs assert them live against Draft’s own zone. What
+  // is gone is only THIS surface’s door onto them.
+  //
+  // THE TYPED FIXTURE ABOVE STAYS LIVE, deliberately: the Backspace check
+  // below is about FORWARD LOCK, which item 121 does not touch, and it needs
+  // text on the page. Parking the scaffolding along with the claim is how a
+  // park quietly retires a law it was never about - the first attempt at this
+  // park did exactly that and ran the Backspace check against an empty editor.
+  //
+  // THIS PARK CARRIES A SECOND LESSON. Run unparked against the item 121
+  // tree, the first line below did not FAIL - it THREW, on a .click() against
+  // a button that no longer exists, and a throw aborts the whole file. The
+  // suite recorded NOVERDICT: not one of this file’s 44 checks reported,
+  // pass or fail. A driver can lie by dying as easily as by doing nothing,
+  // which is why a probe belongs in front of every gesture.
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
+  // await sleep(200);
+  // await app.typeKeys('bold text');
+  // await sleep(200);
+  // await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Bold\"]').click()");
+  // await sleep(200);
+  // const boldText = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  // ok('S2: Bold\'s two-press bracket genuinely survives a real keystroke run typed BETWEEN the two clicks (the exact case the execCommand approach silently lost) — both ** markers present around the typed text',
+  // boldText === 'Hello world**bold text**', boldText);
+  //
+  // await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Italic\"]').click()");
+  // await sleep(150);
+  // await app.typeKeys('em');
+  // await sleep(150);
+  // await app.evalJs("document.querySelector('.wz-sliver-format .mode-tbtn[title=\"Italic\"]').click()");
+  // await sleep(150);
+  // const italicText = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  // ok('S2: Italic\'s own bracket works too, immediately chained after Bold\'s own closing marker',
+  // italicText === 'Hello world**bold text***em*', italicText);
+  // -------------------------------------------------------------------
+  // The live successor: the zone is absent, so its buttons are absent with it.
+  const freeWriteFormatGone = await app.evalJs(`({
+    zone: document.querySelectorAll('.wz-sliver-format').length,
+    buttons: document.querySelectorAll('.wz-sliver-format .mode-tbtn').length,
+    disabled: document.querySelectorAll('.wz-sliver-body [disabled], .wz-sliver-body [aria-disabled="true"]').length,
+  })`);
+  ok('S2 [ITEM 121 I6 / R15 successor]: with STYLING retired, Free Write’s rail has NO format zone and NO format buttons - and nothing in its drawer is disabled or aria-disabled either, so the removal is absence throughout rather than a greyed door',
+    freeWriteFormatGone.zone === 0 && freeWriteFormatGone.buttons === 0 && freeWriteFormatGone.disabled === 0,
+    JSON.stringify(freeWriteFormatGone));
 
   // Forward-lock's own deletion discipline, re-verified live in this same
   // pass (S2's own "verify, don't assume" instruction): a real Backspace
   // after all this rail-driven insertion still STRIKES (never erases) —
   // the marker insertion never touched handleBackspace/eraseTail/
   // strikeStep at all.
+  const beforeBackspace = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
   await app.key('Backspace');
   await sleep(150);
   const afterBackspace = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
   const struckPresent = await app.evalJs("!!document.querySelector('.forward-only-editor .fo-struck')");
   ok('S2: forward-lock\'s deletion discipline is UNTOUCHED by the rail-driven marker insertion — a real Backspace still STRIKES (struck span present, text unchanged), never erases',
-    afterBackspace === italicText && struckPresent === true, JSON.stringify({ afterBackspace, struckPresent }));
+  // ITEM 121 I6 - RE-POINTED, NOT PARKED. This claim is about FORWARD-LOCK’s
+  // deletion discipline, which item 121 does not touch. It compared against
+  // `italicText` only because the parked bracket drive above happened to be
+  // what last wrote the text; it now compares against the text as it stood
+  // immediately before the Backspace, which is what the claim always meant
+  // and is if anything the tighter reading. Still proven live, on real text.
+    afterBackspace === beforeBackspace && struckPresent === true, JSON.stringify({ beforeBackspace, afterBackspace, struckPresent }));
 
   // Journal's OWN sliver regression [PARKED WHOLE — FX14 S2] -----------------
   // Asserted the TRUE Journal surface's OWN sliver is untouched by the opt-in
