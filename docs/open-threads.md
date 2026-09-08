@@ -2353,6 +2353,24 @@ AS BUILT — the zero-work default), the **typewriter FACE** (Nick's, with the t
 always read it — the barrel is not). **Pressure** rides a later slice, and the S0 correction is on
 the record: pressure is ALREADY STORED (`StrokePoint.p`); what was true is that nothing reads it.
 
+**→ ANSWERED FOR ITEM 126 / 121-B (Fable's merge-review question, 2026-09-07) — THE STRATUM IS
+FREE WRITE ONLY, AND THE INK IS HIDDEN THERE, NEVER LOST.** **Measured against the offered build,
+not read off it.** RENDER: the stratum mounts behind `framed && mode === 'journal'`, so in **Draft
+and Revise the component does not mount at all** (`stratumMounted:false`, `canvasCount:0`); a census
+confirms no second painter of a page's `entry.strokes` exists. PERSIST: **fully intact** — the
+stroke survives **Draft's own autosave, Revise's own autosave and a reload**, carrying its
+tip/nib/ink (text grew 0→19→27 while `strokes` held at 1, tip `marker`). RETURN: **byte-identical
+repaint — 2035 painted pixels before, on return, and after reload.** The half worth having measured
+is PERSIST: a Draft save that dropped `strokes` would have been data loss wearing the same symptom,
+and it does not — both save paths spread the latest row. Two adjacent facts: the instrument
+**survives a mode switch but not a reload** (back into INK from Draft; TEXT after reload, I3's
+session-scoped default), and within Free Write **the stratum is mounted in BOTH instruments** —
+`active` governs only interception, so ink stays visible while the writer types. **THIS IS A
+BOUNDARY, NOT AN OVERSIGHT:** R15 rules on ONE surface, Draft and Revise are not sketch pads, and
+mounting the stratum there would have been this lane widening its own charter. **121-B starts from:
+the ink is on the row and rendered on exactly one surface — a RENDER question, not a recovery one,
+and no migration is owed.** Full table in the offer record §7A.
+
 **→ ⚠ THE GATE THE HARNESS CANNOT REPLACE — THE REAL-DEVICE SITTING ON NICK'S TABLET.** Three
 things are hardware and are **unasserted deliberately rather than by omission**: (1) **a finger not
 drawing while a stylus is attached** — CDP has no stylus-present state, so S5 asserts THE APP'S OWN
