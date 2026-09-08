@@ -335,6 +335,13 @@ function reapStaleProfileDirs(heldOwners) {
     // a browser that is starting up — the same harm as the process sweep's, in
     // the same shape, closed the same way. An unreadable mtime counts as YOUNG,
     // which is the sparing direction.
+    //
+    // AND THE COST OF WAITING IS ~NIL, which is why the floor is worth applying
+    // to dirs as well as to processes: `withHarness` clears its OWN dir on the
+    // way in (DF1.1 S3's self-healing fix for the PID-recycling class), so a
+    // stale dir left standing five minutes longer harms no later run — it is
+    // collected either by this sweep or by the next run that draws that PID. A
+    // delayed cleanup buys a real protection for nothing.
     let dirAgeSec = null;
     try { dirAgeSec = (Date.now() - statSync(full).mtimeMs) / 1000; } catch { dirAgeSec = null; }
     if (dirAgeSec === null || dirAgeSec < AGE_FLOOR_SECONDS) {
