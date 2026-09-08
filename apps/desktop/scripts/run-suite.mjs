@@ -227,6 +227,13 @@ if (NO_REAP) {
       // machine-readable record as well as the log. A reader diffing two runs
       // must be able to see that an owner went unresolved.
       unknownOwnersSpared: reapReport.unknownOwners || [],
+      // RULED 2026-09-07 — the age floor is half the kill decision now, so the
+      // record has to carry it. `youngSpared` is the one a reader most needs
+      // after an incident: it names browsers this run DECLINED to reap because
+      // they were too new to trust a dead-owner reading about.
+      ageFloorSec: reapReport.ageFloorSec ?? null,
+      youngSpared: (reapReport.youngSpared || []).map((b) => ({ pid: b.pid, owner: b.owner, ageSec: b.ageSec })),
+      ageUnreadableSpared: (reapReport.ageUnknownSpared || []).map((b) => ({ pid: b.pid, owner: b.owner })),
       profileDirsRemoved: reapReport.dirs ? reapReport.dirs.removed : null,
     } }, null, 2));
   } catch { /* the log already carries it; the manifest is a convenience */ }

@@ -17,7 +17,7 @@
 // mid-run. S2 proves a live owner is spared even when sparing it means this run
 // gets nothing. S5 asserts, against the module's own source, that no wider
 // instrument is present to reach for.
-import { readFileSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, rmSync, existsSync, writeFileSync, utimesSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -47,11 +47,16 @@ const SELF = process.pid;
   const DEAD_A = 900001;      // a dead owner, three browsers (the orphan shape)
   const LIVE_B = 900002;      // a live owner — another lane, mid-run
   const UNKNOWN = 900003;     // an owner we cannot resolve
+  // AGES ADDED 2026-09-07. Every fixture browser here is an hour old —
+  // unambiguously past the age floor — so each check still tests exactly what it
+  // was written to test (the OWNER decision) rather than quietly becoming a test
+  // of the clock. The floor gets its own falsification in S1b, where age is the
+  // ONLY thing that varies between two otherwise identical tables.
   const table = [
-    { pid: 11, owner: DEAD_A }, { pid: 12, owner: DEAD_A }, { pid: 13, owner: DEAD_A },
-    { pid: 21, owner: LIVE_B }, { pid: 22, owner: LIVE_B },
-    { pid: 31, owner: UNKNOWN },
-    { pid: 41, owner: SELF },
+    { pid: 11, owner: DEAD_A, ageSec: 3600 }, { pid: 12, owner: DEAD_A, ageSec: 3600 }, { pid: 13, owner: DEAD_A, ageSec: 3600 },
+    { pid: 21, owner: LIVE_B, ageSec: 3600 }, { pid: 22, owner: LIVE_B, ageSec: 3600 },
+    { pid: 31, owner: UNKNOWN, ageSec: 3600 },
+    { pid: 41, owner: SELF, ageSec: 3600 },
   ];
   // The resolver is TRI-STATE, as ratified: 'dead' is the only licence, and
   // 'unknown' is a distinct answer that must survive into the report rather
@@ -87,6 +92,51 @@ const SELF = process.pid;
 }
 
 // ===========================================================================
+// S1b — THE AGE FLOOR (ruled 2026-09-07, from INK's live observation).
+//
+// THE DEAD-OWNER LICENCE IS NECESSARY, NOT SUFFICIENT. On Edge, harness browsers
+// THIRTY SECONDS OLD reported their owner as GONE **while a foreign suite was
+// actively running them** — detached parentage reads as death. So the single
+// test this reaper was built on can be confidently, catastrophically wrong about
+// a live run, which is the 2026-08-04 harm arriving from a new direction.
+//
+// This is the falsification Fable named, and its shape is the point: the SAME
+// dead-reading owner, spared at 30s and reaped past the floor. NOTHING BUT THE
+// CLOCK DIFFERS between the two tables, which is what makes the pair a test of
+// the floor rather than of anything else.
+// ===========================================================================
+{
+  const DEAD = 930001;
+  const dead = () => 'dead';
+  const at = (ageSec) => selectReapTargets(
+    [{ pid: 91, owner: DEAD, ageSec }, { pid: 92, owner: DEAD, ageSec }],
+    { self: SELF, resolve: dead },
+  );
+
+  const young = at(30);
+  ok('S1b (falsification, the dangerous half): a DEAD-READING owner at 30s is SPARED — INK\'s exact observation, and reaping it would kill a live foreign suite whose parentage had merely detached',
+    young.targets.length === 0 && young.youngSpared.length === 2,
+    JSON.stringify({ targets: young.targets.length, youngSpared: young.youngSpared.length, floor: young.ageFloorSec }));
+
+  const old = at(young.ageFloorSec + 60);
+  ok('S1b (falsification, the other half): the SAME dead-reading owner one minute PAST the floor IS reaped — the floor delays a corpse, it does not grant it immunity, and without this half the check above would pass on a reaper that never reaps anything at all',
+    old.targets.length === 2 && old.youngSpared.length === 0,
+    JSON.stringify({ targets: old.targets.length, ageSec: young.ageFloorSec + 60, floor: young.ageFloorSec }));
+
+  const exact = at(young.ageFloorSec);
+  ok('S1b: the boundary is inclusive and stated rather than left to be discovered — exactly AT the floor is reapable, so the rule reads "younger than the floor is spared" and nobody has to guess the off-by-one',
+    exact.targets.length === 2,
+    JSON.stringify({ atFloorSec: young.ageFloorSec, targets: exact.targets.length }));
+
+  const noAge = selectReapTargets([{ pid: 93, owner: DEAD }], { self: SELF, resolve: dead });
+  ok('S1b: an UNREADABLE age is spared, not assumed old — an age we failed to read is the same kind of not-knowing as an owner we failed to resolve, and every uncertainty in this reaper fails toward not killing',
+    noAge.targets.length === 0 && noAge.ageUnknownSpared.length === 1,
+    JSON.stringify({ targets: noAge.targets.length, ageUnknownSpared: noAge.ageUnknownSpared.length }));
+
+  ok(`S1b: the floor is ${young.ageFloorSec}s — MEASURED, not picked. The longest legitimate harness-browser lifetime observed here is 81s (fx5.mjs, across 278 file-runs in four stamped suites; median 20s, p95 53s); the probe holds ONE browser 39s for its entire matrix; INK's observation was 30s. Five minutes is 3.7x the longest life ever measured and 10x the observation, and deliberately no larger — every extra minute is one a genuine orphan keeps every lane's guard refusing`,
+    young.ageFloorSec === 300, `floor=${young.ageFloorSec}s`);
+}
+// ===========================================================================
 // S2 — THE GUARD ON THE GUARD. A machine holding nothing but ONE live owner's
 // browsers yields ZERO targets. This is the check that fails if a later hand
 // "improves" the reaper into something that clears the board so a blocked run
@@ -94,7 +144,7 @@ const SELF = process.pid;
 // ===========================================================================
 {
   const LIVE = 910001;
-  const onlyLive = [{ pid: 51, owner: LIVE }, { pid: 52, owner: LIVE }, { pid: 53, owner: LIVE }];
+  const onlyLive = [{ pid: 51, owner: LIVE, ageSec: 3600 }, { pid: 52, owner: LIVE, ageSec: 3600 }, { pid: 53, owner: LIVE, ageSec: 3600 }];
   const r = selectReapTargets(onlyLive, { self: SELF, resolve: () => 'alive' });
   ok('S2 (the guard on the guard): a box holding ONLY live-owner browsers yields ZERO targets — the reaper leaves the run blocked rather than clearing the board to unblock itself',
     r.targets.length === 0 && r.spared.length === 3 && r.liveOwners.length === 1,
@@ -127,10 +177,18 @@ const SELF = process.pid;
   const liveDir = path.join(tmp, `ws-runtime-verify-${SELF}`);
   const decoyDir = path.join(tmp, 'ws-runtime-verify-notanumber');
   const bareDir = path.join(tmp, 'ws-runtime-verify');
-  for (const d of [deadDir, liveDir, decoyDir, bareDir]) {
+  const youngDeadDir = path.join(tmp, `ws-runtime-verify-${deadPid()}`);
+  for (const d of [deadDir, liveDir, decoyDir, bareDir, youngDeadDir]) {
     mkdirSync(d, { recursive: true });
     writeFileSync(path.join(d, 'DevToolsActivePort'), '1234\n/devtools/browser/x');
   }
+  // BACKDATED PAST THE FLOOR (2026-09-07). A dir this test just created is
+  // SECONDS old, and the age floor keeps young dirs on purpose — so without this
+  // the check would fail for the FLOOR's sake rather than for the SWEEP's, which
+  // is a different claim. `youngDeadDir` is left at its real age and is the
+  // control for exactly that behaviour.
+  const oldStamp = new Date(Date.now() - 3600 * 1000);
+  utimesSync(deadDir, oldStamp, oldStamp);
 
   const lines = [];
   const report = await reapOrphans({ log: (l) => lines.push(l) });
@@ -146,7 +204,11 @@ const SELF = process.pid;
     lines.some((l) => l.startsWith('REAPER:')) && report !== null,
     JSON.stringify(lines.slice(0, 4)));
 
-  for (const d of [deadDir, liveDir, decoyDir, bareDir]) rmSync(d, { recursive: true, force: true });
+  ok('S4 (the age floor, on dirs): a dead-owner dir that is YOUNG is KEPT — withHarness clears its dir and THEN launches, so a live run mid-launch owns a dir with no browser yet to hold it, and a dead-reading owner would otherwise delete the profile out from under a browser that is starting up',
+    existsSync(youngDeadDir),
+    `youngDeadDir=${path.basename(youngDeadDir)} stillThere=${existsSync(youngDeadDir)}`);
+
+  for (const d of [deadDir, liveDir, decoyDir, bareDir, youngDeadDir]) rmSync(d, { recursive: true, force: true });
 }
 
 // ===========================================================================
@@ -204,7 +266,7 @@ const SELF = process.pid;
 // ===========================================================================
 {
   const DEAD_OWNER = 920001;
-  const table = [{ pid: 61, owner: DEAD_OWNER }, { pid: 62, owner: DEAD_OWNER }];
+  const table = [{ pid: 61, owner: DEAD_OWNER, ageSec: 3600 }, { pid: 62, owner: DEAD_OWNER, ageSec: 3600 }];
   const isDeadOwner = () => table;             // the machine never changes: nothing dies
   const killAttempts = [];
   const lines = [];
@@ -232,7 +294,7 @@ const SELF = process.pid;
   // The same staging with a kill that actually works: the count falls, and the
   // reaper concludes success. Without this the check above would pass on a
   // reaper that simply always cried mismatch.
-  let alive = [{ pid: 71, owner: 920002 }, { pid: 72, owner: 920002 }];
+  let alive = [{ pid: 71, owner: 920002, ageSec: 3600 }, { pid: 72, owner: 920002, ageSec: 3600 }];
   const cleared = await reapOrphans({
     log: () => {},
     enumerate: () => alive,
@@ -269,7 +331,7 @@ const SELF = process.pid;
   const ulines = [];
   const unk = await reapOrphans({
     log: (l) => ulines.push(l),
-    enumerate: () => [{ pid: 81, owner: 0 }, { pid: 82, owner: 0 }],
+    enumerate: () => [{ pid: 81, owner: 0, ageSec: 3600 }, { pid: 82, owner: 0, ageSec: 3600 }],
     kill: () => { throw new Error('the reaper killed on an UNKNOWN owner'); },
     pollMs: 5, polls: 2,
   });
@@ -290,6 +352,8 @@ const SELF = process.pid;
     const d = path.join(tmp, `ws-runtime-verify-${deadPid()}`);
     mkdirSync(d, { recursive: true });
     writeFileSync(path.join(d, 'DevToolsActivePort'), '0');
+    const oldT = new Date(Date.now() - 3600 * 1000);   // past the floor — see S4's note
+    utimesSync(d, oldT, oldT);
     made.push(d);
   }
   const t0 = Date.now();
