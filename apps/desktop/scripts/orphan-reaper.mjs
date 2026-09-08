@@ -180,6 +180,93 @@ export function ownerAlive(pid) {
 }
 
 // ---------------------------------------------------------------------------
+// THE PRECONDITION — ruled 2026-09-07 (Fable), adopting the third signal NOT as
+// a third licence but as the gate in front of both.
+//
+//   WHEN ANY FOREIGN run-suite / harness / probe PROCESS IS ALIVE, THE REAPER
+//   REAPS NOTHING. Only on a box with no live foreign run do the two licences —
+//   dead owner AND stale age — get to decide anything at all.
+//
+// WHY THIS IS BETTER THAN THE THIRD LICENCE I PROPOSED. It closes the residual
+// gap the age floor could not: a pathological file that runs past the floor
+// KEEPS ITS SUITE ALIVE, so its browsers are never reapable no matter how old
+// they look. Age bounds how long a corpse must wait; this bounds whether the
+// question is asked at all. Together they mean a live run is safe from this
+// reaper by two independent facts, neither of which relies on the owner PID —
+// which is the reading INK proved untrustworthy.
+//
+// AND IT IS NOT A NEW IDEA, WHICH IS THE OTHER ARGUMENT FOR IT: it is the
+// generic waiter's own box-free test — the thing every lane already runs by hand
+// before taking the box — made canonical inside the runner so no lane has to
+// remember it.
+//
+// "FOREIGN" MEANS NOT OURS, and ours is computed rather than assumed: this
+// process, plus every ancestor of it. That matters in both directions. run-suite
+// calls this from its OWN preflight, so run-suite must not detect itself and
+// refuse to ever sweep; and a harness run reached through withHarness must not
+// detect the suite that spawned it. Walking the parent chain answers both
+// without either caller having to declare anything.
+//
+// UNDETERMINABLE IS "PRESENT". If the process table cannot be read, this returns
+// null and the caller treats it as a live run — the sparing direction every
+// other uncertainty in this file takes.
+// THE SIGNATURE MATCHES A RUNNING SCRIPT, AND THE PROCESS MUST BE NODE. Both
+// halves are load-bearing, and the second was found by MEASURING rather than by
+// thinking: on its first run this matched the SHELL WRAPPERS that merely MENTION
+// these paths in their own command line — an agent's `bash -c "... node
+// scripts/harness/x.mjs ..."` is not a run, it is a sentence about one. Counting
+// them made the box look permanently busy, which would have disabled the reaper
+// entirely and SILENTLY, in the guise of being careful. A guard that never fires
+// is worse than no guard, because it reports a safety it is not providing.
+const SUITE_SIGNATURE = /run-suite\.mjs|scripts[\\/]harness[\\/]|menus-probe\.mjs/;
+const IS_NODE = /^node(\.exe)?$/i;
+
+export function enumerateForeignRuns({ self = process.pid } = {}) {
+  try {
+    let procs;
+    if (process.platform === 'win32') {
+      const ps = 'Get-CimInstance Win32_Process | ForEach-Object { '
+        + '"$($_.ProcessId)|$($_.ParentProcessId)|$($_.Name)|$($_.CommandLine)" }';
+      const out = execFileSync('powershell.exe', ['-NoProfile', '-Command', ps], { encoding: 'utf8', timeout: 30000 });
+      procs = out.split('\n').map((l) => {
+        const parts = l.split('|');
+        if (parts.length < 4) return null;
+        return {
+          pid: Number(parts[0]),
+          ppid: Number(parts[1]),
+          name: (parts[2] || '').trim(),
+          cmd: parts.slice(3).join('|').trim(),
+        };
+      }).filter((p) => p && Number.isInteger(p.pid));
+    } else {
+      const out = execFileSync('ps', ['-eo', 'pid=,ppid=,comm=,args='], { encoding: 'utf8', timeout: 30000 });
+      procs = out.split('\n').map((l) => {
+        const m = l.match(/^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/);
+        return m ? { pid: Number(m[1]), ppid: Number(m[2]), name: m[3].split('/').pop(), cmd: m[4] } : null;
+      }).filter(Boolean);
+    }
+
+    // OURS = self + every ancestor. The guard on the walk is not paranoia: a
+    // corrupted or cyclic parent map must not spin here, and a reaper that hangs
+    // is a reaper that stops every lane.
+    const byPid = new Map(procs.map((p) => [p.pid, p]));
+    const ours = new Set([self]);
+    let cur = byPid.get(self);
+    for (let i = 0; cur && cur.ppid && i < 64; i++) {
+      if (ours.has(cur.ppid)) break;
+      ours.add(cur.ppid);
+      cur = byPid.get(cur.ppid);
+    }
+
+    return procs
+      .filter((p) => IS_NODE.test(p.name || '') && SUITE_SIGNATURE.test(p.cmd || '') && !ours.has(p.pid))
+      .map((p) => ({ pid: p.pid, cmd: (p.cmd || '').slice(0, 120) }));
+  } catch {
+    return null; // cannot tell — the caller treats this as a live run
+  }
+}
+
+// ---------------------------------------------------------------------------
 // THE AGE FLOOR — ruled 2026-09-07 (Fable, from INK's live observation).
 //
 // THE DEAD-OWNER LICENCE IS NECESSARY, NOT SUFFICIENT. On Edge, harness browsers
@@ -237,12 +324,42 @@ export function selectReapTargets(browsers, {
   self = process.pid,
   resolve = resolveOwner,
   ageFloorSec = AGE_FLOOR_SECONDS,
+  // THE DEFAULT IS `null`, WHICH MEANS "A LIVE RUN IS PRESENT" AND REAPS
+  // NOTHING. Deliberate, and the safe direction: a caller who forgets to pass
+  // the precondition gets the conservative answer rather than a sweep it never
+  // asked to authorise. `reapOrphans` always passes the measured value; the
+  // harness passes `[]` explicitly, which is how a fixture states out loud that
+  // it is testing the LICENCES on a quiet box rather than the gate.
+  foreignRuns = null,
 } = {}) {
   const owners = [...new Set(browsers.map((b) => b.owner))];
   // Our own PID is recorded as what it is and then excluded on its own line
   // below — flattening it into "alive" would hide the self-protection rather
   // than state it.
   const states = new Map(owners.map((o) => [o, resolve(o)]));
+
+  // THE PRECONDITION, BEFORE ANY LICENCE IS CONSULTED. A live foreign run means
+  // the box is theirs and nothing here is reapable, however dead or old it looks.
+  // This is what closes the age floor's residual gap: a pathological file that
+  // outruns the floor KEEPS ITS SUITE ALIVE, so the question never reaches the
+  // licences at all.
+  const boxIsTheirs = foreignRuns === null || foreignRuns.length > 0;
+  if (boxIsTheirs) {
+    return {
+      owners,
+      states,
+      targets: [],
+      spared: browsers,
+      youngSpared: [],
+      ageUnknownSpared: [],
+      ageFloorSec,
+      boxIsTheirs: true,
+      foreignRuns: foreignRuns || null,
+      liveOwners: owners.filter((o) => states.get(o) === 'alive'),
+      deadOwners: owners.filter((o) => o !== self && states.get(o) === 'dead'),
+      unknownOwners: owners.filter((o) => states.get(o) === 'unknown'),
+    };
+  }
 
   const deadOwned = browsers.filter((b) => b.owner !== self && states.get(b.owner) === 'dead');
   // AGE UNKNOWN IS NOT OLD. An age we failed to read fails toward sparing, the
@@ -260,6 +377,8 @@ export function selectReapTargets(browsers, {
     youngSpared,
     ageUnknownSpared,
     ageFloorSec,
+    boxIsTheirs: false,
+    foreignRuns,
     liveOwners: owners.filter((o) => states.get(o) === 'alive'),
     deadOwners: owners.filter((o) => o !== self && states.get(o) === 'dead'),
     // RATIFIED 2026-09-05: unknown is SPARED **and REPORTED** — unknown is not
@@ -382,6 +501,12 @@ export async function reapOrphans({
   kill = killPid,
   pollMs = 200,
   polls = 8,
+  // THE PRECONDITION, injectable for the same reason `enumerate` and `kill` are:
+  // a suite file must be DETERMINISTIC, and measuring the real box would make
+  // every fixture below pass or fail depending on whether another lane happens
+  // to be running. Undefined means MEASURE — which is what production always
+  // does — so the default is the real behaviour and only the harness opts out.
+  foreignRuns: foreignRunsOpt,
 } = {}) {
   const started = Date.now();
   const before = enumerate();
@@ -394,7 +519,8 @@ export async function reapOrphans({
   // Resolve each DISTINCT owner once — the answer is a property of the owner,
   // not of each of its nine child processes — and decide through the one pure
   // function the harness proves.
-  const { owners, states, targets, spared, liveOwners, unknownOwners, youngSpared, ageUnknownSpared, ageFloorSec } = selectReapTargets(before);
+  const foreignRuns = foreignRunsOpt !== undefined ? foreignRunsOpt : enumerateForeignRuns();
+  const { owners, states, targets, spared, liveOwners, unknownOwners, youngSpared, ageUnknownSpared, ageFloorSec, boxIsTheirs } = selectReapTargets(before, { foreignRuns });
 
   // THE LOG IS NOT CONDITIONAL. The 2026-08-03 authorized sweep executed
   // against an empty target set and recorded exactly that; an empty, dated,
@@ -407,6 +533,20 @@ export async function reapOrphans({
       return `${o}:${st}${ages.length ? `/${Math.min(...ages)}-${Math.max(...ages)}s` : ''}`;
     }).join(' ')
     + ` | floor=${ageFloorSec}s | targets=${targets.length}${dryRun ? ' (DRY RUN)' : ''}`);
+  // RULED 2026-09-07 — THE PRECONDITION REPORTS ITSELF AND STOPS. When another
+  // lane is running, this reaper has no business forming an opinion about
+  // anything on the box, and saying so is more useful than a silent zero.
+  if (boxIsTheirs) {
+    const n = Array.isArray(foreignRuns) ? foreignRuns.length : null;
+    log(`REAPER: LIVE RUN PRESENT — BOX IS THEIRS. ${n === null ? 'The process table could not be read' : `${n} foreign run(s)`}; NOTHING is reaped, whatever any owner or age reads.`);
+    for (const r of (foreignRuns || []).slice(0, 6)) log(`  live pid=${r.pid} ${r.cmd}`);
+    log('  This is the gate in front of both licences: a pathological file keeps its suite alive, so');
+    log('  its browsers are never reapable however old they look. It is the box-free test every');
+    log('  lane already runs by hand before taking the box, made canonical inside the runner.');
+    const dirsSkipped = { removed: [], kept: [], enumerated: null };
+    log(`REAPER: survivors=${before.length} (untouched) in ${Date.now() - started}ms`);
+    return { enumerated: before.length, reaped: [], reapFailed: [], survivors: before, liveOwners, unknownOwners, youngSpared: [], ageUnknownSpared: [], ageFloorSec, boxIsTheirs: true, foreignRuns, mismatch: false, dirs: dirsSkipped, ms: Date.now() - started };
+  }
   // RATIFIED 2026-09-05 — UNKNOWN IS SPARED AND REPORTED. Saying it on its own
   // line, rather than letting it hide inside the roster above, is the whole
   // point: an owner we could not resolve is the one case where a reader might
