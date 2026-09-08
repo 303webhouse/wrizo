@@ -2571,6 +2571,55 @@ early because the two repairs look alike and only one of them holds.
 tolerated one, and it is **not yet closed** - `bm1` can still go red on the pairing/unpair pair.
 Offers citing `bm1` should say so until act 2 lands.
 
+**-> ACT 2 DONE - 2026-09-07. THE MECHANISM IS PROVEN, THE PARK IS LIFTED, AND bm1 IS DETERMINISTIC.**
+
+**THE VANISH, PROVEN DIRECTLY AND DETERMINISTICALLY** (the falsification the ruling asked for):
+raw-seed a row, make ONE ordinary product write, read storage back.
+
+| step | rows in storage |
+|---|---|
+| after the raw write | `["raw-row"]` |
+| after one product write (`wrizoCreateJournalPage`) | `["seam-row"]` **- raw-row GONE** |
+| after reload | `["seam-row"]` |
+
+Every product write serialises the WHOLE in-memory cache back over storage, and **the cache never
+contained the raw row**. So the rows were never late - they were **overwritten**. That is why the
+failure detail was always exactly `after=false`, and why the 4000ms settle poll could never rescue
+it: **there was nothing to wait for.** No timing signature, hence no polling repair - which is what
+made this look like a "flaky test" for as long as it did.
+
+**THE RULING'S PREMISE NEEDED ONE CORRECTION, HANDED UP RATHER THAN RESOLVED QUIETLY.** "Migration,
+not invention" held only half. The seam existed but **could not express the fixture**:
+`JournalPageSeed` carried `{id, text, createdAt, strokes}` while bm1 needs `origin:'loose'`,
+`pageType:'board'`, `projectId` and `boxes`. **`origin` is the load-bearing one** - it is written
+ONLY at birth (nothing in the app ever changes it afterwards) and **`belongsOnShelf` excludes
+anything journal-homed** (`persistence.ts:1314`). So a seam that could not seed `origin:'loose'`
+could not produce a Shelf-eligible entry **at all**, which is exactly why bm1 was still reaching past
+it. **A seam that cannot say what a fixture needs is not bypassed loudly. It is bypassed QUIETLY** -
+and the bill arrives later as a coin flip.
+
+**THE REPAIR, in the order it was done:** widen `JournalPageSeed` with **origin / pageType /
+projectId / boxes**, each applied ONLY when supplied (the discipline `strokes` already established,
+so an unseeded call writes the byte-identical row it always did; product code passes no seed at
+all) -> migrate `bm1`'s `seedEntries` to `window.wrizoCreateJournalPage` -> absorb the one
+behavioural difference the seam's own comment names (the write is DEBOUNCED where the raw write was
+synchronous, so the fixture waits for the flush to land before reloading; a reload that outran it
+would have traded one vanish for another) -> **LIFT THE PARK**, restoring the original assertion at
+its own place in the run rather than relocating it somewhere quieter.
+
+**MEASURED, before and after:** ~50% (2 fails in 4 here, 5 in 10 at ERRATA) -> **6 runs, 6 passes,
+36/36 checks**. The parked stand-in is removed; `bm1` parks nothing again.
+
+**THE BLAST RADIUS, because bm1 is item 85's FIRST victim and not its last: 54 of 75 harness files
+write `writer-studio-journal-entries` RAW.** Each is a latent coin flip that fires only when a
+product write happens after the seed in the same run - which is why `bm1`, whose pairing calls ARE
+product writes, was the one that surfaced. **Named honestly: two of the 54 are this lane's own
+(`underline.mjs`, `item118.mjs`).** Neither has flaked, both are latent, and neither is touched here
+because this ticket was ruled to block everything downstream and widening it would hold the queue.
+**ROUTED, not fixed: item 85 now has a measured population and a proven remediation pattern.** The
+durable artifact worth building next is a STATIC GUARD (the `hooks-order.mjs` shape) that fails when
+a harness writes a collection raw - it would have caught all 54 before any of them cost a day.
+
 Registry: next free **130**.
 
 ## NOW — blocks everything downstream

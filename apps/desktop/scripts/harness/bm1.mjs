@@ -43,16 +43,39 @@ const freshDesk = async (app, width = 1400, height = 900) => {
   await app.emulateDpr(1, width, height);
 };
 
+// ITEM 129 — SEEDED THROUGH THE SEAM, never raw localStorage.
+//
+// WHAT THE RAW WRITE ACTUALLY DID, measured rather than reasoned: every product
+// write serialises the WHOLE in-memory cache back over storage, and the cache
+// never contained a raw-written row. So a raw seed survives only until the next
+// product write ANYWHERE in the run, and then vanishes wholesale. Proven
+// directly — raw-seed a row, make one ordinary product write, and the row is
+// gone; reload confirms it. That is why bm1's S2 failed ~50% of the time with
+// `after=false` that the 4000ms settle poll could never rescue: there was
+// nothing to wait for. The rows were not late. They had been overwritten.
+//
+// This is item 85's first concrete victim, and its remediation pattern: a seam
+// that cannot express the fixture a harness needs is not bypassed loudly, it is
+// bypassed QUIETLY, and the bill arrives later as a flaky test. Item 129 widened
+// `JournalPageSeed` with origin / pageType / projectId / boxes so the seam can
+// say what these fixtures need to say.
+//
+// The write is DEBOUNCED (scheduleFlush, 300ms) where the raw write was
+// synchronous — the one behavioural difference a migrating harness absorbs — so
+// this waits for each row to be readable through the store before returning.
 const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
-  await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-  })()`);
-  // Reload so the in-memory persistence cache hydrates the new rows (the store
-  // reads the cache, not localStorage, for every getter/pairing op).
+  for (const row of rows) {
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
+  }
+  // Wait for the debounced flush to LAND before reloading: the reload hydrates
+  // the cache from storage, so a reload that outruns the 300ms flush would
+  // hydrate a store missing the rows just seeded — trading one vanish for
+  // another. This is the one behavioural difference the seam's own comment
+  // names, absorbed here rather than assumed away.
+  const ids = rows.map(r => r.id);
+  await settle(app, `(() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').map(e => e.id); return ${JSON.stringify(ids)}.every(id => es.includes(id)); })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed hydrate' });
 };
@@ -171,25 +194,18 @@ async function scenario(app) {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (after orphan)' });
   const orphanBoardOnShelfAfter = await settle(app, "window.wrizoDerived.shelf().includes('bm1-oboard')");
   const stillPaired = await app.evalJs("window.wrizoPairing.isPaired('bm1-oboard')");
-  // ITEM 129 — THIS ASSERTION IS PARKED AS KNOWN-NONDETERMINISTIC, not deleted.
-  // It failed 5 times in 10 at a quiet box with WS_NO_REAP=1 (ERRATA), and 2 in
-  // 4 on a re-measure here. The original is quoted verbatim in the parked
-  // section below with the full evidence; a DETERMINISTIC successor covering
-  // the same product claim on a fresh fixture runs there too, so the behaviour
-  // stays covered while offers stop flipping a coin.
-  //
-  // WHAT IS NOT THE CAUSE, measured rather than assumed. The failure detail is
-  // always `before=false after=false paired=false` — only the `after` term is
-  // ever wrong, and it is still wrong AFTER the 4000ms settle poll. So the
-  // board does not arrive on the Shelf late; in those runs it never arrives at
-  // all. That rules out both the read's race and the orphaning itself, and the
-  // settle-poll repair already present is therefore insufficient BY
-  // CONSTRUCTION rather than by tuning.
-  //
-  // The values are still read above, deliberately: item 129's S0 needs this
-  // exact point in the run, and a reader following the flake should see the
-  // reads that produce it rather than a gap. Nothing asserts on them here.
-  void orphanBoardOnShelfBefore; void orphanBoardOnShelfAfter; void stillPaired;
+  // ITEM 129 — THE PARK IS LIFTED. This assertion failed ~50% of the time not
+  // because the claim was wrong and not because the read raced, but because
+  // seedEntries wrote raw localStorage and every product write serialises the
+  // whole in-memory cache back over storage. The seeded rows were not late —
+  // they had been overwritten, which is why the 4000ms settle poll above could
+  // never rescue them and why the failure detail was always `after=false`
+  // exactly. seedEntries now seeds THROUGH THE SEAM, so the assertion stands
+  // here, in its own place in the run, rather than being relocated somewhere
+  // quieter.
+  ok('S2 orphan: a paired board is off the Shelf; deleting its page orphans it onto the Shelf, nothing cascades',
+    orphanBoardOnShelfBefore === false && orphanBoardOnShelfAfter === true && stillPaired === false,
+    `before=${orphanBoardOnShelfBefore} after=${orphanBoardOnShelfAfter} paired=${stillPaired}`);
 
   // ============ S3 — the bar: three tabs + door at 1100/1280/2200 ===========
   for (const width of [FLOOR_W, LAPTOP_W, WIDE_W]) {
@@ -405,36 +421,10 @@ if (process.env.HARNESS_PARKED === '1') {
     const nowRoute = await app.evalJs('location.hash');
     pok('PARKED (was "S3 PAGE → (trusted pointer): on an UNPAIRED board travels to the FX10 named return (leaves the board)") — ITEM 91, Nick\'s S11 verdict: an unpaired board\'s PAGE → now opens a New Page auto-linked BACK to the board (the address carries `?pin=<boardId>`), so it no longer leaves the board at all; live successor: this file\'s own S3 section above',
       /\/page\/new/.test(nowRoute) && nowRoute.includes('pin=bm1-unpaired'), nowRoute);
-    // ITEM 129 — the parked original's DETERMINISTIC successor. Same product
-    // claim, same seams, run from a genuinely fresh desk so the accumulated
-    // fixture state that makes the live assertion a coin flip is absent. This
-    // is COVERAGE HELD, explicitly NOT the repair: the repair belongs to item
-    // 129's S0 and must restore the assertion at its proper place in bm1's own
-    // sequence, not relocate it somewhere quieter.
-    await freshDesk(app, LAPTOP_W, 900);
-    await seedEntries(app, [
-      { id: 'bm1p-oboard', text: 'orphan board', projectId: null, pageType: 'board', source: 'page', origin: 'loose', boxes: [], createdAt: '2026-03-01T00:00:00.000Z', updatedAt: '2026-03-01T00:00:00.000Z' },
-      { id: 'bm1p-opage', text: 'orphan page', projectId: null, source: 'page', origin: 'loose', createdAt: '2026-03-02T00:00:00.000Z', updatedAt: '2026-03-02T00:00:00.000Z' },
-    ]);
-    await app.evalJs("window.wrizoPairing.pair('bm1p-oboard','bm1p-opage')");
-    const pBefore = await app.evalJs("window.wrizoDerived.shelf().includes('bm1p-oboard')");
-    await app.evalJs(`(() => {
-      const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]');
-      const p = es.find(e => e.id === 'bm1p-opage'); if (p) p.deletedAt = new Date().toISOString();
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(es));
-    })()`);
-    await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (parked orphan)' });
-    const pAfter = await settle(app, "window.wrizoDerived.shelf().includes('bm1p-oboard')");
-    const pPaired = await app.evalJs("window.wrizoPairing.isPaired('bm1p-oboard')");
-    const pRows = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').length");
-    pok('PARKED, KNOWN-NONDETERMINISTIC (was \"S2 orphan: a paired board is off the Shelf; deleting its page orphans it onto the Shelf, nothing cascades\") — ITEM 129, opened 2026-09-07. NOT superseded and NOT wrong: the product claim is TRUE and is re-made deterministically by this very check, below, from a fresh fixture. What is parked is the assertion AT ITS OLD POINT IN THIS FILE, where it is a coin flip. MEASURED: 5 fails in 10 runs (ERRATA, quiet box, WS_NO_REAP=1) and 2 in 4 on re-measure. The failure detail is ALWAYS `before=false after=false paired=false` — only the `after` term is ever wrong, and it is still wrong after the 4000ms settle poll, so the board never arrives on the Shelf in those runs rather than arriving late. That rules out the read\'s race AND the orphaning, and it is why the settle-poll repair already in the file is insufficient by construction. ISOLATION CONTROL, measured here: the same flow from a genuinely fresh desk passed 3 of 3 with TWO rows in the store, against bm1\'s own accumulated store by the time S2 runs. The park lifts when item 129\'s S0 names what S2 inherits from S0/S1 that a standalone run does not, and repairs the fixture — never by loosening the claim.',
-      pBefore === false && pAfter === true && pPaired === false,
-      `before=${pBefore} after=${pAfter} paired=${pPaired} rows=${pRows}`);
   });
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
-  console.log(parkedPass ? `\nBM1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; one of these is item 129's KNOWN-NONDETERMINISTIC S2 orphan assertion, whose product claim is re-made here deterministically from a fresh fixture` : `\nBM1 PARKED: FAIL`);
+  console.log(parkedPass ? `\nBM1 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, park sweep is a verified no-op` : `\nBM1 PARKED: FAIL`);
 }
 
 console.log(JSON.stringify(checks, null, 2));
