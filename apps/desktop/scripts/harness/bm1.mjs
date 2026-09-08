@@ -18,6 +18,20 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// A DERIVED read after a reload waits for the derivation; it is never sampled
+// the instant `.wz-arrival` appears. The S2 orphan check failed exactly that
+// way once (parked run at 6d7cdec, 2026-09-07: before=false after=false
+// paired=false) while a probe proved the board row alive, deletedAt null, and
+// on the Shelf 200ms later — a race in the READ, not a defect in the product.
+// Bounded poll that RETURNS the value rather than throwing, so a genuine
+// failure still records a check that names itself (drivers never assume).
+const settle = async (app, expr, ms = 4000, step = 100) => {
+  const deadline = Date.now() + ms;
+  let v = await app.evalJs(expr);
+  while (v !== true && Date.now() < deadline) { await sleep(step); v = await app.evalJs(expr); }
+  return v;
+};
+
 const FLOOR_W = 1100, LAPTOP_W = 1280, WIDE_W = 2200;
 const TELOS = 'The plan serves the page.';
 
@@ -155,7 +169,7 @@ async function scenario(app) {
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (after orphan)' });
-  const orphanBoardOnShelfAfter = await app.evalJs("window.wrizoDerived.shelf().includes('bm1-oboard')");
+  const orphanBoardOnShelfAfter = await settle(app, "window.wrizoDerived.shelf().includes('bm1-oboard')");
   const stillPaired = await app.evalJs("window.wrizoPairing.isPaired('bm1-oboard')");
   ok('S2 orphan: a paired board is off the Shelf; deleting its page orphans it onto the Shelf, nothing cascades',
     orphanBoardOnShelfBefore === false && orphanBoardOnShelfAfter === true && stillPaired === false,
