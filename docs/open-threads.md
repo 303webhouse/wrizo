@@ -2620,6 +2620,37 @@ because this ticket was ruled to block everything downstream and widening it wou
 durable artifact worth building next is a STATIC GUARD (the `hooks-order.mjs` shape) that fails when
 a harness writes a collection raw - it would have caught all 54 before any of them cost a day.
 
+**-> THE GUARD IS BUILT - 2026-09-08, inside the box-quiet hold. `scripts/harness/seed-seam-guard.mjs`,
+5 checks, STATIC AND BROWSERLESS** (the `hooks-order.mjs` shape): it reads the harness directory and
+compares it to a frozen baseline. No browser, no port, **no contention** - which is exactly why it
+could be built while the box was held.
+
+**IT IS A POPULATION RATCHET, NOT A PROHIBITION, and the distinction is written into the file so
+nobody later "tightens" it into a lie.** A raw write is **not** automatically a defect. The dangerous
+shape is a raw SEED whose rows must survive later product writes; a raw write followed IMMEDIATELY by
+a reload with no product write between is a legitimate fixture idiom - **`bm1.mjs`'s own surviving raw
+write is exactly that**, setting `deletedAt` to exercise a load path and reloading on the next line.
+Whether a site is safe depends on what runs AFTER it, which a static scan cannot know. So the guard
+asserts only that the population **may fall and may not rise**. A guard that claimed more would be
+disbelieved and then disabled.
+
+**THE FIVE CHECKS:** no NEW file writes a collection raw · no listed file GROWS its count · the
+baseline describes only files that still offend at their real counts (**so migrating a file makes
+removing it from the list compulsory** - the ratchet cannot rot into a hiding place) · **item 129
+cannot regress** (`bm1` still seeds through the seam, and its one raw write is still the load-path
+deletion) · **the seam can still SAY what fixtures need** (`JournalPageSeed` keeps origin / pageType /
+projectId / boxes - because item 129's whole finding was that a seam which cannot express the fixture
+gets bypassed QUIETLY, so the guard watches the seam itself, not only its callers).
+
+**FALSIFIED FIVE TIMES, ONE PER CHECK:** a new offender file, a listed file growing, a migrated file
+left on the list, `bm1` moved off the seam, and `origin` deleted from `JournalPageSeed`. **Each
+perturbation reddened EXACTLY ONE check**, and the control run returned to PASS with the tree
+restored. **Baseline as frozen: 56 files, 157 raw writes**, two of them this lane's own
+(`item118.mjs`, `underline.mjs`), named in the file rather than quietly excluded.
+
+**STANDING: BUILT, NOT OFFERED.** It carries no stamp yet - the box-quiet hold is in force and an
+offer that needs a stamp waits. Suite files 75 -> 76 when it lands.
+
 Registry: next free **130**.
 
 ## NOW — blocks everything downstream
