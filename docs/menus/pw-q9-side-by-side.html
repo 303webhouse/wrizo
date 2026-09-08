@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PW · Q9 side by side — is Plan a panel, or a door?</title>
+<!--
+  THE PAGE/PLAN WORKFLOW ARC · Q9 SIDE BY SIDE
+  PLAN desk · 2026-09-07 · HELD FOR NICK. Nothing locks.
+
+  Nick's question, verbatim:
+    "What options would a Plan tab bring up? Or maybe should it be a link
+     to 'Drawer' that then shows a new surface with all of the Pages/Boards
+     in the Drawer displayed?"
+
+  That is a clean fork, so it is rendered as one: IS THE PLAN TAB A PANEL
+  OR A DOOR? Both candidates are real screens at 1366x768, shown together
+  at half scale and blowable to full.
+
+    A -- PW23: Plan is a PANEL. The board's own acts, plus the containers
+         holding it. A drawer opens beside the work; you keep your place.
+    B -- PW24: Plan is a DOOR. It opens the DRAWER'S OWN BOARD -- a system
+         board of everything the drawer holds, the same mechanism Journal,
+         Trash and Shelf already are (systemKind). Not a new surface KIND,
+         and not a file browser: the anti-file-manager rule
+         (CascadePanels.tsx:536) is routed around rather than lifted.
+
+  THE DESK'S LEAN, handed up rather than resolved (desk law, this relay):
+  they answer DIFFERENT QUESTIONS -- A answers "what can I do here", B
+  answers "what do I have". So B NEEDS A; A does not need B. Chosen alone,
+  B re-opens R13.iv: the board acts lose the home PW23 just gave them.
+  A third view, A+B, shows the compose.
+
+  Also folded: Q14 RULED -- a board's card list takes the BOARD'S OWN
+  READING ORDER (by y, then x), never creation order. Rendered in A's
+  panel and in B's arrangement alike.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:12px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f;font-size:11px}
+
+  .fit{position:absolute;inset:41px 0 auto 0;bottom:190px;display:flex;gap:14px;
+       align-items:center;justify-content:center;overflow:hidden;padding:12px}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:7px}
+  .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low)}
+  .lab b{color:var(--accent-rest);font-weight:600}
+  .stage{background:var(--ground);position:relative;transform-origin:top center;
+         box-shadow:0 0 0 1px #000, 0 18px 50px rgba(0,0,0,.8);overflow:hidden;flex:0 0 auto}
+  body[data-view="A"] #cellB,body[data-view="B"] #cellA{display:none}
+
+  /* ---- the frame, shared ---- */
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;background:none;
+       border:none;border-left:1px solid transparent;color:var(--text-low);font-family:inherit;
+       font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left-color:var(--accent-rest)}
+  .cat.door{color:var(--brass)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:18px;padding:0 20px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .qbtn{background:none;border:none;font:inherit;font-size:11px;color:var(--text-mid);padding:4px 2px}
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+  .board{position:absolute;inset:20px 26px 24px 26px}
+
+  /* three silhouettes, no colour spent */
+  .bcard{position:absolute;width:196px;min-height:78px;background:var(--panel);border:1px solid var(--line);
+         padding:9px 11px}
+  .bcard .k{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-bottom:4px}
+  .bcard .b{font-family:var(--prose);font-size:13px;line-height:1.38;color:var(--text-mid)}
+  .brdcard{position:absolute;width:176px;height:96px;background:var(--panel);border:1px solid var(--line);padding:9px 11px}
+  .brdcard:before{content:'';position:absolute;left:4px;right:-4px;top:-4px;bottom:4px;border:1px solid var(--line);z-index:-1}
+  .brdcard .k{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);margin-bottom:5px}
+  .brdcard .n{font-size:13.5px;color:var(--text-hi)}
+  .brdcard .h{font-size:9px;color:var(--text-low);margin-top:5px}
+  .pgcard{position:absolute;width:96px;height:125px;background:var(--paper);opacity:.92;
+          border:1px solid #cbbfa6;padding:8px 8px 0;overflow:hidden}
+  .pgcard .pk{font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:#8a7b62;margin-bottom:4px}
+  .pgcard .pb{font-family:var(--prose);font-size:9.5px;line-height:1.32;color:#3a2c1c}
+
+  /* ---- A: the panel ---- */
+  .cwrap{position:absolute;left:0;top:0;bottom:0;width:300px;z-index:6}
+  .cbody{width:300px;height:100%;background:var(--panel);border:1px solid var(--line);border-left:none;
+         display:flex;flex-direction:column}
+  .chead{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;
+         border-bottom:1px solid var(--line)}
+  .ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-rest)}
+  .cx{color:var(--text-low);font-size:14px}
+  .cscroll{flex:1;overflow:hidden;padding:4px 0 8px}
+  .zhead{display:block;padding:10px 14px 6px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+         color:var(--accent-rest)}
+  .zrule{height:1px;background:var(--line);margin:7px 14px}
+  .door{display:block;text-align:left;background:none;border:1px solid var(--accent-door);color:var(--text-mid);
+        font-family:inherit;font-size:11px;padding:6px 10px;margin:5px 14px 0;width:calc(100% - 28px)}
+  .door.plain{border-color:transparent;padding-left:11px}
+  .door.hot{border-color:var(--accent-rest);color:var(--text-hi)}
+  .brow{display:block;width:100%;text-align:left;padding:7px 14px;border-left:1px solid transparent}
+  .brow .t{display:block;font-size:12px;color:var(--text-mid)}
+  .brow .m{display:block;font-size:9.5px;color:var(--text-low);margin-top:2px}
+  .hint{padding:5px 14px 0;font-size:10px;color:var(--text-low);line-height:1.45}
+
+  /* ---- the trade-off table ---- */
+  .cmp{position:fixed;left:0;right:0;bottom:0;height:190px;z-index:19;background:#08080a;
+       border-top:1px solid #1e1e22;padding:10px 16px;overflow:auto}
+  table{border-collapse:collapse;width:100%;font-size:11.5px;color:#8b857b}
+  th,td{text-align:left;padding:5px 10px;border-bottom:1px solid #17171a;vertical-align:top}
+  th{color:#cfc9c0;font-weight:600;font-size:10.5px;letter-spacing:.06em}
+  td:first-child{color:#6e6961;width:26%}
+  .good{color:var(--accent-rest)} .bad{color:#c98b5e}
+  .lean{margin-top:8px;font-size:11.5px;color:#7e786e;line-height:1.55}
+  .lean b{color:#b9b2a6;font-weight:500}
+</style>
+</head>
+<body data-view="both">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PW · Q9 — IS PLAN A PANEL, OR A DOOR?</b>
+  <button id="vBoth" aria-pressed="true">side by side</button>
+  <button id="vA" aria-pressed="false">A full</button>
+  <button id="vB" aria-pressed="false">B full</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="fit">
+
+  <!-- ===================== A — PLAN IS A PANEL (PW23) ===================== -->
+  <div class="cell" id="cellA">
+    <div class="lab"><b>A</b> · Plan is a PANEL — it opens beside your work</div>
+    <div class="stage" id="stageA">
+      <div class="frame">
+        <nav class="rail" aria-label="Cascade">
+          <div class="cat"><span class="g">✶</span>journal</div>
+          <div class="sep"></div>
+          <div class="cat"><span class="g">▭</span>page</div>
+          <div class="cat on"><span class="g">⌗</span>plan</div>
+          <div class="sep"></div>
+          <div class="cat"><span class="g">☰</span>drawers</div>
+          <div class="cat"><span class="g">⌂</span>shelf</div>
+          <div class="foot"><div class="cat"><span class="g">⚙</span>settings</div>
+            <div class="cat"><span class="g">◐</span>theme</div><div class="sep"></div>
+            <div class="cat"><span class="g">✕</span>trash</div></div>
+        </nav>
+        <div class="band">
+          <div class="crumb"><span class="i">Novel</span><span class="s">/</span><span class="h">Stark</span></div>
+          <div class="qbtn">Page <span aria-hidden="true">→</span></div>
+        </div>
+        <div class="room">
+          <div class="board">
+            <div class="bcard" style="left:26%;top:4%"><div class="k">Card</div>
+              <div class="b">Ned's refusal is not stubbornness.</div></div>
+            <div class="pgcard" style="left:68%;top:12%"><div class="pk">Page</div>
+              <div class="pb">The coat on the train — she had the coat over her arm…</div></div>
+            <div class="bcard" style="left:28%;top:44%"><div class="k">Card</div>
+              <div class="b">Winterfell — the crypt is colder than the yard.</div></div>
+            <div class="brdcard" style="left:64%;top:58%"><div class="k">Board</div>
+              <div class="n">Ravens &amp; letters</div><div class="h">Research</div></div>
+          </div>
+          <div class="cwrap"><aside class="cbody" aria-label="Plan">
+            <div class="chead"><span class="ctitle">Plan</span><span class="cx">×</span></div>
+            <div class="cscroll">
+              <span class="zhead">Board</span>
+              <div class="door">＋ New card</div>
+              <div class="door plain">Import file</div>
+              <div class="door plain">＋ New board here</div>
+              <div class="door plain">Place this board inside…</div>
+              <div class="zrule"></div>
+              <span class="zhead">Boards connected</span>
+              <div class="brow"><span class="t">Novel</span><span class="m">its drawer</span></div>
+              <div class="brow"><span class="t">Westeros — the whole</span><span class="m">holds this board</span></div>
+              <div class="hint">Everything here acts on the board you are standing on. You never leave it.</div>
+            </div>
+          </aside></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== B — PLAN IS A DOOR (PW24) ===================== -->
+  <div class="cell" id="cellB">
+    <div class="lab"><b>B</b> · Plan is a DOOR — it opens the drawer's own board</div>
+    <div class="stage" id="stageB">
+      <div class="frame">
+        <nav class="rail" aria-label="Cascade">
+          <div class="cat"><span class="g">✶</span>journal</div>
+          <div class="sep"></div>
+          <div class="cat"><span class="g">▭</span>page</div>
+          <div class="cat door"><span class="g">⌗</span>plan →</div>
+          <div class="sep"></div>
+          <div class="cat"><span class="g">☰</span>drawers</div>
+          <div class="cat"><span class="g">⌂</span>shelf</div>
+          <div class="foot"><div class="cat"><span class="g">⚙</span>settings</div>
+            <div class="cat"><span class="g">◐</span>theme</div><div class="sep"></div>
+            <div class="cat"><span class="g">✕</span>trash</div></div>
+        </nav>
+        <div class="band">
+          <div class="crumb"><span class="h">Novel</span><span class="s">·</span><span class="i">the drawer's board</span></div>
+          <div class="qbtn">‹ Back to Stark</div>
+        </div>
+        <div class="room">
+          <div class="board">
+            <div class="brdcard" style="left:3%;top:4%"><div class="k">Board</div>
+              <div class="n">Westeros — the whole</div><div class="h">holds 2 boards</div></div>
+            <div class="brdcard" style="left:36%;top:6%"><div class="k">Board</div>
+              <div class="n">Stark</div><div class="h">you were here</div></div>
+            <div class="brdcard" style="left:68%;top:4%"><div class="k">Board</div>
+              <div class="n">Lannister</div><div class="h">&nbsp;</div></div>
+            <div class="pgcard" style="left:4%;top:44%"><div class="pk">Page</div>
+              <div class="pb">The coat on the train — she had the coat over her arm before she understood…</div></div>
+            <div class="pgcard" style="left:22%;top:44%"><div class="pk">Page</div>
+              <div class="pb">Catelyn's letter — three drafts, none of them sent, all of them true.</div></div>
+            <div class="pgcard" style="left:40%;top:44%"><div class="pk">Page</div>
+              <div class="pb">Ned — the last ride. He does not look back and that is the tell.</div></div>
+            <div class="pgcard" style="left:58%;top:44%"><div class="pk">Page</div>
+              <div class="pb">Platform smells — coal, wet wool, someone's orange.</div></div>
+            <div class="pgcard" style="left:76%;top:44%"><div class="pk">Page</div>
+              <div class="pb">Mara — first walk. The dog knows before she does.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="cmp">
+  <table>
+    <tr><th></th><th>A · Plan is a panel</th><th>B · Plan is a door</th></tr>
+    <tr><td>what happens on the press</td><td>a drawer opens beside the work</td><td>you travel to a new surface</td></tr>
+    <tr><td>you keep your place</td><td class="good">yes — the board stays under it</td><td class="bad">no — it is a surface switch</td></tr>
+    <tr><td>the question it answers</td><td>“what can I do here?”</td><td>“what do I have?”</td></tr>
+    <tr><td>board acts (R13.iv's homeless set)</td><td class="good">housed — this is the home the ruling was waiting for</td><td class="bad">homeless again; the sliver is already gone from boards</td></tr>
+    <tr><td>seeing the whole drawer</td><td class="bad">a list that scrolls</td><td class="good">the whole thing at once, spatially, arrangeable</td></tr>
+    <tr><td>the anti-file-manager rule<br><span style="font-size:10px">(CascadePanels.tsx:536)</span></td><td>untouched</td><td class="good">routed around, not lifted — it is a <em>board</em>, not a browser</td></tr>
+    <tr><td>new ontology needed</td><td class="good">none</td><td class="good">none — a system board, the mechanism Journal / Trash / Shelf already are; A16 exactly (derived membership, authored arrangement)</td></tr>
+    <tr><td>closed cost</td><td>one grip</td><td>one grip</td></tr>
+  </table>
+  <div class="lean"><b>The desk's lean, handed up rather than resolved:</b> these are not rivals — <b>they answer different questions</b>, and the table shows each winning the row the other loses. So <b>B needs A; A does not need B.</b> Picked alone, B re-opens R13.iv: the board's acts lose the only home this arc has found for them, and the writer who wanted to add a card has to leave the drawer to do it. <b>Composed</b> — A's panel, with one door row at its foot reading <em>“Open the drawer →”</em> — costs one row and gives both answers. <b>That is the desk's recommendation; Nick's word picks.</b></div>
+</div>
+
+<script>
+(function(){
+  var W=1366,H=768, view='both';
+  var stA=document.getElementById('stageA'), stB=document.getElementById('stageB'),
+      geom=document.getElementById('geom'), fit=document.querySelector('.fit');
+  var bBoth=document.getElementById('vBoth'), bA=document.getElementById('vA'), bB=document.getElementById('vB');
+
+  function setView(v){
+    view=v; document.body.dataset.view = (v==='both'?'both':v);
+    bBoth.setAttribute('aria-pressed', String(v==='both'));
+    bA.setAttribute('aria-pressed', String(v==='A'));
+    bB.setAttribute('aria-pressed', String(v==='B'));
+    layout();
+  }
+  function layout(){
+    [stA,stB].forEach(function(s){ s.style.width=W+'px'; s.style.height=H+'px'; });
+    var avail = fit.clientWidth - 40, avh = fit.clientHeight - 34;
+    var per = (view==='both') ? (avail-14)/2 : avail;
+    var sc = Math.min(per/W, avh/H, 1);
+    [stA,stB].forEach(function(s){ s.style.transform='scale('+sc+')';
+      s.style.marginBottom = (-(H*(1-sc)))+'px'; });
+    geom.textContent = 'both stages 1366×768 @ '+(sc*100).toFixed(0)+'% · '
+      + (view==='both' ? 'same scale, same width — a fair comparison' : 'single view');
+  }
+  bBoth.onclick=function(){setView('both')}; bA.onclick=function(){setView('A')}; bB.onclick=function(){setView('B')};
+  window.addEventListener('resize',layout);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='1')setView('both'); if(e.key==='2')setView('A'); if(e.key==='3')setView('B');
+  });
+  layout();
+})();
+</script>
+</body>
+</html>

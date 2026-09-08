@@ -121,6 +121,13 @@ export interface BirthContent {
   boxes?: Box[];
   pageType?: JournalEntry['pageType'];
   script?: JournalEntry['script'];
+  // ITEM 121 I2 — ink is content, so ink can be a birth trigger. Exactly the
+  // `boxes` shape and for exactly the `boxes` reason: the row is written WITH
+  // the drawing in the same synchronous act, never created empty and filled in
+  // afterwards. F6's DoD 4 already ruled that an ink-only page is NOT empty, so
+  // a first stroke on an unborn Free Write page births it the way a first word
+  // does. Zero schema — `strokes` is an existing column on the row.
+  strokes?: JournalEntry['strokes'];
 }
 
 export function birth(
@@ -137,6 +144,7 @@ export function birth(
     ...(content.boxes != null ? { boxes: content.boxes } : {}),
     ...(content.pageType != null ? { pageType: content.pageType } : {}),
     ...(content.script != null ? { script: content.script } : {}),
+    ...(content.strokes != null ? { strokes: content.strokes } : {}),
     updatedAt: now,
   };
   saveJournalEntry(born);

@@ -109,6 +109,10 @@ interface Props {
   // 1100px gate) falls through to the internal uncontrolled `pen` state,
   // byte-identical to pre-AB2 behavior.
   penColor?: string;
+  // ITEM 121 I3 — the page's current instrument, when the host has one.
+  // Undefined on every other host, which is what keeps `data-instrument`
+  // off their paper entirely rather than present-and-empty.
+  instrument?: 'text' | 'ink';
   // HB1 S3 — true only on the one page a first-run Write click produced,
   // while the veil holds. The reveal handle and the settings gear (which
   // exposes a Theme switch and the Typewriter toggle — exactly the two
@@ -121,7 +125,7 @@ interface Props {
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, firstRunGateActive, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, firstRunGateActive, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -447,6 +451,14 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
             ref={surfaceRef}
             className={`mode-page${focused ? ' focused' : ''}`}
             data-page={pageNum}
+            /* ITEM 121 I3 — which instrument the page currently IS. Additive
+               and optional: absent on every host that does not pass it, so the
+               attribute simply does not exist on Draft, Revise, the sprint or
+               the script page and nothing about them changes. Free Write's own
+               switch is the only writer; index.css reads it to put the caret to
+               sleep, and the harness reads it to prove the switch and the paper
+               never disagree. */
+            data-instrument={instrument}
             /* ITEM 83 M3 (R6) — the paper is the preview: PAGE SETUP's margins
                and leading land here as CSS custom properties, live, as the
                writer chooses them. Empty object when the page carries no dress,

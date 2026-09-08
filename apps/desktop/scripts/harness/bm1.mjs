@@ -43,16 +43,39 @@ const freshDesk = async (app, width = 1400, height = 900) => {
   await app.emulateDpr(1, width, height);
 };
 
+// ITEM 129 — SEEDED THROUGH THE SEAM, never raw localStorage.
+//
+// WHAT THE RAW WRITE ACTUALLY DID, measured rather than reasoned: every product
+// write serialises the WHOLE in-memory cache back over storage, and the cache
+// never contained a raw-written row. So a raw seed survives only until the next
+// product write ANYWHERE in the run, and then vanishes wholesale. Proven
+// directly — raw-seed a row, make one ordinary product write, and the row is
+// gone; reload confirms it. That is why bm1's S2 failed ~50% of the time with
+// `after=false` that the 4000ms settle poll could never rescue: there was
+// nothing to wait for. The rows were not late. They had been overwritten.
+//
+// This is item 85's first concrete victim, and its remediation pattern: a seam
+// that cannot express the fixture a harness needs is not bypassed loudly, it is
+// bypassed QUIETLY, and the bill arrives later as a flaky test. Item 129 widened
+// `JournalPageSeed` with origin / pageType / projectId / boxes so the seam can
+// say what these fixtures need to say.
+//
+// The write is DEBOUNCED (scheduleFlush, 300ms) where the raw write was
+// synchronous — the one behavioural difference a migrating harness absorbs — so
+// this waits for each row to be readable through the store before returning.
 const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
-  await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-  })()`);
-  // Reload so the in-memory persistence cache hydrates the new rows (the store
-  // reads the cache, not localStorage, for every getter/pairing op).
+  for (const row of rows) {
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
+  }
+  // Wait for the debounced flush to LAND before reloading: the reload hydrates
+  // the cache from storage, so a reload that outruns the 300ms flush would
+  // hydrate a store missing the rows just seeded — trading one vanish for
+  // another. This is the one behavioural difference the seam's own comment
+  // names, absorbed here rather than assumed away.
+  const ids = rows.map(r => r.id);
+  await settle(app, `(() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').map(e => e.id); return ${JSON.stringify(ids)}.every(id => es.includes(id)); })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed hydrate' });
 };
@@ -171,6 +194,15 @@ async function scenario(app) {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (after orphan)' });
   const orphanBoardOnShelfAfter = await settle(app, "window.wrizoDerived.shelf().includes('bm1-oboard')");
   const stillPaired = await app.evalJs("window.wrizoPairing.isPaired('bm1-oboard')");
+  // ITEM 129 — THE PARK IS LIFTED. This assertion failed ~50% of the time not
+  // because the claim was wrong and not because the read raced, but because
+  // seedEntries wrote raw localStorage and every product write serialises the
+  // whole in-memory cache back over storage. The seeded rows were not late —
+  // they had been overwritten, which is why the 4000ms settle poll above could
+  // never rescue them and why the failure detail was always `after=false`
+  // exactly. seedEntries now seeds THROUGH THE SEAM, so the assertion stands
+  // here, in its own place in the run, rather than being relocated somewhere
+  // quieter.
   ok('S2 orphan: a paired board is off the Shelf; deleting its page orphans it onto the Shelf, nothing cascades',
     orphanBoardOnShelfBefore === false && orphanBoardOnShelfAfter === true && stillPaired === false,
     `before=${orphanBoardOnShelfBefore} after=${orphanBoardOnShelfAfter} paired=${stillPaired}`);

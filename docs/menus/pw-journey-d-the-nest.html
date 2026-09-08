@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PW · Journey D — the nest (a board inside a board)</title>
+<!--
+  THE PAGE/PLAN WORKFLOW ARC · JOURNEY D · "the nest"
+  PLAN desk · 2026-09-07 · candidates only, nothing locks.
+
+  NEW JOURNEY, on item 128's own instruction ("the desk designs the
+  journey") and Fable's ruling that the CYCLE GUARD must be "named in your
+  journey where the writer would meet it."
+
+  Renders, from the verbatim canon at 3d80a0f:
+  - ITEM 128: a board is a RECURSIVE CONTAINER; the board-card kind on a
+    parent; DOUBLE-CLICK TRAVELS IN.
+  - ITEM 128's FIRST INVARIANT (Fable, this relay): membership creation
+    refuses a board entering its own descendant -- "a board cannot be
+    placed inside itself, or inside a board it already contains." Met at
+    step 5, at the moment of the act, not after it.
+  - ITEM 125 generalized: a board is a member of a board exactly as a page
+    is, and MEMBERSHIP IS NOT DISPLAY -- steps 6 and 7 are separate acts.
+  - Q19 AS RULED: THE RAIL TRAVELS, THE COUNSEL READS. Both hands are on
+    screen at step 2 so the two jobs can be seen at once, never as copies.
+  - COPY SEMANTICS (item 123): a board-card is membership, not content, so
+    it carries NO copy verb -- same as a page-pin.
+  - PW8's crumb carries the nest chain, which is what makes "where am I"
+    answerable once containers hold containers.
+
+  SHAPE TEACHES THE KIND, extended to three silhouettes, no colour spent:
+    free card   -- landscape panel        (board-owned content)
+    page card   -- portrait, papered, aspect-locked
+    board card  -- a doubled edge: a thing that HOLDS things
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+  #geom.drift{color:#e05c5c}
+
+  .steps{position:fixed;top:39px;left:0;right:0;z-index:19;display:flex;gap:10px;align-items:center;
+         padding:7px 14px;background:#08080a;border-bottom:1px solid #1e1e22;font-size:12px}
+  .steps .nav{font:inherit;background:#141414;border:1px solid #333;color:#d8d8d8;padding:3px 9px;cursor:pointer}
+  .steps .nav:disabled{opacity:.35;cursor:default}
+  .dots{display:flex;gap:4px}
+  .dot{width:22px;height:20px;border:1px solid #333;background:#141414;color:#8a8a8a;font:inherit;
+       font-size:10.5px;cursor:pointer;padding:0}
+  .dot[aria-current="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  .act{color:#cfc9c0} .act i{font-style:normal;color:var(--brass)}
+  .cnt{margin-left:auto;color:#8f8f8f;letter-spacing:.04em}
+  .cnt b{color:#fff}
+
+  .fit{position:absolute;inset:74px 0 46px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;z-index:19;padding:9px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.5}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;position:relative;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;background:none;
+       border:none;border-left:1px solid transparent;color:var(--text-low);font-family:inherit;
+       font-size:9px;letter-spacing:.09em;cursor:pointer}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left-color:var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:20px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .strip{display:flex;gap:20px}
+  .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
+  .acts{margin-left:auto}
+  .qbtn{background:none;border:none;font:inherit;font-size:11px;color:var(--text-mid);cursor:pointer;padding:4px 2px}
+  .qbtn:hover{color:var(--brass)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+  .board{position:absolute;inset:22px 30px 26px 30px}
+
+  /* --- three silhouettes, no colour spent --- */
+  .bcard{position:absolute;width:210px;min-height:84px;background:var(--panel);border:1px solid var(--line);
+         padding:10px 12px}
+  .bcard .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-bottom:5px}
+  .bcard .b{font-family:var(--prose);font-size:13.5px;line-height:1.4;color:var(--text-mid)}
+  /* a BOARD card: a doubled edge — a thing that HOLDS things */
+  .brdcard{position:absolute;width:190px;height:104px;background:var(--panel);border:1px solid var(--line);
+           padding:10px 12px;cursor:pointer}
+  .brdcard:before{content:'';position:absolute;left:4px;right:-4px;top:-4px;bottom:4px;
+                  border:1px solid var(--line);z-index:-1}
+  .brdcard .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);margin-bottom:6px}
+  .brdcard .n{font-size:14px;color:var(--text-hi)}
+  .brdcard .h{font-size:9.5px;color:var(--text-low);margin-top:6px}
+  .brdcard:hover{border-color:var(--accent-rest)}
+  .brdcard.fresh{border-color:var(--accent-rest)}
+  .brdcard[data-new="1"]{display:none}
+  .stage[data-newnest="1"] .brdcard[data-new="1"]{display:block}
+
+  /* the two hands, mirrored (item 119) */
+  .cwrap{position:absolute;left:0;top:0;bottom:0;width:0;overflow:hidden;z-index:6;transition:width .18s ease}
+  .stage[data-panel="plan"] .cwrap{width:300px}
+  .counsel{position:absolute;right:0;top:0;bottom:0;width:0;overflow:hidden;z-index:6;transition:width .18s ease}
+  .stage[data-counsel="1"] .counsel{width:300px}
+  .cbody{width:300px;height:100%;background:var(--panel);border:1px solid var(--line);
+         display:flex;flex-direction:column}
+  .cwrap .cbody{border-left:none}
+  .counsel .cbody{border-right:none}
+  .chead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;
+         border-bottom:1px solid var(--line)}
+  .ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-rest)}
+  .cx{background:none;border:none;color:var(--text-low);font:inherit;font-size:15px;cursor:pointer}
+  .cscroll{flex:1;overflow:auto;padding:4px 0 8px}
+  .zhead{display:block;padding:11px 14px 7px;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+         color:var(--accent-rest)}
+  .zrule{height:1px;background:var(--line);margin:8px 14px}
+  .hint{padding:4px 14px 8px;font-size:10.5px;color:var(--text-low);line-height:1.5}
+  .door{display:block;text-align:left;background:none;border:1px solid var(--accent-door);color:var(--text-mid);
+        font-family:inherit;font-size:11.5px;padding:7px 11px;margin:6px 14px 0;width:calc(100% - 28px);cursor:pointer}
+  .door:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  .door.plain{border-color:transparent;padding-left:12px}
+
+  .brow{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;
+        padding:8px 14px;cursor:pointer;border-left:1px solid transparent}
+  .brow .t{display:block;font-size:12.5px;color:var(--text-mid)}
+  .brow .m{display:block;font-size:10px;color:var(--text-low);margin-top:2px}
+  .brow:hover{background:#241305}.brow:hover .t{color:var(--text-hi)}
+
+  /* the membership picker — where the cycle guard is MET */
+  .pick{margin:0 14px;border:1px solid var(--line)}
+  .prow{display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;background:none;border:0;
+        border-bottom:1px solid var(--line);font-family:inherit;padding:8px 10px;cursor:pointer}
+  .prow:last-child{border-bottom:none}
+  .prow .bx{width:11px;height:11px;border:1px solid var(--text-low);flex:0 0 auto;margin-top:2px;position:relative}
+  .prow .pt{flex:1;min-width:0}
+  .prow .pn{display:block;font-size:11.5px;color:var(--text-mid)}
+  .prow .pw{display:block;font-size:9.5px;color:var(--text-low);margin-top:2px}
+  .prow:hover{background:#241305} .prow:hover .pn{color:var(--text-hi)}
+  .prow[data-on="1"] .bx{border-color:var(--accent-rest)}
+  .prow[data-on="1"] .bx:after{content:'';position:absolute;inset:2px;background:var(--accent-rest)}
+  .prow[data-on="1"] .pn{color:var(--text-hi)}
+  /* INERT WITH ITS REASON — G3's lawful pole: a transient gate on real
+     capability, the refusal disclosed on the control itself. */
+  .prow.inert{cursor:default;opacity:.72}
+  .prow.inert:hover{background:none} .prow.inert:hover .pn{color:var(--text-low)}
+  .prow.inert .pn{color:var(--text-low)}
+  .prow.inert .bx{border-style:dashed;border-color:#4a3a22}
+  .prow.inert .pw{color:#8d7f5f;font-style:italic}
+  .stage[data-refuse="1"] #pickWest{outline:1px solid #8d7f5f;outline-offset:-1px}
+
+  /* the Counsel's read of the contained cards (effect 5 / item 124) */
+  .cn{margin:0 14px 7px;border:1px solid var(--line);padding:8px 10px}
+  .cn .cnk{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-bottom:4px}
+  .cn .cnb{font-family:var(--prose);font-size:12.5px;line-height:1.42;color:var(--text-mid)}
+
+  .stamp{position:absolute;right:12px;bottom:8px;z-index:9;font-size:10px;color:#5e564c}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PW · JOURNEY D — THE NEST</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="steps">
+  <button class="nav" id="prev">‹ Prev</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav" id="next">Next ›</button>
+  <span class="act" id="act"></span>
+  <span class="cnt" id="cnt"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage" data-panel="none" data-counsel="0"
+     data-newnest="0" data-refuse="0">
+  <div class="frame">
+
+    <nav class="rail" aria-label="Cascade">
+      <button class="cat"><span class="g">✶</span>journal</button>
+      <div class="sep"></div>
+      <button class="cat" id="catPage"><span class="g">▭</span>page</button>
+      <button class="cat" id="catPlan"><span class="g">⌗</span>plan</button>
+      <div class="sep"></div>
+      <button class="cat"><span class="g">☰</span>drawers</button>
+      <button class="cat"><span class="g">⌂</span>shelf</button>
+      <div class="foot">
+        <button class="cat"><span class="g">⚙</span>settings</button>
+        <button class="cat"><span class="g">◐</span>theme</button>
+        <div class="sep"></div>
+        <button class="cat"><span class="g">✕</span>trash</button>
+      </div>
+    </nav>
+
+    <div class="band">
+      <div class="crumb" id="crumb" aria-label="Location"></div>
+      <div class="strip" aria-label="Rooms"><span class="mode" id="modeLbl">Board</span></div>
+      <div class="acts"><button class="qbtn" id="doorq">Page <span aria-hidden="true">→</span></button></div>
+    </div>
+
+    <div class="room" id="room">
+      <div class="board" id="boardWest" aria-label="Westeros — the whole">
+        <div class="brdcard" style="left:4%;top:8%"><div class="k">Board</div>
+          <div class="n">Stark</div><div class="h">Novel</div></div>
+        <div class="brdcard" style="left:36%;top:34%"><div class="k">Board</div>
+          <div class="n">Lannister</div><div class="h">Novel</div></div>
+        <div class="bcard" style="left:8%;top:60%"><div class="k">Card</div>
+          <div class="b">The two houses mirror each other and neither notices.</div></div>
+      </div>
+
+      <div class="board" id="boardStark" aria-label="Stark" style="display:none">
+        <div class="bcard" style="left:5%;top:8%"><div class="k">Card</div>
+          <div class="b">Ned's refusal is not stubbornness.</div></div>
+        <div class="bcard" style="left:40%;top:44%"><div class="k">Card</div>
+          <div class="b">Winterfell — the crypt is colder than the yard.</div></div>
+        <div class="brdcard fresh" data-new="1" style="left:8%;top:56%"><div class="k">Board · just displayed</div>
+          <div class="n">Ravens &amp; letters</div><div class="h">Research</div></div>
+      </div>
+
+      <!-- LEFT HAND — the rail TRAVELS (Q19 as ruled) -->
+      <div class="cwrap"><aside class="cbody" aria-label="Plan">
+        <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
+        <div class="cscroll" id="planScroll">
+
+          <div id="planBoardActs">
+            <span class="zhead">Board</span>
+            <button class="door">＋ New card</button>
+            <button class="door plain">Import file</button>
+            <button class="door plain">＋ New board here</button>
+            <div class="zrule"></div>
+            <span class="zhead">Boards connected</span>
+            <div id="connList"></div>
+          </div>
+
+          <div id="planPick" style="display:none">
+            <span class="zhead">Place this board inside…</span>
+            <div class="pick">
+              <button class="prow" data-on="0"><span class="bx"></span><span class="pt">
+                <span class="pn">Ravens &amp; letters</span><span class="pw">Research</span></span></button>
+              <button class="prow" data-on="0"><span class="bx"></span><span class="pt">
+                <span class="pn">Lannister</span><span class="pw">Novel</span></span></button>
+              <div class="prow inert" id="pickWest"><span class="bx"></span><span class="pt">
+                <span class="pn">Westeros — the whole</span>
+                <span class="pw">already contains this board</span></span></div>
+            </div>
+            <div class="hint">A board cannot be placed inside itself, or inside a board it already contains.</div>
+          </div>
+
+        </div>
+      </aside></div>
+
+      <!-- RIGHT HAND — the Counsel READS (Q19 as ruled; effect 5 / item 124) -->
+      <div class="counsel"><aside class="cbody" aria-label="Counsel">
+        <div class="chead"><span class="ctitle">Counsel</span><button class="cx" aria-label="Close">×</button></div>
+        <div class="cscroll">
+          <span class="zhead">What this board holds</span>
+          <div class="cn"><div class="cnk">Stark · a board</div>
+            <div class="cnb">3 cards. Ned's refusal, the crypt, the coat.</div></div>
+          <div class="cn"><div class="cnk">Lannister · a board</div>
+            <div class="cnb">2 cards, both about debt.</div></div>
+          <div class="cn"><div class="cnk">Card</div>
+            <div class="cnb">The two houses mirror each other and neither notices.</div></div>
+          <div class="hint">The board itself has no words of its own — the Counsel reads what it holds.</div>
+        </div>
+      </aside></div>
+
+      <div class="stamp" id="stamp"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var CONN_WEST = '<button class="brow"><span class="t">Novel</span><span class="m">its drawer</span></button>';
+  var CONN_STARK = '<button class="brow"><span class="t">Novel</span><span class="m">its drawer</span></button>' +
+                   '<button class="brow"><span class="t">Westeros — the whole</span><span class="m">holds this board</span></button>';
+
+  var STEPS = [
+    { act:'— standing inside <i>Westeros — the whole</i>. It holds two boards and a card.', n:'0',
+      board:'west', panel:'none', counsel:0, pick:0, refuse:0, newnest:0, conn:CONN_WEST,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="h">Westeros — the whole</span>',
+      cap:'<b>Step 1 · three silhouettes, no colour spent.</b> A <b>board-card</b> wears a doubled edge — a thing that <em>holds</em> things — beside a landscape <b>card</b>. (A page would be portrait and papered.) Shape teaches the kind at a glance, which is <b>S13</b> answered a third time and the Plateau ember ceiling never touched. <b>Item 128:</b> a board is a recursive container.' },
+
+    { act:'press <i>Plan</i> in the rail, and open the <i>Counsel</i>', n:'2',
+      board:'west', panel:'plan', counsel:1, pick:0, refuse:0, newnest:0, conn:CONN_WEST,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="h">Westeros — the whole</span>',
+      cap:'<b>Step 2 · two hands, two jobs — Q19 as ruled.</b> <b>The rail TRAVELS; the Counsel READS.</b> On the left, the container’s own tools and the containers holding it (<em>Novel, its drawer</em>) — where to go. On the right, what this board <em>holds</em>, read as counsel — what they say. Two displays of one container, never copies. And the Counsel’s last line is <b>item 124</b>: the board has no words of its own, so there is nothing else for it to read.' },
+
+    { act:'double-click the <i>Stark</i> board-card', n:'1',
+      board:'stark', panel:'none', counsel:0, pick:0, refuse:0, newnest:0, conn:CONN_STARK,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="i">Westeros — the whole</span><span class="s">/</span><span class="h">Stark</span>',
+      cap:'<b>Step 3 · double-click travels in (item 128), and the crumb carries the nest.</b> <em>Novel / Westeros — the whole / Stark.</em> This is <b>PW8</b> earning its keep a second time: once containers hold containers, a one-line address is the only thing that answers “where am I” without opening anything. The same rule as everywhere — the chain never renders empty.' },
+
+    { act:'press <i>Plan</i> in the rail', n:'1',
+      board:'stark', panel:'plan', counsel:0, pick:0, refuse:0, newnest:0, conn:CONN_STARK,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="i">Westeros — the whole</span><span class="s">/</span><span class="h">Stark</span>',
+      cap:'<b>Step 4 · PW13’s silent list is awake.</b> It stayed silent while “can a board hold a board” was unanswered; Nick’s overrule woke it. <b>BOARDS CONNECTED</b> on a board now names <em>its drawer</em> and <em>any parent board</em> — one heading, two surfaces, contents by where you stand (G2). Same word as on a page: one thing for the writer to learn, not two.' },
+
+    { act:'press <i>＋ Place this board inside…</i>', n:'1',
+      board:'stark', panel:'plan', counsel:0, pick:1, refuse:1, newnest:0, conn:CONN_STARK,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="i">Westeros — the whole</span><span class="s">/</span><span class="h">Stark</span>',
+      cap:'<b>Step 5 · the cycle guard, met where the writer would meet it — item 128’s first invariant.</b> Stark is already inside Westeros, so Westeros cannot go inside Stark. The row is <b>present, inert, and says why: <em>“already contains this board.”</em></b> Not absent — absence makes the writer hunt for a board they can see on the crumb. This is <b>G3’s lawful pole</b>, not its forbidden one: a <em>transient</em> gate on real capability, disclosed on the control — the same shape as the selection-gated action row, and the same shape as the inert <em>Unlink</em> Fable ratified. <b>Self-nesting differs and is ABSENT:</b> a board never lists itself, because that is nonsense rather than a refusal, and the built self-pin guard already holds it.' },
+
+    { act:'press <i>Ravens &amp; letters</i>', n:'1',
+      board:'stark', panel:'plan', counsel:0, pick:1, refuse:0, newnest:0, conn:CONN_STARK, picked:1,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="i">Westeros — the whole</span><span class="s">/</span><span class="h">Stark</span>',
+      cap:'<b>Step 6 · a lawful nest is made — and the wall does not change.</b> <b>Item 125 generalizes exactly as ruled:</b> a board is a member of a board precisely as a page is, so this is a <em>membership</em> and nothing has been displayed. The canvas is still the writer’s arrangement. One rule covers pages and boards both; there is no second model to learn.' },
+
+    { act:'press <i>Display on Board</i> in the row’s <i>⋯</i>', n:'2',
+      board:'stark', panel:'plan', counsel:0, pick:1, refuse:0, newnest:1, conn:CONN_STARK, picked:1,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="i">Westeros — the whole</span><span class="s">/</span><span class="h">Stark</span>',
+      cap:'<b>Step 7 · now it is displayed, and it arrived wearing its kind.</b> The same two display acts as a page — the menu row, or a drag onto the wall. <b>No copy verb anywhere on it (item 123):</b> a board-card is <em>membership</em>, not content, so it copies no more than a page-pin does. <b>And the build law behind all of this (item 125):</b> absence must mean displayed — every board a writer has already arranged reads unchanged on first launch, and the storage shape serves that rather than the reverse.' },
+
+    { act:'— the way back out', n:'1',
+      board:'stark', panel:'none', counsel:0, pick:0, refuse:0, newnest:1, conn:CONN_STARK,
+      crumb:'<span class="i">Novel</span><span class="s">/</span><span class="i">Westeros — the whole</span><span class="s">/</span><span class="h">Stark</span>',
+      cap:'<b>Step 8 · one press out, at any depth.</b> The crumb’s parent segment is the door — <em>Westeros — the whole</em> — and the rail’s BOARDS CONNECTED holds the same door for a hand already there. <b>Nesting adds depth without adding a way to get lost</b>, which is the whole test a recursive container has to pass: the address is always one line, and the way back is always one press.' }
+  ];
+
+  var stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      crumb=document.getElementById('crumb'), cap=document.getElementById('cap'),
+      act=document.getElementById('act'), cnt=document.getElementById('cnt'),
+      dots=document.getElementById('dots'), prev=document.getElementById('prev'),
+      next=document.getElementById('next'), stamp=document.getElementById('stamp'),
+      catPlan=document.getElementById('catPlan'), connList=document.getElementById('connList'),
+      boardWest=document.getElementById('boardWest'), boardStark=document.getElementById('boardStark'),
+      planBoardActs=document.getElementById('planBoardActs'), planPick=document.getElementById('planPick'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+
+  var SIZES={a:[1366,768], b:[1680,1050]}, cur='a', scale=1, i=0;
+
+  STEPS.forEach(function(s,n){
+    var b=document.createElement('button'); b.className='dot'; b.textContent=String(n+1);
+    b.onclick=function(){ i=n; render(); }; dots.appendChild(b);
+  });
+
+  function render(){
+    var s=STEPS[i];
+    stage.dataset.panel=s.panel; stage.dataset.counsel=s.counsel;
+    stage.dataset.newnest=s.newnest; stage.dataset.refuse=s.refuse;
+    boardWest.style.display = s.board==='west' ? 'block':'none';
+    boardStark.style.display = s.board==='stark' ? 'block':'none';
+    crumb.innerHTML=s.crumb;
+    connList.innerHTML=s.conn;
+    catPlan.classList.toggle('on', s.panel==='plan');
+    planBoardActs.style.display = s.pick ? 'none':'block';
+    planPick.style.display = s.pick ? 'block':'none';
+    var rows=planPick.querySelectorAll('.prow:not(.inert)');
+    if(rows[0]) rows[0].setAttribute('data-on', s.picked ? '1':'0');
+
+    act.innerHTML=s.act;
+    cnt.innerHTML='presses this step — <b>'+s.n+'</b>';
+    cap.innerHTML=s.cap;
+    stamp.textContent='step '+(i+1)+' of '+STEPS.length;
+    Array.prototype.forEach.call(dots.children,function(d,n){
+      d.setAttribute('aria-current', n===i ? 'true':'false'); });
+    prev.disabled=i===0; next.disabled=i===STEPS.length-1;
+    requestAnimationFrame(readout);
+  }
+
+  function readout(){
+    var s=STEPS[i], W=SIZES[cur][0], H=SIZES[cur][1];
+    var rail=document.querySelector('.rail').getBoundingClientRect();
+    var parts=['rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'%'];
+    if(s.panel!=='none'){
+      var p=document.querySelector('.cwrap').getBoundingClientRect();
+      var gap=(p.left-rail.right)/scale, flush=Math.abs(gap)<0.6;
+      geom.classList.toggle('drift',!flush);
+      parts.push('panel seam '+gap.toFixed(1)+'px '+(flush?'✓ flush (R10.i)':'✗ DRIFT'));
+    } else { geom.classList.remove('drift'); parts.push('both hands closed'); }
+    if(s.counsel){
+      var L=document.querySelector('.cwrap .cbody').getBoundingClientRect();
+      var R=document.querySelector('.counsel .cbody').getBoundingClientRect();
+      var d=Math.abs(L.width-R.width)/scale;
+      parts.push('hands mirrored — width delta '+d.toFixed(1)+'px '+(d<0.6?'✓':'✗'));
+    }
+    parts.push(s.refuse ? 'cycle refused at the act — inert, reason disclosed'
+                        : (s.newnest ? 'nested board DISPLAYED' : 'no refusal in view'));
+    geom.textContent=parts.join(' · ');
+  }
+
+  function layout(){
+    var W=SIZES[cur][0], H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    requestAnimationFrame(readout);
+  }
+
+  prev.onclick=function(){ if(i>0){i--;render();} };
+  next.onclick=function(){ if(i<STEPS.length-1){i++;render();} };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ next.click(); } if(e.key==='ArrowLeft'){ prev.click(); }
+  });
+  B1.onclick=function(){ cur='a'; B1.setAttribute('aria-pressed','true'); B2.setAttribute('aria-pressed','false'); layout(); };
+  B2.onclick=function(){ cur='b'; B2.setAttribute('aria-pressed','true'); B1.setAttribute('aria-pressed','false'); layout(); };
+  window.addEventListener('resize',layout);
+  render(); layout();
+})();
+</script>
+</body>
+</html>

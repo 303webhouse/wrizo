@@ -767,6 +767,28 @@ export interface JournalPageSeed {
   text?: string;
   createdAt?: string;
   strokes?: Stroke[];
+  // ITEM 129 — the four fields a real fixture needs, added because the seam
+  // could not express one. A harness seeding a LOOSE BOARD (the shape bm1's S2
+  // orphan check requires) could reach it only by writing raw localStorage,
+  // and a raw write is destroyed by the very next product write in the run:
+  // every product write serialises the WHOLE in-memory cache back over
+  // storage, and the cache never contained the raw row. Measured, and
+  // deterministic: raw-seed a row, call this function once, and the raw row is
+  // gone — no timing signature, so no settle poll could ever have caught it.
+  //
+  // `origin` matters more than it looks: it is set ONLY at birth (nothing in
+  // the app ever writes it afterwards), and `belongsOnShelf` excludes anything
+  // journal-homed. So a seam that could not seed `origin: 'loose'` could not
+  // produce a Shelf-eligible page AT ALL, which is exactly why bm1 was still
+  // reaching past the seam.
+  //
+  // Every one of these is applied ONLY when supplied, so an unseeded call
+  // writes the byte-identical row it always did — the same discipline
+  // `strokes` already established below. Product code passes no seed at all.
+  origin?: JournalEntry['origin'];
+  pageType?: JournalEntry['pageType'];
+  projectId?: string | null;
+  boxes?: Box[];
 }
 
 export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
@@ -799,6 +821,14 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   // Set only when seeded, so an unseeded page's row is byte-identical to the
   // one this function wrote before fix (b) — `strokes` is absent, not empty.
   if (seed?.strokes) entry.strokes = seed.strokes;
+  // ITEM 129 — same discipline, four more fields. Presence-checked
+  // individually rather than spread, so a caller supplying none of them gets
+  // the identical row this function has always written, and a caller
+  // supplying one does not silently acquire the others' defaults.
+  if (seed?.origin !== undefined) entry.origin = seed.origin;
+  if (seed?.pageType !== undefined) entry.pageType = seed.pageType;
+  if (seed?.projectId !== undefined) entry.projectId = seed.projectId;
+  if (seed?.boxes !== undefined) entry.boxes = seed.boxes;
   saveJournalEntry(entry);
   return entry;
 }
@@ -816,7 +846,16 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
 //
 // Item 82 fix (b): callers may pass a `JournalPageSeed` (id / text /
 // createdAt / strokes) — see that interface's own comment for why, and for
-// why product code never does. The write is DEBOUNCED like every other
+// why product code never does.
+//
+// ITEM 129 widened that seed with origin / pageType / projectId / boxes, and
+// the reason is worth keeping next to the seam rather than only in the ledger:
+// a seam that cannot express the fixture a harness needs does not get bypassed
+// loudly. It gets bypassed QUIETLY, with a raw localStorage write that works
+// perfectly until some unrelated product write flushes the cache over it — and
+// then presents as a ~50% "flaky test" that no amount of polling can fix.
+// bm1's S2 was item 85's first concrete victim; the remediation is to make the
+// seam able to say what fixtures actually need to say. The write is DEBOUNCED like every other
 // product write (`scheduleFlush`, 300ms), so a fixture that reads
 // localStorage straight afterwards must wait for the row to land; the raw
 // write this replaces was synchronous, and that is the one behavioural

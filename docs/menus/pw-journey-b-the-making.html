@@ -3,20 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PW · Journey B — the making (a relation made by one natural act)</title>
+<title>PW · Journey B — the making (membership, and then display)</title>
 <!--
   THE PAGE/PLAN WORKFLOW ARC · JOURNEY B · "the making"
   PLAN desk · 2026-09-07 · candidates only, nothing locks.
 
-  Eight STEPS. Proves the MINIMUM-SETUP LAW: the writer never configures a
-  relationship. They tick a checkbox they already have, or pick a page from a
-  list that already exists, and the relation becomes geography with no further
-  step. Renders PW1, PW2, PW9, PW10 and the two-ends symmetry.
+  REWRITTEN against the THREE-SPACE CANON read VERBATIM at 3d80a0f
+  (open-threads 2291-2334, items 123-128). The prior render is readable at
+  4ba3670, and its central caption was FALSIFIED rather than merely dated:
+  it said the checkbox makes the page "a card on Stark." Item 125 rules
+  otherwise -- MEMBERSHIP IS NOT DISPLAY -- with two display acts,
+  "Display on Board" (right-click) and drag-thumbnail-to-board.
 
-  Nothing here is new mechanism. The Boards zone checkbox is PlacesPanel.tsx
-  as built (pin/unpin, membership never filing). "Place page on board" is the
-  board's Page drawer as built (item 83 M6, R13.ii). The candidate is only
-  that the Plan tab then SHOWS what those two acts made.
+  Folded from the verbatim text:
+  - Nick: "No writing or drawing is made on a board -- it merely holds
+    cards/pages/imported docs." A board is a container you stand inside to
+    arrange what it holds. (This corrects THIS DESK's own earlier claim
+    that a board's canvas is a surface.)
+  - RIDER: page cards are ASPECT-LOCKED, "resizable by SCALE, never
+    stretched." This OVERRULES this desk's recommendation of a fixed,
+    unresizable page-card. The ruling keeps the same teaching -- a page
+    still reads as a page -- and hands back a capability my version spent
+    for nothing.
+  - ITEM 123: tags travel with a copy; THREADS DO NOT; every card keeps
+    >= 1 board.
+  - ITEM 125 SCHEMA FLAG: the storage home is the BUILDER'S S0's to
+    establish, not this desk's. The onCanvas? sketch is INPUT ONLY. Its
+    one load-bearing property: ABSENCE MUST MEAN DISPLAYED, or every
+    already-arranged board reads as emptied on first launch.
+  - Q1: the three-action THRESHOLD is retired (it was Fable's number, not
+    Nick's). Counts are still reported; they are evidence, not a gate.
+  - Q2: the zone heading is BOARDS CONNECTED.
+
+  Mechanism check against main: the Boards-zone checkbox is
+  PlacesPanel.tsx as built (pin/unpin; membership, never filing). "Place
+  page on board" is the board's Page drawer as built (item 83 M6, R13.ii).
+  What is NEW is only the display gate.
 -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
@@ -46,9 +68,8 @@
   .dot{width:22px;height:20px;border:1px solid #333;background:#141414;color:#8a8a8a;font:inherit;
        font-size:10.5px;cursor:pointer;padding:0}
   .dot[aria-current="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
-  .act{color:#cfc9c0}
-  .act i{font-style:normal;color:var(--brass)}
-  .cnt{margin-left:auto;color:#8f8f8f;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+  .act{color:#cfc9c0} .act i{font-style:normal;color:var(--brass)}
+  .cnt{margin-left:auto;color:#8f8f8f;letter-spacing:.04em}
   .cnt b{color:#fff}
 
   .fit{position:absolute;inset:74px 0 46px 0;display:grid;place-items:center;overflow:hidden}
@@ -76,7 +97,7 @@
   .strip{display:flex;gap:20px}
   .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
   .mode.on{color:var(--text-hi)}
-  .acts{display:flex;gap:14px;margin-left:auto}
+  .acts{margin-left:auto}
   .qbtn{background:none;border:none;font:inherit;font-size:11px;color:var(--text-mid);cursor:pointer;padding:4px 2px}
   .qbtn:hover{color:var(--brass)}
 
@@ -89,17 +110,28 @@
   .paper p{margin-bottom:13px}
   .stage[data-surface="board"] .paper{display:none}
 
-  /* the board canvas, for the other end of the act */
+  /* the board: a CONTAINER you stand inside. No writing is made here. */
   .board{position:absolute;inset:22px 30px 26px 30px;display:none}
   .stage[data-surface="board"] .board{display:block}
-  .bcard{position:absolute;width:216px;min-height:104px;background:var(--panel);border:1px solid var(--line);
+  .bcard{position:absolute;width:224px;min-height:92px;background:var(--panel);border:1px solid var(--line);
          padding:11px 13px}
   .bcard .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-bottom:5px}
   .bcard .b{font-family:var(--prose);font-size:14px;line-height:1.42;color:var(--text-mid)}
-  .bcard.fresh{border-color:var(--accent-rest)}
-  .bcard.fresh .k{color:var(--accent-rest)}
-  .bcard[data-new="1"]{display:none}
-  .stage[data-fresh="1"] .bcard[data-new="1"]{display:block}
+  /* RULED: a page card is ASPECT-LOCKED — resizable by SCALE, never stretched.
+     Shape teaches the kind (S13) and spends no colour. Two scales shown. */
+  .pgcard{position:absolute;background:var(--paper);opacity:.92;border:1px solid #cbbfa6;
+          padding:9px 9px 0;display:none;overflow:hidden;
+          width:104px;height:135px}                   /* 0.77 aspect, held */
+  .stage[data-oncanvas="1"] .pgcard{display:block}
+  .stage[data-scaled="1"] .pgcard{width:139px;height:180px}  /* SCALED, same aspect */
+  .pgcard .pk{font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:#8a7b62;margin-bottom:5px}
+  .pgcard .pb{font-family:var(--prose);font-size:10.5px;line-height:1.35;color:#3a2c1c}
+  .grip{position:absolute;right:-4px;bottom:-4px;width:8px;height:8px;background:var(--accent-rest);display:none}
+  .stage[data-scaled="1"] .grip{display:block}
+  .ghost{position:absolute;left:52%;top:42%;width:104px;height:135px;border:1px dashed #4a3a22;
+         display:none;place-items:center;text-align:center;font-size:9px;color:#6d6154;
+         letter-spacing:.05em;padding:8px}
+  .stage[data-ghost="1"] .ghost{display:grid}
 
   .cwrap{position:absolute;left:0;top:0;bottom:0;width:0;overflow:hidden;z-index:6;transition:width .18s ease}
   .stage[data-panel="plan"] .cwrap,.stage[data-panel="page"] .cwrap{width:300px}
@@ -129,7 +161,6 @@
   .door:hover{color:var(--text-hi);border-color:var(--accent-rest)}
   .door.plain{border-color:transparent;padding-left:12px}
 
-  /* Places (Pass 7's redesign: verb-led headings, state first) */
   .pface{padding:11px 14px 4px;border-bottom:1px solid var(--line)}
   .pface .ttl{font-family:var(--prose);font-size:15px;color:var(--text-hi)}
   .pface .home{font-size:10.5px;color:var(--text-low);margin-top:3px}
@@ -140,24 +171,42 @@
   .prow[data-on="1"] .bx{border-color:var(--accent-rest)}
   .prow[data-on="1"] .bx:after{content:'';position:absolute;inset:2px;background:var(--accent-rest)}
   .prow[data-on="1"]{color:var(--text-hi)}
-  .prow[data-on="1"] .lab{letter-spacing:.02em}
   .toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:14;background:var(--panel);
          border:1px solid var(--accent-door);color:var(--text-hi);font-size:11.5px;padding:8px 16px;display:none}
   .stage[data-toast="1"] .toast{display:block}
 
-  /* the board's Page drawer — "Place page on board" (built, R13.ii) */
   .sorts{display:flex;gap:4px;padding:2px 14px 8px}
   .chip{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10px;
         padding:3px 8px;cursor:pointer}
   .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
-  .plist{margin:0 14px;border:1px solid var(--line);max-height:230px;overflow:auto}
+  .plist{margin:0 14px;border:1px solid var(--line);max-height:130px;overflow:auto}
   .pitem{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);
          font-family:inherit;padding:7px 10px;cursor:pointer}
   .pitem:last-child{border-bottom:none}
   .pitem .t{display:block;font-size:11.5px;color:var(--text-mid)}
   .pitem .m{display:block;font-size:9.5px;color:var(--text-low);margin-top:1px}
   .pitem:hover{background:#241305}.pitem:hover .t{color:var(--text-hi)}
-  .pitem.fresh .t{color:var(--accent-rest)}
+
+  .lrow{position:relative;display:flex;align-items:flex-start;gap:9px;margin:0 14px 0;
+        border:1px solid var(--line);padding:8px 9px}
+  .lrow:before{content:'';flex:0 0 auto;width:19px;height:25px;background:var(--paper);opacity:.82;margin-top:1px}
+  .lrow .lt{flex:1;min-width:0}
+  .lrow .ln{display:block;font-size:12px;color:var(--text-mid)}
+  .lrow .ls{display:block;font-size:9.5px;color:var(--text-low);font-style:italic;margin-top:3px}
+  .lrow.shown{border-color:var(--accent-rest)}
+  .lrow.shown .ls{color:var(--accent-rest);font-style:normal}
+  .lmenu{position:absolute;right:4px;top:3px;background:none;border:0;color:var(--text-low);font:inherit;
+         font-size:13px;line-height:1;cursor:pointer;padding:2px 3px}
+  .ltray{display:none;flex-direction:column;margin:0 14px 8px;border:1px solid var(--accent-rest);
+         border-top:none;padding:6px 9px 8px}
+  .stage[data-menu="1"] .ltray{display:flex}
+  .ltray .lh{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);padding-bottom:4px}
+  .ltray button{background:none;border:0;text-align:left;font-family:inherit;font-size:11.5px;
+                color:var(--text-mid);padding:5px 2px;cursor:pointer}
+  .ltray button:hover{color:var(--text-hi);background:#241305}
+  .ltray button.off{color:var(--text-low);cursor:default}
+  .ltray button.off:hover{background:none;color:var(--text-low)}
+  .ltray .lnote{font-size:9.5px;color:var(--text-low);line-height:1.45;padding-top:5px}
 
   .stamp{position:absolute;right:12px;bottom:8px;z-index:9;font-size:10px;color:#5e564c}
 </style>
@@ -179,7 +228,8 @@
   <span class="cnt" id="cnt"></span>
 </div>
 
-<div class="fit"><div class="stage" id="stage" data-panel="none" data-surface="page" data-toast="0" data-fresh="0">
+<div class="fit"><div class="stage" id="stage" data-panel="none" data-surface="page"
+     data-toast="0" data-oncanvas="0" data-menu="0" data-ghost="0" data-scaled="0">
   <div class="frame">
 
     <nav class="rail" aria-label="Cascade">
@@ -200,7 +250,7 @@
 
     <div class="band">
       <div class="crumb" id="crumb" aria-label="Location"></div>
-      <div class="strip" aria-label="Modes" id="strip">
+      <div class="strip" aria-label="Modes">
         <span class="mode">Free Write</span><span class="mode on">Draft</span>
         <span class="mode">Revise</span><span class="mode">Publish</span>
       </div>
@@ -214,19 +264,20 @@
         <p>Ned would have said something about duty. Ned said something about duty every time the weather changed.</p>
       </div>
 
-      <div class="board" aria-label="Stark — the wall">
-        <div class="bcard" style="left:6%;top:6%"><div class="k">Card</div>
+      <div class="board" aria-label="Stark — a container">
+        <div class="bcard" style="left:5%;top:7%"><div class="k">Card</div>
           <div class="b">Ned's refusal is not stubbornness.</div></div>
-        <div class="bcard" style="left:40%;top:26%"><div class="k">From a page</div>
-          <div class="b">The coat on the train</div></div>
-        <div class="bcard" style="left:12%;top:52%"><div class="k">Card</div>
+        <div class="bcard" style="left:8%;top:56%"><div class="k">Card</div>
           <div class="b">Winterfell — the crypt is colder than the yard.</div></div>
-        <div class="bcard fresh" data-new="1" style="left:56%;top:60%"><div class="k">From a page · just placed</div>
-          <div class="b">Morning pages</div></div>
+        <div class="ghost">drop here to display<br>on the board</div>
+        <div class="pgcard" style="left:52%;top:36%">
+          <div class="pk">Page</div>
+          <div class="pb">The coat on the train — she had the coat over her arm before she understood she had picked it up…</div>
+          <div class="grip" aria-hidden="true"></div>
+        </div>
       </div>
 
       <div class="cwrap">
-        <!-- PLAN -->
         <aside class="cbody" id="panPlan" aria-label="Plan">
           <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
           <div class="cscroll">
@@ -241,16 +292,15 @@
           </div>
         </aside>
 
-        <!-- PAGE -->
         <aside class="cbody" id="panPage" aria-label="Page">
-          <div class="chead"><span class="ctitle" id="pageTitleTerm">Page</span><button class="cx" aria-label="Close">×</button></div>
-          <div class="cscroll" id="pageScroll">
+          <div class="chead"><span class="ctitle">Page</span><button class="cx" aria-label="Close">×</button></div>
+          <div class="cscroll">
 
             <div id="pageOnPage">
               <button class="door" style="margin-bottom:8px">＋ New page</button>
               <div class="pface">
                 <div class="ttl">The coat on the train</div>
-                <div class="home" id="faceHome">In Novel</div>
+                <div class="home">In Novel</div>
               </div>
               <span class="zhead">This page lives in…</span>
               <div class="prow" data-on="0"><span class="bx rad"></span><span class="lab">The Journal</span></div>
@@ -258,7 +308,9 @@
               <div class="prow" data-on="0"><span class="bx rad"></span><span class="lab">Research</span></div>
               <div class="prow" data-on="0"><span class="bx rad"></span><span class="lab">Loose</span></div>
               <div class="zrule"></div>
-              <span class="zhead">Also appears on…</span>
+              <!-- "Also appears on…" would now LIE: appearing is DISPLAY, and a
+                   checkbox here makes MEMBERSHIP. The word matches BOARDS CONNECTED. -->
+              <span class="zhead">Also connected to…</span>
               <div class="prow" id="cbStark" data-on="0"><span class="bx"></span><span class="lab">Stark</span></div>
               <div class="prow" data-on="0"><span class="bx"></span><span class="lab">Winterfell timeline</span></div>
               <div class="prow" data-on="0"><span class="bx"></span><span class="lab">Ravens &amp; letters</span></div>
@@ -266,6 +318,20 @@
 
             <div id="pageOnBoard" style="display:none">
               <button class="door" style="margin-bottom:10px">＋ New page</button>
+              <span class="zhead">Pages linked to this board</span>
+              <div class="lrow" id="lrowCoat">
+                <div class="lt"><span class="ln">The coat on the train</span>
+                  <span class="ls" id="lstate">member · not shown on the board</span></div>
+                <button class="lmenu" id="lmenuBtn" aria-label="More" aria-expanded="false">⋯</button>
+              </div>
+              <div class="ltray">
+                <div class="lh">This page</div>
+                <button id="dispBtn">Display on Board</button>
+                <button>Open the page →</button>
+                <button class="off" title="Item 123 — every card keeps at least one board">Unlink — its only board</button>
+                <div class="lnote">Right-click the row does the same. Nothing here is reachable only by a gesture.</div>
+              </div>
+              <div class="zrule"></div>
               <span class="zhead">Place page on board</span>
               <div class="sorts" role="radiogroup" aria-label="Sort recent pages">
                 <button class="chip" aria-pressed="true">Date</button>
@@ -273,10 +339,9 @@
                 <button class="chip" aria-pressed="false">A–Z</button>
               </div>
               <div class="plist" aria-label="Recent pages — scrollable">
-                <button class="pitem" id="piMorning"><span class="t">Morning pages</span><span class="m">today · The Journal</span></button>
+                <button class="pitem"><span class="t">Morning pages</span><span class="m">today · The Journal</span></button>
                 <button class="pitem"><span class="t">Platform smells</span><span class="m">yesterday · Novel</span></button>
                 <button class="pitem"><span class="t">Mara — first walk</span><span class="m">Jul 30 · Novel</span></button>
-                <button class="pitem"><span class="t">Coal dust notes</span><span class="m">Jul 28 · Research</span></button>
               </div>
             </div>
 
@@ -295,39 +360,52 @@
 <script>
 (function(){
   var STEPS = [
-    { act:'— the page is on no board at all.', n:'no acts yet',
-      surface:'page', panel:'none', cat:null, boards:0, stark:0, toast:'', fresh:0, door:'Plan →',
-      cap:'<b>Step 1 · nothing has been set up, because there is nothing to set up.</b> The writer has never opened a dialog, named a relationship, or chosen a type. The whole arc will add none.' },
+    { act:'— the page is connected to no board at all.', n:'no acts yet',
+      surface:'page', panel:'none', cat:null, boards:0, stark:0, onCanvas:0, menu:0, onboard:0, ghost:0, scaled:0, toast:'', door:'Plan →',
+      cap:'<b>Step 1 · nothing has been set up, because there is nothing to set up.</b> No dialog, no relationship named, no type chosen. This arc adds none.' },
 
     { act:'press <i>Plan</i> in the rail', n:'1 press — a look, not the act',
-      surface:'page', panel:'plan', cat:'plan', boards:0, stark:0, toast:'', fresh:0, door:'Plan →',
+      surface:'page', panel:'plan', cat:'plan', boards:0, stark:0, onCanvas:0, menu:0, onboard:0, ghost:0, scaled:0, toast:'', door:'Plan →',
       hint:'A board you make from here becomes this page’s own plan board.',
-      cap:'<b>Step 2 · absent, never empty (PW9).</b> This page is on no board, so there is <em>no board zone</em> — not a zone containing “No boards yet.” Nothing announces a capability the writer has not reached for. What is present is what they can do: two doors, and one quiet line saying what pressing them means.' },
+      cap:'<b>Step 2 · absent, never empty (PW9).</b> No connections, so there is <em>no</em> BOARDS CONNECTED zone — not a zone saying “none yet.” Nothing announces a capability the writer has not reached for. <b>The rail is the container space</b>, and boards are containers, so this list belongs here (canon effect 1).' },
 
     { act:'press <i>Page</i> in the rail', n:'the making — press <b>1</b> of 2',
-      surface:'page', panel:'page', cat:'page', boards:0, stark:0, toast:'', fresh:0, door:'Plan →',
-      cap:'<b>Step 3 · the other question, in the other tab (PW1).</b> <b>Page</b> is the <em>put</em> family, so Pass 7’s law governs: verb-led headings — “This page lives in…”, “Also appears on…” — and the state speaks first (Novel already marked). Compare with step 2: <b>Plan</b>’s rows are bare nouns because there the nouns mean <em>go</em>. Same law, opposite output, because the act is opposite.' },
+      surface:'page', panel:'page', cat:'page', boards:0, stark:0, onCanvas:0, menu:0, onboard:0, ghost:0, scaled:0, toast:'', door:'Plan →',
+      cap:'<b>Step 3 · the other question, in the other tab.</b> <b>Page</b> is the <em>put</em> family, so Pass 7’s law governs: verb-led headings, state first. <b>The second heading had to change:</b> “Also appears on…” would now <em>lie</em> — under item 125, <em>appearing</em> means being displayed on a canvas, and a checkbox here does not do that. <em>“Also connected to…”</em> is true, and it matches the Plan tab’s own <b>BOARDS CONNECTED</b>: one connecting word, two faces.' },
 
     { act:'press the <i>Stark</i> checkbox', n:'the making — press <b>2</b> of 2 · done',
-      surface:'page', panel:'page', cat:'page', boards:1, stark:1, toast:'Pinned to Stark.', fresh:0, door:'Plan →',
-      cap:'<b>Step 4 · the relation is made. Two presses, from the page.</b> No dialog opened, nothing was named, no type was chosen — the writer ticked a box that was already there. Membership, never filing: this changes where the page <em>appears</em>, never where it <em>lives</em> (the Home zone above is untouched). The page is now a card on Stark.' },
+      surface:'page', panel:'page', cat:'page', boards:1, stark:1, onCanvas:0, menu:0, onboard:0, ghost:0, scaled:0,
+      toast:'Connected to Stark.', door:'Plan →',
+      cap:'<b>Step 4 · the relation is made — and it is a MEMBERSHIP, not a card.</b> Two presses, no dialog, nothing named. <b>The page is not on Stark’s canvas</b>, and will not be until the writer says so (item 125). <em>This is the caption the previous render got wrong</em> — it said the checkbox made a card. Membership is a <b>container</b> relation; a card is one <b>display</b> of it.' },
 
     { act:'press <i>Plan</i> in the rail', n:'<b>1</b> press to see what was made',
-      surface:'page', panel:'plan', cat:'plan', boards:1, stark:1, toast:'', fresh:1, door:'Plan →',
-      hint:'',
-      cap:'<b>Step 5 · the act became geography, with no further step.</b> The zone that was absent one press ago now exists, because <em>the writer pinned</em> — the same lawful arrival the board’s own selection-gated action row already has: it arrives because the writer acted, and it still does not lunge. <b>PW10</b> — the second line names the drawer (<em>Novel</em>), which is quietly half the answer to “where is it stored.” Never a count.' },
+      surface:'page', panel:'plan', cat:'plan', boards:1, stark:1, onCanvas:0, menu:0, onboard:0, ghost:0, scaled:0, toast:'', door:'Plan →',
+      cap:'<b>Step 5 · the membership became geography immediately.</b> The zone absent two presses ago now exists, because <em>the writer connected it</em> — the same lawful arrival the board’s selection-gated action row already has: it arrives because the writer acted, and it still does not lunge. The second line names the drawer (<em>Novel</em>) — quietly half the answer to “where is it stored.” Never a count.' },
 
-    { act:'— the other end: the writer is standing on <i>Stark</i>', n:'— the same relation, other side',
-      surface:'board', panel:'none', cat:null, boards:1, stark:1, toast:'', fresh:0, door:'Page →',
-      cap:'<b>Step 6 · the same relation, approached from the board.</b> The page pinned in step 4 is on the wall as a card. The band’s door reads <b>Page →</b> here, the mirror of the page’s <b>Plan →</b> — the arrow grammar that already ships.' },
+    { act:'— travel to <i>Stark</i>. Look at the wall.', n:'— the proof',
+      surface:'board', panel:'none', cat:null, boards:1, stark:1, onCanvas:0, menu:0, onboard:0, ghost:0, scaled:0, toast:'', door:'Page →',
+      cap:'<b>Step 6 · the wall is unchanged, and that is the ruling working.</b> The page is a member of this board and <em>the board looks exactly as the writer left it</em>. Nothing arrived unbidden — not even something the writer connected themselves. <b>Nick, verbatim: “No writing or drawing is made on a board — it merely holds cards/pages/imported docs.”</b> A board is a container you stand inside to arrange what it holds, and a membership does not get to arrange it for you.' },
 
-    { act:'press <i>Page</i> in the rail, then <i>Morning pages</i>', n:'the making, from the board — <b>2</b> presses',
-      surface:'board', panel:'page', cat:'page', boards:1, stark:1, toast:'Placed on Stark.', fresh:1, door:'Page →', onboard:1,
-      cap:'<b>Step 7 · the same act, the other door. Two presses again.</b> This is the board’s Page drawer exactly as built (item 83 M6 / R13.ii): recent pages, scrollable, sortable Date · Drawer · A–Z, and a heading that names the <em>act</em> rather than the noun. The writer places a page on a board without ever leaving the board.' },
+    { act:'press <i>Page</i> in the rail, then the row’s <i>⋯</i>', n:'<b>2</b> presses',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, onCanvas:0, menu:1, onboard:1, ghost:0, scaled:0, toast:'', door:'Page →',
+      cap:'<b>Step 7 · the membership is visible here, and says which it is.</b> Linked pages listed with their titles, beneath the board’s own cards (Nick’s Q4). Each row states <em>member · not shown on the board</em> — display state is a fact on the row, never something to infer from the wall. The <code>⋯</code> carries <em>Display on Board</em> as the twin of the right-click, so the act is never gesture-only. <b>Item 123’s invariant is rendered, not just obeyed:</b> <em>Unlink</em> is inert and says why — <em>its only board</em> — because every card keeps at least one.' },
 
-    { act:'— both faces of one row', n:'— one row, two honest faces',
-      surface:'board', panel:'page', cat:'page', boards:1, stark:1, toast:'', fresh:1, door:'Page →', onboard:1,
-      cap:'<b>Step 8 · one relation, two honest faces, zero setup.</b> The checkbox on the page and the list on the board write the <em>same row</em> — a <code>page-pin</code> box in the board’s <code>boxes</code>. Nothing is duplicated, nothing syncs, nothing can drift; the cluster pass’s own finding, unchanged: there is one card, seen from two places. <b>The minimum-setup law is not something this design works around — it is what is left when you refuse to add data.</b>' }
+    { act:'press <i>Display on Board</i>', n:'<b>3</b> presses total',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, onCanvas:1, menu:0, onboard:1, ghost:0, scaled:0,
+      toast:'Shown on the board.', door:'Page →',
+      cap:'<b>Step 8 · now it is displayed — and it does not look like a card.</b> A page on a board keeps a page’s proportions: portrait and papered, where a card is landscape. <b>Shape teaches the kind</b> — <b>S13</b>’s founder verdict answered at a glance, and it spends no colour, so the Plateau ceiling is untouched. Note this reverses <code>BoardEditor.tsx:70</code>’s own “no aspect lock” for page-pins: the checkable change the builder needs.' },
+
+    { act:'— drag its corner', n:'<b>1</b> drag',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, onCanvas:1, menu:0, onboard:1, ghost:0, scaled:1, toast:'', door:'Page →',
+      cap:'<b>Step 9 · aspect-locked: resizable by SCALE, never stretched — as RULED.</b> Bigger, same proportions. <b>This overrules this desk’s own recommendation</b> that a page-card be fixed and unresizable: the ruling keeps the entire teaching — a page still reads as a page at any size — and hands back a capability my version had spent for nothing. A writer can size a page to its weight on the wall without ever making it look like a card.' },
+
+    { act:'— or the drag onto the wall: the same act, the other hand', n:'<b>1</b> drag',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, onCanvas:0, menu:0, onboard:1, ghost:1, scaled:0, toast:'', door:'Page →',
+      cap:'<b>Step 10 · the second display act, Nick’s other clause.</b> Drag the row onto the wall and it lands where it is dropped — the writer chooses the position, which is the whole reason display is opt-in. <b>The drag needs a canvas, so it exists only on a board; the menu act works everywhere.</b> That asymmetry is why the menu, not the drag, is the path that must be complete.' },
+
+    { act:'— one membership, several displays', n:'— the whole point',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, onCanvas:1, menu:0, onboard:1, ghost:0, scaled:0, toast:'', door:'Page →',
+      cap:'<b>Step 11 · one row, three faces, and no sync engine anywhere.</b> The checkbox on the page and this list on the board write <em>the same membership</em>; that membership shows as a row in the rail and, now, as a page on the wall. <b>One relation, several displays</b> — exactly the canon. <b>Storage is the builder’s S0 to settle, not this desk’s</b> (item 125’s schema flag): a column stops for Nick’s word. One property is load-bearing whatever shape the S0 picks — <b>absence must mean DISPLAYED</b>, or every board a writer has already arranged reads as emptied on first launch.' }
   ];
 
   var stage=document.getElementById('stage'), geom=document.getElementById('geom'),
@@ -339,8 +417,9 @@
       zoneBoards=document.getElementById('zoneBoards'), cbStark=document.getElementById('cbStark'),
       toast=document.getElementById('toast'), planHint=document.getElementById('planHint'),
       doorq=document.getElementById('doorq'), pageOnPage=document.getElementById('pageOnPage'),
-      pageOnBoard=document.getElementById('pageOnBoard'), pageTitleTerm=document.getElementById('pageTitleTerm'),
-      piMorning=document.getElementById('piMorning'),
+      pageOnBoard=document.getElementById('pageOnBoard'), rowStark=document.getElementById('rowStark'),
+      lrowCoat=document.getElementById('lrowCoat'), lstate=document.getElementById('lstate'),
+      lmenuBtn=document.getElementById('lmenuBtn'),
       B1=document.getElementById('w1'), B2=document.getElementById('w2');
 
   var SIZES={a:[1366,768], b:[1680,1050]}, cur='a', scale=1, i=0;
@@ -353,7 +432,8 @@
   function render(){
     var s=STEPS[i];
     stage.dataset.surface=s.surface; stage.dataset.panel=s.panel;
-    stage.dataset.toast=s.toast?'1':'0'; stage.dataset.fresh=s.fresh?'1':'0';
+    stage.dataset.toast=s.toast?'1':'0'; stage.dataset.oncanvas=s.onCanvas;
+    stage.dataset.menu=s.menu; stage.dataset.ghost=s.ghost; stage.dataset.scaled=s.scaled;
 
     crumb.innerHTML = s.surface==='board'
       ? '<span class="i">Novel</span><span class="s">/</span><span class="h">Stark</span>'
@@ -364,11 +444,12 @@
     catPage.classList.toggle('on', s.cat==='page');
     zoneBoards.setAttribute('data-has', s.boards ? '1':'0');
     cbStark.setAttribute('data-on', s.stark ? '1':'0');
-    document.getElementById('rowStark').classList.toggle('fresh', !!s.fresh);
-    piMorning.classList.toggle('fresh', !!s.onboard && !!s.fresh);
+    rowStark.classList.toggle('fresh', s.boards===1);
     pageOnPage.style.display = s.onboard ? 'none' : 'block';
     pageOnBoard.style.display = s.onboard ? 'block' : 'none';
-    pageTitleTerm.textContent = 'Page';
+    lmenuBtn.setAttribute('aria-expanded', s.menu ? 'true':'false');
+    lrowCoat.classList.toggle('shown', s.onCanvas===1);
+    lstate.textContent = s.onCanvas ? 'member · shown on the board' : 'member · not shown on the board';
     planHint.textContent = s.hint || '';
     toast.textContent = s.toast || '';
 
@@ -392,9 +473,13 @@
       var gap=(p.left-rail.right)/scale, flush=Math.abs(gap)<0.6;
       geom.classList.toggle('drift',!flush);
       parts.push('panel seam '+gap.toFixed(1)+'px '+(flush?'✓ flush (R10.i)':'✗ DRIFT'));
-      parts.push('no second layer — panel only, well inside G4');
     } else { geom.classList.remove('drift'); parts.push('cascade closed — closed cost = the rail'); }
-    parts.push('zero schema: pin/unpin writes a page-pin box, nothing else');
+    parts.push(s.stark ? (s.onCanvas ? 'member of Stark · DISPLAYED' : 'member of Stark · not displayed')
+                       : 'no membership yet');
+    if(s.onCanvas){
+      var pc=document.querySelector('.pgcard').getBoundingClientRect();
+      parts.push('page-card aspect '+(pc.width/pc.height).toFixed(3)+(s.scaled?' (scaled)':'')+' — locked');
+    }
     geom.textContent=parts.join(' · ');
   }
 

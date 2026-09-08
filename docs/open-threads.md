@@ -2559,7 +2559,216 @@ DOCS — and `main` MUST NOT MOVE UNDER A DEPLOY.** It was harmless **only** bec
 and a true fast-forward**, both of which chat 1 **verified before continuing, not after** (`apps/`
 untouched; `6d7cdec` an ancestor). **The verification is the reason it is a note and not an
 incident.**
-Registry: next free **129**.
+## THE DEPLOY WINDOW — STANDING LAW (Fable, granted 2026-09-07)
+
+**From the moment a deploy's SUITE OF RECORD is launched until its STAMP LANDS:**
+- **NO LANE RUNS A HARNESS.** *"The reaper cannot sweep a live owner — the S4 law's other half is
+  RESTRAINT."*
+- **NOTHING IS WRITTEN INTO THE PRIMARY CHECKOUT BY ANY HAND — DOWNLOADS INCLUDED.**
+- **Chat 1 announces the window's OPEN and CLOSE through Nick, the only courier.**
+- **Docs arriving mid-window WAIT IN DOWNLOADS** and commit post-stamp under the enumeration habit.
+
+**WHY IT EXISTS, from the two attempts that died without it:** attempt 2's parked leg **VOIDED** when
+a foreign lane opened five harness browsers mid-run, and the same pair carried **`+3dirty`** because
+a design desk was writing into the deploy's staging tree. **A window that lets the box go quiet is
+what makes RESTRAINT AFFORDABLE** — without it, the pressure to sweep a live lane grows every time a
+stamp dies, and that pressure is exactly what the S4 law forbids yielding to.
+
+## ITEM 99 — THE ORPHAN REAPER: TWO AMENDMENTS — 2026-09-07 (ERRATA building)
+
+**The licence to reap now requires THREE facts, outermost and cheapest first:**
+1. **THE LIVE-SUITE PRECONDITION — no reap while ANY foreign `run-suite` process is alive.**
+2. **DEAD OWNER** (`ESRCH`; `EPERM` is alive; anything else is `unknown`, spared **and reported**).
+3. **THE AGE FLOOR — the browser must also be STALE.**
+
+**WHY EACH EXISTS, measured rather than argued:**
+- **The age floor guards against PID REUSE.** A dead owner's PID can be **recycled** by an unrelated
+  new process; a reaper trusting `ESRCH` alone would then sweep a **live stranger's** browsers on a
+  technicality. **Age makes the licence require two independent facts.**
+- **The live-suite precondition guards against a hazard THIS SESSION MEASURED.** During the 2026-09-07
+  ship, harness browsers were found whose parent PIDs (`54232`, `56932`) were **already dead while
+  chat 1's own suite was still running** — **browser trees outlive the per-harness child that spawned
+  them.** Under dead-owner-plus-age alone, those read as orphans, and a reaper would have swept the
+  browsers of a **RUNNING** lane. **The outermost gate is the cheapest to check and the one that
+  would have caused the worst harm.**
+
+## ITEM 128 — THE ANCESTOR-WALK INVARIANT (charter amendment) — 2026-09-07
+
+**The charter gains: AN ANCESTOR WALK AT EVERY WRITE.** A board is a **recursive container**, so
+without it, nesting A into B and later B into A admits a **CYCLE** — and every reader afterward
+(rendering, membership, the Counsel reading contained cards) either **loops forever or silently
+truncates.** **Checked at WRITE time, not read time: a cycle admitted once is a cycle every
+traversal must defend against forever.**
+
+## Q14 — RULED: THE BOARD'S OWN READING ORDER — 2026-09-07
+
+**RULED (Fable, 2026-09-07): the board has its own READING ORDER.** Recorded here as the ruling; the
+PLAN desk's `pw-q14-q17-fold.md` carries the desk's working-out, **candidates only.**
+## ITEM 129 — BM1 S2's FIXTURE-STATE NON-DETERMINISM — OPENS 2026-09-07
+
+**OPENS (Fable, 2026-09-07). FIX-OWNED. PARK-THEN-FIX.** The `settle()` cure chat 1 applied at the
+deploy halt is **the PARK, not the fix**: it makes the check read the derivation instead of sampling
+it, but **the underlying fixture-state non-determinism is still there** and belongs to FIX.
+
+**ERRATA's item-99 offer HOLDS for the park + its re-stamp; it merges on that green.**
+
+## CANON — "A SENTENCE ABOUT A RUN IS NOT A RUN" (ERRATA's own catch, 2026-09-07)
+
+**The item-99 live-suite precondition's FIRST CUT matched shell wrappers that merely NAMED harness
+paths** — a command line mentioning `run-suite.mjs` is not a running suite. **It would have made the
+box read PERMANENTLY BUSY**, and a reaper that can never reap is **the worst guard failure there is:
+REPORTING A SAFETY IT IS NOT PROVIDING.** A guard that always says "unsafe" is indistinguishable from
+a guard that always says "safe" — both have stopped measuring.
+
+**MEASURING CAUGHT IT.** Not review, not reasoning about the regex: **running it against the real
+process table.** This is the same lesson the deploy halt taught from the other end — **a green re-run
+is not a diagnosis, and a plausible guard is not a working one. Both are settled by measurement.**
+## ITEM 129 — WIDENED BY FIX'S MEASUREMENT, AND CHAT 1'S VERDICT CORRECTED — 2026-09-07
+
+**WIDENED (Fable, on FIX's measurement): `bm1`'s SEEDED ROWS VANISH INTERMITTENTLY.** The mechanism
+is **the raw-localStorage seeding class — ITEM 85's mechanism**, not a derivation fault. **The
+S2-orphan park is SOUND BUT PARTIAL: `bm1` can still red on OTHER S2 checks.** **ACT 2 =
+SEED-THROUGH-THE-SEAMS.** **FIX is building it now, and it BLOCKS EVERY PAIR until it lands.**
+**Offers citing `bm1` say so.**
+
+**CHAT 1 OWNS A WRONG ATTRIBUTION — the (B) verdict was RIGHT IN ITS EXCLUSION AND WRONG IN ITS
+CAUSE.** The probe **correctly excluded (A) CASCADE**: the `bm1-oboard` row was alive with
+`deletedAt: null`, so **no board was ever deleted with its page and the product was never at fault** —
+that part stands. **But naming the cause "a derivation race" over-read the evidence.** The probe ran
+in a window where **the seed happened to survive**, saw the shelf settle at the first 200ms poll, and
+chat 1 concluded the read was early. **A VANISHED SEED EXPLAINS ALL THREE OBSERVED VALUES EQUALLY
+WELL** — `before=false`, `after=false`, `paired=false` are exactly what a board that was never there
+produces. **Two hypotheses fit the same detail, and chat 1 reported one of them as settled.**
+
+**WHAT WOULD HAVE CAUGHT IT: the probe never asked whether the seed EXISTED at the moment of the
+failing read.** It asked whether the row survived *in a fresh run of its own* — which is a different
+question than it appeared to be, because **the probe re-seeded rather than inspecting the failed
+run's state.** A discriminator that cannot run against the failing occurrence is weaker than it
+looks.
+
+**THE HOUSE ALREADY KNEW.** The standing guidance — *seed through the seams
+(`window.wrizoCreateJournalPage`), never raw localStorage; **the CACHE, not the surface, is the
+hazard*** — names this exact failure, and `bm1.mjs`'s own seeding comment **admits the hazard while
+working around it**: *"Reload so the in-memory persistence cache hydrates the new rows (the store
+reads the cache, not localStorage...)"*. **A reload is a workaround for the cache, not a defence
+against it: if the cache flushes AFTER the seed write, the seeded rows are overwritten and the
+fixture proceeds against a board that no longer exists.** Chat 1 read that comment during the
+diagnosis and did not connect it. **The seam it should have used exists today at
+`persistence.ts:825`.**
+
+**THE `settle()` PARK STANDS AS A PARK AND NOTHING MORE.** It removes a real early-read, but **it
+cannot help a vanished seed** — which is precisely why Fable ruled it **sound but partial**. **The
+fix is act 2, and it is FIX's.**
+
+## Q17 — RULED "COMPOSED"; THE PAGE/PLAN ARC'S RULINGS COMPLETE — 2026-09-07
+
+**Q17 RULED: "composed."** **With it, the Page/Plan workflow arc's RULINGS ARE COMPLETE.** **The PLAN
+desk is drafting TWO BUILD BRIEFS.** (C5 and C6 waited on this arc by Nick's own ruling.)
+
+## THE INK SHIP WAITS ON ITEM 129 — 2026-09-07
+
+**Fable's Ink review is next.** **EVEN ON PASS, the Ink ship WAITS on item 129's act 2** — **a deploy
+suite would flip the same coin.** A green pair drawn from a fixture whose seeds vanish intermittently
+is **not evidence the software is sound; it is evidence the coin landed the right way this time.**
+*(UNION RESOLUTION, chat 1, 2026-09-08. Two desks recorded item 129 in the same band and the merge
+conflicted. NEITHER RECORD WAS DROPPED. Above: the ticket as it opened, chat 1's own corrected
+attribution, and the rulings that rode with it. Below: FIX's ACT 1 record, which MEASURED the
+mechanism and found the premise too narrow — it supersedes the "derivation race" reading above on
+the question of CAUSE, and the two are kept together so the correction is legible rather than
+tidied away.)*
+## ITEM 129 - bm1.mjs S2 IS NON-DETERMINISTIC (harness-class) - OPENS 2026-09-07
+
+**ACT 1 DONE, AND IT FOUND THE TICKET'S PREMISE TOO NARROW.** The park is in
+(`bm1.mjs` S2 orphan, KNOWN-NONDETERMINISTIC, original quoted verbatim, evidence beside it, a
+deterministic successor holding the coverage). **But it does NOT stop the coin flip, and the offer
+lane should not be told otherwise.**
+
+**WHAT WAS MEASURED HERE, not taken on trust.**
+- **The rate reproduces:** 2 fails in 4 full `bm1` runs (quiet box, `WS_NO_REAP=1`), against ERRATA's
+  5 in 10. Same order.
+- **The failing TERM is always the same:** `before=false after=false paired=false`. Only `after` is
+  ever wrong, and it is **still wrong after the 4000ms settle poll**. The board does not reach the
+  Shelf LATE - in those runs it never reaches it at all. **That rules out the read's race AND the
+  orphaning, and it is why the settle-poll repair already in the file is insufficient by
+  construction rather than by tuning.**
+- **ISOLATION CONTROL:** the identical flow from a genuinely fresh desk passed **3 of 3, with TWO
+  rows in the store**. The product orphans correctly; the fixture is the variable.
+
+**THEN THE PARK'S OWN VERIFICATION WIDENED THE TICKET.** Four post-park runs: three green, and one
+**red at 2/35 - on two DIFFERENT S2 checks**, neither of them the orphan:
+- `"S2 explicit pairing: board-side pair succeeds once, 1:1 refuses a second"` - detail empty
+- `"S2 unpair: the page loses its planBoardId key entirely"` - **detail `null`**
+
+`rawEntryStr` returns `null` only when the row is **absent from localStorage**. So in that run the
+seeded page was **GONE**. **The non-determinism is not "the orphan check flakes" - it is that bm1's
+SEEDED ROWS INTERMITTENTLY VANISH, and the orphan check is merely where it shows most often.**
+
+**THE MECHANISM IS ALREADY A RECORDED LAW OF THIS CODEBASE.** `bm1`'s `seedEntries` writes **raw
+`localStorage`** and reloads. The standing seeding law says seed through the seams
+(`window.wrizoCreateJournalPage` and friends), **never raw `localStorage`** - *"the cache, not the
+surface, is the hazard"*: the store reads an in-memory cache, and a flush of that cache can land
+**after** the raw write and clobber it. That is exactly the shape of a row that is present on one
+run and absent on the next, with no timing signature a settle poll can catch.
+
+**SO ACT 2'S S0 HAS ITS QUESTION SHARPENED BEFORE IT STARTS:** not *"what does S2 inherit from
+S0/S1"* alone, but **"which seeded rows survive to S2, and what flushes over them"** - with the
+repair almost certainly *seed through the seams* rather than *clear the fixture harder*. Naming it
+early because the two repairs look alike and only one of them holds.
+
+**STANDING:** the flake list stays EMPTY by law. This is a **TICKETED** non-determinism, not a
+tolerated one, and it is **not yet closed** - `bm1` can still go red on the pairing/unpair pair.
+Offers citing `bm1` should say so until act 2 lands.
+
+**-> ACT 2 DONE - 2026-09-07. THE MECHANISM IS PROVEN, THE PARK IS LIFTED, AND bm1 IS DETERMINISTIC.**
+
+**THE VANISH, PROVEN DIRECTLY AND DETERMINISTICALLY** (the falsification the ruling asked for):
+raw-seed a row, make ONE ordinary product write, read storage back.
+
+| step | rows in storage |
+|---|---|
+| after the raw write | `["raw-row"]` |
+| after one product write (`wrizoCreateJournalPage`) | `["seam-row"]` **- raw-row GONE** |
+| after reload | `["seam-row"]` |
+
+Every product write serialises the WHOLE in-memory cache back over storage, and **the cache never
+contained the raw row**. So the rows were never late - they were **overwritten**. That is why the
+failure detail was always exactly `after=false`, and why the 4000ms settle poll could never rescue
+it: **there was nothing to wait for.** No timing signature, hence no polling repair - which is what
+made this look like a "flaky test" for as long as it did.
+
+**THE RULING'S PREMISE NEEDED ONE CORRECTION, HANDED UP RATHER THAN RESOLVED QUIETLY.** "Migration,
+not invention" held only half. The seam existed but **could not express the fixture**:
+`JournalPageSeed` carried `{id, text, createdAt, strokes}` while bm1 needs `origin:'loose'`,
+`pageType:'board'`, `projectId` and `boxes`. **`origin` is the load-bearing one** - it is written
+ONLY at birth (nothing in the app ever changes it afterwards) and **`belongsOnShelf` excludes
+anything journal-homed** (`persistence.ts:1314`). So a seam that could not seed `origin:'loose'`
+could not produce a Shelf-eligible entry **at all**, which is exactly why bm1 was still reaching past
+it. **A seam that cannot say what a fixture needs is not bypassed loudly. It is bypassed QUIETLY** -
+and the bill arrives later as a coin flip.
+
+**THE REPAIR, in the order it was done:** widen `JournalPageSeed` with **origin / pageType /
+projectId / boxes**, each applied ONLY when supplied (the discipline `strokes` already established,
+so an unseeded call writes the byte-identical row it always did; product code passes no seed at
+all) -> migrate `bm1`'s `seedEntries` to `window.wrizoCreateJournalPage` -> absorb the one
+behavioural difference the seam's own comment names (the write is DEBOUNCED where the raw write was
+synchronous, so the fixture waits for the flush to land before reloading; a reload that outran it
+would have traded one vanish for another) -> **LIFT THE PARK**, restoring the original assertion at
+its own place in the run rather than relocating it somewhere quieter.
+
+**MEASURED, before and after:** ~50% (2 fails in 4 here, 5 in 10 at ERRATA) -> **6 runs, 6 passes,
+36/36 checks**. The parked stand-in is removed; `bm1` parks nothing again.
+
+**THE BLAST RADIUS, because bm1 is item 85's FIRST victim and not its last: 54 of 75 harness files
+write `writer-studio-journal-entries` RAW.** Each is a latent coin flip that fires only when a
+product write happens after the seed in the same run - which is why `bm1`, whose pairing calls ARE
+product writes, was the one that surfaced. **Named honestly: two of the 54 are this lane's own
+(`underline.mjs`, `item118.mjs`).** Neither has flaked, both are latent, and neither is touched here
+because this ticket was ruled to block everything downstream and widening it would hold the queue.
+**ROUTED, not fixed: item 85 now has a measured population and a proven remediation pattern.** The
+durable artifact worth building next is a STATIC GUARD (the `hooks-order.mjs` shape) that fails when
+a harness writes a collection raw - it would have caught all 54 before any of them cost a day.
+
+Registry: next free **130**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -10910,6 +11119,76 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## THE POST-WALK PACKAGE DEPLOY MANIFEST — 2026-09-07 (chat 1, on Nick's standing ship word — Fable PASS)
+
+**LIVE: `4ba3670` · railway `ba29d04d`** — deployment `ba29d04d-940a-4541-8d40-043051b68e5a`,
+service `writer-studio-app`, status **SUCCESS**, serving `index-DOYnMkS6.js`.
+**ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+*(Amendment, same day: the first cut of this manifest carried the git SHA and the container digest
+but NOT the railway build id — the ratchet's actual handle. Named here on Fable's catch. A rollback
+target you cannot address is not a rollback target.)*
+**PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `10c2d0f` · railway `de639860`, serving
+`index-CK6B8dF1.js`** — measured at this deploy's start rather than remembered.
+
+**WHAT SHIPPED — three things, named:**
+- **FIX's WINDOW OFFER** (`829fbc7`): **item 118 (c) — the RIGHT-EDGE hard stop**, the **UPPER-bound**
+  clamp the bottom already had (the pre-existing `Math.max(0, ...)` is the LOWER bound and was never
+  the fix); **the OUTDENT PARTNER** + Indent's decrement via one shared `paragraphScope` helper; and
+  **UNDERLINE's renderer** (`00feda1`) in both decoration paths.
+- **ITEM 113** (`6daf087`): the Tutor's **decline/modeling block in `SYSTEM_PROMPT`**, Nick's four
+  paragraphs **byte-verbatim**, its **MIRROR restored and updated IN THE SAME COMMIT**, and
+  **`tutor-mirror.mjs` making the mirror law self-enforcing** after **43 silent commits of
+  divergence**. **SERVER-BEHAVIOUR, REVIEWED AND BLESSED. Zero schema.**
+- **RULED-THREE'S LEXICON CHANGE** (`ad76e42`, merged `e17dd6e`): the mode strip's Draft sub-label,
+  **`revise` becomes `mark`**.
+
+**SHA ENUMERATION: 40 commits `10c2d0f..4ba3670`.** **Product-bearing (touching `apps/*/src`): FOUR**
+— `00feda1`, `829fbc7`, `ad76e42`, `6daf087`. Everything else is **harness, records and docs.**
+
+**PRODUCT DELTA — 8 files, +195/-22:** `BoardEditor.tsx` (+31), `ModeSwitcher.tsx` (+25),
+`Sliver.tsx` (+14), `index.css` (+6), `deskLexicon.ts` (+3), `draftDecoration.ts` (+47),
+`draftFormat.ts` (+77), **`apps/server/src/tutor.ts` (+12/-2 — the ONLY server byte).**
+
+**SCHEMA: ZERO, by measurement** (no `*.sql`, no migrations, no server schema path in the range).
+
+**SUITE OF RECORD — BOTH SETTINGS, FRESH AT THE DEPLOY HEAD:**
+- **DEFAULT: 74/74 CLEAN** — `tree=4ba3670 bundle=index-DOYnMkS6.js/558457b`
+- **PARKED: 74/74 CLEAN** — `tree=4ba3670 bundle=index-DOYnMkS6.js/558457b`
+- **PARK AUDIT (count, not green): 62 files reporting parks, 158 parked checks** — **identical to the
+  pre-repair run**, so the fixture repair removed no park.
+- **THE ROSTER IS 74, NOT THE 72 IN THE REVIEW.** `hooks-order-ast.mjs` (`40aae87`) and `item109.mjs`
+  (`1bbf465`) entered **main-side** with the errata wave at `e17dd6e`, **after FIX cut `ef06835`**.
+  The review's `72/72 at tree=0bb9371` is a **PRE-MERGE** stamp on the offer's side of the union;
+  **this deploy-head pair is the first measurement of the merged whole.** Arithmetic, not drift.
+
+**TWO STAMP ATTEMPTS FAILED BEFORE THIS ONE, and both are on the record above:** a **RED**
+(`bm1.mjs` S2, diagnosed to a read race by a probe, cured narrowly) and a **VOID** (foreign browsers
+mid-run + a tree write during the pair). **Neither was cleared by re-running for green.**
+
+**TREE CLEAN AT UPLOAD: BARE** — `git status --porcelain` empty, **no enumerated strays at all.** The
+five MENU-desk downloads that had been authorized to ride were instead **reconciled away**
+(blob-identical to `2b8e5b4`, deleted, main fast-forwarded so the bytes ride tracked).
+
+**ITEM-98 GUARD (project AND tree):** `writer-studio` / `production` / `writer-studio-app`; toplevel
+`C:/Users/nickh/writer-studio`; **`HEAD == origin/main == 4ba3670`.** **tsc x2 exit 0** at the deploy
+head (`tsconfig.json` + `tsconfig.node.json`).
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**;
+Railway image **linux/amd64**, container digest
+`sha256:8fd1c7279694cae605dca32ffe993f90c53a4b6a8fe8e54f6d6cfe652cf2745a`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served bundle **`index-DOYnMkS6.js`**
+(was `index-CK6B8dF1.js`).
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
+- `index-DOYnMkS6.js` — served `ed45d933877e4443eedf2e9345935a7e` **==** stamped
+  `ed45d933877e4443eedf2e9345935a7e`
+- `index-Ggv_wk8Y.css` — served `b706338535fadb076a221a82a62a9629` **==** stamped
+  `b706338535fadb076a221a82a62a9629`
+
+**THE DEPLOY WINDOW WAS OPEN FOR THIS SHIP** (announced through Nick, the only courier) and **closed
+at the stamp.** It is the first ship under that law, and it is the reason attempt 3 survived.
 ## THE FLOOR (112-A) + ITEM 99 DEPLOY MANIFEST — 2026-09-05 (chat 1, on Nick's standing "ship the floor" — Fable PASS)
 
 **THE FLOOR — item 112-A: REVISE STANDS UP as a live surface (empty by design) — riding with item 99's
