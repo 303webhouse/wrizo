@@ -2577,8 +2577,9 @@ working around it**: *"Reload so the in-memory persistence cache hydrates the ne
 reads the cache, not localStorage...)"*. **A reload is a workaround for the cache, not a defence
 against it: if the cache flushes AFTER the seed write, the seeded rows are overwritten and the
 fixture proceeds against a board that no longer exists.** Chat 1 read that comment during the
-diagnosis and did not connect it. **The seam it should have used exists today at
-`persistence.ts:825`.**
+diagnosis and did not connect it. **The seam it should have used exists today: `window.wrizoCreateJournalPage`,
+assigned in `persistence.ts`.** *(Cited by SYMBOL. This sentence originally gave a LINE NUMBER —
+corrected under the brief law below, by the desk that wrote it, on the day the law was ruled.)*
 
 **THE `settle()` PARK STANDS AS A PARK AND NOTHING MORE.** It removes a real early-read, but **it
 cannot help a vanished seed** — which is precisely why Fable ruled it **sound but partial**. **The
@@ -2692,6 +2693,48 @@ because this ticket was ruled to block everything downstream and widening it wou
 durable artifact worth building next is a STATIC GUARD (the `hooks-order.mjs` shape) that fails when
 a harness writes a collection raw - it would have caught all 54 before any of them cost a day.
 
+## CANON — THREE LINES FROM THE ITEM-129 HUNT (2026-09-08)
+
+**1. THE PROBE LESSON — A DISCRIMINATOR MUST INSPECT THE FAILING RUN'S STATE, NEVER ITS OWN FRESH
+ONE.** A probe that re-creates the scenario is measuring **a different occurrence**, and a healthy
+result there says nothing about the sick one. Chat 1's item-129 probe re-seeded, found the row alive,
+and reported the cause settled; **the seed it inspected was not the seed that vanished.** **Where the
+failing state cannot be preserved, the finding is a HYPOTHESIS and must be labelled one.**
+
+**2. THE SEAM LESSON — A SEAM THAT CANNOT EXPRESS WHAT A FIXTURE NEEDS IS NOT BYPASSED LOUDLY; IT IS
+BYPASSED QUIETLY, AND THE BILL ARRIVES AS A COIN FLIP.** Nobody files a ticket saying "the seam was
+inadequate so I wrote raw storage" — they write the raw line, it passes, and the cost lands months
+later as an intermittent red that looks like a product defect. **The remediation is not discipline,
+it is EXPRESSIVENESS: make the seam able to say what fixtures actually need to say** (item 129 widened
+`JournalPageSeed` with `origin`/`pageType`/`projectId`/`boxes` for exactly this reason).
+
+**3. THE BRIEF LAW — LOCATE BY SYMBOL, NEVER BY LINE.** A line number is correct only until the next
+edit above it, and a brief that misdirects its builder costs more than one that says less. **Cite the
+function, the export, the class — the thing that survives an edit.** Line numbers are a courtesy, and
+they are never the anchor.
+
+## ITEM 85 — THE MEASURED POPULATION, AND ITS PROVEN REMEDIATION — 2026-09-08
+
+**MEASURED, not estimated: 54 of 75 harness files write `writer-studio-journal-entries` RAW.** **Each
+is a latent coin flip** that fires only when a product write happens after the seed in the same run —
+**which is why `bm1`, whose pairing calls ARE product writes, was the one that surfaced.** **Named
+honestly by the lane that found it: two of the 54 are FIX's own (`underline.mjs`, `item118.mjs`)** —
+neither has flaked, both are latent, and neither was touched because item 129 was ruled to block
+everything downstream and widening it would have held the queue.
+
+**THE REMEDIATION IS NOW PROVEN, not theorised:** item 129 migrated `bm1` to the seam and the coin
+flip stopped. **The pattern generalises — widen the seam, then migrate.**
+
+## ITEM 85-B — A BROWSERLESS STATIC GUARD FOR RAW SEEDING — OPENS 2026-09-08
+
+**OPENS.** **A static guard in the `hooks-order.mjs` shape** — **browserless**, so it costs no suite
+time and cannot itself flake — **that FAILS when a harness writes a collection raw.** **It would have
+caught all 54 before any of them cost a day.** **ERRATA's next job, after its re-stamp.**
+
+**WHY A STATIC GUARD RATHER THAN A CONVENTION:** the 54 files were each written by someone who knew
+the convention. **A rule that lives only in a document is enforced by memory; a rule that fails a
+run is enforced by the run.** This is the same reasoning that made `tutor-mirror.mjs` self-enforcing
+after 43 silent commits of divergence.
 Registry: next free **130**.
 
 ## NOW — blocks everything downstream
