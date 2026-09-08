@@ -2594,6 +2594,104 @@ desk is drafting TWO BUILD BRIEFS.** (C5 and C6 waited on this arc by Nick's own
 **Fable's Ink review is next.** **EVEN ON PASS, the Ink ship WAITS on item 129's act 2** — **a deploy
 suite would flip the same coin.** A green pair drawn from a fixture whose seeds vanish intermittently
 is **not evidence the software is sound; it is evidence the coin landed the right way this time.**
+*(UNION RESOLUTION, chat 1, 2026-09-08. Two desks recorded item 129 in the same band and the merge
+conflicted. NEITHER RECORD WAS DROPPED. Above: the ticket as it opened, chat 1's own corrected
+attribution, and the rulings that rode with it. Below: FIX's ACT 1 record, which MEASURED the
+mechanism and found the premise too narrow — it supersedes the "derivation race" reading above on
+the question of CAUSE, and the two are kept together so the correction is legible rather than
+tidied away.)*
+## ITEM 129 - bm1.mjs S2 IS NON-DETERMINISTIC (harness-class) - OPENS 2026-09-07
+
+**ACT 1 DONE, AND IT FOUND THE TICKET'S PREMISE TOO NARROW.** The park is in
+(`bm1.mjs` S2 orphan, KNOWN-NONDETERMINISTIC, original quoted verbatim, evidence beside it, a
+deterministic successor holding the coverage). **But it does NOT stop the coin flip, and the offer
+lane should not be told otherwise.**
+
+**WHAT WAS MEASURED HERE, not taken on trust.**
+- **The rate reproduces:** 2 fails in 4 full `bm1` runs (quiet box, `WS_NO_REAP=1`), against ERRATA's
+  5 in 10. Same order.
+- **The failing TERM is always the same:** `before=false after=false paired=false`. Only `after` is
+  ever wrong, and it is **still wrong after the 4000ms settle poll**. The board does not reach the
+  Shelf LATE - in those runs it never reaches it at all. **That rules out the read's race AND the
+  orphaning, and it is why the settle-poll repair already in the file is insufficient by
+  construction rather than by tuning.**
+- **ISOLATION CONTROL:** the identical flow from a genuinely fresh desk passed **3 of 3, with TWO
+  rows in the store**. The product orphans correctly; the fixture is the variable.
+
+**THEN THE PARK'S OWN VERIFICATION WIDENED THE TICKET.** Four post-park runs: three green, and one
+**red at 2/35 - on two DIFFERENT S2 checks**, neither of them the orphan:
+- `"S2 explicit pairing: board-side pair succeeds once, 1:1 refuses a second"` - detail empty
+- `"S2 unpair: the page loses its planBoardId key entirely"` - **detail `null`**
+
+`rawEntryStr` returns `null` only when the row is **absent from localStorage**. So in that run the
+seeded page was **GONE**. **The non-determinism is not "the orphan check flakes" - it is that bm1's
+SEEDED ROWS INTERMITTENTLY VANISH, and the orphan check is merely where it shows most often.**
+
+**THE MECHANISM IS ALREADY A RECORDED LAW OF THIS CODEBASE.** `bm1`'s `seedEntries` writes **raw
+`localStorage`** and reloads. The standing seeding law says seed through the seams
+(`window.wrizoCreateJournalPage` and friends), **never raw `localStorage`** - *"the cache, not the
+surface, is the hazard"*: the store reads an in-memory cache, and a flush of that cache can land
+**after** the raw write and clobber it. That is exactly the shape of a row that is present on one
+run and absent on the next, with no timing signature a settle poll can catch.
+
+**SO ACT 2'S S0 HAS ITS QUESTION SHARPENED BEFORE IT STARTS:** not *"what does S2 inherit from
+S0/S1"* alone, but **"which seeded rows survive to S2, and what flushes over them"** - with the
+repair almost certainly *seed through the seams* rather than *clear the fixture harder*. Naming it
+early because the two repairs look alike and only one of them holds.
+
+**STANDING:** the flake list stays EMPTY by law. This is a **TICKETED** non-determinism, not a
+tolerated one, and it is **not yet closed** - `bm1` can still go red on the pairing/unpair pair.
+Offers citing `bm1` should say so until act 2 lands.
+
+**-> ACT 2 DONE - 2026-09-07. THE MECHANISM IS PROVEN, THE PARK IS LIFTED, AND bm1 IS DETERMINISTIC.**
+
+**THE VANISH, PROVEN DIRECTLY AND DETERMINISTICALLY** (the falsification the ruling asked for):
+raw-seed a row, make ONE ordinary product write, read storage back.
+
+| step | rows in storage |
+|---|---|
+| after the raw write | `["raw-row"]` |
+| after one product write (`wrizoCreateJournalPage`) | `["seam-row"]` **- raw-row GONE** |
+| after reload | `["seam-row"]` |
+
+Every product write serialises the WHOLE in-memory cache back over storage, and **the cache never
+contained the raw row**. So the rows were never late - they were **overwritten**. That is why the
+failure detail was always exactly `after=false`, and why the 4000ms settle poll could never rescue
+it: **there was nothing to wait for.** No timing signature, hence no polling repair - which is what
+made this look like a "flaky test" for as long as it did.
+
+**THE RULING'S PREMISE NEEDED ONE CORRECTION, HANDED UP RATHER THAN RESOLVED QUIETLY.** "Migration,
+not invention" held only half. The seam existed but **could not express the fixture**:
+`JournalPageSeed` carried `{id, text, createdAt, strokes}` while bm1 needs `origin:'loose'`,
+`pageType:'board'`, `projectId` and `boxes`. **`origin` is the load-bearing one** - it is written
+ONLY at birth (nothing in the app ever changes it afterwards) and **`belongsOnShelf` excludes
+anything journal-homed** (`persistence.ts:1314`). So a seam that could not seed `origin:'loose'`
+could not produce a Shelf-eligible entry **at all**, which is exactly why bm1 was still reaching past
+it. **A seam that cannot say what a fixture needs is not bypassed loudly. It is bypassed QUIETLY** -
+and the bill arrives later as a coin flip.
+
+**THE REPAIR, in the order it was done:** widen `JournalPageSeed` with **origin / pageType /
+projectId / boxes**, each applied ONLY when supplied (the discipline `strokes` already established,
+so an unseeded call writes the byte-identical row it always did; product code passes no seed at
+all) -> migrate `bm1`'s `seedEntries` to `window.wrizoCreateJournalPage` -> absorb the one
+behavioural difference the seam's own comment names (the write is DEBOUNCED where the raw write was
+synchronous, so the fixture waits for the flush to land before reloading; a reload that outran it
+would have traded one vanish for another) -> **LIFT THE PARK**, restoring the original assertion at
+its own place in the run rather than relocating it somewhere quieter.
+
+**MEASURED, before and after:** ~50% (2 fails in 4 here, 5 in 10 at ERRATA) -> **6 runs, 6 passes,
+36/36 checks**. The parked stand-in is removed; `bm1` parks nothing again.
+
+**THE BLAST RADIUS, because bm1 is item 85's FIRST victim and not its last: 54 of 75 harness files
+write `writer-studio-journal-entries` RAW.** Each is a latent coin flip that fires only when a
+product write happens after the seed in the same run - which is why `bm1`, whose pairing calls ARE
+product writes, was the one that surfaced. **Named honestly: two of the 54 are this lane's own
+(`underline.mjs`, `item118.mjs`).** Neither has flaked, both are latent, and neither is touched here
+because this ticket was ruled to block everything downstream and widening it would hold the queue.
+**ROUTED, not fixed: item 85 now has a measured population and a proven remediation pattern.** The
+durable artifact worth building next is a STATIC GUARD (the `hooks-order.mjs` shape) that fails when
+a harness writes a collection raw - it would have caught all 54 before any of them cost a day.
+
 Registry: next free **130**.
 
 ## NOW — blocks everything downstream
