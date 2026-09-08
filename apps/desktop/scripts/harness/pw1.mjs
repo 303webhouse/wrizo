@@ -546,9 +546,25 @@ await withHarness(async (app) => {
         const chip = await app.evalJs("document.querySelector('.wz-back-to-board')?.textContent ?? null");
         ok('S4(ii): the return chip NAMES THE SURFACE ACTUALLY LEFT (the page the writer was standing on), never a blind "Back to the board" to a writer who never stood on one',
           typeof chip === 'string' && chip.includes('A page pinned the OLD way'), JSON.stringify({ arrived, chip }));
-        const railKept = await app.evalJs("({ panel: !!document.querySelector('.wz-cascade-panel'), survey: !!document.querySelector('.wz-cascade-survey'), surveyTitle: document.querySelector('.wz-cascade-survey-title')?.textContent })");
+        const railKept = await app.evalJs(`({
+          panel: !!document.querySelector('.wz-cascade-panel'),
+          survey: !!document.querySelector('.wz-cascade-survey'),
+          surveyTitle: document.querySelector('.wz-cascade-survey-title')?.textContent,
+          currentTitles: [...document.querySelectorAll('.wz-cascade-thumb.current .wz-cascade-thumb-title')].map(t => t.textContent),
+          ariaCurrent: [...document.querySelectorAll('.wz-cascade-thumb-title[aria-current="true"]')].map(t => t.textContent),
+        })`);
         ok('S4(i): travel from the SURVEY arrives with the panel open and the survey still on the same board — the way back is one press on a row already under the writer’s eye',
           railKept.panel === true && railKept.survey === true && railKept.surveyTitle === 'The already-arranged board', JSON.stringify(railKept));
+        // S7's check 8, in full: the ORIGIN ROW WEARS THE `current` MARK. The
+        // survey already computes it (`current: entry.id === currentEntryId`)
+        // and already renders it (`aria-current`), so what this proves is that
+        // the arriving surface is genuinely the one the row stands for — the
+        // trail is only a trail if it says where the writer is standing on it.
+        ok('S4(i): and the row the writer arrived AT wears the survey’s own `current` mark, in the DOM and in `aria-current` alike — the rail says where you are, not merely what is on the board',
+          Array.isArray(railKept.currentTitles) && railKept.currentTitles.length === 1
+            && railKept.currentTitles[0] === 'A page pinned the NEW way'
+            && Array.isArray(railKept.ariaCurrent) && railKept.ariaCurrent.includes('A page pinned the NEW way'),
+          JSON.stringify({ currentTitles: railKept.currentTitles, ariaCurrent: railKept.ariaCurrent }));
       }
     }
   }
