@@ -2316,7 +2316,12 @@ safe). **Detection proved separately from decision:** a real node process runnin
 harness-signature script (spawned in TEMP, never in `scripts/harness`) IS seen, and this process
 never sees itself.
 
-**► A DEFECT BUILT AND CAUGHT BY MEASURING, recorded because it would have been invisible.** The
+**► RATIFIED 2026-09-07 (Fable): the PRECONDITION + TWO LICENCES shape stands AS BUILT; the red was
+handled right — measured, attributed, not re-rolled, not absorbed; and the false-busy catch is now
+CANON: "A SENTENCE ABOUT A RUN IS NOT A RUN."** The offer HOLDS for FIX's bm1 park, then the pair
+re-stamps and it merges.
+
+**► THE DEFECT THE CANON COMES FROM, recorded because it would have been invisible.** The
 precondition's first cut matched any process whose COMMAND LINE mentioned those paths — which
 matched the agent's own shell wrappers (`bash -c "... node scripts/harness/x.mjs ..."` is not a
 run, it is a sentence about one). The box looked permanently busy and the reaper would have been

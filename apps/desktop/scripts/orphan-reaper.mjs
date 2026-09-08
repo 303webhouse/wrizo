@@ -210,6 +210,8 @@ export function ownerAlive(pid) {
 // UNDETERMINABLE IS "PRESENT". If the process table cannot be read, this returns
 // null and the caller treats it as a live run — the sparing direction every
 // other uncertainty in this file takes.
+// CANON — ratified 2026-09-07: A SENTENCE ABOUT A RUN IS NOT A RUN.
+//
 // THE SIGNATURE MATCHES A RUNNING SCRIPT, AND THE PROCESS MUST BE NODE. Both
 // halves are load-bearing, and the second was found by MEASURING rather than by
 // thinking: on its first run this matched the SHELL WRAPPERS that merely MENTION
