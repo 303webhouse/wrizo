@@ -2547,6 +2547,53 @@ a guard that always says "safe" — both have stopped measuring.
 **MEASURING CAUGHT IT.** Not review, not reasoning about the regex: **running it against the real
 process table.** This is the same lesson the deploy halt taught from the other end — **a green re-run
 is not a diagnosis, and a plausible guard is not a working one. Both are settled by measurement.**
+## ITEM 129 — WIDENED BY FIX'S MEASUREMENT, AND CHAT 1'S VERDICT CORRECTED — 2026-09-07
+
+**WIDENED (Fable, on FIX's measurement): `bm1`'s SEEDED ROWS VANISH INTERMITTENTLY.** The mechanism
+is **the raw-localStorage seeding class — ITEM 85's mechanism**, not a derivation fault. **The
+S2-orphan park is SOUND BUT PARTIAL: `bm1` can still red on OTHER S2 checks.** **ACT 2 =
+SEED-THROUGH-THE-SEAMS.** **FIX is building it now, and it BLOCKS EVERY PAIR until it lands.**
+**Offers citing `bm1` say so.**
+
+**CHAT 1 OWNS A WRONG ATTRIBUTION — the (B) verdict was RIGHT IN ITS EXCLUSION AND WRONG IN ITS
+CAUSE.** The probe **correctly excluded (A) CASCADE**: the `bm1-oboard` row was alive with
+`deletedAt: null`, so **no board was ever deleted with its page and the product was never at fault** —
+that part stands. **But naming the cause "a derivation race" over-read the evidence.** The probe ran
+in a window where **the seed happened to survive**, saw the shelf settle at the first 200ms poll, and
+chat 1 concluded the read was early. **A VANISHED SEED EXPLAINS ALL THREE OBSERVED VALUES EQUALLY
+WELL** — `before=false`, `after=false`, `paired=false` are exactly what a board that was never there
+produces. **Two hypotheses fit the same detail, and chat 1 reported one of them as settled.**
+
+**WHAT WOULD HAVE CAUGHT IT: the probe never asked whether the seed EXISTED at the moment of the
+failing read.** It asked whether the row survived *in a fresh run of its own* — which is a different
+question than it appeared to be, because **the probe re-seeded rather than inspecting the failed
+run's state.** A discriminator that cannot run against the failing occurrence is weaker than it
+looks.
+
+**THE HOUSE ALREADY KNEW.** The standing guidance — *seed through the seams
+(`window.wrizoCreateJournalPage`), never raw localStorage; **the CACHE, not the surface, is the
+hazard*** — names this exact failure, and `bm1.mjs`'s own seeding comment **admits the hazard while
+working around it**: *"Reload so the in-memory persistence cache hydrates the new rows (the store
+reads the cache, not localStorage...)"*. **A reload is a workaround for the cache, not a defence
+against it: if the cache flushes AFTER the seed write, the seeded rows are overwritten and the
+fixture proceeds against a board that no longer exists.** Chat 1 read that comment during the
+diagnosis and did not connect it. **The seam it should have used exists today at
+`persistence.ts:825`.**
+
+**THE `settle()` PARK STANDS AS A PARK AND NOTHING MORE.** It removes a real early-read, but **it
+cannot help a vanished seed** — which is precisely why Fable ruled it **sound but partial**. **The
+fix is act 2, and it is FIX's.**
+
+## Q17 — RULED "COMPOSED"; THE PAGE/PLAN ARC'S RULINGS COMPLETE — 2026-09-07
+
+**Q17 RULED: "composed."** **With it, the Page/Plan workflow arc's RULINGS ARE COMPLETE.** **The PLAN
+desk is drafting TWO BUILD BRIEFS.** (C5 and C6 waited on this arc by Nick's own ruling.)
+
+## THE INK SHIP WAITS ON ITEM 129 — 2026-09-07
+
+**Fable's Ink review is next.** **EVEN ON PASS, the Ink ship WAITS on item 129's act 2** — **a deploy
+suite would flip the same coin.** A green pair drawn from a fixture whose seeds vanish intermittently
+is **not evidence the software is sound; it is evidence the coin landed the right way this time.**
 Registry: next free **130**.
 
 ## NOW — blocks everything downstream
