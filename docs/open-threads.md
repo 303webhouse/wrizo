@@ -2259,7 +2259,7 @@ measured, drift-sensitive one; no merge and no deploy.
 Branched from `origin/main` @ `4ba3670`. **ZERO PRODUCT CODE** — three harness-infra files only
 (`orphan-reaper.mjs`, `run-suite.mjs`, `item99.mjs`); the diff over `apps/desktop/src`,
 `apps/server`, `packages` is empty. **`00521fb`** (age floor) · **`fc09178`** (precondition) ·
-**`__OFFER__`** (this record).
+**`b226093`** (this record).
 
 **THE STAMP IS NOT A CLEAN PAIR, AND THAT IS SAID FIRST:**
 
