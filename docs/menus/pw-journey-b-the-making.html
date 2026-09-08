@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PW · Journey B — the making (a relation made by one natural act)</title>
+<!--
+  THE PAGE/PLAN WORKFLOW ARC · JOURNEY B · "the making"
+  PLAN desk · 2026-09-07 · candidates only, nothing locks.
+
+  Eight STEPS. Proves the MINIMUM-SETUP LAW: the writer never configures a
+  relationship. They tick a checkbox they already have, or pick a page from a
+  list that already exists, and the relation becomes geography with no further
+  step. Renders PW1, PW2, PW9, PW10 and the two-ends symmetry.
+
+  Nothing here is new mechanism. The Boards zone checkbox is PlacesPanel.tsx
+  as built (pin/unpin, membership never filing). "Place page on board" is the
+  board's Page drawer as built (item 83 M6, R13.ii). The candidate is only
+  that the Plan tab then SHOWS what those two acts made.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+  #geom.drift{color:#e05c5c}
+
+  .steps{position:fixed;top:39px;left:0;right:0;z-index:19;display:flex;gap:10px;align-items:center;
+         padding:7px 14px;background:#08080a;border-bottom:1px solid #1e1e22;font-size:12px}
+  .steps .nav{font:inherit;background:#141414;border:1px solid #333;color:#d8d8d8;padding:3px 9px;cursor:pointer}
+  .steps .nav:disabled{opacity:.35;cursor:default}
+  .dots{display:flex;gap:4px}
+  .dot{width:22px;height:20px;border:1px solid #333;background:#141414;color:#8a8a8a;font:inherit;
+       font-size:10.5px;cursor:pointer;padding:0}
+  .dot[aria-current="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  .act{color:#cfc9c0}
+  .act i{font-style:normal;color:var(--brass)}
+  .cnt{margin-left:auto;color:#8f8f8f;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+  .cnt b{color:#fff}
+
+  .fit{position:absolute;inset:74px 0 46px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;z-index:19;padding:9px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.5}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;position:relative;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;background:none;
+       border:none;border-left:1px solid transparent;color:var(--text-low);font-family:inherit;
+       font-size:9px;letter-spacing:.09em;cursor:pointer}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left-color:var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:20px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .strip{display:flex;gap:20px}
+  .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
+  .mode.on{color:var(--text-hi)}
+  .acts{display:flex;gap:14px;margin-left:auto}
+  .qbtn{background:none;border:none;font:inherit;font-size:11px;color:var(--text-mid);cursor:pointer;padding:4px 2px}
+  .qbtn:hover{color:var(--brass)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  .paper{position:absolute;top:26px;bottom:0;left:50%;transform:translateX(-50%);
+         width:min(760px,88%);background:var(--paper);color:#241a10;padding:44px 56px;
+         font-family:var(--prose);font-size:17px;line-height:1.62;z-index:1}
+  .paper h1{font-size:19px;font-weight:500;margin-bottom:18px}
+  .paper p{margin-bottom:13px}
+  .stage[data-surface="board"] .paper{display:none}
+
+  /* the board canvas, for the other end of the act */
+  .board{position:absolute;inset:22px 30px 26px 30px;display:none}
+  .stage[data-surface="board"] .board{display:block}
+  .bcard{position:absolute;width:216px;min-height:104px;background:var(--panel);border:1px solid var(--line);
+         padding:11px 13px}
+  .bcard .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-bottom:5px}
+  .bcard .b{font-family:var(--prose);font-size:14px;line-height:1.42;color:var(--text-mid)}
+  .bcard.fresh{border-color:var(--accent-rest)}
+  .bcard.fresh .k{color:var(--accent-rest)}
+  .bcard[data-new="1"]{display:none}
+  .stage[data-fresh="1"] .bcard[data-new="1"]{display:block}
+
+  .cwrap{position:absolute;left:0;top:0;bottom:0;width:0;overflow:hidden;z-index:6;transition:width .18s ease}
+  .stage[data-panel="plan"] .cwrap,.stage[data-panel="page"] .cwrap{width:300px}
+  .cbody{width:300px;height:100%;background:var(--panel);border:1px solid var(--line);border-left:none;
+         display:flex;flex-direction:column;position:absolute;inset:0;visibility:hidden}
+  .stage[data-panel="plan"] #panPlan,.stage[data-panel="page"] #panPage{visibility:visible}
+  .chead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;
+         border-bottom:1px solid var(--line)}
+  .ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-rest)}
+  .cx{background:none;border:none;color:var(--text-low);font:inherit;font-size:15px;cursor:pointer}
+  .cscroll{flex:1;overflow:auto;padding:4px 0 8px}
+  .zhead{display:block;padding:11px 14px 7px;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+         color:var(--accent-rest)}
+  .zrule{height:1px;background:var(--line);margin:8px 14px}
+  .hint{padding:4px 14px 8px;font-size:10.5px;color:var(--text-low);line-height:1.5}
+
+  .brow{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;
+        padding:8px 14px;cursor:pointer;border-left:1px solid transparent}
+  .brow .t{display:block;font-size:12.5px;color:var(--text-mid)}
+  .brow .m{display:block;font-size:10px;color:var(--text-low);margin-top:2px}
+  .brow:hover{background:#241305}.brow:hover .t{color:var(--text-hi)}
+  .brow.fresh{border-left-color:var(--accent-rest);background:#241305}
+  .brow.fresh .t{color:var(--text-hi)}
+  #zoneBoards[data-has="0"]{display:none}
+  .door{display:block;text-align:left;background:none;border:1px solid var(--accent-door);color:var(--text-mid);
+        font-family:inherit;font-size:11.5px;padding:7px 11px;margin:6px 14px 0;width:calc(100% - 28px);cursor:pointer}
+  .door:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  .door.plain{border-color:transparent;padding-left:12px}
+
+  /* Places (Pass 7's redesign: verb-led headings, state first) */
+  .pface{padding:11px 14px 4px;border-bottom:1px solid var(--line)}
+  .pface .ttl{font-family:var(--prose);font-size:15px;color:var(--text-hi)}
+  .pface .home{font-size:10.5px;color:var(--text-low);margin-top:3px}
+  .prow{display:flex;align-items:center;gap:9px;padding:6px 14px;font-size:11.5px;color:var(--text-mid);cursor:pointer}
+  .prow:hover{color:var(--text-hi);background:#241305}
+  .prow .bx{width:11px;height:11px;border:1px solid var(--text-low);flex:0 0 auto;position:relative}
+  .prow .bx.rad{border-radius:50%}
+  .prow[data-on="1"] .bx{border-color:var(--accent-rest)}
+  .prow[data-on="1"] .bx:after{content:'';position:absolute;inset:2px;background:var(--accent-rest)}
+  .prow[data-on="1"]{color:var(--text-hi)}
+  .prow[data-on="1"] .lab{letter-spacing:.02em}
+  .toast{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:14;background:var(--panel);
+         border:1px solid var(--accent-door);color:var(--text-hi);font-size:11.5px;padding:8px 16px;display:none}
+  .stage[data-toast="1"] .toast{display:block}
+
+  /* the board's Page drawer — "Place page on board" (built, R13.ii) */
+  .sorts{display:flex;gap:4px;padding:2px 14px 8px}
+  .chip{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10px;
+        padding:3px 8px;cursor:pointer}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest)}
+  .plist{margin:0 14px;border:1px solid var(--line);max-height:230px;overflow:auto}
+  .pitem{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);
+         font-family:inherit;padding:7px 10px;cursor:pointer}
+  .pitem:last-child{border-bottom:none}
+  .pitem .t{display:block;font-size:11.5px;color:var(--text-mid)}
+  .pitem .m{display:block;font-size:9.5px;color:var(--text-low);margin-top:1px}
+  .pitem:hover{background:#241305}.pitem:hover .t{color:var(--text-hi)}
+  .pitem.fresh .t{color:var(--accent-rest)}
+
+  .stamp{position:absolute;right:12px;bottom:8px;z-index:9;font-size:10px;color:#5e564c}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PW · JOURNEY B — THE MAKING</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="steps">
+  <button class="nav" id="prev">‹ Prev</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav" id="next">Next ›</button>
+  <span class="act" id="act"></span>
+  <span class="cnt" id="cnt"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage" data-panel="none" data-surface="page" data-toast="0" data-fresh="0">
+  <div class="frame">
+
+    <nav class="rail" aria-label="Cascade">
+      <button class="cat"><span class="g">✶</span>journal</button>
+      <div class="sep"></div>
+      <button class="cat" id="catPage"><span class="g">▭</span>page</button>
+      <button class="cat" id="catPlan"><span class="g">⌗</span>plan</button>
+      <div class="sep"></div>
+      <button class="cat"><span class="g">☰</span>drawers</button>
+      <button class="cat"><span class="g">⌂</span>shelf</button>
+      <div class="foot">
+        <button class="cat"><span class="g">⚙</span>settings</button>
+        <button class="cat"><span class="g">◐</span>theme</button>
+        <div class="sep"></div>
+        <button class="cat"><span class="g">✕</span>trash</button>
+      </div>
+    </nav>
+
+    <div class="band">
+      <div class="crumb" id="crumb" aria-label="Location"></div>
+      <div class="strip" aria-label="Modes" id="strip">
+        <span class="mode">Free Write</span><span class="mode on">Draft</span>
+        <span class="mode">Revise</span><span class="mode">Publish</span>
+      </div>
+      <div class="acts"><button class="qbtn" id="doorq"></button></div>
+    </div>
+
+    <div class="room" id="room">
+      <div class="paper">
+        <h1>The coat on the train</h1>
+        <p>She had the coat over her arm before she understood she had picked it up, and by then the platform was already moving past the window, or she was.</p>
+        <p>Ned would have said something about duty. Ned said something about duty every time the weather changed.</p>
+      </div>
+
+      <div class="board" aria-label="Stark — the wall">
+        <div class="bcard" style="left:6%;top:6%"><div class="k">Card</div>
+          <div class="b">Ned's refusal is not stubbornness.</div></div>
+        <div class="bcard" style="left:40%;top:26%"><div class="k">From a page</div>
+          <div class="b">The coat on the train</div></div>
+        <div class="bcard" style="left:12%;top:52%"><div class="k">Card</div>
+          <div class="b">Winterfell — the crypt is colder than the yard.</div></div>
+        <div class="bcard fresh" data-new="1" style="left:56%;top:60%"><div class="k">From a page · just placed</div>
+          <div class="b">Morning pages</div></div>
+      </div>
+
+      <div class="cwrap">
+        <!-- PLAN -->
+        <aside class="cbody" id="panPlan" aria-label="Plan">
+          <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
+          <div class="cscroll">
+            <div id="zoneBoards" data-has="0">
+              <span class="zhead">This page's boards</span>
+              <button class="brow fresh" id="rowStark"><span class="t">Stark</span><span class="m">Novel</span></button>
+              <div class="zrule"></div>
+            </div>
+            <button class="door">＋ New board</button>
+            <button class="door plain">Plot a story</button>
+            <div class="hint" id="planHint"></div>
+          </div>
+        </aside>
+
+        <!-- PAGE -->
+        <aside class="cbody" id="panPage" aria-label="Page">
+          <div class="chead"><span class="ctitle" id="pageTitleTerm">Page</span><button class="cx" aria-label="Close">×</button></div>
+          <div class="cscroll" id="pageScroll">
+
+            <div id="pageOnPage">
+              <button class="door" style="margin-bottom:8px">＋ New page</button>
+              <div class="pface">
+                <div class="ttl">The coat on the train</div>
+                <div class="home" id="faceHome">In Novel</div>
+              </div>
+              <span class="zhead">This page lives in…</span>
+              <div class="prow" data-on="0"><span class="bx rad"></span><span class="lab">The Journal</span></div>
+              <div class="prow" data-on="1"><span class="bx rad"></span><span class="lab">Novel</span></div>
+              <div class="prow" data-on="0"><span class="bx rad"></span><span class="lab">Research</span></div>
+              <div class="prow" data-on="0"><span class="bx rad"></span><span class="lab">Loose</span></div>
+              <div class="zrule"></div>
+              <span class="zhead">Also appears on…</span>
+              <div class="prow" id="cbStark" data-on="0"><span class="bx"></span><span class="lab">Stark</span></div>
+              <div class="prow" data-on="0"><span class="bx"></span><span class="lab">Winterfell timeline</span></div>
+              <div class="prow" data-on="0"><span class="bx"></span><span class="lab">Ravens &amp; letters</span></div>
+            </div>
+
+            <div id="pageOnBoard" style="display:none">
+              <button class="door" style="margin-bottom:10px">＋ New page</button>
+              <span class="zhead">Place page on board</span>
+              <div class="sorts" role="radiogroup" aria-label="Sort recent pages">
+                <button class="chip" aria-pressed="true">Date</button>
+                <button class="chip" aria-pressed="false">Drawer</button>
+                <button class="chip" aria-pressed="false">A–Z</button>
+              </div>
+              <div class="plist" aria-label="Recent pages — scrollable">
+                <button class="pitem" id="piMorning"><span class="t">Morning pages</span><span class="m">today · The Journal</span></button>
+                <button class="pitem"><span class="t">Platform smells</span><span class="m">yesterday · Novel</span></button>
+                <button class="pitem"><span class="t">Mara — first walk</span><span class="m">Jul 30 · Novel</span></button>
+                <button class="pitem"><span class="t">Coal dust notes</span><span class="m">Jul 28 · Research</span></button>
+              </div>
+            </div>
+
+          </div>
+        </aside>
+      </div>
+
+      <div class="toast" id="toast"></div>
+      <div class="stamp" id="stamp"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var STEPS = [
+    { act:'— the page is on no board at all.', n:'no acts yet',
+      surface:'page', panel:'none', cat:null, boards:0, stark:0, toast:'', fresh:0, door:'Plan →',
+      cap:'<b>Step 1 · nothing has been set up, because there is nothing to set up.</b> The writer has never opened a dialog, named a relationship, or chosen a type. The whole arc will add none.' },
+
+    { act:'press <i>Plan</i> in the rail', n:'1 press — a look, not the act',
+      surface:'page', panel:'plan', cat:'plan', boards:0, stark:0, toast:'', fresh:0, door:'Plan →',
+      hint:'A board you make from here becomes this page’s own plan board.',
+      cap:'<b>Step 2 · absent, never empty (PW9).</b> This page is on no board, so there is <em>no board zone</em> — not a zone containing “No boards yet.” Nothing announces a capability the writer has not reached for. What is present is what they can do: two doors, and one quiet line saying what pressing them means.' },
+
+    { act:'press <i>Page</i> in the rail', n:'the making — press <b>1</b> of 2',
+      surface:'page', panel:'page', cat:'page', boards:0, stark:0, toast:'', fresh:0, door:'Plan →',
+      cap:'<b>Step 3 · the other question, in the other tab (PW1).</b> <b>Page</b> is the <em>put</em> family, so Pass 7’s law governs: verb-led headings — “This page lives in…”, “Also appears on…” — and the state speaks first (Novel already marked). Compare with step 2: <b>Plan</b>’s rows are bare nouns because there the nouns mean <em>go</em>. Same law, opposite output, because the act is opposite.' },
+
+    { act:'press the <i>Stark</i> checkbox', n:'the making — press <b>2</b> of 2 · done',
+      surface:'page', panel:'page', cat:'page', boards:1, stark:1, toast:'Pinned to Stark.', fresh:0, door:'Plan →',
+      cap:'<b>Step 4 · the relation is made. Two presses, from the page.</b> No dialog opened, nothing was named, no type was chosen — the writer ticked a box that was already there. Membership, never filing: this changes where the page <em>appears</em>, never where it <em>lives</em> (the Home zone above is untouched). The page is now a card on Stark.' },
+
+    { act:'press <i>Plan</i> in the rail', n:'<b>1</b> press to see what was made',
+      surface:'page', panel:'plan', cat:'plan', boards:1, stark:1, toast:'', fresh:1, door:'Plan →',
+      hint:'',
+      cap:'<b>Step 5 · the act became geography, with no further step.</b> The zone that was absent one press ago now exists, because <em>the writer pinned</em> — the same lawful arrival the board’s own selection-gated action row already has: it arrives because the writer acted, and it still does not lunge. <b>PW10</b> — the second line names the drawer (<em>Novel</em>), which is quietly half the answer to “where is it stored.” Never a count.' },
+
+    { act:'— the other end: the writer is standing on <i>Stark</i>', n:'— the same relation, other side',
+      surface:'board', panel:'none', cat:null, boards:1, stark:1, toast:'', fresh:0, door:'Page →',
+      cap:'<b>Step 6 · the same relation, approached from the board.</b> The page pinned in step 4 is on the wall as a card. The band’s door reads <b>Page →</b> here, the mirror of the page’s <b>Plan →</b> — the arrow grammar that already ships.' },
+
+    { act:'press <i>Page</i> in the rail, then <i>Morning pages</i>', n:'the making, from the board — <b>2</b> presses',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, toast:'Placed on Stark.', fresh:1, door:'Page →', onboard:1,
+      cap:'<b>Step 7 · the same act, the other door. Two presses again.</b> This is the board’s Page drawer exactly as built (item 83 M6 / R13.ii): recent pages, scrollable, sortable Date · Drawer · A–Z, and a heading that names the <em>act</em> rather than the noun. The writer places a page on a board without ever leaving the board.' },
+
+    { act:'— both faces of one row', n:'— one row, two honest faces',
+      surface:'board', panel:'page', cat:'page', boards:1, stark:1, toast:'', fresh:1, door:'Page →', onboard:1,
+      cap:'<b>Step 8 · one relation, two honest faces, zero setup.</b> The checkbox on the page and the list on the board write the <em>same row</em> — a <code>page-pin</code> box in the board’s <code>boxes</code>. Nothing is duplicated, nothing syncs, nothing can drift; the cluster pass’s own finding, unchanged: there is one card, seen from two places. <b>The minimum-setup law is not something this design works around — it is what is left when you refuse to add data.</b>' }
+  ];
+
+  var stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      crumb=document.getElementById('crumb'), cap=document.getElementById('cap'),
+      act=document.getElementById('act'), cnt=document.getElementById('cnt'),
+      dots=document.getElementById('dots'), prev=document.getElementById('prev'),
+      next=document.getElementById('next'), stamp=document.getElementById('stamp'),
+      catPage=document.getElementById('catPage'), catPlan=document.getElementById('catPlan'),
+      zoneBoards=document.getElementById('zoneBoards'), cbStark=document.getElementById('cbStark'),
+      toast=document.getElementById('toast'), planHint=document.getElementById('planHint'),
+      doorq=document.getElementById('doorq'), pageOnPage=document.getElementById('pageOnPage'),
+      pageOnBoard=document.getElementById('pageOnBoard'), pageTitleTerm=document.getElementById('pageTitleTerm'),
+      piMorning=document.getElementById('piMorning'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+
+  var SIZES={a:[1366,768], b:[1680,1050]}, cur='a', scale=1, i=0;
+
+  STEPS.forEach(function(s,n){
+    var b=document.createElement('button'); b.className='dot'; b.textContent=String(n+1);
+    b.onclick=function(){ i=n; render(); }; dots.appendChild(b);
+  });
+
+  function render(){
+    var s=STEPS[i];
+    stage.dataset.surface=s.surface; stage.dataset.panel=s.panel;
+    stage.dataset.toast=s.toast?'1':'0'; stage.dataset.fresh=s.fresh?'1':'0';
+
+    crumb.innerHTML = s.surface==='board'
+      ? '<span class="i">Novel</span><span class="s">/</span><span class="h">Stark</span>'
+      : '<span class="i">Novel</span><span class="s">/</span><span class="h">The coat on the train</span>';
+    doorq.innerHTML = s.door.replace('→','<span aria-hidden="true">→</span>');
+
+    catPlan.classList.toggle('on', s.cat==='plan');
+    catPage.classList.toggle('on', s.cat==='page');
+    zoneBoards.setAttribute('data-has', s.boards ? '1':'0');
+    cbStark.setAttribute('data-on', s.stark ? '1':'0');
+    document.getElementById('rowStark').classList.toggle('fresh', !!s.fresh);
+    piMorning.classList.toggle('fresh', !!s.onboard && !!s.fresh);
+    pageOnPage.style.display = s.onboard ? 'none' : 'block';
+    pageOnBoard.style.display = s.onboard ? 'block' : 'none';
+    pageTitleTerm.textContent = 'Page';
+    planHint.textContent = s.hint || '';
+    toast.textContent = s.toast || '';
+
+    act.innerHTML = s.act;
+    cnt.innerHTML = s.n;
+    cap.innerHTML = s.cap;
+    stamp.textContent = 'step '+(i+1)+' of '+STEPS.length;
+
+    Array.prototype.forEach.call(dots.children,function(d,n){
+      d.setAttribute('aria-current', n===i ? 'true':'false'); });
+    prev.disabled = i===0; next.disabled = i===STEPS.length-1;
+    requestAnimationFrame(readout);
+  }
+
+  function readout(){
+    var s=STEPS[i], W=SIZES[cur][0], H=SIZES[cur][1];
+    var rail=document.querySelector('.rail').getBoundingClientRect();
+    var parts=['rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'%'];
+    if(s.panel!=='none'){
+      var p=document.querySelector('.cwrap').getBoundingClientRect();
+      var gap=(p.left-rail.right)/scale, flush=Math.abs(gap)<0.6;
+      geom.classList.toggle('drift',!flush);
+      parts.push('panel seam '+gap.toFixed(1)+'px '+(flush?'✓ flush (R10.i)':'✗ DRIFT'));
+      parts.push('no second layer — panel only, well inside G4');
+    } else { geom.classList.remove('drift'); parts.push('cascade closed — closed cost = the rail'); }
+    parts.push('zero schema: pin/unpin writes a page-pin box, nothing else');
+    geom.textContent=parts.join(' · ');
+  }
+
+  function layout(){
+    var W=SIZES[cur][0], H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    requestAnimationFrame(readout);
+  }
+
+  prev.onclick=function(){ if(i>0){i--;render();} };
+  next.onclick=function(){ if(i<STEPS.length-1){i++;render();} };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ next.click(); } if(e.key==='ArrowLeft'){ prev.click(); }
+  });
+  B1.onclick=function(){ cur='a'; B1.setAttribute('aria-pressed','true'); B2.setAttribute('aria-pressed','false'); layout(); };
+  B2.onclick=function(){ cur='b'; B2.setAttribute('aria-pressed','true'); B1.setAttribute('aria-pressed','false'); layout(); };
+  window.addEventListener('resize',layout);
+  render(); layout();
+})();
+</script>
+</body>
+</html>

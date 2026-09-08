@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PW · Journey A — the return trip (Page → Plan → card → Page)</title>
+<!--
+  THE PAGE/PLAN WORKFLOW ARC · JOURNEY A · "the return trip"
+  PLAN desk · 2026-09-07 · candidates only, nothing locks.
+
+  Eight STEPS, each one a real screen at a real width. Every step names the
+  action the writer takes and carries a running press count. Renders the
+  candidates PW1-PW7 and PW10 from pw-pass-page-plan-workflow.md.
+
+  Geometry is real: rail 84px (--strip-width as measured on main), cascade
+  panel 300px FLUSH on the rail (R10.i — zero gap, asserted by the readout),
+  survey 360px beside it. At 1366 the survey lawfully overlays the paper —
+  index.css's own allowance for an UNDOCKED layer at laptop widths — and the
+  readout measures and reports that overlap rather than hiding it.
+
+  Sample data only. No mechanism is invented: every act shown maps to a
+  function that exists on main (getBoardsPinning, planBoardId, buildSurvey,
+  the board popup). What changes is WHICH SET the Plan panel lists and WHERE
+  the list lives.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --brass-press:#e88900;
+    --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+
+  /* ---- the rig: not Wrizo chrome ---- */
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+  #geom.drift{color:#e05c5c}
+
+  .steps{position:fixed;top:39px;left:0;right:0;z-index:19;display:flex;gap:10px;align-items:center;
+         padding:7px 14px;background:#08080a;border-bottom:1px solid #1e1e22;font-size:12px}
+  .steps .nav{font:inherit;background:#141414;border:1px solid #333;color:#d8d8d8;padding:3px 9px;cursor:pointer}
+  .steps .nav:disabled{opacity:.35;cursor:default}
+  .dots{display:flex;gap:4px}
+  .dot{width:22px;height:20px;border:1px solid #333;background:#141414;color:#8a8a8a;font:inherit;
+       font-size:10.5px;cursor:pointer;padding:0}
+  .dot[aria-current="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  .act{color:#cfc9c0}
+  .act i{font-style:normal;color:var(--brass)}
+  .cnt{margin-left:auto;color:#8f8f8f;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+  .cnt b{color:#fff}
+
+  .fit{position:absolute;inset:74px 0 46px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;z-index:19;padding:9px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.5}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  /* ---- the frame ---- */
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;align-items:stretch;padding:8px 0;position:relative;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;background:none;
+       border:none;border-left:1px solid transparent;color:var(--text-low);font-family:inherit;
+       font-size:9px;letter-spacing:.09em;cursor:pointer}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left-color:var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:20px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  /* PW8 — the crumb the framed Board keeps and the framed Page lost */
+  .crumb{font-size:11px;color:var(--text-low);letter-spacing:.02em;margin-right:auto;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px}
+  .crumb .h{color:var(--text-hi)}
+  .crumb[data-new="true"]{outline:1px dashed rgba(150,160,90,.5);outline-offset:3px}
+  .strip{display:flex;gap:20px}
+  .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
+  .mode.on{color:var(--text-hi)}
+  .acts{display:flex;gap:14px;margin-left:auto;align-items:center}
+  .qbtn{background:none;border:none;font:inherit;font-size:11px;color:var(--text-mid);cursor:pointer;padding:4px 2px}
+  .qbtn:hover{color:var(--brass)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* ---- the paper ---- */
+  .paper{position:absolute;top:26px;bottom:0;left:50%;transform:translateX(-50%);
+         width:min(760px,88%);background:var(--paper);color:#241a10;padding:44px 56px;
+         font-family:var(--prose);font-size:17px;line-height:1.62;z-index:1}
+  .paper h1{font-size:19px;font-weight:500;margin-bottom:18px;letter-spacing:.01em}
+  .paper p{margin-bottom:13px}
+  .paper .caret{display:inline-block;width:1.5px;height:1.05em;background:#241a10;
+                vertical-align:-.17em;animation:bl 1.1s step-end infinite}
+  @keyframes bl{50%{opacity:0}}
+  /* the popup's faded ground is the backdrop below, not a filter on the room */
+
+  /* ---- cascade panel (300px, FLUSH on the rail — R10.i) ---- */
+  .cwrap{position:absolute;left:0;top:0;bottom:0;width:0;overflow:hidden;z-index:6;
+         transition:width .18s ease}
+  .stage[data-panel="1"] .cwrap{width:300px}
+  .cbody{width:300px;height:100%;background:var(--panel);border:1px solid var(--line);
+         border-left:none;display:flex;flex-direction:column}
+  .chead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;
+         border-bottom:1px solid var(--line)}
+  .ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-rest)}
+  .cx{background:none;border:none;color:var(--text-low);font:inherit;font-size:15px;cursor:pointer;padding:0 2px}
+  .cscroll{flex:1;overflow:auto;padding:4px 0 8px}
+  .zhead{display:block;padding:11px 14px 7px;font-size:9.5px;letter-spacing:.22em;
+         text-transform:uppercase;color:var(--accent-rest)}
+  .zrule{height:1px;background:var(--line);margin:8px 14px}
+
+  /* a board row: ONE act (PW4/PP4). Second line = relation or drawer, NEVER a count (PW10) */
+  .brow{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;
+        padding:8px 14px;cursor:pointer;border-left:1px solid transparent}
+  .brow .t{display:block;font-size:12.5px;color:var(--text-mid)}
+  .brow .m{display:block;font-size:10px;color:var(--text-low);letter-spacing:.03em;margin-top:2px}
+  .brow:hover{background:#241305}.brow:hover .t{color:var(--text-hi)}
+  .brow:active .t{color:var(--brass)}
+  .brow.on{border-left-color:var(--accent-rest);background:#241305}
+  .brow.on .t{color:var(--text-hi)}
+  /* the two creation doors, BELOW the list (PW3) */
+  .door{display:block;text-align:left;background:none;border:1px solid var(--accent-door);
+        color:var(--text-mid);font-family:inherit;font-size:11.5px;padding:7px 11px;margin:6px 14px 0;
+        width:calc(100% - 28px);cursor:pointer}
+  .door:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  .door.plain{border-color:transparent;padding-left:12px}
+
+  /* ---- the survey (360px, beside the panel) ---- */
+  .swrap{position:absolute;left:300px;top:0;bottom:0;width:0;overflow:hidden;z-index:5;
+         transition:width .18s ease}
+  .stage[data-survey="1"] .swrap{width:360px}
+  .sbody{width:360px;height:100%;background:var(--panel);border:1px solid var(--line);
+         display:flex;flex-direction:column}
+  .shead{display:flex;align-items:center;gap:6px;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+  .sback{background:none;border:none;color:var(--text-mid);font:inherit;font-size:15px;line-height:1;
+         cursor:pointer;padding:0 2px}
+  .stitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-mid)}
+  .sscroll{flex:1;overflow:auto;padding:8px 10px 10px}
+  /* PW4 — the board's own door, a ROW of its own, in the built door dress */
+  .sdoor{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;
+         border:1px solid var(--accent-door);color:var(--text-mid);font-family:inherit;font-size:11.5px;
+         padding:8px 11px;margin-bottom:9px;cursor:pointer}
+  .sdoor:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  .thumb{display:block;width:100%;text-align:left;background:none;border:1px solid var(--line);
+         font-family:inherit;padding:9px 11px;margin-bottom:7px;cursor:pointer}
+  .thumb .k{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+            color:var(--text-low);margin-bottom:4px}
+  .thumb .t{display:block;font-family:var(--prose);font-size:14px;line-height:1.4;color:var(--text-mid)}
+  .thumb:hover{border-color:var(--text-low)}.thumb:hover .t{color:var(--text-hi)}
+  .thumb:active .t{color:var(--brass)}
+  .thumb.cur{border-color:var(--accent-rest)}
+  .thumb.cur .k{color:var(--accent-rest)}
+  .thumb .was{float:right;font-size:9px;letter-spacing:.1em;color:var(--accent-rest);text-transform:none}
+
+  /* ---- the card popup: the SAME popup the board uses (item 117) ---- */
+  .pop{position:absolute;inset:0;z-index:12;display:none;place-items:center;background:rgba(12,5,0,.62)}
+  .stage[data-popup="1"] .pop{display:grid}
+  .popcard{position:relative;width:430px;background:var(--panel);border:1px solid var(--line);
+           box-shadow:0 24px 70px rgba(0,0,0,.7)}
+  .popdock{position:absolute;left:-46px;top:50%;transform:translateY(-50%);width:38px;
+           background:var(--panel);border:1px solid var(--line);padding:7px 0;display:flex;
+           flex-direction:column;align-items:center;gap:5px}
+  .popdock .dh{font-size:7.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-rest);
+               margin-bottom:2px}
+  .popdock button{width:24px;height:24px;background:none;border:1px solid transparent;color:var(--text-mid);
+                  font:inherit;font-size:12px;cursor:pointer}
+  .popdock button:hover{border-color:var(--line);color:var(--text-hi)}
+  .popeb{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-low);
+         padding:10px 14px 0}
+  .popbody{font-family:var(--prose);font-size:15.5px;line-height:1.5;color:var(--text-hi);padding:8px 14px 16px}
+  .popfoot{display:flex;justify-content:flex-end;padding:0 14px 12px}
+  .btnbrass{background:none;border:1px solid var(--brass);color:var(--brass);font:inherit;font-size:11px;
+            padding:5px 14px;cursor:pointer}
+
+  .stamp{position:absolute;right:12px;bottom:10px;z-index:9;font-size:10px;color:#5e564c;letter-spacing:.03em}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PW · JOURNEY A — THE RETURN TRIP</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="steps">
+  <button class="nav" id="prev">‹ Prev</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav" id="next">Next ›</button>
+  <span class="act" id="act"></span>
+  <span class="cnt" id="cnt"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage" data-panel="0" data-survey="0" data-popup="0" data-dim="0">
+  <div class="frame">
+
+    <nav class="rail" aria-label="Cascade">
+      <button class="cat"><span class="g">✶</span>journal</button>
+      <div class="sep"></div>
+      <button class="cat" id="catPage"><span class="g">▭</span>page</button>
+      <button class="cat" id="catPlan"><span class="g">⌗</span>plan</button>
+      <div class="sep"></div>
+      <button class="cat"><span class="g">☰</span>drawers</button>
+      <button class="cat"><span class="g">⌂</span>shelf</button>
+      <div class="foot">
+        <button class="cat"><span class="g">⚙</span>settings</button>
+        <button class="cat"><span class="g">◐</span>theme</button>
+        <div class="sep"></div>
+        <button class="cat"><span class="g">✕</span>trash</button>
+      </div>
+    </nav>
+
+    <div class="band">
+      <div class="crumb" id="crumb" data-new="true" aria-label="Location"></div>
+      <div class="strip" aria-label="Modes">
+        <span class="mode">Free Write</span><span class="mode on">Draft</span>
+        <span class="mode">Revise</span><span class="mode">Publish</span>
+      </div>
+      <div class="acts">
+        <button class="qbtn">Plan <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+
+    <div class="room" id="room">
+      <div class="paper" id="paper"></div>
+
+      <!-- the cascade panel: PLAN, listing THIS PAGE'S boards (PW2/PW3) -->
+      <div class="cwrap"><aside class="cbody" aria-label="Plan">
+        <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
+        <div class="cscroll">
+          <span class="zhead">This page's boards</span>
+          <button class="brow" id="rowOwn"><span class="t">The coat on the train — plan</span><span class="m">its own plan board</span></button>
+          <button class="brow" id="rowStark"><span class="t">Stark</span><span class="m">Novel</span></button>
+          <button class="brow" id="rowWint"><span class="t">Winterfell timeline</span><span class="m">Research</span></button>
+          <div class="zrule"></div>
+          <button class="door">＋ New board</button>
+          <button class="door plain">Plot a story</button>
+        </div>
+      </aside></div>
+
+      <!-- the survey: that board's cards (the BUILT second layer) -->
+      <div class="swrap"><aside class="sbody" aria-label="Stark">
+        <div class="shead"><button class="sback" aria-label="Back to the board list">‹</button>
+          <span class="stitle">Stark</span></div>
+        <div class="sscroll">
+          <button class="sdoor"><span>Open the board</span><span aria-hidden="true">→</span></button>
+          <button class="thumb" id="thNed"><span class="k">Card</span>
+            <span class="t">Ned's refusal is not stubbornness. He simply cannot see the shape of the room he is standing in.</span></button>
+          <button class="thumb" id="thCoat"><span class="k">From a page<span class="was" id="wasCoat"></span></span>
+            <span class="t">The coat on the train — she doesn't run; the leaving is already done.</span></button>
+          <button class="thumb"><span class="k">Card</span>
+            <span class="t">Winterfell — the crypt is colder than the yard, and everyone pretends not to notice.</span></button>
+          <button class="thumb" id="thCat"><span class="k">From a page</span>
+            <span class="t">Catelyn's letter — three drafts, none of them sent, all of them true.</span></button>
+        </div>
+      </aside></div>
+
+      <!-- the card popup: the same popup the Board uses (item 117; identity, not sync) -->
+      <div class="pop"><div class="popcard">
+        <div class="popdock" aria-label="Styling">
+          <span class="dh">Style</span>
+          <button title="Bold"><b>B</b></button><button title="Italic"><i>I</i></button><button title="Underline"><u>U</u></button>
+        </div>
+        <div class="popeb">Card</div>
+        <div class="popbody">Ned's refusal is not stubbornness. He simply cannot see the shape of the room he is standing in.</div>
+        <div class="popfoot"><button class="btnbrass">Close</button></div>
+      </div></div>
+
+      <div class="stamp" id="stamp"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var COAT = '<h1>The coat on the train</h1>' +
+    '<p>She had the coat over her arm before she understood she had picked it up, and by then the platform was already moving past the window, or she was.</p>' +
+    '<p>Ned would have said something about duty. Ned said something about duty every time the weather changed.<span class="caret"></span></p>';
+  var CATELYN = '<h1>Catelyn’s letter</h1>' +
+    '<p>Three drafts. The first was honest and unsendable. The second was sendable and a lie. The third she folded without reading, which is its own kind of answer.</p>' +
+    '<p>She writes the way other people hold a door — for someone who has already gone through.<span class="caret"></span></p>';
+
+  // Each STEP is a real screen. `act` names the action that PRODUCED it.
+  var STEPS = [
+    { act:'— the writer is writing. Nothing is open.', out:0, back:0,
+      surface:'coat', panel:0, survey:0, popup:0, cat:null, row:null, cur:null,
+      cap:'<b>Step 1 · the page.</b> Closed cost is the rail alone (G7). The crumb — dashed here — is <b>PW8</b>: the location line the framed Board keeps and the framed Page lost. On <code>main</code> today this row reads strip + actions with a hole where the address was, and “where does this live” costs two presses into a drawer.' },
+
+    { act:'press <i>Plan</i> in the rail', out:1, back:0,
+      surface:'coat', panel:1, survey:0, popup:0, cat:'plan', row:null, cur:null,
+      cap:'<b>Step 2 · the boards this page is on.</b> <b>PW2</b> — the set is <code>planBoardId ∪ getBoardsPinning(entryId)</code>, not the drawer’s boards. <b>PW3</b> — the list <em>is</em> the panel; the old “Open…” footer link retires and the two creation doors sit below a rule, because travel is common and creation is rare. <b>PW10</b> — second lines name the relation or the drawer. No counts, no badges. <b>PW1</b> — bare nouns, no verb heading: here the nouns mean <em>go</em>, and the writer’s learned grammar is already right.' },
+
+    { act:'press <i>Stark</i>', out:2, back:0,
+      surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:null,
+      cap:'<b>Step 3 · Stark’s cards.</b> The built survey, one pop-out deep — G4’s ceiling exactly, and the engine already ships (<code>buildSurvey</code>, back arrow, current mark, docking). <b>PW4</b> — the board’s own door is a <em>row of its own</em> in door dress, never a second act on a card row (PP4’s mis-click law). One press, not double-click: the rail’s grammar (<b>Q3</b>, departing from item 117 by name).' },
+
+    { act:'press the card <i>Ned’s refusal</i>', out:3, back:0,
+      surface:'coat', panel:1, survey:1, popup:1, cat:'plan', row:'stark', cur:null, dim:1,
+      cap:'<b>Step 4 · the card opens where the writer is.</b> <b>PW5</b> — the same popup the Board uses, over the page, ground faded. The writer <em>never left</em>. Edits are the same row seen from two places — identity, not a sync engine. <b>Three presses.</b> The card carries its own hand (Styling) at card scale; Close stays brass.' },
+
+    { act:'press <i>Close</i> (or Esc)', out:3, back:1,
+      surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:null,
+      cap:'<b>Step 5 · back, and the caret never moved.</b> <b>3 out, 1 back.</b> The rail is still open on Stark, so the next card is one press away. This is the whole thesis: the cheapest surface switch is the one the writer does not have to make.' },
+
+    { act:'— same lap, other flavour: from step 3, press <i>From a page · Catelyn’s letter</i>', out:3, back:0,
+      surface:'catelyn', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:'coat',
+      cap:'<b>Step 6 · a page-pin is travelled to, not opened.</b> The built distinction (a text card opens; a page-pin travels) becomes the rail’s grammar too — the verbs teach the kind. <b>PW6, the trail is the rail:</b> the cascade arrives still open, still on Stark, and the row the writer came <em>from</em> wears the survey’s own <code>current</code> mark. On <code>main</code> today a cascade travel leaves <em>no</em> way back at all.' },
+
+    { act:'press the marked row <i>The coat on the train</i>', out:3, back:1,
+      surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:'coat',
+      cap:'<b>Step 7 · home, in one press.</b> <b>3 out, 1 back</b> — the return is not a second journey, it is the row already under the writer’s eye. This is the arc’s one candidate with real build weight (cascade state is per-surface today); the cheap fallback is the built return chip, worded to name the surface actually left rather than a board the writer never stood on.' },
+
+    { act:'later that session — press <i>Plan</i>', out:1, back:0,
+      surface:'coat', panel:1, survey:1, popup:0, cat:'plan', row:'stark', cur:'coat',
+      cap:'<b>Step 8 · the panel opens where it was left.</b> <b>PW7</b> — per-page memory of the last board opened. Not a configured relationship: the machine declining to forget, restoring only what the writer themselves opened. Every visit after the first is <b>2 out, 1 back</b>. The ‹ in the survey head is always the way back to the list.' }
+  ];
+
+  var stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      room=document.getElementById('room'), paper=document.getElementById('paper'),
+      crumb=document.getElementById('crumb'), cap=document.getElementById('cap'),
+      act=document.getElementById('act'), cnt=document.getElementById('cnt'),
+      dots=document.getElementById('dots'), prev=document.getElementById('prev'),
+      next=document.getElementById('next'), stamp=document.getElementById('stamp'),
+      catPage=document.getElementById('catPage'), catPlan=document.getElementById('catPlan'),
+      rowStark=document.getElementById('rowStark'), rowOwn=document.getElementById('rowOwn'),
+      rowWint=document.getElementById('rowWint'), thCoat=document.getElementById('thCoat'),
+      wasCoat=document.getElementById('wasCoat'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+
+  var SIZES={a:[1366,768], b:[1680,1050]}, cur='a', scale=1, i=0;
+
+  STEPS.forEach(function(s,n){
+    var b=document.createElement('button'); b.className='dot'; b.textContent=String(n+1);
+    b.onclick=function(){ i=n; render(); }; dots.appendChild(b);
+  });
+
+  function render(){
+    var s=STEPS[i];
+    stage.dataset.panel=s.panel; stage.dataset.survey=s.survey;
+    stage.dataset.popup=s.popup; stage.dataset.dim=s.dim||0;
+
+    paper.innerHTML = s.surface==='coat' ? COAT : CATELYN;
+    crumb.innerHTML = s.surface==='coat'
+      ? '<span class="i">Novel</span><span class="s">/</span><span class="h">The coat on the train</span>'
+      : '<span class="i">Novel</span><span class="s">/</span><span class="h">Catelyn’s letter</span>';
+
+    catPlan.classList.toggle('on', s.cat==='plan');
+    catPage.classList.toggle('on', s.cat==='page');
+    rowStark.classList.toggle('on', s.row==='stark');
+    rowOwn.classList.remove('on'); rowWint.classList.remove('on');
+    thCoat.classList.toggle('cur', s.cur==='coat');
+    wasCoat.textContent = s.cur==='coat' ? ' · you were here' : '';
+
+    act.innerHTML = s.act;
+    cnt.innerHTML = 'presses — out <b>'+s.out+'</b> · back <b>'+s.back+'</b>';
+    cap.innerHTML = s.cap;
+    stamp.textContent = 'step '+(i+1)+' of '+STEPS.length;
+
+    Array.prototype.forEach.call(dots.children,function(d,n){
+      d.setAttribute('aria-current', n===i ? 'true':'false'); });
+    prev.disabled = i===0; next.disabled = i===STEPS.length-1;
+    requestAnimationFrame(readout);
+  }
+
+  function readout(){
+    var s=STEPS[i], W=SIZES[cur][0], H=SIZES[cur][1];
+    var rail=document.querySelector('.rail').getBoundingClientRect();
+    var parts=['rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'%'];
+    if(s.panel){
+      var p=document.querySelector('.cbody').getBoundingClientRect();
+      var gap=(p.left-rail.right)/scale;
+      var flush=Math.abs(gap)<0.6;
+      geom.classList.toggle('drift',!flush);
+      parts.push('panel seam '+gap.toFixed(1)+'px '+(flush?'✓ flush (R10.i)':'✗ DRIFT'));
+    } else { geom.classList.remove('drift'); parts.push('cascade closed — closed cost = the rail'); }
+    if(s.survey){
+      var sv=document.querySelector('.sbody').getBoundingClientRect();
+      var pp=paper.getBoundingClientRect();
+      var ov=(sv.right-pp.left)/scale;
+      parts.push(ov>0.5
+        ? 'survey overlays paper '+ov.toFixed(1)+'px — lawful (undocked layer, laptop widths)'
+        : 'survey clear of paper');
+    }
+    geom.textContent=parts.join(' · ');
+  }
+
+  function layout(){
+    var W=SIZES[cur][0], H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    requestAnimationFrame(readout);
+  }
+
+  prev.onclick=function(){ if(i>0){i--;render();} };
+  next.onclick=function(){ if(i<STEPS.length-1){i++;render();} };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ next.click(); }
+    if(e.key==='ArrowLeft'){ prev.click(); }
+  });
+  B1.onclick=function(){ cur='a'; B1.setAttribute('aria-pressed','true'); B2.setAttribute('aria-pressed','false'); layout(); };
+  B2.onclick=function(){ cur='b'; B2.setAttribute('aria-pressed','true'); B1.setAttribute('aria-pressed','false'); layout(); };
+  window.addEventListener('resize',layout);
+  render(); layout();
+})();
+</script>
+</body>
+</html>

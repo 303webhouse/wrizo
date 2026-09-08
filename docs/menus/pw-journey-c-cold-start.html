@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PW · Journey C — the cold start (no project, no board, no plan)</title>
+<!--
+  THE PAGE/PLAN WORKFLOW ARC · JOURNEY C · "the cold start"
+  PLAN desk · 2026-09-07 · candidates only, nothing locks.
+
+  Seven STEPS. The zero-setup case: a page that belongs nowhere, whose writer
+  has never made a board and does not intend to. Proves NO LEARNING CURVE
+  (the writer makes no decisions before a board exists) and answers Nick's
+  second sentence — "it is incomprehensible where documents are stored" — by
+  giving the question one permanent address.
+
+  Truth-checked against main:
+  - getOrCreatePlanBoard mints a board BORN EMPTY (boxes: []), projectId null,
+    origin 'loose', and writes planBoardId back onto the PAGE. The page is
+    PAIRED to it, never pinned onto it. Step 3 renders that honestly, and the
+    caption argues why it is right rather than papering over it.
+  - The band's Plan → / Page → doors are BM1 S3 as built.
+  - Step 4 renders PW13: the Plan tab on a BOARD carries the board's own acts
+    — the missing home R13.iv's one-commit relocation was waiting for.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:14px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#6b6b6b;color:#fff}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f}
+  #geom.drift{color:#e05c5c}
+
+  .steps{position:fixed;top:39px;left:0;right:0;z-index:19;display:flex;gap:10px;align-items:center;
+         padding:7px 14px;background:#08080a;border-bottom:1px solid #1e1e22;font-size:12px}
+  .steps .nav{font:inherit;background:#141414;border:1px solid #333;color:#d8d8d8;padding:3px 9px;cursor:pointer}
+  .steps .nav:disabled{opacity:.35;cursor:default}
+  .dots{display:flex;gap:4px}
+  .dot{width:22px;height:20px;border:1px solid #333;background:#141414;color:#8a8a8a;font:inherit;
+       font-size:10.5px;cursor:pointer;padding:0}
+  .dot[aria-current="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  .act{color:#cfc9c0} .act i{font-style:normal;color:var(--brass)}
+  .cnt{margin-left:auto;color:#8f8f8f;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+  .cnt b{color:#fff}
+
+  .fit{position:absolute;inset:74px 0 46px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;z-index:19;padding:9px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.5}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;position:relative;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;background:none;
+       border:none;border-left:1px solid transparent;color:var(--text-low);font-family:inherit;
+       font-size:9px;letter-spacing:.09em;cursor:pointer}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left-color:var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:20px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .crumb .nowhere{color:#8d7f5f;font-style:italic}
+  .strip{display:flex;gap:20px}
+  .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
+  .mode.on{color:var(--text-hi)}
+  .acts{margin-left:auto}
+  .qbtn{background:none;border:none;font:inherit;font-size:11px;color:var(--text-mid);cursor:pointer;padding:4px 2px}
+  .qbtn:hover{color:var(--brass)}
+  .qbtn.hot{color:var(--brass)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  .paper{position:absolute;top:26px;bottom:0;left:50%;transform:translateX(-50%);
+         width:min(760px,88%);background:var(--paper);color:#241a10;padding:44px 56px;
+         font-family:var(--prose);font-size:17px;line-height:1.62;z-index:1}
+  .paper h1{font-size:19px;font-weight:500;margin-bottom:18px}
+  .paper p{margin-bottom:13px}
+  .paper .caret{display:inline-block;width:1.5px;height:1.05em;background:#241a10;
+                vertical-align:-.17em;animation:bl 1.1s step-end infinite}
+  @keyframes bl{50%{opacity:0}}
+  .stage[data-surface="board"] .paper{display:none}
+
+  .board{position:absolute;inset:22px 30px 26px 30px;display:none}
+  .stage[data-surface="board"] .board{display:block}
+  .empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--text-low);
+         font-size:12px;letter-spacing:.04em}
+  .stage[data-cards="1"] .empty{display:none}
+  .bcard{position:absolute;width:216px;min-height:96px;background:var(--panel);border:1px solid var(--accent-rest);
+         padding:11px 13px;display:none}
+  .stage[data-cards="1"] .bcard{display:block}
+  .bcard .k{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);margin-bottom:5px}
+  .bcard .b{font-family:var(--prose);font-size:14px;line-height:1.42;color:var(--text-mid)}
+
+  .cwrap{position:absolute;left:0;top:0;bottom:0;width:0;overflow:hidden;z-index:6;transition:width .18s ease}
+  .stage[data-panel="plan-page"] .cwrap,.stage[data-panel="plan-board"] .cwrap,
+  .stage[data-panel="page"] .cwrap{width:300px}
+  .cbody{width:300px;height:100%;background:var(--panel);border:1px solid var(--line);border-left:none;
+         display:flex;flex-direction:column;position:absolute;inset:0;visibility:hidden}
+  .stage[data-panel="plan-page"] #panPlanPage{visibility:visible}
+  .stage[data-panel="plan-board"] #panPlanBoard{visibility:visible}
+  .stage[data-panel="page"] #panPage{visibility:visible}
+  .chead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;
+         border-bottom:1px solid var(--line)}
+  .ctitle{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-rest)}
+  .cx{background:none;border:none;color:var(--text-low);font:inherit;font-size:15px;cursor:pointer}
+  .cscroll{flex:1;overflow:auto;padding:4px 0 8px}
+  .zhead{display:block;padding:11px 14px 7px;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+         color:var(--accent-rest)}
+  .zrule{height:1px;background:var(--line);margin:8px 14px}
+  .hint{padding:5px 14px 8px;font-size:10.5px;color:var(--text-low);line-height:1.5}
+
+  .brow{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;
+        padding:8px 14px;cursor:pointer;border-left:1px solid var(--accent-rest);background:#241305}
+  .brow .t{display:block;font-size:12.5px;color:var(--text-hi)}
+  .brow .m{display:block;font-size:10px;color:var(--text-low);margin-top:2px}
+  #zoneBoards[data-has="0"]{display:none}
+
+  .door{display:block;text-align:left;background:none;border:1px solid var(--accent-door);color:var(--text-mid);
+        font-family:inherit;font-size:11.5px;padding:7px 11px;margin:6px 14px 0;width:calc(100% - 28px);cursor:pointer}
+  .door:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  .door.plain{border-color:transparent;padding-left:12px}
+  .row{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 28px);margin:2px 14px 0;
+       background:none;border:none;font-family:inherit;font-size:11.5px;color:var(--text-mid);padding:7px 0;cursor:pointer}
+  .row:hover{color:var(--text-hi)}
+  .row .sw{width:22px;height:11px;border:1px solid var(--accent-rest);position:relative}
+  .row .sw:after{content:'';position:absolute;top:1px;left:11px;width:8px;height:7px;background:var(--accent-rest)}
+
+  .pface{padding:11px 14px 4px;border-bottom:1px solid var(--line)}
+  .pface .ttl{font-family:var(--prose);font-size:15px;color:var(--text-hi)}
+  .pface .home{font-size:10.5px;color:#8d7f5f;font-style:italic;margin-top:3px}
+  .prow{display:flex;align-items:center;gap:9px;padding:6px 14px;font-size:11.5px;color:var(--text-mid);cursor:pointer}
+  .prow:hover{color:var(--text-hi);background:#241305}
+  .prow .bx{width:11px;height:11px;border:1px solid var(--text-low);border-radius:50%;flex:0 0 auto;position:relative}
+  .prow[data-on="1"] .bx{border-color:var(--accent-rest)}
+  .prow[data-on="1"] .bx:after{content:'';position:absolute;inset:2px;background:var(--accent-rest)}
+  .prow[data-on="1"]{color:var(--text-hi)}
+
+  .stamp{position:absolute;right:12px;bottom:8px;z-index:9;font-size:10px;color:#5e564c}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>PW · JOURNEY C — THE COLD START</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="steps">
+  <button class="nav" id="prev">‹ Prev</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav" id="next">Next ›</button>
+  <span class="act" id="act"></span>
+  <span class="cnt" id="cnt"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage" data-surface="page" data-panel="none" data-cards="0">
+  <div class="frame">
+
+    <nav class="rail" aria-label="Cascade">
+      <button class="cat"><span class="g">✶</span>journal</button>
+      <div class="sep"></div>
+      <button class="cat" id="catPage"><span class="g">▭</span>page</button>
+      <button class="cat" id="catPlan"><span class="g">⌗</span>plan</button>
+      <div class="sep"></div>
+      <button class="cat"><span class="g">☰</span>drawers</button>
+      <button class="cat"><span class="g">⌂</span>shelf</button>
+      <div class="foot">
+        <button class="cat"><span class="g">⚙</span>settings</button>
+        <button class="cat"><span class="g">◐</span>theme</button>
+        <div class="sep"></div>
+        <button class="cat"><span class="g">✕</span>trash</button>
+      </div>
+    </nav>
+
+    <div class="band">
+      <div class="crumb" id="crumb" aria-label="Location"></div>
+      <div class="strip" aria-label="Modes" id="strip">
+        <span class="mode on" id="mFW">Free Write</span><span class="mode">Draft</span>
+        <span class="mode">Revise</span><span class="mode">Publish</span>
+      </div>
+      <div class="acts"><button class="qbtn" id="doorq"></button></div>
+    </div>
+
+    <div class="room" id="room">
+      <div class="paper">
+        <h1>The coat on the train</h1>
+        <p>She had the coat over her arm before she understood she had picked it up, and by then the platform was already moving past the window, or she was.</p>
+        <p>There is a version of this where she says something. I have not found it yet.<span class="caret"></span></p>
+      </div>
+
+      <div class="board" aria-label="The plan board">
+        <div class="empty">an empty wall</div>
+        <div class="bcard" style="left:8%;top:14%"><div class="k">Card · just made</div>
+          <div class="b">Who is she leaving — the man, or the platform?</div></div>
+      </div>
+
+      <div class="cwrap">
+        <!-- PLAN, on a PAGE -->
+        <aside class="cbody" id="panPlanPage" aria-label="Plan">
+          <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
+          <div class="cscroll">
+            <div id="zoneBoards" data-has="0">
+              <span class="zhead">This page's boards</span>
+              <button class="brow"><span class="t">The coat on the train — plan</span><span class="m">its own plan board</span></button>
+              <div class="zrule"></div>
+            </div>
+            <button class="door">＋ New board</button>
+            <button class="door plain">Plot a story</button>
+            <div class="hint" id="planHint"></div>
+          </div>
+        </aside>
+
+        <!-- PLAN, on a BOARD (PW13 — the surface-aware contents) -->
+        <aside class="cbody" id="panPlanBoard" aria-label="Plan">
+          <div class="chead"><span class="ctitle">Plan</span><button class="cx" aria-label="Close">×</button></div>
+          <div class="cscroll">
+            <span class="zhead">Board</span>
+            <button class="door">＋ New card</button>
+            <button class="door plain">Import file</button>
+            <button class="door plain">From a deck…</button>
+            <div class="zrule"></div>
+            <button class="row"><span>Show connections</span><span class="sw"></span></button>
+            <div class="hint">Board acts live here (R13.iii). The Tools sliver does not mount on a board (R13.iv) — this panel is the home that ruling was waiting for.</div>
+          </div>
+        </aside>
+
+        <!-- PAGE -->
+        <aside class="cbody" id="panPage" aria-label="Page">
+          <div class="chead"><span class="ctitle">Page</span><button class="cx" aria-label="Close">×</button></div>
+          <div class="cscroll">
+            <button class="door" style="margin-bottom:8px">＋ New page</button>
+            <div class="pface">
+              <div class="ttl">The coat on the train</div>
+              <div class="home">Loose — belongs nowhere yet</div>
+            </div>
+            <span class="zhead">This page lives in…</span>
+            <div class="prow" data-on="0"><span class="bx"></span><span class="lab">The Journal</span></div>
+            <div class="prow" data-on="0"><span class="bx"></span><span class="lab">Novel</span></div>
+            <div class="prow" data-on="0"><span class="bx"></span><span class="lab">Research</span></div>
+            <div class="prow" data-on="1"><span class="bx"></span><span class="lab">Loose</span></div>
+            <div class="hint">＋ File to a new drawer…</div>
+            <div class="zrule"></div>
+            <span class="zhead">Also appears on…</span>
+            <div class="hint" style="padding-top:0">Nothing yet. Ticking a board here places this page on it.</div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="stamp" id="stamp"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var STEPS = [
+    { act:'— a page that belongs nowhere. No project, no board, no plan.', n:0,
+      surface:'page', panel:'none', cat:null, cards:0, boards:0, door:'Plan →', hot:0,
+      crumb:'<span class="nowhere">Loose — belongs nowhere yet</span><span class="s">/</span><span class="h">The coat on the train</span>',
+      cap:'<b>Step 1 · the crumb never renders empty (PW8).</b> With no drawer and no project, the chain reads the page’s <em>home label</em> — the exact string <code>describePageHome</code> already produces — rather than a bare title. The one case where the writer is most likely to be lost is the one case where the address must still say something true.' },
+
+    { act:'press <i>Plan →</i> in the band', n:1,
+      surface:'board', panel:'none', cat:null, cards:0, boards:0, door:'Page →', hot:1,
+      crumb:'<span class="nowhere">Loose</span><span class="s">/</span><span class="h">The coat on the train — plan</span>',
+      cap:'<b>Step 2 · a board exists, and the writer made no decisions to get it.</b> One press. They did not name it, choose a type, pick a template, or file it anywhere. This is the built door (BM1 S3): the page is born if unborn, the board is minted, the pointer is written back onto the <em>page</em>. <b>Page is primary; the plan face is subordinate and lazily born.</b>' },
+
+    { act:'— the wall it arrives as', n:0,
+      surface:'board', panel:'none', cat:null, cards:0, boards:0, door:'Page →', hot:0,
+      crumb:'<span class="nowhere">Loose</span><span class="s">/</span><span class="h">The coat on the train — plan</span>',
+      cap:'<b>Step 3 · born empty, and that is right.</b> The board arrives with no cards — the page is <em>paired</em> to it, never pinned onto it. A card would be the same truth twice: the pairing already is the relation, and the two doors already say so. The hands do not duplicate (CA4’s own reasoning about why a links list has no place beside threads), and arrangement stays the writer’s to author (A16).' },
+
+    { act:'press <i>Plan</i> in the rail, then <i>＋ New card</i>', n:2,
+      surface:'board', panel:'plan-board', cat:'plan', cards:1, boards:0, door:'Page →', hot:0,
+      crumb:'<span class="nowhere">Loose</span><span class="s">/</span><span class="h">The coat on the train — plan</span>',
+      cap:'<b>Step 4 · the same tab, different contents (PW13).</b> On a page the Plan tab lists <em>this page’s boards</em>; on a board it carries <em>the board’s own acts</em>. One form, two contents — G2 exactly. This is also the home R13.iv has been waiting for: the ruling removed the board’s Tools sliver, the build deferred it because the acts had nowhere to go, and the report asked for “the absence and the new home in the same commit.” <b>This arc supplies the new home.</b>' },
+
+    { act:'press <i>Page →</i> in the band', n:1,
+      surface:'page', panel:'none', cat:null, cards:1, boards:1, door:'Plan →', hot:1,
+      crumb:'<span class="nowhere">Loose — belongs nowhere yet</span><span class="s">/</span><span class="h">The coat on the train</span>',
+      cap:'<b>Step 5 · back to the writing, in one press.</b> The two doors are each other’s mirror — <b>Plan →</b> out, <b>Page →</b> back — and the round trip for an unplanned page is <b>1 out, 1 back</b>. Nothing was configured in either direction.' },
+
+    { act:'press <i>Plan</i> in the rail', n:1,
+      surface:'page', panel:'plan-page', cat:'plan', cards:1, boards:1, door:'Plan →', hot:0,
+      crumb:'<span class="nowhere">Loose — belongs nowhere yet</span><span class="s">/</span><span class="h">The coat on the train</span>',
+      cap:'<b>Step 6 · the board the writer never decided to make is now listed.</b> The zone that was absent in step 1 exists because a board exists. <b>PW10’s clause:</b> a plan board is born untitled, so its row is titled from the page it is paired to — the pairing is 1:1, so the page’s name is a <em>true</em> name for it — and the second line names the relation, not a count.' },
+
+    { act:'press <i>Page</i> in the rail', n:1,
+      surface:'page', panel:'page', cat:'page', cards:1, boards:1, door:'Plan →', hot:0,
+      crumb:'<span class="nowhere">Loose — belongs nowhere yet</span><span class="s">/</span><span class="h">The coat on the train</span>',
+      cap:'<b>Step 7 · “where is my page,” answered in the same place every time.</b> Not a better answer — a <em>findable</em> one. <b>Page</b> says where it lives and where it appears; <b>Plan</b> says which boards it is on. Two facts, learned once, and the writer never has to learn anything else about storage. Here the honest answer is <em>Loose — belongs nowhere yet</em>, with every drawer one press away, and “Also appears on…” saying plainly that nothing does yet.' }
+  ];
+
+  var stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      crumb=document.getElementById('crumb'), cap=document.getElementById('cap'),
+      act=document.getElementById('act'), cnt=document.getElementById('cnt'),
+      dots=document.getElementById('dots'), prev=document.getElementById('prev'),
+      next=document.getElementById('next'), stamp=document.getElementById('stamp'),
+      catPage=document.getElementById('catPage'), catPlan=document.getElementById('catPlan'),
+      zoneBoards=document.getElementById('zoneBoards'), planHint=document.getElementById('planHint'),
+      doorq=document.getElementById('doorq'), mFW=document.getElementById('mFW'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+
+  var SIZES={a:[1366,768], b:[1680,1050]}, cur='a', scale=1, i=0;
+
+  STEPS.forEach(function(s,n){
+    var b=document.createElement('button'); b.className='dot'; b.textContent=String(n+1);
+    b.onclick=function(){ i=n; render(); }; dots.appendChild(b);
+  });
+
+  function render(){
+    var s=STEPS[i];
+    stage.dataset.surface=s.surface; stage.dataset.panel=s.panel; stage.dataset.cards=s.cards;
+    crumb.innerHTML=s.crumb;
+    doorq.innerHTML=s.door.replace('→','<span aria-hidden="true">→</span>');
+    doorq.classList.toggle('hot', !!s.hot);
+    catPlan.classList.toggle('on', s.cat==='plan');
+    catPage.classList.toggle('on', s.cat==='page');
+    zoneBoards.setAttribute('data-has', s.boards ? '1':'0');
+    planHint.textContent = s.boards ? '' : 'A board you make from here becomes this page’s own plan board.';
+    mFW.style.visibility = s.surface==='board' ? 'hidden' : 'visible';
+
+    act.innerHTML=s.act;
+    cnt.innerHTML='presses for this step — <b>'+s.n+'</b>';
+    cap.innerHTML=s.cap;
+    stamp.textContent='step '+(i+1)+' of '+STEPS.length;
+    Array.prototype.forEach.call(dots.children,function(d,n){
+      d.setAttribute('aria-current', n===i ? 'true':'false'); });
+    prev.disabled=i===0; next.disabled=i===STEPS.length-1;
+    requestAnimationFrame(readout);
+  }
+
+  function readout(){
+    var s=STEPS[i], W=SIZES[cur][0], H=SIZES[cur][1];
+    var rail=document.querySelector('.rail').getBoundingClientRect();
+    var parts=['rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'%'];
+    if(s.panel!=='none'){
+      var p=document.querySelector('.cwrap').getBoundingClientRect();
+      var gap=(p.left-rail.right)/scale, flush=Math.abs(gap)<0.6;
+      geom.classList.toggle('drift',!flush);
+      parts.push('panel seam '+gap.toFixed(1)+'px '+(flush?'✓ flush (R10.i)':'✗ DRIFT'));
+    } else { geom.classList.remove('drift'); parts.push('cascade closed — closed cost = the rail'); }
+    parts.push(s.boards ? 'board zone present — the writer made a board' : 'board zone ABSENT, not empty (PW9)');
+    geom.textContent=parts.join(' · ');
+  }
+
+  function layout(){
+    var W=SIZES[cur][0], H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    requestAnimationFrame(readout);
+  }
+
+  prev.onclick=function(){ if(i>0){i--;render();} };
+  next.onclick=function(){ if(i<STEPS.length-1){i++;render();} };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ next.click(); } if(e.key==='ArrowLeft'){ prev.click(); }
+  });
+  B1.onclick=function(){ cur='a'; B1.setAttribute('aria-pressed','true'); B2.setAttribute('aria-pressed','false'); layout(); };
+  B2.onclick=function(){ cur='b'; B2.setAttribute('aria-pressed','true'); B1.setAttribute('aria-pressed','false'); layout(); };
+  window.addEventListener('resize',layout);
+  render(); layout();
+})();
+</script>
+</body>
+</html>
