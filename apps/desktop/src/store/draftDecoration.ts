@@ -37,6 +37,19 @@ function decorateInline(text: string): string {
     const boldStart = text.indexOf('**', i);
     const italicStart = text.indexOf('*', i);
     const underStart = text.indexOf('__', i);
+    const strikeStart = text.indexOf('~~', i);
+    // ITEM 122 — strike competes on the same earliest-opens rule as the rest.
+    if (strikeStart !== -1
+        && (boldStart === -1 || strikeStart < boldStart)
+        && (italicStart === -1 || strikeStart < italicStart)
+        && (underStart === -1 || strikeStart < underStart)) {
+      const close = text.indexOf('~~', strikeStart + 2);
+      if (close === -1) { out += escHtml(text.slice(i)); break; }
+      out += escHtml(text.slice(i, strikeStart));
+      out += `<span class="md-strike"><span class="md-mark">~~</span>${escHtml(text.slice(strikeStart + 2, close))}<span class="md-mark">~~</span></span>`;
+      i = close + 2;
+      continue;
+    }
     // Underline first when it opens earliest — a `__` before any asterisk.
     if (underStart !== -1
         && (boldStart === -1 || underStart < boldStart)
@@ -88,6 +101,13 @@ const H1 = /^(#\s+)([\s\S]*)$/;
 // have stopped matching the moment E3 made indents repeatable and common.
 const LEADING_TABS = /^(\t+)([\s\S]*)$/;
 
+// SUPERSEDED AS A DEFAULT BY ITEM 122 — kept, not deleted, because parks and
+// comments across the harness and this codebase name it, and because it is the
+// honest record of the register Draft used to carry. It renders every marker
+// visible at `.md-mark{opacity:.38}`. DO NOT reach for it to "show syntax" on a
+// writing surface: Nick's ruling is that Draft shows the STYLE, not the marks.
+// If a surface ever genuinely wants visible syntax, that is a design question
+// with an owner, not a default to fall back into.
 export function decorateMarkdown(text: string): string {
   return text
     .split('\n')
@@ -133,6 +153,22 @@ function decorateInlineForCard(text: string, caret: number | null): string {
     const boldStart = text.indexOf('**', i);
     const italicStart = text.indexOf('*', i);
     const underStart = text.indexOf('__', i);
+    const strikeStart = text.indexOf('~~', i);
+    // ITEM 122 — strike, same precedence, same reveal-adjacent marks.
+    if (strikeStart !== -1
+        && (boldStart === -1 || strikeStart < boldStart)
+        && (italicStart === -1 || strikeStart < italicStart)
+        && (underStart === -1 || strikeStart < underStart)) {
+      const close = text.indexOf('~~', strikeStart + 2);
+      if (close === -1) { out += escHtml(text.slice(i)); break; }
+      out += escHtml(text.slice(i, strikeStart));
+      const sEnd = close + 2;
+      const sReveal = caret !== null && caret >= strikeStart && caret <= sEnd;
+      const sCls = sReveal ? 'md-mark' : 'md-mark md-mark-hidden';
+      out += `<span class="md-strike"><span class="${sCls}">~~</span>${escHtml(text.slice(strikeStart + 2, close))}<span class="${sCls}">~~</span></span>`;
+      i = sEnd;
+      continue;
+    }
     // Same precedence as the Draft pass above, plus this register's own
     // reveal-adjacent-to-caret rule: the marks collapse unless the caret is
     // within or beside the run. Collapsed via `md-mark-hidden` (font-size:0),
@@ -245,13 +281,30 @@ export function decorateEditorFor(
   plain: string,
   caret: number | null,
   setCaretOffset: (el: HTMLElement, target: number) => void,
-  // FX5 S6 — an optional override, defaulting to decorateMarkdown exactly
-  // as before (every EXISTING call site — ForwardOnlyEditor.tsx's drafting
-  // branch, PageEditor.tsx's rail format actions — omits this argument, so
-  // their own output is byte-identical to pre-FX5; Draft mode's dimmed-
-  // syntax register is genuinely untouched, not just claimed). Only
-  // BoardCardPopup.tsx passes `text => decorateMarkdownForCard(text, caret)`.
-  decorate: (text: string) => string = decorateMarkdown,
+  // ITEM 122 — THE DEFAULT REGISTER IS NOW REVEAL-ADJACENT, on Nick's ruling
+  // that Draft's B/I/U must render the STYLE with no visible markers
+  // ("bold renders bold"). FX5 S6 introduced this parameter with
+  // `decorateMarkdown` as the default — the iA dimmed-syntax register, where
+  // every marker stayed on screen at `opacity:.38`. That register is what the
+  // ruling retires for Draft.
+  //
+  // WHY THE DEFAULT MOVES RATHER THAN EACH CALL SITE PASSING AN OVERRIDE:
+  // there are four Draft call sites (ForwardOnlyEditor's redecorate and its
+  // initial mount, its initial React html, and PageEditor's rail actions), and
+  // they must agree or the markers flicker between registers as the writer
+  // types. A default cannot be forgotten at a fifth site; four overrides can.
+  // BoardCardPopup already passed this function explicitly, so the card is
+  // unchanged either way — the two surfaces now simply share one register,
+  // which is what "the same engine" was always supposed to mean.
+  //
+  // SAFE THROUGH THE LIVE ROUND-TRIP, MEASURED NOT ASSUMED (item 122 S0): the
+  // collapsed marks use `font-size:0`, never display/visibility, so they remain
+  // real rendered characters and survive `el.innerText` — which is what the
+  // live editor reads back into the store on every keystroke. The two forbidden
+  // techniques were run as controls in the same probe and BOTH stripped the
+  // markers out of `innerText`. See this file's own header for why that
+  // distinction is load-bearing rather than stylistic.
+  decorate: (text: string) => string = (t) => decorateMarkdownForCard(t, caret),
 ): void {
   if (caret === null) return;
   const needsGuard = plain.endsWith('\n');

@@ -10,7 +10,7 @@
 // supersedes Chamber 1's deferral of alignment/indentation ("until a real need
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
-  | 'bold' | 'italic' | 'underline' | 'heading' | 'spacing'
+  | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'spacing'
   | 'bullet' | 'quote' | 'indent' | 'outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
@@ -29,8 +29,12 @@ export type StructureKind = 'prose' | 'screenplay';
 // the freeze provided. It stays plain-text honest (the storage law), the
 // dimmed-syntax register renders the markers as craft, and export strips them
 // like every other convention. One word from Nick re-tokens it.
-export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline', string> =
-  { bold: '**', italic: '*', underline: '__' };
+// ITEM 122 — strikethrough joins the frozen set on Nick's ruling. `~~` is the
+// conventional pair and, unlike `_`, the tilde carries no ordinary role in
+// prose, so a single `~` needs no special defence the way a single
+// underscore did.
+export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline' | 'strike', string> =
+  { bold: '**', italic: '*', underline: '__', strike: '~~' };
 
 export interface FormatResult {
   text: string;
@@ -268,12 +272,55 @@ function indentParagraphs(text: string, selStart: number, selEnd: number): Forma
 
 const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-right']] as const;
 
+// ITEM 122 — WHAT THE CARET IS INSIDE. Draft's rail had NO active state at all
+// before this: its format prop was `{ onFormat }` and nothing else, so there was
+// never a stuck highlight to unstick on Draft — there was no highlight. (The
+// stuck one Nick saw lives on Free Write, whose rail carries `boldOn` and whose
+// two-press bracket leaves it armed by design. That surface's styling is being
+// removed under item 121, so this is the state that replaces it, built caret-
+// derived from the start rather than toggled.)
+//
+// PURE, AND DELIBERATELY SO: text in, flags out, no DOM. That makes the rule
+// testable without a browser and keeps the one interesting decision explicit —
+// A RUN COUNTS AS ACTIVE WHEN THE CARET IS ANYWHERE WITHIN IT, ITS MARKERS
+// INCLUDED. That is the same boundary `decorateInlineForCard`'s reveal-adjacent
+// rule already uses to un-collapse the marks, so the button lights at exactly
+// the moment the writer can see the syntax they are inside. Two rules that
+// disagreed about "inside" would be worse than either alone.
+export function marksAt(text: string, caret: number): { bold: boolean; italic: boolean; underline: boolean; strike: boolean } {
+  const within = (mark: string): boolean => {
+    let i = 0;
+    while (i < text.length) {
+      const open = text.indexOf(mark, i);
+      if (open === -1) return false;
+      const close = text.indexOf(mark, open + mark.length);
+      if (close === -1) return false; // unpaired: not a run, so nothing is inside it
+      if (caret >= open && caret <= close + mark.length) return true;
+      i = close + mark.length;
+    }
+    return false;
+  };
+  // Bold before italic, for the reason the renderer scans that way: `**` would
+  // otherwise be read as two italic marks and every bold run would report as
+  // italic. The flags are independent, so this ordering is about correctness of
+  // the italic answer, not about precedence between them.
+  const bold = within(FORMAT_MARK.bold);
+  const italicRaw = within(FORMAT_MARK.italic);
+  return {
+    bold,
+    italic: italicRaw && !bold,
+    underline: within(FORMAT_MARK.underline),
+    strike: within(FORMAT_MARK.strike),
+  };
+}
+
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
   const start = Math.min(selStart, selEnd);
   const end = Math.max(selStart, selEnd);
   if (action === 'bold') return wrapSelection(text, start, end, FORMAT_MARK.bold);
   if (action === 'italic') return wrapSelection(text, start, end, FORMAT_MARK.italic);
   if (action === 'underline') return wrapSelection(text, start, end, FORMAT_MARK.underline);
+  if (action === 'strike') return wrapSelection(text, start, end, FORMAT_MARK.strike);
   if (action === 'heading') return cycleHeading(text, start);
   if (action === 'bullet') return toggleLinePrefix(text, start, LINE_DIRECTIVE.bullet);
   if (action === 'quote') return toggleLinePrefix(text, start, LINE_DIRECTIVE.quote);
