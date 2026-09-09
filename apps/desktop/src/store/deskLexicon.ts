@@ -38,6 +38,13 @@ export type DeskTermId =
   // instruments the page can be; the drawer's ink zone names the three groups
   // (TIP / NIB / INK) and the three tips and three nibs by name. Every one of
   // them enters the lexicon rather than the JSX, per the standing seam rule.
+  // ITEM 130's rename (2026-09-09). `modeBarPen` names ModeStage's UNFRAMED
+  // pen bar - the narrow shell's only ink-looking control. Its visible label
+  // was the inline literal 'ink' while its own aria-label already read 'Pen',
+  // so the eye and assistive tech disagreed about one control. The term makes
+  // the eye agree with the aria-label, and retires the literal.
+  // `spreadLensInk` folds the Spread's own inline 'Ink' chip in beside it.
+  | 'modeBarPen' | 'spreadLensInk'
   | 'inkInstrument' | 'inkModeText' | 'inkModeInk'
   | 'inkTip' | 'inkNib' | 'inkTipPen' | 'inkTipPencil' | 'inkTipMarker'
   | 'inkNibFine' | 'inkNibRegular' | 'inkNibBroad'
@@ -580,6 +587,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   railReading: 'Reading',
   railTypewriter: 'Typewriter',
   railFormat: 'Format',
+  modeBarPen: 'Pen',
+  spreadLensInk: 'Ink',
   inkInstrument: 'The page’s instrument',
   inkModeText: 'Text',
   inkModeInk: 'Ink',

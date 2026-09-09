@@ -2294,8 +2294,15 @@ a:focus-visible,
 .mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }
 .mode-swatch{ width:22px; height:22px; border:1px solid var(--ink-border-strong); cursor:pointer; padding:0; }
 .mode-swatch.active{ outline:2px solid var(--brass); outline-offset:1px; }
-.mode-nib{ height:28px; padding:0 10px; background:none; border:1px solid var(--ink-border);
-  color:var(--text-mid); font-size:12px; cursor:pointer; margin-left:8px; }
+/* SWEPT (the narrow shell's rename, 2026-09-09) — `.mode-nib` styled the
+   unframed pen bar's `nib · fine ▾` button, which was `title="Nib styles —
+   coming soon"`: a control promising a capability the narrow shell does not
+   have. G3 in miniature, so it went ABSENT rather than grayed, and its rule
+   goes with it rather than lingering as dead weight. Item 131 (phone ink)
+   brings real nibs to that surface and will dress them then. The CD1 comment
+   further down still NAMES .mode-nib as one of the looks the sliver ported
+   verbatim — that sentence is history and stays true of what was ported; only
+   the live rule is gone. */
 
 /* The lit page — fixed height; the editor scrolls inside it (typewriter fade). */
 .mode-page{ position:relative; background:var(--paper); color:var(--ink-on-paper);

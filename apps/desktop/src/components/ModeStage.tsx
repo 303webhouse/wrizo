@@ -132,6 +132,10 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // ITEM 83 M3 — the dress the visible sheet should wear (store/pageDress.ts).
   const pageDress = usePageDress();
   const { t: lex } = useLexicon();
+  // ITEM 130 — the DESK lexicon, for the pen bar's own label. This component
+  // already holds the THEME lexicon above; the two are different registers and
+  // the bar's label is desk chrome, so it takes the desk one.
+  const { t: deskT } = useDeskLexicon();
   // Typewriter engages in Free Write and Draft (writing postures) — never in
   // Format/Workshop/Publish (convention/delivery, revision-shaped work the
   // hold would fight). Gated by the persisted setting AND the bottom-right
@@ -414,7 +418,15 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           <div className="mode-bar mode-dissolve" role="toolbar" aria-label={rail.tools === 'pen' ? 'Pen' : 'Format'}>
             {rail.tools === 'pen' ? (
               <>
-                <span className="mode-tlabel">ink</span>
+                {/* ITEM 130 (2026-09-09) — 'Pen', from the lexicon.
+                    This read 'ink' while this same bar's own aria-label read
+                    'Pen' (above), so one control carried two names and only
+                    assistive tech got the right one. It is the UNFRAMED bar:
+                    the narrow shell is the only surface it reaches, which is
+                    why the phone showed 'INK' beside text-colour swatches and
+                    looked like the Ink wave's zone. It is not — that zone is
+                    Sliver.tsx's, framed-only, and cannot render here. */}
+                <span className="mode-tlabel">{deskT('modeBarPen')}</span>
                 {PEN_INKS.map(ink => (
                   <button
                     key={ink}
@@ -426,7 +438,16 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                     onClick={() => choosePen(ink)}
                   />
                 ))}
-                <button type="button" className="mode-nib" title="Nib styles — coming soon">nib · fine ▾</button>
+                {/* ITEM 130 (2026-09-09) — THE 'nib · fine ▾' BUTTON IS GONE.
+                    It was `title="Nib styles — coming soon"`: a control
+                    promising a capability this surface does not have. G3 in
+                    miniature — progressive disclosure never shows a locked
+                    door — so it is ABSENT, never grayed: what isn't built
+                    doesn't render. Item 131 (phone ink) brings real nibs here
+                    and this is where they land. Dating note, because the word
+                    misled the first diagnosis: this button was introduced
+                    d65065c on 2026-06-28, ten weeks BEFORE the Ink wave's own
+                    nib (af3c79c, 2026-09-07). Same word, unrelated control. */}
               </>
             ) : (
               <>
