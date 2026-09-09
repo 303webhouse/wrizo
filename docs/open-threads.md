@@ -2583,7 +2583,7 @@ sheet-anchored; the J-series ported whole.**
 **typewriter as behavior or also face** (Nick's word — **answered by item 127**); **the S-Pen barrel-
 button flip** (hardware-reserved, noted).
 
-**THE INK OFFER IS QUEUED, NOT MERGED:** `item121-ink @ cd325ab`, **75/75 both settings**, **zero
+**THE INK OFFER SHIPPED — `f4094b7` · railway `d3b7e67f`, 2026-09-08.** *(This line read "QUEUED, NOT MERGED" until the ship; corrected in place rather than left to mislead, and the original words are quoted here so the correction is legible.)* Its offer record and the §7A render table merged with the lane's docs at `dfa20f4`. **As offered:** `item121-ink @ cd325ab`, **75/75 both settings**, **zero
 schema by measurement** (`strokes` is an **existing jsonb column**). **Merges after the post-walk
 ship resolves; Fable's review at its merge.**
 
@@ -3037,6 +3037,105 @@ which carries the mechanism in-tree).
 symptom is a mis-aimed click at the glyph (the glyph is centred, i.e. inside the covered band) or
 merely a reduced hit target — that wants a founder observation, not a builder's guess.
 
+## CANON — NEVER COUNT FROM A VIEW YOU CUT (the listing trap, third instance) — 2026-09-09
+
+**RULED as canon on chat 1's own error.** A count taken from a TRUNCATED, FILTERED or PAGED view is a
+count of the view, not of the thing. **The cut is invisible in the output you are reading** — that is
+the whole trap: nothing in a `tail -14` says "one line was removed above."
+
+**THREE INSTANCES, all corrected UPWARD by execution:**
+1. **Item 85's population: an S0 READ 47 harness files; execution MEASURED 56.** `AGENTS.md` amends.
+2. **PW1's park sweep: its S0 READ 15 retired names; execution MEASURED 17** (20 retired / 17 names).
+3. **PW1's product-file count: chat 1 said 13; the truth is 15 (13 modified + 2 new).** Chat 1 piped
+   the diffstat through `tail -14` and counted the lines it could see — **`BoardEditor.tsx` had
+   scrolled off the top**, the single most load-bearing file in the change and one of the three the
+   review reads at the hunks. **The view was cut by chat 1's own hand, then trusted as a census.**
+
+**THE RULE: to count a population, ENUMERATE IT — `wc -l`, `--name-only | wc -l`, a `uniq -c` — never
+read a number off a display you paged, tailed, headed or grepped.** Every instance so far has been an
+UNDERCOUNT, and an undercount is the dangerous direction: it reports less exposure than exists.
+**Sibling laws: a green re-run is not a diagnosis; a sentence about a run is not a run; and the
+park-count audit — each the same instruction to measure the thing rather than a story about it.**
+
+## CANON — A MODE'S TOOL PREFERENCE NEVER OVERRIDES A CORRUPTION RULE — 2026-09-09
+
+**Re-earned by chat 1 the same day, on the same batch.** A harness mode instructed "do the work
+through Bash wherever it can accomplish the job." Chat 1 then reached for a **heredoc** to write a
+backtick-heavy script — and the shell failed to parse it, which is the *lucky* outcome. **The standing
+guard already forbade exactly that: backtick- and backslash-bearing content travels by written FILE,
+never inline through a shell.**
+
+**RULED: a mode's PREFERENCE for a tool never overrides a RULE about content that tool CORRUPTS
+BEFORE ANY INTERPRETER SEES IT.** The shell performs command substitution on backticks while the
+bytes are still in transit, so the corruption happens **upstream of every check you would use to catch
+it** — including the script's own anchor validation. **"Wherever it can accomplish the job" is the
+clause that settles it: for this content, it cannot.** The Write tool is not the cautious option there
+— **it is the only one that preserves the bytes.**
+
+**A silent success is the dangerous case, not the parse error.** This attempt died loudly. The
+original instance did not: a collapsed escape corrupted a drift check and came near to corrupting
+`draftFormat.ts`.
+
+## AMENDMENT — THE PW1 MERGE MESSAGE'S FILE COUNT — 2026-09-09
+
+**Chat 1's merge commit for `pw1-boards-connected @ 57a0878` states "13 product source". THE CORRECT
+COUNT IS 15 — 13 modified + 2 new** (`LocationCrumb.tsx`, `planTrail.ts`). **A commit message is
+immutable, so the correction lives here beside it rather than being rewritten**, the same discipline
+the parks follow. Cause recorded above as the listing trap's third instance.
+
+## THE OFFER-RECORD GATE — WHAT PW1'S MERGE DID AND DID NOT SET AS PRECEDENT — 2026-09-09
+
+**PW1 was merged with `docs/` untouched: no offer record, no ledger entry.** Chat 1 flagged it at the
+merge rather than after, and merged anyway **because Fable explicitly ordered it** — not because a
+merge suite substitutes for the record.
+
+**RULED, so no lane reads this as precedent: THE RECORD IS NEVER OPTIONAL. It was DEFERRED, and it
+was still OWED** — landed afterwards as `pw1-records @ 826f7ef` (the offer record with its stamps
+quoted and their scope named, **the first RED pair reported beside the green**, and the ledger band
+opening item 130). **The gate that 112-A's first offer failed at `6093e35` STANDS unchanged.** An
+order can change WHEN the record lands. Nothing changes WHETHER it does.
+
+## ITEM 85-B — RULED: seed-guard.mjs IS THE CANONICAL INSTRUMENT — 2026-09-09
+
+**ERRATA's `seed-guard.mjs` is the instrument.** **Population 56.** It matches on **runtime KEYS**,
+and takes **reason strings for deliberate external-mutation simulations** — so **`bm1`'s tombstone
+write is LAWFUL and stays, annotated.** *(A guard that cannot express a legitimate exception gets
+bypassed quietly — the seam lesson, turned on the guard itself.)*
+
+**FIX's duplicate is DROPPED AS A FILE; its two regression checks FOLD IN** as a follow-up commit:
+**item 129 cannot regress**, and **`JournalPageSeed` keeps its migration-dependent fields.**
+**`AGENTS.md`'s 47 → 56 and "remediation" → "migration" ACCEPTED as the separable commit.**
+
+## ITEM 85-C — THE MIGRATION: 56 FILES TO THE SEAMS — OPENS 2026-09-09
+
+**ERRATA's, after 85-B merges. FIX keeps item 122.** The remediation is **proven, not theorised** —
+`bm1` migrated and its coin flip stopped. **85-B makes new raw writes impossible; 85-C removes those
+that remain.** Guard first, then migrate — otherwise the population grows while it is being drained.
+
+## TOOLS TAKES ITEM 130 — 2026-09-09
+
+**TOOLS owns item 130** (the cascade strip's unreachable right ~54% — **`DeskFrame.tsx` is its
+territory**) **and the narrow shell's "INK" → "Pen" rename.** **The `item121-ink` branch belongs to
+the INK lane; TOOLS does not continue it.**
+
+## ITEM 125 — DISCHARGED AS RULED — 2026-09-09
+
+**Closed by PW1 and confirmed at Fable's review.** `onCanvas` on the existing **page-pin Box**: new
+memberships write the flag **explicitly**, pre-existing pins carry none and **DISPLAY** (the gate
+withholds only on an explicit `false`), and **`getBoardsPinning` reads the pin's PRESENCE and never
+consults the flag** — so **membership and display separate STRUCTURALLY, not by convention.** **Zero
+column, zero migration. The schema STOP never fired.**
+
+## PW1 HAS TWO STAMPS — SEPARATE FACTS, SEPARATE TREES — 2026-09-09
+
+**Recorded apart, and never to be conflated:**
+- **PW1's OWN stamp: 76/76 both settings at its frozen tree — which PREDATES item 99 on `main`.** It
+  is evidence about the OFFER.
+- **Chat 1's MERGE SUITE at `c2d5539` is the authority for the MERGED state** — the first measurement
+  carrying PW1 **and** item 99 **and** the Ink together.
+
+**Neither is promoted into a claim about the other.** A stamp describes the tree it ran on and nothing
+else — the same discipline that made the post-walk roster read 74 rather than the review's 72.
 Registry: next free **131**.
 
 ## NOW — blocks everything downstream
@@ -11388,6 +11487,56 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## THE INK DEPLOY MANIFEST — 2026-09-08 (chat 1, on Nick's "Ship the INK" — Fable PASS x2)
+
+**LIVE: `f4094b7` · railway `d3b7e67f`** — deployment `d3b7e67f-6838-4d23-9c32-617d7421c67a`,
+service `writer-studio-app`, status **SUCCESS**, serving `index-iSZ6K_Sw.js`.
+**PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `4ba3670` · railway `ba29d04d`**, serving
+`index-DOYnMkS6.js`. **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**WHAT SHIPPED — three items:**
+- **ITEM 121, THE INK WAVE** (`cd325ab`, merged `48926e3`): Free Write's Text/Ink switch, the ink
+  stratum, the drawer. **Zero schema BY TYPE** — `tip`/`nib`/`ink` are optional enums whose absence
+  reads as `pen · regular · the theme's default`, exactly what every existing stroke renders as;
+  `strokes` was already an existing jsonb column. **Ink stored BY TOKEN NAME, never hex**, so a theme
+  re-colour re-points old pages instead of freezing one palette into them.
+- **ITEM 129, THE SEED SEAM** (`028ba73`, merged `0802c16`): `JournalPageSeed` gains
+  `origin`/`pageType`/`projectId`/`boxes` so a fixture can ask for a Shelf-eligible entry. **Zero
+  product callers**, so production behaviour is untouched by construction.
+- **ITEM 99, THE THREE GATES** (`3b10b2b`, merged `f4094b7`): live-suite precondition, dead owner,
+  age floor. **Harness/runner only — no product source at all.**
+
+**SCHEMA: ZERO. SERVER BYTES: ZERO** — `apps/server/` untouched across the whole range.
+
+**SUITE OF RECORD — BOTH SETTINGS, FRESH AT THE DEPLOY HEAD:**
+- **DEFAULT: 75/75 CLEAN** — `tree=f4094b7 bundle=index-iSZ6K_Sw.js/567286b`
+- **PARKED: 75/75 CLEAN** — identical stamp
+- `item121` 43 · `bm1` 36 · `item99` 41, all green in the same runs.
+- **PARK AUDIT (count, not green): 63 files / 158 checks.** Reconciled against the previous 62/158:
+  `BM1 PARKED: PASS (2 checks)` intact and `ITEM121 PARKED: PASS (0 checks)` the new no-op file — so
+  **item 129's park lift removed no park.** The count is the check.
+
+**INDEPENDENT BUILD AGREEMENT, a free check the two-lane sequence handed us:** ERRATA's stamp at
+`3b10b2b` and chat 1's at `f4094b7` produced the **byte-identical bundle** `index-iSZ6K_Sw.js/567286b`
+— exactly what must happen when the merge between two trees touches no product source.
+
+**TREE CLEAN AT UPLOAD: BARE.** **tsc x2 exit 0.** **ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == f4094b7`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**;
+Railway image **linux/amd64**, container digest
+`sha256:f33d58df2b11f90a6c89138e21e8a1892660b733e2163c73095495ddda79df57`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-iSZ6K_Sw.js`.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
+- `index-iSZ6K_Sw.js` — served `0ed2215aac1836823665dde8c4d710fa` **==** stamped
+- `index-DEVzFxzo.css` — served `9523679be12d164d95e63258f16b64ec` **==** stamped
+
+**THE FIRST SHIP UNDER THE DEPLOY WINDOW, AND IT PASSED ON THE FIRST ATTEMPT.** The three preceding
+attempts died to a RED, a VOID and a REFUSAL; **seven contention voids preceded the box-quiet call.**
+This pair had nothing to excuse. **The gate that cost ERRATA its parked leg — LIVE RUN PRESENT, BOX
+IS THEIRS — is the same gate that shipped in this bundle: it paid for itself before it deployed.**
 ## THE POST-WALK PACKAGE DEPLOY MANIFEST — 2026-09-07 (chat 1, on Nick's standing ship word — Fable PASS)
 
 **LIVE: `4ba3670` · railway `ba29d04d`** — deployment `ba29d04d-940a-4541-8d40-043051b68e5a`,
