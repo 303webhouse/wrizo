@@ -58,8 +58,13 @@ const DESKTOP = path.join(HERE, '..', '..');
 const PERSISTENCE = path.join(DESKTOP, 'src', 'store', 'persistence.ts');
 
 // --- the collection keys, single-sourced from the app ------------------------
-function collectionKeys() {
-  const src = readFileSync(PERSISTENCE, 'utf8');
+// The source is a DEFAULTED PARAMETER, not a closed-over read, for one reason:
+// the loud-failure path below is the guard's most important behaviour and the
+// one that can never be observed in a healthy tree. Taking source as an argument
+// is what lets the fixtures drive it. (This is the discriminator law: a check
+// about a failing state must be able to inspect that state, not only its own
+// healthy one.)
+function collectionKeys(src = readFileSync(PERSISTENCE, 'utf8')) {
   const block = src.match(/const KEYS = \{([\s\S]*?)\} as const;/);
   if (!block) return null;
   const keys = [...block[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
@@ -151,6 +156,27 @@ const BASELINE = new Set([
 const keys = collectionKeys();
 ok('85-B: the collection keys parse out of persistence.ts itself — a hardcoded copy here would stop guarding a seventh collection the day one is added, silently',
   Array.isArray(keys) && keys.length >= 6, keys ? `keys=${keys.join(',')}` : 'PARSE FAILED');
+
+// THE LOUD-FAILURE PATH, DRIVEN RATHER THAN ASSERTED. The header above claims
+// that a failed parse fails this guard loudly rather than guarding nothing —
+// and in a healthy tree that branch never executes, so the claim would ship
+// unproven, which is exactly how the AST guard nearly shipped as a decoration.
+// A guard that silently stops guarding is worse than no guard: it reports a
+// safety it is not providing.
+{
+  const mangled = 'export const OTHER = { a: 1 };\nconst NOTKEYS = { b: 2 } as const;\n';
+  ok('85-B: a persistence.ts this parser cannot read yields NO KEYS — which drives the loud-failure exit rather than an empty scan that would pass every check below while guarding nothing',
+    collectionKeys(mangled) === null, JSON.stringify({ parsed: collectionKeys(mangled) }));
+
+  const truncated = "const KEYS = {\n  projects: 'writer-studio-projects',\n  drafts: 'writer-studio-drafts',\n} as const;\n";
+  const few = collectionKeys(truncated);
+  ok('85-B: a parse that SUCCEEDS but returns fewer keys than the app has also fails the check above (>= 6) — the dangerous shape is not a thrown error, it is a partial answer that looks like an answer',
+    Array.isArray(few) && few.length === 2 && few.length < 6, JSON.stringify({ parsed: few }));
+
+  const renamed = "export const KEYS = {\n  a: 'k1', b: 'k2', c: 'k3', d: 'k4', e: 'k5', f: 'k6',\n} as const;\n";
+  ok('85-B (the control): an `export const KEYS` — the likely future edit — still parses, so the two checks above are not passing on a parser that simply fails on everything it is handed',
+    (collectionKeys(renamed) || []).length === 6, JSON.stringify({ parsed: collectionKeys(renamed) }));
+}
 
 if (!keys) {
   // eslint-disable-next-line no-console
