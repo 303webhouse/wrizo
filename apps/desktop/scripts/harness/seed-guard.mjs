@@ -213,11 +213,32 @@ ok('85-B: the baseline is a RATCHET — every listed file still writes raw, so a
   stale.length === 0,
   stale.length ? `MIGRATED, remove from BASELINE: ${stale.join(', ')}` : 'none stale');
 
-ok(`85-B (the population, reported so it can only go down): ${offenders.length} harness files write a persisted collection raw — ${offenders.length - DELIBERATE.size} unclassified migration debt, ${DELIBERATE.size} annotated deliberate`,
-  true,
+// --- THE WORKLIST, EMITTED WHOLE ---------------------------------------------
+// 85-C's first law, ruled 2026-09-09: A WORKLIST COUNTED FROM A CUT VIEW
+// SILENTLY OMITS FILES. So the migration's worklist is emitted HERE, complete
+// and sorted, by the same instrument that measured it — rather than left to be
+// re-derived later from a grep somebody truncates for readability. The count and
+// the list come from one array, so they cannot disagree; and the omission that
+// law describes would be invisible in the output, which is what makes it worth a
+// law rather than a habit.
+//
+// A SAMPLE IS ALLOWED WHERE A COUNT IS NOT. The falsification further down
+// prints `sample: ...slice(0, 5)` beside a full-length count — the exact
+// distinction the canon draws. Nothing on this path is sliced.
+//
+// This also replaces a check whose condition was the literal `true`. A check
+// that cannot fail is the decoration this file keeps arguing against, so it now
+// asserts something real: the worklist and the annotations must ACCOUNT FOR
+// every offender. If an annotation ever names a file outside the population, the
+// two stop summing and this reds.
+const unclassified = offenders.filter((f) => !DELIBERATE.has(f));
+
+ok(`85-B (the worklist, emitted whole): ${offenders.length} harness files write a persisted collection raw — ${unclassified.length} unclassified migration debt and ${DELIBERATE.size} annotated deliberate, which together account for every one of them`,
+  unclassified.length + DELIBERATE.size === offenders.length,
   JSON.stringify({
     population: offenders.length,
-    deliberate: [...DELIBERATE.keys()],
+    annotated: [...DELIBERATE.keys()],
+    unclassifiedWorklist: unclassified,   // COMPLETE, never sliced — item 85-C's input
     keysGuarded: keys,
   }));
 
