@@ -45,8 +45,16 @@
 //     scenario, not a shortcut past one.
 // The guard cannot tell them apart by reading source, and it does not pretend
 // to: it reports every raw writer and carries a REASON for any entry claimed to
-// be deliberate. The tension is handed to Fable in the offer rather than settled
-// here — my lean is that deliberate simulations are lawful and stay annotated.
+// be deliberate.
+//
+// RATIFIED 2026-09-09 (Fable): deliberate simulations are LAWFUL, and the reason
+// string is REQUIRED. That promotes the reason from a courtesy to a rule — and
+// this file's own argument then applies to it immediately, because a rule that
+// lives in a ruling is enforced by memory. It is enforced below instead: an
+// annotation with no reason, a placeholder reason, a reason attached to a file
+// that no longer writes raw, or one attached to a file the baseline does not
+// track, all FAIL this guard. An unexplained exemption is how a ratchet becomes
+// an amnesty — one honest-looking line at a time.
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -212,6 +220,65 @@ ok(`85-B (the population, reported so it can only go down): ${offenders.length} 
     deliberate: [...DELIBERATE.keys()],
     keysGuarded: keys,
   }));
+
+// --- THE RATIFIED LAW, ENFORCED ---------------------------------------------
+// Ruled 2026-09-09: a deliberate external-mutation simulation is lawful AND its
+// reason string is REQUIRED. Enforcement lives in a pure function so it can be
+// driven with fixtures: the shape that matters here — an exemption that has
+// quietly lost its justification — is one a healthy tree never exhibits, and an
+// enforcement that never executes is the decoration this file keeps arguing
+// against.
+//
+// A REASON IS NOT A FIELD BEING PRESENT. The way a required field actually rots
+// is not an empty string, which everyone notices; it is the word "deliberate"
+// sitting where an argument used to be. Both are rejected.
+const PLACEHOLDER_REASON = /^(deliberate|intentional|on purpose|by design|see above|n\/a|tbd|todo)\.?$/i;
+const MIN_REASON = 40;
+
+function deliberateFaults(deliberate, baseline, seen) {
+  const faults = [];
+  for (const [file, reason] of deliberate) {
+    if (!baseline.has(file)) faults.push({ file, fault: 'not-in-baseline' });
+    if (!seen.has(file)) faults.push({ file, fault: 'no-longer-writes-raw' });
+    const r = typeof reason === 'string' ? reason.trim() : '';
+    if (!r) faults.push({ file, fault: 'reason-missing' });
+    else if (PLACEHOLDER_REASON.test(r) || r.length < MIN_REASON) faults.push({ file, fault: 'reason-not-substantive' });
+  }
+  return faults;
+}
+
+const dFaults = deliberateFaults(DELIBERATE, BASELINE, found);
+ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describes a file that writes raw, and carries a SUBSTANTIVE reason — the 2026-09-09 ruling enforced rather than remembered',
+  dFaults.length === 0,
+  JSON.stringify({ annotated: DELIBERATE.size, faults: dFaults }));
+
+// The falsifications. Without them the check above passes on one well-formed
+// entry and proves nothing about the four ways an exemption goes bad.
+{
+  const FILE = 'scripts/harness/x.mjs';
+  const base = new Set([FILE]);
+  const seen = new Set([FILE]);
+  const GOOD = 'a two-device tombstone simulation the app has no seam for, kept deliberately by item 129';
+
+  ok('85-B (the control): a well-formed annotation yields NO fault — so the four falsifications below are not passing on a validator that simply rejects everything handed to it',
+    deliberateFaults(new Map([[FILE, GOOD]]), base, seen).length === 0, '');
+
+  const missing = deliberateFaults(new Map([[FILE, '   ']]), base, seen);
+  ok('85-B FALSIFICATION: an annotation with an EMPTY reason fails — the reason is required, so its absence is a red rather than a note nobody reads',
+    missing.some((f) => f.fault === 'reason-missing'), JSON.stringify({ faults: missing }));
+
+  const placeholder = deliberateFaults(new Map([[FILE, 'deliberate']]), base, seen);
+  ok('85-B FALSIFICATION: the word "deliberate" is NOT a reason — this is the shape a required justification actually rots into, and it is the one an empty-string check would happily wave through',
+    placeholder.some((f) => f.fault === 'reason-not-substantive'), JSON.stringify({ faults: placeholder }));
+
+  const migrated = deliberateFaults(new Map([[FILE, GOOD]]), base, new Set());
+  ok('85-B FALSIFICATION: an annotation on a file that NO LONGER writes raw fails — an exemption must expire with the thing it exempts, or it silently pre-authorises the next raw write into that file',
+    migrated.some((f) => f.fault === 'no-longer-writes-raw'), JSON.stringify({ faults: migrated }));
+
+  const untracked = deliberateFaults(new Map([['scripts/harness/y.mjs', GOOD]]), base, new Set([FILE, 'scripts/harness/y.mjs']));
+  ok('85-B FALSIFICATION: an annotation for a file the BASELINE does not track fails — otherwise a raw writer could be exempted without ever being counted, which is the one route around the ratchet that leaves no trace in the population',
+    untracked.some((f) => f.fault === 'not-in-baseline'), JSON.stringify({ faults: untracked }));
+}
 
 // --- THE FALSIFICATION FABLE ASKED FOR ---------------------------------------
 // "It would have caught all 54 before any of them cost a day" is the charter's
