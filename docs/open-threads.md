@@ -2811,7 +2811,125 @@ caught all 54 before any of them cost a day.** **ERRATA's next job, after its re
 the convention. **A rule that lives only in a document is enforced by memory; a rule that fails a
 run is enforced by the run.** This is the same reasoning that made `tutor-mirror.mjs` self-enforcing
 after 43 silent commits of divergence.
-Registry: next free **130**.
+
+## PW1 — BOARDS CONNECTED: BUILT, OFFERED, MERGED — 2026-09-08/09 (pw1 lane; branch `pw1-boards-connected`)
+
+**MERGED at `c2d5539`** (chat 1, TAKE WORD — MERGE, not deploy), branch `pw1-boards-connected`
+@ **`57a0878`**, cut from `origin/main` @ `ddb5cf7`. **Offer record:**
+`docs/wrizo-alpha/pw1-boards-connected-offer-2026-09-08.md` — **written POST-MERGE, and late;
+see the gate finding below.** Brief: `docs/menus/pw1-build-brief.md`.
+
+**THE SLICE:** the geography was already built and listed the **wrong subject**. `PlanPanel`
+showed `getBinderPages(projectId)` — which containers live inside this page's DRAWER — when the
+writer asked which containers hold **this page**. **Co-location is not connection.** The set
+becomes `planBoardId ∪ getBoardsPinning`. Zero new entities, zero new routes, **zero schema,
+zero server bytes**.
+
+**ITEM 125's STORAGE HOME — ANSWERED BY THIS S0, AND NO COLUMN IS IMPLICATED.** `onCanvas?:
+boolean`, an additive optional field on the existing `page-pin` `Box`, inside the board's own
+`boxes` jsonb. **Measured, not assumed:** `sync.ts` writes `JSON.stringify(e.boxes ?? null)` and
+reads `r.boxes ?? undefined` — a WHOLE-BLOB mapper with no per-field enumeration at either end —
+and the `Box` interface already carries **eight** additive-optional precedents, of which
+`footerOn` is the exact structural twin. **ABSENCE MEANS DISPLAYED**, tested as `=== false` and
+never as falsiness, so every already-arranged board reads byte-for-byte unchanged on first
+launch: no backfill, no migration. **`getBoardsPinning` never consults the flag** — it reads
+membership by the pin's PRESENCE — so membership and display are separated structurally rather
+than by convention.
+
+**THE STAMP:** `76/76` **CLEAN in BOTH settings**, one frozen tree (`tree=57a0878
+bundle=index-8geTcfLU.js/573591b`, no `+Ndirty`). `pw1.mjs` PASS (33 checks). **Scope named:
+that stamp is against a tree cut from `ddb5cf7`, BEFORE main gained item 99 — it is not a stamp
+on the merged state**, which is chat 1's merge suite's to give.
+
+**FOUR RULINGS FOLDED (Fable, relayed by Nick):** (1) the storage home as above; (2) the
+connections zone lifts ABOVE the no-project return — a loose page's real connections never hide
+behind creation doors; (3) the **`Open the drawer →` foot row is ABSENT** in PW1 — **Nick's Q17
+"composed" ruling STANDS**, but no drawer-board surface exists in `src`, and G3 forbids a door
+onto nothing, so the row arrives in PW2 **with the surface it opens** (sequenced, not dropped;
+the reason is recorded in `PlanPanel` at the exact spot the row would occupy); (4) the rename —
+the Plan heading is Nick's exact term **`Boards connected`**, and the Page face's prose line and
+the Places zone both become **`Also connected to…`**. One connecting word, three faces.
+
+**TWO BUILDER'S JUDGMENTS, RATIFIED:**
+- **`pinPageToBoard` HAS TWO SIDES.** **Page-side** (Places checkbox, "Pin to a Board…") makes an
+  undisplayed **membership**; **board-side** ("New page card", "Place page on board", "Add an
+  existing page", a page born from a board's own address) **displays**, because the writer acted
+  ON the board. Item 125's own reason points this way — the rule exists so a canvas never arrives
+  furnished with arrangement the writer did NOT author, and here they authored it.
+- **`Hide from the board`, NOT "Remove".** The board card's own `Remove` already ends the
+  MEMBERSHIP; **two acts a keystroke apart never share a word.** `Remove` is untouched — **whether
+  it should now clear DISPLAY rather than membership routes to PW2.**
+
+**THE FIRST STAMP PAIR WAS RED, AND ONE RED WAS THE HARNESS BEING RIGHT.** `item9192.mjs`'s *"the
+board RENDERS a card, not merely a row in storage"* failed — and it was **correct**: its journey
+is the board's own *New page card* door, and the build had made the card the writer just asked
+for invisible, resurrecting the symptom item 92 was about. **The check was not superseded; the
+BUILD was wrong**, and the fix landed in the product (the two-sided `pinPageToBoard` above), not
+in the harness. `tu1.mjs`'s membership line was the other, and that one WAS a lawful supersession.
+
+> **CANON, from this lane: A CHECK THAT GOES RED IS NOT AUTOMATICALLY A CHECK TO RETIRE.** The
+> question is *"is this check still true of the product I meant to build?"* before reaching for
+> `pok()`. `item9192` is the worked example.
+
+**THE PARK SWEEP — 20 RETIRED / 17 NAMES, AUDITED BY EXECUTION** (the count is the check, not the
+colour of the run; figures taken from the actual `pok()` results in the parked run, not from the
+roster): **behind the gate 16 / 13** — `cd2` 6/6, `ab4` 8/5 (three names × both reference widths),
+`b2` 1/1 (generation 4), `cd1` 1/1 (the framed crumb's absence, which is the ruling S6 overturns);
+**superseded in place with live successors 4 / 4** — `ab4` 3, `tu1` 1.
+
+> **CANON, and the S0's own correction: SWEEP FOR WHAT A CHANGE *DOES*, NOT FOR WHAT IT
+> *RENAMES*.** This S0 reported **15 / 12**; the true figure is **20 / 17**. The sweep grepped the
+> STRINGS the slice renamed and found `ab4` alone — it missed the two BEHAVIOURS it changed (a
+> fresh page-side pin no longer renders; the membership line's word moved), which `tu1` and
+> `item9192` assert without ever naming a string. **Four of the five extras were found by RUNNING
+> the suite, not by reading it** — so a full run is PART of a sweep, not its confirmation.
+
+**TWO DRIVER HAZARDS FIXED RATHER THAN INHERITED** (a driver can lie by dying as easily as by
+doing nothing): `cd2.mjs`'s bare `.click()` on the retired `Open…` link, and `ab4.mjs`'s bare
+`dispatchEvent` on a card item 125 no longer puts on the canvas — **each would have ABORTED ITS
+WHOLE FILE** and reported nothing downstream.
+
+**⚠ THE GATE FINDING — CHAT 1'S, AND CONCEDED WITHOUT QUALIFICATION.** The offer carried **no
+ledger entry and no offer record**; `docs/` was untouched on the branch, so the 76/76 claim
+reached chat 1 **by relay only and could not be verified from the branch** — **the same gate
+112-A's first offer failed.** It merged on the strength of chat 1's own merge suite, which is
+**stronger evidence than an offer record, not weaker** — but the record was owed and the gate did
+not pass. Both artefacts are written post-merge on `pw1-records` (branched from `origin/main` @
+`c2d5539`). **The lateness is recorded, not repaired by back-dating.**
+
+**NOT IN THIS SLICE, BY DESIGN:** nested boards (item 128), card transfer (item 123), the
+drawer-board surface and its foot row. **All PW2.** C5/C6 were blocked on this arc.
+
+## ITEM 130 — THE CASCADE STRIP IS HALF-UNREACHABLE BY A REAL POINTER (layout/defect) — OPENS 2026-09-08
+
+**OPENS** (Fable's number, on PW1's finding — *"yours to have found, not to fix here"*).
+**PRE-EXISTING; NOT introduced by PW1**, established from the diff rather than asserted:
+`DeskFrame.tsx` is untouched by that branch and its only frame-adjacent CSS is the restored
+crumb's `margin-right:auto` INSIDE `.sprint-nav`, which cannot move the stage's left edge.
+
+**THE MECHANISM.** `.desk-frame-strip` is `position:absolute` at `left: calc(-1 *
+var(--frame-host-pad-x))` with `width: var(--strip-width)`; `.desk-frame-stage` is the normal-flow
+sibling that FOLLOWS it in the DOM and begins at the host's own padding-left. Both carry
+`z-index: auto`, so the later one paints on top.
+
+**MEASURED at 1280×900, framed prose:** strip item rect `left 1, width 82` (the strip band spans
+`0–84`); `.desk-frame-stage` rect `left 38.39`. A strip item's own CENTRE is `x = 42`, which lands
+inside the overlap — `document.elementFromPoint(42, 261)` returns **`desk-frame-stage
+desk-frame-stage--prose`**, not the button, and `getComputedStyle(stage).pointerEvents` is
+`auto`. **Roughly the right 54% of the strip's width is covered**; only its left portion is
+reachable by a real pointer.
+
+**WHY NOTHING CAUGHT IT:** every existing harness reaches these controls with `.click()`, which
+**bypasses hit-testing entirely**. The finding surfaced only because `pw1.mjs` drives real CDP
+pointer events under the standing "probes drive real pointer events" law, and its driver now
+point-scans for a genuinely hit-testable point (see `pw1.mjs`'s own `hittablePointBy` comment,
+which carries the mechanism in-tree).
+
+**NOT FIXED HERE, by Fable's word.** **Open question for the owner:** whether the writer-visible
+symptom is a mis-aimed click at the glyph (the glyph is centred, i.e. inside the covered band) or
+merely a reduced hit target — that wants a founder observation, not a builder's guess.
+
+Registry: next free **131**.
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
