@@ -2253,6 +2253,82 @@ additive, nothing parked; if the two ever disagree, that disagreement is itself 
 pass; reported, not gated); no per-surface sub-label prop; no suppression beyond the keyed,
 measured, drift-sensitive one; no merge and no deploy.
 
+## ITEM 99 — THE AGE FLOOR + THE PRECONDITION; AND A MEASURED bm1 NON-DETERMINISM — 2026-09-07 (errata lane; branch `item99-age-floor`)
+
+**OFFERED, NOT MERGED.** Full record: `docs/wrizo-alpha/item99-age-floor-offer-2026-09-07.md`.
+Branched from `origin/main` @ `4ba3670`. **ZERO PRODUCT CODE** — three harness-infra files only
+(`orphan-reaper.mjs`, `run-suite.mjs`, `item99.mjs`); the diff over `apps/desktop/src`,
+`apps/server`, `packages` is empty. **`00521fb`** (age floor) · **`fc09178`** (precondition) ·
+**`b226093`** (this record).
+
+**THE STAMP IS NOT A CLEAN PAIR, AND THAT IS SAID FIRST:**
+
+```
+SUITE RESULT: CLEAN     - tree=fc09178 bundle=index-DOYnMkS6.js/558457b            (74/74)
+SUITE RESULT: NOT CLEAN - tree=fc09178 bundle=index-DOYnMkS6.js/558457b NO-REBUILD (73/74)
+  FAIL: bm1.mjs
+```
+
+`item99.mjs` passes **41/41 in BOTH settings** and parks nothing. **The parked pass was NOT
+re-run in search of a green** — the rate is known (~1 in 2), so a green re-run would be a lucky
+sample presented as a result, and both "passes in isolation" and "the machine was quiet" are
+retired clearance arguments.
+
+**► THE RED, MEASURED AND ATTRIBUTED — `bm1.mjs` S2 orphan, NOT THIS LANE'S.**
+`before=false after=false paired=false`. **`bm1.mjs` documents this exact signature in its own
+header**, from a DIFFERENT tree earlier the same day (`6d7cdec`), diagnosed there as *"a race in
+the READ, not a defect in the product"*; the repair landed for it (`0bd5ef4`, a bounded 4000ms
+`settle` poll) **is present in this tree and is insufficient.** Measured rather than argued:
+**2 pass / 2 fail** on a quiet box at this tree; **3 pass / 3 fail with `WS_NO_REAP=1`**, where
+`withHarness` never even imports the reaper and a standalone run does not involve `run-suite` at
+all — **five failures in ten runs, with none of this lane's code in the process.** Under the suite
+the exclusion is stronger: `run-suite` sets `WS_REAPER_PREFLIGHT_DONE=1`, so the reaper is skipped
+for all 74 files. **AND THE EARLIER DIAGNOSIS DOES NOT SURVIVE:** the read is already guarded to
+4000ms and still returns false, and the product orphans CORRECTLY **8/8 in isolation** (board
+unpaired and on the Shelf at t≈0, stable to 15s) — so the fault is not orphaning but something in
+bm1's own accumulated fixture state by the time that block runs. **NOT FIXED HERE** (another
+lane's fixture; repairing it from inside an unrelated offer is how a red gets absorbed instead of
+owned). **RECOMMENDED: its own item, board lane** — the flake list is EMPTY by standing law, and
+this has already defeated one repair.
+
+**THE AGE FLOOR (INK's observation).** Dead-owner is NECESSARY, NOT SUFFICIENT: on Edge, browsers
+30s old reported their owner GONE while a foreign suite was actively running them — detached
+parentage reads as death. **Two licences, both required: verified-dead owner AND stale age.**
+**N=5min is MEASURED:** longest per-file browser lifetime **81s** (`fx5.mjs`) across 278 file-runs
+in four stamped suites (median 20s, p95 53s); the probe holds one browser **39s** for its whole
+matrix; INK's observation **30s**. Five minutes is 3.7x the longest life measured and 10x the
+observation, and deliberately no larger — every extra minute is one a genuine orphan keeps every
+lane's guard refusing. **FALSIFIED:** 30s dead-owner SPARED · 360s REAPED · exactly 300s reaped
+(the boundary is inclusive and stated) · unreadable age SPARED. **The floor reaches the profile
+DIRS too** — an extension beyond the ruling's letter, flagged not slipped in: `withHarness` clears
+its dir and THEN launches, so a live run mid-launch owns a dir with no browser to hold it; the
+cost of waiting is ~nil because `withHarness` clears its own dir on the way in.
+
+**THE PRECONDITION (the third signal, adopted as the GATE not a third licence).** A live foreign
+`run-suite`/harness/probe process means the box is theirs and NOTHING is reaped. **It closes the
+floor's residual gap:** a pathological file that outruns the floor KEEPS ITS SUITE ALIVE, so its
+browsers are never reapable however old they look. A live run is now safe by two independent
+facts, **neither trusting the owner PID**. "Foreign" is COMPUTED — self plus every ancestor — so
+`run-suite` does not detect itself from its own preflight. **FALSIFIED:** quiet box + dead owner +
+360s → REAPED (2); the SAME pair with a live foreign run → **REAPED ZERO**; unreadable process
+table → nothing; **precondition omitted → nothing** (the default is `null`, so an omission fails
+safe). **Detection proved separately from decision:** a real node process running a
+harness-signature script (spawned in TEMP, never in `scripts/harness`) IS seen, and this process
+never sees itself.
+
+**► RATIFIED 2026-09-07 (Fable): the PRECONDITION + TWO LICENCES shape stands AS BUILT; the red was
+handled right — measured, attributed, not re-rolled, not absorbed; and the false-busy catch is now
+CANON: "A SENTENCE ABOUT A RUN IS NOT A RUN."** The offer HOLDS for FIX's bm1 park, then the pair
+re-stamps and it merges.
+
+**► THE DEFECT THE CANON COMES FROM, recorded because it would have been invisible.** The
+precondition's first cut matched any process whose COMMAND LINE mentioned those paths — which
+matched the agent's own shell wrappers (`bash -c "... node scripts/harness/x.mjs ..."` is not a
+run, it is a sentence about one). The box looked permanently busy and the reaper would have been
+**DISABLED ENTIRELY AND SILENTLY, in the guise of being careful** — the worst failure available to
+a guard, reporting a safety it is not providing. Narrowed to node processes; measured before and
+after (**5 matches → 2**, the two being a real foreign suite and its child).
+
 ## ITEM 120 — R6 BIRTH-FROM-DEFAULTS NEVER REACHES THE UNBORN ROUTE (fix-class) — OPENS 2026-09-03
 
 **OPENS (Fable, from the errata wave's measurement, 2026-09-03).** R6's **birth-from-defaults** — the
