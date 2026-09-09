@@ -32,6 +32,7 @@ import { PortToBoardSheet } from './PortToBoardSheet';
 import { PinToBoardSheet } from './PinToBoardSheet';
 import { isScriptEmpty } from '../store/structureConvert';
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
+import { LocationCrumb } from './LocationCrumb';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
 // element, ONLY the active element a live contenteditable (the BoardTextBox
@@ -955,6 +956,15 @@ export function ScriptEditor({ id }: { id: string }) {
   // travel (BoardEditor.tsx), the same `location.state` precedent PageEditor/
   // JournalEntry use (mirrored from F2's own warm-start signal). Framed-only.
   const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
+  // PW1 S4(ii) — THE CHIP NAMES THE SURFACE ACTUALLY LEFT. `fromBoardTitle`
+  // has been carried on this very state object since BoardEditor's own travel
+  // (`state: { fromBoardId: id, fromBoardTitle: title }`) and was never read:
+  // the chip said "Back to the board" to everyone. A writer who reached this
+  // surface through the RAIL never stood on a board, and sending them somewhere
+  // they have never been is the destination-blind verb the Card pass named as
+  // the enemy (CA1). The title is a plain read; the fallback keeps every
+  // pre-existing caller's wording byte-identical.
+  const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
 
   // Draft law only (S1, still true below the AB1 gate) — the Screenplay
   // Room's forward-only mode (script Free-write) is AB2, not this ticket;
@@ -1089,6 +1099,12 @@ export function ScriptEditor({ id }: { id: string }) {
         {/* ab1.1 R1 (Fable review) — the nav row was the one piece of framed
             chrome that never recessed with the rest of the room. */}
         <div className="chrome-fade chrome-top sprint-nav">
+          {/* PW1 S6 (Nick, Q7) — the Screenplay regains the address line too.
+              The same one component the Page uses (LocationCrumb), in the same
+              row shape the Board proved — so the three framed surfaces cannot
+              drift, which is precisely how the Page and the Script came to have
+              two hand-rolled copies of one chain in the first place. */}
+          <LocationCrumb entry={initialEntry} project={project} drawer={drawer} title={title} />
           {/* ITEM 112-A — `reviseEnabled={false}` for the SAME reason
               `freeWriteEnabled={false}` is already here: this surface is Draft
               law only (S1) and its `onSwitch` is a no-op, so a live Revise tab
@@ -1112,7 +1128,7 @@ export function ScriptEditor({ id }: { id: string }) {
             )}
             {fromBoard && (
               <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flushNow(); navigate(`/page/${fromBoard}`); }}>
-                ‹ Back to the board
+                {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
               </button>
             )}
           </div>

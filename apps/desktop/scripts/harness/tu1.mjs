@@ -375,8 +375,21 @@ await withHarness(async (app) => {
   const structureFiled = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
   ok('S3 Structure: a filed page names its project as home',
     structureFiled.includes('In '), structureFiled);
-  ok('S3 Structure: a page pinned to a board carries a truthful membership line',
-    structureFiled.toLowerCase().includes('pinned'), structureFiled);
+  // PW1 S3/PW27 + Fable's ruling 4 (2026-09-08) — SUPERSEDED IN PLACE, original
+  // quoted verbatim (A4). Item 125 separates MEMBERSHIP from DISPLAY: the
+  // pin-card is one display of the relation, and a page can be a member of a
+  // board while appearing on its canvas not at all. "Pinned" named the card, so
+  // the membership line stopped being able to say it — it now reads "Also
+  // connected to <board>.", the same connecting word the Plan panel's own
+  // "Boards connected" heading and the Places zone carry.
+  //
+  // The CLAIM is unchanged and still exactly as strong: the Structure lens tells
+  // the truth about where this page is connected. Only the true word changed.
+  //   ORIGINAL:
+  //   ok('S3 Structure: a page pinned to a board carries a truthful membership line',
+  //     structureFiled.toLowerCase().includes('pinned'), structureFiled);
+  ok('S3 Structure: a page connected to a board carries a truthful membership line (PW1/ruling 4 successor of the same claim, when the word was "pinned")',
+    structureFiled.toLowerCase().includes('connected to'), structureFiled);
   // FX12 S2 — the beats sentence dies (V3): the ORIGINAL check (parked VERBATIM in
   // this file's PARKED section, A4) asserted the Structure lens NAMES a linked beat;
   // the beats system is dormant (CD4), so the lens no longer speaks a dead language.

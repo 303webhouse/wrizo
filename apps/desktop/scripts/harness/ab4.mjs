@@ -110,108 +110,23 @@ await withHarness(async (app) => {
   // S1 — the CD2 erratum comes true: survey card-swap (board list -> cards
   // -> back), both reference widths.
   // ==========================================================================
-  for (const width of [LAPTOP_W, WIDE_W]) {
-    await freshProsePage(app, width, 900);
-    await sleep(400);
-    const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
-    const projectId = await currentProjectId(app, pageId);
-    const now = new Date().toISOString();
-    await seedEntries(app, [
-      { id: 'ab4-s1-target', text: 'AB4 Card Target Page\nSecond line body.', projectId, pageType: 'manuscript', origin: 'project', source: 'page', createdAt: now, updatedAt: now },
-      {
-        id: 'ab4-s1-board', text: 'AB4 Survey Board', projectId, pageType: 'board', source: 'page',
-        boxes: [
-          { id: 'ab4-s1-card-text', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Card One\nMore body text here.' },
-          { id: 'ab4-s1-card-ink', kind: 'ink', x: 0.05, y: 0.2, w: 0.2, h: 0.15, z: 2, strokes: [] },
-          { id: 'ab4-s1-card-pin', kind: 'page-pin', x: 0.05, y: 0.4, w: 0.3, h: 0.1, z: 3, entryId: 'ab4-s1-target' },
-        ],
-        createdAt: now, updatedAt: now,
-      },
-    ]);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
-    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'S1 page reloaded with a board seeded' });
-    await sleep(250);
-    await app.emulateDpr(1, width, 900);
-
-    await clickCategory(app, 2); // Journal, Page, Plan(2), Drawers, Shelf, Settings, Theme
-    await sleep(200);
-    await app.evalJs("document.querySelector('.wz-cascade-link')?.click()"); // "Open..." -> the board list survey
-    await sleep(200);
-    const boardListTitles = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent)`);
-    ok(`S1 @ ${width}px: Plan's survey shows the board list`, boardListTitles.includes('AB4 Survey Board'), JSON.stringify(boardListTitles));
-
-    await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-title')].find(b => b.textContent.includes('AB4 Survey Board'))?.click()");
-    await sleep(200);
-    const cardsView = await app.evalJs(`({
-      title: document.querySelector('.wz-cascade-survey-title')?.textContent,
-      hasBack: !!document.querySelector('.wz-cascade-survey-back'),
-      cardTitles: [...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent),
-    })`);
-    ok(`S1 @ ${width}px: picking a board swaps the survey column to ITS OWN cards (large thumbnails: title/excerpt, or "A sketch" for ink) with a quiet back affordance`,
-      cardsView.title === 'AB4 Survey Board' && cardsView.hasBack
-      && cardsView.cardTitles.includes('Card One')
-      && cardsView.cardTitles.includes('A sketch')
-      && cardsView.cardTitles.some((t) => t.includes('AB4 Card Target Page')),
-      JSON.stringify(cardsView));
-
-    await app.evalJs("document.querySelector('.wz-cascade-survey-back')?.click()");
-    await sleep(200);
-    const backToList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent)`);
-    ok(`S1 @ ${width}px: the back affordance returns to the board list, not the cards`,
-      backToList.includes('AB4 Survey Board') && !backToList.includes('Card One'), JSON.stringify(backToList));
-  }
-
   // ==========================================================================
-  // S1 — docked cards persist through typing (CD2's own dock-testing
-  // pattern, reused for the nested board-cards survey specifically — this
-  // is the "PowerPoint moment" the brief names: a board's cards docked
-  // beside a focused page, surviving keystrokes by the writer's deliberate
-  // word).
+  // PW1 (2026-09-08) — THE ROUTE INTO THIS SURVEY CHANGED. EIGHT CHECK
+  // INSTANCES (five names, three of them run at both reference widths) ARE
+  // PARKED, quoted VERBATIM in this file's own PARKED section below, each with
+  // a live successor re-derived there.
+  //
+  // The survey itself is NOT retired — the board-cards column, its back
+  // affordance, and the dock all survive intact. What changed is the DOOR: the
+  // "Open…" link and the board-LIST survey behind it are gone (PW3 — the Plan
+  // panel is the list now), and the list's subject changed from
+  // `getBinderPages(projectId)` to `planBoardId ∪ getBoardsPinning`.
+  //
+  // These fixtures seed their boards with a `projectId` and pin NOTHING, so
+  // under the new subject the panel lists them not at all — the fixture, not
+  // just the assertion, encoded the old subject. The successors below make a
+  // real membership through the product's own seam first.
   // ==========================================================================
-  await freshProsePage(app, LAPTOP_W, 900);
-  await sleep(400);
-  {
-    const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
-    const projectId = await currentProjectId(app, pageId);
-    const now = new Date().toISOString();
-    await seedEntries(app, [
-      { id: 'ab4-dock-board', text: 'AB4 Dock Board', projectId, pageType: 'board', source: 'page',
-        boxes: [{ id: 'ab4-dock-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Dock Card' }],
-        createdAt: now, updatedAt: now },
-    ]);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
-    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page reloaded for dock test' });
-    await sleep(250);
-    await app.emulateDpr(1, LAPTOP_W, 900);
-
-    await clickCategory(app, 2);
-    await sleep(150);
-    await app.evalJs("document.querySelector('.wz-cascade-link')?.click()");
-    await sleep(150);
-    await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-title')].find(b => b.textContent.includes('AB4 Dock Board'))?.click()");
-    await sleep(150);
-    await app.evalJs("document.querySelector('.wz-cascade-dock-btn')?.click()"); // dock the survey
-    await sleep(200);
-    const dockedBefore = await app.evalJs(`({
-      present: !!document.querySelector('.wz-cascade-survey'),
-      docked: document.querySelector('.wz-cascade-survey')?.dataset.docked,
-      cardVisible: [...document.querySelectorAll('.wz-cascade-thumb-title')].some(t => t.textContent.includes('Dock Card')),
-    })`);
-    ok('S1: the board-cards survey docks like any other survey layer', dockedBefore.present && dockedBefore.docked === 'true' && dockedBefore.cardVisible, JSON.stringify(dockedBefore));
-
-    await app.evalJs("(document.querySelector('.forward-only-editor, .entry-edit, .entry-full, [contenteditable=\"true\"]'))?.focus?.()");
-    await app.typeKeys('x');
-    await sleep(200);
-    const dockedAfterTyping = await app.evalJs(`({
-      present: !!document.querySelector('.wz-cascade-survey'),
-      docked: document.querySelector('.wz-cascade-survey')?.dataset.docked,
-      cardVisible: [...document.querySelectorAll('.wz-cascade-thumb-title')].some(t => t.textContent.includes('Dock Card')),
-    })`);
-    ok('S1/S6: docked board cards survive a keystroke elsewhere on the page (the writer\'s deliberate word to keep them)',
-      dockedAfterTyping.present && dockedAfterTyping.docked === 'true' && dockedAfterTyping.cardVisible, JSON.stringify(dockedAfterTyping));
-  }
 
   // ==========================================================================
   // S2 — the pin flow through the REAL picker (not a shortcut): origin/
@@ -270,12 +185,31 @@ await withHarness(async (app) => {
     await sleep(450); // clear persistence.ts's own 300ms debounced-flush window before reading localStorage directly
 
     const membership = await app.evalJs(`[...document.querySelectorAll('.wz-pageface-membership')].map(m => m.textContent)`);
-    ok('S2: the Page face\'s home block gains a truthful "Also pinned to <board>." membership line',
-      membership.some((m) => m === 'Also pinned to AB4 Target Board.'), JSON.stringify(membership));
+    // PW1 (2026-09-08) — THREE MORE CHECKS PARKED HERE, all from item 125's
+    // one ruling: MEMBERSHIP IS NOT DISPLAY.
+    //
+    // (1) The membership LINE's wording changed (Fable's ruling 4): "pinned"
+    //     named the card, and a member may now have no card at all.
+    // (2)+(3) The UNPIN journey below selected the pin-card ON THE CANVAS and
+    //     pressed Remove. A freshly-made membership is no longer displayed
+    //     (`onCanvas: false`, written explicitly), so there is no card there to
+    //     select — the bare `document.querySelector(...).dispatchEvent(...)`
+    //     threw on null and ABORTED THE WHOLE FILE, which is exactly the driver
+    //     hazard the standing law names. The unpin MECHANIC is unchanged; only
+    //     its precondition is new, and the successors prove precisely that by
+    //     displaying the membership first.
+    //
+    // ORIGINAL, QUOTED VERBATIM AND NO LONGER ASSERTED (A4):
+    //   ok('S2: the Page face\'s home block gains a truthful "Also pinned to <board>." membership line',
+    //     membership.some((m) => m === 'Also pinned to AB4 Target Board.'), JSON.stringify(membership));
+    ok('S2 (PW1/ruling 4 successor of "the Page face\'s home block gains a truthful \\"Also pinned to <board>.\\" membership line"): the line now reads "Also connected to <board>." — one connecting word across the Plan heading, the Places zone and this prose line, because a member may have no card on the wall at all',
+      membership.some((m) => m === 'Also connected to AB4 Target Board.'), JSON.stringify(membership));
 
     const boardBoxes = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'ab4-pin-board')?.boxes");
     const pinBox = (boardBoxes || []).find((b) => b.kind === 'page-pin' && b.entryId === sourcePageId);
     ok('S2: pinning adds a page-pin card to the board referencing the entry id (membership, not a copy)', !!pinBox, JSON.stringify(boardBoxes));
+    ok('S2 (PW1/item 125): and that pin is a MEMBERSHIP RECORD, not yet a display — `onCanvas` is written explicitly false, so the writer chooses where it lands rather than the app choosing for them',
+      !!pinBox && pinBox.onCanvas === false, JSON.stringify(pinBox));
 
     const after = await app.localJSON('writer-studio-journal-entries');
     const sourceAfter = after.find((e) => e.id === sourcePageId);
@@ -283,23 +217,43 @@ await withHarness(async (app) => {
       sourceAfter.origin === sourceBefore.origin && sourceAfter.projectId === sourceBefore.projectId && sourceAfter.text === sourceBefore.text,
       JSON.stringify({ before: { origin: sourceBefore.origin, projectId: sourceBefore.projectId }, after: { origin: sourceAfter.origin, projectId: sourceAfter.projectId } }));
 
-    // Unpin: select the page-pin card on the board itself and Remove it —
-    // the card leaves, the page stays.
+    // Unpin: DISPLAY the membership first (PW1's own precondition), then select
+    // the page-pin card on the board and Remove it — the card leaves, the page
+    // stays. The two checks below are the successors of the originals quoted
+    // just above them.
+    //   ORIGINAL, VERBATIM (A4):
+    //   ok('S2: unpinning removes the card from the board', !(boxesAfterUnpin || []).some((b) => b.id === pinBox.id), JSON.stringify(boxesAfterUnpin?.map((b) => b.id)));
+    //   ok('S2: unpinning never touches the page itself — it remains fully intact',
+    //     !!sourceAfterUnpin && !sourceAfterUnpin.deletedAt && sourceAfterUnpin.text === sourceBefore.text && sourceAfterUnpin.origin === sourceBefore.origin,
+    //     JSON.stringify(sourceAfterUnpin));
+    await app.evalJs(`window.wrizoSetPinDisplayed('ab4-pin-board', ${JSON.stringify(sourcePageId)}, true)`);
+    await sleep(450);
     await app.evalJs("location.hash = '#/page/ab4-pin-board'");
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'target board framed for unpin' });
     await sleep(250);
-    await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerdown', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
-    await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerup', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
-    await sleep(150);
-    await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
-    await sleep(200);
-    const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
-    ok('S2: unpinning removes the card from the board', !(boxesAfterUnpin || []).some((b) => b.id === pinBox.id), JSON.stringify(boxesAfterUnpin?.map((b) => b.id)));
+    // DRIVERS NEVER ASSUME EXISTENCE — probe before acting, so a missing card
+    // fails a NAMED check instead of aborting every check after it.
+    const pinCardOnWall = pinBox ? await app.evalJs(`!!document.querySelector('[data-box-id="${pinBox.id}"]')`) : false;
+    ok('S2 (PW1 successor, precondition): once DISPLAYED, the membership\'s card is on the canvas to act on — display is the only thing that changed, and it changed by the writer\'s own act',
+      pinCardOnWall === true, JSON.stringify({ pinBoxId: pinBox && pinBox.id, pinCardOnWall }));
+    if (!pinCardOnWall) {
+      ok('S2 (PW1 successor of "unpinning removes the card from the board"): the card was reachable to unpin', false, 'the displayed pin-card never appeared on the canvas');
+      ok('S2 (PW1 successor of "unpinning never touches the page itself — it remains fully intact"): the page survived the unpin', false, 'not reached — no card to unpin');
+    } else {
+      await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerdown', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
+      await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerup', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
+      await sleep(150);
+      await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')?.click()");
+      await sleep(200);
+      const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
+      ok('S2 (PW1 successor of "unpinning removes the card from the board"): the board card\'s own Remove still ends the MEMBERSHIP outright — unchanged mechanic, new precondition. It is deliberately a different act, and a different word, from the rail\'s "Hide from the board", which ends only the display',
+        !(boxesAfterUnpin || []).some((b) => b.id === pinBox.id), JSON.stringify(boxesAfterUnpin?.map((b) => b.id)));
 
-    const sourceAfterUnpin = (await app.localJSON('writer-studio-journal-entries')).find((e) => e.id === sourcePageId);
-    ok('S2: unpinning never touches the page itself — it remains fully intact',
-      !!sourceAfterUnpin && !sourceAfterUnpin.deletedAt && sourceAfterUnpin.text === sourceBefore.text && sourceAfterUnpin.origin === sourceBefore.origin,
-      JSON.stringify(sourceAfterUnpin));
+      const sourceAfterUnpin = (await app.localJSON('writer-studio-journal-entries')).find((e) => e.id === sourcePageId);
+      ok('S2 (PW1 successor of "unpinning never touches the page itself — it remains fully intact"): unchanged, and still true',
+        !!sourceAfterUnpin && !sourceAfterUnpin.deletedAt && sourceAfterUnpin.text === sourceBefore.text && sourceAfterUnpin.origin === sourceBefore.origin,
+        JSON.stringify(sourceAfterUnpin));
+    }
   }
 
   // FX4 S6 — this whole "S3 — threads" block SUPERSEDED: the sliver's own
@@ -479,6 +433,257 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
+  // ========================================================================
+  // PW1 (2026-09-08) — THE DOOR INTO THE BOARD-CARDS SURVEY CHANGED.
+  // Eight instances / five names, parked. The survey survives whole; only
+  // the route in, and the LIST's subject, changed (PW3 + PW1 S1).
+  // ORIGINAL, QUOTED VERBATIM AND NO LONGER ASSERTED (A4):
+  //   for (const width of [LAPTOP_W, WIDE_W]) {
+  //     await freshProsePage(app, width, 900);
+  //     await sleep(400);
+  //     const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+  //     const projectId = await currentProjectId(app, pageId);
+  //     const now = new Date().toISOString();
+  //     await seedEntries(app, [
+  //       { id: 'ab4-s1-target', text: 'AB4 Card Target Page\nSecond line body.', projectId, pageType: 'manuscript', origin: 'project', source: 'page', createdAt: now, updatedAt: now },
+  //       {
+  //         id: 'ab4-s1-board', text: 'AB4 Survey Board', projectId, pageType: 'board', source: 'page',
+  //         boxes: [
+  //           { id: 'ab4-s1-card-text', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Card One\nMore body text here.' },
+  //           { id: 'ab4-s1-card-ink', kind: 'ink', x: 0.05, y: 0.2, w: 0.2, h: 0.15, z: 2, strokes: [] },
+  //           { id: 'ab4-s1-card-pin', kind: 'page-pin', x: 0.05, y: 0.4, w: 0.3, h: 0.1, z: 3, entryId: 'ab4-s1-target' },
+  //         ],
+  //         createdAt: now, updatedAt: now,
+  //       },
+  //     ]);
+  //     await app.reload();
+  //     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+  //     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'S1 page reloaded with a board seeded' });
+  //     await sleep(250);
+  //     await app.emulateDpr(1, width, 900);
+  //
+  //     await clickCategory(app, 2); // Journal, Page, Plan(2), Drawers, Shelf, Settings, Theme
+  //     await sleep(200);
+  //     await app.evalJs("document.querySelector('.wz-cascade-link')?.click()"); // "Open..." -> the board list survey
+  //     await sleep(200);
+  //     const boardListTitles = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent)`);
+  //     ok(`S1 @ ${width}px: Plan's survey shows the board list`, boardListTitles.includes('AB4 Survey Board'), JSON.stringify(boardListTitles));
+  //
+  //     await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-title')].find(b => b.textContent.includes('AB4 Survey Board'))?.click()");
+  //     await sleep(200);
+  //     const cardsView = await app.evalJs(`({
+  //       title: document.querySelector('.wz-cascade-survey-title')?.textContent,
+  //       hasBack: !!document.querySelector('.wz-cascade-survey-back'),
+  //       cardTitles: [...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent),
+  //     })`);
+  //     ok(`S1 @ ${width}px: picking a board swaps the survey column to ITS OWN cards (large thumbnails: title/excerpt, or "A sketch" for ink) with a quiet back affordance`,
+  //       cardsView.title === 'AB4 Survey Board' && cardsView.hasBack
+  //       && cardsView.cardTitles.includes('Card One')
+  //       && cardsView.cardTitles.includes('A sketch')
+  //       && cardsView.cardTitles.some((t) => t.includes('AB4 Card Target Page')),
+  //       JSON.stringify(cardsView));
+  //
+  //     await app.evalJs("document.querySelector('.wz-cascade-survey-back')?.click()");
+  //     await sleep(200);
+  //     const backToList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent)`);
+  //     ok(`S1 @ ${width}px: the back affordance returns to the board list, not the cards`,
+  //       backToList.includes('AB4 Survey Board') && !backToList.includes('Card One'), JSON.stringify(backToList));
+  //   }
+  //
+  //   // ==========================================================================
+  //   // S1 — docked cards persist through typing (CD2's own dock-testing
+  //   // pattern, reused for the nested board-cards survey specifically — this
+  //   // is the "PowerPoint moment" the brief names: a board's cards docked
+  //   // beside a focused page, surviving keystrokes by the writer's deliberate
+  //   // word).
+  //   // ==========================================================================
+  //   await freshProsePage(app, LAPTOP_W, 900);
+  //   await sleep(400);
+  //   {
+  //     const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+  //     const projectId = await currentProjectId(app, pageId);
+  //     const now = new Date().toISOString();
+  //     await seedEntries(app, [
+  //       { id: 'ab4-dock-board', text: 'AB4 Dock Board', projectId, pageType: 'board', source: 'page',
+  //         boxes: [{ id: 'ab4-dock-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Dock Card' }],
+  //         createdAt: now, updatedAt: now },
+  //     ]);
+  //     await app.reload();
+  //     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+  //     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page reloaded for dock test' });
+  //     await sleep(250);
+  //     await app.emulateDpr(1, LAPTOP_W, 900);
+  //
+  //     await clickCategory(app, 2);
+  //     await sleep(150);
+  //     await app.evalJs("document.querySelector('.wz-cascade-link')?.click()");
+  //     await sleep(150);
+  //     await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-title')].find(b => b.textContent.includes('AB4 Dock Board'))?.click()");
+  //     await sleep(150);
+  //     await app.evalJs("document.querySelector('.wz-cascade-dock-btn')?.click()"); // dock the survey
+  //     await sleep(200);
+  //     const dockedBefore = await app.evalJs(`({
+  //       present: !!document.querySelector('.wz-cascade-survey'),
+  //       docked: document.querySelector('.wz-cascade-survey')?.dataset.docked,
+  //       cardVisible: [...document.querySelectorAll('.wz-cascade-thumb-title')].some(t => t.textContent.includes('Dock Card')),
+  //     })`);
+  //     ok('S1: the board-cards survey docks like any other survey layer', dockedBefore.present && dockedBefore.docked === 'true' && dockedBefore.cardVisible, JSON.stringify(dockedBefore));
+  //
+  //     await app.evalJs("(document.querySelector('.forward-only-editor, .entry-edit, .entry-full, [contenteditable=\"true\"]'))?.focus?.()");
+  //     await app.typeKeys('x');
+  //     await sleep(200);
+  //     const dockedAfterTyping = await app.evalJs(`({
+  //       present: !!document.querySelector('.wz-cascade-survey'),
+  //       docked: document.querySelector('.wz-cascade-survey')?.dataset.docked,
+  //       cardVisible: [...document.querySelectorAll('.wz-cascade-thumb-title')].some(t => t.textContent.includes('Dock Card')),
+  //     })`);
+  //     ok('S1/S6: docked board cards survive a keystroke elsewhere on the page (the writer\'s deliberate word to keep them)',
+  //       dockedAfterTyping.present && dockedAfterTyping.docked === 'true' && dockedAfterTyping.cardVisible, JSON.stringify(dockedAfterTyping));
+  //   }
+
+  // --- successors, re-derived through the NEW door ---------------------------
+  // Same three claims, at the same two reference widths (so the instance
+  // arithmetic is unchanged: 6 + 2 = 8), reached by one press on the panel's
+  // own board row instead of by "Open…".
+  for (const width of [LAPTOP_W, WIDE_W]) {
+    await freshProsePage(app, width, 900);
+    await sleep(400);
+    const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+    const projectId = await currentProjectId(app, pageId);
+    const now = new Date().toISOString();
+    await seedEntries(app, [
+      { id: 'ab4-s1-target', text: 'AB4 Card Target Page\nSecond line body.', projectId, pageType: 'manuscript', origin: 'project', source: 'page', createdAt: now, updatedAt: now },
+      {
+        id: 'ab4-s1-board', text: 'AB4 Survey Board', projectId, pageType: 'board', source: 'page',
+        boxes: [
+          { id: 'ab4-s1-card-text', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Card One\nMore body text here.' },
+          { id: 'ab4-s1-card-ink', kind: 'ink', x: 0.05, y: 0.2, w: 0.2, h: 0.15, z: 2, strokes: [] },
+          { id: 'ab4-s1-card-pin', kind: 'page-pin', x: 0.05, y: 0.4, w: 0.3, h: 0.1, z: 3, entryId: 'ab4-s1-target' },
+        ],
+        createdAt: now, updatedAt: now,
+      },
+    ]);
+    // RELOAD BEFORE PINNING, and the ordering is load-bearing (item 85/129):
+    // this file's `seedEntries` writes RAW localStorage, so the in-memory cache
+    // knows nothing of these rows until a reload hydrates it. `wrizoPinPageToBoard`
+    // is a PRODUCT write, and every product write serialises the WHOLE cache
+    // back over storage — so pinning first would both fail (the board is not in
+    // the cache to find) AND wipe the raw rows on its way out. Measured, not
+    // reasoned: this is precisely how it failed the first time it was run.
+    await app.reload();
+    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PARKED: page reloaded, cache hydrated from the raw seed' });
+    await sleep(250);
+    // THE MEMBERSHIP the old fixture never made — through the product's own
+    // seam, so the board is genuinely CONNECTED to this page and not merely
+    // co-located in its drawer.
+    const pinned = await app.evalJs(`!!window.wrizoPinPageToBoard(${JSON.stringify(pageId)}, 'ab4-s1-board')`);
+    pok(`PARKED-FIXTURE @ ${width}px: the membership was genuinely made through the product's own seam`, pinned === true, String(pinned));
+    await sleep(450);
+    await app.emulateDpr(1, width, 900);
+
+    await clickCategory(app, 2);
+    await sleep(250);
+    const boardRows = await app.evalJs("[...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent)");
+    pok(`PARKED (was "S1 @ ${width}px: Plan's survey shows the board list") — PW1 S1/PW3: the PANEL is the list now, and it lists the boards CONNECTED to this page rather than every board in its drawer. Live successor: pw1.mjs's own S1 section`,
+      Array.isArray(boardRows) && boardRows.includes('AB4 Survey Board'), JSON.stringify(boardRows));
+
+    // DRIVERS NEVER ASSUME EXISTENCE.
+    const rowThere = await app.evalJs("!!document.querySelector('.wz-cascade-boardrow-open')");
+    if (!rowThere) {
+      pok(`PARKED-DRIVER @ ${width}px: a connected board row is present to press`, false, 'absent');
+    } else {
+      await app.evalJs("document.querySelector('.wz-cascade-boardrow-open').click()");
+      await sleep(250);
+      const cardsView = await app.evalJs(`({
+        title: document.querySelector('.wz-cascade-survey-title')?.textContent,
+        hasBack: !!document.querySelector('.wz-cascade-survey-back'),
+        cardTitles: [...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent),
+        sections: [...document.querySelectorAll('.wz-cascade-survey-section')].map(s => s.textContent),
+      })`);
+      pok(`PARKED (was "S1 @ ${width}px: picking a board swaps the survey column to ITS OWN cards (large thumbnails: title/excerpt, or \\"A sketch\\" for ink) with a quiet back affordance") — PW1 S2: unchanged mechanic reached through the new door, and the column now reads in TWO SECTIONS (Q4) with the cards in the board's own y-then-x arrangement (Q14)`,
+        cardsView.title === 'AB4 Survey Board' && cardsView.hasBack
+        && cardsView.cardTitles.includes('Card One')
+        && cardsView.cardTitles.includes('A sketch')
+        && cardsView.cardTitles.some((t) => t.includes('AB4 Card Target Page'))
+        && cardsView.sections.includes('Cards') && cardsView.sections.includes('Pages linked to this board'),
+        JSON.stringify(cardsView));
+
+      const backThere = await app.evalJs("!!document.querySelector('.wz-cascade-survey-back')");
+      if (!backThere) {
+        pok(`PARKED-DRIVER @ ${width}px: the survey's back affordance is present to press`, false, 'absent');
+      } else {
+        await app.evalJs("document.querySelector('.wz-cascade-survey-back').click()");
+        await sleep(250);
+        const backToList = await app.evalJs(`({
+          survey: !!document.querySelector('.wz-cascade-survey'),
+          rows: [...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent),
+        })`);
+        pok(`PARKED (was "S1 @ ${width}px: the back affordance returns to the board list, not the cards") — PW1 S1/S5: it still returns to THE LIST; the list simply moved up a layer, so the back affordance now closes the survey onto the panel rather than opening a second one`,
+          backToList.survey === false && backToList.rows.includes('AB4 Survey Board'), JSON.stringify(backToList));
+      }
+    }
+  }
+
+  // The two dock claims, through the same new door.
+  {
+    await freshProsePage(app, LAPTOP_W, 900);
+    await sleep(400);
+    const pageId = await app.evalJs('location.hash.split(\'/page/\')[1]');
+    const projectId = await currentProjectId(app, pageId);
+    const now = new Date().toISOString();
+    await seedEntries(app, [
+      { id: 'ab4-dock-board', text: 'AB4 Dock Board', projectId, pageType: 'board', source: 'page',
+        boxes: [{ id: 'ab4-dock-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Dock Card' }],
+        createdAt: now, updatedAt: now },
+    ]);
+    // Same ordering law as above: hydrate the cache first, then make the
+    // membership through the seam.
+    await app.reload();
+    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PARKED: page reloaded for the dock re-derivation' });
+    await sleep(250);
+    const dockPinned = await app.evalJs(`!!window.wrizoPinPageToBoard(${JSON.stringify(pageId)}, 'ab4-dock-board')`);
+    pok('PARKED-FIXTURE: the dock re-derivation’s membership was genuinely made through the seam', dockPinned === true, String(dockPinned));
+    await sleep(450);
+    await app.emulateDpr(1, LAPTOP_W, 900);
+
+    await clickCategory(app, 2);
+    await sleep(200);
+    const rowThere = await app.evalJs("!!document.querySelector('.wz-cascade-boardrow-open')");
+    if (!rowThere) {
+      pok('PARKED-DRIVER: a connected board row is present to press (dock)', false, 'absent');
+    } else {
+      await app.evalJs("document.querySelector('.wz-cascade-boardrow-open').click()");
+      await sleep(200);
+      const dockBtnThere = await app.evalJs("!!document.querySelector('.wz-cascade-dock-btn')");
+      if (!dockBtnThere) {
+        pok('PARKED-DRIVER: the dock affordance is present to press', false, 'absent');
+      } else {
+        await app.evalJs("document.querySelector('.wz-cascade-dock-btn').click()");
+        await sleep(250);
+        const dockedBefore = await app.evalJs(`({
+          present: !!document.querySelector('.wz-cascade-survey'),
+          docked: document.querySelector('.wz-cascade-survey')?.dataset.docked,
+          cardVisible: [...document.querySelectorAll('.wz-cascade-thumb-title')].some(t => t.textContent.includes('Dock Card')),
+        })`);
+        pok('PARKED (was "S1: the board-cards survey docks like any other survey layer") — PW1 S1: unchanged mechanic, reached through the panel\'s own board row',
+          dockedBefore.present && dockedBefore.docked === 'true' && dockedBefore.cardVisible, JSON.stringify(dockedBefore));
+
+        await app.evalJs("(document.querySelector('.forward-only-editor, .entry-edit, .entry-full, [contenteditable=\"true\"]'))?.focus?.()");
+        await app.typeKeys('x');
+        await sleep(250);
+        const dockedAfterTyping = await app.evalJs(`({
+          present: !!document.querySelector('.wz-cascade-survey'),
+          docked: document.querySelector('.wz-cascade-survey')?.dataset.docked,
+          cardVisible: [...document.querySelectorAll('.wz-cascade-thumb-title')].some(t => t.textContent.includes('Dock Card')),
+        })`);
+        pok('PARKED (was "S1/S6: docked board cards survive a keystroke elsewhere on the page (the writer\'s deliberate word to keep them)") — PW1 S1: unchanged, same new door',
+          dockedAfterTyping.present && dockedAfterTyping.docked === 'true' && dockedAfterTyping.cardVisible, JSON.stringify(dockedAfterTyping));
+      }
+    }
+  }
+
     // ORIGINAL (this file's own live "S4 (regression)" section): await app.
     // evalJs('document.querySelector(\'[data-box-id="ab4-text-regress-card
     // "]\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');

@@ -5,7 +5,9 @@ import {
   patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
+  setPinDisplayed,
 } from '../store/persistence';
+import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
 import { withLanes } from '../store/boardStructure';
@@ -1249,7 +1251,9 @@ export function BoardEditor({ id }: { id: string }) {
   // the alternatives (losing the card, or duplicating the placement rules).
   const onAddPageCard = () => {
     const page = createLooseHomePage();
-    const updated = pinPageToBoard(page.id, id);
+    // PW1 S3 — BOARD-SIDE: the writer pressed a door ON THIS CANVAS asking for
+    // a card here, so the card appears here. Arrangement they authored.
+    const updated = pinPageToBoard(page.id, id, { display: true });
     const pin = (updated?.boxes ?? []).find(b => b.kind === 'page-pin' && b.entryId === page.id);
     if (pin) {
       const next = [...boxesRef.current, pin];
@@ -1807,7 +1811,16 @@ export function BoardEditor({ id }: { id: string }) {
   // (endpoints derived LIVE from the current boxes, so a drag/resize drags
   // the hairline with it for free); board-meta renders nothing at all (its
   // only job is carrying the canvas's own persisted dimensions).
-  const visibleBoxes = boxes.filter(b => b.kind !== 'connection' && b.kind !== 'board-meta');
+  // PW1 S3 (item 125) — MEMBERSHIP IS NOT DISPLAY. A page-pin whose membership
+  // is explicitly NOT displayed is withheld from the canvas here, at the one
+  // gate every card already passes through. ABSENCE MEANS DISPLAYED: the test
+  // is `=== false`, never falsiness, so every pin written before this field
+  // existed (undefined) still renders — every already-arranged board reads
+  // UNCHANGED on first launch, with no backfill and no migration. The card is
+  // withheld from the WALL only; the membership itself is untouched and still
+  // lists everywhere memberships list.
+  const visibleBoxes = boxes.filter(b => b.kind !== 'connection' && b.kind !== 'board-meta'
+    && !(b.kind === 'page-pin' && b.onCanvas === false));
   const connections = boxes.filter(b => b.kind === 'connection');
   const sorted = visibleBoxes.slice().sort((a, b) => a.z - b.z);
 
@@ -1988,6 +2001,45 @@ export function BoardEditor({ id }: { id: string }) {
           data-thread-armed={threadArmedFrom != null ? 'true' : 'false'}
           data-dragging={isDragging ? 'true' : 'false'}
           style={{ position: 'relative', width: pageWidthPx, height: canvasHeightPx, background: 'var(--paper)' }}
+          // PW1 S3 (item 125) — the DRAG half of the two display acts (Nick,
+          // Q4): a membership row dragged from the rail's survey lands WHERE
+          // DROPPED. The writer choosing the position is the whole reason
+          // display is opt-in, so the drop point IS the act; nothing here
+          // arranges on the writer's behalf.
+          //
+          // ONLY this board's own memberships are accepted. The payload names
+          // its board, and a mismatch is ignored outright: dragging a row from
+          // some OTHER board's survey onto this canvas would be moving a card
+          // between boards, which is CARD TRANSFER (item 123, still unbuilt) —
+          // and a display act must never quietly become one.
+          onDragOver={(e) => { if (e.dataTransfer.types.includes(SURVEY_DRAG_TYPE)) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } }}
+          onDrop={(e) => {
+            const payload = e.dataTransfer.getData(SURVEY_DRAG_TYPE);
+            if (!payload) return;
+            const sep = payload.indexOf(':');
+            if (sep < 0) return;
+            const [srcBoardId, entryId] = [payload.slice(0, sep), payload.slice(sep + 1)];
+            if (srcBoardId !== id || !entryId) return;
+            e.preventDefault();
+            // Normalized exactly as the RENDERER reads it, which is the only
+            // definition that matters: this file's own box style is
+            // `left: box.x * pageWidthPx, top: box.y * pageWidthPx` — BOTH axes
+            // divide by the WIDTH. `y` is therefore a fraction of the width,
+            // NOT of the height, and it legitimately exceeds 1 on a canvas
+            // taller than it is wide. Dividing y by rect.height here would have
+            // landed every dropped card near the top of the board, which looks
+            // like a placement bug and is really a denominator bug.
+            const rect = e.currentTarget.getBoundingClientRect();
+            if (rect.width <= 0) return;
+            // Clamp by the card's OWN measure, so a card dropped at the very
+            // edge still lands wholly on the board rather than half outside it.
+            const pin = boxes.find(b => b.kind === 'page-pin' && b.entryId === entryId);
+            const w = pin?.w ?? 0;
+            const h = pin?.h ?? 0;
+            const x = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), Math.max(1 - w, 0));
+            const y = Math.min(Math.max((e.clientY - rect.top) / rect.width, 0), Math.max(rect.height / rect.width - h, 0));
+            setPinDisplayed(id, entryId, true, { x, y });
+          }}
           onDoubleClick={(e) => {
             // FX7 S5 — root-caused live (not guessed): `e.target` here is
             // NOT reliable — `onDown` below (FX5 S4(a)'s own drag-friction

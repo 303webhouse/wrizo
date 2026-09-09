@@ -160,7 +160,9 @@ export function birth(
   // does — a page opened from a board, left, and returned to is still born
   // pinned to that board.
   const pinTo = opts.pinToBoardId ?? d.pinBoardId;
-  if (pinTo) pinPageToBoard(born.id, pinTo);
+  // PW1 S3 — BOARD-SIDE: this page was opened FROM a board's own door (the
+  // board is in the address), so the card belongs on that board's wall.
+  if (pinTo) pinPageToBoard(born.id, pinTo, { display: true });
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most
   // one unborn surface, and only while it is genuinely unborn."

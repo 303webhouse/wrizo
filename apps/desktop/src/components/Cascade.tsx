@@ -3,9 +3,19 @@ import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { CascadeSurvey } from './CascadeSurvey';
-import { renderCategoryPanel, buildSurvey, type CategoryId, type CascadeSurveyKind, type CascadeContext } from './CascadePanels';
+import { renderCategoryPanel, buildSurvey, resolveStickyPlanSurvey, type CategoryId, type CascadeSurveyKind, type CascadeContext } from './CascadePanels';
 import type { PageFaceSubject } from './PageFace';
-import type { Project } from '../types';
+import type { JournalEntry, Project } from '../types';
+import { routeForEntry } from '../store/routeForEntry';
+import { firstLine } from '../store/entryText';
+import { stageCascadeHandoff, takeCascadeHandoff } from '../store/planTrail';
+
+// PW1 S4(ii) — the surface actually LEFT, named. A board carries its title; a
+// page carries its first line; neither is ever allowed to be blank, because the
+// chip's whole job is to say where "back" goes.
+function originTitle(entry: JournalEntry): string {
+  return firstLine(entry.text).slice(0, 60) || (entry.pageType === 'board' ? 'Untitled board' : 'Untitled');
+}
 
 // CD2 — the Cascade (docs/wrizo-alpha/cd2-cascade-brief.md), replacing the
 // AB3 Drawer whole (S5: "the left drawer retires ... the cascade replaces
@@ -136,7 +146,18 @@ function availableCascadeMargin(): number {
 
 export function useCascade({ subject, project, navigate }: CascadeProps): { strip: ReactNode; layers: ReactNode } {
   const { t } = useDeskLexicon();
-  const [state, setState] = useState<CascadeState>(REST);
+  // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
+  // unmounts the whole hook, so before this the destination always mounted at
+  // REST and a writer who reached a card through the rail arrived with the rail
+  // shut and no way back. A travel originated from inside the cascade stages
+  // its own shape first (`travelFromCascade` below); every OTHER arrival takes
+  // nothing and mounts at REST exactly as before. Read-and-clear, so an
+  // ordinary navigation that merely follows a cascade travel never inherits a
+  // stale rail — the baton is passed once and consumed once.
+  const [state, setState] = useState<CascadeState>(() => {
+    const h = takeCascadeHandoff();
+    return h ? { category: h.category, survey: h.survey, docked: false } : REST;
+  });
   const currentEntryId = subject.entry.id;
 
   // item 83 M1 (R9/R11) — the two-drawer law. This drawer registers its own
@@ -176,6 +197,14 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       // A category switch dismisses a docked survey (the vanishing-law
       // rider's own words: "dismissed only by explicit close, category
       // switch, or Escape").
+      //
+      // PW1 S5 — and OPENING Plan restores the board whose contents this page
+      // last had open. Resolved HERE, at the opening toggle, rather than in the
+      // panel's own render: that is what lets the survey's `‹` walk back to the
+      // list and STAY there — nothing re-resolves until the writer opens the
+      // category afresh. A remembered board that has since been deleted or
+      // unpinned resolves to null and the list simply shows (G3).
+      if (id === 'plan') return { category: id, survey: resolveStickyPlanSurvey(subject.entry), docked: false };
       return { category: id, survey: null, docked: false };
     });
   };
@@ -221,7 +250,24 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.category, state.docked, state.survey]);
 
-  const ctx: CascadeContext = { subject, project, navigate, openSurvey };
+  // PW1 S1/S5 — walk back from a survey to the panel, which is now the list
+  // (PW3). Deliberately the SAME transition Escape's own "survey -> panel" step
+  // takes, rather than a second path that could drift from it.
+  const closeSurvey = () => setState((s) => (s.survey ? { ...s, survey: null } : s));
+
+  // PW1 S4 — travel that KEEPS THE RAIL, and the ONE place it is minted. Stages
+  // the cascade's shape for the destination's own mount, then navigates with
+  // the return chip's state — carrying the ORIGIN'S OWN TITLE, because a writer
+  // who reached a card through the rail never stood on a board, and sending
+  // them somewhere they have never been is the destination-blind verb the Card
+  // pass named as the enemy (CA1). `fromBoardTitle` was already carried by
+  // BoardEditor's own travel and simply never read; S4(ii) reads it.
+  const travelFromCascade = (entry: JournalEntry) => {
+    if (state.category) stageCascadeHandoff({ category: state.category, survey: state.survey });
+    navigate(routeForEntry(entry), { state: { fromBoardId: subject.entry.id, fromBoardTitle: originTitle(subject.entry) } });
+  };
+
+  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade };
 
   const strip = (
     <div className="wz-strip">

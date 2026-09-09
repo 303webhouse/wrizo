@@ -190,6 +190,15 @@ function JournalEntryView() {
   // forward). Framed-only (this ticket's whole cascade/sliver system is)
   // — legacy (<1100px) stays byte-identical, no chip there.
   const fromBoard = (location.state as { fromBoardId?: string } | null)?.fromBoardId ?? null;
+  // PW1 S4(ii) — THE CHIP NAMES THE SURFACE ACTUALLY LEFT. `fromBoardTitle`
+  // has been carried on this very state object since BoardEditor's own travel
+  // (`state: { fromBoardId: id, fromBoardTitle: title }`) and was never read:
+  // the chip said "Back to the board" to everyone. A writer who reached this
+  // surface through the RAIL never stood on a board, and sending them somewhere
+  // they have never been is the destination-blind verb the Card pass named as
+  // the enemy (CA1). The title is a plain read; the fallback keeps every
+  // pre-existing caller's wording byte-identical.
+  const fromBoardTitle = (location.state as { fromBoardTitle?: string } | null)?.fromBoardTitle ?? null;
   const warm = useWarmStart(warmRef.current, editRef, sheetRef);
   const warmReleaseRef = useRef<() => void>(() => {});
   warmReleaseRef.current = warm.release;
@@ -1132,7 +1141,7 @@ function JournalEntryView() {
             <Link to="/journal" className="btn-quiet" style={{ display: 'inline-block' }}>← The journal</Link>
             {fromBoard && (
               <button type="button" className="btn-quiet wz-back-to-board" onClick={() => { flushNow(); navigate(`/page/${fromBoard}`); }}>
-                ‹ Back to the board
+                {fromBoardTitle ? `‹ Back to ${fromBoardTitle}` : '‹ Back to the board'}
               </button>
             )}
             <ModeStrip mode="journal" onSwitch={() => setTabPrompt(true)} onPublish={() => setTabPrompt(true)} />

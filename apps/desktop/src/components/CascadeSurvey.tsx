@@ -1,5 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
+
+// PW1 S3 — the drag half's dataTransfer type. Named here, beside the only
+// producer, and imported by the only consumer (BoardEditor's canvas) so the
+// two can never drift to two different strings.
+export const SURVEY_DRAG_TYPE = 'text/wrizo-survey-item';
 
 // CD2 S4 — the survey (layer 3), one generic component every category's
 // "Open…"/"All ___ →"/"choosing a container" doorway feeds. Large
@@ -16,6 +21,19 @@ export interface SurveyItem {
   excerpt?: string;
   image?: string;
   current?: boolean;
+  // PW1 S2 — TWO SECTIONS (Nick, Q4): a board's own Cards, then the Pages
+  // linked to it. Carried on the ITEM rather than as a separate `sections`
+  // prop so every existing caller stays byte-identical (all undefined → one
+  // ungrouped grid, exactly as before) and so ordering stays `buildSurvey`'s
+  // single responsibility. A heading renders whenever this value CHANGES from
+  // the previous item's, which means the builder's order IS the sectioning.
+  sectionTitle?: string;
+  // PW1 S3 — the row's own state line ("member · shown on the board"). Display
+  // state is a FACT ON THE ROW, never inferred from the wall. Distinct from
+  // `excerpt` (which is content) because this is provenance, and a harness
+  // asserting the no-count law over second lines must be able to tell them
+  // apart.
+  note?: string;
 }
 
 export interface SurveyProps {
@@ -46,9 +64,17 @@ export interface SurveyProps {
   // the board list — distinct from `onDismiss` (which closes/docks the
   // whole survey), since this walks back one step within it instead.
   onBack?: () => void;
+  // PW1 S3 — the drag half of the two display acts (Nick, Q4): drag a row onto
+  // the canvas and it lands WHERE DROPPED. The BUILDER supplies the payload
+  // (it alone knows which board and which box a row stands for), and a row that
+  // returns null is simply not draggable — a card, or a row with no lawful
+  // drop. Optional because the drag needs a canvas and so exists only on a
+  // board; the MENU act is the one that must be complete everywhere, and it is
+  // (`renderMenu`).
+  dragPayload?: (item: SurveyItem) => string | null;
 }
 
-export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, renderMenu, onBack }: SurveyProps) {
+export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, renderMenu, onBack, dragPayload }: SurveyProps) {
   const { t } = useDeskLexicon();
   return (
     <div className="wz-cascade-survey" data-open="true" data-docked={docked ? 'true' : 'false'}>
@@ -65,19 +91,45 @@ export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, rende
       </div>
       <div className="wz-cascade-survey-grid">
         {items.length === 0 && <div className="wz-cascade-empty">{t('cascadeSurveyEmpty')}</div>}
-        {items.map((item) => (
-          <SurveyThumb key={item.id} item={item} onTravel={onTravel} renderMenu={renderMenu} />
+        {items.map((item, i) => (
+          <Fragment key={item.id}>
+            {/* PW1 S2 — a section heading whenever the builder's order crosses
+                into a new one. Never rendered for an absent sectionTitle, so
+                an ungrouped survey (Journal's, and every pre-PW1 caller) emits
+                no headings at all. */}
+            {item.sectionTitle && item.sectionTitle !== items[i - 1]?.sectionTitle && (
+              <div className="wz-cascade-survey-section">{item.sectionTitle}</div>
+            )}
+            <SurveyThumb item={item} onTravel={onTravel} renderMenu={renderMenu} dragPayload={dragPayload} />
+          </Fragment>
         ))}
       </div>
     </div>
   );
 }
 
-function SurveyThumb({ item, onTravel, renderMenu }: { item: SurveyItem; onTravel: (id: string) => void; renderMenu?: (item: SurveyItem) => ReactNode }) {
+function SurveyThumb({ item, onTravel, renderMenu, dragPayload }: { item: SurveyItem; onTravel: (id: string) => void; renderMenu?: (item: SurveyItem) => ReactNode; dragPayload?: (item: SurveyItem) => string | null }) {
   const { t } = useDeskLexicon();
   const [menuOpen, setMenuOpen] = useState(false);
+  const payload = dragPayload ? dragPayload(item) : null;
+  // PW1 S2/S3 — a row only wears a `⋯` if that `⋯` HAS something in it. The
+  // plan-board survey passes one `renderMenu` for the whole column, but only
+  // its membership rows have an act (Display/Hide); a card's would open empty.
+  // G3's own principle at the scale of a menu: absent, never a door onto
+  // nothing. Calling `renderMenu` here builds an ELEMENT, it does not render
+  // one, so no hook runs until the menu is actually opened.
+  const menuContent = renderMenu ? renderMenu(item) : null;
   return (
-    <div className={`wz-cascade-thumb${item.current ? ' current' : ''}`}>
+    <div className={`wz-cascade-thumb${item.current ? ' current' : ''}`}
+      // PW1 S3 — right-click is the SECOND display act (Nick, Q4), and it is
+      // deliberately not a second menu: it opens the one the row already
+      // carries. Every act stays reachable by the keyboard and the unfamiliar
+      // hand through that same `⋯`, which is the whole point of the twin law
+      // (PW22) — a gesture may be a shortcut, never the only path.
+      onContextMenu={menuContent ? (e) => { e.preventDefault(); setMenuOpen(true); } : undefined}
+      draggable={payload ? true : undefined}
+      onDragStart={payload ? (e) => { e.dataTransfer.setData(SURVEY_DRAG_TYPE, payload); e.dataTransfer.effectAllowed = 'move'; } : undefined}
+    >
       <button type="button" className="wz-cascade-thumb-title" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', textAlign: 'left' }}
         onClick={() => onTravel(item.id)} aria-current={item.current ? 'true' : undefined}>
         {item.title}
@@ -90,11 +142,15 @@ function SurveyThumb({ item, onTravel, renderMenu }: { item: SurveyItem; onTrave
           this branch is exercised by a future ticket without a rewrite. */}
       {item.image && <img className="wz-cascade-thumb-image" src={item.image} alt="" />}
       {item.excerpt && <div className="wz-cascade-thumb-excerpt">{item.excerpt}</div>}
+      {/* PW1 S3 — the state line: "member · shown on the board". Its own class,
+          never the excerpt's, so what is CONTENT and what is PROVENANCE stay
+          distinguishable to a reader and to a harness alike. */}
+      {item.note && <div className="wz-cascade-thumb-note">{item.note}</div>}
       {item.current && <div className="wz-cascade-thumb-row"><span style={{ fontSize: 10, letterSpacing: 1, color: 'var(--accent-rest)' }}>{t('cascadeSurveyCurrent')}</span></div>}
-      {renderMenu && (
+      {menuContent && (
         <>
           <button type="button" className="wz-cascade-thumb-menu-btn" aria-label="More" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}>⋯</button>
-          {menuOpen && <div className="wz-cascade-thumb-menu">{renderMenu(item)}</div>}
+          {menuOpen && <div className="wz-cascade-thumb-menu">{menuContent}</div>}
         </>
       )}
     </div>

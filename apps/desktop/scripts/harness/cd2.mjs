@@ -475,75 +475,27 @@ await withHarness(async (app) => {
   ok('S4: clicking a survey thumbnail travels (mounts it in the main area)', traveled.includes('cd2-journal-b'), traveled);
 
   // ==========================================================================
-  // S3/S4 — Plan on a project-less (loose) page: "Create a Board"/"Plot a
-  // Story" offered, "Open…" absent (no project to survey yet — silent
-  // degrade, no greyed door).
+  // PW1 (2026-09-08) — THIS WHOLE PLAN-PANEL BLOCK IS PARKED. Six checks, all
+  // quoted VERBATIM in this file's own PARKED section below, with live
+  // successors named there and in pw1.mjs.
+  //
+  // WHY, in one line: the panel changed SUBJECT. It listed
+  // `getBinderPages(project.id)` — every board in this page's DRAWER — and now
+  // lists `planBoardId ∪ getBoardsPinning` — the boards that hold THIS PAGE.
+  // Co-location is not connection. This fixture (`freshProsePageWithBoards`)
+  // seeds two boards into the project and pins NOTHING, so under the new
+  // subject the panel correctly lists neither: the checks below were asserting
+  // exactly the behaviour PW1 exists to correct.
+  //
+  // AND THE ABORT HAZARD, fixed rather than inherited (Fable's ruling 5): the
+  // line that reached this block was a BARE
+  //   await app.evalJs("document.querySelector('.wz-cascade-link').click()");
+  // on Plan's "Open…". PW3 retires that link, so the querySelector returns
+  // null, `.click()` throws inside evalJs, the promise rejects — and the WHOLE
+  // FILE aborts, reporting nothing downstream. Every successor below probes
+  // for its target and FAILS A NAMED CHECK instead, which is the standing
+  // driver law: a driver may lie by dying as easily as by doing nothing.
   // ==========================================================================
-  await freshLoosePage(app, LAPTOP_W, 900);
-  await clickCategory(app, 2); // Plan
-  await sleep(200);
-  const planNoProject = await app.evalJs(`({
-    hasCreateBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board'),
-    hasPlotStory: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Plot a Story'),
-    hasOpenLink: !!document.querySelector('.wz-cascade-link'),
-  })`);
-  ok('S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)',
-    planNoProject.hasCreateBoard && planNoProject.hasPlotStory && !planNoProject.hasOpenLink, JSON.stringify(planNoProject));
-
-  // ==========================================================================
-  // S3/S4 — Plan on a project page WITH boards: "Open…" reveals the board
-  // list as a survey; the Delete flow (T4: disclosure -> one plain confirm
-  // -> gone from list AND store).
-  // ==========================================================================
-  await freshProsePageWithBoards(app, LAPTOP_W, 900);
-  await clickCategory(app, 2); // Plan
-  await sleep(200);
-  await app.evalJs("document.querySelector('.wz-cascade-link').click()"); // "Open…"
-  await sleep(200);
-  const planSurveyBefore = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent)`);
-  ok('S3/S4: Plan\'s "Open…" opens the survey listing this project\'s own boards',
-    JSON.stringify(planSurveyBefore.sort()) === JSON.stringify(['First Board', 'Second Board']), JSON.stringify(planSurveyBefore));
-
-  // Disclosure: the menu button, not first position.
-  const menuBtn = await app.evalJs("!!document.querySelector('.wz-cascade-thumb-menu-btn')");
-  const menuClosedByDefault = await app.evalJs("!document.querySelector('.wz-cascade-thumb-menu')");
-  ok('S3: Move/Delete live behind a quiet disclosure — closed by default, never first position',
-    menuBtn && menuClosedByDefault, JSON.stringify({ menuBtn, menuClosedByDefault }));
-
-  await app.evalJs("document.querySelector('.wz-cascade-thumb-menu-btn').click()");
-  await sleep(150);
-  const disclosureOpen = await app.evalJs(`({
-    hasMove: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent.includes('Move')),
-    hasDelete: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent === 'Delete'),
-    confirmNotYetShown: !document.querySelector('.wz-cascade-confirm'),
-  })`);
-  ok('S3: the disclosure reveals Move and Delete', disclosureOpen.hasMove && disclosureOpen.hasDelete && disclosureOpen.confirmNotYetShown, JSON.stringify(disclosureOpen));
-
-  await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-menu-item')].find(b => b.textContent === 'Delete').click()");
-  await sleep(150);
-  const confirmState = await app.evalJs(`({
-    confirmShown: !!document.querySelector('.wz-cascade-confirm'),
-    dangerColor: getComputedStyle(document.querySelector('.wz-cascade-confirm-danger')).backgroundColor,
-    hasCancel: !!document.querySelector('.wz-cascade-confirm-cancel'),
-  })`);
-  ok('T4: one plain confirm appears — destructive color lives ONLY here, never at rest (the disclosure item itself stayed --text-mid)',
-    confirmState.confirmShown && confirmState.hasCancel, JSON.stringify(confirmState));
-
-  await app.evalJs("document.querySelector('.wz-cascade-confirm-danger').click()");
-  // The 300ms debounced-flush window again (persistence.ts's FLUSH_DELAY) —
-  // the in-memory cache (and thus the reactively-rendered survey) updates
-  // immediately, but the actual localStorage write is debounced.
-  await sleep(400);
-  const afterDelete = await app.evalJs(`({
-    survey: [...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent),
-    // buildSurvey's Plan branch sorts most-recent-first (byRecent); "Second
-    // Board" was seeded with the LATER timestamp, so it renders FIRST — the
-    // menu-btn clicked above (the first one in DOM order) is ITS disclosure.
-    store: (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'cd2-board-2') || {}).deletedAt || null,
-  })`);
-  ok('T4/S6 DoD: Delete — one plain confirm, then gone from BOTH the open survey list AND the store (soft-deleted, deletedAt stamped)',
-    !afterDelete.survey.includes('Second Board') && afterDelete.survey.includes('First Board') && !!afterDelete.store,
-    JSON.stringify(afterDelete));
 
   // ==========================================================================
   // B2 S7 — the Drawers panel is rebuilt whole: large tiles, derived
@@ -969,6 +921,187 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
+
+  // ==========================================================================
+  // PW1 (2026-09-08) — THE PLAN PANEL CHANGES SUBJECT. SIX CHECKS PARKED.
+  //
+  // The panel listed `getBinderPages(project.id)` — every board in this page's
+  // DRAWER — when the writer's question is which boards hold THIS PAGE. It now
+  // lists `planBoardId ∪ getBoardsPinning`. Co-location is not connection, and
+  // that substitution is the whole of PW1's S1.
+  //
+  // WHY THESE SIX COULD NOT SIMPLY BE RE-POINTED: their fixture
+  // (`freshProsePageWithBoards`) seeds two boards into the project and pins
+  // NOTHING. Under the new subject the panel correctly lists neither board, so
+  // the fixture itself — not just the assertions — encoded the old subject.
+  // The successors below therefore make a real MEMBERSHIP first, through the
+  // product's own seam, and then re-derive what genuinely survived.
+  //
+  // WHAT SURVIVED, and what did not:
+  //   - "Open…" and its survey RETIRE whole (PW3: the panel IS the list).
+  //     Checks 1 and 2 have no successor here; pw1.mjs asserts the new subject
+  //     directly, including a decoy board that pins nothing.
+  //   - The Move/Delete grammar (BoardRowMenu) MOVED, intact, from the survey's
+  //     rows to the panel's own board rows, where it also gained "Open the
+  //     board" as the double-click's twin (PW22). Checks 3-6 are re-derived
+  //     against it below — same disclosure discipline, same one-plain-confirm,
+  //     same gone-from-list-AND-store.
+  //
+  // ORIGINAL, QUOTED VERBATIM AND NO LONGER ASSERTED (A4):
+  //   // ==========================================================================
+  //   // S3/S4 — Plan on a project-less (loose) page: "Create a Board"/"Plot a
+  //   // Story" offered, "Open…" absent (no project to survey yet — silent
+  //   // degrade, no greyed door).
+  //   // ==========================================================================
+  //   await freshLoosePage(app, LAPTOP_W, 900);
+  //   await clickCategory(app, 2); // Plan
+  //   await sleep(200);
+  //   const planNoProject = await app.evalJs(`({
+  //     hasCreateBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board'),
+  //     hasPlotStory: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Plot a Story'),
+  //     hasOpenLink: !!document.querySelector('.wz-cascade-link'),
+  //   })`);
+  //   ok('S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)',
+  //     planNoProject.hasCreateBoard && planNoProject.hasPlotStory && !planNoProject.hasOpenLink, JSON.stringify(planNoProject));
+  //
+  //   // ==========================================================================
+  //   // S3/S4 — Plan on a project page WITH boards: "Open…" reveals the board
+  //   // list as a survey; the Delete flow (T4: disclosure -> one plain confirm
+  //   // -> gone from list AND store).
+  //   // ==========================================================================
+  //   await freshProsePageWithBoards(app, LAPTOP_W, 900);
+  //   await clickCategory(app, 2); // Plan
+  //   await sleep(200);
+  //   await app.evalJs("document.querySelector('.wz-cascade-link').click()"); // "Open…"
+  //   await sleep(200);
+  //   const planSurveyBefore = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent)`);
+  //   ok('S3/S4: Plan\'s "Open…" opens the survey listing this project\'s own boards',
+  //     JSON.stringify(planSurveyBefore.sort()) === JSON.stringify(['First Board', 'Second Board']), JSON.stringify(planSurveyBefore));
+  //
+  //   // Disclosure: the menu button, not first position.
+  //   const menuBtn = await app.evalJs("!!document.querySelector('.wz-cascade-thumb-menu-btn')");
+  //   const menuClosedByDefault = await app.evalJs("!document.querySelector('.wz-cascade-thumb-menu')");
+  //   ok('S3: Move/Delete live behind a quiet disclosure — closed by default, never first position',
+  //     menuBtn && menuClosedByDefault, JSON.stringify({ menuBtn, menuClosedByDefault }));
+  //
+  //   await app.evalJs("document.querySelector('.wz-cascade-thumb-menu-btn').click()");
+  //   await sleep(150);
+  //   const disclosureOpen = await app.evalJs(`({
+  //     hasMove: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent.includes('Move')),
+  //     hasDelete: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent === 'Delete'),
+  //     confirmNotYetShown: !document.querySelector('.wz-cascade-confirm'),
+  //   })`);
+  //   ok('S3: the disclosure reveals Move and Delete', disclosureOpen.hasMove && disclosureOpen.hasDelete && disclosureOpen.confirmNotYetShown, JSON.stringify(disclosureOpen));
+  //
+  //   await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-menu-item')].find(b => b.textContent === 'Delete').click()");
+  //   await sleep(150);
+  //   const confirmState = await app.evalJs(`({
+  //     confirmShown: !!document.querySelector('.wz-cascade-confirm'),
+  //     dangerColor: getComputedStyle(document.querySelector('.wz-cascade-confirm-danger')).backgroundColor,
+  //     hasCancel: !!document.querySelector('.wz-cascade-confirm-cancel'),
+  //   })`);
+  //   ok('T4: one plain confirm appears — destructive color lives ONLY here, never at rest (the disclosure item itself stayed --text-mid)',
+  //     confirmState.confirmShown && confirmState.hasCancel, JSON.stringify(confirmState));
+  //
+  //   await app.evalJs("document.querySelector('.wz-cascade-confirm-danger').click()");
+  //   // The 300ms debounced-flush window again (persistence.ts's FLUSH_DELAY) —
+  //   // the in-memory cache (and thus the reactively-rendered survey) updates
+  //   // immediately, but the actual localStorage write is debounced.
+  //   await sleep(400);
+  //   const afterDelete = await app.evalJs(`({
+  //     survey: [...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent),
+  //     // buildSurvey's Plan branch sorts most-recent-first (byRecent); "Second
+  //     // Board" was seeded with the LATER timestamp, so it renders FIRST — the
+  //     // menu-btn clicked above (the first one in DOM order) is ITS disclosure.
+  //     store: (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'cd2-board-2') || {}).deletedAt || null,
+  //   })`);
+  //   ok('T4/S6 DoD: Delete — one plain confirm, then gone from BOTH the open survey list AND the store (soft-deleted, deletedAt stamped)',
+  //     !afterDelete.survey.includes('Second Board') && afterDelete.survey.includes('First Board') && !!afterDelete.store,
+  //     JSON.stringify(afterDelete));
+
+  // --- successors, re-derived against the panel's own board rows -----------
+  {
+    const { pageId: pw1PageId } = await freshProsePageWithBoards(app, LAPTOP_W, 900);
+    // The membership the old fixture never made — through the product's own
+    // seam, never a hand-built box (the raw-write hazard, item 85/129).
+    await app.evalJs(`window.wrizoPinPageToBoard(${JSON.stringify(pw1PageId)}, 'cd2-board-2')`);
+    await sleep(400);
+    await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pw1PageId)}`);
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PARKED: page remounted with a real membership' });
+    await sleep(300);
+    await clickCategory(app, 2); // Plan
+    await sleep(250);
+
+    const rowTitles = await app.evalJs("[...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent)");
+    pok('PARKED (was "S3/S4: Plan\'s \\"Open…\\" opens the survey listing this project\'s own boards") — PW1 S1: "Open…" retires with the survey it opened; the PANEL is the list now, and it lists the boards CONNECTED to this page rather than the drawer\'s own siblings. Live successor: pw1.mjs\'s own S1 section (which also asserts a decoy sibling is absent)',
+      Array.isArray(rowTitles) && rowTitles.includes('Second Board') && !rowTitles.includes('First Board'), JSON.stringify(rowTitles));
+
+    // DRIVERS NEVER ASSUME EXISTENCE — probe, then act.
+    const menuBtnThere = await app.evalJs("!!document.querySelector('.wz-cascade-boardrow-menu-btn')");
+    const menuClosedByDefault = await app.evalJs("!document.querySelector('.wz-cascade-boardrow .wz-cascade-thumb-menu')");
+    pok('PARKED (was "S3: Move/Delete live behind a quiet disclosure — closed by default, never first position") — PW1 S1: the SAME BoardRowMenu, re-homed from the survey\'s rows to the panel\'s board rows',
+      menuBtnThere && menuClosedByDefault, JSON.stringify({ menuBtnThere, menuClosedByDefault }));
+
+    if (!menuBtnThere) {
+      pok('PARKED-DRIVER: a board row ⋯ is present to open', false, 'absent');
+    } else {
+      await app.evalJs("document.querySelector('.wz-cascade-boardrow-menu-btn').click()");
+      await sleep(200);
+      const disclosureOpen = await app.evalJs(`({
+        hasOpenBoard: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent === 'Open the board'),
+        hasMove: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent.includes('Move')),
+        hasDelete: [...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent === 'Delete'),
+        confirmNotYetShown: !document.querySelector('.wz-cascade-confirm'),
+      })`);
+      pok('PARKED (was "S3: the disclosure reveals Move and Delete") — PW1 S2/PW22: it reveals Move and Delete still, and now "Open the board" beside them — the double-click\'s menu twin, so no act is reachable by gesture alone',
+        disclosureOpen.hasMove && disclosureOpen.hasDelete && disclosureOpen.hasOpenBoard && disclosureOpen.confirmNotYetShown,
+        JSON.stringify(disclosureOpen));
+
+      const deleteThere = await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-menu-item')].some(b => b.textContent === 'Delete')");
+      if (!deleteThere) {
+        pok('PARKED-DRIVER: a Delete item is present to press', false, 'absent');
+      } else {
+        await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-menu-item')].find(b => b.textContent === 'Delete').click()");
+        await sleep(200);
+        const confirmState = await app.evalJs(`({
+          confirmShown: !!document.querySelector('.wz-cascade-confirm'),
+          hasCancel: !!document.querySelector('.wz-cascade-confirm-cancel'),
+          hasDanger: !!document.querySelector('.wz-cascade-confirm-danger'),
+        })`);
+        pok('PARKED (was "T4: one plain confirm appears — destructive color lives ONLY here, never at rest (the disclosure item itself stayed --text-mid)") — PW1 S1: unchanged mechanic, re-derived on the panel\'s own board row',
+          confirmState.confirmShown && confirmState.hasCancel && confirmState.hasDanger, JSON.stringify(confirmState));
+
+        if (!confirmState.hasDanger) {
+          pok('PARKED-DRIVER: the confirm\'s danger button is present to press', false, 'absent');
+        } else {
+          await app.evalJs("document.querySelector('.wz-cascade-confirm-danger').click()");
+          await sleep(500);
+          const afterDeleteNow = await app.evalJs(`({
+            rows: [...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent),
+            store: (JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'cd2-board-2') || {}).deletedAt || null,
+          })`);
+          pok('PARKED (was "T4/S6 DoD: Delete — one plain confirm, then gone from BOTH the open survey list AND the store (soft-deleted, deletedAt stamped)") — PW1 S1: gone from the PANEL\'s list and the store; and because the zone is ABSENT-NEVER-EMPTY (PW9), deleting the only connection removes the whole zone rather than leaving an empty one',
+            !afterDeleteNow.rows.includes('Second Board') && !!afterDeleteNow.store, JSON.stringify(afterDeleteNow));
+        }
+      }
+    }
+
+    // The loose-page check's own successor: the creation doors still stand,
+    // and PW1 adds that a loose page's REAL CONNECTIONS now sit above them.
+    await freshLoosePage(app, LAPTOP_W, 900);
+    await clickCategory(app, 2); // Plan
+    await sleep(250);
+    const loosePanel = await app.evalJs(`({
+      hasCreateBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board'),
+      hasPlotStory: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Plot a Story'),
+      hasOpenLink: !!document.querySelector('.wz-cascade-panel .wz-cascade-link'),
+      hasZone: !!document.querySelector('.wz-cascade-plan-zone'),
+    })`);
+    pok('PARKED (was "S3: Plan on a loose (project-less) page still offers Create a Board / Plot a Story, but Open… is silently absent (nothing to survey yet)") — PW1 S1 + Fable\'s ruling 2: the two creation doors stand unchanged, "Open…" is absent because it RETIRED (not because there is nothing to survey — the reason changed even though the observation did not), and an unconnected loose page shows NO zone at all (PW9). Live successor: pw1.mjs\'s own loose-page section, which pins one and proves the zone then appears ABOVE the doors',
+      loosePanel.hasCreateBoard && loosePanel.hasPlotStory && !loosePanel.hasOpenLink && !loosePanel.hasZone,
+      JSON.stringify(loosePanel));
+  }
+
     await freshProsePage(app, LAPTOP_W, 900);
     const stripShapeParked = await app.evalJs(`({
       itemCount: document.querySelectorAll('.wz-strip-item').length,
