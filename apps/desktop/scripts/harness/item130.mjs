@@ -140,14 +140,23 @@ await withHarness(async (app) => {
       // This is not item 130's doing — the reading is IDENTICAL on a bundle
       // built from the pre-fix source, which is how it was attributed rather
       // than assumed. It surfaced only because this file added 1100 to the
-      // matrix; menus-probe.mjs measures 1366 and 1680 and has never covered
-      // the gate floor, so nothing was watching this width.
+      // matrix; menus-probe.mjs measures 1366 and 1680 and does not cover the
+      // gate floor.
+      //
+      // IT IS NOT UNWATCHED — IT IS OWED TO CLUSTER C2 (surface anchoring),
+      // whose charter names it outright: "paper / board WRAP / card popup;
+      // closes the -29.7px overhang at 1100". C2's input is the MEASURED TRIO
+      // (Fable's amendment, 2026-09-05): prose -29.69 - screenplay -38.00 -
+      // board 0.00 (flush). This file measures the PROSE row and reads -29.69,
+      // reproducing C2's own recorded figure exactly from a different lane and
+      // a different instrument - which is corroboration for C2's input, not a
+      // new finding.
       //
       // Asserting 0.00 here would make this file permanently red for someone
       // else's defect; asserting the overlap would ratify a bug as law. So it
       // asserts the only thing THIS ticket actually owes: that the repair did
-      // not move the paper at this width either. Owed to Fable for a number.
-      ok(`ITEM130 S2 @ ${w}: SURFACED, NOT FIXED — the dock overlaps the paper by ~29.7px at the gate floor (pre-existing; identical pre-fix and post-fix). This check asserts only that item 130's repair did NOT move it`,
+      // not move the paper at this width either. The overhang is C2's to close.
+      ok(`ITEM130 S2 @ ${w}: OWED TO C2 (surface anchoring) — the dock overlaps the paper by 29.69px at the gate floor, the PROSE row of C2's own measured trio, reproduced here independently. Pre-existing and identical pre-fix and post-fix; this check asserts only that item 130's repair did NOT move it`,
         !!f && Math.abs(f.delta - GATE_FLOOR_KNOWN_DELTA) < 0.6,
         JSON.stringify({ ...f, knownPreExisting: GATE_FLOOR_KNOWN_DELTA }));
     } else {
