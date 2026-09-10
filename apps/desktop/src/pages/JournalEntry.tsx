@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, getNotebookPages, createLoosePage, flushNow, getBoardsPinning } from '../store/persistence';
+import { getJournalEntry, getProject, getProjects, saveJournalEntry, setProjectSprintText, setPageHome, createQuickSprintProject, getNotebookPages, createLoosePage, flushNow, getBoardsConnecting } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { firstLine, formatStamp } from '../store/entryText';
 import { inkColor, renderStroke, ERASER_WIDTH } from '../store/ink';
@@ -738,7 +738,7 @@ function JournalEntryView() {
   const homeProject = entry.projectId ? getProject(entry.projectId) : null;
   // AB4 S2 — every board currently pinning this page, for the truthful
   // "Also pinned to <board>." membership line(s).
-  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const pinnedBoardTitles = getBoardsConnecting(entry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(entry, homeProject, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',

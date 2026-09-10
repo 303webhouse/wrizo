@@ -692,6 +692,118 @@ await withHarness(async (app) => {
     !!words && words.heading === 'Boards connected' && words.places === 'Also connected to…' && words.face === 'Also connected to',
     JSON.stringify(words));
 
+
+  // ==========================================================================
+  // THE THREE ERRATA — Nick's live sitting, 2026-09-09. All three are things a
+  // green suite said nothing about, because nothing asked.
+  // ==========================================================================
+
+  // ERRATUM 1 — CONDITION-BOARDS ARE NOT CONNECTIONS. The Shelf, Trash and
+  // Journal boards are displays of a CONDITION under the three-space canon, and
+  // their pins are DERIVED (reconcileSystemBoard), never authored. A loose page
+  // always sits on the Shelf board by derivation, so before this it listed the
+  // Shelf under "Boards connected" — telling the writer they had linked
+  // something they never touched.
+  await freshDesk(app, LAPTOP_W, 900);
+  await seedEntries(app, [
+    { id: 'pw1e-loose', text: 'A loose page for the errata', origin: 'loose', projectId: null },
+  ]);
+  // Reaching the Shelf board is what DERIVES its membership — the pin only
+  // exists once the board has reconciled, so the fixture visits it first.
+  await app.evalJs("location.hash = '#/shelf'");
+  await waitOr(app, "!!document.querySelector('.board-canvas')", 'the Shelf board mounts and reconciles its derived membership');
+  await sleep(600);
+  const shelfPinned = await app.evalJs(`(() => {
+    const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]');
+    const sys = es.filter(e => (e.boxes||[]).some(b => b.kind === 'board-meta' && b.systemKind));
+    return sys.map(b => ({
+      kind: (b.boxes||[]).find(x => x.kind === 'board-meta').systemKind,
+      pinsLoose: (b.boxes||[]).some(x => x.kind === 'page-pin' && x.entryId === 'pw1e-loose'),
+    }));
+  })()`);
+  ok('ERRATUM 1 (precondition): the Shelf board really does carry a DERIVED page-pin for the loose page — so the exclusion below is excluding something that is genuinely there, not passing vacuously',
+    Array.isArray(shelfPinned) && shelfPinned.some((b) => b.kind === 'shelf' && b.pinsLoose === true),
+    JSON.stringify(shelfPinned));
+
+  await app.evalJs("location.hash = '#/page/pw1e-loose'");
+  await waitOr(app, "!!document.querySelector('.forward-only-editor')", 'the loose page, for the condition-board exclusion');
+  await sleep(400);
+  if (await openPlan(app)) {
+    const rows = await planRows(app);
+    ok('ERRATUM 1: a CONDITION-BOARD is never a connection — the loose page does NOT list the Shelf under "Boards connected", and with no plan board yet the zone is absent entirely (PW9)',
+      Array.isArray(rows) && rows.length === 0, JSON.stringify(rows));
+  }
+  const faceLine = await app.evalJs("[...document.querySelectorAll('.wz-pageface-membership')].map(m => m.textContent)");
+  ok('ERRATUM 1: and the prose line follows the same rule — no "Also connected to The Shelf" anywhere on the face',
+    Array.isArray(faceLine) && !faceLine.some((m) => /shelf|trash|journal board/i.test(m)), JSON.stringify(faceLine));
+
+  // ...and a REAL board still lists, so the exclusion is not simply hiding
+  // everything on a loose page.
+  await seedEntries(app, [
+    { id: 'pw1e-realboard', text: 'A real board', origin: 'loose', projectId: null, pageType: 'board', boxes: [] },
+  ]);
+  await app.evalJs("window.wrizoPinPageToBoard('pw1e-loose', 'pw1e-realboard')");
+  await settle(app, "(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'pw1e-realboard'); return !!e && (e.boxes||[]).some(b => b.kind === 'page-pin'); })()");
+  await app.evalJs("location.hash = '#/'");
+  await sleep(200);
+  await app.evalJs("location.hash = '#/page/pw1e-loose'");
+  await waitOr(app, "!!document.querySelector('.forward-only-editor')", 'the loose page again, now genuinely connected');
+  await sleep(400);
+  if (await openPlan(app)) {
+    const rows2 = await planRows(app);
+    ok('ERRATUM 1 (the other direction): a REAL board still lists — the exclusion removes the condition-boards, not the connections',
+      Array.isArray(rows2) && rows2.length === 1 && rows2[0].title === 'A real board', JSON.stringify(rows2));
+
+    // ERRATUM 2 — the lead sentence is absent where it would lie.
+    const leadNow = await app.evalJs("(document.querySelector('.wz-cascade-panel-body')?.innerText ?? '')");
+    ok('ERRATUM 2: with a connection listed, the no-project lead sentence ("File this page to a drawer first to plan around it") is ABSENT — it would contradict the row directly above it and tell the writer to build what they have built',
+      !leadNow.includes('File this page to a drawer first'), JSON.stringify(leadNow.slice(0, 160)));
+  }
+
+  // ERRATUM 2, the other direction: the sentence still speaks when it is TRUE.
+  await freshDesk(app, LAPTOP_W, 900);
+  await seedEntries(app, [
+    { id: 'pw1e-bare', text: 'A page with nowhere to plan', origin: 'loose', projectId: null },
+  ]);
+  await app.evalJs("location.hash = '#/page/pw1e-bare'");
+  await waitOr(app, "!!document.querySelector('.forward-only-editor')", 'a page with no connections at all');
+  await sleep(400);
+  if (await openPlan(app)) {
+    const leadBare = await app.evalJs("(document.querySelector('.wz-cascade-panel-body')?.innerText ?? '')");
+    ok('ERRATUM 2 (the other direction): with NO connections the sentence still speaks — it was never wrong, only wrong BENEATH a listed board, so it is withheld by state rather than deleted',
+      leadBare.includes('File this page to a drawer first'), JSON.stringify(leadBare.slice(0, 160)));
+  }
+
+  // ERRATUM 3 — THE LOCATION PHRASE NEVER ELIDES. Measured against the RENDERED
+  // box, not the string: a phrase clipped by CSS is still grammatical, so it
+  // reads as a different (false) sentence rather than as a truncation.
+  const crumbGeom = await app.evalJs(`(() => {
+    const el = document.querySelector('.desk-frame-host .sprint-crumb .wz-crumb-home');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return {
+      text: el.textContent,
+      // scrollWidth > clientWidth is the actual, measured definition of "this
+      // element is clipping its own content" — not an inference from CSS.
+      clipped: el.scrollWidth > el.clientWidth + 1,
+      overflow: cs.overflow, textOverflow: cs.textOverflow, maxWidth: cs.maxWidth,
+      isCrumbItem: el.classList.contains('crumb-item'),
+    };
+  })()`);
+  ok('ERRATUM 3: the location phrase renders WHOLE — "Loose — belongs nowhere yet" is not clipped by its own box (measured scrollWidth vs clientWidth), and it no longer wears `crumb-item`, whose 160px ellipsis turned it into the false sentence "Loose — belongs now…"',
+    !!crumbGeom && crumbGeom.clipped === false && crumbGeom.isCrumbItem === false
+      && crumbGeom.text.includes('belongs nowhere yet'),
+    JSON.stringify(crumbGeom));
+
+  const titleTrunc = await app.evalJs(`(() => {
+    const el = document.querySelector('.desk-frame-host .sprint-crumb .crumb-here');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    return { textOverflow: cs.textOverflow, overflow: cs.overflow, whiteSpace: cs.whiteSpace };
+  })()`);
+  ok('ERRATUM 3: and TRUNCATION TAKES THE TITLE instead — the one part of the chain that can be shortened without lying, because a clipped name still reads as a name',
+    !!titleTrunc && titleTrunc.textOverflow === 'ellipsis' && titleTrunc.overflow === 'hidden' && titleTrunc.whiteSpace === 'nowrap',
+    JSON.stringify(titleTrunc));
   return checks;
 });
 

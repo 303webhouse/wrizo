@@ -1,6 +1,6 @@
 import { Fragment, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsPinning } from '../store/persistence';
+import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsConnecting } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
@@ -663,7 +663,7 @@ export function ScriptEditor({ id }: { id: string }) {
 
   // AB4 S2 — every board currently pinning this page, for the truthful
   // "Also pinned to <board>." membership line(s).
-  const pinnedBoardTitles = getBoardsPinning(initialEntry.id).map(b => b.title);
+  const pinnedBoardTitles = getBoardsConnecting(initialEntry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(initialEntry, project, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',

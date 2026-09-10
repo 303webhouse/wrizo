@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
-  patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
+  patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
@@ -854,7 +854,7 @@ export function BoardEditor({ id }: { id: string }) {
   // split-second `initialEntry` is genuinely null; nothing ever reads it,
   // since the component returns null right after this hook zone in that
   // case.
-  const pinnedBoardTitles = initialEntry ? getBoardsPinning(initialEntry.id).map(b => b.title) : [];
+  const pinnedBoardTitles = initialEntry ? getBoardsConnecting(initialEntry.id).map(b => b.title) : [];
   const { homeLabel: describedHomeLabel, memberships } = describePageHome(
     initialEntry ?? { id, text: '', projectId: null, createdAt: '', updatedAt: '' },
     project,

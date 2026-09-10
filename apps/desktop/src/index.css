@@ -4249,7 +4249,11 @@ a:focus-visible,
 /* The home label standing in for an absent chain ("Loose — belongs nowhere
    yet"): the chain never renders empty, and what fills it reads as a state
    rather than as a place-name it is not. */
-.wz-crumb-home{ font-style:italic; color:var(--text-low); }
+/* PW1 ERRATUM 3 — the location PHRASE never elides. `white-space:nowrap` with
+   no max-width and no shrink: a clipped phrase stays grammatical and so reads
+   as a different (false) sentence rather than as a truncation. Overflow is the
+   TITLE's to absorb — see `.crumb-here`. */
+.wz-crumb-home{ font-style:italic; color:var(--text-low); white-space:nowrap; flex:0 0 auto; }
 
 /* Destructive color lives ONLY inside the confirm (T4's own ruling —
    "Destructive color appears only inside the confirm, never at rest") —
@@ -4629,7 +4633,12 @@ a:focus-visible,
   color:var(--text-low); min-width:0; }
 .crumb-item{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
 .crumb-sep{ color:var(--ink-border-strong); }
-.crumb-here{ color:var(--text-mid); font-weight:600; }
+/* PW1 ERRATUM 3 — TRUNCATION TAKES THE TITLE. It is the one part of the chain
+   that can be shortened without lying: a clipped title still reads as a name
+   the reader knows was clipped, where a clipped location phrase reads as a
+   different sentence. */
+.crumb-here{ color:var(--text-mid); font-weight:600; min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
 /* ============================================================================
