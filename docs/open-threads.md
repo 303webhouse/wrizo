@@ -3219,7 +3219,50 @@ observation inflates a population the same way counting from a cut view deflates
 stamps marked **OWED** — correctly, and that is the gate working)* **· 3. FIX's re-stamp after the
 dead-renderer deletion · 4. THE REOPEN ANNOUNCEMENT.** **No lane waits on quiet to guess its turn;
 the ordering is the ruling.**
-Registry: next free **131**.
+## ITEM 131 — THE PW1 ERRATA (three, founder-confirmed live) — OPENS 2026-09-09
+
+**BOARDS CONNECTED IS FOUNDER-CONFIRMED LIVE** at **`39eacae` · railway `479adc19`.** Nick walked it
+on production and returned **three errata.** **Fix-class, PW1's own errata branch, and it takes the
+box AFTER FIX** in the standing order.
+
+**(a) CONDITION-BOARDS ARE LISTED AS CONNECTIONS — A CANON VIOLATION, and the most serious of the
+three.** The three-space canon already rules, on this ledger: **"Shelf and Trash are displays of a
+CONDITION (loose; deleted), NOT places."** The Plan panel's subject is **the containers that HOLD the
+page** — so a condition can never appear there. **This is not a rendering bug; the panel is answering
+a different question than the canon asks it to answer.**
+
+**NICK'S RULING ON (a), and it names TWO surfaces, not one:** **the Shelf is NEVER shown as a board.**
+**Condition-boards are excluded from "Boards connected" AND from the Structure lens's connection**
+**line.** **RULED — errata #1 proceeds as ordered.**
+
+*(The second surface is the part a fix scoped to the reported symptom would have missed: the erratum
+was walked on the Plan panel, but the same wrong membership feeds the Structure lens. **The canon is
+about what a condition IS, so every surface that answers "which containers hold this page" inherits
+the exclusion.** A builder fixing only the panel would ship the violation again through the lens.)*
+
+**(b) STALE NO-PROJECT COPY.** Superseded wording surviving on the no-project path.
+
+**(c) A MEANING-CHANGING CRUMB TRUNCATION.** **The distinction is the whole erratum: a truncation that
+ELIDES is a cosmetic limit; a truncation that CHANGES THE MEANING is a defect.** The crumb tells a
+writer where they are, and a location that reads as a different location is worse than no location.
+
+**WHY THE SUITE DID NOT CATCH (a), recorded plainly rather than excused.** It passed `pw1.mjs`'s 33
+checks, both legs of a merge suite, a deploy pair, and Fable's review at the load-bearing hunks.
+**None of that could have caught it: no check encodes "the Shelf is not a place."** The harness
+verifies BEHAVIOUR — that the listed boards render, persist and route — and the panel did all of that
+correctly **with the wrong members in the list.** **A canon violation is a claim about MEANING, and
+meaning is exactly what a green suite cannot certify.** This is the same shape as item 130, where
+every harness clicked a control that no human pointer could reach: **the instrument answered the
+question it was asked, and the question was not the one that mattered.**
+
+**THE FOUNDER WALK REMAINS THE ONLY INSTRUMENT FOR THIS CLASS.** Item 118 (c), item 130 and now
+131 (a) were each found by a person using the product, and each had passed everything else.
+
+**CARRIED, NOT CLOSED: the FRAGMENTS DUPLICATE OBS still stands.** It survives this ship unresolved
+and is not folded into these three.
+
+Registry: next free **132**.
+
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
