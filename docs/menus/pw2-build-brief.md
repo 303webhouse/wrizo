@@ -6,6 +6,19 @@
 its membership/display split, and its cascade persistence. **Never the primary checkout.**
 **This lane pushes its BRANCH; the merge is chat 1's.**
 
+> **⚠ A WORKTREE ISOLATES FILES, NOT THE BOX** — standing law (Fable via Nick, 2026-09-08).
+> **One machine, one browser pool: a run from ANY tree is a run on the box.** Your own
+> worktree buys you file isolation and nothing else. This brief's close conditions end at a
+> full suite in both settings, so **before any harness, probe or suite launch, read the
+> current box ordering on the ledger or ask chat 1 — never infer your turn from quiet.**
+> Contention has voided runs in batches; every one of them was a lane that believed its tree
+> was its own machine.
+>
+> *This clause carries no dates and names no window on purpose: a dated hold written into a
+> durable brief goes stale and then misleads. The ordering lives on the ledger; the law lives
+> here.*
+
+
 **GATE:** PW1 merged. If PW1 is still an offer, this brief waits — do not fork the side menu.
 
 > **⚠ LINE NUMBERS ARE A COURTESY; SYMBOLS ARE THE ANCHOR.** Every reference below was

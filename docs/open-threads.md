@@ -3321,6 +3321,43 @@ chat 1 and PW1 wrote 131 for the erratum and the mismatch surfaced. **A registry
 the relays that reach it**, and a lost relay is invisible from the inside — nothing in the ledger
 looks wrong when a number was never claimed.)*
 
+## THE RELAY AUDIT — INSTITUTED 2026-09-10
+
+**AT EVERY STAMP: Fable lists the rulings issued since the last stamp; chat 1 confirms each LANDED or
+reports it MISSING.** **The point is that ABSENCE BECOMES VISIBLE.** A ledger cannot show what never
+reached it — **nothing looks wrong when a ruling was simply never written down** — so the check has to
+come from the sender's list, not from reading the record.
+
+**FIRST AUDIT, since `39eacae` (Boards Connected):** (a) item 132 phone ink parked — **LANDED** (via
+the collision). (b) the corroboration canon — **LANDED**. (c) INK's TEXT-half ruling — **LANDED** in
+the 121-B brief merge. (d) FIX's two rulings — **LANDED**. (e) the three canon lines — **LANDED**.
+(f) the box-is-one-machine sentence — **LANDED**. (g) the fourth canon line + the split — **LANDED**.
+(i) PW1's no-blank-stamp practice — **recorded below.**
+
+**(h) THE PLAN DESK'S AMENDED BRIEFS + AMENDMENT NOTE — WAS MISSING. NOW LANDED.** Chat 1 queued them
+in a batch plan, landed everything around them, and never returned. **The first audit caught exactly
+the thing it was built to catch, on its first run.** Confirmed by measurement rather than memory: all
+three were sitting in Downloads at the stated md5s (`6561bdfd` / `542bf3c1` / `43d2895b`) while the
+briefs on `main` were still the older versions. **A queued item is not a landed item, and only a list
+kept OUTSIDE the ledger can tell the difference.**
+
+## CANON — A STAMPED TREE CARRIES NO BLANK STAMP (PW1's practice, ratified) — 2026-09-10
+
+**A stamp field is NEVER left blank.** It either carries **the stamp verbatim, naming the tree it ran
+on and the scope of what it covers**, or it says **OWED** in as many words.
+
+**WHY: a blank and an OWED look identical on the page and mean opposite things.** A blank reads as
+"nobody thought about this"; an OWED reads as "measured deliberately, not yet run." **Only one of
+those is a gate.** A reader cannot tell an unrun suite from an unrecorded one, so the offer must say.
+
+**BOTH FORMS ON THE RECORD, a page apart, and the contrast is the teaching:** **PW1's offer record**
+quoted its stamps verbatim **with their scope named** — including **the first RED pair reported beside
+the green**, which a blank would have silently swallowed. **TOOLS' offer at `3827552`** marked its
+stamps **OWED** — correctly, and that is the gate working rather than failing.
+
+**Corollary, from the same practice: a stamp describes THE TREE IT RAN ON and nothing else.** This is
+why PW1 has two stamps recorded separately, why the post-walk roster read 74 against a review's 72,
+and why a re-stamp is owed whenever HEAD moves — **including when it moves for records only.**
 Registry: next free **133**.
 
 

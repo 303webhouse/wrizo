@@ -6,6 +6,19 @@
 checkout). **Never build in the primary checkout** — it is chat 1's deploy staging area.
 **This lane pushes its BRANCH; the merge to `main` is chat 1's, even for docs.**
 
+> **⚠ A WORKTREE ISOLATES FILES, NOT THE BOX** — standing law (Fable via Nick, 2026-09-08).
+> **One machine, one browser pool: a run from ANY tree is a run on the box.** Your own
+> worktree buys you file isolation and nothing else. This brief's close conditions end at a
+> full suite in both settings, so **before any harness, probe or suite launch, read the
+> current box ordering on the ledger or ask chat 1 — never infer your turn from quiet.**
+> Contention has voided runs in batches; every one of them was a lane that believed its tree
+> was its own machine.
+>
+> *This clause carries no dates and names no window on purpose: a dated hold written into a
+> durable brief goes stale and then misleads. The ordering lives on the ledger; the law lives
+> here.*
+
+
 **STATUS: RULINGS COMPLETE.** Every design question this brief depends on is answered —
 Q1–Q9, Q11–Q17, the three-space canon (`3d80a0f`), items 123/125/128. **One decision is
 deliberately NOT this brief's and stops the lane: see S0(e).**
