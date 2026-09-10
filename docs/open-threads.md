@@ -2707,6 +2707,10 @@ incident.**
 - **NO LANE RUNS A HARNESS.** *"The reaper cannot sweep a live owner — the S4 law's other half is
   RESTRAINT."*
 - **NOTHING IS WRITTEN INTO THE PRIMARY CHECKOUT BY ANY HAND — DOWNLOADS INCLUDED.**
+- **A WORKTREE ISOLATES FILES, NOT THE BOX. One machine, one browser pool; a run from ANY tree is a
+  run on the box.** *(Added 2026-09-09 as LAW, not as a window — it is permanently true. Earned when
+  a run from `writer-studio-fx17`, correctly built in its own worktree per the standing law, voided a
+  deploy pair at file 2 of 76: the worktree isolated its files and shared its browsers.)*
 - **Chat 1 announces the window's OPEN and CLOSE through Nick, the only courier.**
 - **Docs arriving mid-window WAIT IN DOWNLOADS** and commit post-stamp under the enumeration habit.
 
@@ -3170,6 +3174,51 @@ column, zero migration. The schema STOP never fired.**
 
 **Neither is promoted into a claim about the other.** A stamp describes the tree it ran on and nothing
 else — the same discipline that made the post-walk roster read 74 rather than the review's 72.
+## CANON — THREE LINES FROM THE BOARDS-CONNECTED SHIP — 2026-09-09
+
+**1. WAIT AND LAUNCH ARE ONE ACT — two steps leave a gap another lane can claim (TOOLS).** Chat 1's
+pre-flight read `runners: 0 | browsers: 0`; `writer-studio-fx17` launched **between that reading and
+the suite reaching the box**, and the pair voided at file 2 of 76. **A check whose result is acted on
+in a LATER step is a check of the past.** The fix is structural, not procedural: **one process waits
+for quiet and CLAIMS the box in the same act**, chaining the parked leg on the default's exit 0 so no
+gap opens at either seam. **It passed on its first outing.**
+
+**2. A WINDOW WRITTEN INTO A DURABLE BRIEF IS A LANDMINE WITH A TIMER (the PLAN desk).** Transient
+coordination state — a box-quiet call, a hold, whose turn it is — **must never be written into a
+document that outlives it.** A brief is read months later as though still in force. **Durable laws
+belong in briefs** (pin `origin/main` by SHA; never build in the primary checkout; a worktree isolates
+files, not the box). **A window belongs in the relay that opened it, and nowhere else.**
+
+**3. WHEN A PROBE ALLEGES SOMETHING AS SEVERE AS LOST WORDS, SUSPECT THE INSTRUMENT FIRST (FIX).**
+The severity of a claim is evidence about **how carefully it must be verified**, never about how
+likely it is. **The more catastrophic the alleged defect, the more probable that the probe is broken**
+— because a defect that destroys a writer's words would have been found by a writer long before a
+harness noticed. *(Siblings: the item-129 cascade hypothesis, excluded by asking whether the row
+survived; and item 130, where a synthetic `.click()` CONCEALED a true defect instead of inventing a
+false one.)*
+
+## FIX — TWO RULINGS FOR ITS OFFER — 2026-09-09
+
+- **THE DEAD DEFAULT RENDERERS ARE DELETED.** **A dead export that still produces the RETIRED register
+  is a trap** — the next reader wires it up in good faith and reintroduces the old behaviour.
+  **Parks QUOTE the past and need no live function to point at**, so nothing is lost by deleting it.
+  **Migrate any caller first.**
+- **REVEAL-ON-CLICK IS THE NEXT WINDOW'S FIRST JOB — page and card TOGETHER: one register, one
+  behaviour.** Splitting the surfaces is what produced the divergence being cleaned up.
+
+## TOOLS' C2 CORROBORATION — A SECOND SOURCE, NOT A NEW SIGHTING — 2026-09-09
+
+**TOOLS independently measured the prose row at `-29.69`.** **Recorded as a SECOND SOURCE for C2's
+existing input — not a fresh sighting.** The distinction matters to the count: **two lanes measuring
+the same value once is one fact with two witnesses, not two facts.** Treating corroboration as a new
+observation inflates a population the same way counting from a cut view deflates one.
+
+## THE BOX ORDER AFTER THIS STAMP — 2026-09-09
+
+**1. ERRATA's 85-B pair · 2. TOOLS' item-130 + Pen-rename pair** *(its offer at `3827552` carries its
+stamps marked **OWED** — correctly, and that is the gate working)* **· 3. FIX's re-stamp after the
+dead-renderer deletion · 4. THE REOPEN ANNOUNCEMENT.** **No lane waits on quiet to guess its turn;
+the ordering is the ruling.**
 Registry: next free **131**.
 
 ## NOW — blocks everything downstream
@@ -11521,6 +11570,56 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## BOARDS CONNECTED (PW1) DEPLOY MANIFEST — 2026-09-09 (chat 1, on Nick's "ship Boards Connected on the clean pair" — Fable PASS)
+
+**LIVE: `39eacae` · railway `479adc19`** — deployment `479adc19-2c6e-4839-841e-2c1acf80b9fc`,
+service `writer-studio-app`, status **SUCCESS**, serving `index-8geTcfLU.js`.
+**PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `f4094b7` · railway `d3b7e67f`**, serving
+`index-iSZ6K_Sw.js`. **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**WHAT SHIPPED: PW1 — THE WALKABLE SLICE** (`57a0878`, merged `c2d5539`), plus the records merges
+that followed it (`pw1-records @ 826f7ef`, the INK lane's docs `cd325ab..dfa20f4`) and this session's
+ledger batch. **15 PRODUCT FILES — 13 modified + 2 new** (`LocationCrumb.tsx`, `planTrail.ts`).
+
+**ITEM 125 DISCHARGED AS RULED — zero column, zero migration.** `onCanvas` on the existing **page-pin
+Box**: new memberships write it **explicitly**, pre-existing pins carry none and **DISPLAY** (the gate
+withholds only on an explicit `false`), and **`getBoardsPinning` reads the pin's PRESENCE and never
+consults the flag** — membership and display separate **STRUCTURALLY, not by convention.** The S0
+measured the round trip: `sync.ts` is a **whole-blob mapper** with no per-field enumeration at either
+end, so the field costs nothing at the boundary.
+
+**SCHEMA: ZERO. SERVER BYTES: ZERO.**
+
+**SUITE OF RECORD — BOTH SETTINGS, FRESH AT THE DEPLOY HEAD:**
+- **DEFAULT: 76/76 CLEAN** — `tree=39eacae bundle=index-8geTcfLU.js/573591b`
+- **PARKED: 76/76 CLEAN** — identical stamp
+- **PARK AUDIT: 63 files / 176 checks** — identical to the merge suite's, so the records batch
+  disturbed no park.
+
+**TREE BARE AT UPLOAD. tsc x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 39eacae`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**;
+Railway image **linux/amd64**, container digest
+`sha256:0dccc8aa68ba57b0bfaa58ff28fe80b1628d8122d2597bdbc2f6a6d736872a71`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-8geTcfLU.js`.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
+- `index-8geTcfLU.js` — served `d0851aa07eb71a6ff9a2777dda455794` **==** stamped
+- `index-DwJr4Phd.css` — served `17a3b3b11d57132b7e92e4d2402266ed` **==** stamped
+
+**THE FIRST ATTEMPT VOIDED AT FILE 2 OF 76**, when a run launched from `writer-studio-fx17` claimed
+the box **in the gap between chat 1's pre-flight check and its launch**. The second attempt used an
+**ATOMIC WAIT-AND-LAUNCH** — one process that waits for sustained quiet and takes the box in the same
+act, with the parked leg chained on the default's exit 0 — and passed clean. **The instrument that
+produced the void was replaced before the retry, not merely re-run.**
+
+**OPEN, NON-BLOCKING: THE PARK ACCOUNTING.** PW1's §6 reads **20 retired / 17 names**, of which
+**16 / 13 executed and verified**; chat 1 measured **+18 executed** against the Ink ship's baseline.
+**No park was lost — every per-file delta is POSITIVE (AB4 +11, CD1 +1, CD2 +6)** — so the hazard the
+count-not-green law guards is measurably absent. The three numbers count different things and the
+reconciliation is owed. **Recorded as an open question rather than resolved by assertion.**
 ## THE INK DEPLOY MANIFEST — 2026-09-08 (chat 1, on Nick's "Ship the INK" — Fable PASS x2)
 
 **LIVE: `f4094b7` · railway `d3b7e67f`** — deployment `d3b7e67f-6838-4d23-9c32-617d7421c67a`,
