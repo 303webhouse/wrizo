@@ -3261,7 +3261,68 @@ question it was asked, and the question was not the one that mattered.**
 **CARRIED, NOT CLOSED: the FRAGMENTS DUPLICATE OBS still stands.** It survives this ship unresolved
 and is not folded into these three.
 
-Registry: next free **132**.
+## CANON — A SUITE CERTIFIES BEHAVIOUR; A SITTING CERTIFIES MEANING — 2026-09-10
+
+**THE LINE, ruled as canon:** **"The instrument answered the question it was asked — and that wasn't
+the question that mattered."**
+
+**A SUITE CERTIFIES BEHAVIOUR. A SITTING CERTIFIES MEANING.** A harness can prove that a list renders,
+persists, routes and survives a reload. **It cannot prove the list contains the RIGHT MEMBERS**, that
+an address names where the writer actually is, or that a sentence says the true thing — because those
+are claims about **meaning**, and no assertion encodes them unless someone first knew to write it.
+
+**THEREFORE, AS A GATE AND NOT A COURTESY: surfaces that CARRY MEANING — membership lists, address
+lines, connection sentences — get a FOUNDER SITTING before they are called done.** Not a demo after
+the fact; **a gate, in the same sense the suite is a gate.**
+
+**EVIDENCE — three defects, each of which passed EVERYTHING automated:**
+- **ITEM 118 (c)** — cards vanished past the right edge; found by the founder on a populated board.
+- **ITEM 130** — the cascade strip's right ~54% unreachable by a real pointer. **Every harness clicked
+  it successfully, because `.click()` bypasses hit-testing.** The synthetic event did not invent a
+  false red; **it CONCEALED a true one.**
+- **ITEM 131 (a)** — condition-boards listed as connections. Passed 33 checks, a merge suite, a deploy
+  pair and a review at the load-bearing hunks. **The panel rendered, persisted and routed correctly
+  WITH THE WRONG MEMBERS IN THE LIST.**
+
+**The pattern is not that the instruments failed. Each answered its question correctly.** The failure
+is that **no instrument was pointed at meaning**, and only a person using the product is.
+
+## THE RULING'S STRUCTURAL FORM — `getBoardsPinning` / `getBoardsConnecting` — RATIFIED 2026-09-10
+
+**PW1's split is RATIFIED as the structural form of Nick's condition-board ruling, and the two names
+are recorded HERE, beside the canon, so the REASON travels with them:**
+
+- **`getBoardsPinning` — RAW MEMBERSHIP.** Every board pinning the page, conditions included. It
+  answers a storage question and must stay honest about what is stored.
+- **`getBoardsConnecting` — THE READER.** Membership **with the canon applied**: condition-boards
+  excluded. **Every surface that answers "which containers hold this page" calls THIS one** —
+  "Boards connected" and the Structure lens's connection line alike.
+
+**WHY A SPLIT RATHER THAN A FILTER AT EACH CALL SITE:** erratum 131 (a) was walked on ONE surface and
+the ruling reached TWO. **A filter written at the call site is a rule that must be remembered every
+time; a named reader is a rule that must be BYPASSED on purpose.** The split makes the canon
+**impossible to half-apply** — which is precisely how the violation shipped in the first place.
+
+*(Status at time of ratification: `getBoardsPinning` is live on `main` at three call sites;
+**`getBoardsConnecting` does not yet exist on `main`** — it is the errata branch's form, ratified
+here in advance of its build so the brief and the ledger agree.)*
+
+## REGISTRY RECONCILIATION — TWO ITEMS NEARLY SHARED A NUMBER — 2026-09-10
+
+**ITEM 131 IS THE SHELF / CONDITION-BOARDS ERRATUM** — as chat 1 and PW1 both independently recorded
+it.
+
+**ITEM 132 — PHONE INK. PARKED on Nick's word: "later."** It had been numbered **131** in a relay that
+**evidently never landed**, so the two would have collided. **Renumbered here so no number carries two
+meanings.**
+
+*(Worth noting as a near-miss rather than a clean save: the collision was caught only because BOTH
+chat 1 and PW1 wrote 131 for the erratum and the mismatch surfaced. **A registry is only as good as
+the relays that reach it**, and a lost relay is invisible from the inside — nothing in the ledger
+looks wrong when a number was never claimed.)*
+
+Registry: next free **133**.
+
 
 
 ## NOW — blocks everything downstream
