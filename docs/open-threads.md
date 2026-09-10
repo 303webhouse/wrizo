@@ -2550,6 +2550,40 @@ the standing schema law. **Not a builder's call.**
 Write's decoration. **Editable in Free Write. Locked-but-MOVABLE on double-click in Draft/Revise.**
 **Text is never movable, in any mode.**
 
+**► BUILD BRIEF DRAFTED (INK lane, browserless, 2026-09-08) — `docs/menus/item126-build-brief.md`.**
+Written on Fable's word during the deploy window, from `origin/main @ 39eacae`, **without taking the
+box**. Its founding fact is item 121's offer record **§7A** — the stratum renders in Free Write ONLY
+today, the ink PERSISTS intact through Draft's and Revise's autosaves and a reload, and **no
+migration is owed**: item 126 is a RENDER question, not a recovery one. Worktree named:
+`.claude/worktrees/item126-ink-across-modes`.
+
+**THE ONE STRUCTURAL FINDING, and it shrinks the ticket:** `.wz-ink-sheet` is rendered
+**UNCONDITIONALLY** inside `editorBody`, and `editorBody` is handed to ONE `ModeStage` for all three
+modes — so **the box the canvas anchors to ALREADY EXISTS in Draft and Revise**, and the mount
+extension is **one condition** (`framed && mode === 'journal'` → `framed`), not a new surface.
+Claimed browserless and flagged in the brief's own S0 as *a claim to verify, not a fact to trust*.
+
+**THE SHAPE PROPOSED:** a three-state permission (`edit` · `inert` · `movable`) replacing item 121's
+`active` boolean, worn on the paper as its own attribute so it can never be confused with
+`data-instrument` (which stays what R15 made it — *which instrument the page IS*, Free Write only);
+**the canvases stay `pointer-events:none` in every mode**, with a capture-phase `dblclick` on the
+sheet asking `store/ink.ts` for the stroke under the point (`strokeAt`) — hit arms a move, **miss
+touches nothing so bare text still selects a word**, which is Nick's own "text is only editable by a
+cursor" made checkable; a stroke group derived as a **SPATIAL CLUSTER** (never stored, so it can be
+re-tuned forever without touching a saved page); and a move persisting as **geometry**, not a
+transform field — zero DDL, the server diff stays empty.
+
+**THE ERASER CLAUSE, named because it is invisible to a check that counts strokes:** an erase is a
+stroke painted `destination-out`, so **every erase inside a moved group must travel with it** — move
+the ink and leave the erases behind and the rubbed-out parts REAPPEAR at the old position.
+
+**⚠ ONE OPEN WORD FOR NICK, surfaced rather than assumed: IS INK MOVABLE IN FREE WRITE / TEXT?** His
+sentence names Draft and Revise and is silent on Free Write's TEXT half. The brief LEANS to leaving
+it **inert** (R15 already ruled "in TEXT the stratum is inert"; do not reverse a standing ruling the
+new one is silent about) **and says the resulting asymmetry plainly**: ink would be movable in the
+two modes where you cannot draw it, and not movable in the one where you can. **One word settles it;
+the build is a one-line difference either way.**
+
 ## ITEM 127 — THE TYPED FACE, AND THE FREE WRITE MENU ROSTER — OPENS 2026-09-07
 
 **OPENS (Fable, 2026-09-07).** Free Write **"both acts like a typewriter and looks typed"** (Nick) —
