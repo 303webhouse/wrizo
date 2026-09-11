@@ -80,7 +80,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const headingId = 'i83f-script-heading';
-    window.wrizoCreateJournalPage({ id: 'i83f-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'i83f-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed' });

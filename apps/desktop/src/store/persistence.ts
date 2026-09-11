@@ -802,6 +802,18 @@ export interface JournalPageSeed {
   // The store already persists originless rows — it is the pre-AB3 grandfather
   // shape ab3/b2 test by name — so this widens the door, not the house.
   origin?: JournalEntry['origin'] | null;
+  // ITEM 85-C — `source` takes null for the SAME reason origin does, and I
+  // learned it the same way twice. This function hardcodes source:'page', and
+  // a row that OMITS source is a raw CAPTURE: tutorLenses' computeFragmentItems
+  // is literally `all.filter(e => e.source !== 'page')`. So a capture fixture
+  // born through the seam silently stops being a capture.
+  //
+  // I had measured `source` and called it a phantom — "all 32 files that name
+  // it write 'page'". That measured the files that NAME the key and never the
+  // rows that OMIT it, which is the identical mistake the origin default was.
+  // The absence of a key is a value; counting the key's presence cannot see it.
+  // fx12's S3 caught it: countPlain 0.
+  source?: 'page' | null;
   pageType?: JournalEntry['pageType'];
   projectId?: string | null;
   boxes?: Box[];
@@ -870,6 +882,12 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   if (seed?.origin !== undefined) {
     if (seed.origin === null) delete entry.origin;
     else entry.origin = seed.origin;
+  }
+  // Same rule, same reason: null means "no source field", which is what makes a
+  // row a raw capture rather than an authored page.
+  if (seed?.source !== undefined) {
+    if (seed.source === null) delete entry.source;
+    else entry.source = seed.source;
   }
   if (seed?.pageType !== undefined) entry.pageType = seed.pageType;
   if (seed?.projectId !== undefined) entry.projectId = seed.projectId;

@@ -79,7 +79,7 @@ const freshScriptPage = async (app, width = 1280, height = 900) => {
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const headingId = 'fx4-script-heading';
-    window.wrizoCreateJournalPage({ id: 'fx4-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'fx4-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed' });
@@ -539,8 +539,11 @@ await withHarness(async (app) => {
   ], LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const board = entries.find(e => e.id === 'fx4-s7-board');
     window.wrizoCreateJournalPage({ id: 'fx4-s7-pin-target', text: 'Pin target', createdAt: now, origin: null });
+    // Reading storage is lawful — only setItem/removeItem is a raw write. The
+    // pin box itself goes back through the seam.
+    const board = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(e => e.id === 'fx4-s7-board');
+    window.wrizoPatchEntry('fx4-s7-board', { boxes: [...board.boxes, { id: 'fx4-s7-pin', kind: 'page-pin', x: 0.55, y: 0.05, w: 0.2, h: 0.08, z: 3, entryId: 'fx4-s7-pin-target' }] });
   })()`);
   await app.reload();
   await app.evalJs(DRAG_HELPER);

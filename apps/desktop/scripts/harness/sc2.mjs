@@ -227,7 +227,7 @@ const seedScript = async (app, id, heading, body, { width = LAPTOP_W, theme = 'p
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     window.wrizoCreateJournalPage({
-      id: ${JSON.stringify(id)}, text: '', pageType: 'script', createdAt: now, origin: null,
+      id: ${JSON.stringify(id)}, text: '', pageType: 'script', createdAt: now, source: null, origin: null,
       script: { v: 1, scenes: [{ id: 's2b-h', heading: { id: 's2b-h', t: 'scene', text: ${JSON.stringify(heading)} },
         body: ${JSON.stringify(body)} }] },
     });
@@ -369,7 +369,7 @@ async function measure(app, sceneCount, typed) {
     window.wrizoCreateJournalPage({
       id: 'sc2-perf', text: '', pageType: 'script',
       script: { v: 1, scenes: ${JSON.stringify(scenes)} },
-      createdAt: now, origin: null,
+      createdAt: now, source: null, origin: null,
     });
   })()`);
   await app.reload();
@@ -601,7 +601,7 @@ await withHarness(async (app) => {
     const now = new Date().toISOString();
     const hid = 's1-h';
     window.wrizoCreateJournalPage({
-      id: 's1-ledger', text: '', pageType: 'script', createdAt: now, origin: null,
+      id: 's1-ledger', text: '', pageType: 'script', createdAt: now, source: null, origin: null,
       script: { v: 1, scenes: [{ id: hid, heading: { id: hid, t: 'scene', text: 'INT. THE MEASURE - DAY' }, body: [
         { id: 's1-a', t: 'action', text: 'Short line.' },
         { id: 's1-b', t: 'action', text: 'x'.repeat(70) },
