@@ -3358,6 +3358,31 @@ stamps **OWED** — correctly, and that is the gate working rather than failing.
 **Corollary, from the same practice: a stamp describes THE TREE IT RAN ON and nothing else.** This is
 why PW1 has two stamps recorded separately, why the post-walk roster read 74 against a review's 72,
 and why a re-stamp is owed whenever HEAD moves — **including when it moves for records only.**
+## CANON — AN OUT DIRECTORY IS PER-ATTEMPT (ERRATA's words) — 2026-09-10
+
+**ERRATA's line, ruled as canon:** **"A directory of green files looks like evidence rather than
+prose."**
+
+**OUT DIRECTORIES ARE PER-ATTEMPT. NEVER REUSED across a killed run and its retry.** A retry that
+writes into its predecessor's directory leaves **the dead run's green files sitting beside the live
+run's**, indistinguishable by anything a reader can see. **The survivors do not announce which run
+produced them** — and a folder of passing results reads as a measured result, not as the debris of
+two attempts.
+
+**A MIXED DIRECTORY IS QUARANTINED AND NAMED — NEVER READ.** Not sorted by timestamp, not filtered,
+not partially trusted. **Once two runs have written to one directory, no file in it can be attributed
+with certainty**, and an attribution you cannot make is not one to guess at.
+
+**WHY THIS BELONGS BESIDE THE OTHER COUNTING LAWS.** It is the same failure as counting from a cut
+view, and as reading a suite's summary line instead of its verdict: **an artifact that LOOKS like a
+measurement, produced by something other than the measurement.** The suite of record already defends
+the live side of this — it refuses a contended box rather than reporting a partly-trustworthy result
+— and this defends the recorded side. **A sweep cannot be half-clean; a directory cannot be
+half-attributed.**
+
+**Sibling laws: never count from a view you cut · a sentence about a run is not a run · a green re-run
+is not a diagnosis · a stamped tree carries no blank stamp.** Each one says: **measure the thing, and
+keep the evidence able to say which thing it measured.**
 Registry: next free **133**.
 
 
