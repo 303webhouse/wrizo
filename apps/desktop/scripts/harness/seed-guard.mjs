@@ -131,6 +131,12 @@ function scanDir(dir, keys) {
 // one of the 56 closely enough to classify it, and I am not going to label the
 // other 55 from a grep — classification belongs to whoever migrates each file.
 const DELIBERATE = new Map([
+  ['scripts/harness/item85c.mjs',
+    'the raw write here is the CONTROL, not a seed: item 85-C\'s S2 seeds one row raw and one through '
+    + 'the seam, performs a single ordinary product write, and reads both back — proving the raw row is '
+    + 'destroyed and the seam row survives. Delete this raw write and S2 proves only that a row written '
+    + 'through the store is still there afterwards, which is not news. The hazard cannot be demonstrated '
+    + 'without reproducing it.'],
   ['scripts/harness/bm1.mjs',
     'a two-device TOMBSTONE simulation, not a seed: the write sets deletedAt on an existing row and '
     + 'reloads, because the scenario under test IS a row vanishing under a mounted surface and the app '
@@ -152,7 +158,7 @@ const BASELINE = new Set([
   'scripts/harness/fx6.mjs', 'scripts/harness/fx7.mjs', 'scripts/harness/fx8.mjs',
   'scripts/harness/fx9.mjs', 'scripts/harness/hb1.mjs', 'scripts/harness/hb2.mjs',
   'scripts/harness/item118.mjs', 'scripts/harness/item83f.mjs', 'scripts/harness/item84.mjs',
-  'scripts/harness/item84b.mjs', 'scripts/harness/item9192.mjs', 'scripts/harness/j4.mjs',
+  'scripts/harness/item84b.mjs', 'scripts/harness/item85c.mjs', 'scripts/harness/item9192.mjs', 'scripts/harness/j4.mjs',
   'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs', 'scripts/harness/m1.mjs',
   'scripts/harness/m2.mjs', 'scripts/harness/m3.mjs', 'scripts/harness/m4.mjs',
   'scripts/harness/pb1.mjs', 'scripts/harness/sc2.mjs', 'scripts/harness/tu1.mjs',
