@@ -93,7 +93,13 @@ export type SliverContent =
       kind: 'draft';
       structure: StructureKind;
       onSwitchStructure: (next: StructureKind) => void;
-      format?: { onFormat: (action: FormatAction) => void };
+      // ITEM 122 — the Draft rail gains an active state it never had. Optional,
+      // so a caller that does not track a caret simply renders unlit buttons
+      // exactly as before.
+      format?: {
+        onFormat: (action: FormatAction) => void;
+        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean;
+      };
       // ITEM 114 (item 83 errata E4) — the page's DECLARED kind and, under
       // Research, its style guide. Note the two neighbouring words this union
       // now carries and which must not be confused: `kind: 'draft'` is which
@@ -543,9 +549,15 @@ function SliverToolsBody({ content }: { content: SliverContent }) {
           {/* ITEM 83 M5 (R1) — STYLING's B·I·U leads Draft too, so the two
               prose modes read as one hand with different reach. */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
-            <button type="button" className="mode-tbtn" title={t('stylingBold')} onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
-            <button type="button" className="mode-tbtn" title={t('stylingItalic')} onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
-            <button type="button" className="mode-tbtn" title={t('stylingUnderline')} onClick={() => content.format!.onFormat('underline')}><u>U</u></button>
+            <button type="button" className="mode-tbtn" data-on={content.format.boldOn ? 'true' : 'false'} aria-pressed={!!content.format.boldOn} title={t('stylingBold')} onClick={() => content.format!.onFormat('bold')}><b>B</b></button>
+            <button type="button" className="mode-tbtn" data-on={content.format.italicOn ? 'true' : 'false'} aria-pressed={!!content.format.italicOn} title={t('stylingItalic')} onClick={() => content.format!.onFormat('italic')}><i>I</i></button>
+            <button type="button" className="mode-tbtn" data-on={content.format.underlineOn ? 'true' : 'false'} aria-pressed={!!content.format.underlineOn} title={t('stylingUnderline')} onClick={() => content.format!.onFormat('underline')}><u>U</u></button>
+            {/* ITEM 122 — strikethrough joins the styling row AFTER underline, so
+                the row reads B I U S: the three the writer already knows, then the
+                new one, rather than the new one displacing a position their hand
+                has learned. The glyph wears its own mark (<s>) exactly as B/I/U
+                wear theirs — the control demonstrates itself. */}
+            <button type="button" className="mode-tbtn" data-on={content.format.strikeOn ? 'true' : 'false'} aria-pressed={!!content.format.strikeOn} title={t('stylingStrike')} onClick={() => content.format!.onFormat('strike')}><s>S</s></button>
             <button type="button" className="mode-tbtn" title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
           </div>
           {/* ITEM 83 M5 (R4) — the roster Nick named: bulleted lists,

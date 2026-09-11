@@ -4446,6 +4446,23 @@ a:focus-visible,
    text-decoration (never a border) so it inherits the run's own colour and
    rides descenders the way the typeface intends. */
 .md-underline{ text-decoration:underline; text-underline-offset:2px; }
+/* ITEM 122 — strikethrough's own mark. text-decoration again, never a
+   border or a gradient: it inherits the run's colour and rides the
+   typeface's own metrics, and it composes with underline when a writer
+   wraps a run in both. */
+.md-strike{ text-decoration:line-through; }
+.md-underline.md-strike, .md-strike .md-underline{ text-decoration:underline line-through; }
+
+/* ITEM 122 — THE SELECTION IS BRASS, on Nick's ruling: orange is for humans
+   ACTING, and selecting is the writer acting. Painted from the THEME TOKEN,
+   never a literal, so a theme pack re-points it with everything else; and
+   `--on-brass` is the paired foreground that already exists for exactly this
+   job, so selected text stays legible instead of inheriting whatever ink it
+   happened to have. Both rules are needed: Firefox honours only ::selection,
+   Chromium honours both, and ::-moz-selection is inert elsewhere. */
+::selection{ background:var(--brass); color:var(--on-brass); }
+::-moz-selection{ background:var(--brass); color:var(--on-brass); }
+
 .md-h1{ font-size:1.3em; font-weight:600; }
 .md-h2{ font-size:1.14em; font-weight:600; }
 

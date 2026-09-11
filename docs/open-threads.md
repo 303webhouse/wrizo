@@ -2654,6 +2654,19 @@ new one is silent about) **and says the resulting asymmetry plainly**: ink would
 two modes where you cannot draw it, and not movable in the one where you can. **One word settles it;
 the build is a one-line difference either way.**
 
+**✅ RULED THE SAME DAY (Fable, from the analog law, 2026-09-08; Nick may overrule): FREE WRITE'S
+TEXT HALF STAYS INERT. R15 STANDS.** **And the asymmetry is CORRECT rather than a hole** — Fable's
+reason, which is the part worth keeping: *in Free Write the sketch pad is one press away (switch to
+INK to move or edit strokes); in Draft and Revise there is no INK to switch to, which is exactly why
+movable-on-double-click exists there.* **A typewriter doesn't move ink; a sketch pad does.**
+**BUILD CONSEQUENCE, recorded because it is the way this ruling would be reversed by accident:**
+`movable` is reachable from **Draft and Revise ONLY**, so the double-click listener attaches under
+that permission alone — never "whenever the writer is not drawing", which would extend the gesture
+into Free Write's TEXT half and undo the ruling silently. The harness asserts the NEGATIVE (a
+double-click in Free Write / TEXT arms nothing), so the ruling is proven rather than assumed.
+**121-B is the INK lane's to build — same lane, same context — when this brief merges, taking the
+box in the announced order.**
+
 ## ITEM 127 — THE TYPED FACE, AND THE FREE WRITE MENU ROSTER — OPENS 2026-09-07
 
 **OPENS (Fable, 2026-09-07).** Free Write **"both acts like a typewriter and looks typed"** (Nick) —
@@ -3027,6 +3040,38 @@ caught all 54 before any of them cost a day.** **ERRATA's next job, after its re
 the convention. **A rule that lives only in a document is enforced by memory; a rule that fails a
 run is enforced by the run.** This is the same reasoning that made `tutor-mirror.mjs` self-enforcing
 after 43 silent commits of divergence.
+
+**-> ROUTING, 2026-09-09 (Fable's ruling). ERRATA'S GUARD IS CANONICAL. FIX's duplicate is DROPPED.**
+FIX built this artifact browserlessly inside the box-quiet hold (`seed-seam-guard.mjs`, commit
+`1db5c54` on `item129-bm1-park`, 5 checks, falsified five times). It never merged with item 129 -
+main carries `003f546` but not the guard - so from main it read as unbuilt, and the waiter would have
+had ERRATA build it twice. **The file is dropped and is NOT offered; the branch keeps it only as
+history.** Ruled: **fold FIX's two REGRESSION checks into 85-B's follow-up.**
+
+**THE TWO CHECKS OWED TO 85-B's FOLLOW-UP, specified so they can be lifted verbatim:**
+1. **ITEM 129 CANNOT REGRESS.** `bm1.mjs` still seeds through `window.wrizoCreateJournalPage`, and
+   its ONLY remaining raw write is the deliberate **load-path deletion** (it sets `deletedAt` to
+   exercise a load path and reloads on the very next line). Assert both halves: the seam call is
+   present, and the raw-write count is exactly **1**. The file that cost a day to this class must not
+   quietly slide back.
+2. **THE SEAM CAN STILL SAY WHAT FIXTURES NEED.** `JournalPageSeed` keeps `id / text / createdAt /
+   strokes / origin / pageType / projectId / boxes`. **`origin` above all:** it is written ONLY at
+   birth, and `belongsOnShelf` excludes anything journal-homed, so without it **no seeded entry can
+   be Shelf-eligible at all** - which is exactly why `bm1` was still reaching past the seam. Item
+   129's finding was that a seam which cannot express the fixture is bypassed QUIETLY, so the guard
+   must watch **the seam itself**, not only its callers.
+
+**ONE DESIGN CORRECTION CARRIED ACROSS, from FIX's S0 - the charter above says the guard "FAILS when
+a harness writes a collection raw", and a literal reading of that would misfire.** **Not every raw
+write is a defect.** The killer is a raw SEED whose rows must survive a later product write; a raw
+write followed IMMEDIATELY by a reload with no product write between is a legitimate fixture idiom -
+**`bm1`'s own surviving write is exactly that.** Whether a site is safe depends on what runs AFTER
+it, which a static scan cannot know. A literal "any raw write fails" guard would therefore be **red
+on day one across 56 files** and would mislabel correct code as broken. **A guard that cries wolf
+gets disabled, and then item 85 has no guard at all.** The shape that holds is a **POPULATION
+RATCHET**: the count may fall and may not rise; new offenders and growth fail; and migrating a file
+makes removing it from the baseline **compulsory**, so the list cannot rot into a place where fixed
+things hide. **Offered as a finding, not as a constraint on ERRATA's design.**
 
 ## PW1 — BOARDS CONNECTED: BUILT, OFFERED, MERGED — 2026-09-08/09 (pw1 lane; branch `pw1-boards-connected`)
 

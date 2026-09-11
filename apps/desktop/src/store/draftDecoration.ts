@@ -14,60 +14,7 @@ function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
 }
 
-// Inline pass over one line: bold (`**..**`) before italic (`*..*`) so a
-// bold run's own asterisks are never re-matched as italic markers.
-// ITEM 79 FAMILY — UNDERLINE GETS A RENDERER (Nick's ship word: "the bold,
-// italic, and underlining buttons"). Until now this engine handled `**` and `*`
-// and nothing else, while the rail and the card dock BOTH shipped a U button
-// writing `__word__` (draftFormat.ts's FORMAT_MARK.underline). The UI and the
-// renderer disagreed, and the writer got literal underscores with no styling.
-//
-// `__` IS MATCHED BEFORE `*` FOR THE SAME REASON `**` IS MATCHED BEFORE `*`:
-// whichever marker opens EARLIEST in the line wins, and a tie goes to the
-// longer marker. Underscore and asterisk cannot collide with each other, so
-// the only new ordering question is `__` against a single `_`, and a single
-// `_` is not a marker in this convention at all — FORMAT_MARK.underline is the
-// PAIR. That matters for prose: snake_case identifiers, file_names and
-// mid-word emphasis keep exactly one underscore and are left alone, because an
-// unpaired `__` falls through to the plain-text branch like any other text.
-function decorateInline(text: string): string {
-  let out = '';
-  let i = 0;
-  while (i < text.length) {
-    const boldStart = text.indexOf('**', i);
-    const italicStart = text.indexOf('*', i);
-    const underStart = text.indexOf('__', i);
-    // Underline first when it opens earliest — a `__` before any asterisk.
-    if (underStart !== -1
-        && (boldStart === -1 || underStart < boldStart)
-        && (italicStart === -1 || underStart < italicStart)) {
-      const close = text.indexOf('__', underStart + 2);
-      if (close === -1) { out += escHtml(text.slice(i)); break; }
-      out += escHtml(text.slice(i, underStart));
-      out += `<span class="md-underline"><span class="md-mark">__</span>${escHtml(text.slice(underStart + 2, close))}<span class="md-mark">__</span></span>`;
-      i = close + 2;
-      continue;
-    }
-    if (boldStart === -1 && italicStart === -1 && underStart === -1) { out += escHtml(text.slice(i)); break; }
-    if (boldStart === -1 && italicStart === -1) { out += escHtml(text.slice(i)); break; }
-    if (boldStart !== -1 && (italicStart === -1 || boldStart <= italicStart)) {
-      const close = text.indexOf('**', boldStart + 2);
-      if (close === -1) { out += escHtml(text.slice(i)); break; }
-      out += escHtml(text.slice(i, boldStart));
-      const inner = text.slice(boldStart + 2, close);
-      out += `<span class="md-bold"><span class="md-mark">**</span>${escHtml(inner)}<span class="md-mark">**</span></span>`;
-      i = close + 2;
-      continue;
-    }
-    const close = text.indexOf('*', italicStart + 1);
-    if (close === -1) { out += escHtml(text.slice(i)); break; }
-    out += escHtml(text.slice(i, italicStart));
-    const inner = text.slice(italicStart + 1, close);
-    out += `<span class="md-italic"><span class="md-mark">*</span>${escHtml(inner)}<span class="md-mark">*</span></span>`;
-    i = close + 1;
-  }
-  return out;
-}
+
 
 const H2 = /^(##\s+)([\s\S]*)$/;
 const H1 = /^(#\s+)([\s\S]*)$/;
@@ -88,21 +35,6 @@ const H1 = /^(#\s+)([\s\S]*)$/;
 // have stopped matching the moment E3 made indents repeatable and common.
 const LEADING_TABS = /^(\t+)([\s\S]*)$/;
 
-export function decorateMarkdown(text: string): string {
-  return text
-    .split('\n')
-    .map(rawLine => {
-      const ind = rawLine.match(LEADING_TABS);
-      const indent = ind ? `<span class="md-mark">${escHtml(ind[1])}</span>` : '';
-      const line = ind ? ind[2] : rawLine;
-      const h2 = line.match(H2);
-      if (h2) return `${indent}<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInline(h2[2])}</span>`;
-      const h1 = line.match(H1);
-      if (h1) return `${indent}<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInline(h1[2])}</span>`;
-      return indent + decorateInline(line);
-    })
-    .join('\n');
-}
 
 // FX5 S6 — the CARD-surface display register (BoardEditor.tsx's
 // BoardCardPopup ONLY — Draft mode's own decorateMarkdown/decorateInline
@@ -133,6 +65,22 @@ function decorateInlineForCard(text: string, caret: number | null): string {
     const boldStart = text.indexOf('**', i);
     const italicStart = text.indexOf('*', i);
     const underStart = text.indexOf('__', i);
+    const strikeStart = text.indexOf('~~', i);
+    // ITEM 122 — strike, same precedence, same reveal-adjacent marks.
+    if (strikeStart !== -1
+        && (boldStart === -1 || strikeStart < boldStart)
+        && (italicStart === -1 || strikeStart < italicStart)
+        && (underStart === -1 || strikeStart < underStart)) {
+      const close = text.indexOf('~~', strikeStart + 2);
+      if (close === -1) { out += escHtml(text.slice(i)); break; }
+      out += escHtml(text.slice(i, strikeStart));
+      const sEnd = close + 2;
+      const sReveal = caret !== null && caret >= strikeStart && caret <= sEnd;
+      const sCls = sReveal ? 'md-mark' : 'md-mark md-mark-hidden';
+      out += `<span class="md-strike"><span class="${sCls}">~~</span>${escHtml(text.slice(strikeStart + 2, close))}<span class="${sCls}">~~</span></span>`;
+      i = sEnd;
+      continue;
+    }
     // Same precedence as the Draft pass above, plus this register's own
     // reveal-adjacent-to-caret rule: the marks collapse unless the caret is
     // within or beside the run. Collapsed via `md-mark-hidden` (font-size:0),
@@ -182,19 +130,57 @@ function decorateInlineForCard(text: string, caret: number | null): string {
  * SAME H1/H2 regexes above — not duplicated), but the bold/italic inline
  * pass is reveal-adjacent-to-caret. `caret` is a plain-text offset into the
  * FULL (multi-line) `text`, exactly what decorateEditorFor already tracks. */
+// ITEM 122 — `decorateMarkdown` and `decorateInline` WERE HERE, and are DELETED.
+// They rendered the retired iA register, where every marker stayed on screen at
+// `.md-mark{opacity:.38}`. Nick's ruling retired that for Draft; Fable's ruling
+// then retired the FUNCTIONS, because "SUPERSEDED-AS-DEFAULT is a trap in code,
+// not a record" — a live export that produces the wrong register is something a
+// future reader can reach for by habit, and the parks that mention them quote
+// the past rather than calling it.
+//
+// WHAT THE DELETION COST, recorded because it was nearly missed: the two passes
+// were NOT feature-equivalent. The deleted one handled the leading-tab indent
+// and this one did not, so moving the default silently dropped Draft's indent
+// marker — caught by item83f.mjs's E3 check reporting zero `.md-mark` elements,
+// not by review. The indent is ported into the pass below, and it deliberately
+// does NOT collapse: a tab IS the indentation, not syntax standing in for it.
+
 export function decorateMarkdownForCard(text: string, caret: number | null): string {
   let consumed = 0;
   return text
     .split('\n')
-    .map(line => {
+    .map(rawLine => {
       const localCaret = caret === null ? null : caret - consumed;
-      const effCaret = localCaret !== null && localCaret >= 0 && localCaret <= line.length ? localCaret : null;
-      consumed += line.length + 1; // +1 for the '\n' this split() consumed
+      const effLine = localCaret !== null && localCaret >= 0 && localCaret <= rawLine.length ? localCaret : null;
+      consumed += rawLine.length + 1; // +1 for the '\n' this split() consumed
+      // ITEM 122 REGRESSION FIX — the leading-tab indent, ported from the
+      // register this one replaced as the default. Its absence here is what
+      // item83f.mjs's E3 check caught: switching the default dropped the indent
+      // marker entirely and the run reported `{"marks":[],"textLength":23}`.
+      // "One register shared" was too glib a claim — the two passes were NOT
+      // feature-equivalent, and the suite is what proved it.
+      //
+      // THE INDENT MARK NEVER COLLAPSES, and that is the whole design point of
+      // porting it rather than copying it. `**` is syntax standing in for an
+      // effect the reader sees elsewhere (weight), so hiding it loses nothing.
+      // A leading TAB *is* the effect: it has no ink of its own, and the
+      // indentation the writer sees IS those characters. Collapsing it with
+      // `md-mark-hidden` (font-size:0) would render the tab zero-width and
+      // silently un-indent the paragraph — trading a missing marker for a
+      // deleted layout. So it wears the plain `.md-mark` register, always
+      // visible, exactly as it did before.
+      const ind = rawLine.match(LEADING_TABS);
+      const indent = ind ? `<span class="md-mark">${escHtml(ind[1])}</span>` : '';
+      const line = ind ? ind[2] : rawLine;
+      // The caret is measured against the FULL line, so every offset handed to
+      // the inline pass shifts left by the indent it no longer contains.
+      const indentLen = ind ? ind[1].length : 0;
+      const effCaret = effLine === null ? null : effLine - indentLen;
       const h2 = line.match(H2);
-      if (h2) return `<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInlineForCard(h2[2], effCaret === null ? null : effCaret - h2[1].length)}</span>`;
+      if (h2) return `${indent}<span class="md-h2"><span class="md-mark">${escHtml(h2[1])}</span>${decorateInlineForCard(h2[2], effCaret === null ? null : effCaret - h2[1].length)}</span>`;
       const h1 = line.match(H1);
-      if (h1) return `<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInlineForCard(h1[2], effCaret === null ? null : effCaret - h1[1].length)}</span>`;
-      return decorateInlineForCard(line, effCaret);
+      if (h1) return `${indent}<span class="md-h1"><span class="md-mark">${escHtml(h1[1])}</span>${decorateInlineForCard(h1[2], effCaret === null ? null : effCaret - h1[1].length)}</span>`;
+      return indent + decorateInlineForCard(line, effCaret);
     })
     .join('\n');
 }
@@ -245,13 +231,30 @@ export function decorateEditorFor(
   plain: string,
   caret: number | null,
   setCaretOffset: (el: HTMLElement, target: number) => void,
-  // FX5 S6 — an optional override, defaulting to decorateMarkdown exactly
-  // as before (every EXISTING call site — ForwardOnlyEditor.tsx's drafting
-  // branch, PageEditor.tsx's rail format actions — omits this argument, so
-  // their own output is byte-identical to pre-FX5; Draft mode's dimmed-
-  // syntax register is genuinely untouched, not just claimed). Only
-  // BoardCardPopup.tsx passes `text => decorateMarkdownForCard(text, caret)`.
-  decorate: (text: string) => string = decorateMarkdown,
+  // ITEM 122 — THE DEFAULT REGISTER IS NOW REVEAL-ADJACENT, on Nick's ruling
+  // that Draft's B/I/U must render the STYLE with no visible markers
+  // ("bold renders bold"). FX5 S6 introduced this parameter with
+  // `decorateMarkdown` as the default — the iA dimmed-syntax register, where
+  // every marker stayed on screen at `opacity:.38`. That register is what the
+  // ruling retires for Draft.
+  //
+  // WHY THE DEFAULT MOVES RATHER THAN EACH CALL SITE PASSING AN OVERRIDE:
+  // there are four Draft call sites (ForwardOnlyEditor's redecorate and its
+  // initial mount, its initial React html, and PageEditor's rail actions), and
+  // they must agree or the markers flicker between registers as the writer
+  // types. A default cannot be forgotten at a fifth site; four overrides can.
+  // BoardCardPopup already passed this function explicitly, so the card is
+  // unchanged either way — the two surfaces now simply share one register,
+  // which is what "the same engine" was always supposed to mean.
+  //
+  // SAFE THROUGH THE LIVE ROUND-TRIP, MEASURED NOT ASSUMED (item 122 S0): the
+  // collapsed marks use `font-size:0`, never display/visibility, so they remain
+  // real rendered characters and survive `el.innerText` — which is what the
+  // live editor reads back into the store on every keystroke. The two forbidden
+  // techniques were run as controls in the same probe and BOTH stripped the
+  // markers out of `innerText`. See this file's own header for why that
+  // distinction is load-bearing rather than stylistic.
+  decorate: (text: string) => string = (t) => decorateMarkdownForCard(t, caret),
 ): void {
   if (caret === null) return;
   const needsGuard = plain.endsWith('\n');
