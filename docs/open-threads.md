@@ -150,12 +150,28 @@ other lanes' in-flight runs). One browser pool, one runner at a time.
 
 ## ITEM 130 + THE NARROW SHELL'S PEN BAR — BUILT AND OFFERED — 2026-09-09 (tools lane; branch `item130-strip-hittest`)
 
-**OFFERED TO CHAT 1, SUITE LINES OWED NOT CLAIMED.** Full record:
-`docs/menus/item130-offer-2026-09-09.md`. Off `origin/main` @ `c2d5539`. **S0 `a039efe`** (survey,
-no behaviour change) · **item 130 `0c3b42a`** · **the rename `0b4b852`**. Two tickets, two commits;
-the first draft bundled them under a message naming one and was split before any push. The stamped
-suite waits on this lane's turn under the deploy window's ordering - **no one waits on quiet to
-guess their turn** - and the record is amended with both settings before the offer is complete.
+**OFFERED TO CHAT 1 — BOTH LEGS STAMPED, 78/78 EACH.** Full record:
+`docs/menus/item130-offer-2026-09-09.md`. **S0 `a039efe`** (survey, no behaviour change) · **item
+130 `0c3b42a`** · **the rename `0b4b852`** · **records `3827552`** · **merge `d1f4be3`**. Two
+tickets, two commits; the first draft bundled them under a message naming one and was split before
+any push.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b
+SUITE DONE HARNESS_PARKED=1 — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b NO-REBUILD
+```
+
+Same tree AND the same bundle hash in both stamps; neither carries dirt. `item130.mjs` reports PASS
+(16 checks) default and PARKED: PASS (0 checks) — it parks nothing, and the empty list is auditable
+rather than an absence that looks like an oversight. **The turn was held by chat 1's announcement,
+not inferred from quiet**; the atomic waiter ran as the safety check AFTER the grant, and
+`build:web` + `tsc` were verified browserlessly BEFORE launching so no discovery could cost the
+slot. **The stamped tree is `d1f4be3`, not the announced `07a6fbc`**: origin/main had already moved
+to `d9d9b8f`, so current main was merged --no-ff before stamping — a stamp against a stale base
+describes software nobody is merging. That merge brought only ERRATA's browserless `seed-guard.mjs`
+(zero product drift), which is why the suite reads 78 files here and 77 at the 85-B merge.
 
 **ITEM 130 - THE STRIP WINS ITS OWN BAND (stacking, not geometry).** `.desk-frame-strip` is absolute
 at `left:calc(-1 * --frame-host-pad-x)`, width 84px; `.desk-frame-stagecol` is the normal-flow
