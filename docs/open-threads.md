@@ -148,6 +148,76 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 130 + THE NARROW SHELL'S PEN BAR — BUILT AND OFFERED — 2026-09-09 (tools lane; branch `item130-strip-hittest`)
+
+**OFFERED TO CHAT 1 — BOTH LEGS STAMPED, 78/78 EACH.** Full record:
+`docs/menus/item130-offer-2026-09-09.md`. **S0 `a039efe`** (survey, no behaviour change) · **item
+130 `0c3b42a`** · **the rename `0b4b852`** · **records `3827552`** · **merge `d1f4be3`**. Two
+tickets, two commits; the first draft bundled them under a message naming one and was split before
+any push.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b
+SUITE DONE HARNESS_PARKED=1 — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b NO-REBUILD
+```
+
+Same tree AND the same bundle hash in both stamps; neither carries dirt. `item130.mjs` reports PASS
+(16 checks) default and PARKED: PASS (0 checks) — it parks nothing, and the empty list is auditable
+rather than an absence that looks like an oversight. **The turn was held by chat 1's announcement,
+not inferred from quiet**; the atomic waiter ran as the safety check AFTER the grant, and
+`build:web` + `tsc` were verified browserlessly BEFORE launching so no discovery could cost the
+slot. **The stamped tree is `d1f4be3`, not the announced `07a6fbc`**: origin/main had already moved
+to `d9d9b8f`, so current main was merged --no-ff before stamping — a stamp against a stale base
+describes software nobody is merging. That merge brought only ERRATA's browserless `seed-guard.mjs`
+(zero product drift), which is why the suite reads 78 files here and 77 at the 85-B merge.
+
+**ITEM 130 - THE STRIP WINS ITS OWN BAND (stacking, not geometry).** `.desk-frame-strip` is absolute
+at `left:calc(-1 * --frame-host-pad-x)`, width 84px; `.desk-frame-stagecol` is the normal-flow
+sibling that FOLLOWS it in the DOM and starts at the host's padding-left. **Neither carried a
+z-index anywhere in index.css**, so DOM order decided and the stage painted on top - at 1280px the
+stage began at 38.4 and covered the strip's 38.4-84 band, and `elementFromPoint` at a strip item's
+own centre returned `.desk-frame-stage`. **Fixed with `z-index:1`**, the smallest value that beats
+`auto`. **Geometry was the wrong lever and is untouched: moving the stage would move the PAPER, and
+paper never reflows for chrome** - a geometry fix trades one law for another. The safety argument is
+a census in the CSS beside the rule (cascade/sliver/tutor anchors all INSIDE the stage and right of
+the band; modals fixed at 80-300).
+
+**WHY IT SURVIVED, AND THE INSTRUMENT THAT ENDS IT.** Every other harness reaches these controls
+with `.click()`, **which never consults the hit-testing stack** - a control can be unreachable by a
+human and pass such a check forever. **`item130.mjs` never clicks anything**; it asks the document
+what is on top where a finger would land, at 1100/1280/1366/1680 (four widths because
+`--frame-host-pad-x` is a clamp, so the overlap varies). It carries a CONTROL asserting the stage
+still overlaps the strip (so a green cannot come from a fixture that stopped exercising the
+condition) and the 0.00 paper-flush assertion beside it (so the fix cannot trade one law for the
+other). **Bites pre-fix 5/16** on a baseline built old-product-under-current-instruments; **16/16
+after**.
+
+**THE PEN BAR - A DIAGNOSIS CORRECTED, THEN A RENAME.** The desk first read the phone's "INK" bar as
+the Ink wave's options zone rendering where the stratum never mounts. **S0 falsified that**: it is
+the OLD PEN_INKS text-colour bar, gated `{!framed &&}` so it renders only below the gate, which is
+why the narrow shell is the one surface it reaches; the Ink wave's zone is Sliver.tsx's, framed-only,
+and cannot render there - **so G3 already held by construction and there was nothing to gate**. One
+word misled it and dating settled it: `nib · fine` landed d65065c **2026-06-28**, ten weeks BEFORE
+the Ink wave's `inkNibFine` (af3c79c, **2026-09-07**). The rename's own argument came out of the
+survey: **that bar's aria-label ALREADY read 'Pen'** - one control, two names, and assistive tech had
+the right one while the eye had the wrong one. Label now from `modeBarPen`; `spreadLensInk` folds
+Spread's inline chip in beside it. **The one real locked door is REMOVED**: `nib · fine ▾`
+(`title="Nib styles - coming soon"`) is ABSENT, never grayed, with its orphaned `.mode-nib` rule
+swept in the same commit as its markup; **item 131 (phone ink)** brings real nibs there. The swatches
+keep `aria-label="Ink <hex>"` deliberately - the bar is the Pen, the swatches are its inks.
+
+**THE 1100 OVERHANG IS OWED TO C2, NOT UNWATCHED.** Adding 1100 to the matrix measured the dock
+overlapping the paper by **-29.69px on prose**. **Cluster C2 (surface anchoring) already owns it** -
+its charter names "the -29.7px overhang at 1100", and Fable's 2026-09-05 amendment specifies C2
+against the MEASURED TRIO: **prose -29.69 · screenplay -38.00 · board 0.00 (flush)**. This lane
+measured the prose row independently, from another worktree with another instrument, and read
+**-29.69 - C2's own recorded figure exactly**. That is corroboration of C2's input from a second
+source. S2 refuses both dishonest options at that width: it does not assert 0.00 (that would make
+this file permanently red for another cluster's work) and does not assert the overlap (that would
+ratify a bug as law); it asserts only that **item 130's repair did not move it**.
+
 ## ITEM 99 — THE THREE RULINGS RATIFIED; THE REAPER RE-STAMPED — 2026-09-05 (errata lane; branch `item99-orphan-reaper`)
 
 **Fable's rulings, chat 1 reading. All three RATIFIED.** Full record appended as §8 of
@@ -3219,7 +3289,271 @@ observation inflates a population the same way counting from a cut view deflates
 stamps marked **OWED** — correctly, and that is the gate working)* **· 3. FIX's re-stamp after the
 dead-renderer deletion · 4. THE REOPEN ANNOUNCEMENT.** **No lane waits on quiet to guess its turn;
 the ordering is the ruling.**
-Registry: next free **131**.
+## ITEM 131 — THE PW1 ERRATA (three, founder-confirmed live) — OPENS 2026-09-09
+
+**BOARDS CONNECTED IS FOUNDER-CONFIRMED LIVE** at **`39eacae` · railway `479adc19`.** Nick walked it
+on production and returned **three errata.** **Fix-class, PW1's own errata branch, and it takes the
+box AFTER FIX** in the standing order.
+
+**(a) CONDITION-BOARDS ARE LISTED AS CONNECTIONS — A CANON VIOLATION, and the most serious of the
+three.** The three-space canon already rules, on this ledger: **"Shelf and Trash are displays of a
+CONDITION (loose; deleted), NOT places."** The Plan panel's subject is **the containers that HOLD the
+page** — so a condition can never appear there. **This is not a rendering bug; the panel is answering
+a different question than the canon asks it to answer.**
+
+**NICK'S RULING ON (a), and it names TWO surfaces, not one:** **the Shelf is NEVER shown as a board.**
+**Condition-boards are excluded from "Boards connected" AND from the Structure lens's connection**
+**line.** **RULED — errata #1 proceeds as ordered.**
+
+*(The second surface is the part a fix scoped to the reported symptom would have missed: the erratum
+was walked on the Plan panel, but the same wrong membership feeds the Structure lens. **The canon is
+about what a condition IS, so every surface that answers "which containers hold this page" inherits
+the exclusion.** A builder fixing only the panel would ship the violation again through the lens.)*
+
+**(b) STALE NO-PROJECT COPY.** Superseded wording surviving on the no-project path.
+
+**(c) A MEANING-CHANGING CRUMB TRUNCATION.** **The distinction is the whole erratum: a truncation that
+ELIDES is a cosmetic limit; a truncation that CHANGES THE MEANING is a defect.** The crumb tells a
+writer where they are, and a location that reads as a different location is worse than no location.
+
+**WHY THE SUITE DID NOT CATCH (a), recorded plainly rather than excused.** It passed `pw1.mjs`'s 33
+checks, both legs of a merge suite, a deploy pair, and Fable's review at the load-bearing hunks.
+**None of that could have caught it: no check encodes "the Shelf is not a place."** The harness
+verifies BEHAVIOUR — that the listed boards render, persist and route — and the panel did all of that
+correctly **with the wrong members in the list.** **A canon violation is a claim about MEANING, and
+meaning is exactly what a green suite cannot certify.** This is the same shape as item 130, where
+every harness clicked a control that no human pointer could reach: **the instrument answered the
+question it was asked, and the question was not the one that mattered.**
+
+**THE FOUNDER WALK REMAINS THE ONLY INSTRUMENT FOR THIS CLASS.** Item 118 (c), item 130 and now
+131 (a) were each found by a person using the product, and each had passed everything else.
+
+**CARRIED, NOT CLOSED: the FRAGMENTS DUPLICATE OBS still stands.** It survives this ship unresolved
+and is not folded into these three.
+
+## CANON — A SUITE CERTIFIES BEHAVIOUR; A SITTING CERTIFIES MEANING — 2026-09-10
+
+**THE LINE, ruled as canon:** **"The instrument answered the question it was asked — and that wasn't
+the question that mattered."**
+
+**A SUITE CERTIFIES BEHAVIOUR. A SITTING CERTIFIES MEANING.** A harness can prove that a list renders,
+persists, routes and survives a reload. **It cannot prove the list contains the RIGHT MEMBERS**, that
+an address names where the writer actually is, or that a sentence says the true thing — because those
+are claims about **meaning**, and no assertion encodes them unless someone first knew to write it.
+
+**THEREFORE, AS A GATE AND NOT A COURTESY: surfaces that CARRY MEANING — membership lists, address
+lines, connection sentences — get a FOUNDER SITTING before they are called done.** Not a demo after
+the fact; **a gate, in the same sense the suite is a gate.**
+
+**EVIDENCE — three defects, each of which passed EVERYTHING automated:**
+- **ITEM 118 (c)** — cards vanished past the right edge; found by the founder on a populated board.
+- **ITEM 130** — the cascade strip's right ~54% unreachable by a real pointer. **Every harness clicked
+  it successfully, because `.click()` bypasses hit-testing.** The synthetic event did not invent a
+  false red; **it CONCEALED a true one.**
+- **ITEM 131 (a)** — condition-boards listed as connections. Passed 33 checks, a merge suite, a deploy
+  pair and a review at the load-bearing hunks. **The panel rendered, persisted and routed correctly
+  WITH THE WRONG MEMBERS IN THE LIST.**
+
+**The pattern is not that the instruments failed. Each answered its question correctly.** The failure
+is that **no instrument was pointed at meaning**, and only a person using the product is.
+
+## THE RULING'S STRUCTURAL FORM — `getBoardsPinning` / `getBoardsConnecting` — RATIFIED 2026-09-10
+
+**PW1's split is RATIFIED as the structural form of Nick's condition-board ruling, and the two names
+are recorded HERE, beside the canon, so the REASON travels with them:**
+
+- **`getBoardsPinning` — RAW MEMBERSHIP.** Every board pinning the page, conditions included. It
+  answers a storage question and must stay honest about what is stored.
+- **`getBoardsConnecting` — THE READER.** Membership **with the canon applied**: condition-boards
+  excluded. **Every surface that answers "which containers hold this page" calls THIS one** —
+  "Boards connected" and the Structure lens's connection line alike.
+
+**WHY A SPLIT RATHER THAN A FILTER AT EACH CALL SITE:** erratum 131 (a) was walked on ONE surface and
+the ruling reached TWO. **A filter written at the call site is a rule that must be remembered every
+time; a named reader is a rule that must be BYPASSED on purpose.** The split makes the canon
+**impossible to half-apply** — which is precisely how the violation shipped in the first place.
+
+*(Status at time of ratification: `getBoardsPinning` is live on `main` at three call sites;
+**`getBoardsConnecting` does not yet exist on `main`** — it is the errata branch's form, ratified
+here in advance of its build so the brief and the ledger agree.)*
+
+## REGISTRY RECONCILIATION — TWO ITEMS NEARLY SHARED A NUMBER — 2026-09-10
+
+**ITEM 131 IS THE SHELF / CONDITION-BOARDS ERRATUM** — as chat 1 and PW1 both independently recorded
+it.
+
+**ITEM 132 — PHONE INK. PARKED on Nick's word: "later."** It had been numbered **131** in a relay that
+**evidently never landed**, so the two would have collided. **Renumbered here so no number carries two
+meanings.**
+
+*(Worth noting as a near-miss rather than a clean save: the collision was caught only because BOTH
+chat 1 and PW1 wrote 131 for the erratum and the mismatch surfaced. **A registry is only as good as
+the relays that reach it**, and a lost relay is invisible from the inside — nothing in the ledger
+looks wrong when a number was never claimed.)*
+
+## THE RELAY AUDIT — INSTITUTED 2026-09-10
+
+**AT EVERY STAMP: Fable lists the rulings issued since the last stamp; chat 1 confirms each LANDED or
+reports it MISSING.** **The point is that ABSENCE BECOMES VISIBLE.** A ledger cannot show what never
+reached it — **nothing looks wrong when a ruling was simply never written down** — so the check has to
+come from the sender's list, not from reading the record.
+
+**FIRST AUDIT, since `39eacae` (Boards Connected):** (a) item 132 phone ink parked — **LANDED** (via
+the collision). (b) the corroboration canon — **LANDED**. (c) INK's TEXT-half ruling — **LANDED** in
+the 121-B brief merge. (d) FIX's two rulings — **LANDED**. (e) the three canon lines — **LANDED**.
+(f) the box-is-one-machine sentence — **LANDED**. (g) the fourth canon line + the split — **LANDED**.
+(i) PW1's no-blank-stamp practice — **recorded below.**
+
+**(h) THE PLAN DESK'S AMENDED BRIEFS + AMENDMENT NOTE — WAS MISSING. NOW LANDED.** Chat 1 queued them
+in a batch plan, landed everything around them, and never returned. **The first audit caught exactly
+the thing it was built to catch, on its first run.** Confirmed by measurement rather than memory: all
+three were sitting in Downloads at the stated md5s (`6561bdfd` / `542bf3c1` / `43d2895b`) while the
+briefs on `main` were still the older versions. **A queued item is not a landed item, and only a list
+kept OUTSIDE the ledger can tell the difference.**
+
+## CANON — A STAMPED TREE CARRIES NO BLANK STAMP (PW1's practice, ratified) — 2026-09-10
+
+**A stamp field is NEVER left blank.** It either carries **the stamp verbatim, naming the tree it ran
+on and the scope of what it covers**, or it says **OWED** in as many words.
+
+**WHY: a blank and an OWED look identical on the page and mean opposite things.** A blank reads as
+"nobody thought about this"; an OWED reads as "measured deliberately, not yet run." **Only one of
+those is a gate.** A reader cannot tell an unrun suite from an unrecorded one, so the offer must say.
+
+**BOTH FORMS ON THE RECORD, a page apart, and the contrast is the teaching:** **PW1's offer record**
+quoted its stamps verbatim **with their scope named** — including **the first RED pair reported beside
+the green**, which a blank would have silently swallowed. **TOOLS' offer at `3827552`** marked its
+stamps **OWED** — correctly, and that is the gate working rather than failing.
+
+**Corollary, from the same practice: a stamp describes THE TREE IT RAN ON and nothing else.** This is
+why PW1 has two stamps recorded separately, why the post-walk roster read 74 against a review's 72,
+and why a re-stamp is owed whenever HEAD moves — **including when it moves for records only.**
+## CANON — AN OUT DIRECTORY IS PER-ATTEMPT (ERRATA's words) — 2026-09-10
+
+**ERRATA's line, ruled as canon:** **"A directory of green files looks like evidence rather than
+prose."**
+
+**OUT DIRECTORIES ARE PER-ATTEMPT. NEVER REUSED across a killed run and its retry.** A retry that
+writes into its predecessor's directory leaves **the dead run's green files sitting beside the live
+run's**, indistinguishable by anything a reader can see. **The survivors do not announce which run
+produced them** — and a folder of passing results reads as a measured result, not as the debris of
+two attempts.
+
+**A MIXED DIRECTORY IS QUARANTINED AND NAMED — NEVER READ.** Not sorted by timestamp, not filtered,
+not partially trusted. **Once two runs have written to one directory, no file in it can be attributed
+with certainty**, and an attribution you cannot make is not one to guess at.
+
+**WHY THIS BELONGS BESIDE THE OTHER COUNTING LAWS.** It is the same failure as counting from a cut
+view, and as reading a suite's summary line instead of its verdict: **an artifact that LOOKS like a
+measurement, produced by something other than the measurement.** The suite of record already defends
+the live side of this — it refuses a contended box rather than reporting a partly-trustworthy result
+— and this defends the recorded side. **A sweep cannot be half-clean; a directory cannot be
+half-attributed.**
+
+**Sibling laws: never count from a view you cut · a sentence about a run is not a run · a green re-run
+is not a diagnosis · a stamped tree carries no blank stamp.** Each one says: **measure the thing, and
+keep the evidence able to say which thing it measured.**
+## ITEM 85-C — PRODUCT-CODE AUTHORITY, NARROWLY GRANTED — 2026-09-10
+
+**GRANTED: product-code authority FOR TEST SEAMS ONLY.** **Thin wrappers over EXISTING store paths.
+ZERO schema. ZERO behaviour change.** **A NEW STORE CAPABILITY STOPS** — if a migration needs the
+store to be able to do something it cannot already do, that is not a seam, and it goes to Nick.
+
+**The boundary is the whole grant:** a seam **exposes** a path the product already walks; a capability
+**adds** one. **The first cannot change what the app does; the second can.** Item 129 is the worked
+example — `JournalPageSeed` gained four optional fields, every one applied only when supplied, and
+`apps/desktop/src` had **zero callers**, so production behaviour was untouched **by construction**
+rather than by care.
+
+**THE WAVES: seams + 28, then the 27.** ERRATA **builds browserless**; **the box order stands.**
+
+**THE POPULATION RECONCILES EXACTLY — measured, not asserted** (the guard is browserless, so this cost
+no box time):
+
+```
+population 56  =  55 unclassified debt  +  1 annotated deliberate (bm1.mjs)
+55 debt        =  28 (first wave)        +  27 (second wave)
+```
+
+**bm1 is the annotated one and is NOT debt.** Its remaining raw write is not a seed: it is a deliberate
+**two-device TOMBSTONE simulation** — a row vanishing out from under a mounted surface — and **there is
+no seam for "another device deleted this", because the app cannot do it.** Item 129 migrated bm1's
+SEEDING and kept this, correctly. **A raw write has two shapes and only one is a debt.**
+
+## CANON — GUARD THE VALUE, NOT THE KEY — 2026-09-10
+
+**The guard parses its six collection names out of `persistence.ts`'s OWN `KEYS` object AT RUN TIME,
+and matches the VALUES** — `writer-studio-journal-entries` and its five siblings — **never the property
+names that point at them.** **The literal a raw write puts on the wire is the VALUE**; a guard watching
+the identifier would miss every actual offender while appearing to work.
+
+**AND THE LIST IS NEVER COPIED.** In the guard's own words: **"a hardcoded copy would be a second
+formula for one number"** — add a seventh collection to the app and a copy here **silently stops
+guarding it.** **If the parse fails, the guard FAILS LOUDLY rather than guarding nothing**, and it
+proves that with its own checks: a parse returning **fewer** keys than the app has fails too, because
+**"the dangerous shape is not a thrown error, it is a partial answer that looks like an answer."**
+
+**This is the a-guard-that-always-says-safe hazard closed from the inside**, and it is the same lesson
+as the listing trap: **a number that looks measured and is not.** A guard is only as honest as the
+population it can see, so **it must derive that population from the thing it guards** and refuse when
+it cannot.
+
+**The baseline is a RATCHET, too:** every listed file must still write raw, so a migration **deletes
+its line in the same change**; an annotation on a file that no longer writes raw **fails**, because
+**an exemption must expire with the thing it exempts or it silently pre-authorises the next raw write
+into that file.**
+## CANON — A CHECK CAN PASS FOR THE WRONG REASON WHEN ITS PREMISE IS ALREADY DEAD — 2026-09-10
+
+**ERRATA's finding, and it is the finding rather than the pass.** Item 85-C's S2 proof intended to
+show that a **raw** row dies under an ordinary product write while a **seam-written** row survives.
+**Its premise was destroyed before it was ever measured: the SEAM CALL made right after the raw write
+IS ITSELF A PRODUCT WRITE, and had already killed the raw row.**
+
+**THE TRAP: the final reads would still have produced the EXPECTED SHAPE — `{raw:false, seam:true}` —
+so the check would have PASSED**, and the lane would have reported a clean proof **of a mechanism
+located in the wrong place.** A green result, a true conclusion, and an experiment that never tested
+what it claimed to.
+
+**RULED: when a check confirms exactly what you expected, the question is not "did it pass" but "COULD
+IT HAVE FAILED, AND BY THE ROUTE I THINK?"** A proof whose setup step performs the very operation
+under test is not a proof. **Order the steps so the premise survives to the moment of measurement,
+and prove the premise separately where it is cheap** — ERRATA did, and the corrected S2 reads:
+
+```
+                                   raw     seam
+  both seeded                      true    true
+  after one ordinary product write false   true
+```
+
+**Sibling laws, and this is now the family's sharpest member:** *a green re-run is not a diagnosis* ·
+*a sentence about a run is not a run* · *a directory of green files looks like evidence rather than
+prose* · *a red check is not automatically a check to retire*. **Each says the same thing from a
+different side: the outcome is not the evidence; the ROUTE to the outcome is.**
+
+## ITEM 85-C — THE SEAMS PROVED, ON THE INTEGRATED TREE — 2026-09-10
+
+**`ITEM85C VERIFY: PASS (13 checks)`, measured at `ab86dd8` — the INTEGRATED tree, not the branch's
+stale base.** Branch pushed at **`3b236b5`** (four commits: the seams, the proof, the S2 ordering fix,
+and `main` merged in). **Suite now 79.** Box released.
+
+**ERRATA SPENT ITS SINGLE-FILE TURN ON THE RIGHT QUESTION.** It had already passed the file 13/13
+before the announcement — **so re-running the stale base would have re-answered a question it had
+answered.** `main` had moved **nine commits**; the useful question was **whether that drift
+invalidated the result.** It fetched, found **`persistence.ts`, the types and the seams' dependencies
+all untouched**, merged clean, typechecked 0, and **rebuilt — because `main` had brought product code,
+so its bundle was stale.** *(The rebuild is the part a hurried lane skips; a stale bundle is the exact
+condition item 77(c) added the bundle hash to the stamp to expose.)*
+
+**THE GUARD DID ITS STANDING JOB ON WORK THAT WAS NOT ITS OWN.** The merge brought TOOLS' brand-new
+`item130.mjs` into the tree, and **`seed-guard.mjs` met it and stayed green** — the new file seeds
+through the seam, so **the baseline is still honest.** **An instrument that only validates its
+author's work is a rehearsal; one that silently passes a stranger's correct file is a guard.**
+
+**85-C's product code is `persistence.ts` alone** — within the seams-only authority granted 2026-09-10
+(thin wrappers over existing store paths; a new store capability STOPS).
+Registry: next free **133**.
+
+
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
