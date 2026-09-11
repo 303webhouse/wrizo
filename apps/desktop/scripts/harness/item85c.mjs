@@ -96,15 +96,32 @@ await withHarness(async (app) => {
   // S2 — THE POINT OF THE WHOLE ITEM. Raw vs seam, same run, same product
   // write, read back together.
   // =========================================================================
+  // ORDER MATTERS HERE, AND THE FIRST VERSION OF THIS BLOCK HAD IT WRONG — a
+  // mistake worth keeping in the record because of how it was caught.
+  //
+  // It seeded RAW first and then called the seam. But THE SEAM CALL IS ITSELF A
+  // PRODUCT WRITE: it serialises the whole cache back over storage, and the
+  // cache never held the raw row. So the raw row was already destroyed before
+  // the deliberate product write below ever ran.
+  //
+  // S2's final reads would still have come out {raw:false, seam:true} — the
+  // exact shape this file expects — and the check WOULD HAVE PASSED FOR THE
+  // WRONG REASON, crediting the destruction to a write that had nothing to do
+  // with it. The premise check is the only thing that caught it, which is the
+  // discriminator law in miniature: assert the state your conclusion depends
+  // on, not only the conclusion.
+  //
+  // So: seam row FIRST and let it flush, then the raw row on top of the flushed
+  // content, so both genuinely coexist before a single product write is made.
   await freshDesk(app);
+  await app.evalJs("window.wrizoCreateJournalPage({ id: '85c-seam', text: 'seeded through the seam', origin: 'loose' })");
+  await sleep(FLUSH);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     entries.push({ id: '85c-raw', text: 'seeded raw', source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
     localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
   })()`);
-  await app.evalJs("window.wrizoCreateJournalPage({ id: '85c-seam', text: 'seeded through the seam', origin: 'loose' })");
-  await sleep(FLUSH);
   const bothBefore = await app.evalJs(`(() => {
     const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     return JSON.stringify({ raw: es.some(e => e.id === '85c-raw'), seam: es.some(e => e.id === '85c-seam') });
