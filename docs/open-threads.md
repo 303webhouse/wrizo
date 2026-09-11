@@ -3383,6 +3383,55 @@ half-attributed.**
 **Sibling laws: never count from a view you cut · a sentence about a run is not a run · a green re-run
 is not a diagnosis · a stamped tree carries no blank stamp.** Each one says: **measure the thing, and
 keep the evidence able to say which thing it measured.**
+## ITEM 85-C — PRODUCT-CODE AUTHORITY, NARROWLY GRANTED — 2026-09-10
+
+**GRANTED: product-code authority FOR TEST SEAMS ONLY.** **Thin wrappers over EXISTING store paths.
+ZERO schema. ZERO behaviour change.** **A NEW STORE CAPABILITY STOPS** — if a migration needs the
+store to be able to do something it cannot already do, that is not a seam, and it goes to Nick.
+
+**The boundary is the whole grant:** a seam **exposes** a path the product already walks; a capability
+**adds** one. **The first cannot change what the app does; the second can.** Item 129 is the worked
+example — `JournalPageSeed` gained four optional fields, every one applied only when supplied, and
+`apps/desktop/src` had **zero callers**, so production behaviour was untouched **by construction**
+rather than by care.
+
+**THE WAVES: seams + 28, then the 27.** ERRATA **builds browserless**; **the box order stands.**
+
+**THE POPULATION RECONCILES EXACTLY — measured, not asserted** (the guard is browserless, so this cost
+no box time):
+
+```
+population 56  =  55 unclassified debt  +  1 annotated deliberate (bm1.mjs)
+55 debt        =  28 (first wave)        +  27 (second wave)
+```
+
+**bm1 is the annotated one and is NOT debt.** Its remaining raw write is not a seed: it is a deliberate
+**two-device TOMBSTONE simulation** — a row vanishing out from under a mounted surface — and **there is
+no seam for "another device deleted this", because the app cannot do it.** Item 129 migrated bm1's
+SEEDING and kept this, correctly. **A raw write has two shapes and only one is a debt.**
+
+## CANON — GUARD THE VALUE, NOT THE KEY — 2026-09-10
+
+**The guard parses its six collection names out of `persistence.ts`'s OWN `KEYS` object AT RUN TIME,
+and matches the VALUES** — `writer-studio-journal-entries` and its five siblings — **never the property
+names that point at them.** **The literal a raw write puts on the wire is the VALUE**; a guard watching
+the identifier would miss every actual offender while appearing to work.
+
+**AND THE LIST IS NEVER COPIED.** In the guard's own words: **"a hardcoded copy would be a second
+formula for one number"** — add a seventh collection to the app and a copy here **silently stops
+guarding it.** **If the parse fails, the guard FAILS LOUDLY rather than guarding nothing**, and it
+proves that with its own checks: a parse returning **fewer** keys than the app has fails too, because
+**"the dangerous shape is not a thrown error, it is a partial answer that looks like an answer."**
+
+**This is the a-guard-that-always-says-safe hazard closed from the inside**, and it is the same lesson
+as the listing trap: **a number that looks measured and is not.** A guard is only as honest as the
+population it can see, so **it must derive that population from the thing it guards** and refuse when
+it cannot.
+
+**The baseline is a RATCHET, too:** every listed file must still write raw, so a migration **deletes
+its line in the same change**; an annotation on a file that no longer writes raw **fails**, because
+**an exemption must expire with the thing it exempts or it silently pre-authorises the next raw write
+into that file.**
 Registry: next free **133**.
 
 
