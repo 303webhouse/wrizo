@@ -171,15 +171,41 @@ await withHarness(async (app) => {
     return { x: Math.round(b.left + b.width / 2), y: Math.round(b.top + b.height / 2) }; })()`);
   const colourNow = () => app.evalJs("getComputedStyle(document.querySelector('[data-beginning=\"newCard\"]')).color");
 
-  const restColour = await colourNow();
+  // ITEM 122 — A PROBE READS THE SETTLED STATE, NEVER A STATE IN MOTION.
+  // These three colours are reached through a CSS transition, and they used to
+  // be sampled after a FIXED sleep — 250ms for hover, 150ms for press. Under
+  // suite load that is not always enough, and the read lands mid-transition:
+  // this check failed once in-suite reporting `rgb(233, 138, 0)` for the press,
+  // which is not a wrong colour at all but an INTERMEDIATE one — literally
+  // between brass `rgb(255, 152, 0)` and brass-press `rgb(232, 137, 0)`, one
+  // step short of arriving. It then passed 4 of 4 standalone, which is exactly
+  // how a timing dependency disguises itself as a flake.
+  //
+  // THIS POLLS FOR STABILITY, NEVER FOR THE EXPECTED VALUE. Polling until the
+  // colour equals what the assertion wants would make the assertion pass by
+  // construction — the check would be shopping for its own answer and would go
+  // green even if the lane law were broken. Waiting until the value STOPS
+  // CHANGING measures the settled state and leaves the verdict to the
+  // comparison below, which is the whole point of having one.
+  const settledColour = async (ms = 2000, step = 60) => {
+    const deadline = Date.now() + ms;
+    let prev = await colourNow();
+    while (Date.now() < deadline) {
+      await sleep(step);
+      const next = await colourNow();
+      if (next === prev) return next; // two agreeing reads: the transition has landed
+      prev = next;
+    }
+    return prev; // deadline reached — return what we have and let the check speak
+  };
+
+  const restColour = await settledColour();
   await app.mouseMove(doorBox.x - 40, doorBox.y);
   await sleep(80);
   await app.mouseMove(doorBox.x, doorBox.y);
-  await sleep(250);
-  const hoverColour = await colourNow();
+  const hoverColour = await settledColour();
   await app.mouseDown(doorBox.x, doorBox.y);
-  await sleep(150);
-  const pressColour = await colourNow();
+  const pressColour = await settledColour();
   // Release OFF the door, deliberately. A press sampled with a release on the
   // same element is a CLICK — the first run of this check pressed New Card for
   // real, the board gained a card, and the row correctly vanished out from
