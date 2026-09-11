@@ -148,6 +148,76 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 130 + THE NARROW SHELL'S PEN BAR — BUILT AND OFFERED — 2026-09-09 (tools lane; branch `item130-strip-hittest`)
+
+**OFFERED TO CHAT 1 — BOTH LEGS STAMPED, 78/78 EACH.** Full record:
+`docs/menus/item130-offer-2026-09-09.md`. **S0 `a039efe`** (survey, no behaviour change) · **item
+130 `0c3b42a`** · **the rename `0b4b852`** · **records `3827552`** · **merge `d1f4be3`**. Two
+tickets, two commits; the first draft bundled them under a message naming one and was split before
+any push.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b
+SUITE DONE HARNESS_PARKED=1 — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b NO-REBUILD
+```
+
+Same tree AND the same bundle hash in both stamps; neither carries dirt. `item130.mjs` reports PASS
+(16 checks) default and PARKED: PASS (0 checks) — it parks nothing, and the empty list is auditable
+rather than an absence that looks like an oversight. **The turn was held by chat 1's announcement,
+not inferred from quiet**; the atomic waiter ran as the safety check AFTER the grant, and
+`build:web` + `tsc` were verified browserlessly BEFORE launching so no discovery could cost the
+slot. **The stamped tree is `d1f4be3`, not the announced `07a6fbc`**: origin/main had already moved
+to `d9d9b8f`, so current main was merged --no-ff before stamping — a stamp against a stale base
+describes software nobody is merging. That merge brought only ERRATA's browserless `seed-guard.mjs`
+(zero product drift), which is why the suite reads 78 files here and 77 at the 85-B merge.
+
+**ITEM 130 - THE STRIP WINS ITS OWN BAND (stacking, not geometry).** `.desk-frame-strip` is absolute
+at `left:calc(-1 * --frame-host-pad-x)`, width 84px; `.desk-frame-stagecol` is the normal-flow
+sibling that FOLLOWS it in the DOM and starts at the host's padding-left. **Neither carried a
+z-index anywhere in index.css**, so DOM order decided and the stage painted on top - at 1280px the
+stage began at 38.4 and covered the strip's 38.4-84 band, and `elementFromPoint` at a strip item's
+own centre returned `.desk-frame-stage`. **Fixed with `z-index:1`**, the smallest value that beats
+`auto`. **Geometry was the wrong lever and is untouched: moving the stage would move the PAPER, and
+paper never reflows for chrome** - a geometry fix trades one law for another. The safety argument is
+a census in the CSS beside the rule (cascade/sliver/tutor anchors all INSIDE the stage and right of
+the band; modals fixed at 80-300).
+
+**WHY IT SURVIVED, AND THE INSTRUMENT THAT ENDS IT.** Every other harness reaches these controls
+with `.click()`, **which never consults the hit-testing stack** - a control can be unreachable by a
+human and pass such a check forever. **`item130.mjs` never clicks anything**; it asks the document
+what is on top where a finger would land, at 1100/1280/1366/1680 (four widths because
+`--frame-host-pad-x` is a clamp, so the overlap varies). It carries a CONTROL asserting the stage
+still overlaps the strip (so a green cannot come from a fixture that stopped exercising the
+condition) and the 0.00 paper-flush assertion beside it (so the fix cannot trade one law for the
+other). **Bites pre-fix 5/16** on a baseline built old-product-under-current-instruments; **16/16
+after**.
+
+**THE PEN BAR - A DIAGNOSIS CORRECTED, THEN A RENAME.** The desk first read the phone's "INK" bar as
+the Ink wave's options zone rendering where the stratum never mounts. **S0 falsified that**: it is
+the OLD PEN_INKS text-colour bar, gated `{!framed &&}` so it renders only below the gate, which is
+why the narrow shell is the one surface it reaches; the Ink wave's zone is Sliver.tsx's, framed-only,
+and cannot render there - **so G3 already held by construction and there was nothing to gate**. One
+word misled it and dating settled it: `nib · fine` landed d65065c **2026-06-28**, ten weeks BEFORE
+the Ink wave's `inkNibFine` (af3c79c, **2026-09-07**). The rename's own argument came out of the
+survey: **that bar's aria-label ALREADY read 'Pen'** - one control, two names, and assistive tech had
+the right one while the eye had the wrong one. Label now from `modeBarPen`; `spreadLensInk` folds
+Spread's inline chip in beside it. **The one real locked door is REMOVED**: `nib · fine ▾`
+(`title="Nib styles - coming soon"`) is ABSENT, never grayed, with its orphaned `.mode-nib` rule
+swept in the same commit as its markup; **item 131 (phone ink)** brings real nibs there. The swatches
+keep `aria-label="Ink <hex>"` deliberately - the bar is the Pen, the swatches are its inks.
+
+**THE 1100 OVERHANG IS OWED TO C2, NOT UNWATCHED.** Adding 1100 to the matrix measured the dock
+overlapping the paper by **-29.69px on prose**. **Cluster C2 (surface anchoring) already owns it** -
+its charter names "the -29.7px overhang at 1100", and Fable's 2026-09-05 amendment specifies C2
+against the MEASURED TRIO: **prose -29.69 · screenplay -38.00 · board 0.00 (flush)**. This lane
+measured the prose row independently, from another worktree with another instrument, and read
+**-29.69 - C2's own recorded figure exactly**. That is corroboration of C2's input from a second
+source. S2 refuses both dishonest options at that width: it does not assert 0.00 (that would make
+this file permanently red for another cluster's work) and does not assert the overlap (that would
+ratify a bug as law); it asserts only that **item 130's repair did not move it**.
+
 ## ITEM 99 — THE THREE RULINGS RATIFIED; THE REAPER RE-STAMPED — 2026-09-05 (errata lane; branch `item99-orphan-reaper`)
 
 **Fable's rulings, chat 1 reading. All three RATIFIED.** Full record appended as §8 of
@@ -3358,6 +3428,80 @@ stamps **OWED** — correctly, and that is the gate working rather than failing.
 **Corollary, from the same practice: a stamp describes THE TREE IT RAN ON and nothing else.** This is
 why PW1 has two stamps recorded separately, why the post-walk roster read 74 against a review's 72,
 and why a re-stamp is owed whenever HEAD moves — **including when it moves for records only.**
+## CANON — AN OUT DIRECTORY IS PER-ATTEMPT (ERRATA's words) — 2026-09-10
+
+**ERRATA's line, ruled as canon:** **"A directory of green files looks like evidence rather than
+prose."**
+
+**OUT DIRECTORIES ARE PER-ATTEMPT. NEVER REUSED across a killed run and its retry.** A retry that
+writes into its predecessor's directory leaves **the dead run's green files sitting beside the live
+run's**, indistinguishable by anything a reader can see. **The survivors do not announce which run
+produced them** — and a folder of passing results reads as a measured result, not as the debris of
+two attempts.
+
+**A MIXED DIRECTORY IS QUARANTINED AND NAMED — NEVER READ.** Not sorted by timestamp, not filtered,
+not partially trusted. **Once two runs have written to one directory, no file in it can be attributed
+with certainty**, and an attribution you cannot make is not one to guess at.
+
+**WHY THIS BELONGS BESIDE THE OTHER COUNTING LAWS.** It is the same failure as counting from a cut
+view, and as reading a suite's summary line instead of its verdict: **an artifact that LOOKS like a
+measurement, produced by something other than the measurement.** The suite of record already defends
+the live side of this — it refuses a contended box rather than reporting a partly-trustworthy result
+— and this defends the recorded side. **A sweep cannot be half-clean; a directory cannot be
+half-attributed.**
+
+**Sibling laws: never count from a view you cut · a sentence about a run is not a run · a green re-run
+is not a diagnosis · a stamped tree carries no blank stamp.** Each one says: **measure the thing, and
+keep the evidence able to say which thing it measured.**
+## ITEM 85-C — PRODUCT-CODE AUTHORITY, NARROWLY GRANTED — 2026-09-10
+
+**GRANTED: product-code authority FOR TEST SEAMS ONLY.** **Thin wrappers over EXISTING store paths.
+ZERO schema. ZERO behaviour change.** **A NEW STORE CAPABILITY STOPS** — if a migration needs the
+store to be able to do something it cannot already do, that is not a seam, and it goes to Nick.
+
+**The boundary is the whole grant:** a seam **exposes** a path the product already walks; a capability
+**adds** one. **The first cannot change what the app does; the second can.** Item 129 is the worked
+example — `JournalPageSeed` gained four optional fields, every one applied only when supplied, and
+`apps/desktop/src` had **zero callers**, so production behaviour was untouched **by construction**
+rather than by care.
+
+**THE WAVES: seams + 28, then the 27.** ERRATA **builds browserless**; **the box order stands.**
+
+**THE POPULATION RECONCILES EXACTLY — measured, not asserted** (the guard is browserless, so this cost
+no box time):
+
+```
+population 56  =  55 unclassified debt  +  1 annotated deliberate (bm1.mjs)
+55 debt        =  28 (first wave)        +  27 (second wave)
+```
+
+**bm1 is the annotated one and is NOT debt.** Its remaining raw write is not a seed: it is a deliberate
+**two-device TOMBSTONE simulation** — a row vanishing out from under a mounted surface — and **there is
+no seam for "another device deleted this", because the app cannot do it.** Item 129 migrated bm1's
+SEEDING and kept this, correctly. **A raw write has two shapes and only one is a debt.**
+
+## CANON — GUARD THE VALUE, NOT THE KEY — 2026-09-10
+
+**The guard parses its six collection names out of `persistence.ts`'s OWN `KEYS` object AT RUN TIME,
+and matches the VALUES** — `writer-studio-journal-entries` and its five siblings — **never the property
+names that point at them.** **The literal a raw write puts on the wire is the VALUE**; a guard watching
+the identifier would miss every actual offender while appearing to work.
+
+**AND THE LIST IS NEVER COPIED.** In the guard's own words: **"a hardcoded copy would be a second
+formula for one number"** — add a seventh collection to the app and a copy here **silently stops
+guarding it.** **If the parse fails, the guard FAILS LOUDLY rather than guarding nothing**, and it
+proves that with its own checks: a parse returning **fewer** keys than the app has fails too, because
+**"the dangerous shape is not a thrown error, it is a partial answer that looks like an answer."**
+
+**This is the a-guard-that-always-says-safe hazard closed from the inside**, and it is the same lesson
+as the listing trap: **a number that looks measured and is not.** A guard is only as honest as the
+population it can see, so **it must derive that population from the thing it guards** and refuse when
+it cannot.
+
+**The baseline is a RATCHET, too:** every listed file must still write raw, so a migration **deletes
+its line in the same change**; an annotation on a file that no longer writes raw **fails**, because
+**an exemption must expire with the thing it exempts or it silently pre-authorises the next raw write
+into that file.**
 Registry: next free **133**.
 
 
