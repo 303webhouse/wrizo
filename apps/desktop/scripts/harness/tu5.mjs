@@ -82,7 +82,7 @@ const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before TU5 seed' });
   await app.evalJs(`(() => {
-    window.wrizoCreateJournalPage({ JSON.stringify(rows), origin: null });
+    ${JSON.stringify(rows)}.forEach((r) => window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null }));
   })()`);
 };
 

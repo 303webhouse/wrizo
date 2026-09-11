@@ -64,6 +64,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.join(HERE, '..', '..');
 const PERSISTENCE = path.join(DESKTOP, 'src', 'store', 'persistence.ts');
+const BACKSLASH = String.fromCharCode(92);
 
 // --- the collection keys, single-sourced from the app ------------------------
 // The source is a DEFAULTED PARAMETER, not a closed-over read, for one reason:
@@ -331,6 +332,99 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     JSON.stringify({ newOffenders: newOffenders.length, stale: stale.length }));
 }
 
+// --- THE SEAM CALL SITES ARE WELL FORMED -------------------------------------
+// ADDED BY ITEM 85-C, because the migration produced a defect neither existing
+// gate could see. Transforming `entries.push(...${JSON.stringify(rows)})` — a
+// spread of a TEMPLATE INTERPOLATION — a transformer took the `{` of `${` for
+// the start of an object literal and emitted:
+//
+//     window.wrizoCreateJournalPage({ JSON.stringify(rows), origin: null });
+//
+// a call expression sitting where a key belongs, with the `$` eaten. It is not
+// valid JavaScript, and BOTH static gates passed it:
+//   · `node --check` passes, because that text lives inside a template literal
+//     — in the .mjs file it is a STRING, not code. It would have thrown in the
+//     browser, at which point the file aborts and reports nothing (the
+//     "a driver can lie by dying" hazard this repo already names).
+//   · this guard passed, because no raw write remained — which is all it was
+//     ever asked.
+// Four files carried it. So the migration's own instrument gains the check its
+// absence cost, and it is cheap: a brace-matched parse of every call site.
+const CALL_RE = /wrizoCreateJournalPage\(\s*\{/g;
+
+function matchBrace(text, open) {
+  let depth = 0, inStr = null;
+  for (let i = open; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) { if (c === BACKSLASH) { i += 1; continue; } if (c === inStr) inStr = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if (c === '{') depth += 1;
+    else if (c === '}') { depth -= 1; if (depth === 0) return i; }
+  }
+  return -1;
+}
+
+function topLevelEntries(body) {
+  const parts = []; let depth = 0, inStr = null, start = 0;
+  for (let i = 0; i <= body.length; i += 1) {
+    if (i === body.length) { parts.push(body.slice(start)); break; }
+    const c = body[i];
+    if (inStr) { if (c === BACKSLASH) { i += 1; continue; } if (c === inStr) inStr = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) depth -= 1;
+    else if (c === ',' && depth === 0) { parts.push(body.slice(start, i)); start = i + 1; }
+  }
+  return parts.map((p) => p.trim()).filter(Boolean);
+}
+
+function malformedCallSites(text, label) {
+  const out = [];
+  let m;
+  CALL_RE.lastIndex = 0;
+  while ((m = CALL_RE.exec(text)) !== null) {
+    const open = text.indexOf('{', m.index);
+    const close = matchBrace(text, open);
+    if (close < 0) { out.push(`${label}: unbalanced object literal`); continue; }
+    for (const p of topLevelEntries(text.slice(open + 1, close))) {
+      if (p.startsWith('...')) continue;                                        // spread
+      if (/^[A-Za-z_$][\w$]*$/.test(p)) continue;                               // shorthand
+      if (/^(\[[^\]]*\]|[A-Za-z_$][\w$]*|'[^']*'|"[^"]*")\s*:/.test(p)) continue; // key: value
+      out.push(`${label}: ${p.slice(0, 70)}`);
+    }
+  }
+  return out;
+}
+
+{
+  const malformed = [];
+  let siteCount = 0;
+  for (const dir of [path.join(DESKTOP, 'scripts', 'harness'), path.join(DESKTOP, 'scripts')]) {
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.mjs')) continue;
+      const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
+      if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
+      const text = readFileSync(path.join(dir, name), 'utf8');
+      CALL_RE.lastIndex = 0;
+      siteCount += (text.match(/wrizoCreateJournalPage\(\s*\{/g) || []).length;
+      malformed.push(...malformedCallSites(text, rel));
+    }
+  }
+  ok(`85-C: all ${siteCount} seam call sites are well-formed object literals — the one defect class that passes BOTH node --check (the text is a string inside a template literal) and the raw-write scan above, and then throws in the browser where a dying driver reports nothing`,
+    malformed.length === 0, JSON.stringify({ sites: siteCount, malformed }));
+
+  // Self-proof, because a shape check that never sees a bad shape is the
+  // decoration this file keeps arguing against. The first fixture is the exact
+  // text the migration produced.
+  const damaged = "window.wrizoCreateJournalPage({ JSON.stringify(rows), origin: null });";
+  ok('85-C self-proof: the real defect text is CAUGHT — a call expression where a key belongs',
+    malformedCallSites(damaged, 'fixture').length === 1, JSON.stringify(malformedCallSites(damaged, 'fixture')));
+  const healthy = "window.wrizoCreateJournalPage({ id: 'x', text: '', boxes: [], origin: null });"
+    + "window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null });";
+  ok('85-C self-proof (the control): well-formed sites — including a spread and a computed value — are NOT flagged, so the check is not one that reds on everything',
+    malformedCallSites(healthy, 'fixture').length === 0, JSON.stringify(malformedCallSites(healthy, 'fixture')));
+}
 // --- THE SELF-PROOF ----------------------------------------------------------
 // The scan above finds 56 files whether it works well or barely. These fixtures
 // are what make the claim real — the same argument hooks-order-ast.mjs had to
