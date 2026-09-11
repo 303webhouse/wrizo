@@ -65,15 +65,28 @@ const waitOr = async (app, expr, what, ms = 6000) => {
 
 // A genuinely trusted press on a selector, at a point that GENUINELY HITS IT.
 //
-// Why point-scanning rather than "press the centre": in the framed layout the
-// stage overlaps the strip's right-hand portion, so a strip item's own CENTRE
-// hit-tests to `.desk-frame-stage`, not the button. Every existing harness
-// reaches these controls with `.click()`, which bypasses hit-testing entirely
-// and so never noticed. A synthetic click would skip the pipeline the product
-// actually listens on, so instead this finds a point INSIDE the element that
-// `elementFromPoint` genuinely resolves to it, and presses there with real CDP
-// pointer events. If NO point in the element is reachable, that is a real
-// finding and it is recorded as a named failure rather than papered over.
+// ⚠ THE PREMISE THAT FIRST MOTIVATED THIS IS NOW DEAD, AND SAYING SO IS THE
+// POINT (the 85-C canon: a check can pass for the WRONG REASON once its premise
+// has been fixed under it). When this helper was written, the framed stage
+// overlapped the strip's right ~54%, so a strip item's own CENTRE hit-tested to
+// `.desk-frame-stage` rather than the button — the finding that became ITEM 130.
+// **Item 130 is fixed and merged** (the strip wins its own band); the centre is
+// reachable again, and the scan below now finds it on its first candidate.
+//
+// THE HELPER STAYS, and not out of sentiment. Two reasons, both live:
+//   1. It is the only reason the occlusion was ever visible. Every other harness
+//      reaches these controls with `.click()`, which bypasses hit-testing
+//      entirely — the synthetic event did not invent a false red, it CONCEALED a
+//      true one for as long as it was used.
+//   2. A press that silently lands on an overlay is indistinguishable from a
+//      product that ignored it. Probing first means a future occlusion — of any
+//      control, from any cause — surfaces as a NAMED failure ("a point inside
+//      the target is reachable by a real pointer") instead of as a mystery red
+//      somewhere downstream.
+//
+// So: find a point inside the element that `elementFromPoint` genuinely resolves
+// to, and press THERE with real CDP pointer events. If no point in the element
+// is reachable, that is a real finding and it is recorded as such.
 const hittablePointBy = (app, elExpr) => app.evalJs(`(() => {
   const e = (() => { return ${elExpr}; })();
   if (!e) return null;
