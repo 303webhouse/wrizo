@@ -130,6 +130,215 @@ export function strokeWidth(stroke: Stroke): number {
   return NIB_WIDTHS[tipOf(stroke)][nibOf(stroke)];
 }
 
+// ITEM 126 B3/B4 — HIT-TESTING AND GROUPING, and why they live in THIS file.
+//
+// Item 126 lets a writer grab ink in Draft and Revise. Grabbing needs an answer
+// to "is there ink under this point, and what else belongs with it" — and that
+// is a question about a stroke's SHAPE, which this file has been the sole owner
+// of since J9 and which I5 relied on when tips gained their own widths. A hit
+// test written in the component would be a second place that knows how wide a
+// marker is, and the two would drift the first time a nib changed.
+//
+// EVERYTHING HERE IS PURE. No DOM, no canvas, no React — the sheet's width is
+// passed in. That is what lets a check call these directly with known geometry
+// instead of inferring them from painted pixels.
+
+// Forgiveness, in CSS px, added to the stroke's own half-width. A fine pen is
+// 0.9px wide; without slop the writer would have to be within half a pixel of it.
+// Tuned so a broad marker is still easier to hit than a fine pen — which is also
+// true of paper — rather than flattening both to one fat target.
+export const HIT_SLOP_PX = 7;
+
+// The gap, in NORMALIZED units (by sheet width), within which two strokes are
+// "the same drawing" for the purposes of a move. ~0.04 of a 760px measure is
+// ~30px, about one line-height — close enough that a sketch's own strokes join,
+// far enough that a margin note and a diagram across the page do not.
+// A WORKING VALUE, NOT A LAW: grouping is DERIVED at grab time and never stored,
+// so this can be re-tuned forever without touching a single saved page.
+export const GROUP_GAP = 0.04;
+
+/** Squared distance from point p to segment ab, all in the same units. */
+function distSqToSegment(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
+  const vx = bx - ax, vy = by - ay;
+  const wx = px - ax, wy = py - ay;
+  const len2 = vx * vx + vy * vy;
+  // A zero-length segment is a dot (a single-point stroke renders as one).
+  const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, (wx * vx + wy * vy) / len2));
+  const dx = px - (ax + t * vx), dy = py - (ay + t * vy);
+  return dx * dx + dy * dy;
+}
+
+/**
+ * ITEM 126 B3 — the index of the stroke under a point, or null.
+ *
+ * `x`/`y` are NORMALIZED (both by the sheet's WIDTH — J8's rule, and the one
+ * that has already cost this lane a check that passed for the wrong reason);
+ * `sheetW` converts to px so the tolerance can be expressed in px, where widths
+ * and slop actually live.
+ *
+ * SEARCHED FROM THE TOP DOWN. Strokes paint in array order, so the LAST one is
+ * the one the writer sees on top; grabbing must agree with the eyes.
+ *
+ * ERASERS ARE NEVER HIT. An erase carries no ink — it is a hole — and grabbing
+ * a hole is not a gesture the writer can mean. They still TRAVEL with a group
+ * (see strokeGroupAt), which is a different question.
+ */
+export function strokeAt(strokes: Stroke[], x: number, y: number, sheetW: number): number | null {
+  const px = x * sheetW, py = y * sheetW;
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const st = strokes[i];
+    if (st.eraser) continue;
+    const pts = st.points;
+    if (!pts || pts.length === 0) continue;
+    const tol = strokeWidth(st) / 2 + HIT_SLOP_PX;
+    const tol2 = tol * tol;
+    if (pts.length === 1) {
+      const dx = px - pts[0].x * sheetW, dy = py - pts[0].y * sheetW;
+      if (dx * dx + dy * dy <= tol2) return i;
+      continue;
+    }
+    for (let j = 0; j < pts.length - 1; j++) {
+      if (distSqToSegment(px, py, pts[j].x * sheetW, pts[j].y * sheetW,
+                          pts[j + 1].x * sheetW, pts[j + 1].y * sheetW) <= tol2) return i;
+    }
+  }
+  return null;
+}
+
+/** A stroke's bounding box in normalized units. Null for an empty stroke. */
+export function strokeBox(stroke: Stroke): { x0: number; y0: number; x1: number; y1: number } | null {
+  const pts = stroke.points;
+  if (!pts || pts.length === 0) return null;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of pts) {
+    if (p.x < x0) x0 = p.x;
+    if (p.x > x1) x1 = p.x;
+    if (p.y < y0) y0 = p.y;
+    if (p.y > y1) y1 = p.y;
+  }
+  return { x0, y0, x1, y1 };
+}
+
+/** Do two boxes come within `gap` of each other (in normalized units)? */
+function boxesNear(a: { x0: number; y0: number; x1: number; y1: number },
+                   b: { x0: number; y0: number; x1: number; y1: number }, gap: number): boolean {
+  return a.x0 - gap <= b.x1 && b.x0 - gap <= a.x1 && a.y0 - gap <= b.y1 && b.y0 - gap <= a.y1;
+}
+
+/**
+ * ITEM 126 B4 — THE STROKE GROUP: every index that should move together when
+ * the writer grabs the stroke at (x, y). Null when nothing is there.
+ *
+ * A SPATIAL CLUSTER, grown transitively: the hit stroke, plus every ink stroke
+ * whose box comes within GROUP_GAP of the growing group's, repeated until it
+ * stops growing. This is what the eye calls "that drawing", and the three
+ * alternatives lose for stated reasons — one-stroke-per-grab makes a sketch
+ * thirty drags; all-ink-on-the-page makes a margin note unmovable; a temporal
+ * run would move two annotations made in one sitting on opposite margins.
+ *
+ * ⚠ THE ERASER CLAUSE, and it is not optional. An erase is a stroke painted
+ * `destination-out`, so it is a HOLE punched at a fixed place on the sheet. If
+ * the ink moves and its erases stay behind, the rubbed-out parts REAPPEAR at the
+ * old position while the ink lands at the new one — the page would grow marks
+ * the writer had deliberately removed. So every erase whose box falls within the
+ * assembled group's box travels WITH it. This is invisible to any check that
+ * only counts strokes, which is exactly why it is written here in full.
+ *
+ * DERIVED, NEVER STORED. The group exists for the length of one gesture.
+ */
+export function strokeGroupAt(strokes: Stroke[], x: number, y: number, sheetW: number): number[] | null {
+  const hit = strokeAt(strokes, x, y, sheetW);
+  if (hit == null) return null;
+
+  const boxes = strokes.map(strokeBox);
+  const chosen = new Set<number>([hit]);
+
+  // Grow over INK strokes only: an erase must not be able to bridge two
+  // drawings that are otherwise strangers.
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (let i = 0; i < strokes.length; i++) {
+      if (chosen.has(i) || strokes[i].eraser) continue;
+      const bi = boxes[i];
+      if (!bi) continue;
+      for (const j of chosen) {
+        if (strokes[j].eraser) continue;
+        const bj = boxes[j];
+        if (bj && boxesNear(bi, bj, GROUP_GAP)) { chosen.add(i); grew = true; break; }
+      }
+    }
+  }
+
+  // The assembled ink box, then the eraser clause.
+  let gx0 = Infinity, gy0 = Infinity, gx1 = -Infinity, gy1 = -Infinity;
+  for (const i of chosen) {
+    const b = boxes[i];
+    if (!b) continue;
+    if (b.x0 < gx0) gx0 = b.x0;
+    if (b.y0 < gy0) gy0 = b.y0;
+    if (b.x1 > gx1) gx1 = b.x1;
+    if (b.y1 > gy1) gy1 = b.y1;
+  }
+  const groupBox = { x0: gx0, y0: gy0, x1: gx1, y1: gy1 };
+  for (let i = 0; i < strokes.length; i++) {
+    if (!strokes[i].eraser || chosen.has(i)) continue;
+    const b = boxes[i];
+    if (b && boxesNear(b, groupBox, 0)) chosen.add(i);
+  }
+
+  return [...chosen].sort((a, b) => a - b);
+}
+
+/** The bounding box of a set of strokes, in normalized units. */
+export function groupBox(strokes: Stroke[], indices: number[]): { x0: number; y0: number; x1: number; y1: number } | null {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  let any = false;
+  for (const i of indices) {
+    const b = strokeBox(strokes[i]);
+    if (!b) continue;
+    any = true;
+    if (b.x0 < x0) x0 = b.x0;
+    if (b.y0 < y0) y0 = b.y0;
+    if (b.x1 > x1) x1 = b.x1;
+    if (b.y1 > y1) y1 = b.y1;
+  }
+  return any ? { x0, y0, x1, y1 } : null;
+}
+
+/**
+ * ITEM 126 B4 — translate a group by (dx, dy) in normalized units, returning a
+ * NEW strokes array. Pure: the caller owns when this becomes state.
+ *
+ * A MOVE REWRITES GEOMETRY. It deliberately does NOT add a per-group transform
+ * field: that would change the stored shape for no gain and force every renderer
+ * — renderStroke, renderThumbnail, the Board's box ink, anything later — to
+ * learn about groups it has no other reason to know. Rewriting points keeps the
+ * blob exactly as item 121 left it, so a move is zero DDL and zero migration.
+ */
+export function translateGroup(strokes: Stroke[], indices: number[], dx: number, dy: number): Stroke[] {
+  const set = new Set(indices);
+  return strokes.map((st, i) => (set.has(i)
+    ? { ...st, points: st.points.map(pt => ({ ...pt, x: pt.x + dx, y: pt.y + dy })) }
+    : st));
+}
+
+/**
+ * ITEM 126 B4 — clamp a proposed delta so the group's box cannot leave the
+ * sheet. The exact partner of FX17's bottom stop, and the same law: a limit
+ * STOPS, it never relocates. `maxY` is the sheet's height in normalized units
+ * (height / width), because y is normalized by WIDTH (J8).
+ */
+export function clampDelta(box: { x0: number; y0: number; x1: number; y1: number },
+                           dx: number, dy: number, maxY: number): { dx: number; dy: number } {
+  let cx = dx, cy = dy;
+  if (box.x0 + cx < 0) cx = -box.x0;
+  if (box.x1 + cx > 1) cx = 1 - box.x1;
+  if (box.y0 + cy < 0) cy = -box.y0;
+  if (box.y1 + cy > maxY) cy = maxY - box.y1;
+  return { dx: cx, dy: cy };
+}
+
 // Render one stroke. Points are stored normalized (0..1 by the sheet's width);
 // denormalize by the current sheet width — the same scale on both axes — so a
 // circle stays a circle at any width. Smoothing: quadratic midpoints through the

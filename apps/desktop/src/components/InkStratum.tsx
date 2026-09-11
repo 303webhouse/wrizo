@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ERASER_WIDTH, inkColor, renderStroke } from '../store/ink';
+import { ERASER_WIDTH, clampDelta, groupBox, inkColor, renderStroke, strokeGroupAt, translateGroup } from '../store/ink';
 import type { Stroke, StrokeInk, StrokeNib, StrokePoint, StrokeTip } from '../types';
 
 // ITEM 121 I2 — THE INK STRATUM. The Journal's J-series drawing layer
@@ -129,6 +129,25 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   const captureRectRef = useRef<DOMRect | null>(null);
   const [canUndo, setCanUndo] = useState(false);
 
+  // ITEM 126 B4 — THE ARMED GROUP. `armed` is state (the outline must re-render
+  // with it); `armedRef` mirrors it for the once-per-permission listener effect,
+  // the same ref-mirror pattern the pen and eraser already use so the listeners
+  // never re-attach mid-gesture.
+  const [armed, setArmed] = useState<number[] | null>(null);
+  const armedRef = useRef<number[] | null>(null);
+  armedRef.current = armed;
+  // The live drag delta, in normalized units. A ref, not state: it changes every
+  // pointermove and a render per move is exactly the cost J2's ring avoided.
+  const dragRef = useRef<{ x: number; y: number; dx: number; dy: number } | null>(null);
+
+  // ITEM 126 B4 — UNDO BECOMES A SNAPSHOT, and that GENERALIZES item 121 rather
+  // than changing it. It used to be `slice(0, -1)` — drop the last stroke — which
+  // cannot express "put that drawing back where it was". One level is unchanged;
+  // what the level holds is now the whole strokes array as it stood before the
+  // last undoable act, so one mechanism reverses a stroke AND a move. For a
+  // stroke-add the observable result is identical to the slice it replaces.
+  const undoSnapshotRef = useRef<Stroke[] | null>(null);
+
   // Refs the once-per-`active` listener effect reads, so it never needs to
   // re-attach when the pen or the eraser changes (the Journal's own pattern —
   // a re-attach mid-stroke would drop the in-flight pointer capture).
@@ -164,6 +183,10 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     ro.observe(sheet);
     return () => ro.disconnect();
   }, [sheetRef]);
+
+  // ITEM 126 B4 — a mode switch must not leave a group armed: the writer who
+  // returns to Draft should find the page at rest, not mid-gesture.
+  useEffect(() => { setArmed(null); }, [permission]);
 
   // Hide the ring immediately on disarm or on leaving INK (not just on the
   // next pointermove) — J2's own rule.
@@ -324,7 +347,9 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       activeStrokeRef.current = null;
       try { sheet.releasePointerCapture(e.pointerId); } catch { /* */ }
       if (stroke && stroke.points.length > 0) {
-        const next = [...strokesRef.current, stroke];
+        const before = strokesRef.current;
+        const next = [...before, stroke];
+        undoSnapshotRef.current = before;   // one level: the array as it stood
         strokesRef.current = next;
         paintCommitted(committedRef.current, sheet, next); // paint now — no 1-frame gap
         clearActive();
@@ -388,6 +413,172 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     };
   }, [permission, sheetRef]);
 
+  // ── ITEM 126 B4 · THE MOVE (permission: movable) ─────────────────────────
+  //
+  // Attached ONLY under `movable`, which is reachable ONLY from Draft and Revise
+  // (PageEditor derives it by falling PAST Free Write). That is the ruling made
+  // structural: a listener armed by "the writer is not drawing" would extend this
+  // gesture into Free Write's TEXT half and reverse R15 with nobody typing a word.
+  //
+  // THE CANVAS STAYS INERT. Everything here listens on the SHEET, as item 121's
+  // routing law requires — and it must, because the text underneath has to keep
+  // receiving every click it would otherwise get.
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (permission !== 'movable' || !sheet) return;
+
+    const norm = (e: PointerEvent | MouseEvent) => {
+      const rect = sheet.getBoundingClientRect();
+      const w = rect.width || 1;
+      // BOTH axes over WIDTH — J8's rule. Converting y by height here is the
+      // mistake that already cost this lane a check that passed for the wrong
+      // reason; it would also make every hit test miss by a factor of ~2.
+      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top) / w, w, h: rect.height };
+    };
+
+    // Repaint with the live drag applied to the armed group only.
+    const previewStrokes = () => {
+      const d = dragRef.current, a = armedRef.current;
+      if (!d || !a) return strokesRef.current;
+      return translateGroup(strokesRef.current, a, d.dx, d.dy);
+    };
+    // The armed outline rides the ACTIVE canvas, which is otherwise unused in
+    // this permission — no third canvas, no DOM overlay to keep in sync.
+    const paintOutline = () => {
+      const canvas = activeRef.current;
+      const rect = sheet.getBoundingClientRect();
+      if (!canvas) return;
+      const ctx = syncCanvas(canvas, rect.width, rect.height);
+      if (!ctx) return;
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      const a = armedRef.current;
+      if (!a) return;
+      const box = groupBox(previewStrokes(), a);
+      if (!box) return;
+      const w = rect.width, pad = 6;
+      ctx.save();
+      // Olive at rest, per the plateau register; the press is the drag itself.
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim() || '#96a05a';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(box.x0 * w - pad, box.y0 * w - pad,
+                     (box.x1 - box.x0) * w + pad * 2, (box.y1 - box.y0) * w + pad * 2);
+      ctx.restore();
+    };
+    const repaint = () => {
+      paintCommitted(committedRef.current, sheet, previewStrokes());
+      paintOutline();
+    };
+    const disarm = () => {
+      armedRef.current = null;
+      dragRef.current = null;
+      setArmed(null);
+      const canvas = activeRef.current;
+      const rect = sheet.getBoundingClientRect();
+      canvas?.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
+      paintCommitted(committedRef.current, sheet, strokesRef.current);
+    };
+
+    // THE GESTURE. A double-click that lands ON INK arms its group; one that
+    // lands on bare text does NOTHING AT ALL — no preventDefault, no
+    // stopPropagation — so the browser's own word-selection happens exactly as
+    // it always has. That miss-path is not politeness: it is Nick's "text is
+    // only editable by standard in-line word processing led by a cursor",
+    // and it is the clause an over-eager listener breaks first.
+    const onDblClick = (e: MouseEvent) => {
+      const { x, y, w } = norm(e);
+      const group = strokeGroupAt(strokesRef.current, x, y, w);
+      if (!group) { if (armedRef.current) disarm(); return; }
+      e.preventDefault();
+      e.stopPropagation();
+      // A double-click also leaves a word selected underneath; clear it, or the
+      // writer drags ink with a stray selection glowing behind it.
+      try { window.getSelection()?.removeAllRanges(); } catch { /* */ }
+      armedRef.current = group;
+      setArmed(group);
+      dragRef.current = null;
+      repaint();
+    };
+
+    const onDown = (e: PointerEvent) => {
+      const a = armedRef.current;
+      if (!a) return;                       // nothing armed: the text owns this press
+      const { x, y, w } = norm(e);
+      const box = groupBox(strokesRef.current, a);
+      // Only a press INSIDE the armed box begins a drag. A press anywhere else
+      // is the writer going back to the text, so it disarms and falls through
+      // untouched — never swallowed.
+      const pad = 8 / w;
+      if (!box || x < box.x0 - pad || x > box.x1 + pad || y < box.y0 - pad || y > box.y1 + pad) { disarm(); return; }
+      e.preventDefault();
+      e.stopPropagation();
+      dragRef.current = { x, y, dx: 0, dy: 0 };
+      try { sheet.setPointerCapture(e.pointerId); } catch { /* best effort */ }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const d = dragRef.current, a = armedRef.current;
+      if (!d || !a) return;
+      e.preventDefault();
+      const { x, y, w, h } = norm(e);
+      const box = groupBox(strokesRef.current, a);
+      if (!box) return;
+      // FX17's law, applied to ink: a limit STOPS, it never relocates. The group
+      // cannot be pushed off the sheet on either axis. maxY is height/width
+      // because y is normalized by WIDTH.
+      const c = clampDelta(box, x - d.x, y - d.y, h / w);
+      d.dx = c.dx; d.dy = c.dy;
+      repaint();
+    };
+
+    const commit = (e: PointerEvent) => {
+      const d = dragRef.current, a = armedRef.current;
+      dragRef.current = null;
+      try { sheet.releasePointerCapture(e.pointerId); } catch { /* */ }
+      if (!d || !a || (d.dx === 0 && d.dy === 0)) { repaint(); return; }
+      const before = strokesRef.current;
+      const next = translateGroup(before, a, d.dx, d.dy);
+      undoSnapshotRef.current = before;     // one level, and it reverses a MOVE
+      strokesRef.current = next;
+      setCanUndo(true);
+      repaint();
+      // Merged with live text by the host, exactly as a stroke is (item 121 I2).
+      onCommitRef.current(next);
+    };
+
+    // Escape releases the group, mid-drag or merely armed — the same
+    // cancel-without-consequence J2's onCancel gives a stroke.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !armedRef.current) return;
+      e.preventDefault();
+      dragRef.current = null;
+      disarm();
+    };
+
+    const opts = { passive: false, capture: true } as const;
+    sheet.addEventListener('dblclick', onDblClick, opts);
+    sheet.addEventListener('pointerdown', onDown, opts);
+    sheet.addEventListener('pointermove', onMove, opts);
+    sheet.addEventListener('pointerup', commit, opts);
+    sheet.addEventListener('pointercancel', commit, opts);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      sheet.removeEventListener('dblclick', onDblClick, opts);
+      sheet.removeEventListener('pointerdown', onDown, opts);
+      sheet.removeEventListener('pointermove', onMove, opts);
+      sheet.removeEventListener('pointerup', commit, opts);
+      sheet.removeEventListener('pointercancel', commit, opts);
+      window.removeEventListener('keydown', onKey);
+      // Leaving this permission must not strand an armed outline on the paper.
+      armedRef.current = null;
+      dragRef.current = null;
+      const canvas = activeRef.current;
+      const rect = sheet.getBoundingClientRect();
+      canvas?.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
+      paintCommitted(committedRef.current, sheet, strokesRef.current);
+    };
+  }, [permission, sheetRef]);
+
   // ── UNDO ─────────────────────────────────────────────────────────────────
   // One level, the last STROKE only. The Journal's undo is unified across a
   // typed run and a stroke because the Journal's own editable records typed
@@ -399,8 +590,12 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   // keeps its permanence, and the affordance lives with the ink — visible in
   // INK only. Typing does not consume it, because typing is not undoable here.
   const undo = () => {
-    const next = strokesRef.current.slice(0, -1);
+    const next = undoSnapshotRef.current;
+    if (!next) return;
+    undoSnapshotRef.current = null;
     strokesRef.current = next;
+    // A move can be undone while its group is still armed; the indices stay
+    // valid because a move never adds or removes strokes, only relocates them.
     paintCommitted(committedRef.current, sheetRef.current, next);
     setCanUndo(false);
     onCommitRef.current(next);
@@ -437,7 +632,11 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
           border: '1.5px solid var(--ink-on-paper-low)', pointerEvents: 'none',
         }}
       />
-      {permission === 'edit' && canUndo && (
+      {/* ITEM 126 B4 — offered under `edit` (a stroke to reverse) and `movable`
+          (a move to reverse), never under `inert`: Free Write's TEXT half is
+          forward-only and has nothing of its own to undo, which is what
+          item121.mjs's S8 already asserts and still does. */}
+      {permission !== 'inert' && canUndo && (
         <button
           type="button"
           className="btn-quiet ink-undo"
