@@ -2294,8 +2294,15 @@ a:focus-visible,
 .mode-tmore{ margin-left:auto; color:var(--text-low); font-size:12px; }
 .mode-swatch{ width:22px; height:22px; border:1px solid var(--ink-border-strong); cursor:pointer; padding:0; }
 .mode-swatch.active{ outline:2px solid var(--brass); outline-offset:1px; }
-.mode-nib{ height:28px; padding:0 10px; background:none; border:1px solid var(--ink-border);
-  color:var(--text-mid); font-size:12px; cursor:pointer; margin-left:8px; }
+/* SWEPT (the narrow shell's rename, 2026-09-09) — `.mode-nib` styled the
+   unframed pen bar's `nib · fine ▾` button, which was `title="Nib styles —
+   coming soon"`: a control promising a capability the narrow shell does not
+   have. G3 in miniature, so it went ABSENT rather than grayed, and its rule
+   goes with it rather than lingering as dead weight. Item 131 (phone ink)
+   brings real nibs to that surface and will dress them then. The CD1 comment
+   further down still NAMES .mode-nib as one of the looks the sliver ported
+   verbatim — that sentence is history and stays true of what was ported; only
+   the live rule is gone. */
 
 /* The lit page — fixed height; the editor scrolls inside it (typewriter fade). */
 .mode-page{ position:relative; background:var(--paper); color:var(--ink-on-paper);
@@ -2665,7 +2672,30 @@ a:focus-visible,
    frame (PageEditor/ScriptEditor/JournalEntry all render that same spacer),
    and the strip drops its own top border + top corner-rounding so it hangs
    straight off that line instead of drawing a second one just below it. */
-.desk-frame-strip{ position:absolute; top:-16px; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width);
+/* ITEM 130 (2026-09-09) — THE STRIP MUST WIN ITS OWN BAND.
+   The strip is absolute and pulled out to x=0; `.desk-frame-stagecol` is the
+   normal-flow sibling that FOLLOWS it in the DOM and begins at the host's own
+   padding-left. Both were `z-index:auto`, so DOM order decided and the stage
+   painted on top: at 1280px `--frame-host-pad-x` resolves to 38.4, the stage
+   covered the strip's 38.4-84 band, and `elementFromPoint` at a strip item's
+   own centre (x~42) returned `.desk-frame-stage` — roughly the right 54% of
+   the strip was unreachable by a REAL pointer. Every harness had reached these
+   controls with `.click()`, which never consults the hit-testing stack, so
+   nothing caught it until pw1.mjs drove real pointer events.
+
+   WHY z-index AND NOT GEOMETRY. Moving the stage clear of the strip would move
+   the PAPER, and paper never reflows for chrome — the probe asserts the dock
+   flush at 0.00px. A geometry fix would trade one law for the other. Raising
+   the strip changes hit-testing without changing layout at all.
+
+   WHY z-index:1 IS SAFE, censused rather than assumed: the cascade panel, the
+   tool sliver and the tutor panel/grip are all absolutely positioned INSIDE
+   `.desk-frame-stage` and sit right of the band (the cascade is anchored flush
+   at the strip's own right edge, x=84), so nothing legitimately overlaps the
+   strip and nothing falls under it. Modals, backdrops and toasts are `fixed`
+   at z-index 80-300, far above this. 1 is the smallest value that beats
+   `auto`, chosen so this rule claims no more of the stack than it needs. */
+.desk-frame-strip{ position:absolute; top:-16px; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width); z-index:1;
   min-height:70vh; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); overflow:hidden; }
 /* FX3 S1 — the one definite, non-percentage height near the top of the

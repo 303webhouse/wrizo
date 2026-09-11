@@ -148,6 +148,76 @@ correct under standing law — parallel agents on one browser pool would trip th
 refusal (`run-suite`'s fail-fast) and the cross-lane kill hazard (a by-name process kill murders
 other lanes' in-flight runs). One browser pool, one runner at a time.
 
+## ITEM 130 + THE NARROW SHELL'S PEN BAR — BUILT AND OFFERED — 2026-09-09 (tools lane; branch `item130-strip-hittest`)
+
+**OFFERED TO CHAT 1 — BOTH LEGS STAMPED, 78/78 EACH.** Full record:
+`docs/menus/item130-offer-2026-09-09.md`. **S0 `a039efe`** (survey, no behaviour change) · **item
+130 `0c3b42a`** · **the rename `0b4b852`** · **records `3827552`** · **merge `d1f4be3`**. Two
+tickets, two commits; the first draft bundled them under a message naming one and was split before
+any push.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b
+SUITE DONE HARNESS_PARKED=1 — 78/78 of 78 returned a passing verdict
+SUITE RESULT: CLEAN — tree=d1f4be3 bundle=index-BNOjHQno.js/573558b NO-REBUILD
+```
+
+Same tree AND the same bundle hash in both stamps; neither carries dirt. `item130.mjs` reports PASS
+(16 checks) default and PARKED: PASS (0 checks) — it parks nothing, and the empty list is auditable
+rather than an absence that looks like an oversight. **The turn was held by chat 1's announcement,
+not inferred from quiet**; the atomic waiter ran as the safety check AFTER the grant, and
+`build:web` + `tsc` were verified browserlessly BEFORE launching so no discovery could cost the
+slot. **The stamped tree is `d1f4be3`, not the announced `07a6fbc`**: origin/main had already moved
+to `d9d9b8f`, so current main was merged --no-ff before stamping — a stamp against a stale base
+describes software nobody is merging. That merge brought only ERRATA's browserless `seed-guard.mjs`
+(zero product drift), which is why the suite reads 78 files here and 77 at the 85-B merge.
+
+**ITEM 130 - THE STRIP WINS ITS OWN BAND (stacking, not geometry).** `.desk-frame-strip` is absolute
+at `left:calc(-1 * --frame-host-pad-x)`, width 84px; `.desk-frame-stagecol` is the normal-flow
+sibling that FOLLOWS it in the DOM and starts at the host's padding-left. **Neither carried a
+z-index anywhere in index.css**, so DOM order decided and the stage painted on top - at 1280px the
+stage began at 38.4 and covered the strip's 38.4-84 band, and `elementFromPoint` at a strip item's
+own centre returned `.desk-frame-stage`. **Fixed with `z-index:1`**, the smallest value that beats
+`auto`. **Geometry was the wrong lever and is untouched: moving the stage would move the PAPER, and
+paper never reflows for chrome** - a geometry fix trades one law for another. The safety argument is
+a census in the CSS beside the rule (cascade/sliver/tutor anchors all INSIDE the stage and right of
+the band; modals fixed at 80-300).
+
+**WHY IT SURVIVED, AND THE INSTRUMENT THAT ENDS IT.** Every other harness reaches these controls
+with `.click()`, **which never consults the hit-testing stack** - a control can be unreachable by a
+human and pass such a check forever. **`item130.mjs` never clicks anything**; it asks the document
+what is on top where a finger would land, at 1100/1280/1366/1680 (four widths because
+`--frame-host-pad-x` is a clamp, so the overlap varies). It carries a CONTROL asserting the stage
+still overlaps the strip (so a green cannot come from a fixture that stopped exercising the
+condition) and the 0.00 paper-flush assertion beside it (so the fix cannot trade one law for the
+other). **Bites pre-fix 5/16** on a baseline built old-product-under-current-instruments; **16/16
+after**.
+
+**THE PEN BAR - A DIAGNOSIS CORRECTED, THEN A RENAME.** The desk first read the phone's "INK" bar as
+the Ink wave's options zone rendering where the stratum never mounts. **S0 falsified that**: it is
+the OLD PEN_INKS text-colour bar, gated `{!framed &&}` so it renders only below the gate, which is
+why the narrow shell is the one surface it reaches; the Ink wave's zone is Sliver.tsx's, framed-only,
+and cannot render there - **so G3 already held by construction and there was nothing to gate**. One
+word misled it and dating settled it: `nib · fine` landed d65065c **2026-06-28**, ten weeks BEFORE
+the Ink wave's `inkNibFine` (af3c79c, **2026-09-07**). The rename's own argument came out of the
+survey: **that bar's aria-label ALREADY read 'Pen'** - one control, two names, and assistive tech had
+the right one while the eye had the wrong one. Label now from `modeBarPen`; `spreadLensInk` folds
+Spread's inline chip in beside it. **The one real locked door is REMOVED**: `nib · fine ▾`
+(`title="Nib styles - coming soon"`) is ABSENT, never grayed, with its orphaned `.mode-nib` rule
+swept in the same commit as its markup; **item 131 (phone ink)** brings real nibs there. The swatches
+keep `aria-label="Ink <hex>"` deliberately - the bar is the Pen, the swatches are its inks.
+
+**THE 1100 OVERHANG IS OWED TO C2, NOT UNWATCHED.** Adding 1100 to the matrix measured the dock
+overlapping the paper by **-29.69px on prose**. **Cluster C2 (surface anchoring) already owns it** -
+its charter names "the -29.7px overhang at 1100", and Fable's 2026-09-05 amendment specifies C2
+against the MEASURED TRIO: **prose -29.69 · screenplay -38.00 · board 0.00 (flush)**. This lane
+measured the prose row independently, from another worktree with another instrument, and read
+**-29.69 - C2's own recorded figure exactly**. That is corroboration of C2's input from a second
+source. S2 refuses both dishonest options at that width: it does not assert 0.00 (that would make
+this file permanently red for another cluster's work) and does not assert the overlap (that would
+ratify a bug as law); it asserts only that **item 130's repair did not move it**.
+
 ## ITEM 99 — THE THREE RULINGS RATIFIED; THE REAPER RE-STAMPED — 2026-09-05 (errata lane; branch `item99-orphan-reaper`)
 
 **Fable's rulings, chat 1 reading. All three RATIFIED.** Full record appended as §8 of
