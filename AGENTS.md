@@ -89,9 +89,16 @@ and the resulting flush wrote a cache that had never contained the row. A seed
 made through the seam enters the cache, so no flush can erase it — the mechanism
 is removed rather than out-timed. **A real writer is immune** (every product
 write reaches storage through the cache); this is a harness-only hazard, which is
-exactly why it went unnoticed. **Until item 85's remediation lands, this is the
-guard: new seeding goes through seams, and any edit to one of the 47 raw-writing
-harness files checks that file's own exposure before it lands.**
+exactly why it went unnoticed. **Until item 85's MIGRATION lands, this is the
+guard: new seeding goes through seams, and any edit to one of the 56 raw-writing
+harness files checks that file's own exposure before it lands.** Item 85-B is the
+instrument, not the migration, and does not discharge this: it only makes the
+count enforceable. `scripts/harness/seed-guard.mjs` measures the population every
+suite run and FAILS on any file that newly writes raw, so the number above can no
+longer rot the way it just did. It is 56 — not the 47 that stood here (never
+re-counted) and not item 85's 54, which measures `journal-entries` alone;
+`flushNow()` iterates every key in `KEYS`, and `b2-1.mjs` and `j5.mjs` write
+`projects` / `story-plans` / `drawers` raw with the identical coin flip.
 
 ## Config changes: propose, never ship
 Changes to CC's own permissions, harness configuration, or session settings

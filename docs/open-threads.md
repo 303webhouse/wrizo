@@ -2402,6 +2402,114 @@ capability is already in the house — the S0 establishes what it can do before 
 top of it). Governed by the analog law (below): Free Write is a typewriter for text and a journal
 page / sketch pad for drawing — Ink is that second half made real, not a new decoration surface.
 
+**► OFFERED (ink lane, 2026-09-07) — branch `item121-ink`, **offered SHA `cd325ab`** — the tip of the SOFTWARE, and the exact tree BOTH stamps name; this records commit sits on top of it and adds only docs.** Record:
+`docs/menus/item121-offer-2026-09-07.md` (+ `item121-s0-survey.md`). Free Write becomes what the
+analog law says it is: a **TEXT | INK switch in the band**, the Journal's whole J-series drawing
+pipeline **ported onto the framed page**, per-stroke **tip · nib · ink**, and a drawer zone
+(**TIP · NIB · INK · eraser**) that is **absent — never greyed — in TEXT**. **STYLING leaves Free
+Write**, and so does the older zone headed "Ink" that in fact coloured the typed text.
+**BOTH SETTINGS CLEAN, one tree, one bundle, neither stamp dirty — 75/75 each:
+`tree=cd325ab bundle=index-DkZ73BNk.js/567050b`** (parked ran `--no-rebuild`, so both stamps name
+the same software). 2487 passing checks unparked, 2747 parked. `item121.mjs` **43**.
+**ZERO SCHEMA AND ZERO SERVER**, checkable and checked: `git diff 2b8e5b4..HEAD -- apps/server
+packages` is **empty**. **OFFERED, NOT MERGED; no deploy asked.** Merge and deploy are separate
+words and both Nick's.
+
+**→ ITEM 121's S0 ANSWER, on the record — THE SCHEMA STOP DID NOT FIRE.** `strokes` is an existing
+`jsonb` column in `journal_entries`' ORIGINAL table body (`migrate.ts:56`), and `journal_entries` is
+the single row-per-page table every page kind lives in — `pageType` sits on the same interface as
+`strokes`. Three optional keys INSIDE that blob are invisible to Postgres: no DDL, no backfill, no
+migration. Nick's own framing, satisfied literally: *inside an existing blob is zero schema.*
+
+**→ ONE STOP STANDS, HELD FOR NICK: FLUX'S FOUR INK VALUES.** The ink pass names Plateau's four
+(walnut · iron · oxblood · sea) and no ruling or canon names an ink for any other theme — TH2
+explicitly declined to give Flux a pen ink at all (*"Journal ink is its own sealed domain, out of
+TH2's scope"*). **Flux inherits Plateau's four under the cascade rather than this lane inventing a
+theme's colours.** Storing the ink **BY TOKEN NAME** is what makes the stop cheap: four values in
+one existing block whenever the word comes, and every stroke ever drawn re-colours with no data
+touched. A stored hex would have frozen Plateau into the page forever.
+
+**→ THE PARKS: 8 ASSERTIONS TOUCHED, AND THE COUNT IS ITSELF THE FINDING.** 5 live (`ab2` 1,
+`ab3` 1, `fx7` 3) + **3 parked-section re-derivations** (`ab2` 2, `ab3` 1), plus 1 re-pointed.
+**THE I7 COMMIT CLAIMED 5, AND THE THREE IT MISSED WERE INVISIBLE TO A GREEN UNPARKED RUN — that
+suite was 75/75 CLEAN with all three already false.** They live in the `HARNESS_PARKED` sections,
+re-deriving the CURRENT membership of Free Write's drawer, which item 121 moved. Corrected on the
+record in `cd325ab` rather than quietly restated. **Item 84's arithmetic, applied to this lane: the
+two settings are two gates, and the park COUNT is a number to be audited, not a silence to trust.**
+Nothing rewritten in place — each parked entry keeps its whole supersession chain verbatim and gains
+one link (ab2's own "generation 4" precedent); the ab2 pair have now been moved by AB3, FX1 S3, FX7
+S2 and R15, **twice in opposite directions on the same clause**.
+
+**→ `fx7` DID NOT FAIL — IT THREW, AND THE SUITE RECORDED `NOVERDICT`.** A `.click()` against a
+button R15 removed aborted the file, so **not one of its 44 checks reported, pass or fail**. Logged
+as the live case of the standing law: *a driver can lie by dying as easily as by doing nothing*, and
+a probe belongs in front of every gesture. `item121.mjs` routes every gesture through one.
+
+**→ TWO DEFECTS THE HARNESS FOUND THAT READING DID NOT.** (1) **The caret was not actually dormant
+in INK** — `ForwardOnlyEditor` sets `caretColor` as an INLINE style, which beats any selector, so
+the caret went on blinking: the typewriter "put down" everywhere except where the writer was
+looking. (2) **The first eraser check passed for the wrong reason** — `penStroke`'s `y` is a
+fraction of element HEIGHT while a stored point's `y` is normalized by WIDTH, so the sampler read
+empty paper. It now reads the persisted stroke's own mid-point (alpha 102 → 0).
+
+**→ FOUR SEAMS SURFACED, NOT BUILT, each disclosed in the offer §4:** (a) I1's **server-side enum
+validation** was NOT built — `sync.ts` states a no-revalidation law for this jsonb column family,
+and building it there would contradict that law AND turn a zero-schema wave into a SERVER-BEHAVIOUR
+ship; validation lives at the **read boundary**, which is stronger for the property that matters.
+(b) The brief's **I2 mount does not fit the live geometry** — Free Write's `.mode-page` is
+fixed-height with an inner scroller, so `inset:0` would nail ink to the viewport; the stratum mounts
+inside `.mode-scroll` and I7's anchor check is re-aimed at that box. (c) **The framed band has no
+location line** (CD1 S1 retired the crumb; mockup B still shows one) — the switch keeps its position
+relative to the mode strip, and the crumb was NOT resurrected. (d) **Ink is framed-only (≥1100px)**
+per the 112-A rider — **a reach cost, and Nick's to weigh: a tablet in portrait below 1100 gets
+today's page and no ink.**
+
+**→ UNDO IS NOT UNIFIED, AND THAT IS A FINDING RATHER THAN A GAP.** The brief asked for one level
+across a typed run and a stroke. Free Write is **FORWARD-ONLY**, and `ForwardOnlyEditor`'s undo
+stack (FX6 S1) is gated to the free-edit modes by that law — a typed-run undo here would breach
+forward-only permanence, an older ruling than this wave. **The pen gets an undo; the typewriter
+keeps its permanence.** Both halves are asserted (S8).
+
+**→ ONE WORD SPENT, AND IT WAS ASKED FOR RATHER THAN TAKEN (Nick, 2026-09-07).** Free Write's drawer
+already carried a zone headed **"Ink" that was not ink** — three hardcoded hex values colouring the
+TYPED TEXT and caret, beside a "nib · fine" button that did nothing — live on journal-origin and
+legacy pages, i.e. most of them. **R15 names STYLING and does not name this**, so it went to the
+founder rather than into a build. His word: **retire it with STYLING.** `PEN_INKS`, ModeStage's
+unframed pen bar and QuickSprint keep the mechanism untouched.
+
+**→ THE THREE OPEN WORDS ARE UNSPENT**, as instructed: the **eraser's tip binding** (tip-agnostic
+AS BUILT — the zero-work default), the **typewriter FACE** (Nick's, with the theme arc), and the
+**S-Pen barrel button** (hardware-reserved; `buttons & 32`, the eraser bit, is read exactly as J2
+always read it — the barrel is not). **Pressure** rides a later slice, and the S0 correction is on
+the record: pressure is ALREADY STORED (`StrokePoint.p`); what was true is that nothing reads it.
+
+**→ ANSWERED FOR ITEM 126 / 121-B (Fable's merge-review question, 2026-09-07) — THE STRATUM IS
+FREE WRITE ONLY, AND THE INK IS HIDDEN THERE, NEVER LOST.** **Measured against the offered build,
+not read off it.** RENDER: the stratum mounts behind `framed && mode === 'journal'`, so in **Draft
+and Revise the component does not mount at all** (`stratumMounted:false`, `canvasCount:0`); a census
+confirms no second painter of a page's `entry.strokes` exists. PERSIST: **fully intact** — the
+stroke survives **Draft's own autosave, Revise's own autosave and a reload**, carrying its
+tip/nib/ink (text grew 0→19→27 while `strokes` held at 1, tip `marker`). RETURN: **byte-identical
+repaint — 2035 painted pixels before, on return, and after reload.** The half worth having measured
+is PERSIST: a Draft save that dropped `strokes` would have been data loss wearing the same symptom,
+and it does not — both save paths spread the latest row. Two adjacent facts: the instrument
+**survives a mode switch but not a reload** (back into INK from Draft; TEXT after reload, I3's
+session-scoped default), and within Free Write **the stratum is mounted in BOTH instruments** —
+`active` governs only interception, so ink stays visible while the writer types. **THIS IS A
+BOUNDARY, NOT AN OVERSIGHT:** R15 rules on ONE surface, Draft and Revise are not sketch pads, and
+mounting the stratum there would have been this lane widening its own charter. **121-B starts from:
+the ink is on the row and rendered on exactly one surface — a RENDER question, not a recovery one,
+and no migration is owed.** Full table in the offer record §7A.
+
+**→ ⚠ THE GATE THE HARNESS CANNOT REPLACE — THE REAL-DEVICE SITTING ON NICK'S TABLET.** Three
+things are hardware and are **unasserted deliberately rather than by omission**: (1) **a finger not
+drawing while a stylus is attached** — CDP has no stylus-present state, so S5 asserts THE APP'S OWN
+BRANCH (once a pen has been seen, a touch makes no stroke) and says so in the check's own name; (2)
+**palm rejection** on a real hand; (3) **the OS handwriting path** on OneUI/Chrome, the whole reason
+I0 slice 2 exists — S6 asserts the guard's signature and the no-text OUTCOME, but only the device
+can prove the recognizer never fired. A softer fourth: **whether the three tips LOOK right** is an
+eye's verdict, not a suite's.
+
 ## ITEM 122 — THE STYLING COMPLETION WAVE (fix-class) — OPENS 2026-09-06
 
 **OPENS (Fable, 2026-09-06) — FIX's next window.** Draft's **B/I/U MADE TO WORK** (item 79's marker
@@ -2496,6 +2604,40 @@ the standing schema law. **Not a builder's call.**
 Write's decoration. **Editable in Free Write. Locked-but-MOVABLE on double-click in Draft/Revise.**
 **Text is never movable, in any mode.**
 
+**► BUILD BRIEF DRAFTED (INK lane, browserless, 2026-09-08) — `docs/menus/item126-build-brief.md`.**
+Written on Fable's word during the deploy window, from `origin/main @ 39eacae`, **without taking the
+box**. Its founding fact is item 121's offer record **§7A** — the stratum renders in Free Write ONLY
+today, the ink PERSISTS intact through Draft's and Revise's autosaves and a reload, and **no
+migration is owed**: item 126 is a RENDER question, not a recovery one. Worktree named:
+`.claude/worktrees/item126-ink-across-modes`.
+
+**THE ONE STRUCTURAL FINDING, and it shrinks the ticket:** `.wz-ink-sheet` is rendered
+**UNCONDITIONALLY** inside `editorBody`, and `editorBody` is handed to ONE `ModeStage` for all three
+modes — so **the box the canvas anchors to ALREADY EXISTS in Draft and Revise**, and the mount
+extension is **one condition** (`framed && mode === 'journal'` → `framed`), not a new surface.
+Claimed browserless and flagged in the brief's own S0 as *a claim to verify, not a fact to trust*.
+
+**THE SHAPE PROPOSED:** a three-state permission (`edit` · `inert` · `movable`) replacing item 121's
+`active` boolean, worn on the paper as its own attribute so it can never be confused with
+`data-instrument` (which stays what R15 made it — *which instrument the page IS*, Free Write only);
+**the canvases stay `pointer-events:none` in every mode**, with a capture-phase `dblclick` on the
+sheet asking `store/ink.ts` for the stroke under the point (`strokeAt`) — hit arms a move, **miss
+touches nothing so bare text still selects a word**, which is Nick's own "text is only editable by a
+cursor" made checkable; a stroke group derived as a **SPATIAL CLUSTER** (never stored, so it can be
+re-tuned forever without touching a saved page); and a move persisting as **geometry**, not a
+transform field — zero DDL, the server diff stays empty.
+
+**THE ERASER CLAUSE, named because it is invisible to a check that counts strokes:** an erase is a
+stroke painted `destination-out`, so **every erase inside a moved group must travel with it** — move
+the ink and leave the erases behind and the rubbed-out parts REAPPEAR at the old position.
+
+**⚠ ONE OPEN WORD FOR NICK, surfaced rather than assumed: IS INK MOVABLE IN FREE WRITE / TEXT?** His
+sentence names Draft and Revise and is silent on Free Write's TEXT half. The brief LEANS to leaving
+it **inert** (R15 already ruled "in TEXT the stratum is inert"; do not reverse a standing ruling the
+new one is silent about) **and says the resulting asymmetry plainly**: ink would be movable in the
+two modes where you cannot draw it, and not movable in the one where you can. **One word settles it;
+the build is a one-line difference either way.**
+
 ## ITEM 127 — THE TYPED FACE, AND THE FREE WRITE MENU ROSTER — OPENS 2026-09-07
 
 **OPENS (Fable, 2026-09-07).** Free Write **"both acts like a typewriter and looks typed"** (Nick) —
@@ -2529,7 +2671,7 @@ sheet-anchored; the J-series ported whole.**
 **typewriter as behavior or also face** (Nick's word — **answered by item 127**); **the S-Pen barrel-
 button flip** (hardware-reserved, noted).
 
-**THE INK OFFER IS QUEUED, NOT MERGED:** `item121-ink @ cd325ab`, **75/75 both settings**, **zero
+**THE INK OFFER SHIPPED — `f4094b7` · railway `d3b7e67f`, 2026-09-08.** *(This line read "QUEUED, NOT MERGED" until the ship; corrected in place rather than left to mislead, and the original words are quoted here so the correction is legible.)* Its offer record and the §7A render table merged with the lane's docs at `dfa20f4`. **As offered:** `item121-ink @ cd325ab`, **75/75 both settings**, **zero
 schema by measurement** (`strokes` is an **existing jsonb column**). **Merges after the post-walk
 ship resolves; Fable's review at its merge.**
 
@@ -2619,6 +2761,10 @@ incident.**
 - **NO LANE RUNS A HARNESS.** *"The reaper cannot sweep a live owner — the S4 law's other half is
   RESTRAINT."*
 - **NOTHING IS WRITTEN INTO THE PRIMARY CHECKOUT BY ANY HAND — DOWNLOADS INCLUDED.**
+- **A WORKTREE ISOLATES FILES, NOT THE BOX. One machine, one browser pool; a run from ANY tree is a
+  run on the box.** *(Added 2026-09-09 as LAW, not as a window — it is permanently true. Earned when
+  a run from `writer-studio-fx17`, correctly built in its own worktree per the standing law, voided a
+  deploy pair at file 2 of 76: the worktree isolated its files and shared its browsers.)*
 - **Chat 1 announces the window's OPEN and CLOSE through Nick, the only courier.**
 - **Docs arriving mid-window WAIT IN DOWNLOADS** and commit post-stamp under the enumeration habit.
 
@@ -2865,7 +3011,484 @@ caught all 54 before any of them cost a day.** **ERRATA's next job, after its re
 the convention. **A rule that lives only in a document is enforced by memory; a rule that fails a
 run is enforced by the run.** This is the same reasoning that made `tutor-mirror.mjs` self-enforcing
 after 43 silent commits of divergence.
-Registry: next free **130**.
+
+## PW1 — BOARDS CONNECTED: BUILT, OFFERED, MERGED — 2026-09-08/09 (pw1 lane; branch `pw1-boards-connected`)
+
+**MERGED at `c2d5539`** (chat 1, TAKE WORD — MERGE, not deploy), branch `pw1-boards-connected`
+@ **`57a0878`**, cut from `origin/main` @ `ddb5cf7`. **Offer record:**
+`docs/wrizo-alpha/pw1-boards-connected-offer-2026-09-08.md` — **written POST-MERGE, and late;
+see the gate finding below.** Brief: `docs/menus/pw1-build-brief.md`.
+
+**THE SLICE:** the geography was already built and listed the **wrong subject**. `PlanPanel`
+showed `getBinderPages(projectId)` — which containers live inside this page's DRAWER — when the
+writer asked which containers hold **this page**. **Co-location is not connection.** The set
+becomes `planBoardId ∪ getBoardsPinning`. Zero new entities, zero new routes, **zero schema,
+zero server bytes**.
+
+**ITEM 125's STORAGE HOME — ANSWERED BY THIS S0, AND NO COLUMN IS IMPLICATED.** `onCanvas?:
+boolean`, an additive optional field on the existing `page-pin` `Box`, inside the board's own
+`boxes` jsonb. **Measured, not assumed:** `sync.ts` writes `JSON.stringify(e.boxes ?? null)` and
+reads `r.boxes ?? undefined` — a WHOLE-BLOB mapper with no per-field enumeration at either end —
+and the `Box` interface already carries **eight** additive-optional precedents, of which
+`footerOn` is the exact structural twin. **ABSENCE MEANS DISPLAYED**, tested as `=== false` and
+never as falsiness, so every already-arranged board reads byte-for-byte unchanged on first
+launch: no backfill, no migration. **`getBoardsPinning` never consults the flag** — it reads
+membership by the pin's PRESENCE — so membership and display are separated structurally rather
+than by convention.
+
+**THE STAMP:** `76/76` **CLEAN in BOTH settings**, one frozen tree (`tree=57a0878
+bundle=index-8geTcfLU.js/573591b`, no `+Ndirty`). `pw1.mjs` PASS (33 checks). **Scope named:
+that stamp is against a tree cut from `ddb5cf7`, BEFORE main gained item 99 — it is not a stamp
+on the merged state**, which is chat 1's merge suite's to give.
+
+**FOUR RULINGS FOLDED (Fable, relayed by Nick):** (1) the storage home as above; (2) the
+connections zone lifts ABOVE the no-project return — a loose page's real connections never hide
+behind creation doors; (3) the **`Open the drawer →` foot row is ABSENT** in PW1 — **Nick's Q17
+"composed" ruling STANDS**, but no drawer-board surface exists in `src`, and G3 forbids a door
+onto nothing, so the row arrives in PW2 **with the surface it opens** (sequenced, not dropped;
+the reason is recorded in `PlanPanel` at the exact spot the row would occupy); (4) the rename —
+the Plan heading is Nick's exact term **`Boards connected`**, and the Page face's prose line and
+the Places zone both become **`Also connected to…`**. One connecting word, three faces.
+
+**TWO BUILDER'S JUDGMENTS, RATIFIED:**
+- **`pinPageToBoard` HAS TWO SIDES.** **Page-side** (Places checkbox, "Pin to a Board…") makes an
+  undisplayed **membership**; **board-side** ("New page card", "Place page on board", "Add an
+  existing page", a page born from a board's own address) **displays**, because the writer acted
+  ON the board. Item 125's own reason points this way — the rule exists so a canvas never arrives
+  furnished with arrangement the writer did NOT author, and here they authored it.
+- **`Hide from the board`, NOT "Remove".** The board card's own `Remove` already ends the
+  MEMBERSHIP; **two acts a keystroke apart never share a word.** `Remove` is untouched — **whether
+  it should now clear DISPLAY rather than membership routes to PW2.**
+
+**THE FIRST STAMP PAIR WAS RED, AND ONE RED WAS THE HARNESS BEING RIGHT.** `item9192.mjs`'s *"the
+board RENDERS a card, not merely a row in storage"* failed — and it was **correct**: its journey
+is the board's own *New page card* door, and the build had made the card the writer just asked
+for invisible, resurrecting the symptom item 92 was about. **The check was not superseded; the
+BUILD was wrong**, and the fix landed in the product (the two-sided `pinPageToBoard` above), not
+in the harness. `tu1.mjs`'s membership line was the other, and that one WAS a lawful supersession.
+
+> **CANON, from this lane: A CHECK THAT GOES RED IS NOT AUTOMATICALLY A CHECK TO RETIRE.** The
+> question is *"is this check still true of the product I meant to build?"* before reaching for
+> `pok()`. `item9192` is the worked example.
+
+**THE PARK SWEEP — 20 RETIRED / 17 NAMES, AUDITED BY EXECUTION** (the count is the check, not the
+colour of the run; figures taken from the actual `pok()` results in the parked run, not from the
+roster): **behind the gate 16 / 13** — `cd2` 6/6, `ab4` 8/5 (three names × both reference widths),
+`b2` 1/1 (generation 4), `cd1` 1/1 (the framed crumb's absence, which is the ruling S6 overturns);
+**superseded in place with live successors 4 / 4** — `ab4` 3, `tu1` 1.
+
+> **CANON, and the S0's own correction: SWEEP FOR WHAT A CHANGE *DOES*, NOT FOR WHAT IT
+> *RENAMES*.** This S0 reported **15 / 12**; the true figure is **20 / 17**. The sweep grepped the
+> STRINGS the slice renamed and found `ab4` alone — it missed the two BEHAVIOURS it changed (a
+> fresh page-side pin no longer renders; the membership line's word moved), which `tu1` and
+> `item9192` assert without ever naming a string. **Four of the five extras were found by RUNNING
+> the suite, not by reading it** — so a full run is PART of a sweep, not its confirmation.
+
+**TWO DRIVER HAZARDS FIXED RATHER THAN INHERITED** (a driver can lie by dying as easily as by
+doing nothing): `cd2.mjs`'s bare `.click()` on the retired `Open…` link, and `ab4.mjs`'s bare
+`dispatchEvent` on a card item 125 no longer puts on the canvas — **each would have ABORTED ITS
+WHOLE FILE** and reported nothing downstream.
+
+**⚠ THE GATE FINDING — CHAT 1'S, AND CONCEDED WITHOUT QUALIFICATION.** The offer carried **no
+ledger entry and no offer record**; `docs/` was untouched on the branch, so the 76/76 claim
+reached chat 1 **by relay only and could not be verified from the branch** — **the same gate
+112-A's first offer failed.** It merged on the strength of chat 1's own merge suite, which is
+**stronger evidence than an offer record, not weaker** — but the record was owed and the gate did
+not pass. Both artefacts are written post-merge on `pw1-records` (branched from `origin/main` @
+`c2d5539`). **The lateness is recorded, not repaired by back-dating.**
+
+**NOT IN THIS SLICE, BY DESIGN:** nested boards (item 128), card transfer (item 123), the
+drawer-board surface and its foot row. **All PW2.** C5/C6 were blocked on this arc.
+
+## ITEM 130 — THE CASCADE STRIP IS HALF-UNREACHABLE BY A REAL POINTER (layout/defect) — OPENS 2026-09-08
+
+**OPENS** (Fable's number, on PW1's finding — *"yours to have found, not to fix here"*).
+**PRE-EXISTING; NOT introduced by PW1**, established from the diff rather than asserted:
+`DeskFrame.tsx` is untouched by that branch and its only frame-adjacent CSS is the restored
+crumb's `margin-right:auto` INSIDE `.sprint-nav`, which cannot move the stage's left edge.
+
+**THE MECHANISM.** `.desk-frame-strip` is `position:absolute` at `left: calc(-1 *
+var(--frame-host-pad-x))` with `width: var(--strip-width)`; `.desk-frame-stage` is the normal-flow
+sibling that FOLLOWS it in the DOM and begins at the host's own padding-left. Both carry
+`z-index: auto`, so the later one paints on top.
+
+**MEASURED at 1280×900, framed prose:** strip item rect `left 1, width 82` (the strip band spans
+`0–84`); `.desk-frame-stage` rect `left 38.39`. A strip item's own CENTRE is `x = 42`, which lands
+inside the overlap — `document.elementFromPoint(42, 261)` returns **`desk-frame-stage
+desk-frame-stage--prose`**, not the button, and `getComputedStyle(stage).pointerEvents` is
+`auto`. **Roughly the right 54% of the strip's width is covered**; only its left portion is
+reachable by a real pointer.
+
+**WHY NOTHING CAUGHT IT:** every existing harness reaches these controls with `.click()`, which
+**bypasses hit-testing entirely**. The finding surfaced only because `pw1.mjs` drives real CDP
+pointer events under the standing "probes drive real pointer events" law, and its driver now
+point-scans for a genuinely hit-testable point (see `pw1.mjs`'s own `hittablePointBy` comment,
+which carries the mechanism in-tree).
+
+**NOT FIXED HERE, by Fable's word.** **Open question for the owner:** whether the writer-visible
+symptom is a mis-aimed click at the glyph (the glyph is centred, i.e. inside the covered band) or
+merely a reduced hit target — that wants a founder observation, not a builder's guess.
+
+## CANON — NEVER COUNT FROM A VIEW YOU CUT (the listing trap, third instance) — 2026-09-09
+
+**RULED as canon on chat 1's own error.** A count taken from a TRUNCATED, FILTERED or PAGED view is a
+count of the view, not of the thing. **The cut is invisible in the output you are reading** — that is
+the whole trap: nothing in a `tail -14` says "one line was removed above."
+
+**THREE INSTANCES, all corrected UPWARD by execution:**
+1. **Item 85's population: an S0 READ 47 harness files; execution MEASURED 56.** `AGENTS.md` amends.
+2. **PW1's park sweep: its S0 READ 15 retired names; execution MEASURED 17** (20 retired / 17 names).
+3. **PW1's product-file count: chat 1 said 13; the truth is 15 (13 modified + 2 new).** Chat 1 piped
+   the diffstat through `tail -14` and counted the lines it could see — **`BoardEditor.tsx` had
+   scrolled off the top**, the single most load-bearing file in the change and one of the three the
+   review reads at the hunks. **The view was cut by chat 1's own hand, then trusted as a census.**
+
+**THE RULE: to count a population, ENUMERATE IT — `wc -l`, `--name-only | wc -l`, a `uniq -c` — never
+read a number off a display you paged, tailed, headed or grepped.** Every instance so far has been an
+UNDERCOUNT, and an undercount is the dangerous direction: it reports less exposure than exists.
+**Sibling laws: a green re-run is not a diagnosis; a sentence about a run is not a run; and the
+park-count audit — each the same instruction to measure the thing rather than a story about it.**
+
+## CANON — A MODE'S TOOL PREFERENCE NEVER OVERRIDES A CORRUPTION RULE — 2026-09-09
+
+**Re-earned by chat 1 the same day, on the same batch.** A harness mode instructed "do the work
+through Bash wherever it can accomplish the job." Chat 1 then reached for a **heredoc** to write a
+backtick-heavy script — and the shell failed to parse it, which is the *lucky* outcome. **The standing
+guard already forbade exactly that: backtick- and backslash-bearing content travels by written FILE,
+never inline through a shell.**
+
+**RULED: a mode's PREFERENCE for a tool never overrides a RULE about content that tool CORRUPTS
+BEFORE ANY INTERPRETER SEES IT.** The shell performs command substitution on backticks while the
+bytes are still in transit, so the corruption happens **upstream of every check you would use to catch
+it** — including the script's own anchor validation. **"Wherever it can accomplish the job" is the
+clause that settles it: for this content, it cannot.** The Write tool is not the cautious option there
+— **it is the only one that preserves the bytes.**
+
+**A silent success is the dangerous case, not the parse error.** This attempt died loudly. The
+original instance did not: a collapsed escape corrupted a drift check and came near to corrupting
+`draftFormat.ts`.
+
+## AMENDMENT — THE PW1 MERGE MESSAGE'S FILE COUNT — 2026-09-09
+
+**Chat 1's merge commit for `pw1-boards-connected @ 57a0878` states "13 product source". THE CORRECT
+COUNT IS 15 — 13 modified + 2 new** (`LocationCrumb.tsx`, `planTrail.ts`). **A commit message is
+immutable, so the correction lives here beside it rather than being rewritten**, the same discipline
+the parks follow. Cause recorded above as the listing trap's third instance.
+
+## THE OFFER-RECORD GATE — WHAT PW1'S MERGE DID AND DID NOT SET AS PRECEDENT — 2026-09-09
+
+**PW1 was merged with `docs/` untouched: no offer record, no ledger entry.** Chat 1 flagged it at the
+merge rather than after, and merged anyway **because Fable explicitly ordered it** — not because a
+merge suite substitutes for the record.
+
+**RULED, so no lane reads this as precedent: THE RECORD IS NEVER OPTIONAL. It was DEFERRED, and it
+was still OWED** — landed afterwards as `pw1-records @ 826f7ef` (the offer record with its stamps
+quoted and their scope named, **the first RED pair reported beside the green**, and the ledger band
+opening item 130). **The gate that 112-A's first offer failed at `6093e35` STANDS unchanged.** An
+order can change WHEN the record lands. Nothing changes WHETHER it does.
+
+## ITEM 85-B — RULED: seed-guard.mjs IS THE CANONICAL INSTRUMENT — 2026-09-09
+
+**ERRATA's `seed-guard.mjs` is the instrument.** **Population 56.** It matches on **runtime KEYS**,
+and takes **reason strings for deliberate external-mutation simulations** — so **`bm1`'s tombstone
+write is LAWFUL and stays, annotated.** *(A guard that cannot express a legitimate exception gets
+bypassed quietly — the seam lesson, turned on the guard itself.)*
+
+**FIX's duplicate is DROPPED AS A FILE; its two regression checks FOLD IN** as a follow-up commit:
+**item 129 cannot regress**, and **`JournalPageSeed` keeps its migration-dependent fields.**
+**`AGENTS.md`'s 47 → 56 and "remediation" → "migration" ACCEPTED as the separable commit.**
+
+## ITEM 85-C — THE MIGRATION: 56 FILES TO THE SEAMS — OPENS 2026-09-09
+
+**ERRATA's, after 85-B merges. FIX keeps item 122.** The remediation is **proven, not theorised** —
+`bm1` migrated and its coin flip stopped. **85-B makes new raw writes impossible; 85-C removes those
+that remain.** Guard first, then migrate — otherwise the population grows while it is being drained.
+
+## TOOLS TAKES ITEM 130 — 2026-09-09
+
+**TOOLS owns item 130** (the cascade strip's unreachable right ~54% — **`DeskFrame.tsx` is its
+territory**) **and the narrow shell's "INK" → "Pen" rename.** **The `item121-ink` branch belongs to
+the INK lane; TOOLS does not continue it.**
+
+## ITEM 125 — DISCHARGED AS RULED — 2026-09-09
+
+**Closed by PW1 and confirmed at Fable's review.** `onCanvas` on the existing **page-pin Box**: new
+memberships write the flag **explicitly**, pre-existing pins carry none and **DISPLAY** (the gate
+withholds only on an explicit `false`), and **`getBoardsPinning` reads the pin's PRESENCE and never
+consults the flag** — so **membership and display separate STRUCTURALLY, not by convention.** **Zero
+column, zero migration. The schema STOP never fired.**
+
+## PW1 HAS TWO STAMPS — SEPARATE FACTS, SEPARATE TREES — 2026-09-09
+
+**Recorded apart, and never to be conflated:**
+- **PW1's OWN stamp: 76/76 both settings at its frozen tree — which PREDATES item 99 on `main`.** It
+  is evidence about the OFFER.
+- **Chat 1's MERGE SUITE at `c2d5539` is the authority for the MERGED state** — the first measurement
+  carrying PW1 **and** item 99 **and** the Ink together.
+
+**Neither is promoted into a claim about the other.** A stamp describes the tree it ran on and nothing
+else — the same discipline that made the post-walk roster read 74 rather than the review's 72.
+## CANON — THREE LINES FROM THE BOARDS-CONNECTED SHIP — 2026-09-09
+
+**1. WAIT AND LAUNCH ARE ONE ACT — two steps leave a gap another lane can claim (TOOLS).** Chat 1's
+pre-flight read `runners: 0 | browsers: 0`; `writer-studio-fx17` launched **between that reading and
+the suite reaching the box**, and the pair voided at file 2 of 76. **A check whose result is acted on
+in a LATER step is a check of the past.** The fix is structural, not procedural: **one process waits
+for quiet and CLAIMS the box in the same act**, chaining the parked leg on the default's exit 0 so no
+gap opens at either seam. **It passed on its first outing.**
+
+**2. A WINDOW WRITTEN INTO A DURABLE BRIEF IS A LANDMINE WITH A TIMER (the PLAN desk).** Transient
+coordination state — a box-quiet call, a hold, whose turn it is — **must never be written into a
+document that outlives it.** A brief is read months later as though still in force. **Durable laws
+belong in briefs** (pin `origin/main` by SHA; never build in the primary checkout; a worktree isolates
+files, not the box). **A window belongs in the relay that opened it, and nowhere else.**
+
+**3. WHEN A PROBE ALLEGES SOMETHING AS SEVERE AS LOST WORDS, SUSPECT THE INSTRUMENT FIRST (FIX).**
+The severity of a claim is evidence about **how carefully it must be verified**, never about how
+likely it is. **The more catastrophic the alleged defect, the more probable that the probe is broken**
+— because a defect that destroys a writer's words would have been found by a writer long before a
+harness noticed. *(Siblings: the item-129 cascade hypothesis, excluded by asking whether the row
+survived; and item 130, where a synthetic `.click()` CONCEALED a true defect instead of inventing a
+false one.)*
+
+## FIX — TWO RULINGS FOR ITS OFFER — 2026-09-09
+
+- **THE DEAD DEFAULT RENDERERS ARE DELETED.** **A dead export that still produces the RETIRED register
+  is a trap** — the next reader wires it up in good faith and reintroduces the old behaviour.
+  **Parks QUOTE the past and need no live function to point at**, so nothing is lost by deleting it.
+  **Migrate any caller first.**
+- **REVEAL-ON-CLICK IS THE NEXT WINDOW'S FIRST JOB — page and card TOGETHER: one register, one
+  behaviour.** Splitting the surfaces is what produced the divergence being cleaned up.
+
+## TOOLS' C2 CORROBORATION — A SECOND SOURCE, NOT A NEW SIGHTING — 2026-09-09
+
+**TOOLS independently measured the prose row at `-29.69`.** **Recorded as a SECOND SOURCE for C2's
+existing input — not a fresh sighting.** The distinction matters to the count: **two lanes measuring
+the same value once is one fact with two witnesses, not two facts.** Treating corroboration as a new
+observation inflates a population the same way counting from a cut view deflates one.
+
+## THE BOX ORDER AFTER THIS STAMP — 2026-09-09
+
+**1. ERRATA's 85-B pair · 2. TOOLS' item-130 + Pen-rename pair** *(its offer at `3827552` carries its
+stamps marked **OWED** — correctly, and that is the gate working)* **· 3. FIX's re-stamp after the
+dead-renderer deletion · 4. THE REOPEN ANNOUNCEMENT.** **No lane waits on quiet to guess its turn;
+the ordering is the ruling.**
+## ITEM 131 — THE PW1 ERRATA (three, founder-confirmed live) — OPENS 2026-09-09
+
+**BOARDS CONNECTED IS FOUNDER-CONFIRMED LIVE** at **`39eacae` · railway `479adc19`.** Nick walked it
+on production and returned **three errata.** **Fix-class, PW1's own errata branch, and it takes the
+box AFTER FIX** in the standing order.
+
+**(a) CONDITION-BOARDS ARE LISTED AS CONNECTIONS — A CANON VIOLATION, and the most serious of the
+three.** The three-space canon already rules, on this ledger: **"Shelf and Trash are displays of a
+CONDITION (loose; deleted), NOT places."** The Plan panel's subject is **the containers that HOLD the
+page** — so a condition can never appear there. **This is not a rendering bug; the panel is answering
+a different question than the canon asks it to answer.**
+
+**NICK'S RULING ON (a), and it names TWO surfaces, not one:** **the Shelf is NEVER shown as a board.**
+**Condition-boards are excluded from "Boards connected" AND from the Structure lens's connection**
+**line.** **RULED — errata #1 proceeds as ordered.**
+
+*(The second surface is the part a fix scoped to the reported symptom would have missed: the erratum
+was walked on the Plan panel, but the same wrong membership feeds the Structure lens. **The canon is
+about what a condition IS, so every surface that answers "which containers hold this page" inherits
+the exclusion.** A builder fixing only the panel would ship the violation again through the lens.)*
+
+**(b) STALE NO-PROJECT COPY.** Superseded wording surviving on the no-project path.
+
+**(c) A MEANING-CHANGING CRUMB TRUNCATION.** **The distinction is the whole erratum: a truncation that
+ELIDES is a cosmetic limit; a truncation that CHANGES THE MEANING is a defect.** The crumb tells a
+writer where they are, and a location that reads as a different location is worse than no location.
+
+**WHY THE SUITE DID NOT CATCH (a), recorded plainly rather than excused.** It passed `pw1.mjs`'s 33
+checks, both legs of a merge suite, a deploy pair, and Fable's review at the load-bearing hunks.
+**None of that could have caught it: no check encodes "the Shelf is not a place."** The harness
+verifies BEHAVIOUR — that the listed boards render, persist and route — and the panel did all of that
+correctly **with the wrong members in the list.** **A canon violation is a claim about MEANING, and
+meaning is exactly what a green suite cannot certify.** This is the same shape as item 130, where
+every harness clicked a control that no human pointer could reach: **the instrument answered the
+question it was asked, and the question was not the one that mattered.**
+
+**THE FOUNDER WALK REMAINS THE ONLY INSTRUMENT FOR THIS CLASS.** Item 118 (c), item 130 and now
+131 (a) were each found by a person using the product, and each had passed everything else.
+
+**CARRIED, NOT CLOSED: the FRAGMENTS DUPLICATE OBS still stands.** It survives this ship unresolved
+and is not folded into these three.
+
+## CANON — A SUITE CERTIFIES BEHAVIOUR; A SITTING CERTIFIES MEANING — 2026-09-10
+
+**THE LINE, ruled as canon:** **"The instrument answered the question it was asked — and that wasn't
+the question that mattered."**
+
+**A SUITE CERTIFIES BEHAVIOUR. A SITTING CERTIFIES MEANING.** A harness can prove that a list renders,
+persists, routes and survives a reload. **It cannot prove the list contains the RIGHT MEMBERS**, that
+an address names where the writer actually is, or that a sentence says the true thing — because those
+are claims about **meaning**, and no assertion encodes them unless someone first knew to write it.
+
+**THEREFORE, AS A GATE AND NOT A COURTESY: surfaces that CARRY MEANING — membership lists, address
+lines, connection sentences — get a FOUNDER SITTING before they are called done.** Not a demo after
+the fact; **a gate, in the same sense the suite is a gate.**
+
+**EVIDENCE — three defects, each of which passed EVERYTHING automated:**
+- **ITEM 118 (c)** — cards vanished past the right edge; found by the founder on a populated board.
+- **ITEM 130** — the cascade strip's right ~54% unreachable by a real pointer. **Every harness clicked
+  it successfully, because `.click()` bypasses hit-testing.** The synthetic event did not invent a
+  false red; **it CONCEALED a true one.**
+- **ITEM 131 (a)** — condition-boards listed as connections. Passed 33 checks, a merge suite, a deploy
+  pair and a review at the load-bearing hunks. **The panel rendered, persisted and routed correctly
+  WITH THE WRONG MEMBERS IN THE LIST.**
+
+**The pattern is not that the instruments failed. Each answered its question correctly.** The failure
+is that **no instrument was pointed at meaning**, and only a person using the product is.
+
+## THE RULING'S STRUCTURAL FORM — `getBoardsPinning` / `getBoardsConnecting` — RATIFIED 2026-09-10
+
+**PW1's split is RATIFIED as the structural form of Nick's condition-board ruling, and the two names
+are recorded HERE, beside the canon, so the REASON travels with them:**
+
+- **`getBoardsPinning` — RAW MEMBERSHIP.** Every board pinning the page, conditions included. It
+  answers a storage question and must stay honest about what is stored.
+- **`getBoardsConnecting` — THE READER.** Membership **with the canon applied**: condition-boards
+  excluded. **Every surface that answers "which containers hold this page" calls THIS one** —
+  "Boards connected" and the Structure lens's connection line alike.
+
+**WHY A SPLIT RATHER THAN A FILTER AT EACH CALL SITE:** erratum 131 (a) was walked on ONE surface and
+the ruling reached TWO. **A filter written at the call site is a rule that must be remembered every
+time; a named reader is a rule that must be BYPASSED on purpose.** The split makes the canon
+**impossible to half-apply** — which is precisely how the violation shipped in the first place.
+
+*(Status at time of ratification: `getBoardsPinning` is live on `main` at three call sites;
+**`getBoardsConnecting` does not yet exist on `main`** — it is the errata branch's form, ratified
+here in advance of its build so the brief and the ledger agree.)*
+
+## REGISTRY RECONCILIATION — TWO ITEMS NEARLY SHARED A NUMBER — 2026-09-10
+
+**ITEM 131 IS THE SHELF / CONDITION-BOARDS ERRATUM** — as chat 1 and PW1 both independently recorded
+it.
+
+**ITEM 132 — PHONE INK. PARKED on Nick's word: "later."** It had been numbered **131** in a relay that
+**evidently never landed**, so the two would have collided. **Renumbered here so no number carries two
+meanings.**
+
+*(Worth noting as a near-miss rather than a clean save: the collision was caught only because BOTH
+chat 1 and PW1 wrote 131 for the erratum and the mismatch surfaced. **A registry is only as good as
+the relays that reach it**, and a lost relay is invisible from the inside — nothing in the ledger
+looks wrong when a number was never claimed.)*
+
+## THE RELAY AUDIT — INSTITUTED 2026-09-10
+
+**AT EVERY STAMP: Fable lists the rulings issued since the last stamp; chat 1 confirms each LANDED or
+reports it MISSING.** **The point is that ABSENCE BECOMES VISIBLE.** A ledger cannot show what never
+reached it — **nothing looks wrong when a ruling was simply never written down** — so the check has to
+come from the sender's list, not from reading the record.
+
+**FIRST AUDIT, since `39eacae` (Boards Connected):** (a) item 132 phone ink parked — **LANDED** (via
+the collision). (b) the corroboration canon — **LANDED**. (c) INK's TEXT-half ruling — **LANDED** in
+the 121-B brief merge. (d) FIX's two rulings — **LANDED**. (e) the three canon lines — **LANDED**.
+(f) the box-is-one-machine sentence — **LANDED**. (g) the fourth canon line + the split — **LANDED**.
+(i) PW1's no-blank-stamp practice — **recorded below.**
+
+**(h) THE PLAN DESK'S AMENDED BRIEFS + AMENDMENT NOTE — WAS MISSING. NOW LANDED.** Chat 1 queued them
+in a batch plan, landed everything around them, and never returned. **The first audit caught exactly
+the thing it was built to catch, on its first run.** Confirmed by measurement rather than memory: all
+three were sitting in Downloads at the stated md5s (`6561bdfd` / `542bf3c1` / `43d2895b`) while the
+briefs on `main` were still the older versions. **A queued item is not a landed item, and only a list
+kept OUTSIDE the ledger can tell the difference.**
+
+## CANON — A STAMPED TREE CARRIES NO BLANK STAMP (PW1's practice, ratified) — 2026-09-10
+
+**A stamp field is NEVER left blank.** It either carries **the stamp verbatim, naming the tree it ran
+on and the scope of what it covers**, or it says **OWED** in as many words.
+
+**WHY: a blank and an OWED look identical on the page and mean opposite things.** A blank reads as
+"nobody thought about this"; an OWED reads as "measured deliberately, not yet run." **Only one of
+those is a gate.** A reader cannot tell an unrun suite from an unrecorded one, so the offer must say.
+
+**BOTH FORMS ON THE RECORD, a page apart, and the contrast is the teaching:** **PW1's offer record**
+quoted its stamps verbatim **with their scope named** — including **the first RED pair reported beside
+the green**, which a blank would have silently swallowed. **TOOLS' offer at `3827552`** marked its
+stamps **OWED** — correctly, and that is the gate working rather than failing.
+
+**Corollary, from the same practice: a stamp describes THE TREE IT RAN ON and nothing else.** This is
+why PW1 has two stamps recorded separately, why the post-walk roster read 74 against a review's 72,
+and why a re-stamp is owed whenever HEAD moves — **including when it moves for records only.**
+## CANON — AN OUT DIRECTORY IS PER-ATTEMPT (ERRATA's words) — 2026-09-10
+
+**ERRATA's line, ruled as canon:** **"A directory of green files looks like evidence rather than
+prose."**
+
+**OUT DIRECTORIES ARE PER-ATTEMPT. NEVER REUSED across a killed run and its retry.** A retry that
+writes into its predecessor's directory leaves **the dead run's green files sitting beside the live
+run's**, indistinguishable by anything a reader can see. **The survivors do not announce which run
+produced them** — and a folder of passing results reads as a measured result, not as the debris of
+two attempts.
+
+**A MIXED DIRECTORY IS QUARANTINED AND NAMED — NEVER READ.** Not sorted by timestamp, not filtered,
+not partially trusted. **Once two runs have written to one directory, no file in it can be attributed
+with certainty**, and an attribution you cannot make is not one to guess at.
+
+**WHY THIS BELONGS BESIDE THE OTHER COUNTING LAWS.** It is the same failure as counting from a cut
+view, and as reading a suite's summary line instead of its verdict: **an artifact that LOOKS like a
+measurement, produced by something other than the measurement.** The suite of record already defends
+the live side of this — it refuses a contended box rather than reporting a partly-trustworthy result
+— and this defends the recorded side. **A sweep cannot be half-clean; a directory cannot be
+half-attributed.**
+
+**Sibling laws: never count from a view you cut · a sentence about a run is not a run · a green re-run
+is not a diagnosis · a stamped tree carries no blank stamp.** Each one says: **measure the thing, and
+keep the evidence able to say which thing it measured.**
+## ITEM 85-C — PRODUCT-CODE AUTHORITY, NARROWLY GRANTED — 2026-09-10
+
+**GRANTED: product-code authority FOR TEST SEAMS ONLY.** **Thin wrappers over EXISTING store paths.
+ZERO schema. ZERO behaviour change.** **A NEW STORE CAPABILITY STOPS** — if a migration needs the
+store to be able to do something it cannot already do, that is not a seam, and it goes to Nick.
+
+**The boundary is the whole grant:** a seam **exposes** a path the product already walks; a capability
+**adds** one. **The first cannot change what the app does; the second can.** Item 129 is the worked
+example — `JournalPageSeed` gained four optional fields, every one applied only when supplied, and
+`apps/desktop/src` had **zero callers**, so production behaviour was untouched **by construction**
+rather than by care.
+
+**THE WAVES: seams + 28, then the 27.** ERRATA **builds browserless**; **the box order stands.**
+
+**THE POPULATION RECONCILES EXACTLY — measured, not asserted** (the guard is browserless, so this cost
+no box time):
+
+```
+population 56  =  55 unclassified debt  +  1 annotated deliberate (bm1.mjs)
+55 debt        =  28 (first wave)        +  27 (second wave)
+```
+
+**bm1 is the annotated one and is NOT debt.** Its remaining raw write is not a seed: it is a deliberate
+**two-device TOMBSTONE simulation** — a row vanishing out from under a mounted surface — and **there is
+no seam for "another device deleted this", because the app cannot do it.** Item 129 migrated bm1's
+SEEDING and kept this, correctly. **A raw write has two shapes and only one is a debt.**
+
+## CANON — GUARD THE VALUE, NOT THE KEY — 2026-09-10
+
+**The guard parses its six collection names out of `persistence.ts`'s OWN `KEYS` object AT RUN TIME,
+and matches the VALUES** — `writer-studio-journal-entries` and its five siblings — **never the property
+names that point at them.** **The literal a raw write puts on the wire is the VALUE**; a guard watching
+the identifier would miss every actual offender while appearing to work.
+
+**AND THE LIST IS NEVER COPIED.** In the guard's own words: **"a hardcoded copy would be a second
+formula for one number"** — add a seventh collection to the app and a copy here **silently stops
+guarding it.** **If the parse fails, the guard FAILS LOUDLY rather than guarding nothing**, and it
+proves that with its own checks: a parse returning **fewer** keys than the app has fails too, because
+**"the dangerous shape is not a thrown error, it is a partial answer that looks like an answer."**
+
+**This is the a-guard-that-always-says-safe hazard closed from the inside**, and it is the same lesson
+as the listing trap: **a number that looks measured and is not.** A guard is only as honest as the
+population it can see, so **it must derive that population from the thing it guards** and refuse when
+it cannot.
+
+**The baseline is a RATCHET, too:** every listed file must still write raw, so a migration **deletes
+its line in the same change**; an annotation on a file that no longer writes raw **fails**, because
+**an exemption must expire with the thing it exempts or it silently pre-authorises the next raw write
+into that file.**
+Registry: next free **133**.
+
+
 
 ## NOW — blocks everything downstream
 1. ~~**The J4 merge word.**~~ **DONE — 2026-07-11.** Fable's delta review
@@ -11216,6 +11839,106 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## BOARDS CONNECTED (PW1) DEPLOY MANIFEST — 2026-09-09 (chat 1, on Nick's "ship Boards Connected on the clean pair" — Fable PASS)
+
+**LIVE: `39eacae` · railway `479adc19`** — deployment `479adc19-2c6e-4839-841e-2c1acf80b9fc`,
+service `writer-studio-app`, status **SUCCESS**, serving `index-8geTcfLU.js`.
+**PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `f4094b7` · railway `d3b7e67f`**, serving
+`index-iSZ6K_Sw.js`. **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**WHAT SHIPPED: PW1 — THE WALKABLE SLICE** (`57a0878`, merged `c2d5539`), plus the records merges
+that followed it (`pw1-records @ 826f7ef`, the INK lane's docs `cd325ab..dfa20f4`) and this session's
+ledger batch. **15 PRODUCT FILES — 13 modified + 2 new** (`LocationCrumb.tsx`, `planTrail.ts`).
+
+**ITEM 125 DISCHARGED AS RULED — zero column, zero migration.** `onCanvas` on the existing **page-pin
+Box**: new memberships write it **explicitly**, pre-existing pins carry none and **DISPLAY** (the gate
+withholds only on an explicit `false`), and **`getBoardsPinning` reads the pin's PRESENCE and never
+consults the flag** — membership and display separate **STRUCTURALLY, not by convention.** The S0
+measured the round trip: `sync.ts` is a **whole-blob mapper** with no per-field enumeration at either
+end, so the field costs nothing at the boundary.
+
+**SCHEMA: ZERO. SERVER BYTES: ZERO.**
+
+**SUITE OF RECORD — BOTH SETTINGS, FRESH AT THE DEPLOY HEAD:**
+- **DEFAULT: 76/76 CLEAN** — `tree=39eacae bundle=index-8geTcfLU.js/573591b`
+- **PARKED: 76/76 CLEAN** — identical stamp
+- **PARK AUDIT: 63 files / 176 checks** — identical to the merge suite's, so the records batch
+  disturbed no park.
+
+**TREE BARE AT UPLOAD. tsc x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 39eacae`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**;
+Railway image **linux/amd64**, container digest
+`sha256:0dccc8aa68ba57b0bfaa58ff28fe80b1628d8122d2597bdbc2f6a6d736872a71`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-8geTcfLU.js`.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
+- `index-8geTcfLU.js` — served `d0851aa07eb71a6ff9a2777dda455794` **==** stamped
+- `index-DwJr4Phd.css` — served `17a3b3b11d57132b7e92e4d2402266ed` **==** stamped
+
+**THE FIRST ATTEMPT VOIDED AT FILE 2 OF 76**, when a run launched from `writer-studio-fx17` claimed
+the box **in the gap between chat 1's pre-flight check and its launch**. The second attempt used an
+**ATOMIC WAIT-AND-LAUNCH** — one process that waits for sustained quiet and takes the box in the same
+act, with the parked leg chained on the default's exit 0 — and passed clean. **The instrument that
+produced the void was replaced before the retry, not merely re-run.**
+
+**OPEN, NON-BLOCKING: THE PARK ACCOUNTING.** PW1's §6 reads **20 retired / 17 names**, of which
+**16 / 13 executed and verified**; chat 1 measured **+18 executed** against the Ink ship's baseline.
+**No park was lost — every per-file delta is POSITIVE (AB4 +11, CD1 +1, CD2 +6)** — so the hazard the
+count-not-green law guards is measurably absent. The three numbers count different things and the
+reconciliation is owed. **Recorded as an open question rather than resolved by assertion.**
+## THE INK DEPLOY MANIFEST — 2026-09-08 (chat 1, on Nick's "Ship the INK" — Fable PASS x2)
+
+**LIVE: `f4094b7` · railway `d3b7e67f`** — deployment `d3b7e67f-6838-4d23-9c32-617d7421c67a`,
+service `writer-studio-app`, status **SUCCESS**, serving `index-iSZ6K_Sw.js`.
+**PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `4ba3670` · railway `ba29d04d`**, serving
+`index-DOYnMkS6.js`. **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**WHAT SHIPPED — three items:**
+- **ITEM 121, THE INK WAVE** (`cd325ab`, merged `48926e3`): Free Write's Text/Ink switch, the ink
+  stratum, the drawer. **Zero schema BY TYPE** — `tip`/`nib`/`ink` are optional enums whose absence
+  reads as `pen · regular · the theme's default`, exactly what every existing stroke renders as;
+  `strokes` was already an existing jsonb column. **Ink stored BY TOKEN NAME, never hex**, so a theme
+  re-colour re-points old pages instead of freezing one palette into them.
+- **ITEM 129, THE SEED SEAM** (`028ba73`, merged `0802c16`): `JournalPageSeed` gains
+  `origin`/`pageType`/`projectId`/`boxes` so a fixture can ask for a Shelf-eligible entry. **Zero
+  product callers**, so production behaviour is untouched by construction.
+- **ITEM 99, THE THREE GATES** (`3b10b2b`, merged `f4094b7`): live-suite precondition, dead owner,
+  age floor. **Harness/runner only — no product source at all.**
+
+**SCHEMA: ZERO. SERVER BYTES: ZERO** — `apps/server/` untouched across the whole range.
+
+**SUITE OF RECORD — BOTH SETTINGS, FRESH AT THE DEPLOY HEAD:**
+- **DEFAULT: 75/75 CLEAN** — `tree=f4094b7 bundle=index-iSZ6K_Sw.js/567286b`
+- **PARKED: 75/75 CLEAN** — identical stamp
+- `item121` 43 · `bm1` 36 · `item99` 41, all green in the same runs.
+- **PARK AUDIT (count, not green): 63 files / 158 checks.** Reconciled against the previous 62/158:
+  `BM1 PARKED: PASS (2 checks)` intact and `ITEM121 PARKED: PASS (0 checks)` the new no-op file — so
+  **item 129's park lift removed no park.** The count is the check.
+
+**INDEPENDENT BUILD AGREEMENT, a free check the two-lane sequence handed us:** ERRATA's stamp at
+`3b10b2b` and chat 1's at `f4094b7` produced the **byte-identical bundle** `index-iSZ6K_Sw.js/567286b`
+— exactly what must happen when the merge between two trees touches no product source.
+
+**TREE CLEAN AT UPLOAD: BARE.** **tsc x2 exit 0.** **ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == f4094b7`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**;
+Railway image **linux/amd64**, container digest
+`sha256:f33d58df2b11f90a6c89138e21e8a1892660b733e2163c73095495ddda79df57`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-iSZ6K_Sw.js`.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
+- `index-iSZ6K_Sw.js` — served `0ed2215aac1836823665dde8c4d710fa` **==** stamped
+- `index-DEVzFxzo.css` — served `9523679be12d164d95e63258f16b64ec` **==** stamped
+
+**THE FIRST SHIP UNDER THE DEPLOY WINDOW, AND IT PASSED ON THE FIRST ATTEMPT.** The three preceding
+attempts died to a RED, a VOID and a REFUSAL; **seven contention voids preceded the box-quiet call.**
+This pair had nothing to excuse. **The gate that cost ERRATA its parked leg — LIVE RUN PRESENT, BOX
+IS THEIRS — is the same gate that shipped in this bundle: it paid for itself before it deployed.**
 ## THE POST-WALK PACKAGE DEPLOY MANIFEST — 2026-09-07 (chat 1, on Nick's standing ship word — Fable PASS)
 
 **LIVE: `4ba3670` · railway `ba29d04d`** — deployment `ba29d04d-940a-4541-8d40-043051b68e5a`,
