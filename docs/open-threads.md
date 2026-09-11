@@ -3551,6 +3551,117 @@ author's work is a rehearsal; one that silently passes a stranger's correct file
 
 **85-C's product code is `persistence.ts` alone** — within the seams-only authority granted 2026-09-10
 (thin wrappers over existing store paths; a new store capability STOPS).
+## STANDING ORDER CHANGED — BATCH SHIPS, AND MERGES NO LONGER WAIT ON REVIEW (Nick, 2026-09-11)
+
+**1. BATCH SHIPS. Deploying per package STOPS.** Green offers **merge as they arrive and ACCUMULATE on
+`main`**; **ONE deploy per batch**, at a cadence chat 1 judges — roughly daily, **or when the batch
+carries something Nick is waiting to walk.** **ONE suite-of-record pair PER BATCH** instead of per
+package — **that is the saving.** **The manifest names every package in the batch.** **Nick's ship
+word covers the BATCH BY NAME.** **Any schema in a batch still STOPS and surfaces to him.**
+
+**2. MERGE WITHOUT FABLE'S REVIEW** for **harness-only offers · docs/records · lexicon and copy ·
+test-seam product code (85-C's class)** — on chat 1's own verification. **FABLE STILL REVIEWS:
+writer-facing product code · anything touching persistence/sync/server · and EVERY batch's ASSEMBLED
+DIFF BEFORE THE SHIP** (one review per batch, not per package). **REVIEWS NEVER GATE A MERGE AGAIN —
+ONLY THE DEPLOY.**
+
+**3. WHY THE BATCH REVIEW IS KEPT (Fable's reason, on the record):** **three of this arc's defects —
+118 (c), 130, 131 (a) — were MEANING-LEVEL, and a suite cannot certify meaning.** One review per batch
+costs an hour a day and is **the last gate before Nick's writers see it.**
+
+**WHAT CHAT 1'S VERIFICATION DOES AND DOES NOT COVER — stated so the new trust is calibrated.** It
+verifies **STRUCTURE**: schema, server bytes, product surface, stamp lineage, docs-only claims, park
+declarations, and **whether a stamped tree is the tree being merged.** **It does NOT verify MEANING** —
+whether a list holds the right members, whether a sentence says the true thing. **131 (a) passed chat
+1's verification AND Fable's review, and a founder found it.** So the split lands where the evidence
+puts it: **merge on structure, gate the deploy on meaning.**
+
+**THREE CONSEQUENCES OF BATCHING, named in advance rather than discovered at the first batch ship:**
+- **ROLLBACK GRANULARITY COARSENS.** The ratchet reverts **the whole batch**, so one bad package costs
+  every other package's value to undo. **The assembled-diff review now carries that weight too.**
+- **A RED AT BATCH TIME NO LONGER NAMES ITS PACKAGE.** One pair across five merges means a failure
+  could come from any of them. **This makes STAMP-THE-MERGED-TREE load-bearing rather than tidy: if
+  every offer arrives stamped on a tree that already contained `main`, each merge carries its own
+  green and a batch red bisects against those instead of from scratch.** **Requested as a HARD
+  REQUIREMENT for batch members, not a commendable habit.**
+- **THE WINDOW TAX DROPS SHARPLY, and that was the real cost.** One box-quiet window per BATCH rather
+  than per package — the tax that ate seven voids and two ships on 2026-09-08/09.
+
+**A BATCH THAT GREW AFTER NICK'S WORD IS A DIFFERENT BATCH.** The manifest names the packages, and his
+word is quoted against that name.
+
+## CANON — A FIXED FLAKE WITH NO RED ON THE RECORD IS INDISTINGUISHABLE FROM ONE THAT WAS NEVER THERE
+
+**Ruled 2026-09-11.** **The asymmetry runs one way, and that is what makes it dangerous.** A red that
+is recorded and fixed leaves **two** artifacts — the defect and its cure. A red fixed **silently**
+leaves **only the cure**: a change with no visible cause, indistinguishable later from a change that
+was never needed.
+
+**WHAT IT COSTS, each with a precedent in this ledger:**
+- **THE FIX LOOKS LIKE DEAD WEIGHT AND GETS REVERTED.** `settle()` survives review only because the
+  red it answers sits beside it; strip the red and it reads as a gratuitous poll somebody simplifies
+  away — **and the flake returns wearing a new face.**
+- **THE KNOWN-FLAKE LIST SILENTLY LOSES ITS MEANING.** It stands EMPTY by assertion, and *"a red suite
+  means something is wrong"* holds **only if every historical red was recorded or genuinely cured.**
+  An unrecorded red makes the list a claim nobody can audit.
+- **THE NEXT OCCURRENCE HAS NO PRIOR.** When `bm1` went red the second time, **the recorded first red**
+  is what turned "another flake" into "same mechanism, widened."
+- **IT CORRODES THE RETRY DOCTRINE FROM UNDERNEATH.** *"Retrying a red is shopping for an answer"* is
+  enforceable **only if reds leave traces.** If a red can vanish by being fixed, it can vanish by being
+  re-run, and no one downstream can tell those two histories apart.
+
+**RULED: a red is EVIDENCE, and evidence survives its own repair.** Record the red, the mechanism and
+the cure together. **When a flake is fixed inside another item's window — as `bg2` S1 was inside 122's
+— the red belongs in BOTH records**, because the window that fixed it is not where the next reader
+will look.
+
+## CANON — A MIGRATION CHANGES HOW A ROW IS WRITTEN, NEVER WHAT THE ROW IS (ERRATA) — 2026-09-11
+
+**ERRATA's line, ruled.** A seam migration moves a write from raw storage onto the app's own path.
+**The bytes that land must mean the same thing they meant before.**
+
+**THE COROLLARY, and it is the load-bearing half: `seed-guard.mjs` READS RAW WRITES, NOT SEMANTICS.**
+It can prove a file no longer writes the collection directly. **It cannot prove the migrated fixture
+still seeds the same world.** **MEANING-PRESERVATION IS THE MIGRATOR'S PROOF, NEVER THE INSTRUMENT'S**
+— a green guard across all 55 files would say nothing about whether any of them still tests what it
+used to.
+
+**Recorded beside the S2 premise finding deliberately: TWICE NOW THE CATCH CAME FROM MEASURING THE
+STATE THE CONCLUSION DEPENDED ON** — the raw row that was already dead when S2 "proved" it died, and
+the seeded world a migrated fixture must still produce. **The guard watches the WRITE; only the
+migrator can watch the MEANING.** Same shape as *a suite certifies behaviour, a sitting certifies
+meaning*, one layer down.
+
+## ITEM 85-C — THE WAVES RE-PARTITIONED, AND THE TOTAL IS THE CHECK — 2026-09-11
+
+**Wave 1 = 37 files · Wave 2 = 18.** The same 55-file debt **re-measured against the WIDENED seam**;
+**nine files crossed on `script` / `starred` / `tags`.**
+
+```
+wave 1   28 -> 37   (+9 crossed)
+wave 2   27 -> 18   (-9)
+total     55 =  55   — the debt is unchanged
+```
+
+**THE POPULATION DID NOT MOVE; THE INSTRUMENT DID.** Widening the seam moved nine files from "needs
+more seam" to "migratable now." **The total reconciling is the check that nothing was invented or
+lost** — a re-measurement that ADDS UP is the honest kind, and the listing-trap family used correctly
+for once.
+
+## bg2 S1 — AN IN-SUITE NON-DETERMINISM, DIAGNOSED RATHER THAN RETRIED — 2026-09-11
+
+**Mechanism named: a MID-TRANSITION SAMPLE versus the literal.** **Fixed inside item 122's window,
+with the RED RECORDED** — per the canon above, a fix without its red is invisible later.
+
+**The third non-determinism this arc closed by naming its mechanism** rather than by a second run that
+happened to pass — after `bm1`'s vanishing seed and item 129's alleged read race.
+
+## THE AB2 PARK-COUNT CHECK — THE NO-BLANK-STAMP CANON PAYING OUT — 2026-09-11
+
+**Noted for Batch One:** AB2's park-count check is **the no-blank-stamp canon collecting.** **A park
+that silently failed to push would read 11 and STILL LOOK GREEN** — the count is the only thing that
+can tell a complete sweep from an incomplete one, because **a pass/fail run cannot see a check that
+was never pushed.** *(The original instance: TU2 parked 9 against a summary claiming 10.)*
 Registry: next free **133**.
 
 
