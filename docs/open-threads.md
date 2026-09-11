@@ -2654,6 +2654,19 @@ new one is silent about) **and says the resulting asymmetry plainly**: ink would
 two modes where you cannot draw it, and not movable in the one where you can. **One word settles it;
 the build is a one-line difference either way.**
 
+**✅ RULED THE SAME DAY (Fable, from the analog law, 2026-09-08; Nick may overrule): FREE WRITE'S
+TEXT HALF STAYS INERT. R15 STANDS.** **And the asymmetry is CORRECT rather than a hole** — Fable's
+reason, which is the part worth keeping: *in Free Write the sketch pad is one press away (switch to
+INK to move or edit strokes); in Draft and Revise there is no INK to switch to, which is exactly why
+movable-on-double-click exists there.* **A typewriter doesn't move ink; a sketch pad does.**
+**BUILD CONSEQUENCE, recorded because it is the way this ruling would be reversed by accident:**
+`movable` is reachable from **Draft and Revise ONLY**, so the double-click listener attaches under
+that permission alone — never "whenever the writer is not drawing", which would extend the gesture
+into Free Write's TEXT half and undo the ruling silently. The harness asserts the NEGATIVE (a
+double-click in Free Write / TEXT arms nothing), so the ruling is proven rather than assumed.
+**121-B is the INK lane's to build — same lane, same context — when this brief merges, taking the
+box in the announced order.**
+
 ## ITEM 127 — THE TYPED FACE, AND THE FREE WRITE MENU ROSTER — OPENS 2026-09-07
 
 **OPENS (Fable, 2026-09-07).** Free Write **"both acts like a typewriter and looks typed"** (Nick) —
@@ -3027,6 +3040,38 @@ caught all 54 before any of them cost a day.** **ERRATA's next job, after its re
 the convention. **A rule that lives only in a document is enforced by memory; a rule that fails a
 run is enforced by the run.** This is the same reasoning that made `tutor-mirror.mjs` self-enforcing
 after 43 silent commits of divergence.
+
+**-> ROUTING, 2026-09-09 (Fable's ruling). ERRATA'S GUARD IS CANONICAL. FIX's duplicate is DROPPED.**
+FIX built this artifact browserlessly inside the box-quiet hold (`seed-seam-guard.mjs`, commit
+`1db5c54` on `item129-bm1-park`, 5 checks, falsified five times). It never merged with item 129 -
+main carries `003f546` but not the guard - so from main it read as unbuilt, and the waiter would have
+had ERRATA build it twice. **The file is dropped and is NOT offered; the branch keeps it only as
+history.** Ruled: **fold FIX's two REGRESSION checks into 85-B's follow-up.**
+
+**THE TWO CHECKS OWED TO 85-B's FOLLOW-UP, specified so they can be lifted verbatim:**
+1. **ITEM 129 CANNOT REGRESS.** `bm1.mjs` still seeds through `window.wrizoCreateJournalPage`, and
+   its ONLY remaining raw write is the deliberate **load-path deletion** (it sets `deletedAt` to
+   exercise a load path and reloads on the very next line). Assert both halves: the seam call is
+   present, and the raw-write count is exactly **1**. The file that cost a day to this class must not
+   quietly slide back.
+2. **THE SEAM CAN STILL SAY WHAT FIXTURES NEED.** `JournalPageSeed` keeps `id / text / createdAt /
+   strokes / origin / pageType / projectId / boxes`. **`origin` above all:** it is written ONLY at
+   birth, and `belongsOnShelf` excludes anything journal-homed, so without it **no seeded entry can
+   be Shelf-eligible at all** - which is exactly why `bm1` was still reaching past the seam. Item
+   129's finding was that a seam which cannot express the fixture is bypassed QUIETLY, so the guard
+   must watch **the seam itself**, not only its callers.
+
+**ONE DESIGN CORRECTION CARRIED ACROSS, from FIX's S0 - the charter above says the guard "FAILS when
+a harness writes a collection raw", and a literal reading of that would misfire.** **Not every raw
+write is a defect.** The killer is a raw SEED whose rows must survive a later product write; a raw
+write followed IMMEDIATELY by a reload with no product write between is a legitimate fixture idiom -
+**`bm1`'s own surviving write is exactly that.** Whether a site is safe depends on what runs AFTER
+it, which a static scan cannot know. A literal "any raw write fails" guard would therefore be **red
+on day one across 56 files** and would mislabel correct code as broken. **A guard that cries wolf
+gets disabled, and then item 85 has no guard at all.** The shape that holds is a **POPULATION
+RATCHET**: the count may fall and may not rise; new offenders and growth fail; and migrating a file
+makes removing it from the baseline **compulsory**, so the list cannot rot into a place where fixed
+things hide. **Offered as a finding, not as a constraint on ERRATA's design.**
 
 ## PW1 — BOARDS CONNECTED: BUILT, OFFERED, MERGED — 2026-09-08/09 (pw1 lane; branch `pw1-boards-connected`)
 
@@ -3502,6 +3547,166 @@ it cannot.
 its line in the same change**; an annotation on a file that no longer writes raw **fails**, because
 **an exemption must expire with the thing it exempts or it silently pre-authorises the next raw write
 into that file.**
+## CANON — A CHECK CAN PASS FOR THE WRONG REASON WHEN ITS PREMISE IS ALREADY DEAD — 2026-09-10
+
+**ERRATA's finding, and it is the finding rather than the pass.** Item 85-C's S2 proof intended to
+show that a **raw** row dies under an ordinary product write while a **seam-written** row survives.
+**Its premise was destroyed before it was ever measured: the SEAM CALL made right after the raw write
+IS ITSELF A PRODUCT WRITE, and had already killed the raw row.**
+
+**THE TRAP: the final reads would still have produced the EXPECTED SHAPE — `{raw:false, seam:true}` —
+so the check would have PASSED**, and the lane would have reported a clean proof **of a mechanism
+located in the wrong place.** A green result, a true conclusion, and an experiment that never tested
+what it claimed to.
+
+**RULED: when a check confirms exactly what you expected, the question is not "did it pass" but "COULD
+IT HAVE FAILED, AND BY THE ROUTE I THINK?"** A proof whose setup step performs the very operation
+under test is not a proof. **Order the steps so the premise survives to the moment of measurement,
+and prove the premise separately where it is cheap** — ERRATA did, and the corrected S2 reads:
+
+```
+                                   raw     seam
+  both seeded                      true    true
+  after one ordinary product write false   true
+```
+
+**Sibling laws, and this is now the family's sharpest member:** *a green re-run is not a diagnosis* ·
+*a sentence about a run is not a run* · *a directory of green files looks like evidence rather than
+prose* · *a red check is not automatically a check to retire*. **Each says the same thing from a
+different side: the outcome is not the evidence; the ROUTE to the outcome is.**
+
+## ITEM 85-C — THE SEAMS PROVED, ON THE INTEGRATED TREE — 2026-09-10
+
+**`ITEM85C VERIFY: PASS (13 checks)`, measured at `ab86dd8` — the INTEGRATED tree, not the branch's
+stale base.** Branch pushed at **`3b236b5`** (four commits: the seams, the proof, the S2 ordering fix,
+and `main` merged in). **Suite now 79.** Box released.
+
+**ERRATA SPENT ITS SINGLE-FILE TURN ON THE RIGHT QUESTION.** It had already passed the file 13/13
+before the announcement — **so re-running the stale base would have re-answered a question it had
+answered.** `main` had moved **nine commits**; the useful question was **whether that drift
+invalidated the result.** It fetched, found **`persistence.ts`, the types and the seams' dependencies
+all untouched**, merged clean, typechecked 0, and **rebuilt — because `main` had brought product code,
+so its bundle was stale.** *(The rebuild is the part a hurried lane skips; a stale bundle is the exact
+condition item 77(c) added the bundle hash to the stamp to expose.)*
+
+**THE GUARD DID ITS STANDING JOB ON WORK THAT WAS NOT ITS OWN.** The merge brought TOOLS' brand-new
+`item130.mjs` into the tree, and **`seed-guard.mjs` met it and stayed green** — the new file seeds
+through the seam, so **the baseline is still honest.** **An instrument that only validates its
+author's work is a rehearsal; one that silently passes a stranger's correct file is a guard.**
+
+**85-C's product code is `persistence.ts` alone** — within the seams-only authority granted 2026-09-10
+(thin wrappers over existing store paths; a new store capability STOPS).
+## STANDING ORDER CHANGED — BATCH SHIPS, AND MERGES NO LONGER WAIT ON REVIEW (Nick, 2026-09-11)
+
+**1. BATCH SHIPS. Deploying per package STOPS.** Green offers **merge as they arrive and ACCUMULATE on
+`main`**; **ONE deploy per batch**, at a cadence chat 1 judges — roughly daily, **or when the batch
+carries something Nick is waiting to walk.** **ONE suite-of-record pair PER BATCH** instead of per
+package — **that is the saving.** **The manifest names every package in the batch.** **Nick's ship
+word covers the BATCH BY NAME.** **Any schema in a batch still STOPS and surfaces to him.**
+
+**2. MERGE WITHOUT FABLE'S REVIEW** for **harness-only offers · docs/records · lexicon and copy ·
+test-seam product code (85-C's class)** — on chat 1's own verification. **FABLE STILL REVIEWS:
+writer-facing product code · anything touching persistence/sync/server · and EVERY batch's ASSEMBLED
+DIFF BEFORE THE SHIP** (one review per batch, not per package). **REVIEWS NEVER GATE A MERGE AGAIN —
+ONLY THE DEPLOY.**
+
+**3. WHY THE BATCH REVIEW IS KEPT (Fable's reason, on the record):** **three of this arc's defects —
+118 (c), 130, 131 (a) — were MEANING-LEVEL, and a suite cannot certify meaning.** One review per batch
+costs an hour a day and is **the last gate before Nick's writers see it.**
+
+**WHAT CHAT 1'S VERIFICATION DOES AND DOES NOT COVER — stated so the new trust is calibrated.** It
+verifies **STRUCTURE**: schema, server bytes, product surface, stamp lineage, docs-only claims, park
+declarations, and **whether a stamped tree is the tree being merged.** **It does NOT verify MEANING** —
+whether a list holds the right members, whether a sentence says the true thing. **131 (a) passed chat
+1's verification AND Fable's review, and a founder found it.** So the split lands where the evidence
+puts it: **merge on structure, gate the deploy on meaning.**
+
+**THREE CONSEQUENCES OF BATCHING, named in advance rather than discovered at the first batch ship:**
+- **ROLLBACK GRANULARITY COARSENS.** The ratchet reverts **the whole batch**, so one bad package costs
+  every other package's value to undo. **The assembled-diff review now carries that weight too.**
+- **A RED AT BATCH TIME NO LONGER NAMES ITS PACKAGE.** One pair across five merges means a failure
+  could come from any of them. **This makes STAMP-THE-MERGED-TREE load-bearing rather than tidy: if
+  every offer arrives stamped on a tree that already contained `main`, each merge carries its own
+  green and a batch red bisects against those instead of from scratch.** **Requested as a HARD
+  REQUIREMENT for batch members, not a commendable habit.**
+- **THE WINDOW TAX DROPS SHARPLY, and that was the real cost.** One box-quiet window per BATCH rather
+  than per package — the tax that ate seven voids and two ships on 2026-09-08/09.
+
+**A BATCH THAT GREW AFTER NICK'S WORD IS A DIFFERENT BATCH.** The manifest names the packages, and his
+word is quoted against that name.
+
+## CANON — A FIXED FLAKE WITH NO RED ON THE RECORD IS INDISTINGUISHABLE FROM ONE THAT WAS NEVER THERE
+
+**Ruled 2026-09-11.** **The asymmetry runs one way, and that is what makes it dangerous.** A red that
+is recorded and fixed leaves **two** artifacts — the defect and its cure. A red fixed **silently**
+leaves **only the cure**: a change with no visible cause, indistinguishable later from a change that
+was never needed.
+
+**WHAT IT COSTS, each with a precedent in this ledger:**
+- **THE FIX LOOKS LIKE DEAD WEIGHT AND GETS REVERTED.** `settle()` survives review only because the
+  red it answers sits beside it; strip the red and it reads as a gratuitous poll somebody simplifies
+  away — **and the flake returns wearing a new face.**
+- **THE KNOWN-FLAKE LIST SILENTLY LOSES ITS MEANING.** It stands EMPTY by assertion, and *"a red suite
+  means something is wrong"* holds **only if every historical red was recorded or genuinely cured.**
+  An unrecorded red makes the list a claim nobody can audit.
+- **THE NEXT OCCURRENCE HAS NO PRIOR.** When `bm1` went red the second time, **the recorded first red**
+  is what turned "another flake" into "same mechanism, widened."
+- **IT CORRODES THE RETRY DOCTRINE FROM UNDERNEATH.** *"Retrying a red is shopping for an answer"* is
+  enforceable **only if reds leave traces.** If a red can vanish by being fixed, it can vanish by being
+  re-run, and no one downstream can tell those two histories apart.
+
+**RULED: a red is EVIDENCE, and evidence survives its own repair.** Record the red, the mechanism and
+the cure together. **When a flake is fixed inside another item's window — as `bg2` S1 was inside 122's
+— the red belongs in BOTH records**, because the window that fixed it is not where the next reader
+will look.
+
+## CANON — A MIGRATION CHANGES HOW A ROW IS WRITTEN, NEVER WHAT THE ROW IS (ERRATA) — 2026-09-11
+
+**ERRATA's line, ruled.** A seam migration moves a write from raw storage onto the app's own path.
+**The bytes that land must mean the same thing they meant before.**
+
+**THE COROLLARY, and it is the load-bearing half: `seed-guard.mjs` READS RAW WRITES, NOT SEMANTICS.**
+It can prove a file no longer writes the collection directly. **It cannot prove the migrated fixture
+still seeds the same world.** **MEANING-PRESERVATION IS THE MIGRATOR'S PROOF, NEVER THE INSTRUMENT'S**
+— a green guard across all 55 files would say nothing about whether any of them still tests what it
+used to.
+
+**Recorded beside the S2 premise finding deliberately: TWICE NOW THE CATCH CAME FROM MEASURING THE
+STATE THE CONCLUSION DEPENDED ON** — the raw row that was already dead when S2 "proved" it died, and
+the seeded world a migrated fixture must still produce. **The guard watches the WRITE; only the
+migrator can watch the MEANING.** Same shape as *a suite certifies behaviour, a sitting certifies
+meaning*, one layer down.
+
+## ITEM 85-C — THE WAVES RE-PARTITIONED, AND THE TOTAL IS THE CHECK — 2026-09-11
+
+**Wave 1 = 37 files · Wave 2 = 18.** The same 55-file debt **re-measured against the WIDENED seam**;
+**nine files crossed on `script` / `starred` / `tags`.**
+
+```
+wave 1   28 -> 37   (+9 crossed)
+wave 2   27 -> 18   (-9)
+total     55 =  55   — the debt is unchanged
+```
+
+**THE POPULATION DID NOT MOVE; THE INSTRUMENT DID.** Widening the seam moved nine files from "needs
+more seam" to "migratable now." **The total reconciling is the check that nothing was invented or
+lost** — a re-measurement that ADDS UP is the honest kind, and the listing-trap family used correctly
+for once.
+
+## bg2 S1 — AN IN-SUITE NON-DETERMINISM, DIAGNOSED RATHER THAN RETRIED — 2026-09-11
+
+**Mechanism named: a MID-TRANSITION SAMPLE versus the literal.** **Fixed inside item 122's window,
+with the RED RECORDED** — per the canon above, a fix without its red is invisible later.
+
+**The third non-determinism this arc closed by naming its mechanism** rather than by a second run that
+happened to pass — after `bm1`'s vanishing seed and item 129's alleged read race.
+
+## THE AB2 PARK-COUNT CHECK — THE NO-BLANK-STAMP CANON PAYING OUT — 2026-09-11
+
+**Noted for Batch One:** AB2's park-count check is **the no-blank-stamp canon collecting.** **A park
+that silently failed to push would read 11 and STILL LOOK GREEN** — the count is the only thing that
+can tell a complete sweep from an incomplete one, because **a pass/fail run cannot see a check that
+was never pushed.** *(The original instance: TU2 parked 9 against a summary claiming 10.)*
 Registry: next free **133**.
 
 

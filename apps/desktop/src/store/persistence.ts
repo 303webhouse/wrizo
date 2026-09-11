@@ -1209,14 +1209,50 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoPinPageToBoard?: unknown }).wrizoPinPageToBoard = pinPageToBoard;
 }
 
-// Every board (regardless of its own home) currently pinning `entryId` —
-// feeds the Page panel's truthful "Also pinned to <board>." membership
-// line(s). A page can be pinned to more than one board; every truth is told
-// (S2's own "told truthfully like every other membership" law).
+// Every board (regardless of its own home) currently pinning `entryId` — the
+// RAW STRUCTURAL SCAN, condition-boards included.
+//
+// PW1 ERRATUM 1 (Nick's live sitting, 2026-09-09) — ⚠ THIS IS PROBABLY NOT THE
+// FUNCTION YOU WANT. It answers "which boards carry a page-pin box for this
+// entry", which is a question about STORAGE. It does NOT answer "which boards
+// is this page CONNECTED to" — for that use `getBoardsConnecting` below, the
+// same scan minus the condition-boards.
+//
+// The difference is not tidiness. Under the three-space canon the Shelf, Trash
+// and Journal boards are DISPLAYS OF A CONDITION (loose; deleted; in-journal-
+// view), not places — and their pins are DERIVED, written by
+// `reconcileSystemBoard` from `qualifyingPagesFor` in reaction to that
+// condition. The writer never authored them. So a page-pin on a system board is
+// not a membership at all, it is a rendering, and reporting it as a connection
+// tells the writer they linked something they never touched. Nick saw exactly
+// that: a loose page's "Boards connected" listing the Shelf.
+//
+// This raw form survives for the one caller that asks the genuinely structural
+// question — ExistingPagePicker's "is this page already on THIS board", where
+// the host board's own kind is being tested rather than interpreted.
 export function getBoardsPinning(entryId: string): { id: string; title: string }[] {
   return cache.journalEntries
     .filter(e => !e.deletedAt && e.pageType === 'board' && (e.boxes ?? []).some(b => b.kind === 'page-pin' && b.entryId === entryId))
     .map(e => ({ id: e.id, title: e.text.trim() ? e.text.trim().split('\n')[0].slice(0, 60) : 'Untitled board' }));
+}
+
+// PW1 ERRATUM 1 — THE CONNECTION READER. `getBoardsPinning` minus the
+// condition-boards, and the ONLY form that may feed a sentence or a list which
+// claims the writer connected something.
+//
+// "Shelf and Trash are displays of a CONDITION (loose; deleted), NOT places"
+// (Fable's annotation on the three-space canon); the Journal board is the same
+// shape by construction. A condition is not a connection — it is the app
+// describing the page's state back to itself — so none of the three may appear
+// under "Boards connected", in the Page face's "Also connected to…" line, or in
+// the Tutor's Structure lens.
+//
+// Consequence worth stating, because it is the visible behaviour Nick asked
+// for: a LOOSE page (which always sits on the Shelf board by derivation) now
+// shows its own plan board and nothing else — and if it has no plan board, the
+// zone does not render at all (PW9: absent, never empty).
+export function getBoardsConnecting(entryId: string): { id: string; title: string }[] {
+  return getBoardsPinning(entryId).filter(b => getSystemKind(getJournalEntry(b.id)) === undefined);
 }
 
 // --- S1 — the Screenplay Room's document (fragments-canon §2) -------------

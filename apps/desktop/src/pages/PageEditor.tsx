@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
@@ -18,7 +18,7 @@ import { useFirstLineInvite } from '../components/useFirstLineInvite';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
 import { BeginningsRow, type BeginningDoor } from '../components/BeginningsRow';
 import { useWayBack } from '../components/useWayBack';
-import { setCaretOffset, getSelectionOffsets } from '../store/caretOffset';
+import { setCaretOffset, getCaretOffset, getSelectionOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
@@ -42,8 +42,8 @@ import { PAGE_KIND_DEFAULT, PAGE_SETTINGS_FALLBACK, STYLE_GUIDE_DEFAULT } from '
 import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { PinToBoardSheet } from '../components/PinToBoardSheet';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
-import { applyFormat, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor } from '../store/draftDecoration';
+import { applyFormat, marksAt, stripMarkdownConventions, type FormatAction } from '../store/draftFormat';
+import { decorateEditorFor, readEditorPlainText } from '../store/draftDecoration';
 import { getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
@@ -257,6 +257,12 @@ function PageEditorView({ id }: { id: string }) {
   unbornRef.current = unborn;
   const lastSavedRef = useRef(initialText);
   const editorRef = useRef<HTMLDivElement>(null);
+  // ITEM 122 — the Draft rail's active state. Read from the DOM caret rather
+  // than threaded through a new prop: `editorRef` is already the editor's own
+  // host div here (the same one `applyCaret` writes through), and
+  // `getCaretOffset` is the shared reader every other caret path uses, so this
+  // adds no plumbing and cannot disagree with the caret the formatter acts on.
+  const [draftMarks, setDraftMarks] = useState({ bold: false, italic: false, underline: false, strike: false });
   // ITEM 121 I6 — FX7 S2's rail-driven marker-insertion escape hatch is gone
   // with the STYLING zone that was its only caller. ForwardOnlyEditor's
   // `insertMarkerRef` PROP is deliberately left standing: it is that shared
@@ -285,6 +291,27 @@ function PageEditorView({ id }: { id: string }) {
     !!(location.state as { firstRunGate?: boolean } | null)?.firstRunGate && !getFirstRunComplete(),
   );
   const [gateUnlocked, setGateUnlocked] = useState(false);
+  // ITEM 122 — recompute on `selectionchange`, which is the ONLY event that
+  // fires for every way a caret can move: typing, clicking, arrow keys, and the
+  // programmatic moves the formatter itself makes. Listening to keyup or click
+  // instead would leave the buttons lying after any of the others — which is
+  // precisely the "stuck highlight" complaint this item exists to answer, and
+  // it would be embarrassing to reintroduce it while fixing it.
+  useEffect(() => {
+    if (mode !== 'drafting') return;
+    const recompute = () => {
+      const el = editorRef.current;
+      if (!el) return;
+      const offset = getCaretOffset(el);
+      setDraftMarks(offset == null
+        ? { bold: false, italic: false, underline: false, strike: false }
+        : marksAt(readEditorPlainText(el.innerText, null).plain, offset));
+    };
+    document.addEventListener('selectionchange', recompute);
+    recompute();
+    return () => document.removeEventListener('selectionchange', recompute);
+  }, [mode, text]);
+
   const gateActive = framed && firstRunGateRequested.current && !gateUnlocked;
   const gateWords = useMonotonicWordCount(text, gateActive);
   const gateReached = gateActive && gateWords >= FIRST_RUN_WORD_TARGET;
@@ -518,7 +545,7 @@ function PageEditorView({ id }: { id: string }) {
   // fresh values on the next render without any extra plumbing here.
   // AB4 S2 — every board currently pinning this page, for the truthful
   // "Also pinned to <board>." membership line(s).
-  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const pinnedBoardTitles = getBoardsConnecting(entry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(entry, project, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
@@ -849,7 +876,11 @@ function PageEditorView({ id }: { id: string }) {
             kind: 'draft',
             structure: 'prose',
             onSwitchStructure,
-            format: { onFormat: applyRailFormat },
+            format: {
+              onFormat: applyRailFormat,
+              boldOn: draftMarks.bold, italicOn: draftMarks.italic,
+              underlineOn: draftMarks.underline, strikeOn: draftMarks.strike,
+            },
             // ITEM 114 (item 83 errata E4) — READ THROUGH THE DEFAULT, never
             // written at birth. A page that has never chosen carries no `kind`
             // key at all, reads 'normal' here, and stays byte-identical on disk.
