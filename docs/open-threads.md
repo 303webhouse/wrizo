@@ -3769,7 +3769,49 @@ anywhere to show it happened.
 **Sibling to the guard laws from the other side:** *a guard that can never fire reports a safety it is
 not providing*; **a guard that fires constantly reports a hazard nobody will read.** **Both have
 stopped measuring; only one of them looks broken.**
-Registry: next free **133**.
+## ITEM 133 — NAMING (fix-class) — OPENS 2026-09-11
+
+**OPENS. FIX-CLASS → FIX. Its NEXT WINDOW, and the FIRST JOB in it.**
+
+## ITEM 134 — THE VIEWS CHARTER (design) — OPENS 2026-09-11
+
+**OPENS. DESIGN → THE PLAN DESK.** **The LIBRARY is TABLED INSIDE IT as §4** — not a separate item,
+and not dropped: it is a section of this charter and returns with it.
+
+**ITEM 90 IS SUPERSEDED BY ITEM 134.** Per the immutability law, the predecessor is quoted, not
+erased. **Item 90 as the ledger recorded it — it never held a section of its own, and these four
+references ARE its substance:**
+
+> the toast when **item 90 makes Trash items openable**
+> the trashed board stays manually recoverable via the **Trash overhaul (item 90)**
+> boards stay recoverable via **item 90's future work**
+
+**SUCCESSOR: item 134, the Views charter**, which takes up the Trash-as-a-view question inside a
+model of views rather than as a standalone overhaul. **Item 90 is closed by supersession, not by
+completion** — nothing it named has been built, and the work travels to 134.
+
+**RIDERS:**
+- **(a) ITEM 128's GUARD GAINS: "A DRAWER IS NEVER A MEMBER OF ANYTHING."** To the **PW2 brief.**
+  *(It belongs with the ancestor-walk guard: both say a container's membership graph admits only what
+  can lawfully be held, and both are cheapest to enforce at WRITE time.)*
+- **(b) EMPTY TRASH = HARD DELETE = ITS OWN PERSISTENCE ITEM.** **Opens when 134's design returns.**
+  **FABLE REVIEW SCOPE (server/sync)** — and under the 2026-09-11 standing order that is explicit:
+  **anything touching persistence/sync/server is NOT merge-on-chat-1's-verification.** A hard delete
+  is the one operation this house has no undo for, so it earns the heavier gate by its nature.
+
+**⚠ GAP ON THE RECORD — SIX FOUNDER RULINGS NOT RECEIVED.** Fable's relay of 2026-09-11 names **"six
+founder rulings from Nick's message above, recorded verbatim."** **That message never reached chat 1.**
+**They are NOT recorded here, and this entry is INCOMPLETE until they are** — chat 1 will not
+paraphrase founder rulings from a description of them, and a verbatim record cannot be reconstructed
+from a summary. **Requested; this marker stands until they land.**
+
+**THIS IS THE THIRD LOST RELAY FOUND, and every one was found by the AUDIT rather than by reading the
+ledger** — the INK lane's render table, its §3.1 ruling, and now these six. **A ledger cannot show what
+never reached it; only a sender's list can.** The two INK losses were caught by the sending lane; this
+one by the receiving desk. **Both directions work, and neither works alone.**
+
+Registry: next free **135**.
+
 
 
 
