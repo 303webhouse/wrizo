@@ -8,6 +8,7 @@ import { PortToBoardSheet } from '../components/PortToBoardSheet';
 import { AddToSheet } from '../components/AddToSheet';
 import { useActionToast } from '../components/ActionToast';
 import { useLexicon } from '../store/themeLexicon';
+import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Stroke } from '../types';
 
 // J3 — the spread view: a visual grid of the loose Journal in notebook order
@@ -316,6 +317,9 @@ interface LensRowProps {
   allTags: string[];
 }
 function SpreadLensRow({ order, setOrder, content, setContent, starOnly, setStarOnly, tagFilter, setTagFilter, allTags }: LensRowProps) {
+  // ITEM 130 — the Ink chip's label comes from the desk lexicon now, not an
+  // inline literal (the standing rule: every string enters the lexicon).
+  const { t } = useDeskLexicon();
   const chip = (active: boolean, label: string, onClick: () => void, key?: string) => (
     <button key={key ?? label} type="button" className="spread-lens-chip" data-active={active ? 'true' : 'false'} onClick={onClick}>
       {label}
@@ -330,7 +334,7 @@ function SpreadLensRow({ order, setOrder, content, setContent, starOnly, setStar
       <div className="spread-lens-group" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         {chip(content === 'all', 'All', () => setContent('all'))}
         {chip(content === 'text', 'Text', () => setContent('text'))}
-        {chip(content === 'ink', 'Ink', () => setContent('ink'))}
+        {chip(content === 'ink', t('spreadLensInk'), () => setContent('ink'))}
         {chip(content === 'both', 'Text+ink', () => setContent('both'))}
       </div>
       <div className="spread-lens-group" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
