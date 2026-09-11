@@ -46,9 +46,7 @@ const freshProsePage = async (app, width, height) => {
 const freshBoard = async (app, width, height) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => { const now = new Date().toISOString();
-    const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]');
-    es.push({ id: 'fx18-board', text: 'FX18 Board', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(es)); })()`);
+    window.wrizoCreateJournalPage({ id: 'fx18-board', text: 'FX18 Board', pageType: 'board', boxes: [], createdAt: now, origin: null }); })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/fx18-board'");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'board framed' });

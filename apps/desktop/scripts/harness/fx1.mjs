@@ -57,10 +57,8 @@ const freshScriptPage = async (app) => {
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     const headingId = 'fx1-script-heading';
-    entries.push({ id: 'fx1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: 'INT. ROOM - DAY' }, body: [] }] }, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: 'INT. ROOM - DAY' }, body: [] }] }, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed' });

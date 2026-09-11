@@ -321,8 +321,7 @@ await withHarness(async (app) => {
   await freshArrival(app, { anon: false });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = [{ id: 'hb1-resume', text: 'Already underway.', projectId: null, origin: 'loose', createdAt: now, updatedAt: now }];
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'hb1-resume', text: 'Already underway.', projectId: null, origin: 'loose', createdAt: now });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Arrival, seeded resume target' });

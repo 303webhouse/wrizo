@@ -43,9 +43,7 @@ const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before FX12 seed' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ JSON.stringify(rows), origin: null });
   })()`);
 };
 
@@ -96,15 +94,9 @@ await withHarness(async (app) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before FX12 frag tag stamp' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     const host = entries.find(e => e.id === ${JSON.stringify(fragPageId)});
-    if (host) host.tags = ['fx12tag'];
     const now = new Date().toISOString();
-    entries.push(
-      { id: 'fx12-frag-dup', text: 'Fragment Dup qualifies twice', projectId: null, starred: true, tags: ['fx12tag'], createdAt: now, updatedAt: now },
-      { id: 'fx12-frag-plain', text: 'Fragment Plain once', projectId: null, createdAt: now, updatedAt: now },
-    );
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx12-frag-dup', text: 'Fragment Dup qualifies twice', projectId: null, starred: true, tags: ['fx12tag'], createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(fragPageId)}`);

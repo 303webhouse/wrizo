@@ -37,9 +37,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'FX8 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'FX8 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -58,10 +56,8 @@ const freshBoardWithSourcePage = async (app, boardId, boxes, sourcePage, width =
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(sourcePage.id)}, text: ${JSON.stringify(sourcePage.text)}, pageType: 'page', source: 'page', createdAt: now, updatedAt: now });
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'FX8 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(sourcePage.id)}, text: ${JSON.stringify(sourcePage.text)}, pageType: 'page', createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'FX8 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -314,9 +310,7 @@ await withHarness(async (app) => {
   await freshDesk(app, LEGACY_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx8-legacy-board', text: 'FX8 Legacy Board', pageType: 'board', source: 'page', boxes: [{ id: 'legacy-card', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.1, z: 1, text: 'Legacy Card\\nBody' }], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx8-legacy-board', text: 'FX8 Legacy Board', pageType: 'board', boxes: [{ id: 'legacy-card', kind: 'text', x: 0.1, y: 0.1, w: 0.3, h: 0.1, z: 1, text: 'Legacy Card\\nBody' }], createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/fx8-legacy-board'");

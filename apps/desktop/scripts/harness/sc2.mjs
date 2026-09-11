@@ -226,11 +226,11 @@ const seedScript = async (app, id, heading, body, { width = LAPTOP_W, theme = 'p
   await freshDesk(app, width, 900, theme);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([{
-      id: ${JSON.stringify(id)}, text: '', pageType: 'script', createdAt: now, updatedAt: now,
+    window.wrizoCreateJournalPage({
+      id: ${JSON.stringify(id)}, text: '', pageType: 'script', createdAt: now, origin: null,
       script: { v: 1, scenes: [{ id: 's2b-h', heading: { id: 's2b-h', t: 'scene', text: ${JSON.stringify(heading)} },
         body: ${JSON.stringify(body)} }] },
-    }]));
+    });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk after ${id} seed` });
@@ -366,11 +366,11 @@ async function measure(app, sceneCount, typed) {
   const scenes = makeScenes(sceneCount);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([{
+    window.wrizoCreateJournalPage({
       id: 'sc2-perf', text: '', pageType: 'script',
       script: { v: 1, scenes: ${JSON.stringify(scenes)} },
-      createdAt: now, updatedAt: now,
-    }]));
+      createdAt: now, origin: null,
+    });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seed' });
@@ -600,8 +600,8 @@ await withHarness(async (app) => {
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const hid = 's1-h';
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([{
-      id: 's1-ledger', text: '', pageType: 'script', createdAt: now, updatedAt: now,
+    window.wrizoCreateJournalPage({
+      id: 's1-ledger', text: '', pageType: 'script', createdAt: now, origin: null,
       script: { v: 1, scenes: [{ id: hid, heading: { id: hid, t: 'scene', text: 'INT. THE MEASURE - DAY' }, body: [
         { id: 's1-a', t: 'action', text: 'Short line.' },
         { id: 's1-b', t: 'action', text: 'x'.repeat(70) },
@@ -610,7 +610,7 @@ await withHarness(async (app) => {
         { id: 's1-e', t: 'dialogue', text: 'This dialogue line is deliberately long enough to wrap across its own thirty-five character measure.' },
         { id: 's1-f', t: 'action', text: '' },
       ] }] },
-    }]));
+    });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after S1 seed' });

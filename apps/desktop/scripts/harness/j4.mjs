@@ -60,10 +60,8 @@ await withHarness(async (app) => {
   // (renormalizeStrokesForBox) reads identically.
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'j4-src-p1', text: 'Page One text.', projectId: null, source: 'page', origin: 'journal', createdAt: now, updatedAt: now });
-    entries.push({ id: 'j4-src-p2', text: 'Page Two text.', projectId: null, source: 'page', origin: 'journal', strokes: [{ points: [{ x: 0.3, y: 0.3 }, { x: 0.4, y: 0.35 }, { x: 0.5, y: 0.3 }] }], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'j4-src-p1', text: 'Page One text.', projectId: null, origin: 'journal', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'j4-src-p2', text: 'Page Two text.', projectId: null, origin: 'journal', strokes: [{ points: [{ x: 0.3, y: 0.3 }, { x: 0.4, y: 0.35 }, { x: 0.5, y: 0.3 }] }], createdAt: now });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after seeding the two source pages' });
@@ -313,11 +311,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PARKED board seed' });
     const now = new Date().toISOString();
     await app.evalJs(`(() => {
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j4-parked-board', text: 'J4 Parked Board', pageType: 'board', source: 'page',
-        boxes: [{ id: 'j4-parked-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Original' }],
-        createdAt: ${JSON.stringify(now)}, updatedAt: ${JSON.stringify(now)} });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'j4-parked-board', text: 'J4 Parked Board', pageType: 'board', boxes: [{ id: 'j4-parked-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'Original' }], createdAt: ${JSON.stringify(now)}, origin: null });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/page/j4-parked-board'");
@@ -412,12 +406,8 @@ if (process.env.HARNESS_PARKED === '1') {
     const now2 = new Date().toISOString();
     await app.evalJs(`(() => {
       const now = ${JSON.stringify(now2)};
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j4-parked-source', text: 'A source page.', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j4-parked-ported-board', text: 'J4 Parked Ported Board', pageType: 'board', source: 'page',
-        boxes: [{ id: 'j4-parked-ported-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'A source page.', sourceEntryId: 'j4-parked-source', portedAt: now }],
-        createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'j4-parked-source', text: 'A source page.', createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j4-parked-ported-board', text: 'J4 Parked Ported Board', pageType: 'board', boxes: [{ id: 'j4-parked-ported-card', kind: 'text', x: 0.05, y: 0.05, w: 0.4, h: 0.1, z: 1, text: 'A source page.', sourceEntryId: 'j4-parked-source', portedAt: now }], createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/page/j4-parked-ported-board'");

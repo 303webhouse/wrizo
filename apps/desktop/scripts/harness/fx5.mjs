@@ -79,9 +79,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'FX5 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'FX5 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -393,9 +391,7 @@ await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'fx5-s3-source', text: ${JSON.stringify(longText)}, source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'fx5-s3-source', text: ${JSON.stringify(longText)}, createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before port' });
@@ -475,12 +471,8 @@ await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'fx5-s3-pin-target', text: 'Pin target first line\\nsecond\\nthird\\nfourth\\nfifth', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'fx5-s3-pin-board', text: 'FX5 Pin Board', pageType: 'board', source: 'page',
-        boxes: [{ id: 'fx5-s3-pin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.28, h: 0.12, z: 1, entryId: 'fx5-s3-pin-target' }],
-        createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'fx5-s3-pin-target', text: 'Pin target first line\\nsecond\\nthird\\nfourth\\nfifth', createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'fx5-s3-pin-board', text: 'FX5 Pin Board', pageType: 'board', boxes: [{ id: 'fx5-s3-pin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.28, h: 0.12, z: 1, entryId: 'fx5-s3-pin-target' }], createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.evalJs(DRAG_HELPER);

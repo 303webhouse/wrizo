@@ -110,26 +110,31 @@ function scanDir(dir, keys) {
 }
 
 // --- THE BASELINE ------------------------------------------------------------
-// MEASURED 2026-09-09 against `main` @ c2d5539, not estimated: 56 files, which
-// is the population AFTER item 129 migrated bm1's seeding.
+// MEASURED, never estimated. The number has moved once, by work rather than by
+// re-counting, and the history is kept because it is the point of the ratchet:
 //
-// ► IT IS 56, NOT 54, AND THE DIFFERENCE IS A REAL WIDENING OF THE EXPOSURE.
-// Item 85's record measures `writer-studio-journal-entries` alone and counts 54.
-// Two further files — b2-1.mjs and j5.mjs — write `projects` / `story-plans` /
-// `drawers` raw and never touch journal-entries, so they fall outside that
-// count. `flushNow()` iterates EVERY key in KEYS, so their coin flip is
-// identical in kind. Both numbers are right about what they measure; only the
-// six-key one is right about the hazard.
+//   56  item 85-B, against main @ c2d5539 — the population the guard was built
+//       to hold still. (Item 85's own record says 54; it measures
+//       `writer-studio-journal-entries` alone, and b2-1.mjs / j5.mjs write
+//       `projects`/`story-plans`/`drawers` without ever touching journal
+//       entries. `flushNow()` iterates EVERY key, so their coin flip is
+//       identical in kind — both numbers are right about what they measure,
+//       only the six-key one is right about the hazard. AGENTS.md said 47.)
+//   57  item 85-C added item85c.mjs, whose raw write is the CONTROL that proves
+//       the hazard (annotated below).
+//   20  item 85-C WAVE 1 — 37 files migrated to the seams, 67 raw writes gone.
+//       18 unclassified remain (wave 2, each blocked on nothing now that the
+//       collection and mutation seams exist) plus the 2 annotated.
 //
 // THIS LIST IS A RATCHET, NOT AN AMNESTY. A file NOT in it that writes raw is a
 // FAILURE — that is the guard. A file IN it that no longer writes raw is ALSO a
 // failure, so a migration must delete its line here in the same change; without
 // that the list would rot into a permanent excuse and quietly re-authorise what
-// it was built to end.
+// it was built to end. Wave 1 proved that half works: the guard went red the
+// moment the 37 were migrated and stayed red until these lines were removed.
 //
-// The entries are UNCLASSIFIED debt except where a reason is given. I have read
-// one of the 56 closely enough to classify it, and I am not going to label the
-// other 55 from a grep — classification belongs to whoever migrates each file.
+// The entries are UNCLASSIFIED debt except where a reason is given.
+// Classification belongs to whoever migrates each file — never to a grep.
 const DELIBERATE = new Map([
   ['scripts/harness/item85c.mjs',
     'the raw write here is the CONTROL, not a seed: item 85-C\'s S2 seeds one row raw and one through '
@@ -145,25 +150,13 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/ab1.mjs', 'scripts/harness/ab2.mjs', 'scripts/harness/ab3.mjs',
-  'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs', 'scripts/harness/b2-1.mjs',
-  'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs', 'scripts/harness/bg1.mjs',
-  'scripts/harness/bg2.mjs', 'scripts/harness/bm1.mjs', 'scripts/harness/cd1.mjs',
-  'scripts/harness/cd2.mjs', 'scripts/harness/cd4.mjs', 'scripts/harness/e1.mjs',
-  'scripts/harness/e3.mjs', 'scripts/harness/fx1.mjs', 'scripts/harness/fx10.mjs',
-  'scripts/harness/fx11.mjs', 'scripts/harness/fx12.mjs', 'scripts/harness/fx13.mjs',
-  'scripts/harness/fx14.mjs', 'scripts/harness/fx15.mjs', 'scripts/harness/fx16.mjs',
-  'scripts/harness/fx17.mjs', 'scripts/harness/fx18.mjs', 'scripts/harness/fx2.mjs',
-  'scripts/harness/fx3.mjs', 'scripts/harness/fx4.mjs', 'scripts/harness/fx5.mjs',
-  'scripts/harness/fx6.mjs', 'scripts/harness/fx7.mjs', 'scripts/harness/fx8.mjs',
-  'scripts/harness/fx9.mjs', 'scripts/harness/hb1.mjs', 'scripts/harness/hb2.mjs',
-  'scripts/harness/item118.mjs', 'scripts/harness/item83f.mjs', 'scripts/harness/item84.mjs',
-  'scripts/harness/item84b.mjs', 'scripts/harness/item85c.mjs', 'scripts/harness/item9192.mjs', 'scripts/harness/j4.mjs',
+  'scripts/harness/ab3.mjs', 'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs',
+  'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs',
+  'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/e1.mjs',
+  'scripts/harness/fx10.mjs', 'scripts/harness/fx9.mjs', 'scripts/harness/item85c.mjs',
   'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs', 'scripts/harness/m1.mjs',
   'scripts/harness/m2.mjs', 'scripts/harness/m3.mjs', 'scripts/harness/m4.mjs',
-  'scripts/harness/pb1.mjs', 'scripts/harness/sc2.mjs', 'scripts/harness/tu1.mjs',
-  'scripts/harness/tu2.mjs', 'scripts/harness/tu5.mjs', 'scripts/harness/underline.mjs',
-  'scripts/harness/w1.mjs', 'scripts/harness/w2.mjs',
+  'scripts/harness/tu1.mjs', 'scripts/harness/tu2.mjs',
 ]);
 
 // --- run ---------------------------------------------------------------------
@@ -318,7 +311,7 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
   const emptyBaseline = new Set();
   const againstEmpty = offenders.filter((f) => !emptyBaseline.has(f));
   ok(`85-B FALSIFICATION: against an EMPTY baseline the guard flags ALL ${offenders.length} known raw writers — the charter's claim ("it would have caught all 54") tested rather than asserted, and the thing a baseline that merely exempts them could never show`,
-    againstEmpty.length === offenders.length && offenders.length >= 54,
+    againstEmpty.length === offenders.length && offenders.length === BASELINE.size && offenders.length > 0,
     JSON.stringify({ flagged: againstEmpty.length, population: offenders.length, sample: againstEmpty.slice(0, 5) }));
 
   // And the ratchet's other direction: a baseline entry that has been migrated

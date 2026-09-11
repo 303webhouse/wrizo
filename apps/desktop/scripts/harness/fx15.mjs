@@ -49,9 +49,7 @@ const openFreshPage = async (app, id, pref) => {
   await freshDesk(app, 1400, 900);
   await seedFromDesk(app, `(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(id)}, text: '', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(id)}, text: '', projectId: null, origin: 'loose', createdAt: now });
     ${pref ? `localStorage.setItem(${JSON.stringify(PREF_KEY)}, ${JSON.stringify(pref)}); localStorage.setItem('wrizo-first-line-invite-migrated', '1'); /* FX16 fixture re-point: seed the migrated marker so this deliberate pref survives FX16's one-time migration (a post-migration opt-in); the opt-in-rail assertions below are unchanged */` : `localStorage.removeItem(${JSON.stringify(PREF_KEY)});`}
   })()`);
   await app.reload();
