@@ -75,9 +75,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'FX6 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'FX6 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -498,9 +496,7 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx6-s2-loose', text: 'Loose page, no project', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx6-s2-loose', text: 'Loose page, no project', projectId: null, origin: 'loose', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/fx6-s2-loose'");
@@ -533,10 +529,8 @@ await withHarness(async (app) => {
   await sleep(200);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx6-s3-selfpin-board', text: 'FX6 Self-pin Board', projectId: ${JSON.stringify(selfPinProjectId)}, pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    entries.push({ id: 'fx6-s3-other-board', text: 'FX6 Other Board', projectId: ${JSON.stringify(selfPinProjectId)}, pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx6-s3-selfpin-board', text: 'FX6 Self-pin Board', projectId: ${JSON.stringify(selfPinProjectId)}, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'fx6-s3-other-board', text: 'FX6 Other Board', projectId: ${JSON.stringify(selfPinProjectId)}, pageType: 'board', boxes: [], createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/fx6-s3-selfpin-board'");
@@ -566,9 +560,7 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx6-s3-noproj-page', text: 'No project page', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx6-s3-noproj-page', text: 'No project page', projectId: null, origin: 'loose', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/fx6-s3-noproj-page'");
@@ -630,9 +622,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await freshDesk(app, LAPTOP_W, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'fx6-parked-noproj-page', text: 'No project page (PARKED)', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'fx6-parked-noproj-page', text: 'No project page (PARKED)', projectId: null, origin: 'loose', createdAt: now });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/page/fx6-parked-noproj-page'");

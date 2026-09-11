@@ -28,9 +28,7 @@ const freshBoard = async (app, boardId, boxes, width, height) => {
   await app.emulateDpr(1, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'FX13 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'FX13 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);

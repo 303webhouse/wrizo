@@ -97,10 +97,8 @@ await withHarness(async (app) => {
   // -- A5: board/script delegates never get the mode tabs / Workshop-Publish
   const boardCheck = await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     const id = 'w1-board-' + Date.now();
-    entries.push({ id, text: '', pageType: 'board', boxes: [], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id, text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
     return id;
   })()`);
   await app.reload();

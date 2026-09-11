@@ -785,10 +785,62 @@ export interface JournalPageSeed {
   // Every one of these is applied ONLY when supplied, so an unseeded call
   // writes the byte-identical row it always did — the same discipline
   // `strokes` already established below. Product code passes no seed at all.
-  origin?: JournalEntry['origin'];
+  // ITEM 85-C — `null` is meaningful here and is NOT the same as omitting the
+  // property. Omitting it leaves this function's default (`origin: 'journal'`);
+  // passing null seeds a row with NO origin field at all.
+  //
+  // That distinction is the difference between migrating 55 files and rewriting
+  // them. MEASURED: 52 of the 67 rows the first migration wave seeds carry no
+  // origin, across 27 of its 32 files. Born through the seam without this, every
+  // one of them would silently become journal-homed — and absent is genuinely
+  // not 'journal': PageEditor's `journalFurniture` treats them alike, but
+  // `origin === 'journal'` at line ~1407 and unbornPage's `d.origin && ...` both
+  // discriminate. A migration must change HOW a row is written, never WHAT the
+  // row is; the guard cannot see that difference, so it would have surfaced as
+  // suite reds blamed on the migration rather than on a semantic rewrite.
+  //
+  // The store already persists originless rows — it is the pre-AB3 grandfather
+  // shape ab3/b2 test by name — so this widens the door, not the house.
+  origin?: JournalEntry['origin'] | null;
+  // ITEM 85-C — `source` takes null for the SAME reason origin does, and I
+  // learned it the same way twice. This function hardcodes source:'page', and
+  // a row that OMITS source is a raw CAPTURE: tutorLenses' computeFragmentItems
+  // is literally `all.filter(e => e.source !== 'page')`. So a capture fixture
+  // born through the seam silently stops being a capture.
+  //
+  // I had measured `source` and called it a phantom — "all 32 files that name
+  // it write 'page'". That measured the files that NAME the key and never the
+  // rows that OMIT it, which is the identical mistake the origin default was.
+  // The absence of a key is a value; counting the key's presence cannot see it.
+  // fx12's S3 caught it: countPlain 0.
+  source?: 'page' | null;
   pageType?: JournalEntry['pageType'];
   projectId?: string | null;
   boxes?: Box[];
+  // ITEM 85-C — seven more, measured rather than guessed. Each is a field some
+  // fixture in the 55-file migration seeds today by writing raw localStorage,
+  // counted across all 156 raw writes: `script` (10 files), `starred` (2), and
+  // `deletedAt`/`shelved`/`tags`/`orderIndex`/`updatedAt` (1 each).
+  //
+  // WHAT IS DELIBERATELY ABSENT, because measuring said so: `source`. It looked
+  // like the single biggest gap — 32 files name it — until the VALUES were
+  // read, and all 32 write `source: 'page'`, which is exactly what this
+  // function already sets. `updatedAt` looked like the biggest of all at 41
+  // files, and 40 of them set it equal to `createdAt`, which this function also
+  // already does; only b2.mjs needs the two to differ, and that one file is why
+  // `updatedAt` is here at all. Counting keys would have put two phantoms at
+  // the top of the list. A key is not a blocker; a value is.
+  //
+  // Every one of these already rides `saveJournalEntry`, which upserts the
+  // whole row — so this widens the door, never the house: no field here is new
+  // store capability, and nothing about what the app persists changes.
+  script?: JournalEntry['script'];
+  starred?: boolean;
+  tags?: string[];
+  deletedAt?: string;
+  shelved?: boolean;
+  orderIndex?: number;
+  updatedAt?: string;
 }
 
 export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
@@ -825,10 +877,35 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   // individually rather than spread, so a caller supplying none of them gets
   // the identical row this function has always written, and a caller
   // supplying one does not silently acquire the others' defaults.
-  if (seed?.origin !== undefined) entry.origin = seed.origin;
+  // ITEM 85-C — null means "seed a row with no origin field", which is a row
+  // shape the store already holds and this seam previously could not produce.
+  if (seed?.origin !== undefined) {
+    if (seed.origin === null) delete entry.origin;
+    else entry.origin = seed.origin;
+  }
+  // Same rule, same reason: null means "no source field", which is what makes a
+  // row a raw capture rather than an authored page.
+  if (seed?.source !== undefined) {
+    if (seed.source === null) delete entry.source;
+    else entry.source = seed.source;
+  }
   if (seed?.pageType !== undefined) entry.pageType = seed.pageType;
   if (seed?.projectId !== undefined) entry.projectId = seed.projectId;
   if (seed?.boxes !== undefined) entry.boxes = seed.boxes;
+  // ITEM 85-C — the same presence-check discipline, seven more fields. Applied
+  // individually rather than spread, so an unseeded call still writes the
+  // byte-identical row this function has always written, and a caller supplying
+  // one does not silently acquire the others' defaults.
+  if (seed?.script !== undefined) entry.script = seed.script;
+  if (seed?.starred !== undefined) entry.starred = seed.starred;
+  if (seed?.tags !== undefined) entry.tags = seed.tags;
+  if (seed?.deletedAt !== undefined) entry.deletedAt = seed.deletedAt;
+  if (seed?.shelved !== undefined) entry.shelved = seed.shelved;
+  if (seed?.orderIndex !== undefined) entry.orderIndex = seed.orderIndex;
+  // `updatedAt` is set AFTER createdAt above, so a caller who supplies only
+  // createdAt still gets updatedAt === createdAt (what 40 of the 41 fixtures
+  // that name it actually want), and the one that needs them to differ can say so.
+  if (seed?.updatedAt !== undefined) entry.updatedAt = seed.updatedAt;
   saveJournalEntry(entry);
   return entry;
 }
@@ -861,7 +938,25 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
 // write this replaces was synchronous, and that is the one behavioural
 // difference a migrating harness has to absorb.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage = createJournalPage;
+  // ITEM 85-C — THE SEAM FLUSHES; THE FUNCTION IT WRAPS DOES NOT.
+  //
+  // MEASURED, at the cost of a stamped leg: 36 of 80 files died as NOVERDICT
+  // when wave 1 first ran, every one a file this migration had touched. The
+  // cause is the single behavioural difference between a raw write and a seam
+  // write, which item85c.mjs's own header names and the migration then failed
+  // to absorb: the raw write was SYNCHRONOUS, this one is DEBOUNCED
+  // (`scheduleFlush`, 300ms). A fixture that seeds and immediately reloads
+  // discards the page — and the cache holding the row — before the timer fires.
+  // The row was never in storage, so the surface never mounted.
+  //
+  // The fix belongs HERE rather than at 37 call sites: a test seam whose write
+  // may or may not have landed is a seam that hands every caller the same
+  // footgun, and the next migrated file would rediscover it. Product code calls
+  // `createJournalPage` DIRECTLY and never through `window`, so the app's own
+  // debounced cadence is untouched — this makes the SEAM durable, not the
+  // store eager.
+  (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage =
+    (seed?: JournalPageSeed) => { const entry = createJournalPage(seed); flushNow(); return entry; };
 }
 
 // Create a typed page inside a Binder (B1) — a JournalEntry parented to the
@@ -2264,6 +2359,99 @@ export function setProjectDrawer(projectId: string, drawerId: string | null): vo
   if (!project) return;
   project.drawerId = drawerId ?? undefined;
   saveProject(project);
+}
+
+// ===========================================================================
+// ITEM 85-C — THE AUTHORING SEAMS. Test/inspection only, in the shape
+// `wrizoCreateJournalPage` and `wrizoPinPageToBoard` already established.
+//
+// WHY THEY EXIST. Item 85's migration measured 55 harness files writing a
+// persisted collection raw, and 27 of them could not stop: nothing on `window`
+// authored a project, a story plan or a drawer, and nothing set a field on a
+// row that already existed. A fixture that cannot say what it needs says it
+// raw — and a raw row is erased by the next product write in the same run,
+// which is how one file cost a day. `j5.mjs` names this in its own source:
+// "no wrizo* seam authors one — item 85 phase 2".
+//
+// WHAT THEY ARE, AND THE LINE THEY DO NOT CROSS. Every one is a thin wrapper
+// over a store path that ALREADY EXISTS and is already exercised by product
+// code. No new capability, no schema, no new persistence behaviour: this
+// widens the door, never the house. Product code never calls any of them —
+// they are reachable only from `window`, which is how the existing two seams
+// are scoped, and nothing in `src/` references them.
+//
+// THE ONE COMPOSITION, FLAGGED RATHER THAN SLIPPED IN. `wrizoPatchProject`
+// composes `getProject` + `saveProject` because there is no first-class
+// project mutator to wrap — the store has `renameDrawer` but no
+// `renameProject`, and `fx9.mjs` renames a project to prove its folds are
+// id-keyed. Both halves are existing exports and the composition is the same
+// one `setProjectDrawer` directly above performs, so it stays inside the
+// wrapper rule; it is named here because it is the only seam below that is not
+// a single call forwarded.
+//
+// IDS ARE RETURNED, NOT SUPPLIED. `createProject`/`createStoryPlan`/
+// `createDrawer` generate their own ids, and these seams do not override that
+// — overriding would mean changing the creators, which is house work, not door
+// work. Fixtures that hardcode ids today adopt the returned one instead, the
+// same way every UI-driven fixture already reads its page id back after
+// creating one. (`createJournalPage` differs only because it already accepted
+// a seeded `id` before this item.)
+// ===========================================================================
+if (typeof window !== 'undefined') {
+  const seams = window as unknown as Record<string, unknown>;
+
+  // EVERY SEAM BELOW FLUSHES, for the reason recorded at wrizoCreateJournalPage:
+  // a debounced write that a fixture reloads past is a row that never existed,
+  // and it cost 36 files in a stamped leg. `durable` is the one place that
+  // guarantee lives, so no future seam can forget it and no call site has to
+  // remember. Product code reaches none of these.
+  const durable = <T>(value: T): T => { flushNow(); return value; };
+
+  // Set fields on an EXISTING page. Wraps `patchJournalEntry`, passing the
+  // row's own current text so a patch never clobbers it; a caller that means to
+  // change the text passes it in `changes` and the spread inside wins.
+  seams.wrizoPatchEntry = (id: string, changes: Partial<JournalEntry>) => {
+    const latest = getJournalEntry(id);
+    if (!latest) return null;
+    return durable(patchJournalEntry(id, latest.text, changes));
+  };
+
+  // Flush on demand — the escape hatch for a fixture that writes through some
+  // other product path and needs it landed before a reload.
+  seams.wrizoFlushNow = () => flushNow();
+
+  // NOTE the narrower union, which a typecheck caught and the build did not:
+  // `Project['type']` has three members but `createProject` accepts two, so a
+  // seam typed to the full union would promise a value the store path cannot
+  // take. Widening `createProject` to accept the third would be house work, not
+  // door work — so the seam mirrors the creator's own signature instead. It
+  // costs nothing here: all 19 project rows across the 55 fixtures are
+  // `type: 'creative'`, measured, and none needs the third.
+  seams.wrizoCreateProject = (title: string, type: 'creative' | 'academic' = 'creative') =>
+    durable(createProject(title, type));
+
+  // A project with a `kind` and an optional home drawer — the shape the Shelf
+  // and Drawers fixtures need, and already the app's own Binder birth path.
+  seams.wrizoCreateBinder = (title: string, kind: Project['kind'], drawerId?: string,
+    type: Project['type'] = 'creative') => durable(createBinder(title, kind, drawerId, type));
+
+  seams.wrizoPatchProject = (id: string, changes: Partial<Project>) => {
+    const project = getProject(id);
+    if (!project) return null;
+    saveProject({ ...project, ...changes });
+    return durable(getProject(id));
+  };
+
+  // Authors the plan AND stamps `project.storyPlanId` — because
+  // `createStoryPlan` already does both. The fixtures that set that field by
+  // hand were duplicating work the creator performs.
+  seams.wrizoCreateStoryPlan = (projectId: string, frameworkId: string, beatIds: string[]) =>
+    durable(createStoryPlan(projectId, frameworkId, beatIds));
+
+  seams.wrizoCreateDrawer = (name: string) => durable(createDrawer(name));
+
+  seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) =>
+    durable(setProjectDrawer(projectId, drawerId));
 }
 
 // --- Sync integration -----------------------------------------------------

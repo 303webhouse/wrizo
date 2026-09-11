@@ -53,11 +53,9 @@ await withHarness(async (app) => {
   // ==========================================================================
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([
-      { id: 'u-board', text: 'Underline board', pageType: 'board', source: 'page', createdAt: now, updatedAt: now,
-        boxes: [{ id: 'u-card', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.14, z: 1,
-                  text: '__under__ and **bold** and *slant*' }] },
-    ]));
+    window.wrizoCreateJournalPage({ id: 'u-board', text: 'Underline board', pageType: 'board', createdAt: now, origin: null,
+      boxes: [{ id: 'u-card', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.14, z: 1,
+                text: '__under__ and **bold** and *slant*' }] });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/u-board'");
@@ -103,11 +101,9 @@ await withHarness(async (app) => {
   // ==========================================================================
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([
-      { id: 'u-board2', text: 'Prose board', pageType: 'board', source: 'page', createdAt: now, updatedAt: now,
-        boxes: [{ id: 'u-card2', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.14, z: 1,
-                  text: 'the file_name and snake_case survive' }] },
-    ]));
+    window.wrizoCreateJournalPage({ id: 'u-board2', text: 'Prose board', pageType: 'board', createdAt: now, origin: null,
+      boxes: [{ id: 'u-card2', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.14, z: 1,
+                text: 'the file_name and snake_case survive' }] });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/u-board2'");
@@ -129,11 +125,9 @@ await withHarness(async (app) => {
   // ==========================================================================
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([
-      { id: 'u-board3', text: 'Unpaired board', pageType: 'board', source: 'page', createdAt: now, updatedAt: now,
-        boxes: [{ id: 'u-card3', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.14, z: 1,
-                  text: 'an __unclosed run keeps going' }] },
-    ]));
+    window.wrizoCreateJournalPage({ id: 'u-board3', text: 'Unpaired board', pageType: 'board', createdAt: now, origin: null,
+      boxes: [{ id: 'u-card3', kind: 'text', x: 0.06, y: 0.06, w: 0.5, h: 0.14, z: 1,
+                text: 'an __unclosed run keeps going' }] });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/u-board3'");

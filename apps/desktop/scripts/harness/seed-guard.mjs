@@ -64,6 +64,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DESKTOP = path.join(HERE, '..', '..');
 const PERSISTENCE = path.join(DESKTOP, 'src', 'store', 'persistence.ts');
+const BACKSLASH = String.fromCharCode(92);
 
 // --- the collection keys, single-sourced from the app ------------------------
 // The source is a DEFAULTED PARAMETER, not a closed-over read, for one reason:
@@ -110,27 +111,38 @@ function scanDir(dir, keys) {
 }
 
 // --- THE BASELINE ------------------------------------------------------------
-// MEASURED 2026-09-09 against `main` @ c2d5539, not estimated: 56 files, which
-// is the population AFTER item 129 migrated bm1's seeding.
+// MEASURED, never estimated. The number has moved once, by work rather than by
+// re-counting, and the history is kept because it is the point of the ratchet:
 //
-// ► IT IS 56, NOT 54, AND THE DIFFERENCE IS A REAL WIDENING OF THE EXPOSURE.
-// Item 85's record measures `writer-studio-journal-entries` alone and counts 54.
-// Two further files — b2-1.mjs and j5.mjs — write `projects` / `story-plans` /
-// `drawers` raw and never touch journal-entries, so they fall outside that
-// count. `flushNow()` iterates EVERY key in KEYS, so their coin flip is
-// identical in kind. Both numbers are right about what they measure; only the
-// six-key one is right about the hazard.
+//   56  item 85-B, against main @ c2d5539 — the population the guard was built
+//       to hold still. (Item 85's own record says 54; it measures
+//       `writer-studio-journal-entries` alone, and b2-1.mjs / j5.mjs write
+//       `projects`/`story-plans`/`drawers` without ever touching journal
+//       entries. `flushNow()` iterates EVERY key, so their coin flip is
+//       identical in kind — both numbers are right about what they measure,
+//       only the six-key one is right about the hazard. AGENTS.md said 47.)
+//   57  item 85-C added item85c.mjs, whose raw write is the CONTROL that proves
+//       the hazard (annotated below).
+//   20  item 85-C WAVE 1 — 37 files migrated to the seams, 67 raw writes gone.
+//       18 unclassified remain (wave 2, each blocked on nothing now that the
+//       collection and mutation seams exist) plus the 2 annotated.
 //
 // THIS LIST IS A RATCHET, NOT AN AMNESTY. A file NOT in it that writes raw is a
 // FAILURE — that is the guard. A file IN it that no longer writes raw is ALSO a
 // failure, so a migration must delete its line here in the same change; without
 // that the list would rot into a permanent excuse and quietly re-authorise what
-// it was built to end.
+// it was built to end. Wave 1 proved that half works: the guard went red the
+// moment the 37 were migrated and stayed red until these lines were removed.
 //
-// The entries are UNCLASSIFIED debt except where a reason is given. I have read
-// one of the 56 closely enough to classify it, and I am not going to label the
-// other 55 from a grep — classification belongs to whoever migrates each file.
+// The entries are UNCLASSIFIED debt except where a reason is given.
+// Classification belongs to whoever migrates each file — never to a grep.
 const DELIBERATE = new Map([
+  ['scripts/harness/item85c.mjs',
+    'the raw write here is the CONTROL, not a seed: item 85-C\'s S2 seeds one row raw and one through '
+    + 'the seam, performs a single ordinary product write, and reads both back — proving the raw row is '
+    + 'destroyed and the seam row survives. Delete this raw write and S2 proves only that a row written '
+    + 'through the store is still there afterwards, which is not news. The hazard cannot be demonstrated '
+    + 'without reproducing it.'],
   ['scripts/harness/bm1.mjs',
     'a two-device TOMBSTONE simulation, not a seed: the write sets deletedAt on an existing row and '
     + 'reloads, because the scenario under test IS a row vanishing under a mounted surface and the app '
@@ -139,25 +151,13 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/ab1.mjs', 'scripts/harness/ab2.mjs', 'scripts/harness/ab3.mjs',
-  'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs', 'scripts/harness/b2-1.mjs',
-  'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs', 'scripts/harness/bg1.mjs',
-  'scripts/harness/bg2.mjs', 'scripts/harness/bm1.mjs', 'scripts/harness/cd1.mjs',
-  'scripts/harness/cd2.mjs', 'scripts/harness/cd4.mjs', 'scripts/harness/e1.mjs',
-  'scripts/harness/e3.mjs', 'scripts/harness/fx1.mjs', 'scripts/harness/fx10.mjs',
-  'scripts/harness/fx11.mjs', 'scripts/harness/fx12.mjs', 'scripts/harness/fx13.mjs',
-  'scripts/harness/fx14.mjs', 'scripts/harness/fx15.mjs', 'scripts/harness/fx16.mjs',
-  'scripts/harness/fx17.mjs', 'scripts/harness/fx18.mjs', 'scripts/harness/fx2.mjs',
-  'scripts/harness/fx3.mjs', 'scripts/harness/fx4.mjs', 'scripts/harness/fx5.mjs',
-  'scripts/harness/fx6.mjs', 'scripts/harness/fx7.mjs', 'scripts/harness/fx8.mjs',
-  'scripts/harness/fx9.mjs', 'scripts/harness/hb1.mjs', 'scripts/harness/hb2.mjs',
-  'scripts/harness/item118.mjs', 'scripts/harness/item83f.mjs', 'scripts/harness/item84.mjs',
-  'scripts/harness/item84b.mjs', 'scripts/harness/item9192.mjs', 'scripts/harness/j4.mjs',
+  'scripts/harness/ab3.mjs', 'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs',
+  'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs',
+  'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/e1.mjs',
+  'scripts/harness/fx10.mjs', 'scripts/harness/fx9.mjs', 'scripts/harness/item85c.mjs',
   'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs', 'scripts/harness/m1.mjs',
   'scripts/harness/m2.mjs', 'scripts/harness/m3.mjs', 'scripts/harness/m4.mjs',
-  'scripts/harness/pb1.mjs', 'scripts/harness/sc2.mjs', 'scripts/harness/tu1.mjs',
-  'scripts/harness/tu2.mjs', 'scripts/harness/tu5.mjs', 'scripts/harness/underline.mjs',
-  'scripts/harness/w1.mjs', 'scripts/harness/w2.mjs',
+  'scripts/harness/tu1.mjs', 'scripts/harness/tu2.mjs',
 ]);
 
 // --- run ---------------------------------------------------------------------
@@ -312,7 +312,7 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
   const emptyBaseline = new Set();
   const againstEmpty = offenders.filter((f) => !emptyBaseline.has(f));
   ok(`85-B FALSIFICATION: against an EMPTY baseline the guard flags ALL ${offenders.length} known raw writers — the charter's claim ("it would have caught all 54") tested rather than asserted, and the thing a baseline that merely exempts them could never show`,
-    againstEmpty.length === offenders.length && offenders.length >= 54,
+    againstEmpty.length === offenders.length && offenders.length === BASELINE.size && offenders.length > 0,
     JSON.stringify({ flagged: againstEmpty.length, population: offenders.length, sample: againstEmpty.slice(0, 5) }));
 
   // And the ratchet's other direction: a baseline entry that has been migrated
@@ -332,6 +332,99 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     JSON.stringify({ newOffenders: newOffenders.length, stale: stale.length }));
 }
 
+// --- THE SEAM CALL SITES ARE WELL FORMED -------------------------------------
+// ADDED BY ITEM 85-C, because the migration produced a defect neither existing
+// gate could see. Transforming `entries.push(...${JSON.stringify(rows)})` — a
+// spread of a TEMPLATE INTERPOLATION — a transformer took the `{` of `${` for
+// the start of an object literal and emitted:
+//
+//     window.wrizoCreateJournalPage({ JSON.stringify(rows), origin: null });
+//
+// a call expression sitting where a key belongs, with the `$` eaten. It is not
+// valid JavaScript, and BOTH static gates passed it:
+//   · `node --check` passes, because that text lives inside a template literal
+//     — in the .mjs file it is a STRING, not code. It would have thrown in the
+//     browser, at which point the file aborts and reports nothing (the
+//     "a driver can lie by dying" hazard this repo already names).
+//   · this guard passed, because no raw write remained — which is all it was
+//     ever asked.
+// Four files carried it. So the migration's own instrument gains the check its
+// absence cost, and it is cheap: a brace-matched parse of every call site.
+const CALL_RE = /wrizoCreateJournalPage\(\s*\{/g;
+
+function matchBrace(text, open) {
+  let depth = 0, inStr = null;
+  for (let i = open; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) { if (c === BACKSLASH) { i += 1; continue; } if (c === inStr) inStr = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if (c === '{') depth += 1;
+    else if (c === '}') { depth -= 1; if (depth === 0) return i; }
+  }
+  return -1;
+}
+
+function topLevelEntries(body) {
+  const parts = []; let depth = 0, inStr = null, start = 0;
+  for (let i = 0; i <= body.length; i += 1) {
+    if (i === body.length) { parts.push(body.slice(start)); break; }
+    const c = body[i];
+    if (inStr) { if (c === BACKSLASH) { i += 1; continue; } if (c === inStr) inStr = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) depth -= 1;
+    else if (c === ',' && depth === 0) { parts.push(body.slice(start, i)); start = i + 1; }
+  }
+  return parts.map((p) => p.trim()).filter(Boolean);
+}
+
+function malformedCallSites(text, label) {
+  const out = [];
+  let m;
+  CALL_RE.lastIndex = 0;
+  while ((m = CALL_RE.exec(text)) !== null) {
+    const open = text.indexOf('{', m.index);
+    const close = matchBrace(text, open);
+    if (close < 0) { out.push(`${label}: unbalanced object literal`); continue; }
+    for (const p of topLevelEntries(text.slice(open + 1, close))) {
+      if (p.startsWith('...')) continue;                                        // spread
+      if (/^[A-Za-z_$][\w$]*$/.test(p)) continue;                               // shorthand
+      if (/^(\[[^\]]*\]|[A-Za-z_$][\w$]*|'[^']*'|"[^"]*")\s*:/.test(p)) continue; // key: value
+      out.push(`${label}: ${p.slice(0, 70)}`);
+    }
+  }
+  return out;
+}
+
+{
+  const malformed = [];
+  let siteCount = 0;
+  for (const dir of [path.join(DESKTOP, 'scripts', 'harness'), path.join(DESKTOP, 'scripts')]) {
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.mjs')) continue;
+      const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
+      if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
+      const text = readFileSync(path.join(dir, name), 'utf8');
+      CALL_RE.lastIndex = 0;
+      siteCount += (text.match(/wrizoCreateJournalPage\(\s*\{/g) || []).length;
+      malformed.push(...malformedCallSites(text, rel));
+    }
+  }
+  ok(`85-C: all ${siteCount} seam call sites are well-formed object literals — the one defect class that passes BOTH node --check (the text is a string inside a template literal) and the raw-write scan above, and then throws in the browser where a dying driver reports nothing`,
+    malformed.length === 0, JSON.stringify({ sites: siteCount, malformed }));
+
+  // Self-proof, because a shape check that never sees a bad shape is the
+  // decoration this file keeps arguing against. The first fixture is the exact
+  // text the migration produced.
+  const damaged = "window.wrizoCreateJournalPage({ JSON.stringify(rows), origin: null });";
+  ok('85-C self-proof: the real defect text is CAUGHT — a call expression where a key belongs',
+    malformedCallSites(damaged, 'fixture').length === 1, JSON.stringify(malformedCallSites(damaged, 'fixture')));
+  const healthy = "window.wrizoCreateJournalPage({ id: 'x', text: '', boxes: [], origin: null });"
+    + "window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null });";
+  ok('85-C self-proof (the control): well-formed sites — including a spread and a computed value — are NOT flagged, so the check is not one that reds on everything',
+    malformedCallSites(healthy, 'fixture').length === 0, JSON.stringify(malformedCallSites(healthy, 'fixture')));
+}
 // --- THE SELF-PROOF ----------------------------------------------------------
 // The scan above finds 56 files whether it works well or barely. These fixtures
 // are what make the claim real — the same argument hooks-order-ast.mjs had to
