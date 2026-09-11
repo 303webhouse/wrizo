@@ -125,7 +125,7 @@ Revise (the founding fact's inversion, and the ticket's whole point).
 | mode | instrument | permission | pointer on ink | keystrokes |
 |---|---|---|---|---|
 | Free Write | INK | **`edit`** | draws, erases, undoes (item 121, unchanged) | do not type |
-| Free Write | TEXT | **`inert`** *(see the open word)* | nothing; passes through to the editor | type |
+| Free Write | TEXT | **`inert`** *(RULED — §3.1)* | nothing; passes through to the editor | type |
 | Draft | — | **`movable`** | double-click arms a move; otherwise passes through | type |
 | Revise | — | **`movable`** | double-click arms a move; otherwise passes through | type |
 
@@ -278,8 +278,11 @@ reports NOTHING; item 121's `fx7` went `NOVERDICT` exactly that way.
 **Per mode:**
 - **Free Write / INK** — item 121's 43 checks still green, unchanged. Any red
   here is a regression, not a new law.
-- **Free Write / TEXT** — the stratum RENDERS (ink visible while typing) and
-  behaves per the open word below.
+- **Free Write / TEXT** — the stratum RENDERS (ink visible while typing) and is
+  **INERT** (§3.1, ruled). Item 121's S3 already asserts that inertness, so this
+  is a REGRESSION leg, not a new law: a pen stroke makes no stroke, a keystroke
+  types, and **a double-click arms NOTHING** — that last clause is new, and is
+  the one that proves the ruling rather than assuming it.
 - **Draft** — the stratum renders; keystrokes type normally; a pen and a mouse
   stroke create **no** stroke; dblclick on ink arms a move; **dblclick on bare
   text still selects a word**; drag moves the ink; the text's rect is unmoved.
@@ -323,23 +326,35 @@ headless than item 121's palm rejection was. Offer to chat 1; hold.
 
 ---
 
-## §3 · OPEN WORDS — for Nick, not for the builder
+## §3 · WORDS — one RULED (3.1), the rest still open for Nick
 
-1. **⚠ IS INK MOVABLE IN FREE WRITE / TEXT?** Nick's sentence names Draft and
-   Revise. It does not mention Free Write's TEXT half. Two lawful readings:
-   - **(a) inert, as item 121 shipped** — R15 already ruled "in TEXT the stratum
-     is inert", and item 126 does not name it. *This brief's lean, on the
-     narrower ground: do not reverse a standing ruling the new one is silent
-     about.*
-   - **(b) movable**, on the reading that "not currently drawing" is one state
-     wherever it occurs.
-   **The asymmetry (a) creates should be said plainly rather than buried:** ink
-   would be movable in the two modes where you cannot draw it, and not movable in
-   the mode where you can. That may be exactly right — Free Write has the switch,
-   so a writer who wants to rearrange ink can flip to INK and use the eraser and
-   pen — or it may read as an odd hole. **One word settles it; the build is a
-   one-line difference either way, and the harness leg differs only in its
-   expected value.**
+1. **✅ RULED — INK IS *NOT* MOVABLE IN FREE WRITE / TEXT. IT STAYS INERT.**
+   *(Fable, from the analog law, 2026-09-08. Nick may overrule.)*
+
+   **The question, kept as it was asked**, because the answer is only legible
+   beside it: Nick's sentence names Draft and Revise and is silent on Free
+   Write's TEXT half. Two lawful readings were put up — **(a) inert, as item 121
+   shipped** (R15 already ruled "in TEXT the stratum is inert", so do not reverse
+   a standing ruling the new one is silent about — this brief's lean), and **(b)
+   movable**, on the reading that "not currently drawing" is one state wherever
+   it occurs. The brief also said plainly that (a) creates an asymmetry: ink
+   movable in the two modes where you cannot draw it, and not in the one where
+   you can.
+
+   **THE RULING TAKES (a), AND TURNS THE ASYMMETRY FROM A HOLE INTO THE REASON —
+   Fable's words:** *in Free Write the sketch pad is one press away (switch to
+   INK to move or edit strokes); in Draft and Revise there is no INK to switch
+   to, which is exactly why movable-on-double-click exists there.* **A typewriter
+   doesn't move ink; a sketch pad does.**
+
+   **What this settles for the build:** `movable` is reachable from Draft and
+   Revise ONLY. Free Write keeps exactly two states — `edit` in INK, `inert` in
+   TEXT — and both are byte-identical to what item 121 shipped. **The
+   double-click listener must therefore be attached under `movable` alone**, not
+   "whenever the writer is not drawing"; a listener armed by the absence of INK
+   would quietly extend the gesture into Free Write's TEXT half and reverse this
+   ruling without anyone typing a word about it. **B6's Free Write / TEXT leg
+   asserts the negative** — a double-click there arms nothing.
 2. **The gap threshold for a group** (§B4) ships as a working value, not a law.
 3. **Double-click is getting crowded.** Item 128 makes it the gesture that
    travels into a nested board. Different surfaces today, so no collision — but

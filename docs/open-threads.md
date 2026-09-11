@@ -2654,6 +2654,19 @@ new one is silent about) **and says the resulting asymmetry plainly**: ink would
 two modes where you cannot draw it, and not movable in the one where you can. **One word settles it;
 the build is a one-line difference either way.**
 
+**✅ RULED THE SAME DAY (Fable, from the analog law, 2026-09-08; Nick may overrule): FREE WRITE'S
+TEXT HALF STAYS INERT. R15 STANDS.** **And the asymmetry is CORRECT rather than a hole** — Fable's
+reason, which is the part worth keeping: *in Free Write the sketch pad is one press away (switch to
+INK to move or edit strokes); in Draft and Revise there is no INK to switch to, which is exactly why
+movable-on-double-click exists there.* **A typewriter doesn't move ink; a sketch pad does.**
+**BUILD CONSEQUENCE, recorded because it is the way this ruling would be reversed by accident:**
+`movable` is reachable from **Draft and Revise ONLY**, so the double-click listener attaches under
+that permission alone — never "whenever the writer is not drawing", which would extend the gesture
+into Free Write's TEXT half and undo the ruling silently. The harness asserts the NEGATIVE (a
+double-click in Free Write / TEXT arms nothing), so the ruling is proven rather than assumed.
+**121-B is the INK lane's to build — same lane, same context — when this brief merges, taking the
+box in the announced order.**
+
 ## ITEM 127 — THE TYPED FACE, AND THE FREE WRITE MENU ROSTER — OPENS 2026-09-07
 
 **OPENS (Fable, 2026-09-07).** Free Write **"both acts like a typewriter and looks typed"** (Nick) —
