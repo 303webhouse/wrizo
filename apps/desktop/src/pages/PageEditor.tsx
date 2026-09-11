@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
@@ -545,7 +545,7 @@ function PageEditorView({ id }: { id: string }) {
   // fresh values on the next render without any extra plumbing here.
   // AB4 S2 — every board currently pinning this page, for the truthful
   // "Also pinned to <board>." membership line(s).
-  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const pinnedBoardTitles = getBoardsConnecting(entry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(entry, project, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',

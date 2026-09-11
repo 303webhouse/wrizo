@@ -6,12 +6,12 @@
 // stored (S1's own law).
 import type { JournalEntry, Project } from '../types';
 import { describePageHome } from './pageHome';
-import { getBoardsPinning, getJournalEntries } from './persistence';
+import { getBoardsConnecting, getJournalEntries } from './persistence';
 
 // --- Structure --------------------------------------------------------
-// "Where this page sits: its home and its memberships (getBoardsPinning).
+// "Where this page sits: its home and its memberships (getBoardsConnecting).
 // Read-only, M1's coverage-never-verdicts" — every fact here is read straight
-// off existing helpers (describePageHome, getBoardsPinning), never a verdict on
+// off existing helpers (describePageHome, getBoardsConnecting), never a verdict on
 // whether the page's placement is "good."
 // FX12 S2 — the linked-beat field is retired: the beats system is dormant (CD4),
 // so the Structure lens no longer reads or speaks beat language (the StoryPlan/
@@ -23,7 +23,7 @@ export interface StructureFacts {
 }
 
 export function computeStructureFacts(entry: JournalEntry, project: Project | null): StructureFacts {
-  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const pinnedBoardTitles = getBoardsConnecting(entry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(entry, project, pinnedBoardTitles);
   return { homeLabel, memberships };
 }

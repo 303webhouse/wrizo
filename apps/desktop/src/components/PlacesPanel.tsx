@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import {
   getProjects, getJournalEntry, setPageHome, createBinder,
-  getAllUserBoards, getBoardsPinning, pinPageToBoard, unpinPageFromBoard,
+  getAllUserBoards, getBoardsConnecting, pinPageToBoard, unpinPageFromBoard,
   inJournalView, flushNow, getSystemKind,
 } from '../store/persistence';
 import { useActionToast } from './ActionToast';
@@ -100,7 +100,13 @@ export function PlacesPanel({ entry: entryProp }: { entry: JournalEntry }) {
   // allows), minus the page itself (a board can't pin itself — the same
   // self-pin guard PinToBoardSheet.tsx's own leaf exclusion carries).
   const allBoards = getAllUserBoards().filter(b => b.id !== entry.id);
-  const pinnedIds = new Set(getBoardsPinning(entry.id).map(b => b.id));
+  // PW1 ERRATUM 1 — the CONNECTION reader, not the raw scan. Behaviour here is
+  // identical either way (these checkboxes are drawn over `getAllUserBoards`,
+  // which already excludes the condition-boards, so a system id could never
+  // match one) — but this list MAKES connections, so it should read the same
+  // function every other connection reader does. Identical today; it stays
+  // correct if `getAllUserBoards` ever widens.
+  const pinnedIds = new Set(getBoardsConnecting(entry.id).map(b => b.id));
   const toggleBoard = (boardId: string, checked: boolean) => {
     if (checked) pinPageToBoard(entry.id, boardId);
     else unpinPageFromBoard(entry.id, boardId);
