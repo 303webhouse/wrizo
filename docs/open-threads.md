@@ -3707,6 +3707,68 @@ happened to pass — after `bm1`'s vanishing seed and item 129's alleged read ra
 that silently failed to push would read 11 and STILL LOOK GREEN** — the count is the only thing that
 can tell a complete sweep from an incomplete one, because **a pass/fail run cannot see a check that
 was never pushed.** *(The original instance: TU2 parked 9 against a summary claiming 10.)*
+## STANDING LAW — AN OFFER IS PUSHED OR IT DOES NOT EXIST — 2026-09-11
+
+**`commit = push` was already law; this names the failure it did not cover.** **A lane may not report
+an offer whose branch is not on `origin`**, and **a relay names BRANCH + TIP SHA + BOTH `SUITE RESULT`
+LINES.** **Identification is load-bearing under batch ships.**
+
+**THE FAILURE THAT EARNED IT.** Item 122's offer was relayed as branch **`fix-item113`** — a
+**different, already-merged** branch whose tip (`ef06835`) carried nothing new against `main`. The real
+branch was **`item122-styling`**. Chat 1 recovered it **from the stamped commit's own parent message**
+(*"Merge origin/main @ e8cad7d into item122-styling for the stamp"*) — **and that worked ONLY because
+the lane had stamped the merged tree.** **A wrong branch name plus a stamp with no lineage would have
+left nothing to recover from.**
+
+**WHY THE THREE-PART RELAY: each part cross-checks the others.** The SHA proves the branch, both stamp
+lines prove the SHA, and the branch makes the SHA fetchable. **Under batch ships a mis-identified merge
+no longer fails alone — it rides to production inside someone else's batch**, and the batch review
+reads an assembled diff, not a branch name.
+
+## CANON — A REF READ DURING A PUSH IS A MOVING TARGET — 2026-09-11
+
+**"Two disagreeing measurements mean one is STALE, not that the repository is strange."**
+
+**Chat 1 read `origin/item122-styling` three times during a push in progress and got `dddc917`, then a
+contradiction, then `61bd7ab`** — and spent the middle of it **reasoning about how git could produce
+the contradiction** instead of re-measuring. **The trap is not the moving ref; it is treating
+inconsistent readings as a puzzle to solve rather than as stale data to refresh.** **Fetch, re-read,
+and believe the fresh measurement.**
+
+## CANON — STATIC GATES SEE TEXT, NOT MEANING (ERRATA) — 2026-09-11
+
+**`node --check` passes a corrupted call inside a template literal BECAUSE THERE IT GENUINELY IS A
+STRING.** **`seed-guard.mjs` passes a migrated file because NO RAW WRITE REMAINS — which is all it was
+asked.** **Both instruments answered correctly, and the migration was still wrong.**
+
+**MIGRATION FIDELITY IS A COMPARISON NO STATIC GATE CAN MAKE: every new call against THE ROW IT
+REPLACED, FIELD BY FIELD.** Nothing that reads the new text alone can see a field that changed value,
+because **the new text is internally consistent** — that is exactly what makes it pass.
+
+**Proven by ERRATA's own two defects, found and repaired by the lane before anyone else saw them:**
+**dropped statements**, and **`source` absent is NOT `source: 'page'`** — the origin error repeated one
+step later. **A seam that materialises a DEFAULT where the raw row had ABSENCE has changed WHAT THE ROW
+IS**, which is precisely what this lane's own canon forbids: *a migration changes HOW a row is written,
+never WHAT the row is.*
+
+**NAMED FOR WAVE 2 AND ALL LATER MIGRATIONS: "the origin error repeated one step later" is NOT TWO BUGS
+— it is ONE MISCONCEPTION APPLIED FIELD BY FIELD.** **Fixing the field that failed leaves the
+misconception in place**, and it resurfaces at whatever field comes next. **The check is field-by-field
+across every migrated call, not a patch aimed at the field that surfaced.**
+
+## CANON — A CHECKER THAT CRIES WOLF TEACHES THE NEXT READER TO DISCOUNT IT (ERRATA) — 2026-09-11
+
+**ERRATA read TEN mismatches down to FOUR real ones BEFORE reporting.** **That editing pass is the
+work, not an optional courtesy.**
+
+**A checker with false positives is worse than no checker**, because it still costs the run AND it
+trains its reader to skim — and **the reader who skims a noisy checker is the one who will skim the
+true finding buried in it.** **A discounted instrument fails silently and permanently**, with no red
+anywhere to show it happened.
+
+**Sibling to the guard laws from the other side:** *a guard that can never fire reports a safety it is
+not providing*; **a guard that fires constantly reports a hazard nobody will read.** **Both have
+stopped measuring; only one of them looks broken.**
 Registry: next free **133**.
 
 
