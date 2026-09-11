@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
-import { decorateEditorFor, decorateMarkdown, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
@@ -615,7 +615,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // AB2 S0/S3's iA register). Journal renders its runs (struck spans stay
   // visible, drop from derived).
   const html = freeEdit
-    ? decorateMarkdown(initialText)
+    // ITEM 122 — first paint collapses its markers too, with a NULL caret:
+    // nothing is adjacent to nothing before the writer has placed one, and a
+    // first paint that showed syntax and then hid it on the first keystroke
+    // would read as a flicker rather than a register.
+    ? decorateMarkdownForCard(initialText, null)
     : isEmpty
       ? ''
       : content.map(run => `<span class="${run.struck ? 'fo-run fo-struck' : 'fo-run'}">${escHtml(run.text)}</span>`).join('')

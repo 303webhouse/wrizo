@@ -254,6 +254,7 @@ export type DeskTermId =
   // ITEM 83 M4 — STYLING (R1), the Typewriter menu (R3, names per F1's
   // default), and the three-instrument foot (R5/R12).
   | 'stylingHeading' | 'stylingBold' | 'stylingItalic' | 'stylingUnderline'
+  | 'stylingStrike'
   | 'twMenuHeading' | 'twForwardLock' | 'twForwardLockWindow'
   | 'twUnitWords' | 'twUnitSentences' | 'twLineFade' | 'twLineFadeLines'
   | 'twWritingLine' | 'twLineTop' | 'twLineCenter' | 'twLineBottom'
@@ -822,6 +823,7 @@ const CANONICAL: Record<DeskTermId, string> = {
   stylingBold: 'Bold',
   stylingItalic: 'Italic',
   stylingUnderline: 'Underline',
+  stylingStrike: 'Strikethrough',
   // ITEM 83 M4 (R3) — the Typewriter menu. Names are Nick's latest (F1's
   // default): "Forward Lock" and "Line Fade" govern; Chamber 1's "Forward
   // Momentum"/"Text Fade" retire.
