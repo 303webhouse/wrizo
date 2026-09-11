@@ -539,9 +539,18 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding the StoryPlan' });
   await app.evalJs(`
     (() => {
-      const now = new Date().toISOString();
-      const plan = { id: 'plan-' + Date.now(), projectId: ${JSON.stringify(standaloneBinder.id)}, frameworkId: 'three_act', beatNotes: [], currentBeatId: null, createdAt: now, updatedAt: now };
-      localStorage.setItem('writer-studio-story-plans', JSON.stringify([plan]));
+      // ITEM 85-C — through the seam. createStoryPlan(projectId, framework, [])
+      // produces this fixture's exact shape: beatNotes [] and currentBeatId
+      // null (it derives both from the beatIds it is given, and it is given
+      // none). The plan's id was already dynamic here ('plan-' + Date.now()),
+      // so nothing could depend on its value and nothing does.
+      //
+      // ONE DIFFERENCE, FLAGGED: createStoryPlan also stamps
+      // project.storyPlanId, which the raw write did not. Nothing in this file
+      // asserts on that field, and a plan with no back-link to its project was
+      // arguably an inconsistent fixture — but it IS a change, so it is named
+      // here rather than left for someone to find.
+      window.wrizoCreateStoryPlan(${JSON.stringify(standaloneBinder.id)}, 'three_act', []);
     })()
   `);
   await app.reload();
