@@ -3502,6 +3502,55 @@ it cannot.
 its line in the same change**; an annotation on a file that no longer writes raw **fails**, because
 **an exemption must expire with the thing it exempts or it silently pre-authorises the next raw write
 into that file.**
+## CANON — A CHECK CAN PASS FOR THE WRONG REASON WHEN ITS PREMISE IS ALREADY DEAD — 2026-09-10
+
+**ERRATA's finding, and it is the finding rather than the pass.** Item 85-C's S2 proof intended to
+show that a **raw** row dies under an ordinary product write while a **seam-written** row survives.
+**Its premise was destroyed before it was ever measured: the SEAM CALL made right after the raw write
+IS ITSELF A PRODUCT WRITE, and had already killed the raw row.**
+
+**THE TRAP: the final reads would still have produced the EXPECTED SHAPE — `{raw:false, seam:true}` —
+so the check would have PASSED**, and the lane would have reported a clean proof **of a mechanism
+located in the wrong place.** A green result, a true conclusion, and an experiment that never tested
+what it claimed to.
+
+**RULED: when a check confirms exactly what you expected, the question is not "did it pass" but "COULD
+IT HAVE FAILED, AND BY THE ROUTE I THINK?"** A proof whose setup step performs the very operation
+under test is not a proof. **Order the steps so the premise survives to the moment of measurement,
+and prove the premise separately where it is cheap** — ERRATA did, and the corrected S2 reads:
+
+```
+                                   raw     seam
+  both seeded                      true    true
+  after one ordinary product write false   true
+```
+
+**Sibling laws, and this is now the family's sharpest member:** *a green re-run is not a diagnosis* ·
+*a sentence about a run is not a run* · *a directory of green files looks like evidence rather than
+prose* · *a red check is not automatically a check to retire*. **Each says the same thing from a
+different side: the outcome is not the evidence; the ROUTE to the outcome is.**
+
+## ITEM 85-C — THE SEAMS PROVED, ON THE INTEGRATED TREE — 2026-09-10
+
+**`ITEM85C VERIFY: PASS (13 checks)`, measured at `ab86dd8` — the INTEGRATED tree, not the branch's
+stale base.** Branch pushed at **`3b236b5`** (four commits: the seams, the proof, the S2 ordering fix,
+and `main` merged in). **Suite now 79.** Box released.
+
+**ERRATA SPENT ITS SINGLE-FILE TURN ON THE RIGHT QUESTION.** It had already passed the file 13/13
+before the announcement — **so re-running the stale base would have re-answered a question it had
+answered.** `main` had moved **nine commits**; the useful question was **whether that drift
+invalidated the result.** It fetched, found **`persistence.ts`, the types and the seams' dependencies
+all untouched**, merged clean, typechecked 0, and **rebuilt — because `main` had brought product code,
+so its bundle was stale.** *(The rebuild is the part a hurried lane skips; a stale bundle is the exact
+condition item 77(c) added the bundle hash to the stamp to expose.)*
+
+**THE GUARD DID ITS STANDING JOB ON WORK THAT WAS NOT ITS OWN.** The merge brought TOOLS' brand-new
+`item130.mjs` into the tree, and **`seed-guard.mjs` met it and stayed green** — the new file seeds
+through the seam, so **the baseline is still honest.** **An instrument that only validates its
+author's work is a rehearsal; one that silently passes a stranger's correct file is a guard.**
+
+**85-C's product code is `persistence.ts` alone** — within the seams-only authority granted 2026-09-10
+(thin wrappers over existing store paths; a new store capability STOPS).
 Registry: next free **133**.
 
 
