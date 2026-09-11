@@ -92,6 +92,29 @@ await withHarness(async (app) => {
     && u.orderIndex === undefined && u.script === undefined && u.sameTimes === true
     && u.source === 'page' && u.origin === 'journal', unseeded);
 
+  // S1d — `origin: null` seeds a row with NO origin field, which is a different
+  // row from one homed in the journal and the single most load-bearing detail
+  // of the whole migration: 52 of the 67 rows wave 1 seeds carry no origin, so
+  // without this the migration would rewrite them rather than move them. The
+  // control beside it is what gives null its meaning — OMITTING origin must
+  // still produce the default.
+  await app.evalJs(`(() => {
+    window.wrizoCreateJournalPage({ id: '85c-no-origin', origin: null });
+    window.wrizoCreateJournalPage({ id: '85c-default-origin' });
+    window.wrizoCreateJournalPage({ id: '85c-loose-origin', origin: 'loose' });
+  })()`);
+  await sleep(FLUSH);
+  const originRows = await app.evalJs(`(() => {
+    const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    const pick = (id) => { const e = es.find(x => x.id === id); return e ? ('origin' in e ? String(e.origin) : 'ABSENT') : 'MISSING'; };
+    return JSON.stringify({ nulled: pick('85c-no-origin'), def: pick('85c-default-origin'), loose: pick('85c-loose-origin') });
+  })()`);
+  const o = JSON.parse(originRows);
+  ok('S1d: origin:null seeds a row with NO origin field — the pre-AB3 grandfather shape, and the row 52 of wave 1\'s 67 seeds actually are. Without it the migration would rewrite those rows instead of moving them, and the guard cannot see that difference',
+    o.nulled === 'ABSENT', originRows);
+  ok('S1d (the control): omitting origin still yields the default \'journal\', and an explicit \'loose\' still wins — so null is a third, distinct instruction rather than a synonym for either',
+    o.def === 'journal' && o.loose === 'loose', originRows);
+
   // =========================================================================
   // S2 — THE POINT OF THE WHOLE ITEM. Raw vs seam, same run, same product
   // write, read back together.

@@ -785,7 +785,23 @@ export interface JournalPageSeed {
   // Every one of these is applied ONLY when supplied, so an unseeded call
   // writes the byte-identical row it always did — the same discipline
   // `strokes` already established below. Product code passes no seed at all.
-  origin?: JournalEntry['origin'];
+  // ITEM 85-C — `null` is meaningful here and is NOT the same as omitting the
+  // property. Omitting it leaves this function's default (`origin: 'journal'`);
+  // passing null seeds a row with NO origin field at all.
+  //
+  // That distinction is the difference between migrating 55 files and rewriting
+  // them. MEASURED: 52 of the 67 rows the first migration wave seeds carry no
+  // origin, across 27 of its 32 files. Born through the seam without this, every
+  // one of them would silently become journal-homed — and absent is genuinely
+  // not 'journal': PageEditor's `journalFurniture` treats them alike, but
+  // `origin === 'journal'` at line ~1407 and unbornPage's `d.origin && ...` both
+  // discriminate. A migration must change HOW a row is written, never WHAT the
+  // row is; the guard cannot see that difference, so it would have surfaced as
+  // suite reds blamed on the migration rather than on a semantic rewrite.
+  //
+  // The store already persists originless rows — it is the pre-AB3 grandfather
+  // shape ab3/b2 test by name — so this widens the door, not the house.
+  origin?: JournalEntry['origin'] | null;
   pageType?: JournalEntry['pageType'];
   projectId?: string | null;
   boxes?: Box[];
@@ -849,7 +865,12 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   // individually rather than spread, so a caller supplying none of them gets
   // the identical row this function has always written, and a caller
   // supplying one does not silently acquire the others' defaults.
-  if (seed?.origin !== undefined) entry.origin = seed.origin;
+  // ITEM 85-C — null means "seed a row with no origin field", which is a row
+  // shape the store already holds and this seam previously could not produce.
+  if (seed?.origin !== undefined) {
+    if (seed.origin === null) delete entry.origin;
+    else entry.origin = seed.origin;
+  }
   if (seed?.pageType !== undefined) entry.pageType = seed.pageType;
   if (seed?.projectId !== undefined) entry.projectId = seed.projectId;
   if (seed?.boxes !== undefined) entry.boxes = seed.boxes;
