@@ -8,7 +8,24 @@ import type { Stroke, StrokeInk, StrokeNib, StrokePoint, StrokeTip } from '../ty
 // journal page / sketch pad for drawing, and this is the second half made
 // real. Everything about HOW a stroke is captured, painted, erased, undone and
 // persisted is the Journal's, unchanged in kind; what is new is that the page
-// has a MODE, and this layer is inert unless the page says INK.
+// has a MODE.
+//
+// ITEM 126 (121-B) — THE STRATUM NOW RENDERS IN EVERY MODE, because the ink is
+// THE PAGE'S, not Free Write's decoration. Item 121's sentence here used to read
+// "this layer is inert unless the page says INK"; that was true of the surface
+// it shipped on and is false now, so it is corrected rather than left to mislead
+// the next reader. What varies by mode is no longer PRESENCE but PERMISSION:
+//   edit    — Free Write / INK: draw, erase, undo (item 121, unchanged).
+//   inert   — Free Write / TEXT: renders, intercepts nothing. RULED (Fable,
+//             2026-09-08): R15 stands, and the asymmetry is the reason, not a
+//             hole — in Free Write the sketch pad is one press away, so a
+//             typewriter does not move ink; a sketch pad does.
+//   movable — Draft and Revise: renders, and a double-click on ink arms a move.
+//             There is no INK to switch to in these modes, which is exactly why
+//             movable exists here and nowhere else.
+// THE LISTENER THAT ARMS A MOVE MUST ATTACH UNDER `movable` ALONE — never
+// "whenever the writer is not drawing", which would quietly extend the gesture
+// into Free Write's TEXT half and reverse the ruling with nobody typing a word.
 //
 // ── THE SHEET, AND WHY IT IS NOT THE PAPER COLUMN ─────────────────────────
 // The build brief said to mount at `inset:0` on the paper column. That was
@@ -54,9 +71,18 @@ export interface InkPen {
   ink: StrokeInk;
 }
 
+/**
+ * ITEM 126 B2 — what the page lets the writer DO to its ink, in this mode.
+ * Presence is no longer the variable (the stratum renders in every mode); this
+ * is. One value rather than two booleans, because two could express states that
+ * do not exist (`editable && locked`) and would drift apart the first time only
+ * one of them was updated.
+ */
+export type InkPermission = 'edit' | 'inert' | 'movable';
+
 interface Props {
-  /** INK mode. False → nothing is attached and the layer is inert. */
-  active: boolean;
+  /** What the writer may do to the ink here. See InkPermission. */
+  permission: InkPermission;
   /** The relatively-positioned sheet these layers fill by layout. */
   sheetRef: React.RefObject<HTMLElement>;
   strokes: Stroke[];
@@ -93,7 +119,7 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   for (const s of strokes) renderStroke(ctx, s, rect.width, color);
 }
 
-export function InkStratum({ active, sheetRef, strokes, onCommit, pen, eraserArmed }: Props) {
+export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, eraserArmed }: Props) {
   const committedRef = useRef<HTMLCanvasElement | null>(null);
   const activeRef = useRef<HTMLCanvasElement | null>(null);
   const ringRef = useRef<HTMLDivElement | null>(null);
@@ -142,13 +168,15 @@ export function InkStratum({ active, sheetRef, strokes, onCommit, pen, eraserArm
   // Hide the ring immediately on disarm or on leaving INK (not just on the
   // next pointermove) — J2's own rule.
   useEffect(() => {
-    if ((!eraserArmed || !active) && ringRef.current) ringRef.current.style.display = 'none';
-  }, [eraserArmed, active]);
+    if ((!eraserArmed || permission !== 'edit') && ringRef.current) ringRef.current.style.display = 'none';
+  }, [eraserArmed, permission]);
 
   // ── CAPTURE ───────────────────────────────────────────────────────────────
-  // Attached ONLY in INK. In TEXT this effect returns before adding anything,
-  // so a Free Write page in TEXT behaves exactly as it did before item 121 —
-  // including keeping ForwardOnlyEditor's I0 pen seal fully in force.
+  // Attached ONLY under `edit`. Under `inert` and `movable` this effect returns
+  // before adding anything, so Free Write's TEXT half behaves exactly as it did
+  // before item 121 — including keeping ForwardOnlyEditor's I0 pen seal fully in
+  // force — and Draft and Revise never gain a drawing pointer at all. Item 126
+  // gives those two modes a MOVE gesture, not a pen (B3/B4); nothing here.
   //
   // In INK the listeners are capture-phase and non-passive on the SHEET (an
   // ANCESTOR of the editor). Capture runs root→target, so this fires BEFORE
@@ -160,7 +188,7 @@ export function InkStratum({ active, sheetRef, strokes, onCommit, pen, eraserArm
   // Journal" — see that file's own I0 comment, amended in place to say so.
   useEffect(() => {
     const sheet = sheetRef.current;
-    if (!active || !sheet) return;
+    if (permission !== 'edit' || !sheet) return;
 
     const normPoint = (e: PointerEvent): StrokePoint => {
       const rect = captureRectRef.current ?? sheet.getBoundingClientRect();
@@ -358,7 +386,7 @@ export function InkStratum({ active, sheetRef, strokes, onCommit, pen, eraserArm
       sheet.style.removeProperty('user-select');
       sheet.style.removeProperty('-webkit-user-select');
     };
-  }, [active, sheetRef]);
+  }, [permission, sheetRef]);
 
   // ── UNDO ─────────────────────────────────────────────────────────────────
   // One level, the last STROKE only. The Journal's undo is unified across a
@@ -388,7 +416,7 @@ export function InkStratum({ active, sheetRef, strokes, onCommit, pen, eraserArm
         ref={committedRef}
         className="ink-canvas ink-committed wz-ink-stratum"
         aria-hidden="true"
-        data-ink-active={active ? 'true' : 'false'}
+        data-ink-permission={permission}
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
       />
       <canvas
@@ -409,7 +437,7 @@ export function InkStratum({ active, sheetRef, strokes, onCommit, pen, eraserArm
           border: '1.5px solid var(--ink-on-paper-low)', pointerEvents: 'none',
         }}
       />
-      {active && canUndo && (
+      {permission === 'edit' && canUndo && (
         <button
           type="button"
           className="btn-quiet ink-undo"

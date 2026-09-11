@@ -84,8 +84,16 @@ const freshPage = async (app, width = W1, height = H1) => {
   await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'DeskFrame mounted' });
   // A page opens in DRAFT by default, and item 121 is a ruling about FREE
   // WRITE, so the fixture enters Free Write explicitly through the mode strip
-  // — the writer's own door, not a state poke. (This is also why the switch
-  // and the stratum are correctly absent a moment ago: they are Free Write's.)
+  // — the writer's own door, not a state poke.
+  //
+  // ITEM 126 (121-B) CORRECTION, 2026-09-11. This comment used to end: "(This is
+  // also why the switch and the stratum are correctly absent a moment ago: they
+  // are Free Write's.)" Half of that is now FALSE — the STRATUM renders in every
+  // mode, because the ink is the page's. Only the SWITCH is still Free Write's,
+  // and this file's own S10 check asserts exactly that and is unaffected.
+  // Corrected rather than parked: no assertion was falsified (nothing here ever
+  // checked the stratum's absence — see item126-s0-survey.md §6), and a comment
+  // that lies to the next reader is a defect even when nothing goes red.
   await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"freewrite\"]').click()");
   await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write, switch in the band' });
   await sleep(400);
