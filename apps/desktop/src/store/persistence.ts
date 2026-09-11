@@ -920,7 +920,25 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
 // write this replaces was synchronous, and that is the one behavioural
 // difference a migrating harness has to absorb.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage = createJournalPage;
+  // ITEM 85-C — THE SEAM FLUSHES; THE FUNCTION IT WRAPS DOES NOT.
+  //
+  // MEASURED, at the cost of a stamped leg: 36 of 80 files died as NOVERDICT
+  // when wave 1 first ran, every one a file this migration had touched. The
+  // cause is the single behavioural difference between a raw write and a seam
+  // write, which item85c.mjs's own header names and the migration then failed
+  // to absorb: the raw write was SYNCHRONOUS, this one is DEBOUNCED
+  // (`scheduleFlush`, 300ms). A fixture that seeds and immediately reloads
+  // discards the page — and the cache holding the row — before the timer fires.
+  // The row was never in storage, so the surface never mounted.
+  //
+  // The fix belongs HERE rather than at 37 call sites: a test seam whose write
+  // may or may not have landed is a seam that hands every caller the same
+  // footgun, and the next migrated file would rediscover it. Product code calls
+  // `createJournalPage` DIRECTLY and never through `window`, so the app's own
+  // debounced cadence is untouched — this makes the SEAM durable, not the
+  // store eager.
+  (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage =
+    (seed?: JournalPageSeed) => { const entry = createJournalPage(seed); flushNow(); return entry; };
 }
 
 // Create a typed page inside a Binder (B1) — a JournalEntry parented to the
@@ -2364,14 +2382,25 @@ export function setProjectDrawer(projectId: string, drawerId: string | null): vo
 if (typeof window !== 'undefined') {
   const seams = window as unknown as Record<string, unknown>;
 
+  // EVERY SEAM BELOW FLUSHES, for the reason recorded at wrizoCreateJournalPage:
+  // a debounced write that a fixture reloads past is a row that never existed,
+  // and it cost 36 files in a stamped leg. `durable` is the one place that
+  // guarantee lives, so no future seam can forget it and no call site has to
+  // remember. Product code reaches none of these.
+  const durable = <T>(value: T): T => { flushNow(); return value; };
+
   // Set fields on an EXISTING page. Wraps `patchJournalEntry`, passing the
   // row's own current text so a patch never clobbers it; a caller that means to
   // change the text passes it in `changes` and the spread inside wins.
   seams.wrizoPatchEntry = (id: string, changes: Partial<JournalEntry>) => {
     const latest = getJournalEntry(id);
     if (!latest) return null;
-    return patchJournalEntry(id, latest.text, changes);
+    return durable(patchJournalEntry(id, latest.text, changes));
   };
+
+  // Flush on demand — the escape hatch for a fixture that writes through some
+  // other product path and needs it landed before a reload.
+  seams.wrizoFlushNow = () => flushNow();
 
   // NOTE the narrower union, which a typecheck caught and the build did not:
   // `Project['type']` has three members but `createProject` accepts two, so a
@@ -2381,30 +2410,30 @@ if (typeof window !== 'undefined') {
   // costs nothing here: all 19 project rows across the 55 fixtures are
   // `type: 'creative'`, measured, and none needs the third.
   seams.wrizoCreateProject = (title: string, type: 'creative' | 'academic' = 'creative') =>
-    createProject(title, type);
+    durable(createProject(title, type));
 
   // A project with a `kind` and an optional home drawer — the shape the Shelf
   // and Drawers fixtures need, and already the app's own Binder birth path.
   seams.wrizoCreateBinder = (title: string, kind: Project['kind'], drawerId?: string,
-    type: Project['type'] = 'creative') => createBinder(title, kind, drawerId, type);
+    type: Project['type'] = 'creative') => durable(createBinder(title, kind, drawerId, type));
 
   seams.wrizoPatchProject = (id: string, changes: Partial<Project>) => {
     const project = getProject(id);
     if (!project) return null;
     saveProject({ ...project, ...changes });
-    return getProject(id);
+    return durable(getProject(id));
   };
 
   // Authors the plan AND stamps `project.storyPlanId` — because
   // `createStoryPlan` already does both. The fixtures that set that field by
   // hand were duplicating work the creator performs.
   seams.wrizoCreateStoryPlan = (projectId: string, frameworkId: string, beatIds: string[]) =>
-    createStoryPlan(projectId, frameworkId, beatIds);
+    durable(createStoryPlan(projectId, frameworkId, beatIds));
 
-  seams.wrizoCreateDrawer = (name: string) => createDrawer(name);
+  seams.wrizoCreateDrawer = (name: string) => durable(createDrawer(name));
 
   seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) =>
-    setProjectDrawer(projectId, drawerId);
+    durable(setProjectDrawer(projectId, drawerId));
 }
 
 // --- Sync integration -----------------------------------------------------
