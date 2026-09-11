@@ -2365,6 +2365,26 @@ export function setProjectDrawer(projectId: string, drawerId: string | null): vo
 // ITEM 85-C — THE AUTHORING SEAMS. Test/inspection only, in the shape
 // `wrizoCreateJournalPage` and `wrizoPinPageToBoard` already established.
 //
+// ► IF YOU ARE WRITING A SEAM-SEEDED FIXTURE, READ THESE TWO FIRST. Both cost a
+// stamped pair to learn, and neither is visible to any static check.
+//
+//   1. THE DEBOUNCE. A product write is debounced (`scheduleFlush`, 300ms); the
+//      raw write it replaces was synchronous. A fixture that seeds and then
+//      immediately reloads discards the page — and the cache holding the row —
+//      before the timer fires, so the row never reaches storage and the surface
+//      never mounts. Every seam below FLUSHES before returning, so you are safe
+//      using them; if you reach storage by any other product path and then
+//      reload, call `wrizoFlushNow()` first. On wave 1's first leg this killed
+//      36 of 80 files, all reporting NOVERDICT — nothing at all.
+//
+//   2. `origin` AND `source` MUST BE CARRIED EXPLICITLY. `createJournalPage`
+//      defaults origin to 'journal' and hardcodes source:'page', so a row that
+//      OMITS either is a different row: absent `source` is what makes an entry
+//      a raw capture (computeFragmentItems filters `e.source !== 'page'`), and
+//      absent `origin` is the pre-AB3 grandfather shape. Pass `origin: null` /
+//      `source: null` to seed a row without that field. The absence of a key is
+//      a value, and counting a key's presence cannot see it.
+//
 // WHY THEY EXIST. Item 85's migration measured 55 harness files writing a
 // persisted collection raw, and 27 of them could not stop: nothing on `window`
 // authored a project, a story plan or a drawer, and nothing set a field on a
