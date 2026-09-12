@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>item 134 · Trash — the same view, two differences</title>
+<!--
+  ITEM 134 · THE VIEWS CHARTER · MOCKUP 3 of 3 — TRASH
+  PLAN desk · 2026-09-11 · candidates only, nothing locks. Item 90 folds here.
+
+  SV1 — ONE COMPONENT, TWO MOUNTINGS. This file is mockup 2 (Shelf) with the
+  condition flag flipped. Same markup, same CSS, same postures, same grid,
+  same ordering rule. Put the two side by side: EVERYTHING is shared except
+  the two differences the charter names.
+
+  THE TWO DIFFERENCES, and only two:
+    1. HANDS. Shelf pages carry both. Trash pages AND boards carry NEITHER --
+       a deleted thing is not a writing surface, so a grip would be a door
+       onto nothing (BD4's presence-follows-content, at view scale).
+    2. EMPTY. Trash can be emptied, permanently. Shelf cannot.
+
+  TV1 — RESTORE NAMES ITS DESTINATION. "Restore" alone is the
+  destination-blind verb the Card pass named as the enemy. The row says where
+  the thing will land BEFORE the press -- including the case that will
+  actually happen, where the drawer it came from is gone.
+
+  TV2 — EMPTY LIVES IN THE TRASH VIEW. Never a modal over the writer's work,
+  never a surface switch. It reuses the built confirm shape (T4's ruling: one
+  plain confirm, then gone; destructive colour ONLY inside the confirm).
+
+  TV3 — THE COUNT. The standing law is no counts in chrome (A14/A18), written
+  against AMBIENT numbers that nag. A destructive, irreversible confirmation
+  is not ambient: it is the one moment where the number IS the information.
+  Proposed as a clause, HANDED UP, not assumed. Toggle it in the rig to read
+  the confirmation both ways and rule on it.
+
+  TV4 — ABSENT, NEVER DISABLED. An empty Trash shows no Empty control at all.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --danger:#c0553a;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:12px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f;font-size:11px}
+  .fit{position:absolute;inset:41px 0 112px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:112px;z-index:19;padding:10px 16px;
+       background:#08080a;border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;
+       line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;
+       color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left:1px solid var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:18px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .h{color:var(--text-hi)}
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden;display:flex;flex-direction:column}
+
+  .grid{flex:1;overflow:auto;padding:24px 34px 8px;display:flex;flex-wrap:wrap;
+        gap:24px;align-content:flex-start}
+  .thumb{position:relative;cursor:pointer;width:151px}
+  .thumb .lab{display:block;margin-top:7px;font-size:11px;color:var(--text-mid);text-align:center}
+  .thumb .sub{display:block;font-size:9px;color:var(--text-low);text-align:center;margin-top:2px}
+  .thumb:hover .lab{color:var(--text-hi)}
+  .pg{width:116px;height:151px;margin:0 auto;background:var(--paper);border:1px solid #cbbfa6;
+      padding:11px 11px 0;overflow:hidden;opacity:.62}
+  .pg .pk{font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:#8a7b62;margin-bottom:5px}
+  .pg .pb{font-family:var(--prose);font-size:10px;line-height:1.34;color:#3a2c1c}
+  .brd{width:151px;height:104px;background:var(--panel);border:1px solid var(--line);
+       padding:10px 12px;position:relative;opacity:.72}
+  .brd:before{content:'';position:absolute;left:4px;right:-4px;top:-4px;bottom:4px;
+              border:1px solid var(--line);z-index:-1}
+  .brd .bk{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);margin-bottom:6px}
+  .brd .bn{font-size:13px;color:var(--text-hi)}
+
+  /* TV1 — RESTORE NAMES ITS DESTINATION */
+  .rest{display:block;width:100%;margin-top:8px;background:none;border:1px solid var(--accent-door);
+        color:var(--text-mid);font-family:inherit;font-size:10.5px;padding:5px 7px;cursor:pointer;
+        text-align:center;line-height:1.35}
+  .rest:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  .rest .where{display:block;font-size:9px;color:var(--text-low);margin-top:2px}
+  .rest.orphan .where{color:#8d7f5f;font-style:italic}
+
+  /* SV4 — NO HANDS on Trash. The grips do not render at all. */
+
+  .footbar{border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;
+           padding:8px 34px;font-size:11px;color:var(--text-low);min-height:46px}
+  .pbtn{background:none;border:1px solid transparent;color:var(--text-mid);font:inherit;
+        font-size:11px;padding:4px 10px;cursor:pointer}
+  .pbtn[aria-pressed="true"]{border-color:var(--accent-rest);color:var(--text-hi)}
+  .order{margin-left:auto;font-size:10px;letter-spacing:.06em;color:var(--text-low)}
+  .empty{background:none;border:1px solid var(--accent-door);color:var(--text-mid);
+         font:inherit;font-size:11px;padding:5px 12px;cursor:pointer}
+  .empty:hover{color:var(--text-hi);border-color:var(--accent-rest)}
+  body[data-items="0"] .empty{display:none}      /* TV4 — absent, never disabled */
+
+  /* TV2/TV3 — the confirm, IN THE VIEW. Destructive colour only inside it. */
+  .confirm{display:none;align-items:center;gap:12px;padding:6px 0}
+  body[data-confirm="1"] .confirm{display:flex}
+  body[data-confirm="1"] .empty{display:none}
+  .confirm .q{font-size:11.5px;color:var(--text-hi)}
+  .cdanger{background:none;border:1px solid var(--danger);color:var(--danger);font:inherit;
+           font-size:11px;padding:5px 12px;cursor:pointer}
+  .cdanger:hover{background:var(--danger);color:#fff}
+  .ccancel{background:none;border:1px solid transparent;color:var(--text-mid);font:inherit;
+           font-size:11px;padding:5px 10px;cursor:pointer}
+  .ccancel:hover{color:var(--text-hi)}
+  .emptystate{flex:1;display:none;place-items:center;color:var(--text-low);font-size:12px;letter-spacing:.04em}
+  body[data-items="0"] .emptystate{display:grid}
+  body[data-items="0"] .grid{display:none}
+</style>
+</head>
+<body data-confirm="0" data-items="1" data-count="1">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>ITEM 134 · TRASH</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <button id="cnt" aria-pressed="true">count in confirm (Q-A)</button>
+  <button id="emp" aria-pressed="false">empty trash state</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat"><span class="g">✶</span>journal</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat"><span class="g">⌗</span>plan</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="cat"><span class="g">⌂</span>shelf</div>
+      <div class="foot"><div class="cat"><span class="g">⚙</span>settings</div>
+        <div class="cat"><span class="g">◐</span>theme</div><div class="sep"></div>
+        <div class="cat on"><span class="g">✕</span>trash</div></div>
+    </nav>
+    <div class="band">
+      <div class="crumb"><span class="h">The Trash</span> &nbsp;<span style="opacity:.6">— deleted, still recoverable</span></div>
+    </div>
+    <div class="room">
+      <!-- SV4: no grips here at all. Not hidden — never rendered. -->
+      <div class="grid" id="grid"></div>
+      <div class="emptystate">nothing in the Trash</div>
+
+      <div class="footbar">
+        <button class="pbtn" aria-pressed="true">Thumbnails</button>
+        <button class="pbtn" aria-pressed="false">One at a time</button>
+        <button class="empty" id="emptyBtn">Empty Trash</button>
+        <div class="confirm">
+          <span class="q" id="q"></span>
+          <button class="cdanger">Empty</button>
+          <button class="ccancel" id="cancel">Cancel</button>
+        </div>
+        <span class="order">most recently deleted first · the condition’s own clock</span>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var ITEMS=[
+    {k:'page', t:'An abandoned opening', s:'deleted 1 day ago', home:'Novel',
+     b:'It began with weather, which is how you know I did not know what it was about yet.'},
+    {k:'page', t:'Duplicate — coat draft', s:'deleted 2 days ago', home:'Novel',
+     b:'She had the coat over her arm before she understood she had picked it up…'},
+    {k:'board', t:'Old structure attempt', s:'deleted 4 days ago', home:null},
+    {k:'page', t:'Notes on a cut chapter', s:'deleted 6 days ago', home:null,
+     b:'Everything useful in here has already moved somewhere else. Probably.'}
+  ];
+  var grid=document.getElementById('grid'), cap=document.getElementById('cap'),
+      stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      q=document.getElementById('q'), emptyBtn=document.getElementById('emptyBtn'),
+      cancel=document.getElementById('cancel'), cnt=document.getElementById('cnt'),
+      emp=document.getElementById('emp'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+  var SIZES={a:[1366,768],b:[1680,1050]}, cur='a', scale=1;
+
+  function paint(){
+    grid.innerHTML=ITEMS.map(function(it){
+      var body = it.k==='page'
+        ? '<div class="pg"><div class="pk">Page</div><div class="pb">'+it.b+'</div></div>'
+        : '<div class="brd"><div class="bk">Board</div><div class="bn">'+it.t+'</div></div>';
+      var rest = it.home
+        ? '<button class="rest">Restore<span class="where">to '+it.home+'</span></button>'
+        : '<button class="rest orphan">Restore<span class="where">its drawer is gone — goes Loose</span></button>';
+      return '<div class="thumb">'+body+'<span class="lab">'+it.t+'</span>'
+        +'<span class="sub">'+it.s+'</span>'+rest+'</div>';
+    }).join('');
+    q.textContent = document.body.dataset.count==='1'
+      ? 'Empty the Trash? '+ITEMS.length+' items, permanently.'
+      : 'Empty the Trash? This cannot be undone.';
+    cap.innerHTML='<b>The same view as the Shelf, with exactly two differences.</b> Put them side by side: same grid, same aspect-locked pages, same board thumbnails, same condition-clock ordering. <b>(1) No hands</b> — the two grips are not hidden here, they are never rendered: a deleted thing is not a writing surface, so a grip would be a door onto nothing. <b>(2) Empty</b>, permanent, and living <em>in this view</em> — never a modal over the writer’s work. <b>TV1:</b> every Restore names where it lands <em>before</em> the press — including the case that will actually happen, where the drawer is gone and the thing goes Loose. A destination-blind “Restore” is the verb the Card pass named as the enemy. <b>TV3 / Q-A is yours:</b> toggle <em>count in confirm</em> — the no-count law was written against ambient numbers that nag, and a destructive confirmation is the one place the number <em>is</em> the information. Read it both ways and rule. <b>TV4:</b> toggle <em>empty trash state</em> — the Empty control is absent, never greyed.';
+    readout();
+  }
+  function readout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    var grips=document.querySelectorAll('.grip').length;
+    var n=document.body.dataset.items==='1'?ITEMS.length:0;
+    geom.textContent='rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'% · hands rendered: '
+      +grips+(grips===0?' ✓ (none, as ruled)':' *** expected 0')
+      +' · items '+n+' · Empty control '+(n===0?'ABSENT ✓':'present')
+      +' · confirm '+(document.body.dataset.count==='1'?'carries a count (Q-A open)':'no count');
+  }
+  function layout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    requestAnimationFrame(readout);
+  }
+  emptyBtn.onclick=function(){ document.body.dataset.confirm='1'; readout(); };
+  cancel.onclick=function(){ document.body.dataset.confirm='0'; readout(); };
+  cnt.onclick=function(){ var v=document.body.dataset.count==='1'?'0':'1';
+    document.body.dataset.count=v; cnt.setAttribute('aria-pressed',String(v==='1')); paint(); };
+  emp.onclick=function(){ var v=document.body.dataset.items==='1'?'0':'1';
+    document.body.dataset.items=v; emp.setAttribute('aria-pressed',String(v==='0'));
+    document.body.dataset.confirm='0'; readout(); };
+  B1.onclick=function(){cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');layout()};
+  B2.onclick=function(){cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout()};
+  window.addEventListener('resize',layout);
+  paint(); layout();
+})();
+</script>
+</body>
+</html>

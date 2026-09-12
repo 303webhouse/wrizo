@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>item 134 · Journal — the flip</title>
+<!--
+  ITEM 134 · THE VIEWS CHARTER · MOCKUP 1 of 3 — THE JOURNAL FLIP
+  PLAN desk · 2026-09-11 · candidates only, nothing locks.
+
+  LIVE, NOT STEPPED, ON PURPOSE. Fable's constraint is about MOTION --
+  "the flip is a MOTION, not furniture -- no spread, no curl, no frame that
+  shrinks the page" -- and a motion cannot be judged from a still. Press the
+  margin marks or use the arrow keys and feel it.
+
+  What this renders:
+  - JV1: the PAGE moves. Nothing shrinks, nothing curls, no second page
+    appears, the paper keeps its measure throughout. Only position and
+    opacity change.
+  - JV2: primacy of the page. The two affordances live in the OUTER MARGINS,
+    outside the measure, at the paper's vertical midline. The page itself
+    gains no chrome at all.
+  - JV4: order is DAY WRITTEN (createdAt), which is already the built default
+    (notebookKey = orderIndex ?? createdAt).
+  - REDUCED MOTION: toggle it in the rig. The fallback is an INSTANT SWAP --
+    never a different layout. A motion that degrades into furniture would
+    have failed the constraint.
+
+  Built today, verified at aa18840: JournalEntry.tsx (J1) already holds the
+  notebook array with prevPage/nextPage -- one page, full size, a way back
+  and forward. This mockup is mostly about what NOT to add.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:12px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f;font-size:11px}
+  #geom.drift{color:#e05c5c}
+
+  .fit{position:absolute;inset:41px 0 118px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:118px;z-index:19;padding:10px 16px;
+       background:#08080a;border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;
+       line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;
+       color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left:1px solid var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:18px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .strip{display:flex;gap:20px}
+  .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
+  .mode.on{color:var(--text-hi)}
+
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  /* THE PAPER — one page, full size, measure never changes */
+  .paper{position:absolute;top:24px;bottom:0;left:50%;width:min(720px,72%);
+         background:var(--paper);color:#241a10;padding:46px 58px;
+         font-family:var(--prose);font-size:17px;line-height:1.62;z-index:2;
+         transform:translateX(-50%);will-change:transform,opacity}
+  .paper h1{font-size:19px;font-weight:500;margin-bottom:6px}
+  .paper .dt{font-family:var(--ui);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+             color:#8a7b62;margin-bottom:20px}
+  .paper p{margin-bottom:13px}
+
+  /* JV1 — the flip. The page moves; nothing else does. */
+  .paper.out-l{animation:outL var(--dur) cubic-bezier(.33,0,.2,1) forwards}
+  .paper.out-r{animation:outR var(--dur) cubic-bezier(.33,0,.2,1) forwards}
+  .paper.in-l{animation:inL var(--dur) cubic-bezier(.33,0,.2,1) forwards}
+  .paper.in-r{animation:inR var(--dur) cubic-bezier(.33,0,.2,1) forwards}
+  @keyframes outL{to{transform:translateX(calc(-50% - 52px));opacity:0}}
+  @keyframes outR{to{transform:translateX(calc(-50% + 52px));opacity:0}}
+  @keyframes inL{from{transform:translateX(calc(-50% + 52px));opacity:0}
+                 to{transform:translateX(-50%);opacity:1}}
+  @keyframes inR{from{transform:translateX(calc(-50% - 52px));opacity:0}
+                 to{transform:translateX(-50%);opacity:1}}
+  body[data-rm="1"] .paper{animation:none!important}
+
+  /* JV2 — the two marks, in the OUTER margins. Never on the paper. */
+  .turn{position:absolute;top:50%;transform:translateY(-50%);z-index:3;
+        background:none;border:none;font-family:inherit;font-size:22px;line-height:1;
+        color:var(--accent-rest);opacity:.55;cursor:pointer;padding:14px 10px}
+  .turn:hover{opacity:1;color:var(--brass)}
+  .turn:disabled{opacity:.14;cursor:default;color:var(--text-low)}
+  .turn.prev{left:26px} .turn.next{right:26px}
+  .pos{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;z-index:3;
+       font-size:10px;letter-spacing:.14em;color:var(--text-low);font-variant-numeric:tabular-nums}
+
+  /* what the charter REFUSES, shown as a ghost for contrast */
+  .refuse{position:absolute;inset:24px 26px 0 26px;z-index:1;display:none;
+          grid-template-columns:1fr 1fr;gap:18px;opacity:.2}
+  body[data-ghost="1"] .refuse{display:grid}
+  .refuse div{background:var(--paper);border:1px dashed #7a6a4a}
+  .refuse span{position:absolute;left:50%;top:46%;transform:translateX(-50%);
+               font-size:11px;color:#c98b5e;letter-spacing:.08em;background:#110600;padding:4px 10px}
+</style>
+</head>
+<body data-rm="0" data-ghost="0">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>ITEM 134 · JOURNAL — THE FLIP</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <button id="rm" aria-pressed="false">reduced motion</button>
+  <button id="gh" aria-pressed="false">show what's refused</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat on"><span class="g">✶</span>journal</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat"><span class="g">⌗</span>plan</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="cat"><span class="g">⌂</span>shelf</div>
+      <div class="foot"><div class="cat"><span class="g">⚙</span>settings</div>
+        <div class="cat"><span class="g">◐</span>theme</div><div class="sep"></div>
+        <div class="cat"><span class="g">✕</span>trash</div></div>
+    </nav>
+    <div class="band">
+      <div class="crumb" id="crumb"></div>
+      <div class="strip"><span class="mode on">Free Write</span><span class="mode">Draft</span>
+        <span class="mode">Revise</span><span class="mode">Publish</span></div>
+    </div>
+    <div class="room" id="room">
+      <div class="refuse" aria-hidden="true"><div></div><div></div>
+        <span>a spread · a curl · a frame that shrinks the page — all refused</span></div>
+      <div class="paper" id="paper"></div>
+      <button class="turn prev" id="prev" aria-label="Previous page">‹</button>
+      <button class="turn next" id="next" aria-label="Next page">›</button>
+      <div class="pos" id="pos"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var PAGES=[
+    {d:'2 March',  t:'The coat on the train',
+     b:['She had the coat over her arm before she understood she had picked it up, and by then the platform was already moving past the window, or she was.',
+        'Ned would have said something about duty. Ned said something about duty every time the weather changed.']},
+    {d:'4 March',  t:'Platform smells',
+     b:['Coal, wet wool, someone’s orange. The orange is the one that will end up in the book — it is the only one nobody expects.',
+        'Write the list before the scene. The scene will steal what it needs.']},
+    {d:'9 March',  t:'Mara — first walk',
+     b:['The dog knows before she does. That is the whole trick of the chapter and I have been circling it for a week.']},
+    {d:'15 March', t:'Catelyn’s letter',
+     b:['Three drafts. The first was honest and unsendable. The second was sendable and a lie. The third she folded without reading, which is its own kind of answer.',
+        'She writes the way other people hold a door — for someone who has already gone through.']},
+    {d:'21 March', t:'Coal dust notes',
+     b:['Everything in that town is the colour of the thing it was before. Nothing is its own colour any more.']}
+  ];
+  var i=0, busy=false;
+  var paper=document.getElementById('paper'), prev=document.getElementById('prev'),
+      next=document.getElementById('next'), pos=document.getElementById('pos'),
+      crumb=document.getElementById('crumb'), cap=document.getElementById('cap'),
+      stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      rm=document.getElementById('rm'), gh=document.getElementById('gh'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+  var SIZES={a:[1366,768],b:[1680,1050]}, cur='a', scale=1;
+
+  function paint(){
+    var p=PAGES[i];
+    paper.innerHTML='<h1>'+p.t+'</h1><div class="dt">'+p.d+'</div>'+p.b.map(function(x){return '<p>'+x+'</p>'}).join('');
+    crumb.innerHTML='<span class="i">The Journal</span><span class="s">/</span><span class="h">'+p.t+'</span>';
+    pos.textContent=(i+1)+' of '+PAGES.length+'  ·  day written';
+    prev.disabled=(i===0); next.disabled=(i===PAGES.length-1);
+    cap.innerHTML='<b>The flip is a motion, not furniture.</b> One page, full size, at its own measure — and the measure never changes, because nothing here reframes the page to move it. <b>JV2:</b> the two marks sit in the <em>outer margins</em>, outside the measure, at the paper’s midline; the page itself gains no chrome at all. Arrow keys work. <b>JV4:</b> the order is <em>day written</em> — a notebook’s pages do not renumber themselves because you reread one, and “last touched” is a <em>condition</em>, which the canon makes a lens and never a binding. <b>Try “reduced motion”:</b> the fallback is an instant swap, never a different layout — a motion that degrades into furniture would have failed the constraint. <b>Try “show what’s refused”</b> to see the spread this retires (and with it, per JV3, the only place journal order can be hand-set — flagged, not solved).';
+    readout();
+  }
+  function go(d){
+    if(busy) return;
+    var t=i+d; if(t<0||t>=PAGES.length) return;
+    if(document.body.dataset.rm==='1'){ i=t; paint(); return; }
+    busy=true;
+    var outC=d>0?'out-l':'out-r', inC=d>0?'in-r':'in-l';
+    paper.classList.add(outC);
+    setTimeout(function(){
+      paper.classList.remove(outC); i=t; paint();
+      paper.classList.add(inC);
+      setTimeout(function(){ paper.classList.remove(inC); busy=false; },260);
+    },200);
+  }
+  function readout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    var r=paper.getBoundingClientRect();
+    var w=(r.width/scale).toFixed(1), h=(r.height/scale).toFixed(1);
+    if(!readout.base) readout.base=w;
+    var same=Math.abs(parseFloat(w)-parseFloat(readout.base))<0.6;
+    geom.classList.toggle('drift',!same);
+    geom.textContent='rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'% · paper '+w+'×'+h
+      +' · measure '+(same?'UNCHANGED ✓ (nothing shrinks the page)':'*** CHANGED')
+      +' · '+(document.body.dataset.rm==='1'?'reduced motion: instant swap':'motion: 200ms out / 260ms in');
+  }
+  function layout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    readout.base=null; requestAnimationFrame(readout);
+  }
+  document.documentElement.style.setProperty('--dur','200ms');
+  prev.onclick=function(){go(-1)}; next.onclick=function(){go(1)};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowLeft'){go(-1)} if(e.key==='ArrowRight'){go(1)}
+  });
+  rm.onclick=function(){ var v=document.body.dataset.rm==='1'?'0':'1';
+    document.body.dataset.rm=v; rm.setAttribute('aria-pressed',String(v==='1')); paint(); };
+  gh.onclick=function(){ var v=document.body.dataset.ghost==='1'?'0':'1';
+    document.body.dataset.ghost=v; gh.setAttribute('aria-pressed',String(v==='1')); };
+  B1.onclick=function(){cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');layout()};
+  B2.onclick=function(){cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout()};
+  window.addEventListener('resize',layout);
+  paint(); layout();
+})();
+</script>
+</body>
+</html>
