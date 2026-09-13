@@ -108,6 +108,7 @@ export type DeskTermId =
   | 'cascadeCardCopyTo' | 'cascadeCardCopyTitle' | 'cascadeCardCopyNote'
   | 'cascadeCardCopiedFrom' | 'cascadeCardRemove' | 'cascadeCardOnlyBoard'
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
+  | 'cascadePlanSectionBoards' | 'cascadePlanLinkedHeading'
   | 'cascadePinShown' | 'cascadePinNotShown' | 'cascadePinDisplay' | 'cascadePinHide'
   | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
   | 'cascadeBoardDeleteCancel' | 'cascadeBoardDeleteQuestion'
@@ -687,7 +688,11 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadeCardOnlyBoard: 'its only board',
   cascadeOpenBoard: 'Open the board',
   cascadePlanSectionCards: 'Cards',
-  cascadePlanSectionPages: 'Pages linked to this board',
+  // PW2 S2 AMENDMENT (Nick) — one heading, two clearly separated sections.
+  // Fable's derived wording for the heading, standing until Nick words it.
+  cascadePlanSectionPages: 'Pages',
+  cascadePlanSectionBoards: 'Boards',
+  cascadePlanLinkedHeading: 'Linked to this board',
   // PW1 S3 — display state is a fact ON THE ROW, never inferred from the wall.
   cascadePinShown: 'member · shown on the board',
   cascadePinNotShown: 'member · not shown on the board',

@@ -1230,6 +1230,15 @@ export function wouldNestCycle(sourceId: string, targetBoardId: string): boolean
 // for the full reasoning on why this stays inside the existing column).
 const BOARD_PIN_W = 0.28;
 const BOARD_PIN_H = 0.12;
+// PW2 S2 AMENDMENT (Nick) — A BOARD IS WIDER THAN TALL WHEREVER IT APPEARS.
+// The rail draws a board's thumbnail as a horizontal rectangle and a page's as
+// a vertical one; a nested board's card on the CANVAS obeys the same law, so
+// the two faces of one board agree and the silhouette means the same thing in
+// both places. Deliberately MORE horizontal than the page-pin default rather
+// than equal to it — a shape that teaches has to be distinguishable at a
+// glance, not on measurement.
+const BOARD_CARD_W = 0.32;
+const BOARD_CARD_H = 0.10;
 
 // PW1 S3 (item 125) — `display` splits the two acts that share this function.
 //
@@ -1323,7 +1332,13 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // nobody chose — the exact arrangement-the-writer-did-not-author the display
   // opt-in exists to prevent (A16; BD7). The x/y/z above still compute, so a
   // later `Display on Board` from the menu has a lawful default seat to take.
-  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId, onCanvas: opts?.display === true };
+  // A nested board's card takes the board silhouette; a page's keeps the page
+  // one. Existing arranged boards are untouched — every box stores its own
+  // w/h, so this changes the DEFAULT a new card is born at and nothing else.
+  const nesting = source.pageType === 'board';
+  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY,
+    w: nesting ? BOARD_CARD_W : BOARD_PIN_W, h: nesting ? BOARD_CARD_H : BOARD_PIN_H,
+    z: startZ, entryId, onCanvas: opts?.display === true };
   saveJournalEntry({ ...board, boxes: [...existing, pin] });
   return getJournalEntry(boardEntryId);
 }
@@ -1417,16 +1432,26 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
   const existing = target.boxes ?? [];
   const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + COPY_OFFSET;
   const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
-  // PROVENANCE RIDES THE BUILT FIELDS — "provenance travels on every box"
-  // (FX5 S3). `sourceEntryId` names the board it was copied FROM, which is what
-  // the arrived card's own lineage line reads back.
+  // PROVENANCE RIDES ITS OWN FIELD (ruled, PLAN DESK amendment to the brief's
+  // "carry it on the built fields"): `copiedFromBoardId` names the board this
+  // card was copied FROM, and the arrived card's lineage line reads it back.
+  // It is deliberately NOT `sourceEntryId` — see the field's own comment.
   const copy: Box = {
     ...box,
     id: generateId(),
     x: box.x, y: startY, z: startZ,
-    sourceEntryId: sourceBoardId,
-    portedAt: new Date().toISOString(),
+    copiedFromBoardId: sourceBoardId,
   };
+  // ⚠ THE MIRROR FIELDS ARE STRIPPED, NOT INHERITED, and this is the case the
+  // spread would otherwise have got wrong silently: copying a PORTED card would
+  // carry `sourceEntryId` across, and a text card holding that field TRAVELS on
+  // double-click instead of opening its editor. The copy would have lost the
+  // editing gesture every card has — the exact defect the separate
+  // `copiedFromBoardId` field exists to prevent, reappearing through a spread.
+  // A copy is independent of BOTH the board it came from and anything the
+  // original mirrored.
+  delete (copy as Partial<Box>).sourceEntryId;
+  delete (copy as Partial<Box>).portedAt;
   // A copy never inherits the source's structural placement: seq/laneId/parentId
   // describe a position in ANOTHER board's ordering and would be meaningless —
   // or worse, a parentId pointing at a box that does not exist here.

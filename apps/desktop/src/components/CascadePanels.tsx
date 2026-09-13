@@ -1082,6 +1082,15 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   // its own heading rather than as one more card in the pile.
   const cards = allBoxes.filter((b) => b.kind !== 'page-pin').sort(byArrangement);
   const pins = allBoxes.filter((b) => b.kind === 'page-pin').sort(byArrangement);
+  // PW2 S2 AMENDMENT (Nick, verbatim: "group them together but section off
+  // Boards from Pages clearly and use a different thumbnail") — the memberships
+  // split into two LABELLED sections under one heading. A nested board is still
+  // a membership exactly as a page is (125 unchanged); what changes is that the
+  // writer can see at a glance which kind they are looking at, without reading
+  // a badge on every row.
+  const isBoardPin = (b: Box) => getJournalEntry(b.entryId ?? '')?.pageType === 'board';
+  const pagePins = pins.filter((b) => !isBoardPin(b));
+  const boardPins = pins.filter(isBoardPin);
 
   const items: SurveyItem[] = [
     // PW2 S3 — AN ARRIVED COPY STATES ITS LINEAGE in the second-line slot:
@@ -1093,7 +1102,7 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
       sectionTitle: deskTerm('cascadePlanSectionCards'),
       note: copiedFromLine(b),
     })),
-    ...pins.map((b) => ({
+    ...pagePins.map((b) => ({
       ...boardCardItem(b, currentEntryId),
       sectionTitle: deskTerm('cascadePlanSectionPages'),
       // PW1 S2 — "the built `excerpt` YIELDS to the title" (Q3), and on a
@@ -1105,6 +1114,17 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
       // PW1 S3 — each row states its state. ABSENCE MEANS DISPLAYED, read here
       // exactly as the canvas reads it: only an explicit `false` is "not shown".
       note: b.onCanvas === false ? deskTerm('cascadePinNotShown') : deskTerm('cascadePinShown'),
+      kindShape: 'page' as const,
+    })),
+    // BOARDS, their own labelled section. A nested board appears HERE and
+    // nowhere else — one row, one section, so the writer never has to work out
+    // which list a thing is in.
+    ...boardPins.map((b) => ({
+      ...boardCardItem(b, currentEntryId),
+      sectionTitle: deskTerm('cascadePlanSectionBoards'),
+      excerpt: undefined,
+      note: b.onCanvas === false ? deskTerm('cascadePinNotShown') : deskTerm('cascadePinShown'),
+      kindShape: 'board' as const,
     })),
   ];
 
@@ -1185,8 +1205,10 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
 // PW2 S3 — the lineage line for a copied card, or undefined for one that was
 // authored here. `sourceEntryId` names the board it came FROM.
 function copiedFromLine(box: Box): string | undefined {
-  if (!box.sourceEntryId || !box.portedAt) return undefined;
-  const from = getJournalEntry(box.sourceEntryId);
+  // Reads `copiedFromBoardId`, never the mirror fields — TEXT ONLY, no travel
+  // from this line in PW2; a door here is a later refinement (ruled).
+  if (!box.copiedFromBoardId) return undefined;
+  const from = getJournalEntry(box.copiedFromBoardId);
   if (!from || from.pageType !== 'board') return undefined;
   return `${deskTerm('cascadeCardCopiedFrom')} ${boardTitle(from)}`;
 }

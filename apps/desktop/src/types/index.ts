@@ -464,6 +464,19 @@ export interface Box {
   // costs zero schema, zero migration, and zero server change. Approved as the
   // storage home by Fable, on this S0's measurement (item 125).
   onCanvas?: boolean;   // kind 'page-pin' — absent/true: on the canvas; false: member only
+  // PW2 S3 (item 123) — A COPY GETS ITS OWN FIELD. Ruled, and the reason is
+  // the whole of it: `sourceEntryId` means "this card MIRRORS that entry", and
+  // BoardEditor's double-click dispatch is built on that meaning — a text card
+  // carrying it TRAVELS to its source instead of opening the edit popup. A copy
+  // is the OPPOSITE relationship: independent by item 123's own words ("edits do
+  // not follow"). Reusing the mirror field would have cost a copy the editing
+  // gesture every other card has.
+  //
+  // ONE FIELD, ONE RELATIONSHIP. Additive optional, the `onCanvas` pattern, zero
+  // schema — `Box` rides the board's own `boxes` jsonb. Read for the lineage
+  // line ONLY (text; no travel in PW2 — a door there is a later refinement), and
+  // the dispatch is left untouched.
+  copiedFromBoardId?: string;   // kind 'text' | 'ink' — the board this card was COPIED from
   // B1 S1 — A system Board is a REAL board page (pageType 'board'), created
   // find-or-create idempotently on first approach, marked by a new optional
   // field on the existing 'board-meta' element in its own boxes: systemKind:
