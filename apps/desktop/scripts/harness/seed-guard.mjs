@@ -175,8 +175,8 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/b2.mjs', 'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs',
-  'scripts/harness/item85c.mjs', 'scripts/harness/j6.mjs', 'scripts/harness/m1.mjs',
+  'scripts/harness/b2.mjs', 'scripts/harness/bm1.mjs', 'scripts/harness/item85c.mjs',
+  'scripts/harness/m1.mjs',
 ]);
 
 // --- run ---------------------------------------------------------------------
@@ -519,6 +519,14 @@ function malformedCallSites(text, label) {
       if (p.startsWith('...')) continue;                                        // spread
       if (/^[A-Za-z_$][\w$]*$/.test(p)) continue;                               // shorthand
       if (/^(\[[^\]]*\]|[A-Za-z_$][\w$]*|'[^']*'|"[^"]*")\s*:/.test(p)) continue; // key: value
+      // A TEMPLATE INTERPOLATION at the start of an entry is legal and common in
+      // these fixtures: j6 has `${cond ? "pageType: 'note', " : ''}origin: ...`,
+      // which expands to a valid pair either way. This exemption is written
+      // NARROWLY — it requires the literal two characters `${` — precisely so it
+      // cannot re-hide the defect this check exists for: the spread-form damage
+      // produced `JSON.stringify(rows)` with the `$` EATEN, which does not start
+      // with `${` and is still caught.
+      if (p.startsWith('${')) continue;
       out.push(`${label}: ${p.slice(0, 70)}`);
     }
   }
