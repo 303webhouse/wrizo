@@ -76,9 +76,29 @@ leave it on its current path here.)*
 
 - Thumbnails **flow** in a wrapping grid. **No x/y, no drag-to-place, no connections, no canvas,
   no z-order.** Nothing in this view reads or writes a Box's coordinates.
-- **Q4's grammar, unchanged:** a **page** renders **aspect-locked** — *resizable by scale, never
-  stretched* (the canon rider); a **board** renders as **its thumbnail**, wearing the doubled
-  edge that says *a thing that holds things*.
+- **Q4's grammar, now carrying THE THUMBNAIL LAW (ruled 2026-09-13).** Nick, verbatim: *"use a
+  different thumbnail (horizontal rectangles for Boards, vertical rectangles for Pages)."*
+  > **BOARDS ARE WIDE. PAGES ARE TALL.**
+  - a **page** renders **TALL** — a vertical rectangle, **aspect-locked**: *resizable by scale,
+    never stretched* (the canon rider)
+  - a **board** renders **WIDE** — a horizontal rectangle, wearing the doubled edge that says
+    *a thing that holds things*
+  **Shape teaches the kind before a word is read, and it spends no colour** — the Plateau ember
+  ceiling is untouched. *This is what `colour-as-kind-signal` was routed to item 96 to solve; it
+  never returned, and shape does the work instead.*
+
+- **SECTIONED, NOT MIXED — Nick's other half: *"group them together but section off Boards from
+  Pages clearly."*** One zone, two sections. **Fable's derived wording, recorded as STANDING
+  UNTIL NICK VETOES** *(it is derived from his sentence, not quoted from it — so it is marked as
+  such rather than presented as his)*:
+  ```
+  LINKED TO THIS BOARD
+    Pages      <tall thumbnails>
+    Boards     <wide thumbnails>
+  ```
+  **The sections are the "clearly"** — grouping alone would leave two silhouettes interleaved,
+  which is legible but not *sectioned*. **Shape and section do different jobs: shape tells you
+  what one thing is; the section tells you where its kind ends.**
 - **Shape teaches the kind** — three silhouettes, **no colour spent**, the Plateau ember ceiling
   untouched. This is the job Pass 5 routed to item 96 as *colour-as-kind-signal*; shape does it.
 - **Empty state:** a plain line. **Absent, never disabled** anywhere in this view.
