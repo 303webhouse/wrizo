@@ -1134,6 +1134,61 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
   return getJournalEntry(boardEntryId);
 }
 
+
+// --- PW2 S1 — THE CONTAINMENT GRAPH, AND ITS ONE WALKER --------------------
+//
+// A board is a RECURSIVE CONTAINER (item 128). The containment edge is the
+// EXISTING `page-pin` box and nothing new: board P contains board C when P
+// carries a page-pin whose `entryId` is C. So the graph's edges live across
+// ENTRIES, and walking it means `getBoardsConnecting` repeatedly — NOT the
+// `parentId` chain in `store/boardStructure.ts`, which is a different graph
+// entirely (BM1's OUTLINE nesting, within one board's own boxes array). That
+// walker's SHAPE is the precedent here; its edges are not.
+//
+// ⚠ ONE WALKER, AND EVERY RECURSIVE READER USES IT. The order is the safety,
+// not a style: nothing on `main` walks this chain recursively yet, so this
+// lands BEFORE any reader that would. A second hand-rolled walk is a second
+// place for the `seen` set to be forgotten.
+//
+// ⚠ THE `seen` SET IS MANDATORY, and not merely for tidiness. A graph can
+// arrive ALREADY CYCLIC — from an older client, through sync — and a walk
+// without `seen` does not report a cycle on such data, it HANGS. So the walk
+// must terminate on a pre-existing loop it did not create, which is a claim
+// about READ safety, not just write refusal. `boardStructure.ts`'s own
+// `wouldCycle` carries the identical guard for the identical reason.
+//
+// The walk is a DAG walk, not a chain walk: a board may sit in several boards
+// at once, so "the parent" is a set and the frontier is a stack.
+
+/** Every board that transitively CONTAINS `boardId`. Terminates on cyclic data. */
+export function boardAncestors(boardId: string): Set<string> {
+  const seen = new Set<string>();
+  const stack: string[] = [boardId];
+  while (stack.length) {
+    const cur = stack.pop() as string;
+    for (const parent of getBoardsConnecting(cur)) {
+      if (seen.has(parent.id)) continue;
+      seen.add(parent.id);
+      stack.push(parent.id);
+    }
+  }
+  return seen;
+}
+
+// Would placing `sourceId` INTO `targetBoardId` close a cycle? It does iff the
+// target already sits inside the source — i.e. walking UP from the target
+// reaches the source.
+//
+// ⚠ THIS RUNS AT EVERY MEMBERSHIP WRITE, NEVER ONLY THE FIRST, and that is the
+// build law rather than an optimisation note. A membership that is lawful when
+// made becomes a cycle LATER, when its parent nests somewhere new — so a
+// first-write-only guard is precisely a guard that misses the case it exists
+// for. Every write re-walks.
+export function wouldNestCycle(sourceId: string, targetBoardId: string): boolean {
+  if (sourceId === targetBoardId) return true; // self — held by the built guard too
+  return boardAncestors(targetBoardId).has(sourceId);
+}
+
 // --- AB4 S2 — Pin: membership, not capture --------------------------------
 // A page-pin card references an entry by id; it never copies its content and
 // never touches the referenced entry's own record (origin/projectId/text all
@@ -1166,6 +1221,33 @@ const BOARD_PIN_H = 0.12;
 // from the board it was just made on is the symptom item 92 was about), and it
 // is a one-word change to overturn if Fable or Nick reads it otherwise.
 export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { display?: boolean }): JournalEntry | null {
+  // PW2 S1 — THE MEMBERSHIP GUARD. One seam, both laws, no mode flag.
+  //
+  // WHY NO MODE FLAG, measured rather than assumed: there are exactly TWO sites
+  // in this file that create a `page-pin` box — this one (the AUTHORED write)
+  // and `placeNewCards`, whose single caller is `reconcileSystemBoard` (the
+  // DERIVED write). The derived path never routes through here, so this guard
+  // does not have to tell authored from derived; it can simply refuse what a
+  // writer may not author, and the condition boards keep deriving their own
+  // pins untouched.
+  //
+  // ── LAW 1 · THE SOURCE RESOLVES TO A LIVE, PINNABLE ENTRY ─────────────────
+  // Ruled as item 134's rider (a), and deliberately POSITIVE. The rider reads
+  // "a drawer is never a member of anything", but a negative check —
+  // `if (isDrawer) return null` — WOULD NEVER FIRE: a Drawer is not a
+  // JournalEntry at all (its own row in `cache.drawers`), so a drawer id never
+  // arrives typed as a drawer. It arrives as an id that RESOLVES TO NOTHING.
+  //
+  // THE GUARD IS ABOUT WHAT THE ID *IS*, NOT WHAT IT IS CALLED. Stated
+  // positively it makes the rider true by construction AND closes the wider
+  // hole the survey found underneath it: before this, nothing here verified
+  // the source existed at all, so ANY foreign id — a drawer's, a project's, a
+  // typo's — fell straight through and wrote a page-pin pointing at nothing.
+  // A dangling membership renders as "Missing page" and is a member of a board
+  // forever.
+  const source = getJournalEntry(entryId);
+  if (!source) return null;
+  // (the built source-side system guard follows below, unchanged)
   // FX6 S3 (a1, ab4-review's own advisory) — self-pin closed at THIS end
   // too (belt and suspenders alongside PinToBoardSheet.tsx's own leaf
   // exclusion): a board can never pin itself to itself, even via a direct
@@ -1177,9 +1259,26 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // unreachable through the UI (the sheet never opens on a system Board's
   // own Page face), but this guard is what actually holds if some OTHER
   // call site ever pins entryId onto a DIFFERENT board directly.
-  if (getSystemKind(getJournalEntry(entryId))) return null;
+  if (getSystemKind(source)) return null; // (reads LAW 1's resolved row — one fetch, one truth)
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
+  // ── LAW 2 · THE TARGET IS A BOARD THE WRITER MAY AUTHOR ONTO ──────────────
+  // The built guard above checks `getSystemKind` on the SOURCE only, and that
+  // asymmetry was never intentional — it was simply the half B1 needed. A
+  // condition board's membership is DERIVED (`reconcileSystemBoard` from
+  // `qualifyingPagesFor`, in reaction to loose/deleted/in-journal-view); it is
+  // never authored. So an authored write onto one would be a hand-placed card
+  // in a list the app recomputes — erased at the next reconcile, and wrong in
+  // the meantime. Refused here, at the same seam, for the same reason the
+  // source side is.
+  if (getSystemKind(board)) return null;
+  // ── LAW 3 · NO CYCLE. Item 128's first invariant ──────────────────────────
+  // "A board cannot be placed inside itself, or inside a board it already
+  // contains." Walked on EVERY write (see `wouldNestCycle`), because a
+  // membership lawful when made becomes a cycle later when its parent moves.
+  // A cycle presents as a hang or a blown stack far from the pin that caused
+  // it: trivial to prevent, expensive to find.
+  if (wouldNestCycle(entryId, boardEntryId)) return null;
   const existing = board.boxes ?? [];
   if (existing.some(b => b.kind === 'page-pin' && b.entryId === entryId)) return board; // already pinned — idempotent
   const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
