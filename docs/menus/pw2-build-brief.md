@@ -96,6 +96,41 @@ a board they can see on their own crumb.
 
 **The zone carries Fable's sentence as its own line** beneath the list.
 
+### THE GUARD'S SECOND LAW — **A DRAWER IS NEVER A MEMBER OF ANYTHING**
+
+**Ruled (Nick's word via Fable, item 134 rider (a)), and it belongs HERE, beside the ancestor
+walk, for Fable's own reason:** *both say a container's membership graph admits only what can
+lawfully be held, and both are cheapest to enforce at **WRITE time**.*
+
+**WHAT THE SURVEY FOUND — read it before writing a drawer special-case, because you do not want
+one.** A **Drawer is not a `JournalEntry`.** It is its own row — `Drawer { id, name, order,
+createdAt, updatedAt, deletedAt }` (`types/index.ts`) — and a `Project` points at one through
+`Project.drawerId`. So **a drawer id can never reach the pin path as a drawer**: there is no
+code path that offers one, and `getJournalEntry(<drawerId>)` simply returns `undefined`.
+
+**⚠ BUT THE PIN PATH HAS NO EXISTENCE CHECK AT ALL, AND THAT IS THE REAL GAP.**
+`pinPageToBoard(entryId, boardEntryId)` guards exactly four things — self-pin, a **system-kind**
+source, that the **target** is a board, and idempotency. **Nothing verifies that `entryId`
+resolves to a live entry.** `getSystemKind(getJournalEntry(entryId))` is falsy for a missing
+row, so the function **falls through and writes a `page-pin` box pointing at nothing** — a
+dangling membership, from a drawer id or any other foreign id.
+
+**SO THE GUARD IS POSITIVE, NOT A SPECIAL CASE:**
+
+> **A membership write admits only a source that resolves to a LIVE, PINNABLE ENTRY.**
+
+That one line makes *"a drawer is never a member of anything"* **true by construction** — and
+closes the orphan-pin case with it. **A negative check (`if (isDrawer) return null`) would never
+fire**, because a drawer never arrives typed as a drawer; it arrives as an id that resolves to
+nothing. *The law is about what may be held; the guard is therefore about what the id IS, not
+about what it is called.*
+
+**Harness-owed, in `pw2.mjs` beside the cycle checks:**
+- a membership write with a **drawer id** is refused, and **no `page-pin` box is created**
+- a membership write with **any unresolvable id** is refused the same way (the general case)
+- a normal page and a normal board still pin — the guard refuses only what cannot be held
+
+
 ---
 
 ## S2 · NESTING — the board-card
