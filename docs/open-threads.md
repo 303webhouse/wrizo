@@ -3972,6 +3972,15 @@ sites FIX censused.** **FIX's `boardName()` / `entryText.ts` single-sourcing is 
 which is the *one fact, one derivation* law arriving exactly where it was needed: thirty derivations
 are thirty places a name can disagree with itself.
 
+**✅ RESOLVED 2026-09-13 — NICK'S WORD: "my answer is 'No'."** **"Untitled" does NOT exist as a default
+name.** **Fable's reading was correct and chat 1's refusal to record it was still right**: an
+interpretation is not a ruling until the founder says so, and the day it spent flagged cost nothing
+while recording it wrongly would have cost a charter. **Also ruled: NEW BOARDS ARE BORN WITH THE NAME
+FIELD IN FOCUS** — Nick: *"I concur with your recommendation about having new boards open with the name
+field in focus"*. **ITEM 136's CHARTER IS ISSUED TO FIX** — schema addition, its own batch, Fable review
+scope.
+
+**SUPERSEDED MARKER, kept:**
 **⚠ FLAGGED, NOT RECORDED — THE LAST SENTENCE IS UNRESOLVED.** Fable reads it as **should NOT exist**;
 the sentence as written says **"probably should exist."** **Chat 1 records NEITHER reading as ruled.**
 **Nick's one word closes it next relay.** *(The verbatim text above stands regardless — the primary
@@ -4070,7 +4079,71 @@ refused by a target clause written carelessly — hence the condition.)*
 
 **PW2 ASKS FOR ITS STAMP TURN WHEN READY: queued AFTER FIX and ERRATA, a short pair at chat 1's
 discretion.**
-Registry: next free **137**.
+## ITEM 134 — NICK'S RULINGS, VERBATIM — 2026-09-13
+
+> 1. Written 2. Group 3. Show it 4. Keep it at the foot (although on my UI, the trash has never been
+> aligned at the bottom of the rail --- it's inline with the rest of the menu options. 5. Accept. And
+> yes, ratified. As for the "Untitled" question, my answer is "No" and I concur with your
+> recommendation about having new boards open with the name field in focus
+
+**RECORDED AS:**
+- **(i) JOURNAL ORDER = DAY WRITTEN.**
+- **(ii) THE RAIL IS GROUPED BY KIND, and the SEPARATORS TEACH** the grouping.
+- **(Q-A) THE NO-COUNT LAW GAINS THE DESK'S CLAUSE: a count is lawful INSIDE A DESTRUCTIVE
+  CONFIRMATION and NOWHERE ELSE.** *(The exception is narrow for a reason: a count shown at rest is a
+  number a writer must maintain; a count shown before an irreversible act is the only information that
+  makes the act decidable.)*
+- **(Q-B) TRASH AT THE FOOT.**
+- **(Q-C) MANUAL JOURNAL ORDER RETIRES WITH THE SPREAD, DELIBERATELY — `setNotebookPosition` dies IN
+  THAT COMMIT, in the views build.** Not before.
+- **THE ARRANGEMENT LAW IS RATIFIED: IF A WRITER CAN MOVE ONE THING RELATIVE TO ANOTHER, IT HAS BECOME
+  A BOARD.** *(It is a definition, not a preference — which is why manual order cannot survive in a
+  Journal that is not one.)*
+- **ITEM 134's Q-D CLOSES — HIS TEXT GOVERNS.**
+
+**NICK'S PARENTHESIS IS ITSELF A FINDING, not an aside:** *"on my UI, the trash has never been aligned
+at the bottom of the rail --- it's inline with the rest of the menu options."* **He ruled "keep it at
+the foot" AND reported that it is not at the foot.** → **item 137.**
+
+## ITEM 137 — TRASH AT THE FOOT (fix-class → TOOLS, Batch Two) — OPENS 2026-09-13
+
+**THE FOURTH FOUNDER-SITTING FINDING, after 118 (c), 130 and 131 (a)** — each found by a person using
+the product, each having passed everything automated.
+
+**FABLE'S READ AT THE BYTES, CONFIRMED BY CHAT 1 AT THE LINES:**
+- `.desk-frame-strip{ ... min-height:70vh; ... }` — **`min-height` ONLY; no definite `height`.**
+- `.wz-strip{ display:flex; flex-direction:column; height:100%; }`
+- `.wz-strip-foot{ margin-top:auto; }`
+
+**A PERCENTAGE HEIGHT CANNOT RESOLVE AGAINST A `min-height`.** So `height:100%` computes to `auto`,
+the flex column shrinks to its content, and **`margin-top:auto` has NO FREE SPACE to push into** — the
+foot sits inline. **"STATICALLY PINNED IS NOT MEASURED PINNED."**
+
+**AND THE HOUSE ALREADY KNEW — the warning sits FOUR LINES BELOW the broken rule**, from FX3 S1:
+
+> a flex/grid `height:100%` further down needs an explicit height somewhere above it to resolve
+> against — a naive `height:100%` on the paper alone, with nothing above it definite, silently no-ops
+> back to auto/intrinsic, which is exactly the bug this fixes
+
+**THE SAME SHAPE AS PW2's DEPTH-1 GUARD, ONE DAY APART: a lesson fixed WHERE IT WAS NOTICED and not
+generalised to the next chain that has it.** FX3 fixed the stage; the strip has the identical
+dependency and was never revisited. **A comment that explains a hazard is not a guard against it** —
+which is `comments describe intent; call sites are the evidence`, arriving from the CSS side.
+
+## THE VIEWS ARC — BUILD ORDER — 2026-09-13
+
+**Single-subject briefs from the PLAN DESK, in this order:**
+**1. THE RAIL (after item 137)** → **2. THE SHELF/TRASH VIEW** → **3. THE JOURNAL FLIP (retires the
+Spread — and `setNotebookPosition` dies in that commit)** → **4. EMPTY TRASH (persistence, FABLE
+SCOPE).**
+
+**The ordering is load-bearing, not administrative:** the rail must be right before views mount in it;
+the flip is what retires the Spread, so Q-C's deletion rides it and cannot precede it; and **Empty
+Trash is last because it is the only irreversible one** — the single operation in this house with no
+undo, which is why it carries Fable review by its nature rather than by classification.
+
+Registry: next free **138**.
+
 
 
 
