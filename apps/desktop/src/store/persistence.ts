@@ -1184,6 +1184,38 @@ export function boardAncestors(boardId: string): Set<string> {
 // made becomes a cycle LATER, when its parent nests somewhere new — so a
 // first-write-only guard is precisely a guard that misses the case it exists
 // for. Every write re-walks.
+
+// PW2 S2 — THE NEST CHAIN, ordered outermost-first, for the board's crumb.
+//
+// `boardAncestors` answers a SET question ("is X above me"), which is what the
+// guard needs. An address needs a PATH, so this is the ordered sibling — the
+// same edges, the same `seen` termination, one walk per level.
+//
+// ⚠ A BOARD MAY HAVE SEVERAL PARENTS, and an address is one line, so this walks
+// ONE path: the first parent at each level, in `getBoardsConnecting`'s own
+// stable order. That is a deliberate narrowing and not an oversight — the crumb
+// answers "a way back", not "every way back", and the Plan panel's BOARDS
+// CONNECTED zone is where the full parent set is listed. Picking the first
+// keeps the line one line at any depth, which is the test a recursive
+// container has to pass.
+//
+// The `seen` set is again mandatory rather than tidy: on data that arrives
+// already cyclic this returns a finite chain instead of looping forever. A
+// crumb that hangs the surface is a worse failure than a crumb that is short.
+export function boardNestChain(boardId: string): { id: string; title: string }[] {
+  const chain: { id: string; title: string }[] = [];
+  const seen = new Set<string>([boardId]);
+  let cur = boardId;
+  for (;;) {
+    const parent = getBoardsConnecting(cur).find(p => !seen.has(p.id));
+    if (!parent) break;
+    seen.add(parent.id);
+    chain.push(parent);
+    cur = parent.id;
+  }
+  return chain.reverse(); // outermost first — an address reads from the outside in
+}
+
 export function wouldNestCycle(sourceId: string, targetBoardId: string): boolean {
   if (sourceId === targetBoardId) return true; // self — held by the built guard too
   return boardAncestors(targetBoardId).has(sourceId);

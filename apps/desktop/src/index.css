@@ -1454,6 +1454,32 @@ a:focus-visible,
 .board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-rest); margin-bottom:2px; }
 .board-pin-title{ font-weight:600; }
 .board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
+
+/* ===== PW2 S2 — THE BOARD-CARD (item 128) ================================
+   A nested board on its parent's canvas. It rides the SAME `.board-pin` box a
+   page does — the membership is the same relation — so this rule adds only the
+   face.
+
+   SHAPE TEACHES THE KIND, AND SPENDS NO COLOUR. The silhouette is a DOUBLED
+   EDGE: a second border offset behind the card, drawn by `::before` at
+   z-index:-1 (Journey D's `.brdcard`). "A thing that holds things", said in
+   geometry. This is the job Pass 5 routed to item 96 as colour-as-kind-signal
+   — shape does it instead, so a third card kind costs the Plateau ember
+   ceiling nothing and reads the same in every theme.
+
+   `isolation:isolate` is NOT set here on purpose: the pseudo-element must sit
+   BEHIND the card's own background, and a new stacking context would trap it
+   in front. The card already paints an opaque `--panel` ground, so z-index:-1
+   lands it between the card and the canvas rather than under the canvas. */
+.board-boardcard{ position:relative; }
+.board-boardcard::before{
+  content:''; position:absolute; left:4px; right:-4px; top:-4px; bottom:4px;
+  border:1px solid var(--ink-border); z-index:-1; pointer-events:none;
+  border-radius:inherit;
+}
+/* The doubled edge answers hover with the card, so the whole silhouette reads
+   as one object rather than two overlapping ones. */
+.board-box:hover .board-boardcard::before{ border-color:var(--accent-rest); }
 /* Deliberately UNCHANGED by FX8 S3 (still cursor:default, not grab) — a
    missing-page-pin card (its own referenced entry genuinely gone) has no
    live source to open, but IS still draggable like any other card via the

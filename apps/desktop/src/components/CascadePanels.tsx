@@ -1098,7 +1098,20 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     renderMenu: (item) => {
       const box = pins.find((b) => b.id === item.id);
       if (!box || !box.entryId) return null;
-      return <PinDisplayMenu boardId={kind.boardId} entryId={box.entryId} displayed={box.onCanvas !== false} />;
+      // PW2 S2/PW22 — THE TWIN. A nested board's double-click travels INTO it
+      // on the canvas; the same act must ride this menu, or the gesture is the
+      // only path and the keyboard and the unfamiliar hand lose their way in.
+      // A page membership gets no such row: pressing its row already travels.
+      const nested = getJournalEntry(box.entryId);
+      return (
+        <>
+          {nested?.pageType === 'board' && (
+            <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-open-board"
+              onClick={() => ctx.travelFromCascade(nested)}>{deskTerm('cascadeOpenBoard')}</button>
+          )}
+          <PinDisplayMenu boardId={kind.boardId} entryId={box.entryId} displayed={box.onCanvas !== false} />
+        </>
+      );
     },
     // PW1 S3 — the DRAG half (Nick, Q4): drag a membership row onto the canvas
     // and it lands WHERE DROPPED. Only membership rows are draggable (a card is
