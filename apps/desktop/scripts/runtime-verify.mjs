@@ -565,9 +565,28 @@ function makeApp(base, cdp, waitEvent) {
      * Press a single key (down+up) via CDP — e.g. 'Backspace', 'Delete',
      * 'Enter'. Used to prove the forward-only permanence rail blocks erasure.
      */
-    key: async (key) => {
-      const vk = { Backspace: 8, Delete: 46, Enter: 13, Tab: 9 }[key] || 0;
-      const p = { key, code: key, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk };
+    key: async (key, { shift = false } = {}) => {
+      // REVEAL-ON-CLICK — the arrow/Home/End codes and the `shift` option are
+      // ADDITIVE. Before this, `key('ArrowRight')` sent windowsVirtualKeyCode 0
+      // and Chromium moved no caret at all, so a caret-move could only be staged
+      // by building a Range in page script — untrusted, and not the gesture a
+      // writer makes. No existing harness passed an arrow, Home or End through
+      // here (checked across the roster, not assumed), so nothing can regress.
+      //
+      // `shift` holds the REAL Shift modifier (CDP's bitmask: Alt=1, Ctrl=2,
+      // Meta=4, Shift=8), which is what lets a check extend a SELECTION by a
+      // trusted key press rather than assembling one in page script. That
+      // matters here specifically: the thing under test is whether a live
+      // non-collapsed selection survives, and a selection the page made itself
+      // is a weaker witness than one the browser's own input layer made.
+      const vk = {
+        Backspace: 8, Delete: 46, Enter: 13, Tab: 9,
+        ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Home: 36, End: 35,
+      }[key] || 0;
+      const p = {
+        key, code: key, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk,
+        modifiers: shift ? 8 : 0,
+      };
       await cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p });
       await cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p });
     },
