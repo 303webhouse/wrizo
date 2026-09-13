@@ -1750,6 +1750,21 @@ export function BoardEditor({ id }: { id: string }) {
     return () => { delete (window as unknown as { wrizoBoard?: unknown }).wrizoBoard; };
   }, []);
 
+  // ITEM 133 — THE RENAME STATE LIVES HERE, WITH EVERY OTHER HOOK, and above
+  // the early return below. It was first written beside the `title` derivation
+  // it serves — which reads better and is wrong: `if (!initialEntry) return
+  // null` sits between, so on a render where the board's row is missing these
+  // two useState calls would not run and React would see fewer hooks than the
+  // render before. That is error #300 and the whole tree blanked — item 104's
+  // class exactly. hooks-order.mjs caught it here rather than a writer finding
+  // it when a board is deleted on another device mid-session.
+  //
+  // The lesson worth keeping beside the code: state belongs with the HOOKS,
+  // not with the feature it describes. Proximity to its own feature is the
+  // pull that put it in the wrong place.
+  const [renaming, setRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+
   if (!initialEntry) return null;
 
   // FX4 S4 — "minimums = content extents": the canvas can never be dragged
@@ -1819,8 +1834,6 @@ export function BoardEditor({ id }: { id: string }) {
     patchJournalEntry(id, next, {});
   };
 
-  const [renaming, setRenaming] = useState(false);
-  const [nameDraft, setNameDraft] = useState('');
 
   // AB4 S3 / FX4 S4 — connection and board-meta boxes are never positioned
   // cards: filtered out of the positioned-card render loop (they never
