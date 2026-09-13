@@ -26,9 +26,23 @@ export function firstLine(text: string): string {
 // on two surfaces. The rename this ticket adds would have made that visible
 // immediately, since a writer renaming a board watches one label change. This
 // is the single source; the full 30-site sweep belongs to its own ticket.
-export function boardName(text: string | undefined): string {
+//
+// THE FALLBACK IS THE CALLER'S, DELIBERATELY. The first cut of this helper
+// returned 'Untitled board' everywhere, which quietly CHANGED what the board's
+// own crumb displays: that surface has always said plain 'Untitled', and the
+// headful sitting captured it doing so. Unifying the stand-in text is item
+// 136's job — it retires these strings wholesale under the "first few words"
+// rule — and changing one of them here would leave two half-rules on one tree,
+// with a board saying 'Untitled board' in the cascade and 'Untitled' in its own
+// crumb for exactly as long as it took someone to notice.
+//
+// So this single-sources the DERIVATION (which line, trimmed, capped) and
+// nothing else. That was the drift worth closing: three sites disagreeing about
+// which characters the name is. What each surface CALLS a nameless board stays
+// exactly as it was until one rule replaces all of them at once.
+export function boardName(text: string | undefined, fallback: string): string {
   const first = (text ?? '').split('\n').map(l => l.trim()).find(Boolean);
-  return first ? first.slice(0, 60) : 'Untitled board';
+  return first ? first.slice(0, 60) : fallback;
 }
 
 // A single-line preview: collapse whitespace and truncate with an ellipsis.

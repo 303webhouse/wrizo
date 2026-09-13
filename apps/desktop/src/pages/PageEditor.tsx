@@ -568,9 +568,20 @@ function PageEditorView({ id }: { id: string }) {
     onReachName: () => {
       const el = editorRef.current;
       if (!el) return;
-      el.focus();
       const firstLineEnd = (textRef.current.split('\n')[0] ?? '').length;
-      setCaretOffset(el, firstLineEnd);
+      el.focus();
+      // PLACE THE CARET AFTER THE SURFACE SETTLES, not in the same tick as
+      // the focus. `focus()` lets the editor run its OWN caret placement,
+      // which collapses to the container's END (see ForwardOnlyEditor's note
+      // on the trailing-newline-at-EOF state) — and that placement lands
+      // AFTER a synchronous setCaretOffset, silently overwriting it.
+      // MEASURED, NOT GUESSED: the harness read offset 35 on a 16-character
+      // first line, which is the end of the whole text. This is the same law
+      // that governs reading — a probe reads the settled state — applied to
+      // WRITING: do not place a caret into a surface still arranging itself.
+      requestAnimationFrame(() => {
+        if (editorRef.current) setCaretOffset(editorRef.current, firstLineEnd);
+      });
     },
     onOpenPortToBoard: withBirth(() => setPortOpen(true)),
     onOpenPin: withBirth(() => setPinOpen(true)),

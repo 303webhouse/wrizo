@@ -1806,7 +1806,7 @@ export function BoardEditor({ id }: { id: string }) {
   const backTo = project ? `/project/${project.id}` : isSystemBoard ? '/' : '/journal';
   // ITEM 133 — one derivation (store/entryText.ts's boardName), not this file's
   // own third reading of the same field.
-  const title = boardName(initialEntry.text);
+  const title = boardName(initialEntry.text, 'Untitled');
   // ITEM 133 — commit through the EXISTING store path. `patchJournalEntry`
   // takes the current text and the changes, so the rename is an ordinary edit
   // of an ordinary field; nothing here is a naming-specific pipe.
@@ -1815,7 +1815,7 @@ export function BoardEditor({ id }: { id: string }) {
     setRenaming(false);
     if (!next) return;                       // empty reverts: the old name stands
     const live = getJournalEntry(id);
-    if (!live || next === boardName(live.text)) return;
+    if (!live || next === boardName(live.text, 'Untitled')) return;
     patchJournalEntry(id, next, {});
   };
 
@@ -2501,7 +2501,7 @@ export function BoardEditor({ id }: { id: string }) {
                 type="button"
                 className="crumb-here crumb-rename-btn"
                 title={t('boardRenameLabel')}
-                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text) === 'Untitled board' ? '' : boardName(getJournalEntry(id)?.text)); setRenaming(true); }}
+                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, 'Untitled') === 'Untitled board' ? '' : boardName(getJournalEntry(id)?.text, 'Untitled')); setRenaming(true); }}
               >{title}</button>
             )}
           </div>
