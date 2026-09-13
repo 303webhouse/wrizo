@@ -3799,6 +3799,40 @@ completion** — nothing it named has been built, and the work travels to 134.
   **anything touching persistence/sync/server is NOT merge-on-chat-1's-verification.** A hard delete
   is the one operation this house has no undo for, so it earns the heavier gate by its nature.
 
+**✅ THE GAP IS CLOSED — 2026-09-12. The six founder rulings landed inline and are recorded below.**
+*(The marker below is kept verbatim rather than deleted: it is the record that the entry was
+incomplete for a day, and what closed it.)*
+
+**ITEM 134 / ITEM 133 — PRIMARY TEXT. Nick's message of 2026-09-11, VERBATIM:**
+
+> OK. Have we discussed what the different views should look like? Because it should be distinct from
+> the Board. A journal should look sort of like a book that can be flipped through forward or backward,
+> but it shouldn't lose the primacy of the Page. Containers hold Pages or other containers (except
+> Drawers, which are like the foundational container that cannot be contained by something else). The
+> view of the Shelf and Trash should probably be the same, and closer to the way the Journal pages can
+> be flipped through---although it would be good if there is a thumbnail view of the Shelf and Trash.
+> One difference between the Shelf and Trash, is that the Trash should be able to be emptied, which
+> permanently deletes files. And the Pages or Boards in the Trash should not have either of the
+> two-hand menus, but the Shelf should. (One other small thing, but I still can't name anything in the
+> app, either Pages or Boards---at least not that I've been able to figure out so far. I would like to
+> make that fix as part of our current revisions). As for the Library, yeah, that should probably also
+> be something like a stack of Pages that can be flipped through or, alternately, a thumbnail view
+> where many Library entries are visible simultaneously and able to be grouped into sections. Table the
+> Library for now, though. That comes toward the end.
+
+**THE SIX, as Fable numbered them against that text:**
+1. **DRAWERS ARE THE FOUNDATIONAL CONTAINER** — they hold pages and containers; **nothing contains a
+   Drawer.**
+2. **JOURNAL = A BOOK FLIPPED FORWARD AND BACKWARD, and THE PAGE KEEPS PRIMACY.**
+3. **SHELF AND TRASH SHARE ONE VIEW** — the Journal's flip, **plus a thumbnail view.**
+4. **TRASH CAN BE EMPTIED — PERMANENT DELETE.**
+5. **IN TRASH, pages and boards carry NEITHER HAND; ON THE SHELF, BOTH.**
+6. **LIBRARY = stack-flip or sectioned thumbnail grid — TABLED, "toward the end."**
+
+**THE NAMING SENTENCE IS ITEM 133's PRIMARY TEXT AS WELL** — *"I still can't name anything in the app,
+either Pages or Boards... I would like to make that fix as part of our current revisions."*
+
+**SUPERSEDED MARKER, kept:**
 **⚠ GAP ON THE RECORD — SIX FOUNDER RULINGS NOT RECEIVED.** Fable's relay of 2026-09-11 names **"six
 founder rulings from Nick's message above, recorded verbatim."** **That message never reached chat 1.**
 **They are NOT recorded here, and this entry is INCOMPLETE until they are** — chat 1 will not
@@ -3810,7 +3844,154 @@ ledger** — the INK lane's render table, its §3.1 ruling, and now these six. *
 never reached it; only a sender's list can.** The two INK losses were caught by the sending lane; this
 one by the receiving desk. **Both directions work, and neither works alone.**
 
-Registry: next free **135**.
+## BATCH ONE — SHIPPED — 2026-09-12 (chat 1, on Nick's "You have my word --- push it" — Fable PASS)
+
+**LIVE: `f12c318` · railway `0a921758`** — deployment `0a921758-02de-4044-8ee9-95b08d1b5ca3`, status
+**SUCCESS**, serving `index-C2Z1gh61.js`. **PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `39eacae` ·
+railway `479adc19`.** **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**THE FIRST BATCH SHIP. SEVEN PACKAGES, ONE DEPLOY:** item 130 + the Pen rename · 85-B (the seed
+guard) · the 121-B brief + its §3.1 ruling · item 122 (the styling completion wave) · PW1's errata
+(item 131) · 85-C wave 1 (37 files migrated) · records.
+
+**17 product files, +567/-129. SCHEMA: ZERO. SERVER BYTES: ZERO.** Suite of record **80/80 CLEAN BOTH
+LEGS** fresh at the batch HEAD — `tree=f12c318 bundle=index-C2Z1gh61.js/575276b` — park audit 65 files
+/ 176 checks, tree BARE at upload, tsc x2 exit 0.
+
+**SERVED-vs-STAMPED — BOTH ASSETS MATCH:** `index-C2Z1gh61.js` served `12d50df30734b4f3eebedf92415e7cb3`
+**==** stamped · `index-Cg4B_nto.css` served `2c34613a60ca26b037fbd38915553bef` **==** stamped.
+
+**BUILD OS / TOOLCHAIN:** local Node v24.13.0, pnpm 10.28.2, MINGW64_NT-10.0-19045; Railway image
+linux/amd64, digest `sha256:bcf4f4a0a7292e78deecf540b89d0713591a1c685b9c7a983ace28ccafc71db3`.
+
+**THE SAVING IS REAL: ONE window, ONE pair, ONE review, ONE word** — where the per-package order would
+have wanted five of each. **On a box that cost seven contention voids in two days, that is the whole
+argument for batching.**
+
+## ITEM 135 — SUSPENSION VOID (harness) — OPENS 2026-09-12
+
+**OPENS. ERRATA's queue. NO FABLE GATE** (harness-only). **PRIMARY TEXT, chat 1's words from the stamp
+report:**
+
+> nothing detects a wall-clock discontinuity, so a suspended run currently accuses the code. A
+> monotonic-vs-wall-clock sample per file, voiding with "the machine slept," would turn the most
+> expensive failure mode into one honest line.
+
+**THE INCIDENT THAT EARNED IT.** Batch One's first pair reported **two reds** — `fx5` TIMEOUT with a
+**0-byte** output and `item97` **`seam=false`**. **Neither was a defect.** The machine **slept for 19
+hours mid-run**: Kernel-Power id=42 at `2026-09-11 23:21:11`, resume at `2026-09-12 18:27:04`. **fx5's
+reported duration was 68,792s against a measured suspension of 68,753s — a 39-second difference, which
+is exactly how long fx5 had been running when the machine went down.** The re-run returned `fx5` PASS
+(62 checks) and `item97` PASS (7/7).
+
+## CANON — A RUN HAS THREE VERDICTS: GREEN, RED, VOID — 2026-09-12
+
+**VOID IS DECLARED BY MEASURING THE MACHINE — the event log, the arithmetic — NEVER by re-running for
+green. AND A VOID CARRIES ITS EVIDENCE THE WAY A RED DOES.**
+
+**Why the third verdict has to exist:** a suspended run's output is indistinguishable, on its face,
+from a genuine failure. **Treating it as RED accuses the code and opens tickets against working
+files.** **Treating it as a flake and re-running for green violates the retry doctrine and teaches the
+desk that reds evaporate.** **Only VOID is honest**, and it is only available to someone who went and
+measured what the machine was doing.
+
+**The 39-second match is the worked example**: it is what turns "probably the machine" into a
+measurement. **A VOID asserted without that arithmetic is just a re-run wearing a better name.**
+
+## STANDING LAW — A RELAY BLOCK CARRIES WHAT IT NAMES (Fable's own) — 2026-09-12
+
+**No payload rides "above" or "in the preceding paste," and no block holds a blank for someone to
+fill.** **FOUR MISSES WERE THIS FORMAT, all from one desk** — INK's render table, INK's §3.1 ruling,
+item 134's six founder rulings, and the Batch One review — **and the AUDIT caught each, because
+absence has no other detector.** **The audit is PERMANENT, not a response to a run of losses.**
+
+*(The law removes the failure mode instead of asking for more care, which is the only kind of fix that
+holds. Note the shape: every loss was content DESCRIBED-BUT-NOT-ATTACHED — the sender saw a complete
+message because the description was there.)*
+
+## FIX — ITEM 133 BUILT, TWO JUDGMENTS RATIFIED — 2026-09-12
+
+**Both halves built, ZERO SCHEMA.** **RATIFIED:**
+- **The caret lands at the END of the first line.**
+- **The gesture exists ONLY on the subject page** — **a dead affordance is worse than none.** *(Same
+  reasoning as item 130's unreachable strip: a control that is present and inert teaches the writer it
+  does not work, and they stop reaching for it where it DOES.)*
+
+**The sitting + harness + reveal-on-click ride the opened window; the offer goes to BATCH TWO.**
+
+## RIDER (a) RATIFIED — IN THE POSITIVE FORM THE SURVEY PRODUCED — 2026-09-12
+
+**Given as a prohibition** — *"a Drawer is never a member of anything"* — **and returned as a
+CONSTRUCTION RULE:**
+
+> **A membership write admits only a source that resolves to a live, pinnable entry.**
+
+**The positive form is strictly stronger, and the reason is general enough to keep:** a prohibition is
+**only ever as complete as its list of exclusions**; a construction rule **states what is admitted and
+excludes everything else by silence.** **Drawers are excluded BY CONSTRUCTION** — they are not
+`JournalEntry` rows at all — **so no clause needs to name them.** **And it closes a case the
+prohibition would have missed: the dangling pin `pinPageToBoard` admits today.** Three checks named for
+`pw2.mjs`.
+
+## REGISTERED FROM THE LANES — 2026-09-12
+
+- **PW1's BUILD LAW IS LIVE** at `persistence.ts` (the pin is the MEMBERSHIP record; a new pin is **not
+  displayed** until the writer places it — `onCanvas: false` written explicitly). **Q14
+  (`byArrangement`) SHIPPED** — three call sites in `src/`.
+- **Q-C CENSUS REGISTERED: no container depends on `orderIndex`** (loose Journal pages only;
+  `notebookKey` → `sortNotebook` → `getNotebookPages`). **Nick's Q-C ruling PENDING.** On "accept",
+  **`setNotebookPosition` is deleted in the SAME COMMIT that retires the Spread — the views build, not
+  before.** *(The same-commit clause is what stops a half-retirement leaving a dead writer behind.)*
+- **FIX's reading of ruling (2) CONFIRMED: (A) builds now; (B) is Nick's open question — a CHARTER if
+  yes, NEVER a fix window.**
+
+## BAND — TWO LAW-LINES — 2026-09-12
+
+- **COMMENTS DESCRIBE INTENT; CALL SITES ARE THE EVIDENCE.** (PLAN DESK, from the Q-C census.) A
+  comment records what someone meant at the time; **only the call sites record what is true now**, and
+  the two drift silently because nothing fails when they do.
+- **ONE FACT, ONE DERIVATION — A FIELD READ THREE WAYS IS A BOARD ANSWERING TO TWO NAMES.** (FIX, from
+  133.) **Each additional derivation is a place the answers can disagree**, and disagreement between
+  derivations of the same fact is invisible until a writer sees two different truths on one screen.
+
+## ITEM 136 — NAMES (charter; its own batch) — OPENS 2026-09-12
+
+**OPENS. Nick's ruling, VERBATIM:**
+
+> Yes, users need to be able to name Pages and Boards whatever they want. If they haven't named it,
+> the first few words can be a stand-in for the name/title instead of "Untitled." In fact, "Untitled"
+> probably should exist as a default name of anything because if you haven't written anything, there
+> is nothing to save.
+
+**SCOPE:** a **stored `title` on `JournalEntry`** for pages and boards — **A SCHEMA ADDITION, SYNCED →
+FABLE REVIEW SCOPE** — the **stand-in rule** ("first few words"), **the retirement of every
+'Untitled' fallback**, and **the board edge** (born empty — what stands in?).
+
+**IT IS ITS OWN CHARTER AND ITS OWN BATCH, NEVER A FIX WINDOW** — it touches the **~30 derivation
+sites FIX censused.** **FIX's `boardName()` / `entryText.ts` single-sourcing is its foundation** —
+which is the *one fact, one derivation* law arriving exactly where it was needed: thirty derivations
+are thirty places a name can disagree with itself.
+
+**⚠ FLAGGED, NOT RECORDED — THE LAST SENTENCE IS UNRESOLVED.** Fable reads it as **should NOT exist**;
+the sentence as written says **"probably should exist."** **Chat 1 records NEITHER reading as ruled.**
+**Nick's one word closes it next relay.** *(The verbatim text above stands regardless — the primary
+text is not in doubt, only its reading.)*
+
+**ITEM 133 CLOSES on FIX's offer as the ZERO-SCHEMA HALF; item 136 later moves the in-place control's
+write target from `text` to `title`.** **The split is the point: the naming GESTURE ships without
+schema now, and the stored NAME comes with its own charter and Nick's schema word.**
+
+## ITEM 134 — THE SIX ARE CONFIRMED; THE FIVE RULINGS WAIT ON A SITTING — 2026-09-12
+
+**Nick, on the six founder rulings: "Confirmed."** The quoted message is **primary text, confirmed by
+the founder** — recorded above.
+
+**THE FIVE 134 RULINGS ARE PENDING NICK'S SITTING WITH THE MOCKUPS — he had not yet seen them.
+NOTHING BLOCKS.** *(Recorded because a pending ruling that looks like a delivered one is how a desk
+builds on a decision the founder never made — the same hazard the INCOMPLETE marker guarded.)*
+
+Registry: next free **137**.
+
 
 
 
