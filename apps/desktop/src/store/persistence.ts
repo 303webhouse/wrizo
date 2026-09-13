@@ -1364,6 +1364,84 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = setPinDisplayed;
 }
 
+
+// --- PW2 S3 — CARD TRANSFER (item 123). COPY ONLY. ------------------------
+//
+// COPY SEMANTICS, ruled: the original stays, there is NO SHARED IDENTITY, and
+// edits do not follow. So this mints a NEW box with a NEW id on the target
+// board and touches the source board's record not at all — which is what makes
+// "edits do not follow" true by construction rather than by discipline: there
+// is no shared row to diverge.
+//
+// ⚠ THREADS DO NOT TRAVEL, and the mechanism is worth stating because it looks
+// like an omission. A thread is a `connection` box whose `connA`/`connB` are
+// BOX IDS on one board. The copy has a new id and lands on a different board,
+// so a copied connection would point at endpoints that do not exist there — a
+// hairline to nowhere. They are therefore not copied at all, rather than
+// copied-and-repaired, and the tray says so BEFORE the act.
+//
+// TAGS: item 123's ruling also says "tags travel with the copy". That clause is
+// DEFERRED ON THE RECORD (Fable, 2026-09-13), not dropped: a `Box` has no tags
+// field — tags live on `JournalEntry` — so cards cannot carry tags yet and the
+// clause has nothing to act on. Its successor is C4, the cluster's tags design;
+// the day cards can carry tags, the copy carries them and the tray's sentence
+// regains its middle clause. The tray ships only the true clauses meanwhile.
+//
+// MOVE IS NOT BUILT AND MUST NOT BE. In a canon built on ownership, moving a
+// card is an ownership transfer and a different act; item 123 defers it by
+// name. Copy only.
+const COPY_OFFSET = 0.02;
+
+/**
+ * Copy one board-owned card onto another board. Returns the new box, or null
+ * if the act is refused (a missing source, a non-copyable row kind, or a
+ * target a writer may not author onto).
+ */
+export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoardId: string): Box | null {
+  const source = getJournalEntry(sourceBoardId);
+  const target = getJournalEntry(targetBoardId);
+  if (!source || !target || target.pageType !== 'board') return null;
+  // The same target law S1 established for memberships: a condition board's
+  // contents are DERIVED, so a hand-placed copy there would be erased at the
+  // next reconcile. One rule about what a writer may author onto, two acts.
+  if (getSystemKind(target)) return null;
+  const box = (source.boxes ?? []).find(b => b.id === boxId);
+  if (!box) return null;
+  // COPY APPLIES TO BOARD-OWNED CONTENT ONLY. A page-pin and a board-card are
+  // MEMBERSHIPS, not content — "copying" one would just be a second membership,
+  // which the Places checkbox already makes — and a connection is a thread,
+  // which cannot travel. The verbs teach this at the row (CA1); this refuses it
+  // at the seam, so the two cannot drift.
+  if (box.kind !== 'text' && box.kind !== 'ink') return null;
+
+  const existing = target.boxes ?? [];
+  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + COPY_OFFSET;
+  const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  // PROVENANCE RIDES THE BUILT FIELDS — "provenance travels on every box"
+  // (FX5 S3). `sourceEntryId` names the board it was copied FROM, which is what
+  // the arrived card's own lineage line reads back.
+  const copy: Box = {
+    ...box,
+    id: generateId(),
+    x: box.x, y: startY, z: startZ,
+    sourceEntryId: sourceBoardId,
+    portedAt: new Date().toISOString(),
+  };
+  // A copy never inherits the source's structural placement: seq/laneId/parentId
+  // describe a position in ANOTHER board's ordering and would be meaningless —
+  // or worse, a parentId pointing at a box that does not exist here.
+  delete (copy as Partial<Box>).seq;
+  delete (copy as Partial<Box>).laneId;
+  delete (copy as Partial<Box>).parentId;
+  saveJournalEntry({ ...target, boxes: [...existing, copy] });
+  return copy;
+}
+
+// Test/inspection seam — this file's own `wrizoPinPageToBoard` convention.
+if (typeof window !== 'undefined') {
+  (window as unknown as { wrizoCopyCardToBoard?: unknown }).wrizoCopyCardToBoard = copyCardToBoard;
+}
+
 // FX6 S4 — test/inspection seam (this file's own established pattern —
 // see setNotebookPosition's own `window.wrizoNotebook` neighbor above):
 // PinToBoardSheet.tsx's own leaf exclusion already makes a self-pin

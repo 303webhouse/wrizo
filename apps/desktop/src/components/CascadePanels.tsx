@@ -7,7 +7,7 @@ import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createQuickSprintProject, softDeleteEntry, getProject,
   getJournalEntry, getOrCreateSystemBoard, saveJournalEntry, pinPageToBoard,
-  getPlanBoardId, getBoardsConnecting, setPinDisplayed,
+  getPlanBoardId, getBoardsConnecting, setPinDisplayed, copyCardToBoard,
 } from '../store/persistence';
 import { rememberLastPlanBoard, getLastPlanBoard } from '../store/planTrail';
 import { unbornHref } from '../store/unbornPage';
@@ -21,6 +21,7 @@ import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
 import { PlacesPanel } from './PlacesPanel';
 import { AddToSheet } from './AddToSheet';
+import { PinToBoardSheet } from './PinToBoardSheet';
 import { routeForEntry } from '../store/routeForEntry';
 import type { JournalEntry, Project } from '../types';
 import type { SurveyItem, SurveyProps } from './CascadeSurvey';
@@ -1083,7 +1084,15 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   const pins = allBoxes.filter((b) => b.kind === 'page-pin').sort(byArrangement);
 
   const items: SurveyItem[] = [
-    ...cards.map((b) => ({ ...boardCardItem(b, currentEntryId), sectionTitle: deskTerm('cascadePlanSectionCards') })),
+    // PW2 S3 — AN ARRIVED COPY STATES ITS LINEAGE in the second-line slot:
+    // `copied from <board>`. Provenance rides the built fields (FX5 S3's
+    // "provenance travels on every box"), so this is a read, not a new record.
+    // No badge, no colour, no count — the line is a fact, not a decoration.
+    ...cards.map((b) => ({
+      ...boardCardItem(b, currentEntryId),
+      sectionTitle: deskTerm('cascadePlanSectionCards'),
+      note: copiedFromLine(b),
+    })),
     ...pins.map((b) => ({
       ...boardCardItem(b, currentEntryId),
       sectionTitle: deskTerm('cascadePlanSectionPages'),
@@ -1120,6 +1129,11 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     // must be COMPLETE: the drag half needs a canvas and so exists only on a
     // board, while `Display on Board` works everywhere the row does.
     renderMenu: (item) => {
+      // PW2 S3 — a CARD row carries transfer; a membership row carries display.
+      const card = cards.find((b) => b.id === item.id);
+      if (card) return (card.kind === 'text' || card.kind === 'ink')
+        ? <CardTransferMenu boardId={kind.boardId} box={card} />
+        : null;
       const box = pins.find((b) => b.id === item.id);
       if (!box || !box.entryId) return null;
       // PW2 S2/PW22 — THE TWIN. A nested board's double-click travels INTO it
@@ -1153,6 +1167,59 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     // is always the way back to the list" holds — the list simply moved up.
     onBack: () => ctx.closeSurvey(),
   };
+}
+
+
+// PW2 S3 (item 123) — CARD TRANSFER's menu, on the row it belongs to.
+//
+// THE VERBS TEACH THE KIND (CA1), and the canon does the sorting — which is
+// why this is a per-kind decision and not one verb with a disabled state:
+//   free / text card → `Copy to <board>…`  — board-owned CONTENT; a copy is a
+//                                            new card owned where it lands
+//   page-pin         → no copy verb        — MEMBERSHIP, not content. "Copying"
+//                                            it is just a second membership,
+//                                            which the Places checkbox makes
+//   board-card       → no copy verb        — membership too
+// An absent verb says "this is not that kind of thing" more cleanly than a
+// greyed one, and PP4 holds: a quiet disclosure is not a competing act.
+// PW2 S3 — the lineage line for a copied card, or undefined for one that was
+// authored here. `sourceEntryId` names the board it came FROM.
+function copiedFromLine(box: Box): string | undefined {
+  if (!box.sourceEntryId || !box.portedAt) return undefined;
+  const from = getJournalEntry(box.sourceEntryId);
+  if (!from || from.pageType !== 'board') return undefined;
+  return `${deskTerm('cascadeCardCopiedFrom')} ${boardTitle(from)}`;
+}
+
+function CardTransferMenu({ boardId, box }: { boardId: string; box: Box }) {
+  const { t } = useDeskLexicon();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  // ITEM 123's INVARIANT, RENDERED RATHER THAN MERELY ENFORCED: "every card
+  // keeps >= 1 board". A board-owned card belongs to exactly one board, so
+  // removing it from this one would leave it with none — the verb is therefore
+  // PRESENT, INERT, AND SAYS WHY, the same refusal grammar S1 uses for a
+  // descendant and PW1 used for its inert Unlink. Absence would make the writer
+  // hunt for a removal that is not missing, only refused.
+  return (
+    <>
+      <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-copy-card" onClick={() => setPickerOpen(true)}>
+        {t('cascadeCardCopyTo')}
+      </button>
+      <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-inert" aria-disabled="true" disabled
+        title={t('cascadeCardOnlyBoard')}>
+        {t('cascadeCardRemove')} <span className="wz-cascade-inert-why">{t('cascadeCardOnlyBoard')}</span>
+      </button>
+      {pickerOpen && (
+        <PinToBoardSheet
+          entryId={boardId}
+          title={t('cascadeCardCopyTitle')}
+          note={t('cascadeCardCopyNote')}
+          onChoose={(targetBoardId) => { copyCardToBoard(boardId, box.id, targetBoardId); }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+    </>
+  );
 }
 
 // PW1 S3 (item 125) — the two display acts, menu half (Nick, Q4). Membership is

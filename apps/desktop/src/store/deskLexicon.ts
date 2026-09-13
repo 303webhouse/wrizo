@@ -105,6 +105,8 @@ export type DeskTermId =
   // a term that went missing.
   | 'cascadePlanBoardsConnected' | 'cascadePlanRelationOwn' | 'cascadePlanOwnSuffix'
   | 'cascadePlanNoDrawer' | 'cascadeOpenBoard' | 'cascadePlanCaptionIn'
+  | 'cascadeCardCopyTo' | 'cascadeCardCopyTitle' | 'cascadeCardCopyNote'
+  | 'cascadeCardCopiedFrom' | 'cascadeCardRemove' | 'cascadeCardOnlyBoard'
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
   | 'cascadePinShown' | 'cascadePinNotShown' | 'cascadePinDisplay' | 'cascadePinHide'
   | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
@@ -668,6 +670,21 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanNoDrawer: 'Not in a drawer',
   // PW2 S2 — the BOARDS CONNECTED zone's caption on a board.
   cascadePlanCaptionIn: 'in',
+  // PW2 S3 (item 123) — card transfer. COPY ONLY: Move is an ownership
+  // transfer and a different act, deferred by name.
+  cascadeCardCopyTo: 'Copy to a board…',
+  cascadeCardCopyTitle: 'Copy this card to a board',
+  // THE TRAY'S DISCLOSURE, before the act. Item 123's ruled sentence also
+  // carried "its tags come with it" — DEFERRED ON THE RECORD (Fable,
+  // 2026-09-13), successor C4: a Box has no tags field, so cards cannot carry
+  // tags yet and the clause has nothing to act on. The tray ships only the
+  // true clauses; the middle one returns the day cards can be tagged. A tray
+  // that promises what the product cannot do is the surprise it exists to
+  // prevent.
+  cascadeCardCopyNote: 'A copy is a new card owned by the board it lands on. Its threads do not come with it, and edits do not follow.',
+  cascadeCardCopiedFrom: 'copied from',
+  cascadeCardRemove: 'Remove from this board',
+  cascadeCardOnlyBoard: 'its only board',
   cascadeOpenBoard: 'Open the board',
   cascadePlanSectionCards: 'Cards',
   cascadePlanSectionPages: 'Pages linked to this board',
