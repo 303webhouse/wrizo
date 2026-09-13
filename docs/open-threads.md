@@ -4395,6 +4395,68 @@ so nobody later re-derives it from scratch believing it was never considered.)*
 **Registered.** **All 80 files parse.** **The FIELD-CHANGED COMPARISON runs across the whole wave
 BEFORE the offer** — which is the migration-fidelity law made procedural: **field by field, every new
 call against the row it replaced, and before anyone is asked to review it.**
+## NICK'S Q4 RULING — THE ZONE, AND THE THUMBNAIL LAW — 2026-09-13
+
+**Nick, VERBATIM:**
+
+> Yes, group them together but section off Boards from Pages clearly and use a different thumbnail
+> (horizontal rectangles for Boards, vertical rectangles for Pages).
+
+**(1) ONE ZONE HOLDS BOTH, SECTIONED BY KIND, CLEARLY.**
+
+**(2) THE THUMBNAIL LAW — to canon, BESIDE THE ARRANGEMENT LAW:**
+
+> **BOARDS ARE WIDE, PAGES ARE TALL.** Every thumbnail of a board is a **horizontal rectangle**; every
+> thumbnail of a page a **vertical** one — **on every surface that shows one**: the linked zone, the
+> canvas, VW2's Shelf/Trash view, the Library later.
+
+*(It earns a place beside the arrangement law because it is the same KIND of rule: a claim about what
+a thing IS, expressed as something a writer can see without being told. The arrangement law says a
+surface you can reorder has become a board; the thumbnail law says a board LOOKS like one everywhere,
+so the writer never has to check.)*
+
+**FABLE-DERIVED WORDING, FLAGGED, STANDING UNTIL NICK VETOES:** the zone heading becomes **"Linked to
+this board"**, with section labels **"Pages"** and **"Boards"** — because **"Pages linked to this
+board" would be a FALSE SENTENCE over the Boards section.** *(A heading that is true of one section and
+false of the other is the canon-violation shape of 131 (a) in copy rather than in membership.)*
+
+**PW2 APPLIES IT IN S2 NOW; S4 MEASURES IT** — aspect asserted per kind, sections asserted separate.
+**PLAN DESK records the law and amends VW2's thumbnail clause to carry it.**
+
+## BAND — TWO LAW-LINES — 2026-09-13
+
+- **A LANE ON THE BOX SAYS SO ON ORIGIN; A TURN THAT PUSHES NOTHING READS AS NOT TAKEN.** (Fable.)
+  **FIX's turn WAS taken and completed** — 133 at 80/80 both legs, reveal-on-click at 81/81 both legs —
+  **and pushed nothing, so every instrument chat 1 had said "not started."** *(The measurement was
+  right about `origin` and wrong about the world. It is the exact inverse of `an offer is pushed or it
+  does not exist`: that law says unpushed work cannot be CLAIMED; this one says unpushed work cannot be
+  SEEN — and a desk reading origin will reallocate the box under a lane that is using it.)*
+- **A LOAD-BEARING FIELD IS NEVER REUSED FOR A SECOND MEANING.** (PW2 S3.) **`sourceEntryId` is
+  load-bearing for PORTED cards — double-click travels on it** — so a COPY gets **its own additive
+  optional field, `copiedFromBoardId`.** **One field, one relationship.** **PLAN DESK amends the
+  brief's "carry it on the built fields."** *(Reusing it would have made "where did this come from"
+  answer two different questions depending on how the card was made — and nothing would have failed
+  until a writer double-clicked a copy and travelled somewhere wrong.)*
+
+## ERRATA — ITEM 85 MIGRATED (`9a3cc1d`), AND A SIXTH UNDERCOUNT CAUGHT PRE-OFFER — 2026-09-13
+
+**Item 85 migrated. Population 2, BOTH LAWFUL.** **All 80 parse. 176 findings, NONE SILENCED. 13 files
+outside the comparison's reach STATED AS SUCH.**
+
+**THE SIXTH UNDERCOUNT: the field-changed comparison found TWELVE MORE source-omitted rows BEFORE the
+offer.** **47 → 56 · 15 → 17 · 13 → 15 · 9 → 11 · 33 → 38 · and now +12 pre-offer.** **The second
+caught before publication, and the first caught by an INSTRUMENT rather than by a reader.**
+
+**THAT IS THE ARC OF THE WHOLE FAMILY IN THREE STEPS: caught by EXECUTION after the claim (four times)
+→ caught by a BREAKDOWN before the claim (once) → caught by a PURPOSE-BUILT INSTRUMENT before the offer
+(now).** *(And "13 files outside the comparison's reach, stated as such" is the honest half: the
+instrument names where it cannot see, so its silence is bounded instead of being read as absence.)*
+
+## QUEUE AND BATCH TWO — 2026-09-13
+
+**QUEUE: TOOLS (on the box) → FIX's reveal pair (short) → ERRATA's wave 2 pair (long) → PW2 after
+S4.** **BATCH TWO ASSEMBLES AT: item 133 + item 137 + reveal-on-click + item 135.** **133 is MERGED**
+(`973e724`); **135 is merged**; 137 and reveal are owed.
 Registry: next free **138**.
 
 
