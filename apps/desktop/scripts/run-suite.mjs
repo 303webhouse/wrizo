@@ -57,6 +57,7 @@ import { spawn, spawnSync, execFileSync } from 'node:child_process';
 import { openSync, closeSync, readFileSync, statSync, mkdirSync, writeFileSync, appendFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { clockPair, gapSince } from './sleep-detect.mjs';
 import { fileURLToPath } from 'node:url';
 // ITEM 99 — the canonical dead-owner sweep. Imported, never re-implemented: the
 // runner used to carry its own copy of the enumerator, which is exactly the
@@ -321,6 +322,7 @@ function foreignNow() {
 
 const results = [];
 let abortedAt = null;
+let sleptAt = null;                       // ITEM 135 — the file the machine slept through
 for (let i = 0; i < files.length; i++) {
   const intruders = foreignNow();
   if (intruders.length > 0 && !IGNORE_FOREIGN) {
@@ -333,18 +335,40 @@ for (let i = 0; i < files.length; i++) {
     say('  whole in a quiet window — a sweep cannot be half-clean.');
     break;
   }
-  const t0 = Date.now();
+  // ITEM 135 — sample both clocks around every file. See scripts/sleep-detect.mjs.
+  const clocks = clockPair();
   const r = await runOne(files[i]);
-  const secs = Math.round((Date.now() - t0) / 1000);
+  const gap = gapSince(clocks);
+  const secs = Math.round((Date.now() - clocks.wall) / 1000);
+  r.slept = gap.slept;
+  r.lostMs = gap.lostMs;
   // HOUSE LAW: a stalled report is a report that does not exist. A file that
   // produced no VERIFY line did not test anything, whatever its exit code —
   // it is a MISSING verdict, never a passing one.
   const noVerdict = !r.verdicts.some((v) => /\bVERIFY\b[^\n]*:/.test(v));
-  const status = r.timedOut ? 'TIMEOUT' : noVerdict ? 'NOVERDICT' : (r.code === 0 && r.failed.length === 0) ? 'OK' : 'FAIL';
+  // ITEM 135 — SLEPT OUTRANKS EVERY OTHER STATUS, including a pass. A file the
+  // machine slept through was not measured: its timing assertions ran against a
+  // clock that jumped, so a green is as meaningless as a red and calling it OK
+  // would launder an unmeasured file into a clean sweep.
+  const status = r.slept ? 'SLEPT'
+    : r.timedOut ? 'TIMEOUT' : noVerdict ? 'NOVERDICT' : (r.code === 0 && r.failed.length === 0) ? 'OK' : 'FAIL';
   r.status = status;
   results.push(r);
   say(`[${String(i + 1).padStart(2, '0')}/${files.length}] ${status.padEnd(9)} exit=${r.code} ${String(secs).padStart(4)}s ${files[i]}`
+    + `${r.slept ? ` THE MACHINE SLEPT (${Math.round(r.lostMs / 1000)}s unaccounted)` : ''}`
     + `${r.sweptBrowsers.length ? ` swept=${r.sweptBrowsers.join(',')}` : ''} :: ${r.verdicts.join(' ;; ') || `(no verdict — see ${r.outFile})`}`);
+  // Stop at the first suspension rather than measuring the rest against a clock
+  // that has already jumped — the same reasoning as the mid-run foreign-browser
+  // abort directly above: a sweep cannot be half-clean.
+  if (r.slept) {
+    sleptAt = files[i];
+    say('');
+    say(`SUITE ABORTED at ${files[i]}: THE MACHINE SLEPT — ${Math.round(r.lostMs / 1000)}s of wall clock with no elapsed running time.`);
+    say('  Every timing assertion, waitFor budget and browser connection measured across that gap was');
+    say('  measured against a clock that jumped, so this run is VOID rather than red. Nothing here is');
+    say('  evidence about the code. Re-run it whole on a machine that stays awake.');
+    break;
+  }
 }
 
 const bad = results.filter((r) => r.status !== 'OK');
@@ -352,6 +376,12 @@ say('');
 say(`SUITE DONE HARNESS_PARKED=${PARKED ? '1' : 'unset'} — ${results.length - bad.length}/${results.length} of ${files.length} returned a passing verdict`
   + `${contaminated ? ' [CONTAMINATED: foreign browsers present at start]' : ''}`);
 for (const r of bad) say(`  ${r.status}: ${r.file} — full output at ${r.outFile}`);
-const clean = bad.length === 0 && !contaminated && !abortedAt && results.length === files.length;
-say(`SUITE RESULT: ${clean ? 'CLEAN' : abortedAt ? `VOID (aborted mid-run at ${abortedAt})` : bad.length === 0 ? 'PASS-BUT-CONTAMINATED' : 'NOT CLEAN'} — ${STAMP}`);
+const clean = bad.length === 0 && !contaminated && !abortedAt && !sleptAt && results.length === files.length;
+// ITEM 135 — a suspension reads VOID, and it is tested BEFORE `bad.length`, so a
+// slept run can never be reported as NOT CLEAN. Calling it red would blame the
+// code for the machine, which is the false accusation this ticket exists to stop.
+say(`SUITE RESULT: ${clean ? 'CLEAN'
+  : sleptAt ? `VOID (the machine slept during ${sleptAt})`
+    : abortedAt ? `VOID (aborted mid-run at ${abortedAt})`
+      : bad.length === 0 ? 'PASS-BUT-CONTAMINATED' : 'NOT CLEAN'} — ${STAMP}`);
 process.exit(clean ? 0 : 1);
