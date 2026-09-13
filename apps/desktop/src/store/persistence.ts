@@ -280,6 +280,26 @@ export function flushNow(): void {
   });
 }
 
+// ITEM 85-C / OBS-1 — EVERY MUTATING TEST SEAM FLUSHES, AND THIS IS THE ONE
+// PLACE THAT MAKES IT TRUE.
+//
+// A product write is debounced (`scheduleFlush`, 300ms). A fixture that writes
+// through a seam and then reloads discards the page — and the cache holding the
+// row — before the timer fires, so the write never reaches storage. That killed
+// 36 of 80 files on one stamped leg, every one reporting NOVERDICT.
+//
+// The fix was first applied only to the seams item 85-C added, which left the
+// three older ones (`wrizoPinPageToBoard`, `wrizoSetPinDisplayed`,
+// `wrizoSetPageHome`) carrying the same footgun and made "every seam flushes" a
+// claim rather than a fact. Hoisted here so it is true OF THE FILE, and enforced
+// by seed-guard.mjs so the next seam cannot quietly opt out.
+//
+// PRODUCT CODE IS UNTOUCHED: it calls these store functions DIRECTLY and keeps
+// its own debounced cadence. This makes the SEAM durable, not the store eager.
+function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
+  return (...args: A): R => { const out = fn(...args); flushNow(); return out; };
+}
+
 // Generic upsert: stamp updatedAt, replace-or-insert in the cache, mark dirty,
 // schedule a write, and notify subscribers.
 function upsert<T extends { id: string; updatedAt: string }>(
@@ -956,7 +976,7 @@ if (typeof window !== 'undefined') {
   // debounced cadence is untouched — this makes the SEAM durable, not the
   // store eager.
   (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage =
-    (seed?: JournalPageSeed) => { const entry = createJournalPage(seed); flushNow(); return entry; };
+    durableSeam(createJournalPage);
 }
 
 // Create a typed page inside a Binder (B1) — a JournalEntry parented to the
@@ -1230,7 +1250,7 @@ export function isPinDisplayed(boardEntryId: string, entryId: string): boolean {
 // established shape. The harness must be able to write a pin in the PRE-EXISTING
 // grandfathered shape (no flag at all) to prove absence still means displayed.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = setPinDisplayed;
+  (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = durableSeam(setPinDisplayed);
 }
 
 // FX6 S4 — test/inspection seam (this file's own established pattern —
@@ -1242,7 +1262,7 @@ if (typeof window !== 'undefined') {
 // call, bypassing the sheet entirely. Exposed unconditionally (module
 // load, not component-mount-scoped), the SAME shape wrizoDeskLexicon uses.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoPinPageToBoard?: unknown }).wrizoPinPageToBoard = pinPageToBoard;
+  (window as unknown as { wrizoPinPageToBoard?: unknown }).wrizoPinPageToBoard = durableSeam(pinPageToBoard);
 }
 
 // Every board (regardless of its own home) currently pinning `entryId` — the
@@ -1828,7 +1848,7 @@ export function setPageHome(pageId: string, target: string): PageHomeResult {
 // and the refusal would otherwise be unassertable from a harness. Never read by
 // app code.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoSetPageHome?: unknown }).wrizoSetPageHome = setPageHome;
+  (window as unknown as { wrizoSetPageHome?: unknown }).wrizoSetPageHome = durableSeam(setPageHome);
 }
 
 // B2 S4 — the inverse of pinPageToBoard: uncheck in the Places panel's
@@ -2455,12 +2475,12 @@ if (typeof window !== 'undefined') {
   seams.wrizoCreateBinder = (title: string, kind: Project['kind'], drawerId?: string,
     type: Project['type'] = 'creative') => durable(createBinder(title, kind, drawerId, type));
 
-  seams.wrizoPatchProject = (id: string, changes: Partial<Project>) => {
+  seams.wrizoPatchProject = durableSeam((id: string, changes: Partial<Project>) => {
     const project = getProject(id);
     if (!project) return null;
     saveProject({ ...project, ...changes });
-    return durable(getProject(id));
-  };
+    return getProject(id);
+  });
 
   // Authors the plan AND stamps `project.storyPlanId` — because
   // `createStoryPlan` already does both. The fixtures that set that field by

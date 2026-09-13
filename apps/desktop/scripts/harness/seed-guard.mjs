@@ -124,8 +124,10 @@ function scanDir(dir, keys) {
 //   57  item 85-C added item85c.mjs, whose raw write is the CONTROL that proves
 //       the hazard (annotated below).
 //   20  item 85-C WAVE 1 — 37 files migrated to the seams, 67 raw writes gone.
-//       18 unclassified remain (wave 2, each blocked on nothing now that the
-//       collection and mutation seams exist) plus the 2 annotated.
+//   14  item 85-C WAVE 2, in progress — 6 more migrated (the files needing no
+//       generated id). 12 unclassified remain plus the 2 annotated. The guard
+//       caught this update being owed: it went red on six stale entries while I
+//       was reading the worklist instead of the verdict.
 //
 // THIS LIST IS A RATCHET, NOT AN AMNESTY. A file NOT in it that writes raw is a
 // FAILURE — that is the guard. A file IN it that no longer writes raw is ALSO a
@@ -154,10 +156,8 @@ const BASELINE = new Set([
   'scripts/harness/ab3.mjs', 'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs',
   'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs',
   'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/e1.mjs',
-  'scripts/harness/fx10.mjs', 'scripts/harness/fx9.mjs', 'scripts/harness/item85c.mjs',
-  'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs', 'scripts/harness/m1.mjs',
-  'scripts/harness/m2.mjs', 'scripts/harness/m3.mjs', 'scripts/harness/m4.mjs',
-  'scripts/harness/tu1.mjs', 'scripts/harness/tu2.mjs',
+  'scripts/harness/fx9.mjs', 'scripts/harness/item85c.mjs', 'scripts/harness/j6.mjs',
+  'scripts/harness/m1.mjs', 'scripts/harness/tu1.mjs',
 ]);
 
 // --- run ---------------------------------------------------------------------
@@ -332,6 +332,65 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     JSON.stringify({ newOffenders: newOffenders.length, stale: stale.length }));
 }
 
+// --- EVERY MUTATING SEAM FLUSHES ---------------------------------------------
+// OBS-1 (Batch One review): item 85-C made its OWN seams durable and left the
+// three older ones — wrizoPinPageToBoard, wrizoSetPinDisplayed, wrizoSetPageHome
+// — carrying the footgun the durability was added to remove. One class, three
+// instances, and "every seam flushes" was a claim about some of the file.
+//
+// A debounced seam write that a fixture reloads past is a row that never
+// existed, and it presents as a file that dies reporting nothing: 36 of 80 on
+// one stamped leg. Nothing static could see it, which is why the rule is worth a
+// check rather than a comment — the next seam added would inherit the same
+// silence, and the person adding it has no reason to know.
+//
+// THE RULE: any seam whose name carries a MUTATING VERB (Create/Patch/Set/Pin)
+// must route through `durableSeam(` or `durable(`. Read-only seams are exempt by
+// name (wrizoBoard, wrizoNotebook, wrizoResume and friends inspect, they do not
+// write), and wrizoFlushNow is exempt because it IS the flush.
+{
+  const src = readFileSync(PERSISTENCE, 'utf8');
+  const lines = src.split(/\r?\n/);
+  const undurable = [];
+  let seamCount = 0;
+  lines.forEach((line, i) => {
+    const m = line.match(/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/);
+    if (!m) return;
+    const name = `wrizo${m[1]}${m[2]}`;
+    if (name === 'wrizoFlushNow') return;
+    // skip prose: a comment quoting an assignment is not one
+    if (/^\s*(\/\/|\*)/.test(line)) return;
+    seamCount += 1;
+    // the assignment's value may wrap; four lines covers every form in this file
+    const window = lines.slice(i, i + 4).join('\n');
+    if (!/durableSeam\(|durable\(/.test(window)) undurable.push(`${name} (line ${i + 1})`);
+  });
+  ok(`85-C/OBS-1: all ${seamCount} MUTATING test seams route through durableSeam/durable — a seam that does not flush hands every fixture a debounced write it will reload past, which cost 36 of 80 files on a stamped leg and is invisible to every other static check`,
+    undurable.length === 0, JSON.stringify({ seams: seamCount, undurable }));
+  ok('85-C/OBS-1: and the rule is worth checking because it was already broken once — three older seams were left unwrapped when the newer ones gained durability, so this asserts a property of the FILE rather than of the block someone happened to be editing',
+    seamCount >= 9, JSON.stringify({ seams: seamCount }));
+
+  // Self-proof: the check must actually reject an unwrapped mutating seam, and
+  // must not reject a read-only one or the flush itself.
+  const fixture = (text) => {
+    const bad = [];
+    text.split('\n').forEach((line, i) => {
+      const m = line.match(/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/);
+      if (!m) return;
+      const name = `wrizo${m[1]}${m[2]}`;
+      if (name === 'wrizoFlushNow') return;
+      if (/^\s*(\/\/|\*)/.test(line)) return;
+      if (!/durableSeam\(|durable\(/.test(text.split('\n').slice(i, i + 4).join('\n'))) bad.push(name);
+    });
+    return bad;
+  };
+  ok('85-C/OBS-1 self-proof: an unwrapped mutating seam IS caught — the exact shape the three older seams had',
+    JSON.stringify(fixture('  w.wrizoSetPageHome = setPageHome;')) === '["wrizoSetPageHome"]',
+    JSON.stringify(fixture('  w.wrizoSetPageHome = setPageHome;')));
+  ok('85-C/OBS-1 self-proof (the control): a WRAPPED seam, a read-only seam, and wrizoFlushNow are all clean — so the check is not one that reds on every seam it sees',
+    fixture('  w.wrizoSetPageHome = durableSeam(setPageHome);\n  w.wrizoNotebook = () => list();\n  w.wrizoFlushNow = () => flushNow();').length === 0,
+    JSON.stringify(fixture('  w.wrizoSetPageHome = durableSeam(setPageHome);\n  w.wrizoNotebook = () => list();\n  w.wrizoFlushNow = () => flushNow();')));
+}
 // --- THE SEAM CALL SITES ARE WELL FORMED -------------------------------------
 // ADDED BY ITEM 85-C, because the migration produced a defect neither existing
 // gate could see. Transforming `entries.push(...${JSON.stringify(rows)})` — a
