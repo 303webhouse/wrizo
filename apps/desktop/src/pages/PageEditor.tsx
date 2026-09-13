@@ -560,6 +560,18 @@ function PageEditorView({ id }: { id: string }) {
     onToggleStar: unborn ? undefined : toggleStar,
     onAddTag: unborn ? undefined : addTag,
     onRemoveTag: unborn ? undefined : removeTag,
+    // ITEM 133 (A) — the name is reachable, and reaching it lands the caret at
+    // the END of the first line: the writer arrives where they would type to
+    // change the title, not at character zero where a keystroke would push the
+    // name rightwards. Guarded on the editor actually being mounted, so the
+    // gesture is offered only when there is a caret to place.
+    onReachName: () => {
+      const el = editorRef.current;
+      if (!el) return;
+      el.focus();
+      const firstLineEnd = (textRef.current.split('\n')[0] ?? '').length;
+      setCaretOffset(el, firstLineEnd);
+    },
     onOpenPortToBoard: withBirth(() => setPortOpen(true)),
     onOpenPin: withBirth(() => setPinOpen(true)),
   };

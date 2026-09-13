@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { boardName } from '../store/entryText';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsPinning, generateId, createLooseHomePage, pinPageToBoard,
@@ -1803,7 +1804,23 @@ export function BoardEditor({ id }: { id: string }) {
   // a page with no project and no natural "up" — the exact same reasoning
   // PageEditor.tsx's own backTo already applies to a loose-origin page.
   const backTo = project ? `/project/${project.id}` : isSystemBoard ? '/' : '/journal';
-  const title = initialEntry.text.trim() ? initialEntry.text.trim() : 'Untitled';
+  // ITEM 133 — one derivation (store/entryText.ts's boardName), not this file's
+  // own third reading of the same field.
+  const title = boardName(initialEntry.text);
+  // ITEM 133 — commit through the EXISTING store path. `patchJournalEntry`
+  // takes the current text and the changes, so the rename is an ordinary edit
+  // of an ordinary field; nothing here is a naming-specific pipe.
+  const commitRename = () => {
+    const next = nameDraft.trim();
+    setRenaming(false);
+    if (!next) return;                       // empty reverts: the old name stands
+    const live = getJournalEntry(id);
+    if (!live || next === boardName(live.text)) return;
+    patchJournalEntry(id, next, {});
+  };
+
+  const [renaming, setRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
 
   // AB4 S3 / FX4 S4 — connection and board-meta boxes are never positioned
   // cards: filtered out of the positioned-card render loop (they never
@@ -2456,7 +2473,37 @@ export function BoardEditor({ id }: { id: string }) {
           <div className="sprint-crumb" aria-label="Location" style={{ marginRight: 'auto' }}>
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-            <span className="crumb-here">{title}</span>
+            {/* ITEM 133 — THE NAME IS EDITED WHERE IT IS DISPLAYED. Nick could not
+                name a board because a board's name was written once at birth and
+                no surface could reach it again. This is that surface: the name in
+                the board's own crumb, clicked.
+                Enter or blur COMMITS, Escape REVERTS, and an empty name reverts to
+                the previous one — a board is never left nameless by a stray click,
+                and "clear it to rename it" is not a thing a writer should have to
+                discover. Zero schema: `board.text` is a pure label, so writing it
+                IS the rename, through the same patchJournalEntry every other edit
+                uses. */}
+            {renaming ? (
+              <input
+                className="crumb-here crumb-rename"
+                value={nameDraft}
+                autoFocus
+                aria-label={t('boardRenameLabel')}
+                onChange={ev => setNameDraft(ev.target.value)}
+                onKeyDown={ev => {
+                  if (ev.key === 'Enter') { ev.preventDefault(); commitRename(); }
+                  else if (ev.key === 'Escape') { ev.preventDefault(); setRenaming(false); }
+                }}
+                onBlur={commitRename}
+              />
+            ) : (
+              <button
+                type="button"
+                className="crumb-here crumb-rename-btn"
+                title={t('boardRenameLabel')}
+                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text) === 'Untitled board' ? '' : boardName(getJournalEntry(id)?.text)); setRenaming(true); }}
+              >{title}</button>
+            )}
           </div>
           {boardModeBar}
           <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 0 }}>

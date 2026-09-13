@@ -9,6 +9,28 @@ export function firstLine(text: string): string {
   return line || 'Untitled';
 }
 
+// ITEM 133 — THE BOARD'S NAME, derived in ONE place.
+//
+// A board's `text` is not prose. `createBoardPage` sets it once, at birth, from
+// the optional title it is given, and until this ticket NOTHING in the app ever
+// wrote it again — which is why every board born through the untitled doors was
+// called "Untitled board" for life. That is the founder's report: boards cannot
+// be named.
+//
+// WHY A HELPER RATHER THAN A FOURTH COPY. The same name was being derived three
+// different ways at three sites: BoardEditor took the WHOLE trimmed text with a
+// fallback of "Untitled"; Cascade took `firstLine(...).slice(0, 60)` with a
+// fallback of "Untitled board"; CascadePanels split on the newline itself with
+// its own 60-cap. Three readings of one field, disagreeing about truncation AND
+// about what an unnamed board is called — so a board could answer to two names
+// on two surfaces. The rename this ticket adds would have made that visible
+// immediately, since a writer renaming a board watches one label change. This
+// is the single source; the full 30-site sweep belongs to its own ticket.
+export function boardName(text: string | undefined): string {
+  const first = (text ?? '').split('\n').map(l => l.trim()).find(Boolean);
+  return first ? first.slice(0, 60) : 'Untitled board';
+}
+
 // A single-line preview: collapse whitespace and truncate with an ellipsis.
 export function snippet(text: string, max = 140): string {
   const flat = text.replace(/\s+/g, ' ').trim();
