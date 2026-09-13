@@ -136,9 +136,7 @@ const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before TU1 seed' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ${JSON.stringify(rows)}.forEach((r) => window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null, source: 'source' in r ? r.source : null }));
   })()`);
 };
 
@@ -146,9 +144,14 @@ const seedStoryPlans = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before TU1 story-plan seed' });
   await app.evalJs(`(() => {
-    const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
-    plans.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-story-plans', JSON.stringify(plans));
+    // ITEM 85-C — each plan through createStoryPlan, which derives beatNotes and
+    // currentBeatId from the beat ids it is given. Taking them from the row's own
+    // beatNotes reproduces this fixture's plan EXACTLY: one empty-status note for
+    // BEAT_ID and currentBeatId BEAT_ID. The plan id becomes generated; nothing
+    // here referenced it. createStoryPlan also stamps project.storyPlanId, which
+    // the raw push did not — a plan the project points back to, which is what the
+    // UI produces.
+    ${JSON.stringify(rows)}.forEach((p) => window.wrizoCreateStoryPlan(p.projectId, p.frameworkId, (p.beatNotes || []).map((b) => b.beatId)));
   })()`);
 };
 
@@ -362,10 +365,7 @@ await withHarness(async (app) => {
   // — the Plan-jump UI itself is a later brief, per JournalEntry's own type
   // comment; this ticket only reads the field).
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = entries.find(x => x.id === ${JSON.stringify(filedPageId)});
-    if (e) e.beatId = ${JSON.stringify(BEAT_ID)};
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoPatchEntry(${JSON.stringify(filedPageId)}, { beatId: ${JSON.stringify(BEAT_ID)} });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(filedPageId)}`);
@@ -414,10 +414,7 @@ await withHarness(async (app) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the frag-host tag stamp' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = entries.find(x => x.id === ${JSON.stringify(fragHostId)});
-    if (e) e.tags = ['gilded'];
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoPatchEntry(${JSON.stringify(fragHostId)}, { tags: ['gilded'] });
   })()`);
   const t2 = new Date().toISOString();
   await seedEntries(app, [
@@ -491,10 +488,7 @@ await withHarness(async (app) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the structural-walk fixture seed' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = entries.find(x => x.id === ${JSON.stringify(walkHostId)});
-    if (e) e.tags = ['walk-fixture'];
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoPatchEntry(${JSON.stringify(walkHostId)}, { tags: ['walk-fixture'] });
   })()`);
   const walkNow = new Date().toISOString();
   await seedEntries(app, [
@@ -511,10 +505,7 @@ await withHarness(async (app) => {
   // navigates away before the message is read, so there's no unmount-flush
   // to race against.
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = entries.find(x => x.id === ${JSON.stringify(walkHostId)});
-    if (e) e.tutor = { messages: [{ id: 'm1', role: 'writer', text: 'hello', at: new Date().toISOString() }] };
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoPatchEntry(${JSON.stringify(walkHostId)}, { tutor: { messages: [{ id: 'm1', role: 'writer', text: 'hello', at: new Date().toISOString() }] } });
   })()`);
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
   await sleep(150);
