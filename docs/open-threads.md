@@ -4282,6 +4282,65 @@ which is a different status from a founder ruling and is marked as such.)*
 ## BATCH TWO — UNCHANGED — 2026-09-13
 
 **Assembling at FIX's two offers + item 137.** Carries **item 135** so far.
+## PW2 — THE FORK RULED: A-AS-CAPTION — 2026-09-13
+
+**The drawer is NAMED AT THE HEAD of BOARDS CONNECTED — a CAPTION, not a row.** **A door only when the
+drawer surface exists**; **the successor is recorded AT THE CAPTION.**
+
+*(A row implies a destination. Until the drawer surface exists there is nowhere to go, and a row that
+goes nowhere is the dead affordance item 133 just ruled against — present, inert, and teaching the
+writer the control does not work. A caption states the fact without promising a door.)*
+
+## BAND — THREE LAW-LINES — 2026-09-13
+
+- **A GUARD IS CORRECT AT THE DEPTH IT WAS WRITTEN AND BLIND ONE STEP OVER — SYMMETRY OF APPEARANCE,
+  ASYMMETRY OF QUESTION.** (chat 1.) **Three instances in one week:** the **self-pin guard** (stops
+  A-in-A, blind to A-in-B-in-A); **FX3's height fix** (fixed the stage, blind to the strip with the
+  identical dependency); and **`pinPageToBoard`'s pair** (source asks SYSTEM-ness, target asks
+  BOARD-ness, four lines apart and looking like a matched pair). **The tell is always that the guards
+  LOOK symmetrical** — which is why reading them side by side is not enough; **you have to read the
+  QUESTION each one asks.**
+- **A CENSUS IS A CLAIM ABOUT AN INSTRUMENT BEFORE IT IS A CLAIM ABOUT A TREE.** (TOOLS, VW1 — **its 33
+  was the REGEX, not the tree.**) Every count in this arc has been a statement about what the scanner
+  could see, wearing the grammar of a statement about the codebase.
+- **A DECISION-COMPLETE COUNT CARRIES ITS BREAKDOWN — A BARE NUMBER CANNOT LOCALISE A DISAGREEMENT.**
+  (The practice that made VW1's miscount recoverable.) **Two bare totals that disagree tell you only
+  THAT they disagree; two broken-down counts tell you WHERE.**
+
+## THE UNDERCOUNT TABLE — A FIFTH INSTANCE, AND THE FIRST CAUGHT BEFORE PUBLICATION — 2026-09-13
+
+**47 → 56 · 15 → 17 · 13 → 15 · 9 → 11 · and now 33 → 38.**
+
+**THE FIFTH IS DIFFERENT IN THE ONLY WAY THAT MATTERS: IT WAS CAUGHT BEFORE REPORT**, because **the
+brief carried its breakdown — `[0]×9` — rather than a bare total.** **The first of the family corrected
+PRE-PUBLICATION.** *(Four were caught by execution AFTER a number had been published and acted on; this
+one never became a claim. The breakdown is what moved the catch earlier in the pipeline — which is the
+whole argument for the third law-line above.)*
+
+**CONSEQUENCE ON RECORD FOR VW1: BOTH INDEX FORMS — SPREAD AND DIRECT — ARE CONVERSION TARGETS, AND
+CHECK 7's GREP MATCHES BOTH.** *(The miscount was not a slip; it was the scan seeing one form. Fixing
+the number without widening the guard would have left the second form free to rot back.)*
+
+## VW2 — THE PLAN DESK'S AMENDMENT, WITH ITS REASONING — 2026-09-13
+
+**THE SHELF INHERITS THE BOOK'S SPINE; THE TRASH CARRIES THE ONLY CLOCK IT HAS.** **One view looks
+INTO the book, the other at WHAT FELL OUT OF IT.** *(That sentence is the whole justification for two
+different orderings on surfaces Nick ruled should share one view: the view is shared, the SPINE is
+not, because the Shelf's members were written and the Trash's were discarded — and only one of those
+events is a writing act.)*
+
+**SV3's ORIGINAL LEFT VERBATIM.** **Check 5 SPLIT against a fixture ordered oppositely — so
+harmonising the two would go RED.** *(Recorded because it is the immutability law doing real work: the
+split preserves a check that would be destroyed by making the two surfaces agree, and the red it would
+throw is the evidence that they genuinely differ.)*
+
+## ERRATA — 8 → 6 AT `92e957e`, AND A STANDING SWEEP — 2026-09-13
+
+**Registered.** **`node --check` sweep of ALL 80 after each batch** — **browserless, so it costs no box
+time and cannot itself flake.** *(It is the `static gates see text, not meaning` law used for exactly
+what static gates ARE good for: a corrupted file is a TEXT fault, and text is what `--check` can see.
+The sweep closes the one failure mode a migration can produce that a behavioural suite might never
+reach — a file that no longer parses.)*
 Registry: next free **138**.
 
 
