@@ -4208,6 +4208,80 @@ a batch Nick can WALK as one thing rather than a list of unrelated repairs.
 **ERRATA's wave 2 and PW2's S1 ride BATCH THREE if their pairs run long.** **DO NOT HOLD A READY BATCH
 FOR A LONG QUEUE** — the batch order exists to save windows, not to maximise batch size, and a ready
 batch held for a slow one spends the saving it was meant to make.
+## NAMING RULE — "VW" RESOLVES TWO WAYS (TOOLS' catch) — 2026-09-13
+
+**TO THE REGISTRY:**
+- **"VW" NUMBERED — VW1–VW4 — IS THE VIEWS ARC.** Files: `docs/menus/vwN-*-build-brief.md`.
+- **"VW" BARE IS THE VOICE WALL.** File: `docs/vw-voice-wall-brief.md`.
+- **FROM HERE, EVERY RELAY NAMES THE PATH, NEVER THE NICKNAME.**
+
+**BAND — A NAME THAT RESOLVES TO THE WRONG DOCUMENT IS A LANDMINE.** **It does not fail; it delivers
+the wrong thing confidently**, and a builder handed the wrong brief builds correctly to the wrong
+specification. **The path is the only identifier that cannot resolve twice** — which is the same
+reasoning as *an offer is pushed or it does not exist* (branch + tip SHA + stamps) and *a guard asks
+what the id resolves to, not what the ruling calls it*. **Three laws now, all saying: identify by the
+thing, not by the label for it.**
+
+## THE FOUR-UNDERCOUNT PATTERN — REGISTERED AS THE EVIDENCE — 2026-09-13
+
+**Registered behind "invert the default, prove the exception."** **47 → 56 · 15 → 17 · 13 → 15 ·
+9 → 11.** **Four corrections, four UPWARD, every original a SCAN and every correction an EXECUTION.**
+**Zero overcounts in the whole arc.** *(A scan reports what it recognises and is silent about the rest,
+and silence reads as absence — so a scan-derived census is biased low BY CONSTRUCTION, not by accident.
+That is why the fix is structural: flag everything, justify each exemption.)*
+
+## BAND — A FIELD IS CARRIED AS IT IS: NULL IS THE FACT OF ABSENCE, NEVER A DEFAULT (ERRATA) — 2026-09-13
+
+**The second face of the presence law.** The first face (item 85-C): **a seam that materialises a
+DEFAULT where the raw row had ABSENCE has changed what the row is.** The second (fx9): **a NULL
+asserted over a PRESENT field is the same capture defect arrived at backwards** — absence invented
+where a value existed, instead of a value invented where absence existed.
+
+**Both directions destroy the same thing: the distinction between "no value" and "this value."** **A
+field is carried AS IT IS.**
+
+## PW2 — S1 BUILT — 2026-09-13
+
+**ONE WALKER over the real graph — DAG, `seen` set — so it is READ SAFETY, not merely write refusal.**
+*(The distinction matters: a write guard stops new cycles; a safe walker survives the ones already
+constructible today. PW2's own S0 measured A-in-B-in-A as reachable on this build, so read safety is
+not belt-and-braces — it is the half that covers what already exists.)*
+
+**ONE PREDICATE CARRYING THREE LAWS.** **Its one-fetch refactor inside the guard is ACCEPTED — named,
+and behaviour-identical.** **12 checks owed. Turn when S1–S4 are done.**
+
+## THE TARGET GAP IS LIVE ON THIS BUILD — 2026-09-13
+
+**PLAN DESK's finding, registered — and confirmed independently by chat 1 at the lines.** In
+`pinPageToBoard`:
+
+- **SOURCE:** `if (getSystemKind(getJournalEntry(entryId))) return null;` — a system board **cannot be
+  pinned.**
+- **TARGET:** `if (!board || board.pageType !== 'board') return null;` — **only "is it a board at
+  all."**
+
+**A CONDITION BOARD *IS* `pageType: 'board'`, SO IT PASSES.** **`getSystemKind` is never applied to the
+target.** **A page can be pinned INTO the Shelf or the Trash.**
+
+**UNREACHABLE BY ANY BUTTON — so it is latent, like the cycle.** **131 (a)'s FAMILY: a condition board
+treated as an ordinary place because the guard asked the wrong question.** **S1 CLOSES IT.**
+
+*(Note the symmetry that made it invisible: the source check and the target check sit FOUR LINES APART,
+and one of them asks about SYSTEM-NESS while the other asks about BOARD-NESS. Two guards that look like
+a matched pair and are not.)*
+
+## VW2 S0(c) — RULED BY FABLE, FLAGGED FOR NICK'S VETO — 2026-09-13
+
+**NO `shelvedAt` EXISTS AND NONE IS ADDED.** **The Shelf orders by DAY WRITTEN — the Journal's own
+spine.** **The Trash orders by `deletedAt`, which EXISTS.** **ZERO SCHEMA.** **PLAN DESK amends VW2 to
+carry it.**
+
+*(Recorded as RULED-AND-FLAGGED, not as settled: it is Fable's ruling standing until Nick vetoes,
+which is a different status from a founder ruling and is marked as such.)*
+
+## BATCH TWO — UNCHANGED — 2026-09-13
+
+**Assembling at FIX's two offers + item 137.** Carries **item 135** so far.
 Registry: next free **138**.
 
 
