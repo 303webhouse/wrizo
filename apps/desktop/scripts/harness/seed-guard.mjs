@@ -175,9 +175,8 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/b1.mjs', 'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs',
-  'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/fx9.mjs',
-  'scripts/harness/item85c.mjs', 'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs',
+  'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs', 'scripts/harness/bm1.mjs',
+  'scripts/harness/cd2.mjs', 'scripts/harness/item85c.mjs', 'scripts/harness/j6.mjs',
   'scripts/harness/m1.mjs', 'scripts/harness/tu1.mjs',
 ]);
 

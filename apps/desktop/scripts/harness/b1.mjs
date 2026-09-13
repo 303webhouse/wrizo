@@ -241,12 +241,13 @@ await withHarness(async (app) => {
   // immediately so persistence.ts re-hydrates from it before anything else
   // reads or (worse) re-saves over it.
   await app.evalJs(`(() => {
-    const key = 'writer-studio-journal-entries';
-    const list = JSON.parse(localStorage.getItem(key));
-    const board = list.find(e => e.id === ${JSON.stringify(journalBoardIdS2)});
-    const box = board.boxes.find(b => b.entryId === ${JSON.stringify(siblingId)});
-    box.x = 0.71; box.y = 0.42; box.w = 0.19; box.h = 0.15;
-    localStorage.setItem(key, JSON.stringify(list));
+    // ITEM 85-C — reading storage is lawful; only the WRITE had to move. One
+    // box's geometry changes, so the whole boxes array is patched through the
+    // seam rather than mutated in place behind the app's back.
+    const board = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(e => e.id === ${JSON.stringify(journalBoardIdS2)});
+    const boxes = board.boxes.map((b) => (b.entryId === ${JSON.stringify(siblingId)}
+      ? { ...b, x: 0.71, y: 0.42, w: 0.19, h: 0.15 } : b));
+    window.wrizoPatchEntry(${JSON.stringify(journalBoardIdS2)}, { boxes });
   })()`);
   await app.reload();
 
@@ -271,11 +272,10 @@ await withHarness(async (app) => {
   // second, real-UI exercise of an actually-clickable existing delete path
   // (the Plan panel's own board delete) follows in the A18 section below.
   await app.evalJs(`(() => {
-    const key = 'writer-studio-journal-entries';
-    const list = JSON.parse(localStorage.getItem(key));
-    const e = list.find(x => x.id === ${JSON.stringify(captureId)});
-    e.deletedAt = new Date().toISOString();
-    localStorage.setItem(key, JSON.stringify(list));
+    // ITEM 85-C — the SAME deletedAt stamp softDeleteEntry itself would write,
+    // now set through the seam. The point of the fixture is unchanged: reconcile
+    // is proven against stored truth whichever door produced it.
+    window.wrizoPatchEntry(${JSON.stringify(captureId)}, { deletedAt: new Date().toISOString() });
   })()`);
   await app.reload(); // re-hydrate persistence.ts's in-memory cache from the direct write
 
@@ -706,12 +706,10 @@ if (process.env.HARNESS_PARKED === '1') {
     // needs a system Board's own Page face reachable — not a real
     // find-or-create round trip, already proven live above).
     await app.evalJs(`(() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key));
-      const board = list.find(e => e.id === 'b1-parked-system-probe');
-      board.origin = 'system';
-      board.boxes = [{ id: 'meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'trash' }];
-      localStorage.setItem(key, JSON.stringify(list));
+      window.wrizoPatchEntry('b1-parked-system-probe', {
+        origin: 'system',
+        boxes: [{ id: 'meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'trash' }],
+      });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/page/b1-parked-system-probe'");
@@ -751,12 +749,10 @@ if (process.env.HARNESS_PARKED === '1') {
     // 'journal', the ternary's ELSE branch in BoardEditor.tsx).
     await freshBoard(app, 'b1-parked-journal-probe', [], LAPTOP_W, 900);
     await app.evalJs(`(() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key));
-      const board = list.find(e => e.id === 'b1-parked-journal-probe');
-      board.origin = 'system';
-      board.boxes = [{ id: 'meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'journal' }];
-      localStorage.setItem(key, JSON.stringify(list));
+      window.wrizoPatchEntry('b1-parked-journal-probe', {
+        origin: 'system',
+        boxes: [{ id: 'meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, systemKind: 'journal' }],
+      });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/page/b1-parked-journal-probe'");

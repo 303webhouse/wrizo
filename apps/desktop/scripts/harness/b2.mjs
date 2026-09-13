@@ -202,11 +202,7 @@ await withHarness(async (app) => {
   // the NEXT reconcile — the T3 disqualifier is genuinely dynamic, not a
   // one-time snapshot.
   await app.evalJs(`(() => {
-    const key = 'writer-studio-journal-entries';
-    const list = JSON.parse(localStorage.getItem(key));
-    const board = list.find(e => e.id === 'b2-t3-userboard');
-    board.boxes = [];
-    localStorage.setItem(key, JSON.stringify(list));
+    window.wrizoPatchEntry('b2-t3-userboard', { boxes: [] });
   })()`);
   await app.reload();
   const shelfBoxesAfterUnpin = await shelfBoardBoxes(app);
@@ -225,12 +221,12 @@ await withHarness(async (app) => {
     JSON.stringify({ boxesRunOne, boxesRunTwo }));
 
   await app.evalJs(`(() => {
-    const key = 'writer-studio-journal-entries';
-    const list = JSON.parse(localStorage.getItem(key));
-    const board = list.find(e => e.id === ${JSON.stringify(shelfIdT3)});
-    const box = board.boxes.find(b => b.entryId === 'b2-t3-qualifies');
-    box.x = 0.61; box.y = 0.33; box.w = 0.18; box.h = 0.14;
-    localStorage.setItem(key, JSON.stringify(list));
+    // Reading storage is lawful; the write goes through the seam. One box's
+    // geometry changes, so the whole array is patched.
+    const board = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(e => e.id === ${JSON.stringify(shelfIdT3)});
+    const boxes = board.boxes.map((b) => (b.entryId === 'b2-t3-qualifies'
+      ? { ...b, x: 0.61, y: 0.33, w: 0.18, h: 0.14 } : b));
+    window.wrizoPatchEntry(${JSON.stringify(shelfIdT3)}, { boxes });
   })()`);
   await app.reload();
   const boxesAfterAuthor = await shelfBoardBoxes(app);

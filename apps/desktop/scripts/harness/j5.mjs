@@ -204,11 +204,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the star/tag patch' });
   await app.evalJs(`
     (() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key));
-      const b = list.find(e => e.id === ${JSON.stringify(B.id)});
-      b.starred = true; b.tags = ['research'];
-      localStorage.setItem(key, JSON.stringify(list));
+      window.wrizoPatchEntry(${JSON.stringify(B.id)}, { starred: true, tags: ['research'] });
     })()
   `);
   // A direct localStorage write doesn't update the app's already-hydrated
@@ -624,15 +620,12 @@ await withHarness(async (app) => {
   const boardId = 'seed-board-' + Date.now();
   await app.evalJs(`
     (() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key));
       const now = new Date().toISOString();
-      list.push({
+      window.wrizoCreateJournalPage({
         id: ${JSON.stringify(boardId)}, text: 'Seed Board', projectId: ${JSON.stringify(standaloneBinder.id)},
-        pageType: 'board', source: 'page', createdAt: now, updatedAt: now,
+        pageType: 'board', createdAt: now, origin: null,
         boxes: [{ id: 'seed-box', kind: 'text', x: 0.05, y: 0.1, w: 0.6, h: 0.2, z: 1, text: 'existing content' }],
       });
-      localStorage.setItem(key, JSON.stringify(list));
     })()
   `);
   await app.reload();
