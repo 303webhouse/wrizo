@@ -175,8 +175,7 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/b2.mjs', 'scripts/harness/bm1.mjs', 'scripts/harness/item85c.mjs',
-  'scripts/harness/m1.mjs',
+  'scripts/harness/bm1.mjs', 'scripts/harness/item85c.mjs',
 ]);
 
 // --- run ---------------------------------------------------------------------
@@ -479,7 +478,57 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
 //     ever asked.
 // Four files carried it. So the migration's own instrument gains the check its
 // absence cost, and it is cheap: a brace-matched parse of every call site.
-const CALL_RE = /wrizoCreateJournalPage\(\s*\{/g;
+// EVERY seam that takes an object literal, not just the first one. wrizoPatchEntry
+// and wrizoPatchProject carry the same risk and were outside this check until the
+// migration put 25 of them in the tree.
+//
+// THE OBJECT IS FOUND BY SCANNING, NOT BY REGEX, and that is a correction: the
+// first attempt used `\(\s*(?:[^,()]*,\s*)?\{`, which cannot cross the parens in
+// `wrizoPatchEntry(${JSON.stringify(id)}, { ... })` — the shape most patch sites
+// actually use. The check LOOKED extended while covering none of them, and the
+// site count never moved, which is the only reason I noticed. An instrument that
+// silently covers less than it claims is the failure this whole item keeps
+// finding, and it does not stop being that when the instrument is mine.
+const SEAM_NAMES = /wrizo(?:CreateJournalPage|PatchEntry|PatchProject)\(/g;
+
+// Given the index just past a seam call's `(`, return the index of the object
+// literal's opening brace — the first `{` encountered at paren depth 1 — or -1.
+function objectArgAt(text, afterParen) {
+  let depth = 1, inStr = null;
+  for (let i = afterParen; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) { if (c === BACKSLASH) { i += 1; continue; } if (c === inStr) inStr = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    // A TEMPLATE INTERPOLATION'S BRACE IS NOT AN OBJECT LITERAL. Without this,
+    // `wrizoPatchEntry(${JSON.stringify(id)}, { boxes })` hands back the `{` of
+    // `${`, and the scanner then parses `JSON.stringify(id)` as a malformed
+    // entry — 20-odd false positives. This is the SAME `${` trap that made my
+    // transformer eat a `$` and emit invalid code; it bites a reader of the text
+    // exactly as readily as a writer of it.
+    if (c === '$' && text[i + 1] === '{') {
+      const end = matchBrace(text, i + 1);
+      if (end < 0) return -1;
+      i = end;
+      continue;
+    }
+    if (c === '(' || c === '[') depth += 1;
+    else if (c === ')' || c === ']') { depth -= 1; if (depth === 0) return -1; }
+    else if (c === '{' && depth === 1) return i;
+  }
+  return -1;
+}
+
+// AN UNQUOTED STRING VALUE IS A BARE IDENTIFIER, AND IT THROWS IN THE BROWSER.
+// My own transformer emitted `wrizoCreateProject('T3 Project', creative)` — the
+// type's captured value re-emitted without its quotes. `creative` is then an
+// undefined identifier, and because the text lives inside an app.evalJs template
+// literal, `node --check` sees a STRING and passes. It would have thrown at run
+// time, where a harness that dies reports nothing at all.
+//
+// The check is deliberately a CLOSED LIST of values that must always be quoted —
+// the project types, binder kinds and beat statuses — so it cannot false-positive
+// on a legitimate variable that happens to be passed along.
+const UNQUOTED_VALUES = /wrizo\w+\([^)]*?[,(]\s*(creative|academic|professional|book|story|screenplay|other|empty|complete|journal|project|loose|system|page)\s*[,)]/g;
 
 function matchBrace(text, open) {
   let depth = 0, inStr = null;
@@ -507,12 +556,22 @@ function topLevelEntries(body) {
   return parts.map((p) => p.trim()).filter(Boolean);
 }
 
+function countCallSites(text) {
+  let n = 0; let m;
+  SEAM_NAMES.lastIndex = 0;
+  while ((m = SEAM_NAMES.exec(text)) !== null) {
+    if (objectArgAt(text, m.index + m[0].length) >= 0) n += 1;
+  }
+  return n;
+}
+
 function malformedCallSites(text, label) {
   const out = [];
   let m;
-  CALL_RE.lastIndex = 0;
-  while ((m = CALL_RE.exec(text)) !== null) {
-    const open = text.indexOf('{', m.index);
+  SEAM_NAMES.lastIndex = 0;
+  while ((m = SEAM_NAMES.exec(text)) !== null) {
+    const open = objectArgAt(text, m.index + m[0].length);
+    if (open < 0) continue;   // no object argument at this call (e.g. a bare id)
     const close = matchBrace(text, open);
     if (close < 0) { out.push(`${label}: unbalanced object literal`); continue; }
     for (const p of topLevelEntries(text.slice(open + 1, close))) {
@@ -543,13 +602,33 @@ function malformedCallSites(text, label) {
       const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
       if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
       const text = readFileSync(path.join(dir, name), 'utf8');
-      CALL_RE.lastIndex = 0;
-      siteCount += (text.match(/wrizoCreateJournalPage\(\s*\{/g) || []).length;
+      siteCount += countCallSites(text);
       malformed.push(...malformedCallSites(text, rel));
     }
   }
   ok(`85-C: all ${siteCount} seam call sites are well-formed object literals — the one defect class that passes BOTH node --check (the text is a string inside a template literal) and the raw-write scan above, and then throws in the browser where a dying driver reports nothing`,
     malformed.length === 0, JSON.stringify({ sites: siteCount, malformed }));
+
+  // The other half of the same class: a string VALUE emitted without its quotes.
+  const unquoted = [];
+  for (const dir of [path.join(DESKTOP, 'scripts', 'harness'), path.join(DESKTOP, 'scripts')]) {
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.mjs')) continue;
+      const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
+      if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
+      const text = readFileSync(path.join(dir, name), 'utf8');
+      UNQUOTED_VALUES.lastIndex = 0;
+      let um;
+      while ((um = UNQUOTED_VALUES.exec(text)) !== null) unquoted.push(`${rel}: ${um[1]} (unquoted)`);
+    }
+  }
+  ok('85-C: no seam call passes a string VALUE as a bare identifier — my own transformer emitted wrizoCreateProject(title, creative), which node --check cannot see (the text is a string inside a template literal) and which throws ReferenceError in the browser, where the file dies reporting nothing',
+    unquoted.length === 0, JSON.stringify({ unquoted }));
+  ok('85-C self-proof: the bare-identifier shape IS caught, and its quoted form is NOT — a closed list of always-quoted values, so a legitimate variable passed along cannot trip it',
+    /wrizo\w+\([^)]*?[,(]\s*(creative)\s*[,)]/.test("window.wrizoCreateProject('T', creative)")
+    && !/wrizo\w+\([^)]*?[,(]\s*(creative|academic)\s*[,)]/.test("window.wrizoCreateProject('T', 'creative')")
+    && !/wrizo\w+\([^)]*?[,(]\s*(creative|academic)\s*[,)]/.test("window.wrizoCreateProject('T', kind)"), '');
 
   // Self-proof, because a shape check that never sees a bad shape is the
   // decoration this file keeps arguing against. The first fixture is the exact

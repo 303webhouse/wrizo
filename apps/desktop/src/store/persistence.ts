@@ -2488,6 +2488,19 @@ if (typeof window !== 'undefined') {
   seams.wrizoCreateStoryPlan = (projectId: string, frameworkId: string, beatIds: string[]) =>
     durable(createStoryPlan(projectId, frameworkId, beatIds));
 
+  // ITEM 85-C — createStoryPlan always makes the FIRST beat current, and m1's
+  // fixtures need a LATER one (their whole subject is a plan whose current beat
+  // is not the opening one). The store already has setCurrentBeat, so this is a
+  // wrapper over an existing path like every other seam here — not new capability.
+  seams.wrizoSetCurrentBeat = (planId: string, beatId: string) =>
+    durable(setCurrentBeat(planId, beatId));
+
+  // Same reason: createStoryPlan makes every beat 'empty', and m1's fixtures need
+  // one COMPLETE (a plan with progress behind its current beat). setBeatStatus is
+  // the store's own path for it.
+  seams.wrizoSetBeatStatus = (planId: string, beatId: string, status: BeatNote['status']) =>
+    durable(setBeatStatus(planId, beatId, status));
+
   seams.wrizoCreateDrawer = (name: string) => durable(createDrawer(name));
 
   seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) =>
