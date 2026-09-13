@@ -92,6 +92,22 @@ function rawWritesIn(text, keys) {
       const re = new RegExp(`localStorage\\.(setItem|removeItem)\\(\\s*['"\`]${key}['"\`]`);
       if (re.test(line)) hits.push({ line: i + 1, key, op: line.includes('removeItem') ? 'removeItem' : 'setItem' });
     }
+    // A VARIABLE KEY IS STILL A RAW WRITE, and this scan was blind to it until
+    // wave 2 tripped over it:
+    //     const key = 'writer-studio-journal-entries';
+    //     localStorage.setItem(key, JSON.stringify(list));
+    // Eight such writes sat in three files, two of which had already dropped off
+    // the migration worklist — counted as DONE while still writing a collection
+    // raw. The population this guard exists to defend was therefore understated,
+    // in the flattering direction, which is the worst kind: nobody audits a
+    // number that looks better than expected.
+    //
+    // Counted as a hit on the FILE rather than on a named collection, because
+    // the key is not readable here — which is precisely why it must be reported
+    // rather than resolved. Any `setItem` whose first argument is an identifier
+    // qualifies; no honest fixture has a reason to hide a key from this scan.
+    const varKey = line.match(/localStorage\.(setItem|removeItem)\(\s*([A-Za-z_$][\w$]*)\s*,/);
+    if (varKey) hits.push({ line: i + 1, key: `<variable: ${varKey[2]}>`, op: varKey[1] });
   });
   return hits;
 }
@@ -125,9 +141,15 @@ function scanDir(dir, keys) {
 //       the hazard (annotated below).
 //   20  item 85-C WAVE 1 — 37 files migrated to the seams, 67 raw writes gone.
 //   14  item 85-C WAVE 2, in progress — 6 more migrated (the files needing no
-//       generated id). 12 unclassified remain plus the 2 annotated. The guard
-//       caught this update being owed: it went red on six stale entries while I
-//       was reading the worklist instead of the verdict.
+//       generated id). The guard caught this update being owed: it went red on
+//       six stale entries while I was reading the worklist instead of the
+//       verdict line.
+//   11  WAVE 2 continued — 5 more migrated (ab3, ab4, b1's literal writes, b3,
+//       e1), AND the count CORRECTED UPWARD: this scan was blind to a write
+//       through a VARIABLE key, so b1 and j5 had dropped off the worklist while
+//       still writing collections raw. Eight such writes in three files. The
+//       number had been understated in the flattering direction — the kind
+//       nobody audits. 9 unclassified remain plus the 2 annotated.
 //
 // THIS LIST IS A RATCHET, NOT AN AMNESTY. A file NOT in it that writes raw is a
 // FAILURE — that is the guard. A file IN it that no longer writes raw is ALSO a
@@ -153,10 +175,9 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/ab3.mjs', 'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs',
-  'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs',
-  'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/e1.mjs',
-  'scripts/harness/fx9.mjs', 'scripts/harness/item85c.mjs', 'scripts/harness/j6.mjs',
+  'scripts/harness/b1.mjs', 'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs',
+  'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/fx9.mjs',
+  'scripts/harness/item85c.mjs', 'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs',
   'scripts/harness/m1.mjs', 'scripts/harness/tu1.mjs',
 ]);
 
@@ -332,6 +353,57 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     JSON.stringify({ newOffenders: newOffenders.length, stale: stale.length }));
 }
 
+// --- NO COLLECTION WRITE THROUGH A VARIABLE KEY ------------------------------
+// A BLIND SPOT IN THIS GUARD, found by wave 2 rather than by the guard.
+//
+// Every check above matches `localStorage.setItem('writer-studio-...'` with a
+// LITERAL key. This shape is invisible to all of them:
+//
+//     const key = 'writer-studio-journal-entries';
+//     localStorage.setItem(key, JSON.stringify(list));
+//
+// Eight such writes exist across three files. Two of those files had already
+// dropped off the migration worklist — counted as done — while still writing a
+// persisted collection raw. The population figure this guard exists to defend
+// was therefore WRONG, and wrong in the flattering direction, which is the worst
+// kind: a guard that under-reports is trusted exactly as much as one that does
+// not, and nobody goes looking.
+//
+// THE FIX INVERTS THE DEFAULT. Rather than hunting the shapes a raw write can
+// take, this flags EVERY `localStorage.setItem` whose key is not a literal, and
+// demands the key be readable. A seed can then only hide by using a key this
+// guard cannot see at all, which no honest fixture has a reason to do.
+{
+  const varKeyWrites = [];
+  for (const dir of [path.join(DESKTOP, 'scripts', 'harness'), path.join(DESKTOP, 'scripts')]) {
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.mjs')) continue;
+      const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
+      if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
+      const text = readFileSync(path.join(dir, name), 'utf8');
+      text.split(/\r?\n/).forEach((line, i) => {
+        // a non-literal first argument: setItem(ident, ...) or setItem(expr, ...)
+        const m = line.match(/localStorage\.setItem\(\s*([A-Za-z_$][\w$]*)\s*,/);
+        if (!m) return;
+        varKeyWrites.push(`${rel}:${i + 1} key=${m[1]}`);
+      });
+    }
+  }
+  // Reported, not asserted: the MAIN scan now counts these as raw writes, so
+  // the population and the ratchet already fail on them. A second failing
+  // check for the same write would report one defect twice, which is how a
+  // guard teaches people to skim it.
+  ok(`85-C (reported): ${varKeyWrites.length} collection writes use a VARIABLE key — the shape this file was blind to until wave 2 tripped over it. Counted in the population by the main scan above; listed here so the sites are named`,
+    true, JSON.stringify({ count: varKeyWrites.length, sites: varKeyWrites }));
+
+  // Self-proof, because a check for an invisible shape must be shown to see it.
+  const fixture = (text) => text.split('\n').filter((l) => /localStorage\.setItem\(\s*[A-Za-z_$][\w$]*\s*,/.test(l)).length;
+  ok('85-C self-proof: the variable-key shape IS caught — this is the exact text found in b1/b2/j5',
+    fixture("    const key = 'writer-studio-journal-entries';\n    localStorage.setItem(key, JSON.stringify(list));") === 1, '');
+  ok('85-C self-proof (the control): a LITERAL key is not flagged by this check — it is the business of the checks above, and double-reporting one write as two findings is how a guard teaches people to skim it',
+    fixture("localStorage.setItem('writer-studio-drafts', '[]');\nlocalStorage.clear();") === 0, '');
+}
 // --- EVERY MUTATING SEAM FLUSHES ---------------------------------------------
 // OBS-1 (Batch One review): item 85-C made its OWN seams durable and left the
 // three older ones — wrizoPinPageToBoard, wrizoSetPinDisplayed, wrizoSetPageHome

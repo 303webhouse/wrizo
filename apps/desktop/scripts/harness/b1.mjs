@@ -47,9 +47,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'B1 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'B1 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -152,12 +150,9 @@ await withHarness(async (app) => {
   // must never contain "Journal"/"Trash" as a destination.
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b1-pin-project', title: 'Pin Sheet Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b1-pin-page', text: 'Pin sheet probe', projectId: 'b1-pin-project', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    // ITEM 85-C — the generated project id is used only to home the page below.
+    const project = window.wrizoCreateProject('Pin Sheet Project');
+    window.wrizoCreateJournalPage({ id: 'b1-pin-page', text: 'Pin sheet probe', projectId: project.id, pageType: 'manuscript', origin: 'project', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b1-pin-page'");
@@ -411,9 +406,7 @@ await withHarness(async (app) => {
   // regardless of which OTHER real board it's aimed at.
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b1-pin-target-board', text: 'A genuine other board', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'b1-pin-target-board', text: 'A genuine other board', pageType: 'board', boxes: [], createdAt: now, origin: null });
   })()`);
   await app.reload(); // re-hydrate persistence.ts's cache — pinPageToBoard reads getJournalEntry, not raw localStorage
   await app.evalJs(`location.hash = '#/page/${journalBoardIdS2}'`);
