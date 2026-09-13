@@ -4341,6 +4341,60 @@ time and cannot itself flake.** *(It is the `static gates see text, not meaning`
 what static gates ARE good for: a corrupted file is a TEXT fault, and text is what `--check` can see.
 The sweep closes the one failure mode a migration can produce that a behavioural suite might never
 reach — a file that no longer parses.)*
+## BAND — THE BOX IS HELD BY A RUNNING SUITE, NOT BY AN ANNOUNCEMENT — 2026-09-13
+
+**An announced turn NOT BEGUN yields to a lane that is READY.** **Re-announce the yielded turn when
+that lane asks for it.**
+
+**THE CASE THAT EARNED IT:** FIX's turn was announced at the Batch One stamp and **never started** —
+no `133`/reveal/naming branch reached `origin` at all — while **TOOLS sat ready at `cd37c03`, already
+merged onto `main`.** **An announcement is a grant, not a lock**, and a grant nobody has acted on
+should not idle a free box.
+
+*(Note what this does NOT loosen: the turn still comes BY ANNOUNCEMENT, never by quiet — a ready lane
+asks and is granted, it does not simply take. The rule decides WHO may be granted a free box, not
+whether a grant is needed.)*
+
+## BATCH TWO FORMS AROUND WHAT IS OFFERED — 2026-09-13
+
+**If ERRATA's wave 2 and PW2's S1 are ready first, THEY are Batch Two, and FIX/TOOLS ride Batch
+Three.** **A batch is composed of what exists, never of what was expected** — the corollary of *do not
+hold a ready batch for a long queue*.
+
+## PW2 S3 — RULED (reading A): ITEM 123's TAGS CLAUSE HAS NO REFERENT TODAY — 2026-09-13
+
+**FINDING REGISTERED AND CONFIRMED INDEPENDENTLY BY CHAT 1 AT THE TYPES: CARDS HAVE NO `tags` FIELD.**
+`tags` exists on **`Framework`** and on **`JournalEntry`** (pages) — **`Box`, the card type, carries
+none** (`kind: 'text' | 'ink' | 'page-pin' | 'connection' | 'board-meta'`).
+
+**SO ITEM 123's "TAGS COME WITH IT" HAS NO REFERENT.** **RULED:**
+- **The tray ships ONLY THE TRUE CLAUSE:** *"Its threads do not come with it, and edits do not follow."*
+- **The TAGS clause is DEFERRED ON THE RECORD, with C4 (tags) as its SUCCESSOR — NOT DROPPED.**
+- **Check 5 asserts THREADS-ABSENT ONLY; its tags half is RECORDED AS OWED.**
+
+**Nick is informed and MAY ORDER CARD TAGS BUILT AS A NEW ITEM.**
+
+*(This is the immutability discipline applied to a SPEC rather than a check: the clause was ruled, it
+turned out to have no referent, and it is parked with a named successor instead of quietly deleted —
+so nobody later re-derives it from scratch believing it was never considered.)*
+
+## BAND — TWO TRANSFORMER LAWS (ERRATA) — 2026-09-13
+
+- **PRESENCE IS TESTED AGAINST THE ORIGINAL ROW, NEVER THE REMAINDER.** **A transformer that checks
+  what it has ALREADY CONSUMED is asking the wrong witness** — the remainder has been changed by the
+  very operation under test. *(The S2 premise finding in another costume: the state the conclusion
+  depends on must survive to the moment of measurement.)*
+- **AN EXEMPTION IS PROVEN BY REINSTATING THE DAMAGE IT MUST NOT HIDE.** **An exemption that has never
+  been shown to FAIL is indistinguishable from a hole.** The test is not "does the exempt case pass" —
+  it is **"put the damage back, and does the exemption still let it through?"** *(Sibling to
+  `seed-guard`'s falsification checks: an annotation on a file that no longer writes raw must FAIL, or
+  the exemption silently pre-authorises the next one.)*
+
+## ERRATA — 6 → 4 AT `9067879`; ALL 80 PARSE — 2026-09-13
+
+**Registered.** **All 80 files parse.** **The FIELD-CHANGED COMPARISON runs across the whole wave
+BEFORE the offer** — which is the migration-fidelity law made procedural: **field by field, every new
+call against the row it replaced, and before anyone is asked to review it.**
 Registry: next free **138**.
 
 
