@@ -10,7 +10,11 @@
 > **⚠ SYMBOLS ARE THE ANCHOR**, line numbers a courtesy. Verified at `9153ac6`.
 
 **RULING:** the FINAL pass §1, §3 (SV1–SV5), §4/TV1 · the **arrangement law, RATIFIED** by Nick
-2026-09-13 (*"And yes, ratified"*).
+2026-09-13 (*"And yes, ratified"*) · **S0(c)/S4 ruled 2026-09-13** (Fable).
+
+> **NAMING — for anyone writing in this arc.** Files keep the **numbered `vwN-` prefix**; prose
+> says **"the views arc"**. **Bare "VW" on this tree means the VOICE WALL**
+> (`docs/vw-voice-wall-brief.md`) — TOOLS nearly walked into the collision.
 **GATE:** brief 1 (the rail) need not have landed — these are different files. **When THIS brief
 is final, Fable opens the hard-delete persistence item** (brief 4's other half).
 
@@ -44,10 +48,11 @@ another, it has become a board.*
 (`CascadePanels.tsx:44/48/54`), and that `/page/:id` renders `BoardEditor` for a system board.
 **(b)** Confirm `reconcileSystemBoard` **builds its own boxes and never calls `pinPageToBoard`** —
 it is the index, and this brief leaves it alone.
-**(c)** Establish **the condition's own clock**: what field dates *shelved* and *deleted*.
-`deletedAt` exists. **If no `shelvedAt` exists, REPORT IT** — SV3 needs a date the condition
-began, and `updatedAt` is not it (a page edited yesterday did not become unfiled yesterday).
-**This is a real finding if it's missing; do not silently substitute `updatedAt`.**
+**(c) ~~Establish the condition's own clock~~ — RULED, 2026-09-13; no survey owed.** The
+question this brief raised is answered: **no `shelvedAt` exists in `src` and none is added.**
+Confirmed independently at branch tip — `shelved?: boolean` is a **flag, not a date**, so there
+is genuinely no record of *when* a page became unfiled. **See S4 for the order this rules.
+Zero schema.**
 **(d)** Park discipline: anything rewritten in place is parked with its original quoted verbatim;
 **audit the park COUNT** against this brief's claim.
 
@@ -86,11 +91,33 @@ leave it on its current path here.)*
 - **The posture control is an INSTRUMENT, not a door (G1)** → it lives **in the foot**, never in
   the strip. Per-view and remembered.
 
-## S4 · THE ORDER — the condition's own clock (SV3)
+## S4 · THE ORDER — RULED 2026-09-13, and the two differ on purpose (SV3, amended)
 
-**Shelf: when it became unfiled. Trash: when it was deleted. Newest first.** **Not `createdAt`** —
-that is the page's own date and belongs to the Journal. **Not `updatedAt`** — see S0(c). *A
-condition has exactly one honest date: when it began.*
+| view | orders by | field |
+|---|---|---|
+| **Shelf** | **day written** | `createdAt` — the book's own spine |
+| **Trash** | **when it was deleted**, newest first | `deletedAt` — exists today |
+
+**ZERO SCHEMA. No `shelvedAt` is added** (S0(c)).
+
+**SV3's original wording — *"a condition has exactly one honest date: when it began"* — is
+SUPERSEDED for the Shelf**, and left standing here rather than rewritten, because the reason it
+yielded is the useful part.
+
+**WHY THE TWO DIFFER, so no one later "harmonises" them into a bug.** Fable's ruling:
+*a condition is a lens over the book, and the book's spine is the day.*
+
+- **An unfiled page is still IN the book.** *Unfiled* is a **lens** over it — a way of looking at
+  pages that remain in the sequence. A lens does not get to reorder what it looks through, so the
+  Shelf **inherits the book's spine: day written.** *(This is (i) "Written" reaching a second
+  surface — the same reasoning, one view further out: recency is a condition, and a condition may
+  be a lens but never the binding.)*
+- **A deleted page has LEFT the book.** Deletion is an **event**, with its own date, and the
+  thing is no longer in the sequence to inherit an order from. So the Trash carries **its own
+  clock** — the only one it has.
+
+**The asymmetry is the model showing through, not an inconsistency.** *One of these views looks
+into the book; the other looks at what fell out of it.*
 
 ## S5 · THE TWO DIFFERENCES, AND ONLY TWO (SV4)
 
@@ -123,8 +150,10 @@ seams** · **absolute worktree path**.
    check the whole charter rests on: a condition that can be arranged has become a board.*
 3. **Page thumbnails are aspect-locked** — measure two at different scales, assert equal ratio.
 4. **A board renders as a board thumbnail**, badge reads `Board`.
-5. **Order is the condition's clock** — a fixture whose `createdAt` order deliberately differs
-   from its condition order; assert the condition order wins. *It cannot pass by accident.*
+5. **Order, both views, and they must be asserted SEPARATELY** — one fixture, `createdAt` order
+   deliberately opposite to `deletedAt` order. **Assert the Shelf follows `createdAt`** and
+   **the Trash follows `deletedAt`.** *A single shared assertion would pass while silently
+   harmonising the two, which is the exact mistake S4 exists to prevent.*
 6. **Hands: Shelf 2 grips, Trash 0** — asserted as a **count**, both mountings, one fixture.
 7. **Restore names its destination** — both cases, including the orphan (`goes Loose`), asserted
    **before** any press.
