@@ -1,5 +1,23 @@
 # ITEM 134 — THE VIEWS CHARTER · committee pass
-### PLAN desk · 2026-09-11 · design only · CANDIDATES + RECOMMENDATIONS. Nothing locks.
+### PLAN desk · 2026-09-11 · **FINAL — 2026-09-13, on Nick's five rulings**
+
+> **NICK'S RULINGS, VERBATIM** (relayed by Fable, 2026-09-13):
+> *"1. Written  2. Group  3. Show it  4. Keep it at the foot (although on my UI, the trash has
+> never been aligned at the bottom of the rail --- it's inline with the rest of the menu
+> options.  5. Accept. And yes, ratified."*
+>
+> **(i) Written · (ii) Group · Q-A Show it · Q-B Foot · Q-C Accept · the arrangement law
+> RATIFIED.** Every recommendation in this pass was taken as written. **Q-D closes on his
+> text.** The pass is **FINAL**; the four build briefs it feeds are named in §8.
+>
+> **HIS ASIDE IS A DEFECT, NOT A PREFERENCE — and it is now item 137 (TOOLS).** The Trash *is*
+> ruled to the foot and *is* coded to it (`.wz-strip-foot{margin-top:auto}`); it renders inline
+> because **`.desk-frame-strip` carries `min-height:70vh` and no `height`, so `.wz-strip`'s
+> `height:100%` cannot resolve and no-ops to auto** — the column shrinks to content and
+> `margin-top:auto` has no free space to consume. **The house already diagnosed this exact class
+> in FX3 S1** and fixed it for the paper, in its own words: *"a flex/grid `height:100%` further
+> down needs an explicit height somewhere above it to resolve against… silently no-ops back to
+> auto/intrinsic."* The strip has the same bug, unfixed. **The rail brief assumes 137's fix.**
 
 ---
 
@@ -75,6 +93,9 @@ not a rendering slip, but the ontology and the storage disagreeing, with the ont
 
 > **ARRANGEMENT IS THE SIGNATURE OF A CONTAINER. A CONDITION HAS NONE, BECAUSE NOBODY ARRANGED
 > IT — THE APP COMPUTED IT.**
+>
+> **RATIFIED — Nick, 2026-09-13: *“And yes, ratified.”*** *“Falsifiable on sight” is the standard
+> this house wants (Fable).*
 
 A board has **authored arrangement** (A16). Shelf membership is computed from "unfiled"; Trash
 from "deleted"; the Journal from date. **Therefore none of the three may offer positioning,
@@ -253,18 +274,31 @@ view in this charter is a membership list. **The sitting is the gate; the suite 
 
 ## §8 · RETURNED FOR NICK'S WORD
 
-**(i) Journal order** → **recommend DAY WRITTEN** (§2/JV4). Recency is a condition; a condition
-may be a lens but never the binding.
-**(ii) the rail** → **recommend grouping by the writer's question** (§5/RV1), separators doing
-the teaching. **Trash's slot handed up (Q-B).**
-**Q-A** — may a **count** appear inside a destructive confirmation? (§4/TV3.)
-**Q-B** — Trash at the foot (standing B1 S5) or with the conditions (canon kind)? *Lean: foot.*
-**Q-C** — **JV3**: the Spread retires and takes manual journal order with it. Accept (lean),
-re-home, or keep a lens?
-**Q-D** — **[needs his text]** the missing message. If it rules on any of the above, his wording
-governs and this pass amends to it.
+**(i) Journal order — RULED: *“Written.”*** Day written. Recency is a condition; a condition may
+be a lens but never the binding. (§2/JV4.)
+**(ii) the rail — RULED: *“Group.”*** Grouped by kind, separators doing the teaching, the writer
+never reading the words *surface / container / display*. **Trash at the foot** per Q-B. (§5/RV1.)
+**Q-A — RULED: *“Show it.”*** The clause stands as proposed: **a count is lawful inside a
+destructive confirmation and nowhere else.** The no-count law gains it; ambient chrome is
+unchanged. (§4/TV3.)
+**Q-B — RULED: *“Keep it at the foot.”*** B1 S5 stands; the canon's grouping governs the other
+five tabs. The lean was right and the aside that came with it is **item 137**. (§5/RV2.)
+**Q-C — RULED: *“Accept.”*** The Spread retires and manual re-ordering goes with it.
+**`setNotebookPosition` dies in the same commit that retires the Spread** — in the views build,
+not before — and the Q-C census is what makes deleting a zero-call-site writer safe to do
+knowingly. (§2/JV3; `item134-qc-orderindex-census.md`.)
+**Q-D — CLOSED.** His five arrived verbatim and are quoted at the head of this document. Every
+**[needs his text]** mark in this pass resolves against them; none is left open.
+
+**THE FOUR BUILD BRIEFS THIS PASS FEEDS — one subject each, in Fable's order:**
+**(1) THE RAIL** — grouping by kind, separators, Trash at the foot (assumes item 137's fix).
+**(2) SHELF / TRASH** — the shared view: flip + thumbnails on Q4's grammar; hands present on the
+Shelf, absent in Trash; Restore naming its destination.
+**(3) THE JOURNAL** — the flip; the Spread retires; `setNotebookPosition` in the same commit.
+**(4) EMPTY TRASH** — the confirm and its count. **The hard delete itself is a separate
+persistence item in Fable's scope, opened when (2)'s brief is final.**
 
 **MOCKUPS:** `item134-mock-journal-flip.html` · `item134-mock-shelf-thumbnail.html` ·
 `item134-mock-trash.html`.
 
-**Nothing locks. C5 (the shelf) in the cluster inherits this charter.** — the PLAN desk
+**THE PASS IS FINAL. C5 (the shelf) in the cluster inherits this charter.** — the PLAN desk
