@@ -4282,6 +4282,181 @@ which is a different status from a founder ruling and is marked as such.)*
 ## BATCH TWO — UNCHANGED — 2026-09-13
 
 **Assembling at FIX's two offers + item 137.** Carries **item 135** so far.
+## PW2 — THE FORK RULED: A-AS-CAPTION — 2026-09-13
+
+**The drawer is NAMED AT THE HEAD of BOARDS CONNECTED — a CAPTION, not a row.** **A door only when the
+drawer surface exists**; **the successor is recorded AT THE CAPTION.**
+
+*(A row implies a destination. Until the drawer surface exists there is nowhere to go, and a row that
+goes nowhere is the dead affordance item 133 just ruled against — present, inert, and teaching the
+writer the control does not work. A caption states the fact without promising a door.)*
+
+## BAND — THREE LAW-LINES — 2026-09-13
+
+- **A GUARD IS CORRECT AT THE DEPTH IT WAS WRITTEN AND BLIND ONE STEP OVER — SYMMETRY OF APPEARANCE,
+  ASYMMETRY OF QUESTION.** (chat 1.) **Three instances in one week:** the **self-pin guard** (stops
+  A-in-A, blind to A-in-B-in-A); **FX3's height fix** (fixed the stage, blind to the strip with the
+  identical dependency); and **`pinPageToBoard`'s pair** (source asks SYSTEM-ness, target asks
+  BOARD-ness, four lines apart and looking like a matched pair). **The tell is always that the guards
+  LOOK symmetrical** — which is why reading them side by side is not enough; **you have to read the
+  QUESTION each one asks.**
+- **A CENSUS IS A CLAIM ABOUT AN INSTRUMENT BEFORE IT IS A CLAIM ABOUT A TREE.** (TOOLS, VW1 — **its 33
+  was the REGEX, not the tree.**) Every count in this arc has been a statement about what the scanner
+  could see, wearing the grammar of a statement about the codebase.
+- **A DECISION-COMPLETE COUNT CARRIES ITS BREAKDOWN — A BARE NUMBER CANNOT LOCALISE A DISAGREEMENT.**
+  (The practice that made VW1's miscount recoverable.) **Two bare totals that disagree tell you only
+  THAT they disagree; two broken-down counts tell you WHERE.**
+
+## THE UNDERCOUNT TABLE — A FIFTH INSTANCE, AND THE FIRST CAUGHT BEFORE PUBLICATION — 2026-09-13
+
+**47 → 56 · 15 → 17 · 13 → 15 · 9 → 11 · and now 33 → 38.**
+
+**THE FIFTH IS DIFFERENT IN THE ONLY WAY THAT MATTERS: IT WAS CAUGHT BEFORE REPORT**, because **the
+brief carried its breakdown — `[0]×9` — rather than a bare total.** **The first of the family corrected
+PRE-PUBLICATION.** *(Four were caught by execution AFTER a number had been published and acted on; this
+one never became a claim. The breakdown is what moved the catch earlier in the pipeline — which is the
+whole argument for the third law-line above.)*
+
+**CONSEQUENCE ON RECORD FOR VW1: BOTH INDEX FORMS — SPREAD AND DIRECT — ARE CONVERSION TARGETS, AND
+CHECK 7's GREP MATCHES BOTH.** *(The miscount was not a slip; it was the scan seeing one form. Fixing
+the number without widening the guard would have left the second form free to rot back.)*
+
+## VW2 — THE PLAN DESK'S AMENDMENT, WITH ITS REASONING — 2026-09-13
+
+**THE SHELF INHERITS THE BOOK'S SPINE; THE TRASH CARRIES THE ONLY CLOCK IT HAS.** **One view looks
+INTO the book, the other at WHAT FELL OUT OF IT.** *(That sentence is the whole justification for two
+different orderings on surfaces Nick ruled should share one view: the view is shared, the SPINE is
+not, because the Shelf's members were written and the Trash's were discarded — and only one of those
+events is a writing act.)*
+
+**SV3's ORIGINAL LEFT VERBATIM.** **Check 5 SPLIT against a fixture ordered oppositely — so
+harmonising the two would go RED.** *(Recorded because it is the immutability law doing real work: the
+split preserves a check that would be destroyed by making the two surfaces agree, and the red it would
+throw is the evidence that they genuinely differ.)*
+
+## ERRATA — 8 → 6 AT `92e957e`, AND A STANDING SWEEP — 2026-09-13
+
+**Registered.** **`node --check` sweep of ALL 80 after each batch** — **browserless, so it costs no box
+time and cannot itself flake.** *(It is the `static gates see text, not meaning` law used for exactly
+what static gates ARE good for: a corrupted file is a TEXT fault, and text is what `--check` can see.
+The sweep closes the one failure mode a migration can produce that a behavioural suite might never
+reach — a file that no longer parses.)*
+## BAND — THE BOX IS HELD BY A RUNNING SUITE, NOT BY AN ANNOUNCEMENT — 2026-09-13
+
+**An announced turn NOT BEGUN yields to a lane that is READY.** **Re-announce the yielded turn when
+that lane asks for it.**
+
+**THE CASE THAT EARNED IT:** FIX's turn was announced at the Batch One stamp and **never started** —
+no `133`/reveal/naming branch reached `origin` at all — while **TOOLS sat ready at `cd37c03`, already
+merged onto `main`.** **An announcement is a grant, not a lock**, and a grant nobody has acted on
+should not idle a free box.
+
+*(Note what this does NOT loosen: the turn still comes BY ANNOUNCEMENT, never by quiet — a ready lane
+asks and is granted, it does not simply take. The rule decides WHO may be granted a free box, not
+whether a grant is needed.)*
+
+## BATCH TWO FORMS AROUND WHAT IS OFFERED — 2026-09-13
+
+**If ERRATA's wave 2 and PW2's S1 are ready first, THEY are Batch Two, and FIX/TOOLS ride Batch
+Three.** **A batch is composed of what exists, never of what was expected** — the corollary of *do not
+hold a ready batch for a long queue*.
+
+## PW2 S3 — RULED (reading A): ITEM 123's TAGS CLAUSE HAS NO REFERENT TODAY — 2026-09-13
+
+**FINDING REGISTERED AND CONFIRMED INDEPENDENTLY BY CHAT 1 AT THE TYPES: CARDS HAVE NO `tags` FIELD.**
+`tags` exists on **`Framework`** and on **`JournalEntry`** (pages) — **`Box`, the card type, carries
+none** (`kind: 'text' | 'ink' | 'page-pin' | 'connection' | 'board-meta'`).
+
+**SO ITEM 123's "TAGS COME WITH IT" HAS NO REFERENT.** **RULED:**
+- **The tray ships ONLY THE TRUE CLAUSE:** *"Its threads do not come with it, and edits do not follow."*
+- **The TAGS clause is DEFERRED ON THE RECORD, with C4 (tags) as its SUCCESSOR — NOT DROPPED.**
+- **Check 5 asserts THREADS-ABSENT ONLY; its tags half is RECORDED AS OWED.**
+
+**Nick is informed and MAY ORDER CARD TAGS BUILT AS A NEW ITEM.**
+
+*(This is the immutability discipline applied to a SPEC rather than a check: the clause was ruled, it
+turned out to have no referent, and it is parked with a named successor instead of quietly deleted —
+so nobody later re-derives it from scratch believing it was never considered.)*
+
+## BAND — TWO TRANSFORMER LAWS (ERRATA) — 2026-09-13
+
+- **PRESENCE IS TESTED AGAINST THE ORIGINAL ROW, NEVER THE REMAINDER.** **A transformer that checks
+  what it has ALREADY CONSUMED is asking the wrong witness** — the remainder has been changed by the
+  very operation under test. *(The S2 premise finding in another costume: the state the conclusion
+  depends on must survive to the moment of measurement.)*
+- **AN EXEMPTION IS PROVEN BY REINSTATING THE DAMAGE IT MUST NOT HIDE.** **An exemption that has never
+  been shown to FAIL is indistinguishable from a hole.** The test is not "does the exempt case pass" —
+  it is **"put the damage back, and does the exemption still let it through?"** *(Sibling to
+  `seed-guard`'s falsification checks: an annotation on a file that no longer writes raw must FAIL, or
+  the exemption silently pre-authorises the next one.)*
+
+## ERRATA — 6 → 4 AT `9067879`; ALL 80 PARSE — 2026-09-13
+
+**Registered.** **All 80 files parse.** **The FIELD-CHANGED COMPARISON runs across the whole wave
+BEFORE the offer** — which is the migration-fidelity law made procedural: **field by field, every new
+call against the row it replaced, and before anyone is asked to review it.**
+## NICK'S Q4 RULING — THE ZONE, AND THE THUMBNAIL LAW — 2026-09-13
+
+**Nick, VERBATIM:**
+
+> Yes, group them together but section off Boards from Pages clearly and use a different thumbnail
+> (horizontal rectangles for Boards, vertical rectangles for Pages).
+
+**(1) ONE ZONE HOLDS BOTH, SECTIONED BY KIND, CLEARLY.**
+
+**(2) THE THUMBNAIL LAW — to canon, BESIDE THE ARRANGEMENT LAW:**
+
+> **BOARDS ARE WIDE, PAGES ARE TALL.** Every thumbnail of a board is a **horizontal rectangle**; every
+> thumbnail of a page a **vertical** one — **on every surface that shows one**: the linked zone, the
+> canvas, VW2's Shelf/Trash view, the Library later.
+
+*(It earns a place beside the arrangement law because it is the same KIND of rule: a claim about what
+a thing IS, expressed as something a writer can see without being told. The arrangement law says a
+surface you can reorder has become a board; the thumbnail law says a board LOOKS like one everywhere,
+so the writer never has to check.)*
+
+**FABLE-DERIVED WORDING, FLAGGED, STANDING UNTIL NICK VETOES:** the zone heading becomes **"Linked to
+this board"**, with section labels **"Pages"** and **"Boards"** — because **"Pages linked to this
+board" would be a FALSE SENTENCE over the Boards section.** *(A heading that is true of one section and
+false of the other is the canon-violation shape of 131 (a) in copy rather than in membership.)*
+
+**PW2 APPLIES IT IN S2 NOW; S4 MEASURES IT** — aspect asserted per kind, sections asserted separate.
+**PLAN DESK records the law and amends VW2's thumbnail clause to carry it.**
+
+## BAND — TWO LAW-LINES — 2026-09-13
+
+- **A LANE ON THE BOX SAYS SO ON ORIGIN; A TURN THAT PUSHES NOTHING READS AS NOT TAKEN.** (Fable.)
+  **FIX's turn WAS taken and completed** — 133 at 80/80 both legs, reveal-on-click at 81/81 both legs —
+  **and pushed nothing, so every instrument chat 1 had said "not started."** *(The measurement was
+  right about `origin` and wrong about the world. It is the exact inverse of `an offer is pushed or it
+  does not exist`: that law says unpushed work cannot be CLAIMED; this one says unpushed work cannot be
+  SEEN — and a desk reading origin will reallocate the box under a lane that is using it.)*
+- **A LOAD-BEARING FIELD IS NEVER REUSED FOR A SECOND MEANING.** (PW2 S3.) **`sourceEntryId` is
+  load-bearing for PORTED cards — double-click travels on it** — so a COPY gets **its own additive
+  optional field, `copiedFromBoardId`.** **One field, one relationship.** **PLAN DESK amends the
+  brief's "carry it on the built fields."** *(Reusing it would have made "where did this come from"
+  answer two different questions depending on how the card was made — and nothing would have failed
+  until a writer double-clicked a copy and travelled somewhere wrong.)*
+
+## ERRATA — ITEM 85 MIGRATED (`9a3cc1d`), AND A SIXTH UNDERCOUNT CAUGHT PRE-OFFER — 2026-09-13
+
+**Item 85 migrated. Population 2, BOTH LAWFUL.** **All 80 parse. 176 findings, NONE SILENCED. 13 files
+outside the comparison's reach STATED AS SUCH.**
+
+**THE SIXTH UNDERCOUNT: the field-changed comparison found TWELVE MORE source-omitted rows BEFORE the
+offer.** **47 → 56 · 15 → 17 · 13 → 15 · 9 → 11 · 33 → 38 · and now +12 pre-offer.** **The second
+caught before publication, and the first caught by an INSTRUMENT rather than by a reader.**
+
+**THAT IS THE ARC OF THE WHOLE FAMILY IN THREE STEPS: caught by EXECUTION after the claim (four times)
+→ caught by a BREAKDOWN before the claim (once) → caught by a PURPOSE-BUILT INSTRUMENT before the offer
+(now).** *(And "13 files outside the comparison's reach, stated as such" is the honest half: the
+instrument names where it cannot see, so its silence is bounded instead of being read as absence.)*
+
+## QUEUE AND BATCH TWO — 2026-09-13
+
+**QUEUE: TOOLS (on the box) → FIX's reveal pair (short) → ERRATA's wave 2 pair (long) → PW2 after
+S4.** **BATCH TWO ASSEMBLES AT: item 133 + item 137 + reveal-on-click + item 135.** **133 is MERGED**
+(`973e724`); **135 is merged**; 137 and reveal are owed.
 Registry: next free **138**.
 
 

@@ -4481,6 +4481,17 @@ a:focus-visible,
    typeface's own metrics, and it composes with underline when a writer
    wraps a run in both. */
 .md-strike{ text-decoration:line-through; }
+
+/* ITEM 133 (A) — the page's name is reachable, and looks it. Inherits the
+   title's own type so the name does not become a control wearing a
+   button's clothes: it is the same words in the same place, that happen
+   to answer when reached. The underline appears only on hover/focus —
+   at rest the writer sees a title, which is what it is. */
+.wz-pageface-title-reach{ display:block; width:100%; text-align:inherit;
+  font:inherit; color:inherit; background:none; border:0; padding:0;
+  cursor:text; }
+.wz-pageface-title-reach:hover, .wz-pageface-title-reach:focus-visible{
+  text-decoration:underline; text-underline-offset:3px; }
 .md-underline.md-strike, .md-strike .md-underline{ text-decoration:underline line-through; }
 
 /* ITEM 122 — THE SELECTION IS BRASS, on Nick's ruling: orange is for humans
