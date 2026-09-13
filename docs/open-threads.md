@@ -4142,6 +4142,72 @@ the flip is what retires the Spread, so Q-C's deletion rides it and cannot prece
 Trash is last because it is the only irreversible one** — the single operation in this house with no
 undo, which is why it carries Fable review by its nature rather than by classification.
 
+## VW1 — THE RAIL — BUILD ORDER — 2026-09-13
+
+**BUILDER: TOOLS, AFTER ITEM 137. TWO COMMITS, as the brief hands up:**
+1. **Convert all 38 index selectors to named `data-category` selection — WITH NO REGROUP.** A green
+   pair then proves **the conversions and nothing else.**
+2. **THEN regroup.**
+**Check 7's static grep guards the conversion from rotting back to indices.**
+
+**THE SPLIT IS THE LAW ARRIVING BEFORE IT WAS WRITTEN DOWN.** Shipped together, a red could be either
+change and the bisect is a guess. **Apart, each commit has ONE explanation.** *(And the static grep is
+what makes the conversion permanent rather than momentary — a convention nobody can silently undo.)*
+
+## PW2 — THE TARGET CLAUSE RATIFIED, IN THE SIMPLE FORM — 2026-09-13
+
+**THE CONDITION WAS MEASURED, AND IT HOLDS: `reconcileSystemBoard` NEVER ROUTES THROUGH
+`pinPageToBoard`.** Confirmed independently by chat 1 — **two DISJOINT `page-pin` write sites** in
+`persistence.ts`: one inside `pinPageToBoard`, one inside `reconcileSystemBoard`, which builds its own
+pin and merely READS the existing ones. **So a target clause on the manual path cannot refuse the
+system board's own reconciliation** — which is exactly the risk that made the clause conditional.
+
+**THE FULL CLAUSE, RATIFIED:**
+
+> **A membership write admits only a SOURCE that resolves to a live, pinnable entry, AND a TARGET that
+> is a writer's board.**
+
+**PLAN DESK records it in the PW2 brief as its OWN CLAUSE COMMIT.** *(Source and target were always two
+questions — what may be pinned, and where — and the measurement is what let them be answered in one
+sentence instead of hedged into two.)*
+
+## ERRATA — THE POPULATION CORRECTION, 9 → 11 — 2026-09-13
+
+**Registered. The earlier figure erred in THE FLATTERING DIRECTION** — it reported less exposure than
+existed, which is the direction every count in this arc has erred: **47 → 56, 15 → 17, 13 → 15, and now
+9 → 11.** **Four corrections, four undercounts, zero overcounts.** **A census that only ever revises
+upward is not unlucky; it is systematically reading a subset and calling it the set.**
+
+## BAND — FIVE LAW-LINES — 2026-09-13
+
+- **A COMMENT EXPLAINING A HAZARD IS NOT A GUARD AGAINST IT.** (chat 1, item 137 — **the stylesheet
+  face of call-sites-over-comments.**) FX3 S1 documented the exact `height:100%` no-op **four lines
+  above the rule that still has it.** **The comment was read by everyone and enforced by nothing.**
+- **A COUNT THAT IMPROVES UNEXPECTEDLY IS A FINDING, NOT PROGRESS.** (ERRATA.) **A number moving the
+  pleasing way without a change that explains it means the MEASUREMENT moved, not the world.** The
+  instinct to accept good news unexamined is exactly the instinct the retry doctrine forbids about
+  greens.
+- **A SCAN THAT MATCHES A SHAPE IS BLIND TO EVERY OTHER — INVERT THE DEFAULT, PROVE THE EXCEPTION.**
+  (ERRATA.) **A pattern-based scan reports what it recognises and is silent about everything else**, so
+  its silence reads as absence. **Inverting it — flag everything, then justify each exemption — makes
+  the unrecognised case LOUD instead of invisible.** *(This is what `seed-guard.mjs` already does with
+  its reason strings, generalised into a rule.)*
+- **A HARNESS SELECTS BY NAME, NEVER BY INDEX — AN INDEX IS A TRAP THAT ARMS ON REORDER.** (PLAN DESK.)
+  **An index-selected element passes until someone reorders the list, then silently tests the wrong
+  thing** — it does not fail, it MISREPORTS. VW1's 38 conversions are this law being paid off.
+- **ONE COMMIT PER EXPLANATION — WHEN TWO CHANGES COULD EACH EXPLAIN A RED, THEY SHIP APART.** (PLAN
+  DESK.) **The cost of separating them is minutes; the cost of not is a bisect against your own
+  history.**
+
+## BATCH TWO — THE ASSEMBLY POINT — 2026-09-13
+
+**Fable's recommendation, adopted: assemble once FIX's two offers and item 137 land.** That makes a
+**coherent writer-facing batch — naming, reveal-on-click, the foot, and the sleep detector** — which is
+a batch Nick can WALK as one thing rather than a list of unrelated repairs.
+
+**ERRATA's wave 2 and PW2's S1 ride BATCH THREE if their pairs run long.** **DO NOT HOLD A READY BATCH
+FOR A LONG QUEUE** — the batch order exists to save windows, not to maximise batch size, and a ready
+batch held for a slow one spends the saving it was meant to make.
 Registry: next free **138**.
 
 
