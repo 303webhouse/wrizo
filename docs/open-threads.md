@@ -3972,6 +3972,15 @@ sites FIX censused.** **FIX's `boardName()` / `entryText.ts` single-sourcing is 
 which is the *one fact, one derivation* law arriving exactly where it was needed: thirty derivations
 are thirty places a name can disagree with itself.
 
+**✅ RESOLVED 2026-09-13 — NICK'S WORD: "my answer is 'No'."** **"Untitled" does NOT exist as a default
+name.** **Fable's reading was correct and chat 1's refusal to record it was still right**: an
+interpretation is not a ruling until the founder says so, and the day it spent flagged cost nothing
+while recording it wrongly would have cost a charter. **Also ruled: NEW BOARDS ARE BORN WITH THE NAME
+FIELD IN FOCUS** — Nick: *"I concur with your recommendation about having new boards open with the name
+field in focus"*. **ITEM 136's CHARTER IS ISSUED TO FIX** — schema addition, its own batch, Fable review
+scope.
+
+**SUPERSEDED MARKER, kept:**
 **⚠ FLAGGED, NOT RECORDED — THE LAST SENTENCE IS UNRESOLVED.** Fable reads it as **should NOT exist**;
 the sentence as written says **"probably should exist."** **Chat 1 records NEITHER reading as ruled.**
 **Nick's one word closes it next relay.** *(The verbatim text above stands regardless — the primary
@@ -4070,7 +4079,211 @@ refused by a target clause written carelessly — hence the condition.)*
 
 **PW2 ASKS FOR ITS STAMP TURN WHEN READY: queued AFTER FIX and ERRATA, a short pair at chat 1's
 discretion.**
-Registry: next free **137**.
+## ITEM 134 — NICK'S RULINGS, VERBATIM — 2026-09-13
+
+> 1. Written 2. Group 3. Show it 4. Keep it at the foot (although on my UI, the trash has never been
+> aligned at the bottom of the rail --- it's inline with the rest of the menu options. 5. Accept. And
+> yes, ratified. As for the "Untitled" question, my answer is "No" and I concur with your
+> recommendation about having new boards open with the name field in focus
+
+**RECORDED AS:**
+- **(i) JOURNAL ORDER = DAY WRITTEN.**
+- **(ii) THE RAIL IS GROUPED BY KIND, and the SEPARATORS TEACH** the grouping.
+- **(Q-A) THE NO-COUNT LAW GAINS THE DESK'S CLAUSE: a count is lawful INSIDE A DESTRUCTIVE
+  CONFIRMATION and NOWHERE ELSE.** *(The exception is narrow for a reason: a count shown at rest is a
+  number a writer must maintain; a count shown before an irreversible act is the only information that
+  makes the act decidable.)*
+- **(Q-B) TRASH AT THE FOOT.**
+- **(Q-C) MANUAL JOURNAL ORDER RETIRES WITH THE SPREAD, DELIBERATELY — `setNotebookPosition` dies IN
+  THAT COMMIT, in the views build.** Not before.
+- **THE ARRANGEMENT LAW IS RATIFIED: IF A WRITER CAN MOVE ONE THING RELATIVE TO ANOTHER, IT HAS BECOME
+  A BOARD.** *(It is a definition, not a preference — which is why manual order cannot survive in a
+  Journal that is not one.)*
+- **ITEM 134's Q-D CLOSES — HIS TEXT GOVERNS.**
+
+**NICK'S PARENTHESIS IS ITSELF A FINDING, not an aside:** *"on my UI, the trash has never been aligned
+at the bottom of the rail --- it's inline with the rest of the menu options."* **He ruled "keep it at
+the foot" AND reported that it is not at the foot.** → **item 137.**
+
+## ITEM 137 — TRASH AT THE FOOT (fix-class → TOOLS, Batch Two) — OPENS 2026-09-13
+
+**THE FOURTH FOUNDER-SITTING FINDING, after 118 (c), 130 and 131 (a)** — each found by a person using
+the product, each having passed everything automated.
+
+**FABLE'S READ AT THE BYTES, CONFIRMED BY CHAT 1 AT THE LINES:**
+- `.desk-frame-strip{ ... min-height:70vh; ... }` — **`min-height` ONLY; no definite `height`.**
+- `.wz-strip{ display:flex; flex-direction:column; height:100%; }`
+- `.wz-strip-foot{ margin-top:auto; }`
+
+**A PERCENTAGE HEIGHT CANNOT RESOLVE AGAINST A `min-height`.** So `height:100%` computes to `auto`,
+the flex column shrinks to its content, and **`margin-top:auto` has NO FREE SPACE to push into** — the
+foot sits inline. **"STATICALLY PINNED IS NOT MEASURED PINNED."**
+
+**AND THE HOUSE ALREADY KNEW — the warning sits FOUR LINES BELOW the broken rule**, from FX3 S1:
+
+> a flex/grid `height:100%` further down needs an explicit height somewhere above it to resolve
+> against — a naive `height:100%` on the paper alone, with nothing above it definite, silently no-ops
+> back to auto/intrinsic, which is exactly the bug this fixes
+
+**THE SAME SHAPE AS PW2's DEPTH-1 GUARD, ONE DAY APART: a lesson fixed WHERE IT WAS NOTICED and not
+generalised to the next chain that has it.** FX3 fixed the stage; the strip has the identical
+dependency and was never revisited. **A comment that explains a hazard is not a guard against it** —
+which is `comments describe intent; call sites are the evidence`, arriving from the CSS side.
+
+## THE VIEWS ARC — BUILD ORDER — 2026-09-13
+
+**Single-subject briefs from the PLAN DESK, in this order:**
+**1. THE RAIL (after item 137)** → **2. THE SHELF/TRASH VIEW** → **3. THE JOURNAL FLIP (retires the
+Spread — and `setNotebookPosition` dies in that commit)** → **4. EMPTY TRASH (persistence, FABLE
+SCOPE).**
+
+**The ordering is load-bearing, not administrative:** the rail must be right before views mount in it;
+the flip is what retires the Spread, so Q-C's deletion rides it and cannot precede it; and **Empty
+Trash is last because it is the only irreversible one** — the single operation in this house with no
+undo, which is why it carries Fable review by its nature rather than by classification.
+
+## VW1 — THE RAIL — BUILD ORDER — 2026-09-13
+
+**BUILDER: TOOLS, AFTER ITEM 137. TWO COMMITS, as the brief hands up:**
+1. **Convert all 38 index selectors to named `data-category` selection — WITH NO REGROUP.** A green
+   pair then proves **the conversions and nothing else.**
+2. **THEN regroup.**
+**Check 7's static grep guards the conversion from rotting back to indices.**
+
+**THE SPLIT IS THE LAW ARRIVING BEFORE IT WAS WRITTEN DOWN.** Shipped together, a red could be either
+change and the bisect is a guess. **Apart, each commit has ONE explanation.** *(And the static grep is
+what makes the conversion permanent rather than momentary — a convention nobody can silently undo.)*
+
+## PW2 — THE TARGET CLAUSE RATIFIED, IN THE SIMPLE FORM — 2026-09-13
+
+**THE CONDITION WAS MEASURED, AND IT HOLDS: `reconcileSystemBoard` NEVER ROUTES THROUGH
+`pinPageToBoard`.** Confirmed independently by chat 1 — **two DISJOINT `page-pin` write sites** in
+`persistence.ts`: one inside `pinPageToBoard`, one inside `reconcileSystemBoard`, which builds its own
+pin and merely READS the existing ones. **So a target clause on the manual path cannot refuse the
+system board's own reconciliation** — which is exactly the risk that made the clause conditional.
+
+**THE FULL CLAUSE, RATIFIED:**
+
+> **A membership write admits only a SOURCE that resolves to a live, pinnable entry, AND a TARGET that
+> is a writer's board.**
+
+**PLAN DESK records it in the PW2 brief as its OWN CLAUSE COMMIT.** *(Source and target were always two
+questions — what may be pinned, and where — and the measurement is what let them be answered in one
+sentence instead of hedged into two.)*
+
+## ERRATA — THE POPULATION CORRECTION, 9 → 11 — 2026-09-13
+
+**Registered. The earlier figure erred in THE FLATTERING DIRECTION** — it reported less exposure than
+existed, which is the direction every count in this arc has erred: **47 → 56, 15 → 17, 13 → 15, and now
+9 → 11.** **Four corrections, four undercounts, zero overcounts.** **A census that only ever revises
+upward is not unlucky; it is systematically reading a subset and calling it the set.**
+
+## BAND — FIVE LAW-LINES — 2026-09-13
+
+- **A COMMENT EXPLAINING A HAZARD IS NOT A GUARD AGAINST IT.** (chat 1, item 137 — **the stylesheet
+  face of call-sites-over-comments.**) FX3 S1 documented the exact `height:100%` no-op **four lines
+  above the rule that still has it.** **The comment was read by everyone and enforced by nothing.**
+- **A COUNT THAT IMPROVES UNEXPECTEDLY IS A FINDING, NOT PROGRESS.** (ERRATA.) **A number moving the
+  pleasing way without a change that explains it means the MEASUREMENT moved, not the world.** The
+  instinct to accept good news unexamined is exactly the instinct the retry doctrine forbids about
+  greens.
+- **A SCAN THAT MATCHES A SHAPE IS BLIND TO EVERY OTHER — INVERT THE DEFAULT, PROVE THE EXCEPTION.**
+  (ERRATA.) **A pattern-based scan reports what it recognises and is silent about everything else**, so
+  its silence reads as absence. **Inverting it — flag everything, then justify each exemption — makes
+  the unrecognised case LOUD instead of invisible.** *(This is what `seed-guard.mjs` already does with
+  its reason strings, generalised into a rule.)*
+- **A HARNESS SELECTS BY NAME, NEVER BY INDEX — AN INDEX IS A TRAP THAT ARMS ON REORDER.** (PLAN DESK.)
+  **An index-selected element passes until someone reorders the list, then silently tests the wrong
+  thing** — it does not fail, it MISREPORTS. VW1's 38 conversions are this law being paid off.
+- **ONE COMMIT PER EXPLANATION — WHEN TWO CHANGES COULD EACH EXPLAIN A RED, THEY SHIP APART.** (PLAN
+  DESK.) **The cost of separating them is minutes; the cost of not is a bisect against your own
+  history.**
+
+## BATCH TWO — THE ASSEMBLY POINT — 2026-09-13
+
+**Fable's recommendation, adopted: assemble once FIX's two offers and item 137 land.** That makes a
+**coherent writer-facing batch — naming, reveal-on-click, the foot, and the sleep detector** — which is
+a batch Nick can WALK as one thing rather than a list of unrelated repairs.
+
+**ERRATA's wave 2 and PW2's S1 ride BATCH THREE if their pairs run long.** **DO NOT HOLD A READY BATCH
+FOR A LONG QUEUE** — the batch order exists to save windows, not to maximise batch size, and a ready
+batch held for a slow one spends the saving it was meant to make.
+## NAMING RULE — "VW" RESOLVES TWO WAYS (TOOLS' catch) — 2026-09-13
+
+**TO THE REGISTRY:**
+- **"VW" NUMBERED — VW1–VW4 — IS THE VIEWS ARC.** Files: `docs/menus/vwN-*-build-brief.md`.
+- **"VW" BARE IS THE VOICE WALL.** File: `docs/vw-voice-wall-brief.md`.
+- **FROM HERE, EVERY RELAY NAMES THE PATH, NEVER THE NICKNAME.**
+
+**BAND — A NAME THAT RESOLVES TO THE WRONG DOCUMENT IS A LANDMINE.** **It does not fail; it delivers
+the wrong thing confidently**, and a builder handed the wrong brief builds correctly to the wrong
+specification. **The path is the only identifier that cannot resolve twice** — which is the same
+reasoning as *an offer is pushed or it does not exist* (branch + tip SHA + stamps) and *a guard asks
+what the id resolves to, not what the ruling calls it*. **Three laws now, all saying: identify by the
+thing, not by the label for it.**
+
+## THE FOUR-UNDERCOUNT PATTERN — REGISTERED AS THE EVIDENCE — 2026-09-13
+
+**Registered behind "invert the default, prove the exception."** **47 → 56 · 15 → 17 · 13 → 15 ·
+9 → 11.** **Four corrections, four UPWARD, every original a SCAN and every correction an EXECUTION.**
+**Zero overcounts in the whole arc.** *(A scan reports what it recognises and is silent about the rest,
+and silence reads as absence — so a scan-derived census is biased low BY CONSTRUCTION, not by accident.
+That is why the fix is structural: flag everything, justify each exemption.)*
+
+## BAND — A FIELD IS CARRIED AS IT IS: NULL IS THE FACT OF ABSENCE, NEVER A DEFAULT (ERRATA) — 2026-09-13
+
+**The second face of the presence law.** The first face (item 85-C): **a seam that materialises a
+DEFAULT where the raw row had ABSENCE has changed what the row is.** The second (fx9): **a NULL
+asserted over a PRESENT field is the same capture defect arrived at backwards** — absence invented
+where a value existed, instead of a value invented where absence existed.
+
+**Both directions destroy the same thing: the distinction between "no value" and "this value."** **A
+field is carried AS IT IS.**
+
+## PW2 — S1 BUILT — 2026-09-13
+
+**ONE WALKER over the real graph — DAG, `seen` set — so it is READ SAFETY, not merely write refusal.**
+*(The distinction matters: a write guard stops new cycles; a safe walker survives the ones already
+constructible today. PW2's own S0 measured A-in-B-in-A as reachable on this build, so read safety is
+not belt-and-braces — it is the half that covers what already exists.)*
+
+**ONE PREDICATE CARRYING THREE LAWS.** **Its one-fetch refactor inside the guard is ACCEPTED — named,
+and behaviour-identical.** **12 checks owed. Turn when S1–S4 are done.**
+
+## THE TARGET GAP IS LIVE ON THIS BUILD — 2026-09-13
+
+**PLAN DESK's finding, registered — and confirmed independently by chat 1 at the lines.** In
+`pinPageToBoard`:
+
+- **SOURCE:** `if (getSystemKind(getJournalEntry(entryId))) return null;` — a system board **cannot be
+  pinned.**
+- **TARGET:** `if (!board || board.pageType !== 'board') return null;` — **only "is it a board at
+  all."**
+
+**A CONDITION BOARD *IS* `pageType: 'board'`, SO IT PASSES.** **`getSystemKind` is never applied to the
+target.** **A page can be pinned INTO the Shelf or the Trash.**
+
+**UNREACHABLE BY ANY BUTTON — so it is latent, like the cycle.** **131 (a)'s FAMILY: a condition board
+treated as an ordinary place because the guard asked the wrong question.** **S1 CLOSES IT.**
+
+*(Note the symmetry that made it invisible: the source check and the target check sit FOUR LINES APART,
+and one of them asks about SYSTEM-NESS while the other asks about BOARD-NESS. Two guards that look like
+a matched pair and are not.)*
+
+## VW2 S0(c) — RULED BY FABLE, FLAGGED FOR NICK'S VETO — 2026-09-13
+
+**NO `shelvedAt` EXISTS AND NONE IS ADDED.** **The Shelf orders by DAY WRITTEN — the Journal's own
+spine.** **The Trash orders by `deletedAt`, which EXISTS.** **ZERO SCHEMA.** **PLAN DESK amends VW2 to
+carry it.**
+
+*(Recorded as RULED-AND-FLAGGED, not as settled: it is Fable's ruling standing until Nick vetoes,
+which is a different status from a founder ruling and is marked as such.)*
+
+## BATCH TWO — UNCHANGED — 2026-09-13
+
+**Assembling at FIX's two offers + item 137.** Carries **item 135** so far.
+Registry: next free **138**.
+
 
 
 
