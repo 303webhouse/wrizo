@@ -3990,6 +3990,45 @@ the founder** — recorded above.
 NOTHING BLOCKS.** *(Recorded because a pending ruling that looks like a delivered one is how a desk
 builds on a decision the founder never made — the same hazard the INCOMPLETE marker guarded.)*
 
+## BATCH TWO IS OPEN — 2026-09-13
+
+**Offers accumulate on `main`; one deploy, one pair, one assembled-diff review, one word.**
+**Members so far:** **item 135** (suspension void — the runner's third verdict). **Expected:** FIX's
+**item 133** offer and **reveal-on-click** as their own offers; **ERRATA's wave 2** carrying
+**`0535f49`** (OBS-1 closed, **all 11 seams guarded**); **`7b87871`** on a push.
+
+**ITEM 135 MERGED FIRST, AND IT CHANGES THE INSTRUMENT THE STAMPS RUN THROUGH.** **Recorded IN
+ADVANCE, per Fable: the first pair after this merge is item 135's LIVE PROOF. If that pair reds IN THE
+RUNNER rather than in the code, it is THE RUNNER'S red, diagnosed as such — not the offering lane's.**
+*(Naming it before the run is what stops a runner defect being charged to whoever happens to be holding
+the box — the same courtesy the VOID verdict extends to a sleeping machine.)*
+
+**A RELAY CARRYING VOID IS COMPLETE; ONE CARRYING CLEAN OVER A SLEPT FILE IS NOT.** A `VOID` leg's
+`SUITE RESULT` line now reads **VOID**.
+
+## WORKTREES — THE PLAN DESK'S TWO RETIRED — 2026-09-13
+
+**Both offers merged, both worktrees removed** (`plan-item134-views`, `plan-pw2-drawer`), **item-110
+hygiene followed: each was checked for uncommitted work BEFORE removal** — both clean, nothing to
+preserve — **and each branch was confirmed an ancestor of `main` first.** **A worktree is removed
+because its work is SAFE, never because its offer was accepted.**
+
+## BAND — THREE LAW-LINES — 2026-09-13
+
+- **A SINGLE SOURCE CHANGES HOW A NAME IS READ, NEVER WHAT A SURFACE SAYS.** (FIX, item 133 — **the
+  migration law's second face.**) Consolidating thirty derivations into one reader is a change of
+  DERIVATION, not of CONTENT: **if any surface's words move, the single-sourcing did something it was
+  not asked to do.** *(Sibling: "a migration changes HOW a row is written, never WHAT the row is" —
+  same rule, one for storage and one for display.)*
+- **THE VERDICT LINE IS THE VERDICT; THE WORKLIST IS WHAT REMAINS.** (ERRATA, wave 2.) **Reading past
+  the guard is looking past it.** A guard that emits both a verdict and a worklist invites a reader to
+  treat the worklist as the finding — **but the worklist is what the guard has NOT yet been satisfied
+  about, and the verdict is what it HAS.** Confusing them turns a passing guard into a to-do list and
+  a failing one into a formality.
+- **A GUARD ASKS WHAT THE ID RESOLVES TO, NOT WHAT THE RULING CALLS IT.** (PLAN DESK, rider (a).) **The
+  ruling said "Drawer"; the guard asks whether the id resolves to a live, pinnable entry.** A guard
+  written in the ruling's vocabulary inherits the ruling's blind spots — **it would have admitted the
+  dangling pin, which no one had thought to name.**
 Registry: next free **137**.
 
 
