@@ -39,6 +39,10 @@ export interface PageFaceSubject {
   // Move/Copy/Port in the same row, riding the same Add-to grammar (a board
   // picker) — see PinToBoardSheet.tsx.
   onOpenPin: () => void;
+  // ITEM 133 (A) — reaching the displayed name puts the caret on the page's
+  // FIRST LINE. Optional: a PageFace shown for a page that is not the one open
+  // in the editor has no caret to place, and simply renders the name as text.
+  onReachName?: () => void;
 }
 
 export function PageFace({ subject }: { subject: PageFaceSubject }) {
@@ -54,6 +58,20 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
   // rename pipe is out of scope here; this is a deliberate, flagged gap, not
   // an oversight — see the AB3 build report).
   const title = textEmpty ? (hasInk ? 'A sketch' : 'Untitled') : firstLine(entry.text).slice(0, 100);
+  // ITEM 133 (A) — J10's model STANDS: a page's name is its first line, not a
+  // stored field. What was missing was never the ability to rename — a writer
+  // has always been able to change a page's name by changing its opening line —
+  // it was any way to LEARN that. The comment above this line has said "there
+  // is no stored title field to rename" since AB3, filed as a deliberate gap;
+  // the founder's report is that gap arriving at a desk.
+  //
+  // THE GESTURE DEMONSTRATES ITSELF, WHICH IS WHY THERE IS NO HELP TEXT. Reach
+  // for the name and the caret lands on the line the name comes from. The
+  // writer is now typing in their own first line and can see the title change
+  // as they do — the relationship is shown, once, by using it, and never has to
+  // be explained. A tooltip saying "the first line is the title" would be the
+  // same fact in the weaker form: told rather than demonstrated.
+  const reachable = !!subject.onReachName;
 
   const commitTag = () => {
     const v = tagDraft.trim();
@@ -64,7 +82,15 @@ export function PageFace({ subject }: { subject: PageFaceSubject }) {
 
   return (
     <div className="wz-pageface">
-      <div className="wz-pageface-title">{title}</div>
+      {reachable ? (
+        <button
+          type="button"
+          className="wz-pageface-title wz-pageface-title-reach"
+          onClick={subject.onReachName}
+        >{title}</button>
+      ) : (
+        <div className="wz-pageface-title">{title}</div>
+      )}
 
       {subject.onToggleStar && (
         <button
