@@ -4270,6 +4270,11 @@ a:focus-visible,
    and the survey's slide are the built engine, and this arc adds none. */
 .wz-cascade-plan-zone{ display:flex; flex-direction:column; gap:2px; }
 .wz-cascade-plan-title{ padding:0 0 4px; }
+/* PW2 S2 — the zone's caption on a board ("in Novel"). Quiet, one step
+   below the engraved heading: it states where this board lives, and it is
+   deliberately NOT a control (G3 — a drawer has no surface of its own yet).
+   `cursor:default` so nothing about it invites a press. */
+.wz-cascade-plan-caption{ font-size:11px; color:var(--text-low); padding:0 0 6px; cursor:default; }
 .wz-cascade-plan-rule{ height:1px; background:var(--ink-border); margin:8px 0 2px; }
 /* A board row: title over its relation/drawer line. `.wz-cascade-list-item`'s
    own hover/rhythm, with a second line the list rows never needed. */

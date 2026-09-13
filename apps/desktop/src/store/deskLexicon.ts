@@ -104,7 +104,7 @@ export type DeskTermId =
   // empty) — the ids stay so the retirement reads as deliberate rather than as
   // a term that went missing.
   | 'cascadePlanBoardsConnected' | 'cascadePlanRelationOwn' | 'cascadePlanOwnSuffix'
-  | 'cascadePlanNoDrawer' | 'cascadeOpenBoard'
+  | 'cascadePlanNoDrawer' | 'cascadeOpenBoard' | 'cascadePlanCaptionIn'
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
   | 'cascadePinShown' | 'cascadePinNotShown' | 'cascadePinDisplay' | 'cascadePinHide'
   | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
@@ -666,6 +666,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanRelationOwn: 'its own plan board',
   cascadePlanOwnSuffix: '— plan',
   cascadePlanNoDrawer: 'Not in a drawer',
+  // PW2 S2 — the BOARDS CONNECTED zone's caption on a board.
+  cascadePlanCaptionIn: 'in',
   cascadeOpenBoard: 'Open the board',
   cascadePlanSectionCards: 'Cards',
   cascadePlanSectionPages: 'Pages linked to this board',

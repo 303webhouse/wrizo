@@ -560,6 +560,13 @@ export function resolveStickyPlanSurvey(page: JournalEntry): CascadeSurveyKind |
   return row ? { category: 'plan-board', boardId: row.id, boardTitle: row.title } : null;
 }
 
+// PW2 S2 — the zone's caption on a board: "in <drawer>". Names where this
+// board lives; a board with no drawer says so rather than borrowing a name.
+function drawerCaptionFor(board: JournalEntry): string {
+  const name = board.projectId ? (getProject(board.projectId)?.title || 'Untitled') : null;
+  return name ? `${deskTerm('cascadePlanCaptionIn')} ${name}` : deskTerm('cascadePlanNoDrawer');
+}
+
 // PW1 S1/S2 — one board row. ONE ACT PER ROW (PP4): a press opens that board's
 // contents and does nothing else. Double-click TRAVELS to the board (Nick, Q4),
 // and — PW22, the twin law — that gesture is never the only path: `Open the
@@ -627,6 +634,23 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
           verb heading — here the nouns mean GO, and the writer's learned
           grammar is already right (PW1; PP1 applied, opposite output). */}
       <div className="wz-cascade-panel-title wz-cascade-plan-title">{t('cascadePlanBoardsConnected')}</div>
+      {/* PW2 S2 (item 128, ruling A + Fable's refinement) — THE DRAWER IS THE
+          ZONE'S CAPTION, NOT A ROW. On a board, this zone names its drawer as
+          well as its parent boards; making the drawer a ROW would have meant
+          an INERT row sitting among pressable ones, which PP4 forbids. As a
+          caption nothing is inert and the rule holds as written.
+
+          IT IS NOT PRESSABLE, AND THAT IS G3, NOT AN OVERSIGHT: a drawer has
+          no surface of its own yet, and a door onto a surface that does not
+          exist is exactly the destination-blind gesture item 118's unlink and
+          item 133 were both about. Routing it to the all-drawers list was
+          considered and REFUSED for the same reason — landing on a list of
+          every drawer does not answer "show me this one".
+
+          ⚠ SUCCESSOR, RECORDED HERE SO IT IS ADDED DELIBERATELY RATHER THAN
+          DISCOVERED MISSING: the day the drawer's own surface ships, this
+          caption becomes the door to it. */}
+      {subject.entry.pageType === 'board' && <div className="wz-cascade-plan-caption">{drawerCaptionFor(subject.entry)}</div>}
       {rows.map((row) => (
         <BoardConnectedRow key={row.id} row={row} onOpenContents={() => openContents(row)} onTravel={() => travelToBoard(row)} />
       ))}
