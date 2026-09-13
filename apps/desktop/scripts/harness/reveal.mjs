@@ -147,8 +147,9 @@ await withHarness(async (app) => {
   })()`);
   if (edgePt) await realClick(app, edgePt);
   const pageAfterAway = await revealState(app, '.forward-only-editor');
-  ok('S1: clicking back out into plain prose RE-COLLAPSES the markers — the reveal follows the caret both ways, it does not latch on',
-    pageAfterAway.allHidden === true, JSON.stringify(pageAfterAway));
+  ok('S1: clicking back out into plain prose RE-COLLAPSES the markers — the reveal follows the caret both ways, it does not latch on. Asserted together with the reveal that preceded it, because "they are hidden now" is trivially true on a surface where nothing ever revealed them: this check has to be unable to pass on a build with no listener at all.',
+    pageAfterClick.anyRevealed === true && pageAfterAway.allHidden === true,
+    JSON.stringify({ revealedFirst: pageAfterClick.anyRevealed, hiddenAfter: pageAfterAway.allHidden }));
 
   // ==========================================================================
   // S2 — TERMINATION, MEASURED. Redecorating restores the caret; restoring the
@@ -170,18 +171,44 @@ await withHarness(async (app) => {
     typeof mutations === 'number' && mutations > 0 && mutations < 40, JSON.stringify({ mutations }));
 
   // ==========================================================================
-  // S3 — THE SELECTION GUARD. The old card pair redecorated unconditionally,
-  // and a redecorate restores a COLLAPSED caret: extending a selection
-  // destroyed it. Driven by TRUSTED Shift+Arrow presses, not a page-built
-  // Range — a selection the page makes itself is a weaker witness.
+  // S3 — THE SELECTION GUARD. A redecorate restores a COLLAPSED caret, so
+  // running one while the writer is extending a selection destroys it.
+  //
+  // THE SELECTION IS EXTENDED BACKWARDS, and that detail is the entire check.
+  // It took two wrong versions to find out why, both of which passed with the
+  // selection guard DELETED:
+  //
+  //   v1 extended three characters WITHIN the bold run. The caret never left
+  //   the revealed region, so the decoration was unchanged and the
+  //   "unchanged decoration is not rewritten" guard carried the check.
+  //   v2 extended FORWARDS from offset 0 across the boundary — and still
+  //   passed, because `getCaretOffset` returns the range's START offset, and
+  //   a forward Shift+Arrow selection never moves its start. The decoration
+  //   is computed from a number that was standing still.
+  //
+  // Extending BACKWARDS from the end moves the start, dragging it across the
+  // boundary into the bold run, so the decoration genuinely differs from the
+  // one last written and only the non-collapsed check can save the selection.
+  // Falsified by deleting that check: the selection collapses to a caret.
+  //
+  // The general lesson, which is the one worth keeping: "the state I am
+  // testing changed" is an assumption, and here it was wrong twice in a row
+  // while the suite stayed green. A check that cannot be made to fail is not
+  // evidence of anything.
+  //
+  // Driven by TRUSTED Shift+Arrow presses rather than a page-built Range — a
+  // selection the page assembles itself is a weaker witness than one the
+  // browser's own input layer made.
   // ==========================================================================
   const boldPt3 = await centreOf(app, '.forward-only-editor .md-bold');
   if (boldPt3) await realClick(app, boldPt3);
-  for (let i = 0; i < 3; i += 1) await app.key('ArrowRight', { shift: true });
+  await app.key('End');
+  await sleep(300);
+  for (let i = 0; i < 10; i += 1) await app.key('ArrowLeft', { shift: true });
   await sleep(400);
   const pageSel = await selectionNow(app);
-  ok('S3 (page): a live NON-COLLAPSED selection survives — three trusted Shift+ArrowRight presses leave three characters selected, because revealAtCaret declines while a selection is open rather than rewriting the DOM under it',
-    pageSel.none === false && pageSel.collapsed === false && pageSel.length === 3, JSON.stringify(pageSel));
+  ok('S3 (page): a live NON-COLLAPSED selection survives being extended BACKWARDS across a reveal boundary — ten trusted Shift+ArrowLeft presses from the end drag the range START into the bold run, where the decoration genuinely differs from the one last written, and the ten characters are still selected because revealAtCaret declines outright while a selection is open',
+    pageSel.none === false && pageSel.collapsed === false && pageSel.length === 10, JSON.stringify(pageSel));
 
   // ==========================================================================
   // S4 — THE CARD SURFACE. What FX5 S6 built must still work, on the new
@@ -231,11 +258,15 @@ await withHarness(async (app) => {
   ok('S4: a trusted Home press re-collapses them — every path the retired NAV_KEYS list enumerated is still covered, because selectionchange fires for all of them',
     cardAfterHome.allHidden === true, JSON.stringify(cardAfterHome));
 
-  for (let i = 0; i < 4; i += 1) await app.key('ArrowRight', { shift: true });
+  // Backwards from the end, for the reason S3 spells out: only a moving range
+  // START changes the decoration, because that is the offset the register reads.
+  await app.key('End');
+  await sleep(300);
+  for (let i = 0; i < 10; i += 1) await app.key('ArrowLeft', { shift: true });
   await sleep(400);
   const cardSel = await selectionNow(app);
-  ok('S4 THE DEFECT THE SWAP FIXES: a selection can be extended on a card at all — the retired mouseup/keyup pair redecorated unconditionally and a redecorate restores a COLLAPSED caret, so this selection used to be destroyed as it was made',
-    cardSel.none === false && cardSel.collapsed === false && cardSel.length === 4, JSON.stringify(cardSel));
+  ok('S4 THE DEFECT THE SWAP FIXES: a selection can be extended across a reveal boundary on a card — the retired mouseup/keyup pair redecorated UNCONDITIONALLY on every nav keyup and every mouseup, and a redecorate restores a COLLAPSED caret, so a selection made this way was destroyed as it was made',
+    cardSel.none === false && cardSel.collapsed === false && cardSel.length === 10, JSON.stringify(cardSel));
 
   // ==========================================================================
   // S5 — THE TEXT IS NEVER TOUCHED. Every check above rewrote innerHTML
