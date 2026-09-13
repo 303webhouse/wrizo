@@ -119,6 +119,38 @@ dangling membership, from a drawer id or any other foreign id.
 
 > **A membership write admits only a source that resolves to a LIVE, PINNABLE ENTRY.**
 
+**AND ITS TARGET-SIDE TWIN — RULED with it (item 134's relay, 2026-09-13):**
+
+> **A membership write admits only a TARGET that is a WRITER'S BOARD — never a condition board.**
+
+**Both laws sit at ONE SEAM**, because they are one question asked from two ends: *what may this
+graph admit?* **Enforce them together, at WRITE time, in `pinPageToBoard`.**
+
+**THE MEASUREMENT THAT LETS THE GUARD BE THIS SIMPLE (PW2's own, confirmed at `9153ac6`):**
+**`reconcileSystemBoard` builds its own boxes and NEVER calls `pinPageToBoard`.** So **no
+legitimate path pins onto a condition board** — the index maintains itself. The guard can
+therefore be a flat refusal with **no exemption, no caller allow-list, and no flag**: the
+simplest form is also the complete one.
+
+**⚠ AND THE GAP IS REAL, not theoretical — the two ends are ASYMMETRIC today.**
+`pinPageToBoard` **already refuses a system-board SOURCE** (`if (getSystemKind(getJournalEntry(entryId))) return null`)
+but its **TARGET guard is `board.pageType !== 'board'` alone — and a condition board passes it.**
+So a page can be pinned **onto** the Shelf or the Trash on today's build. *Half of this law has
+been enforced since B1 S3; the other half was never written, and nothing surfaced it because
+nothing in the UI offers the act.*
+
+**This is erratum 131(a)'s own family seen from the storage side:** 131(a) was a condition
+appearing in a *reader* (`getBoardsConnecting` fixed that); this is a condition admitted by a
+*writer*. **The canon — a condition is not a place — binds both ends, and only one end was
+holding it.**
+
+**Harness-owed in `pw2.mjs`, beside the source checks:**
+- a membership write **targeting a condition board** (shelf, trash) is refused, **and no
+  `page-pin` box is created on it**
+- a membership write targeting a **writer's board** still succeeds
+- `reconcileSystemBoard` still populates the condition boards normally **after** the guard lands
+  — *the check that proves the guard did not break the index it must not touch*
+
 That one line makes *"a drawer is never a member of anything"* **true by construction** — and
 closes the orphan-pin case with it. **A negative check (`if (isDrawer) return null`) would never
 fire**, because a drawer never arrives typed as a drawer; it arrives as an id that resolves to
