@@ -4029,6 +4029,47 @@ because its work is SAFE, never because its offer was accepted.**
   ruling said "Drawer"; the guard asks whether the id resolves to a live, pinnable entry.** A guard
   written in the ruling's vocabulary inherits the ruling's blind spots — **it would have admitted the
   dangling pin, which no one had thought to name.**
+## PW2's S0 — REGISTERED, AND VERIFIED AT THE CODE BY CHAT 1 — 2026-09-13
+
+**Survey at `pw2-nesting-transfer @ f12c318`; NOTHING WRITTEN.** All three findings confirmed
+independently against `main` rather than accepted on report:
+
+**(a) BOARD-IN-BOARD ALREADY RIDES THE PAGE-PIN BOX, UNGUARDED.** The `page-pin` `Box` carries a bare
+`entryId`; **nothing checks `pageType`**, so a board pins exactly like a page. The only guards on
+`pinPageToBoard` are **self-pin** (`entryId === boardEntryId`) and the system board.
+
+**(b) NO CYCLE GUARD ON THE PIN PATH. A-in-B-in-A IS REACHABLE TODAY** — and **no recursive reader
+exists on `main` yet**, confirmed: no ancestor walk, no cycle check, no recursive traversal in
+`persistence.ts`. **So the cycle is CONSTRUCTIBLE BUT INERT: it is harmless only because nothing walks
+it.** **THE FIRST RECURSIVE READER TURNS A LATENT CYCLE INTO A HANG.**
+
+**→ S1 PRECEDES S2 AS A SAFETY ORDER, and the reason is now measured rather than prudential: the guard
+must exist BEFORE the reader that would loop on what it fails to stop.** Build the walker first and
+the first cycle is discovered by a frozen surface.
+
+**A SHAPE WORTH NAMING: the self-pin guard proves the hazard was understood AT DEPTH 1 AND NOT
+GENERALISED.** Its own comment calls it *"belt and suspenders alongside `PinToBoardSheet.tsx`'s own
+leaf exclusion"* — careful work, stopping A-in-A. **A-in-B-in-A is the same hazard one level deeper,
+and nothing reaches it.** Same family as *the origin error repeated one step later*: **one
+misconception — here, one GUARD — written at the depth where it was noticed.**
+
+**(c) THE DANGLING-PIN HOLE, FOUND INDEPENDENTLY BY PW2 AND THE PLAN DESK — RECORDED AS CORROBORATION,
+NOT AS TWO FINDINGS.** PW2 reached it from the surface (**it renders as "Missing page"** — confirmed at
+**two** sites, `BoardEditor.tsx` and `CascadePanels.tsx`); the PLAN DESK reached it from the guard's
+construction. **One fact, two witnesses** — and the two routes are the value: **a hole found from both
+the render and the write path is a hole neither desk has to argue for.**
+
+**PW2 CUT BEFORE `04d250a` MERGED** and is told to **re-read the clause and build to the POSITIVE
+form** — *a membership write admits only a source that resolves to a live, pinnable entry.*
+
+**ONE BRIEF ADDITION PENDING PW2's REPORT — NOT RECORDED AS RULED: THE TARGET CLAUSE** (*a manual
+membership write admits only a writer's board as TARGET*), **conditional on how `reconcileSystemBoard`
+writes.** *(Source and target are separate questions: the positive form governs WHAT MAY BE PINNED;
+this would govern WHERE. A system board that writes its own memberships through the same path would be
+refused by a target clause written carelessly — hence the condition.)*
+
+**PW2 ASKS FOR ITS STAMP TURN WHEN READY: queued AFTER FIX and ERRATA, a short pair at chat 1's
+discretion.**
 Registry: next free **137**.
 
 
