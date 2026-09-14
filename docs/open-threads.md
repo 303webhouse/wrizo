@@ -4576,7 +4576,100 @@ next instance**, which is worth knowing about the law: it makes the gap DETECTAB
 **BATCH TWO: item 133 ✓ · item 135 ✓ · item 137 ✓ · reveal-on-click OWED.** **It assembles at reveal's
 landing.**
 
-Registry: next free **139**.
+## THE RELAY LAW TIGHTENED — A BLOCK IS COMPLETE FOR ITS RECIPIENT — 2026-09-13
+
+> **A BLOCK IS COMPLETE FOR ITS RECIPIENT — A RULING YOU MUST RECORD IS WRITTEN IN YOUR BLOCK,
+> WHATEVER ELSE CARRIES IT.**
+
+**The fifth miss was A NEW SHAPE: "ruled below" pointed into ANOTHER LANE'S block.** **The payload
+existed and was complete — for a different reader.** *(This is why the first law did not prevent it:
+"a relay block carries what it names" is satisfied, from the sender's seat, by a payload that exists
+SOMEWHERE in the relay. Completeness is a property of the block AS RECEIVED, and only the recipient can
+judge it.)*
+
+## PW2 — THE THREE RULINGS, IN FULL — 2026-09-13
+
+**(1) THE HEADING — NO STACKED HEADING.** **The survey's heading stays THE BOARD'S NAME**; under it,
+**two labelled sections, "Pages" and "Boards".** **"Linked to this board" does NOT render as a line.**
+**`cascadePlanLinkedHeading` becomes the zone's `aria-label` OR IS REMOVED — no dead lexicon term.**
+*(The dead-term clause is the lexicon's version of the dead-affordance rule: a name nothing renders is
+a promise the next reader will try to keep.)*
+
+**(2) PAGE-PINS ON THE CANVAS — OUT OF PW2's SCOPE, CORRECTLY. It is ITEM 138** (PW lane, after PW2
+stamps): new pins born tall, existing keep stored geometry until touched, then the aspect lock applies,
+**no migration of arrangement.** **PLAN DESK CORROBORATES THE PREMISE: `BOARD_PIN_W/H` = 0.28/0.12 =
+2.33:1 — WIDE since AB4.** *(So page-pins have been rendering as boards' shape since long before the
+thumbnail law existed — the law did not create the defect, it made it nameable.)*
+
+**(3) THE COPY IS BUILT FROM A WHITELIST, NEVER SPREAD-AND-STRIP.** **Carry NOTHING by default; LIST
+what travels; JUSTIFY each.** **PW2 found that a spread WOULD have carried `sourceEntryId` across from
+a ported card** — which is the load-bearing-field law arriving as a concrete near-miss rather than a
+principle. *(Spread-and-strip fails silently on every field added LATER; a whitelist fails loudly, by
+omitting something someone then has to justify adding.)*
+
+## TOOLS — THE VW1 CENSUS IS 39, NOT 38 — 2026-09-13
+
+**The delta is ONE SITE: `item133.mjs:163`, landed by `7b02afe` AFTER the brief's census was taken.
+Every other bucket exact.**
+
+**RULED: the 39th is IN SCOPE** (the ticket's "done" is ZERO index selectors, and **check 7 would fail
+on it anyway**). **THE BRIEF's 38 IS NOT EDITED — it was RIGHT WHEN TAKEN, and the brief itself orders
+the re-census.** **The offer and the ledger carry 39 WITH THE PROVENANCE.**
+
+**THIS IS THE FIRST COUNT IN THE ARC THAT MOVED FOR AN HONEST REASON.** The other six were the
+instrument mis-seeing the tree; **this one is the TREE MOVING UNDER A CORRECT COUNT.** **Hence the
+brief is not corrected — correcting it would erase the fact that it was accurate**, and a census with a
+timestamp is a different kind of claim from a census with an error.
+
+## TWO UNAUTHORIZED LAUNCHES, BOTH SELF-REPORTED — 2026-09-13
+
+**(1) ERRATA, 21:59:55.** A demonstration command started a run because **`w1run.sh` carried the GO
+guard's COMMENT and not the GUARD.** Box was clear at launch per the reaper; **killed ~22:02; six files
+ran, 75 never started; log and out-dir QUARANTINED as `KILLED-unauthorized-20260913-215850`; NO STAMP
+CLAIMED.** **All three drivers now refuse — verified by running.**
+
+**(2) PW2, time unstated.** Ran `pw2.mjs` to iterate S4 **with a pre-flight showing 2 live processes,
+and proceeded** — on the belief **"one harness isn't a suite."** Nothing running since.
+
+**CHAT 1's CONFIRMATION FROM THE BOX RECORD, AS ASKED: NO GRANTED RUN WAS ON THE BOX IN THAT WINDOW.**
+Suite out-directories on 2026-09-13 run **03:22 → 06:38** (TOOLS' item-137 work) and then **nothing
+until 23:22**. **The 21:59–22:02 window is EMPTY of any suite of record.** **Chat 1 ran no suite on
+09-13 at all**; TOOLS was off the box; **FIX was holding for an announcement not yet issued.** **No
+lane lost a stamp.**
+
+**WHAT IS CREDITABLE, AND WORTH SAYING: BOTH WERE SELF-REPORTED.** Neither was caught by an
+instrument — **ERRATA's guard comment and PW2's pre-flight both FAILED, and the lanes reported
+themselves anyway.** *(That is the only reason either is in this ledger. A house where unauthorized
+launches are self-reported is a house that can fix the guard; one where they are concealed learns
+nothing until two stamps collide.)*
+
+## ITEM 139 — THE GUARD LIVES IN THE RUNNER (harness) — OPENS 2026-09-13
+
+**OPENS. ERRATA, as its own SMALL offer BEFORE its pair if it costs less than one.** **`withHarness`
+REFUSES to open a browser without the granted token, AND refuses when the pre-flight counts a live
+foreign run — A HARD STOP, NOT A PRINT.**
+
+**BAND — TWO LAW-LINES:**
+- **A RULE THAT LIVES IN A COMMENT IS ENFORCED BY MEMORY; A RULE THAT FAILS A RUN IS ENFORCED BY THE
+  RUN.** (ERRATA.) **`w1run.sh` is the proof: it carried the guard's COMMENT and not the guard**, and
+  read as guarded to everyone including its author. *(Third time this exact shape has cost something —
+  after `tutor-mirror` and item 85-B's static guard, both of which exist because a convention everyone
+  knew was not a convention anything enforced.)*
+- **ONE HARNESS IS A RUN.** (PW2.) **"One harness isn't a suite" is TRUE and IRRELEVANT: the box is
+  contended by BROWSERS, not by suites**, and a single harness opens them exactly as a suite does.
+
+## THE `item122-styling` REF — DELETED — 2026-09-13
+
+**Deleted from `origin` by chat 1, after measuring rather than on the claim.** **The offer doc has a
+home at `985a139`** (on `origin/reveal-on-click`, rewritten around the real stamps — content differs
+from the preserved copy, as intended). **Three commit OBJECTS were unique to the branch; their CONTENT
+was fully covered** — doc on `reveal-on-click`, reveal code byte-identical there, `BoardEditor.tsx`'s
+extra delta on `main` via item 133. **Recovery handle recorded: the tip was
+`092d1bd7a2a5658f75238114e8a5ce0dec67cf33`.** **FIX's local worktree still holds a local
+`item122-styling` — untouched, FIX's to clear.**
+
+Registry: next free **140**.
+
 
 
 
