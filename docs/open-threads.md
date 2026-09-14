@@ -3,6 +3,51 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## ITEM 137 — THE TRASH AT THE FOOT: BUILT AND OFFERED — 2026-09-13 (tools lane; branch `item137-trash-foot`)
+
+**OFFERED TO CHAT 1 — BOTH LEGS CLEAN, 83/83 EACH.** Full record:
+`docs/menus/item137-offer-2026-09-13.md`. **S0 `cf22e6b`** (headful measurement, no behaviour
+change) · **fix `9a18ee1`** · **sitting frames + merge `bd0f322`**.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 83/83 of 83 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bd0f322 bundle=index-C4zPfe40.js/576319b
+SUITE DONE HARNESS_PARKED=1 — 83/83 of 83 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bd0f322 bundle=index-C4zPfe40.js/576319b NO-REBUILD
+```
+
+**S0 MEASURED THE HYPOTHESIS RATHER THAN TRUSTING IT, and it held.** 1366x768: gap 8.8px,
+`.wz-strip` 544.4px, aside 545.2px. 1366x1200: gap **303.6px**, `.wz-strip` **still 544.4px**,
+aside 840.0px. The decisive reading is not the gap but the strip rendering the IDENTICAL height at
+both viewports while the aside tracked 70vh exactly — `height:100%` resolves against the parent's
+HEIGHT, `min-height` does not make that definite, so the percentage fell back to auto, the strip
+went content-tall, and `margin-top:auto` had no free space to consume. **WHY THE FOUNDER SAID
+"INLINE": at 768 the gap is 8.8px** — the eye sees Trash sitting after the last item. The defect
+was never that Trash was slightly high; **it was never pinned at all**, and it strands further the
+taller the window gets.
+
+**THE FIX IS GEOMETRY ONLY:** the aside becomes a flex column, `.wz-strip` takes `flex:1` in place
+of the percentage. Stretching into a flex parent needs no definite height on that parent at all —
+inventing a height would have put a second source of truth beside `min-height:70vh` for the next
+lane to desynchronise. After: 1200's gap 303.6 -> **8.8px**, strip 544.4 -> **839.2px** against an
+840.0 aside; the residual 8.8px is structural (8px padding + 1px border), identical at both heights.
+
+**ITEM 130 TRAVELS WITH IT.** The fix adds `display:flex` to the very element carrying item 130's
+`z-index:1`. Untouched — and not merely asserted: `item137.mjs` S3 re-runs item 130's own hit-test
+question on its own fixture at both heights, and `item130.mjs` still reports PASS (16) in the
+stamped run. Neither repair may buy the other.
+
+**THE HARNESS BITES 3/9 PRE-FIX, AND THE LOAD-BEARING DETAIL IS WHICH CHECK DID NOT.** S1 @ 768
+**passed on the broken build** at 9.0px: a check that merely bounded the gap would have certified
+the bug as fixed. What separates PINNED from ACCIDENTALLY CLOSE is behaviour across heights, so the
+discriminating assertion is that **the gap does not care how tall the window is** (drift 294.6px
+pre-fix). S2 asserts the mechanism itself, so a future change restoring the bug is NAMED by the
+check, not merely detected. **Nothing parked** — no prior assertion covered the Trash's vertical
+position, which is precisely why a founder had to report it.
+
+**SITTING FRAMES** at both heights in `docs/menus/item137-shots/` — 768 (where the defect was
+invisible) and 1200 (where it stranded). Nick's eye is the gate there, not the numbers.
+
 ## PRE-FLIGHT SITTING — 2026-08-02 (Nick, ranked) — the fix wave's input
 
 Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's word; laptop
