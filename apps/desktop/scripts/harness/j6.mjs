@@ -318,7 +318,7 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.wz-arrival-write').click()");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'B3 scratch loose page mounted' });
     await sleep(300);
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal category, index 0
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal category, index 0
     await app.waitFor("document.querySelectorAll('.wz-cascade-list-item').length >= 1", { label: 'Journal recent list populated' });
     const idx = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-list-item')].findIndex(el => el.textContent.includes(${JSON.stringify(entryText)}))`);
     if (idx < 0) {
@@ -463,7 +463,7 @@ await withHarness(async (app) => {
 
     // The cascade's Page-section door (createLooseHomePage -> /page/:id).
     await freshProsePage(app, LAPTOP_W, 900);
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // Page category, index 1
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()"); // Page category, index 1
     await app.waitFor("!!document.querySelector('.wz-cascade-action-door')", { label: "cascade Page-section New Page door present" });
     const hashBeforeCascadeNewPage = await app.evalJs('location.hash');
     await app.evalJs("document.querySelector('.wz-cascade-action-door').click()");

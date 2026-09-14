@@ -108,7 +108,7 @@ const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
 };
 
@@ -467,7 +467,7 @@ await withHarness(async (app) => {
   ok('CD3 successor of "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section": the Trash sits at the very FOOT of the strip now — below Drawers, Shelf, Settings and Themes (Nick\'s own placement, a thin line above it)',
     stripShape.labels[7] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[5] === 'Settings',
     JSON.stringify(stripShape));
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][7].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=trash]').click()");
   await sleep(200);
   const trashPanelBody = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.textContent ?? ''");
   ok('S4: the Trash panel carries EXACTLY one plain action ("Open the Trash") — reachable, never prominent, no count, no badge, no list, no preview',
@@ -585,7 +585,7 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted (S5 cascade check)' });
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (S5 cascade check)' });
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal category
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal category
   await app.waitFor("!!document.querySelector('.wz-cascade-action')", { label: 'Journal panel open (S5 cascade check)' });
   await app.evalJs("[...document.querySelectorAll('.wz-cascade-action')].find(b => b.textContent === 'Open the Journal').click()");
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'cascade Open-the-Journal lands on the Board' });
@@ -725,7 +725,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED system board framed' });
     await sleep(250);
     await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED cascade strip mounted' });
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // Page category
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()"); // Page category
     await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'PARKED Page face (system board)' });
     const movecopyGone = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
     pok('PARKED (was "S3: Move/Copy is ALSO inert on the system Board\'s own Page face") — B2 S4: the Move/Copy verb (`.wz-pageface-verb-movecopy`) is GONE entirely, not merely inert — superseded by the Places panel; live successor: this file\'s own live S3 section ("Places itself is absent on a system Board\'s own Page face")',
@@ -770,7 +770,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'PARKED journal system board framed' });
     await sleep(250);
     await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'PARKED cascade strip mounted (journal)' });
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
     pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',

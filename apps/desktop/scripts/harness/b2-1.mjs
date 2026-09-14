@@ -70,7 +70,7 @@ const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
 };
 
@@ -78,7 +78,7 @@ const openPageCategory = async (app) => {
 // plan(2), drawers(3), shelf(4), trash(5), settings(6), theme(7).
 const openPlanCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPlanCategory)' });
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][2].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()");
   await sleep(150);
 };
 

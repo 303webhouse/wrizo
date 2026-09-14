@@ -160,7 +160,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page framed' });
   await sleep(700);
 
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1]?.click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]')?.click()");
   await sleep(600);
 
   const reachable = await app.evalJs("!!document.querySelector('.wz-pageface-title-reach')");

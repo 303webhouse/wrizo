@@ -339,7 +339,7 @@ await withHarness(async (app) => {
   // Add-to sheet check is adapted in place (same sheet, new doorway).
   // ==========================================================================
   await freshJournalPage(app, 'FX1RADIUS');
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal
   await sleep(220);
   const stripItemRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-strip-item')).borderRadius");
   ok('S4 (successor to "...border-radius is 0px on a drawer pull"): computed border-radius is 0px on a strip item', stripItemRadius === '0px', stripItemRadius);
@@ -354,7 +354,7 @@ await withHarness(async (app) => {
   // reaches the SAME `.board-sheet-inner` class via Pin instead — the
   // geometry claim itself (square corners on a board sheet) is completely
   // unchanged, only unaffected by which sheet reaches it.
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // Page
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()"); // Page
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (S4 fixture)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet' });

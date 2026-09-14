@@ -328,6 +328,15 @@ function renderSection(
         <button
           key={item.id}
           type="button"
+          // VW1 — THE DOM HOOK. `key` is React-internal and never reaches the
+          // DOM, so before this every harness reached these buttons by INDEX.
+          // An index survives a reorder and silently selects a different
+          // category: none of those selectors throws, so some checks go red
+          // and others PASS AGAINST THE WRONG PANEL. That is item 130's shape
+          // again - the instrument answered the question it was asked, and it
+          // was not the one that mattered. Naming the category makes the rail
+          // reorderable without touching a single harness.
+          data-category={item.id}
           className={`wz-strip-item${state.category === item.id ? ' active' : ''}`}
           aria-pressed={state.category === item.id}
           onClick={() => toggle(item.id)}

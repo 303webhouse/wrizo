@@ -184,12 +184,12 @@ const wakeChrome = async (app) => {
 // to open would fail later, somewhere else, for a reason that reads as a
 // product bug. Ask first.
 const openPlan = async (app) => {
-  const already = await app.evalJs("!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && [...document.querySelectorAll('.wz-strip-item')][2]?.getAttribute('aria-pressed') === 'true')");
+  const already = await app.evalJs("!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && document.querySelector('.wz-strip-item[data-category=plan]')?.getAttribute('aria-pressed') === 'true')");
   if (already) return true;
   const there = await app.evalJs("document.querySelectorAll('.wz-strip-item').length > 2");
   if (!there) { ok('DRIVER: the cascade strip is mounted with a Plan category', false, 'strip missing'); return false; }
   await wakeChrome(app);
-  const opened = await pressEl(app, "[...document.querySelectorAll('.wz-strip-item')][2]", 'the strip Plan category opens');
+  const opened = await pressEl(app, "document.querySelector('.wz-strip-item[data-category=plan]')", 'the strip Plan category opens');
   if (!opened) return false;
   await sleep(300);
   return true;

@@ -54,7 +54,7 @@ const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open' });
 };
 

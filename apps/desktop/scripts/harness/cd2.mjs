@@ -264,7 +264,7 @@ await withHarness(async (app) => {
     // Typing dissolves the chrome (A19), which closes the cascade panel this
     // fixture opened — so the Page category is re-opened after the birth rather
     // than before it. Same doorway, same claim; only the order changed.
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-star')", { label: 'Page face re-opened, Star present' });
   }
   await app.evalJs("document.querySelector('.wz-pageface-star').click()");
@@ -557,7 +557,7 @@ await withHarness(async (app) => {
     panelLeft: document.querySelector('.wz-cascade-panel').getBoundingClientRect().left,
     surveyLeft: document.querySelector('.wz-cascade-survey').getBoundingClientRect().left,
     surveyTitle: document.querySelector('.wz-cascade-survey-title').textContent,
-    categoryActive: document.querySelectorAll('.wz-strip-item')[0].classList.contains('active'),
+    categoryActive: document.querySelector('.wz-strip-item[data-category=journal]').classList.contains('active'),
     surveyCount: document.querySelectorAll('.wz-cascade-survey').length,
   })`);
   ok('S2 (dock, pre-condition): the panel sits left of the survey (strip -> panel -> survey -> paper, cascading rightward)',
@@ -573,7 +573,7 @@ await withHarness(async (app) => {
     surveyLeft: document.querySelector('.wz-cascade-survey').getBoundingClientRect().left,
     surveyTitle: document.querySelector('.wz-cascade-survey-title').textContent,
     surveyCount: document.querySelectorAll('.wz-cascade-survey').length,
-    categoryActive: document.querySelectorAll('.wz-strip-item')[0].classList.contains('active'),
+    categoryActive: document.querySelector('.wz-strip-item[data-category=journal]').classList.contains('active'),
   })`);
   ok('S2 (dock): closing layer 2 collapses the panel (data-visible=false, width->0) and the survey moves LEFT into its vacated slot — the SAME survey node (title unchanged, no duplicate), not a remount',
     afterDock.panelVisible === 'false' && afterDock.panelWidth < 5 && afterDock.surveyDocked === 'true'
@@ -629,7 +629,7 @@ await withHarness(async (app) => {
   const dismissedDocked = await app.evalJs(`({
     surveyGone: !document.querySelector('.wz-cascade-survey'),
     panelGone: !document.querySelector('.wz-cascade-panel'),
-    categoryActive: document.querySelectorAll('.wz-strip-item')[0].classList.contains('active'),
+    categoryActive: document.querySelector('.wz-strip-item[data-category=journal]').classList.contains('active'),
   })`);
   ok('T5: a docked survey\'s own explicit close button dismisses it entirely (category no longer olive)',
     dismissedDocked.surveyGone && dismissedDocked.panelGone && !dismissedDocked.categoryActive, JSON.stringify(dismissedDocked));

@@ -233,7 +233,7 @@ await withHarness(async (app) => {
     scriptCascade.stripItemCount === 8
       && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
     JSON.stringify(scriptCascade));
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
   const scriptPageFacePresent = await app.evalJs("!!document.querySelector('.wz-pageface-star') && !!document.querySelector('.wz-pageface-home')");
   ok('S7: opening Page on script mounts the SAME PageFace prose uses (star + home present)', scriptPageFacePresent, String(scriptPageFacePresent));
@@ -454,7 +454,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // "flip to a Place"), rather than forcing the old two-face sequence
     // through dead selectors.
     const trackBefore = await app.evalJs(rectOf('.desk-frame-strip'));
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal
     await sleep(220);
     const trackAfter = await app.evalJs(rectOf('.desk-frame-strip'));
     pok('PARKED (was "S3 re-floored: the drawer track rect is byte-identical across Page <-> Places (the only two remaining faces)") — CD2 S1/S5: the SAME rect-invariance claim, re-derived across a real cascade state change (opening a category) against .desk-frame-strip; full successor coverage in cd2.mjs\'s own S1/S5 section',
