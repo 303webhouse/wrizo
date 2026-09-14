@@ -95,7 +95,12 @@ export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, rende
           <button type="button" className="wz-cascade-dock-btn" aria-label="Close" onClick={onDismiss}>×</button>
         )}
       </div>
-      <div className="wz-cascade-survey-grid">
+      {/* PW2 S2 AMENDMENT — the grid's ACCESSIBLE NAME. Ruled: no stacked
+          heading, so "Linked to this board" never renders as a visible line;
+          it names the region instead, where a screen reader reaches it and a
+          sighted reader already has the survey's own title above. A lexicon
+          term with no site is rot, so it has one. */}
+      <div className="wz-cascade-survey-grid" role="group" aria-label={t('cascadePlanLinkedHeading')}>
         {items.length === 0 && <div className="wz-cascade-empty">{t('cascadeSurveyEmpty')}</div>}
         {items.map((item, i) => (
           <Fragment key={item.id}>

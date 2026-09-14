@@ -1432,32 +1432,51 @@ export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoar
   const existing = target.boxes ?? [];
   const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + COPY_OFFSET;
   const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
-  // PROVENANCE RIDES ITS OWN FIELD (ruled, PLAN DESK amendment to the brief's
-  // "carry it on the built fields"): `copiedFromBoardId` names the board this
-  // card was copied FROM, and the arrived card's lineage line reads it back.
-  // It is deliberately NOT `sourceEntryId` — see the field's own comment.
+  // ⚠ THE COPY IS BUILT FROM A WHITELIST, NOT SPREAD-AND-STRIP. Ruled, and the
+  // reason is a defect this function already had: it was written as
+  // `{ ...box }` minus a strip list, and copying a PORTED card carried
+  // `sourceEntryId` straight through — giving that copy a double-click that
+  // TRAVELS instead of opening its editor, which is the very thing
+  // `copiedFromBoardId` exists to prevent. The strip list was one field behind
+  // the day it was written.
+  //
+  // THE LAW, because it generalizes past this function: A COPY CARRIES NOTHING
+  // BY DEFAULT. A strip list is a rule that must be UPDATED every time the
+  // shape grows — so it rots silently, and the failure is a field that travels
+  // when nobody decided it should. A whitelist is a rule that must be EXTENDED
+  // on purpose: a new `Box` field simply does not travel until someone says it
+  // does, and the worst case is a field missing rather than a relationship
+  // forged by accident.
+  //
+  // Each field below is listed because it is part of WHAT THE CARD IS, and
+  // everything absent is absent on purpose:
+  //   kind/text/strokes — the content itself; this is the thing being copied.
+  //   w, h              — the card's authored SIZE, part of how it reads
+  //                       (shape teaches the kind), so a copy is recognisably
+  //                       the same card.
+  //   copiedFromBoardId — the new lineage, this act's own record.
+  // Deliberately NOT carried:
+  //   x, y, z           — a position on ANOTHER board's canvas. The target
+  //                       places the copy by its own stacking, below.
+  //   groupId           — names a group that exists on the SOURCE board; the
+  //                       copy would join a group that is not there.
+  //   seq/laneId/parentId — a position in another board's ordering; parentId
+  //                       would point at a box that does not exist here.
+  //   sourceEntryId/portedAt — the MIRROR relationship. A copy is independent
+  //                       by item 123's own words, and inheriting these is the
+  //                       exact defect above.
+  //   entryId/connA/connB/canvas*/footerOn/onCanvas/systemKind/lanes — belong
+  //                       to kinds a copy can never be (a copy is text or ink),
+  //                       or to the board rather than the card.
   const copy: Box = {
-    ...box,
     id: generateId(),
-    x: box.x, y: startY, z: startZ,
+    kind: box.kind,
+    x: 0.05, y: startY, z: startZ,
+    w: box.w, h: box.h,
+    ...(box.text !== undefined ? { text: box.text } : {}),
+    ...(box.strokes !== undefined ? { strokes: box.strokes } : {}),
     copiedFromBoardId: sourceBoardId,
   };
-  // ⚠ THE MIRROR FIELDS ARE STRIPPED, NOT INHERITED, and this is the case the
-  // spread would otherwise have got wrong silently: copying a PORTED card would
-  // carry `sourceEntryId` across, and a text card holding that field TRAVELS on
-  // double-click instead of opening its editor. The copy would have lost the
-  // editing gesture every card has — the exact defect the separate
-  // `copiedFromBoardId` field exists to prevent, reappearing through a spread.
-  // A copy is independent of BOTH the board it came from and anything the
-  // original mirrored.
-  delete (copy as Partial<Box>).sourceEntryId;
-  delete (copy as Partial<Box>).portedAt;
-  // A copy never inherits the source's structural placement: seq/laneId/parentId
-  // describe a position in ANOTHER board's ordering and would be meaningless —
-  // or worse, a parentId pointing at a box that does not exist here.
-  delete (copy as Partial<Box>).seq;
-  delete (copy as Partial<Box>).laneId;
-  delete (copy as Partial<Box>).parentId;
   saveJournalEntry({ ...target, boxes: [...existing, copy] });
   return copy;
 }
