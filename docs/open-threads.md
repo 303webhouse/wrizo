@@ -3,6 +3,51 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## ITEM 137 — THE TRASH AT THE FOOT: BUILT AND OFFERED — 2026-09-13 (tools lane; branch `item137-trash-foot`)
+
+**OFFERED TO CHAT 1 — BOTH LEGS CLEAN, 83/83 EACH.** Full record:
+`docs/menus/item137-offer-2026-09-13.md`. **S0 `cf22e6b`** (headful measurement, no behaviour
+change) · **fix `9a18ee1`** · **sitting frames + merge `bd0f322`**.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 83/83 of 83 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bd0f322 bundle=index-C4zPfe40.js/576319b
+SUITE DONE HARNESS_PARKED=1 — 83/83 of 83 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bd0f322 bundle=index-C4zPfe40.js/576319b NO-REBUILD
+```
+
+**S0 MEASURED THE HYPOTHESIS RATHER THAN TRUSTING IT, and it held.** 1366x768: gap 8.8px,
+`.wz-strip` 544.4px, aside 545.2px. 1366x1200: gap **303.6px**, `.wz-strip` **still 544.4px**,
+aside 840.0px. The decisive reading is not the gap but the strip rendering the IDENTICAL height at
+both viewports while the aside tracked 70vh exactly — `height:100%` resolves against the parent's
+HEIGHT, `min-height` does not make that definite, so the percentage fell back to auto, the strip
+went content-tall, and `margin-top:auto` had no free space to consume. **WHY THE FOUNDER SAID
+"INLINE": at 768 the gap is 8.8px** — the eye sees Trash sitting after the last item. The defect
+was never that Trash was slightly high; **it was never pinned at all**, and it strands further the
+taller the window gets.
+
+**THE FIX IS GEOMETRY ONLY:** the aside becomes a flex column, `.wz-strip` takes `flex:1` in place
+of the percentage. Stretching into a flex parent needs no definite height on that parent at all —
+inventing a height would have put a second source of truth beside `min-height:70vh` for the next
+lane to desynchronise. After: 1200's gap 303.6 -> **8.8px**, strip 544.4 -> **839.2px** against an
+840.0 aside; the residual 8.8px is structural (8px padding + 1px border), identical at both heights.
+
+**ITEM 130 TRAVELS WITH IT.** The fix adds `display:flex` to the very element carrying item 130's
+`z-index:1`. Untouched — and not merely asserted: `item137.mjs` S3 re-runs item 130's own hit-test
+question on its own fixture at both heights, and `item130.mjs` still reports PASS (16) in the
+stamped run. Neither repair may buy the other.
+
+**THE HARNESS BITES 3/9 PRE-FIX, AND THE LOAD-BEARING DETAIL IS WHICH CHECK DID NOT.** S1 @ 768
+**passed on the broken build** at 9.0px: a check that merely bounded the gap would have certified
+the bug as fixed. What separates PINNED from ACCIDENTALLY CLOSE is behaviour across heights, so the
+discriminating assertion is that **the gap does not care how tall the window is** (drift 294.6px
+pre-fix). S2 asserts the mechanism itself, so a future change restoring the bug is NAMED by the
+check, not merely detected. **Nothing parked** — no prior assertion covered the Trash's vertical
+position, which is precisely why a founder had to report it.
+
+**SITTING FRAMES** at both heights in `docs/menus/item137-shots/` — 768 (where the defect was
+invisible) and 1200 (where it stranded). Nick's eye is the gate there, not the numbers.
+
 ## PRE-FLIGHT SITTING — 2026-08-02 (Nick, ranked) — the fix wave's input
 
 Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's word; laptop
@@ -4395,7 +4440,144 @@ so nobody later re-derives it from scratch believing it was never considered.)*
 **Registered.** **All 80 files parse.** **The FIELD-CHANGED COMPARISON runs across the whole wave
 BEFORE the offer** — which is the migration-fidelity law made procedural: **field by field, every new
 call against the row it replaced, and before anyone is asked to review it.**
-Registry: next free **138**.
+## NICK'S Q4 RULING — THE ZONE, AND THE THUMBNAIL LAW — 2026-09-13
+
+**Nick, VERBATIM:**
+
+> Yes, group them together but section off Boards from Pages clearly and use a different thumbnail
+> (horizontal rectangles for Boards, vertical rectangles for Pages).
+
+**(1) ONE ZONE HOLDS BOTH, SECTIONED BY KIND, CLEARLY.**
+
+**(2) THE THUMBNAIL LAW — to canon, BESIDE THE ARRANGEMENT LAW:**
+
+> **BOARDS ARE WIDE, PAGES ARE TALL.** Every thumbnail of a board is a **horizontal rectangle**; every
+> thumbnail of a page a **vertical** one — **on every surface that shows one**: the linked zone, the
+> canvas, VW2's Shelf/Trash view, the Library later.
+
+*(It earns a place beside the arrangement law because it is the same KIND of rule: a claim about what
+a thing IS, expressed as something a writer can see without being told. The arrangement law says a
+surface you can reorder has become a board; the thumbnail law says a board LOOKS like one everywhere,
+so the writer never has to check.)*
+
+**FABLE-DERIVED WORDING, FLAGGED, STANDING UNTIL NICK VETOES:** the zone heading becomes **"Linked to
+this board"**, with section labels **"Pages"** and **"Boards"** — because **"Pages linked to this
+board" would be a FALSE SENTENCE over the Boards section.** *(A heading that is true of one section and
+false of the other is the canon-violation shape of 131 (a) in copy rather than in membership.)*
+
+**PW2 APPLIES IT IN S2 NOW; S4 MEASURES IT** — aspect asserted per kind, sections asserted separate.
+**PLAN DESK records the law and amends VW2's thumbnail clause to carry it.**
+
+## BAND — TWO LAW-LINES — 2026-09-13
+
+- **A LANE ON THE BOX SAYS SO ON ORIGIN; A TURN THAT PUSHES NOTHING READS AS NOT TAKEN.** (Fable.)
+  **FIX's turn WAS taken and completed** — 133 at 80/80 both legs, reveal-on-click at 81/81 both legs —
+  **and pushed nothing, so every instrument chat 1 had said "not started."** *(The measurement was
+  right about `origin` and wrong about the world. It is the exact inverse of `an offer is pushed or it
+  does not exist`: that law says unpushed work cannot be CLAIMED; this one says unpushed work cannot be
+  SEEN — and a desk reading origin will reallocate the box under a lane that is using it.)*
+- **A LOAD-BEARING FIELD IS NEVER REUSED FOR A SECOND MEANING.** (PW2 S3.) **`sourceEntryId` is
+  load-bearing for PORTED cards — double-click travels on it** — so a COPY gets **its own additive
+  optional field, `copiedFromBoardId`.** **One field, one relationship.** **PLAN DESK amends the
+  brief's "carry it on the built fields."** *(Reusing it would have made "where did this come from"
+  answer two different questions depending on how the card was made — and nothing would have failed
+  until a writer double-clicked a copy and travelled somewhere wrong.)*
+
+## ERRATA — ITEM 85 MIGRATED (`9a3cc1d`), AND A SIXTH UNDERCOUNT CAUGHT PRE-OFFER — 2026-09-13
+
+**Item 85 migrated. Population 2, BOTH LAWFUL.** **All 80 parse. 176 findings, NONE SILENCED. 13 files
+outside the comparison's reach STATED AS SUCH.**
+
+**THE SIXTH UNDERCOUNT: the field-changed comparison found TWELVE MORE source-omitted rows BEFORE the
+offer.** **47 → 56 · 15 → 17 · 13 → 15 · 9 → 11 · 33 → 38 · and now +12 pre-offer.** **The second
+caught before publication, and the first caught by an INSTRUMENT rather than by a reader.**
+
+**THAT IS THE ARC OF THE WHOLE FAMILY IN THREE STEPS: caught by EXECUTION after the claim (four times)
+→ caught by a BREAKDOWN before the claim (once) → caught by a PURPOSE-BUILT INSTRUMENT before the offer
+(now).** *(And "13 files outside the comparison's reach, stated as such" is the honest half: the
+instrument names where it cannot see, so its silence is bounded instead of being read as absence.)*
+
+## QUEUE AND BATCH TWO — 2026-09-13
+
+**QUEUE: TOOLS (on the box) → FIX's reveal pair (short) → ERRATA's wave 2 pair (long) → PW2 after
+S4.** **BATCH TWO ASSEMBLES AT: item 133 + item 137 + reveal-on-click + item 135.** **133 is MERGED**
+(`973e724`); **135 is merged**; 137 and reveal are owed.
+## BAND — TWO LAW-LINES — 2026-09-13
+
+- **NOTHING IS DELETED ON A CLAIM OF "NOTHING IS LOST" — THE CLAIM IS MEASURED FIRST.** **Earned
+  here: both FIX and Fable stated that every commit on `item122-styling` also lived on the two new
+  branches. FOUR DID. THREE DID NOT** — the reveal commits — **and the ONLY copy of
+  `docs/wrizo-alpha/offer-reveal-on-click-2026-09-13.md` was among them.** *(Neither desk was careless;
+  the claim was reasonable and the re-cut branch LOOKED like a move. That is the point: "nothing is
+  lost" is exactly the kind of claim that feels safe to accept, which is why it is the kind that must
+  be measured.)*
+- **A CHECK THAT BOUNDS THE SYMPTOM CERTIFIES THE BUG — ASSERT THE INVARIANT THE DEFECT BREAKS.**
+  (TOOLS, item 137.) **S1 at 768 PASSED ON THE BROKEN BUILD, at 9.0px.** A check that measures the
+  symptom at one window height **cannot distinguish a fixed layout from a lucky one.** **The assertion
+  has to be the invariant: THE GAP MUST NOT DEPEND ON WINDOW HEIGHT.** *(Sibling to `a check can pass
+  for the wrong reason when its premise is already dead` — here the premise is alive and the check is
+  simply aimed at a consequence rather than at the cause.)*
+
+## THE `item122-styling` REF — SEQUENCE AGREED — 2026-09-13
+
+**1. FIX carries `offer-reveal-on-click-2026-09-13.md` onto `reveal-on-click`** (rewritten around the
+real stamps when the pair lands). **2. THEN chat 1 DELETES `item122-styling` outright** — **not reset:
+a fully-merged branch whose content lives elsewhere IS a name that resolves to the wrong document, and
+resetting leaves that trap standing.**
+
+**Preserved meanwhile by chat 1:** the doc at **173 lines, md5 `03d7bff363fe71d337c841d88131d3b7`**,
+also recoverable at `092d1bd:docs/wrizo-alpha/offer-reveal-on-click-2026-09-13.md`. **Nothing is at
+risk; the deletion simply waits for the record to have a home.**
+
+## ITEM 137 — CLOSED (merged) — 2026-09-13
+
+**`item137-trash-foot @ 383f680`, 83/83 CLEAN both legs at `bd0f322`, merged.** **ONE product file:
+`index.css` (+27/-1).** **Zero schema, zero server.** **THE FOURTH FOUNDER-SITTING FINDING IS CLOSED.**
+
+## ITEM 136 — S0 ACCEPTED AS THE SCHEMA PLAN — 2026-09-13
+
+**ACCEPTED for Fable review AT ITS BATCH:** **`title` text, NULLABLE, NO DEFAULT** · **boot-time
+add-column (THE TENTH)** · **four server whitelist edits** · **SQL `null` → JS `undefined`** · **LWW
+unchanged.**
+
+**THIS IS A SCHEMA ADDITION AND IT CARRIES THE STANDING SCHEMA LAW: it STOPS for Nick's word.** Its
+own batch, Fable review scope, and the STOP is structural — nobody has to remember it at build time.
+
+**RULED BY FABLE, FLAGGED FOR NICK'S VETO: (4) = (a).** **An empty commit UNSETS `title` and the
+STAND-IN RETURNS; WHITESPACE-ONLY IS EMPTY.** **The stand-in IS `boardName()`'s rule — first non-empty
+line, trimmed, 60 cap — ONE FUNCTION for pages and boards.** *(That single-sourcing is what makes the
+thirty derivations tractable, and it is `one fact, one derivation` applied before the field exists.)*
+
+**KNOWN LIMIT — TO BE STATED IN 136's OFFER, NOT GUARDED: a pre-136 tab that pushes a record after the
+deploy NULLS ITS TITLE.** **The app is served fresh on every load**, so the window is narrow. *(Stating
+a limit instead of guarding it is the right call when the guard would cost more than the exposure —
+but it only works if the limit is WRITTEN DOWN, which is why it rides the offer.)*
+
+## ITEM 138 — PAGE-PINS ARE TALL (PW lane) — OPENS 2026-09-13
+
+**OPENS, after PW2 stamps.** **Nick's THUMBNAIL LAW + Q4's aspect lock applied to page-pin cards on
+the canvas.** **NEW pins are born TALL.** **EXISTING pins keep their stored geometry UNTIL TOUCHED,
+then the lock applies.** **NO MIGRATION OF ARRANGEMENT.**
+
+*(That is the same shape as `onCanvas`'s absence-means-displayed: the writer's existing arrangement is
+never rewritten underneath them, and the new rule takes effect only where they act. A board they laid
+out last month opens exactly as they left it.)*
+
+## ⚠ RELAY GAP — PW2's TWO QUESTIONS — 2026-09-13
+
+**The 2026-09-13 relay states "PW2's two questions ruled below." NO RULINGS FOLLOWED.** **Not recorded;
+requested.** **This is the FIFTH described-but-not-attached payload**, and the first since **A RELAY
+BLOCK CARRIES WHAT IT NAMES** was ratified — **the law naming the exact failure did not prevent its
+next instance**, which is worth knowing about the law: it makes the gap DETECTABLE, not impossible.
+
+## QUEUE AND BATCH TWO — 2026-09-13
+
+**QUEUE: FIX's reveal pair NOW (TOOLS is off the box) → ERRATA's wave 2 → PW2 after S4.**
+**BATCH TWO: item 133 ✓ · item 135 ✓ · item 137 ✓ · reveal-on-click OWED.** **It assembles at reveal's
+landing.**
+
+Registry: next free **139**.
+
 
 
 

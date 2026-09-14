@@ -97,6 +97,32 @@ not a rendering slip, but the ontology and the storage disagreeing, with the ont
 > **RATIFIED — Nick, 2026-09-13: *“And yes, ratified.”*** *“Falsifiable on sight” is the standard
 > this house wants (Fable).*
 
+**AND ITS COMPANION — THE THUMBNAIL LAW, ruled 2026-09-13. Nick, verbatim:**
+
+> *"Yes, group them together but section off Boards from Pages clearly and use a different
+> thumbnail (horizontal rectangles for Boards, vertical rectangles for Pages)."*
+
+> **BOARDS ARE WIDE. PAGES ARE TALL.** **On every surface that shows a thumbnail** — the rail's
+> side menu, the Shelf, the Trash, the Drawers, and the Library when its time comes.
+
+**These two laws are one method, which is why they sit together.** The arrangement law says what
+a container **does** (it is arranged; a condition is not). The thumbnail law says what a thing
+**is**, at a glance, before any word is read. **Both are falsifiable on sight — the standard this
+house wants — and neither spends colour**, so the Plateau ember ceiling is untouched by either.
+
+**It is also the answer to a question routed away from Pass 5:** *colour-as-kind-signal* went to
+the item-96 seam and never returned. **Shape does the work colour was asked to do**, and costs
+nothing from a ceiling that was never going to allow a crayon box.
+
+**IT IS ALREADY LATENT IN WHAT SHIPS, which is why it reads as a law rather than a preference:**
+`NEW_CARD_W/H = 0.4 / 0.08` — a free card is **5:1, wide**; a page card is aspect-locked to a
+page's own **tall** proportion (the canon rider: *resizable by scale, never stretched*). **The
+three item-134 mockups already render it** — `.brd` landscape, `.pg` portrait — **drawn before
+the law was stated.** *A law that only describes what the house was already reaching for is the
+kind worth writing down.*
+
+**PW2 builds it now; the Library inherits it.**
+
 A board has **authored arrangement** (A16). Shelf membership is computed from "unfiled"; Trash
 from "deleted"; the Journal from date. **Therefore none of the three may offer positioning,
 dragging-to-place, connections, or a canvas** — not as a style choice but because there is

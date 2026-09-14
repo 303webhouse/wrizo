@@ -537,6 +537,7 @@ export type DeskTermId =
   | 'boardPageDoor' | 'pagePlanDoor' | 'boardTelos'
   | 'boardLaneDefault' | 'boardStoryboardEmpty' | 'boardOutlineEmpty'
   | 'boardPairWithPage'
+  | 'boardRenameLabel'
   // BG1 — the Beginnings. The empty board's doors (per mode) and the empty
   // page's three start-words. Door NAMES, not tasks: no verb-object
   // instruction, no "get started", nothing that could be read as a checklist
@@ -558,6 +559,8 @@ const CANONICAL: Record<DeskTermId, string> = {
   boardStoryboardEmpty: 'No cards yet. Add cards in Open, then arrange them into order here.',
   boardOutlineEmpty: 'No cards yet. Add cards in Open, then shape them into an outline here.',
   boardPairWithPage: 'Pair with a page…',
+  // ITEM 133 - the board's name, edited where it is displayed.
+  boardRenameLabel: 'Rename this board',
   // BG1 — the Beginnings. Title-cased as door names (the brief's own wording,
   // verbatim), which is what sets them apart from the sliver's sentence-case
   // tool labels a few rows away: a tool is something you use, a door is

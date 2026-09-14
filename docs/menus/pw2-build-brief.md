@@ -221,9 +221,37 @@ which is the one thing the tray exists to prevent.
 
 **The ≥1-board invariant is RENDERED, not merely enforced:** on a card whose only board this
 is, the removal verb is **present, inert, and says why — `its only board`.** Same refusal
-grammar as S1. **Provenance carries on the built fields** — `sourceEntryId` / `portedAt`
-(*"provenance travels on every box"*, FX5 S3) — and the arrived copy **states its lineage in
-the second-line slot**: `copied from <board>`. No badge, no colour, no count.
+grammar as S1. **~~Provenance carries on the built fields — `sourceEntryId` / `portedAt`~~** *(FX5 S3's
+"provenance travels on every box")* — **AMENDED 2026-09-13: A COPY CARRIES `copiedFromBoardId`**,
+an additive optional `Box` field (the `canvasW` / `footerOn` / `systemKind` / `onCanvas`
+pattern), **and keeps the edit popup.** The arrived copy **states its lineage in the second-line
+slot** — `copied from <board>`, read from that field. No badge, no colour, no count.
+*The original wording is struck in place, not deleted: the reason it yielded is the useful part.*
+
+**WHY — `sourceEntryId` IS NOT A PROVENANCE FIELD. IT IS A RELATIONSHIP, AND THREE THINGS READ
+IT.** Verified in `BoardEditor.tsx` by symbol:
+1. **`BoardTextBox`** — `if (sourceEntryId)` renders the **ported face** (a notecard excerpt),
+   not the card's own content.
+2. **The action row** — a selected text card with `sourceEntryId` gains an **`Edit copy`** button
+   (`boardEditCopy`) — an escape hatch that exists *because* of 3.
+3. **The double-click dispatch**, explicit in its own comment: *a PORTED text card
+   (`sourceEntryId` set) **travels to its source**; a hand-typed card keeps the unchanged
+   edit-popup behavior.*
+
+**So a copy carrying `sourceEntryId` would render as a ported card, grow a button it does not
+need, and — the serious one — TRAVEL TO ITS SOURCE ON DOUBLE-CLICK instead of opening for
+editing. That is shared identity expressed as a gesture, and item 123 forbids it in terms:
+*"the original stays; there is NO SHARED IDENTITY — edits do not follow."*** A copy that walks
+the writer back to its original is the exact behaviour the copy semantics rule out.
+
+**ONE FIELD, ONE RELATIONSHIP.** `sourceEntryId` means *"points AT that entry — go there."*
+`copiedFromBoardId` means *"came FROM that board — stay here."* Overloading one field with both
+leaves the dispatch unable to tell them apart, **and the dispatch is not written to ask.**
+*(The same shape as `getBoardsPinning` / `getBoardsConnecting`: when one name carries two
+meanings, the reader that must distinguish them cannot.)*
+
+**Harness-owed:** a copy **double-clicks into the edit popup, never travels**; a genuinely
+ported card **still travels** — both in one fixture, because the pair is the claim.
 
 ---
 
