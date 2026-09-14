@@ -4668,7 +4668,76 @@ extra delta on `main` via item 133. **Recovery handle recorded: the tip was
 `092d1bd7a2a5658f75238114e8a5ce0dec67cf33`.** **FIX's local worktree still holds a local
 `item122-styling` — untouched, FIX's to clear.**
 
-Registry: next free **140**.
+## BAND — A BATCH CLOSES AT ASSEMBLY — 2026-09-14
+
+> **A BATCH CLOSES AT ASSEMBLY — NOTHING MERGES BETWEEN THE ASSEMBLED DIFF AND ITS STAMP; A BATCH THAT
+> GROWS AFTER THE WORD IS A DIFFERENT BATCH.**
+
+**Why it needed saying now:** under batch ships, a merge lands in the open batch **by default** — so an
+ordinary, correct merge can silently enlarge the thing Fable reviewed and Nick worded. **The batch is
+not "main since the last deploy" once it is assembled; it is the diff that was READ.** *(This is why
+`item139-runner-guard` waits behind the stamp rather than merging on arrival: it is green, verified and
+ready, and merging it would still be wrong.)*
+
+## BATCH TWO — ASSEMBLY HELD FOR ITEM 133-B — 2026-09-14
+
+**Fable's review: PASS, PENDING ONE LINE.** Recorded verbatim at
+`docs/wrizo-alpha/batch-two-review-fable.md`.
+
+**OBS-1 IS A REAL DEFECT, and its shape is the one this ledger keeps meeting:** `BoardEditor.tsx`
+compares the derived name to **`'Untitled board'`** while that surface's fallback is **`'Untitled'`** —
+**the comparison can never be true, the "open empty when nameless" branch is DEAD, and an unnamed
+board's field opens pre-filled with "Untitled".** **A leftover of the fallback correction: the word
+appears TWICE IN ONE EXPRESSION and ONE was updated.** *(Not a missed file — a missed OCCURRENCE inside
+a single line. The same family as the origin/source pair and the depth-1 guard: a correction applied
+where it was noticed.)* **Cosmetic, no data risk** — an unedited Enter writes nothing.
+
+**ASSEMBLY IS HELD for FIX's ITEM 133-B** (one line + one check, its own branch and pair; the box is
+free) **UNLESS NICK SAYS "SHIP AS IS"** — in which case Batch Two assembles without it and **133-B
+rides Batch Three.**
+
+**THE ASSEMBLED DIFF AS CHAT 1 MEASURES IT: 8 product files, +313/-24, SCHEMA ZERO, SERVER ZERO.**
+*(Fable's review states -25. One line of disagreement, localised here rather than silently reconciled:
+chat 1's figure is `git diff --stat f12c318 HEAD -- apps/desktop/src apps/server/src`. Recorded under
+`a decision-complete count carries its breakdown`.)*
+
+**OBS-2 (scale, not defect):** the equality test decorates the whole text on every `selectionchange`, so
+**a keystroke now decorates twice** — item 86's territory, measured at scale there; the caret's run is
+the obvious cheaper identity. **OBS-3 (records):** FIX's park count of **179** matches the
+`"name": "PARKED"` form only, and **`item137.mjs` emits a bare `ITEM137 PARKED` line the counter cannot
+see** — **harmless at zero parks, an UNDERCOUNT the day it parks.** **TOOLS conforms the line.**
+*(Seventh count in the arc, and the first caught BEFORE it could be wrong — the failure is latent, not
+yet realised.)*
+
+## THE OVERLAP RECONCILED — PW2 LAUNCHED INTO A GRANTED PAIR — 2026-09-14
+
+**PW2 now reads its unsanctioned run as launched INTO FIX's granted pair — the "2" it walked past.**
+
+**CHAT 1's EVIDENCE, and it corroborates that reading exactly:** at **23:36:31** chat 1 directly
+observed the box carrying **precisely two fx17 processes** — `node 5576` (`run-suite`) and `node 49508`
+(`item84b.mjs`). **PW2's pre-flight "2" is that signature.** FIX's default leg ran **23:19:49 → ~23:47**
+(out-dir `wrizo-suite-5576`). **No surviving artifact pins PW2's exact minute** — the browser profiles
+are cleaned up — **so the launch is placed inside the window by fingerprint, not by clock, and that is
+stated as such.**
+
+**CHAT 1 OWNS THE SCOPE ERROR IN ITS EARLIER CONFIRMATION.** The 2026-09-13 box check answered **"was a
+GRANTED RUN on the box"** by enumerating **suite out-directories** — and it was TRUE as scoped. **But
+the question that mattered was "was any FOREIGN HARNESS alive during a granted pair," and a bare
+harness writes no out-directory.** **The instrument answered the question it was asked, and that was
+not the question that mattered** — chat 1's own canon, arriving against chat 1's own report.
+
+**FIX's STAMP STANDS: served == stamped (`index-Cw3mb3LO.js`) proves the harness measured its own
+tree; 84/84 both legs; NO VOID.** **RECORDED AS THE FIRST KNOWN FOREIGN HARNESS ALIVE DURING A GRANTED
+PAIR — which ITEM 139's PRE-FLIGHT WOULD HAVE REFUSED.**
+
+## ITEM 140 — SPEC ACCEPTED — 2026-09-14
+
+**From ERRATA: THE TOKEN IS CHECKED AGAINST THE FILE, NEVER MERELY PRESENT — so a STALE token FAILS
+once chat 1 clears it.** *(Presence-only would have made the grant a one-way latch: granted once, held
+forever. Checking against the file is what makes the clear-at-stamp step mean anything.)*
+
+Registry: next free **141**.
+
 
 
 
