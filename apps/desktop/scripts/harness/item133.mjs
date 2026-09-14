@@ -85,6 +85,14 @@ await withHarness(async (app) => {
   ok('S1: reaching it opens an edit in place — the name is edited where it lives, not in a dialog somewhere else',
     editing, String(editing));
 
+  // ITEM 133-B — WHAT THE FIELD OPENS WITH, read before a single character is
+  // typed. This board is seeded nameless, so the draft must be EMPTY: a writer
+  // naming a board for the first time should find a blank field, not a
+  // stand-in word they have to clear before they can type.
+  const unnamedDraft = editing
+    ? await app.evalJs("(document.querySelector('.crumb-rename')||{}).value")
+    : null;
+
   const type = async (value) => app.evalJs(`(() => {
     const i = document.querySelector('.crumb-rename');
     if (!i) return false;
@@ -118,6 +126,24 @@ await withHarness(async (app) => {
   ok('S2: and the board\'s own crumb shows it',
     (await app.evalJs("(document.querySelector('.crumb-rename-btn')||{}).textContent")) === 'Chapter Plan',
     String(await app.evalJs("(document.querySelector('.crumb-rename-btn')||{}).textContent")));
+
+  // ITEM 133-B — the same gesture on a NAMED board, for the other half of the
+  // pair. `?.click()` rather than a bare one: a driver that dies on a missing
+  // node reports nothing, and the assertion below is what should speak.
+  await app.evalJs("document.querySelector('.crumb-rename-btn')?.click()");
+  await sleep(300);
+  const namedDraft = await app.evalJs("(document.querySelector('.crumb-rename')||{}).value");
+  // Close it again with a real Escape. S3 below reads document.body.innerText,
+  // and an OPEN field is an <input> whose value is not innerText at all — the
+  // stale-name sweep would read a crumb that isn't there and pass for the
+  // wrong reason.
+  await app.evalJs(`document.querySelector('.crumb-rename')?.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
+  await sleep(250);
+
+  ok('ITEM 133-B: the rename field opens EMPTY on a nameless board and pre-filled with the name on a named one. The first cut compared the derived name against \'Untitled board\' while the crumb\'s own fallback was \'Untitled\', so the open-empty branch could never fire and a writer naming a board found the stand-in word sitting in the field, to be deleted before they could type. The comparison is gone rather than corrected: the draft derives with an EMPTY fallback, so namelessness produces emptiness directly and there is no sentinel string left to drift.',
+    unnamedDraft === '' && namedDraft === 'Chapter Plan',
+    JSON.stringify({ unnamedDraft, namedDraft }));
 
   // ==========================================================================
   // S3 — EVERY LIST SHOWING THE NAME SHOWS THE NEW ONE.

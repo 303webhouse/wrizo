@@ -2520,7 +2520,26 @@ export function BoardEditor({ id }: { id: string }) {
                 type="button"
                 className="crumb-here crumb-rename-btn"
                 title={t('boardRenameLabel')}
-                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, 'Untitled') === 'Untitled board' ? '' : boardName(getJournalEntry(id)?.text, 'Untitled')); setRenaming(true); }}
+                // ITEM 133-B — THE DRAFT OPENS WITH AN EMPTY FALLBACK, so a nameless
+                // board gives a nameless field. The first cut asked the question the
+                // long way round: it derived the name with the crumb's own fallback
+                // ('Untitled') and then compared the result against 'Untitled board'
+                // to decide whether to open blank. Those two strings were the SAME
+                // string when boardName() returned one stand-in for every caller; the
+                // moment the fallback became a caller's parameter (which was itself a
+                // correction — the crumb has always displayed plain 'Untitled') the
+                // comparison could never be true again, and the open-blank branch went
+                // dead. A writer naming a board for the first time found the stand-in
+                // word sitting in the field, to be selected and deleted before they
+                // could type their own.
+                //
+                // THE SENTINEL IS GONE RATHER THAN CORRECTED. Repairing the literal
+                // would have left a magic string that has to be kept in step with a
+                // fallback it cannot see — which is exactly the drift that produced
+                // this, and item 136 is about to retire those stand-ins entirely.
+                // Deriving with '' makes namelessness produce emptiness directly:
+                // nothing to compare, nothing to keep in step.
+                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
               >{title}</button>
             )}
           </div>
