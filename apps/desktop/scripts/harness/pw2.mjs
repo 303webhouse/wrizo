@@ -150,6 +150,19 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
+// ⚠ STRIP ITEMS ARE SELECTED BY NAME, NEVER BY INDEX. An index encodes the
+// strip's current ORDER into every probe that uses it, so the day a category is
+// added, removed or reordered, a run does not report a moved control — it
+// silently presses a DIFFERENT one and asserts against the wrong panel. The
+// failure is not a red; it is a green about something else. (TOOLS is
+// converting the existing index-based sites on main; this file is written the
+// new way from the start rather than becoming one more of them.)
+//
+// `.wz-strip-item` carries no per-category class, so the handle is the label's
+// own text — the name the writer reads, which is also what a ruling would
+// change deliberately rather than incidentally.
+const STRIP_PLAN = "[...document.querySelectorAll('.wz-strip-item')].find(b => b.querySelector('.wz-strip-label')?.textContent?.trim() === 'Plan')";
+
 // The chrome RECEDES while the writer types (the vanishing law) and takes
 // `pointer-events` with it, so a band control is genuinely unreachable until a
 // pointer stirs. That is correct product behaviour, not an obstacle to route
@@ -171,12 +184,12 @@ const wakeChrome = async (app) => {
 // to open would fail later, somewhere else, for a reason that reads as a
 // product bug. Ask first.
 const openPlan = async (app) => {
-  const already = await app.evalJs("!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && [...document.querySelectorAll('.wz-strip-item')][2]?.getAttribute('aria-pressed') === 'true')");
+  const already = await app.evalJs(`!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && ${STRIP_PLAN}?.getAttribute('aria-pressed') === 'true')`);
   if (already) return true;
   const there = await app.evalJs("document.querySelectorAll('.wz-strip-item').length > 2");
   if (!there) { ok('DRIVER: the cascade strip is mounted with a Plan category', false, 'strip missing'); return false; }
   await wakeChrome(app);
-  const opened = await pressEl(app, "[...document.querySelectorAll('.wz-strip-item')][2]", 'the strip Plan category opens');
+  const opened = await pressEl(app, STRIP_PLAN, 'the strip Plan category opens');
   if (!opened) return false;
   await sleep(300);
   return true;
