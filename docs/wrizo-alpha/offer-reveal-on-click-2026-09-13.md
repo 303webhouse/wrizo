@@ -2,11 +2,12 @@
 ## THE OFFER — clicking into markup shows it, on both surfaces, from one signal
 
 **Lane:** FIX · **Branch:** `reveal-on-click` · **Worktree:** `writer-studio-fx17`
-**Base:** `origin/main` @ `a3e8d59` · **Tip:** `8cce16b`
-**Date:** 2026-09-13 · **Standing:** **BUILT AND CARRIED — ITS PAIR IS OWED.**
-Not yet offered; the offer form arrives with the stamps.
+**Base:** `origin/main` @ `6255632` (merged in at `17cb743`) · **Tip offered:** `17cb743`
+**Date:** 2026-09-13, stamped 2026-09-14 · **Standing:** **OFFERED.** Batch Two
+assembles on it.
 
-**ZERO SCHEMA. ZERO SERVER.** 5 files, +440/−23 — three product, two harness.
+**ZERO SCHEMA. ZERO SERVER.** Against current main: **6 files, +636/−23** — three
+product, two harness, one record (this document).
 
 **CATEGORY, flagged under the merge rule:** product code (`draftDecoration.ts`,
 `ForwardOnlyEditor.tsx`, `BoardEditor.tsx`) plus harness. **The product half
@@ -14,57 +15,59 @@ gates the whole offer.**
 
 ---
 
-## §1 · THE STAMP — **OWED, NOT CLAIMED**
-
-**THIS BRANCH HAS NOT BEEN STAMPED.** The pair below was measured on the
-**pre-split lineage**, where this work sat on top of item 133 on the (already
-merged) `item122-styling`. The one-subject-one-branch ruling moved it: the two
-commits were cherry-picked onto **current `origin/main` (`a3e8d59`)**, which is a
-**different tree**, so those numbers do not describe the code offered here. They
-are recorded as **history, not as this branch's stamp** — a stamp that names a
-tree it was not run on is a false record, and the whole point of the provenance
-line is that it cannot be borrowed.
-
-**A fresh pair at `8cce16b` is owed**, by chat 1's announcement, and this section
-is rewritten around the real numbers when it lands.
-
-**WHAT THE PRE-SPLIT PAIR MEASURED (history):**
+## §1 · THE STAMP
 
 | setting | result | stamp |
 |---------|--------|-------|
-| `HARNESS_PARKED` unset | 81/81 CLEAN | `tree=1fec9ac bundle=index-CwqM6vX3.js/575426b` |
-| `HARNESS_PARKED=1` | 81/81 CLEAN | `tree=1fec9ac bundle=index-CwqM6vX3.js/575426b` |
+| `HARNESS_PARKED` unset | **84/84 CLEAN** | `tree=17cb743 bundle=index-Cw3mb3LO.js/576642b` |
+| `HARNESS_PARKED=1` | **84/84 CLEAN** | `tree=17cb743 bundle=index-Cw3mb3LO.js/576642b` |
 
-Machine clear, no contamination and no mid-run VOID in either leg; the tree
-measured 0 dirty before the first leg and 0 dirty after the second. On the new
-base the cherry-picks applied cleanly and **`tsc --noEmit` and `build:web` are
-green browserlessly** — which is not a stamp, and is not offered as one; it only
-means the box turn will not be spent discovering a compile error.
+**STAMPED ON THE MERGED TREE.** `origin/main` had moved **21 commits** to `6255632`
+and was merged in at `17cb743` before either leg ran — a pair run on an unmerged
+branch proves the change works beside code it will not land next to. Machine
+clear: **no contamination, no mid-run VOID**, every one of the 84 harnesses
+returned OK in both legs. The tree measured **0 dirty before the first leg and 0
+dirty after the second**, so nothing was written between the two stamps.
+**Pre-flight read 0 harness browsers and 0 run-suite processes** before launch.
 
-**WHAT THE NEW PAIR MUST RE-CONFIRM**, stated in advance so a shortfall is
-visible rather than explained afterwards: **81 harnesses** (`reveal.mjs` is new,
-and the count on the new base may differ if other lanes have added files since),
-`reveal.mjs` **PASS (16 checks)**, and the two expectations below.
+**THE ROSTER IS 84, MEASURED — NOT THE 81 THIS DOCUMENT PREDICTED.** The earlier
+draft said the count "may differ if other lanes have added files since", and it
+did: `item133.mjs`, `item137.mjs` and one more landed in the 21 commits. **The
+number is reported as measured rather than as predicted**, which is the only
+reason the prediction was worth writing down.
 
-**THE PARK COUNT, TO BE COUNTED RATHER THAN ASSUMED:** on the pre-split pair the
-parked leg carried **179** park entries against item 133's **179** — unchanged,
-which is the claim, since this swaps a signal without retiring an assertion. The
-new pair re-counts against **current main's own baseline**, which is the number
-that matters now; no park is expected to be owed.
+**ITEM 133 LANDED IN MAIN DURING THE SPLIT**, which turns this pair into
+something better than it was designed to be: reveal-on-click is stamped **beside
+133's own rename control in the same `BoardEditor.tsx`**, not instead of it.
+`item133.mjs` returns **PASS (13 checks)** on this tree, so the two tickets that
+were forcibly separated are green together.
 
-**AND THE ASSERTION MOST AT RISK WAS GREEN ON ITS OWN TERMS:** on the pre-split
-pair `fx5.mjs` returned **PASS (62 checks)**, S6's reveal-adjacent-to-caret among
-them. That is the check FX5 wrote for the register this ticket re-signals, and it
-passing is the evidence that the enumerated pair's *behaviour* survived its
-removal. **It is the single check to look at first if the new pair reds.**
+**THE THREE CHECKS THIS DOCUMENT NAMED IN ADVANCE, so a shortfall could not be
+explained away afterwards:**
 
-**ONE DISCLOSURE ABOUT THAT CHECK, since it is the kind of thing worth saying out
-loud:** fx5 S6 places its caret with a programmatic Range and then dispatches a
-synthetic `keyup` as a nudge. **That nudge is now inert** — nothing listens to
-`keyup` for the reveal any more. The check still passes because setting a Range
-fires a genuine `selectionchange`, which is the signal this ticket installs. The
-assertion is unfalsified and therefore **no park is owed**, but the dead nudge is
-recorded here so a future reader does not infer that `keyup` still matters.
+| named in advance | measured |
+|---|---|
+| `reveal.mjs` at 16 checks | **PASS (16 checks)**, both legs |
+| `fx5.mjs` — "the first check to look at if the new pair reds" | **PASS (62 checks)** |
+| the park count, against current main's baseline | **179**, see below |
+
+`fx5.mjs` is the one that mattered: S6's reveal-adjacent-to-caret is the
+assertion FX5 wrote for the register this ticket re-signals, and its passing is
+the evidence that the retired `keyup`/`mouseup` pair's *behaviour* survived the
+swap rather than merely appearing to.
+
+**THE PARK COUNT, WITH ITS LIMIT STATED.** The parked leg carries **179** entries
+of the `"name": "PARKED"` form — the same 179 measured pre-split, consistent with
+item 133 retiring nothing. **But that number is a proxy, not a total:**
+`item137.mjs` reports its park as a bare `ITEM137 PARKED` line, which this
+pattern does not count. So 179 is a *comparable measure across runs*, not a
+census of every park in the roster.
+
+**The claim that no park is owed therefore does not rest on the count.** It rests
+on this ticket retiring no assertion, and on `fx5.mjs` — the only harness whose
+assertions this change could plausibly have falsified — returning green
+unmodified. A differential count against a main-only baseline would need a third
+run that was not taken, and is not implied here.
 
 ---
 
