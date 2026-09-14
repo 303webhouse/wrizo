@@ -4502,7 +4502,82 @@ instrument names where it cannot see, so its silence is bounded instead of being
 **QUEUE: TOOLS (on the box) → FIX's reveal pair (short) → ERRATA's wave 2 pair (long) → PW2 after
 S4.** **BATCH TWO ASSEMBLES AT: item 133 + item 137 + reveal-on-click + item 135.** **133 is MERGED**
 (`973e724`); **135 is merged**; 137 and reveal are owed.
-Registry: next free **138**.
+## BAND — TWO LAW-LINES — 2026-09-13
+
+- **NOTHING IS DELETED ON A CLAIM OF "NOTHING IS LOST" — THE CLAIM IS MEASURED FIRST.** **Earned
+  here: both FIX and Fable stated that every commit on `item122-styling` also lived on the two new
+  branches. FOUR DID. THREE DID NOT** — the reveal commits — **and the ONLY copy of
+  `docs/wrizo-alpha/offer-reveal-on-click-2026-09-13.md` was among them.** *(Neither desk was careless;
+  the claim was reasonable and the re-cut branch LOOKED like a move. That is the point: "nothing is
+  lost" is exactly the kind of claim that feels safe to accept, which is why it is the kind that must
+  be measured.)*
+- **A CHECK THAT BOUNDS THE SYMPTOM CERTIFIES THE BUG — ASSERT THE INVARIANT THE DEFECT BREAKS.**
+  (TOOLS, item 137.) **S1 at 768 PASSED ON THE BROKEN BUILD, at 9.0px.** A check that measures the
+  symptom at one window height **cannot distinguish a fixed layout from a lucky one.** **The assertion
+  has to be the invariant: THE GAP MUST NOT DEPEND ON WINDOW HEIGHT.** *(Sibling to `a check can pass
+  for the wrong reason when its premise is already dead` — here the premise is alive and the check is
+  simply aimed at a consequence rather than at the cause.)*
+
+## THE `item122-styling` REF — SEQUENCE AGREED — 2026-09-13
+
+**1. FIX carries `offer-reveal-on-click-2026-09-13.md` onto `reveal-on-click`** (rewritten around the
+real stamps when the pair lands). **2. THEN chat 1 DELETES `item122-styling` outright** — **not reset:
+a fully-merged branch whose content lives elsewhere IS a name that resolves to the wrong document, and
+resetting leaves that trap standing.**
+
+**Preserved meanwhile by chat 1:** the doc at **173 lines, md5 `03d7bff363fe71d337c841d88131d3b7`**,
+also recoverable at `092d1bd:docs/wrizo-alpha/offer-reveal-on-click-2026-09-13.md`. **Nothing is at
+risk; the deletion simply waits for the record to have a home.**
+
+## ITEM 137 — CLOSED (merged) — 2026-09-13
+
+**`item137-trash-foot @ 383f680`, 83/83 CLEAN both legs at `bd0f322`, merged.** **ONE product file:
+`index.css` (+27/-1).** **Zero schema, zero server.** **THE FOURTH FOUNDER-SITTING FINDING IS CLOSED.**
+
+## ITEM 136 — S0 ACCEPTED AS THE SCHEMA PLAN — 2026-09-13
+
+**ACCEPTED for Fable review AT ITS BATCH:** **`title` text, NULLABLE, NO DEFAULT** · **boot-time
+add-column (THE TENTH)** · **four server whitelist edits** · **SQL `null` → JS `undefined`** · **LWW
+unchanged.**
+
+**THIS IS A SCHEMA ADDITION AND IT CARRIES THE STANDING SCHEMA LAW: it STOPS for Nick's word.** Its
+own batch, Fable review scope, and the STOP is structural — nobody has to remember it at build time.
+
+**RULED BY FABLE, FLAGGED FOR NICK'S VETO: (4) = (a).** **An empty commit UNSETS `title` and the
+STAND-IN RETURNS; WHITESPACE-ONLY IS EMPTY.** **The stand-in IS `boardName()`'s rule — first non-empty
+line, trimmed, 60 cap — ONE FUNCTION for pages and boards.** *(That single-sourcing is what makes the
+thirty derivations tractable, and it is `one fact, one derivation` applied before the field exists.)*
+
+**KNOWN LIMIT — TO BE STATED IN 136's OFFER, NOT GUARDED: a pre-136 tab that pushes a record after the
+deploy NULLS ITS TITLE.** **The app is served fresh on every load**, so the window is narrow. *(Stating
+a limit instead of guarding it is the right call when the guard would cost more than the exposure —
+but it only works if the limit is WRITTEN DOWN, which is why it rides the offer.)*
+
+## ITEM 138 — PAGE-PINS ARE TALL (PW lane) — OPENS 2026-09-13
+
+**OPENS, after PW2 stamps.** **Nick's THUMBNAIL LAW + Q4's aspect lock applied to page-pin cards on
+the canvas.** **NEW pins are born TALL.** **EXISTING pins keep their stored geometry UNTIL TOUCHED,
+then the lock applies.** **NO MIGRATION OF ARRANGEMENT.**
+
+*(That is the same shape as `onCanvas`'s absence-means-displayed: the writer's existing arrangement is
+never rewritten underneath them, and the new rule takes effect only where they act. A board they laid
+out last month opens exactly as they left it.)*
+
+## ⚠ RELAY GAP — PW2's TWO QUESTIONS — 2026-09-13
+
+**The 2026-09-13 relay states "PW2's two questions ruled below." NO RULINGS FOLLOWED.** **Not recorded;
+requested.** **This is the FIFTH described-but-not-attached payload**, and the first since **A RELAY
+BLOCK CARRIES WHAT IT NAMES** was ratified — **the law naming the exact failure did not prevent its
+next instance**, which is worth knowing about the law: it makes the gap DETECTABLE, not impossible.
+
+## QUEUE AND BATCH TWO — 2026-09-13
+
+**QUEUE: FIX's reveal pair NOW (TOOLS is off the box) → ERRATA's wave 2 → PW2 after S4.**
+**BATCH TWO: item 133 ✓ · item 135 ✓ · item 137 ✓ · reveal-on-click OWED.** **It assembles at reveal's
+landing.**
+
+Registry: next free **139**.
+
 
 
 
