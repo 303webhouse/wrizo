@@ -4736,6 +4736,81 @@ PAIR — which ITEM 139's PRE-FLIGHT WOULD HAVE REFUSED.**
 once chat 1 clears it.** *(Presence-only would have made the grant a one-way latch: granted once, held
 forever. Checking against the file is what makes the clear-at-stamp step mean anything.)*
 
+## BAND — AN INSTRUMENT ANSWERS THE QUESTION IT WAS ASKED — 2026-09-14
+
+> **AN INSTRUMENT ANSWERS THE QUESTION IT WAS ASKED — ASK WHETHER THAT WAS THE QUESTION THAT MATTERED.**
+
+**Shared wording, and it converges from two directions on the same day:** **chat 1's box confirmation**
+(enumerated suite out-directories to answer "was a GRANTED RUN on the box," when the question that
+mattered was "was any FOREIGN HARNESS alive" — and a bare harness writes no out-directory) and
+**TOOLS' park counter** (matches the `"name": "PARKED"` form, so a bare `ITEM137 PARKED` line is
+invisible to it). **Both instruments were CORRECT. Both answered a narrower question than the one being
+relied on.**
+
+*(This is the fourth face of the same canon — after 118 (c), 130 and 131 (a) established that a suite
+certifies behaviour and not meaning. The new half is that it applies to a DESK'S OWN REPORTS, not only
+to harnesses: chat 1 ran a query, believed its answer, and the query was narrower than the claim built
+on it.)*
+
+## BATCH TWO — ASSEMBLED — 2026-09-14
+
+**RANGE: `f12c318` → `2155457`. CLOSED AT ASSEMBLY. NOTHING FURTHER ENTERS.**
+
+**PACKAGES (five):** **item 133** (naming) · **item 133-B** (the rename draft) · **item 135**
+(suspension void, harness) · **item 137** (trash at the foot) · **reveal-on-click**.
+
+**PRODUCT DELTA: 8 files, +332/-24.** **SCHEMA: ZERO. SERVER BYTES: ZERO.** Roster **84**.
+
+| file | Δ |
+| --- | --- |
+| `components/BoardEditor.tsx` | +125 |
+| `store/draftDecoration.ts` | +86 |
+| `index.css` | +39 |
+| `store/entryText.ts` | +36 |
+| `components/PageFace.tsx` | +28 |
+| `pages/PageEditor.tsx` | +23 |
+| `components/ForwardOnlyEditor.tsx` | +16 |
+| `store/deskLexicon.ts` | +3 |
+
+**ITEM 133-B's BASE CHECKED AS ORDERED: cut BEFORE reveal** (`dde2251`) — roster 83, `reveal.mjs`
+absent, exactly as FIX reported. **Trial merge CLEAN, tsc x2 exit 0, and 133-B's one line and reveal's
+hunks occupy DIFFERENT REGIONS of `BoardEditor.tsx`.** **The batch pair certifies the integration.**
+
+**HELD BEHIND THE STAMP, both green and both waiting:** **`item139-runner-guard @ c927fef`** and
+**TOOLS' park rider (`item137-trash-foot @ 84d42bb`, harness only)**. **Nothing else enters.**
+
+## RULED FOR TOOLS, AFTER THE STAMP — THE PARK-FORM CONFORMANCE — 2026-09-14
+
+**Conform all FOUR remaining prose-only park blocks — `item130.mjs`, `item83e.mjs`, `pw1.mjs`,
+`item133.mjs` — to the EMITTED-JSON form, in ONE harness offer.** **One subject: THE PARK RECORD.**
+**Merged on chat 1's verification, NO PAIR.** **`item133.mjs` only AFTER 133-B has merged** (it has,
+at `2155457`). **PW2 and FIX informed.**
+
+*(One offer rather than four is `one commit per explanation` read correctly: four files changed for a
+single reason is ONE explanation, and splitting it would make four commits nobody could bisect between
+usefully.)*
+
+## COORDINATION — VW1's SITE MOVED, AND WHY IT DOES NOT MATTER — 2026-09-14
+
+**FIX's insertions moved the VW1 site in `item133.mjs` from line 163 to 189.** **TOOLS merges `main`
+into `vw1-rail` before its window and RE-CENSUSES AT TIP.** **SITES ARE LOCATED BY CONTENT, NEVER BY
+LINE.**
+
+*(Demonstrated in passing while checking: chat 1 found the site on `main` by grepping its CONTENT —
+`[...document.querySelectorAll('.wz-strip-item')][1]?.click()` — and the line number it happened to
+sit on was incidental. That is the brief law and the harness-index law meeting: a line number is a
+courtesy, and an index is a trap that arms on reorder.)*
+
+## BAND — FIX's 133-B LAW-LINE — 2026-09-14
+
+> **A CONTRACT CHANGE SWEEPS DEPENDENTS, NOT CALL SITES — A LITERAL THAT LEANED ON THE OLD CONTRACT IS
+> A DEPENDENT.**
+
+**The 133-B defect is the proof: `boardName()`'s fallback became a PARAMETER, every CALL SITE was
+updated, and a bare string literal `'Untitled board'` sitting in a COMPARISON was not — because it was
+not a call site.** **It was a dependent.** **And the check asserts THE BRANCH IS REACHABLE**, not that
+the field looks right today — which is what makes it bite on the defect's actual shape rather than on
+its symptom.
 Registry: next free **141**.
 
 
