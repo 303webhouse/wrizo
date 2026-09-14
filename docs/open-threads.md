@@ -3,6 +3,51 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## ITEM 137 — THE TRASH AT THE FOOT: BUILT AND OFFERED — 2026-09-13 (tools lane; branch `item137-trash-foot`)
+
+**OFFERED TO CHAT 1 — BOTH LEGS CLEAN, 83/83 EACH.** Full record:
+`docs/menus/item137-offer-2026-09-13.md`. **S0 `cf22e6b`** (headful measurement, no behaviour
+change) · **fix `9a18ee1`** · **sitting frames + merge `bd0f322`**.
+
+```
+SUITE DONE HARNESS_PARKED=unset — 83/83 of 83 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bd0f322 bundle=index-C4zPfe40.js/576319b
+SUITE DONE HARNESS_PARKED=1 — 83/83 of 83 returned a passing verdict
+SUITE RESULT: CLEAN — tree=bd0f322 bundle=index-C4zPfe40.js/576319b NO-REBUILD
+```
+
+**S0 MEASURED THE HYPOTHESIS RATHER THAN TRUSTING IT, and it held.** 1366x768: gap 8.8px,
+`.wz-strip` 544.4px, aside 545.2px. 1366x1200: gap **303.6px**, `.wz-strip` **still 544.4px**,
+aside 840.0px. The decisive reading is not the gap but the strip rendering the IDENTICAL height at
+both viewports while the aside tracked 70vh exactly — `height:100%` resolves against the parent's
+HEIGHT, `min-height` does not make that definite, so the percentage fell back to auto, the strip
+went content-tall, and `margin-top:auto` had no free space to consume. **WHY THE FOUNDER SAID
+"INLINE": at 768 the gap is 8.8px** — the eye sees Trash sitting after the last item. The defect
+was never that Trash was slightly high; **it was never pinned at all**, and it strands further the
+taller the window gets.
+
+**THE FIX IS GEOMETRY ONLY:** the aside becomes a flex column, `.wz-strip` takes `flex:1` in place
+of the percentage. Stretching into a flex parent needs no definite height on that parent at all —
+inventing a height would have put a second source of truth beside `min-height:70vh` for the next
+lane to desynchronise. After: 1200's gap 303.6 -> **8.8px**, strip 544.4 -> **839.2px** against an
+840.0 aside; the residual 8.8px is structural (8px padding + 1px border), identical at both heights.
+
+**ITEM 130 TRAVELS WITH IT.** The fix adds `display:flex` to the very element carrying item 130's
+`z-index:1`. Untouched — and not merely asserted: `item137.mjs` S3 re-runs item 130's own hit-test
+question on its own fixture at both heights, and `item130.mjs` still reports PASS (16) in the
+stamped run. Neither repair may buy the other.
+
+**THE HARNESS BITES 3/9 PRE-FIX, AND THE LOAD-BEARING DETAIL IS WHICH CHECK DID NOT.** S1 @ 768
+**passed on the broken build** at 9.0px: a check that merely bounded the gap would have certified
+the bug as fixed. What separates PINNED from ACCIDENTALLY CLOSE is behaviour across heights, so the
+discriminating assertion is that **the gap does not care how tall the window is** (drift 294.6px
+pre-fix). S2 asserts the mechanism itself, so a future change restoring the bug is NAMED by the
+check, not merely detected. **Nothing parked** — no prior assertion covered the Trash's vertical
+position, which is precisely why a founder had to report it.
+
+**SITTING FRAMES** at both heights in `docs/menus/item137-shots/` — 768 (where the defect was
+invisible) and 1200 (where it stranded). Nick's eye is the gate there, not the numbers.
+
 ## PRE-FLIGHT SITTING — 2026-08-02 (Nick, ranked) — the fix wave's input
 
 Full ranked log: `docs/wrizo-alpha/sitting-log-2026-08-02.md` (ranks are Nick's word; laptop
@@ -4457,7 +4502,244 @@ instrument names where it cannot see, so its silence is bounded instead of being
 **QUEUE: TOOLS (on the box) → FIX's reveal pair (short) → ERRATA's wave 2 pair (long) → PW2 after
 S4.** **BATCH TWO ASSEMBLES AT: item 133 + item 137 + reveal-on-click + item 135.** **133 is MERGED**
 (`973e724`); **135 is merged**; 137 and reveal are owed.
-Registry: next free **138**.
+## BAND — TWO LAW-LINES — 2026-09-13
+
+- **NOTHING IS DELETED ON A CLAIM OF "NOTHING IS LOST" — THE CLAIM IS MEASURED FIRST.** **Earned
+  here: both FIX and Fable stated that every commit on `item122-styling` also lived on the two new
+  branches. FOUR DID. THREE DID NOT** — the reveal commits — **and the ONLY copy of
+  `docs/wrizo-alpha/offer-reveal-on-click-2026-09-13.md` was among them.** *(Neither desk was careless;
+  the claim was reasonable and the re-cut branch LOOKED like a move. That is the point: "nothing is
+  lost" is exactly the kind of claim that feels safe to accept, which is why it is the kind that must
+  be measured.)*
+- **A CHECK THAT BOUNDS THE SYMPTOM CERTIFIES THE BUG — ASSERT THE INVARIANT THE DEFECT BREAKS.**
+  (TOOLS, item 137.) **S1 at 768 PASSED ON THE BROKEN BUILD, at 9.0px.** A check that measures the
+  symptom at one window height **cannot distinguish a fixed layout from a lucky one.** **The assertion
+  has to be the invariant: THE GAP MUST NOT DEPEND ON WINDOW HEIGHT.** *(Sibling to `a check can pass
+  for the wrong reason when its premise is already dead` — here the premise is alive and the check is
+  simply aimed at a consequence rather than at the cause.)*
+
+## THE `item122-styling` REF — SEQUENCE AGREED — 2026-09-13
+
+**1. FIX carries `offer-reveal-on-click-2026-09-13.md` onto `reveal-on-click`** (rewritten around the
+real stamps when the pair lands). **2. THEN chat 1 DELETES `item122-styling` outright** — **not reset:
+a fully-merged branch whose content lives elsewhere IS a name that resolves to the wrong document, and
+resetting leaves that trap standing.**
+
+**Preserved meanwhile by chat 1:** the doc at **173 lines, md5 `03d7bff363fe71d337c841d88131d3b7`**,
+also recoverable at `092d1bd:docs/wrizo-alpha/offer-reveal-on-click-2026-09-13.md`. **Nothing is at
+risk; the deletion simply waits for the record to have a home.**
+
+## ITEM 137 — CLOSED (merged) — 2026-09-13
+
+**`item137-trash-foot @ 383f680`, 83/83 CLEAN both legs at `bd0f322`, merged.** **ONE product file:
+`index.css` (+27/-1).** **Zero schema, zero server.** **THE FOURTH FOUNDER-SITTING FINDING IS CLOSED.**
+
+## ITEM 136 — S0 ACCEPTED AS THE SCHEMA PLAN — 2026-09-13
+
+**ACCEPTED for Fable review AT ITS BATCH:** **`title` text, NULLABLE, NO DEFAULT** · **boot-time
+add-column (THE TENTH)** · **four server whitelist edits** · **SQL `null` → JS `undefined`** · **LWW
+unchanged.**
+
+**THIS IS A SCHEMA ADDITION AND IT CARRIES THE STANDING SCHEMA LAW: it STOPS for Nick's word.** Its
+own batch, Fable review scope, and the STOP is structural — nobody has to remember it at build time.
+
+**RULED BY FABLE, FLAGGED FOR NICK'S VETO: (4) = (a).** **An empty commit UNSETS `title` and the
+STAND-IN RETURNS; WHITESPACE-ONLY IS EMPTY.** **The stand-in IS `boardName()`'s rule — first non-empty
+line, trimmed, 60 cap — ONE FUNCTION for pages and boards.** *(That single-sourcing is what makes the
+thirty derivations tractable, and it is `one fact, one derivation` applied before the field exists.)*
+
+**KNOWN LIMIT — TO BE STATED IN 136's OFFER, NOT GUARDED: a pre-136 tab that pushes a record after the
+deploy NULLS ITS TITLE.** **The app is served fresh on every load**, so the window is narrow. *(Stating
+a limit instead of guarding it is the right call when the guard would cost more than the exposure —
+but it only works if the limit is WRITTEN DOWN, which is why it rides the offer.)*
+
+## ITEM 138 — PAGE-PINS ARE TALL (PW lane) — OPENS 2026-09-13
+
+**OPENS, after PW2 stamps.** **Nick's THUMBNAIL LAW + Q4's aspect lock applied to page-pin cards on
+the canvas.** **NEW pins are born TALL.** **EXISTING pins keep their stored geometry UNTIL TOUCHED,
+then the lock applies.** **NO MIGRATION OF ARRANGEMENT.**
+
+*(That is the same shape as `onCanvas`'s absence-means-displayed: the writer's existing arrangement is
+never rewritten underneath them, and the new rule takes effect only where they act. A board they laid
+out last month opens exactly as they left it.)*
+
+## ⚠ RELAY GAP — PW2's TWO QUESTIONS — 2026-09-13
+
+**The 2026-09-13 relay states "PW2's two questions ruled below." NO RULINGS FOLLOWED.** **Not recorded;
+requested.** **This is the FIFTH described-but-not-attached payload**, and the first since **A RELAY
+BLOCK CARRIES WHAT IT NAMES** was ratified — **the law naming the exact failure did not prevent its
+next instance**, which is worth knowing about the law: it makes the gap DETECTABLE, not impossible.
+
+## QUEUE AND BATCH TWO — 2026-09-13
+
+**QUEUE: FIX's reveal pair NOW (TOOLS is off the box) → ERRATA's wave 2 → PW2 after S4.**
+**BATCH TWO: item 133 ✓ · item 135 ✓ · item 137 ✓ · reveal-on-click OWED.** **It assembles at reveal's
+landing.**
+
+## THE RELAY LAW TIGHTENED — A BLOCK IS COMPLETE FOR ITS RECIPIENT — 2026-09-13
+
+> **A BLOCK IS COMPLETE FOR ITS RECIPIENT — A RULING YOU MUST RECORD IS WRITTEN IN YOUR BLOCK,
+> WHATEVER ELSE CARRIES IT.**
+
+**The fifth miss was A NEW SHAPE: "ruled below" pointed into ANOTHER LANE'S block.** **The payload
+existed and was complete — for a different reader.** *(This is why the first law did not prevent it:
+"a relay block carries what it names" is satisfied, from the sender's seat, by a payload that exists
+SOMEWHERE in the relay. Completeness is a property of the block AS RECEIVED, and only the recipient can
+judge it.)*
+
+## PW2 — THE THREE RULINGS, IN FULL — 2026-09-13
+
+**(1) THE HEADING — NO STACKED HEADING.** **The survey's heading stays THE BOARD'S NAME**; under it,
+**two labelled sections, "Pages" and "Boards".** **"Linked to this board" does NOT render as a line.**
+**`cascadePlanLinkedHeading` becomes the zone's `aria-label` OR IS REMOVED — no dead lexicon term.**
+*(The dead-term clause is the lexicon's version of the dead-affordance rule: a name nothing renders is
+a promise the next reader will try to keep.)*
+
+**(2) PAGE-PINS ON THE CANVAS — OUT OF PW2's SCOPE, CORRECTLY. It is ITEM 138** (PW lane, after PW2
+stamps): new pins born tall, existing keep stored geometry until touched, then the aspect lock applies,
+**no migration of arrangement.** **PLAN DESK CORROBORATES THE PREMISE: `BOARD_PIN_W/H` = 0.28/0.12 =
+2.33:1 — WIDE since AB4.** *(So page-pins have been rendering as boards' shape since long before the
+thumbnail law existed — the law did not create the defect, it made it nameable.)*
+
+**(3) THE COPY IS BUILT FROM A WHITELIST, NEVER SPREAD-AND-STRIP.** **Carry NOTHING by default; LIST
+what travels; JUSTIFY each.** **PW2 found that a spread WOULD have carried `sourceEntryId` across from
+a ported card** — which is the load-bearing-field law arriving as a concrete near-miss rather than a
+principle. *(Spread-and-strip fails silently on every field added LATER; a whitelist fails loudly, by
+omitting something someone then has to justify adding.)*
+
+## TOOLS — THE VW1 CENSUS IS 39, NOT 38 — 2026-09-13
+
+**The delta is ONE SITE: `item133.mjs:163`, landed by `7b02afe` AFTER the brief's census was taken.
+Every other bucket exact.**
+
+**RULED: the 39th is IN SCOPE** (the ticket's "done" is ZERO index selectors, and **check 7 would fail
+on it anyway**). **THE BRIEF's 38 IS NOT EDITED — it was RIGHT WHEN TAKEN, and the brief itself orders
+the re-census.** **The offer and the ledger carry 39 WITH THE PROVENANCE.**
+
+**THIS IS THE FIRST COUNT IN THE ARC THAT MOVED FOR AN HONEST REASON.** The other six were the
+instrument mis-seeing the tree; **this one is the TREE MOVING UNDER A CORRECT COUNT.** **Hence the
+brief is not corrected — correcting it would erase the fact that it was accurate**, and a census with a
+timestamp is a different kind of claim from a census with an error.
+
+## TWO UNAUTHORIZED LAUNCHES, BOTH SELF-REPORTED — 2026-09-13
+
+**(1) ERRATA, 21:59:55.** A demonstration command started a run because **`w1run.sh` carried the GO
+guard's COMMENT and not the GUARD.** Box was clear at launch per the reaper; **killed ~22:02; six files
+ran, 75 never started; log and out-dir QUARANTINED as `KILLED-unauthorized-20260913-215850`; NO STAMP
+CLAIMED.** **All three drivers now refuse — verified by running.**
+
+**(2) PW2, time unstated.** Ran `pw2.mjs` to iterate S4 **with a pre-flight showing 2 live processes,
+and proceeded** — on the belief **"one harness isn't a suite."** Nothing running since.
+
+**CHAT 1's CONFIRMATION FROM THE BOX RECORD, AS ASKED: NO GRANTED RUN WAS ON THE BOX IN THAT WINDOW.**
+Suite out-directories on 2026-09-13 run **03:22 → 06:38** (TOOLS' item-137 work) and then **nothing
+until 23:22**. **The 21:59–22:02 window is EMPTY of any suite of record.** **Chat 1 ran no suite on
+09-13 at all**; TOOLS was off the box; **FIX was holding for an announcement not yet issued.** **No
+lane lost a stamp.**
+
+**WHAT IS CREDITABLE, AND WORTH SAYING: BOTH WERE SELF-REPORTED.** Neither was caught by an
+instrument — **ERRATA's guard comment and PW2's pre-flight both FAILED, and the lanes reported
+themselves anyway.** *(That is the only reason either is in this ledger. A house where unauthorized
+launches are self-reported is a house that can fix the guard; one where they are concealed learns
+nothing until two stamps collide.)*
+
+## ITEM 139 — THE GUARD LIVES IN THE RUNNER (harness) — OPENS 2026-09-13
+
+**OPENS. ERRATA, as its own SMALL offer BEFORE its pair if it costs less than one.** **`withHarness`
+REFUSES to open a browser without the granted token, AND refuses when the pre-flight counts a live
+foreign run — A HARD STOP, NOT A PRINT.**
+
+**BAND — TWO LAW-LINES:**
+- **A RULE THAT LIVES IN A COMMENT IS ENFORCED BY MEMORY; A RULE THAT FAILS A RUN IS ENFORCED BY THE
+  RUN.** (ERRATA.) **`w1run.sh` is the proof: it carried the guard's COMMENT and not the guard**, and
+  read as guarded to everyone including its author. *(Third time this exact shape has cost something —
+  after `tutor-mirror` and item 85-B's static guard, both of which exist because a convention everyone
+  knew was not a convention anything enforced.)*
+- **ONE HARNESS IS A RUN.** (PW2.) **"One harness isn't a suite" is TRUE and IRRELEVANT: the box is
+  contended by BROWSERS, not by suites**, and a single harness opens them exactly as a suite does.
+
+## THE `item122-styling` REF — DELETED — 2026-09-13
+
+**Deleted from `origin` by chat 1, after measuring rather than on the claim.** **The offer doc has a
+home at `985a139`** (on `origin/reveal-on-click`, rewritten around the real stamps — content differs
+from the preserved copy, as intended). **Three commit OBJECTS were unique to the branch; their CONTENT
+was fully covered** — doc on `reveal-on-click`, reveal code byte-identical there, `BoardEditor.tsx`'s
+extra delta on `main` via item 133. **Recovery handle recorded: the tip was
+`092d1bd7a2a5658f75238114e8a5ce0dec67cf33`.** **FIX's local worktree still holds a local
+`item122-styling` — untouched, FIX's to clear.**
+
+## BAND — A BATCH CLOSES AT ASSEMBLY — 2026-09-14
+
+> **A BATCH CLOSES AT ASSEMBLY — NOTHING MERGES BETWEEN THE ASSEMBLED DIFF AND ITS STAMP; A BATCH THAT
+> GROWS AFTER THE WORD IS A DIFFERENT BATCH.**
+
+**Why it needed saying now:** under batch ships, a merge lands in the open batch **by default** — so an
+ordinary, correct merge can silently enlarge the thing Fable reviewed and Nick worded. **The batch is
+not "main since the last deploy" once it is assembled; it is the diff that was READ.** *(This is why
+`item139-runner-guard` waits behind the stamp rather than merging on arrival: it is green, verified and
+ready, and merging it would still be wrong.)*
+
+## BATCH TWO — ASSEMBLY HELD FOR ITEM 133-B — 2026-09-14
+
+**Fable's review: PASS, PENDING ONE LINE.** Recorded verbatim at
+`docs/wrizo-alpha/batch-two-review-fable.md`.
+
+**OBS-1 IS A REAL DEFECT, and its shape is the one this ledger keeps meeting:** `BoardEditor.tsx`
+compares the derived name to **`'Untitled board'`** while that surface's fallback is **`'Untitled'`** —
+**the comparison can never be true, the "open empty when nameless" branch is DEAD, and an unnamed
+board's field opens pre-filled with "Untitled".** **A leftover of the fallback correction: the word
+appears TWICE IN ONE EXPRESSION and ONE was updated.** *(Not a missed file — a missed OCCURRENCE inside
+a single line. The same family as the origin/source pair and the depth-1 guard: a correction applied
+where it was noticed.)* **Cosmetic, no data risk** — an unedited Enter writes nothing.
+
+**ASSEMBLY IS HELD for FIX's ITEM 133-B** (one line + one check, its own branch and pair; the box is
+free) **UNLESS NICK SAYS "SHIP AS IS"** — in which case Batch Two assembles without it and **133-B
+rides Batch Three.**
+
+**THE ASSEMBLED DIFF AS CHAT 1 MEASURES IT: 8 product files, +313/-24, SCHEMA ZERO, SERVER ZERO.**
+*(Fable's review states -25. One line of disagreement, localised here rather than silently reconciled:
+chat 1's figure is `git diff --stat f12c318 HEAD -- apps/desktop/src apps/server/src`. Recorded under
+`a decision-complete count carries its breakdown`.)*
+
+**OBS-2 (scale, not defect):** the equality test decorates the whole text on every `selectionchange`, so
+**a keystroke now decorates twice** — item 86's territory, measured at scale there; the caret's run is
+the obvious cheaper identity. **OBS-3 (records):** FIX's park count of **179** matches the
+`"name": "PARKED"` form only, and **`item137.mjs` emits a bare `ITEM137 PARKED` line the counter cannot
+see** — **harmless at zero parks, an UNDERCOUNT the day it parks.** **TOOLS conforms the line.**
+*(Seventh count in the arc, and the first caught BEFORE it could be wrong — the failure is latent, not
+yet realised.)*
+
+## THE OVERLAP RECONCILED — PW2 LAUNCHED INTO A GRANTED PAIR — 2026-09-14
+
+**PW2 now reads its unsanctioned run as launched INTO FIX's granted pair — the "2" it walked past.**
+
+**CHAT 1's EVIDENCE, and it corroborates that reading exactly:** at **23:36:31** chat 1 directly
+observed the box carrying **precisely two fx17 processes** — `node 5576` (`run-suite`) and `node 49508`
+(`item84b.mjs`). **PW2's pre-flight "2" is that signature.** FIX's default leg ran **23:19:49 → ~23:47**
+(out-dir `wrizo-suite-5576`). **No surviving artifact pins PW2's exact minute** — the browser profiles
+are cleaned up — **so the launch is placed inside the window by fingerprint, not by clock, and that is
+stated as such.**
+
+**CHAT 1 OWNS THE SCOPE ERROR IN ITS EARLIER CONFIRMATION.** The 2026-09-13 box check answered **"was a
+GRANTED RUN on the box"** by enumerating **suite out-directories** — and it was TRUE as scoped. **But
+the question that mattered was "was any FOREIGN HARNESS alive during a granted pair," and a bare
+harness writes no out-directory.** **The instrument answered the question it was asked, and that was
+not the question that mattered** — chat 1's own canon, arriving against chat 1's own report.
+
+**FIX's STAMP STANDS: served == stamped (`index-Cw3mb3LO.js`) proves the harness measured its own
+tree; 84/84 both legs; NO VOID.** **RECORDED AS THE FIRST KNOWN FOREIGN HARNESS ALIVE DURING A GRANTED
+PAIR — which ITEM 139's PRE-FLIGHT WOULD HAVE REFUSED.**
+
+## ITEM 140 — SPEC ACCEPTED — 2026-09-14
+
+**From ERRATA: THE TOKEN IS CHECKED AGAINST THE FILE, NEVER MERELY PRESENT — so a STALE token FAILS
+once chat 1 clears it.** *(Presence-only would have made the grant a one-way latch: granted once, held
+forever. Checking against the file is what makes the clear-at-stamp step mean anything.)*
+
+Registry: next free **141**.
+
+
+
 
 
 

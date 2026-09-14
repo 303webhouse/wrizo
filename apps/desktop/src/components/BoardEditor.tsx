@@ -19,7 +19,7 @@ import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
 import { applyFormat, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
 import { useWayBack } from './useWayBack';
@@ -488,25 +488,32 @@ function BoardCardPopup({
       e.preventDefault();
       notePasteBlocked();
     };
-    // FX5 S6 — reveal-adjacent-to-caret only updates on a TEXT change today
-    // (every path above redecorates after committing new content). A pure
-    // caret move — an arrow key, or a click that repositions without
-    // typing — doesn't fire 'input' at all, so the reveal state would go
-    // stale (still showing the PREVIOUS run's markers, or hiding the one
-    // the caret just moved into). Re-running redecorate with the SAME text
-    // but a freshly-read caret is a no-op for content, just refreshes which
-    // markers are revealed.
-    const NAV_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
-    const onCaretMoveKey = (e: KeyboardEvent) => {
-      if (!NAV_KEYS.has(e.key)) return;
-      redecorate(textRef.current, getCaretOffset(el));
+    // REVEAL-ON-CLICK — this REPLACES the pair FX5 S6 built here (a keyup
+    // against a NAV_KEYS list, plus a mouseup). FX5's diagnosis was right and
+    // is preserved in revealAtCaret's own comment: a pure caret move fires no
+    // 'input', so the reveal would otherwise show the PREVIOUS caret's
+    // markers. What changes is the signal and the guards.
+    //
+    // THE SIGNAL: enumerating the paths that move a caret means the state
+    // goes stale after whichever path nobody listed, and the list here was
+    // already incomplete (Tab, PageUp/PageDown, a programmatic move, a
+    // click-drag that ends outside the element). `selectionchange` fires for
+    // all of them. Item 122 had already made this exact argument for Draft's
+    // B/I/U button state; the decoration is the same problem.
+    //
+    // THE GUARDS, and why this is a fix and not just a swap: the old pair
+    // redecorated UNCONDITIONALLY, and a redecorate restores a COLLAPSED
+    // caret. So a mouseup ending a drag-selection collapsed that selection,
+    // and shift+arrow could not extend one. revealAtCaret declines on a
+    // non-collapsed selection, so selecting text on a card works.
+    const onSelectionReveal = () => {
+      if (composing || applyingEmDash) return;
+      revealAtCaret(el, getCaretOffset, setCaretOffset);
     };
-    const onCaretMoveClick = () => { redecorate(textRef.current, getCaretOffset(el)); };
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
     el.addEventListener('keydown', onUndoRedoKey);
-    el.addEventListener('keyup', onCaretMoveKey);
-    el.addEventListener('mouseup', onCaretMoveClick);
+    document.addEventListener('selectionchange', onSelectionReveal);
     el.addEventListener('compositionstart', onCompStart);
     el.addEventListener('compositionend', onCompEnd);
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
@@ -519,8 +526,7 @@ function BoardCardPopup({
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('keydown', onUndoRedoKey);
-      el.removeEventListener('keyup', onCaretMoveKey);
-      el.removeEventListener('mouseup', onCaretMoveClick);
+      document.removeEventListener('selectionchange', onSelectionReveal);
       el.removeEventListener('compositionstart', onCompStart);
       el.removeEventListener('compositionend', onCompEnd);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
