@@ -4987,6 +4987,44 @@ ACROSS LINES and one because chat 1 probed with a memory's filename instead of t
 too, and it answered the question it was asked. Had chat 1 trusted the first pass, it would have
 re-recorded three laws that were already present — the duplicate hazard, arrived from the other
 direction.)*
+## BAND — AN AUDIT'S OWN INSTRUMENT IS AN INSTRUMENT — 2026-09-15
+
+> **AN AUDIT'S OWN INSTRUMENT IS AN INSTRUMENT — A MISSING READ IS RE-CHECKED BEFORE IT IS
+> RE-RECORDED.**
+
+**Batch Two's audit returned FOUR misses; ONE was real.** Two of the three artifacts came from text
+**WRAPPING ACROSS LINES**, one from probing with **a memory's filename instead of the ledger's
+wording.** **Re-recording on the first pass would have duplicated three laws already present** — the
+duplicate hazard arriving from the opposite direction to the one the append-only ledger guards against.
+
+*(The audit exists because absence has no detector. This says the detector needs one too.)*
+
+## QUEUE CORRECTION — INK WAS LEFT OUT — 2026-09-15
+
+**Fable's omission, on the record: INK (item 126, ink across modes) was promised a turn "after
+ERRATA's" BEFORE Batch One, and was left out of the release order.** **B1–B4 are built at `265be9c`;
+B6 is owed.**
+
+**THE ORDER, CORRECTED:** **139 + the park rider → ERRATA's wave 2 → INK's B6 pair → PW2 → TOOLS' VW1
+(two pairs) → the four-file park conform.**
+
+**CHAT 1 PRE-MEASURED INK's MERGE SURFACE, so the lane does not discover it in its slot:**
+- **`origin/item126-ink-across-modes @ 265be9c` IS PUSHED** — it exists as an offer.
+- **INK is 82 COMMITS BEHIND `main`.**
+- **A trial merge produces ONE conflict region.**
+- **THE PREDICTION NARROWS: of the four suspected files, only `PageEditor.tsx` is touched by BOTH
+  sides.** **`ForwardOnlyEditor.tsx`, `BoardEditor.tsx` and `draftDecoration.ts` were touched by MAIN
+  ONLY** — they merge clean. *(The relay named `PageEditor.tsx` and `ForwardOnlyEditor.tsx` as the
+  likely sites; the measurement halves that: one file, not two.)*
+
+**INK merges `main` before its pair and reports conflicts. INK is told the box rules it missed:
+ITEM 139's TOKEN · THE QUIET CLAUSE (a build is a run) · PRE-FLIGHT ZERO OR STOP · PUSH AT PAIR START ·
+ONE HARNESS IS A RUN.**
+
+*(Worth noting what the omission cost and did not: INK kept building browserless and its work is pushed,
+so nothing was lost but its place in a line. The failure was in the QUEUE, not in the lane — and a
+queue is a record like any other, which is why it is corrected here rather than only in the next
+relay.)*
 Registry: next free **142**.
 
 
