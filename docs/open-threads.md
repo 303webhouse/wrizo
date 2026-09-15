@@ -4811,6 +4811,62 @@ updated, and a bare string literal `'Untitled board'` sitting in a COMPARISON wa
 not a call site.** **It was a dependent.** **And the check asserts THE BRANCH IS REACHABLE**, not that
 the field looks right today — which is what makes it bite on the defect's actual shape rather than on
 its symptom.
+## BATCH TWO — THE DEPLOY PAIR HOLDS: item97 S0 — 2026-09-14
+
+**FIX's SECOND-WITNESS PAIR on `4d86c59`: unparked leg NOT CLEAN 83/84; PARKED leg CLEAN 84/84.**
+**`item133.mjs` 14/14 and `reveal.mjs` 16/16 GREEN IN BOTH — the batch's own packages are not in
+question.** **The red is `item97.mjs` S0.**
+
+**THE ATTRIBUTION IS ESTABLISHED, NOT ASSERTED — and chat 1 confirmed it at the code.** At
+`item97.mjs`, the seam read is **`withHarness`'s FIRST STATEMENT**:
+
+```
+await withHarness(async (app) => {
+  const seamOk = await app.evalJs("typeof window.wrizoPairing === 'object' && ...");
+```
+
+**NO `goto`. NO `waitFor`. NO `freshDesk`** — the helper that performs `goto` + `reload` + `waitFor` is
+defined in the file and **is not called before S0**, while **every other section goes through it.**
+**S1–S2(e) pass and each calls the seam directly.** **Neither `persistence.ts` nor `item97.mjs`
+changed.** **It is the same file that went red in Batch One's sleep incident** (`seam=false`, recorded
+above). **S0's PREMISE is the weak part — not the product.**
+
+**THE DEPLOY PAIR WAITS FOR FIX's CONTROL LEG on clean `main` at `6e57efa`, which is THE DIAGNOSIS and
+runs inside FIX's window.**
+
+**CHAT 1's CAVEAT ON THE (A)/(B) BRANCH, entered before the control runs: A GREEN CONTROL CANNOT
+EXONERATE S0.** The defect is established **at the source**, so a race that did not fire this time is
+**still a race**. **Green is consistent with BOTH contention AND simply missing the window.** **The
+control can CONFIRM contention; it cannot CLEAR the premise.** **Item 141 therefore opens on the CODE,
+not on the control** — and the admission question resolves the same way.
+
+**(A) CONTROL REDS ON MAIN → ITEM 141 OPENS** (harness): **`item97`'s S0 WAITS FOR THE BUNDLE — `goto`,
+then `waitFor` the seam — THE SETTLE LAW IN A NEW FORM.** Harness-only, its own branch, and **ADMITTED
+TO BATCH TWO BY EXCEPTION**, with the reason recorded: **the product delta is unchanged, the bundle is
+byte-identical, and A STAMP OVER A KNOWN RACE WOULD NOT BE A STAMP.**
+
+**(B) CONTROL GREEN ON MAIN → the red was CONTENTION:** TOOLS' `tsc` and `build:web` ran on the box
+during FIX's pair. **The deploy pair runs on a QUIET box, and 141 opens anyway, riding Batch Three.**
+
+## BOX LAW — NEW CLAUSE, ALL LANES — 2026-09-14
+
+> **DURING A STAMPING PAIR THE BOX IS QUIET — no builds, installs, or process-spawning checkers by any
+> lane; STATIC WORK ONLY. A BUILD IS A RUN.**
+
+**Off-turn builds stay lawful when NO PAIR IS LIVE; the pre-flight says which.**
+
+*(The gap this closes: every previous clause spoke of harnesses and suites, so a lane running `tsc` or
+`build:web` could believe itself compliant while consuming the same cores and disk the pair needs. "One
+harness is a run" said the box is contended by BROWSERS; this says it is contended by WORK.)*
+
+## BAND — A PROBE READS THE SETTLED STATE (FIX) — 2026-09-14
+
+> **A PROBE READS THE SETTLED STATE — A BUNDLE THAT HAS NOT EVALUATED IS NOT SETTLED.**
+
+**The settle law's third form.** The first was a DERIVED read after a reload (`bm1` S2); the second was
+a debounced WRITE not yet flushed (`item 85-C`); this is **the MODULE ITSELF not yet evaluated** — the
+earliest point on the same axis. **All three say: the state your assertion depends on must EXIST before
+you read it, and "the page is open" is not the same as "the bundle has run."**
 Registry: next free **141**.
 
 
