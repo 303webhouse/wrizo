@@ -4942,6 +4942,51 @@ cases — the depth-1 guard, FX3's height fix — were a fix applied too NARROWL
 temptation: a fix applied too WIDELY, paid for by 84 files. The discriminator is the measured
 population: a class of one gets a guard, not a contract change.)*
 
+## BAND — A WORD IS QUOTED, NEVER ASSUMED (Fable) — 2026-09-15
+
+> **A WORD IS QUOTED, NEVER ASSUMED — "STANDS AS GIVEN" IS A CLAIM THAT NEEDS THE QUOTE.**
+> **AND THE AUTHORIZED STEP COMES LAST, SO THE RULE SURVIVES BEING FORGOTTEN.**
+
+**EARNED BY FABLE'S OWN CORRECTION: "Nick's word stands as given" was said of Batch Two when no founder
+word existed for it** — the only word on record was Batch One's *"push it."* **A quoted word carries
+its own evidence; "the word stands" is a claim ABOUT evidence held somewhere else.** *(Same structure
+as the relay losses — described but not attached — and as `an offer is pushed or it does not exist`.
+Third domain, one shape.)*
+
+**THE SECOND CLAUSE IS WHY IT COST NOTHING.** Chat 1 did not catch the missing quote. **It simply had
+not reached the step that required it**, because the pair runs before the upload and only the upload
+needs the word. **THE ORDERING DID THE WORK THAT ATTENTION WOULD OTHERWISE HAVE HAD TO DO.**
+
+**THAT IS THE PATTERN OF THIS WHOLE BATCH, stated plainly: EVERY LAW THAT HELD UNDER PRESSURE HAD A
+STRUCTURE BEHIND IT, AND EVERY ONE THAT SLIPPED WAS BEING CARRIED BY ATTENTION ALONE.** The schema STOP
+lives in an item's classification; `seed-guard` fails a run rather than reminding anyone; the
+authorized step comes last. **A rule worth keeping gets an arrangement that survives someone forgetting
+it.**
+
+## THE RELAY AUDIT AT BATCH TWO's STAMP — 2026-09-15
+
+**Audited against Fable's list, since `0a921758`. FOUNDER TEXTS FIRST, as ordered — ALL LANDED,
+verbatim:** item 134's six rulings + **"Confirmed"** · item 136's ruling in full (*"Yes, users need to
+be able to name..."* through *"there is nothing to save"*) + **"No"** on Untitled + the focused name
+field · the five 134 rulings (*"1. Written 2. Group 3. Show it..."*) · the nested-boards/thumbnail word
+· **"Ship it".**
+
+**ITEMS: ALL LANDED** — 135 shipped · 136 chartered · 137 shipped · 138 opened · 139 offered · 140
+opened · 141 shipped as a harness admission · 90 superseded · 133 closed. **VIEWS ARC, PW2, PRECEDENCE:
+ALL LANDED.** **LAWS: ALL LANDED BUT ONE.**
+
+**THE ONE GENUINE MISS: `A WORD IS QUOTED, NEVER ASSUMED` — recorded above in this same commit.** It
+arrived after chat 1 had written the item-141 records, was discussed in the reply, **and was never
+written to the ledger.** *(A law about not trusting an unquoted claim, lost by being acknowledged
+instead of recorded.)*
+
+**AND THE AUDIT'S OWN INSTRUMENT NEARLY REPORTED THREE FALSE MISSES.** `nothing to save`, `a rule that
+fails a run` and the park-count law all read MISSING on the first pass — **two because the text WRAPS
+ACROSS LINES and one because chat 1 probed with a memory's filename instead of the ledger's wording.**
+**A wrap-tolerant re-check separated the real miss from the artifacts.** *(The audit is an instrument
+too, and it answered the question it was asked. Had chat 1 trusted the first pass, it would have
+re-recorded three laws that were already present — the duplicate hazard, arrived from the other
+direction.)*
 Registry: next free **142**.
 
 
@@ -13302,6 +13347,47 @@ pre-rotation Tutor key. **Caveat for the record:** if the old provider key is ev
 every deployment before `11b612db` carries a dead Tutor key; annotate the stamp again at that
 moment.
 
+## BATCH TWO DEPLOY MANIFEST — 2026-09-15 (chat 1, on Nick's "Ship it" — Fable PASS)
+
+**LIVE: `02ead44` · railway `13422c8a`** — deployment `13422c8a-8f04-48c2-8aab-71a2d9146ce9`, status
+**SUCCESS**, serving `index-DWcBCr44.js`. **PREVIOUS LIVE — THIS DEPLOY'S ROLLBACK TARGET: `f12c318` ·
+railway `0a921758`.** **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**AUTHORIZATION, QUOTED: Nick — "Ship it".** *(Recorded as the words themselves. An earlier relay said
+"Nick's word stands as given" for Batch Two; Fable corrected it as its own misstatement — no founder
+word existed until this one. NOTHING SHIPPED AHEAD OF IT: production still served Batch One's
+`index-C2Z1gh61.js` when the correction arrived, and `railway up` had not run.)*
+
+**FIVE PACKAGES + ONE HARNESS ADMISSION:** **item 133** (naming) · **item 133-B** (the rename draft
+opens empty when nameless) · **item 135** (suspension void) · **item 137** (trash at the foot) ·
+**reveal-on-click** — **plus ITEM 141 admitted by exception as a HARNESS ADMISSION, not a sixth
+package.**
+
+**PRODUCT DELTA: 8 files, +332/-24** — unchanged by 141's admission, verified after that merge.
+**SCHEMA: ZERO. SERVER BYTES: ZERO.** Roster **84**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE BATCH HEAD:**
+- **DEFAULT: 84/84 CLEAN** — `tree=02ead44 bundle=index-DWcBCr44.js/576566b`
+- **PARKED: 84/84 CLEAN** — identical stamp
+- `item133` 14 · `item135` 9 · `item137` 9 · `reveal` 16 · **`item97` 7** (the 141 repair, green in the
+  run that mattered). **PARK AUDIT: 67 files / 176 checks.**
+
+**TREE BARE AT UPLOAD. tsc x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 02ead44`.
+
+**SERVED-vs-STAMPED — BOTH ASSETS MATCH:** `index-DWcBCr44.js` served `4b71715f83d0249e82c488a6b5698264`
+**==** stamped · `index-D7RMCeyR.css` served `3ed7251acf861196ae6374a559b9b9c0` **==** stamped.
+
+**THE BUNDLE LAW CLOSED ITS OWN LOOP AT THE SHIP — the worked example, on the record:**
+**`index-DWcBCr44.js/576566b` appears in FIX's RED run, in its GREEN control, in item 141's OFFER, and
+now IN PRODUCTION.** **The instrument that settled the red certified the ship.** *(Four appearances of
+one hash across an accusation, an exoneration, a fix and a deploy. The bytes production now serves are
+provably the bytes those investigations argued over — which is why the item-97 episode cost the batch
+nothing but time.)*
+
+**TWO PAIRS WERE SPENT BEFORE THIS ONE, both recorded above:** a **contended pair** (TOOLS' `tsc` and
+`build:web` during FIX's window, lawful under the old model) and the **item-97 S0 race** it exposed.
+**Neither was a product defect.**
 ## BOARDS CONNECTED (PW1) DEPLOY MANIFEST — 2026-09-09 (chat 1, on Nick's "ship Boards Connected on the clean pair" — Fable PASS)
 
 **LIVE: `39eacae` · railway `479adc19`** — deployment `479adc19-2c6e-4839-841e-2c1acf80b9fc`,
