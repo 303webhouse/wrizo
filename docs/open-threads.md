@@ -5088,6 +5088,36 @@ refusals to treat a convenient summary as the thing itself.)*
 **INK's question to chat 1 is ANSWERED by the reconciliation above; NOTHING FURTHER TO ADJUDICATE.**
 **Release order stands:** 139 + the park rider → ERRATA's wave 2 → INK's B6 pair → PW2 → TOOLS' VW1
 (two pairs) → the four-file park conform.
+## BAND — A DECLARED-READY LANE IS ANNOUNCED, NOT RE-ASKED — 2026-09-15
+
+> **A LANE THAT HAS DECLARED READY AND IS NEXT IN THE ORDER IS ANNOUNCED, NOT RE-ASKED — TWO DESKS
+> WAITING POLITELY IS AN IDLE BOX.**
+
+**EARNED BY AN IDLE BOX SINCE BATCH TWO's STAMP.** **Chat 1 wrote "ask and I grant" and waited to be
+asked; ERRATA had already declared ready days earlier** — *"standing by for the announcement after the
+deploy pair"* — **and the release order already NAMED it next.** **Nobody was blocked and nothing was
+running.**
+
+**THE RELEASE ORDER IS THE ASK.** When the order names the next lane and that lane has declared ready,
+**the announcement is owed by the desk that holds the box, not requested by the lane that wants it.**
+*(The turn-by-announcement rule was built so a lane never TAKES a quiet box. It was never meant to make
+a lane BEG for one — and read the second way it converts a safety rule into a stall.)*
+
+## TWO HELD OFFERS MERGED — THEY WERE NEVER UN-OFFERED — 2026-09-15
+
+**`item139-runner-guard @ c927fef`** and **TOOLS' park rider `@ 84d42bb`** **MERGED.** **Both were
+offered BEFORE Batch Two closed and were held ONLY by the closed batch — no re-offer was needed, and
+chat 1 should not have waited for one.** *(A batch closing suspends a merge; it does not withdraw the
+offer. Chat 1 read "held behind the stamp" as "awaiting re-offer," which is the same idle-box error in
+a second costume.)*
+
+**ITEM 139 IS NOW LIVE IN THE RUNNER. THE TOKEN IS `WS_BOX_TURN`** — `withHarness` hard-stops with
+**`BOX TURN NOT GRANTED`** when it is unset, and **`run-suite` requires it too and passes it to every
+child, so a suite's files inherit ONE grant** rather than each claiming its own. **Its first live pair
+is its proof: a red IN THE RUNNER is the RUNNER's red.**
+
+**THE PARK RIDER closes OBS-3:** `item137.mjs` now emits `parkedChecks` as JSON, so the counter can see
+them. **The remaining four prose-only blocks conform in TOOLS' single offer.**
 Registry: next free **142**.
 
 
