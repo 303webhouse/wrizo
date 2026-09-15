@@ -92,7 +92,38 @@ const disarm = (app) => app.evalJs(
   "fetch('/api/_sync_mode', { method: 'POST', body: '{}' }).then(r => r.json()).then(() => true)");
 
 await withHarness(async (app) => {
-  const seamOk = await app.evalJs(
+  // ITEM 141 — WAIT FOR THE BUNDLE BEFORE READING THE SEAM.
+  //
+  // THE DEFECT THIS CLOSES: S0 was the first statement inside withHarness, and
+  // it read `window.wrizoPairing` with no navigation and no wait in front of
+  // it. withHarness launches the browser AT the app url and then connects over
+  // CDP as fast as it can — it never waits for the app to finish loading,
+  // because every other harness in the roster supplies that wait itself with
+  // its own goto/waitFor. This file did not, so it was reading a page that had
+  // not necessarily evaluated the bundle yet, and the seam is installed as a
+  // MODULE SIDE EFFECT in store/persistence.ts. The read won on an idle box and
+  // lost under contention.
+  //
+  // IT WAS FOUND BY LOSING: a 2026-09-14 pair returned `seam=false` here while
+  // S1-S2(e) — every one of which calls `window.wrizoPairing.birth()` — passed
+  // in the same run. That combination is the whole diagnosis: the seam was
+  // working, and S0 had measured the render queue rather than the product. A
+  // control leg on the same tree with a byte-identical bundle came back 84/84
+  // CLEAN with this file green at the same suite position.
+  //
+  // This is the codebase's own standing law — a probe reads the SETTLED state —
+  // in a form it had not taken here before: not a debounce, not a transition,
+  // but module evaluation.
+  await app.goto('/');
+  // The wait is wrapped because `waitFor` THROWS on timeout, and a driver that
+  // throws kills the file and reports nothing at all. If the seam is genuinely
+  // absent — the real regression this check exists to catch — the check must
+  // FAIL and say so, which is the standing law for every driver here.
+  const seamReady = await app
+    .waitFor("typeof window.wrizoPairing === 'object' && typeof window.wrizoPairing.birth === 'function'", { label: 'the pairing seam is installed' })
+    .then(() => true)
+    .catch(() => false);
+  const seamOk = seamReady && await app.evalJs(
     "typeof window.wrizoPairing === 'object' && typeof window.wrizoPairing.birth === 'function'");
   ok('S0 seam — window.wrizoPairing exposes the pairing verbs for inspection',
     seamOk === true, `seam=${seamOk}`);
