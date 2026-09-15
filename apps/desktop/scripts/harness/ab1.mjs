@@ -205,20 +205,18 @@ await withHarness(async (app) => {
   await app.emulateDpr(1, 1400, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     // One text box (S3's board fixture) so there is something to double-click
     // into and type — commitText's own keydown-driven noteWrite() call needs
     // a live edit session to prove the dissolve actually fires on Board too.
-    entries.push({ id: 'ab1-board', text: '', pageType: 'board', boxes: [
-      { id: 'ab1-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-    ], createdAt: now, updatedAt: now });
     // One scene, one empty heading — createEmptyScriptDoc()'s own shape, so
     // there's a live .script-el-active to type into (an empty scenes: []
     // array renders NO elements at all, unlike w2.mjs's route-restore-only
     // script fixture which never types).
     const headingId = 'ab1-script-heading';
-    entries.push({ id: 'ab1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'ab1-board', text: '', pageType: 'board', boxes: [
+      { id: 'ab1-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
+    ], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'ab1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed' });
@@ -609,10 +607,8 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.goto('/'); // back to Arrival first — the preceding fixture left us on a /page/:id route, and a bare reload() would just re-render THAT route, never landing on .wz-arrival
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
       const headingId = 'ab1-parked-script-heading';
-      entries.push({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED script seed' });
@@ -684,11 +680,9 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script seed, CD2 park' });
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'ab1-cd2-park-board', text: '', pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now });
       const headingId = 'ab1-cd2-park-script-heading';
-      entries.push({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-board', text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed, CD2 park' });
@@ -753,11 +747,9 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.goto('/');
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'ab1-parked-board', text: '', pageType: 'board', boxes: [
+      window.wrizoCreateJournalPage({ id: 'ab1-parked-board', text: '', pageType: 'board', boxes: [
         { id: 'ab1-parked-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-      ], createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      ], createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED board seed' });

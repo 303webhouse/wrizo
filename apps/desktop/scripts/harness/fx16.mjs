@@ -35,9 +35,7 @@ const openWithInviteState = async (app, id, { pref, marker }) => {
   await freshDesk(app, 1400, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(id)}, text: '', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(id)}, text: '', projectId: null, origin: 'loose', createdAt: now });
     ${pref != null ? `localStorage.setItem(${JSON.stringify(PREF_KEY)}, ${JSON.stringify(pref)});` : `localStorage.removeItem(${JSON.stringify(PREF_KEY)});`}
     ${marker ? `localStorage.setItem(${JSON.stringify(MIGRATED_KEY)}, '1');` : `localStorage.removeItem(${JSON.stringify(MIGRATED_KEY)});`}
   })()`);

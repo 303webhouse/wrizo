@@ -97,11 +97,8 @@ await withHarness(async (app) => {
     await seedThenReload(app, `(() => {
       const now = new Date().toISOString();
       const older = new Date(Date.now() - 60000).toISOString();
-      const entries = [
-        { id: 'hb2-page', text: 'An older page', projectId: null, origin: 'loose', source: 'page', createdAt: older, updatedAt: older },
-        { id: 'hb2-board', text: 'The latest board', pageType: 'board', source: 'page', boxes: [{ id: 'x', kind: 'text', x: 0.2, y: 0.2, w: 0.2, h: 0.15, z: 1, text: 'b' }], projectId: null, createdAt: now, updatedAt: now },
-      ];
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'hb2-page', text: 'An older page', projectId: null, origin: 'loose', createdAt: older });
+      window.wrizoCreateJournalPage({ id: 'hb2-board', text: 'The latest board', pageType: 'board', boxes: [{ id: 'x', kind: 'text', x: 0.2, y: 0.2, w: 0.2, h: 0.15, z: 1, text: 'b' }], projectId: null, createdAt: now, origin: null });
     })()`);
     const resumeTarget = await app.evalJs("window.wrizoResume ? window.wrizoResume().route : null");
     await app.click('Open');
@@ -140,8 +137,7 @@ await withHarness(async (app) => {
       const now = new Date().toISOString();
       // A legacy journal-origin entry — the pre-FX14 shape that used to open the retired
       // JournalEntry surface at /journal/:id.
-      const entries = [{ id: 'hb2-legacy-journal', text: 'A legacy journal entry', projectId: null, origin: 'journal', source: 'page', createdAt: now, updatedAt: now }];
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'hb2-legacy-journal', text: 'A legacy journal entry', projectId: null, origin: 'journal', createdAt: now });
     })()`);
     // 4a — resuming a legacy journal-origin entry lands on THE Page (routeForEntry),
     // never the retired journal surface.

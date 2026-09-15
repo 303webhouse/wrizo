@@ -7,7 +7,7 @@ import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createQuickSprintProject, softDeleteEntry, getProject,
   getJournalEntry, getOrCreateSystemBoard, saveJournalEntry, pinPageToBoard,
-  getPlanBoardId, getBoardsPinning, setPinDisplayed,
+  getPlanBoardId, getBoardsConnecting, setPinDisplayed,
 } from '../store/persistence';
 import { rememberLastPlanBoard, getLastPlanBoard } from '../store/planTrail';
 import { unbornHref } from '../store/unbornPage';
@@ -482,7 +482,7 @@ function boardTitle(entry: JournalEntry): string {
 // inside this page's DRAWER — when the writer asked which containers hold THIS
 // PAGE. Co-location is not connection. The right set was already computed and
 // already rendered, as a SENTENCE, inside a drawer, where it could not be
-// pressed: `planBoardId` ∪ `getBoardsPinning`. Zero schema; both functions
+// pressed: `planBoardId` ∪ `getBoardsConnecting`. Zero schema; both functions
 // built, local, and already called this same render.
 interface ConnectedBoard {
   id: string;
@@ -530,7 +530,7 @@ function connectedBoardsFor(page: JournalEntry): ConnectedBoard[] {
       seen.add(board.id);
     }
   }
-  for (const pinned of getBoardsPinning(page.id)) {
+  for (const pinned of getBoardsConnecting(page.id)) {
     if (seen.has(pinned.id)) continue; // ∪ — a page pinned to its OWN plan board is one row, named by the truer relation
     seen.add(pinned.id);
     const board = getJournalEntry(pinned.id);
@@ -650,7 +650,16 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
             "which boards is this page on" with "make a project first" was the
             panel telling a writer to build what they had already built. */}
         {zone}
-        <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>
+        {/* PW1 ERRATUM 2 (Nick's live sitting, 2026-09-09) — THE LEAD SENTENCE
+            IS FALSE BENEATH A LISTED PLAN BOARD. "File this page to a drawer
+            first to plan around it" is a true and useful thing to say to a page
+            with nowhere to plan; said directly under a plan board the writer is
+            already looking at, it contradicts the row above it and tells them
+            to build what they have built. The sentence is not reworded — it is
+            simply ABSENT in the state where it would lie, which is the same
+            law the zone itself obeys (PW9: absent, never empty). Nothing
+            announces a prerequisite the writer has already met. */}
+        {!zone && <div className="wz-cascade-empty" style={{ padding: 0 }}>{t('cascadePlanNoProject')}</div>}
         <button type="button" className="wz-cascade-action" onClick={createBoard}>{t('cascadePlanCreateBoard')}</button>
         <button type="button" className="wz-cascade-action" onClick={plotStory}>{t('cascadePlanPlotStory')}</button>
         {/* FX6 S2c — a quiet one-line pointer at the OTHER new door: a

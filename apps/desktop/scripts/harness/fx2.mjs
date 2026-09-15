@@ -94,9 +94,7 @@ const freshDraftPage = async (app, text, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx2-draft', text: ${JSON.stringify(text)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx2-draft', text: ${JSON.stringify(text)}, createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after draft seed' });
@@ -121,10 +119,8 @@ const freshTwoDraftPages = async (app, textA, textB, width = 1400, height = 900)
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx2-draft-a', text: ${JSON.stringify(textA)}, createdAt: now, updatedAt: now });
-    entries.push({ id: 'fx2-draft-b', text: ${JSON.stringify(textB)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx2-draft-a', text: ${JSON.stringify(textA)}, createdAt: now, source: null, origin: null });
+    window.wrizoCreateJournalPage({ id: 'fx2-draft-b', text: ${JSON.stringify(textB)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after two-page draft seed' });

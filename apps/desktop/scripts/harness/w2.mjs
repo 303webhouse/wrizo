@@ -225,10 +225,8 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script fixtures' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'w2-board', text: '', pageType: 'board', boxes: [], createdAt: now, updatedAt: now });
-    entries.push({ id: 'w2-script', text: '', pageType: 'script', script: { v: 1, scenes: [] }, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'w2-board', text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'w2-script', text: '', pageType: 'script', script: { v: 1, scenes: [] }, createdAt: now, origin: null });
   })()`);
   await app.reload();
 

@@ -2695,7 +2695,29 @@ a:focus-visible,
    strip and nothing falls under it. Modals, backdrops and toasts are `fixed`
    at z-index 80-300, far above this. 1 is the smallest value that beats
    `auto`, chosen so this rule claims no more of the stack than it needs. */
+/* ITEM 137 (2026-09-13) — THE TRASH REACHES THE FOOT.
+   Founder: "the trash has never been aligned at the bottom of the rail - it's
+   inline with the rest of the menu options." MEASURED, headful, before any
+   change (docs/menus/item137-s0-measurement.md):
+
+     1366x768   gap 8.8px    .wz-strip 544.4px   aside 545.2px
+     1366x1200  gap 303.6px  .wz-strip 544.4px   aside 840.0px
+
+   `.wz-strip` rendered the SAME 544.4px at both viewport heights while this
+   aside tracked 70vh exactly (0.70 x 1200 = 840). Its `height:100%` resolves
+   against this element's HEIGHT, and `min-height` does not make that height
+   definite - so the percentage fell back to auto, the strip went content-tall,
+   and `.wz-strip-foot{margin-top:auto}` had no free space to push against.
+   At 768 the gap is only 8.8px, which is why it reads as "inline" rather than
+   as a broken pin; the taller the window, the further Trash strands.
+
+   THE FIX IS GEOMETRY ONLY AND ADDITIVE: this element becomes a flex column so
+   its child has a definite box to stretch into, and `.wz-strip` takes `flex:1`
+   in place of the percentage (below). Nothing else here moves - ITEM 130's
+   `z-index:1` on this same rule is untouched, and its hit-test coverage runs
+   beside the new pin check in item137.mjs so the two cannot trade places. */
 .desk-frame-strip{ position:absolute; top:-16px; left:calc(-1 * var(--frame-host-pad-x)); width:var(--strip-width); z-index:1;
+  display:flex; flex-direction:column;
   min-height:70vh; background:var(--desk-ground);
   border:1px solid var(--ink-border); border-top:none; border-radius:0 0 var(--radius-md) var(--radius-md); overflow:hidden; }
 /* FX3 S1 — the one definite, non-percentage height near the top of the
@@ -3973,7 +3995,11 @@ a:focus-visible,
    S1's own law: "never dissolving" — no chrome-fade/desk-dissolve
    anywhere in this block; the strip is glance, always present, like the
    sliver's own grip. */
-.wz-strip{ display:flex; flex-direction:column; height:100%; padding:8px 0; }
+/* ITEM 137 — `flex:1` in place of `height:100%`. The percentage had nothing
+   definite to resolve against (see .desk-frame-strip above); stretching into a
+   flex parent needs no definite height on that parent at all, which is why
+   this is the geometry fix rather than inventing a height for the aside. */
+.wz-strip{ display:flex; flex-direction:column; flex:1; min-height:0; padding:8px 0; }
 .wz-strip-section{ display:flex; flex-direction:column; }
 /* Hairline separators BETWEEN the four sections (A11's own roster) — not
    between the two items sharing one section (Page+Plan, Drawers+Shelf). */
@@ -4279,7 +4305,11 @@ a:focus-visible,
 /* The home label standing in for an absent chain ("Loose — belongs nowhere
    yet"): the chain never renders empty, and what fills it reads as a state
    rather than as a place-name it is not. */
-.wz-crumb-home{ font-style:italic; color:var(--text-low); }
+/* PW1 ERRATUM 3 — the location PHRASE never elides. `white-space:nowrap` with
+   no max-width and no shrink: a clipped phrase stays grammatical and so reads
+   as a different (false) sentence rather than as a truncation. Overflow is the
+   TITLE's to absorb — see `.crumb-here`. */
+.wz-crumb-home{ font-style:italic; color:var(--text-low); white-space:nowrap; flex:0 0 auto; }
 
 /* Destructive color lives ONLY inside the confirm (T4's own ruling —
    "Destructive color appears only inside the confirm, never at rest") —
@@ -4451,6 +4481,17 @@ a:focus-visible,
    typeface's own metrics, and it composes with underline when a writer
    wraps a run in both. */
 .md-strike{ text-decoration:line-through; }
+
+/* ITEM 133 (A) — the page's name is reachable, and looks it. Inherits the
+   title's own type so the name does not become a control wearing a
+   button's clothes: it is the same words in the same place, that happen
+   to answer when reached. The underline appears only on hover/focus —
+   at rest the writer sees a title, which is what it is. */
+.wz-pageface-title-reach{ display:block; width:100%; text-align:inherit;
+  font:inherit; color:inherit; background:none; border:0; padding:0;
+  cursor:text; }
+.wz-pageface-title-reach:hover, .wz-pageface-title-reach:focus-visible{
+  text-decoration:underline; text-underline-offset:3px; }
 .md-underline.md-strike, .md-strike .md-underline{ text-decoration:underline line-through; }
 
 /* ITEM 122 — THE SELECTION IS BRASS, on Nick's ruling: orange is for humans
@@ -4676,7 +4717,12 @@ a:focus-visible,
   color:var(--text-low); min-width:0; }
 .crumb-item{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
 .crumb-sep{ color:var(--ink-border-strong); }
-.crumb-here{ color:var(--text-mid); font-weight:600; }
+/* PW1 ERRATUM 3 — TRUNCATION TAKES THE TITLE. It is the one part of the chain
+   that can be shortened without lying: a clipped title still reads as a name
+   the reader knows was clipped, where a clipped location phrase reads as a
+   different sentence. */
+.crumb-here{ color:var(--text-mid); font-weight:600; min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
 .sprint-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
 /* ============================================================================

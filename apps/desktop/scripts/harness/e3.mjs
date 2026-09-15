@@ -57,9 +57,7 @@ const freshPage = async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify([
-      { id: 'e3-page', text: 'Some words already here.', pageType: 'page', source: 'page', createdAt: now, updatedAt: now },
-    ]));
+    window.wrizoCreateJournalPage({ id: 'e3-page', text: 'Some words already here.', pageType: 'page', createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/e3-page'");

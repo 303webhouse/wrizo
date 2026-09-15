@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>item 134 · Shelf — the thumbnail posture</title>
+<!--
+  ITEM 134 · THE VIEWS CHARTER · MOCKUP 2 of 3 — THE SHELF
+  PLAN desk · 2026-09-11 · candidates only, nothing locks.
+
+  SV1 — ONE COMPONENT, TWO MOUNTINGS. This file and mockup 3 (Trash) share
+  the same markup and the same CSS by construction; only a `condition` flag
+  differs. That is the 119-mirror pattern: the flip, the thumbnails, the
+  ordering and the empty state cannot drift between Shelf and Trash because
+  there is only one of each.
+
+  SV2 — THE THUMBNAIL VIEW IS A LIST, NOT A CANVAS. The pass's central law:
+  ARRANGEMENT IS THE SIGNATURE OF A CONTAINER; A CONDITION HAS NONE, BECAUSE
+  NOBODY ARRANGED IT -- THE APP COMPUTED IT. So: thumbnails FLOW in a grid.
+  Nothing is positioned, nothing drags to a place, there are no connections
+  and no canvas. That is what "may not look like a Board" means in build
+  terms, and it is checkable on sight: if a writer can move one thing
+  relative to another, it has become a board.
+
+  Q4's grammar carries over exactly: pages are ASPECT-LOCKED (scale, never
+  stretch); a board renders as ITS THUMBNAIL, wearing the doubled edge.
+
+  SV3 — order is the CONDITION'S OWN CLOCK: when it became unfiled, newest
+  first. Not createdAt -- that is the page's own date and belongs to the
+  Journal.
+
+  SV4 — Shelf pages carry BOTH HANDS (grips visible at the surface's edges).
+  Trash carries NEITHER. That is one of the only two differences.
+
+  SV5 — the posture control is an INSTRUMENT, not a door (G1), so it lives
+  in the foot, never in the strip.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:12px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f;font-size:11px}
+  #geom.drift{color:#e05c5c}
+  .fit{position:absolute;inset:41px 0 108px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000, 0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:108px;z-index:19;padding:10px 16px;
+       background:#08080a;border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;
+       line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;
+       color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left:1px solid var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:18px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto;white-space:nowrap}
+  .crumb .h{color:var(--text-hi)}
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden;display:flex;flex-direction:column}
+
+  /* ---- THUMBNAIL POSTURE — a FLOWING grid. No coordinates anywhere. ---- */
+  .grid{flex:1;overflow:auto;padding:26px 34px 8px;display:flex;flex-wrap:wrap;
+        gap:26px;align-content:flex-start}
+  body[data-posture="flip"] .grid{display:none}
+  .thumb{position:relative;cursor:pointer}
+  .thumb .lab{display:block;width:100%;margin-top:7px;font-size:11px;color:var(--text-mid);
+              text-align:center;letter-spacing:.01em}
+  .thumb .sub{display:block;font-size:9px;color:var(--text-low);text-align:center;margin-top:2px}
+  .thumb:hover .lab{color:var(--text-hi)}
+  /* a PAGE — aspect-locked, scale never stretch (Q4's grammar) */
+  .pg{width:116px;height:151px;background:var(--paper);border:1px solid #cbbfa6;
+      padding:11px 11px 0;overflow:hidden}
+  .pg .pk{font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:#8a7b62;margin-bottom:5px}
+  .pg .pb{font-family:var(--prose);font-size:10px;line-height:1.34;color:#3a2c1c}
+  .thumb.big .pg{width:151px;height:196px}       /* SCALED — same aspect */
+  /* a BOARD — its thumbnail, wearing the doubled edge */
+  .brd{width:151px;height:104px;background:var(--panel);border:1px solid var(--line);padding:10px 12px;position:relative}
+  .brd:before{content:'';position:absolute;left:4px;right:-4px;top:-4px;bottom:4px;
+              border:1px solid var(--line);z-index:-1}
+  .brd .bk{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest);margin-bottom:6px}
+  .brd .bn{font-size:13px;color:var(--text-hi)}
+
+  /* ---- FLIP POSTURE — the Journal's own motion, same view ---- */
+  .flipwrap{flex:1;position:relative;display:none}
+  body[data-posture="flip"] .flipwrap{display:block}
+  .paper{position:absolute;top:24px;bottom:14px;left:50%;transform:translateX(-50%);
+         width:min(660px,70%);background:var(--paper);color:#241a10;padding:40px 52px;
+         font-family:var(--prose);font-size:16px;line-height:1.6}
+  .paper h1{font-size:18px;font-weight:500;margin-bottom:5px}
+  .paper .dt{font-family:var(--ui);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+             color:#8a7b62;margin-bottom:17px}
+  .turn{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;
+        font-size:22px;color:var(--accent-rest);opacity:.55;cursor:pointer;padding:14px 10px;font-family:inherit}
+  .turn:hover{opacity:1;color:var(--brass)}
+  .turn.prev{left:26px} .turn.next{right:26px}
+
+  /* ---- SV4 — BOTH HANDS. Shelf has them; Trash has neither. ---- */
+  .grip{position:absolute;top:50%;transform:translateY(-50%);width:13px;height:52px;
+        background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;
+        color:var(--accent-rest);font-size:9px;z-index:5;cursor:pointer}
+  .grip.l{left:0} .grip.r{right:0}
+  body[data-hands="0"] .grip{display:none}
+
+  /* ---- the foot: posture is an INSTRUMENT (G1), so it lives here ---- */
+  .footbar{border-top:1px solid var(--line);display:flex;align-items:center;gap:16px;
+           padding:8px 34px;font-size:11px;color:var(--text-low)}
+  .pbtn{background:none;border:1px solid transparent;color:var(--text-mid);font:inherit;
+        font-size:11px;padding:4px 10px;cursor:pointer}
+  .pbtn[aria-pressed="true"]{border-color:var(--accent-rest);color:var(--text-hi)}
+  .order{margin-left:auto;font-size:10px;letter-spacing:.06em;color:var(--text-low)}
+</style>
+</head>
+<body data-posture="thumb" data-hands="1">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>ITEM 134 · SHELF</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <button id="scale" aria-pressed="false">scale a page</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat"><span class="g">✶</span>journal</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat"><span class="g">⌗</span>plan</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="cat on"><span class="g">⌂</span>shelf</div>
+      <div class="foot"><div class="cat"><span class="g">⚙</span>settings</div>
+        <div class="cat"><span class="g">◐</span>theme</div><div class="sep"></div>
+        <div class="cat"><span class="g">✕</span>trash</div></div>
+    </nav>
+    <div class="band">
+      <div class="crumb"><span class="h">The Shelf</span> &nbsp;<span style="opacity:.6">— everything not yet filed</span></div>
+    </div>
+    <div class="room">
+      <button class="grip l" aria-label="Desk">‖</button>
+      <button class="grip r" aria-label="Counsel">‖</button>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="flipwrap">
+        <div class="paper" id="paper"></div>
+        <button class="turn prev" id="prev" aria-label="Previous">‹</button>
+        <button class="turn next" id="next" aria-label="Next">›</button>
+      </div>
+
+      <div class="footbar">
+        <button class="pbtn" id="pThumb" aria-pressed="true">Thumbnails</button>
+        <button class="pbtn" id="pFlip" aria-pressed="false">One at a time</button>
+        <span class="order" id="order"></span>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var ITEMS=[
+    {k:'page', t:'The coat on the train', s:'unfiled 2 days ago', b:'She had the coat over her arm before she understood she had picked it up…', d:'2 March'},
+    {k:'page', t:'Platform smells', s:'unfiled 3 days ago', b:'Coal, wet wool, someone’s orange. The orange is the one that will end up in the book.', d:'4 March'},
+    {k:'board', t:'Ravens & letters', s:'unfiled 4 days ago'},
+    {k:'page', t:'Mara — first walk', s:'unfiled 6 days ago', b:'The dog knows before she does. That is the whole trick of the chapter.', d:'9 March'},
+    {k:'page', t:'Coal dust notes', s:'unfiled 9 days ago', b:'Everything in that town is the colour of the thing it was before.', d:'21 March'},
+    {k:'board', t:'Scraps — no home yet', s:'unfiled 12 days ago'}
+  ];
+  var pages=ITEMS.filter(function(x){return x.k==='page'}), fi=0, big=false;
+  var grid=document.getElementById('grid'), paper=document.getElementById('paper'),
+      order=document.getElementById('order'), cap=document.getElementById('cap'),
+      stage=document.getElementById('stage'), geom=document.getElementById('geom'),
+      pThumb=document.getElementById('pThumb'), pFlip=document.getElementById('pFlip'),
+      sc=document.getElementById('scale'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+  var SIZES={a:[1366,768],b:[1680,1050]}, cur='a', scale=1;
+
+  function paintGrid(){
+    grid.innerHTML=ITEMS.map(function(it,n){
+      var body = it.k==='page'
+        ? '<div class="pg"><div class="pk">Page</div><div class="pb">'+it.b+'</div></div>'
+        : '<div class="brd"><div class="bk">Board</div><div class="bn">'+it.t+'</div></div>';
+      return '<div class="thumb'+(big&&n===0?' big':'')+'">'+body
+        +'<span class="lab">'+it.t+'</span><span class="sub">'+it.s+'</span></div>';
+    }).join('');
+  }
+  function paintFlip(){
+    var p=pages[fi];
+    paper.innerHTML='<h1>'+p.t+'</h1><div class="dt">'+p.d+'</div><p>'+p.b+'</p>';
+    document.getElementById('prev').disabled=(fi===0);
+    document.getElementById('next').disabled=(fi===pages.length-1);
+  }
+  function paint(){
+    paintGrid(); paintFlip();
+    order.textContent='newest unfiled first · the condition’s own clock';
+    cap.innerHTML='<b>A condition cannot be arranged, so this cannot be a board.</b> The thumbnails <em>flow</em> — nothing is positioned, nothing drags to a place, there are no connections and no canvas. That is the pass’s law made checkable: <em>arrangement is the signature of a container; a condition has none, because nobody arranged it — the app computed it.</em> <b>Q4’s grammar carries:</b> pages are aspect-locked (press <em>scale a page</em> — bigger, same proportions, never stretched); a board renders as its thumbnail with the doubled edge. <b>SV3:</b> the order is <em>when it became unfiled</em>, not the page’s own date — a condition has exactly one honest clock. <b>SV4:</b> both hands are present here (the two grips) — on Trash they are absent entirely. <b>SV5:</b> the posture control is an instrument, so it sits in the foot, never in the strip.';
+    readout();
+  }
+  function readout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    var ps=grid.querySelectorAll('.pg'), a=[];
+    ps.forEach(function(el){var r=el.getBoundingClientRect(); a.push(r.width/r.height);});
+    var lock = a.length? a.every(function(x){return Math.abs(x-a[0])<0.01}) : true;
+    geom.classList.toggle('drift',!lock);
+    geom.textContent='rendered '+W+'×'+H+' @ '+(scale*100).toFixed(0)+'% · page aspect '
+      +(a[0]?a[0].toFixed(3):'—')+' across '+a.length+' thumbs · '
+      +(lock?'LOCKED ✓ (scale, never stretch)':'*** STRETCHED')
+      +' · no element carries x/y — it is a list, not a canvas';
+  }
+  function layout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+    requestAnimationFrame(readout);
+  }
+  function posture(p){
+    document.body.dataset.posture=p;
+    pThumb.setAttribute('aria-pressed',String(p==='thumb'));
+    pFlip.setAttribute('aria-pressed',String(p==='flip'));
+    requestAnimationFrame(readout);
+  }
+  pThumb.onclick=function(){posture('thumb')}; pFlip.onclick=function(){posture('flip')};
+  document.getElementById('prev').onclick=function(){ if(fi>0){fi--;paintFlip();} };
+  document.getElementById('next').onclick=function(){ if(fi<pages.length-1){fi++;paintFlip();} };
+  sc.onclick=function(){ big=!big; sc.setAttribute('aria-pressed',String(big)); paintGrid(); requestAnimationFrame(readout); };
+  B1.onclick=function(){cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');layout()};
+  B2.onclick=function(){cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout()};
+  window.addEventListener('resize',layout);
+  paint(); layout();
+})();
+</script>
+</body>
+</html>

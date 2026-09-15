@@ -41,7 +41,17 @@ export function LocationCrumb({ entry, project, drawer, title, trailing }: {
     <div className="sprint-crumb" aria-label="Location">
       {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
       {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-      {homeLabel && <><span className="crumb-item wz-crumb-home">{homeLabel}</span><span className="crumb-sep">/</span></>}
+      {/* PW1 ERRATUM 3 (Nick's live sitting, 2026-09-09) — NOT `crumb-item`.
+          That class carries `max-width:160px` + `text-overflow:ellipsis`, which
+          is right for a NAME that is merely long (a drawer, a project) and
+          catastrophic for a PHRASE: "Loose — belongs nowhere yet" clipped to
+          "Loose — belongs now…", which does not read as a truncation at all —
+          it reads as a sentence, and as the OPPOSITE of the one it is. A name
+          survives elision because the reader knows a name was shortened; a
+          phrase does not, because the shortened form is still grammatical.
+          THE LOCATION PHRASE NEVER ELIDES; truncation is the title's to take
+          (see `.crumb-here` in index.css). */}
+      {homeLabel && <><span className="wz-crumb-home">{homeLabel}</span><span className="crumb-sep">/</span></>}
       <span className="crumb-here">{title}</span>
       {trailing}
     </div>

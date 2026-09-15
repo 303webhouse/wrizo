@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsPinning, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
+import { flushNow, getDrawer, getJournalEntry, getProject, saveJournalEntry, patchJournalEntry, getBoardsConnecting, inJournalView, getOrCreatePlanBoard } from '../store/persistence';
 import { setPageDress } from '../store/pageDress';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
@@ -568,7 +568,7 @@ function PageEditorView({ id }: { id: string }) {
   // fresh values on the next render without any extra plumbing here.
   // AB4 S2 — every board currently pinning this page, for the truthful
   // "Also pinned to <board>." membership line(s).
-  const pinnedBoardTitles = getBoardsPinning(entry.id).map(b => b.title);
+  const pinnedBoardTitles = getBoardsConnecting(entry.id).map(b => b.title);
   const { homeLabel, memberships } = describePageHome(entry, project, pinnedBoardTitles);
   const pageFaceSubject: PageFaceSubject = {
     kind: 'page',
@@ -583,6 +583,29 @@ function PageEditorView({ id }: { id: string }) {
     onToggleStar: unborn ? undefined : toggleStar,
     onAddTag: unborn ? undefined : addTag,
     onRemoveTag: unborn ? undefined : removeTag,
+    // ITEM 133 (A) — the name is reachable, and reaching it lands the caret at
+    // the END of the first line: the writer arrives where they would type to
+    // change the title, not at character zero where a keystroke would push the
+    // name rightwards. Guarded on the editor actually being mounted, so the
+    // gesture is offered only when there is a caret to place.
+    onReachName: () => {
+      const el = editorRef.current;
+      if (!el) return;
+      const firstLineEnd = (textRef.current.split('\n')[0] ?? '').length;
+      el.focus();
+      // PLACE THE CARET AFTER THE SURFACE SETTLES, not in the same tick as
+      // the focus. `focus()` lets the editor run its OWN caret placement,
+      // which collapses to the container's END (see ForwardOnlyEditor's note
+      // on the trailing-newline-at-EOF state) — and that placement lands
+      // AFTER a synchronous setCaretOffset, silently overwriting it.
+      // MEASURED, NOT GUESSED: the harness read offset 35 on a 16-character
+      // first line, which is the end of the whole text. This is the same law
+      // that governs reading — a probe reads the settled state — applied to
+      // WRITING: do not place a caret into a surface still arranging itself.
+      requestAnimationFrame(() => {
+        if (editorRef.current) setCaretOffset(editorRef.current, firstLineEnd);
+      });
+    },
     onOpenPortToBoard: withBirth(() => setPortOpen(true)),
     onOpenPin: withBirth(() => setPinOpen(true)),
   };

@@ -57,11 +57,9 @@ await withHarness(async (app) => {
   await freshDesk(app, 1400, 900);
   await seedFromDesk(app, `(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx14-loose', text: 'A loose page', projectId: null, origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-    entries.push({ id: 'fx14-journal', text: 'A journal-origin page', projectId: null, origin: 'journal', source: 'page', createdAt: now, updatedAt: now });
-    entries.push({ id: 'fx14-typed', text: 'A typed note', projectId: null, origin: 'journal', pageType: 'note', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx14-loose', text: 'A loose page', projectId: null, origin: 'loose', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'fx14-journal', text: 'A journal-origin page', projectId: null, origin: 'journal', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'fx14-typed', text: 'A typed note', projectId: null, origin: 'journal', pageType: 'note', createdAt: now });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after redirect seed' });
@@ -137,9 +135,7 @@ await withHarness(async (app) => {
   await freshDesk(app, 1400, 900);
   await seedFromDesk(app, `(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'fx14-door-probe', text: 'Door probe', projectId: null, origin: 'journal', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'fx14-door-probe', text: 'Door probe', projectId: null, origin: 'journal', createdAt: now });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after door-probe seed' });
