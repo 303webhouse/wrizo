@@ -5062,6 +5062,32 @@ TODAY** (`revealAtCaret` returns at `rangeCount === 0`) — **GUARDED FOR THE DA
 *(This is the right shape for a cross-package assertion: INK does not depend on reveal's internals, it
 asserts the INVARIANT it needs — the text does not change — so the guard survives any future
 refactor of the listener. Assert the invariant, not the symptom, arriving between two lanes.)*
+## BAND — TWO LAW-LINES — 2026-09-15
+
+- **A SURPRISING READING IS RE-MEASURED IN ITS AUTHORITATIVE FORM BEFORE IT IS RELAYED — A PRECISE
+  GREP READS AS AUTHORITATIVE AND ANSWERS AN ADJACENT QUESTION.** (chat 1's standing practice, ruled.)
+  **Three instances in one week, all chat 1's own:** the box-window confirmation (enumerated
+  out-directories, which a bare harness never writes); the audit's probes (blind to text that WRAPS
+  across lines, and one keyed to a memory's filename instead of the ledger's wording); and the
+  conflict count (`changed in both` counted as a conflict). **The cure is cheap and identical each
+  time: run the authoritative form — an actual `git merge`, the guard's own output, a wrap-tolerant
+  read — BEFORE relaying the surprising number.** *(What makes the trap work is PRECISION: a grep
+  returns an exact figure, and exactness is mistaken for correctness.)*
+
+- **A BRANCH THAT CARRIES A MERGE COMMIT IS MERGED, NEVER REPLAYED.** (INK — **the never-rebase hazard
+  in its new form.**) **Cherry-picking `265be9c` alone CONFLICTS in `InkStratum.tsx` because `main`
+  lacks B1+B2; the MERGE is clean at every `main` in the range.** **Verified structurally by chat 1:**
+  `265be9c` (B3+B4) and `b7dd2e4` (B1+B2) **both touch `InkStratum.tsx`**, B1+B2 is not on `main`, and
+  the branch additionally carries a merge commit (`412a6d4`). **A replay lands hunks on a file missing
+  the edits they were written against — a conflict BY CONSTRUCTION, not by bad luck.**
+
+*(The two lines belong together: the first says an instrument's precision is not its authority; the
+second says a branch's HISTORY is part of what is being merged, not packaging around it. Both are
+refusals to treat a convenient summary as the thing itself.)*
+
+**INK's question to chat 1 is ANSWERED by the reconciliation above; NOTHING FURTHER TO ADJUDICATE.**
+**Release order stands:** 139 + the park rider → ERRATA's wave 2 → INK's B6 pair → PW2 → TOOLS' VW1
+(two pairs) → the four-file park conform.
 Registry: next free **142**.
 
 
