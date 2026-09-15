@@ -5025,6 +5025,43 @@ ONE HARNESS IS A RUN.**
 so nothing was lost but its place in a line. The failure was in the QUEUE, not in the lane — and a
 queue is a record like any other, which is why it is corrected here rather than only in the next
 relay.)*
+## THE CONFLICT-COUNT DISAGREEMENT, RECONCILED — CHAT 1 WAS WRONG — 2026-09-15
+
+**Chat 1 reported ONE conflict region in `PageEditor.tsx`. INK reported ZERO conflicts across the same
+82 commits. INK IS CORRECT.**
+
+**BOTH READINGS, AND WHY THEY DIFFER — measured, not argued:**
+- **Chat 1's probe grepped `git merge-tree` for `^(<<<<<<<|changed in both)` and matched ONE line:
+  `changed in both`.**
+- **`changed in both` means THE FILE WAS MODIFIED ON BOTH SIDES. It does NOT mean the file conflicted.**
+- **True conflict markers (`<<<<<<<`) in that output: ZERO.**
+- **An authoritative real trial merge of `265be9c` onto `main`: NO CONFLICTS, rc=0.**
+
+**THE UNDERLYING FINDING WAS RIGHT AND THE LABEL WAS WRONG.** `PageEditor.tsx` IS the one file touched
+by both sides — that is exactly what `changed in both` reports — **and chat 1 called a both-sides-
+modified notice a CONFLICT.** **INK measured the thing that mattered and reported it accurately.**
+
+**THIS IS THE INSTRUMENT LAW AGAINST CHAT 1's OWN MEASUREMENT FOR THE THIRD TIME THIS WEEK** — after
+the box-window confirmation (out-directories, which a bare harness never writes) and the audit's
+wrap-blind probes. **The pattern in all three is identical: a grep answered a question ADJACENT to the
+one being asked, and the answer read as authoritative because it was precise.** *(The cure is the same
+each time and it is cheap: when an instrument reports something surprising, run the AUTHORITATIVE form
+— here, an actual `git merge` — before relaying the surprising number.)*
+
+## INK — THE MERGE AT `d0bab44`, AND B6's RATIFIED ASSERTION — 2026-09-15
+
+**INK's merge of `main`: B1 gate RE-DERIVED BY CONTENT, four real journal gates unchanged, censuses
+2 + 7 GREEN, ZERO server/packages delta.** *(Re-derived by content rather than by line is the
+locate-by-content law applied to a merge, and it is why 82 commits of drift cost one re-derivation
+instead of a hunt.)*
+
+**B6 GAINS ONE ASSERTION, RATIFIED: THE PAGE'S TEXT IS BYTE-IDENTICAL ACROSS AN ARM-AND-MOVE** —
+because **INK's `removeAllRanges` fires reveal-on-click's `selectionchange` listener.** **A NO-OP
+TODAY** (`revealAtCaret` returns at `rangeCount === 0`) — **GUARDED FOR THE DAY IT ISN'T.**
+
+*(This is the right shape for a cross-package assertion: INK does not depend on reveal's internals, it
+asserts the INVARIANT it needs — the text does not change — so the guard survives any future
+refactor of the listener. Assert the invariant, not the symptom, arriving between two lanes.)*
 Registry: next free **142**.
 
 
