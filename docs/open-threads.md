@@ -5118,6 +5118,40 @@ is its proof: a red IN THE RUNNER is the RUNNER's red.**
 
 **THE PARK RIDER closes OBS-3:** `item137.mjs` now emits `parkedChecks` as JSON, so the counter can see
 them. **The remaining four prose-only blocks conform in TOOLS' single offer.**
+## BAND — AN OFFER NAMES THE CHECKS THAT COULD HAVE FAILED (INK) — 2026-09-15
+
+> **AN OFFER NAMES THE CHECKS THAT COULD HAVE FAILED — A CHECK THAT CANNOT FAIL ON TODAY'S CODE IS A
+> GUARD, NOT EVIDENCE.**
+
+**INK's expectation note, made practice.** **Applied to B6 by the lane itself: C3 and C6's TEXT LEG are
+GUARDS; C6's GEOMETRY, C7 and C8 are the EVIDENCE.**
+
+**THE DISTINCTION IS NOT PEDANTIC — IT IS WHAT A GREEN MEANS.** A GUARD passes today because the
+hazard is not present; it earns its place by **failing on the day something reintroduces the hazard.**
+**EVIDENCE passes because THE CHANGE WORKS** — and would have failed before it. **A stamp that counts
+guards as evidence reports more proof than it holds.**
+
+**B6's own arm-and-move assertion is the worked example, and INK labelled it correctly in advance:**
+the page's text byte-identical across an arm-and-move is **a NO-OP TODAY** (`revealAtCaret` returns at
+`rangeCount === 0`) — **guarded for the day it isn't.** **A guard, declared as one.**
+
+**SIBLINGS, and together they bracket the question a check must answer:** *a check that bounds the
+symptom certifies the bug — assert the invariant the defect breaks* (what the check must ASSERT), and
+this line (what the check's green is WORTH). *(And it is the no-blank-stamp discipline one level up: a
+park section that declares zero is readable, and an offer that declares which checks are guards is
+readable the same way — silence in both cases reads as a claim nobody made.)*
+
+## ERRATA — WAVE 2's PAIR IS ITEM 139's FIRST LIVE PROOF — 2026-09-15
+
+**Pair at `ad8b55d`, pre-flight ZERO, quiet box, token `errata-wave2-20260915`.** **It rides 55 MIGRATED
+FILES, m1's park and its successor** — **and it is the first pair to run with `WS_BOX_TURN` enforced in
+`withHarness`.**
+
+**RECORDED IN ADVANCE, AS BEFORE: if this pair reds IN THE RUNNER rather than in the code, it is THE
+RUNNER's red — diagnosed as such, not charged to the wave.** *(Naming it beforehand is what stops an
+instrument's defect being billed to whoever happens to be holding the box when it fires.)*
+
+**ON ERRATA's STAMP: INK's B6 announcement, pre-committed — no ask.**
 Registry: next free **142**.
 
 
