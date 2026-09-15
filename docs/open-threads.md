@@ -4867,7 +4867,83 @@ harness is a run" said the box is contended by BROWSERS; this says it is contend
 a debounced WRITE not yet flushed (`item 85-C`); this is **the MODULE ITSELF not yet evaluated** — the
 earliest point on the same axis. **All three say: the state your assertion depends on must EXIST before
 you read it, and "the page is open" is not the same as "the bundle has run."**
-Registry: next free **141**.
+## ITEM 141 — ADMITTED TO BATCH TWO BY EXCEPTION — 2026-09-15
+
+**`item141-item97-seam-wait @ 86a3f01`, stamped tree `238d88d`, CLEAN 84/84 BOTH LEGS. MERGED.**
+
+**THE EXCEPTION, WITH ITS REASON:** Batch Two was **CLOSED at assembly**, and the standing rule is that
+**nothing merges between the assembled diff and its stamp.** **141 is admitted anyway because it is
+HARNESS-ONLY, the PRODUCT DELTA IS UNCHANGED, the BUNDLE IS BYTE-IDENTICAL — and A STAMP OVER A
+KNOWN-RACY CHECK IS NOT A STAMP.** **The product range stays `f12c318` → `2155457`** (verified after the
+merge: **8 files, +332/-24**, unmoved). **The manifest names 141 as a HARNESS ADMISSION, not as a sixth
+package.**
+
+**THE ADMISSION RESOLVED ON THE CODE, NOT ON THE CONTROL — and the control's outcome did not change
+it.** **THE CONTROL: `main` GREEN 84/84 at `6e57efa`; `item97` at `[58/84]` UNDER FULL LOAD.** **A green
+control cannot clear the premise**: the defect was established at the source, and **a race that did not
+fire is still a race.**
+
+## BAND — SAME BYTES, DIFFERENT VERDICT (FIX) — 2026-09-15
+
+> **SAME BYTES, DIFFERENT VERDICT — THE DIFFERENCE IS NOT THE CODE.**
+
+**`index-DWcBCr44.js/576566b` in the RED run, in the GREEN control, and in 141's own offer.** **When
+the bundle hash matches across a red and a green, THE CODE IS ELIMINATED AS A SUSPECT BY MEASUREMENT,
+not by argument.**
+
+**FIX's GLOSS, and it is the sharper half:** *"the SUITE RESULT line was already carrying the fact in
+every run; I'd been reading `tree=` and treating `bundle=` as decoration."* **THE BUNDLE HASH IS A
+DIAGNOSTIC, NOT A FOOTER.** *(Nothing needed building. Item 77 (c) put the hash on the stamp to catch
+contamination AT UPLOAD; it turns out to settle the authorship of a RED — a use nobody designed it for,
+and it had been printing in every run all along.)*
+
+**TOOLS' GLOSS, the same discipline from the other end:** *"an unattributed red is a phantom: it
+survives as precedent and erodes the meaning of red."* **THE KNOWN-FLAKE LIST STAYS EMPTY BECAUSE THIS
+RED WAS ATTRIBUTED, NOT EXCUSED.** *(Logged as "item97 is flaky," the list gains an entry, every future
+item97 red is pre-excused, and the real defect — a seam read before the bundle evaluates — stays. The
+list's emptiness is not luck; it is the accumulated cost of attributing every single one.)*
+
+**Together: FIX found what the evidence had already been saying; TOOLS named why saying it matters.**
+
+## BAND — HARNESS-ONLY IS A MEASUREMENT — 2026-09-15
+
+> **HARNESS-ONLY IS A MEASUREMENT — THE OFFER'S BUNDLE HASH EQUALS MAIN'S.**
+
+**A lane claiming "harness-only" is making a checkable claim, not a description of intent.** **If the
+offer's bundle hash equals main's, no product byte moved — and if it does not, the claim is false
+whatever the diff appears to show.** *(It is the served-vs-stamped discipline turned inward: the same
+instrument that proves a deploy shipped what it tested proves an offer changed nothing it said it
+would not.)*
+
+## THE ATTRIBUTIONS, JOINED — 2026-09-15
+
+**FIX recorded the load as ENVIRONMENTAL. TOOLS NAMED IT: its own `tsc` and `build:web`, running on the
+box during FIX's pair.** **Both halves belong together, and NEITHER LANE WAS AT FAULT UNDER THE RULES
+AS THEY STOOD** — every box clause spoke of harnesses and suites, so a build was lawful. **THE MODEL IS
+NOW CORRECTED AT ITS SOURCE: a build is a run.**
+
+*(Worth keeping: the incident needed BOTH lanes to report honestly to become explicable. FIX alone had
+"environmental"; TOOLS alone had "I ran a build." Neither is a diagnosis. Joined, they are one.)*
+
+## ERRATA — THE SIBLING SWEEP, AND FIX's TWO OMISSIONS RULED — 2026-09-15
+
+**SWEEP COUNT: 1. `item97` HAS NO SIBLINGS.** **The guard's shape is ACCEPTED: a `window.wrizo*` read
+reached BEFORE a navigation followed by a `waitFor` — and THE `waitFor` IS THE PROOF, NOT THE `goto`.**
+*(A `goto` starts a load; only the `waitFor` establishes that it finished. A guard keyed on the `goto`
+would pass every file that navigates and waits for nothing.)* **Queues after wave 2.**
+
+**FIX's TWO DELIBERATE OMISSIONS ARE RULED, AND BOTH ARE RIGHT:**
+- **The sibling audit was ALREADY DONE** — ERRATA's sweep, count 1.
+- **`withHarness` STAYS UNCHANGED.** **A central wait would rewrite the startup contract of 84
+  harnesses to close a class of ONE.** **The static guard is the class's answer.** **NO NEW ITEM.**
+
+*(This is the counterweight to the generalise-the-guard lesson the ledger has been accumulating. Those
+cases — the depth-1 guard, FX3's height fix — were a fix applied too NARROWLY. This is the opposite
+temptation: a fix applied too WIDELY, paid for by 84 files. The discriminator is the measured
+population: a class of one gets a guard, not a contract change.)*
+
+Registry: next free **142**.
+
 
 
 
