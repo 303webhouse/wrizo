@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useReducer, useRef } from 'react';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
@@ -407,6 +407,19 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         if (shadowAllows(extractIncomingText(e))) return;
         e.preventDefault(); notePasteBlocked();
       };
+      // REVEAL-ON-CLICK — the page surface had NO caret-move reveal at all:
+      // `redecorate` ran from onInput and from the mount effect below, and
+      // from nowhere else. Clicking into a bold run therefore did nothing,
+      // which is the founder-visible half of this ticket. The guards live in
+      // revealAtCaret (draftDecoration.ts) so both surfaces share one rule;
+      // what belongs HERE is only what this closure knows — that composing
+      // text and an in-flight em-dash substitution are not the writer's yet,
+      // the same two conditions onInput checks before it trusts the DOM.
+      const onSelectionReveal = () => {
+        if (composingDraft || applyingEmDash) return;
+        revealAtCaret(el, getPlainOffset, setPlainOffset);
+      };
+      document.addEventListener('selectionchange', onSelectionReveal);
       el.addEventListener('input', onInput);
       el.addEventListener('beforeinput', onBeforeInputDraft as EventListener);
       el.addEventListener('keydown', onKeyDownDraft);
@@ -416,6 +429,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       el.addEventListener('paste', blockPaste);
       el.addEventListener('drop', blockPaste);
       return () => {
+        document.removeEventListener('selectionchange', onSelectionReveal);
         el.removeEventListener('input', onInput);
         el.removeEventListener('beforeinput', onBeforeInputDraft as EventListener);
         el.removeEventListener('keydown', onKeyDownDraft);

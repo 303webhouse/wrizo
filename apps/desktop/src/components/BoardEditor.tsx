@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { boardName } from '../store/entryText';
 import {
   getJournalEntry, saveBoardBoxes, flushNow, getDrawer, getProject,
   patchJournalEntry, getBoardsConnecting, generateId, createLooseHomePage, pinPageToBoard,
@@ -18,7 +19,7 @@ import { renderStroke } from '../store/ink';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
 import { getSelectionOffsets, getCaretOffset, setCaretOffset } from '../store/caretOffset';
 import { applyFormat, type FormatAction } from '../store/draftFormat';
-import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
+import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../store/textUndo';
 import { useWayBack } from './useWayBack';
@@ -487,25 +488,32 @@ function BoardCardPopup({
       e.preventDefault();
       notePasteBlocked();
     };
-    // FX5 S6 — reveal-adjacent-to-caret only updates on a TEXT change today
-    // (every path above redecorates after committing new content). A pure
-    // caret move — an arrow key, or a click that repositions without
-    // typing — doesn't fire 'input' at all, so the reveal state would go
-    // stale (still showing the PREVIOUS run's markers, or hiding the one
-    // the caret just moved into). Re-running redecorate with the SAME text
-    // but a freshly-read caret is a no-op for content, just refreshes which
-    // markers are revealed.
-    const NAV_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
-    const onCaretMoveKey = (e: KeyboardEvent) => {
-      if (!NAV_KEYS.has(e.key)) return;
-      redecorate(textRef.current, getCaretOffset(el));
+    // REVEAL-ON-CLICK — this REPLACES the pair FX5 S6 built here (a keyup
+    // against a NAV_KEYS list, plus a mouseup). FX5's diagnosis was right and
+    // is preserved in revealAtCaret's own comment: a pure caret move fires no
+    // 'input', so the reveal would otherwise show the PREVIOUS caret's
+    // markers. What changes is the signal and the guards.
+    //
+    // THE SIGNAL: enumerating the paths that move a caret means the state
+    // goes stale after whichever path nobody listed, and the list here was
+    // already incomplete (Tab, PageUp/PageDown, a programmatic move, a
+    // click-drag that ends outside the element). `selectionchange` fires for
+    // all of them. Item 122 had already made this exact argument for Draft's
+    // B/I/U button state; the decoration is the same problem.
+    //
+    // THE GUARDS, and why this is a fix and not just a swap: the old pair
+    // redecorated UNCONDITIONALLY, and a redecorate restores a COLLAPSED
+    // caret. So a mouseup ending a drag-selection collapsed that selection,
+    // and shift+arrow could not extend one. revealAtCaret declines on a
+    // non-collapsed selection, so selecting text on a card works.
+    const onSelectionReveal = () => {
+      if (composing || applyingEmDash) return;
+      revealAtCaret(el, getCaretOffset, setCaretOffset);
     };
-    const onCaretMoveClick = () => { redecorate(textRef.current, getCaretOffset(el)); };
     el.addEventListener('input', onInput);
     el.addEventListener('keydown', onKeyDown);
     el.addEventListener('keydown', onUndoRedoKey);
-    el.addEventListener('keyup', onCaretMoveKey);
-    el.addEventListener('mouseup', onCaretMoveClick);
+    document.addEventListener('selectionchange', onSelectionReveal);
     el.addEventListener('compositionstart', onCompStart);
     el.addEventListener('compositionend', onCompEnd);
     el.addEventListener('beforeinput', onBeforeInput as EventListener);
@@ -518,8 +526,7 @@ function BoardCardPopup({
       el.removeEventListener('input', onInput);
       el.removeEventListener('keydown', onKeyDown);
       el.removeEventListener('keydown', onUndoRedoKey);
-      el.removeEventListener('keyup', onCaretMoveKey);
-      el.removeEventListener('mouseup', onCaretMoveClick);
+      document.removeEventListener('selectionchange', onSelectionReveal);
       el.removeEventListener('compositionstart', onCompStart);
       el.removeEventListener('compositionend', onCompEnd);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
@@ -1749,6 +1756,21 @@ export function BoardEditor({ id }: { id: string }) {
     return () => { delete (window as unknown as { wrizoBoard?: unknown }).wrizoBoard; };
   }, []);
 
+  // ITEM 133 — THE RENAME STATE LIVES HERE, WITH EVERY OTHER HOOK, and above
+  // the early return below. It was first written beside the `title` derivation
+  // it serves — which reads better and is wrong: `if (!initialEntry) return
+  // null` sits between, so on a render where the board's row is missing these
+  // two useState calls would not run and React would see fewer hooks than the
+  // render before. That is error #300 and the whole tree blanked — item 104's
+  // class exactly. hooks-order.mjs caught it here rather than a writer finding
+  // it when a board is deleted on another device mid-session.
+  //
+  // The lesson worth keeping beside the code: state belongs with the HOOKS,
+  // not with the feature it describes. Proximity to its own feature is the
+  // pull that put it in the wrong place.
+  const [renaming, setRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+
   if (!initialEntry) return null;
 
   // FX4 S4 — "minimums = content extents": the canvas can never be dragged
@@ -1803,7 +1825,21 @@ export function BoardEditor({ id }: { id: string }) {
   // a page with no project and no natural "up" — the exact same reasoning
   // PageEditor.tsx's own backTo already applies to a loose-origin page.
   const backTo = project ? `/project/${project.id}` : isSystemBoard ? '/' : '/journal';
-  const title = initialEntry.text.trim() ? initialEntry.text.trim() : 'Untitled';
+  // ITEM 133 — one derivation (store/entryText.ts's boardName), not this file's
+  // own third reading of the same field.
+  const title = boardName(initialEntry.text, 'Untitled');
+  // ITEM 133 — commit through the EXISTING store path. `patchJournalEntry`
+  // takes the current text and the changes, so the rename is an ordinary edit
+  // of an ordinary field; nothing here is a naming-specific pipe.
+  const commitRename = () => {
+    const next = nameDraft.trim();
+    setRenaming(false);
+    if (!next) return;                       // empty reverts: the old name stands
+    const live = getJournalEntry(id);
+    if (!live || next === boardName(live.text, 'Untitled')) return;
+    patchJournalEntry(id, next, {});
+  };
+
 
   // AB4 S3 / FX4 S4 — connection and board-meta boxes are never positioned
   // cards: filtered out of the positioned-card render loop (they never
@@ -2456,7 +2492,56 @@ export function BoardEditor({ id }: { id: string }) {
           <div className="sprint-crumb" aria-label="Location" style={{ marginRight: 'auto' }}>
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-            <span className="crumb-here">{title}</span>
+            {/* ITEM 133 — THE NAME IS EDITED WHERE IT IS DISPLAYED. Nick could not
+                name a board because a board's name was written once at birth and
+                no surface could reach it again. This is that surface: the name in
+                the board's own crumb, clicked.
+                Enter or blur COMMITS, Escape REVERTS, and an empty name reverts to
+                the previous one — a board is never left nameless by a stray click,
+                and "clear it to rename it" is not a thing a writer should have to
+                discover. Zero schema: `board.text` is a pure label, so writing it
+                IS the rename, through the same patchJournalEntry every other edit
+                uses. */}
+            {renaming ? (
+              <input
+                className="crumb-here crumb-rename"
+                value={nameDraft}
+                autoFocus
+                aria-label={t('boardRenameLabel')}
+                onChange={ev => setNameDraft(ev.target.value)}
+                onKeyDown={ev => {
+                  if (ev.key === 'Enter') { ev.preventDefault(); commitRename(); }
+                  else if (ev.key === 'Escape') { ev.preventDefault(); setRenaming(false); }
+                }}
+                onBlur={commitRename}
+              />
+            ) : (
+              <button
+                type="button"
+                className="crumb-here crumb-rename-btn"
+                title={t('boardRenameLabel')}
+                // ITEM 133-B — THE DRAFT OPENS WITH AN EMPTY FALLBACK, so a nameless
+                // board gives a nameless field. The first cut asked the question the
+                // long way round: it derived the name with the crumb's own fallback
+                // ('Untitled') and then compared the result against 'Untitled board'
+                // to decide whether to open blank. Those two strings were the SAME
+                // string when boardName() returned one stand-in for every caller; the
+                // moment the fallback became a caller's parameter (which was itself a
+                // correction — the crumb has always displayed plain 'Untitled') the
+                // comparison could never be true again, and the open-blank branch went
+                // dead. A writer naming a board for the first time found the stand-in
+                // word sitting in the field, to be selected and deleted before they
+                // could type their own.
+                //
+                // THE SENTINEL IS GONE RATHER THAN CORRECTED. Repairing the literal
+                // would have left a magic string that has to be kept in step with a
+                // fallback it cannot see — which is exactly the drift that produced
+                // this, and item 136 is about to retire those stand-ins entirely.
+                // Deriving with '' makes namelessness produce emptiness directly:
+                // nothing to compare, nothing to keep in step.
+                onClick={() => { setNameDraft(boardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
+              >{title}</button>
+            )}
           </div>
           {boardModeBar}
           <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 0 }}>
