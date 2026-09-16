@@ -5345,7 +5345,56 @@ word.**
 item-140 turn** (token `errata-item140-20260916`). **The tree stayed clean throughout — the grant file
 lives outside every worktree, so it is invisible to git.**
 
-Registry: next free **143**.
+## ITEM 108 — NICK'S RULINGS ON THE FOUR QUESTIONS — 2026-09-16
+
+**⚠ PRIMARY TEXT NOT IN CHAT 1's BLOCK.** Fable's relay states Nick's four rulings are **in the PLAN
+desk's block, verbatim**, to be recorded as primary text there. **What reached chat 1 is FABLE's
+SUMMARY, recorded below AS a summary.** **The verbatim text lands with the PLAN desk's offer; until then
+this entry carries no founder words.** *(Recorded this way rather than paraphrased into quotation
+marks, because a summary set in quote-marks is indistinguishable later from the founder's own text.)*
+
+**RECORDED BY SUBJECT, NOT BY NUMBER.** The questions reached Nick numbered one way (hold-vs-reflow ·
+card silhouette · FN1's source list · mockup C) and the rulings came back labelled Q-1, Q-3, Q-4 and
+"mockup C" — **no Q-2, and the card question now carries the number 3.** **A number that resolves to a
+different question in each document is a landmine; the subject is not.**
+
+**FABLE's SUMMARY:**
+- **BOARD FILTER — HOLD.** Cards **hold position** under a filter; they do not reflow.
+- **CARD THUMBNAILS MIRROR EACH CARD'S OWN PROPORTION.** **An AMENDMENT to the thumbnail law, NOT an
+  exception:** the canonical shapes are RULED (**board wide, page tall**), and **a card has no canonical
+  shape because the writer chose it.** *(An exception would say "cards break the law." An amendment
+  says the law was always about kinds whose shape is fixed by the house — and a card's shape is fixed
+  by the writer, so honouring it IS the law.)*
+- **FN1's SOURCE-LIST SHAPE — ACCEPTED.** **FN1 holds UNCONDITIONALLY today**, and **a remote source
+  arrives as a CONSENTED CHANNEL** — the pattern FN8 already set.
+- **MOCKUP C — SKIPPED.**
+
+## ITEM 143 — THE TAG CONTROLS — OPENS 2026-09-16
+
+**OPENS. Brief → the PLAN DESK.** **The WRITING half of item 108's READING half — they share ONE
+VOCABULARY.**
+
+- **"Tags" AS A HEADING IS RETIRED.**
+- **"+" ADDS · "−" REMOVES · a THIRD CONTROL shows existing tags in a SCROLLABLE LIST.**
+- **ON EVERY TOOL STRIP MENU — Page, Card, Board.**
+- **THE CARD STRIP's VERSION GATES ON CARD TAGS EXISTING** (cards carry no `tags` field today).
+- **`deskLexicon` terms change with it — ONE DERIVATION, as always.**
+
+**⚠ FINDING FOR THE BRIEF, measured by chat 1 on `main` — LOCATE BEFORE RETIRING:** **no "Tags" heading
+exists in `src`** — no literal, and no lexicon key. **What does exist:** `pageFaceAddTag: 'Add a tag'`
+in `deskLexicon.ts`, and tag add/remove handlers in **four** surfaces (`BoardEditor`, `ScriptEditor`,
+`JournalEntry`, `PageEditor`). **So the heading may live only in a mockup, or render under a key not
+yet matched — the brief should find it BY CONTENT before retiring it, and if it is not in code, that
+half of item 143 is purely ADDITIVE.** *(And `pageFaceAddTag` is the obvious derivation the "+" control
+should inherit rather than duplicate.)*
+
+**NOTE THE FOUR SURFACES ARE FOUR HANDLERS** — each with its own `addTag`/`removeTag`. **A control that
+appears "on every tool strip menu" is the natural moment to make that ONE handler**, or the three
+controls will be built four times. *(One fact, one derivation — applied to behaviour as well as to
+words.)*
+
+Registry: next free **144**.
+
 
 
 
