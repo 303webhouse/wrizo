@@ -115,6 +115,22 @@ const seedFixture = async (app, { projects = [], boards = [], docs = [] }, width
       origin: 'origin' in e ? e.origin : null,
       source: 'source' in e ? e.source : null,
     }));
+    // ITEM 85-C — ESTABLISH THE RECENCY ORDER BY TOUCHING.
+    // These fixtures space createdAt one second apart to get deterministic
+    // recency, but upsert stamps updatedAt on every write, so the seeded spacing
+    // never reaches storage: all rows land in one millisecond and the Drawers
+    // list collapses the ones it cannot tell apart (seven docs rendered SIX).
+    //
+    // SORTED BY THE SEEDED TIMESTAMP, never by array order. Touching boards
+    // before docs made the last DOC the most recent, so it anchored at the top
+    // and left the Loose group one short — the very count the collapse rule
+    // reads. The anchor board carries offset 1000 precisely to be newest, and
+    // sorting ascending reproduces that: the intended recency, made real.
+    window.wrizoTouchInOrder(
+      [...${JSON.stringify(boards)}, ...${JSON.stringify(docs)}]
+        .sort((a, b) => String(a.updatedAt).localeCompare(String(b.updatedAt)))
+        .map((e) => e.id),
+    );
     return JSON.stringify(map);
   })()`));
   await app.reload();
@@ -541,6 +557,11 @@ await withHarness(async (app) => {
       window.wrizoCreateJournalPage({ ...${JSON.stringify(board('fx9-s4-anchor', 'fx9-s4-project', 'S4 Anchor Board', 1000))}, projectId: p.id, origin: null });
       ${JSON.stringify(Array.from({ length: 7 }, (_, i) => doc(`fx9-s4-doc-${i}`, `S4 Doc ${i}`, i)))}
         .forEach((d) => window.wrizoCreateJournalPage({ ...d, origin: 'origin' in d ? d.origin : null, source: 'source' in d ? d.source : null }));
+      // ITEM 85-C — the same touch the shared seedFixture performs, in the same
+      // seeded-recency order: the docs (offsets 0..6) first, then the anchor
+      // board (offset 1000) LAST, so the board stays newest and the seven docs
+      // stay in Loose — which is the count the collapse rule reads.
+      window.wrizoTouchInOrder([...${JSON.stringify(Array.from({ length: 7 }, (_, i) => `fx9-s4-doc-${i}`))}, 'fx9-s4-anchor']);
     })()`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);

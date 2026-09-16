@@ -429,7 +429,10 @@ await withHarness(async (app) => {
   // directions of the audit, proven live).
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
-  await app.evalJs(`(() => {
+  // ITEM 85-C — the generated id is RETURNED to node, because the loose-write
+  // probe below runs in a SEPARATE app.evalJs and each evalJs is its own
+  // browser-side script: a const declared in one does not exist in the next.
+  const s3ProjectId = await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const proj_b2_s3_project = window.wrizoCreateProject('S3 Project');
     // Legacy shape: shelved:true, no origin field at all (pre-AB3 data, the grandfather clause).
@@ -438,6 +441,7 @@ await withHarness(async (app) => {
     window.wrizoCreateJournalPage({ id: 'b2-s3-userboard', text: 'S3 user board', projectId: proj_b2_s3_project.id, pageType: 'board', boxes: [
       { id: 'b2-s3-pin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.2, h: 0.1, z: 1, entryId: 'b2-s3-legacy-connected' },
     ], createdAt: now, origin: null });
+    return proj_b2_s3_project.id;
   })()`);
   await app.reload();
   const s3ShelfBoxes = await shelfBoardBoxes(app);
@@ -451,7 +455,7 @@ await withHarness(async (app) => {
   // (the column stays dormant — zero writes, in either direction).
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    window.wrizoCreateJournalPage({ id: 'b2-s3-loose-write-probe', text: 'S3 loose write probe', projectId: proj_b2_s3_project.id, pageType: 'manuscript', origin: 'project', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-s3-loose-write-probe', text: 'S3 loose write probe', projectId: ${JSON.stringify(s3ProjectId)}, pageType: 'manuscript', origin: 'project', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b2-s3-loose-write-probe'");
@@ -776,6 +780,17 @@ await withHarness(async (app) => {
     window.wrizoCreateJournalPage({ id: 'b2-drawers-board-a1', text: 'Alpha Board', projectId: proj_b2_drawers_project_a.id, pageType: 'board', boxes: [], createdAt: now, updatedAt: t(3), origin: null });
     window.wrizoCreateJournalPage({ id: 'b2-drawers-loose-doc', text: 'Loose Doc', projectId: null, origin: 'loose', createdAt: now, updatedAt: t(100) });
     window.wrizoCreateJournalPage({ id: 'b2-drawers-filed-manuscript', text: 'Filed Manuscript', projectId: proj_b2_drawers_project_a.id, pageType: 'manuscript', origin: 'project', createdAt: now, updatedAt: t(4) });
+    // ITEM 85-C — ESTABLISH THE RECENCY ORDER BY TOUCHING, in the seeded order.
+    // upsert stamps updatedAt on every write, so the t(1)..t(100) spacing above
+    // never reaches storage and every row lands in one millisecond. S7 asserts
+    // "last-opened anchors first", which then has nothing to order by. Touched
+    // ascending — t(1), t(2), t(3), t(4), then the loose doc at t(100) LAST —
+    // so the doc is genuinely the most recently touched, which is what the
+    // comment above has always claimed and what the assertion reads.
+    window.wrizoTouchInOrder([
+      'b2-drawers-board-z2', 'b2-drawers-board-z1', 'b2-drawers-board-a1',
+      'b2-drawers-filed-manuscript', 'b2-drawers-loose-doc',
+    ]);
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Drawers seed' });
