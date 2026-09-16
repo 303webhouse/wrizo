@@ -105,9 +105,13 @@ const clickAt = async (app, x, y) => { await app.mouseDown(x, y); await sleep(30
 // writing surface with a flush-on-unmount effect mounted) to avoid a
 // silent clobber on the next reload. Every seeding call below goes through
 // this helper, which asserts the precondition.
+// ITEM 85-C — this now RETURNS the script's value. The seams generate ids rather
+// than taking them, so a block that creates a project and a later navigation that
+// needs its id have to be connected; window state does not survive the reload
+// between them. Callers that ignore the return are unaffected.
 const seedFromDesk = async (app, mutate) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'seedFromDesk precondition: on the Desk' });
-  await app.evalJs(mutate);
+  return app.evalJs(mutate);
 };
 
 // The gutter/geometry reading this whole file's S1 section is built on:
@@ -238,22 +242,17 @@ await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     await seedFromDesk(app, `(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-b2-manuscript', text: 'A Manuscript Page', pageType: 'manuscript', projectId: 'j6-b2-project', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-b2-loose', text: 'A Loose Journal Page', origin: 'journal', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-b2-boardtarget', text: 'Another Board', pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-b2-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 'j6-b2-heading', heading: { id: 'j6-b2-heading', t: 'scene', text: '' }, body: [] }] }, source: 'page', createdAt: now, updatedAt: now });
-      entries.push({
-        id: 'j6-b2-board', text: 'J6 Travel Board', pageType: 'board', source: 'page', createdAt: now, updatedAt: now,
-        boxes: [
+      window.wrizoCreateJournalPage({ id: 'j6-b2-manuscript', text: 'A Manuscript Page', pageType: 'manuscript', projectId: 'j6-b2-project', createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j6-b2-loose', text: 'A Loose Journal Page', origin: 'journal', createdAt: now });
+      window.wrizoCreateJournalPage({ id: 'j6-b2-boardtarget', text: 'Another Board', pageType: 'board', boxes: [], createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j6-b2-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 'j6-b2-heading', heading: { id: 'j6-b2-heading', t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j6-b2-board', text: 'J6 Travel Board', pageType: 'board', createdAt: now, boxes: [
           { id: 'pin-manuscript', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.28, h: 0.12, z: 1, entryId: 'j6-b2-manuscript' },
           { id: 'pin-loose', kind: 'page-pin', x: 0.05, y: 0.20, w: 0.28, h: 0.12, z: 1, entryId: 'j6-b2-loose' },
           { id: 'pin-board', kind: 'page-pin', x: 0.05, y: 0.35, w: 0.28, h: 0.12, z: 1, entryId: 'j6-b2-boardtarget' },
           { id: 'pin-missing', kind: 'page-pin', x: 0.05, y: 0.50, w: 0.28, h: 0.12, z: 1, entryId: 'j6-b2-does-not-exist' },
           { id: 'ported-script', kind: 'text', x: 0.4, y: 0.05, w: 0.28, h: 0.12, z: 1, text: 'Ported excerpt', sourceEntryId: 'j6-b2-script' },
-        ],
-      });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+        ], origin: null });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/page/j6-b2-board'");
@@ -309,9 +308,7 @@ await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     await seedFromDesk(app, `(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: ${JSON.stringify(id)}, text: ${JSON.stringify(entryText)}, ${id === 'j6-b3-typed' ? "pageType: 'note', " : ''}origin: 'journal', source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: ${JSON.stringify(id)}, text: ${JSON.stringify(entryText)}, ${id === 'j6-b3-typed' ? "pageType: 'note', " : ''}origin: 'journal', createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after B3 seed' });
@@ -339,19 +336,19 @@ await withHarness(async (app) => {
   // too) -- proving all three Link destinations. ---------------------------
   {
     await freshDesk(app, LAPTOP_W, 900);
-    await seedFromDesk(app, `(() => {
+    const b4ProjectId = await seedFromDesk(app, `(() => {
       const now = new Date().toISOString();
-      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-      projects.push({ id: 'j6-b4-project', title: 'J6 ProjectHome Test', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-b4-chapter', text: 'Chapter One', pageType: 'manuscript', projectId: 'j6-b4-project', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-b4-support-typed', text: 'A Character', pageType: 'character', projectId: 'j6-b4-project', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-b4-support-legacy', text: 'A Legacy Filed Page', projectId: 'j6-b4-project', source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      // ITEM 85-C — the project's id is generated, and THIS block's id escapes:
+      // two later navigations route to /project/:id. So it is returned and the
+      // caller threads it through. All three pages omit origin, so each says so.
+      const project = window.wrizoCreateProject('J6 ProjectHome Test');
+      window.wrizoCreateJournalPage({ id: 'j6-b4-chapter', text: 'Chapter One', pageType: 'manuscript', projectId: project.id, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j6-b4-support-typed', text: 'A Character', pageType: 'character', projectId: project.id, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j6-b4-support-legacy', text: 'A Legacy Filed Page', projectId: project.id, createdAt: now, origin: null });
+      return project.id;
     })()`);
     await app.reload();
-    await app.evalJs("location.hash = '#/project/j6-b4-project'");
+    await app.evalJs(`location.hash = '#/project/' + ${JSON.stringify(b4ProjectId)}`);
     await app.waitFor("!!document.querySelector('.dz-tree')", { label: 'ProjectHome mounted' });
     await sleep(300);
     for (const [text, expectHash, label] of [
@@ -365,7 +362,7 @@ await withHarness(async (app) => {
       await sleep(300);
       const hash = await app.evalJs('location.hash');
       ok(label, hash === expectHash, hash);
-      await app.evalJs("location.hash = '#/project/j6-b4-project'");
+      await app.evalJs(`location.hash = '#/project/' + ${JSON.stringify(b4ProjectId)}`);
       await app.waitFor("!!document.querySelector('.dz-tree')", { label: `back on ProjectHome after ${text}` });
       await sleep(250);
     }
@@ -384,9 +381,7 @@ await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     await seedFromDesk(app, `(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-b5-typed', text: 'A Typed Entry', pageType: 'research', source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'j6-b5-typed', text: 'A Typed Entry', pageType: 'research', createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/journal/j6-b5-typed'");
@@ -420,13 +415,11 @@ await withHarness(async (app) => {
     await freshDesk(app, LAPTOP_W, 900);
     await seedFromDesk(app, `(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-b7-plain', text: 'Spread Plain', origin: 'journal', orderIndex: 1000, source: 'page', createdAt: now, updatedAt: now });
       // An unfiled manuscript page, still loose (projectId null) -- the
       // exact reachable-today edge case: getNotebookPages() only excludes
       // pageType:'board', so this DOES appear in the Spread grid.
-      entries.push({ id: 'j6-b7-unfiled-manuscript', text: 'Spread Unfiled Manuscript', origin: 'journal', pageType: 'manuscript', orderIndex: 2000, source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'j6-b7-plain', text: 'Spread Plain', origin: 'journal', orderIndex: 1000, createdAt: now });
+      window.wrizoCreateJournalPage({ id: 'j6-b7-unfiled-manuscript', text: 'Spread Unfiled Manuscript', origin: 'journal', pageType: 'manuscript', orderIndex: 2000, createdAt: now });
     })()`);
     await app.reload();
     await app.evalJs("location.hash = '#/journal/spread'");
@@ -480,10 +473,8 @@ await withHarness(async (app) => {
     await freshDesk(app, LEGACY_W, 900);
     await seedFromDesk(app, `(() => {
       const now = new Date().toISOString();
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'j6-legacy-typed', text: 'Legacy Typed', pageType: 'note', source: 'page', createdAt: now, updatedAt: now });
-      entries.push({ id: 'j6-legacy-untyped', text: 'Legacy Untyped', origin: 'loose', source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoCreateJournalPage({ id: 'j6-legacy-typed', text: 'Legacy Typed', pageType: 'note', createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'j6-legacy-untyped', text: 'Legacy Untyped', origin: 'loose', createdAt: now });
     })()`);
     await app.reload();
     // FIXTURE RE-POINT [FX14 S2] — this legacy GEOMETRY check is item 47's own

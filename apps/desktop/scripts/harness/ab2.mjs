@@ -705,7 +705,7 @@ await withHarness(async (app) => {
     const now = new Date().toISOString();
     window.wrizoCreateJournalPage({ id: 'ab2-board', text: '', pageType: 'board', boxes: [
       { id: 'ab2-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-    ], createdAt: now, origin: null });
+    ], createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Board seed' });
@@ -977,7 +977,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.emulateDpr(1, 1400, 900);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      window.wrizoCreateJournalPage({ id: 'ab2-script-parked-typewriter', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab2-script-parked-typewriter', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed (PARKED typewriter)' });
@@ -1086,7 +1086,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before re-seed (PARKED typewriter)' });
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      window.wrizoCreateJournalPage({ id: 'ab2-script-parked-typewriter', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab2-script-parked-typewriter', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: 's1', heading: { id: 's1', t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after re-seed (PARKED typewriter)' });

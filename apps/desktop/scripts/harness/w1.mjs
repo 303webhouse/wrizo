@@ -98,7 +98,7 @@ await withHarness(async (app) => {
   const boardCheck = await app.evalJs(`(() => {
     const now = new Date().toISOString();
     const id = 'w1-board-' + Date.now();
-    window.wrizoCreateJournalPage({ id, text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id, text: '', pageType: 'board', boxes: [], createdAt: now, source: null, origin: null });
     return id;
   })()`);
   await app.reload();
