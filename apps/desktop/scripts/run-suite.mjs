@@ -90,7 +90,7 @@ const IGNORE_FOREIGN = has('--ignore-foreign');
 // fails FAST, before the rebuild, so an ungranted sweep costs one clear refusal
 // instead of 85 children each refusing on their own after a build nobody wanted.
 {
-  const { checkGrant } = await import('./harness/box-grant.mjs');
+  const { checkGrant } = await import('./box-grant.mjs');
   const verdict = checkGrant(process.env.WS_BOX_TURN);
   if (!verdict.ok) {
     console.error('SUITE REFUSED: BOX TURN NOT GRANTED.');

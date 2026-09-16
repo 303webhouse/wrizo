@@ -115,11 +115,18 @@ export function checkGrantAt(grantPath, token) {
     };
   }
   if (grant.token !== token) {
+    // The timestamp is read under EITHER name. writeGrant writes `time`; chat 1's
+    // first live grant (2026-09-16) was written by hand as `granted` — the path
+    // matched and the format drifted, which is precisely what importing
+    // writeGrant prevents. Only `token` decides anything, so the match was never
+    // at risk; but a refusal that prints "granted undefined" tells the reader the
+    // guard is broken when it is the writer that drifted.
+    const when = grant.time ?? grant.granted ?? 'at an unrecorded time';
     return {
       ok: false,
       reason: 'token-mismatch',
       message: 'BOX TURN HELD BY ANOTHER LANE — refusing to open a browser.\n'
-        + `  The grant on this box names lane "${grant.lane}" (granted ${grant.time}).\n`
+        + `  The grant on this box names lane "${grant.lane}" (granted ${when}).\n`
         + '  Your exported token does not match it. The turn is allocated by ANNOUNCEMENT,\n'
         + '  and the file is what the announcement wrote — a token is checked against the\n'
         + '  FILE, never merely for being present.',

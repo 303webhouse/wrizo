@@ -21,7 +21,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import path from 'node:path';
-import { checkGrantAt, GRANT_PATH, writeGrant, clearGrant } from './box-grant.mjs';
+import { checkGrantAt, GRANT_PATH, writeGrant, clearGrant } from '../box-grant.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -72,6 +72,22 @@ ok('140: a grant carrying NO TOKEN is refused rather than matching anything — 
 const nullGrant = checkGrantAt(put('null.json', 'null'), 'errata-wave2-20260915');
 ok('140: a grant file containing literal null parses CLEANLY and must still be refused — valid JSON is not a valid grant, and this is the shape that would slip past a bare try/catch',
   nullGrant.ok === false && nullGrant.reason === 'grant-malformed', JSON.stringify(nullGrant.reason));
+
+// THE SHAPE CHAT 1 ACTUALLY WRITES. The round-trip below proves writeGrant and
+// the matcher agree — but chat 1's first live grant (2026-09-16) was written by
+// hand, as { lane, token, granted }, not through writeGrant's { lane, token,
+// time }. A test that only covers the format this lane writes proves
+// compatibility with a format nobody is using. This pins the one in use.
+const chat1Shape = put('chat1-shape.json', JSON.stringify({
+  lane: 'ERRATA', token: 'errata-item140-20260916', granted: '2026-09-16T23:41:23.487Z',
+}, null, 2));
+const chat1Match = checkGrantAt(chat1Shape, 'errata-item140-20260916');
+const chat1Other = checkGrantAt(chat1Shape, 'ink-20260916');
+ok('140: the grant in the shape chat 1 ACTUALLY WRITES ({ lane, token, granted }) is matched on its token, and a refusal against it names the holder with a real timestamp rather than "undefined" — the path matched while the format drifted, and only a test of the format in use can say the drift is harmless',
+  chat1Match.ok === true && chat1Match.lane === 'ERRATA'
+  && chat1Other.ok === false && chat1Other.message.includes('2026-09-16T23:41:23.487Z')
+  && !chat1Other.message.includes('undefined'),
+  JSON.stringify({ match: chat1Match.ok, refusalNamesTime: chat1Other.message.includes('2026-09-16T23:41:23.487Z') }));
 
 // 6 — THE ONE THAT MAKES 140 DIFFER FROM 139.
 const lifecycle = at('lifecycle.json');

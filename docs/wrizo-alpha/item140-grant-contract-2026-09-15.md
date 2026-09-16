@@ -35,7 +35,7 @@ half — where the act that ends the turn ends the grant.
 ## §2 · THE PATH, SETTLED AS A CONSTANT RATHER THAN A CONVENTION
 
 ```
-apps/desktop/scripts/harness/box-grant.mjs   →   export const GRANT_PATH
+apps/desktop/scripts/box-grant.mjs   →   export const GRANT_PATH
                                                  = ~/.wrizo/box-turn.json
 ```
 
@@ -68,7 +68,7 @@ correct refusal that nobody asked for.
 line from any checkout:
 
 ```
-node -e "import('./apps/desktop/scripts/harness/box-grant.mjs').then(m=>m.writeGrant('<lane>','<token>'))"
+node -e "import('./apps/desktop/scripts/box-grant.mjs').then(m=>m.writeGrant('<lane>','<token>'))"
 ```
 
 That is a recovery, not a workflow: a lane writing its own grant is a lane
@@ -80,7 +80,7 @@ written down because an undocumented recovery is how a guard gets deleted at 2am
 ## §4 · CHAT 1'S HALF — THE EXACT SURFACE
 
 ```js
-import { writeGrant, clearGrant, GRANT_PATH } from './apps/desktop/scripts/harness/box-grant.mjs';
+import { writeGrant, clearGrant, GRANT_PATH } from './apps/desktop/scripts/box-grant.mjs';
 
 writeGrant('errata', 'errata-wave3-20260916');  // at the announcement
 clearGrant();                                    // at the stamp — put this IN the stamp sequence

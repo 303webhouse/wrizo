@@ -738,7 +738,7 @@ export async function withHarness(scenario, opts = {}) {
   // extra steps. No expiry — see box-grant.mjs for why a long pair must never
   // be refused mid-run.
   {
-    const { checkGrant } = await import('./harness/box-grant.mjs');
+    const { checkGrant } = await import('./box-grant.mjs');
     const verdict = checkGrant(process.env.WS_BOX_TURN);
     if (!verdict.ok) {
       throw new Error(
