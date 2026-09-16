@@ -215,8 +215,8 @@ await withHarness(async (app) => {
     const headingId = 'ab1-script-heading';
     window.wrizoCreateJournalPage({ id: 'ab1-board', text: '', pageType: 'board', boxes: [
       { id: 'ab1-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-    ], createdAt: now, origin: null });
-    window.wrizoCreateJournalPage({ id: 'ab1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+    ], createdAt: now, source: null, origin: null });
+    window.wrizoCreateJournalPage({ id: 'ab1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed' });
@@ -608,7 +608,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
       const headingId = 'ab1-parked-script-heading';
-      window.wrizoCreateJournalPage({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED script seed' });
@@ -682,7 +682,7 @@ if (process.env.HARNESS_PARKED === '1') {
       const now = new Date().toISOString();
       const headingId = 'ab1-cd2-park-script-heading';
       window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-board', text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
-      window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed, CD2 park' });
@@ -749,7 +749,7 @@ if (process.env.HARNESS_PARKED === '1') {
       const now = new Date().toISOString();
       window.wrizoCreateJournalPage({ id: 'ab1-parked-board', text: '', pageType: 'board', boxes: [
         { id: 'ab1-parked-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-      ], createdAt: now, origin: null });
+      ], createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED board seed' });

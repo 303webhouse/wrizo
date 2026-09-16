@@ -89,16 +89,43 @@ and the resulting flush wrote a cache that had never contained the row. A seed
 made through the seam enters the cache, so no flush can erase it — the mechanism
 is removed rather than out-timed. **A real writer is immune** (every product
 write reaches storage through the cache); this is a harness-only hazard, which is
-exactly why it went unnoticed. **Until item 85's MIGRATION lands, this is the
-guard: new seeding goes through seams, and any edit to one of the 56 raw-writing
-harness files checks that file's own exposure before it lands.** Item 85-B is the
-instrument, not the migration, and does not discharge this: it only makes the
-count enforceable. `scripts/harness/seed-guard.mjs` measures the population every
-suite run and FAILS on any file that newly writes raw, so the number above can no
-longer rot the way it just did. It is 56 — not the 47 that stood here (never
-re-counted) and not item 85's 54, which measures `journal-entries` alone;
-`flushNow()` iterates every key in `KEYS`, and `b2-1.mjs` and `j5.mjs` write
-`projects` / `story-plans` / `drawers` raw with the identical coin flip.
+exactly why it went unnoticed. **A real writer is immune** — every product write
+reaches storage through the cache — which is exactly why this stayed invisible.
+
+### HOW TO SEED A FIXTURE (item 85-C, wave 1 landed 2026-09-11)
+
+`scripts/harness/seed-guard.mjs` enforces all of this every suite run: it FAILS
+on any file that newly writes a collection raw, on a baseline entry that has
+stopped, on an annotation without a substantive reason, and on a malformed seam
+call site. The population is measured, never remembered — 56 at item 85-B, **20
+today** (18 files awaiting wave 2, plus 2 annotated deliberate).
+
+**Seed through a seam. Never `localStorage.setItem` on a collection.**
+`wrizoCreateJournalPage`, `wrizoPatchEntry`, `wrizoCreateProject`,
+`wrizoCreateBinder`, `wrizoPatchProject`, `wrizoCreateStoryPlan`,
+`wrizoCreateDrawer`, `wrizoSetProjectDrawer`, `wrizoPinPageToBoard`,
+`wrizoFlushNow`.
+
+**► THE DEBOUNCE, WHICH COST A STAMPED PAIR. A product write is DEBOUNCED
+(`scheduleFlush`, 300ms); the raw write it replaces was SYNCHRONOUS.** A fixture
+that seeds and then immediately `app.reload()`s discards the page — and the
+cache holding the row — before the timer fires. The row never reaches storage
+and the surface never mounts. This is not a race you can out-wait reliably and
+it does not look like a seeding bug: 36 of 80 files died as NOVERDICT on wave
+1's first leg, every one reporting nothing at all.
+
+**The `window.wrizo*` seams above all flush before they return, so a seam-seeded
+fixture is safe.** If you reach storage through any OTHER product path and then
+reload, call `window.wrizoFlushNow()` first. Product code is untouched by this —
+it calls the store functions directly and keeps its own debounced cadence.
+
+**► CARRY `origin` AND `source` EXPLICITLY.** `createJournalPage` defaults
+`origin: 'journal'` and hardcodes `source: 'page'`, so a row that OMITS either is
+a DIFFERENT row: absent `source` is what makes an entry a raw capture
+(`computeFragmentItems` filters `e.source !== 'page'`), and absent `origin` is
+the pre-AB3 grandfather shape. Pass `origin: null` / `source: null` to seed a row
+without that field. The absence of a key is a value; counting a key's presence
+cannot see it — that mistake cost two of wave 1's three pairs.
 
 ## Config changes: propose, never ship
 Changes to CC's own permissions, harness configuration, or session settings

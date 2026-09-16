@@ -100,16 +100,42 @@ const t = (offsetSeconds) => new Date(Date.now() + offsetSeconds * 1000).toISOSt
 // in-browser `now`/timestamp derivation.
 const seedFixture = async (app, { projects = [], boards = [], docs = [] }, width = LAPTOP_W, height = 900) => {
   await freshDesk(app, width, height);
-  await app.evalJs(`(() => {
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push(...${JSON.stringify(projects)});
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(boards)}, ...${JSON.stringify(docs)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
-  })()`);
+  // ITEM 85-C — through the seams, with the project ids REMAPPED. createProject
+  // generates its own id, so the ids these fixtures write by hand cannot
+  // survive; each is recorded against the generated one and every entry's
+  // projectId is translated on the way through, which keeps every call site's
+  // data exactly as it was. The map is RETURNED because one site (S2's rename)
+  // needs a generated id after a reload, and window state does not survive one.
+  const idMap = JSON.parse(await app.evalJs(`(() => {
+    const map = {};
+    ${JSON.stringify(projects)}.forEach((p) => { map[p.id] = window.wrizoCreateProject(p.title, p.type).id; });
+    [...${JSON.stringify(boards)}, ...${JSON.stringify(docs)}].forEach((e) => window.wrizoCreateJournalPage({
+      ...e,
+      projectId: e.projectId != null && map[e.projectId] ? map[e.projectId] : (e.projectId ?? null),
+      origin: 'origin' in e ? e.origin : null,
+      source: 'source' in e ? e.source : null,
+    }));
+    // ITEM 85-C — ESTABLISH THE RECENCY ORDER BY TOUCHING.
+    // These fixtures space createdAt one second apart to get deterministic
+    // recency, but upsert stamps updatedAt on every write, so the seeded spacing
+    // never reaches storage: all rows land in one millisecond and the Drawers
+    // list collapses the ones it cannot tell apart (seven docs rendered SIX).
+    //
+    // SORTED BY THE SEEDED TIMESTAMP, never by array order. Touching boards
+    // before docs made the last DOC the most recent, so it anchored at the top
+    // and left the Loose group one short — the very count the collapse rule
+    // reads. The anchor board carries offset 1000 precisely to be newest, and
+    // sorting ascending reproduces that: the intended recency, made real.
+    window.wrizoTouchInOrder(
+      [...${JSON.stringify(boards)}, ...${JSON.stringify(docs)}]
+        .sort((a, b) => String(a.updatedAt).localeCompare(String(b.updatedAt)))
+        .map((e) => e.id),
+    );
+    return JSON.stringify(map);
+  })()`));
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after FX9 fixture seed' });
+  return idMap;
 };
 
 const board = (id, projectId, title, updatedAtOffset) => ({
@@ -161,7 +187,9 @@ await withHarness(async (app) => {
   // anchor-exclusion, see CascadePanels.tsx), leaving only 1 item there
   // instead of the intended 2.
   // ==========================================================================
-  await seedFixture(app, {
+  // s1Ids maps the fixture's own project ids to the ones createProject generated
+  // — S2's rename below needs one of them, after a reload.
+  const s1Ids = await seedFixture(app, {
     projects: [project('fx9-s1-project', 'S1 Grammar Project'), project('fx9-s1-anchor-project', 'S1 Anchor Project')],
     boards: [
       board('fx9-s1-board-a', 'fx9-s1-project', 'Alpha Board', 0),
@@ -365,10 +393,11 @@ await withHarness(async (app) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before rename' });
   await app.evalJs(`(() => {
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    const p = projects.find(p => p.id === 'fx9-s1-project');
-    if (p) p.title = 'Renamed Grammar Project';
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+    // ITEM 85-C — the rename goes through wrizoPatchProject, addressed by the
+    // GENERATED id that seedFixture handed back. This is the fixture whose whole
+    // point is that folds are keyed by id and survive a title change, so the id
+    // has to be the real one.
+    window.wrizoPatchProject(${JSON.stringify(s1Ids['fx9-s1-project'])}, { title: 'Renamed Grammar Project' });
   })()`);
   await app.reload();
   await openDrawersOn(app, 'fx9-s1-board-a');
@@ -518,13 +547,21 @@ await withHarness(async (app) => {
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `S4 @ ${width}px Desk before seed` });
     await app.evalJs(`(() => {
-      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-      projects.push(${JSON.stringify(project('fx9-s4-project', 'S4 Geometry Project'))});
-      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push(${JSON.stringify(board('fx9-s4-anchor', 'fx9-s4-project', 'S4 Anchor Board', 1000))});
-      entries.push(...${JSON.stringify(Array.from({ length: 7 }, (_, i) => doc(`fx9-s4-doc-${i}`, `S4 Doc ${i}`, i)))});
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      // ITEM 85-C — the generated project id is used only to home the anchor
+      // board below, so it stays local to this block.
+      const p = window.wrizoCreateProject('S4 Geometry Project');
+      // board() already carries source:'page', so it is NOT overridden here — an
+      // explicit source: null after the spread would have REMOVED it and turned
+      // an authored board into a raw capture. origin IS absent from board(), so
+      // origin: null is the faithful value.
+      window.wrizoCreateJournalPage({ ...${JSON.stringify(board('fx9-s4-anchor', 'fx9-s4-project', 'S4 Anchor Board', 1000))}, projectId: p.id, origin: null });
+      ${JSON.stringify(Array.from({ length: 7 }, (_, i) => doc(`fx9-s4-doc-${i}`, `S4 Doc ${i}`, i)))}
+        .forEach((d) => window.wrizoCreateJournalPage({ ...d, origin: 'origin' in d ? d.origin : null, source: 'source' in d ? d.source : null }));
+      // ITEM 85-C — the same touch the shared seedFixture performs, in the same
+      // seeded-recency order: the docs (offsets 0..6) first, then the anchor
+      // board (offset 1000) LAST, so the board stays newest and the seven docs
+      // stay in Loose — which is the count the collapse rule reads.
+      window.wrizoTouchInOrder([...${JSON.stringify(Array.from({ length: 7 }, (_, i) => `fx9-s4-doc-${i}`))}, 'fx9-s4-anchor']);
     })()`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);

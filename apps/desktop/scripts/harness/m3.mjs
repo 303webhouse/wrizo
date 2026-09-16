@@ -63,9 +63,7 @@ const seedWordsAndReopen = async (app, pageId, words) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before word seed' });
   await app.evalJs(`(() => {
     const text = Array.from({length: ${words}}, (_, i) => 'word' + (i % 97)).join(' ');
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    const e = entries.find(x => x.id === ${JSON.stringify(pageId)});
-    if (e) { e.text = text; localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries)); }
+    window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);

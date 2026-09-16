@@ -280,6 +280,26 @@ export function flushNow(): void {
   });
 }
 
+// ITEM 85-C / OBS-1 — EVERY MUTATING TEST SEAM FLUSHES, AND THIS IS THE ONE
+// PLACE THAT MAKES IT TRUE.
+//
+// A product write is debounced (`scheduleFlush`, 300ms). A fixture that writes
+// through a seam and then reloads discards the page — and the cache holding the
+// row — before the timer fires, so the write never reaches storage. That killed
+// 36 of 80 files on one stamped leg, every one reporting NOVERDICT.
+//
+// The fix was first applied only to the seams item 85-C added, which left the
+// three older ones (`wrizoPinPageToBoard`, `wrizoSetPinDisplayed`,
+// `wrizoSetPageHome`) carrying the same footgun and made "every seam flushes" a
+// claim rather than a fact. Hoisted here so it is true OF THE FILE, and enforced
+// by seed-guard.mjs so the next seam cannot quietly opt out.
+//
+// PRODUCT CODE IS UNTOUCHED: it calls these store functions DIRECTLY and keeps
+// its own debounced cadence. This makes the SEAM durable, not the store eager.
+function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
+  return (...args: A): R => { const out = fn(...args); flushNow(); return out; };
+}
+
 // Generic upsert: stamp updatedAt, replace-or-insert in the cache, mark dirty,
 // schedule a write, and notify subscribers.
 function upsert<T extends { id: string; updatedAt: string }>(
@@ -817,19 +837,28 @@ export interface JournalPageSeed {
   pageType?: JournalEntry['pageType'];
   projectId?: string | null;
   boxes?: Box[];
-  // ITEM 85-C — seven more, measured rather than guessed. Each is a field some
+  // ITEM 85-C — six more, measured rather than guessed. Each is a field some
   // fixture in the 55-file migration seeds today by writing raw localStorage,
   // counted across all 156 raw writes: `script` (10 files), `starred` (2), and
-  // `deletedAt`/`shelved`/`tags`/`orderIndex`/`updatedAt` (1 each).
+  // `deletedAt`/`shelved`/`tags`/`orderIndex` (1 each).
   //
   // WHAT IS DELIBERATELY ABSENT, because measuring said so: `source`. It looked
   // like the single biggest gap — 32 files name it — until the VALUES were
   // read, and all 32 write `source: 'page'`, which is exactly what this
-  // function already sets. `updatedAt` looked like the biggest of all at 41
-  // files, and 40 of them set it equal to `createdAt`, which this function also
-  // already does; only b2.mjs needs the two to differ, and that one file is why
-  // `updatedAt` is here at all. Counting keys would have put two phantoms at
-  // the top of the list. A key is not a blocker; a value is.
+  // function already sets. Counting keys would have put a phantom at the top of
+  // the list. A key is not a blocker; a value is.
+  //
+  // AND `updatedAt`, WHICH WAS HERE AND IS NOW GONE. It was admitted for one
+  // reason — b2.mjs needed a row whose `createdAt` and `updatedAt` differ — and
+  // it never worked: `upsert` stamps `updatedAt` from the wall clock on every
+  // write, so a seeded value is overwritten before it reaches storage. The
+  // field appeared to work only because the seam returned the object it had
+  // been handed rather than the row that was stored, which is the write-path
+  // lie this item's own law names. b2 now establishes recency by TOUCHING
+  // (`wrizoTouchInOrder`), which is a real order rather than an asserted one,
+  // so the sole justification for the key is gone and the key goes with it.
+  // An accepted key that is silently discarded is the same lie at the door:
+  // it lets a fixture believe it wrote something it did not.
   //
   // Every one of these already rides `saveJournalEntry`, which upserts the
   // whole row — so this widens the door, never the house: no field here is new
@@ -840,7 +869,6 @@ export interface JournalPageSeed {
   deletedAt?: string;
   shelved?: boolean;
   orderIndex?: number;
-  updatedAt?: string;
 }
 
 export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
@@ -902,10 +930,11 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   if (seed?.deletedAt !== undefined) entry.deletedAt = seed.deletedAt;
   if (seed?.shelved !== undefined) entry.shelved = seed.shelved;
   if (seed?.orderIndex !== undefined) entry.orderIndex = seed.orderIndex;
-  // `updatedAt` is set AFTER createdAt above, so a caller who supplies only
-  // createdAt still gets updatedAt === createdAt (what 40 of the 41 fixtures
-  // that name it actually want), and the one that needs them to differ can say so.
-  if (seed?.updatedAt !== undefined) entry.updatedAt = seed.updatedAt;
+  // NO `updatedAt` ASSIGNMENT, DELIBERATELY. It was here, and it was a lie:
+  // `saveJournalEntry` below reaches `upsert`, which stamps `updatedAt` from
+  // the wall clock unconditionally, so whatever was assigned here never
+  // survived the very next line. A fixture needing rows in a recency order
+  // touches them through `wrizoTouchInOrder`, which makes the order real.
   saveJournalEntry(entry);
   return entry;
 }
@@ -955,8 +984,16 @@ if (typeof window !== 'undefined') {
   // `createJournalPage` DIRECTLY and never through `window`, so the app's own
   // debounced cadence is untouched — this makes the SEAM durable, not the
   // store eager.
+  // ITEM 85-C — RETURNS WHAT WAS STORED. createJournalPage hands back the object
+  // it built, but saveJournalEntry passes a CLONE to upsert, which stamps
+  // `updatedAt` on that clone — so the caller's copy keeps the value it asked
+  // for and storage holds another. Re-reading closes it. (The full reasoning is
+  // at `stored` in the seam block below.)
   (window as unknown as { wrizoCreateJournalPage?: unknown }).wrizoCreateJournalPage =
-    (seed?: JournalPageSeed) => { const entry = createJournalPage(seed); flushNow(); return entry; };
+    durableSeam((seed?: JournalPageSeed) => {
+      const born = createJournalPage(seed);
+      return getJournalEntry(born.id) ?? born;
+    });
 }
 
 // Create a typed page inside a Binder (B1) — a JournalEntry parented to the
@@ -1230,7 +1267,7 @@ export function isPinDisplayed(boardEntryId: string, entryId: string): boolean {
 // established shape. The harness must be able to write a pin in the PRE-EXISTING
 // grandfathered shape (no flag at all) to prove absence still means displayed.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = setPinDisplayed;
+  (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = durableSeam(setPinDisplayed);
 }
 
 // FX6 S4 — test/inspection seam (this file's own established pattern —
@@ -1242,7 +1279,7 @@ if (typeof window !== 'undefined') {
 // call, bypassing the sheet entirely. Exposed unconditionally (module
 // load, not component-mount-scoped), the SAME shape wrizoDeskLexicon uses.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoPinPageToBoard?: unknown }).wrizoPinPageToBoard = pinPageToBoard;
+  (window as unknown as { wrizoPinPageToBoard?: unknown }).wrizoPinPageToBoard = durableSeam(pinPageToBoard);
 }
 
 // Every board (regardless of its own home) currently pinning `entryId` — the
@@ -1828,7 +1865,7 @@ export function setPageHome(pageId: string, target: string): PageHomeResult {
 // and the refusal would otherwise be unassertable from a harness. Never read by
 // app code.
 if (typeof window !== 'undefined') {
-  (window as unknown as { wrizoSetPageHome?: unknown }).wrizoSetPageHome = setPageHome;
+  (window as unknown as { wrizoSetPageHome?: unknown }).wrizoSetPageHome = durableSeam(setPageHome);
 }
 
 // B2 S4 — the inverse of pinPageToBoard: uncheck in the Places panel's
@@ -2365,6 +2402,26 @@ export function setProjectDrawer(projectId: string, drawerId: string | null): vo
 // ITEM 85-C — THE AUTHORING SEAMS. Test/inspection only, in the shape
 // `wrizoCreateJournalPage` and `wrizoPinPageToBoard` already established.
 //
+// ► IF YOU ARE WRITING A SEAM-SEEDED FIXTURE, READ THESE TWO FIRST. Both cost a
+// stamped pair to learn, and neither is visible to any static check.
+//
+//   1. THE DEBOUNCE. A product write is debounced (`scheduleFlush`, 300ms); the
+//      raw write it replaces was synchronous. A fixture that seeds and then
+//      immediately reloads discards the page — and the cache holding the row —
+//      before the timer fires, so the row never reaches storage and the surface
+//      never mounts. Every seam below FLUSHES before returning, so you are safe
+//      using them; if you reach storage by any other product path and then
+//      reload, call `wrizoFlushNow()` first. On wave 1's first leg this killed
+//      36 of 80 files, all reporting NOVERDICT — nothing at all.
+//
+//   2. `origin` AND `source` MUST BE CARRIED EXPLICITLY. `createJournalPage`
+//      defaults origin to 'journal' and hardcodes source:'page', so a row that
+//      OMITS either is a different row: absent `source` is what makes an entry
+//      a raw capture (computeFragmentItems filters `e.source !== 'page'`), and
+//      absent `origin` is the pre-AB3 grandfather shape. Pass `origin: null` /
+//      `source: null` to seed a row without that field. The absence of a key is
+//      a value, and counting a key's presence cannot see it.
+//
 // WHY THEY EXIST. Item 85's migration measured 55 harness files writing a
 // persisted collection raw, and 27 of them could not stop: nothing on `window`
 // authored a project, a story plan or a drawer, and nothing set a field on a
@@ -2407,6 +2464,22 @@ if (typeof window !== 'undefined') {
   // remember. Product code reaches none of these.
   const durable = <T>(value: T): T => { flushNow(); return value; };
 
+  // ITEM 85-C — A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED.
+  //
+  // A WRITE PATH THAT ECHOES ITS INPUT CAN CERTIFY A WRITE THAT DID NOT HAPPEN.
+  // Measured: seed a row with updatedAt 2020-05-05, and the seam handed back
+  // 2020-05-05 while storage held 2026-09-15. `upsert` stamps `updatedAt`
+  // unconditionally — and it stamps the CLONE it inserts, so the caller keeps an
+  // unstamped original and never learns. Any fixture asserting on the return
+  // would pass against storage that disagrees: a check passing for the wrong
+  // reason, built into the write path rather than into one test.
+  //
+  // So every creating seam RE-READS the row it just wrote and returns that. The
+  // lie cannot be inherited by a future fixture, and the fix is confined to the
+  // seam block — no product path changes, because product code takes the
+  // creators' return value and is entitled to whatever it has always had.
+  const stored = <T>(row: T | null, reread: () => T | null): T | null => reread() ?? row;
+
   // Set fields on an EXISTING page. Wraps `patchJournalEntry`, passing the
   // row's own current text so a patch never clobbers it; a caller that means to
   // change the text passes it in `changes` and the spread inside wins.
@@ -2420,6 +2493,52 @@ if (typeof window !== 'undefined') {
   // other product path and needs it landed before a reload.
   seams.wrizoFlushNow = () => flushNow();
 
+  // ITEM 85-C — ESTABLISH RECENCY BY TOUCHING, NOT BY ASSERTING A TIMESTAMP.
+  //
+  // `upsert` stamps `updatedAt` on every write, so a seeded value never
+  // survives: a fixture that spaced its rows a second apart to get deterministic
+  // recency got seven rows sharing one millisecond instead, and fx9 rendered SIX
+  // tiles for seven docs — the list collapses rows it cannot tell apart. The
+  // failure presented as a COUNT, which is why it did not look like an ordering
+  // bug at first.
+  //
+  // So the order is made REAL rather than fabricated: touch each row in the
+  // intended sequence and let the store stamp them ascending. That is what the
+  // dependent assertions actually claim ("last-opened anchors first"), and it
+  // is now true rather than asserted of a timestamp nobody wrote.
+  //
+  // THE SEPARATION IS LOAD-BEARING, AND IT IS OBSERVED, NOT ASSUMED. `Date.now()`
+  // has millisecond resolution and these writes are far faster than a
+  // millisecond, so two touches can share a stamp and reproduce the very
+  // collapse this exists to fix. The first shape of this code waited for the
+  // clock with `while (Date.now() === tick) {}` — and the MINIFIER DELETED IT:
+  // an empty body whose condition esbuild treats as side-effect-free is dead
+  // code, so the built bundle re-stamped every row into one millisecond while
+  // the source read as though it did not. A loop whose exit condition is the
+  // STORED stamp cannot be elided, and it does not merely hope the clock moved:
+  // it keeps writing until storage itself shows the row strictly later than the
+  // one before it. The ascending order is then a fact read back, not an
+  // intention expressed.
+  seams.wrizoTouchInOrder = (ids: string[]) => {
+    const out: (JournalEntry | null)[] = [];
+    let previous = '';
+    for (const id of ids) {
+      let latest = getJournalEntry(id);
+      if (!latest) { out.push(null); continue; }
+      // Bounded so a store that refuses to advance fails visibly as a bad order
+      // rather than hanging the page: the assertion, not the seam, reports it.
+      for (let attempt = 0; attempt < 5000; attempt += 1) {
+        patchJournalEntry(id, latest.text, {});
+        latest = getJournalEntry(id) ?? latest;
+        if (latest.updatedAt > previous) break;
+      }
+      previous = latest.updatedAt;
+      out.push(latest);
+    }
+    flushNow();
+    return out;
+  };
+
   // NOTE the narrower union, which a typecheck caught and the build did not:
   // `Project['type']` has three members but `createProject` accepts two, so a
   // seam typed to the full union would promise a value the store path cannot
@@ -2427,31 +2546,85 @@ if (typeof window !== 'undefined') {
   // door work — so the seam mirrors the creator's own signature instead. It
   // costs nothing here: all 19 project rows across the 55 fixtures are
   // `type: 'creative'`, measured, and none needs the third.
-  seams.wrizoCreateProject = (title: string, type: 'creative' | 'academic' = 'creative') =>
-    durable(createProject(title, type));
+  seams.wrizoCreateProject = (title: string, type: 'creative' | 'academic' = 'creative') => {
+    const p = createProject(title, type);
+    return durable(stored(p, () => getProject(p.id)));
+  };
 
   // A project with a `kind` and an optional home drawer — the shape the Shelf
   // and Drawers fixtures need, and already the app's own Binder birth path.
   seams.wrizoCreateBinder = (title: string, kind: Project['kind'], drawerId?: string,
-    type: Project['type'] = 'creative') => durable(createBinder(title, kind, drawerId, type));
+    type: Project['type'] = 'creative') => {
+    const b = createBinder(title, kind, drawerId, type);
+    return durable(stored(b, () => getProject(b.id)));
+  };
 
-  seams.wrizoPatchProject = (id: string, changes: Partial<Project>) => {
+  seams.wrizoPatchProject = durableSeam((id: string, changes: Partial<Project>) => {
     const project = getProject(id);
     if (!project) return null;
     saveProject({ ...project, ...changes });
-    return durable(getProject(id));
-  };
+    return getProject(id);
+  });
 
   // Authors the plan AND stamps `project.storyPlanId` — because
   // `createStoryPlan` already does both. The fixtures that set that field by
   // hand were duplicating work the creator performs.
-  seams.wrizoCreateStoryPlan = (projectId: string, frameworkId: string, beatIds: string[]) =>
-    durable(createStoryPlan(projectId, frameworkId, beatIds));
+  seams.wrizoCreateStoryPlan = (projectId: string, frameworkId: string, beatIds: string[]) => {
+    const plan = createStoryPlan(projectId, frameworkId, beatIds);
+    return durable(stored(plan, () => getStoryPlan(plan.id)));
+  };
 
-  seams.wrizoCreateDrawer = (name: string) => durable(createDrawer(name));
+  // ITEM 85-C — createStoryPlan always makes the FIRST beat current, and m1's
+  // fixtures need a LATER one (their whole subject is a plan whose current beat
+  // is not the opening one). The store already has setCurrentBeat, so this is a
+  // wrapper over an existing path like every other seam here — not new capability.
+  // ITEM 85-C — A SEAM REPORTS WHAT HAPPENED, AND "NOTHING HAPPENED" IS A THING
+  // THAT HAPPENED.
+  //
+  // These three wrap store functions typed `void` that bail SILENTLY on a
+  // missing row (`const plan = getStoryPlan(planId); if (!plan) return;`), so a
+  // caller could not tell a completed write from a no-op: a fixture naming a
+  // wrong id got no value, no error, and no way to know. That is the same class
+  // as the echo lie above, failing by SILENCE instead of by echo — and a seam
+  // that cannot report a no-op certifies it just as effectively.
+  //
+  // The verdict is computed HERE, in the seam, by re-reading the row and
+  // checking the change actually TOOK — never by changing the store function's
+  // signature, which would be a product-path change and would stop. Each
+  // returns the stamped record on success and `false` when nothing happened.
+  seams.wrizoSetCurrentBeat = (planId: string, beatId: string) => {
+    setCurrentBeat(planId, beatId);
+    const plan = getStoryPlan(planId);
+    return durable(plan && plan.currentBeatId === beatId ? plan : false);
+  };
 
-  seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) =>
-    durable(setProjectDrawer(projectId, drawerId));
+  // Same reason: createStoryPlan makes every beat 'empty', and m1's fixtures need
+  // one COMPLETE (a plan with progress behind its current beat). setBeatStatus is
+  // the store's own path for it.
+  // Two silent bail paths here, not one — a missing plan AND a missing beat
+  // note — so the read-back checks the note's status rather than the plan's
+  // existence, or a valid plan with a wrong beatId would report success.
+  seams.wrizoSetBeatStatus = (planId: string, beatId: string, status: BeatNote['status']) => {
+    setBeatStatus(planId, beatId, status);
+    const plan = getStoryPlan(planId);
+    const note = plan?.beatNotes.find((bn) => bn.beatId === beatId);
+    return durable(plan && note && note.status === status ? plan : false);
+  };
+
+  seams.wrizoCreateDrawer = (name: string) => {
+    const d = createDrawer(name);
+    return durable(stored(d, () => getDrawer(d.id)));
+  };
+
+  // `setProjectDrawer` stores `drawerId ?? undefined`, so the read-back compares
+  // against that same normalisation — asserting the stored shape, not the asked
+  // one, which is the whole point of reading it back.
+  seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) => {
+    setProjectDrawer(projectId, drawerId);
+    const project = getProject(projectId);
+    const want = drawerId ?? undefined;
+    return durable(project && project.drawerId === want ? project : false);
+  };
 }
 
 // --- Sync integration -----------------------------------------------------
