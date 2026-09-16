@@ -5152,6 +5152,58 @@ RUNNER's red — diagnosed as such, not charged to the wave.** *(Naming it befor
 instrument's defect being billed to whoever happens to be holding the box when it fires.)*
 
 **ON ERRATA's STAMP: INK's B6 announcement, pre-committed — no ask.**
+## ERRATA — WAVE 2's PAIR NOT CLEAN, AND THE BOUNDARY FINDING — 2026-09-15
+
+**Pair at `ad8b55d`: NOT CLEAN (83/85). The parked leg NEVER RAN and IS NOT CLAIMED.** *(A pair with
+one leg unrun is not a pair, and saying so is the no-blank-stamp discipline applied to a failure.)*
+
+**ATTRIBUTION ESTABLISHED AGAINST MAIN: `fx9` 41/41, SAME BUNDLE — the defects are ERRATA's, NOT
+main's.** **`b2`'s was a cross-`evalJs` const, fixed and SWEPT TO ONE INSTANCE.** *(Swept, not just
+fixed — the population question asked before the fix was called done.)*
+
+**THE BOUNDARY FINDING, REGISTERED — and chat 1 confirmed both halves at the code:**
+- **`upsert` OVERWRITES `updatedAt` UNCONDITIONALLY** — `record.updatedAt = new Date().toISOString();`
+  sits inside the GENERIC upsert, so **`updatedAt` CANNOT BE SEEDED THROUGH ANY STORE PATH.** **This is
+  not a gap in one seam; it is a property of the WRITE BOUNDARY.**
+- **AND THE SEAM RETURNS THE ASKED VALUE WHILE STORAGE HOLDS THE STAMP** — the return is the caller's
+  object, not a re-read. **PROVEN BY MEASUREMENT: asked `2020-05-05`, returned `2020-05-05`, stored
+  `2026-09-15`.**
+
+**THE SECOND HALF IS THE DANGEROUS ONE, AND IT IS A CHECK THAT PASSES FOR THE WRONG REASON IN ITS
+PUREST FORM: a fixture that seeds a date and then verifies it THROUGH THE SEAM gets its own request
+echoed back.** **It verified against the seam's echo, not against storage** — green, and wrong about
+the world.
+
+## BAND — A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED (ERRATA) — 2026-09-15
+
+> **A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED.**
+
+**THE LIE IS THE CLASS** — not this one field. A boundary that reports **the caller's intention** in
+place of **the world's state** makes every verification through it self-confirming. *(Siblings: `null
+is the fact of absence, never a default` and `a migration changes HOW a row is written, never WHAT the
+row is` — all three are a boundary substituting a convenient value for the true one, and all three are
+invisible to any check that reads back through the same boundary.)*
+
+## THE THREE RULINGS ON THE RE-SEED — 2026-09-15
+
+- **ERRATA RE-SEEDS BY TOUCHING ROWS IN ORDER THROUGH `wrizoPatchEntry`** — **ordering becomes REAL**
+  rather than asserted — **verifying FIRST that no dependent assertion tests DURATION.** *(The
+  pre-check is the part worth copying: a fixture change that makes time real can break a check that was
+  quietly relying on it being fake.)*
+- **REVERTING TO RAW WRITES: REFUSED.** *(It would undo item 85-C to rescue a fixture — paying back the
+  debt the migration just cleared.)*
+- **CHANGING `upsert`'s SEMANTICS: REFUSED AS HOUSE WORK.** *(A harness's need does not get to rewrite
+  a product rule. The boundary between "fix the instrument" and "fix the house" is exactly where the
+  seams-only authority was drawn, and this is that line holding under pressure.)*
+- **AND THE SEAM IS FIXED TO RETURN WHAT WAS STORED** — the honest half, which IS the instrument's to
+  fix.
+
+**ERRATA KEEPS THE BOX and RE-RUNS THE PAIR FROM THE TOP ON THE SAME TOKEN** (`errata-wave2-20260915`).
+**INK's pre-committed announcement moves to ERRATA's EVENTUAL stamp — unchanged in order.**
+
+**ITEM 139 HOLDS: THE RED WAS IN THE CODE, NOT THE RUNNER. Its first live proof stands so far.**
+*(Recorded because it was named in advance: had the red been the runner's, it would have been charged
+to the runner. It was not, so the guard is credited with a clean first outing.)*
 Registry: next free **142**.
 
 
