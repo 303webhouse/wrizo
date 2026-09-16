@@ -422,6 +422,33 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
   const lines = src.split(/\r?\n/);
   const undurable = [];
   let seamCount = 0;
+  // An assignment ends at the semicolon that closes it at bracket depth zero.
+  // Strings, template literals and line comments are skipped so a `;` inside one
+  // cannot end the body early — the same discipline the call-site parse check in
+  // this file already uses, rather than a second, weaker way of reading code.
+  const seamBody = (text) => {
+    let depth = 0;
+    let quote = null;
+    for (let i = 0; i < text.length; i += 1) {
+      const c = text[i];
+      if (quote) {
+        if (c === '\\') { i += 1; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+      if (c === '/' && text[i + 1] === '/') {
+        const nl = text.indexOf('\n', i);
+        if (nl < 0) return text;
+        i = nl;
+        continue;
+      }
+      if (c === '(' || c === '[' || c === '{') depth += 1;
+      else if (c === ')' || c === ']' || c === '}') depth -= 1;
+      else if (c === ';' && depth === 0) return text.slice(0, i + 1);
+    }
+    return text;
+  };
   lines.forEach((line, i) => {
     const m = line.match(/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/);
     if (!m) return;
@@ -430,9 +457,22 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     // skip prose: a comment quoting an assignment is not one
     if (/^\s*(\/\/|\*)/.test(line)) return;
     seamCount += 1;
-    // the assignment's value may wrap; four lines covers every form in this file
-    const window = lines.slice(i, i + 4).join('\n');
-    if (!/durableSeam\(|durable\(/.test(window)) undurable.push(`${name} (line ${i + 1})`);
+    // THE SEAM'S OWN BODY, BRACE-MATCHED — not a fixed line window.
+    //
+    // This read `lines.slice(i, i + 4)` and had two faults, one of which let a
+    // real red through. A seam whose body runs longer than four lines was
+    // reported undurable while calling `durable()` on its return (item 85-C's
+    // three verdict-returning seams, 5-6 lines each) — a false positive. And
+    // the same window reaches PAST the seam it is judging into the next one, so
+    // an undurable seam followed by a durable neighbour would have passed: a
+    // false NEGATIVE, in a check whose whole job is catching the seam somebody
+    // forgot. Both are the fixed window, and neither is the rule.
+    //
+    // The body is bounded instead: from the assignment to the matching close of
+    // whichever bracket opens it, strings and comments skipped, so the scan sees
+    // exactly this seam and all of it.
+    const body = seamBody(lines.slice(i).join('\n'));
+    if (!/durableSeam\(|durable\(/.test(body)) undurable.push(`${name} (line ${i + 1})`);
   });
   ok(`85-C/OBS-1: all ${seamCount} MUTATING test seams route through durableSeam/durable — a seam that does not flush hands every fixture a debounced write it will reload past, which cost 36 of 80 files on a stamped leg and is invisible to every other static check`,
     undurable.length === 0, JSON.stringify({ seams: seamCount, undurable }));

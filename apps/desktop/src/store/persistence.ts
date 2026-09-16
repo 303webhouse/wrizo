@@ -2578,22 +2578,53 @@ if (typeof window !== 'undefined') {
   // fixtures need a LATER one (their whole subject is a plan whose current beat
   // is not the opening one). The store already has setCurrentBeat, so this is a
   // wrapper over an existing path like every other seam here — not new capability.
-  seams.wrizoSetCurrentBeat = (planId: string, beatId: string) =>
-    durable(setCurrentBeat(planId, beatId));
+  // ITEM 85-C — A SEAM REPORTS WHAT HAPPENED, AND "NOTHING HAPPENED" IS A THING
+  // THAT HAPPENED.
+  //
+  // These three wrap store functions typed `void` that bail SILENTLY on a
+  // missing row (`const plan = getStoryPlan(planId); if (!plan) return;`), so a
+  // caller could not tell a completed write from a no-op: a fixture naming a
+  // wrong id got no value, no error, and no way to know. That is the same class
+  // as the echo lie above, failing by SILENCE instead of by echo — and a seam
+  // that cannot report a no-op certifies it just as effectively.
+  //
+  // The verdict is computed HERE, in the seam, by re-reading the row and
+  // checking the change actually TOOK — never by changing the store function's
+  // signature, which would be a product-path change and would stop. Each
+  // returns the stamped record on success and `false` when nothing happened.
+  seams.wrizoSetCurrentBeat = (planId: string, beatId: string) => {
+    setCurrentBeat(planId, beatId);
+    const plan = getStoryPlan(planId);
+    return durable(plan && plan.currentBeatId === beatId ? plan : false);
+  };
 
   // Same reason: createStoryPlan makes every beat 'empty', and m1's fixtures need
   // one COMPLETE (a plan with progress behind its current beat). setBeatStatus is
   // the store's own path for it.
-  seams.wrizoSetBeatStatus = (planId: string, beatId: string, status: BeatNote['status']) =>
-    durable(setBeatStatus(planId, beatId, status));
+  // Two silent bail paths here, not one — a missing plan AND a missing beat
+  // note — so the read-back checks the note's status rather than the plan's
+  // existence, or a valid plan with a wrong beatId would report success.
+  seams.wrizoSetBeatStatus = (planId: string, beatId: string, status: BeatNote['status']) => {
+    setBeatStatus(planId, beatId, status);
+    const plan = getStoryPlan(planId);
+    const note = plan?.beatNotes.find((bn) => bn.beatId === beatId);
+    return durable(plan && note && note.status === status ? plan : false);
+  };
 
   seams.wrizoCreateDrawer = (name: string) => {
     const d = createDrawer(name);
     return durable(stored(d, () => getDrawer(d.id)));
   };
 
-  seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) =>
-    durable(setProjectDrawer(projectId, drawerId));
+  // `setProjectDrawer` stores `drawerId ?? undefined`, so the read-back compares
+  // against that same normalisation — asserting the stored shape, not the asked
+  // one, which is the whole point of reading it back.
+  seams.wrizoSetProjectDrawer = (projectId: string, drawerId: string | null) => {
+    setProjectDrawer(projectId, drawerId);
+    const project = getProject(projectId);
+    const want = drawerId ?? undefined;
+    return durable(project && project.drawerId === want ? project : false);
+  };
 }
 
 // --- Sync integration -----------------------------------------------------

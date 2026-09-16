@@ -104,16 +104,28 @@ await withHarness(async (app) => {
   // The control that keeps S1 honest: an UNSEEDED call must still write the
   // byte-identical row it always wrote. A widened seam that changed the
   // default row would be a behaviour change wearing a seam's clothes.
+  //
+  // ITEM 85-C — THE EQUALITY CLAUSE IS PARKED (see below), AND THIS ASSERTS AN
+  // ORDER INSTEAD. The original required updatedAt === createdAt. Those are two
+  // separate clock reads — createdAt is stamped at function entry, updatedAt by
+  // upsert a few microseconds later — and while the seam echoed its input the
+  // check never saw them apart. Now that the seam reports STORAGE, they agree
+  // only when both land in the same millisecond: nearly always, and not always.
+  // The premise changed under it exactly as the seeded-updatedAt check's did.
+  // A CHECK THAT DEPENDS ON TWO CLOCK READS AGREEING ASSERTS AN ORDER, NEVER AN
+  // EQUALITY — so this asserts the order, which is what the control ever meant
+  // (the row is born, not later touched) and is true by construction.
   const unseeded = await app.evalJs(`(() => {
     const e = window.wrizoCreateJournalPage();
     return JSON.stringify({ starred: e.starred, tags: e.tags, shelved: e.shelved,
-      orderIndex: e.orderIndex, script: e.script, sameTimes: e.createdAt === e.updatedAt,
+      orderIndex: e.orderIndex, script: e.script, timesOrdered: e.updatedAt >= e.createdAt,
+      createdAt: e.createdAt, updatedAt: e.updatedAt,
       source: e.source, origin: e.origin });
   })()`);
   const u = JSON.parse(unseeded);
-  ok('S1 (the control): an UNSEEDED call is untouched by the widening — none of the seven fields appears, source is still page, origin still journal, and updatedAt still equals createdAt. Zero behaviour change, demonstrated rather than asserted',
+  ok('S1 (the control): an UNSEEDED call is untouched by the widening — none of the six fields appears, source is still page, origin still journal, and updatedAt is NOT BEFORE createdAt. Zero behaviour change, demonstrated rather than asserted',
     u.starred === undefined && u.tags === undefined && u.shelved === undefined
-    && u.orderIndex === undefined && u.script === undefined && u.sameTimes === true
+    && u.orderIndex === undefined && u.script === undefined && u.timesOrdered === true
     && u.source === 'page' && u.origin === 'journal', unseeded);
 
   // S1d — `origin: null` seeds a row with NO origin field, which is a different
@@ -263,6 +275,44 @@ await withHarness(async (app) => {
   })`);
   ok('S4 (the control): patching a row that does not exist returns null for both seams and creates nothing — a seam that silently created on patch would turn a fixture\'s typo into a passing check',
     JSON.parse(missing).entry === null && JSON.parse(missing).project === null, missing);
+
+  // S5 — THE THREE SEAMS THAT USED TO SAY NOTHING AT ALL.
+  //
+  // setCurrentBeat, setBeatStatus and setProjectDrawer are typed `void` in the
+  // store and bail SILENTLY on a missing row, so these seams returned undefined
+  // whether the write landed or never happened — the echo lie's twin, failing
+  // by silence. The seams now compute the verdict themselves by re-reading, so
+  // each must report BOTH outcomes. A no-op that reports nothing is a no-op a
+  // fixture will read as success.
+  const beatPlan = await app.evalJs(`(() => {
+    const p = window.wrizoCreateProject('85c Verdict Project');
+    const plan = window.wrizoCreateStoryPlan(p.id, 'story_circle', ['b0', 'b1', 'b2']);
+    return JSON.stringify({ planId: plan.id, beats: plan.beatNotes.map((bn) => bn.beatId) });
+  })()`);
+  const bp = JSON.parse(beatPlan);
+  const verdicts = await app.evalJs(`(() => {
+    const planId = ${JSON.stringify(bp.planId)};
+    const beatId = ${JSON.stringify(bp.beats[1])};
+    const projectHit = window.wrizoCreateProject('85c Drawer Project');
+    const drawer = window.wrizoCreateDrawer('85c Drawer');
+    const val = (r) => (r === false ? false : (r && typeof r === 'object' ? 'record' : String(r)));
+    return JSON.stringify({
+      beatHit: val(window.wrizoSetCurrentBeat(planId, beatId)),
+      beatMiss: val(window.wrizoSetCurrentBeat('no-such-plan', beatId)),
+      statusHit: val(window.wrizoSetBeatStatus(planId, beatId, 'complete')),
+      statusMissPlan: val(window.wrizoSetBeatStatus('no-such-plan', beatId, 'complete')),
+      statusMissBeat: val(window.wrizoSetBeatStatus(planId, 'no-such-beat', 'complete')),
+      drawerHit: val(window.wrizoSetProjectDrawer(projectHit.id, drawer.id)),
+      drawerMiss: val(window.wrizoSetProjectDrawer('no-such-project', drawer.id)),
+    });
+  })()`);
+  const v = JSON.parse(verdicts);
+  ok('S5: wrizoSetCurrentBeat reports BOTH outcomes — the stamped record when the beat is set, and false when the plan does not exist. Previously it returned undefined either way, so a fixture could not tell a write from a no-op',
+    v.beatHit === 'record' && v.beatMiss === false, verdicts);
+  ok('S5: wrizoSetBeatStatus reports false for EACH of its two silent bail paths — a missing plan AND a missing beat note — because a valid plan with a wrong beatId is the failure a plan-existence check would wave through',
+    v.statusHit === 'record' && v.statusMissPlan === false && v.statusMissBeat === false, verdicts);
+  ok('S5: wrizoSetProjectDrawer reports the stamped project on success and false for a project that does not exist — the verdict read back from storage, not inferred from the call returning',
+    v.drawerHit === 'record' && v.drawerMiss === false, verdicts);
 });
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ============
@@ -312,6 +362,32 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S1: the seven new seed fields ... a createdAt/updatedAt that DIFFER") — the SAME seed, with the verdict storage actually gives: createdAt is honoured exactly, updatedAt is NOT, because upsert stamps it on every write. The original asserted the echo; this asserts the row',
       ps.createdAt === '2020-01-01T00:00:00.000Z' && ps.updatedAt !== '2021-02-03T00:00:00.000Z',
       parkedSeed);
+
+    // === ITEM 85-C — SUPERSEDED (the unseeded row's equal timestamps) ========
+    // ORIGINAL, verbatim:
+    //
+    //   ok('S1 (the control): an UNSEEDED call is untouched by the widening — none of the seven fields appears, source is still page, origin still journal, and updatedAt still equals createdAt. Zero behaviour change, demonstrated rather than asserted',
+    //     u.starred === undefined && u.tags === undefined && u.shelved === undefined
+    //     && u.orderIndex === undefined && u.script === undefined && u.sameTimes === true
+    //     && u.source === 'page' && u.origin === 'journal', unseeded);
+    //
+    // WHY IT CANNOT STAND. `createdAt` is stamped at createJournalPage's entry
+    // and `updatedAt` by `upsert` a few microseconds later: TWO clock reads.
+    // While the seam echoed its input the check compared the object it was
+    // handed, where both came from the same value, so it could not see them
+    // apart. Now that the seam reports STORAGE, the two agree only when both
+    // land in the same millisecond — nearly always, and not always. It was
+    // never falsified; it was made a check that can pass by luck of timing,
+    // which the house's empty known-flake list will not carry.
+    //
+    // Re-asserted as the ORDER it always meant. Live successor in S1 above.
+    const parkedUnseeded = await app.evalJs(`(() => {
+      const e = window.wrizoCreateJournalPage();
+      return JSON.stringify({ createdAt: e.createdAt, updatedAt: e.updatedAt });
+    })()`);
+    const pu = JSON.parse(parkedUnseeded);
+    pok('PARKED (was "S1 (the control): ... updatedAt still equals createdAt") — the SAME birth, asserted as an ORDER: updatedAt is not before createdAt. Two clock reads agree only within a millisecond, so equality was a coin the check kept winning',
+      pu.updatedAt >= pu.createdAt, parkedUnseeded);
     return parkedChecks;
   });
   // eslint-disable-next-line no-console
