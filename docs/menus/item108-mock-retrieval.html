@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>item 108 · the retrieval gesture</title>
+<!--
+  ITEM 108 · TAGS AS SORTING · MOCKUP A — THE RETRIEVAL GESTURE
+  PLAN desk · 2026-09-16 · candidates only, nothing locks.
+
+  LIVE, NOT STEPPED. Nick's sentence is about reaching something WITHOUT
+  LEAVING: "pull up character info or a type of research while they're on a
+  Page, Board, or Card." A still cannot show "without leaving" -- the whole
+  claim is that the page is still under you at the end. So: press things.
+
+  THE DESIGN IS A COMPOSITION OF THREE STANDING RULINGS, NOT A NEW CONCEPT:
+    Q19 (ratified) -- THE RAIL TRAVELS; THE COUNSEL READS. Retrieval without
+                      leaving IS reading, so it is the Counsel's, not the
+                      rail's. The rail would take you there; the point is
+                      not to go.
+    FN2           -- Find already sits directly beneath the composer.
+    PW5           -- a card opens where you are; a page is travelled to.
+
+  So the tag chips are FIND'S VOCABULARY, sitting beneath it: a chip press IS
+  a find, pre-spelled. Not a third control in a row FN designed to be
+  unmistakable -- the search box's shortcut bar.
+
+  T11 / the thumbnail law: boards WIDE, pages TALL (ruled 2026-09-13).
+  A CARD'S SILHOUETTE IS UNRULED -- drawn here as a small square and flagged
+  as Q-3, because Nick ruled the other two explicitly and this desk will not
+  pick the third for him.
+
+  FN4: results never enter the message stream. They have their own region.
+  FN1: nothing here sends. Every result is local, from this desk.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:12px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 10px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #cnt{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f;font-size:11.5px}
+  #cnt b{color:#fff}
+  .fit{position:absolute;inset:41px 0 116px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:116px;z-index:29;padding:10px 16px;
+       background:#08080a;border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;
+       line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:8}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;
+       color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:18px;padding:0 22px;
+        border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);margin-right:auto}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .strip{display:flex;gap:20px}
+  .mode{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:5px 2px}
+  .mode.on{color:var(--text-hi)}
+  .room{grid-row:2;grid-column:2;position:relative;overflow:hidden}
+
+  .paper{position:absolute;top:24px;bottom:0;left:50%;transform:translateX(-50%);
+         width:min(660px,62%);background:var(--paper);color:#241a10;padding:42px 54px;
+         font-family:var(--prose);font-size:16.5px;line-height:1.62;z-index:1;transition:filter .18s ease}
+  .paper h1{font-size:19px;font-weight:500;margin-bottom:16px}
+  .paper p{margin-bottom:12px}
+  .caret{display:inline-block;width:1.5px;height:1.05em;background:#241a10;vertical-align:-.17em;
+         animation:bl 1.1s step-end infinite}
+  @keyframes bl{50%{opacity:0}}
+
+  /* THE COUNSEL — the reading hand (Q19). Mirrors the Desk's 300px. */
+  .grip{position:absolute;top:50%;transform:translateY(-50%);width:13px;height:56px;
+        background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;
+        color:var(--accent-rest);font-size:9px;cursor:pointer;z-index:6;padding:0}
+  .grip.r{right:0}
+  .cw{position:absolute;right:0;top:0;bottom:0;width:0;overflow:hidden;z-index:7;transition:width .2s ease}
+  body[data-counsel="1"] .cw{width:300px}
+  .cb{width:300px;height:100%;background:var(--panel);border:1px solid var(--line);border-right:none;
+      display:flex;flex-direction:column}
+  .ch{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;
+      border-bottom:1px solid var(--line)}
+  .ct{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-rest)}
+  .cs{flex:1;overflow:auto;padding:10px 0}
+  .zh{display:block;padding:10px 14px 6px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+      color:var(--accent-rest)}
+  .box{margin:0 14px;border:1px solid var(--line);padding:8px 10px;font-size:11.5px;color:var(--text-low)}
+  .box.find{color:var(--text-mid);letter-spacing:.06em}
+  .rule{height:1px;background:var(--line);margin:11px 14px}
+
+  /* the chips — Find's vocabulary, not a second control */
+  .chips{display:flex;flex-wrap:wrap;gap:5px;padding:7px 14px 2px}
+  .chip{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10.5px;
+        padding:3px 9px;cursor:pointer}
+  .chip:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest);background:#241305}
+  .hint{padding:6px 14px 0;font-size:10px;color:var(--text-low);line-height:1.5}
+
+  /* results — their own region (FN4), thumbnails under the thumbnail law */
+  .res{padding:8px 14px 4px;display:flex;flex-wrap:wrap;gap:10px}
+  .r{cursor:pointer;text-align:center}
+  .r .lab{display:block;margin-top:5px;font-size:10px;color:var(--text-mid);max-width:78px;line-height:1.3}
+  .r:hover .lab{color:var(--text-hi)}
+  .r .src{display:block;font-size:8.5px;color:var(--text-low);margin-top:2px}
+  .pg{width:58px;height:75px;background:var(--paper);border:1px solid #cbbfa6;opacity:.92;padding:6px 5px 0}
+  .pg .t{font-family:var(--prose);font-size:7px;line-height:1.3;color:#3a2c1c}
+  .brd{width:78px;height:52px;background:var(--panel);border:1px solid var(--line);position:relative}
+  .brd:before{content:'';position:absolute;left:3px;right:-3px;top:-3px;bottom:3px;border:1px solid var(--line)}
+  .crd{width:56px;height:56px;background:var(--panel);border:1px solid var(--line);padding:5px}
+  .crd .t{font-family:var(--prose);font-size:7px;line-height:1.3;color:var(--text-mid)}
+  .kind{display:block;font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);
+        margin-bottom:3px}
+  .brd .kind,.crd .kind{color:var(--accent-rest)}
+
+  /* PW5 — the card opens OVER the page. The page never leaves. */
+  .pop{position:absolute;inset:0;z-index:20;display:none;place-items:center;background:rgba(12,5,0,.6)}
+  body[data-pop="1"] .pop{display:grid}
+  .popcard{width:400px;background:var(--panel);border:1px solid var(--line);
+           box-shadow:0 22px 60px rgba(0,0,0,.7);position:relative;margin-right:300px}
+  .popdock{position:absolute;left:-44px;top:50%;transform:translateY(-50%);width:36px;background:var(--panel);
+           border:1px solid var(--line);padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .popdock .dh{font-size:7px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-rest);margin-bottom:2px}
+  .popdock button{width:22px;height:22px;background:none;border:1px solid transparent;color:var(--text-mid);
+                  font:inherit;font-size:11px;cursor:pointer}
+  .popdock button:hover{border-color:var(--line);color:var(--text-hi)}
+  .popeb{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-low);padding:10px 14px 0}
+  .popbody{font-family:var(--prose);font-size:15px;line-height:1.5;color:var(--text-hi);padding:8px 14px 10px}
+  .poptags{padding:0 14px 10px;display:flex;gap:5px}
+  .poptag{font-size:9.5px;color:var(--accent-rest);border:1px solid var(--accent-door);padding:2px 7px}
+  .popfoot{display:flex;justify-content:flex-end;padding:0 14px 12px}
+  .btnbrass{background:none;border:1px solid var(--brass);color:var(--brass);font:inherit;font-size:11px;
+            padding:5px 14px;cursor:pointer}
+  .stamp{position:absolute;left:14px;bottom:10px;z-index:9;font-size:10px;color:#5e564c}
+</style>
+</head>
+<body data-counsel="0" data-pop="0">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>ITEM 108 · THE RETRIEVAL GESTURE</b>
+  <button id="w1" aria-pressed="true">1366×768</button>
+  <button id="w2" aria-pressed="false">1680×1050</button>
+  <button id="reset">reset</button>
+  <span id="cnt"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat"><span class="g">⌗</span>plan</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">✶</span>journal</div>
+      <div class="cat"><span class="g">⌂</span>shelf</div>
+      <div class="foot"><div class="cat"><span class="g">⚙</span>settings</div>
+        <div class="cat"><span class="g">◐</span>theme</div><div class="sep"></div>
+        <div class="cat"><span class="g">✕</span>trash</div></div>
+    </nav>
+    <div class="band">
+      <div class="crumb"><span class="i">Novel</span><span class="s">/</span><span class="h">The coat on the train</span></div>
+      <div class="strip"><span class="mode">Free Write</span><span class="mode on">Draft</span>
+        <span class="mode">Revise</span><span class="mode">Publish</span></div>
+    </div>
+    <div class="room" id="room">
+      <div class="paper">
+        <h1>The coat on the train</h1>
+        <p>She had the coat over her arm before she understood she had picked it up, and by then the platform was already moving past the window, or she was.</p>
+        <p>Ned would have said something about duty — he said something about duty every time the weather changed — and she is about to answer him, except<span class="caret"></span></p>
+      </div>
+
+      <button class="grip r" id="grip" aria-label="Counsel">‖</button>
+
+      <div class="cw"><aside class="cb" aria-label="Counsel">
+        <div class="ch"><span class="ct">Counsel</span><span style="color:var(--text-low)">×</span></div>
+        <div class="cs">
+          <span class="zh">Talk it through</span>
+          <div class="box">Ask a question…</div>
+          <div class="rule"></div>
+          <span class="zh">Find</span>
+          <div class="box find">SEARCH YOUR WRITING</div>
+          <div class="chips" id="chips"></div>
+          <div class="hint" id="hint">Your tags. Pressing one is a find, already spelled.</div>
+          <div class="res" id="res"></div>
+        </div>
+      </aside></div>
+
+      <div class="pop" id="pop"><div class="popcard">
+        <div class="popdock" aria-label="Card tools">
+          <span class="dh">Style</span>
+          <button title="Bold"><b>B</b></button><button title="Italic"><i>I</i></button>
+          <span class="dh" style="margin-top:4px">Tags</span>
+          <button title="Tags">#</button>
+        </div>
+        <div class="popeb">Card · from the board “Stark”</div>
+        <div class="popbody" id="popbody"></div>
+        <div class="poptags" id="poptags"></div>
+        <div class="popfoot"><button class="btnbrass" id="closepop">Close</button></div>
+      </div></div>
+
+      <div class="stamp" id="stamp"></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap" id="cap"></div>
+
+<script>
+(function(){
+  var TAGS=['character','stark','research','crypt'];
+  var ITEMS=[
+    {tag:'character',kind:'card', t:'Ned — refusal is not stubbornness', src:'Stark', body:'Ned’s refusal is not stubbornness. He simply cannot see the shape of the room he is standing in.', tags:['character','stark']},
+    {tag:'character',kind:'page', t:'Mara — first walk', src:'Novel', body:'The dog knows before she does.'},
+    {tag:'character',kind:'card', t:'Catelyn, three drafts', src:'Stark', body:'Three drafts. The first was honest and unsendable.', tags:['character','stark']},
+    {tag:'character',kind:'board',t:'Stark', src:'Novel'},
+    {tag:'stark',    kind:'card', t:'The crypt is colder', src:'Stark', body:'Winterfell — the crypt is colder than the yard, and everyone pretends not to notice.', tags:['stark','crypt']},
+    {tag:'stark',    kind:'board',t:'Stark', src:'Novel'},
+    {tag:'research', kind:'page', t:'Coal dust notes', src:'Research', body:'Everything in that town is the colour of the thing it was before.'},
+    {tag:'research', kind:'page', t:'Platform smells', src:'Research', body:'Coal, wet wool, someone’s orange.'},
+    {tag:'crypt',    kind:'card', t:'The crypt is colder', src:'Stark', body:'Winterfell — the crypt is colder than the yard.', tags:['stark','crypt']}
+  ];
+  var active=null, presses=0;
+  var chips=document.getElementById('chips'), res=document.getElementById('res'),
+      pop=document.getElementById('pop'), popbody=document.getElementById('popbody'),
+      poptags=document.getElementById('poptags'), grip=document.getElementById('grip'),
+      cnt=document.getElementById('cnt'), cap=document.getElementById('cap'),
+      stage=document.getElementById('stage'), stamp=document.getElementById('stamp'),
+      hint=document.getElementById('hint'),
+      B1=document.getElementById('w1'), B2=document.getElementById('w2');
+  var SIZES={a:[1366,768],b:[1680,1050]}, cur='a', scale=1;
+
+  function tick(n){ presses+=n; draw(); }
+  function draw(){
+    cnt.innerHTML='presses — <b>'+presses+'</b>'+(presses?' · the page has not moved':'');
+    stamp.textContent = document.body.dataset.pop==='1'
+      ? 'the card is open OVER the page — the caret has not moved'
+      : (active? 'results, in their own region — never the message stream' : 'the writing, undisturbed');
+  }
+  function paintChips(){
+    chips.innerHTML=TAGS.map(function(t){
+      return '<button class="chip" data-t="'+t+'" aria-pressed="'+(active===t)+'">#'+t+'</button>';
+    }).join('');
+    [].forEach.call(chips.children,function(b){
+      b.onclick=function(){ active = (active===b.dataset.t? null : b.dataset.t); tick(1); paintChips(); paintRes(); };
+    });
+  }
+  function thumb(it){
+    if(it.kind==='page') return '<div class="pg"><span class="kind">Page</span><div class="t">'+(it.body||'')+'</div></div>';
+    if(it.kind==='board')return '<div class="brd"><span class="kind" style="padding:5px 0 0 6px">Board</span></div>';
+    return '<div class="crd"><span class="kind">Card</span><div class="t">'+(it.body||'')+'</div></div>';
+  }
+  function paintRes(){
+    if(!active){ res.innerHTML=''; hint.textContent='Your tags. Pressing one is a find, already spelled.'; return; }
+    var hits=ITEMS.filter(function(i){return i.tag===active;});
+    hint.textContent='#'+active+' — in your writing, everywhere. Press one to open it here.';
+    res.innerHTML=hits.map(function(it,n){
+      return '<div class="r" data-n="'+n+'">'+thumb(it)+'<span class="lab">'+it.t+'</span><span class="src">'+it.src+'</span></div>';
+    }).join('');
+    [].forEach.call(res.children,function(el){
+      el.onclick=function(){
+        var it=hits[+el.dataset.n];
+        if(it.kind==='card'){
+          popbody.textContent=it.body;
+          poptags.innerHTML=(it.tags||[]).map(function(t){return '<span class="poptag">#'+t+'</span>';}).join('');
+          document.body.dataset.pop='1';
+        }
+        tick(1);
+      };
+    });
+  }
+  grip.onclick=function(){
+    document.body.dataset.counsel = document.body.dataset.counsel==='1'?'0':'1'; tick(1); };
+  document.getElementById('closepop').onclick=function(){ document.body.dataset.pop='0'; tick(1); };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && document.body.dataset.pop==='1'){ document.body.dataset.pop='0'; tick(1); } });
+  document.getElementById('reset').onclick=function(){
+    active=null; presses=0; document.body.dataset.counsel='0'; document.body.dataset.pop='0';
+    paintChips(); paintRes(); draw(); };
+
+  cap.innerHTML='<b>Press the grip on the right, then a tag, then a result.</b> Three presses, and <em>the page is still under it</em> — that is the whole claim, and it is why this is live rather than stepped. <b>Nothing here is a new concept:</b> <b>Q19</b> (ratified) puts reading in the Counsel and travelling in the rail — retrieval-without-leaving <em>is</em> reading, so the rail would be the wrong hand; <b>FN2</b> already sits Find beneath the composer; <b>PW5</b> already says a card opens where you are. The chips are <b>Find’s vocabulary</b>, not a second control: a chip press <em>is</em> a find, pre-spelled. <b>FN4:</b> results have their own region and never enter the message stream. <b>FN1 holds:</b> every result here is local. <b>The thumbnail law governs the results</b> — boards wide, pages tall — and a <b>card is drawn square because its silhouette is UNRULED: that is Q-3</b>, and this desk will not pick the third shape after Nick ruled the other two.';
+
+  function layout(){
+    var W=SIZES[cur][0],H=SIZES[cur][1];
+    stage.style.width=W+'px'; stage.style.height=H+'px';
+    var fit=document.querySelector('.fit');
+    scale=Math.min(fit.clientWidth/W, fit.clientHeight/H, 1);
+    stage.style.transform='scale('+scale+')';
+  }
+  B1.onclick=function(){cur='a';B1.setAttribute('aria-pressed','true');B2.setAttribute('aria-pressed','false');layout()};
+  B2.onclick=function(){cur='b';B2.setAttribute('aria-pressed','true');B1.setAttribute('aria-pressed','false');layout()};
+  window.addEventListener('resize',layout);
+  paintChips(); paintRes(); draw(); layout();
+})();
+</script>
+</body>
+</html>
