@@ -479,6 +479,32 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
   ok('85-C/OBS-1: and the rule is worth checking because it was already broken once — three older seams were left unwrapped when the newer ones gained durability, so this asserts a property of the FILE rather than of the block someone happened to be editing',
     seamCount >= 9, JSON.stringify({ seams: seamCount }));
 
+  // THE TWO FAULTS OF THE FIXED WINDOW, TESTED RATHER THAN ASSERTED. Both are
+  // measured on synthetic text, because proving them against the real file
+  // would mean contriving the file into the shape that fails.
+  const undurableSeam = [
+    "  seams.wrizoSetThing = (id) => setThing(id);",
+    "  seams.wrizoSetOther = (id) => durable(setOther(id));",
+  ].join('\n');
+  const oldWindow = undurableSeam.split('\n').slice(0, 4).join('\n');
+  ok('85-C/OBS-1 FALSIFICATION: an UNDURABLE seam whose durable NEIGHBOUR begins within four lines is caught — the fixed window this check used to read reached past the seam it was judging and would have passed it, which is a false negative in the one check whose job is catching the seam somebody forgot',
+    !/durableSeam\(|durable\(/.test(seamBody(undurableSeam))
+    && /durable\(/.test(oldWindow),
+    JSON.stringify({ newMatcherSeesDurable: /durable\(/.test(seamBody(undurableSeam)), oldWindowSawDurable: /durable\(/.test(oldWindow) }));
+
+  const longDurableSeam = [
+    "  seams.wrizoSetThing = (id) => {",
+    "    setThing(id);",
+    "    const row = getThing(id);",
+    "    const want = id;",
+    "    return durable(row && row.id === want ? row : false);",
+    "  };",
+  ].join('\n');
+  ok('85-C/OBS-1 (the control): a DURABLE seam with a body longer than four lines is NOT flagged — the other half of the same fault, which reported item 85-C\'s own verdict-returning seams as undurable while they flush on every path',
+    /durable\(/.test(seamBody(longDurableSeam))
+    && !/durable\(/.test(longDurableSeam.split('\n').slice(0, 4).join('\n')),
+    JSON.stringify({ newMatcherSeesDurable: /durable\(/.test(seamBody(longDurableSeam)) }));
+
   // Self-proof: the check must actually reject an unwrapped mutating seam, and
   // must not reject a read-only one or the flush itself.
   const fixture = (text) => {
