@@ -204,11 +204,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the star/tag patch' });
   await app.evalJs(`
     (() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key));
-      const b = list.find(e => e.id === ${JSON.stringify(B.id)});
-      b.starred = true; b.tags = ['research'];
-      localStorage.setItem(key, JSON.stringify(list));
+      window.wrizoPatchEntry(${JSON.stringify(B.id)}, { starred: true, tags: ['research'] });
     })()
   `);
   // A direct localStorage write doesn't update the app's already-hydrated
@@ -539,9 +535,18 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding the StoryPlan' });
   await app.evalJs(`
     (() => {
-      const now = new Date().toISOString();
-      const plan = { id: 'plan-' + Date.now(), projectId: ${JSON.stringify(standaloneBinder.id)}, frameworkId: 'three_act', beatNotes: [], currentBeatId: null, createdAt: now, updatedAt: now };
-      localStorage.setItem('writer-studio-story-plans', JSON.stringify([plan]));
+      // ITEM 85-C — through the seam. createStoryPlan(projectId, framework, [])
+      // produces this fixture's exact shape: beatNotes [] and currentBeatId
+      // null (it derives both from the beatIds it is given, and it is given
+      // none). The plan's id was already dynamic here ('plan-' + Date.now()),
+      // so nothing could depend on its value and nothing does.
+      //
+      // ONE DIFFERENCE, FLAGGED: createStoryPlan also stamps
+      // project.storyPlanId, which the raw write did not. Nothing in this file
+      // asserts on that field, and a plan with no back-link to its project was
+      // arguably an inconsistent fixture — but it IS a change, so it is named
+      // here rather than left for someone to find.
+      window.wrizoCreateStoryPlan(${JSON.stringify(standaloneBinder.id)}, 'three_act', []);
     })()
   `);
   await app.reload();
@@ -615,15 +620,12 @@ await withHarness(async (app) => {
   const boardId = 'seed-board-' + Date.now();
   await app.evalJs(`
     (() => {
-      const key = 'writer-studio-journal-entries';
-      const list = JSON.parse(localStorage.getItem(key));
       const now = new Date().toISOString();
-      list.push({
+      window.wrizoCreateJournalPage({
         id: ${JSON.stringify(boardId)}, text: 'Seed Board', projectId: ${JSON.stringify(standaloneBinder.id)},
-        pageType: 'board', source: 'page', createdAt: now, updatedAt: now,
+        pageType: 'board', createdAt: now, origin: null,
         boxes: [{ id: 'seed-box', kind: 'text', x: 0.05, y: 0.1, w: 0.6, h: 0.2, z: 1, text: 'existing content' }],
       });
-      localStorage.setItem(key, JSON.stringify(list));
     })()
   `);
   await app.reload();

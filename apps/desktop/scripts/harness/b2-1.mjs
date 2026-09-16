@@ -103,6 +103,9 @@ async function progressOptions(app) {
 // (not raw fixture surgery for the project itself — only the StoryPlan
 // attach, which has no UI path in this harness's existing fixtures, per
 // m1.mjs's own established pattern). Returns { projectId, pageId }.
+// ITEM 85-C — planId is now a CALLER-SIDE LABEL only: createStoryPlan generates
+// the plan id, so the value no longer reaches storage. Kept because each call
+// site names its own fixture with it and nothing asserted on the id.
 const seedProjectWithPlan = async (app, planId) => {
   await app.goto('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
@@ -121,17 +124,20 @@ const seedProjectWithPlan = async (app, planId) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding StoryPlan' });
   await app.evalJs(`(() => {
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    const pi = projects.findIndex(p => p.id === '${projectId}');
-    projects[pi].storyPlanId = '${JSON.stringify(planId).slice(1, -1)}';
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
-    plans.push({
-      id: '${JSON.stringify(planId).slice(1, -1)}', projectId: '${projectId}', frameworkId: 'story_circle',
-      currentBeatId: ${JSON.stringify(storyCircle.beats[0].id)}, beatNotes: [],
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-    });
-    localStorage.setItem('writer-studio-story-plans', JSON.stringify(plans));
+    // ITEM 85-C — createStoryPlan authors the plan AND stamps
+    // project.storyPlanId, so both raw writes collapse into one call. The plan's
+    // id is now GENERATED; this file never asserted on it, and the caller's
+    // planId argument is retained only as a per-call label (see the note on the
+    // parameter).
+    //
+    // ONE DIFFERENCE, FLAGGED: the raw plan had beatNotes: [] with currentBeatId
+    // set. createStoryPlan derives BOTH from the beatIds it is given, so passing
+    // the first beat yields the same currentBeatId and one empty-status beatNote
+    // instead of none. Nothing in this file reads beatNotes — its subject is the
+    // QuickSprint destination label, which needs only that a plan EXISTS — and a
+    // plan carrying a beatNote for its framework's beat is closer to what the UI
+    // actually produces than an empty array was.
+    window.wrizoCreateStoryPlan('${projectId}', 'story_circle', [${JSON.stringify(storyCircle.beats[0].id)}]);
   })()`);
   await app.reload();
   return { projectId, pageId };
@@ -326,14 +332,11 @@ await withHarness(async (app) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding a real Drawer' });
   await app.evalJs(`(() => {
-    const now = new Date().toISOString();
-    const drawers = JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]');
-    drawers.push({ id: 'b21-real-drawer', name: 'Real Stored Drawer', order: 0, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-drawers', JSON.stringify(drawers));
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    const pi = projects.findIndex(p => p.id === '${planProjectId}');
-    projects[pi].drawerId = 'b21-real-drawer';
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+    // ITEM 85-C — the drawer's id is generated and used only to file the project
+    // below, so it stays local. createDrawer assigns order itself (max + 1),
+    // which for the first drawer is the 0 this fixture wrote by hand.
+    const drawer = window.wrizoCreateDrawer('Real Stored Drawer');
+    window.wrizoSetProjectDrawer('${planProjectId}', drawer.id);
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/project/${planProjectId}/sprint'`);
@@ -580,14 +583,8 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'PARKED: Desk before seeding a real Drawer' });
     await app.evalJs(`(() => {
-      const now = new Date().toISOString();
-      const drawers = JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]');
-      drawers.push({ id: 'b21-parked-real-drawer', name: 'PARKED Real Stored Drawer', order: 0, createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-drawers', JSON.stringify(drawers));
-      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-      const pi = projects.findIndex(p => p.id === '${pProjectId}');
-      projects[pi].drawerId = 'b21-parked-real-drawer';
-      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+      const drawer = window.wrizoCreateDrawer('PARKED Real Stored Drawer');
+      window.wrizoSetProjectDrawer('${pProjectId}', drawer.id);
     })()`);
     await app.reload();
     await app.evalJs(`location.hash = '#/project/${pProjectId}/sprint'`);

@@ -39,9 +39,26 @@ const freshDesk = async (app, width = 1400, height = 900) => {
 // fixture re-arms it after its own reload) and a fresh DPR emulation.
 const seedAndOpen = async (app, { projects = [], entries, waitSel, hash, width = LAPTOP_W, height = 900, dlDir }) => {
   await freshDesk(app, width, height);
+  // ITEM 85-C — through the seams. createProject GENERATES the project id rather
+  // than taking one, so the ids these fixtures write by hand (e1-binder) cannot
+  // survive; instead they are REMAPPED. Every project is created, its supplied id
+  // is recorded against the generated one, and each entry's projectId is
+  // translated on the way through. That keeps every call site's data literal
+  // exactly as it was — the fixtures still say projectId: 'e1-binder' and still
+  // mean "the binder created beside me".
+  //
+  // origin and source are carried per row: absent means absent, which is the law
+  // (the seam defaults origin to journal and hardcodes source to page, so
+  // silence here would rewrite the row instead of moving it).
   await app.evalJs(`(() => {
-    localStorage.setItem('writer-studio-projects', ${JSON.stringify(JSON.stringify(projects))});
-    localStorage.setItem('writer-studio-journal-entries', ${JSON.stringify(JSON.stringify(entries))});
+    const idMap = {};
+    ${JSON.stringify(projects)}.forEach((p) => { idMap[p.id] = window.wrizoCreateProject(p.title, p.type).id; });
+    ${JSON.stringify(entries)}.forEach((e) => window.wrizoCreateJournalPage({
+      ...e,
+      projectId: e.projectId != null && idMap[e.projectId] ? idMap[e.projectId] : (e.projectId ?? null),
+      origin: 'origin' in e ? e.origin : null,
+      source: 'source' in e ? e.source : null,
+    }));
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = ${JSON.stringify(hash)}`);
