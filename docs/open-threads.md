@@ -5088,6 +5088,122 @@ refusals to treat a convenient summary as the thing itself.)*
 **INK's question to chat 1 is ANSWERED by the reconciliation above; NOTHING FURTHER TO ADJUDICATE.**
 **Release order stands:** 139 + the park rider → ERRATA's wave 2 → INK's B6 pair → PW2 → TOOLS' VW1
 (two pairs) → the four-file park conform.
+## BAND — A DECLARED-READY LANE IS ANNOUNCED, NOT RE-ASKED — 2026-09-15
+
+> **A LANE THAT HAS DECLARED READY AND IS NEXT IN THE ORDER IS ANNOUNCED, NOT RE-ASKED — TWO DESKS
+> WAITING POLITELY IS AN IDLE BOX.**
+
+**EARNED BY AN IDLE BOX SINCE BATCH TWO's STAMP.** **Chat 1 wrote "ask and I grant" and waited to be
+asked; ERRATA had already declared ready days earlier** — *"standing by for the announcement after the
+deploy pair"* — **and the release order already NAMED it next.** **Nobody was blocked and nothing was
+running.**
+
+**THE RELEASE ORDER IS THE ASK.** When the order names the next lane and that lane has declared ready,
+**the announcement is owed by the desk that holds the box, not requested by the lane that wants it.**
+*(The turn-by-announcement rule was built so a lane never TAKES a quiet box. It was never meant to make
+a lane BEG for one — and read the second way it converts a safety rule into a stall.)*
+
+## TWO HELD OFFERS MERGED — THEY WERE NEVER UN-OFFERED — 2026-09-15
+
+**`item139-runner-guard @ c927fef`** and **TOOLS' park rider `@ 84d42bb`** **MERGED.** **Both were
+offered BEFORE Batch Two closed and were held ONLY by the closed batch — no re-offer was needed, and
+chat 1 should not have waited for one.** *(A batch closing suspends a merge; it does not withdraw the
+offer. Chat 1 read "held behind the stamp" as "awaiting re-offer," which is the same idle-box error in
+a second costume.)*
+
+**ITEM 139 IS NOW LIVE IN THE RUNNER. THE TOKEN IS `WS_BOX_TURN`** — `withHarness` hard-stops with
+**`BOX TURN NOT GRANTED`** when it is unset, and **`run-suite` requires it too and passes it to every
+child, so a suite's files inherit ONE grant** rather than each claiming its own. **Its first live pair
+is its proof: a red IN THE RUNNER is the RUNNER's red.**
+
+**THE PARK RIDER closes OBS-3:** `item137.mjs` now emits `parkedChecks` as JSON, so the counter can see
+them. **The remaining four prose-only blocks conform in TOOLS' single offer.**
+## BAND — AN OFFER NAMES THE CHECKS THAT COULD HAVE FAILED (INK) — 2026-09-15
+
+> **AN OFFER NAMES THE CHECKS THAT COULD HAVE FAILED — A CHECK THAT CANNOT FAIL ON TODAY'S CODE IS A
+> GUARD, NOT EVIDENCE.**
+
+**INK's expectation note, made practice.** **Applied to B6 by the lane itself: C3 and C6's TEXT LEG are
+GUARDS; C6's GEOMETRY, C7 and C8 are the EVIDENCE.**
+
+**THE DISTINCTION IS NOT PEDANTIC — IT IS WHAT A GREEN MEANS.** A GUARD passes today because the
+hazard is not present; it earns its place by **failing on the day something reintroduces the hazard.**
+**EVIDENCE passes because THE CHANGE WORKS** — and would have failed before it. **A stamp that counts
+guards as evidence reports more proof than it holds.**
+
+**B6's own arm-and-move assertion is the worked example, and INK labelled it correctly in advance:**
+the page's text byte-identical across an arm-and-move is **a NO-OP TODAY** (`revealAtCaret` returns at
+`rangeCount === 0`) — **guarded for the day it isn't.** **A guard, declared as one.**
+
+**SIBLINGS, and together they bracket the question a check must answer:** *a check that bounds the
+symptom certifies the bug — assert the invariant the defect breaks* (what the check must ASSERT), and
+this line (what the check's green is WORTH). *(And it is the no-blank-stamp discipline one level up: a
+park section that declares zero is readable, and an offer that declares which checks are guards is
+readable the same way — silence in both cases reads as a claim nobody made.)*
+
+## ERRATA — WAVE 2's PAIR IS ITEM 139's FIRST LIVE PROOF — 2026-09-15
+
+**Pair at `ad8b55d`, pre-flight ZERO, quiet box, token `errata-wave2-20260915`.** **It rides 55 MIGRATED
+FILES, m1's park and its successor** — **and it is the first pair to run with `WS_BOX_TURN` enforced in
+`withHarness`.**
+
+**RECORDED IN ADVANCE, AS BEFORE: if this pair reds IN THE RUNNER rather than in the code, it is THE
+RUNNER's red — diagnosed as such, not charged to the wave.** *(Naming it beforehand is what stops an
+instrument's defect being billed to whoever happens to be holding the box when it fires.)*
+
+**ON ERRATA's STAMP: INK's B6 announcement, pre-committed — no ask.**
+## ERRATA — WAVE 2's PAIR NOT CLEAN, AND THE BOUNDARY FINDING — 2026-09-15
+
+**Pair at `ad8b55d`: NOT CLEAN (83/85). The parked leg NEVER RAN and IS NOT CLAIMED.** *(A pair with
+one leg unrun is not a pair, and saying so is the no-blank-stamp discipline applied to a failure.)*
+
+**ATTRIBUTION ESTABLISHED AGAINST MAIN: `fx9` 41/41, SAME BUNDLE — the defects are ERRATA's, NOT
+main's.** **`b2`'s was a cross-`evalJs` const, fixed and SWEPT TO ONE INSTANCE.** *(Swept, not just
+fixed — the population question asked before the fix was called done.)*
+
+**THE BOUNDARY FINDING, REGISTERED — and chat 1 confirmed both halves at the code:**
+- **`upsert` OVERWRITES `updatedAt` UNCONDITIONALLY** — `record.updatedAt = new Date().toISOString();`
+  sits inside the GENERIC upsert, so **`updatedAt` CANNOT BE SEEDED THROUGH ANY STORE PATH.** **This is
+  not a gap in one seam; it is a property of the WRITE BOUNDARY.**
+- **AND THE SEAM RETURNS THE ASKED VALUE WHILE STORAGE HOLDS THE STAMP** — the return is the caller's
+  object, not a re-read. **PROVEN BY MEASUREMENT: asked `2020-05-05`, returned `2020-05-05`, stored
+  `2026-09-15`.**
+
+**THE SECOND HALF IS THE DANGEROUS ONE, AND IT IS A CHECK THAT PASSES FOR THE WRONG REASON IN ITS
+PUREST FORM: a fixture that seeds a date and then verifies it THROUGH THE SEAM gets its own request
+echoed back.** **It verified against the seam's echo, not against storage** — green, and wrong about
+the world.
+
+## BAND — A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED (ERRATA) — 2026-09-15
+
+> **A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED.**
+
+**THE LIE IS THE CLASS** — not this one field. A boundary that reports **the caller's intention** in
+place of **the world's state** makes every verification through it self-confirming. *(Siblings: `null
+is the fact of absence, never a default` and `a migration changes HOW a row is written, never WHAT the
+row is` — all three are a boundary substituting a convenient value for the true one, and all three are
+invisible to any check that reads back through the same boundary.)*
+
+## THE THREE RULINGS ON THE RE-SEED — 2026-09-15
+
+- **ERRATA RE-SEEDS BY TOUCHING ROWS IN ORDER THROUGH `wrizoPatchEntry`** — **ordering becomes REAL**
+  rather than asserted — **verifying FIRST that no dependent assertion tests DURATION.** *(The
+  pre-check is the part worth copying: a fixture change that makes time real can break a check that was
+  quietly relying on it being fake.)*
+- **REVERTING TO RAW WRITES: REFUSED.** *(It would undo item 85-C to rescue a fixture — paying back the
+  debt the migration just cleared.)*
+- **CHANGING `upsert`'s SEMANTICS: REFUSED AS HOUSE WORK.** *(A harness's need does not get to rewrite
+  a product rule. The boundary between "fix the instrument" and "fix the house" is exactly where the
+  seams-only authority was drawn, and this is that line holding under pressure.)*
+- **AND THE SEAM IS FIXED TO RETURN WHAT WAS STORED** — the honest half, which IS the instrument's to
+  fix.
+
+**ERRATA KEEPS THE BOX and RE-RUNS THE PAIR FROM THE TOP ON THE SAME TOKEN** (`errata-wave2-20260915`).
+**INK's pre-committed announcement moves to ERRATA's EVENTUAL stamp — unchanged in order.**
+
+**ITEM 139 HOLDS: THE RED WAS IN THE CODE, NOT THE RUNNER. Its first live proof stands so far.**
+*(Recorded because it was named in advance: had the red been the runner's, it would have been charged
+to the runner. It was not, so the guard is credited with a clean first outing.)*
 Registry: next free **142**.
 
 
