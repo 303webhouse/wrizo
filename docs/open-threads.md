@@ -2665,6 +2665,53 @@ the standing schema law. **Not a builder's call.**
 Write's decoration. **Editable in Free Write. Locked-but-MOVABLE on double-click in Draft/Revise.**
 **Text is never movable, in any mode.**
 
+**► OFFERED (INK lane, 2026-09-16) — branch `item126-ink-across-modes`, offered SHA `17a89ac`.**
+Record: `docs/menus/item126-offer-2026-09-16.md` (+ `item126-s0-survey.md`). **BOTH SETTINGS CLEAN,
+one tree, one bundle, neither stamp dirty — 86/86 each: `tree=17a89ac
+bundle=index-BuX8s8NA.js/582706b`** (parked ran `--no-rebuild`). 2,704 live checks unparked; 2,818
+live + 179 parked in the parked run. `item126.mjs` **42**. **ZERO SCHEMA, ZERO SERVER.** Rides
+**Batch Three**. **The turn** came by chat 1's announcement on 85-C's merge; `WS_BOX_TURN` verified
+byte-equal to the grant file before launch; pre-flight zero before every run; pushed at each pair's
+start; quiet between runs; diagnostic probes kept OUTSIDE the tree.
+
+**→ THE FIRST PAIR WAS NOT CLEAN, AND THE RED WAS A PRODUCT DEFECT.** `tree=fe4e935`: **85/86 both
+settings**, the one red this ticket's own **C8**, identical in both runs — a group shoved past the
+sheet's edge came back **not moved at all** (`cAfter === cBefore` to the last digit; its clamp
+clauses passed only because nothing moved). **Not fixed by editing the test.** Probes kept out of the
+tree: a release **inside the viewport**, just past the sheet edge — an ordinary gesture, which rules
+out a CDP artifact — **still lost the move**; capture-got 0, release-on-sheet 0. A trusted mouse drag
+after the arming double-click never receives `gotpointercapture` (`setPointerCapture` returns and
+`hasPointerCapture` reads true, but capture is never applied), so a release outside the sheet never
+reached `commit`, and **the drag stayed live** to the next buttonless movement. The product's own
+`try { setPointerCapture } catch {}` hid it.
+
+**→ ⚠ ITEM 121 SHIPPED THE SAME DEFECT — FIXED HERE AS A STATED SCOPE EXTENSION.** The capture
+pattern was shared: a trusted **mouse stroke** in Free Write / INK ending past the paper's edge was
+**silently discarded** (0 → 0). **The laptop, the primary target.** Item 121's own mouse leg passed
+only because it released inside the sheet. Fixed in the same file on the same reasoning, and asserted
+in **this** ticket's harness (**C14**) so the extension is in one place and **easy to split out**.
+**Not claimed:** the pen path's OUTSIDE release was never tested, so nothing is said about whether it
+was safe before.
+
+**→ THE FIX REMOVES THE DEPENDENCY RATHER THAN EXPLAINING IT.** The press stays on the sheet; move,
+release and cancel are heard on **window**; capture is best-effort only. Every handler is guarded by
+the pointer that began the gesture; window `blur` cancels an in-flight one; **a cancel no longer
+commits** (`pointercancel` had been wired to the move's `commit`).
+
+**→ MUTATION-TESTED, FIX COMMITTED FIRST.** Moving ONLY the listeners back from window to the sheet
+turns **exactly five checks red and no others** (37 stay green): C8, C8b ×2 — **including the stuck
+drag, inferred before and MEASURED here** — and C14 ×2. One variable changed; only those five
+responded. Restored by `git checkout`, the mutant bundle rebuilt over **before** the re-stamp — and
+the re-stamp's bundle hash (`BuX8s8NA`, not the mutant's) is the proof.
+
+**→ STATICALLY ZERO WAS MEASURED ZERO.** `item126.mjs` emits `[]`; the only other harness touched,
+`item121.mjs`, changed comments only; **179 parked checks in both pairs**. **→ Also on the record:**
+a first live-check tally ("2,660 across 85") skipped `fx7`'s `VERIFY (partial):` form — a cut view,
+discarded and recounted over all 86 lines rather than quoted.
+
+**→ OWED TO THE TABLET SITTING, ADDED BY THIS TICKET:** a **stylus stroke that leaves the paper** —
+the harness cannot drive a pen past the element's box.
+
 **► BUILD BRIEF DRAFTED (INK lane, browserless, 2026-09-08) — `docs/menus/item126-build-brief.md`.**
 Written on Fable's word during the deploy window, from `origin/main @ 39eacae`, **without taking the
 box**. Its founding fact is item 121's offer record **§7A** — the stratum renders in Free Write ONLY
@@ -5204,7 +5251,102 @@ invisible to any check that reads back through the same boundary.)*
 **ITEM 139 HOLDS: THE RED WAS IN THE CODE, NOT THE RUNNER. Its first live proof stands so far.**
 *(Recorded because it was named in advance: had the red been the runner's, it would have been charged
 to the runner. It was not, so the guard is credited with a clean first outing.)*
-Registry: next free **142**.
+## ITEM 108 — TAGS AS SORTING — CHARTERED TO THE PLAN DESK — 2026-09-16
+
+**PRIMARY TEXT — Nick, VERBATIM:**
+
+> Item 108: Other than for Tutor to use as a way of searching the available text, tags should be a way
+> for the user to sort Boards, Cards, and Pages in any area where they are displayed as thumbnails. I'm
+> not sure what exactly we have built out, but if I'm on a board that contains 20 cards of different
+> topics, e.g., I should be able to click on one of a list of all available tags on that board and then
+> have only the cards/pages with that tag now displaying. Same with the scrolling cards/boards in the
+> side menu that I think we're going to be building (if we haven't already). The FIND row: The empty
+> search box should say: 'SEARCH YOUR WRITING'. The search should check anything the user has written
+> anywhere in the app, including when we get to the social media app. Cards should be taggable and
+> sortable too, yes. Take all of the tag/sortability issues to the Architects and then show me a couple
+> mockups of how we can make tags a useful way for writers to pull up character info or a type of
+> research, for example, while they're on a Page, Board, or Card
+
+**RULED FROM IT:** tags sort **Boards, Cards and Pages wherever thumbnails are displayed** · **cards
+become taggable** · **FIND's placeholder is "SEARCH YOUR WRITING"** · **FIND's scope is EVERYTHING the
+writer has written anywhere in the app, including the future social app** — **which answers the
+long-open PROJECT-SCOPE question: NO.**
+
+*(This primary text reached chat 1 only on the second relay — the fourth reference-by-name. It was not
+recorded from the first relay's paraphrase, because a paraphrase in the ledger is indistinguishable
+later from the founder's own words.)*
+
+**NICK HAS THE MOCKUPS AND FOUR QUESTIONS:** board filter HOLD-vs-REFLOW · the CARD SILHOUETTE
+(unruled) · FN1's SOURCE-LIST SHAPE (returned to him by name per FN8) · MOCKUP C wanted or not.
+
+**C4 IS ANSWERED BY THIS CHARTER.** **Cards have no tags today** (`Box` carries no field — confirmed at
+the type) — **so item 123's deferred tags clause names the CARD-TAGS BUILD as its successor.**
+**Item 142 is reserved below; a further number is available for the card-tags half if PLAN asks.**
+
+## THE ONLY TAG FILTER, AND WHY IT IS CARRIED FORWARD — 2026-09-16
+
+**FABLE'S FINDING, CONFIRMED BY CHAT 1 AT THE LINE: `Spread.tsx` holds the app's ONLY collection-level
+tag filter** — `pages.filter(... (!tagFilter || (p.tags ?? []).includes(tagFilter)))` — **and computes
+`allTags`, the vocabulary that filter offers.** **Every other `tags` hit in `src` — `BoardEditor`,
+`ScriptEditor`, `JournalEntry` — is a `patchJournalEntry` call adding or removing a tag on ONE entry:
+a tag EDITOR, not a FILTER.** **So retiring the Spread would take both the filter and its vocabulary.**
+
+**RULED: TAG FILTERING IS CARRIED FORWARD.** **VW3's brief carries it as its own clause commit
+(`plan-vw3-tagfilter @ 307c83a`, merged FIRST so no builder could read the brief without it).** **VW3
+MUST NOT RETIRE THE SPREAD UNTIL THE FILTER HAS A NEW HOME.**
+
+**PLAN DESK's addition: tags are WRITTEN from three faces and READ in one — and that one is the surface
+VW3 deletes. UNDER-CONSUMED, not under-designed.**
+
+## BAND — A CAPABILITY RETIRES WITH ITS CONTAINER ONLY IF THE NEW MODEL CONTRADICTS IT — 2026-09-16
+
+> **A CAPABILITY RETIRES WITH ITS CONTAINER ONLY IF THE NEW MODEL CONTRADICTS IT — OTHERWISE IT IS
+> RE-HOMED.**
+
+**THE SAME RETIREMENT, OPPOSITE DISPOSITIONS:** **manual ordering DIES with the Spread** — the
+arrangement law makes it incoherent in a surface that is not a board. **Tag filtering is merely
+RESIDENT in the Spread** — nothing about the flip makes filtering wrong — **so it is re-homed.** *(The
+test is not "does this live in the thing being retired" but "does the thing replacing it make this
+capability false." Only the second is a reason to let it go.)*
+
+## ITEM 126 — INK's B6 MERGED; C14 NOT SPLIT — 2026-09-16
+
+**`item126-ink-across-modes @ 14ff198`, CLEAN 86/86 both settings at `17a89ac`** (bundle
+`index-BuX8s8NA.js/582706b`, neither stamp dirty, **parks 179 both**). **Four product files
+(+586/-40).** **Zero schema, zero server.** Record at `docs/menus/item126-offer-2026-09-16.md`.
+
+**RULED: DO NOT SPLIT C14.** **The item-121 fix and the item-126 fix are ONE MISCONCEPTION — A GESTURE
+THAT ENDS OFF THE PAPER IS LOST — applied in two places.** **Fix the class, not the instance.**
+
+**HALF OF THIS CLASS IS ALREADY IN PRODUCTION**, shipped with item 121. **BATCH THREE THEREFORE CARRIES
+A PRODUCT FIX TO LIVE INK** — in **Fable's review scope**, reviewed in the assembled diff before Nick's
+word.
+
+**THE FIRST PAIR STAYS ON THE RECORD: `fe4e935`, 85/86 both settings.** **The defect was MEASURED, not
+inferred, and a MUTATION TEST put it back to prove FIVE checks catch it** — a red kept beside its cure.
+
+## ITEM 142 — STYLUS PAST THE PAPER'S EDGE — OPENS 2026-09-16
+
+**OPENS. ORIGIN: item 126's offer.** **The harness CANNOT drive a pen beyond the sheet, so the
+lost-gesture class is UNPROVEN FOR STYLUS.** **ROUTED TO NICK's TABLET SITTING.**
+
+*(The mouse half is proven by five checks and a mutation test; the stylus half is proven by nothing,
+because no instrument in the house can reach it. This is the founder-sitting class again — a gap no
+suite can close — and it is named now so the stylus is not assumed to share the mouse's verdict.)*
+
+## BATCH THREE — CONTENTS SO FAR — 2026-09-16
+
+**Item 139 · TOOLS' park rider · 85-C (wave 2) · item 126 (+ item 121's fix).** **It now carries
+WRITER-FACING PRODUCT CODE TO LIVE INK, so Fable's assembled-diff review is required before Nick's
+word.**
+
+**THE GRANT FILE, RUN THROUGH ITS FIRST FULL CYCLE:** chat 1 **CLEARED INK's grant at its stamp**
+(lane `INK`, token `ink-b6-20260916`; file confirmed absent after the clear) and **GRANTED ERRATA's
+item-140 turn** (token `errata-item140-20260916`). **The tree stayed clean throughout — the grant file
+lives outside every worktree, so it is invisible to git.**
+
+Registry: next free **143**.
+
 
 
 
