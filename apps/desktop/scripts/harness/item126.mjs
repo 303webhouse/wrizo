@@ -34,6 +34,11 @@
 //   C7  the eraser clause — erases travel with their group.
 //   C8  the clamp — a group cannot be pushed off the sheet (FX17's law).
 //   C9  Escape releases; undo restores the pre-move geometry, one level.
+//   C8b the ORDINARY release past the sheet's edge (inside the viewport) is
+//       committed, and the drag is not left stuck — the case that PROVED C8's
+//       red was a product defect rather than a CDP artifact.
+//   C14 SCOPE EXTENSION — item 121's mouse stroke ending past the paper's edge
+//       is committed. The same capture defect, shipped; fixed in the same commit.
 //   C10 cross-mode — drawn in Free Write, present in Draft and Revise at
 //       identical normalized geometry, and §7A's autosave regression re-run.
 //   C11 the band does not grow, in any mode.
@@ -414,6 +419,83 @@ await withHarness(async (app) => {
   ok('C8: a group shoved past the sheet\'s edge STOPS at it — x never below 0, y never below 0 — and it still MOVED (FX17\'s law: a limit stops, it never relocates, and it never freezes the gesture outright)',
     cAfter.x0 >= -1e-9 && cAfter.y0 >= -1e-9 && cAfter.x0 < cBefore.x0,
     JSON.stringify({ cBefore, cAfter }));
+
+  // ==========================================================================
+  // C8b — THE ORDINARY CASE THAT PROVED THE DEFECT. C8 releases off the
+  // viewport, and on its first stamped run it went red with the group NOT MOVED
+  // AT ALL. A probe then released INSIDE the viewport, just past the sheet's
+  // edge — a plain, everyday event, which rules out a CDP artifact — and the
+  // move was STILL lost: the release never reached the sheet, because a trusted
+  // mouse drag after the arming double-click never received pointer capture.
+  // This leg is that probe, kept. It is the one a writer actually performs.
+  // ==========================================================================
+  const inVpId = await pageWithInk(app, W1, H1);
+  await toMode(app, 'draft');
+  const iv = await strokesOf(app, inVpId);
+  const ivBefore = bboxOf(iv[0].points);
+  const ivp = await screenOf(app, midOf(iv[0]));
+  const ivSheet = await app.evalJs(rectOf(SHEET));
+  await app.doubleClick(ivp.x, ivp.y);
+  await sleep(350);
+  // End LEFT of the sheet but well INSIDE the viewport.
+  const ivEnd = { x: Math.max(8, ivSheet.left - 60), y: ivp.y };
+  await app.mouseDown(ivp.x, ivp.y);
+  for (let i = 1; i <= 10; i++) { await app.mouseMove(ivp.x + ((ivEnd.x - ivp.x) * i) / 10, ivp.y); await sleep(16); }
+  await app.mouseUp(ivEnd.x, ivEnd.y);
+  await sleep(900);
+  const ivAfter = bboxOf((await strokesOf(app, inVpId))[0].points);
+  ok('C8b: a drag RELEASED PAST THE SHEET\'S EDGE BUT INSIDE THE VIEWPORT is COMMITTED — the group moves left and stops AT the edge. Before the fix this exact gesture lost the move: the release never reached the sheet (measured: capture-got 0, release-on-sheet 0, persisted false)',
+    ivEnd.x > 0 && ivAfter.x0 < ivBefore.x0 && ivAfter.x0 >= -1e-9,
+    JSON.stringify({ ivEnd, ivBefore, ivAfter }));
+
+  // AND THE DRAG IS NOT LEFT STUCK. A lost release used to leave the drag live,
+  // so the ink followed the next buttonless mouse movement. Move with no button
+  // held and read storage AND the live paint: neither may change.
+  const ivStored = JSON.stringify((await strokesOf(app, inVpId))[0].points);
+  const paintEdge = () => app.evalJs(`(() => { const c = document.querySelector('${CANVAS}');
+    const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    let minX = 1e9; for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++)
+      if (d[(y * c.width + x) * 4 + 3] > 8 && x < minX) minX = x;
+    return minX; })()`);
+  const edgeBefore = await paintEdge();
+  await app.mouseMove(ivSheet.left + ivSheet.width * 0.6, ivSheet.top + 150);
+  await sleep(120);
+  await app.mouseMove(ivSheet.left + ivSheet.width * 0.8, ivSheet.top + 200);
+  await sleep(500);
+  const edgeAfter = await paintEdge();
+  const ivStoredAfter = JSON.stringify((await strokesOf(app, inVpId))[0].points);
+  ok('C8b: and the drag is NOT LEFT STUCK — buttonless mouse movement afterwards moves the ink neither in storage nor on the canvas. A lost release used to leave the gesture live, so the ink followed the next movement with no button held',
+    ivStored === ivStoredAfter && edgeBefore === edgeAfter,
+    JSON.stringify({ storedSame: ivStored === ivStoredAfter, edgeBefore, edgeAfter }));
+
+  // ==========================================================================
+  // C14 — THE SAME DEFECT, SHIPPED IN ITEM 121. SCOPE EXTENSION, STATED.
+  // The capture pattern was shared, and item 121's drawing path had it too: a
+  // trusted MOUSE stroke in Free Write / INK that ENDED past the paper's edge
+  // got capture, lost it, never delivered its release — and the stroke was
+  // SILENTLY DISCARDED (probe: strokes 0 -> 0). That is the laptop, the primary
+  // target. Item 121's own mouse leg passed only because it released inside the
+  // sheet. Fixed in the same commit and asserted here, in this ticket's file,
+  // so the extension is visible in one place and easy to split out.
+  // ==========================================================================
+  const drawId = await freshPage(app, W1, H1);
+  await toMode(app, 'freewrite');
+  await app.waitFor("!!document.querySelector('.wz-ink-switch')", { label: 'Free Write switch (C14)' });
+  await setInstrument(app, 'ink');
+  const dSheet = await app.evalJs(rectOf(SHEET));
+  const dBefore = (await strokesOf(app, drawId)).length;
+  const dStart = { x: dSheet.left + dSheet.width * 0.5, y: dSheet.top + 90 };
+  const dEnd = { x: Math.max(8, dSheet.left - 90), y: dSheet.top + 100 };
+  await app.mouseDown(dStart.x, dStart.y);
+  for (let i = 1; i <= 10; i++) { await app.mouseMove(dStart.x + ((dEnd.x - dStart.x) * i) / 10, dStart.y + ((dEnd.y - dStart.y) * i) / 10); await sleep(16); }
+  await app.mouseUp(dEnd.x, dEnd.y);
+  await sleep(900);
+  const dAfter = await strokesOf(app, drawId);
+  ok('C14 (item 121\'s path — SCOPE EXTENSION): a trusted MOUSE stroke in Free Write / INK that ENDS PAST THE PAPER\'S EDGE is COMMITTED, not silently discarded. Before this fix it was lost — the laptop, the primary target, dropping the writer\'s ink without a word',
+    dAfter.length === dBefore + 1, JSON.stringify({ before: dBefore, after: dAfter.length }));
+  ok('C14: and the stroke contains points from OUTSIDE the sheet (x below 0) - the direct evidence that moves past the paper\'s edge were HEARD at all, which is what the window-level listener exists to do. This asserts the MECHANISM, not a storage policy: if clipping is ever ruled, this check is its to supersede',
+    dAfter.length > 0 && dAfter[dAfter.length - 1].points.some(pt => pt.x < 0),
+    JSON.stringify({ minX: dAfter.length ? Math.min(...dAfter[dAfter.length - 1].points.map(pt => pt.x)) : null }));
 
   // ==========================================================================
   // C10 — CROSS-MODE, and §7A's autosave regression re-asserted rather than

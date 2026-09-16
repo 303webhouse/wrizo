@@ -213,6 +213,10 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     const sheet = sheetRef.current;
     if (permission !== 'edit' || !sheet) return;
 
+    // The pointer that started the current stroke, or -1. Per-effect state in a
+    // closure, because the listeners below are attached once per permission.
+    let activeId = -1;
+
     const normPoint = (e: PointerEvent): StrokePoint => {
       const rect = captureRectRef.current ?? sheet.getBoundingClientRect();
       const w = rect.width || 1;
@@ -300,6 +304,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const ac = activeRef.current;
       if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
       drawingRef.current = true;
+      activeId = e.pointerId;   // only THIS pointer may drive or end the stroke
       // J2 — the toggle is the guaranteed path; the hardware eraser tip is a
       // bonus signal on top of it. Per the Pointer Events spec the eraser end
       // reports pointerType 'pen' with the eraser-button bit (32) set in
@@ -319,13 +324,18 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
         stroke.ink = p.ink;
       }
       activeStrokeRef.current = stroke;
-      try { sheet.setPointerCapture(e.pointerId); } catch { /* capture is best-effort */ }
+      // BEST-EFFORT, AND NO LONGER LOAD-BEARING (item 126, measured): the
+      // stroke's move and release are heard on WINDOW (below), so this call
+      // failing — or succeeding and then not rerouting the release, which is
+      // what a trusted mouse drag was measured doing — can no longer lose a
+      // stroke. It stays for cursor and hover consistency only.
+      try { sheet.setPointerCapture(e.pointerId); } catch { /* best effort */ }
       e.preventDefault();
       paintActive();
     };
 
     const onMove = (e: PointerEvent) => {
-      if (!drawingRef.current) return;
+      if (!drawingRef.current || e.pointerId !== activeId) return;
       e.preventDefault();
       e.stopPropagation();
       activeStrokeRef.current?.points.push(normPoint(e));
@@ -338,10 +348,11 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     };
 
     const onUp = (e: PointerEvent) => {
-      if (!drawingRef.current) return;
+      if (!drawingRef.current || e.pointerId !== activeId) return;
       e.preventDefault();
       e.stopPropagation();
       drawingRef.current = false;
+      activeId = -1;
       restoreSheet();
       const stroke = activeStrokeRef.current;
       activeStrokeRef.current = null;
@@ -360,19 +371,27 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       }
     };
 
-    const onCancel = (e: PointerEvent) => {
+    const cancelStroke = () => {
       if (!drawingRef.current) return;
       drawingRef.current = false;
       restoreSheet();
       const wasErasing = activeStrokeRef.current?.eraser;
       activeStrokeRef.current = null;
-      try { sheet.releasePointerCapture(e.pointerId); } catch { /* */ }
+      try { if (activeId !== -1) sheet.releasePointerCapture(activeId); } catch { /* */ }
+      activeId = -1;
       clearActive();
       // J2 — a cancelled erase already rubbed pixels straight onto the
       // committed canvas with no matching entry in strokesRef; repaint from
       // the authoritative array to undo the stray in-progress rub-out.
       if (wasErasing) paintCommitted(committedRef.current, sheet, strokesRef.current);
     };
+    const onCancel = (e: PointerEvent) => {
+      if (e.pointerId !== activeId) return;
+      cancelStroke();
+    };
+    // A window that loses focus mid-stroke will never deliver the release.
+    // Cancel rather than leave a stroke open that the next press would extend.
+    const onBlur = () => cancelStroke();
 
     // J2 — ring preview: a quiet ERASER_WIDTH-diameter ring follows the pointer
     // while the eraser is armed, so aim is possible before touching down.
@@ -390,19 +409,33 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     };
     const onLeave = () => { const ring = ringRef.current; if (ring) ring.style.display = 'none'; };
 
+    // ITEM 126 — WHERE EACH LISTENER LIVES, AND WHY THAT MOVED.
+    // The PRESS stays on the sheet: whether a stroke begins is a question about
+    // the paper. The MOVE, RELEASE and CANCEL are heard on WINDOW, because a
+    // stroke is not over until the writer lets go, and they may let go anywhere.
+    // Before this, all four lived on the sheet and relied on pointer capture to
+    // reroute a release that landed outside it. MEASURED: a trusted MOUSE stroke
+    // ending past the paper's edge got capture, lost it, never delivered its
+    // release to the sheet — and the stroke was SILENTLY DISCARDED. That is the
+    // laptop, the primary target. Item 121's own mouse leg passed only because
+    // it happened to release inside the sheet. Every handler below is guarded by
+    // the pointer id, so only the pointer that started a stroke can extend or end
+    // it — which a window listener would otherwise not guarantee.
     const opts = { passive: false, capture: true } as const;
     sheet.addEventListener('pointerdown', onDown, opts);
-    sheet.addEventListener('pointermove', onMove, opts);
-    sheet.addEventListener('pointerup', onUp, opts);
-    sheet.addEventListener('pointercancel', onCancel, opts);
+    window.addEventListener('pointermove', onMove, opts);
+    window.addEventListener('pointerup', onUp, opts);
+    window.addEventListener('pointercancel', onCancel, opts);
+    window.addEventListener('blur', onBlur);
     const hoverOpts = { passive: true } as const;
     sheet.addEventListener('pointermove', onHover, hoverOpts);
     sheet.addEventListener('pointerleave', onLeave, hoverOpts);
     return () => {
       sheet.removeEventListener('pointerdown', onDown, opts);
-      sheet.removeEventListener('pointermove', onMove, opts);
-      sheet.removeEventListener('pointerup', onUp, opts);
-      sheet.removeEventListener('pointercancel', onCancel, opts);
+      window.removeEventListener('pointermove', onMove, opts);
+      window.removeEventListener('pointerup', onUp, opts);
+      window.removeEventListener('pointercancel', onCancel, opts);
+      window.removeEventListener('blur', onBlur);
       sheet.removeEventListener('pointermove', onHover);
       sheet.removeEventListener('pointerleave', onLeave);
       // Leaving INK mid-stroke must not leave the sheet unselectable.
@@ -426,6 +459,9 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   useEffect(() => {
     const sheet = sheetRef.current;
     if (permission !== 'movable' || !sheet) return;
+
+    // The pointer that started the current drag, or -1.
+    let dragId = -1;
 
     const norm = (e: PointerEvent | MouseEvent) => {
       const rect = sheet.getBoundingClientRect();
@@ -513,12 +549,15 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       e.preventDefault();
       e.stopPropagation();
       dragRef.current = { x, y, dx: 0, dy: 0 };
+      dragId = e.pointerId;
+      // Best-effort only — see the registration comment below for why a drag no
+      // longer depends on capture to hear its own release.
       try { sheet.setPointerCapture(e.pointerId); } catch { /* best effort */ }
     };
 
     const onMove = (e: PointerEvent) => {
       const d = dragRef.current, a = armedRef.current;
-      if (!d || !a) return;
+      if (!d || !a || e.pointerId !== dragId) return;
       e.preventDefault();
       const { x, y, w, h } = norm(e);
       const box = groupBox(strokesRef.current, a);
@@ -532,8 +571,10 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     };
 
     const commit = (e: PointerEvent) => {
+      if (e.pointerId !== dragId) return;
       const d = dragRef.current, a = armedRef.current;
       dragRef.current = null;
+      dragId = -1;
       try { sheet.releasePointerCapture(e.pointerId); } catch { /* */ }
       if (!d || !a || (d.dx === 0 && d.dy === 0)) { repaint(); return; }
       const before = strokesRef.current;
@@ -546,6 +587,18 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       onCommitRef.current(next);
     };
 
+    // A cancelled or abandoned drag DISCARDS its delta — nothing was persisted
+    // yet, so dropping the preview and repainting is the whole of the undo.
+    const cancelDrag = () => {
+      if (!dragRef.current) return;
+      try { if (dragId !== -1) sheet.releasePointerCapture(dragId); } catch { /* */ }
+      dragRef.current = null;
+      dragId = -1;
+      repaint();
+    };
+    const onCancel = (e: PointerEvent) => { if (e.pointerId === dragId) cancelDrag(); };
+    const onBlurMove = () => cancelDrag();
+
     // Escape releases the group, mid-drag or merely armed — the same
     // cancel-without-consequence J2's onCancel gives a stroke.
     const onKey = (e: KeyboardEvent) => {
@@ -555,19 +608,32 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       disarm();
     };
 
+    // ITEM 126 — THE RELEASE IS HEARD ON WINDOW. item126.mjs C8 went red with
+    // the group not moved AT ALL, and the probe explained it: a trusted mouse
+    // drag after the arming double-click NEVER receives gotpointercapture, so a
+    // release anywhere outside the sheet — even an ordinary one inside the
+    // viewport — never reached `commit`. The move was LOST, and the drag stayed
+    // armed to the next mouse movement. Measured, not inferred: capture-got 0,
+    // release-on-sheet 0, persisted false, in a leg whose release was a plain
+    // in-viewport event, which rules out a CDP artifact.
+    // The press and the double-click stay on the sheet (arming is a question
+    // about the paper); move, release and cancel go to window; every handler is
+    // guarded by the pointer that began the drag.
     const opts = { passive: false, capture: true } as const;
     sheet.addEventListener('dblclick', onDblClick, opts);
     sheet.addEventListener('pointerdown', onDown, opts);
-    sheet.addEventListener('pointermove', onMove, opts);
-    sheet.addEventListener('pointerup', commit, opts);
-    sheet.addEventListener('pointercancel', commit, opts);
+    window.addEventListener('pointermove', onMove, opts);
+    window.addEventListener('pointerup', commit, opts);
+    window.addEventListener('pointercancel', onCancel, opts);
+    window.addEventListener('blur', onBlurMove);
     window.addEventListener('keydown', onKey);
     return () => {
       sheet.removeEventListener('dblclick', onDblClick, opts);
       sheet.removeEventListener('pointerdown', onDown, opts);
-      sheet.removeEventListener('pointermove', onMove, opts);
-      sheet.removeEventListener('pointerup', commit, opts);
-      sheet.removeEventListener('pointercancel', commit, opts);
+      window.removeEventListener('pointermove', onMove, opts);
+      window.removeEventListener('pointerup', commit, opts);
+      window.removeEventListener('pointercancel', onCancel, opts);
+      window.removeEventListener('blur', onBlurMove);
       window.removeEventListener('keydown', onKey);
       // Leaving this permission must not strand an armed outline on the paper.
       armedRef.current = null;
