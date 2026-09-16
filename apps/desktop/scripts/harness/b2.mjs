@@ -769,17 +769,23 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const t = (s) => new Date(Date.now() + s * 1000).toISOString();
     const proj_b2_drawers_project_z = window.wrizoCreateProject('Zeta Project');
     const proj_b2_drawers_project_a = window.wrizoCreateProject('Alpha Project');
     // Two boards in Zeta (out-of-alpha-order titles, to prove deterministic sort), one in Alpha.
     // A loose doc (T3-qualifying) — the MOST recently touched of everything, so it anchors first.
     // A filed, non-board page — must NOT appear as its own tile (only boards + loose docs do).
-    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-z2', text: 'Zulu Board', projectId: proj_b2_drawers_project_z.id, pageType: 'board', boxes: [], createdAt: now, updatedAt: t(1), origin: null });
-    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-z1', text: 'Yankee Board', projectId: proj_b2_drawers_project_z.id, pageType: 'board', boxes: [], createdAt: now, updatedAt: t(2), origin: null });
-    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-a1', text: 'Alpha Board', projectId: proj_b2_drawers_project_a.id, pageType: 'board', boxes: [], createdAt: now, updatedAt: t(3), origin: null });
-    window.wrizoCreateJournalPage({ id: 'b2-drawers-loose-doc', text: 'Loose Doc', projectId: null, origin: 'loose', createdAt: now, updatedAt: t(100) });
-    window.wrizoCreateJournalPage({ id: 'b2-drawers-filed-manuscript', text: 'Filed Manuscript', projectId: proj_b2_drawers_project_a.id, pageType: 'manuscript', origin: 'project', createdAt: now, updatedAt: t(4) });
+    //
+    // NO updatedAt HERE, DELIBERATELY. These rows carried a t(1)..t(100)
+    // spacing that never reached storage: upsert stamps updatedAt on every
+    // write, so the spacing read as though it established the recency order
+    // this section asserts while doing nothing at all. The order is now made
+    // real, below, by touching the rows — so the dead spacing is removed rather
+    // than left to mislead the next author into trusting it.
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-z2', text: 'Zulu Board', projectId: proj_b2_drawers_project_z.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-z1', text: 'Yankee Board', projectId: proj_b2_drawers_project_z.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-a1', text: 'Alpha Board', projectId: proj_b2_drawers_project_a.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-loose-doc', text: 'Loose Doc', projectId: null, origin: 'loose', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-filed-manuscript', text: 'Filed Manuscript', projectId: proj_b2_drawers_project_a.id, pageType: 'manuscript', origin: 'project', createdAt: now });
     // ITEM 85-C — ESTABLISH THE RECENCY ORDER BY TOUCHING, in the seeded order.
     // upsert stamps updatedAt on every write, so the t(1)..t(100) spacing above
     // never reaches storage and every row lands in one millisecond. S7 asserts

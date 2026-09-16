@@ -837,19 +837,28 @@ export interface JournalPageSeed {
   pageType?: JournalEntry['pageType'];
   projectId?: string | null;
   boxes?: Box[];
-  // ITEM 85-C — seven more, measured rather than guessed. Each is a field some
+  // ITEM 85-C — six more, measured rather than guessed. Each is a field some
   // fixture in the 55-file migration seeds today by writing raw localStorage,
   // counted across all 156 raw writes: `script` (10 files), `starred` (2), and
-  // `deletedAt`/`shelved`/`tags`/`orderIndex`/`updatedAt` (1 each).
+  // `deletedAt`/`shelved`/`tags`/`orderIndex` (1 each).
   //
   // WHAT IS DELIBERATELY ABSENT, because measuring said so: `source`. It looked
   // like the single biggest gap — 32 files name it — until the VALUES were
   // read, and all 32 write `source: 'page'`, which is exactly what this
-  // function already sets. `updatedAt` looked like the biggest of all at 41
-  // files, and 40 of them set it equal to `createdAt`, which this function also
-  // already does; only b2.mjs needs the two to differ, and that one file is why
-  // `updatedAt` is here at all. Counting keys would have put two phantoms at
-  // the top of the list. A key is not a blocker; a value is.
+  // function already sets. Counting keys would have put a phantom at the top of
+  // the list. A key is not a blocker; a value is.
+  //
+  // AND `updatedAt`, WHICH WAS HERE AND IS NOW GONE. It was admitted for one
+  // reason — b2.mjs needed a row whose `createdAt` and `updatedAt` differ — and
+  // it never worked: `upsert` stamps `updatedAt` from the wall clock on every
+  // write, so a seeded value is overwritten before it reaches storage. The
+  // field appeared to work only because the seam returned the object it had
+  // been handed rather than the row that was stored, which is the write-path
+  // lie this item's own law names. b2 now establishes recency by TOUCHING
+  // (`wrizoTouchInOrder`), which is a real order rather than an asserted one,
+  // so the sole justification for the key is gone and the key goes with it.
+  // An accepted key that is silently discarded is the same lie at the door:
+  // it lets a fixture believe it wrote something it did not.
   //
   // Every one of these already rides `saveJournalEntry`, which upserts the
   // whole row — so this widens the door, never the house: no field here is new
@@ -860,7 +869,6 @@ export interface JournalPageSeed {
   deletedAt?: string;
   shelved?: boolean;
   orderIndex?: number;
-  updatedAt?: string;
 }
 
 export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
@@ -922,10 +930,11 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   if (seed?.deletedAt !== undefined) entry.deletedAt = seed.deletedAt;
   if (seed?.shelved !== undefined) entry.shelved = seed.shelved;
   if (seed?.orderIndex !== undefined) entry.orderIndex = seed.orderIndex;
-  // `updatedAt` is set AFTER createdAt above, so a caller who supplies only
-  // createdAt still gets updatedAt === createdAt (what 40 of the 41 fixtures
-  // that name it actually want), and the one that needs them to differ can say so.
-  if (seed?.updatedAt !== undefined) entry.updatedAt = seed.updatedAt;
+  // NO `updatedAt` ASSIGNMENT, DELIBERATELY. It was here, and it was a lie:
+  // `saveJournalEntry` below reaches `upsert`, which stamps `updatedAt` from
+  // the wall clock unconditionally, so whatever was assigned here never
+  // survived the very next line. A fixture needing rows in a recency order
+  // touches them through `wrizoTouchInOrder`, which makes the order real.
   saveJournalEntry(entry);
   return entry;
 }
