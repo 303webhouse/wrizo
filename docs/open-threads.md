@@ -4987,6 +4987,223 @@ ACROSS LINES and one because chat 1 probed with a memory's filename instead of t
 too, and it answered the question it was asked. Had chat 1 trusted the first pass, it would have
 re-recorded three laws that were already present — the duplicate hazard, arrived from the other
 direction.)*
+## BAND — AN AUDIT'S OWN INSTRUMENT IS AN INSTRUMENT — 2026-09-15
+
+> **AN AUDIT'S OWN INSTRUMENT IS AN INSTRUMENT — A MISSING READ IS RE-CHECKED BEFORE IT IS
+> RE-RECORDED.**
+
+**Batch Two's audit returned FOUR misses; ONE was real.** Two of the three artifacts came from text
+**WRAPPING ACROSS LINES**, one from probing with **a memory's filename instead of the ledger's
+wording.** **Re-recording on the first pass would have duplicated three laws already present** — the
+duplicate hazard arriving from the opposite direction to the one the append-only ledger guards against.
+
+*(The audit exists because absence has no detector. This says the detector needs one too.)*
+
+## QUEUE CORRECTION — INK WAS LEFT OUT — 2026-09-15
+
+**Fable's omission, on the record: INK (item 126, ink across modes) was promised a turn "after
+ERRATA's" BEFORE Batch One, and was left out of the release order.** **B1–B4 are built at `265be9c`;
+B6 is owed.**
+
+**THE ORDER, CORRECTED:** **139 + the park rider → ERRATA's wave 2 → INK's B6 pair → PW2 → TOOLS' VW1
+(two pairs) → the four-file park conform.**
+
+**CHAT 1 PRE-MEASURED INK's MERGE SURFACE, so the lane does not discover it in its slot:**
+- **`origin/item126-ink-across-modes @ 265be9c` IS PUSHED** — it exists as an offer.
+- **INK is 82 COMMITS BEHIND `main`.**
+- **A trial merge produces ONE conflict region.**
+- **THE PREDICTION NARROWS: of the four suspected files, only `PageEditor.tsx` is touched by BOTH
+  sides.** **`ForwardOnlyEditor.tsx`, `BoardEditor.tsx` and `draftDecoration.ts` were touched by MAIN
+  ONLY** — they merge clean. *(The relay named `PageEditor.tsx` and `ForwardOnlyEditor.tsx` as the
+  likely sites; the measurement halves that: one file, not two.)*
+
+**INK merges `main` before its pair and reports conflicts. INK is told the box rules it missed:
+ITEM 139's TOKEN · THE QUIET CLAUSE (a build is a run) · PRE-FLIGHT ZERO OR STOP · PUSH AT PAIR START ·
+ONE HARNESS IS A RUN.**
+
+*(Worth noting what the omission cost and did not: INK kept building browserless and its work is pushed,
+so nothing was lost but its place in a line. The failure was in the QUEUE, not in the lane — and a
+queue is a record like any other, which is why it is corrected here rather than only in the next
+relay.)*
+## THE CONFLICT-COUNT DISAGREEMENT, RECONCILED — CHAT 1 WAS WRONG — 2026-09-15
+
+**Chat 1 reported ONE conflict region in `PageEditor.tsx`. INK reported ZERO conflicts across the same
+82 commits. INK IS CORRECT.**
+
+**BOTH READINGS, AND WHY THEY DIFFER — measured, not argued:**
+- **Chat 1's probe grepped `git merge-tree` for `^(<<<<<<<|changed in both)` and matched ONE line:
+  `changed in both`.**
+- **`changed in both` means THE FILE WAS MODIFIED ON BOTH SIDES. It does NOT mean the file conflicted.**
+- **True conflict markers (`<<<<<<<`) in that output: ZERO.**
+- **An authoritative real trial merge of `265be9c` onto `main`: NO CONFLICTS, rc=0.**
+
+**THE UNDERLYING FINDING WAS RIGHT AND THE LABEL WAS WRONG.** `PageEditor.tsx` IS the one file touched
+by both sides — that is exactly what `changed in both` reports — **and chat 1 called a both-sides-
+modified notice a CONFLICT.** **INK measured the thing that mattered and reported it accurately.**
+
+**THIS IS THE INSTRUMENT LAW AGAINST CHAT 1's OWN MEASUREMENT FOR THE THIRD TIME THIS WEEK** — after
+the box-window confirmation (out-directories, which a bare harness never writes) and the audit's
+wrap-blind probes. **The pattern in all three is identical: a grep answered a question ADJACENT to the
+one being asked, and the answer read as authoritative because it was precise.** *(The cure is the same
+each time and it is cheap: when an instrument reports something surprising, run the AUTHORITATIVE form
+— here, an actual `git merge` — before relaying the surprising number.)*
+
+## INK — THE MERGE AT `d0bab44`, AND B6's RATIFIED ASSERTION — 2026-09-15
+
+**INK's merge of `main`: B1 gate RE-DERIVED BY CONTENT, four real journal gates unchanged, censuses
+2 + 7 GREEN, ZERO server/packages delta.** *(Re-derived by content rather than by line is the
+locate-by-content law applied to a merge, and it is why 82 commits of drift cost one re-derivation
+instead of a hunt.)*
+
+**B6 GAINS ONE ASSERTION, RATIFIED: THE PAGE'S TEXT IS BYTE-IDENTICAL ACROSS AN ARM-AND-MOVE** —
+because **INK's `removeAllRanges` fires reveal-on-click's `selectionchange` listener.** **A NO-OP
+TODAY** (`revealAtCaret` returns at `rangeCount === 0`) — **GUARDED FOR THE DAY IT ISN'T.**
+
+*(This is the right shape for a cross-package assertion: INK does not depend on reveal's internals, it
+asserts the INVARIANT it needs — the text does not change — so the guard survives any future
+refactor of the listener. Assert the invariant, not the symptom, arriving between two lanes.)*
+## BAND — TWO LAW-LINES — 2026-09-15
+
+- **A SURPRISING READING IS RE-MEASURED IN ITS AUTHORITATIVE FORM BEFORE IT IS RELAYED — A PRECISE
+  GREP READS AS AUTHORITATIVE AND ANSWERS AN ADJACENT QUESTION.** (chat 1's standing practice, ruled.)
+  **Three instances in one week, all chat 1's own:** the box-window confirmation (enumerated
+  out-directories, which a bare harness never writes); the audit's probes (blind to text that WRAPS
+  across lines, and one keyed to a memory's filename instead of the ledger's wording); and the
+  conflict count (`changed in both` counted as a conflict). **The cure is cheap and identical each
+  time: run the authoritative form — an actual `git merge`, the guard's own output, a wrap-tolerant
+  read — BEFORE relaying the surprising number.** *(What makes the trap work is PRECISION: a grep
+  returns an exact figure, and exactness is mistaken for correctness.)*
+
+- **A BRANCH THAT CARRIES A MERGE COMMIT IS MERGED, NEVER REPLAYED.** (INK — **the never-rebase hazard
+  in its new form.**) **Cherry-picking `265be9c` alone CONFLICTS in `InkStratum.tsx` because `main`
+  lacks B1+B2; the MERGE is clean at every `main` in the range.** **Verified structurally by chat 1:**
+  `265be9c` (B3+B4) and `b7dd2e4` (B1+B2) **both touch `InkStratum.tsx`**, B1+B2 is not on `main`, and
+  the branch additionally carries a merge commit (`412a6d4`). **A replay lands hunks on a file missing
+  the edits they were written against — a conflict BY CONSTRUCTION, not by bad luck.**
+
+*(The two lines belong together: the first says an instrument's precision is not its authority; the
+second says a branch's HISTORY is part of what is being merged, not packaging around it. Both are
+refusals to treat a convenient summary as the thing itself.)*
+
+**INK's question to chat 1 is ANSWERED by the reconciliation above; NOTHING FURTHER TO ADJUDICATE.**
+**Release order stands:** 139 + the park rider → ERRATA's wave 2 → INK's B6 pair → PW2 → TOOLS' VW1
+(two pairs) → the four-file park conform.
+## BAND — A DECLARED-READY LANE IS ANNOUNCED, NOT RE-ASKED — 2026-09-15
+
+> **A LANE THAT HAS DECLARED READY AND IS NEXT IN THE ORDER IS ANNOUNCED, NOT RE-ASKED — TWO DESKS
+> WAITING POLITELY IS AN IDLE BOX.**
+
+**EARNED BY AN IDLE BOX SINCE BATCH TWO's STAMP.** **Chat 1 wrote "ask and I grant" and waited to be
+asked; ERRATA had already declared ready days earlier** — *"standing by for the announcement after the
+deploy pair"* — **and the release order already NAMED it next.** **Nobody was blocked and nothing was
+running.**
+
+**THE RELEASE ORDER IS THE ASK.** When the order names the next lane and that lane has declared ready,
+**the announcement is owed by the desk that holds the box, not requested by the lane that wants it.**
+*(The turn-by-announcement rule was built so a lane never TAKES a quiet box. It was never meant to make
+a lane BEG for one — and read the second way it converts a safety rule into a stall.)*
+
+## TWO HELD OFFERS MERGED — THEY WERE NEVER UN-OFFERED — 2026-09-15
+
+**`item139-runner-guard @ c927fef`** and **TOOLS' park rider `@ 84d42bb`** **MERGED.** **Both were
+offered BEFORE Batch Two closed and were held ONLY by the closed batch — no re-offer was needed, and
+chat 1 should not have waited for one.** *(A batch closing suspends a merge; it does not withdraw the
+offer. Chat 1 read "held behind the stamp" as "awaiting re-offer," which is the same idle-box error in
+a second costume.)*
+
+**ITEM 139 IS NOW LIVE IN THE RUNNER. THE TOKEN IS `WS_BOX_TURN`** — `withHarness` hard-stops with
+**`BOX TURN NOT GRANTED`** when it is unset, and **`run-suite` requires it too and passes it to every
+child, so a suite's files inherit ONE grant** rather than each claiming its own. **Its first live pair
+is its proof: a red IN THE RUNNER is the RUNNER's red.**
+
+**THE PARK RIDER closes OBS-3:** `item137.mjs` now emits `parkedChecks` as JSON, so the counter can see
+them. **The remaining four prose-only blocks conform in TOOLS' single offer.**
+## BAND — AN OFFER NAMES THE CHECKS THAT COULD HAVE FAILED (INK) — 2026-09-15
+
+> **AN OFFER NAMES THE CHECKS THAT COULD HAVE FAILED — A CHECK THAT CANNOT FAIL ON TODAY'S CODE IS A
+> GUARD, NOT EVIDENCE.**
+
+**INK's expectation note, made practice.** **Applied to B6 by the lane itself: C3 and C6's TEXT LEG are
+GUARDS; C6's GEOMETRY, C7 and C8 are the EVIDENCE.**
+
+**THE DISTINCTION IS NOT PEDANTIC — IT IS WHAT A GREEN MEANS.** A GUARD passes today because the
+hazard is not present; it earns its place by **failing on the day something reintroduces the hazard.**
+**EVIDENCE passes because THE CHANGE WORKS** — and would have failed before it. **A stamp that counts
+guards as evidence reports more proof than it holds.**
+
+**B6's own arm-and-move assertion is the worked example, and INK labelled it correctly in advance:**
+the page's text byte-identical across an arm-and-move is **a NO-OP TODAY** (`revealAtCaret` returns at
+`rangeCount === 0`) — **guarded for the day it isn't.** **A guard, declared as one.**
+
+**SIBLINGS, and together they bracket the question a check must answer:** *a check that bounds the
+symptom certifies the bug — assert the invariant the defect breaks* (what the check must ASSERT), and
+this line (what the check's green is WORTH). *(And it is the no-blank-stamp discipline one level up: a
+park section that declares zero is readable, and an offer that declares which checks are guards is
+readable the same way — silence in both cases reads as a claim nobody made.)*
+
+## ERRATA — WAVE 2's PAIR IS ITEM 139's FIRST LIVE PROOF — 2026-09-15
+
+**Pair at `ad8b55d`, pre-flight ZERO, quiet box, token `errata-wave2-20260915`.** **It rides 55 MIGRATED
+FILES, m1's park and its successor** — **and it is the first pair to run with `WS_BOX_TURN` enforced in
+`withHarness`.**
+
+**RECORDED IN ADVANCE, AS BEFORE: if this pair reds IN THE RUNNER rather than in the code, it is THE
+RUNNER's red — diagnosed as such, not charged to the wave.** *(Naming it beforehand is what stops an
+instrument's defect being billed to whoever happens to be holding the box when it fires.)*
+
+**ON ERRATA's STAMP: INK's B6 announcement, pre-committed — no ask.**
+## ERRATA — WAVE 2's PAIR NOT CLEAN, AND THE BOUNDARY FINDING — 2026-09-15
+
+**Pair at `ad8b55d`: NOT CLEAN (83/85). The parked leg NEVER RAN and IS NOT CLAIMED.** *(A pair with
+one leg unrun is not a pair, and saying so is the no-blank-stamp discipline applied to a failure.)*
+
+**ATTRIBUTION ESTABLISHED AGAINST MAIN: `fx9` 41/41, SAME BUNDLE — the defects are ERRATA's, NOT
+main's.** **`b2`'s was a cross-`evalJs` const, fixed and SWEPT TO ONE INSTANCE.** *(Swept, not just
+fixed — the population question asked before the fix was called done.)*
+
+**THE BOUNDARY FINDING, REGISTERED — and chat 1 confirmed both halves at the code:**
+- **`upsert` OVERWRITES `updatedAt` UNCONDITIONALLY** — `record.updatedAt = new Date().toISOString();`
+  sits inside the GENERIC upsert, so **`updatedAt` CANNOT BE SEEDED THROUGH ANY STORE PATH.** **This is
+  not a gap in one seam; it is a property of the WRITE BOUNDARY.**
+- **AND THE SEAM RETURNS THE ASKED VALUE WHILE STORAGE HOLDS THE STAMP** — the return is the caller's
+  object, not a re-read. **PROVEN BY MEASUREMENT: asked `2020-05-05`, returned `2020-05-05`, stored
+  `2026-09-15`.**
+
+**THE SECOND HALF IS THE DANGEROUS ONE, AND IT IS A CHECK THAT PASSES FOR THE WRONG REASON IN ITS
+PUREST FORM: a fixture that seeds a date and then verifies it THROUGH THE SEAM gets its own request
+echoed back.** **It verified against the seam's echo, not against storage** — green, and wrong about
+the world.
+
+## BAND — A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED (ERRATA) — 2026-09-15
+
+> **A SEAM RETURNS WHAT WAS STORED, NOT WHAT WAS ASKED.**
+
+**THE LIE IS THE CLASS** — not this one field. A boundary that reports **the caller's intention** in
+place of **the world's state** makes every verification through it self-confirming. *(Siblings: `null
+is the fact of absence, never a default` and `a migration changes HOW a row is written, never WHAT the
+row is` — all three are a boundary substituting a convenient value for the true one, and all three are
+invisible to any check that reads back through the same boundary.)*
+
+## THE THREE RULINGS ON THE RE-SEED — 2026-09-15
+
+- **ERRATA RE-SEEDS BY TOUCHING ROWS IN ORDER THROUGH `wrizoPatchEntry`** — **ordering becomes REAL**
+  rather than asserted — **verifying FIRST that no dependent assertion tests DURATION.** *(The
+  pre-check is the part worth copying: a fixture change that makes time real can break a check that was
+  quietly relying on it being fake.)*
+- **REVERTING TO RAW WRITES: REFUSED.** *(It would undo item 85-C to rescue a fixture — paying back the
+  debt the migration just cleared.)*
+- **CHANGING `upsert`'s SEMANTICS: REFUSED AS HOUSE WORK.** *(A harness's need does not get to rewrite
+  a product rule. The boundary between "fix the instrument" and "fix the house" is exactly where the
+  seams-only authority was drawn, and this is that line holding under pressure.)*
+- **AND THE SEAM IS FIXED TO RETURN WHAT WAS STORED** — the honest half, which IS the instrument's to
+  fix.
+
+**ERRATA KEEPS THE BOX and RE-RUNS THE PAIR FROM THE TOP ON THE SAME TOKEN** (`errata-wave2-20260915`).
+**INK's pre-committed announcement moves to ERRATA's EVENTUAL stamp — unchanged in order.**
+
+**ITEM 139 HOLDS: THE RED WAS IN THE CODE, NOT THE RUNNER. Its first live proof stands so far.**
+*(Recorded because it was named in advance: had the red been the runner's, it would have been charged
+to the runner. It was not, so the guard is credited with a clean first outing.)*
 Registry: next free **142**.
 
 

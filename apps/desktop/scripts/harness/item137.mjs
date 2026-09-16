@@ -143,6 +143,13 @@ if (process.env.HARNESS_PARKED === '1') {
   // Nothing to park. No prior assertion covered the Trash's vertical position
   // — which is precisely why a founder had to report it — so the repair
   // falsifies nothing. The empty list is the evidence, not an omission.
+  // EMIT THE ARRAY, even empty. The park counter reads the JSON records, not
+  // the human line below it — so a harness that prints only prose declares a
+  // park count nothing can audit, and the day this file DOES park something
+  // it would be parked invisibly. The empty array is the auditable form of
+  // "nothing parked"; the sentence after it is for a reader, not the counter.
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
   console.log('\nITEM137 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 137 parks nothing. No existing check asserted where the Trash sits, so none is superseded by pinning it.');
 }

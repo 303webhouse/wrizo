@@ -367,10 +367,7 @@ await withHarness(async (app) => {
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before burst seed' });
     await app.evalJs(`(() => {
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      const e = entries.find(x => x.id === ${JSON.stringify(pageId)});
-      if (e) e.text = Array.from({ length: 245 }, (_, i) => 'w' + i).join(' ');
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: Array.from({ length: 245 }, (_, i) => 'w' + i).join(' ') });
     })()`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);

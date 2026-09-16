@@ -154,9 +154,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900, opts 
   await freshDesk(app, width, height, opts);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'TU2 Board', projectId: null, pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'TU2 Board', projectId: null, pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -172,9 +170,7 @@ const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before TU2 seed' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ${JSON.stringify(rows)}.forEach((r) => window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null, source: 'source' in r ? r.source : null }));
   })()`);
 };
 
@@ -522,10 +518,7 @@ await withHarness(async (app) => {
     // A rich fixture (S6's own "not a vacuous sweep" bar): give the board a
     // real conversation message + a fragment so more control species mount.
     await app.evalJs(`(() => {
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      const e = entries.find(x => x.id === ${JSON.stringify(walkBoardId)});
-      if (e) e.tutor = { messages: [{ id: 'm1', role: 'writer', text: 'hello board', at: new Date().toISOString() }] };
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoPatchEntry(${JSON.stringify(walkBoardId)}, { tutor: { messages: [{ id: 'm1', role: 'writer', text: 'hello board', at: new Date().toISOString() }] } });
     })()`);
     // `source: undefined` (not 'page') is what computeFragmentItems reads
     // as a raw CAPTURE (tutorLenses.ts: `all.filter(e => e.source !==

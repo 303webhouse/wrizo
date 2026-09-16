@@ -96,9 +96,7 @@ const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before AB4 seed' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ${JSON.stringify(rows)}.forEach((r) => window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null, source: 'source' in r ? r.source : null }));
   })()`);
 };
 
@@ -150,12 +148,9 @@ await withHarness(async (app) => {
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before AB4 pin-target seed' });
     await app.evalJs(`(() => {
-      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-      projects.push({ id: 'ab4-pin-project', title: 'AB4 Pin Target Project', type: 'creative', storyPlanId: null, createdAt: ${JSON.stringify(now)}, updatedAt: ${JSON.stringify(now)} });
-      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'ab4-pin-board', text: 'AB4 Target Board', projectId: 'ab4-pin-project', pageType: 'board', boxes: [], source: 'page', createdAt: ${JSON.stringify(now)}, updatedAt: ${JSON.stringify(now)} });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      // ITEM 85-C — the generated project id is used only to home the board below.
+      const project = window.wrizoCreateProject('AB4 Pin Target Project');
+      window.wrizoCreateJournalPage({ id: 'ab4-pin-board', text: 'AB4 Target Board', projectId: project.id, pageType: 'board', boxes: [], createdAt: ${JSON.stringify(now)}, origin: null });
     })()`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(sourcePageId)}`);

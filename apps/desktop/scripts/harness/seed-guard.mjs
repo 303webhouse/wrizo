@@ -92,6 +92,22 @@ function rawWritesIn(text, keys) {
       const re = new RegExp(`localStorage\\.(setItem|removeItem)\\(\\s*['"\`]${key}['"\`]`);
       if (re.test(line)) hits.push({ line: i + 1, key, op: line.includes('removeItem') ? 'removeItem' : 'setItem' });
     }
+    // A VARIABLE KEY IS STILL A RAW WRITE, and this scan was blind to it until
+    // wave 2 tripped over it:
+    //     const key = 'writer-studio-journal-entries';
+    //     localStorage.setItem(key, JSON.stringify(list));
+    // Eight such writes sat in three files, two of which had already dropped off
+    // the migration worklist — counted as DONE while still writing a collection
+    // raw. The population this guard exists to defend was therefore understated,
+    // in the flattering direction, which is the worst kind: nobody audits a
+    // number that looks better than expected.
+    //
+    // Counted as a hit on the FILE rather than on a named collection, because
+    // the key is not readable here — which is precisely why it must be reported
+    // rather than resolved. Any `setItem` whose first argument is an identifier
+    // qualifies; no honest fixture has a reason to hide a key from this scan.
+    const varKey = line.match(/localStorage\.(setItem|removeItem)\(\s*([A-Za-z_$][\w$]*)\s*,/);
+    if (varKey) hits.push({ line: i + 1, key: `<variable: ${varKey[2]}>`, op: varKey[1] });
   });
   return hits;
 }
@@ -124,8 +140,16 @@ function scanDir(dir, keys) {
 //   57  item 85-C added item85c.mjs, whose raw write is the CONTROL that proves
 //       the hazard (annotated below).
 //   20  item 85-C WAVE 1 — 37 files migrated to the seams, 67 raw writes gone.
-//       18 unclassified remain (wave 2, each blocked on nothing now that the
-//       collection and mutation seams exist) plus the 2 annotated.
+//   14  item 85-C WAVE 2, in progress — 6 more migrated (the files needing no
+//       generated id). The guard caught this update being owed: it went red on
+//       six stale entries while I was reading the worklist instead of the
+//       verdict line.
+//   11  WAVE 2 continued — 5 more migrated (ab3, ab4, b1's literal writes, b3,
+//       e1), AND the count CORRECTED UPWARD: this scan was blind to a write
+//       through a VARIABLE key, so b1 and j5 had dropped off the worklist while
+//       still writing collections raw. Eight such writes in three files. The
+//       number had been understated in the flattering direction — the kind
+//       nobody audits. 9 unclassified remain plus the 2 annotated.
 //
 // THIS LIST IS A RATCHET, NOT AN AMNESTY. A file NOT in it that writes raw is a
 // FAILURE — that is the guard. A file IN it that no longer writes raw is ALSO a
@@ -151,13 +175,7 @@ const DELIBERATE = new Map([
 ]);
 
 const BASELINE = new Set([
-  'scripts/harness/ab3.mjs', 'scripts/harness/ab4.mjs', 'scripts/harness/b1.mjs',
-  'scripts/harness/b2-1.mjs', 'scripts/harness/b2.mjs', 'scripts/harness/b3.mjs',
-  'scripts/harness/bm1.mjs', 'scripts/harness/cd2.mjs', 'scripts/harness/e1.mjs',
-  'scripts/harness/fx10.mjs', 'scripts/harness/fx9.mjs', 'scripts/harness/item85c.mjs',
-  'scripts/harness/j5.mjs', 'scripts/harness/j6.mjs', 'scripts/harness/m1.mjs',
-  'scripts/harness/m2.mjs', 'scripts/harness/m3.mjs', 'scripts/harness/m4.mjs',
-  'scripts/harness/tu1.mjs', 'scripts/harness/tu2.mjs',
+  'scripts/harness/bm1.mjs', 'scripts/harness/item85c.mjs',
 ]);
 
 // --- run ---------------------------------------------------------------------
@@ -332,6 +350,182 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     JSON.stringify({ newOffenders: newOffenders.length, stale: stale.length }));
 }
 
+// --- NO COLLECTION WRITE THROUGH A VARIABLE KEY ------------------------------
+// A BLIND SPOT IN THIS GUARD, found by wave 2 rather than by the guard.
+//
+// Every check above matches `localStorage.setItem('writer-studio-...'` with a
+// LITERAL key. This shape is invisible to all of them:
+//
+//     const key = 'writer-studio-journal-entries';
+//     localStorage.setItem(key, JSON.stringify(list));
+//
+// Eight such writes exist across three files. Two of those files had already
+// dropped off the migration worklist — counted as done — while still writing a
+// persisted collection raw. The population figure this guard exists to defend
+// was therefore WRONG, and wrong in the flattering direction, which is the worst
+// kind: a guard that under-reports is trusted exactly as much as one that does
+// not, and nobody goes looking.
+//
+// THE FIX INVERTS THE DEFAULT. Rather than hunting the shapes a raw write can
+// take, this flags EVERY `localStorage.setItem` whose key is not a literal, and
+// demands the key be readable. A seed can then only hide by using a key this
+// guard cannot see at all, which no honest fixture has a reason to do.
+{
+  const varKeyWrites = [];
+  for (const dir of [path.join(DESKTOP, 'scripts', 'harness'), path.join(DESKTOP, 'scripts')]) {
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.mjs')) continue;
+      const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
+      if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
+      const text = readFileSync(path.join(dir, name), 'utf8');
+      text.split(/\r?\n/).forEach((line, i) => {
+        // a non-literal first argument: setItem(ident, ...) or setItem(expr, ...)
+        const m = line.match(/localStorage\.setItem\(\s*([A-Za-z_$][\w$]*)\s*,/);
+        if (!m) return;
+        varKeyWrites.push(`${rel}:${i + 1} key=${m[1]}`);
+      });
+    }
+  }
+  // Reported, not asserted: the MAIN scan now counts these as raw writes, so
+  // the population and the ratchet already fail on them. A second failing
+  // check for the same write would report one defect twice, which is how a
+  // guard teaches people to skim it.
+  ok(`85-C (reported): ${varKeyWrites.length} collection writes use a VARIABLE key — the shape this file was blind to until wave 2 tripped over it. Counted in the population by the main scan above; listed here so the sites are named`,
+    true, JSON.stringify({ count: varKeyWrites.length, sites: varKeyWrites }));
+
+  // Self-proof, because a check for an invisible shape must be shown to see it.
+  const fixture = (text) => text.split('\n').filter((l) => /localStorage\.setItem\(\s*[A-Za-z_$][\w$]*\s*,/.test(l)).length;
+  ok('85-C self-proof: the variable-key shape IS caught — this is the exact text found in b1/b2/j5',
+    fixture("    const key = 'writer-studio-journal-entries';\n    localStorage.setItem(key, JSON.stringify(list));") === 1, '');
+  ok('85-C self-proof (the control): a LITERAL key is not flagged by this check — it is the business of the checks above, and double-reporting one write as two findings is how a guard teaches people to skim it',
+    fixture("localStorage.setItem('writer-studio-drafts', '[]');\nlocalStorage.clear();") === 0, '');
+}
+// --- EVERY MUTATING SEAM FLUSHES ---------------------------------------------
+// OBS-1 (Batch One review): item 85-C made its OWN seams durable and left the
+// three older ones — wrizoPinPageToBoard, wrizoSetPinDisplayed, wrizoSetPageHome
+// — carrying the footgun the durability was added to remove. One class, three
+// instances, and "every seam flushes" was a claim about some of the file.
+//
+// A debounced seam write that a fixture reloads past is a row that never
+// existed, and it presents as a file that dies reporting nothing: 36 of 80 on
+// one stamped leg. Nothing static could see it, which is why the rule is worth a
+// check rather than a comment — the next seam added would inherit the same
+// silence, and the person adding it has no reason to know.
+//
+// THE RULE: any seam whose name carries a MUTATING VERB (Create/Patch/Set/Pin)
+// must route through `durableSeam(` or `durable(`. Read-only seams are exempt by
+// name (wrizoBoard, wrizoNotebook, wrizoResume and friends inspect, they do not
+// write), and wrizoFlushNow is exempt because it IS the flush.
+{
+  const src = readFileSync(PERSISTENCE, 'utf8');
+  const lines = src.split(/\r?\n/);
+  const undurable = [];
+  let seamCount = 0;
+  // An assignment ends at the semicolon that closes it at bracket depth zero.
+  // Strings, template literals and line comments are skipped so a `;` inside one
+  // cannot end the body early — the same discipline the call-site parse check in
+  // this file already uses, rather than a second, weaker way of reading code.
+  const seamBody = (text) => {
+    let depth = 0;
+    let quote = null;
+    for (let i = 0; i < text.length; i += 1) {
+      const c = text[i];
+      if (quote) {
+        if (c === '\\') { i += 1; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+      if (c === '/' && text[i + 1] === '/') {
+        const nl = text.indexOf('\n', i);
+        if (nl < 0) return text;
+        i = nl;
+        continue;
+      }
+      if (c === '(' || c === '[' || c === '{') depth += 1;
+      else if (c === ')' || c === ']' || c === '}') depth -= 1;
+      else if (c === ';' && depth === 0) return text.slice(0, i + 1);
+    }
+    return text;
+  };
+  lines.forEach((line, i) => {
+    const m = line.match(/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/);
+    if (!m) return;
+    const name = `wrizo${m[1]}${m[2]}`;
+    if (name === 'wrizoFlushNow') return;
+    // skip prose: a comment quoting an assignment is not one
+    if (/^\s*(\/\/|\*)/.test(line)) return;
+    seamCount += 1;
+    // THE SEAM'S OWN BODY, BRACE-MATCHED — not a fixed line window.
+    //
+    // This read `lines.slice(i, i + 4)` and had two faults, one of which let a
+    // real red through. A seam whose body runs longer than four lines was
+    // reported undurable while calling `durable()` on its return (item 85-C's
+    // three verdict-returning seams, 5-6 lines each) — a false positive. And
+    // the same window reaches PAST the seam it is judging into the next one, so
+    // an undurable seam followed by a durable neighbour would have passed: a
+    // false NEGATIVE, in a check whose whole job is catching the seam somebody
+    // forgot. Both are the fixed window, and neither is the rule.
+    //
+    // The body is bounded instead: from the assignment to the matching close of
+    // whichever bracket opens it, strings and comments skipped, so the scan sees
+    // exactly this seam and all of it.
+    const body = seamBody(lines.slice(i).join('\n'));
+    if (!/durableSeam\(|durable\(/.test(body)) undurable.push(`${name} (line ${i + 1})`);
+  });
+  ok(`85-C/OBS-1: all ${seamCount} MUTATING test seams route through durableSeam/durable — a seam that does not flush hands every fixture a debounced write it will reload past, which cost 36 of 80 files on a stamped leg and is invisible to every other static check`,
+    undurable.length === 0, JSON.stringify({ seams: seamCount, undurable }));
+  ok('85-C/OBS-1: and the rule is worth checking because it was already broken once — three older seams were left unwrapped when the newer ones gained durability, so this asserts a property of the FILE rather than of the block someone happened to be editing',
+    seamCount >= 9, JSON.stringify({ seams: seamCount }));
+
+  // THE TWO FAULTS OF THE FIXED WINDOW, TESTED RATHER THAN ASSERTED. Both are
+  // measured on synthetic text, because proving them against the real file
+  // would mean contriving the file into the shape that fails.
+  const undurableSeam = [
+    "  seams.wrizoSetThing = (id) => setThing(id);",
+    "  seams.wrizoSetOther = (id) => durable(setOther(id));",
+  ].join('\n');
+  const oldWindow = undurableSeam.split('\n').slice(0, 4).join('\n');
+  ok('85-C/OBS-1 FALSIFICATION: an UNDURABLE seam whose durable NEIGHBOUR begins within four lines is caught — the fixed window this check used to read reached past the seam it was judging and would have passed it, which is a false negative in the one check whose job is catching the seam somebody forgot',
+    !/durableSeam\(|durable\(/.test(seamBody(undurableSeam))
+    && /durable\(/.test(oldWindow),
+    JSON.stringify({ newMatcherSeesDurable: /durable\(/.test(seamBody(undurableSeam)), oldWindowSawDurable: /durable\(/.test(oldWindow) }));
+
+  const longDurableSeam = [
+    "  seams.wrizoSetThing = (id) => {",
+    "    setThing(id);",
+    "    const row = getThing(id);",
+    "    const want = id;",
+    "    return durable(row && row.id === want ? row : false);",
+    "  };",
+  ].join('\n');
+  ok('85-C/OBS-1 (the control): a DURABLE seam with a body longer than four lines is NOT flagged — the other half of the same fault, which reported item 85-C\'s own verdict-returning seams as undurable while they flush on every path',
+    /durable\(/.test(seamBody(longDurableSeam))
+    && !/durable\(/.test(longDurableSeam.split('\n').slice(0, 4).join('\n')),
+    JSON.stringify({ newMatcherSeesDurable: /durable\(/.test(seamBody(longDurableSeam)) }));
+
+  // Self-proof: the check must actually reject an unwrapped mutating seam, and
+  // must not reject a read-only one or the flush itself.
+  const fixture = (text) => {
+    const bad = [];
+    text.split('\n').forEach((line, i) => {
+      const m = line.match(/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/);
+      if (!m) return;
+      const name = `wrizo${m[1]}${m[2]}`;
+      if (name === 'wrizoFlushNow') return;
+      if (/^\s*(\/\/|\*)/.test(line)) return;
+      if (!/durableSeam\(|durable\(/.test(text.split('\n').slice(i, i + 4).join('\n'))) bad.push(name);
+    });
+    return bad;
+  };
+  ok('85-C/OBS-1 self-proof: an unwrapped mutating seam IS caught — the exact shape the three older seams had',
+    JSON.stringify(fixture('  w.wrizoSetPageHome = setPageHome;')) === '["wrizoSetPageHome"]',
+    JSON.stringify(fixture('  w.wrizoSetPageHome = setPageHome;')));
+  ok('85-C/OBS-1 self-proof (the control): a WRAPPED seam, a read-only seam, and wrizoFlushNow are all clean — so the check is not one that reds on every seam it sees',
+    fixture('  w.wrizoSetPageHome = durableSeam(setPageHome);\n  w.wrizoNotebook = () => list();\n  w.wrizoFlushNow = () => flushNow();').length === 0,
+    JSON.stringify(fixture('  w.wrizoSetPageHome = durableSeam(setPageHome);\n  w.wrizoNotebook = () => list();\n  w.wrizoFlushNow = () => flushNow();')));
+}
 // --- THE SEAM CALL SITES ARE WELL FORMED -------------------------------------
 // ADDED BY ITEM 85-C, because the migration produced a defect neither existing
 // gate could see. Transforming `entries.push(...${JSON.stringify(rows)})` — a
@@ -350,7 +544,57 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
 //     ever asked.
 // Four files carried it. So the migration's own instrument gains the check its
 // absence cost, and it is cheap: a brace-matched parse of every call site.
-const CALL_RE = /wrizoCreateJournalPage\(\s*\{/g;
+// EVERY seam that takes an object literal, not just the first one. wrizoPatchEntry
+// and wrizoPatchProject carry the same risk and were outside this check until the
+// migration put 25 of them in the tree.
+//
+// THE OBJECT IS FOUND BY SCANNING, NOT BY REGEX, and that is a correction: the
+// first attempt used `\(\s*(?:[^,()]*,\s*)?\{`, which cannot cross the parens in
+// `wrizoPatchEntry(${JSON.stringify(id)}, { ... })` — the shape most patch sites
+// actually use. The check LOOKED extended while covering none of them, and the
+// site count never moved, which is the only reason I noticed. An instrument that
+// silently covers less than it claims is the failure this whole item keeps
+// finding, and it does not stop being that when the instrument is mine.
+const SEAM_NAMES = /wrizo(?:CreateJournalPage|PatchEntry|PatchProject)\(/g;
+
+// Given the index just past a seam call's `(`, return the index of the object
+// literal's opening brace — the first `{` encountered at paren depth 1 — or -1.
+function objectArgAt(text, afterParen) {
+  let depth = 1, inStr = null;
+  for (let i = afterParen; i < text.length; i++) {
+    const c = text[i];
+    if (inStr) { if (c === BACKSLASH) { i += 1; continue; } if (c === inStr) inStr = null; continue; }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    // A TEMPLATE INTERPOLATION'S BRACE IS NOT AN OBJECT LITERAL. Without this,
+    // `wrizoPatchEntry(${JSON.stringify(id)}, { boxes })` hands back the `{` of
+    // `${`, and the scanner then parses `JSON.stringify(id)` as a malformed
+    // entry — 20-odd false positives. This is the SAME `${` trap that made my
+    // transformer eat a `$` and emit invalid code; it bites a reader of the text
+    // exactly as readily as a writer of it.
+    if (c === '$' && text[i + 1] === '{') {
+      const end = matchBrace(text, i + 1);
+      if (end < 0) return -1;
+      i = end;
+      continue;
+    }
+    if (c === '(' || c === '[') depth += 1;
+    else if (c === ')' || c === ']') { depth -= 1; if (depth === 0) return -1; }
+    else if (c === '{' && depth === 1) return i;
+  }
+  return -1;
+}
+
+// AN UNQUOTED STRING VALUE IS A BARE IDENTIFIER, AND IT THROWS IN THE BROWSER.
+// My own transformer emitted `wrizoCreateProject('T3 Project', creative)` — the
+// type's captured value re-emitted without its quotes. `creative` is then an
+// undefined identifier, and because the text lives inside an app.evalJs template
+// literal, `node --check` sees a STRING and passes. It would have thrown at run
+// time, where a harness that dies reports nothing at all.
+//
+// The check is deliberately a CLOSED LIST of values that must always be quoted —
+// the project types, binder kinds and beat statuses — so it cannot false-positive
+// on a legitimate variable that happens to be passed along.
+const UNQUOTED_VALUES = /wrizo\w+\([^)]*?[,(]\s*(creative|academic|professional|book|story|screenplay|other|empty|complete|journal|project|loose|system|page)\s*[,)]/g;
 
 function matchBrace(text, open) {
   let depth = 0, inStr = null;
@@ -378,18 +622,36 @@ function topLevelEntries(body) {
   return parts.map((p) => p.trim()).filter(Boolean);
 }
 
+function countCallSites(text) {
+  let n = 0; let m;
+  SEAM_NAMES.lastIndex = 0;
+  while ((m = SEAM_NAMES.exec(text)) !== null) {
+    if (objectArgAt(text, m.index + m[0].length) >= 0) n += 1;
+  }
+  return n;
+}
+
 function malformedCallSites(text, label) {
   const out = [];
   let m;
-  CALL_RE.lastIndex = 0;
-  while ((m = CALL_RE.exec(text)) !== null) {
-    const open = text.indexOf('{', m.index);
+  SEAM_NAMES.lastIndex = 0;
+  while ((m = SEAM_NAMES.exec(text)) !== null) {
+    const open = objectArgAt(text, m.index + m[0].length);
+    if (open < 0) continue;   // no object argument at this call (e.g. a bare id)
     const close = matchBrace(text, open);
     if (close < 0) { out.push(`${label}: unbalanced object literal`); continue; }
     for (const p of topLevelEntries(text.slice(open + 1, close))) {
       if (p.startsWith('...')) continue;                                        // spread
       if (/^[A-Za-z_$][\w$]*$/.test(p)) continue;                               // shorthand
       if (/^(\[[^\]]*\]|[A-Za-z_$][\w$]*|'[^']*'|"[^"]*")\s*:/.test(p)) continue; // key: value
+      // A TEMPLATE INTERPOLATION at the start of an entry is legal and common in
+      // these fixtures: j6 has `${cond ? "pageType: 'note', " : ''}origin: ...`,
+      // which expands to a valid pair either way. This exemption is written
+      // NARROWLY — it requires the literal two characters `${` — precisely so it
+      // cannot re-hide the defect this check exists for: the spread-form damage
+      // produced `JSON.stringify(rows)` with the `$` EATEN, which does not start
+      // with `${` and is still caught.
+      if (p.startsWith('${')) continue;
       out.push(`${label}: ${p.slice(0, 70)}`);
     }
   }
@@ -406,13 +668,33 @@ function malformedCallSites(text, label) {
       const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
       if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
       const text = readFileSync(path.join(dir, name), 'utf8');
-      CALL_RE.lastIndex = 0;
-      siteCount += (text.match(/wrizoCreateJournalPage\(\s*\{/g) || []).length;
+      siteCount += countCallSites(text);
       malformed.push(...malformedCallSites(text, rel));
     }
   }
   ok(`85-C: all ${siteCount} seam call sites are well-formed object literals — the one defect class that passes BOTH node --check (the text is a string inside a template literal) and the raw-write scan above, and then throws in the browser where a dying driver reports nothing`,
     malformed.length === 0, JSON.stringify({ sites: siteCount, malformed }));
+
+  // The other half of the same class: a string VALUE emitted without its quotes.
+  const unquoted = [];
+  for (const dir of [path.join(DESKTOP, 'scripts', 'harness'), path.join(DESKTOP, 'scripts')]) {
+    if (!existsSync(dir)) continue;
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith('.mjs')) continue;
+      const rel = path.relative(DESKTOP, path.join(dir, name)).replace(/\\/g, '/');
+      if (rel.endsWith('scripts/harness/seed-guard.mjs')) continue;
+      const text = readFileSync(path.join(dir, name), 'utf8');
+      UNQUOTED_VALUES.lastIndex = 0;
+      let um;
+      while ((um = UNQUOTED_VALUES.exec(text)) !== null) unquoted.push(`${rel}: ${um[1]} (unquoted)`);
+    }
+  }
+  ok('85-C: no seam call passes a string VALUE as a bare identifier — my own transformer emitted wrizoCreateProject(title, creative), which node --check cannot see (the text is a string inside a template literal) and which throws ReferenceError in the browser, where the file dies reporting nothing',
+    unquoted.length === 0, JSON.stringify({ unquoted }));
+  ok('85-C self-proof: the bare-identifier shape IS caught, and its quoted form is NOT — a closed list of always-quoted values, so a legitimate variable passed along cannot trip it',
+    /wrizo\w+\([^)]*?[,(]\s*(creative)\s*[,)]/.test("window.wrizoCreateProject('T', creative)")
+    && !/wrizo\w+\([^)]*?[,(]\s*(creative|academic)\s*[,)]/.test("window.wrizoCreateProject('T', 'creative')")
+    && !/wrizo\w+\([^)]*?[,(]\s*(creative|academic)\s*[,)]/.test("window.wrizoCreateProject('T', kind)"), '');
 
   // Self-proof, because a shape check that never sees a bad shape is the
   // decoration this file keeps arguing against. The first fixture is the exact
