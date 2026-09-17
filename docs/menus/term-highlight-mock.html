@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the term highlight · brass, or not</title>
+<!--
+  THE TERM HIGHLIGHT · THE BRASS FORK (TH-Q1) · PLAN desk · 2026-09-16
+  Candidates only, nothing locks. Nick has taken this question.
+
+  BRASS IS SPOKEN FOR: item 122 ships ::selection{background:var(--brass)}.
+  Two meanings, one colour, one page. The sharpest case is a writer SELECTING
+  a highlighted term -- two meanings stacked on the same glyphs.
+
+    A · BRASS FOR THE TAG (Nick's lean) -- the tag term is brass; SELECTION IS
+        RE-TREATED off brass. Re-opens item 122's shipped selection ruling, and
+        asks an exception to the colour canon below.
+    B · THE TAG DISTINGUISHED ANOTHER WAY -- an olive underline; selection
+        stays brass exactly as item 122 shipped it.
+
+  THE CANON, placed in view, not used to override his lean. The Plateau
+  foundation, live in the stylesheet's own comments: "olive marks where you
+  are; orange marks what you do" -- and beside it, "informational, not
+  evental." A highlight marks where a term IS; a selection is something the
+  writer DID. Read strictly, that is treatment B.
+
+  THIS MOCKUP PAINTS WITH THE REAL CSS CUSTOM HIGHLIGHT API when the browser
+  has it (TH3's recommendation): the register computes ranges, ::highlight()
+  paints them, and THE DOM IS NEVER TOUCHED. The readout says which path ran
+  and asserts the text nodes are unchanged. If the API is missing it falls
+  back to wrapper spans and says so -- which is the rewrite TH3 warns about.
+
+  The stacked case is shown in BOTH panels at once using a second named
+  highlight, because a document can hold only one real selection. Then select
+  text yourself in either panel: each panel scopes its own real ::selection.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+    /* A's re-treated selection — illustrative: a neutral warm fill */
+    --sel-alt:#cfc4b0; --on-sel-alt:#1C1610;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);display:flex;flex-direction:column}
+  .rig{display:flex;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid #222;
+       font-size:12px;color:#9a9a9a;flex:0 0 auto}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #path{margin-left:auto;font-size:11px;color:#8f8f8f;font-variant-numeric:tabular-nums}
+  #path.bad{color:#e05c5c}
+
+  .tags{display:flex;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid #1a1a1a;
+        font-size:11px;color:#8a847a;flex:0 0 auto}
+  .chip{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:11px;
+        padding:3px 9px;cursor:pointer}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest);background:#241305}
+  .stack{margin-left:auto}
+
+  .panes{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px 16px;min-height:0}
+  .pane{display:flex;flex-direction:column;gap:8px;min-height:0}
+  .ph{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-low)}
+  .ph b{color:var(--accent-rest);font-weight:600}
+  .ph .sub{display:block;text-transform:none;letter-spacing:.02em;font-size:10.5px;margin-top:3px;color:#7a746a}
+  .room{flex:1;background:var(--ground);border:1px solid #222;padding:18px;overflow:auto;min-height:0}
+  .paper{background:var(--paper);color:#241a10;padding:26px 32px;font-family:var(--prose);
+         font-size:16.5px;line-height:1.66;user-select:text}
+  .paper h1{font-size:18px;font-weight:500;margin-bottom:12px}
+  .paper p{margin-bottom:11px}
+  .card{margin-top:14px;background:var(--panel);border:1px solid var(--line);padding:11px 14px;
+        font-family:var(--prose);font-size:14.5px;line-height:1.5;color:var(--text-hi);user-select:text}
+  .card .k{font-family:var(--ui);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--text-low);margin-bottom:5px}
+
+  /* ---- A: brass for the tag; selection re-treated ---- */
+  ::highlight(tag-a){ background-color:var(--brass); color:var(--on-brass); }
+  ::highlight(sel-a){ background-color:var(--sel-alt); color:var(--on-sel-alt); }
+  .pa ::selection{ background:var(--sel-alt); color:var(--on-sel-alt); }
+  .pa .fb-tag{ background:var(--brass); color:var(--on-brass); }
+  .pa .fb-sel{ background:var(--sel-alt); color:var(--on-sel-alt); }
+
+  /* ---- B: olive underline for the tag; selection stays brass (item 122) ---- */
+  ::highlight(tag-b){ text-decoration:underline; text-decoration-color:var(--accent-rest);
+                      text-decoration-thickness:3px; text-underline-offset:3px; }
+  ::highlight(sel-b){ background-color:var(--brass); color:var(--on-brass); }
+  .pb ::selection{ background:var(--brass); color:var(--on-brass); }
+  .pb .fb-tag{ text-decoration:underline; text-decoration-color:var(--accent-rest);
+               text-decoration-thickness:3px; text-underline-offset:3px; }
+  .pb .fb-sel{ background:var(--brass); color:var(--on-brass); }
+
+  .cap{flex:0 0 auto;padding:10px 16px;border-top:1px solid #1e1e22;background:#08080a;
+       font-size:11.5px;color:#7e786e;line-height:1.55;max-height:150px;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>THE TERM HIGHLIGHT · TH-Q1</b>
+  <span id="path">checking…</span>
+</div>
+
+<div class="tags">
+  <span style="letter-spacing:.14em">ACTIVE TAGS</span>
+  <span id="chips"></span>
+  <button class="chip stack" id="stackBtn" aria-pressed="true">show the stacked case</button>
+</div>
+
+<div class="panes">
+  <section class="pane">
+    <div class="ph"><b>A</b> · brass for the tag — selection moved
+      <span class="sub">Nick’s lean. Re-opens item 122’s selection; asks an exception to <em>“olive marks where you are.”</em></span></div>
+    <div class="room pa" id="roomA"></div>
+  </section>
+  <section class="pane">
+    <div class="ph"><b>B</b> · olive underline for the tag — selection stays brass
+      <span class="sub">The colour canon as written. Item 122 untouched.</span></div>
+    <div class="room pb" id="roomB"></div>
+  </section>
+</div>
+
+<div class="cap"><b>The stacked case is the one that decides this.</b> With it on, both panels show a
+<em>selected</em> highlighted term — the moment two meanings land on the same glyphs. <b>A</b> keeps them apart
+by moving selection off brass; <b>B</b> keeps them apart by giving the tag a different <em>kind</em> of mark, and
+touches nothing shipped. Now <b>select text yourself</b> in either panel: each scopes its own real selection.
+<b>The canon, in view rather than as an override:</b> the stylesheet’s own foundation reads <em>“olive marks where
+you are; orange marks what you do”</em> — a highlight marks where a term <em>is</em>, a selection is something you
+<em>did</em>. Read strictly, that is B; A is the first place that line would bend, and it is Nick’s to bend.
+<b>The readout above</b> says whether this page painted with the <b>CSS Custom Highlight API</b> (TH3 — the register
+computes, the paint touches no DOM) and <b>asserts the text is byte-identical</b> after painting. <b>Scope (TH1):</b>
+only rendered text is painted — never a search, never a count, never a thumbnail.</div>
+
+<script>
+(function(){
+  var TAGS=['stark','crypt'];
+  var ACTIVE={stark:true, crypt:false};
+  var HTML='<div class="paper"><h1>The coat on the train</h1>'
+    +'<p>She had the coat over her arm before she understood she had picked it up. Ned Stark would have said something about duty — every Stark says something about duty when the weather changes.</p>'
+    +'<p>Starkly, she thought, and did not answer. The crypt under the house was colder than the yard, and nobody in the family ever mentioned the crypt at dinner.</p></div>'
+    +'<div class="card"><div class="k">Card · on the board “Stark”</div>'
+    +'Winterfell — the crypt is colder than the yard, and every STARK pretends not to notice.</div>';
+  var roomA=document.getElementById('roomA'), roomB=document.getElementById('roomB'),
+      chipsEl=document.getElementById('chips'), path=document.getElementById('path'),
+      stackBtn=document.getElementById('stackBtn');
+  var HAS=(typeof CSS!=='undefined' && CSS.highlights && typeof Highlight==='function');
+  var stack=true;
+
+  function textNodes(root){ var out=[], w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT); var n; while((n=w.nextNode())) out.push(n); return out; }
+  function snapshot(root){ return textNodes(root).map(function(n){return n.data;}).join(''); }
+
+  // TH2: case-insensitive, WHOLE WORD. "Starkly" must NOT match.
+  function findRanges(root, terms){
+    var ranges=[];
+    if(!terms.length) return ranges;
+    var re=new RegExp('\\b('+terms.map(function(t){return t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+')\\b','gi');
+    textNodes(root).forEach(function(node){
+      var m; re.lastIndex=0;
+      while((m=re.exec(node.data))){
+        var r=document.createRange(); r.setStart(node,m.index); r.setEnd(node,m.index+m[0].length);
+        ranges.push(r);
+      }
+    });
+    return ranges;
+  }
+
+  function paintAPI(){
+    var terms=TAGS.filter(function(t){return ACTIVE[t];});
+    ['tag-a','tag-b','sel-a','sel-b'].forEach(function(k){ CSS.highlights.delete(k); });
+    var ra=findRanges(roomA,terms), rb=findRanges(roomB,terms);
+    if(ra.length) CSS.highlights.set('tag-a', new Highlight(...ra));
+    if(rb.length) CSS.highlights.set('tag-b', new Highlight(...rb));
+    if(stack && ra.length){ CSS.highlights.set('sel-a', new Highlight(ra[0])); }
+    if(stack && rb.length){ CSS.highlights.set('sel-b', new Highlight(rb[0])); }
+    return ra.length;
+  }
+
+  // FALLBACK — the DOM rewrite TH3 warns about, used only when the API is missing.
+  function paintSpans(room){
+    room.innerHTML=HTML;
+    var terms=TAGS.filter(function(t){return ACTIVE[t];});
+    var ranges=findRanges(room,terms).reverse();
+    ranges.forEach(function(r,i){
+      var s=document.createElement('span');
+      s.className = (stack && i===ranges.length-1) ? 'fb-tag fb-sel' : 'fb-tag';
+      try{ r.surroundContents(s); }catch(e){}
+    });
+    return ranges.length;
+  }
+
+  function render(){
+    chipsEl.innerHTML=TAGS.map(function(t){
+      return '<button class="chip" data-t="'+t+'" aria-pressed="'+ACTIVE[t]+'">#'+t+'</button>';
+    }).join(' ');
+    [].forEach.call(chipsEl.children,function(b){
+      b.onclick=function(){ ACTIVE[b.dataset.t]=!ACTIVE[b.dataset.t]; render(); };
+    });
+    var terms=TAGS.filter(function(t){return ACTIVE[t];});
+    if(HAS){
+      if(!roomA.firstChild){ roomA.innerHTML=HTML; roomB.innerHTML=HTML; }
+      var before=snapshot(roomA)+'|'+snapshot(roomB);
+      var n=paintAPI();
+      var after=snapshot(roomA)+'|'+snapshot(roomB);
+      var same=(before===after);
+      path.classList.toggle('bad',!same);
+      path.textContent='painted with the CSS Custom Highlight API · '+n+' ranges per panel · text nodes '
+        +(same?'UNCHANGED ✓ (no DOM rewrite)':'*** CHANGED')
+        +' · “Starkly” not matched (whole word) · active: '+(terms.length?terms.map(function(t){return '#'+t;}).join(' '):'none');
+    } else {
+      var n2=paintSpans(roomA); paintSpans(roomB);
+      path.classList.add('bad');
+      path.textContent='FALLBACK: this browser has no Highlight API — painted by WRAPPING SPANS, i.e. a DOM rewrite (TH3’s hazard) · '+n2+' matches';
+    }
+  }
+  stackBtn.onclick=function(){ stack=!stack; stackBtn.setAttribute('aria-pressed',String(stack)); render(); };
+  render();
+})();
+</script>
+</body>
+</html>
