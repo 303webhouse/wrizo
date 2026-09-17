@@ -181,6 +181,23 @@ calls at an unchanged target draw nothing. The alternative isn't safe: growth is
 **path-dependent** (600 of 900 step paths differed from the one-call ground), so a
 ground grown forward in steps could not be recomputed this way.
 
+> **RATIFIED DESIGN POINT (2026-09-16) — do not "simplify" the seam into a
+> re-measure.** The check stands on two separate facts, and removing either
+> breaks it:
+> 1. **The seam returns the BUILT geometry**, not a fresh measurement. Origins
+>    depend continuously on geometry, and the component only rebuilds on a change
+>    of more than 1px. A re-measure inside that band scatters different origins
+>    and grows a different ground from the one on screen.
+> 2. **The recompute is a single `growTo`**, and that is only sound because the
+>    rendered ground came from one build. Growth is **path-dependent** (600 of 900
+>    step paths differed from the one-call ground), so a ground grown forward in
+>    steps could not be recomputed this way. The fixture guarantees one build
+>    because `PageEditor` reads the entry synchronously.
+>
+> Replace the built geometry with a measurement, or let the fixture grow the
+> ground in steps, and the fidelity check starts failing for reasons that have
+> nothing to do with the render.
+
 **Why it waits first.** The seam updates synchronously and the DOM on React's
 next commit. So the check waits for them to agree, then reads both in one
 evaluation. **The fidelity recompute is one module-level definition** shared by
