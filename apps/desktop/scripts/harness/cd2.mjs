@@ -184,8 +184,21 @@ await withHarness(async (app) => {
     ok(`CD3 successor of "S1 @ ${width}px: the strip is present with four sections (3 hairline separators) and EIGHT categories (B1 adds Trash to section C), icon+label, focusable (real <button>s)": the strip is present with five groups (4 hairline separators) and EIGHT categories (Trash pinned to the foot below Settings/Themes), icon+label, focusable (real <button>s)`,
       stripShape.present && stripShape.sepCount === 4 && stripShape.itemCount === 8 && stripShape.focusable,
       JSON.stringify(stripShape));
-    ok(`CD3 successor of "S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme": the updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Themes, Trash`,
-      JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+    // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
+    // GENERATION 4, quoted VERBATIM and no longer asserted. It pinned the
+    // strip's labels in the OLD flat sequence, at both reference widths. VW1
+    // regroups the rail by KIND (Page.Plan / Drawers / Journal.Shelf / foot),
+    // re-ruling that sequence by founder word — the regroup is SUPPOSED to
+    // break this, so it is parked, never edited.
+    //
+    // ok(`CD3 successor of "S1 @ ${width}px: B1's own updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme": the updated roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Themes, Trash`,
+    // JSON.stringify(stripShape.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+    // JSON.stringify(stripShape.labels));
+    // ----------------------------------------------------------------
+    ok(`VW1 successor of the CD3 roster check @ ${width}px: the strip carries the SAME eight categories as ever, compared as a SET rather than a sequence — order is VW1's to rule and vw1.mjs is what asserts it, so this file no longer duplicates that claim`,
+      stripShape.itemCount === 8
+        && JSON.stringify([...stripShape.labels].sort())
+           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(stripShape.labels));
   }
 
@@ -1124,8 +1137,25 @@ if (process.env.HARNESS_PARKED === '1') {
     // generation's own condition), generation 2's own text is preserved
     // verbatim above, unexecuted; this is the only live pok() for this
     // claim now. Re-uses the SAME stripShapeParked read above.
-    pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme", then B1 S5-superseded to "EIGHT categories... Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme") — CD3: Trash leaves section C for the strip\'s own foot; Change Theme renamed Themes — live successor: this file\'s own live S1 section',
-      stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+    // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
+    // A GENERATION DEEPER than the gen-3 header above already names. This is
+    // the gated twin of the live S1 order check parked above, pinning the
+    // SAME old flat sequence via stripShapeParked. VW1's regroup re-rules the
+    // sequence, so this breaks by the same design. Parked verbatim, never
+    // edited.
+    //
+    // Worth naming: this is the THIRD file's gated twin to be an INDEX
+    // assertion no driver conversion could have reached — b1 and cd1 carried
+    // the same shape. Only changing the order ever found any of them.
+    //
+    // pok('PARKED (was "S1: the strip is present with four sections (3 hairline separators) and seven categories..." + "A11\'s own roster, verbatim order — Journal, Page, Plan, Drawers, Shelf, Settings, Change Theme", then B1 S5-superseded to "EIGHT categories... Journal, Page, Plan, Drawers, Shelf, Trash, Settings, Change Theme") — CD3: Trash leaves section C for the strip\'s own foot; Change Theme renamed Themes — live successor: this file\'s own live S1 section',
+    // stripShapeParked.itemCount === 8 && JSON.stringify(stripShapeParked.labels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+    // JSON.stringify(stripShapeParked));
+    // ----------------------------------------------------------------
+    pok('PARKED, generation 5 (was the gated re-assertion of the strip roster in the OLD flat sequence, reusing stripShapeParked) — VW1 (item 134): the same eight categories survive as a SET; order is asserted once, by vw1.mjs, which rules it',
+      stripShapeParked.itemCount === 8
+        && JSON.stringify([...stripShapeParked.labels].sort())
+           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(stripShapeParked));
 
     // B2 (2026-07-20) — two more checks this file's own live sections
