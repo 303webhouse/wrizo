@@ -113,6 +113,13 @@ interface Props {
   // Undefined on every other host, which is what keeps `data-instrument`
   // off their paper entirely rather than present-and-empty.
   instrument?: 'text' | 'ink';
+  // ITEM 126 B2 — what the page lets the writer do to its ink here. Kept SEPARATE
+  // from `instrument` on purpose: `instrument` says which instrument the page IS
+  // (Free Write only, R15), and a Draft page is not "in TEXT" — it is a word
+  // processor with ink on it. Overloading one attribute to mean both would make
+  // the two unable to disagree, and disagreeing is exactly what the harness needs
+  // to be able to catch.
+  inkPermission?: 'edit' | 'inert' | 'movable';
   // HB1 S3 — true only on the one page a first-run Write click produced,
   // while the veil holds. The reveal handle and the settings gear (which
   // exposes a Theme switch and the Typewriter toggle — exactly the two
@@ -125,7 +132,7 @@ interface Props {
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, firstRunGateActive, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -480,6 +487,9 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                sleep, and the harness reads it to prove the switch and the paper
                never disagree. */
             data-instrument={instrument}
+            /* ITEM 126 B2 — the paper wears its ink PERMISSION too, so a check can
+               read it independently of the mode and catch the two disagreeing. */
+            data-ink={inkPermission}
             /* ITEM 83 M3 (R6) — the paper is the preview: PAGE SETUP's margins
                and leading land here as CSS custom properties, live, as the
                writer chooses them. Empty object when the page carries no dress,

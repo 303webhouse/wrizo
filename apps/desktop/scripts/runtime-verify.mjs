@@ -699,6 +699,81 @@ export async function withHarness(scenario, opts = {}) {
   // production tests a build nobody in this run made. Its one honest use is the
   // deploy checklist — three ships passed over a DEAD DOOR in production, and
   // this is how the same instrument gets aimed there.
+  // ==========================================================================
+  // ITEM 139 — THE GUARD LIVES IN THE RUNNER.
+  //
+  // Every browser this repo opens comes through here. Until now the rule that
+  // the box is taken BY ANNOUNCEMENT lived in the drivers — and a driver is a
+  // file someone can forget to write the guard into. That is not hypothetical:
+  // on 2026-09-13 a driver carried the rule as a COMMENT and nothing else, and
+  // a command meant to demonstrate the refusal launched 81 files instead. A
+  // rule that lives in a comment is enforced by memory; a rule that fails a run
+  // is enforced by the run.
+  //
+  // So the refusal moves to the one place every path must cross. It is a HARD
+  // STOP — a throw, before any process exists — not a printed warning, because
+  // a warning on stderr is indistinguishable from the noise of a run that went
+  // ahead anyway. And it guards a BARE harness launch (`node
+  // scripts/harness/x.mjs`), which no driver sees at all.
+  //
+  // TWO REFUSALS, both before the first browser:
+  //   1. NO GRANTED TURN — as of ITEM 140, WS_BOX_TURN absent OR NOT MATCHING
+  //      the grant file (139 checked only that it was set; see below).
+  //      run-suite.mjs applies the same check and passes the token to every
+  //      child, so a suite's files inherit one grant rather than each claiming
+  //      their own.
+  //   2. A LIVE FOREIGN RUN — another lane is mid-flight. Skipped under
+  //      run-suite (WS_REAPER_PREFLIGHT_DONE=1), which performs this check once
+  //      for the whole sweep; re-running it per child would be 81 redundant
+  //      process enumerations, the same argument the reaper skip already makes.
+  //
+  // UNDETERMINABLE COUNTS AS PRESENT. If the process table cannot be read, this
+  // refuses. A guard that proceeds when it cannot see is not a guard.
+  // ITEM 140 — THE TOKEN IS CHECKED AGAINST THE FILE, NEVER MERELY PRESENT.
+  //
+  // Item 139 asked only whether WS_BOX_TURN was SET, which a token invented in
+  // any shell satisfies — and, worse, so does a token exported during a turn
+  // that has since ENDED: the environment remembers what the box has forgotten.
+  // The grant is now a FILE chat 1 writes at the announcement and clears at the
+  // stamp, and this refuses unless the exported token MATCHES it. The moment
+  // chat 1 clears, a stale token fails; without that, 140 would be 139 with
+  // extra steps. No expiry — see box-grant.mjs for why a long pair must never
+  // be refused mid-run.
+  {
+    const { checkGrant } = await import('./box-grant.mjs');
+    const verdict = checkGrant(process.env.WS_BOX_TURN);
+    if (!verdict.ok) {
+      throw new Error(
+        `${verdict.message}\n`
+        + '  The box is one machine and one browser pool; it is allocated by ANNOUNCEMENT,\n'
+        + '  never by a quiet process table.\n'
+        + '  (ITEM 139/140: this refusal lives in withHarness because every browser crosses\n'
+        + `   it, and it reads the grant rather than the environment. reason=${verdict.reason})`,
+      );
+    }
+  }
+  if (process.env.WS_REAPER_PREFLIGHT_DONE !== '1') {
+    let foreign = null;
+    try {
+      const { enumerateForeignRuns } = await import('./orphan-reaper.mjs');
+      foreign = enumerateForeignRuns();
+    } catch (e) {
+      throw new Error(`BOX PRE-FLIGHT FAILED — refusing to open a browser: ${e && e.message}`);
+    }
+    if (foreign === null || foreign.length > 0) {
+      const who = foreign === null
+        ? 'the process table could not be read, so a live run cannot be ruled out'
+        : foreign.map((p) => `pid ${p.pid}`).join(', ');
+      throw new Error(
+        `LIVE FOREIGN RUN PRESENT — refusing to open a browser (${who}).\n`
+        + '  Another lane is mid-flight on this box. Starting here would contend for the\n'
+        + '  browser pool and void both runs. Wait for the box, then take it by announcement.',
+      );
+    }
+  }
+  // ==========================================================================
+
+  // ITEM 109 — `targetUrl` aims the harness at an ORIGIN ALREADY SERVING the app
   const targetUrl = opts.targetUrl || process.env.WS_TARGET_URL || null;
   const dist = opts.dist || DEFAULT_DIST;
   if (!targetUrl && !existsSync(path.join(dist, 'index.html'))) {

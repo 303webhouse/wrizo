@@ -447,13 +447,14 @@ await withHarness(async (app) => {
   await freshDesk(app);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'ab3-legacy-proj', title: 'Legacy Book', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    // No origin field at all — a pre-AB3 row (A2's grandfather clause).
-    entries.push({ id: 'ab3-legacy-page', text: '', projectId: 'ab3-legacy-proj', pageType: 'manuscript', source: 'page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    // ITEM 85-C — createProject generates the id; it is used only to home the
+    // page below, so the returned value stays local.
+    const project = window.wrizoCreateProject('Legacy Book');
+    // No origin field at all — a pre-AB3 row (A2's grandfather clause). That is
+    // exactly what origin: null seeds, and it is the POINT of this fixture: the
+    // seam's default would have made it journal-homed and quietly destroyed the
+    // grandfather case this section exists to test.
+    window.wrizoCreateJournalPage({ id: 'ab3-legacy-page', text: '', projectId: project.id, pageType: 'manuscript', createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after legacy seed' });
@@ -785,12 +786,9 @@ if (process.env.HARNESS_PARKED === '1') {
     await freshDesk(app);
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
-      const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-      projects.push({ id: 'ab3-legacy-proj-parked', title: 'Legacy Book (parked)', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      entries.push({ id: 'ab3-legacy-page-parked', text: '', projectId: 'ab3-legacy-proj-parked', pageType: 'manuscript', source: 'page', createdAt: now, updatedAt: now });
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      const project = window.wrizoCreateProject('Legacy Book (parked)');
+      // origin: null — the same grandfather shape as the live section above.
+      window.wrizoCreateJournalPage({ id: 'ab3-legacy-page-parked', text: '', projectId: project.id, pageType: 'manuscript', createdAt: now, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after legacy seed (PARKED)' });

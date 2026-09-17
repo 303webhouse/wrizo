@@ -51,9 +51,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'B2 Board', pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'B2 Board', pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -162,29 +160,25 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-t3-project', title: 'T3 Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    const proj_b2_t3_project = window.wrizoCreateProject('T3 Project');
     // (1) qualifies: loose-origin, unfiled, unpinned, not deleted, not starred.
-    entries.push({ id: 'b2-t3-qualifies', text: 'T3 qualifies', projectId: null, source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
     // (2) qualifies-but-starred: same as (1), starred true — starring must NOT disqualify.
-    entries.push({ id: 'b2-t3-starred', text: 'T3 starred', projectId: null, source: 'page', origin: 'loose', starred: true, createdAt: now, updatedAt: now });
     // (3) disqualified: deleted.
-    entries.push({ id: 'b2-t3-deleted', text: 'T3 deleted', projectId: null, source: 'page', origin: 'loose', deletedAt: now, createdAt: now, updatedAt: now });
     // (4) disqualified: project-homed.
-    entries.push({ id: 'b2-t3-projecthomed', text: 'T3 project-homed', projectId: 'b2-t3-project', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: now });
     // (5) disqualified: journal-homed.
-    entries.push({ id: 'b2-t3-journalhomed', text: 'T3 journal-homed', projectId: null, source: 'page', origin: 'journal', createdAt: now, updatedAt: now });
     // (6) disqualified: starred AND journal-homed — proves starring is irrelevant the OTHER way too (a starred but otherwise-disqualified page stays OFF the Shelf).
-    entries.push({ id: 'b2-t3-starred-disqualified', text: 'T3 starred disqualified', projectId: null, source: 'page', origin: 'journal', starred: true, createdAt: now, updatedAt: now });
     // (7) will be pinned to a user board below (built after the board exists).
-    entries.push({ id: 'b2-t3-tobepinned', text: 'T3 to be pinned', projectId: null, source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
     // A user board, with (7) already pinned onto it — disqualified: pinned-anywhere.
-    entries.push({ id: 'b2-t3-userboard', text: 'T3 user board', projectId: 'b2-t3-project', pageType: 'board', source: 'page', boxes: [
+    window.wrizoCreateJournalPage({ id: 'b2-t3-qualifies', text: 'T3 qualifies', projectId: null, origin: 'loose', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-starred', text: 'T3 starred', projectId: null, origin: 'loose', starred: true, createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-deleted', text: 'T3 deleted', projectId: null, origin: 'loose', deletedAt: now, createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-projecthomed', text: 'T3 project-homed', projectId: proj_b2_t3_project.id, pageType: 'manuscript', origin: 'project', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-journalhomed', text: 'T3 journal-homed', projectId: null, origin: 'journal', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-starred-disqualified', text: 'T3 starred disqualified', projectId: null, origin: 'journal', starred: true, createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-tobepinned', text: 'T3 to be pinned', projectId: null, origin: 'loose', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-t3-userboard', text: 'T3 user board', projectId: proj_b2_t3_project.id, pageType: 'board', boxes: [
       { id: 'b2-t3-pin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.2, h: 0.1, z: 1, entryId: 'b2-t3-tobepinned' },
-    ], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ], createdAt: now, origin: null });
   })()`);
   await app.reload();
   const shelfBoxesT3 = await shelfBoardBoxes(app);
@@ -202,11 +196,7 @@ await withHarness(async (app) => {
   // the NEXT reconcile — the T3 disqualifier is genuinely dynamic, not a
   // one-time snapshot.
   await app.evalJs(`(() => {
-    const key = 'writer-studio-journal-entries';
-    const list = JSON.parse(localStorage.getItem(key));
-    const board = list.find(e => e.id === 'b2-t3-userboard');
-    board.boxes = [];
-    localStorage.setItem(key, JSON.stringify(list));
+    window.wrizoPatchEntry('b2-t3-userboard', { boxes: [] });
   })()`);
   await app.reload();
   const shelfBoxesAfterUnpin = await shelfBoardBoxes(app);
@@ -225,12 +215,12 @@ await withHarness(async (app) => {
     JSON.stringify({ boxesRunOne, boxesRunTwo }));
 
   await app.evalJs(`(() => {
-    const key = 'writer-studio-journal-entries';
-    const list = JSON.parse(localStorage.getItem(key));
-    const board = list.find(e => e.id === ${JSON.stringify(shelfIdT3)});
-    const box = board.boxes.find(b => b.entryId === 'b2-t3-qualifies');
-    box.x = 0.61; box.y = 0.33; box.w = 0.18; box.h = 0.14;
-    localStorage.setItem(key, JSON.stringify(list));
+    // Reading storage is lawful; the write goes through the seam. One box's
+    // geometry changes, so the whole array is patched.
+    const board = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find(e => e.id === ${JSON.stringify(shelfIdT3)});
+    const boxes = board.boxes.map((b) => (b.entryId === 'b2-t3-qualifies'
+      ? { ...b, x: 0.61, y: 0.33, w: 0.18, h: 0.14 } : b));
+    window.wrizoPatchEntry(${JSON.stringify(shelfIdT3)}, { boxes });
   })()`);
   await app.reload();
   const boxesAfterAuthor = await shelfBoardBoxes(app);
@@ -244,12 +234,8 @@ await withHarness(async (app) => {
   // ==========================================================================
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-s2-project', title: 'S2 Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-s2-board', text: 'S2 Board', projectId: 'b2-s2-project', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    const proj_b2_s2_project = window.wrizoCreateProject('S2 Project');
+    window.wrizoCreateJournalPage({ id: 'b2-s2-board', text: 'S2 Board', projectId: proj_b2_s2_project.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
   })()`);
   await app.reload();
   const shelfBoxesBeforePin = await shelfBoardBoxes(app);
@@ -326,9 +312,7 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   const qualifyingId = await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-inert-page', text: 'Inertness probe', projectId: null, source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'b2-inert-page', text: 'Inertness probe', projectId: null, origin: 'loose', createdAt: now });
     return 'b2-inert-page';
   })()`);
   await app.reload();
@@ -382,12 +366,8 @@ await withHarness(async (app) => {
   // Never appears in the Pin sheet's board leaves.
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-pinleaf-project', title: 'Pin Leaf Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-pinleaf-page', text: 'Pin leaf probe', projectId: 'b2-pinleaf-project', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    const proj_b2_pinleaf_project = window.wrizoCreateProject('Pin Leaf Project');
+    window.wrizoCreateJournalPage({ id: 'b2-pinleaf-page', text: 'Pin leaf probe', projectId: proj_b2_pinleaf_project.id, pageType: 'manuscript', origin: 'project', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b2-pinleaf-page'");
@@ -449,19 +429,19 @@ await withHarness(async (app) => {
   // directions of the audit, proven live).
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
-  await app.evalJs(`(() => {
+  // ITEM 85-C — the generated id is RETURNED to node, because the loose-write
+  // probe below runs in a SEPARATE app.evalJs and each evalJs is its own
+  // browser-side script: a const declared in one does not exist in the next.
+  const s3ProjectId = await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-s3-project', title: 'S3 Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    const proj_b2_s3_project = window.wrizoCreateProject('S3 Project');
     // Legacy shape: shelved:true, no origin field at all (pre-AB3 data, the grandfather clause).
-    entries.push({ id: 'b2-s3-legacy-unconnected', text: 'Legacy shelved, unconnected', projectId: null, source: 'page', shelved: true, createdAt: now, updatedAt: now });
-    entries.push({ id: 'b2-s3-legacy-connected', text: 'Legacy shelved, connected', projectId: null, source: 'page', shelved: true, createdAt: now, updatedAt: now });
-    entries.push({ id: 'b2-s3-userboard', text: 'S3 user board', projectId: 'b2-s3-project', pageType: 'board', source: 'page', boxes: [
+    window.wrizoCreateJournalPage({ id: 'b2-s3-legacy-unconnected', text: 'Legacy shelved, unconnected', projectId: null, shelved: true, createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-s3-legacy-connected', text: 'Legacy shelved, connected', projectId: null, shelved: true, createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-s3-userboard', text: 'S3 user board', projectId: proj_b2_s3_project.id, pageType: 'board', boxes: [
       { id: 'b2-s3-pin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.2, h: 0.1, z: 1, entryId: 'b2-s3-legacy-connected' },
-    ], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ], createdAt: now, origin: null });
+    return proj_b2_s3_project.id;
   })()`);
   await app.reload();
   const s3ShelfBoxes = await shelfBoardBoxes(app);
@@ -475,9 +455,7 @@ await withHarness(async (app) => {
   // (the column stays dormant — zero writes, in either direction).
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-s3-loose-write-probe', text: 'S3 loose write probe', projectId: 'b2-s3-project', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'b2-s3-loose-write-probe', text: 'S3 loose write probe', projectId: ${JSON.stringify(s3ProjectId)}, pageType: 'manuscript', origin: 'project', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b2-s3-loose-write-probe'");
@@ -582,12 +560,8 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-s4-loose-project', title: 'S4 Loose Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-s4-loose-probe', text: 'S4 loose probe', projectId: 'b2-s4-loose-project', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    const proj_b2_s4_loose_project = window.wrizoCreateProject('S4 Loose Project');
+    window.wrizoCreateJournalPage({ id: 'b2-s4-loose-probe', text: 'S4 loose probe', projectId: proj_b2_s4_loose_project.id, pageType: 'manuscript', origin: 'project', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b2-s4-loose-probe'");
@@ -614,18 +588,14 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-boards-project-a', title: 'Boards Project A', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    projects.push({ id: 'b2-boards-project-b', title: 'Boards Project B', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-boards-page', text: 'Boards zone probe', projectId: null, source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
+    const proj_b2_boards_project_a = window.wrizoCreateProject('Boards Project A');
+    const proj_b2_boards_project_b = window.wrizoCreateProject('Boards Project B');
     // Board A (a-project) already has this page pinned; Board B does not.
-    entries.push({ id: 'b2-boards-board-a', text: 'Board A', projectId: 'b2-boards-project-a', pageType: 'board', source: 'page', boxes: [
+    window.wrizoCreateJournalPage({ id: 'b2-boards-page', text: 'Boards zone probe', projectId: null, origin: 'loose', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-boards-board-a', text: 'Board A', projectId: proj_b2_boards_project_a.id, pageType: 'board', boxes: [
       { id: 'b2-boards-existing-pin', kind: 'page-pin', x: 0.05, y: 0.05, w: 0.2, h: 0.1, z: 1, entryId: 'b2-boards-page' },
-    ], createdAt: now, updatedAt: now });
-    entries.push({ id: 'b2-boards-board-b', text: 'Board B', projectId: 'b2-boards-project-b', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-boards-board-b', text: 'Board B', projectId: proj_b2_boards_project_b.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b2-boards-page'");
@@ -766,13 +736,9 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-s5-project', title: 'S5 Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'b2-s5-board', text: 'S5 Board', projectId: 'b2-s5-project', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: now });
-    entries.push({ id: 'b2-s5-existing-page', text: 'S5 existing page', projectId: 'b2-s5-project', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    const proj_b2_s5_project = window.wrizoCreateProject('S5 Project');
+    window.wrizoCreateJournalPage({ id: 'b2-s5-board', text: 'S5 Board', projectId: proj_b2_s5_project.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-s5-existing-page', text: 'S5 existing page', projectId: proj_b2_s5_project.id, pageType: 'manuscript', origin: 'project', createdAt: now });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/b2-s5-board'");
@@ -803,21 +769,34 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const t = (s) => new Date(Date.now() + s * 1000).toISOString();
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    projects.push({ id: 'b2-drawers-project-z', title: 'Zeta Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    projects.push({ id: 'b2-drawers-project-a', title: 'Alpha Project', type: 'creative', storyPlanId: null, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    const proj_b2_drawers_project_z = window.wrizoCreateProject('Zeta Project');
+    const proj_b2_drawers_project_a = window.wrizoCreateProject('Alpha Project');
     // Two boards in Zeta (out-of-alpha-order titles, to prove deterministic sort), one in Alpha.
-    entries.push({ id: 'b2-drawers-board-z2', text: 'Zulu Board', projectId: 'b2-drawers-project-z', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: t(1) });
-    entries.push({ id: 'b2-drawers-board-z1', text: 'Yankee Board', projectId: 'b2-drawers-project-z', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: t(2) });
-    entries.push({ id: 'b2-drawers-board-a1', text: 'Alpha Board', projectId: 'b2-drawers-project-a', pageType: 'board', source: 'page', boxes: [], createdAt: now, updatedAt: t(3) });
     // A loose doc (T3-qualifying) — the MOST recently touched of everything, so it anchors first.
-    entries.push({ id: 'b2-drawers-loose-doc', text: 'Loose Doc', projectId: null, source: 'page', origin: 'loose', createdAt: now, updatedAt: t(100) });
     // A filed, non-board page — must NOT appear as its own tile (only boards + loose docs do).
-    entries.push({ id: 'b2-drawers-filed-manuscript', text: 'Filed Manuscript', projectId: 'b2-drawers-project-a', pageType: 'manuscript', source: 'page', origin: 'project', createdAt: now, updatedAt: t(4) });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    //
+    // NO updatedAt HERE, DELIBERATELY. These rows carried a t(1)..t(100)
+    // spacing that never reached storage: upsert stamps updatedAt on every
+    // write, so the spacing read as though it established the recency order
+    // this section asserts while doing nothing at all. The order is now made
+    // real, below, by touching the rows — so the dead spacing is removed rather
+    // than left to mislead the next author into trusting it.
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-z2', text: 'Zulu Board', projectId: proj_b2_drawers_project_z.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-z1', text: 'Yankee Board', projectId: proj_b2_drawers_project_z.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-board-a1', text: 'Alpha Board', projectId: proj_b2_drawers_project_a.id, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-loose-doc', text: 'Loose Doc', projectId: null, origin: 'loose', createdAt: now });
+    window.wrizoCreateJournalPage({ id: 'b2-drawers-filed-manuscript', text: 'Filed Manuscript', projectId: proj_b2_drawers_project_a.id, pageType: 'manuscript', origin: 'project', createdAt: now });
+    // ITEM 85-C — ESTABLISH THE RECENCY ORDER BY TOUCHING, in the seeded order.
+    // upsert stamps updatedAt on every write, so the t(1)..t(100) spacing above
+    // never reaches storage and every row lands in one millisecond. S7 asserts
+    // "last-opened anchors first", which then has nothing to order by. Touched
+    // ascending — t(1), t(2), t(3), t(4), then the loose doc at t(100) LAST —
+    // so the doc is genuinely the most recently touched, which is what the
+    // comment above has always claimed and what the assertion reads.
+    window.wrizoTouchInOrder([
+      'b2-drawers-board-z2', 'b2-drawers-board-z1', 'b2-drawers-board-a1',
+      'b2-drawers-filed-manuscript', 'b2-drawers-loose-doc',
+    ]);
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after Drawers seed' });

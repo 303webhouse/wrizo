@@ -402,6 +402,14 @@ if (process.env.HARNESS_PARKED === '1') {
     // the seed with stale in-memory boxes (the harness's own documented
     // seeding-vs-flushNow race; MEMORY.md's own recorded lesson).
     await app.goto('/');
+    // ITEM 141 — TWO DIFFERENT WAITS, AND THEY ARE NOT INTERCHANGEABLE.
+    // This one is the settle: proof that the app has booted and the seams are
+    // installed, without which the read below races module init. The sleep that
+    // follows is NOT a settle and is not being replaced by it — it is the
+    // deliberate pause described above, letting a pending autosave debounce fire
+    // before the seed lands. A poll ends when a condition holds; a sleep ends
+    // when the clock says so, and only the first is evidence of anything.
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the PARKED port seed' });
     await sleep(2300);
     const now2 = new Date().toISOString();
     await app.evalJs(`(() => {

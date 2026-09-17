@@ -100,9 +100,7 @@ const freshBoard = async (app, boardId, boxes, width = 1400, height = 900, opts 
   await freshDesk(app, width, height, opts);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: ${JSON.stringify(boardId)}, text: 'FX10 Board', projectId: null, pageType: 'board', source: 'page', boxes: ${JSON.stringify(boxes)}, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: ${JSON.stringify(boardId)}, text: 'FX10 Board', projectId: null, pageType: 'board', boxes: ${JSON.stringify(boxes)}, createdAt: now, origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(boardId)}`);
@@ -115,9 +113,7 @@ const seedEntries = async (app, rows) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before FX10 seed' });
   await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push(...${JSON.stringify(rows)});
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    ${JSON.stringify(rows)}.forEach((r) => window.wrizoCreateJournalPage({ ...r, origin: 'origin' in r ? r.origin : null, source: 'source' in r ? r.source : null }));
   })()`);
 };
 
@@ -274,10 +270,7 @@ await withHarness(async (app) => {
     await app.goto('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before FX10 no-scroll-within-scroll seed' });
     await app.evalJs(`(() => {
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      const e = entries.find(x => x.id === ${JSON.stringify(hostId)});
-      if (e) e.tags = ['walk-fixture'];
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      window.wrizoPatchEntry(${JSON.stringify(hostId)}, { tags: ['walk-fixture'] });
     })()`);
     const walkNow = new Date().toISOString();
     await seedEntries(app, [
@@ -292,13 +285,10 @@ await withHarness(async (app) => {
     // nothing navigates away before it's read (the same precedent tu1.mjs's
     // own structural-walk fixture already relies on).
     await app.evalJs(`(() => {
-      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-      const e = entries.find(x => x.id === ${JSON.stringify(hostId)});
-      if (e) e.tutor = { messages: [
+      window.wrizoPatchEntry(${JSON.stringify(hostId)}, { tutor: { messages: [
         { id: 'm1', role: 'writer', text: 'A first message, to give the log some real height.', at: new Date().toISOString() },
         { id: 'm2', role: 'tutor', text: 'A reply of a reasonable length, wrapping across more than one line inside the new wider panel, so the conversation log genuinely has content to grow with rather than sitting empty.', at: new Date().toISOString() },
-      ] };
-      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+      ] } });
     })()`);
     await app.evalJs("document.querySelector('.wz-tutor-grip').click()"); // close
     await sleep(150);

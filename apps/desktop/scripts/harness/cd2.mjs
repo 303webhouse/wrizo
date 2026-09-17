@@ -71,10 +71,8 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     const headingId = 'cd2-script-heading';
-    entries.push({ id: 'cd2-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null, source: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after script seed' });
@@ -105,10 +103,8 @@ const freshProsePageWithBoards = async (app, width = 1400, height = 900) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding boards' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-board-1', text: 'First Board', projectId: ${JSON.stringify(projectId)}, pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now });
-    entries.push({ id: 'cd2-board-2', text: 'Second Board', projectId: ${JSON.stringify(projectId)}, pageType: 'board', boxes: [], source: 'page', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-board-1', text: 'First Board', projectId: ${JSON.stringify(projectId)}, pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'cd2-board-2', text: 'Second Board', projectId: ${JSON.stringify(projectId)}, pageType: 'board', boxes: [], createdAt: new Date(Date.now() + 1000).toISOString(), origin: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
@@ -132,14 +128,13 @@ const freshProsePageWithDrawer = async (app, width = 1400, height = 900) => {
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding a drawer' });
   await app.evalJs(`(() => {
-    const now = new Date().toISOString();
-    const drawers = JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]');
-    drawers.push({ id: 'cd2-drawer-1', name: 'Fiction', order: 0, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-drawers', JSON.stringify(drawers));
-    const projects = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]');
-    const proj = projects.find(p => p.id === ${JSON.stringify(projectId)});
-    if (proj) proj.drawerId = 'cd2-drawer-1';
-    localStorage.setItem('writer-studio-projects', JSON.stringify(projects));
+    // ITEM 85-C — the drawer's id is generated and used only to file the project
+    // below, so it stays local. createDrawer assigns order itself (max + 1),
+    // which for the first drawer is the 0 this fixture wrote by hand.
+    // setProjectDrawer is a no-op if the project is missing, which is the same
+    // guard the old if-proj check provided.
+    const drawer = window.wrizoCreateDrawer('Fiction');
+    window.wrizoSetProjectDrawer(${JSON.stringify(projectId)}, drawer.id);
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pageId)}`);
@@ -359,9 +354,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seeding a journal page (S2)' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-journal-seed', text: 'A seeded journal page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-journal-seed', text: 'A seeded journal page', createdAt: now, origin: null, source: null });
   })()`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(s2PageId)}`);
@@ -442,10 +435,8 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-journal-a', text: 'Journal page A — the current one', source: 'page', createdAt: now, updatedAt: now });
-    entries.push({ id: 'cd2-journal-b', text: 'Journal page B — a sibling', source: 'page', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-journal-a', text: 'Journal page A — the current one', createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'cd2-journal-b', text: 'Journal page B — a sibling', createdAt: new Date(Date.now() + 1000).toISOString(), origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after journal-pair seed' });
@@ -539,10 +530,8 @@ await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-dock-a', text: 'Dock fixture A', source: 'page', createdAt: now, updatedAt: now });
-    entries.push({ id: 'cd2-dock-b', text: 'Dock fixture B', source: 'page', createdAt: new Date(Date.now() + 1000).toISOString(), updatedAt: new Date(Date.now() + 1000).toISOString() });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-dock-a', text: 'Dock fixture A', createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'cd2-dock-b', text: 'Dock fixture B', createdAt: new Date(Date.now() + 1000).toISOString(), origin: null });
   })()`);
   await app.reload();
   await app.evalJs("location.hash = '#/page/cd2-dock-a'"); // FX14 S2 re-point: was #/journal/:id (unrouted)
@@ -694,9 +683,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before floor-fixture seed' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-floor-journal', text: 'Floor fixture journal page', createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-floor-journal', text: 'Floor fixture journal page', createdAt: now, origin: null, source: null });
   })()`);
   await app.reload();
   await app.emulateDpr(1, 1100, 900);
@@ -765,11 +752,9 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before board/script seed (park-sweep successor)' });
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    entries.push({ id: 'cd2-ps-board', text: '', pageType: 'board', boxes: [], source: 'page', createdAt: now, updatedAt: now });
     const headingId = 'cd2-ps-script-heading';
-    entries.push({ id: 'cd2-ps-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, updatedAt: now });
-    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    window.wrizoCreateJournalPage({ id: 'cd2-ps-board', text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'cd2-ps-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null, source: null });
   })()`);
   await app.reload();
   await app.emulateDpr(1, LAPTOP_W, 900);
