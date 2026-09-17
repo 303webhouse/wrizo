@@ -5735,7 +5735,77 @@ rule **"survives the reversal"**; the rewrite cites F2 without that clause.
 it is NOT in any merged document.** **Not recorded; requested.** *(A block is complete for its
 recipient.)*
 
-Registry: next free **148**.
+## BAND — THREE LINES FROM THE PLAN DESK — 2026-09-16
+
+> **A LEAN IS PRESENTED WITH THE STRONGEST FORM OF WHAT IT ARGUES AGAINST — ESPECIALLY WHEN THE
+> ALTERNATIVE IS THE SAFER BUILD.** (PLAN's self-argument)
+
+*(The item-145 rewrite is the worked example: it set Fable's lean — accept the overlap — beside the
+desk's own lean for an overline, and declared the brief buildable under either. A lean argued only
+against a weak alternative is not a lean, it is a foregone conclusion.)*
+
+> **A FINDING OUTLIVES THE RULING THAT PRODUCED IT — LEFT IN SUPERSEDED TEXT IT READS AS SUPERSEDED.**
+> (PLAN)
+
+*(Observed the same day: "weight cannot be set through the highlight API" and "underline belongs to
+the writer" were first written inside a colour ruling that was later reversed. Moved into the
+foundation as standing findings F1 and F2, they survive the reversal; left where they were, a reader
+would have discarded them along with the olive ruling.)*
+
+> **A RULE THAT GOVERNS FUTURE WORK CITES THE SOURCE LIST, NOT A SUMMARY — THE SPEC SAYS WHAT SHOULD
+> HAPPEN, THE PIXELS SAY WHAT DID.** (PLAN)
+
+## CHAT 1's TIMING CORRECTION — RECORDED AS WRITTEN — 2026-09-16
+
+**PW2's pair launched at 23:04:17; chat 1's last two commits landed at 23:04:14 and 23:04:51, straddling
+it.** Chat 1's box check had been taken at the START of the turn and was stale when it wrote. **No harm
+followed — PW2 stamps its own worktree (`.claude/worktrees/pw2-nesting-transfer`), so commits to `main`
+never touched its tree.** **BUT THE SAFETY CAME FROM WORKTREE ISOLATION, NOT FROM CHAT 1's CHECK.**
+
+**THE WAIT-AND-LAUNCH LAW, LANDING ON THE DESK THAT ENFORCES IT: a check acted on in a later step is a
+check of the past.** *(And the law that actually protected PW2 was "a worktree isolates FILES" — the
+half of that law that governs writes.)*
+
+## ITEM 148 — THE DURABILITY GUARD'S VERB LIST — OPENS 2026-09-16
+
+**OPENS. Harness → ERRATA, after item 147 or with it, ERRATA's call.**
+
+**THE DEFECT:** `seed-guard.mjs` decides which seams mutate by matching
+`/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/`. **Copy, Move, Delete, Remove, Add and Nest are
+INVISIBLE to it** — and its own comment promises the next seam cannot quietly opt out. **That promise is
+false for every verb outside the four.**
+
+**PW2's `wrizoCopyCardToBoard` WAS THE FIRST CASE REPORTED:** it merged UNWRAPPED and the guard passed 36
+checks — **which PW2 MEASURED by unwrapping it and running, rather than asserting, correcting its own
+earlier claim in the same breath.**
+
+**CHAT 1 FOUND THE GAP IS ALREADY ON `main` — measured, not hypothetical.** Of **21** `wrizo*` seams,
+**8** fall outside the four verbs, and **at least TWO of them WRITE:**
+- **`wrizoTouchInOrder`** — rides `saveJournalEntry`. **ERRATA's OWN seam from 85-C wave 2, added AFTER the
+  guard.** Pattern matches: **0**.
+- **`wrizoPairing`** — an OBJECT whose members are `birth`, `pair` and `unpair`, **all mutators.** Pattern
+  matches: **0**.
+
+**THE SECOND REVEALS A SHAPE THE FIX MUST HANDLE: WHEN A SEAM IS A NAMESPACE, THE VERB LIVES ON THE
+MEMBER, NOT ON THE SEAM's NAME.** An inverted guard keyed on "every `wrizo*` seam that writes" has to
+look INSIDE the object, or `pair` and `unpair` escape it exactly as they escape the verb list.
+
+**FABLE's RULING ON THE SHAPE: INVERT THE DEFAULT.** **Every `wrizo*` seam that writes is IN SCOPE, and each
+exemption is NAMED AND JUSTIFIED** — the same inversion ERRATA already applied to the raw-write scan.
+**Matching a verb list means the guard only ever sees the verbs someone thought of.**
+
+**PW2 KEEPS ITS WRAP** — the durability is needed whether or not anything enforces it.
+
+## BAND — A GUARD WHOSE COMMENT CLAIMS MORE COVERAGE THAN ITS PATTERN HAS — 2026-09-16
+
+> **A GUARD WHOSE COMMENT CLAIMS MORE COVERAGE THAN ITS PATTERN HAS CERTIFIES ITS OWN REACH.**
+
+*(It reports the reach its author intended, not the reach its regex has. Siblings: a verdict line that
+cannot say FAIL is not a verdict; a comment explaining a hazard is not a guard against it. All three are
+text standing in for a mechanism. And the escapee that proves it best is the guard author's own seam.)*
+
+Registry: next free **149**.
+
 
 
 
