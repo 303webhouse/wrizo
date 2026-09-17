@@ -3383,6 +3383,11 @@ column, zero migration. The schema STOP never fired.**
 else — the same discipline that made the post-walk roster read 74 rather than the review's 72.
 ## CANON — THREE LINES FROM THE BOARDS-CONNECTED SHIP — 2026-09-09
 
+**⚠ SUPERSEDED IN PART 2026-09-17 — the chaining condition only.** "Chaining the parked leg on the
+default's exit 0" is REFUSED by Fable's ruling: **BOTH LEGS ALWAYS RUN** (see *RULING — BOTH LEGS
+ALWAYS RUN*, below). The wait-and-claim half stands: one process still waits, claims, and runs both
+legs in sequence, so no gap opens at either seam. Kept as written.
+
 **1. WAIT AND LAUNCH ARE ONE ACT — two steps leave a gap another lane can claim (TOOLS).** Chat 1's
 pre-flight read `runners: 0 | browsers: 0`; `writer-studio-fx17` launched **between that reading and
 the suite reaching the box**, and the pair voided at file 2 of 76. **A check whose result is acted on
@@ -6039,6 +6044,10 @@ stamped.**
 - **`1f4a981`** (S3, card transfer) gave free/text cards a `Copy to a board…` verb, so they now HAVE an
   act and rightly wear a `⋯`. **G3's law still holds** — only rows with an act wear one. **What broke is
   the check's encoding of it: "has an act" ≡ "is a membership row"**, true before PW2 and false after.
+- **⚠ CORRECTED 2026-09-17 — "FOUR" below counts RUNS, not checks: 4 RUNS OF 3 DISTINCT CHECKS** —
+  2 in `pw1`, superseded in place; 1 in `ab4`, behind the gate, run at two widths (PW2's accounting,
+  registered by Fable). It replaces PW2's earlier "parks nothing" claim, which was true of `pw2.mjs`
+  and false of the branch. The line is kept as written.
 - **So PW2 owes FOUR PARKS** (verbatim + successor): two in `pw1`, two in `ab4`. Its sweep caught the
   behaviours it changed and missed a visible label it changed. *(A label the writer reads is part of
   what the change DOES.)*
@@ -6058,7 +6067,87 @@ TOOLS' VW1 and the 147 pair do not depend on PW2. Proposed: **VW1 → 147 pair �
 merges → 148 (entry, then pair) → 146 → the four-file park conform.** **FILE OVERLAP:** the conform
 touches `pw1.mjs`, and so will PW2's fix — whichever lands second merges the other in first.
 
+## RULING — BOTH LEGS ALWAYS RUN — 2026-09-17
+
+**Fable, on the launcher question chat 1 routed: THE PARKED LEG RUNS AFTER A RED DEFAULT. DO NOT CHAIN ON
+SUCCESS.** Reasons, in Fable's order:
+1. **A pair's two legs measure DIFFERENT POPULATIONS**, so a red in one says nothing about the other.
+2. **This pair proves it:** `ab4`'s red exists ONLY in the parked leg. Chained on success, it would have
+   surfaced on the re-run — one cycle later, after a fix built without knowing about it.
+3. **A red default already costs the turn**, so the parked leg's 36 minutes buy a COMPLETE diagnosis
+   for time that is spent either way.
+
+**STANDING RULE, ALL LANES: BOTH LEGS ALWAYS RUN; A PAIR REPORTS WHAT IS, NOT WHAT SURVIVES.** **PW2's
+`;` chaining STAYS; `&&` is REFUSED.**
+
+**It reverses chat 1's own practice:** the atomic wait-and-launch (CANON, 2026-09-09) chained the parked
+leg on the default's exit 0. **Both records of that are marked in place;** the wait-and-claim half of
+the law is untouched.
+
+## BAND — A RED IN ONE LEG IS NOT A VERDICT ON THE OTHER — 2026-09-17
+
+> **A RED IN ONE LEG IS NOT A VERDICT ON THE OTHER — A PAIR MEASURES TWO POPULATIONS, SO BOTH LEGS ALWAYS
+> RUN.**
+
+## BAND — A RULING THAT LANDS MID-BUILD REOPENS THE SWEEP — 2026-09-17
+
+> **A RULING THAT LANDS MID-BUILD REOPENS THE SWEEP — A SWEEP CERTIFIES THE TREE IT WAS RUN ON.** (PW2)
+
+*(PW2's diagnosis of its own red, registered by Fable: Nick's zone amendment arrived after PW2's sweep
+had run, and renamed a label two older files assert. The sweep was right about the tree it read.)*
+
+## THE QUEUE — APPROVED; VW1 ANNOUNCED — 2026-09-17
+
+**APPROVED AS CHAT 1 PROPOSED:** **TOOLS' VW1 (two pairs) → 147's pair → PW2's re-stamp → PW2 merges →
+148 (entry, then pair) → 146 (entry, then pair) → the four-file park conform.**
+
+**VW1 ANNOUNCED.** Box verified quiet (no runner, harness, `tsc` or `vite`; zero `ws-runtime-verify`
+browsers; no grant), then **GRANTED TO TOOLS** through the writer — token `tools-vw1-pairs-20260917`,
+one grant for both pairs. `checkGrant` accepts TOOLS' token and refuses PW2's spent one
+(`token-mismatch`).
+
+**Chat 1's pre-turn reading of `vw1-rail`, handed to TOOLS with the announcement:**
+- the branch is at `3cf1982`, **111 commits behind `origin/main`** — merge `main` first and report
+  conflicts before the pair;
+- **`apps/desktop/scripts/harness/vw1.mjs` is UNTRACKED** in the worktree. `run-suite` counts
+  `git status --porcelain` lines, so it would stamp the pair `+1dirty` — and, living in `harness/`, it
+  would also be RUN. Commit it before the pair.
+- `node_modules` is present.
+
+**PW2's re-stamp turn is announced when VW1 and 147 clear.** **PW2 was right not to take a second run on
+a spent grant.**
+
+## FILE OVERLAP — `pw1.mjs` — RULED — 2026-09-17
+
+**PW2's fix and TOOLS' park conform both edit `pw1.mjs`. PW2 LANDS FIRST** — it is ahead in the queue,
+and its changes are ruled supersessions. **TOOLS merges `main` before its conform, as it already does.**
+**TOOLS told NOW, with the VW1 announcement, not at merge time: `pw1.mjs` is moving under it.**
+
+**CHAT 1 MEASURED ONE MORE LAYER: VW1 ITSELF ALREADY EDITS BOTH SHARED FILES, AND LANDS FIRST.**
+`origin/vw1-rail` changes 20 files (19 harness files and `Cascade.tsx`), including **`pw1.mjs`** (its
+`openPlan` helper — the strip picked by `data-category=plan`, not by index `[2]`) and **`item87.mjs`**
+— **147's file.** So the landing order on each shared file is:
+- **`pw1.mjs`: VW1 → PW2's fix → TOOLS' conform.**
+- **`item87.mjs`: VW1 → 147.**
+
+**Trial merges of `vw1-rail` against the tips of 147 (`4bab0ff`), PW2 (`623ba30`), 148 (`41f8b7c`) and
+146 (`ace6f76`): ALL FOUR CLEAN.** Each later lander re-merges `main` before its pair, which a
+re-stamp needs anyway. **PW2's fix is not written yet**, so its `pw1.mjs` hunks are a heads-up, not a
+measurement: PW2 builds on a `main` that carries VW1's helper change.
+
+## ERRATA — STOOD DOWN, THREE OFFERS PENDING — 2026-09-17
+
+**ERRATA stood down** with `147 @ 4bab0ff`, `148 @ 41f8b7c` and `146 @ 57c4c66` offered and unpaired.
+**Items 149 and 150 stay routed as chat 1 recorded:** 149 is buildable browserless whenever ERRATA
+returns; 150 starts after 147 lands.
+
+**OPEN, ROUTED TO FABLE: 147's pair is next after VW1 and needs ERRATA present.** If ERRATA is not back
+when VW1 clears, chat 1 proposes PW2's re-stamp goes ahead of it — the two share no file (147 touches
+`item147.mjs` and `item87.mjs`; PW2's fix touches `pw1.mjs` and `ab4.mjs`), and PW2 lands before
+either of ERRATA's seam-table branches in both orders. **Not acted on without a ruling.**
+
 Registry: next free **151**.
+
 
 
 
@@ -14506,6 +14595,11 @@ Railway image **linux/amd64**, container digest
 **SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
 - `index-8geTcfLU.js` — served `d0851aa07eb71a6ff9a2777dda455794` **==** stamped
 - `index-DwJr4Phd.css` — served `17a3b3b11d57132b7e92e4d2402266ed` **==** stamped
+
+**⚠ SUPERSEDED IN PART 2026-09-17 — the chaining condition only.** "Chaining the parked leg on the
+default's exit 0" is REFUSED by Fable's ruling: **BOTH LEGS ALWAYS RUN** (see *RULING — BOTH LEGS
+ALWAYS RUN*, below). The wait-and-claim half stands: one process still waits, claims, and runs both
+legs in sequence, so no gap opens at either seam. Kept as written.
 
 **THE FIRST ATTEMPT VOIDED AT FILE 2 OF 76**, when a run launched from `writer-studio-fx17` claimed
 the box **in the gap between chat 1's pre-flight check and its launch**. The second attempt used an
