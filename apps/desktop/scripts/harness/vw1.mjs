@@ -81,27 +81,88 @@ const pressCategory = async (app, cat) => {
 };
 
 // ---- CHECK 7 runs browserless, before any browser is launched -------------
-// A static grep over apps/desktop/scripts. It is the only check that keeps §2
-// from rotting back: the conversions are a one-time tidy, this is the thing
-// that makes them durable.
+// IT IS INVERTED, and that is the whole design. The first version enumerated
+// SPELLINGS of index selection — `[...qsa(sel)][N]` — and was widened once to
+// catch the direct form `qsa(sel)[N]`. It then certified ZERO while 38 live
+// index selectors remained, because a third form existed that neither the
+// check nor its author had imagined: an index passed as a FUNCTION ARGUMENT
+// and interpolated inside a helper (`clickCategory(app, 1)` -> `items[idx]`).
+// No grep looking beside the selector can see that, and a fourth form exists
+// that nobody has imagined yet.
 //
-// IT MATCHES BOTH FORMS, and that is load-bearing rather than thorough: five
-// of the 39 sites used the DIRECT form `querySelectorAll(sel)[N]` rather than
-// the spread `[...querySelectorAll(sel)][N]` (cd2 x3, item112a, item83e). A
-// spread-only grep reads 33, certifies zero remaining, and leaves five live
-// index selectors behind — the census itself made that mistake first.
+// So the rule is inverted: ANY reference to `.wz-strip-item` that is not a
+// `[data-category=...]` selector is an OFFENDER until it is named and
+// justified below. Admitting a lawful new shape means adding an exemption WITH
+// ITS REASON — a decision someone makes deliberately — rather than a shape
+// falling silently through a pattern that never contemplated it.
+//
+// Two law-lines this check exists to enforce, both paid for:
+//   A STATIC CENSUS SEES SPELLINGS, NOT DEPENDENCIES — THE ONLY COMPLETE
+//   CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.
+//   AN INDEX PASSED AS AN ARGUMENT IS INVISIBLE TO EVERY INSTRUMENT LOOKING
+//   BESIDE THE SELECTOR.
 const SCRIPTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const INDEX_SEL = /querySelectorAll\(\s*['"]\.wz-strip-item['"]\s*\)\s*\]?\s*\[\s*\d+\s*\]/;
+
+// Each exemption carries its justification. These are lawful because none of
+// them depends on WHERE a tab sits: they read the population, the whole set,
+// or a property uniform across all eight.
+const LAWFUL = [
+  { why: 'population count — asserts how many tabs exist, never which is where',
+    re: /querySelectorAll\(\s*['"]\.wz-strip-item['"]\s*\)\s*\.length/ },
+  { why: 'whole-set collection — reads EVERY item; position is the answer, not the question',
+    re: /\[\s*\.\.\.[^\]]*?\.wz-strip-item[^\]]*?\]\s*\.\s*(map|every|some|filter)\b/ },
+  { why: 'the LAST item asserted AS last — item 137 pins the Trash to the foot',
+    re: /\.wz-strip-item['"]\s*\)\s*\]\s*\.pop\(\)/ },
+  { why: 'uniform style read of any one item — colour/radius is identical on all eight',
+    re: /getComputedStyle\(\s*document\.querySelector\(\s*['"]\.wz-strip-item/ },
+  { why: 'a selector CONSTANT, not a selection',
+    re: /(CAT_SEL|_SEL)\s*=\s*['"`]/ },
+  { why: "this instrument's own source — it must name the thing it forbids",
+    re: /OFFENDER|LAWFUL|data-category=\$\{cat\}|getAttribute\('data-category'\)/ },
+];
+
+// A COLLECTION ASSIGNED TO A VARIABLE is the one exemption that cannot be
+// decided by looking at its own line: `const items = [...qsa('.wz-strip-item')]`
+// is lawful when the file goes on to read items.length or items.map(...), and
+// is an OFFENDER the moment anything does items[2]. That is precisely the form
+// that hid 38 index selectors from the first check 7 — so it is resolved by
+// asking what the file DOES with the variable, not by matching the spelling.
+const ASSIGN = /(?:const|let|var)\s+(\w+)\s*=\s*\[\s*\.\.\.[^\]]*?\.wz-strip-item[^\]]*?\]/;
+// String.raw, and the reason is a bug this line already had: inside a plain
+// template literal the TEMPLATE consumes the escapes before RegExp ever sees
+// them — `\b` becomes a backspace BYTE, `\s` becomes a literal 's', `\[` an
+// unmatched bracket — and the pattern threw "Unterminated character class" at
+// runtime while passing every syntax check. Same species as the classifier
+// that read zero files because two invisible backspace bytes broke its
+// matcher: a guard can be perfectly well-formed and completely blind.
+const indexesVar = (src, v) => new RegExp(String.raw`\b${v}\s*\[`).test(src);
+
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
   const full = path.join(dir, d.name);
   return d.isDirectory() ? walk(full) : (full.endsWith('.mjs') ? [full] : []);
 });
-const offenders = walk(SCRIPTS_DIR).flatMap((f) =>
-  readFileSync(f, 'utf8').split('\n')
-    .map((line, i) => (INDEX_SEL.test(line) ? `${path.basename(f)}:${i + 1}` : null))
-    .filter(Boolean));
-ok('VW1 check 7: ZERO index-based strip selectors remain anywhere in apps/desktop/scripts — the static assertion that keeps the conversion from rotting back, matching BOTH the spread and the direct form (a spread-only grep reads 33 of 39 and certifies five live selectors as absent)',
-  offenders.length === 0, JSON.stringify({ offenders }));
+const offenders = [];
+for (const f of walk(SCRIPTS_DIR)) {
+  const src = readFileSync(f, 'utf8');
+  src.split('\n').forEach((line, i) => {
+    // THE INSTRUMENT ITSELF is exempt as a FILE, named here rather than
+    // pattern-matched: this file must quote the shapes it forbids in order
+    // to forbid them, so its own exemption regexes and its scanning line
+    // would otherwise be offenders. Its real SELECTIONS all go through
+    // data-category, which is visible a few lines up in pressCategory.
+    if (path.basename(f) === 'vw1.mjs') return;
+    if (!line.includes('.wz-strip-item')) return;
+    const s = line.trim();
+    if (s.startsWith('//') || s.startsWith('*')) return;        // parked / commented
+    if (line.includes('.wz-strip-item[data-category=')) return; // the handle itself
+    if (LAWFUL.some((l) => l.re.test(line))) return;            // named + justified
+    const asg = line.match(ASSIGN);
+    if (asg && !indexesVar(src, asg[1])) return;                // collection, never indexed
+    offenders.push(path.basename(f) + ':' + (i + 1));
+  });
+}
+ok('VW1 check 7 (INVERTED): every live reference to .wz-strip-item is either a data-category selector or a NAMED, JUSTIFIED exemption. A grep that enumerates spellings sees only the spellings someone thought of — the first version certified ZERO while 38 index selectors lived, because the index was a function argument. Inverting it means a new shape must be ruled lawful deliberately instead of falling through',
+  offenders.length === 0, JSON.stringify({ offenders, exemptions: LAWFUL.map((l) => l.why) }));
 
 await withHarness(async (app) => {
   await freshProsePage(app);

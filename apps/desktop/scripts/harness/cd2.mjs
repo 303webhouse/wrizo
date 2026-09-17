@@ -142,13 +142,22 @@ const freshProsePageWithDrawer = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
-const clickCategory = async (app, id) => {
-  await app.evalJs(`(() => {
-    const items = [...document.querySelectorAll('.wz-strip-item')];
-    const idx = ${JSON.stringify(id)};
-    const item = items[idx];
-    if (item) item.click();
+const clickCategory = async (app, cat) => {
+  // VW1 — BY NAME, AND IT FAILS LOUDLY.
+  // This took an INDEX and did `if (item) item.click()`: silently nothing when
+  // the index was out of range, and silently the WRONG TAB when it was in
+  // range. The regroup made the second case real — [1] stopped being Page —
+  // and three files crashed downstream instead of here, where the cause was.
+  // An index passed as an argument is also invisible to every static census
+  // looking for `[N]` beside the selector, which is why this form survived
+  // VW1's own conversion sweep. Named handle, and a throw at the site.
+  const hit = await app.evalJs(`(() => {
+    const el = document.querySelector('.wz-strip-item[data-category=${cat}]');
+    if (!el) return false;
+    el.click();
+    return true;
   })()`);
+  if (!hit) throw new Error(`clickCategory: no strip tab with data-category=${cat}`);
 };
 
 await withHarness(async (app) => {
@@ -185,7 +194,7 @@ await withHarness(async (app) => {
   // category), at the laptop reference width.
   // ==========================================================================
   await freshProsePage(app, LAPTOP_W, 900);
-  await clickCategory(app, 0); // Journal
+  await clickCategory(app, 'journal'); // Journal
   await sleep(200);
   const journalPanel = await app.evalJs(`({
     open: !!document.querySelector('.wz-cascade-panel'),
@@ -197,7 +206,7 @@ await withHarness(async (app) => {
     journalPanel.open && journalPanel.title === 'Journal' && journalPanel.hasOpenJournal && journalPanel.hasNewPage,
     JSON.stringify(journalPanel));
 
-  await clickCategory(app, 1); // Page (switches category)
+  await clickCategory(app, 'page'); // Page (switches category)
   await sleep(200);
   const pagePanel = await app.evalJs(`({
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
@@ -236,7 +245,7 @@ await withHarness(async (app) => {
 
   // The saved-silently footer's positive case — a loose (unfiled) page.
   await freshLoosePage(app, LAPTOP_W, 900);
-  await clickCategory(app, 1); // Page
+  await clickCategory(app, 'page'); // Page
   await sleep(200);
   const loosePageFooter = await app.evalJs("document.querySelector('.wz-pageface-footer')?.textContent");
   ok('S3/DoD: on a loose (unfiled) page, the Page panel carries the saved-silently footer — its only appearance anywhere once framed',
@@ -292,17 +301,17 @@ await withHarness(async (app) => {
 
   await freshProsePage(app, LAPTOP_W, 900);
 
-  await clickCategory(app, 3); // Drawers
+  await clickCategory(app, 'drawers'); // Drawers
   await sleep(200);
   const drawersPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
   ok('S3: clicking Drawers opens layer 2, titled "Drawers"', drawersPanelEmpty === 'Drawers', String(drawersPanelEmpty));
 
-  await clickCategory(app, 4); // Shelf
+  await clickCategory(app, 'shelf'); // Shelf
   await sleep(200);
   const shelfPanelEmpty = await app.evalJs("document.querySelector('.wz-cascade-panel-title')?.textContent");
   ok('S3: clicking Shelf opens layer 2, titled "Shelf"', shelfPanelEmpty === 'Shelf', String(shelfPanelEmpty));
 
-  await clickCategory(app, 5); // Settings (Trash left for the foot; Settings is now index 5)
+  await clickCategory(app, 'settings'); // Settings (Trash left for the foot; Settings is now index 5)
   await sleep(200);
   const settingsPanel = await app.evalJs(`({
     title: document.querySelector('.wz-cascade-panel-title')?.textContent,
@@ -316,7 +325,7 @@ await withHarness(async (app) => {
   // others; current marked olive (--accent-rest, not brass); one click
   // switches and persists.
   // ==========================================================================
-  await clickCategory(app, 6); // Themes (Trash left for the foot; Themes is now index 6)
+  await clickCategory(app, 'theme'); // Themes (Trash left for the foot; Themes is now index 6)
   await sleep(200);
   const themeList = await app.evalJs(`[...document.querySelectorAll('.wz-cascade-theme .wz-cascade-action')].map(b => b.textContent)`);
   ok('S3: the theme panel lists EXACTLY the available themes (Plateau, Flux) and no others',
@@ -362,7 +371,7 @@ await withHarness(async (app) => {
   await sleep(200);
   const paperRest = await app.evalJs(rectOf('.mode-pagecol'));
 
-  await clickCategory(app, 0); // Journal
+  await clickCategory(app, 'journal'); // Journal
   await sleep(200);
   const paperPanelOpen = await app.evalJs(rectOf('.mode-pagecol'));
   await app.evalJs("document.querySelector('.wz-cascade-link').click()"); // "All pages →"
@@ -394,7 +403,7 @@ await withHarness(async (app) => {
     afterEscape2.panelGone && afterEscape2.stripPresent, JSON.stringify(afterEscape2));
 
   // Keystroke dissolves an UNDOCKED survey+panel together; the strip survives.
-  await clickCategory(app, 0); // Journal
+  await clickCategory(app, 'journal'); // Journal
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-cascade-link').click()");
   await sleep(150);
@@ -443,7 +452,7 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/cd2-journal-a'"); // FX14 S2 re-point: was #/journal/:id (unrouted)
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page mounted on entry A (host for the cascade survey)' });
   await sleep(300);
-  await clickCategory(app, 0); // Journal
+  await clickCategory(app, 'journal'); // Journal
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-cascade-link').click()");
   await sleep(200);
@@ -495,7 +504,7 @@ await withHarness(async (app) => {
   // spot-check that the cascade's own 'drawers' category dispatches to it.
   // ==========================================================================
   await freshProsePageWithBoards(app, LAPTOP_W, 900);
-  await clickCategory(app, 3); // Drawers
+  await clickCategory(app, 'drawers'); // Drawers
   await sleep(200);
   const drawersTiles = await app.evalJs(`({
     titles: [...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent),
@@ -538,7 +547,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'THE Page mounted for the dock fixture' });
   await sleep(300);
 
-  await clickCategory(app, 0); // Journal
+  await clickCategory(app, 'journal'); // Journal
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-cascade-link').click()"); // "All pages →"
   await sleep(200);
@@ -583,7 +592,7 @@ await withHarness(async (app) => {
     dockedSurvivesKeystroke.surveyStillPresent && dockedSurvivesKeystroke.stillDocked === 'true', JSON.stringify(dockedSurvivesKeystroke));
 
   // Reopening the category slides the panel back in, survey back out one slot.
-  await clickCategory(app, 0); // Journal again — SAME category, docked -> undock
+  await clickCategory(app, 'journal'); // Journal again — SAME category, docked -> undock
   await sleep(250);
   const afterReopen = await app.evalJs(`({
     panelVisible: document.querySelector('.wz-cascade-panel')?.dataset.visible,
@@ -607,7 +616,7 @@ await withHarness(async (app) => {
   // Explicit-close on a DOCKED survey (the canon's own "dismissed only by
   // explicit close, category switch, or Escape" — the docked survey's own
   // quiet × button dismisses entirely, distinct from re-clicking the strip).
-  await clickCategory(app, 0);
+  await clickCategory(app, 'journal');
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-cascade-link').click()");
   await sleep(150);
@@ -628,7 +637,7 @@ await withHarness(async (app) => {
   // motion (no animated slide, instant state change).
   // ==========================================================================
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-  await clickCategory(app, 0);
+  await clickCategory(app, 'journal');
   await sleep(150);
   // transitionDuration is a comma-separated list, one per transitioned
   // property (width/opacity/margin-right/border-width) — parse EVERY
@@ -661,7 +670,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshProsePage(app, 1100, 900);
   const floorPaperClosed = await app.evalJs(rectOf('.mode-pagecol'));
-  await clickCategory(app, 0); // Journal
+  await clickCategory(app, 'journal'); // Journal
   await sleep(150);
   const floorPaperPanelOpen = await app.evalJs(rectOf('.mode-pagecol'));
   ok('S2 @ 1100px floor: the paper rect never changes with the panel open (layers overlay, never reflow, at any width)',
@@ -693,7 +702,7 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted at the floor, post-seed' });
   await sleep(300);
-  await clickCategory(app, 0);
+  await clickCategory(app, 'journal');
   await sleep(150);
   await app.evalJs("document.querySelector('.wz-cascade-link').click()");
   await sleep(200);
@@ -939,7 +948,7 @@ if (process.env.HARNESS_PARKED === '1') {
   //   // degrade, no greyed door).
   //   // ==========================================================================
   //   await freshLoosePage(app, LAPTOP_W, 900);
-  //   await clickCategory(app, 2); // Plan
+  //   await clickCategory(app, 'plan'); // Plan
   //   await sleep(200);
   //   const planNoProject = await app.evalJs(`({
   //     hasCreateBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board'),
@@ -955,7 +964,7 @@ if (process.env.HARNESS_PARKED === '1') {
   //   // -> gone from list AND store).
   //   // ==========================================================================
   //   await freshProsePageWithBoards(app, LAPTOP_W, 900);
-  //   await clickCategory(app, 2); // Plan
+  //   await clickCategory(app, 'plan'); // Plan
   //   await sleep(200);
   //   await app.evalJs("document.querySelector('.wz-cascade-link').click()"); // "Open…"
   //   await sleep(200);
@@ -1014,7 +1023,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(pw1PageId)}`);
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PARKED: page remounted with a real membership' });
     await sleep(300);
-    await clickCategory(app, 2); // Plan
+    await clickCategory(app, 'plan'); // Plan
     await sleep(250);
 
     const rowTitles = await app.evalJs("[...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent)");
@@ -1074,7 +1083,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // The loose-page check's own successor: the creation doors still stand,
     // and PW1 adds that a loose page's REAL CONNECTIONS now sit above them.
     await freshLoosePage(app, LAPTOP_W, 900);
-    await clickCategory(app, 2); // Plan
+    await clickCategory(app, 'plan'); // Plan
     await sleep(250);
     const loosePanel = await app.evalJs(`({
       hasCreateBoard: [...document.querySelectorAll('.wz-cascade-action')].some(b => b.textContent === 'Create a Board'),
@@ -1137,13 +1146,13 @@ if (process.env.HARNESS_PARKED === '1') {
     //   by project, tiles that travel directly (no nested survey column).
     //   Live successor: this file's own live S3/S4 section, rebuilt.
     await freshProsePage(app, LAPTOP_W, 900);
-    await clickCategory(app, 1); // Page
+    await clickCategory(app, 'page'); // Page
     await sleep(200);
     const movecopyGoneParked = await app.evalJs("!document.querySelector('.wz-pageface-verb-movecopy')");
     pok('PARKED (was "S3/DoD: the Page panel carries the Page face\'s contents (title, star, home line, tags, Move/Copy, Port)...") — B2 S4: Move/Copy is gone, superseded by the Places panel — live successor: this file\'s own live S3 section, amended',
       movecopyGoneParked === true, String(movecopyGoneParked));
 
-    await clickCategory(app, 3); // Drawers
+    await clickCategory(app, 'drawers'); // Drawers
     await sleep(200);
     const oldDrawerSurveyGone = await app.evalJs("!document.querySelector('.wz-cascade-survey') && !!document.querySelector('.wz-drawers-tiles')");
     pok('PARKED (was "S3: the Drawers panel lists the drawer entities (not a flat page list)" + "S3/S4: choosing a drawer opens ITS survey (the filed pages inside that specific drawer)") — B2 S7: the old Drawer-entity list/survey is GONE whole, replaced by the large-tile Drawers panel — live successor: this file\'s own live S3/S4 section, rebuilt',

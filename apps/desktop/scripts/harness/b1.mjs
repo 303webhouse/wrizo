@@ -457,8 +457,25 @@ await withHarness(async (app) => {
   // Trash off section C's own foot to the strip's OWN foot entirely (below
   // Settings/Themes, a thin line above it), so the index this check reads
   // moved from 5 to 7.
-  ok('CD3 successor of "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section": the Trash sits at the very FOOT of the strip now — below Drawers, Shelf, Settings and Themes (Nick\'s own placement, a thin line above it)',
-    stripShape.labels[7] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[5] === 'Settings',
+  // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
+  // GENERATION 3, quoted VERBATIM and no longer asserted. This check pins
+  // the strip's OLD flat order by index — Drawers at [3], Shelf at [4],
+  // Settings at [5], Trash at [7]. VW1 regroups the rail by KIND
+  // (Page·Plan / Drawers / Journal·Shelf / foot), so those positions move.
+  // THE REGROUP IS SUPPOSED TO BREAK THIS: the check is not wrong, its
+  // subject was re-ruled. Parked, never edited.
+  //
+  // Note the shape it was already in: a CD3 successor reading POSITIONS. It
+  // is the same index-dependence VW1 exists to end, surviving inside an
+  // assertion rather than a driver — which is why converting the drivers
+  // alone could never have been enough.
+  //
+  // ok('CD3 successor of "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section": the Trash sits at the very FOOT of the strip now — below Drawers, Shelf, Settings and Themes (Nick\'s own placement, a thin line above it)',
+  // stripShape.labels[7] === 'Trash' && stripShape.labels[3] === 'Drawers' && stripShape.labels[4] === 'Shelf' && stripShape.labels[5] === 'Settings',
+  // JSON.stringify(stripShape));
+  // ------------------------------------------------------------------
+  ok('VW1 successor of the CD3 Trash-placement check: the Trash is the LAST tab in the rail, and it is named rather than counted — the claim was always "Trash sits at the very foot", which survives the regroup; only the index that expressed it did not',
+    stripShape.labels[stripShape.labels.length - 1] === 'Trash',
     JSON.stringify(stripShape));
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=trash]').click()");
   await sleep(200);
@@ -785,8 +802,22 @@ if (process.env.HARNESS_PARKED === '1') {
       const items = [...document.querySelectorAll('.wz-strip-item')];
       return { count: items.length, labels: items.map(b => b.querySelector('.wz-strip-label')?.textContent) };
     })()`);
-    pok('PARKED (was "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section") — CD3: Trash left section C for the strip\'s OWN foot (index 7, below Settings/Themes) — live successor: this file\'s own live S4 section',
-      stripShapeParkedTrash.labels[7] === 'Trash' && stripShapeParkedTrash.labels[3] === 'Drawers' && stripShapeParkedTrash.labels[4] === 'Shelf' && stripShapeParkedTrash.labels[5] === 'Settings',
+    // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
+    // A GENERATION DEEPER. The live CD3 successor above is parked for the same
+    // reason; this is its GATED twin, and it pins the old order by index in
+    // exactly the same way (labels[3] Drawers, labels[5] Settings, labels[7]
+    // Trash). VW1 regroups the rail, so those positions move. The regroup is
+    // SUPPOSED to break it — parked verbatim, never edited.
+    //
+    // Worth naming: the gated lane held an INDEX assertion that no amount of
+    // converting DRIVERS could have reached. Only changing the order found it.
+    //
+    // pok('PARKED (was "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section") — CD3: Trash left section C for the strip\'s OWN foot (index 7, below Settings/Themes) — live successor: this file\'s own live S4 section',
+    // stripShapeParkedTrash.labels[7] === 'Trash' && stripShapeParkedTrash.labels[3] === 'Drawers' && stripShapeParkedTrash.labels[4] === 'Shelf' && stripShapeParkedTrash.labels[5] === 'Settings',
+    // JSON.stringify(stripShapeParkedTrash));
+    // ----------------------------------------------------------------
+    pok('PARKED, generation 4 (was the CD3 gated re-assertion pinning Drawers at [3], Settings at [5] and Trash at [7]) — VW1 (item 134): the rail is grouped by kind, so those indices name different tabs. The surviving claim is that the Trash is LAST, asserted by name rather than by position',
+      stripShapeParkedTrash.labels[stripShapeParkedTrash.labels.length - 1] === 'Trash',
       JSON.stringify(stripShapeParkedTrash));
     return parkedChecks;
   });

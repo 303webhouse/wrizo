@@ -510,8 +510,12 @@ await withHarness(async (app) => {
   // in the UI would announce it.
   // ==========================================================================
   await app.evalJs(`(() => {
-    const b = [...document.querySelectorAll('.wz-strip-item')].find(x => (x.querySelector('.wz-strip-label') || {}).textContent === 'Page');
-    if (b) b.click();
+    // VW1 — one handle for one control. This selected by LABEL TEXT, which
+    // is lexicon-fragile: rename the term and the find() silently returns
+    // undefined and the guard below swallows it. data-category is the handle.
+    const b = document.querySelector('.wz-strip-item[data-category=page]');
+    if (!b) throw new Error('item83f: no Page tab to press');
+    b.click();
   })()`);
   await sleep(500);
   const savedDefaults = await app.evalJs(`(() => {
