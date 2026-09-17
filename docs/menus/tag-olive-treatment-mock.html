@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUPERSEDED · tags were olive · the fill, on both grounds</title>
+<!--
+  TAGS ARE OLIVE · THE HIGHLIGHT'S FILL (TAG-Q3) · PLAN desk · 2026-09-16
+  Nick ruled olive for the tags AND the highlight; brass keeps ::selection.
+
+  The treatment is decided by measurement (tag-olive-foundation.md §1):
+    text colour  -- rejected: 2.41:1 on paper (Nick's own "can barely see")
+    weight       -- impossible: ::highlight() does not carry font-weight
+    underline    -- rejected on MEANING: item 122 made underline a WRITER's mark
+    FILL         -- the treatment; text colour unchanged
+  Only the fill's STRENGTH is a judgment, so it is a slider.
+
+  THE HONEST LIMIT, shown live: no fill-only treatment reaches 3:1 against a
+  LIGHT ground while text stays readable. The readout shows both numbers so the
+  trade is visible, not hidden. (Reference: the browser's own <mark> is 1.07:1.)
+
+  PAPER uses the DOOR step (#4F5730); PANEL uses the REST step (#96a05a) --
+  the --accent-door precedent. Hand-computed blends, as the house does; the
+  CSS below sets SOLID colours computed in JS, never color-mix().
+
+  Paints with the CSS Custom Highlight API when present (text nodes asserted
+  unchanged); falls back to spans and says so.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+    --tag:#96a05a; --tag-fill:#4c4826;            /* dark chrome */
+  }
+  .paperscope{ --tag:#4F5730; --tag-fill:#c2c0ac; } /* the paper scope REDEFINES — components never ask */
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);display:flex;flex-direction:column}
+  .rig{display:flex;gap:12px;align-items:center;padding:8px 14px;border-bottom:1px solid #222;
+       font-size:12px;color:#9a9a9a;flex:0 0 auto}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  #path{margin-left:auto;font-size:11px;color:#8f8f8f}
+  #path.bad{color:#e05c5c}
+  .panes{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px 16px;min-height:0}
+  .pane{display:flex;flex-direction:column;gap:9px;min-height:0}
+  .ph{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-low)}
+  .ph b{color:var(--accent-rest);font-weight:600}
+  .ctl{display:flex;align-items:center;gap:10px;font-size:11px;color:#8a847a;flex-wrap:wrap}
+  .ctl input[type=range]{width:160px;accent-color:#96a05a}
+  .ro{font-variant-numeric:tabular-nums;font-size:11px;line-height:1.6}
+  .ro .ok{color:#96a05a} .ro .low{color:#c98b5e} .ro b{color:#d8d8d8;font-weight:500}
+  .room{flex:1;border:1px solid #222;padding:20px;overflow:auto;min-height:0}
+  .room.dark{background:var(--ground)}
+  .room.light{background:#0c0400}
+
+  /* chips — the TAG itself is olive, persisted state included */
+  .chips{display:flex;gap:6px;margin-bottom:12px}
+  .chip{background:none;border:1px solid var(--tag);color:var(--tag);font:inherit;font-size:11px;padding:3px 9px}
+  .chip.on{background:var(--tag-fill)}
+
+  .paper{background:var(--paper);color:#241a10;padding:26px 32px;font-family:var(--prose);
+         font-size:16.5px;line-height:1.66}
+  .paper h1{font-size:18px;font-weight:500;margin-bottom:12px}
+  .paper p{margin-bottom:11px}
+  .card{background:var(--panel);border:1px solid var(--line);padding:14px 18px;font-family:var(--prose);
+        font-size:15.5px;line-height:1.55;color:var(--text-hi)}
+  .card .k{font-family:var(--ui);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--text-low);margin-bottom:6px}
+  .brasssel{background:var(--brass);color:var(--on-brass)}   /* item 122's ::selection, shown for comparison */
+
+  ::highlight(fill-paper){ background-color:var(--pfill,#c2c0ac); }
+  ::highlight(fill-panel){ background-color:var(--kfill,#4c4826); }
+  .fbp{ background:var(--pfill,#c2c0ac); }
+  .fbk{ background:var(--kfill,#4c4826); }
+  .cap{flex:0 0 auto;padding:10px 16px;border-top:1px solid #1e1e22;background:#08080a;
+       font-size:11.5px;color:#7e786e;line-height:1.55;max-height:140px;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+</style>
+</head>
+<body>
+<div style="background:#3a1a0a;color:#ffbc59;padding:9px 14px;font-size:12.5px;border-bottom:1px solid #6a3a1a;line-height:1.5"><b>SUPERSEDED TWICE — kept as the record.</b> Nick reversed the olive ruling to ORANGE, then refined it: <code>::selection</code> stays brass and a tag match takes a lighter orange. See <code>tag-colour-foundation.md</code> and <code>tag-overlap-mock.html</code>. The measurements on this page still stand as the account of why olive text and an underline fail on this app's paper.</div>
+<div class="rig"><b>TAGS ARE OLIVE · THE FILL (TAG-Q3)</b><span id="path">checking…</span></div>
+
+<div class="panes">
+  <section class="pane">
+    <div class="ph"><b>PAPER</b> · a page · door-step olive</div>
+    <div class="ctl">fill strength <input type="range" id="ap" min="0.10" max="0.60" step="0.02" value="0.30">
+      <span id="apv"></span></div>
+    <div class="ro" id="rop"></div>
+    <div class="room light paperscope">
+      <div class="chips"><span class="chip on">#stark</span><span class="chip">#crypt</span></div>
+      <div class="paper" id="P">
+        <h1>The coat on the train</h1>
+        <p>Ned Stark would have said something about duty — every Stark says something about duty when the weather changes.</p>
+        <p>She did not answer. For comparison, <span class="brasssel">this is a brass selection</span> (item 122, unchanged) — a different hue, a different meaning.</p>
+      </div>
+    </div>
+  </section>
+  <section class="pane">
+    <div class="ph"><b>PANEL</b> · a card · rest-step olive</div>
+    <div class="ctl">fill strength <input type="range" id="ak" min="0.10" max="0.60" step="0.02" value="0.40">
+      <span id="akv"></span></div>
+    <div class="ro" id="rok"></div>
+    <div class="room dark">
+      <div class="chips"><span class="chip on">#stark</span><span class="chip">#crypt</span></div>
+      <div class="card" id="K">
+        <div class="k">Card · on the board “Stark”</div>
+        Winterfell — the crypt is colder than the yard, and every Stark pretends not to notice.
+        <br><br><span class="brasssel">A brass selection</span>, for comparison.
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="cap"><b>Drag the two sliders until the highlight is findable at a glance on each ground.</b> Watch the
+two numbers move in <em>opposite</em> directions: a stronger fill is easier to find and harder to read through.
+<b>Text stays above 4.5:1 across the whole range</b> — the trade is only about how quickly the eye finds the term.
+<b>The chips are olive</b> in both their resting and active states (the persisted tag state never goes orange —
+foundation §3). <b>The brass span</b> is item 122’s selection, unchanged: the olive fill and the brass fill never
+share a hue, which is exactly the separation Nick’s ruling bought. <b>Recommended: paper ≈ 0.30–0.38, panel ≈ 0.40.</b>
+For calibration only: the browser’s own <code>&lt;mark&gt;</code> is <b>1.07:1</b> against white — highlights are read
+as a field, not a line.</div>
+
+<script>
+(function(){
+  function lin(c){ c=c/255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); }
+  function rgb(h){ h=h.replace('#',''); return [0,2,4].map(function(i){return parseInt(h.substr(i,2),16);}); }
+  function L(h){ var c=rgb(h); return 0.2126*lin(c[0])+0.7152*lin(c[1])+0.0722*lin(c[2]); }
+  function ratio(a,b){ var x=L(a),y=L(b); if(x<y){var t=x;x=y;y=t;} return (x+0.05)/(y+0.05); }
+  function blend(fg,bg,a){ var f=rgb(fg),g=rgb(bg);
+    return '#'+f.map(function(v,i){ return ('0'+Math.round(a*v+(1-a)*g[i]).toString(16)).slice(-2); }).join(''); }
+
+  var HAS=(typeof CSS!=='undefined' && CSS.highlights && typeof Highlight==='function');
+  var path=document.getElementById('path');
+  function textNodes(r){ var o=[],w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT),n; while((n=w.nextNode())) o.push(n); return o; }
+  function ranges(root){
+    var out=[], re=/\bstark\b/gi;
+    textNodes(root).forEach(function(n){ var m; re.lastIndex=0;
+      while((m=re.exec(n.data))){ var r=document.createRange(); r.setStart(n,m.index); r.setEnd(n,m.index+m[0].length); out.push(r); } });
+    return out;
+  }
+  var P=document.getElementById('P'), K=document.getElementById('K');
+  var before=textNodes(P).map(function(n){return n.data;}).join('|')+textNodes(K).map(function(n){return n.data;}).join('|');
+  if(HAS){
+    CSS.highlights.set('fill-paper', new Highlight(...ranges(P)));
+    CSS.highlights.set('fill-panel', new Highlight(...ranges(K)));
+    var after=textNodes(P).map(function(n){return n.data;}).join('|')+textNodes(K).map(function(n){return n.data;}).join('|');
+    path.textContent='painted with the CSS Custom Highlight API · text nodes '+(before===after?'UNCHANGED ✓':'*** CHANGED');
+    if(before!==after) path.classList.add('bad');
+  } else {
+    [[P,'fbp'],[K,'fbk']].forEach(function(p){ ranges(p[0]).reverse().forEach(function(r){
+      var s=document.createElement('span'); s.className=p[1]; try{ r.surroundContents(s); }catch(e){} }); });
+    path.classList.add('bad');
+    path.textContent='FALLBACK — no Highlight API in this browser: painted by wrapping spans (a DOM rewrite)';
+  }
+
+  function row(label,val,good){ return label+' <b>'+val.toFixed(2)+':1</b> <span class="'+(good?'ok':'low')+'">'+(good?'✓':'below 3:1')+'</span>'; }
+  function update(){
+    var ap=+document.getElementById('ap').value, ak=+document.getElementById('ak').value;
+    var pf=blend('#4F5730','#F3EDE1',ap), kf=blend('#96a05a','#1b0d03',ak);
+    document.documentElement.style.setProperty('--pfill',pf);
+    document.documentElement.style.setProperty('--kfill',kf);
+    document.getElementById('apv').textContent='α '+ap.toFixed(2)+' → '+pf;
+    document.getElementById('akv').textContent='α '+ak.toFixed(2)+' → '+kf;
+    var pt=ratio('#241a10',pf), pg=ratio(pf,'#F3EDE1');
+    var kt=ratio('#EDE6DA',kf), kg=ratio(kf,'#1b0d03');
+    document.getElementById('rop').innerHTML='text on fill <b>'+pt.toFixed(2)+':1</b> <span class="'+(pt>=4.5?'ok':'low')+'">'+(pt>=4.5?'✓ readable':'LOW')+'</span> &nbsp;·&nbsp; '+row('fill vs paper',pg,pg>=3);
+    document.getElementById('rok').innerHTML='text on fill <b>'+kt.toFixed(2)+':1</b> <span class="'+(kt>=4.5?'ok':'low')+'">'+(kt>=4.5?'✓ readable':'LOW')+'</span> &nbsp;·&nbsp; '+row('fill vs panel',kg,kg>=3);
+  }
+  document.getElementById('ap').oninput=update;
+  document.getElementById('ak').oninput=update;
+  update();
+})();
+</script>
+</body>
+</html>
