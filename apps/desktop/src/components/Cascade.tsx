@@ -74,17 +74,36 @@ export interface CascadeProps {
 
 interface CategorySpec { id: CategoryId; labelTerm: DeskTermId; icon: ReactNode }
 
-const SECTION_A: CategorySpec[] = [{ id: 'journal', labelTerm: 'drawerPlaceJournal', icon: <JournalIcon /> }];
-const SECTION_B: CategorySpec[] = [
+// VW1 (item 134) — THE RAIL, GROUPED BY KIND. The separators do the teaching,
+// silently; no heading, label or tooltip ever names a kind to the writer.
+//
+//   A  Page · Plan        where I am, and what holds it
+//   B  Drawers            where things live — the foundational container
+//   C  Journal · Shelf    what the app shows me (by date · unfiled)
+//   foot  Settings · Theme · Trash   (unchanged)
+//
+// ARRAY MEMBERSHIP IS THE WHOLE CHANGE. Same eight ids, same lexicon terms,
+// same icons, same renderSection, same four separators — so if anything goes
+// red after this, the reorder is the only candidate. That is why it lands in
+// its own commit, AFTER the 39 index selectors were retired and the suite
+// came back green and unchanged against the OLD order.
+//
+// THE SHELF LEAVES THE DRAWERS BAND ON PURPOSE. A condition (unfiled) sitting
+// beside the foundational container was erratum 131(a)'s category blur
+// rendered in furniture; moving it is the point of the ticket, not a side
+// effect of the regroup. vw1.mjs check 3 asserts the absence.
+const SECTION_A: CategorySpec[] = [
   { id: 'page', labelTerm: 'drawerPage', icon: <PageIcon /> },
   { id: 'plan', labelTerm: 'stripPlan', icon: <PlanIcon /> },
 ];
-// B1 S5 (superseded by Nick's own placement) — the Trash NO LONGER lives in
-// section C; it now sits at the very foot of the strip (SECTION_TRASH below),
-// the last place of all, a thin line above it. Section C keeps the two
-// browsing places (Drawers, Shelf), a separator below Shelf closing them off.
-const SECTION_C: CategorySpec[] = [
+const SECTION_B: CategorySpec[] = [
   { id: 'drawers', labelTerm: 'drawerPlaceDrawers', icon: <DrawersIcon /> },
+];
+// B1 S5 (superseded by Nick's own placement) — the Trash NO LONGER lives in
+// section C; it sits at the very foot of the strip (SECTION_TRASH below), the
+// last place of all, a thin line above it.
+const SECTION_C: CategorySpec[] = [
+  { id: 'journal', labelTerm: 'drawerPlaceJournal', icon: <JournalIcon /> },
   { id: 'shelf', labelTerm: 'drawerPlaceShelf', icon: <ShelfIcon /> },
 ];
 const SECTION_D: CategorySpec[] = [
