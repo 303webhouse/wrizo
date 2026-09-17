@@ -6380,7 +6380,60 @@ the queue, it is that PW2 CANNOT COMPLETE ITS OBLIGATION YET:**
 
 **PW2's re-stamp is announced when VW1 lands.** **ERRATA absent: 147 keeps its place, not the box.**
 
-Registry: next free **151**.
+## BAND — READY MEANS READY TO COMPLETE — 2026-09-17
+
+> **READY MEANS READY TO COMPLETE, NOT READY TO RUN.** *(Beside the present-and-ready rule.)*
+
+*(Chat 1's reason for holding PW2, promoted by Fable: PW2's branch was clean and its fix written, but
+steps 2 and 3 need `data-category` on `main` — measured at zero in `src/` — so running it first would
+have bought TWO PW2 pairs.)*
+
+## ITEM 151 — THE SILENT DRIVER ACT — OPENS 2026-09-17
+
+**OPENS. Harness. TOOLS' census TRAVELS WITH IT; the builder is assigned when the box frees.**
+
+**TOOLS SWEPT ADDITION B: 156 LIVE INSTANCES ACROSS 49 FILES** — **128 optional-chain acts, 28
+if-guarded** (11 more commented and excluded) — reaching **`item121`, `item126`, `fx5`, `item112a`** and
+more. **EVERY ONE LETS A DRIVER PRESS OR READ SOMETHING ABSENT AND PASS.**
+
+> **A DRIVER CAN LIE BY DYING OR BY DOING NOTHING AND PASSING — THE SECOND IS THE ONE THAT GOES GREEN.**
+
+**SCOPE NOTE FOR WHOEVER BUILDS IT: the fix is A NAMED FAILURE AT THE SITE — as TOOLS did for
+`clickCategory` — NOT a removal of the guard.** *(Removing the guard trades a silent pass for a crash
+that reports nothing: the existing law is that a driver must probe, fail a check, and record both ways.)*
+
+**TOOLS REFUSED TO RIDE IT ON VW1, CORRECTLY:** a 49-file behavioural change inside a rail regroup makes
+the next red ambiguous — **exactly what the two-commit split exists to prevent.**
+
+## VW1's THIRD-PAIR BUILD — REGISTERED AT `fcebc50` — 2026-09-17
+
+- **FOUR PARKS, NOT TWO.** `b1` and `cd1` each pin the old order **TWICE — once live, once in a gated
+  `pok()` twin.** **The parked leg's failures were DIFFERENT CHECKS from the default leg's.** *(The
+  both-legs-always-run ruling earning itself inside a single turn: the gated twins are index assertions
+  NO DRIVER CONVERSION COULD HAVE REACHED, and a success-chained pair would never have seen them.)*
+- **CHECK 7 INVERTED TO ZERO OFFENDERS WITH SIX NAMED EXEMPTIONS.** **The assignment case was resolved
+  BY A DEPENDENCY CHECK, NOT A SPELLING EXEMPTION** — *exempting the spelling would have reopened the
+  hole the inversion exists to close.*
+- **TWO LATENT OFFENDERS CONVERTED, BOTH PREVIOUSLY GREEN FOR THE WRONG REASON:** `item133` pressed
+  whichever tab happened to be first; `item83f` selected by label text behind a swallowing guard.
+- **CHECK 7 CARRIED A LIVE CRASH:** template-eaten escapes turned `\b` into a **BACKSPACE BYTE**, found
+  ONLY by extracting the logic and RUNNING it. **Second instrument this arc broken by invisible bytes
+  while passing every syntax check** (item 141's classifier was the first).
+
+> **`node --check` PROVES A FILE PARSES, NOT THAT ITS REGEXES COMPILE — RUN THE LOGIC.**
+
+**CHAT 1's VERIFICATION, and one note:**
+- **`fcebc50` is pushed; the box is idle; and the third-pair grant was already written at 17:54
+  (`tools-vw1-pair3-20260917`) — SO TOOLS IS NOT WAITING ON A GRANT. It can run now.**
+- **Commit 3's subject says "the two parks" while the accounting is FOUR** (two files × live + gated
+  twin). The ledger records four; the parked leg's `pok()` counts are the check. *(Park count, not
+  green — a subject line is not an accounting.)*
+- **Both successors now compare the eight labels AS A SET** (sorted), so ORDER is no longer asserted
+  there at all — `vw1.mjs` is what asserts the new order. *(Correct: the re-ruled sequence should be
+  asserted in ONE place, by the item that rules it.)*
+
+Registry: next free **152**.
+
 
 
 
