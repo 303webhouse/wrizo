@@ -162,7 +162,29 @@ ranges; the CSS Custom Highlight API PAINTS them** (`CSS.highlights` + `::highli
   app ships in before it is relied on. **If it is refused, the highlight lives inside the register's
   rewrite, obeys rule 1, and repaints when the selection collapses.**
 
-### TH4 · THE BRASS FORK — both designed, both mocked, Nick has it
+### TH4 · THE BRASS FORK — **RULED, REVERSED, THEN REFINED (2026-09-16)** — see `tag-colour-foundation.md` §0
+
+**The chain, verbatim, so a later reader sees a founder's reversal and not a drift:**
+1. **OLIVE** — *"Let's make the tags and the tag highlights the olive green color so that orange stays
+   connected to the User producing writing or making choices/progress."* **→ superseded.**
+2. **REVERSED TO ORANGE** — *"Eh, I've changed my mind. When a user selects a tag, let's just make the tag
+   orange and use orange ('brass') as the background highlight for each matching word."*
+3. **(B), REFINED** — *"If the user highlights over an already-highlighted word, make the tagged word's
+   highlight a few shades lighter than brass, but still orange so the tag is still visible."* **`::selection`
+   stays brass; a matching word takes a LIGHTER orange.**
+
+**The colour rule — "olive marks where you are; orange marks what you do" — was put in front of its author at
+its first exception, held once, and has now been set aside BY HIM, FOR TAGS.** Where-you-are markers keep
+olive.
+
+**⚠ AND THE FORK'S DECIDING CASE IS OPEN.** By the Highlight API spec (§4.2.4), custom highlights paint
+**beneath** `::selection`; item 122's selection is opaque, so **a tagged word under a selection is invisible
+(measured 1.00:1).** Nick holds Q-OV1 — `tag-colour-foundation.md` §1–§3, `tag-overlap-mock.html`.
+
+*Treatment B's underline, below, did not survive in any version: item 122 made underline a writer's mark.
+The fork as it was first put to him is left standing as the record of what he chose between.*
+
+#### *The fork, as first presented:*
 
 **BRASS IS SPOKEN FOR.** Item 122 ships `::selection{ background:var(--brass); color:var(--on-brass); }`
 (`index.css`). **Two meanings in one colour on one page is the problem.** The sharpest case: **a
@@ -233,9 +255,8 @@ itself**, or **in a strip attached to it**? **Lean: the strip** — a tab should
 a board.
 **SR-Q2 · The row's label.** Recommend **the drawer's name**, so siblinghood reads as *where this sits*
 and is never confused with the membership zone's "Boards."
-**TH-Q1 · Brass.** **A** (brass for the tag, selection moved — asks an exception to *"olive marks where
-you are"*) or **B** (olive underline, selection unchanged — the colour canon as written)? Both
-mocked.
+**TH-Q1 · RULED, REVERSED, REFINED** (see TH4): olive → orange → **(B), selection brass, tag a lighter
+orange.** **The overlap it depends on is OPEN (Q-OV1).** ~~Brass A or B~~
 **TH-Q2 · Matching.** Case-insensitive, whole word or whole phrase — confirm.
 **TH-Q3 · The Highlight API** as the paint layer, with the register as the one computation — confirm
 the direction; the S0 confirms support.
