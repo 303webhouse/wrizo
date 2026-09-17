@@ -555,13 +555,29 @@ await withHarness(async (app) => {
 console.log(JSON.stringify(checks, null, 2));
 
 // === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// PW2 parks NOTHING of its own: this file is new, and the slice's three new
-// refusals (an unresolvable source, a condition-board target, a cycle) falsify
-// no existing assertion. Swept by BEHAVIOUR rather than by string before the
-// build: the only harness that pins a system-kind entry is b1.mjs, which
-// asserts a REFUSAL and stays green; no harness pins onto a condition board,
-// pins an unresolvable id, or builds a cycle. The gate below is intentionally
-// empty, the ab4.mjs / fx3.mjs precedent for an armed-but-empty gate.
+// THIS FILE parks nothing of its own — it is new. BUT PW2 AS A SLICE DOES RETIRE
+// CHECKS ELSEWHERE, and this comment used to say otherwise.
+//
+// ⚠ THE CORRECTION, IN THE PLACE THE WRONG CLAIM LIVED. It read: "the slice's
+// three new refusals falsify no existing assertion." That was TRUE of S1 — and
+// S1 is all the sweep looked at. S2 and S3 were built afterwards and never
+// re-swept, and the first stamped pair (tree 623ba30) came back red in both
+// legs on two of this lane's OWN PW1 harnesses:
+//   pw1.mjs  "S2 (Q4): two sections"      — Nick's amendment renamed the
+//                                           heading to "Pages"
+//   pw1.mjs  "S2/S3 (G3 at menu scale)"   — S3 gave CARDS a real act (Copy), so
+//                                           "only members wear a menu" died
+//   ab4.mjs  "S1 @ Npx: … its own cards"  — the same renamed heading, ×2 widths
+// The lesson is the one already saved as canon and missed again: a sweep taken
+// once, before the build grows, certifies only the part of the build that
+// existed when it ran. RE-SWEEP WHEN THE SLICE GROWS, not once at S0.
+//
+// THE ARITHMETIC, audited by execution on the re-stamp:
+//   SUPERSEDED IN PLACE, live    pw1.mjs  2 instances / 2 names
+//   BEHIND THE GATE (gen 2)      ab4.mjs  2 instances / 1 name  (×2 widths)
+//   PW2 TOTAL RETIRED                     4 instances / 3 names
+// The gate below stays empty because this file retires nothing of its own —
+// the ab4.mjs / fx3.mjs precedent for an armed-but-empty gate.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   // Nothing parked in this file.

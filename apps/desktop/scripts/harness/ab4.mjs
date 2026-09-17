@@ -596,12 +596,27 @@ if (process.env.HARNESS_PARKED === '1') {
         cardTitles: [...document.querySelectorAll('.wz-cascade-thumb-title')].map(t => t.textContent),
         sections: [...document.querySelectorAll('.wz-cascade-survey-section')].map(s => s.textContent),
       })`);
-      pok(`PARKED (was "S1 @ ${width}px: picking a board swaps the survey column to ITS OWN cards (large thumbnails: title/excerpt, or \\"A sketch\\" for ink) with a quiet back affordance") — PW1 S2: unchanged mechanic reached through the new door, and the column now reads in TWO SECTIONS (Q4) with the cards in the board's own y-then-x arrangement (Q14)`,
+      // ---- PARKED, GENERATION 1 — SUPERSEDED by PW2's S2 amendment, 2026-09-13 ----
+      // Quoted VERBATIM and no longer asserted (A4). Nick renamed the membership
+      // section's heading from "Pages linked to this board" to "Pages" ("section
+      // off Boards from Pages clearly"), so the final conjunct is false by ruling.
+      // Every other conjunct is untouched and still pinned in generation 2 below.
+      //
+      // pok(`PARKED (was "S1 @ ${width}px: picking a board swaps the survey column to ITS OWN cards (large thumbnails: title/excerpt, or \\"A sketch\\" for ink) with a quiet back affordance") — PW1 S2: unchanged mechanic reached through the new door, and the column now reads in TWO SECTIONS (Q4) with the cards in the board's own y-then-x arrangement (Q14)`,
+      //   cardsView.title === 'AB4 Survey Board' && cardsView.hasBack
+      //   && cardsView.cardTitles.includes('Card One')
+      //   && cardsView.cardTitles.includes('A sketch')
+      //   && cardsView.cardTitles.some((t) => t.includes('AB4 Card Target Page'))
+      //   && cardsView.sections.includes('Cards') && cardsView.sections.includes('Pages linked to this board'),
+      //   JSON.stringify(cardsView));
+      // ------------------------------------------------------------------------
+      // GENERATION 2 (PW2 S2 amendment) — the same claim against Nick's heading.
+      pok(`PARKED, generation 2 (was the PW1 generation-1 successor of "S1 @ ${width}px: picking a board swaps the survey column to ITS OWN cards") — PW2 S2 amendment: the membership section is headed "Pages" now; the mechanic, the back affordance, the card titles and the Cards section are all unchanged and still pinned`,
         cardsView.title === 'AB4 Survey Board' && cardsView.hasBack
         && cardsView.cardTitles.includes('Card One')
         && cardsView.cardTitles.includes('A sketch')
         && cardsView.cardTitles.some((t) => t.includes('AB4 Card Target Page'))
-        && cardsView.sections.includes('Cards') && cardsView.sections.includes('Pages linked to this board'),
+        && cardsView.sections.includes('Cards') && cardsView.sections.includes('Pages'),
         JSON.stringify(cardsView));
 
       const backThere = await app.evalJs("!!document.querySelector('.wz-cascade-survey-back')");
