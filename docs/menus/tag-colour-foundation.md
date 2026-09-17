@@ -29,7 +29,7 @@ a tagged word, **the tagged word must remain visible beneath it** — **the desi
 front of its author at the first place it would bend. He held it once (ruling 1). He has now set it
 aside, for tags, by his own word (ruling 2).** That is a founder's decision, not an erosion.
 
-**⚠ AND THE SCOPE OF THE REVERSAL IS TAGS — NOTHING ELSE.** The rule still governs every
+**⚠ THE SCOPE OF THE REVERSAL IS TAGS — NOTHING ELSE. (RATIFIED, Fable, 2026-09-16.)** The rule still governs every
 **where-you-are marker** in the app. **The sibling row's current-tab marker (144), the mode strip's
 active tab, open-drawer states — all stay olive.** *A reader who takes "tags went orange" as "the olive
 rule is retired" will repaint half the app. It was not retired; it was excepted, for one kind of
@@ -78,20 +78,25 @@ i.e. can the writer still see which selected words are tagged.*
 
 ---
 
-## §2 · FABLE'S READING, AND WHY THE NARROW READING CANNOT BE BUILT
+## §2 · THE WIDE READING — the lighter orange ALWAYS — and THE REASON
 
-**Nick's sentence scopes the lightening to the overlap.** *This is Fable's reading of a founder
-sentence, not his text:* **the tag's fill is the lighter orange ALWAYS.** Taken narrowly — brass
-everywhere, lighter only under a selection — tag matches and selected text would be **identical
-everywhere except the overlap**, inverting the reason he gave.
+**Nick's sentence scopes the lightening to the overlap** (*"if the user highlights over an
+already-highlighted word…"*). **The brief carries the lighter orange as the tag's fill ALWAYS.** *This
+is a reading of a founder sentence, not his text,* and **Nick confirms or corrects it** — both readings
+are mocked side by side (`tag-overlap-mock.html`).
 
-**This desk adds a second reason, and it is mechanical:** **the narrow reading has no CSS hook at
-all.** There is no selector for *"the part of a highlight that a selection covers,"* and a script
-that computed the intersection would paint it **as another custom highlight — which the spec places
-beneath the selection again.** **The only region where the narrow reading differs from Fable's is the
-region the spec guarantees is hidden.** *So the narrow reading is not only inverted; it is
-unbuildable.* **Both are mocked side by side** (`tag-overlap-mock.html`). **Nick confirms or
-corrects.**
+**THE REASON — recorded as the reason, not a lean (Fable, 2026-09-16):**
+
+> **THE NARROW READING CANNOT BE BUILT.** There is **no CSS selector** for *"the part of a highlight
+> that a selection covers."* A script that computed that intersection would have to paint it **as
+> another custom highlight** — and **the spec places every custom highlight beneath `::selection`**
+> (§4.2.4). **So the narrow reading differs from the wide one ONLY in the region the spec guarantees is
+> hidden.** Everywhere a writer can actually see, the two readings are identical — except that the
+> narrow one paints tag matches in `--brass`, **indistinguishable from a selection.**
+
+**The semantic argument supports it but is not the ground:** taken narrowly, tag matches and selected
+text would be identical everywhere except the overlap, inverting the reason Nick gave for the ruling.
+*The mechanical argument is the ground because it does not depend on reading his intent at all.*
 
 ---
 
@@ -101,15 +106,23 @@ corrects.**
 |---|---|---|
 | **(i) A SECOND CHANNEL** | the tag also carries an orange **decoration** — an **overline**, deliberately *not* the writer's underline (item 122) | **the only channel the selection's background does not own.** **⚠ Whether a LOWER highlight's decoration survives an UPPER selection is an ENGINE detail this desk has NOT measured** and will not assert. The mock tests it live: **select text over a tagged word in your browser.** |
 | (ii) translucent selection | brass at α < 1 | **fails on the page** (≤ 1.20:1); **breaks selected text on cards**; and changes item 122's shipped opacity, which (B) said stays unmoved |
-| (iii) accept it | the tag is hidden while selected; the active chip still says the tag is on | **contradicts (B)'s explicit requirement** |
+| **(iii) ACCEPT IT** | the tag is hidden **only while a selection covers it**; the active chip still says the tag is on | **meets the requirement except during the transient act of selecting** — and needs **no unmeasured mechanism**. **Fable's lean.** |
 | (iv) revisit (A) | move selection off brass | **does NOT solve the overlap** — *any* opaque selection hides *any* custom highlight. (A) only changes things **outside** the overlap, separating by hue instead of intensity |
 
-**LEAN: (i), CONTINGENT ON THE ENGINE MEASUREMENT.** **If the shipping engines hide a lower highlight's
-decoration under a selection too, then no CSS highlight can meet the requirement at all** — and the
-question returns to Nick as **a capability limit, not a design choice.** *This desk would rather say
-that now than let a brief promise it.*
+**TWO LEANS, BOTH HANDED UP:**
+- **FABLE — (iii), accept it.** *A selection is transient; the tag is visible the rest of the time.* The
+  chip keeps saying which tags are on while the writer selects.
+- **THIS DESK — (i), a second channel,** CONTINGENT on an engine measurement.
 
-**Q-OV1 — Nick:** after selecting over a tagged word in the mock — (i), (iii), or something else?
+**The fair comparison, stated so the choice is made on it:** **(iii) needs nothing nobody has run.**
+**(i) depends on a rendering behaviour this desk has NOT measured** — whether a lower highlight's
+decoration survives an upper opaque selection — **and adds a second mark to every tagged word, all the
+time, to serve the moments a selection is on it.** *That is a real point in (iii)'s favour, and this desk
+records it against its own lean.* **If the engines hide lower decorations too, (i) is not available at
+all** and (iii) is the only choice left.
+
+**Q-OV1 — Nick:** after selecting over a tagged word in the mock — (iii) accept, (i) the overline, or
+something else?
 
 ---
 
@@ -136,6 +149,25 @@ outside the overlap, and it tops out near 1.5:1.* **On the card, every step is v
 **Recommend t ≈ 0.35. TAG-Q3's slider returns with these values** (`tag-overlap-mock.html`).
 
 ---
+
+## §4b · STANDING FINDINGS — they outlived the olive era, and they bind any tag colour
+
+*These were found while designing the olive treatment. The colour changed; these did not. They are
+findings about the platform and the product, carried forward as live law — not as superseded text.*
+
+**F1 · WEIGHT CANNOT BE SET THROUGH THE HIGHLIGHT API.** MDN's list of what `::highlight()` accepts,
+verbatim: *"Only certain CSS properties can be used with `::highlight()`:"* — **`color`,
+`background-color`, `text-decoration` and its associated properties, `text-shadow`, and
+`-webkit-text-stroke-color` / `-webkit-text-fill-color` / `-webkit-text-stroke-width`.** **No font property
+is on it.** *(Checked against MDN directly because two summaries of the spec's own list disagreed with each
+other about font properties; a finding that binds every future tag colour should not rest on either.)* *A weight change
+would also reflow the paragraph under the writer's caret, so it would be wrong even if it were allowed.*
+**No tag highlight, in any colour, may rely on weight.**
+
+**F2 · UNDERLINE BELONGS TO THE WRITER.** Item 122 made `__word__` Wrizo's underline — **a mark the
+writer applies.** **A highlight drawn as an underline reads as the writer's act**, in any colour. **No
+tag highlight may use an underline** — which is why §3's second channel, if one is ever built, is an
+**overline**.
 
 ## §5 · THE TOKENS — one derivation, one name, now orange
 
@@ -191,9 +223,9 @@ and **underline was rejected on MEANING** (item 122 made underline a writer's ma
 door step `#4F5730`; the card used the rest step `#96a05a`; `--tag`/`--tag-fill` were redefined in the
 paper scope.** Mock: `tag-olive-treatment-mock.html` (superseded; kept as record).
 
-**Two findings from that work SURVIVE the reversal and bind the orange design too:**
-- **Underline is still the writer's mark** — which is why §3's second channel is an **overline**.
-- **Weight is still impossible** through the API.
+**Two findings from that work outlived it** and are now **live law in §4b** — F1 (weight cannot be set
+through the API) and F2 (underline belongs to the writer). *They are listed there, not here, because a
+finding kept inside superseded text reads as superseded.*
 
 ---
 
