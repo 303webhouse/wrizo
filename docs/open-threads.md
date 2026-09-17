@@ -5872,7 +5872,76 @@ These are not declared; they are counted as evidence.)*
 
 **ERRATA holds item 146 NEXT**, then items 149 and 150. Its offers 147 and 148 wait on their pairs.
 
+## ITEM 146 — RULED: OPTION C — THE "FLAKE" WAS A WRONG CHECK — 2026-09-16
+
+**ERRATA MEASURED THE DISTRIBUTION instead of calling it variance:** it ran the REAL rhizome engine over
+**16,000 grown grounds, browserless.** **Roaming is GUARANTEED on THREE margins and PROBABILISTIC on the
+TOP** — failing **0.44% at live bounds** and **1.15–1.50% at S2's.**
+
+**SO THE LIVE ROAMS CHECK WAS ASSERTING A GUARANTEE THE PRODUCT DOES NOT MAKE.** Confirmed by chat 1 at the
+wording: `m3.mjs` S2 claims the growth reaches near **ALL FOUR** ruled margins (*"roams the whole ground,
+not a confined patch"*), and the live check claims the rendered extent reaches near **ALL FOUR** stage
+margins. **Its pass / fail / pass / pass record on ONE IDENTICAL BUNDLE is exactly what that distribution
+predicts.** *(Not noise around a guarantee — an honest sample of a tendency, graded against a guarantee.)*
+
+**THE BUILD, option C:**
+- **A READ-ONLY `SESSION_START` seam — NO behaviour change.** *(Within the seams-only grant, as chat 1
+  flagged when 146 was routed: the seed lives in product code.)*
+- **The live check PARKED VERBATIM, with the measurement as its reason.**
+- **A SUCCESSOR asserting RENDERED extent equals ENGINE extent, for any seed** — the thing the harness can
+  actually guarantee.
+- **S2 extended to MANY seeds — STRICT on three margins, a STATED RATE on the top.**
+
+**OPTION B REFUSED:** it would keep the GENERAL wording while proving ONE seed, and would introduce a
+**harness-only key pattern that `src/` does not have.** *(A check whose claim is wider than its proof is
+the guard-comment defect again; a pattern that exists only in the harness is a second source of truth.)*
+
+## BAND — A FLAKE IS A CHECK THAT IS WRONG ABOUT THE PRODUCT — 2026-09-16
+
+> **A FLAKE IS A CHECK THAT IS WRONG ABOUT THE PRODUCT AND RIGHT MOST OF THE TIME — MEASURE THE
+> DISTRIBUTION BEFORE CALLING IT VARIANCE.**
+
+*(The known-flake list stayed empty all arc, and this is why that was right: the one standing
+"non-determinism" in chat 1's own records turned out, on measurement, to be a check asserting more than
+the product promises. "Flaky" is a verdict about the TEST; it was being read as a verdict about the
+MACHINE.)*
+
+## MERGE ORDER — THREE SEAM-TABLE ENTRIES, SEQUENCED — 2026-09-16
+
+**The constraint grew:** `wrizoCopyCardToBoard` (PW2) **and 146's new read-only seam** each owe an entry to
+**item 148's table** — and **neither can be added before 148 lands**, because until then the table does not
+exist on `main`.
+
+**RULED BY CHAT 1: `PW2 → item148 → item146`.**
+
+| lands | adds which entry | its pair already run? |
+| --- | --- | --- |
+| **PW2** first | none — no table exists yet | on the box now |
+| **item148** second | **PW2's** `wrizoCopyCardToBoard` | no — queued behind TOOLS |
+| **item146** third | **its own** `SESSION_START` entry | no — still being built |
+
+**ZERO WASTED PAIRS.** The earlier rule extends cleanly: **each seam's entry is added by whichever of the
+two lands SECOND, and that second lander must not have run its pair yet.**
+
+**⚠ THE TWO ENTRIES ARE DIFFERENT KINDS.** Item 148's guard covers seams that WRITE (they must flush).
+**146's seam is READ-ONLY** and does not flush, so under the inverted guard it owes a **NAMED, JUSTIFIED
+EXEMPTION** — not a wrap. **PW2's is a durability entry; 146's is an exemption.** *(Recorded so neither
+builder wraps a seam that has nothing to flush, nor exempts one that writes.)*
+
+## A PRODUCT QUESTION WITH NICK — NOT A DEFECT — 2026-09-16
+
+**About 0.4–1.5% of pages grow a ground that never reaches the TOP of the stage.** **Is "roams the whole
+ground" a GUARANTEE or a TENDENCY?**
+- **If a GUARANTEE:** it becomes **its own item**, needing **an owner** — the **Rhizome desk is retired** —
+  and it touches **`seedOrigins` / `growTo`** in `RhizomeField.tsx`.
+- **If a TENDENCY:** **146's stated-rate check is already the answer.**
+
+**NOTHING IS BLOCKED EITHER WAY.** *(Worth noting how the question was reached: a test was believed to be
+flaky, the distribution was measured, and the measurement turned a harness defect into a product
+question only the founder can answer. The test was never the thing that needed deciding.)*
+
 Registry: next free **151**.
+
 
 
 
