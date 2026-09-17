@@ -862,7 +862,13 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
       if (e.kind !== 'durable' && (e.reason || '').trim().length < 30) fault('EXEMPTION WITH A TOKEN REASON');
 
       if (e.kind === 'durable') {
-        if (!DURABLE.test(s.value)) fault('NOT DURABLE — writes through a seam that does not flush');
+        // ONE IDIOM, deliberately. A bare flushNow() at the end of a body is
+        // durable in fact, but this guard does not verify WHERE a flush sits
+        // relative to the write — a flush before the write would read the same.
+        // durable() and durableSeam() flush after the call by construction, so
+        // they are what is recognised, and the message says exactly that rather
+        // than claiming the seam cannot flush.
+        if (!DURABLE.test(s.value)) fault('NOT DURABLE — does not route through durable() or durableSeam(), the one idiom this guard recognises');
       } else if (e.kind === 'flush') {
         if (!/\bflushNow\s*\(/.test(s.value)) fault('CLAIMS TO BE THE FLUSH AND IS NOT');
       } else if (e.kind === 'namespace') {
