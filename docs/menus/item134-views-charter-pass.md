@@ -123,6 +123,44 @@ kind worth writing down.*
 
 **PW2 builds it now; the Library inherits it.**
 
+### THE THUMBNAIL LAW, AMENDED — 2026-09-16 · *not excepted*
+
+**Nick, verbatim:** *"Since Cards can be made into any size, have Card thumbnails match the
+proportion of each card individually."*
+
+**THE LAW, AS IT NOW STANDS:**
+> **BOARDS ARE WIDE. PAGES ARE TALL. A CARD WEARS ITS OWN PROPORTION.**
+
+**Why this is an amendment and not an exception — Fable's reason, recorded as the law's own:**
+**a board is wide and a page is tall because their shape is CANONICAL.** **A card has no canonical
+shape, because the writer chose it** (FX4 S4: text cards resize freeform on both axes). **So a
+card's thumbnail shows what was made.** *An exception would say "the law, except cards"; the
+amendment says what the law was always about — a thumbnail tells the truth about its subject's
+shape, and for a card the only true shape is the one the writer gave it.*
+
+**SHAPE STILL TEACHES KIND, with no colour spent:** **wide is a board** (and wears the doubled
+edge), **page-shaped is a page**, **anything else is a card wearing its own proportion.** *(A card
+the writer sizes to exactly a page's proportion reads as page-shaped — the doubled edge and the
+kind mark carry the distinction there, as they already do for boards.)*
+
+**⚠ HOW THE PROPORTION IS READ — and the obvious way is wrong.** Fable: *"Aspect is read from the
+card's stored geometry, never re-derived."* **Measured, so a builder does not have to guess:**
+**a `Box`'s `w` AND `h` are BOTH normalised to PAGE WIDTH** — the canvas renders
+`height: box.h * pageWidthPx`, and `BOARD_LINE_H` is documented as *"one text line's height,
+normalized to page width."*
+
+**So a card's aspect is ONE DIVISION: `box.w / box.h`.** **Do NOT scale `h` by the canvas's
+height** — the natural-looking move, and it silently multiplies every card's aspect by the canvas's
+own proportion. **This is the house's known trap in a new place** (a stored stroke's `y` is
+width-normalised too; mixing the frames samples the wrong thing and can pass a check for the wrong
+reason). **The built precedent is already correct** — the resize handler stores
+`aspect: box.h / box.w` from the same two fields — **reuse it, do not re-derive it.**
+
+**Harness-owed wherever card thumbnails render:** two cards of deliberately different stored
+proportions, **on a canvas whose own aspect is not 1:1**, and assert each thumbnail's rendered ratio
+equals `box.w / box.h`. *The non-square canvas is the whole point: on a square canvas the wrong
+formula and the right one agree, and the check passes for the wrong reason.*
+
 A board has **authored arrangement** (A16). Shelf membership is computed from "unfiled"; Trash
 from "deleted"; the Journal from date. **Therefore none of the three may offer positioning,
 dragging-to-place, connections, or a canvas** — not as a style choice but because there is
