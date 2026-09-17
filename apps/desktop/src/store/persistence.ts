@@ -296,7 +296,16 @@ export function flushNow(): void {
 //
 // PRODUCT CODE IS UNTOUCHED: it calls these store functions DIRECTLY and keeps
 // its own debounced cadence. This makes the SEAM durable, not the store eager.
-function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
+//
+// [ITEM 148] "so the next seam cannot quietly opt out" WAS FALSE when written:
+// the guard matched only the verbs Create/Patch/Set/Pin, read only this file, and
+// could not see inside a namespace seam — so wrizoTouchInOrder (added after it),
+// wrizoPairing's birth/pair/unpair and wrizoBible's add/edit/delete all wrote
+// through the debounced cache unwrapped, with the guard green. The guard now
+// enumerates every wrizo* seam in src/ and requires each to be durable or a NAMED
+// exemption. EXPORTED so a store module outside this file can wrap its own
+// window seam in the same idiom rather than inventing a second one.
+export function durableSeam<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {
   return (...args: A): R => { const out = fn(...args); flushNow(); return out; };
 }
 
@@ -2096,13 +2105,18 @@ export function unpairPlanBoard(boardId: string): void {
 // convention). Lets bm1.mjs assert lazy birth / explicit pair / unpair / orphan
 // without DOM.
 if (typeof window !== 'undefined') {
+  // [ITEM 148] A NAMESPACE SEAM: the verb lives on the MEMBER, not on the seam's
+  // name, so a guard reading names could never see these three. Each writes
+  // through saveJournalEntry — the debounced cache — and a fixture that births
+  // or pairs and then reloads would lose the row. Wrapped member by member; the
+  // three readers stay bare because they write nothing.
   (window as unknown as { wrizoPairing?: unknown }).wrizoPairing = {
     planBoardId: getPlanBoardId,
     pairedPageId: getPairedPageId,
     isPaired: isPairedPlanBoard,
-    birth: getOrCreatePlanBoard,
-    pair: pairBoardWithPage,
-    unpair: unpairPlanBoard,
+    birth: durableSeam(getOrCreatePlanBoard),
+    pair: durableSeam(pairBoardWithPage),
+    unpair: durableSeam(unpairPlanBoard),
   };
   // Derived-membership read seam (the wrizoNotebook precedent) — lets bm1.mjs
   // assert Journal/Shelf counts are unaffected by pairing, and that a plan
@@ -2535,8 +2549,11 @@ if (typeof window !== 'undefined') {
       previous = latest.updatedAt;
       out.push(latest);
     }
-    flushNow();
-    return out;
+    // [ITEM 148] Through `durable`, like every other seam here, rather than a
+    // bare flushNow() — identical behaviour, one idiom, so the guard has a single
+    // thing to recognise. This seam was added AFTER the durability guard and was
+    // invisible to it: "Touch" was not one of the four verbs it matched.
+    return durable(out);
   };
 
   // NOTE the narrower union, which a typecheck caught and the build did not:

@@ -55,7 +55,7 @@
 // that no longer writes raw, or one attached to a file the baseline does not
 // track, all FAIL this guard. An unexplained exemption is how a ratchet becomes
 // an amnesty — one honest-looking line at a time.
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -413,6 +413,13 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
 // check rather than a comment — the next seam added would inherit the same
 // silence, and the person adding it has no reason to know.
 //
+// [ITEM 148, 2026-09-16] THE PROMISE ABOVE WAS NOT KEPT, AND THIS BLOCK IS NO
+// LONGER THE GUARD OF RECORD FOR IT. It matches four verbs in one file, so a
+// seam named with any other verb, a seam in any other file, and a writer that
+// is a MEMBER of a namespace seam all passed it. Its checks still hold for the
+// seams they can see and are left running unchanged; the ITEM 148 block below
+// is the one that makes "cannot quietly opt out" true.
+//
 // THE RULE: any seam whose name carries a MUTATING VERB (Create/Patch/Set/Pin)
 // must route through `durableSeam(` or `durable(`. Read-only seams are exempt by
 // name (wrizoBoard, wrizoNotebook, wrizoResume and friends inspect, they do not
@@ -505,6 +512,11 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     && !/durable\(/.test(longDurableSeam.split('\n').slice(0, 4).join('\n')),
     JSON.stringify({ newMatcherSeesDurable: /durable\(/.test(seamBody(longDurableSeam)) }));
 
+  // [ITEM 148] NOTE: the `fixture` below is a RE-TYPED COPY of the matcher, and
+  // it still carries the fixed four-line window the real check abandoned in
+  // 85-C. It proves a function the guard no longer runs. It is left as written;
+  // the ITEM 148 falsifications drive their judge() directly, which is the fix
+  // for this shape rather than another copy.
   // Self-proof: the check must actually reject an unwrapped mutating seam, and
   // must not reject a read-only one or the flush itself.
   const fixture = (text) => {
@@ -526,6 +538,559 @@ ok('85-B: every DELIBERATE annotation is tracked by the baseline, still describe
     fixture('  w.wrizoSetPageHome = durableSeam(setPageHome);\n  w.wrizoNotebook = () => list();\n  w.wrizoFlushNow = () => flushNow();').length === 0,
     JSON.stringify(fixture('  w.wrizoSetPageHome = durableSeam(setPageHome);\n  w.wrizoNotebook = () => list();\n  w.wrizoFlushNow = () => flushNow();')));
 }
+// === ITEM 148 — EVERY SEAM, NOT FOUR VERBS ===================================
+//
+// OBS-1 above promises that "the next seam cannot quietly opt out". It could,
+// three ways at once, and all three were live on main:
+//
+//   1. BY VERB. It matched /wrizo(Create|Patch|Set|Pin)/. wrizoTouchInOrder —
+//      this lane's own 85-C seam, added after the guard — matched nothing.
+//      PW2's wrizoCopyCardToBoard merged unwrapped with the guard green, which
+//      PW2 measured by unwrapping and running rather than by reading.
+//   2. BY FILE. It read persistence.ts alone. 41 seams live in 23 files; 22 of
+//      them were never opened. wrizoBible (store/tutorBible.ts) writes through
+//      saveProject — the debounced cache — and was invisible for that reason.
+//   3. BY SHAPE. A namespace seam's verbs live on its MEMBERS. wrizoPairing's
+//      birth/pair/unpair all write; the seam's name carries no verb at all.
+//
+// A verb list only ever sees the verbs someone thought of. So the default is
+// INVERTED, as the raw-write scan's was: EVERY window.wrizo* seam anywhere in
+// src/ is in scope, and each is either DURABLE or a NAMED EXEMPTION whose reason
+// is written here and whose claim is CHECKED — an exemption that says "reads
+// only" while reaching a debounced writer is a lie, and fails.
+//
+// "DEBOUNCED WRITER" IS DERIVED, NEVER LISTED. It is any function in
+// persistence.ts that reaches scheduleFlush() — directly (upsert, clearDraft,
+// applyCollection) or through another writer — computed to a fixpoint from the
+// app's own source, as KEYS is above. A hand list of writer names would be a
+// verb list under another name. flushNow writes immediately and is therefore
+// not one; a synchronous localStorage.setItem on a key of a module's own is not
+// one either, because there is no timer for a reload to outrun.
+{
+  const SRC = path.join(DESKTOP, 'src');
+
+  const closeOf = (text, open, oc, cc) => {
+    let depth = 0;
+    let quote = null;
+    for (let i = open; i < text.length; i += 1) {
+      const c = text[i];
+      if (quote) {
+        if (c === BACKSLASH) { i += 1; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+      if (c === oc) depth += 1;
+      else if (c === cc) { depth -= 1; if (depth === 0) return i; }
+    }
+    return -1;
+  };
+
+  // Comments out, strings kept — a seam named in prose is not a seam.
+  const uncomment = (src) => {
+    let out = '';
+    let quote = null;
+    for (let i = 0; i < src.length; i += 1) {
+      const c = src[i];
+      if (quote) {
+        out += c;
+        if (c === BACKSLASH) { out += src[i + 1] ?? ''; i += 1; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; out += c; continue; }
+      if (c === '/' && src[i + 1] === '/') {
+        const nl = src.indexOf('\n', i);
+        if (nl < 0) return out;
+        out += '\n';
+        i = nl;
+        continue;
+      }
+      if (c === '/' && src[i + 1] === '*') {
+        const end = src.indexOf('*/', i + 2);
+        if (end < 0) return out;
+        i = end + 1;
+        continue;
+      }
+      out += c;
+    }
+    return out;
+  };
+
+  // The value an assignment binds: to the `;` that closes it at depth zero.
+  const boundValue = (text, from) => {
+    let depth = 0;
+    let quote = null;
+    for (let i = from; i < text.length; i += 1) {
+      const c = text[i];
+      if (quote) {
+        if (c === BACKSLASH) { i += 1; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+      if (c === '(' || c === '[' || c === '{') depth += 1;
+      else if (c === ')' || c === ']' || c === '}') depth -= 1;
+      else if (c === ';' && depth === 0) return text.slice(from, i).trim();
+    }
+    return text.slice(from).trim();
+  };
+
+  // Bracket depth at every index, strings skipped — so a definition can be
+  // judged TOP-LEVEL. The first version of this block took a nested
+  // `const orderIndex = notebookIndexAfter(...)` inside another function as a
+  // module definition, followed a property access (`p.orderIndex`) into it, and
+  // accused the read-only wrizoNotebook of writing. A name defined inside a
+  // function body is not reachable by that name from anywhere else.
+  const depths = (text) => {
+    const d = new Int32Array(text.length + 1);
+    let depth = 0;
+    let quote = null;
+    for (let i = 0; i < text.length; i += 1) {
+      d[i] = depth;
+      const c = text[i];
+      if (quote) {
+        if (c === BACKSLASH) { i += 1; d[i] = depth; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; continue; }
+      if (c === '(' || c === '[' || c === '{') depth += 1;
+      else if (c === ')' || c === ']' || c === '}') depth -= 1;
+    }
+    return d;
+  };
+
+  // name -> body, for every TOP-LEVEL function declaration and const binding.
+  const definitions = (text) => {
+    const defs = new Map();
+    const d = depths(text);
+    const top = (m) => d[m.index + m[0].indexOf(m[1])] === 0;
+    const fn = /(?:^|\n)[ \t]*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\(/g;
+    for (const m of text.matchAll(fn)) {
+      if (!top(m)) continue;
+      const pOpen = m.index + m[0].length - 1;
+      const pClose = closeOf(text, pOpen, '(', ')');
+      if (pClose < 0) continue;
+      let bOpen = text.indexOf('{', pClose);
+      if (bOpen < 0) continue;
+      if (/:\s*$/.test(text.slice(pClose + 1, bOpen))) {   // `): { ... } {` — a return type
+        const tClose = closeOf(text, bOpen, '{', '}');
+        bOpen = text.indexOf('{', tClose + 1);
+      }
+      const bClose = closeOf(text, bOpen, '{', '}');
+      if (bClose > 0) defs.set(m[1], text.slice(bOpen, bClose + 1));
+    }
+    const cn = /(?:^|\n)[ \t]*(?:export\s+)?(?:const|let)\s+([A-Za-z_$][\w$]*)\s*(?::[^=\n]+)?=(?!=)\s*/g;
+    for (const m of text.matchAll(cn)) {
+      if (!top(m)) continue;
+      if (!defs.has(m[1])) defs.set(m[1], boundValue(text, m.index + m[0].length));
+    }
+    return defs;
+  };
+
+  // FREE CALLS only — `foo(`, never `obj.foo(`. A write can only happen through a
+  // call, so a property access (`p.orderIndex`) or an object key is never a
+  // seed; and a method call on a Map or an array (`cur.set(`, `.map(`) is not a
+  // call to a module function that happens to share the name.
+  const callsIn = (text) => [...text.matchAll(/(?<![.\w$])([A-Za-z_$][\w$]*)\s*(?:<[^>()]*>)?\s*\(/g)].map((m) => m[1]);
+  // An OBJECT value exposes its members' values, which are references rather
+  // than calls — `{ get: getTheme, set: setTheme }` contains no call at all. So an
+  // object seeds from each member's own expression; a bare identifier seeds
+  // itself; anything else seeds from its free calls. (Seeding from EVERY
+  // identifier instead is what dragged property names into the trace.)
+  const seedsOf = (expr) => {
+    const t = expr.trim();
+    if (t.startsWith('{')) {
+      const members = membersOf(t) || [];
+      return [...new Set(members.flatMap((m) => seedsOf(m.expr)))];
+    }
+    return [...new Set([...(/^[A-Za-z_$][\w$]*$/.test(t) ? [t] : []), ...callsIn(t)])];
+  };
+
+  // Relative imports resolved to files IN THE TREE, so a trace can follow a call
+  // out of the seam's own module. A read-only seam that hands its write to a
+  // helper in another module, which then saves, is exactly the hole this item
+  // exists to close; stopping at the file boundary would leave it open.
+  const resolveSpec = (fromRel, spec, files) => {
+    if (!spec.startsWith('.')) return null;
+    const base = path.posix.normalize(path.posix.join(path.posix.dirname(fromRel), spec));
+    for (const cand of [base, `${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`]) {
+      if (Object.prototype.hasOwnProperty.call(files, cand)) return cand;
+    }
+    return null;
+  };
+  const importMap = (rel, text, files) => {
+    const map = new Map();
+    for (const m of text.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g)) {
+      const target = resolveSpec(rel, m[2], files);
+      if (!target) continue;
+      for (const part of m[1].split(',')) {
+        const mm = part.trim().match(/^(?:type\s+)?([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/);
+        if (mm) map.set(mm[2] || mm[1], { rel: target, name: mm[1] });
+      }
+    }
+    return map;
+  };
+  const buildModules = (files) => {
+    const mods = new Map();
+    for (const [rel, raw] of Object.entries(files)) {
+      const text = uncomment(raw);
+      mods.set(rel, { defs: definitions(text), imports: importMap(rel, text, files) });
+    }
+    return mods;
+  };
+
+  // Everything a set of seeds can reach, ACROSS MODULES, as (module, name) pairs.
+  // A pair that lands on a debounced writer in persistence.ts is a hit.
+  const trace = (mods, startRel, seeds, persistenceRel, writers) => {
+    const seen = new Set();
+    const stack = seeds.map((id) => [startRel, id]);
+    const writerHits = new Set();
+    let setsStorage = false;
+    while (stack.length) {
+      const [rel, id] = stack.pop();
+      const key = `${rel}::${id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (rel === persistenceRel && writers.has(id)) { writerHits.add(id); continue; }
+      const mod = mods.get(rel);
+      if (!mod) continue;
+      const body = mod.defs.get(id);
+      if (body !== undefined) {
+        if (/localStorage\s*\.\s*setItem\s*\(/.test(body)) setsStorage = true;
+        for (const c of callsIn(body)) stack.push([rel, c]);
+        continue;
+      }
+      const imp = mod.imports.get(id);
+      if (imp) stack.push([imp.rel, imp.name]);
+    }
+    return { writer: [...writerHits], setsStorage };
+  };
+
+  // Debounced writers, derived from persistence.ts to a fixpoint.
+  const debouncedWriters = (ptext) => {
+    const defs = definitions(uncomment(ptext));
+    const writers = new Set(['scheduleFlush']);
+    for (let pass = 0; pass <= defs.size; pass += 1) {
+      let grew = false;
+      for (const [name, body] of defs) {
+        if (writers.has(name)) continue;
+        if (callsIn(body).some((c) => writers.has(c))) { writers.add(name); grew = true; }
+      }
+      if (!grew) break;
+    }
+    return writers;
+  };
+
+  // Top-level members of an object literal: [{ member, expr }].
+  const membersOf = (value) => {
+    const v = value.trim();
+    if (!v.startsWith('{')) return null;
+    const close = closeOf(v, 0, '{', '}');
+    const inner = v.slice(1, close);
+    const parts = [];
+    let depth = 0;
+    let quote = null;
+    let cur = '';
+    for (let i = 0; i < inner.length; i += 1) {
+      const c = inner[i];
+      if (quote) {
+        cur += c;
+        if (c === BACKSLASH) { cur += inner[i + 1] ?? ''; i += 1; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`') { quote = c; cur += c; continue; }
+      if (c === '(' || c === '[' || c === '{') depth += 1;
+      if (c === ')' || c === ']' || c === '}') depth -= 1;
+      if (c === ',' && depth === 0) { parts.push(cur); cur = ''; continue; }
+      cur += c;
+    }
+    parts.push(cur);
+    return parts.map((p) => p.trim()).filter(Boolean).map((p) => {
+      const kv = p.match(/^([A-Za-z_$][\w$]*)\s*:\s*([\s\S]+)$/);
+      if (kv) return { member: kv[1], expr: kv[2].trim() };
+      const meth = p.match(/^(?:async\s+)?([A-Za-z_$][\w$]*)\s*\(/);
+      if (meth) return { member: meth[1], expr: p };
+      const sh = p.match(/^([A-Za-z_$][\w$]*)$/);
+      if (sh) return { member: sh[1], expr: sh[1] };
+      return { member: p, expr: p };
+    });
+  };
+
+  const ATTACH = /(?:\bseams\.|\bwindow\.|\)\s*\.)(_{0,2}wrizo[A-Za-z0-9]*)\s*=(?!=)/g;
+  const seamsIn = (files) => {
+    const out = [];
+    for (const [rel, raw] of Object.entries(files)) {
+      const text = uncomment(raw);
+      for (const m of text.matchAll(ATTACH)) {
+        out.push({ name: m[1], file: rel, value: boundValue(text, m.index + m[0].length) });
+      }
+    }
+    return out;
+  };
+
+  const DURABLE = /\b(durable|durableSeam)\s*\(/;
+  const WEAK_REASON = /^\s*$|\b(todo|tbd|placeholder|fixme)\b/i;
+
+  // THE JUDGEMENT, as a pure function of a table and a set of file texts, so
+  // every falsification below drives THIS code and not a copy of it. (OBS-1's
+  // own self-proof tests a re-typed copy of its matcher with the old four-line
+  // window still in it — a proof about a function the guard no longer runs.)
+  const judge = (table, files, persistenceRel) => {
+    const writers = debouncedWriters(files[persistenceRel] || '');
+    const found = seamsIn(files);
+    const problems = [];
+    const names = new Set(found.map((s) => s.name));
+    for (const s of found) if (!table[s.name]) problems.push({ seam: s.name, file: s.file, fault: 'UNCLASSIFIED — a new seam must be durable or a named exemption' });
+    for (const name of Object.keys(table)) if (!names.has(name)) problems.push({ seam: name, fault: 'STALE ENTRY — the table names a seam that no longer exists' });
+
+    const mods = buildModules(files);
+    for (const s of found) {
+      const e = table[s.name];
+      if (!e) continue;
+      // What an expression can reach: its own free calls, followed through every
+      // module in the tree, landing (or not) on a debounced writer.
+      const audit = (expr) => {
+        const r = trace(mods, s.file, seedsOf(expr), persistenceRel, writers);
+        return { writer: r.writer, setsStorage: r.setsStorage || /localStorage\s*\.\s*setItem\s*\(/.test(expr) };
+      };
+      const fault = (why) => problems.push({ seam: s.name, file: s.file, fault: why });
+
+      if (e.kind !== 'durable' && WEAK_REASON.test(e.reason || '')) fault('EXEMPTION WITHOUT A REASON');
+      if (e.kind !== 'durable' && (e.reason || '').trim().length < 30) fault('EXEMPTION WITH A TOKEN REASON');
+
+      if (e.kind === 'durable') {
+        if (!DURABLE.test(s.value)) fault('NOT DURABLE — writes through a seam that does not flush');
+      } else if (e.kind === 'flush') {
+        if (!/\bflushNow\s*\(/.test(s.value)) fault('CLAIMS TO BE THE FLUSH AND IS NOT');
+      } else if (e.kind === 'namespace') {
+        const members = membersOf(s.value);
+        if (!members) { fault('CLAIMS TO BE A NAMESPACE AND IS NOT AN OBJECT'); continue; }
+        const listed = new Set([...(e.writers || []), ...(e.readers || [])]);
+        for (const m of members) {
+          if (!listed.has(m.member)) fault(`UNCLASSIFIED MEMBER "${m.member}" — a namespace's verbs live on its members`);
+        }
+        const present = new Set(members.map((m) => m.member));
+        for (const w of listed) if (!present.has(w)) fault(`STALE MEMBER "${w}"`);
+        for (const m of members) {
+          if ((e.writers || []).includes(m.member) && !DURABLE.test(m.expr)) fault(`WRITER MEMBER "${m.member}" IS NOT DURABLE`);
+          if ((e.readers || []).includes(m.member)) {
+            const a = audit(m.expr);
+            if (a.writer.length) fault(`READER MEMBER "${m.member}" REACHES A DEBOUNCED WRITER (${a.writer.join(', ')})`);
+            if (a.setsStorage) fault(`READER MEMBER "${m.member}" WRITES localStorage`);
+          }
+        }
+      } else if (e.kind === 'sync-write') {
+        const a = audit(s.value);
+        if (a.writer.length) fault(`SYNC-WRITE EXEMPTION REACHES A DEBOUNCED WRITER (${a.writer.join(', ')}) — it must be durable instead`);
+        if (!a.setsStorage) fault('SYNC-WRITE EXEMPTION WRITES NOTHING — its reason does not describe it');
+      } else if (e.kind === 'in-memory' || e.kind === 'read-only') {
+        const a = audit(s.value);
+        if (a.writer.length) fault(`${e.kind.toUpperCase()} EXEMPTION REACHES A DEBOUNCED WRITER (${a.writer.join(', ')}) — the exemption is not true`);
+        if (a.setsStorage) fault(`${e.kind.toUpperCase()} EXEMPTION WRITES localStorage — the exemption is not true`);
+      } else {
+        fault(`UNKNOWN KIND "${e.kind}"`);
+      }
+    }
+    return { found, writers, problems };
+  };
+
+  // --- THE TABLE: every seam in src/, and why it is lawful ---------------------
+  const RO = (reason) => ({ kind: 'read-only', reason });
+  const SEAMS = {
+    // DURABLE — each routes through durable() or durableSeam().
+    wrizoCreateBinder: { kind: 'durable' },
+    wrizoCreateDrawer: { kind: 'durable' },
+    wrizoCreateJournalPage: { kind: 'durable' },
+    wrizoCreateProject: { kind: 'durable' },
+    wrizoCreateStoryPlan: { kind: 'durable' },
+    wrizoPatchEntry: { kind: 'durable' },
+    wrizoPatchProject: { kind: 'durable' },
+    wrizoPinPageToBoard: { kind: 'durable' },
+    wrizoSetBeatStatus: { kind: 'durable' },
+    wrizoSetCurrentBeat: { kind: 'durable' },
+    wrizoSetPageHome: { kind: 'durable' },
+    wrizoSetPinDisplayed: { kind: 'durable' },
+    wrizoSetProjectDrawer: { kind: 'durable' },
+    wrizoTouchInOrder: { kind: 'durable' },
+
+    wrizoFlushNow: { kind: 'flush', reason: 'It IS the flush — the thing every durable seam calls; it has nothing to outrun.' },
+
+    // NAMESPACES — the verb lives on the member.
+    wrizoPairing: {
+      kind: 'namespace',
+      writers: ['birth', 'pair', 'unpair'],
+      readers: ['planBoardId', 'pairedPageId', 'isPaired'],
+      reason: 'birth/pair/unpair write through saveJournalEntry and are wrapped; the three lookups only read the pairing.',
+    },
+    wrizoBible: {
+      kind: 'namespace',
+      writers: ['add', 'edit', 'delete'],
+      readers: ['get'],
+      reason: 'add/edit/delete write through saveProject and are wrapped; get only reads the facts.',
+    },
+
+    // SYNC-WRITE — each writes a key of its OWN module with localStorage.setItem,
+    // immediately. There is no debounce, so a reload cannot outrun it.
+    wrizoAmbiance: { kind: 'sync-write', reason: 'setAmbianceDial writes its own dial key with localStorage.setItem, synchronously.' },
+    wrizoBoardMode: { kind: 'sync-write', reason: 'setBoardMode calls persist(), which writes its own key with localStorage.setItem, synchronously.' },
+    wrizoPlanTrail: { kind: 'sync-write', reason: 'rememberLastPlanBoard writes its own trail key with localStorage.setItem, synchronously.' },
+    wrizoSectionFold: { kind: 'sync-write', reason: 'setSectionFold calls persist(), which writes its own key with localStorage.setItem, synchronously.' },
+    wrizoTheme: { kind: 'sync-write', reason: 'setTheme writes the theme key with localStorage.setItem, synchronously.' },
+    wrizoThemePrefs: { kind: 'sync-write', reason: 'setThemePrefs writes its own prefs key with localStorage.setItem, synchronously.' },
+
+    // IN-MEMORY — module state and subscribers only; nothing is persisted.
+    wrizoAssist: { kind: 'in-memory', reason: 'show/clear set a module-level response and notify subscribers; nothing is persisted.' },
+    wrizoThemeFx: { kind: 'in-memory', reason: 'register adds handlers to an in-memory registry for the effects layer; nothing is persisted.' },
+
+    // READ-ONLY — inspection, constants and pure functions.
+    __wrizoRhizomeEngine: RO('The pure growth algorithm (seeding, growth, bursts, caps), exposed so m3 can prove it.'),
+    __wrizoRouteForEntry: RO('A pure function from an entry to its route; its module writes nothing.'),
+    wrizoBoard: RO('Returns the live board boxes ref for inspection; it never assigns to it.'),
+    wrizoDecks: RO('Deck ids and each deck\'s default answers, computed from the static deck library.'),
+    wrizoDerived: RO('Journal, Shelf and Notebook membership, each a mapped read of the store.'),
+    wrizoDeskLexicon: RO('The desk term lookup and its canonical term list.'),
+    wrizoDirty: RO('The dirty-set key, a copy of the dirty ids, and the dirty records, for inspection.'),
+    wrizoFirstLineInvite: RO('The first-line nudge pool, a constant.'),
+    wrizoFluxFx: RO('Pure interval arithmetic and a constant floor for the flux effect.'),
+    wrizoLexicon: RO('The theme term lookup and its canonical term list.'),
+    wrizoNotebook: RO('The notebook order, a mapped read of the store.'),
+    wrizoResume: RO('The resume target, computed from the store without writing it.'),
+    wrizoStructure: RO('Pure board-structure helpers — lanes, card checks, parenting — that return values.'),
+    wrizoTutorFreeWriteDeck: RO('The free-write pools and their draw and refill constants.'),
+    wrizoTutorSessionCost: RO('The tutor session cost, read from the meter.'),
+    wrizoVocab: RO('A pure description of a resume target.'),
+  };
+
+  // --- the real tree -----------------------------------------------------------
+  const tsFiles = (dir, out = []) => {
+    if (!existsSync(dir)) return out;
+    for (const n of readdirSync(dir)) {
+      const p = path.join(dir, n);
+      if (statSync(p).isDirectory()) tsFiles(p, out);
+      else if (/\.(ts|tsx)$/.test(n) && !/\.d\.ts$/.test(n)) out.push(p);
+    }
+    return out;
+  };
+  const tree = {};
+  for (const p of tsFiles(SRC)) tree[path.relative(SRC, p).replace(/\\/g, '/')] = readFileSync(p, 'utf8');
+  const PERSIST_REL = 'store/persistence.ts';
+  const real = judge(SEAMS, tree, PERSIST_REL);
+  const seamFiles = new Set(real.found.map((s) => s.file));
+
+  ok(`148: EVERY window.wrizo* seam in src/ is durable or a named, checked exemption — ${real.found.length} seams across ${seamFiles.size} files, ${real.problems.length} problem(s). The verb list this replaces could see 13 of them and one file`,
+    real.problems.length === 0, JSON.stringify(real.problems, null, 1));
+
+  // COVERAGE — the old check read ONE file. A scan that finds seams in one file
+  // again, or finds none, is the old blindness, not a clean result.
+  ok(`148 (coverage): the scan reads the whole of src/ — ${Object.keys(tree).length} source files, seams found in ${seamFiles.size} of them, ${[...seamFiles].filter((f) => f !== PERSIST_REL).length} outside persistence.ts`,
+    Object.keys(tree).length > 50 && real.found.length >= 40 && [...seamFiles].some((f) => f !== PERSIST_REL),
+    JSON.stringify({ sourceFiles: Object.keys(tree).length, seams: real.found.length, files: [...seamFiles].sort() }));
+
+  // THE WRITER SET IS DERIVED, AND NON-TRIVIAL — a derivation that found nothing
+  // would make every exemption pass by default.
+  ok(`148 (coverage): the debounced-writer set is DERIVED from persistence.ts, not listed — ${real.writers.size} writers, including the ones the two unwrapped namespaces used`,
+    real.writers.has('upsert') && real.writers.has('saveJournalEntry') && real.writers.has('saveProject')
+    && real.writers.has('getOrCreatePlanBoard') && real.writers.has('pairBoardWithPage')
+    && !real.writers.has('flushNow') && !real.writers.has('getJournalEntry'),
+    JSON.stringify({ size: real.writers.size, flushNowIsNot: !real.writers.has('flushNow') }));
+
+  // --- falsifications ------------------------------------------------------------
+  // Each drives judge() on synthetic files. `P` is a minimal persistence module
+  // with one debounced writer, one reader, and the flush.
+  const P = [
+    'function scheduleFlush(n) { timer = setTimeout(flushNow, 300); }',
+    'export function flushNow() { localStorage.setItem(k, v); }',
+    'function upsert(c, r) { c.push(r); scheduleFlush(c); }',
+    'export function saveThing(t) { upsert(things, t); }',
+    'export function getThing(id) { return things.find((t) => t.id === id); }',
+    'export function durableSeam(fn) { return (...a) => { const o = fn(...a); flushNow(); return o; }; }',
+  ].join('\n');
+  const files = (extra) => ({ 'store/persistence.ts': P, ...extra });
+  const probs = (table, extra) => judge(table, files(extra), 'store/persistence.ts').problems;
+
+  const NS_UNWRAPPED = "(window as unknown as { wrizoKit?: unknown }).wrizoKit = { get: getThing, save: saveThing };";
+  const NS_WRAPPED = "(window as unknown as { wrizoKit?: unknown }).wrizoKit = { get: getThing, save: durableSeam(saveThing) };";
+  const NS = { wrizoKit: { kind: 'namespace', writers: ['save'], readers: ['get'], reason: 'save writes through saveThing; get only reads a thing.' } };
+
+  let p = probs(NS, { 'store/kit.ts': `import { getThing, saveThing, durableSeam } from './persistence';\n${NS_UNWRAPPED}` });
+  ok('148 FALSIFICATION: an UNWRAPPED writer member of a namespace is caught — wrizoPairing\'s shape before this item, whose seam name carries no verb at all',
+    p.some((x) => /WRITER MEMBER "save" IS NOT DURABLE/.test(x.fault)), JSON.stringify(p));
+
+  p = probs(NS, { 'store/kit.ts': `import { getThing, saveThing, durableSeam } from './persistence';\n${NS_WRAPPED}` });
+  ok('148 (the control): the same namespace with its writer wrapped is clean — so the guard is a matcher rather than a wall',
+    p.length === 0, JSON.stringify(p));
+
+  p = probs({}, { 'store/copy.ts': "import { saveThing } from './persistence';\n(window as unknown as { wrizoCopyCardToBoard?: unknown }).wrizoCopyCardToBoard = saveThing;" });
+  ok('148 FALSIFICATION: a NEW seam in a NEW file, with a verb the old list never had, is caught as UNCLASSIFIED — PW2\'s wrizoCopyCardToBoard, which merged with the old guard green',
+    p.some((x) => x.seam === 'wrizoCopyCardToBoard' && /UNCLASSIFIED/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoGone: { kind: 'read-only', reason: 'A seam that was deleted from the source long ago.' } }, {});
+  ok('148 FALSIFICATION: a table entry for a seam that no longer exists is STALE — an exemption must expire with the thing it exempts, or the table rots into an amnesty',
+    p.some((x) => x.seam === 'wrizoGone' && /STALE/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoPeek: { kind: 'read-only', reason: 'Claims to read a thing and do nothing else at all.' } },
+    { 'store/peek.ts': "import { saveThing } from './persistence';\nfunction peek(t) { saveThing(t); return t; }\n(window as unknown as { wrizoPeek?: unknown }).wrizoPeek = peek;" });
+  ok('148 FALSIFICATION: a READ-ONLY exemption whose function reaches a debounced writer — through a local helper — is caught. The exemption is a claim, and the claim is checked',
+    p.some((x) => x.seam === 'wrizoPeek' && /REACHES A DEBOUNCED WRITER \(saveThing\)/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoKit: { kind: 'namespace', writers: ['save'], readers: ['get'], reason: 'save writes through saveThing; get only reads a thing.' } },
+    { 'store/kit.ts': "import { getThing, saveThing, durableSeam } from './persistence';\n(window as unknown as { wrizoKit?: unknown }).wrizoKit = { get: getThing, save: durableSeam(saveThing), wipe: saveThing };" });
+  ok('148 FALSIFICATION: a member ADDED to a namespace without being classified is caught — the next member cannot quietly opt out either',
+    p.some((x) => /UNCLASSIFIED MEMBER "wipe"/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoMode: { kind: 'sync-write', reason: 'set writes its own mode key synchronously to storage.' } },
+    { 'store/mode.ts': "let cur = {};\nfunction persist() { localStorage.setItem('mode', JSON.stringify(cur)); }\nfunction setMode(m) { cur = m; persist(); }\n(window as unknown as { wrizoMode?: unknown }).wrizoMode = { set: setMode };" });
+  ok('148 (the control): a SYNC-WRITE seam whose setter writes its own key through a local persist() is clean — boardMode\'s and sectionFold\'s exact shape',
+    p.length === 0, JSON.stringify(p));
+
+  p = probs({ wrizoMode: { kind: 'sync-write', reason: 'set writes its own mode key synchronously to storage.' } },
+    { 'store/mode.ts': "import { saveThing } from './persistence';\nfunction setMode(m) { saveThing(m); }\n(window as unknown as { wrizoMode?: unknown }).wrizoMode = { set: setMode };" });
+  ok('148 FALSIFICATION: a SYNC-WRITE exemption that actually writes through the debounced cache is caught — "it writes its own key" is not a phrase that excuses a write it does not describe',
+    p.some((x) => /SYNC-WRITE EXEMPTION REACHES A DEBOUNCED WRITER/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoLoud: { kind: 'read-only', reason: 'TODO' } },
+    { 'store/loud.ts': "function look() { return 1; }\n(window as unknown as { wrizoLoud?: unknown }).wrizoLoud = look;" });
+  ok('148 FALSIFICATION: an exemption with a placeholder reason fails — the reason is required, as the raw-write annotations\' is',
+    p.some((x) => /REASON/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoNote: { kind: 'read-only', reason: 'Named only in a comment and never attached to anything.' } },
+    { 'store/note.ts': "// (window as unknown as { wrizoNote?: unknown }).wrizoNote = saveThing;\nexport const x = 1;" });
+  ok('148 (the control): a seam that exists only in a COMMENT is not a seam — so its table entry is STALE rather than satisfied',
+    p.some((x) => x.seam === 'wrizoNote' && /STALE/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoLens: { kind: 'read-only', reason: 'Claims only to describe a thing through a helper module.' } }, {
+    'store/helper.ts': "import { saveThing } from './persistence';\nexport function describe(t) { saveThing(t); return String(t); }",
+    'store/lens.ts': "import { describe } from './helper';\n(window as unknown as { wrizoLens?: unknown }).wrizoLens = describe;",
+  });
+  ok('148 FALSIFICATION: a READ-ONLY seam that LAUNDERS a write through a helper in ANOTHER module is caught — the trace follows imports across modules, because stopping at the seam\'s own file would leave exactly the kind of hole this item exists to close',
+    p.some((x) => x.seam === 'wrizoLens' && /REACHES A DEBOUNCED WRITER \(saveThing\)/.test(x.fault)), JSON.stringify(p));
+
+  p = probs({ wrizoLens: { kind: 'read-only', reason: 'Describes a thing through a pure helper module.' } }, {
+    'store/helper.ts': 'export function describe(t) { return String(t); }',
+    'store/lens.ts': "import { describe } from './helper';\n(window as unknown as { wrizoLens?: unknown }).wrizoLens = describe;",
+  });
+  ok('148 (the control): the same seam through a PURE helper module is clean — so crossing a module boundary is followed, not feared',
+    p.length === 0, JSON.stringify(p));
+
+  p = probs({ wrizoOrder: { kind: 'read-only', reason: 'The order of things, a mapped read of the store.' } }, {
+    'store/order.ts': [
+      "import { getThing, saveThing } from './persistence';",
+      'export function reorder(id) { const saveThingNow = 1; saveThing({ id }); }',
+      "(window as unknown as { wrizoOrder?: unknown }).wrizoOrder = () => [getThing('a')].map((p) => ({ id: p.saveThingNow, key: p.reorder }));",
+    ].join('\n'),
+  });
+  ok('148 (the control): PROPERTY ACCESSES are not calls — a read-only seam that reads `p.reorder` is not accused of calling the module\'s own writing reorder(). The first version of this block made exactly that mistake against wrizoNotebook, through a nested const it took for a definition',
+    p.length === 0, JSON.stringify(p));
+
+  const derived = debouncedWriters(`${P}\nexport function deep(t) { saveThing(t); }\nexport function deeper(t) { deep(t); }`);
+  ok('148 (the control): the writer set is TRANSITIVE — a function that writes only through another writer, two hops away, is a writer; and the flush itself is not',
+    derived.has('deep') && derived.has('deeper') && derived.has('upsert') && !derived.has('flushNow') && !derived.has('getThing'),
+    JSON.stringify([...derived]));
+}
+
 // --- THE SEAM CALL SITES ARE WELL FORMED -------------------------------------
 // ADDED BY ITEM 85-C, because the migration produced a defect neither existing
 // gate could see. Transforming `entries.push(...${JSON.stringify(rows)})` — a

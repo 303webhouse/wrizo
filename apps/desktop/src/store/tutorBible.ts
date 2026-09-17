@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getProject, saveProject, generateId, subscribe } from './persistence';
+import { getProject, saveProject, generateId, subscribe, durableSeam } from './persistence';
 import type { Fact, TutorBible } from '../types';
 
 // TU5 S2 — the client store for the book's Bible (L4 of the Tutor's memory):
@@ -78,7 +78,14 @@ export function useBibleFacts(projectId: string | null): Fact[] {
 // Test/inspection seam (the wrizoSectionFold / wrizoBoardMode convention;
 // self-registers in its own store module). Never read by app code.
 if (typeof window !== 'undefined') {
+  // [ITEM 148] add/edit/delete all write through saveProject — the debounced
+  // cache — so each is wrapped; a fixture that adds a fact and reloads would
+  // otherwise lose it. This seam lives outside persistence.ts, which is exactly
+  // why the old guard never saw it: it read one file. `get` writes nothing.
   (window as unknown as { wrizoBible?: unknown }).wrizoBible = {
-    get: getBibleFacts, add: addFact, edit: editFact, delete: deleteFact,
+    get: getBibleFacts,
+    add: durableSeam(addFact),
+    edit: durableSeam(editFact),
+    delete: durableSeam(deleteFact),
   };
 }
