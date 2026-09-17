@@ -5664,7 +5664,79 @@ defect in a harness is its class of work (the seed guard, the sleep detector, th
 **BROWSERLESS DIAGNOSIS FIRST; a pair only once it holds a fix.** **FLAGGED, NOT OVERRIDDEN: chat 1's
 records name m3's ROAMS check as OWED TO THE RHIZOME DESK.** The routing stands unless Fable returns it
 there — a prior owner is named, not silently replaced.
-Registry: next free **147**.
+## ITEM 147 — THE PARK COUNT AS A CHECK — OPENS 2026-09-16
+
+**OPENS. ROUTED TO ERRATA.** It carries three things:
+
+**(1) ITEM 87's LATENT DEFECT — confirmed by chat 1 at the line, and sharper than "hardcoded."** The
+file's parked verdict line reads:
+
+> `ITEM87 PARKED: PASS (0 checks) — ... item 87 parks nothing ... The empty list is the evidence, not an
+> omission.`
+
+**— while the file RUNS FOUR `pok()` CALLS.** The prose was TRUE when written; **four parks were added
+later (clause 1, 2026-08-17) and the summary was never updated.** **It now asserts its own emptiness AS
+EVIDENCE over a list that is not empty.**
+
+**WHY IT CANNOT REPORT A FAILURE:** the runner reds a file ONLY on a verdict line matching `/\bFAIL\b/`,
+a non-zero exit, a timeout, or no verdict. **A verdict line that always says PASS can never match.** The
+file DOES dump the four checks' real `pass` values as JSON just above — **so a failing park would be
+PRINTED and never COUNTED.** **All four pass today: LATENT, not active.**
+
+**(2) CD2's 13 → 10, EXPLAINED.** **(3) THE 17 FILES THAT PRINT NO PARKED LINE, made distinguishable
+from files that genuinely have nothing to park.** *(A silent file and an empty file are identical in a
+log — the no-blank-stamp law, one level down.)*
+
+## BAND — A VERDICT LINE THAT CANNOT SAY FAIL IS NOT A VERDICT — 2026-09-16
+
+> **A VERDICT LINE THAT CANNOT SAY FAIL IS NOT A VERDICT.**
+
+*(It is a sentence about a run, not a run. Item 87's line is the purest instance: it is a constant
+string, so it would read the same whether the four parks passed or failed.)*
+
+## ITEM 146 — m3 STAYS WITH ERRATA; THE RHIZOME DESK's CLAIM IS RETIRED — 2026-09-16
+
+**CHAT 1's CALL, on measurement:**
+- **`m3-rhizome-roams` is the ORIGINAL M3 BUILD of 2026-07-24 — FULLY MERGED, zero commits ahead.** It is
+  not a fix for the ROAMS flake; it is the work that CREATED `m3.mjs`.
+- **The Rhizome desk has not touched the codebase since.** The one "rhizome" commit this month is a
+  records entry naming it in passing.
+- **The defect is still LIVE on `main`:** `RhizomeField.tsx` — `const SESSION_START = Date.now();`, one
+  seed per session.
+
+**Routing owed work to a desk dormant for two months is the idle-box failure in routing form.** **So the
+old "owed to the Rhizome desk" note is RETIRED, and item 146 stays with ERRATA.**
+
+**⚠ SCOPE FOR ERRATA:** the seed is in **PRODUCT code**. A fix that makes it injectable must stay
+**within the seams-only grant** — a thin wrapper that changes NO behaviour — **or it is a STOP.**
+
+**Housekeeping noted, not done (not ordered):** the `m3-rhizome-roams` worktree is **fully merged and
+clean** — safe to remove under item-110 hygiene whenever that is wanted.
+
+## PLAN DESK — SIX UPDATED TIPS MERGED, ONE CONFLICT RESOLVED BY SUBSTANCE — 2026-09-16
+
+**Merged, foundation first, all docs-only:** `006d86b` (the foundation) → `22ad29e`, `1a9ced8`,
+`7deaec7` (each built on it) → `b11d34e`. **`03ca200` was ALREADY IN `main`** from last round — skipped,
+not re-merged.
+
+**`b11d34e` CONFLICTED** in `b145-term-highlight-build-brief.md`: `main` held last round's version (on
+the OLD foundation), and this tip is a **REWRITE from the new one — separate lineages.**
+
+**A LINE DIFF SAID 11 LINES OF MAIN WOULD BE DROPPED. A SUBSTANCE CHECK SAID NOTHING WAS LOST.** Every
+load-bearing term survives; the two reasons that looked dropped — weight cannot be set through the
+highlight API, and underline belongs to the writer — were **FACTORED INTO THE FOUNDATION as standing
+findings F1 and F2**, cited by reference instead of restated. **Resolved to the rewrite.** *(The diff
+measured text; the question was meaning. It is `a census is a claim about an instrument` again.)*
+
+**ONE NUANCE NOT CARRIED, flagged to the PLAN desk:** main's version said the underline-is-the-writer's
+rule **"survives the reversal"**; the rewrite cites F2 without that clause.
+
+**⚠ RELAY GAP: "PLAN DESK's self-argument band line is in its block." It is NOT in chat 1's block, and
+it is NOT in any merged document.** **Not recorded; requested.** *(A block is complete for its
+recipient.)*
+
+Registry: next free **148**.
+
 
 
 
