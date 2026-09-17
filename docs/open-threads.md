@@ -6269,6 +6269,10 @@ without knowing pair 1's design; the reading was right and the instruction's let
 by chat 1 on the box: `vw1.mjs` is absent from `harness/` (88 `.mjs` files there), and pair 1's default
 leg launched at 07:04:57 with `vw1-rail` pushed at `1f75a23`.)*
 
+**⚠ SUPERSEDED 2026-09-17 — THE CENSUS WAS 39 AND IS 77.** Pair 2's reorder found 38 more, invisible to
+every instrument that had looked (see *THE CENSUS WAS 39 AND IS 77*, below). The three readings below
+were sound about the form they read. Kept as written.
+
 **VW1's CENSUS: UNCHANGED AT 39 on the merged tip** — three independent readings, including a sweep for
 new index forms that the 112 commits merged in could have introduced.
 
@@ -6309,7 +6313,75 @@ preserving the sequence; a bare command would have been obeyed to the letter and
 partner of "when an instruction's letter defeats its purpose, follow the purpose and say so": that one
 binds the lane receiving an instruction, this one binds the desk writing it.)*
 
+## VW1 PAIR 1 — CLEAN — AND NOT TAKEN AS PROOF — 2026-09-17
+
+**88/88 BOTH LEGS at `1f75a23`.** **TOOLS did not read green as proof that nothing was skipped:** it
+compared **PER-FILE CHECK COUNTS** against its pre-conversion item-137 run — **19/19 identical parked,
+18/19 default**, and **the single difference TRACED** to 133-B adding a check on `main`.
+
+> **A GREEN SUITE DOES NOT PROVE NOTHING WAS SKIPPED — COMPARE CHECK COUNTS ACROSS THE CHANGE.**
+
+*(The park-count law generalised: there it was parks, here it is every file's total. A conversion that
+silently stopped selecting anything would run, pass, and assert less — and only the count says so.)*
+
+## VW1 PAIR 2 — NOT CLEAN — THE DESIGN WORKING — 2026-09-17
+
+**84/89 BOTH LEGS at `07a228e`.** **Pair 1 having proved the conversions, THE REORDER IS THE ONLY
+CANDIDATE** — the diagnostic the two-commit split was built to produce, arriving as designed.
+
+## THE CENSUS WAS 39 AND IS 77 — THE NINTH UNDERCOUNT — 2026-09-17
+
+**The missing 38 pass the index AS A FUNCTION ARGUMENT — `clickCategory(app, 1)` — so it NEVER APPEARS
+BESIDE THE SELECTOR.** **Invisible to the census, to check 7, and to the third-form sweep — all three
+looked in the same place.** **`cd2` alone holds 27, of which the census saw 4.**
+
+**NINTH UNDERCOUNT OF THE ARC, AND THE FIRST FOUND BY AN ACTION RATHER THAN AN INSTRUMENT.**
+
+> **THE ONLY COMPLETE CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.**
+
+**CHAT 1's INDEPENDENT COUNT, programmatically over the full enumeration (not a cut view):** the literal
+index-as-argument form appears **38 times on the pair-2 tip — `cd2` 23, `fx9` 10, `ab4` 5**, and
+**NONE in `pw1.mjs`**. **It reconciles with TOOLS' figures exactly:** cd2's 27 = its 23 hidden plus the
+4 the census already saw; 39 + 38 = **77**.
+
+## RULED FOR VW1's THIRD PAIR — 2026-09-17
+
+- **CONVERT the 38** to named categories.
+- **PARK `b1`'s and `cd1`'s CD3 successors** — the regroup is SUPPOSED to break them.
+- **INVERT CHECK 7:** any `.wz-strip-item` reference that is NOT a `data-category` selector is an
+  offender, with NAMED EXEMPTIONS — **rather than teaching the guard a third spelling.** *(The same
+  inversion as item 148's: a guard keyed on the forms someone thought of only ever sees those forms.)*
+- **CORRECT THE CENSUS TO 77**, with both breakdowns and HOW EACH FORM WAS FOUND.
+
+**SWEEP TOOLS REPORTS BACK, NOT RIDING VW1:** the helper's `if (item) item.click()` **silently no-ops**,
+so **a driver can press a control that is ABSENT and the check still passes.** **If the shape is
+widespread it becomes ITS OWN ITEM** — it would take **151**. *(Sibling of "a driver can lie by dying OR
+by doing nothing": the dying half is known; this is the doing-nothing half, and it passes.)*
+
+## BOX — TOOLS' GRANT CLEARED, A THIRD GRANTED — 2026-09-17
+
+**The two-pair grant is SPENT and TOOLS CORRECTLY STOPPED.** Chat 1 cleared it, verified the box (0
+runners, 0 harnesses), and **GRANTED TOOLS A THIRD PAIR AS ITS OWN GRANT — token
+`tools-vw1-pair3-20260917`.**
+
+## CHAT 1's CALL — TOOLS CONTINUES; PW2 HOLDS — 2026-09-17
+
+**Applying the present-and-ready rule, chat 1 keeps the box with TOOLS. The reason is not seniority in
+the queue, it is that PW2 CANNOT COMPLETE ITS OBLIGATION YET:**
+- **PW2's steps 2 and 3 need `data-category` ON `main`**, and it arrives only when VW1 merges — which
+  needs VW1's third pair clean. Measured: **0 occurrences in `src/` on `origin/main` (`c190e9e`)**.
+- **So a PW2 pair run now would be INVALIDATED BY PW2's OWN HANDLE WORK** — the alignment edits
+  `pw1.mjs` and `pw2.mjs`, both stamped files. **PW2 first = two PW2 pairs.**
+- **READY MEANS READY TO COMPLETE, NOT MERELY READY TO RUN.** A clean branch and a written fix are not
+  readiness when the merge obligation is one list. *(Fable's "one lane, one merge" is what makes this
+  the cheap order.)*
+- **The 38 sites are in `cd2`, `fx9` and `ab4` — none in PW2's files**, so the third pair does not widen
+  PW2's surface further.
+
+**PW2's re-stamp is announced when VW1 lands.** **ERRATA absent: 147 keeps its place, not the box.**
+
 Registry: next free **151**.
+
 
 
 
