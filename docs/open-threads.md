@@ -6146,7 +6146,69 @@ when VW1 clears, chat 1 proposes PW2's re-stamp goes ahead of it — the two sha
 `item147.mjs` and `item87.mjs`; PW2's fix touches `pw1.mjs` and `ab4.mjs`), and PW2 lands before
 either of ERRATA's seam-table branches in both orders. **Not acted on without a ruling.**
 
+## STANDING RULE — A LANE PRESENT AND READY TAKES THE NEXT SLOT — 2026-09-17
+
+**The contingency chat 1 routed is APPROVED:** if ERRATA is not back when VW1 clears, **PW2's re-stamp
+goes ahead of 147** (no shared file; PW2 lands before 148 and 146 either way).
+
+**FABLE's GENERAL RULE, so it need not be asked again:**
+> **A LANE THAT IS PRESENT AND READY TAKES THE NEXT SLOT; AN ABSENT LANE's ITEM KEEPS ITS PLACE IN THE
+> ORDER BUT NOT ITS HOLD ON THE BOX.** **Chat 1 reorders on that WITHOUT A RULING.**
+
+*(The order says who goes first among the ready. It was never a reservation that holds the machine
+idle for someone who is not there.)*
+
+## RULING — ONE HANDLE FOR ONE CONTROL — 2026-09-17
+
+**PW2's finding:** `pw1.mjs` lines 187 and 192 reach the strip's Plan control BY INDEX, on `main` and on
+PW2's branch, while `pw2.mjs` reaches the same control BY LABEL TEXT — **two files, one strip control,
+two handles.** **PW2 was RIGHT to leave `pw1`'s sites alone:** TOOLS owns them, converting in-branch
+collides on the same lines, and converting to label text now means changing the file twice.
+
+**RULED: after VW1 lands, `data-category` IS THE HANDLE EVERYWHERE, and at its merge PW2 aligns BOTH
+`pw1.mjs` and `pw2.mjs` to it.**
+
+> **TWO FILES ADDRESSING ONE CONTROL BY DIFFERENT HANDLES IS A DIVERGENCE WAITING FOR A REORDER.**
+
+**CHAT 1 MEASURED WHAT THAT ALIGNMENT WILL ACTUALLY CONTAIN:**
+- **`data-category` exists ONLY on `vw1-rail`** — VW1 adds `data-category={item.id}` to the strip
+  buttons in `Cascade.tsx`. On `main` and on PW2's branch the attribute is absent (0 hits in `src/`),
+  so no file can use it before VW1 lands. *(Consistent with the ruling's "after VW1 lands".)*
+- **VW1 ALREADY CONVERTS `pw1.mjs` 187 AND 192** to `.wz-strip-item[data-category=plan]`. **Once PW2
+  re-merges `main` after VW1, `pw1`'s two sites are already on the one handle** — PW2's part there is to
+  CONFIRM it, not to convert it.
+- **The conversion left to PW2 is `pw2.mjs`:** `STRIP_PLAN` (line 164, label text) and the comment above
+  it (lines 161–163), which says `.wz-strip-item` "carries no per-category class" — **true today, FALSE
+  the moment VW1 lands.**
+- **FLAGGED, NOT RULED — line 189 in BOTH files:** `document.querySelectorAll('.wz-strip-item').length > 2`
+  gates the driver check named *"the cascade strip is mounted WITH A PLAN CATEGORY"*. **A count stands
+  in for the claim** — the index handle's residue (`> 2` is what `[2]` needs). VW1 left it, as it left
+  the `length === 8` mount probes elsewhere; with a named handle the claim can be tested directly.
+  Routed to PW2 and TOOLS as part of the same alignment, their call.
+
+## PW2's MERGE OBLIGATION — ONE LIST, NOT LOOSE ENDS — 2026-09-17
+
+**At its re-stamp, in order:** (1) re-merge `main`, which then carries VW1; (2) confirm `pw1.mjs` 187/192
+carry VW1's handle; (3) convert `pw2.mjs`'s `STRIP_PLAN` and its comment to `data-category`; (4) the
+four park runs of three checks; (5) the pair — **both legs**.
+
+**⚠ CHAT 1 FLAGS ONE CONFLICT WITH THE RECORDED ORDER.** Fable's ruling folds **148's table entry** into
+PW2's merge obligation. **Under the approved order PW2 lands BEFORE 148**, and the record *MERGE ORDER —
+RECORDED SO IT CANNOT BE REVERSED* gives the `wrizoCopyCardToBoard` entry to **the second lander,
+148**. **When PW2 merges, 148's table does not exist on `main`, so PW2 CANNOT add the entry.** Recorded
+on the assumption that the entry STAYS 148's ("148: entry, then pair" — as the approved queue itself
+says), and that the single-obligation point is about the HANDLE work. **Routed to Fable to confirm;**
+the only order that gives PW2 the entry is 148 first, which costs PW2 a further pair.
+
+## REGISTERED — 2026-09-17
+
+- **Landing orders, as given:** `pw1.mjs` → VW1, PW2's fix, TOOLS' conform; `item87.mjs` → VW1, then 147.
+- **Chat 1's supersession-in-place of its own chain-on-green practice** — Fable: *the wait-then-claim
+  half survives, and SAYING WHICH HALF SURVIVES IS WHAT KEEPS A SUPERSEDED RULE READABLE.*
+- **TOOLS' turn relayed.** TOOLS has merged `main` into `vw1-rail` (`1f75a23`); its tree is clean.
+
 Registry: next free **151**.
+
 
 
 
