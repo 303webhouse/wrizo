@@ -53,9 +53,11 @@ Distribution of the top extent (`t = minY / height`) over 10,000 seeds:
 
 ### What this establishes
 
-1. **Roaming is guaranteed on three margins and probabilistic on the fourth.**
-   Across 16,000 grown grounds, left, right and bottom never failed. **Every
-   failure was the top.**
+1. **On this geometry,** roaming reached the left, right and bottom margins in
+   all 16,000 grounds, and **every failure was the top.**
+   *(Corrected after §6's wider sweep: this is a fact about S2's geometry,
+   **not** a guarantee for every layout. With a wide paper, the right margin was
+   missed too.)*
 2. **There's a structural reason.** Origin #1 is placed at the **paper's bottom
    centre** (S2 asserts it), so growth has to travel up and around the paper to
    reach the top margin, the farthest side.
@@ -74,7 +76,8 @@ Distribution of the top extent (`t = minY / height`) over 10,000 seeds:
 ## §3 · THE PRODUCT FINDING — WIDER, THEREFORE SURFACED AND NOT TOUCHED
 
 **On the order of 0.4–1.5% of pages grow a ground that doesn't reach the top of
-the stage** (depending on bounds and layout). Whether that's acceptable, and
+the stage** (depending on bounds and layout), **and on a layout with a wide paper
+a side margin can be missed too** (§6). Whether that's acceptable, and
 whether "roams the whole ground" was meant as a guarantee or a tendency, is a
 **product** question about `seedOrigins`/`growTo`. Changing either is wider than
 a thin seam, so this lane **stops** here and surfaces it. The Rhizome desk that
@@ -130,3 +133,82 @@ node roamsweep.mjs rhizomeEngine.mjs 10000
 `roamsweep.mjs` grows `N` grounds per shape and reports the fail rate by margin
 and the top-extent quantiles. It's kept in the lane's scratchpad, not the roster;
 under C it would become S2's multi-seed successor.
+
+---
+
+## §6 · OPTION C, RULED AND BUILT — `item146-rhizome-seed` @ `d9e49c2`
+
+**Standing:** **OFFERED, NOT MERGED — pair owed.** Option B was refused.
+`seedOrigins` and `growTo` are **untouched**. Whether roaming is a guarantee or a
+tendency is **Nick's** question, and nothing here is built for either answer.
+
+### A wider sweep, and a correction to §2
+
+Before the park was written, the three-margin claim was checked on **live-like
+layouts**, because a park that could miss on some seed would be a new flake.
+Sixteen layouts were swept at the recorded live stage size (1203×733), varying the
+paper's width and vertical position, at 2,000 seeds each:
+
+- **8 layouts put the paper flush with the stage bottom and failed on everything,
+  100%.** That's an artefact of the synthetic geometry: origin #1 sits on the
+  paper's bottom edge, so a flush paper puts it on the stage edge. The real
+  render reached `maxY` 729.9 of 733 with a full segment count, so it isn't
+  flush, and these layouts were discarded.
+- **The 8 realistic layouts, 16,000 grounds:** the top was missed **28** times
+  (worst layout 0.45%), and **with a wide paper (60% of the stage) the RIGHT
+  margin was missed 3 times** in those layouts' 4,000 grounds.
+
+**So §2's "left, right and bottom are always reached" was a fact about S2's
+geometry, not a guarantee.** §2 and §3 are corrected in place.
+
+### What was built
+
+| where | change |
+|---|---|
+| `RhizomeField.tsx` | a **read-only** `__wrizoRhizomeField` seam (the `wrizoBoard` convention): returns **copies** of the last build's session start, seed key, built geometry and high-water; attached on mount, removed on unmount; no behaviour change, whether used or not |
+| `m3` live | the ROAMS check **parked verbatim**; its successor asserts **fidelity**: same count, every segment, same extent, for this seed at this geometry |
+| `m3` S2 | extended to **400 fixed seeds**: strict zero on three margins **for this ground**, and the top as a **stated rate** (≤ 2%; measured 5/400) |
+| `m3` park | re-runs the experiment and asserts **fidelity**; the four margins are **recorded, not asserted** |
+
+**Why the seam exposes the *built* geometry.** A rebuild only happens on a change
+of more than 1px, and the origins depend continuously on geometry. A re-measure
+could therefore grow a different ground.
+
+**Why one recompute is exact.** The page opens with its words already in the
+store (`PageEditor` reads the entry synchronously), so the first build is already
+at the full target. Every rebuild is one `growTo` call at that target, and later
+calls at an unchanged target draw nothing. The alternative isn't safe: growth is
+**path-dependent** (600 of 900 step paths differed from the one-call ground), so a
+ground grown forward in steps could not be recomputed this way.
+
+**Why it waits first.** The seam updates synchronously and the DOM on React's
+next commit. So the check waits for them to agree, then reads both in one
+evaluation. **The fidelity recompute is one module-level definition** shared by
+the successor and the park, so the two cannot drift.
+
+### Proof so far — browserless
+
+- **Dry run** of the in-page code, outside the browser, against the real engine:
+  a faithful render matches (570/570); one coordinate moved is caught at its
+  index; a dropped segment is caught; a missing seam reports; the sweep
+  reproduces the measured five top misses exactly.
+- `seed-guard` 36/36, `item141` 11/11 (the new reads sit behind settles),
+  hooks-order 2/2 and 7/7, `tsc` clean, 88/88 files parse.
+- `m3` parks **3** (two existing + this one).
+
+**Not yet proven — the live wiring:** the seam's real values and the real render
+timing. That is the pair's job.
+
+### The pair, and what it must show
+
+- **Default leg:** `m3`'s fidelity successor green, and the S2 sweep reporting
+  5/400.
+- **Parked leg:** `M3 PARKED: PASS (3 checks)`, the ROAMS park among them, with
+  its recorded margins in the detail.
+
+### Merge note
+
+`__wrizoRhizomeField` is a **new seam**. Once item 148 lands, it owes an entry in
+148's table: `{ kind: 'read-only' }`. Chat 1 sequences it with the
+`wrizoCopyCardToBoard` entry, under the same rule: whichever lands second adds the
+line.
