@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>item 108 · filtering a board — holes or reflow?</title>
+<!--
+  ITEM 108 · MOCKUP B — WHAT FILTERING DOES TO A BOARD (Q-1)
+  PLAN desk · 2026-09-16 · candidates only, nothing locks.
+
+  A board is an ARRANGEMENT. Hiding half the cards leaves holes. Two lawful
+  answers, rendered at ONE SCALE side by side, because a comparison at two
+  scales is not a comparison.
+
+    HOLD   -- survivors stay exactly where the writer put them. Gaps appear.
+    REFLOW -- survivors close up into a dense grid.
+
+  THE DESK RECOMMENDS HOLD, for two reasons, and the second is the one this
+  mockup exists to show:
+
+  (1) Fable's: the arrangement is the writer's, and a lens is not a
+      rearrangement.
+
+  (2) THE HOLES ARE THE HONESTY. A board with gaps says "things are hidden
+      here." A reflowed board says "this is all there is" -- it looks
+      complete, tidy and smaller. REFLOW IS THE LAYOUT THAT READS MOST LIKE
+      DELETION, which is exactly the misreading item 125 and T3 exist to
+      prevent. The apparently friendlier option is the dishonest one.
+
+  AND REFLOW OWES A GUARANTEE HOLD DOES NOT: every card must return to its
+  exact prior position when the filter clears. Hold restores nothing because
+  it moved nothing. A view that relocates a writer's arrangement and promises
+  to put it back is a data-shaped risk wearing a view's clothes -- and that
+  failure is silent, permanent, and found late.
+
+  Press the tags. Press "clear". Watch what each board says while filtered.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;gap:10px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:var(--accent-rest);color:#fff;background:#1d1d16}
+  #geom{margin-left:auto;font-variant-numeric:tabular-nums;color:#8f8f8f;font-size:11px}
+  .fit{position:absolute;inset:41px 0 176px 0;display:flex;gap:16px;align-items:flex-start;
+       justify-content:center;overflow:hidden;padding:12px}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:7px}
+  .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low)}
+  .lab b{color:var(--accent-rest);font-weight:600}
+  .stage{background:var(--ground);position:relative;transform-origin:top center;flex:0 0 auto;
+         box-shadow:0 0 0 1px #000,0 16px 44px rgba(0,0,0,.8);overflow:hidden}
+  .cmp{position:fixed;left:0;right:0;bottom:0;height:176px;z-index:19;background:#08080a;
+       border-top:1px solid #1e1e22;padding:10px 16px;overflow:auto;font-size:11.5px;color:#7e786e;line-height:1.55}
+  .cmp b{color:#b9b2a6;font-weight:500}
+  table{border-collapse:collapse;width:100%;font-size:11px;margin-bottom:8px}
+  th,td{text-align:left;padding:4px 9px;border-bottom:1px solid #17171a;vertical-align:top}
+  th{color:#cfc9c0;font-weight:600;font-size:10.5px}
+  td:first-child{color:#6e6961;width:24%}
+  .good{color:var(--accent-rest)} .bad{color:#c98b5e}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-rows:44px 1fr 38px}
+  .band{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);gap:12px}
+  .crumb{font-size:10.5px;color:var(--text-low)} .crumb .h{color:var(--text-hi)}
+  .wall{position:relative;overflow:hidden}
+  .bc{position:absolute;background:var(--panel);border:1px solid var(--line);padding:7px 9px;
+      transition:opacity .18s ease, left .26s cubic-bezier(.33,0,.2,1), top .26s cubic-bezier(.33,0,.2,1)}
+  .bc .k{font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:3px}
+  .bc .t{font-family:var(--prose);font-size:10.5px;line-height:1.35;color:var(--text-mid)}
+  .bc.hidden{opacity:0;pointer-events:none}
+  .footbar{display:flex;align-items:center;gap:6px;padding:0 14px;border-top:1px solid var(--line);
+           font-size:10px;color:var(--text-low)}
+  .chip{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:9.5px;
+        padding:2px 7px;cursor:pointer}
+  .chip[aria-pressed="true"]{color:var(--text-hi);border-color:var(--accent-rest);background:#241305}
+  .clear{margin-left:auto;background:none;border:none;color:var(--accent-rest);font:inherit;font-size:9.5px;
+         cursor:pointer;visibility:hidden}
+  body[data-tag]:not([data-tag=""]) .clear{visibility:visible}
+</style>
+</head>
+<body data-tag="">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>ITEM 108 · Q-1 — HOLES OR REFLOW?</b>
+  <button id="vBoth" aria-pressed="true">side by side</button>
+  <button id="vA" aria-pressed="false">HOLD full</button>
+  <button id="vB" aria-pressed="false">REFLOW full</button>
+  <span id="geom">measuring…</span>
+</div>
+
+<div class="fit">
+  <div class="cell" id="cellA">
+    <div class="lab"><b>HOLD</b> · the survivors stay where you put them</div>
+    <div class="stage" id="stageA"></div>
+  </div>
+  <div class="cell" id="cellB">
+    <div class="lab"><b>REFLOW</b> · the survivors close up</div>
+    <div class="stage" id="stageB"></div>
+  </div>
+</div>
+
+<div class="cmp">
+  <table>
+    <tr><th></th><th>HOLD — recommended</th><th>REFLOW</th></tr>
+    <tr><td>what the filtered board says</td><td class="good">“things are hidden here”</td><td class="bad">“this is all there is”</td></tr>
+    <tr><td>the writer’s arrangement</td><td class="good">untouched — nothing moved</td><td class="bad">relocated, then restored</td></tr>
+    <tr><td>what clearing owes</td><td class="good">nothing; it moved nothing</td><td class="bad">an EXACT restore of every position</td></tr>
+    <tr><td>scanning 3 cards out of 20</td><td class="bad">eyes travel the whole wall</td><td class="good">dense and immediate</td></tr>
+    <tr><td>failure mode if it goes wrong</td><td class="good">none available</td><td class="bad">silent, permanent, found late</td></tr>
+  </table>
+  <div><b>The second argument is the one this mockup exists to show, and it inverts the obvious:</b> reflow looks friendlier and is the dishonest one. <b>A reflowed board is complete, tidy and smaller — which is what a board looks like after you delete things.</b> The gaps in HOLD are not a cost; they are the sentence “there is more here than you are looking at,” written in the layout itself. That matters because <b>item 125 and T3 both turn on one risk: a filter must never read as removing.</b> <b>And only one of these two options can get it wrong:</b> HOLD moves nothing, so it owes no restore and has no silent failure available to it. <b>Press a tag on either board, then <em>clear</em>.</b></div>
+</div>
+
+<script>
+(function(){
+  var W=560,H=430;
+  var CARDS=[
+    {x:3,  y:5,  w:150,h:60, tag:'stark',    t:'Ned’s refusal is not stubbornness.'},
+    {x:31, y:3,  w:150,h:56, tag:'crypt',    t:'The crypt is colder than the yard.'},
+    {x:60, y:6,  w:150,h:62, tag:'research', t:'Coal, wet wool, someone’s orange.'},
+    {x:6,  y:27, w:150,h:58, tag:'character',t:'Mara knows before the dog does.'},
+    {x:34, y:26, w:150,h:64, tag:'stark',    t:'Catelyn: three drafts, none sent.'},
+    {x:63, y:31, w:150,h:56, tag:'research', t:'The town is the colour of what it was.'},
+    {x:4,  y:52, w:150,h:60, tag:'stark',    t:'Winterfell in the spring is a lie.'},
+    {x:33, y:53, w:150,h:56, tag:'character',t:'He answers questions nobody asked.'},
+    {x:61, y:56, w:150,h:62, tag:'crypt',    t:'Everyone pretends not to notice.'},
+    {x:16, y:76, w:150,h:56, tag:'research', t:'Platform timetable, 1892.'},
+    {x:46, y:78, w:150,h:58, tag:'stark',    t:'The direwolf is not a metaphor yet.'},
+    {x:72, y:80, w:150,h:54, tag:'character',t:'She is about to answer him.'}
+  ];
+  var TAGS=['stark','character','research','crypt'];
+  var stA=document.getElementById('stageA'), stB=document.getElementById('stageB'),
+      geom=document.getElementById('geom'), fit=document.querySelector('.fit'),
+      bBoth=document.getElementById('vBoth'), bA=document.getElementById('vA'), bB=document.getElementById('vB');
+  var view='both', tag='';
+
+  function shell(id,mode){
+    return '<div class="frame"><div class="band"><span class="crumb"><span class="h">Stark</span>'
+      +' &nbsp;<span style="opacity:.6">— 12 cards</span></span></div>'
+      +'<div class="wall" id="wall-'+mode+'"></div>'
+      +'<div class="footbar" id="foot-'+mode+'"></div></div>';
+  }
+  function paintFoot(mode){
+    var f=document.getElementById('foot-'+mode);
+    f.innerHTML='<span style="letter-spacing:.14em">TAGS</span>'
+      + TAGS.map(function(t){return '<button class="chip" data-t="'+t+'" aria-pressed="'+(tag===t)+'">#'+t+'</button>';}).join('')
+      + '<button class="clear">clear</button>';
+    [].forEach.call(f.querySelectorAll('.chip'),function(b){
+      b.onclick=function(){ tag = (tag===b.dataset.t? '' : b.dataset.t); render(); };
+    });
+    f.querySelector('.clear').onclick=function(){ tag=''; render(); };
+  }
+  function paintWall(mode){
+    var wall=document.getElementById('wall-'+mode);
+    var visible=CARDS.filter(function(c){return !tag || c.tag===tag;});
+    wall.innerHTML=CARDS.map(function(c,i){
+      var on = !tag || c.tag===tag;
+      var left=c.x, top=c.y;
+      if(mode==='reflow' && tag && on){
+        var k=visible.indexOf(c), col=k%3, row=Math.floor(k/3);
+        left = 4 + col*32; top = 5 + row*24;
+      }
+      return '<div class="bc'+(on?'':' hidden')+'" style="left:'+left+'%;top:'+top+'%;width:'+c.w+'px;min-height:'+c.h+'px">'
+        +'<div class="k">Card · #'+c.tag+'</div><div class="t">'+c.t+'</div></div>';
+    }).join('');
+  }
+  function render(){
+    document.body.dataset.tag=tag;
+    stA.innerHTML=shell('A','hold'); stB.innerHTML=shell('B','reflow');
+    paintWall('hold'); paintWall('reflow'); paintFoot('hold'); paintFoot('reflow');
+    layout();
+  }
+  function setView(v){
+    view=v;
+    document.getElementById('cellA').style.display = (v==='B')?'none':'';
+    document.getElementById('cellB').style.display = (v==='A')?'none':'';
+    bBoth.setAttribute('aria-pressed',String(v==='both'));
+    bA.setAttribute('aria-pressed',String(v==='A'));
+    bB.setAttribute('aria-pressed',String(v==='B'));
+    layout();
+  }
+  function layout(){
+    [stA,stB].forEach(function(s){ s.style.width=W+'px'; s.style.height=H+'px'; });
+    var avail=fit.clientWidth-44, avh=fit.clientHeight-30;
+    var per=(view==='both')?(avail-16)/2:avail;
+    var sc=Math.min(per/W, avh/H, 1.9);
+    [stA,stB].forEach(function(s){ s.style.transform='scale('+sc+')';
+      s.style.marginBottom=(-(H*(1-sc)))+'px'; });
+    var shown=CARDS.filter(function(c){return !tag||c.tag===tag;}).length;
+    geom.textContent='both boards '+W+'×'+H+' @ '+(sc*100).toFixed(0)+'% — same scale'
+      + (tag? ' · #'+tag+' — '+shown+' of '+CARDS.length+' shown (this readout is the RIG, not the product: no count ships)'
+            : ' · no filter');
+  }
+  bBoth.onclick=function(){setView('both')}; bA.onclick=function(){setView('A')}; bB.onclick=function(){setView('B')};
+  window.addEventListener('resize',layout);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='1')setView('both'); if(e.key==='2')setView('A'); if(e.key==='3')setView('B'); });
+  render();
+})();
+</script>
+</body>
+</html>

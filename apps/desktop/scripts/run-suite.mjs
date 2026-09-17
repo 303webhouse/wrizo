@@ -78,6 +78,29 @@ const PARKED = has('--parked');
 const IGNORE_FOREIGN = has('--ignore-foreign');
 // ITEM 99 — the reaper is ON by default; --no-reap is the escape hatch for a
 // lane that wants the machine left exactly as found (a forensic run).
+
+// ITEM 139 — THE RUNNER REQUIRES THE SAME GRANT IT HANDS DOWN.
+// withHarness refuses without WS_BOX_TURN, and this runner sets it for every
+// child — so without this check the runner would be the one path that launders
+// an ungranted turn into 81 granted ones. It is a HARD STOP before the rebuild,
+// so an ungranted run costs nothing and touches nothing.
+//
+// ITEM 140 — AND IT CHECKS THE TOKEN AGAINST THE GRANT FILE, not merely that one
+// is set. withHarness does the same, so the suite is not the authority here; it
+// fails FAST, before the rebuild, so an ungranted sweep costs one clear refusal
+// instead of 85 children each refusing on their own after a build nobody wanted.
+{
+  const { checkGrant } = await import('./box-grant.mjs');
+  const verdict = checkGrant(process.env.WS_BOX_TURN);
+  if (!verdict.ok) {
+    console.error('SUITE REFUSED: BOX TURN NOT GRANTED.');
+    for (const line of verdict.message.split('\n')) console.error(`  ${line}`);
+    console.error('  (ITEM 139/140 — the guard lives in the runner, not in whichever driver');
+    console.error(`   remembered it, and it reads the grant rather than the environment. reason=${verdict.reason})`);
+    process.exit(3);
+  }
+  console.log(`BOX TURN: granted to lane "${verdict.lane}" — token matches the grant file.`);
+}
 const NO_REAP = has('--no-reap');
 const NO_REBUILD = has('--no-rebuild');
 const PER_FILE_TIMEOUT_MS = Number(valOf('--timeout') || 15 * 60 * 1000);
@@ -278,6 +301,9 @@ function runOne(file) {
     // children so withHarness does not re-sweep 67 times while this suite's own
     // siblings are alive on the box.
     env.WS_REAPER_PREFLIGHT_DONE = '1';
+    // ITEM 139 — the suite's grant is inherited by its files. One announcement
+    // covers the sweep; each child does not claim a turn of its own.
+    env.WS_BOX_TURN = process.env.WS_BOX_TURN;
     const child = spawn(process.execPath, [path.join('scripts/harness', file)], {
       cwd: DESKTOP, env, stdio: ['ignore', fd, fd],
     });

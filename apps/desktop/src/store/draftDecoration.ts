@@ -221,6 +221,24 @@ export function readEditorPlainText(raw: string, rawOffset: number | null): { pl
   return { plain, caret: rawOffset - removedBefore };
 }
 
+/** The exact HTML `decorateEditorFor` writes for a given plain text — split
+ * out so `revealAtCaret` below can ask "would this change anything?" without
+ * touching the DOM. One source for the string, so the comparison can never
+ * drift from the thing it is comparing against. */
+export function editorHtmlFor(plain: string, decorate: (text: string) => string): string {
+  const needsGuard = plain.endsWith('\n');
+  return decorate(plain) + (needsGuard ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : '');
+}
+
+// WHAT WAS LAST WRITTEN TO EACH LIVE EDITOR, kept because `revealAtCaret` must
+// compare against OUR OWN OUTPUT and never against `el.innerHTML`. Reading the
+// DOM back gives whatever the browser normalised our string into, which is not
+// guaranteed to be byte-identical to what we set; a purely cosmetic difference
+// there would make every comparison report "changed", and the guard that stops
+// the listener recursing would become the thing that drives it. A WeakMap so a
+// dismounted editor is not held alive by this bookkeeping.
+const lastDecorated = new WeakMap<HTMLElement, string>();
+
 /** Redecorate `el`'s innerHTML from `plain` and restore the caret at
  * `caret`, guarding against the trailing-newline-at-EOF quirk above. The
  * one place a live contenteditable's decorated DOM is ever written from
@@ -258,7 +276,9 @@ export function decorateEditorFor(
 ): void {
   if (caret === null) return;
   const needsGuard = plain.endsWith('\n');
-  el.innerHTML = decorate(plain) + (needsGuard ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : '');
+  const html = editorHtmlFor(plain, decorate);
+  lastDecorated.set(el, html);
+  el.innerHTML = html;
   if (needsGuard && caret === plain.length) {
     const guardText = el.lastElementChild?.firstChild as Text | null;
     const sel = window.getSelection();
@@ -272,4 +292,68 @@ export function decorateEditorFor(
     }
   }
   setCaretOffset(el, caret);
+}
+
+/** REVEAL-ON-CLICK — redecorate `el` for wherever the caret is NOW.
+ *
+ * The register has always computed the reveal FROM a caret offset:
+ * `decorateMarkdownForCard(text, caret)` un-collapses the marker pair the
+ * caret sits inside, which is the writer's escape hatch to the raw syntax.
+ * What was missing is that nothing re-ran it when the caret moved WITHOUT an
+ * edit. Both surfaces called their `redecorate` from the `input` handler and
+ * once at mount, so on the page a writer who CLICKED into a `**bold**` word
+ * saw nothing happen — the decoration still showed the reveal for wherever
+ * the caret had been when they last typed.
+ *
+ * `selectionchange` is the only event that fires for every way a caret can
+ * move: click, drag, arrow keys, Home/End, Tab, and the programmatic moves
+ * the formatter itself makes. Item 122 reached exactly this conclusion for
+ * Draft's B/I/U button state (PageEditor.tsx says so in its own words); this
+ * is the same signal driving the same surface's decoration. The card surface
+ * previously enumerated the paths instead — a keyup against a NAV_KEYS list
+ * plus a mouseup — which is the shape that leaves the state stale after
+ * whichever path nobody listed.
+ *
+ * FOUR THINGS IT REFUSES TO DO, each one a way this could damage the surface
+ * it exists to serve:
+ *
+ *  1. A NON-COLLAPSED SELECTION IS LEFT ALONE. Redecorating rewrites
+ *     `el.innerHTML` and then restores a COLLAPSED caret — so running it
+ *     while the writer has text selected destroys the selection. And
+ *     `selectionchange` fires on every character of a drag, so without this
+ *     guard a sentence could not be selected at all: it would collapse under
+ *     the mouse. (This is not hypothetical on the card, whose mouseup
+ *     listener did exactly that; the harness measures it.)
+ *  2. A CARET OUTSIDE `el` IS NOT OURS. `selectionchange` is a DOCUMENT
+ *     event — it fires for every surface on the page, including the other
+ *     editor when a card popup is open over a page.
+ *  3. AN UNCHANGED DECORATION IS NOT REWRITTEN. This is both the performance
+ *     guard (arrow-keying within one paragraph builds a string and compares
+ *     it, but writes no DOM and disturbs no caret) and the reason the
+ *     listener TERMINATES: redecorating restores the caret, restoring the
+ *     caret fires `selectionchange`, and that is an infinite loop unless the
+ *     second pass declines. It declines because the HTML it would write is
+ *     the HTML just written. See `lastDecorated` above for why the
+ *     comparison is against our own output rather than the live DOM.
+ *  4. IT DOES NOT RUN MID-COMPOSITION or mid-em-dash-substitution — both
+ *     callers pass those guards, for the same reason their `input` handlers
+ *     already check them: the text on screen is not the writer's yet.
+ *
+ * Returns whether it actually redecorated, which is what the harness asserts
+ * against rather than inferring from a repaint.
+ */
+export function revealAtCaret(
+  el: HTMLElement,
+  getCaret: (el: HTMLElement) => number | null,
+  setCaret: (el: HTMLElement, target: number) => void,
+): boolean {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
+  if (!sel.anchorNode || !el.contains(sel.anchorNode)) return false;
+  const { plain, caret } = readEditorPlainText(el.innerText, getCaret(el));
+  if (caret === null) return false;
+  const next = editorHtmlFor(plain, (t) => decorateMarkdownForCard(t, caret));
+  if (next === lastDecorated.get(el)) return false;
+  decorateEditorFor(el, plain, caret, setCaret);
+  return true;
 }

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the sibling tab row · and the sort</title>
+<!--
+  THE SIBLING TAB ROW + Q-2 (ALL) · PLAN desk · 2026-09-16 · candidates only.
+
+  TWO LISTS OF BOARDS ON ONE SURFACE -- Fable's warning. Both are here, on
+  purpose, so a writer can be watched failing (or not) to confuse them:
+
+    LEFT  -- MEMBERSHIP (PW2's zone, as RULED): heading = THE BOARD'S NAME,
+             two sections "Pages" and "Boards". "Linked to this board" does NOT
+             render (PW2 ruling (1)). A list of thumbnails, in the rail.
+    BELOW -- SIBLINGHOOD (this row): every other board in this board's drawer,
+             plus boards sharing an active tag from anywhere. TABS, attached
+             below the board. Labelled by its DRAWER (SR-Q2), because PW2 (1)
+             removed the one visible word that said "membership", and a second
+             list of boards must not also read as the bare noun "Boards".
+
+  PLACE (rail panel vs board edge), FORM (thumbnails vs tabs), WORD (section
+  head vs drawer name) -- three layers, and the third was nearly lost.
+
+  A TAB PRESS TRAVELS (SR2): the board changes over, the crumb updates.
+
+  Q-2 RULED ALL: tags are a sorting mechanism. Each tag added makes the set
+  smaller. Active tags are visible, in the order added, each droppable on its
+  own; "clear all" is a separate act; an EMPTY result states itself in words.
+
+  SR-Q1 lean (b): tagged pages and cards appear in a STRIP attached to the row,
+  never as tabs -- a tab is only ever a door to a board.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:10px;align-items:center;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  #geom{margin-left:auto;font-size:11px;color:#8f8f8f}
+  .fit{position:absolute;inset:41px 0 118px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{width:1366px;height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:118px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 300px 1fr;grid-template-rows:54px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--text-low);
+       font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);border-left:1px solid var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+
+  /* MEMBERSHIP — PW2's zone, as ruled */
+  .panel{grid-row:1/3;grid-column:2;background:var(--panel);border-right:1px solid var(--line);
+         display:flex;flex-direction:column;z-index:4}
+  .panel .ph{padding:12px 14px 10px;border-bottom:1px solid var(--line);font-size:10px;letter-spacing:2px;
+             text-transform:uppercase;color:var(--accent-rest)}
+  .panel .sec{padding:10px 14px 4px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-low)}
+  .mlist{display:flex;flex-wrap:wrap;gap:9px;padding:4px 14px 8px}
+  .mt{text-align:center;font-size:9.5px;color:var(--text-mid)}
+  .mpg{width:46px;height:60px;background:var(--paper);border:1px solid #cbbfa6;opacity:.9;margin:0 auto 4px}
+  .mbd{width:70px;height:46px;background:var(--ground);border:1px solid var(--line);position:relative;margin:0 auto 4px}
+  .mbd:before{content:'';position:absolute;left:3px;right:-3px;top:-3px;bottom:3px;border:1px solid var(--line)}
+  .panel .aria{padding:6px 14px;font-size:9.5px;color:#5e564c;font-style:italic;border-top:1px dashed #2a1d10;margin-top:auto}
+
+  .band{grid-row:1;grid-column:3;display:flex;align-items:center;padding:0 22px;border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low)} .crumb .i{color:var(--text-mid)}
+  .crumb .s{opacity:.5;padding:0 5px} .crumb .h{color:var(--text-hi)}
+  .room{grid-row:2;grid-column:3;position:relative;display:flex;flex-direction:column;min-height:0}
+
+  /* the sort — active tags, in the order added, each droppable */
+  .sort{display:flex;align-items:center;gap:6px;padding:9px 20px;border-bottom:1px solid var(--line);
+        font-size:10.5px;color:var(--text-low);flex:0 0 auto;flex-wrap:wrap}
+  .avail{background:none;border:1px dashed var(--line);color:var(--text-low);font:inherit;font-size:10.5px;
+         padding:2px 8px;cursor:pointer}
+  .avail:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .act{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--accent-rest);background:#241305;
+       color:var(--text-hi);font-size:10.5px;padding:2px 4px 2px 8px}
+  .act button{background:none;border:none;color:var(--accent-rest);font:inherit;cursor:pointer;padding:0 3px}
+  .clearall{margin-left:auto;background:none;border:none;color:var(--accent-rest);font:inherit;font-size:10.5px;
+            cursor:pointer}
+
+  .wall{flex:1;position:relative;min-height:0}
+  .bc{position:absolute;width:190px;background:var(--panel);border:1px solid var(--line);padding:8px 10px;
+      transition:opacity .18s ease}
+  .bc .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:3px}
+  .bc .t{font-family:var(--prose);font-size:12.5px;line-height:1.4;color:var(--text-mid)}
+  .bc.hid{opacity:0}
+  .empty{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:30px;
+         font-size:13px;color:var(--text-mid);line-height:1.6}
+  .empty b{color:var(--text-hi);font-weight:500}
+  body[data-empty="1"] .empty{display:grid}
+
+  /* SIBLINGHOOD — attached below the board */
+  .sib{flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel)}
+  .sibhead{display:flex;align-items:center;gap:10px;padding:7px 20px 0;font-size:9.5px;color:var(--text-low)}
+  .sibhead .dr{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-rest)}
+  .tabs{display:flex;gap:2px;padding:6px 20px 0;overflow-x:auto}
+  .tab{background:var(--ground);border:1px solid var(--line);border-bottom:none;color:var(--text-mid);
+       font:inherit;font-size:11.5px;padding:7px 14px 8px;cursor:pointer;white-space:nowrap;text-align:left}
+  .tab:hover{color:var(--text-hi)}
+  .tab.here{background:var(--panel);color:var(--text-hi);border-color:var(--accent-rest);cursor:default}
+  .tab .from{display:block;font-size:8.5px;color:var(--text-low);margin-top:1px}
+  .tab.gone{display:none}
+  .strip{display:none;gap:10px;align-items:flex-end;padding:8px 20px 10px;border-top:1px dashed #2a1d10}
+  body[data-hastags="1"] .strip{display:flex}
+  .strip .lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-right:6px}
+  .spg{width:30px;height:39px;background:var(--paper);border:1px solid #cbbfa6;opacity:.9}
+  .scd{background:var(--ground);border:1px solid var(--line)}
+  .sitem{text-align:center;font-size:8.5px;color:var(--text-mid);max-width:70px}
+  .nosib{padding:8px 20px 10px;font-size:11px;color:var(--text-mid);display:none}
+  body[data-sibempty="1"] .nosib{display:block}
+</style>
+</head>
+<body data-empty="0" data-hastags="0" data-sibempty="0">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>THE SIBLING ROW · THE SORT (ALL)</b>
+  <button id="reset">reset</button>
+  <span id="geom"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat on"><span class="g">⌗</span>plan</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">✶</span>journal</div>
+      <div class="cat"><span class="g">⌂</span>shelf</div>
+    </nav>
+
+    <aside class="panel" aria-label="Characters — linked to this board">
+      <div class="ph" id="memHead">Characters</div>
+      <div class="sec">Pages</div>
+      <div class="mlist">
+        <div class="mt"><div class="mpg"></div>Catelyn’s letter</div>
+        <div class="mt"><div class="mpg"></div>Ned — last ride</div>
+      </div>
+      <div class="sec">Boards</div>
+      <div class="mlist">
+        <div class="mt"><div class="mbd"></div>House Stark</div>
+      </div>
+      <div class="aria">aria-label: “linked to this board” — never a visible line (PW2 ruling 1)</div>
+    </aside>
+
+    <div class="band"><div class="crumb" id="crumb"></div></div>
+
+    <div class="room">
+      <div class="sort" id="sort"></div>
+      <div class="wall" id="wall">
+        <div class="empty" id="empty"></div>
+      </div>
+
+      <div class="sib" aria-label="Boards beside this one">
+        <div class="sibhead"><span class="dr">Novel</span><span>— the boards this one sits beside</span></div>
+        <div class="tabs" id="tabs"></div>
+        <div class="nosib" id="nosib"></div>
+        <div class="strip" id="strip"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap"><b>Two lists of boards, and you should never confuse them.</b> On the <b>left</b>, the membership
+zone exactly as PW2 ruled it — the board’s name, then <em>Pages</em> and <em>Boards</em>, with “linked to this
+board” living only in the accessible name. <b>Below</b> the board, the <b>sibling row</b>: tabs, labelled by the
+<b>drawer</b> (<em>Novel</em>) because siblinghood means <em>where this sits</em>. Place, form and word all differ —
+and the word matters most, because PW2’s ruling removed the one visible phrase that said “membership.”
+<b>Press a tab</b> and the board changes over (travel, never nest). <b>Add tags</b> from the dashed set: each one
+<em>narrows</em> (ALL — tags are a sorting mechanism). Active tags sit in the order you added them, each with its
+own ×, and <em>clear all</em> is a separate act. <b>Add <em>#lore</em> after <em>#stark</em></b> and the sort
+empties — and it <b>says so in words</b>, naming the tags, so it reads as a sort and not as breakage. Tagged
+pages and cards appear in a <b>strip</b> under the tabs (SR-Q1’s lean), never as tabs.</div>
+
+<script>
+(function(){
+  var BOARDS={
+    characters:{name:'Characters', drawer:'Novel', tags:['stark','character']},
+    locations: {name:'Locations',  drawer:'Novel', tags:['stark','crypt']},
+    lore:      {name:'Lore',       drawer:'Novel', tags:['lore']},
+    timeline:  {name:'Timeline',   drawer:'Novel', tags:['stark']},
+    ravens:    {name:'Ravens & letters', drawer:'Research', tags:['stark','character']}  /* sibling BY TAG, other drawer */
+  };
+  var CARDS={
+    characters:[{t:'Ned’s refusal is not stubbornness.',tags:['stark','character'],x:4,y:6},
+                {t:'Mara knows before the dog does.',tags:['character'],x:36,y:10},
+                {t:'Catelyn: three drafts, none sent.',tags:['stark','character'],x:66,y:5},
+                {t:'The crypt nobody mentions at dinner.',tags:['crypt'],x:10,y:46},
+                {t:'He answers questions nobody asked.',tags:['character'],x:44,y:50}],
+    locations: [{t:'Winterfell — colder than the yard.',tags:['stark','crypt'],x:8,y:10},
+                {t:'The platform, 1892.',tags:['research'],x:44,y:30}],
+    lore:      [{t:'The old gods keep no calendar.',tags:['lore'],x:20,y:20}],
+    timeline:  [{t:'The last ride, before the snow.',tags:['stark'],x:12,y:14}],
+    ravens:    [{t:'A raven that arrives too late.',tags:['stark','character'],x:16,y:18}]
+  };
+  var TAGGED_SURFACES=[
+    {kind:'page', t:'Catelyn’s letter', tags:['stark','character']},
+    {kind:'page', t:'Ned — last ride',  tags:['stark']},
+    {kind:'card', t:'The crypt', tags:['stark','crypt'], w:44, h:30}
+  ];
+  var ALL_TAGS=['stark','character','crypt','lore','research'];
+  var here='characters', active=[];
+  var sortEl=document.getElementById('sort'), wall=document.getElementById('wall'),
+      empty=document.getElementById('empty'), tabs=document.getElementById('tabs'),
+      strip=document.getElementById('strip'), crumb=document.getElementById('crumb'),
+      memHead=document.getElementById('memHead'), nosib=document.getElementById('nosib'),
+      geom=document.getElementById('geom');
+
+  function hasAll(tags){ return active.every(function(a){ return tags.indexOf(a)>=0; }); }
+  function list(tags){ return tags.map(function(t){return '#'+t;}).join(', ').replace(/, ([^,]*)$/,' and $1'); }
+
+  function render(){
+    var b=BOARDS[here];
+    crumb.innerHTML='<span class="i">'+b.drawer+'</span><span class="s">/</span><span class="h">'+b.name+'</span>';
+    memHead.textContent=b.name;
+    document.body.dataset.hastags = active.length ? '1':'0';
+
+    // the sort bar — active in order added, each droppable; clear all is separate
+    var avail=ALL_TAGS.filter(function(t){return active.indexOf(t)<0;});
+    sortEl.innerHTML='<span style="letter-spacing:.14em">SORT</span>'
+      + active.map(function(t){return '<span class="act">#'+t+'<button data-drop="'+t+'" aria-label="Drop #'+t+'">×</button></span>';}).join('')
+      + avail.map(function(t){return '<button class="avail" data-add="'+t+'">+ #'+t+'</button>';}).join('')
+      + (active.length?'<button class="clearall" id="clearall">clear all</button>':'');
+    [].forEach.call(sortEl.querySelectorAll('[data-add]'),function(x){ x.onclick=function(){ active.push(x.dataset.add); render(); }; });
+    [].forEach.call(sortEl.querySelectorAll('[data-drop]'),function(x){ x.onclick=function(){ active=active.filter(function(a){return a!==x.dataset.drop;}); render(); }; });
+    var ca=document.getElementById('clearall'); if(ca) ca.onclick=function(){ active=[]; render(); };
+
+    // the wall — HOLD position (Q-1), filtered by ALL
+    var cards=CARDS[here]||[];
+    var shown=cards.filter(function(c){return hasAll(c.tags);});
+    wall.innerHTML='<div class="empty" id="empty"></div>'+cards.map(function(c){
+      return '<div class="bc'+(hasAll(c.tags)?'':' hid')+'" style="left:'+c.x+'%;top:'+c.y+'%">'
+        +'<div class="k">Card</div><div class="t">'+c.t+'</div></div>';
+    }).join('');
+    var isEmpty = active.length && shown.length===0;
+    document.body.dataset.empty = isEmpty?'1':'0';
+    if(isEmpty) document.getElementById('empty').innerHTML='Nothing on <b>'+b.name+'</b> carries all of <b>'+list(active)+'</b>.<br>Drop the last tag to widen the sort.';
+
+    // the sibling row — drawer siblings ∪ tag siblings, narrowed by ALL
+    var sibs=Object.keys(BOARDS).filter(function(k){
+      if(k===here) return false;
+      var o=BOARDS[k];
+      var sameDrawer = o.drawer===b.drawer;
+      var sharesTag  = active.length && hasAll(o.tags);
+      return (sameDrawer || sharesTag) && (!active.length || hasAll(o.tags));
+    });
+    tabs.innerHTML='<button class="tab here" disabled>'+b.name+'</button>'+sibs.map(function(k){
+      var o=BOARDS[k];
+      return '<button class="tab" data-go="'+k+'">'+o.name+(o.drawer!==b.drawer?'<span class="from">from '+o.drawer+'</span>':'')+'</button>';
+    }).join('');
+    [].forEach.call(tabs.querySelectorAll('[data-go]'),function(x){ x.onclick=function(){ here=x.dataset.go; render(); }; });
+    document.body.dataset.sibempty = (active.length && !sibs.length)?'1':'0';
+    nosib.textContent = 'No other board carries all of '+list(active)+'.';
+
+    // the strip — tagged pages and cards, listed WITH the row, never as tabs (SR-Q1 lean)
+    var hits=TAGGED_SURFACES.filter(function(s){return hasAll(s.tags);});
+    strip.innerHTML='<span class="lbl">also tagged</span>'+(hits.length? hits.map(function(s){
+      var shape = s.kind==='page' ? '<div class="spg"></div>'
+        : '<div class="scd" style="width:'+s.w+'px;height:'+s.h+'px"></div>';
+      return '<div class="sitem">'+shape+s.t+'</div>';
+    }).join('') : '<span style="font-size:10.5px;color:var(--text-mid)">no page or card carries all of '+list(active)+'</span>');
+
+    geom.textContent='on '+b.name+' · sort: '+(active.length?active.map(function(t){return '#'+t;}).join(' → '):'none')
+      +' · siblings shown '+sibs.length+' (rig only — no count ships)';
+  }
+  document.getElementById('reset').onclick=function(){ here='characters'; active=[]; render(); };
+  function layout(){
+    var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/1366, fit.clientHeight/768, 1)+')';
+  }
+  window.addEventListener('resize',layout);
+  render(); layout();
+})();
+</script>
+</body>
+</html>

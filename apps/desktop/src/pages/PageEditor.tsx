@@ -9,7 +9,7 @@ import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEdi
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
-import { InkStratum, type InkPen } from '../components/InkStratum';
+import { InkStratum, type InkPen, type InkPermission } from '../components/InkStratum';
 import { InkSwitch } from '../components/InkSwitch';
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
@@ -190,6 +190,29 @@ function PageEditorView({ id }: { id: string }) {
   const [inkPen, setInkPen] = useState<InkPen>(INK_DEFAULT_PEN);
   const [eraserArmed, setEraserArmed] = useState(false);
   const inkSheetRef = useRef<HTMLDivElement>(null);
+
+  // ITEM 126 B2 — WHAT THIS MODE LETS THE WRITER DO TO THE PAGE'S INK.
+  //
+  // Derived, never stored: it is a pure function of the mode and (in Free Write)
+  // the instrument, so there is no second source of truth to fall out of step
+  // with the switch.
+  //
+  // FREE WRITE keeps exactly the two states item 121 shipped — `edit` in INK,
+  // `inert` in TEXT — and RULED (Fable, 2026-09-08): the TEXT half stays INERT,
+  // R15 stands. The asymmetry that creates is the REASON rather than a hole: in
+  // Free Write the sketch pad is one press away, so a writer who wants to
+  // rearrange ink flips to INK; in Draft and Revise there is no INK to flip to,
+  // which is exactly why `movable` exists there and nowhere else. A typewriter
+  // does not move ink; a sketch pad does.
+  //
+  // THE TERNARY IS WRITTEN THIS WAY ON PURPOSE. `movable` is reached only by
+  // falling past `mode === 'journal'`, so Free Write can never acquire it by
+  // accident. Writing it the other way round — "movable unless the writer is
+  // drawing" — would hand the move gesture to Free Write's TEXT half and reverse
+  // the ruling silently, which is the one mistake this ticket is most able to
+  // make.
+  const inkPermission: InkPermission =
+    mode === 'journal' ? (instrument === 'ink' ? 'edit' : 'inert') : 'movable';
 
   // Persist strokes, merging the LIVE text so a pending typed run is never
   // clobbered — the Journal's own rule (its `persist`), and load-bearing here
@@ -560,6 +583,29 @@ function PageEditorView({ id }: { id: string }) {
     onToggleStar: unborn ? undefined : toggleStar,
     onAddTag: unborn ? undefined : addTag,
     onRemoveTag: unborn ? undefined : removeTag,
+    // ITEM 133 (A) — the name is reachable, and reaching it lands the caret at
+    // the END of the first line: the writer arrives where they would type to
+    // change the title, not at character zero where a keystroke would push the
+    // name rightwards. Guarded on the editor actually being mounted, so the
+    // gesture is offered only when there is a caret to place.
+    onReachName: () => {
+      const el = editorRef.current;
+      if (!el) return;
+      const firstLineEnd = (textRef.current.split('\n')[0] ?? '').length;
+      el.focus();
+      // PLACE THE CARET AFTER THE SURFACE SETTLES, not in the same tick as
+      // the focus. `focus()` lets the editor run its OWN caret placement,
+      // which collapses to the container's END (see ForwardOnlyEditor's note
+      // on the trailing-newline-at-EOF state) — and that placement lands
+      // AFTER a synchronous setCaretOffset, silently overwriting it.
+      // MEASURED, NOT GUESSED: the harness read offset 35 on a 16-character
+      // first line, which is the end of the whole text. This is the same law
+      // that governs reading — a probe reads the settled state — applied to
+      // WRITING: do not place a caret into a surface still arranging itself.
+      requestAnimationFrame(() => {
+        if (editorRef.current) setCaretOffset(editorRef.current, firstLineEnd);
+      });
+    },
     onOpenPortToBoard: withBirth(() => setPortOpen(true)),
     onOpenPin: withBirth(() => setPinOpen(true)),
   };
@@ -699,18 +745,25 @@ function PageEditorView({ id }: { id: string }) {
       )}
       {/* ITEM 121 I2 — the ink stratum, OVER the text (a later sibling, so it
           paints on top — the analog act is writing ON the page with a pen, and
-          ink UNDER type would simply be hidden by the type). Free Write only,
-          framed only: Draft and Revise are not sketch pads (R15 is a ruling
-          about this one surface), and below the 1100px gate the page keeps its
-          pre-item-121 terms exactly, per the 112-A rider's precedent.
-          MOUNTED IN BOTH MODES, not just INK: ink drawn in INK must stay on the
-          page while the writer types in TEXT. It is `active` that decides
-          whether anything is intercepted — in TEXT no listener is attached at
-          all and both canvases stay pointer-events:none, so the surface is
-          byte-identical to the page before this ticket. */}
-      {framed && mode === 'journal' && (
+          ink UNDER type would simply be hidden by the type).
+          ITEM 126 B1 — AND IT RENDERS IN EVERY MODE NOW, because the ink is THE
+          PAGE'S, not Free Write's decoration (Nick: "both text and ink should be
+          editable … in Free Write mode. Once the user switches to Draft or
+          Revise mode, INK no longer becomes directly editable but can be moved
+          around"). This is ONE CONDITION rather than a new surface: the sheet
+          this canvas anchors to is `editorBody`'s own wrapper, which was already
+          rendered unconditionally in all three modes — see
+          docs/menus/item126-s0-survey.md §2.
+          FRAMED-ONLY STAYS. Below the 1100px gate the page keeps its
+          pre-item-121 terms exactly, per the 112-A rider's precedent; item 126
+          does not lift that, and lifting it by silence would be this lane
+          widening its own charter.
+          WHAT VARIES BY MODE IS PERMISSION, NOT PRESENCE — see `inkPermission`
+          above. Both canvases stay pointer-events:none in every mode; routing
+          belongs to the sheet, always. */}
+      {framed && (
         <InkStratum
-          active={instrument === 'ink'}
+          permission={inkPermission}
           sheetRef={inkSheetRef}
           strokes={strokes}
           onCommit={persistStrokes}
@@ -1178,6 +1231,10 @@ function PageEditorView({ id }: { id: string }) {
                switch. Undefined outside Free Write, which keeps the attribute
                off Draft's and Revise's paper entirely. */
             instrument={mode === 'journal' ? instrument : undefined}
+            /* ITEM 126 B2 — the ink's permission, beside (never merged into) the
+               instrument: a Draft page is not "in TEXT", it is a word processor
+               with ink on it. */
+            inkPermission={inkPermission}
             framed
             firstRunGateActive={gateActive}
           >

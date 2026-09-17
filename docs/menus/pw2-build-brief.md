@@ -119,6 +119,38 @@ dangling membership, from a drawer id or any other foreign id.
 
 > **A membership write admits only a source that resolves to a LIVE, PINNABLE ENTRY.**
 
+**AND ITS TARGET-SIDE TWIN — RULED with it (item 134's relay, 2026-09-13):**
+
+> **A membership write admits only a TARGET that is a WRITER'S BOARD — never a condition board.**
+
+**Both laws sit at ONE SEAM**, because they are one question asked from two ends: *what may this
+graph admit?* **Enforce them together, at WRITE time, in `pinPageToBoard`.**
+
+**THE MEASUREMENT THAT LETS THE GUARD BE THIS SIMPLE (PW2's own, confirmed at `9153ac6`):**
+**`reconcileSystemBoard` builds its own boxes and NEVER calls `pinPageToBoard`.** So **no
+legitimate path pins onto a condition board** — the index maintains itself. The guard can
+therefore be a flat refusal with **no exemption, no caller allow-list, and no flag**: the
+simplest form is also the complete one.
+
+**⚠ AND THE GAP IS REAL, not theoretical — the two ends are ASYMMETRIC today.**
+`pinPageToBoard` **already refuses a system-board SOURCE** (`if (getSystemKind(getJournalEntry(entryId))) return null`)
+but its **TARGET guard is `board.pageType !== 'board'` alone — and a condition board passes it.**
+So a page can be pinned **onto** the Shelf or the Trash on today's build. *Half of this law has
+been enforced since B1 S3; the other half was never written, and nothing surfaced it because
+nothing in the UI offers the act.*
+
+**This is erratum 131(a)'s own family seen from the storage side:** 131(a) was a condition
+appearing in a *reader* (`getBoardsConnecting` fixed that); this is a condition admitted by a
+*writer*. **The canon — a condition is not a place — binds both ends, and only one end was
+holding it.**
+
+**Harness-owed in `pw2.mjs`, beside the source checks:**
+- a membership write **targeting a condition board** (shelf, trash) is refused, **and no
+  `page-pin` box is created on it**
+- a membership write targeting a **writer's board** still succeeds
+- `reconcileSystemBoard` still populates the condition boards normally **after** the guard lands
+  — *the check that proves the guard did not break the index it must not touch*
+
 That one line makes *"a drawer is never a member of anything"* **true by construction** — and
 closes the orphan-pin case with it. **A negative check (`if (isDrawer) return null`) would never
 fire**, because a drawer never arrives typed as a drawer; it arrives as an id that resolves to
@@ -189,9 +221,37 @@ which is the one thing the tray exists to prevent.
 
 **The ≥1-board invariant is RENDERED, not merely enforced:** on a card whose only board this
 is, the removal verb is **present, inert, and says why — `its only board`.** Same refusal
-grammar as S1. **Provenance carries on the built fields** — `sourceEntryId` / `portedAt`
-(*"provenance travels on every box"*, FX5 S3) — and the arrived copy **states its lineage in
-the second-line slot**: `copied from <board>`. No badge, no colour, no count.
+grammar as S1. **~~Provenance carries on the built fields — `sourceEntryId` / `portedAt`~~** *(FX5 S3's
+"provenance travels on every box")* — **AMENDED 2026-09-13: A COPY CARRIES `copiedFromBoardId`**,
+an additive optional `Box` field (the `canvasW` / `footerOn` / `systemKind` / `onCanvas`
+pattern), **and keeps the edit popup.** The arrived copy **states its lineage in the second-line
+slot** — `copied from <board>`, read from that field. No badge, no colour, no count.
+*The original wording is struck in place, not deleted: the reason it yielded is the useful part.*
+
+**WHY — `sourceEntryId` IS NOT A PROVENANCE FIELD. IT IS A RELATIONSHIP, AND THREE THINGS READ
+IT.** Verified in `BoardEditor.tsx` by symbol:
+1. **`BoardTextBox`** — `if (sourceEntryId)` renders the **ported face** (a notecard excerpt),
+   not the card's own content.
+2. **The action row** — a selected text card with `sourceEntryId` gains an **`Edit copy`** button
+   (`boardEditCopy`) — an escape hatch that exists *because* of 3.
+3. **The double-click dispatch**, explicit in its own comment: *a PORTED text card
+   (`sourceEntryId` set) **travels to its source**; a hand-typed card keeps the unchanged
+   edit-popup behavior.*
+
+**So a copy carrying `sourceEntryId` would render as a ported card, grow a button it does not
+need, and — the serious one — TRAVEL TO ITS SOURCE ON DOUBLE-CLICK instead of opening for
+editing. That is shared identity expressed as a gesture, and item 123 forbids it in terms:
+*"the original stays; there is NO SHARED IDENTITY — edits do not follow."*** A copy that walks
+the writer back to its original is the exact behaviour the copy semantics rule out.
+
+**ONE FIELD, ONE RELATIONSHIP.** `sourceEntryId` means *"points AT that entry — go there."*
+`copiedFromBoardId` means *"came FROM that board — stay here."* Overloading one field with both
+leaves the dispatch unable to tell them apart, **and the dispatch is not written to ask.**
+*(The same shape as `getBoardsPinning` / `getBoardsConnecting`: when one name carries two
+meanings, the reader that must distinguish them cannot.)*
+
+**Harness-owed:** a copy **double-clicks into the edit popup, never travels**; a genuinely
+ported card **still travels** — both in one fixture, because the pair is the claim.
 
 ---
 

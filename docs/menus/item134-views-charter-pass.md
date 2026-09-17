@@ -1,5 +1,23 @@
 # ITEM 134 — THE VIEWS CHARTER · committee pass
-### PLAN desk · 2026-09-11 · design only · CANDIDATES + RECOMMENDATIONS. Nothing locks.
+### PLAN desk · 2026-09-11 · **FINAL — 2026-09-13, on Nick's five rulings**
+
+> **NICK'S RULINGS, VERBATIM** (relayed by Fable, 2026-09-13):
+> *"1. Written  2. Group  3. Show it  4. Keep it at the foot (although on my UI, the trash has
+> never been aligned at the bottom of the rail --- it's inline with the rest of the menu
+> options.  5. Accept. And yes, ratified."*
+>
+> **(i) Written · (ii) Group · Q-A Show it · Q-B Foot · Q-C Accept · the arrangement law
+> RATIFIED.** Every recommendation in this pass was taken as written. **Q-D closes on his
+> text.** The pass is **FINAL**; the four build briefs it feeds are named in §8.
+>
+> **HIS ASIDE IS A DEFECT, NOT A PREFERENCE — and it is now item 137 (TOOLS).** The Trash *is*
+> ruled to the foot and *is* coded to it (`.wz-strip-foot{margin-top:auto}`); it renders inline
+> because **`.desk-frame-strip` carries `min-height:70vh` and no `height`, so `.wz-strip`'s
+> `height:100%` cannot resolve and no-ops to auto** — the column shrinks to content and
+> `margin-top:auto` has no free space to consume. **The house already diagnosed this exact class
+> in FX3 S1** and fixed it for the paper, in its own words: *"a flex/grid `height:100%` further
+> down needs an explicit height somewhere above it to resolve against… silently no-ops back to
+> auto/intrinsic."* The strip has the same bug, unfixed. **The rail brief assumes 137's fix.**
 
 ---
 
@@ -75,6 +93,73 @@ not a rendering slip, but the ontology and the storage disagreeing, with the ont
 
 > **ARRANGEMENT IS THE SIGNATURE OF A CONTAINER. A CONDITION HAS NONE, BECAUSE NOBODY ARRANGED
 > IT — THE APP COMPUTED IT.**
+>
+> **RATIFIED — Nick, 2026-09-13: *“And yes, ratified.”*** *“Falsifiable on sight” is the standard
+> this house wants (Fable).*
+
+**AND ITS COMPANION — THE THUMBNAIL LAW, ruled 2026-09-13. Nick, verbatim:**
+
+> *"Yes, group them together but section off Boards from Pages clearly and use a different
+> thumbnail (horizontal rectangles for Boards, vertical rectangles for Pages)."*
+
+> **BOARDS ARE WIDE. PAGES ARE TALL.** **On every surface that shows a thumbnail** — the rail's
+> side menu, the Shelf, the Trash, the Drawers, and the Library when its time comes.
+
+**These two laws are one method, which is why they sit together.** The arrangement law says what
+a container **does** (it is arranged; a condition is not). The thumbnail law says what a thing
+**is**, at a glance, before any word is read. **Both are falsifiable on sight — the standard this
+house wants — and neither spends colour**, so the Plateau ember ceiling is untouched by either.
+
+**It is also the answer to a question routed away from Pass 5:** *colour-as-kind-signal* went to
+the item-96 seam and never returned. **Shape does the work colour was asked to do**, and costs
+nothing from a ceiling that was never going to allow a crayon box.
+
+**IT IS ALREADY LATENT IN WHAT SHIPS, which is why it reads as a law rather than a preference:**
+`NEW_CARD_W/H = 0.4 / 0.08` — a free card is **5:1, wide**; a page card is aspect-locked to a
+page's own **tall** proportion (the canon rider: *resizable by scale, never stretched*). **The
+three item-134 mockups already render it** — `.brd` landscape, `.pg` portrait — **drawn before
+the law was stated.** *A law that only describes what the house was already reaching for is the
+kind worth writing down.*
+
+**PW2 builds it now; the Library inherits it.**
+
+### THE THUMBNAIL LAW, AMENDED — 2026-09-16 · *not excepted*
+
+**Nick, verbatim:** *"Since Cards can be made into any size, have Card thumbnails match the
+proportion of each card individually."*
+
+**THE LAW, AS IT NOW STANDS:**
+> **BOARDS ARE WIDE. PAGES ARE TALL. A CARD WEARS ITS OWN PROPORTION.**
+
+**Why this is an amendment and not an exception — Fable's reason, recorded as the law's own:**
+**a board is wide and a page is tall because their shape is CANONICAL.** **A card has no canonical
+shape, because the writer chose it** (FX4 S4: text cards resize freeform on both axes). **So a
+card's thumbnail shows what was made.** *An exception would say "the law, except cards"; the
+amendment says what the law was always about — a thumbnail tells the truth about its subject's
+shape, and for a card the only true shape is the one the writer gave it.*
+
+**SHAPE STILL TEACHES KIND, with no colour spent:** **wide is a board** (and wears the doubled
+edge), **page-shaped is a page**, **anything else is a card wearing its own proportion.** *(A card
+the writer sizes to exactly a page's proportion reads as page-shaped — the doubled edge and the
+kind mark carry the distinction there, as they already do for boards.)*
+
+**⚠ HOW THE PROPORTION IS READ — and the obvious way is wrong.** Fable: *"Aspect is read from the
+card's stored geometry, never re-derived."* **Measured, so a builder does not have to guess:**
+**a `Box`'s `w` AND `h` are BOTH normalised to PAGE WIDTH** — the canvas renders
+`height: box.h * pageWidthPx`, and `BOARD_LINE_H` is documented as *"one text line's height,
+normalized to page width."*
+
+**So a card's aspect is ONE DIVISION: `box.w / box.h`.** **Do NOT scale `h` by the canvas's
+height** — the natural-looking move, and it silently multiplies every card's aspect by the canvas's
+own proportion. **This is the house's known trap in a new place** (a stored stroke's `y` is
+width-normalised too; mixing the frames samples the wrong thing and can pass a check for the wrong
+reason). **The built precedent is already correct** — the resize handler stores
+`aspect: box.h / box.w` from the same two fields — **reuse it, do not re-derive it.**
+
+**Harness-owed wherever card thumbnails render:** two cards of deliberately different stored
+proportions, **on a canvas whose own aspect is not 1:1**, and assert each thumbnail's rendered ratio
+equals `box.w / box.h`. *The non-square canvas is the whole point: on a square canvas the wrong
+formula and the right one agree, and the check passes for the wrong reason.*
 
 A board has **authored arrangement** (A16). Shelf membership is computed from "unfiled"; Trash
 from "deleted"; the Journal from date. **Therefore none of the three may offer positioning,
@@ -253,18 +338,31 @@ view in this charter is a membership list. **The sitting is the gate; the suite 
 
 ## §8 · RETURNED FOR NICK'S WORD
 
-**(i) Journal order** → **recommend DAY WRITTEN** (§2/JV4). Recency is a condition; a condition
-may be a lens but never the binding.
-**(ii) the rail** → **recommend grouping by the writer's question** (§5/RV1), separators doing
-the teaching. **Trash's slot handed up (Q-B).**
-**Q-A** — may a **count** appear inside a destructive confirmation? (§4/TV3.)
-**Q-B** — Trash at the foot (standing B1 S5) or with the conditions (canon kind)? *Lean: foot.*
-**Q-C** — **JV3**: the Spread retires and takes manual journal order with it. Accept (lean),
-re-home, or keep a lens?
-**Q-D** — **[needs his text]** the missing message. If it rules on any of the above, his wording
-governs and this pass amends to it.
+**(i) Journal order — RULED: *“Written.”*** Day written. Recency is a condition; a condition may
+be a lens but never the binding. (§2/JV4.)
+**(ii) the rail — RULED: *“Group.”*** Grouped by kind, separators doing the teaching, the writer
+never reading the words *surface / container / display*. **Trash at the foot** per Q-B. (§5/RV1.)
+**Q-A — RULED: *“Show it.”*** The clause stands as proposed: **a count is lawful inside a
+destructive confirmation and nowhere else.** The no-count law gains it; ambient chrome is
+unchanged. (§4/TV3.)
+**Q-B — RULED: *“Keep it at the foot.”*** B1 S5 stands; the canon's grouping governs the other
+five tabs. The lean was right and the aside that came with it is **item 137**. (§5/RV2.)
+**Q-C — RULED: *“Accept.”*** The Spread retires and manual re-ordering goes with it.
+**`setNotebookPosition` dies in the same commit that retires the Spread** — in the views build,
+not before — and the Q-C census is what makes deleting a zero-call-site writer safe to do
+knowingly. (§2/JV3; `item134-qc-orderindex-census.md`.)
+**Q-D — CLOSED.** His five arrived verbatim and are quoted at the head of this document. Every
+**[needs his text]** mark in this pass resolves against them; none is left open.
+
+**THE FOUR BUILD BRIEFS THIS PASS FEEDS — one subject each, in Fable's order:**
+**(1) THE RAIL** — grouping by kind, separators, Trash at the foot (assumes item 137's fix).
+**(2) SHELF / TRASH** — the shared view: flip + thumbnails on Q4's grammar; hands present on the
+Shelf, absent in Trash; Restore naming its destination.
+**(3) THE JOURNAL** — the flip; the Spread retires; `setNotebookPosition` in the same commit.
+**(4) EMPTY TRASH** — the confirm and its count. **The hard delete itself is a separate
+persistence item in Fable's scope, opened when (2)'s brief is final.**
 
 **MOCKUPS:** `item134-mock-journal-flip.html` · `item134-mock-shelf-thumbnail.html` ·
 `item134-mock-trash.html`.
 
-**Nothing locks. C5 (the shelf) in the cluster inherits this charter.** — the PLAN desk
+**THE PASS IS FINAL. C5 (the shelf) in the cluster inherits this charter.** — the PLAN desk

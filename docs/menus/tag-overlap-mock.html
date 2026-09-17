@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the overlap · a selection over a tagged word</title>
+<!--
+  THE OVERLAP — the acceptance test for ruling (B) · PLAN desk · 2026-09-16
+  Nick: "If the user highlights over an already-highlighted word, make the
+  tagged word's highlight a few shades lighter than brass, but still orange so
+  the tag is still visible."  RULED (B): ::selection STAYS BRASS; the tag fill is
+  a LIGHTER ORANGE; the tagged word must stay visible beneath a selection.
+
+  THE SPEC FACT THIS PAGE EXISTS TO SHOW (CSS Highlight API §4.2.4, verbatim):
+    "The highlight overlays of the custom highlights are below those of the
+     built-in highlight pseudo-elements in the stacking order"
+  and §4.2.5: `priority` orders custom highlights AMONG THEMSELVES only.
+  => A custom tag highlight ALWAYS paints UNDER ::selection. Item 122's
+     ::selection is OPAQUE brass, so it COVERS the tag completely.
+
+  MEASURED (orange-contrast.py, calibrated to the house's own figures):
+    opaque selection   -> overlap separation 1.00:1 on BOTH grounds: invisible
+    translucent, paper -> never better than ~1.20:1 (both composites are light oranges)
+    translucent, panel -> separation rises, but selected PLAIN text drops below 4.5:1
+
+  THREE THINGS TO JUDGE, ALL LIVE:
+    1. SELECTION MODE — opaque (as shipped) vs translucent (alpha slider)
+    2. A SECOND CHANNEL — the fill is exhausted, so try an orange OVERLINE on the
+       tag: a decoration line that is NOT the writer's underline (item 122).
+       Whether a LOWER highlight's decoration survives an UPPER opaque selection
+       is an ENGINE detail this desk will not assert — SELECT TEXT YOURSELF and
+       your browser answers it.
+    3. FABLE'S TWO READINGS side by side — tag lighter ALWAYS, or brass everywhere
+       and lighter only under selection. The second has no CSS hook at all: the
+       region it would change is the one the spec guarantees is hidden.
+
+  Hand-derived colours only (never color-mix): the lighter orange is brass
+  tinted toward white by t, computed in JS and set as a solid.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+    --tagfill:#ffbc59; --selbg:rgba(255,152,0,1);
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);display:flex;flex-direction:column}
+  .rig{display:flex;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid #222;
+       font-size:12px;color:#9a9a9a;flex:0 0 auto;flex-wrap:wrap}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#FF9800;color:#fff;background:#221607}
+  .rig label{display:flex;align-items:center;gap:6px}
+  .rig input[type=range]{width:120px;accent-color:#FF9800}
+  #api{margin-left:auto;font-size:11px;color:#8f8f8f}
+  .nums{padding:7px 14px;font-size:11px;color:#8a847a;border-bottom:1px solid #1a1a1a;
+        font-variant-numeric:tabular-nums;line-height:1.7;flex:0 0 auto}
+  .nums b{color:#e8e2d8;font-weight:500} .nums .bad{color:#e07a5c} .nums .ok{color:#96a05a}
+  .grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;
+        padding:12px 14px;min-height:0}
+  .cell{display:flex;flex-direction:column;gap:6px;min-height:0}
+  .ch{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-low)}
+  .ch b{color:#FF9800;font-weight:600}
+  .ch .sub{display:block;text-transform:none;letter-spacing:.02em;font-size:10.5px;margin-top:2px;color:#7a746a}
+  .room{flex:1;border:1px solid #222;padding:14px;overflow:auto;min-height:0;background:#0c0400}
+  .paper{background:var(--paper);color:#241a10;padding:16px 22px;font-family:var(--prose);font-size:16px;line-height:1.7}
+  .card{background:var(--panel);border:1px solid var(--line);padding:14px 18px;font-family:var(--prose);
+        font-size:15.5px;line-height:1.7;color:var(--text-hi)}
+  .k{font-family:var(--ui);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-bottom:5px}
+
+  /* the REAL ::selection — the value each cell resolves from --selbg */
+  .room ::selection{ background:var(--selbg); color:var(--on-brass); }
+
+  /* THE TAG, Fable's reading: lighter orange ALWAYS */
+  ::highlight(tag-always){ background-color:var(--tagfill); color:var(--on-brass); }
+  ::highlight(tag-always-line){ background-color:var(--tagfill); color:var(--on-brass);
+      text-decoration-line:overline; text-decoration-color:#c96f00; text-decoration-thickness:3px; }
+  /* the NARROW reading: brass everywhere — indistinguishable from a selection */
+  ::highlight(tag-narrow){ background-color:var(--brass); color:var(--on-brass); }
+  /* a SIMULATED selection, as a higher-priority custom highlight, so the overlap is
+     visible at a glance in every cell at once. Real ::selection: select text yourself. */
+  ::highlight(sel-sim){ background-color:var(--selbg); color:var(--on-brass); }
+
+  .cap{flex:0 0 auto;padding:9px 14px;border-top:1px solid #1e1e22;background:#08080a;
+       font-size:11.5px;color:#7e786e;line-height:1.55;max-height:132px;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>THE OVERLAP — RULING (B)'S ACCEPTANCE TEST</b>
+  <button id="mOpaque" aria-pressed="true">selection: opaque (as shipped)</button>
+  <button id="mTrans" aria-pressed="false">selection: translucent</button>
+  <label>sel α <input type="range" id="sa" min="0.40" max="1" step="0.05" value="1"><span id="sav"></span></label>
+  <label>tag lighter by t <input type="range" id="tt" min="0.15" max="0.60" step="0.05" value="0.35"><span id="ttv"></span></label>
+  <button id="line" aria-pressed="false">second channel: overline</button>
+  <button id="sim" aria-pressed="true">show simulated selection</button>
+  <span id="api"></span>
+</div>
+<div class="nums" id="nums"></div>
+
+<div class="grid">
+  <section class="cell">
+    <div class="ch"><b>FABLE’S READING</b> · tag lighter orange ALWAYS · <b>page</b>
+      <span class="sub">The brief carries this. Tag and selection differ everywhere by intensity.</span></div>
+    <div class="room"><div class="paper" id="c1">Ned Stark would have said something about duty — every Stark says something about duty when the weather changes. The crypt was colder than the yard.</div></div>
+  </section>
+  <section class="cell">
+    <div class="ch"><b>FABLE’S READING</b> · tag lighter orange ALWAYS · <b>card</b>
+      <span class="sub">On the dark panel the fills separate well; watch selected plain text as α drops.</span></div>
+    <div class="room"><div class="card" id="c2"><div class="k">Card · on the board “Stark”</div>Winterfell — the crypt is colder than the yard, and every Stark pretends not to notice.</div></div>
+  </section>
+  <section class="cell">
+    <div class="ch"><b>THE NARROW READING</b> · tag BRASS, lighter only under selection · <b>page</b>
+      <span class="sub">Outside the overlap a tag match and a selection are IDENTICAL. Inside it, there is no CSS hook — and the spec hides it anyway.</span></div>
+    <div class="room"><div class="paper" id="c3">Ned Stark would have said something about duty — every Stark says something about duty when the weather changes. The crypt was colder than the yard.</div></div>
+  </section>
+  <section class="cell">
+    <div class="ch"><b>THE NARROW READING</b> · <b>card</b>
+      <span class="sub">Select a plain word next to a tagged one: can you tell which is which?</span></div>
+    <div class="room"><div class="card" id="c4"><div class="k">Card · on the board “Stark”</div>Winterfell — the crypt is colder than the yard, and every Stark pretends not to notice.</div></div>
+  </section>
+</div>
+
+<div class="cap"><b>The simulated selection</b> sits over the SECOND “Stark” and the word after it in every cell, so the
+overlap is visible at a glance. <b>With “opaque”, the tagged Stark under it looks exactly like the untagged word beside
+it</b> — that is the spec, not a styling choice: custom highlights paint beneath <code>::selection</code>, and no priority
+changes it. <b>Then select text yourself</b> — that is your engine’s real <code>::selection</code>, and it is the true test,
+especially for the <b>overline</b>: whether a lower highlight’s decoration survives an upper selection is an engine
+detail this desk measured nowhere and will not assert. <b>The narrow reading (bottom row)</b> cannot be told apart from a
+selection anywhere outside the overlap, and inside it there is nothing to style — which is Fable’s reason, and the
+spec’s. <b>The numbers above</b> come from the same calibrated formula as <code>orange-contrast.py</code>.</div>
+
+<script>
+(function(){
+  function lin(c){ c=c/255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); }
+  function rgb(h){ h=h.replace('#',''); return [0,2,4].map(function(i){return parseInt(h.substr(i,2),16);}); }
+  function L(h){ var c=rgb(h); return 0.2126*lin(c[0])+0.7152*lin(c[1])+0.0722*lin(c[2]); }
+  function ratio(a,b){ var x=L(a),y=L(b); if(x<y){var t=x;x=y;y=t;} return (x+0.05)/(y+0.05); }
+  function mix(fg,bg,a){ var f=rgb(fg),g=rgb(bg);
+    return '#'+f.map(function(v,i){ return ('0'+Math.round(a*v+(1-a)*g[i]).toString(16)).slice(-2); }).join(''); }
+
+  var HAS=(typeof CSS!=='undefined' && CSS.highlights && typeof Highlight==='function');
+  var api=document.getElementById('api');
+  var state={ opaque:true, a:1, t:0.35, line:false, sim:true };
+  var BRASS='#FF9800', ON='#1C1610', PAPER='#F3EDE1', PANEL='#1b0d03';
+
+  function tn(r){ var o=[],w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT),n; while((n=w.nextNode())) o.push(n); return o; }
+  function stark(root){
+    var out=[], re=/\bstark\b/gi;
+    tn(root).forEach(function(n){ var m; re.lastIndex=0;
+      while((m=re.exec(n.data))){ var r=document.createRange(); r.setStart(n,m.index); r.setEnd(n,m.index+m[0].length); out.push(r); } });
+    return out;
+  }
+  // the simulated selection: the SECOND "Stark" plus the word that follows it
+  function simRange(root){
+    var rs=stark(root); if(rs.length<2) return null;
+    var r=rs[1].cloneRange(); var node=r.endContainer, end=r.endOffset;
+    var rest=node.data.slice(end); var m=/^\s+\S+/.exec(rest);
+    if(m) r.setEnd(node, end+m[0].length);
+    return r;
+  }
+
+  function paint(){
+    if(!HAS){ api.textContent='NO Highlight API in this browser — the overlap cannot be shown here'; api.style.color='#e05c5c'; return; }
+    ['tag-always','tag-always-line','tag-narrow','sel-sim'].forEach(function(k){ CSS.highlights.delete(k); });
+    var c1=document.getElementById('c1'), c2=document.getElementById('c2'),
+        c3=document.getElementById('c3'), c4=document.getElementById('c4');
+    var always=stark(c1).concat(stark(c2)), narrow=stark(c3).concat(stark(c4));
+    var key = state.line ? 'tag-always-line' : 'tag-always';
+    var h1=new Highlight(...always); h1.priority=1; CSS.highlights.set(key,h1);
+    var h2=new Highlight(...narrow); h2.priority=1; CSS.highlights.set('tag-narrow',h2);
+    if(state.sim){
+      var sims=[c1,c2,c3,c4].map(simRange).filter(Boolean);
+      var hs=new Highlight(...sims); hs.priority=10;   // ABOVE the tag, as ::selection is
+      CSS.highlights.set('sel-sim',hs);
+    }
+    api.textContent='painted with the CSS Custom Highlight API · the simulated selection is priority 10 over the tag’s 1 — the same order the spec gives ::selection';
+  }
+
+  function numbers(){
+    var tag=mix('#FFFFFF',BRASS,state.t);
+    var a=state.opaque?1:state.a;
+    var out=[];
+    out.push('tag fill <b>'+tag+'</b> · text on tag <b>'+ratio(ON,tag).toFixed(2)+':1</b> · tag vs brass <b>'
+      +ratio(tag,BRASS).toFixed(2)+':1</b> <span class="bad">(intensity alone — (B)’s only separator outside the overlap)</span>'
+      +' · tag vs paper <b>'+ratio(tag,PAPER).toFixed(2)+':1</b>');
+    [[PAPER,'page',ON],[PANEL,'card',ON]].forEach(function(g){
+      var overTag=mix(BRASS,tag,a), overGnd=mix(BRASS,g[0],a);
+      var sep=ratio(overTag,overGnd), tx=ratio(ON,overGnd);
+      out.push('<b>overlap on the '+g[1]+'</b> (selection α '+a.toFixed(2)+') — tagged-under-selection vs plain-under-selection <b>'
+        +sep.toFixed(2)+':1</b> <span class="'+(sep<1.3?'bad':'ok')+'">'+(sep<1.05?'INVISIBLE':sep<1.3?'barely':'visible')+'</span>'
+        +' · selected plain text <b>'+tx.toFixed(2)+':1</b> <span class="'+(tx>=4.5?'ok':'bad')+'">'+(tx>=4.5?'readable':'BELOW 4.5')+'</span>');
+    });
+    document.getElementById('nums').innerHTML=out.join('<br>');
+  }
+
+  function apply(){
+    var a=state.opaque?1:state.a;
+    document.documentElement.style.setProperty('--selbg','rgba(255,152,0,'+a+')');
+    document.documentElement.style.setProperty('--tagfill',mix('#FFFFFF',BRASS,state.t));
+    document.getElementById('sav').textContent=a.toFixed(2);
+    document.getElementById('ttv').textContent=state.t.toFixed(2)+' → '+mix('#FFFFFF',BRASS,state.t);
+    document.getElementById('sa').disabled=state.opaque;
+    ['mOpaque','mTrans'].forEach(function(id){ document.getElementById(id).setAttribute('aria-pressed',
+      String((id==='mOpaque')===state.opaque)); });
+    document.getElementById('line').setAttribute('aria-pressed',String(state.line));
+    document.getElementById('sim').setAttribute('aria-pressed',String(state.sim));
+    paint(); numbers();
+  }
+  document.getElementById('mOpaque').onclick=function(){ state.opaque=true; apply(); };
+  document.getElementById('mTrans').onclick=function(){ state.opaque=false; if(state.a>=1) state.a=0.7;
+    document.getElementById('sa').value=state.a; apply(); };
+  document.getElementById('sa').oninput=function(e){ state.a=+e.target.value; apply(); };
+  document.getElementById('tt').oninput=function(e){ state.t=+e.target.value; apply(); };
+  document.getElementById('line').onclick=function(){ state.line=!state.line; apply(); };
+  document.getElementById('sim').onclick=function(){ state.sim=!state.sim; apply(); };
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -215,8 +215,8 @@ await withHarness(async (app) => {
     const headingId = 'ab1-script-heading';
     window.wrizoCreateJournalPage({ id: 'ab1-board', text: '', pageType: 'board', boxes: [
       { id: 'ab1-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-    ], createdAt: now, origin: null });
-    window.wrizoCreateJournalPage({ id: 'ab1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+    ], createdAt: now, source: null, origin: null });
+    window.wrizoCreateJournalPage({ id: 'ab1-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed' });
@@ -605,10 +605,14 @@ if (process.env.HARNESS_PARKED === '1') {
     // assertion (paper bottom within 32-48px of the stage bottom, at both
     // reference widths) lives in fx3.mjs's own S1 section.
     await app.goto('/'); // back to Arrival first — the preceding fixture left us on a /page/:id route, and a bare reload() would just re-render THAT route, never landing on .wz-arrival
+    // ITEM 141 — and the goto is only a request; this is the observation. The
+    // seam below is attached by the app's own module init, so reading it before
+    // anything has rendered is a race whose losing side reports nothing.
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the PARKED script seed' });
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
       const headingId = 'ab1-parked-script-heading';
-      window.wrizoCreateJournalPage({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab1-parked-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED script seed' });
@@ -682,7 +686,7 @@ if (process.env.HARNESS_PARKED === '1') {
       const now = new Date().toISOString();
       const headingId = 'ab1-cd2-park-script-heading';
       window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-board', text: '', pageType: 'board', boxes: [], createdAt: now, origin: null });
-      window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, origin: null });
+      window.wrizoCreateJournalPage({ id: 'ab1-cd2-park-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after board/script seed, CD2 park' });
@@ -745,11 +749,16 @@ if (process.env.HARNESS_PARKED === '1') {
     // typing instead — full successor coverage (open/blur/focus-trap/Done)
     // is in fx4.mjs's own S5 section.
     await app.goto('/');
+    // ITEM 141 — the wait is the proof; the goto is only a request. Without it
+    // the seam below is read against a document that may not have booted, and
+    // when it loses, wrizoCreateJournalPage is undefined and this block dies
+    // reporting nothing about the thing it tests.
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the PARKED board seed' });
     await app.evalJs(`(() => {
       const now = new Date().toISOString();
       window.wrizoCreateJournalPage({ id: 'ab1-parked-board', text: '', pageType: 'board', boxes: [
         { id: 'ab1-parked-board-box', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'hello' },
-      ], createdAt: now, origin: null });
+      ], createdAt: now, source: null, origin: null });
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after PARKED board seed' });

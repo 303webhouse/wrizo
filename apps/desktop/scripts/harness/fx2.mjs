@@ -120,7 +120,7 @@ const freshTwoDraftPages = async (app, textA, textB, width = 1400, height = 900)
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     window.wrizoCreateJournalPage({ id: 'fx2-draft-a', text: ${JSON.stringify(textA)}, createdAt: now, source: null, origin: null });
-    window.wrizoCreateJournalPage({ id: 'fx2-draft-b', text: ${JSON.stringify(textB)}, createdAt: now, origin: null });
+    window.wrizoCreateJournalPage({ id: 'fx2-draft-b', text: ${JSON.stringify(textB)}, createdAt: now, source: null, origin: null });
   })()`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after two-page draft seed' });
