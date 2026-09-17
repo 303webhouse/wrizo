@@ -69,7 +69,13 @@ active; a **clear affordance is always present while a filter is on**; and — o
 **because they pressed it**, and an ambient "6 of 20" would buy nothing the active chip does not
 already say.
 
-**T4 · ONE TAG AT A TIME.** The Spread's behaviour, kept deliberately. **Multi-tag intersection
+**~~T4 · ONE TAG AT A TIME.~~ — SUPERSEDED 2026-09-16: MULTIPLE ACTIVE TAGS, NARROWED BY ALL.**
+Nick: *“All of them. It should be a kind of sorting mechanism.”* See `siblings-and-highlight-pass.md` §3
+for what intersection obliges (an empty result states itself; every active tag droppable on its
+own). The original argument below is left standing — it was a sound warning against a query
+language, and ALL is not one: it is a single, fixed predicate, not a grammar the writer composes.
+
+*Struck original:* The Spread's behaviour, kept deliberately. **Multi-tag intersection
 is a query language**, and a query language is the taxonomy creep the cluster pass made law
 against: *"no tag types, no colours, no required tags, no hierarchy."* **If Nick wants AND
 later, it returns as its own question with its own evidence.**
@@ -229,8 +235,9 @@ channel** and is not routed through Find.
 **Q-1 · RULED — *“Hold confirmed.”*** Cards hold position under a filter; **the holes are
 honest.** ~~Holes, or reflow? **Recommend HOLD**~~ — the arrangement is yours,
 **and the holes are the honesty**: a reflowed board reads as *"this is all there is."* Mockup B.
-**Q-2 · ⚠ STILL OPEN — not answered in his four.** One tag at a time, or several? **Recommend
-one**, which stands as the default until he rules. Several is a query language, and the
+**Q-2 · RULED — CLOSED, 2026-09-16.** His *“tag(s)”* notation permitted several; asked the fork,
+he ruled **ALL** — *“All of them. It should be a kind of sorting mechanism.”* ~~Recommend one~~ —
+superseded. **Intersection, never union**, everywhere the filter lands. Several is a query language, and the
 cluster pass ruled against taxonomy creep. Returns with evidence if you want it.
 **Q-3 · RULED — *“have Card thumbnails match the proportion of each card individually.”*** A card
 has no canonical shape because the writer chose it, so its thumbnail shows what was made. **The
