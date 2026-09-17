@@ -99,6 +99,44 @@ const geometryReport = (app) => app.evalJs(`(() => {
     paper: { l: Math.round(pr.left*100)/100, t: Math.round(pr.top*100)/100, r: Math.round(pr.right*100)/100, b: Math.round(pr.bottom*100)/100 } };
 })()`);
 
+// ITEM 146 — ONE definition of the fidelity recompute, used by the live
+// successor AND by the parked re-assertion of the check it replaced, so the
+// two can never drift into two different claims. It rebuilds the ground from
+// the inputs of RhizomeField's last build (the read-only __wrizoRhizomeField
+// seam) with the real engine, and compares it to the rendered segments one by
+// one. See the live successor for why a single recompute is exact.
+const FIDELITY_EXPR = `(() => {
+  const E = window.__wrizoRhizomeEngine;
+  const F = window.__wrizoRhizomeField;
+  if (!E || !F) return { error: 'seam missing', engine: !!E, field: !!F };
+  const b = F();
+  if (!b.geo) return { error: 'no build yet', build: b };
+  const rng = E.mulberry32(E.hashSeed(b.seedKey + ':' + b.sessionStart));
+  const origins = E.seedOrigins(rng, b.geo);
+  const target = E.saturationTarget(b.highWater);
+  const st = E.growTo(E.createRhizomeState(), rng, b.geo, origins, target);
+  const engine = st.segments.map((s) => [s.x1, s.y1, s.x2, s.y2]);
+  const rendered = [...document.querySelectorAll('.wz-rhizome-seg')]
+    .map((el) => [+el.getAttribute('x1'), +el.getAttribute('y1'), +el.getAttribute('x2'), +el.getAttribute('y2')]);
+  const ext = (segs) => {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const s of segs) { x0 = Math.min(x0, s[0], s[2]); x1 = Math.max(x1, s[0], s[2]); y0 = Math.min(y0, s[1], s[3]); y1 = Math.max(y1, s[1], s[3]); }
+    return { minX: x0, maxX: x1, minY: y0, maxY: y1 };
+  };
+  let firstDiff = -1;
+  for (let i = 0; i < Math.min(engine.length, rendered.length); i++) {
+    if (engine[i].some((v, k) => Math.abs(v - rendered[i][k]) > 1e-6)) { firstDiff = i; break; }
+  }
+  const re = ext(rendered), ee = ext(engine);
+  const sameExtent = ['minX', 'maxX', 'minY', 'maxY'].every((k) => Math.abs(re[k] - ee[k]) <= 1e-6);
+  return {
+    match: engine.length === rendered.length && firstDiff === -1 && sameExtent,
+    renderedCount: rendered.length, engineCount: engine.length, target, highWater: b.highWater,
+    firstDiff, sameExtent, renderedExtent: re, engineExtent: ee,
+    seed: b.seedKey + ':' + b.sessionStart, geo: b.geo,
+  };
+})()`;
+
 await withHarness(async (app) => {
   await freshDesk(app, LAPTOP_W, 900);
 
@@ -183,11 +221,75 @@ await withHarness(async (app) => {
       s2.spreadX > 0.5 && s2.spreadY > 0.4, JSON.stringify({ spreadX: s2.spreadX, spreadY: s2.spreadY }));
     ok('S2: the scatter is DETERMINISTIC — the same seed produces byte-identical origins (the same page scatters the same way)', s2.originsDet, String(s2.originsDet));
     ok('S2: growTo(saturation) roots multiple shoots and grows to the target segment count', s2.shoots >= 7 && s2.grownSegs === s2.target, JSON.stringify({ shoots: s2.shoots, grownSegs: s2.grownSegs, target: s2.target }));
+    // [ITEM 146, 2026-09-16] This check is left exactly as written and is TRUE
+    // — of ONE seed ('extent'/'extent2'). Its wording states a general property
+    // the engine does not guarantee: across 16,000 grounds the top margin is
+    // missed by roughly 0.4–1.5% of seeds (left, right and bottom: never). It
+    // never flakes because its seed is fixed, which is also why it could never
+    // have said so. The many-seed sweep below states what is actually true.
     ok('S2: FULL-GROUND extent — at saturation the growth reaches near all four ruled margins (roams the whole ground, not a confined patch)',
       s2.extent.l < 0.15 && s2.extent.r > 0.85 && s2.extent.t < 0.2 && s2.extent.b > 0.85, JSON.stringify(s2.extent));
     ok('S2: the single-fixture grow made ZERO paper violations (the wall holds at full scale)', s2.hit === 0, String(s2.hit));
     ok('S2: THE 40-SEED STRESS SWEEP on a TIGHT ground — no origin lands in the paper AND zero paper violations across all 40 full-scale grounds (the only acceptable number is zero)',
       s2.totalViolations === 0 && s2.seedsWithViolations === 0 && s2.originInPaper === 0, JSON.stringify({ totalViolations: s2.totalViolations, seedsWithViolations: s2.seedsWithViolations, originInPaper: s2.originInPaper, minSegs: s2.minSegs }));
+  }
+
+  // ── ITEM 146 — S2 ACROSS MANY SEEDS: strict on three margins, a STATED RATE
+  //    on the fourth ─────────────────────────────────────────────────────────────
+  // "Roams the whole ground" is a TENDENCY, not a guarantee, and it is not even
+  // one tendency: its reach depends on the LAYOUT. On this ground (S2's own
+  // geometry, the paper a quarter of the width) the left, right and bottom
+  // margins were reached by every one of 16,000 grounds, and the TOP was missed
+  // by roughly 1–1.5% — origin one sits at the paper's bottom centre, so the
+  // growth must travel up and around the paper to reach the farthest margin.
+  // On live-like layouts with a WIDE paper (60% of the stage) the RIGHT margin
+  // was missed too, 3 times in 4,000. So the strict zero below is a fact about
+  // THIS fixed ground and these fixed seeds, not a claim about every page. A
+  // measured rate is honest where a guarantee was not.
+  //
+  // THE SEEDS ARE FIXED ('m3-roam-0' .. 'm3-roam-399'), so this sweep is fully
+  // deterministic: it yields the same count on every run and cannot flake. Using
+  // the live component's own shape — ONE rng for both the scatter and the
+  // growth. Measured outside the browser on the same engine: 0 misses on three
+  // margins, 5 of 400 (1.25%) on the top. The 2% ceiling is the top of the range
+  // measured across shapes and bounds (1.15–1.5%) with headroom, so an
+  // improvement never reds and a real loss of roam does.
+  //
+  // Whether the top SHOULD be a guarantee is a product question, put to Nick
+  // (2026-09-16) and not answered here. If he rules it one, this rate becomes a
+  // strict zero with its own item and owner; if a tendency, this is already the
+  // right shape.
+  {
+    const sweep = await app.evalJs(`(() => {
+      const E = window.__wrizoRhizomeEngine;
+      const geo = { width: 1600, height: 1000, paper: { left: 600, top: 120, right: 1000, bottom: 860 } };
+      const target = E.saturationTarget(2500);
+      const N = 400;
+      const miss = { l: 0, r: 0, t: 0, b: 0 };
+      const topMissing = [];
+      let grownToTarget = 0;
+      for (let i = 0; i < N; i++) {
+        const key = 'm3-roam-' + i;
+        const rng = E.mulberry32(E.hashSeed(key));
+        const st = E.growTo(E.createRhizomeState(), rng, geo, E.seedOrigins(rng, geo), target);
+        if (st.segments.length === target) grownToTarget++;
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+        for (const s of st.segments) for (const [x, y] of [[s.x1, s.y1], [s.x2, s.y2]]) {
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
+        if (!(x0 / geo.width < 0.15)) miss.l++;
+        if (!(x1 / geo.width > 0.85)) miss.r++;
+        if (!(y1 / geo.height > 0.85)) miss.b++;
+        if (!(y0 / geo.height < 0.20)) { miss.t++; topMissing.push(key); }
+      }
+      return { N, target, grownToTarget, miss, topMissing };
+    })()`);
+    ok('S2 [ITEM 146]: the sweep genuinely grew 400 full grounds — every fixed seed reached the saturation target, so the margin counts below are counts over real grounds and not over empty ones',
+      sweep.N === 400 && sweep.grownToTarget === 400, JSON.stringify({ N: sweep.N, grownToTarget: sweep.grownToTarget, target: sweep.target }));
+    ok('S2 [ITEM 146]: on THIS ground, all 400 fixed seeds reach the LEFT, RIGHT and BOTTOM margins — zero misses on three sides. A deterministic fact about this geometry, not a guarantee for every layout (a wide paper can miss a side margin too)',
+      sweep.miss.l === 0 && sweep.miss.r === 0 && sweep.miss.b === 0, JSON.stringify(sweep.miss));
+    ok('S2 [ITEM 146]: the TOP margin is a STATED RATE, not a guarantee — at most 2% of 400 fixed seeds miss it (measured: 5 of 400, 1.25%; the seeds are fixed, so the count is identical on every run and cannot flake)',
+      sweep.miss.t <= 8, JSON.stringify({ topMisses: sweep.miss.t, rate: `${(100 * sweep.miss.t / sweep.N).toFixed(2)}%`, ceiling: '2%', topMissing: sweep.topMissing }));
   }
 
   // ── Determinism (S4) — the whole M3 pipeline (scatter + growTo) per seed ───
@@ -257,9 +359,40 @@ await withHarness(async (app) => {
     ok('Live: an essay-length page (2500 words) opens with a GROUND ALIVE — a substantial, near-saturated segment count (M3 supersedes M2 mount-empty)',
       !g.error && g.count >= 0.9 * 570, JSON.stringify({ count: g.count }));
     ok('Live: the saturated live ground makes ZERO paper violations', !g.error && g.paperHit === 0, JSON.stringify({ paperHit: g.paperHit }));
-    ok('Live: the saturated live ground ROAMS — its rendered extent reaches near all four stage margins',
-      !g.error && g.minX < 0.2 * g.stageW && g.maxX > 0.8 * g.stageW && g.minY < 0.25 * g.stageH && g.maxY > 0.8 * g.stageH,
-      JSON.stringify({ minX: g.minX, maxX: g.maxX, minY: g.minY, maxY: g.maxY, stageW: g.stageW, stageH: g.stageH }));
+    // ITEM 146 — THE LIVE ROAMS CHECK IS PARKED (verbatim, in the PARKED block
+    // below) and this is its successor. The original asserted that the rendered
+    // ground reaches all four stage margins; the seed changes on every run (a
+    // generated entry id and the module-load clock), and the engine misses the
+    // TOP margin for roughly 0.4–1.5% of seeds. It was right most of the time and
+    // wrong about the product.
+    //
+    // What a LIVE check can prove for ANY seed is FIDELITY: the rendered ground
+    // IS the engine's ground for this seed at this geometry. So the ground is
+    // recomputed from the inputs of the build that produced it (RhizomeField's
+    // read-only __wrizoRhizomeField seam) and compared segment by segment. Where
+    // the ground roams is the ALGORITHM's claim, stated as a rate in S2 above.
+    //
+    // EXACT BY CONSTRUCTION, not by timing: the page opens with its 2500 words
+    // already in the store (PageEditor reads the entry synchronously), so the
+    // first build is at the full target and every rebuild is one growTo call at
+    // that target — later growth calls at an unchanged target draw nothing. A
+    // single recompute is therefore exact. (It would NOT be exact for a ground
+    // grown forward in steps: measured, growth is path-dependent, 600 of 900
+    // step paths differ from the one-call ground.)
+    //
+    // The seam's geometry updates synchronously while the DOM updates on React's
+    // next commit, so the comparison first WAITS for them to agree — the wait is
+    // the proof — and then reads both in one synchronous evaluation.
+    try {
+      await app.waitFor(`(${FIDELITY_EXPR}).match === true`, { timeout: 5000, label: 'the rendered ground agrees with its own build' });
+    } catch { /* the verdict below reports what did not agree */ }
+    const fid = await app.evalJs(FIDELITY_EXPR);
+    ok('Live [ITEM 146 successor]: the rendered ground IS the engine\'s ground for THIS seed at THIS geometry — same segment count, every segment\'s coordinates, and the same extent. True for any seed, so it cannot flake; where the ground roams is S2\'s stated rate',
+      !fid.error && fid.match === true,
+      JSON.stringify(fid.error ? fid : { renderedCount: fid.renderedCount, engineCount: fid.engineCount, firstDiff: fid.firstDiff, sameExtent: fid.sameExtent, target: fid.target, highWater: fid.highWater, seed: fid.seed }));
+    ok('Live [ITEM 146 successor]: the recompute is of a SATURATED essay ground — the build it read was grown to the 2500-word target, so the fidelity above is proven on a full ground and not an empty one',
+      !fid.error && fid.highWater >= 2500 && fid.engineCount === fid.target && fid.target > 500,
+      JSON.stringify(fid.error ? fid : { highWater: fid.highWater, target: fid.target, engineCount: fid.engineCount }));
     // Nothing orange at rest — the segment stroke resolves to the warm ink, never the ember.
     const strokeAtRest = await app.evalJs(`(() => {
       const el = document.querySelector('.wz-rhizome-seg'); if (!el) return null;
@@ -400,6 +533,53 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "Q1 stays parked: the framed desk has NO progress row") — M4 S3 (SV15) answers Q1 by the front door: the framed desk DOES carry a progress instrument now, in the rhizome\'s own lane — and still not via .mode-incentive-row or FX1 S5\'s dead .desk-frame-meter',
       q1.instrument === true && q1.inAnchor === true && q1.legacyRow === false && q1.meterTracks === 0,
       JSON.stringify(q1));
+
+    // === ITEM 146 — SUPERSEDED (the live ROAMS check) ==========================
+    // ORIGINAL, verbatim:
+    //
+    //   ok('Live: the saturated live ground ROAMS — its rendered extent reaches near all four stage margins',
+    //     !g.error && g.minX < 0.2 * g.stageW && g.maxX > 0.8 * g.stageW && g.minY < 0.25 * g.stageH && g.maxY > 0.8 * g.stageH,
+    //     JSON.stringify({ minX: g.minX, maxX: g.maxX, minY: g.minY, maxY: g.maxY, stageW: g.stageW, stageH: g.stageH }));
+    //
+    // WHY IT CANNOT STAND. It asserted a guarantee the product does not make, on
+    // a seed that changes every run. The seed is `${entry.id}:${SESSION_START}` —
+    // a generated page id and the clock at module load — so each run drew a
+    // fresh ground and judged four absolute margins on that one sample. Measured
+    // outside the browser with the real engine (2026-09-16):
+    //   · 16,000 grounds on S2's geometry: the TOP margin missed by 0.44% of
+    //     seeds under this check's own bounds (10,000 seeds) and by 1.15–1.5%
+    //     under S2's; left, right and bottom never.
+    //   · 8 live-like layouts, 16,000 grounds: the top missed 28 times (up to
+    //     0.45% in the worst layout), and with a WIDE paper (60% of the stage)
+    //     the RIGHT margin was missed too — 3 times in those layouts' 4,000.
+    //   · The recorded failure: minY 248 of a 733px stage (t = 0.338), on a
+    //     bundle byte-identical to one that had passed.
+    // It was right most of the time and wrong about the product: a flake by
+    // construction, not by the box.
+    //
+    // RE-ASSERTED as the same experiment by the one property that holds for
+    // EVERY seed: the rendered ground IS the engine's ground for its seed and
+    // geometry. The four margins it used to assert are RECORDED in the detail,
+    // not asserted. Whether the top should be a guarantee is Nick's question.
+    const roamPage = await freshRhizomePage(app, LAPTOP_W, 900);
+    await seedWordsAndReopen(app, roamPage, 2500);
+    try {
+      await app.waitFor(`(${FIDELITY_EXPR}).match === true`, { timeout: 5000, label: 'the parked re-run\'s ground agrees with its build' });
+    } catch { /* the verdict below reports what did not agree */ }
+    const rg = await geometryReport(app);
+    const rf = await app.evalJs(FIDELITY_EXPR);
+    pok('PARKED (was "Live: the saturated live ground ROAMS — its rendered extent reaches near all four stage margins") — ITEM 146: the SAME rendered ground, asserted by the one property that holds for every seed (it IS the engine\'s ground for its own seed and geometry). Its four margins are RECORDED below, not asserted: the top is missed by ~0.4–1.5% of seeds, a wide paper can miss a side, and this seed changes on every run',
+      !rg.error && !rf.error && rf.match === true,
+      JSON.stringify({
+        fidelity: rf.error ? rf : { match: rf.match, count: rf.renderedCount, seed: rf.seed },
+        marginsRecordedNotAsserted: rg.error ? rg : {
+          left: rg.minX < 0.2 * rg.stageW,
+          right: rg.maxX > 0.8 * rg.stageW,
+          top: rg.minY < 0.25 * rg.stageH,
+          bottom: rg.maxY > 0.8 * rg.stageH,
+          topExtent: Math.round((rg.minY / rg.stageH) * 1000) / 1000,
+        },
+      }));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

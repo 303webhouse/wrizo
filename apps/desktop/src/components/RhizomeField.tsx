@@ -281,6 +281,39 @@ export function RhizomeField({ unitCount, seedKey, paperRef }: {
 
   useEffect(() => () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); }, []);
 
+  // ITEM 146 — READ-ONLY inspection seam (the wrizoBoard convention: a getter
+  // over this instance's refs, attached on mount and removed on unmount).
+  //
+  // m3's live ROAMS check asserted that the rendered ground reaches all four
+  // stage margins. Measured over 16,000 grounds of the real engine, that holds
+  // on three margins and FAILS ON THE TOP for roughly 0.4–1.5% of seeds, and
+  // the seed changes on every run (a generated entry id and SESSION_START, the
+  // clock at module load). So the check was right most of the time and wrong
+  // about the product. Its successor asserts what a live check can actually
+  // prove for ANY seed: that the rendered ground IS the engine's ground for
+  // this seed at this geometry. That needs the inputs of the build that
+  // produced it — exposed here, and only read.
+  //
+  // `geo` is the geometry of the LAST REBUILD, not a fresh measurement: a
+  // rebuild only happens on a change of more than 1px, and the origins depend
+  // continuously on geometry, so a re-measure could be up to 1px off and grow a
+  // different ground. Everything returned is a COPY — nothing a caller does to
+  // the result can reach this component's state. No behaviour changes, whether
+  // or not anything ever calls it.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    (window as unknown as { __wrizoRhizomeField?: unknown }).__wrizoRhizomeField = () => {
+      const g = builtGeoRef.current;
+      return {
+        sessionStart: SESSION_START,
+        seedKey,
+        geo: g ? { width: g.width, height: g.height, paper: { ...g.paper } } : null,
+        highWater: highWaterRef.current,
+      };
+    };
+    return () => { delete (window as unknown as { __wrizoRhizomeField?: unknown }).__wrizoRhizomeField; };
+  }, [seedKey]);
+
   if (!active) return null;
 
   return (
