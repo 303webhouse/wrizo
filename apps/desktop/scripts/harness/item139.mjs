@@ -52,11 +52,32 @@ function runChild(env) {
     !/REACHED-SCENARIO/.test(out), out.slice(0, 120));
 }
 
+// ITEM 140 CHANGED WHAT "A GRANTED TURN" MEANS, and S2 and S3's first check
+// encoded the old meaning. Under 139 a turn was granted if WS_BOX_TURN was SET,
+// so the literal string 'granted' was a grant. Under 140 the token must MATCH the
+// grant file chat 1 writes, so 'granted' is now a mismatch and is refused before
+// either assertion's subject is reached. Both are parked verbatim below
+// (SUPERSEDED); the successors grant the turn the 140 way — with the token this
+// run INHERITED, which is the one that matches the live grant file whenever this
+// file runs inside a granted suite. Outside one there is no grant, and under 140
+// there is no allow path to prove, so the successor rightly fails.
+const GRANTED = process.env.WS_BOX_TURN;
+
 // --- S2 (the control): a granted turn gets through ---------------------------
 {
+  const out = runChild({ WS_BOX_TURN: GRANTED, WS_REAPER_PREFLIGHT_DONE: '1' });
+  ok('S2 (the control) [ITEM 140 successor]: WITH a turn whose token MATCHES the grant file, the box guards pass and the run proceeds to its NEXT check (the missing bundle) — so S1 and S3 are not passing on a guard that refuses everything unconditionally',
+    /No built bundle/.test(out) && !/BOX TURN NOT GRANTED/.test(out) && !/BOX TURN HELD/.test(out) && !/LIVE FOREIGN RUN/.test(out), out.slice(0, 200));
+}
+
+// --- S2b: the token 139 treated as a grant is now REFUSED --------------------
+// Invert the default and prove the exception. The successor above shows a
+// matching token is allowed; this shows the old sentinel is not — which is the
+// whole of what 140 changed about this file's subject.
+{
   const out = runChild({ WS_BOX_TURN: 'granted', WS_REAPER_PREFLIGHT_DONE: '1' });
-  ok('S2 (the control): WITH a granted turn the box guards pass and the run proceeds to its NEXT check (the missing bundle) — so S1 and S3 are not passing on a guard that refuses everything unconditionally',
-    /No built bundle/.test(out) && !/BOX TURN NOT GRANTED/.test(out) && !/LIVE FOREIGN RUN/.test(out), out.slice(0, 200));
+  ok('S2b [ITEM 140]: the literal token "granted" — a grant under 139, because 139 asked only whether the variable was SET — is now REFUSED as a mismatch against the grant file, before any later check is reached',
+    /BOX TURN (HELD BY ANOTHER LANE|NOT GRANTED)/.test(out) && !/No built bundle/.test(out) && !/REACHED-SCENARIO/.test(out), out.slice(0, 200));
 }
 
 // --- S3: a live foreign run --------------------------------------------------
@@ -70,11 +91,14 @@ function runChild(env) {
 
   // WS_REAPER_PREFLIGHT_DONE is deliberately UNSET here: that is the standalone
   // path, the one a lane uses when it runs a single harness by hand.
-  const out = runChild({ WS_BOX_TURN: 'granted' });
+  // [ITEM 140] the MATCHING token, not the old 'granted' sentinel — otherwise the
+  // grant check refuses first and the foreign-run check this block exists to
+  // prove is never reached.
+  const out = runChild({ WS_BOX_TURN: GRANTED });
   try { child.kill(); } catch { /* already gone */ }
   rmSync(path.join(os.tmpdir(), `i139-fake-${process.pid}`), { recursive: true, force: true });
 
-  ok('S3: with a LIVE FOREIGN RUN on the box, withHarness refuses even WITH a granted turn — a grant is permission to take the box, never permission to contend for it',
+  ok('S3 [ITEM 140 successor]: with a LIVE FOREIGN RUN on the box, withHarness refuses even WITH a turn whose token MATCHES the grant file — a grant is permission to take the box, never permission to contend for it',
     /LIVE FOREIGN RUN PRESENT/.test(out), out.slice(0, 200));
   ok('S3: and the scenario never runs — the refusal is a throw before the first process, not a note after it',
     !/REACHED-SCENARIO/.test(out), out.slice(0, 120));
@@ -106,9 +130,67 @@ function runChild(env) {
 
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
+// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ============
+// Item 139 parked nothing of its own. ITEM 140 (2026-09-16) changed what a
+// granted turn MEANS — from "WS_BOX_TURN is set" to "WS_BOX_TURN matches the
+// grant file" — and that falsified two of this file's checks, both of which
+// granted the turn with the literal sentinel 'granted'. Quoted verbatim below
+// (SUPERSEDED); live successors are S2 and S3 above, which grant the turn with
+// the token that matches the file, plus S2b, which proves the old sentinel is
+// now refused.
+const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
+  const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
+  // === ITEM 140 — SUPERSEDED (S2: the 'granted' sentinel as a grant) =========
+  // ORIGINAL, verbatim:
+  //
+  //   const out = runChild({ WS_BOX_TURN: 'granted', WS_REAPER_PREFLIGHT_DONE: '1' });
+  //   ok('S2 (the control): WITH a granted turn the box guards pass and the run proceeds to its NEXT check (the missing bundle) — so S1 and S3 are not passing on a guard that refuses everything unconditionally',
+  //     /No built bundle/.test(out) && !/BOX TURN NOT GRANTED/.test(out) && !/LIVE FOREIGN RUN/.test(out), out.slice(0, 200));
+  //
+  // WHY IT CANNOT STAND. It passed only because 139 asked whether the variable
+  // was SET. Under 140 the token must MATCH the grant file, and 'granted' matches
+  // no grant chat 1 writes — so the run is refused as "BOX TURN HELD BY ANOTHER
+  // LANE" before the bundle check it asserts is ever reached. The same
+  // experiment now yields the opposite verdict, and that verdict is 140's point.
+  //
+  // (Caught by 140's own gate pair, 2026-09-16, which came back NOT CLEAN on it:
+  // a change to a guard's semantics falsifies every test that encodes the old
+  // semantics, and item140.mjs was swept while this file was not.)
+  const parkedS2 = runChild({ WS_BOX_TURN: 'granted', WS_REAPER_PREFLIGHT_DONE: '1' });
+  pok('PARKED (was "S2 (the control): WITH a granted turn the box guards pass ...") — the SAME sentinel, with the verdict 140 gives it: refused before the bundle check, because a token must match the grant file rather than merely be present. Live successor: S2 above, with the matching token',
+    /BOX TURN (HELD BY ANOTHER LANE|NOT GRANTED)/.test(parkedS2) && !/No built bundle/.test(parkedS2),
+    parkedS2.slice(0, 200));
+
+  // === ITEM 140 — SUPERSEDED (S3: the foreign-run refusal behind 'granted') ===
+  // ORIGINAL, verbatim:
+  //
+  //   const out = runChild({ WS_BOX_TURN: 'granted' });
+  //   ...
+  //   ok('S3: with a LIVE FOREIGN RUN on the box, withHarness refuses even WITH a granted turn — a grant is permission to take the box, never permission to contend for it',
+  //     /LIVE FOREIGN RUN PRESENT/.test(out), out.slice(0, 200));
+  //
+  // WHY IT CANNOT STAND. Its claim is still true — a grant never licenses
+  // contention — but with the 'granted' sentinel the GRANT check now refuses
+  // first, so the foreign-run refusal it names is never reached. It would be
+  // asserting a message the run no longer gets far enough to print. Its sibling
+  // ("the scenario never runs") was not falsified and stays live, unchanged.
+  //
+  // Re-asserted as the ordering 140 creates: with the old sentinel, the grant
+  // refusal fires and the foreign-run refusal does not.
+  const parkedS3 = runChild({ WS_BOX_TURN: 'granted' });
+  pok('PARKED (was "S3: with a LIVE FOREIGN RUN on the box, withHarness refuses even WITH a granted turn") — with the old sentinel the GRANT refusal now fires first, so the foreign-run refusal is never reached; the claim itself survives in the live successor, which grants the turn with the matching token',
+    /BOX TURN (HELD BY ANOTHER LANE|NOT GRANTED)/.test(parkedS3) && !/LIVE FOREIGN RUN PRESENT/.test(parkedS3),
+    parkedS3.slice(0, 200));
+
   // eslint-disable-next-line no-console
-  console.log('\nITEM139 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 139 parks nothing. It adds a refusal the runner did not have; no existing assertion changes meaning.');
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  const parkedPass = parkedChecks.every((c) => c.pass);
+  // eslint-disable-next-line no-console
+  console.log(parkedPass
+    ? `\nITEM139 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed, all retired-check successors green`
+    : `\nITEM139 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console

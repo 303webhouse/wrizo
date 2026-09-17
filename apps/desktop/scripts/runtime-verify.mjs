@@ -717,9 +717,11 @@ export async function withHarness(scenario, opts = {}) {
   // scripts/harness/x.mjs`), which no driver sees at all.
   //
   // TWO REFUSALS, both before the first browser:
-  //   1. NO GRANTED TURN — WS_BOX_TURN unset. run-suite.mjs requires it too and
-  //      passes it to every child, so a suite's files inherit one grant rather
-  //      than each claiming their own.
+  //   1. NO GRANTED TURN — as of ITEM 140, WS_BOX_TURN absent OR NOT MATCHING
+  //      the grant file (139 checked only that it was set; see below).
+  //      run-suite.mjs applies the same check and passes the token to every
+  //      child, so a suite's files inherit one grant rather than each claiming
+  //      their own.
   //   2. A LIVE FOREIGN RUN — another lane is mid-flight. Skipped under
   //      run-suite (WS_REAPER_PREFLIGHT_DONE=1), which performs this check once
   //      for the whole sweep; re-running it per child would be 81 redundant
