@@ -5441,7 +5441,13 @@ THE TERM HIGHLIGHT.** Both 144 and 145 **exceed item 108's charter**, which is w
 **Q-2 IS ANSWERED BY HIS NOTATION — "tag(s)", "Board(s)" — MULTIPLE TAGS MAY BE ACTIVE.** **The ALL-vs-ANY
 fork is with him.**
 
-**⚠ THE WORD "brass" ABOVE IS SUPERSEDED BY NICK's NEXT RULING — see below.** The text is kept VERBATIM;
+**⚠ CURRENT RULING FOR THIS TEXT — READ BEFORE BUILDING (updated 2026-09-16):** the word "brass" above
+was superseded by OLIVE, and OLIVE was then REVERSED by Nick. **THE RULING IN FORCE: the tag's TERM
+HIGHLIGHT is a LIGHTER ORANGE — "a few shades lighter than brass, but still orange" — and
+`::selection` STAYS BRASS.** Full sequence in "THE COLOUR SEQUENCE" below. *(A builder reads the primary
+text; the correction therefore sits beside it, not only further down the ledger.)*
+
+**PRIOR MARKER, kept:** **⚠ THE WORD "brass" ABOVE IS SUPERSEDED BY NICK's NEXT RULING — see below.** The text is kept VERBATIM;
 **it is not wrong, it is succeeded.**
 
 ## NICK's COLOUR RULING — PRIMARY TEXT, VERBATIM — 2026-09-16
@@ -5452,11 +5458,24 @@ fork is with him.**
 **SEVEN LEANS ACCEPTED as the PLAN desk listed them. TH-Q1 RULED OLIVE — and WIDER than the question:
 THE TAGS THEMSELVES ARE OLIVE, not only the highlight.**
 
+**⚠ SUPERSEDED 2026-09-16 — the collision did NOT stay dissolved.** When Nick reversed olive, the
+brass/`::selection` collision RETURNED, and he ruled it **(B)** — see "THE COLOUR SEQUENCE" below.
+**ORIGINAL PARAGRAPH, kept:**
 **THE BRASS COLLISION DISSOLVES.** It had been registered that item 122 already puts `::selection` on
 brass, so a brass term highlight would be indistinguishable from selected text. **Olive removes the
 conflict at the root: brass KEEPS `::selection` exactly as item 122 shipped it, and NOTHING MOVES.**
 
 ## THE COLOUR BAND — IN NICK's WORDS — 2026-09-16
+
+**⚠ SUPERSEDED 2026-09-16 BY A FOUNDER REVERSAL.** Nick set this rule aside for tags ("Eh, I've changed
+my mind"). **It is kept verbatim, with its reasoning intact, because it was a real ruling that was
+really reversed — not a drift.**
+
+**CHAT 1 CORRECTS ITS OWN SENTENCE BELOW.** It said *"A rule that survives its author's own exception is
+a rule, not a preference."* **That OVERSTATED what had happened.** The rule held ONCE, against Nick's
+first request — and then its author revised it. **Holding once does not make a founder's rule
+immutable; the founder can change it, and did.** The sentence is left in place, marked, so the record
+shows the claim and its correction rather than a quietly tidied history.
 
 > **ORANGE IS THE WRITER PRODUCING OR CHOOSING. OLIVE IS THE APP SHOWING WHERE THINGS ARE.**
 
@@ -5506,7 +5525,146 @@ question, and the refused set answered it.)*
 `plan-thumbnail-law-amend @ 8de44f7`, `plan-tag-controls-pass @ b32fc82`, `plan-siblings-highlight @
 a6e52cb`, `plan-vw2-heading-fix @ aa7d6a3`.
 
-Registry: next free **146**.
+## THE COLOUR SEQUENCE — THREE FOUNDER RULINGS, ALL KEPT — 2026-09-16
+
+**FIRST — brass.** Nick's item-144/145 text: *"the term should be highlighted by the brass theme colour."*
+
+**SECOND — olive (his rule).** *"Let's make the tags and the tag highlights the olive green color so that
+orange stays connected to the User producing writing or making choices/progress."*
+
+**THIRD — the REVERSAL. Nick, VERBATIM, primary text:**
+
+> 1. Approved 2. Approved. 3. Eh, I've changed my mind. When a user selects a tag, let's just make the
+> tag orange and use orange ('brass') as the background highlight for each matching word
+
+**RECORDED: TAG-Q1 and TAG-Q2 APPROVED. TH-Q1 REVERSED — tags and the term highlight are BRASS, not
+olive.**
+
+**THE COLLISION RETURNED, AND WAS RULED. Nick, VERBATIM, primary text:**
+
+> If the user highlights over an already-highlighted word, make the tagged word's highlight a few
+> shades lighter than brass, but still orange so the tag is still visible
+
+**RULED (B): `::selection` STAYS BRASS AND DOES NOT MOVE. The tag's term highlight is a LIGHTER ORANGE —
+still orange — and STAYS VISIBLE where a selection covers it.** **THE OVERLAP IS THE ACCEPTANCE TEST.**
+*(Fable's lean had been (A), one colour one meaning. Nick chose (B). Recorded as his ruling over a
+stated lean, which is exactly how a lean is supposed to work.)*
+
+**⚠ A FABLE READING, FLAGGED FOR NICK's CONFIRMATION — NOT HIS TEXT:** his sentence scopes the lightening
+to THE OVERLAP. Read narrowly, a tag match and selected text would then be IDENTICAL brass everywhere
+else. **So the brief carries the lighter orange as the tag's fill ALWAYS, mocked both ways, marked as
+Fable's reading.** **It stands until Nick confirms or corrects it.**
+
+**THE SEQUENCE READS: brass (his first) → olive (his rule) → brass/lighter-orange (his reversal + this
+ruling). ALL THREE STAY, each marked superseded in turn, so the record shows FOUNDER REVERSALS rather
+than drift.** **NOTHING IS BLOCKED: 108's tokens are ONE DERIVATION, so each change was a name change,
+not a redesign** — but **nothing paints a term until the fork is ruled.** *(It was ruled (B) — and (B)
+then FAILED its own acceptance test on the platform, below. So the fork is BACK WITH NICK, and nothing
+paints yet.)*
+
+## BAND — A SUPERSEDED FOUNDER TEXT STAYS, MARKED — 2026-09-16
+
+> **A SUPERSEDED FOUNDER TEXT STAYS, MARKED — A BUILDER READS THE PRIMARY TEXT, SO THE CORRECTION MUST
+> TRAVEL WITH IT.**
+
+**Applied twice in this same commit:** item 145's primary text now carries the CURRENT ruling beside it,
+and the colour band carries its reversal at its own heading. *(A correction recorded only further down
+the ledger is invisible to a builder who reads the primary text and stops there — which is what primary
+text is FOR.)*
+
+## THE TAG ARC — GATING, RATIFIED FROM THE PLAN DESK — 2026-09-16
+
+- **ITEM 108 BUILDS FIRST** — the colour tokens, **the shared tag list**, **card tags** — and **GATES 143,
+  144, 145, and VW3's retirement of the Spread.**
+- **108's FILTER LANDS IN THREE HOSTS, EACH WAITING ON ITS OWN:** the **board canvas NOW**, the **side
+  menu on PW2**, **Shelf/Trash on VW2**.
+- **143's CARD CONTROLS WAIT ON CARD TAGS.**
+
+**MERGED (all docs-only, verified), THE FOUNDATION FIRST — the REWRITTEN six, which SUPERSEDE an earlier
+six that were never merged:** `plan-tag-olive-foundation @ 30b6af4` — **the four briefs are each built on
+it, so it cannot be skipped** — then `plan-brief-108 @ 1bdf06b`, `plan-brief-143 @ 382ca3f`,
+`plan-brief-144 @ 4a45945`, `plan-brief-145 @ fe6d2d7`, and `plan-siblings-thq1 @ 03ca200`.
+**THE FOUNDATION FILE IS RENAMED `tag-colour-foundation.md`** (verified: no olive-named file remains) —
+**a file named "olive" that specifies orange would mislead anyone who trusted its name.** *(The branch
+name still says olive; branch names are transient and are not read as specifications.)*
+
+**THREE QUESTIONS WITH NICK:** the press-flash · the focus outline · the fill strength.
+
+## ⚠ RULING (B) FAILS ITS OWN ACCEPTANCE TEST — ON THE SPEC — 2026-09-16
+
+**The overlap WAS the acceptance test, and the platform refuses it.** **Custom highlights render BELOW
+`::selection`** (CSS Custom Highlight API §4.2.4), **and item 122's selection is OPAQUE — so a tagged
+word under a selection measures 1.00:1.** **The lighter-orange tag is not "still visible"; it is not
+visible at all.**
+
+**WITH NICK NOW: (i) ACCEPT THE OVERLAP** (the tag disappears under a selection), **or (ii) A SECOND
+MARK** (an overline) that paints where the fill cannot. **Nothing paints a term until he rules.**
+
+**BAND:**
+
+> **A RULING CAN BE REFUSED BY THE PLATFORM — MEASURE THE MECHANISM BEFORE PROMISING THE BEHAVIOUR.**
+
+*(Nick's sentence described an outcome; the browser decides whether that outcome is paintable. Caught
+on the spec before anyone built it — which is the cheapest place a platform refusal can be caught.)*
+
+## BAND — HOLDING ONCE DOES NOT MAKE A RULE PERMANENT — 2026-09-16
+
+> **HOLDING ONCE DOES NOT MAKE A RULE PERMANENT — A FOUNDER MAY SET ASIDE HIS OWN RULE, AND THE RECORD
+> SHOWS THE SEQUENCE.**
+
+*(Earned by chat 1's own overstatement, corrected above at the colour band's heading and left in place
+marked.)*
+
+## ITEM 146 — m3's ROAMS CHECK IS INTERMITTENT (flake-class defect) — OPENS 2026-09-16
+
+**OPENED ANYWAY.** Fable's conditional — open m3 if ERRATA's re-run reds on it alone — **did NOT fire:**
+140's re-run was CLEAN. **It is opened regardless, on ERRATA's evidence: ONE IDENTICAL BUNDLE — PASSED,
+FAILED, PASSED, PASSED.** **Cause as measured: single-seed ROAMS timing variance.**
+
+**A NUMBERED DEFECT, NOT A KNOWN FLAKE.** **The known-flake list has been EMPTY all arc, and AN UNNAMED
+INTERMITTENT IS HOW IT STARTS FILLING — BY DEFAULT.** *(Chat 1's memory already carries m3's ROAMS check as
+the one measured non-determinism, owed to the Rhizome desk. A numbered item gives that owed work a place
+to be done; the flake list would give it a place to be forgotten. And one bundle across four runs is
+the bundle-diagnostic law doing its job: the code did not change, so the variance is not in the code.)*
+
+## ITEMS 140 AND 141 — MERGED — 2026-09-16
+
+**ITEM 141 MERGED ALONE** (`item141-settle-guard`), **CLEAN both legs at `55b8ed9` on its FIRST pair**,
+with **the PARKED LEG VERIFIED AS HAVING ACTUALLY RUN THE FIXED SITES** — ab1 15/15, j4 4/4 — because every
+site lived inside a parked block. *(A guard proved by a leg that skipped the sites it guards would be
+proved by nothing.)*
+
+**ITEM 140 MERGED IN ONE COMMIT WITH CHAT 1's WRITER** (`scripts/box-turn.mjs`), **CLEAN both legs at
+`ac19cc7`** (second pair; the runner confirmed the ALLOW path on both). **Never before the writer**:
+140's guard refuses everything with no grant file, so landing it alone would have closed the box.
+
+**THE WRITER SPELLS NO FORMAT** — it calls `writeGrant`/`clearGrant` from `box-grant.mjs`. **Chat 1's
+hand-written grant files had ALREADY DRIFTED** (a `granted` field where the module writes `time`); the
+matcher reads only the token, so nothing broke — the point is that it could have. **One deliberate
+layer difference:** `clearGrant()` is idempotent and always reports success, right for the module; the
+writer checks for the file FIRST and reports an already-absent grant as a forgotten or duplicate clear,
+using the exported `GRANT_PATH` rather than the format.
+
+**PROVEN END TO END before committing — chat 1's writer against ERRATA's own matcher:** correct token
+**ALLOWED** (ok, lane PW2) · wrong token **REFUSED** (`token-mismatch`) · empty token **REFUSED**
+(`no-token-exported`). **PW2's grant was written THROUGH the writer before the commit**, so a grant
+existed the instant the guard did.
+
+## BOX STATE AND ROUTING — 2026-09-16
+
+**ERRATA's grant CLEARED; PW2 GRANTED** (token `pw2-pair-20260916`). **PW2 is `d492085`, FROZEN SINCE
+BEFORE BATCH TWO: it re-merges `main` FIRST — main has moved far — and REPORTS CONFLICTS before its
+pair.** **Then TOOLS' VW1 (two pairs), then the four-file park conform.**
+
+**INK is idle and holding its worktree until item 126 merges in Batch Three — correctly.** **ERRATA is
+off the box with an EMPTY QUEUE — routed below.**
+
+**ROUTED BY CHAT 1: ERRATA TAKES ITEM 146.** It gathered the four-run evidence, and a timing-variance
+defect in a harness is its class of work (the seed guard, the sleep detector, the runner guard).
+**BROWSERLESS DIAGNOSIS FIRST; a pair only once it holds a fix.** **FLAGGED, NOT OVERRIDDEN: chat 1's
+records name m3's ROAMS check as OWED TO THE RHIZOME DESK.** The routing stands unless Fable returns it
+there — a prior owner is named, not silently replaced.
+Registry: next free **147**.
 
 
 
