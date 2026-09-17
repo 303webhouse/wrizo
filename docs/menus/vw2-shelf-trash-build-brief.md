@@ -88,14 +88,23 @@ leave it on its current path here.)*
   never returned, and shape does the work instead.*
 
 - **SECTIONED, NOT MIXED — Nick's other half: *"group them together but section off Boards from
-  Pages clearly."*** One zone, two sections. **Fable's derived wording, recorded as STANDING
-  UNTIL NICK VETOES** *(it is derived from his sentence, not quoted from it — so it is marked as
-  such rather than presented as his)*:
+  Pages clearly."*** One zone, two sections.
+  ~~**Fable's derived wording, recorded as STANDING UNTIL NICK VETOES:** a stacked heading
+  `LINKED TO THIS BOARD` above the sections~~ — **SUPERSEDED the day it was written, by PW2's
+  ruling (1), 2026-09-13:** *"The survey's heading stays THE BOARD'S NAME; under it, two labelled
+  sections, 'Pages' and 'Boards'. **'Linked to this board' does NOT render as a line.**"* **This
+  brief never learned it until the PLAN desk reconciled the sibling row against that zone
+  (2026-09-16).** Struck in place, not deleted — *a stale heading that survives in a brief is
+  exactly the instruction a builder would faithfully follow.*
+
+  **AS IT NOW STANDS — for THIS view, whose own name heads it:**
   ```
-  LINKED TO THIS BOARD
+  THE SHELF   (or THE TRASH)
     Pages      <tall thumbnails>
     Boards     <wide thumbnails>
   ```
+  *(In a Shelf or Trash view the struck phrase was never even true: neither is a board, so nothing
+  here is "linked to this board.")*
   **The sections are the "clearly"** — grouping alone would leave two silhouettes interleaved,
   which is legible but not *sectioned*. **Shape and section do different jobs: shape tells you
   what one thing is; the section tells you where its kind ends.**

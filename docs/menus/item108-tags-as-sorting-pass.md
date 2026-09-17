@@ -1,5 +1,20 @@
 # ITEM 108 — TAGS AS SORTING · committee pass
-### PLAN desk · 2026-09-16 · CANDIDATES + RECOMMENDATIONS. Nothing locks.
+### PLAN desk · 2026-09-16 · **RULED IN PART — Nick's four, 2026-09-16**
+
+> **NICK, VERBATIM:** *"1. Hold confirmed  2. Since Cards can be made into any size, have Card
+> thumbnails match the proportion of each card individually.  3. Accepted  4. Skip it, but one
+> small change to the Card tools menu: […] These options should exist for every tool strip menu
+> (Page, Card, Board)"*
+>
+> **RECORDED (mapping per Fable's relay):** **Q-1 HOLD** · **Q-3 card thumbnails mirror each card's
+> own proportion** — the thumbnail law is **amended** in the item-134 charter pass, not excepted ·
+> **Q-4 the source-list shape ACCEPTED** · **Mockup C SKIPPED** · **his "one small change" is a new
+> subject — THE TAG CONTROLS — with its own pass and its own number** (`tag-controls-pass.md`).
+>
+> **⚠ Q-2 IS UNANSWERED.** His four map to Q-1, Q-3, Q-4 and the mockup; **nothing in them answers
+> Q-2 (one tag at a time, or several).** It is **left open, not inferred** — the pass's
+> recommendation (**one**) stands as the default until he rules it. *A question a relay did not
+> answer is not a question answered.*
 
 **NICK'S CHARTER GOVERNS AND IS QUOTED IN FULL IN THE RELAY.** The sentence this pass is
 measured against: *"pull up character info or a type of research… while they're on a Page,
@@ -54,7 +69,13 @@ active; a **clear affordance is always present while a filter is on**; and — o
 **because they pressed it**, and an ambient "6 of 20" would buy nothing the active chip does not
 already say.
 
-**T4 · ONE TAG AT A TIME.** The Spread's behaviour, kept deliberately. **Multi-tag intersection
+**~~T4 · ONE TAG AT A TIME.~~ — SUPERSEDED 2026-09-16: MULTIPLE ACTIVE TAGS, NARROWED BY ALL.**
+Nick: *“All of them. It should be a kind of sorting mechanism.”* See `siblings-and-highlight-pass.md` §3
+for what intersection obliges (an empty result states itself; every active tag droppable on its
+own). The original argument below is left standing — it was a sound warning against a query
+language, and ALL is not one: it is a single, fixed predicate, not a grammar the writer composes.
+
+*Struck original:* The Spread's behaviour, kept deliberately. **Multi-tag intersection
 is a query language**, and a query language is the taxonomy creep the cluster pass made law
 against: *"no tag types, no colours, no required tags, no hierarchy."* **If Nick wants AND
 later, it returns as its own question with its own evidence.**
@@ -211,15 +232,22 @@ channel** and is not routed through Find.
 
 ## §6 · QUESTIONS FOR NICK
 
-**Q-1 · The board fork (§2).** Holes, or reflow? **Recommend HOLD** — the arrangement is yours,
+**Q-1 · RULED — *“Hold confirmed.”*** Cards hold position under a filter; **the holes are
+honest.** ~~Holes, or reflow? **Recommend HOLD**~~ — the arrangement is yours,
 **and the holes are the honesty**: a reflowed board reads as *"this is all there is."* Mockup B.
-**Q-2 · One tag at a time, or several?** **Recommend one.** Several is a query language, and the
+**Q-2 · RULED — CLOSED, 2026-09-16.** His *“tag(s)”* notation permitted several; asked the fork,
+he ruled **ALL** — *“All of them. It should be a kind of sorting mechanism.”* ~~Recommend one~~ —
+superseded. **Intersection, never union**, everywhere the filter lands. Several is a query language, and the
 cluster pass ruled against taxonomy creep. Returns with evidence if you want it.
-**Q-3 · A CARD'S SILHOUETTE.** You ruled boards wide and pages tall. **What is a card?** Today's
+**Q-3 · RULED — *“have Card thumbnails match the proportion of each card individually.”*** A card
+has no canonical shape because the writer chose it, so its thumbnail shows what was made. **The
+thumbnail law is amended in the item-134 charter pass.** ~~What is a card?~~ Today's
 mockups draw it landscape, which makes it share an orientation with boards. *(A small square is
 the obvious third shape, but this desk will not choose it for you after you ruled the other
 two.)*
-**Q-4 · FIND'S REACH — routed by name per FN8 (§5/T14).** The desk proposes **sources, one of
+**Q-4 · RULED — *“Accepted.”*** The source-list shape stands: **FN1 holds unconditionally while
+one local source exists; a remote source arrives later as a consented channel.** ~~Find's reach,
+routed by name per FN8~~ — routed, and ruled. The desk proposes **sources, one of
 them local today**, so FN1's zero-network guarantee survives intact and the social app arrives
 later as a consented source rather than a quiet exception. **Confirm the shape, or rule that
 Find may reach the network when the time comes.**
@@ -234,8 +262,8 @@ call. This pass keeps it as §3 of 108 and flags the split.
 page mid-sentence: Counsel → `#character` → a result → **the card opens over the page**. Live.
 **B · `item108-mock-board-filter.html`** — **the fork**, both candidates at one scale: hold
 versus reflow, on a populated board, so Q-1 is ruled on the paper.
-**C · `item108-mock-card-tags.html`** — tagging in the opened card (T6), and where tags are seen
-without the wall growing chip rows (T7).
+**~~C · `item108-mock-card-tags.html`~~ — SKIPPED on Nick's word (*“Skip it”*).** Its subject,
+tagging in the opened card, is superseded by **the tag controls** (`tag-controls-pass.md`).
 
 **A FOUNDER SITTING IS OWED before any of this is called done.** Every surface here is
 meaning-carrying — *the tags present are the right tags; the filter hid nothing it should have
