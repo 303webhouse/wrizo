@@ -5804,7 +5804,76 @@ exemption is NAMED AND JUSTIFIED** — the same inversion ERRATA already applied
 cannot say FAIL is not a verdict; a comment explaining a hazard is not a guard against it. All three are
 text standing in for a mechanism. And the escapee that proves it best is the guard author's own seam.)*
 
-Registry: next free **149**.
+## ITEM 148 — ERRATA's SURVEY WIDENS THE GAP — 2026-09-16
+
+> *Epigraph: the guard's own author wrote a seam the guard cannot see.*
+
+**THREE AXES, NOT ONE:** the gap runs along **VERB** (only four matched), **FILE** (the guard opened ONE
+file) and **SHAPE** (a namespace's verb lives on its member). **41 seams across 23 files — the guard read
+ONE of the 23.**
+
+**`wrizoBible` FOUND UNWRAPPED, writing through `saveProject` from a file the guard never opened.**
+**`wrizoPairing` AND `wrizoBible` ARE BOTH NOW WRAPPED.** *(chat 1's namespace catch — the verb on the
+member — is carried in 148.)*
+
+## TWO OFFERS — PAIRS OWED, AFTER PW2 AND TOOLS — 2026-09-16
+
+- **`item147-park-count @ 5f9344d`** — 13/13, **four landed mutations.** **ITS PARKED LEG MUST SHOW `ITEM87
+  PARKED: PASS (4 checks)`** — the constant `0 checks` is the defect, so a pair still printing zero has not
+  proven the fix.
+- **`item148-seam-durability @ 41f8b7c`** — 53/53, **six landed mutations.** **ITS PAIR MUST SHOW `bm1`,
+  `item97`, `tu5`, `b2`, `fx9` AND `item85c` STILL PASSING now that their writers FLUSH** — wrapping a seam
+  changes its timing, and those six are the files that lean on it.
+
+## MERGE ORDER — SEQUENCED EXPLICITLY, BY CHAT 1 — 2026-09-16
+
+**THE CONSTRAINT:** whichever of `item148` and `pw2-nesting-transfer` lands SECOND owes ONE table entry
+for `wrizoCopyCardToBoard`. **It cannot be added ahead of time** — on `main` the seam does not exist, so
+the entry would be stale and the guard would rightly refuse it. *(Measured: `main` carries 0 occurrences;
+PW2 introduces the seam.)*
+
+**RULED: `pw2-nesting-transfer` LANDS FIRST; `item148` LANDS SECOND, and adds the entry BEFORE ITS PAIR
+RUNS.**
+
+**THE DECIDING FACT IS WHICH PAIR HAS NOT RUN YET.** PW2's pair is on the box now; item148's is still
+queued behind TOOLS (its tip is its offer — no pair commits). So:
+- **PW2 first, 148 second:** item148 re-merges `main`, picks up the seam, adds the entry, and stamps ONCE.
+  **Zero wasted pairs.**
+- **148 first, PW2 second:** PW2 would add the entry AFTER its current pair, invalidating it — **a second
+  PW2 pair.**
+
+**THE RULE OF THUMB: THE SECOND LANDER IS THE ONE WHOSE PAIR HAS NOT RUN.** *(A table entry that depends on
+another lane's seam is a merge-order question, and the cheapest order is the one where the dependent
+change is absorbed before a stamp rather than after one.)*
+
+## ITEM 149 — THE PARKED-RECORDS AUDIT IS OUTSIDE THE ROSTER — OPENS 2026-09-16
+
+**OPENS. Routed to ERRATA.** **`audit-parked-records.mjs` EXITS 1 ON `main`** from four `NO_KEY` entries —
+**and it is NOT IN THE SUITE ROSTER, so NO PAIR HAS EVER SHOWN IT.** **THE ROSTER GAP IS THE DEFECT.**
+
+**Confirmed by chat 1:** the file lives at `scripts/audit-parked-records.mjs`, **not** `scripts/harness/`,
+and `run-suite` enumerates only `harness/`. **A red that nothing runs is indistinguishable, from every
+stamp, from a green.**
+
+*(The coverage law made concrete: a scan of zero files is not a clean result. Here it is an AUDIT of
+zero runs — an instrument that has been reporting failure the whole time, to nobody.)*
+
+## ITEM 150 — 37 PARKED CHECKS PASS A CONSTANT `true` — OPENS 2026-09-16
+
+**OPENS. Routed to ERRATA.** **37 parked checks pass a CONSTANT `true`.** **A PARK THAT CANNOT FAIL
+CERTIFIES NOTHING — item 87's disease AT SCALE.**
+
+*(Item 87's verdict LINE could not say FAIL; these park CHECKS cannot either. Item 147 fixes the line for
+one file; item 150 is the same defect in the assertions themselves, across 37 of them. A guard, in the
+sense INK defined — a check that cannot fail on today's code — is honest only when it is DECLARED as one.
+These are not declared; they are counted as evidence.)*
+
+## ERRATA's QUEUE — 2026-09-16
+
+**ERRATA holds item 146 NEXT**, then items 149 and 150. Its offers 147 and 148 wait on their pairs.
+
+Registry: next free **151**.
+
 
 
 
