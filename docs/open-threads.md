@@ -5347,7 +5347,16 @@ lives outside every worktree, so it is invisible to git.**
 
 ## ITEM 108 — NICK'S RULINGS ON THE FOUR QUESTIONS — 2026-09-16
 
-**⚠ PRIMARY TEXT NOT IN CHAT 1's BLOCK.** Fable's relay states Nick's four rulings are **in the PLAN
+**✅ PRIMARY TEXT RECEIVED 2026-09-16 — Nick, VERBATIM. It REPLACES the summary below, which is kept
+only as the record that the entry carried a summary for a time:**
+
+> 1. Hold confirmed 2. Since Cards can be made into any size, have Card thumbnails match the
+> proportion of each card individually. 3. Accepted 4. Skip it, but one small change to the Card tools
+> menu: Instead of a heading that says 'Tags,' make the 'Add a Tag' button a '+' sign, and add a
+> '-' that will 'Remove a Tag.' And add a third option that shows the list of existing tags in a
+> scrollable list. These options should exist for every tool strip menu (Page, Card, Board)
+
+**SUPERSEDED MARKER, kept:** **⚠ PRIMARY TEXT NOT IN CHAT 1's BLOCK.** Fable's relay states Nick's four rulings are **in the PLAN
 desk's block, verbatim**, to be recorded as primary text there. **What reached chat 1 is FABLE's
 SUMMARY, recorded below AS a summary.** **The verbatim text lands with the PLAN desk's offer; until then
 this entry carries no founder words.** *(Recorded this way rather than paraphrased into quotation
@@ -5393,7 +5402,112 @@ appears "on every tool strip menu" is the natural moment to make that ONE handle
 controls will be built four times. *(One fact, one derivation — applied to behaviour as well as to
 words.)*
 
-Registry: next free **144**.
+## THE RENUMBERING ERROR — A QUESTION NEVER REACHED NICK — 2026-09-16
+
+**Fable's error, on the record: the PLAN desk asked FIVE questions; Fable relayed FOUR and
+RENUMBERED them, so Q-2 — ONE TAG AT A TIME, OR SEVERAL — NEVER REACHED NICK.** It is with him now; the
+PLAN desk recorded it OPEN with "one" as the default, correctly.
+
+**HOW IT SURFACED: chat 1 recorded the rulings BY SUBJECT, and the subject list had a hole the number
+list did not.**
+
+**BAND — two halves of one law:**
+
+> **RELAY A QUESTION SET BY ITS OWN NUMBERS OR NOT AT ALL — RENUMBERING SILENTLY DROPS THE ONE YOU
+> DIDN'T ASK.** (Fable)
+>
+> **RECORD BY SUBJECT — FOUR ANSWERS FILED AGAINST FOUR NUMBERS LOOK COMPLETE.** (chat 1)
+
+*(The second is why the first is detectable. Four numbers with four answers is a complete-looking table;
+four subjects with four answers against five questions asked is a visible gap.)*
+
+## ITEMS 144 AND 145 — PRIMARY TEXT, Nick VERBATIM — 2026-09-16
+
+> To answer your question, if the user is on a Board surface, every other board in that Drawer (or
+> tagged from anywhere in the app) should be listed as tabs below the Board but attached to it that
+> lists all other Boards. So if a user is doing extensive worldbuilding, they may want a board for
+> characters, one for locations, one for lore, etc. All these Boards together make up the
+> 'Worldbuilding' for the project, so they should all be easy to click back-and-forth between, as
+> well as listed along with their other tagged surfaces (Pages, Cards). When the User selects a
+> tag(s), only the Board(s) containing the tag(s) should show in the list under the current board. When
+> a user clicks on a Board tag, the Board should just change over to that Board. Also, when a tag is
+> selected on any Surface, the term should be highlighted by the brass theme color if it appears
+> anywhere in the viewable text on any surface.
+
+**NUMBERS, ACCEPTED:** **ITEM 143 = THE TAG CONTROLS** · **ITEM 144 = THE SIBLING TAB ROW** · **ITEM 145 =
+THE TERM HIGHLIGHT.** Both 144 and 145 **exceed item 108's charter**, which is why they are numbered.
+**To the PLAN DESK: 143 IS the tag controls — it is yours to claim.**
+
+**Q-2 IS ANSWERED BY HIS NOTATION — "tag(s)", "Board(s)" — MULTIPLE TAGS MAY BE ACTIVE.** **The ALL-vs-ANY
+fork is with him.**
+
+**⚠ THE WORD "brass" ABOVE IS SUPERSEDED BY NICK's NEXT RULING — see below.** The text is kept VERBATIM;
+**it is not wrong, it is succeeded.**
+
+## NICK's COLOUR RULING — PRIMARY TEXT, VERBATIM — 2026-09-16
+
+> Agree with all 'leans' except one: Let's make the tags and the tag highlights the olive green color
+> so that orange stays connected to the User producing writing or making choices/progress
+
+**SEVEN LEANS ACCEPTED as the PLAN desk listed them. TH-Q1 RULED OLIVE — and WIDER than the question:
+THE TAGS THEMSELVES ARE OLIVE, not only the highlight.**
+
+**THE BRASS COLLISION DISSOLVES.** It had been registered that item 122 already puts `::selection` on
+brass, so a brass term highlight would be indistinguishable from selected text. **Olive removes the
+conflict at the root: brass KEEPS `::selection` exactly as item 122 shipped it, and NOTHING MOVES.**
+
+## THE COLOUR BAND — IN NICK's WORDS — 2026-09-16
+
+> **ORANGE IS THE WRITER PRODUCING OR CHOOSING. OLIVE IS THE APP SHOWING WHERE THINGS ARE.**
+
+**RECORDED: THE RULE WAS TESTED AT THE ONE PLACE IT WOULD HAVE BENT, AND IT HELD.** Nick's own first
+text asked for brass; his principle, applied to that request, overruled it. **A rule that survives its
+author's own exception is a rule, not a preference.** *(And it resolved a real defect in passing: two
+meanings no longer share one colour.)*
+
+## THE VOCABULARY CONSTRAINT — VW3's SECOND GATE — 2026-09-16
+
+**THE SHARED TAG VOCABULARY DOES NOT EXIST.** **The only cross-entry gathering of tags is one line in
+`Spread.tsx` (`allTags`), scoped to the Spread's own pages — and VW3 deletes that file.**
+
+**Chat 1's nuance, registered:** `tutorLenses.ts` also builds a `Set` over tags, but it is **ONE ENTRY's
+OWN TAGS — a comparison set, not a vocabulary.** **The constraint holds.**
+
+**RULED: VW3 CANNOT RETIRE THE SPREAD UNTIL BOTH THE FILTER AND THE VOCABULARY HAVE A NEW HOME.** **Routed
+to the PLAN desk** as a clause on `plan-vw3-tagfilter` or its own commit. **The second sequencing gate of
+its kind on the same retirement.**
+
+## ITEM 143 — CHAT 1's TWO FINDINGS RATIFIED INTO IT — 2026-09-16
+
+- **THE "Tags" HEADING MAY NOT EXIST IN CODE.** **The brief FINDS it before retiring it**; if it lives
+  only in a mockup, that part is **pure addition**. **`pageFaceAddTag: 'Add a tag'` is the term to
+  build on.**
+- **TAG ADD/REMOVE IS WRITTEN FOUR TIMES OVER** (`BoardEditor`, `ScriptEditor`, `JournalEntry`,
+  `PageEditor`) **and is MERGED INTO ONE HANDLER as part of 143** — **the `boardName` precedent**; the
+  alternative is building three controls four times.
+
+## BAND — A SET IS RIGHT OR WRONG ONLY FOR THE QUESTION (PLAN DESK) — 2026-09-16
+
+> **A SET IS NOT RIGHT OR WRONG, ONLY RIGHT OR WRONG FOR THE QUESTION — A REFUSED SET MAY BE THE ANSWER
+> TO A LATER ONE.**
+
+**THE PLAN DESK's PW1 REVERSAL, WITH CREDIT:** `getBinderPages(projectId)` was **correctly REFUSED for
+"which boards HOLD this page"** — and is **correct for "which boards sit BESIDE this one."** *(A refusal
+records a mismatch between a set and a question, not a verdict on the set. Item 144 asked a new
+question, and the refused set answered it.)*
+
+## STATE OF THE TAG ARC — 2026-09-16
+
+**PLAN DESK writes FOUR BUILD BRIEFS — 108's filter, 143, 144, 145 — and names WHICH GATES WHICH.**
+**EIGHT QUESTIONS ARE WITH NICK.**
+
+**MERGED THIS ROUND (all docs-only, verified):** `plan-item108-all @ ab7f40d` (bringing
+`plan-item108-rulings @ 0b07214` with it — merging the base alone would have left Q-2 marked open),
+`plan-thumbnail-law-amend @ 8de44f7`, `plan-tag-controls-pass @ b32fc82`, `plan-siblings-highlight @
+a6e52cb`, `plan-vw2-heading-fix @ aa7d6a3`.
+
+Registry: next free **146**.
+
 
 
 
