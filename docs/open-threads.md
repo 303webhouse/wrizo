@@ -6109,6 +6109,9 @@ one grant for both pairs. `checkGrant` accepts TOOLS' token and refuses PW2's sp
 **Chat 1's pre-turn reading of `vw1-rail`, handed to TOOLS with the announcement:**
 - the branch is at `3cf1982`, **111 commits behind `origin/main`** — merge `main` first and report
   conflicts before the pair;
+- **⚠ SUPERSEDED 2026-09-17 — the instruction's LETTER only.** TOOLS did not commit `vw1.mjs` before
+  pair 1; it held the file OUTSIDE `harness/` instead, and **Fable RATIFIED that** (see *TOOLS' `vw1.mjs`
+  PLACEMENT — RATIFIED*, below). The substance — nothing untracked in `harness/` — held. Kept as written.
 - **`apps/desktop/scripts/harness/vw1.mjs` is UNTRACKED** in the worktree. `run-suite` counts
   `git status --porcelain` lines, so it would stamp the pair `+1dirty` — and, living in `harness/`, it
   would also be RUN. Commit it before the pair.
@@ -6146,7 +6149,242 @@ when VW1 clears, chat 1 proposes PW2's re-stamp goes ahead of it — the two sha
 `item147.mjs` and `item87.mjs`; PW2's fix touches `pw1.mjs` and `ab4.mjs`), and PW2 lands before
 either of ERRATA's seam-table branches in both orders. **Not acted on without a ruling.**
 
+## STANDING RULE — A LANE PRESENT AND READY TAKES THE NEXT SLOT — 2026-09-17
+
+**The contingency chat 1 routed is APPROVED:** if ERRATA is not back when VW1 clears, **PW2's re-stamp
+goes ahead of 147** (no shared file; PW2 lands before 148 and 146 either way).
+
+**FABLE's GENERAL RULE, so it need not be asked again:**
+> **A LANE THAT IS PRESENT AND READY TAKES THE NEXT SLOT; AN ABSENT LANE's ITEM KEEPS ITS PLACE IN THE
+> ORDER BUT NOT ITS HOLD ON THE BOX.** **Chat 1 reorders on that WITHOUT A RULING.**
+
+*(The order says who goes first among the ready. It was never a reservation that holds the machine
+idle for someone who is not there.)*
+
+## RULING — ONE HANDLE FOR ONE CONTROL — 2026-09-17
+
+**PW2's finding:** `pw1.mjs` lines 187 and 192 reach the strip's Plan control BY INDEX, on `main` and on
+PW2's branch, while `pw2.mjs` reaches the same control BY LABEL TEXT — **two files, one strip control,
+two handles.** **PW2 was RIGHT to leave `pw1`'s sites alone:** TOOLS owns them, converting in-branch
+collides on the same lines, and converting to label text now means changing the file twice.
+
+**RULED: after VW1 lands, `data-category` IS THE HANDLE EVERYWHERE, and at its merge PW2 aligns BOTH
+`pw1.mjs` and `pw2.mjs` to it.**
+
+> **TWO FILES ADDRESSING ONE CONTROL BY DIFFERENT HANDLES IS A DIVERGENCE WAITING FOR A REORDER.**
+
+**CHAT 1 MEASURED WHAT THAT ALIGNMENT WILL ACTUALLY CONTAIN:**
+- **`data-category` exists ONLY on `vw1-rail`** — VW1 adds `data-category={item.id}` to the strip
+  buttons in `Cascade.tsx`. On `main` and on PW2's branch the attribute is absent (0 hits in `src/`),
+  so no file can use it before VW1 lands. *(Consistent with the ruling's "after VW1 lands".)*
+- **VW1 ALREADY CONVERTS `pw1.mjs` 187 AND 192** to `.wz-strip-item[data-category=plan]`. **Once PW2
+  re-merges `main` after VW1, `pw1`'s two sites are already on the one handle** — PW2's part there is to
+  CONFIRM it, not to convert it.
+- **The conversion left to PW2 is `pw2.mjs`:** `STRIP_PLAN` (line 164, label text) and the comment above
+  it (lines 161–163), which says `.wz-strip-item` "carries no per-category class" — **true today, FALSE
+  the moment VW1 lands.**
+- **✓ RULED 2026-09-17** (see *RULING — A CHECK'S NAME IS A CLAIM*, below). The bullet that follows is
+  kept as written.
+- **FLAGGED, NOT RULED — line 189 in BOTH files:** `document.querySelectorAll('.wz-strip-item').length > 2`
+  gates the driver check named *"the cascade strip is mounted WITH A PLAN CATEGORY"*. **A count stands
+  in for the claim** — the index handle's residue (`> 2` is what `[2]` needs). VW1 left it, as it left
+  the `length === 8` mount probes elsewhere; with a named handle the claim can be tested directly.
+  Routed to PW2 and TOOLS as part of the same alignment, their call.
+
+## PW2's MERGE OBLIGATION — ONE LIST, NOT LOOSE ENDS — 2026-09-17
+
+**At its re-stamp, in order:** (1) re-merge `main`, which then carries VW1; (2) confirm `pw1.mjs` 187/192
+carry VW1's handle; (3) convert `pw2.mjs`'s `STRIP_PLAN` and its comment to `data-category`; (4) the
+four park runs of three checks; (5) the pair — **both legs**.
+
+**✓ RESOLVED 2026-09-17 — Fable CONFIRMED chat 1's reading:** 148's entry stays with 148. Recorded as a
+CORRECTION of the application, not a reversal of the rule (see *CORRECTION — THE SECOND-LANDER RULE WAS
+RIGHT*, below). The paragraph is kept as written.
+
+**⚠ CHAT 1 FLAGS ONE CONFLICT WITH THE RECORDED ORDER.** Fable's ruling folds **148's table entry** into
+PW2's merge obligation. **Under the approved order PW2 lands BEFORE 148**, and the record *MERGE ORDER —
+RECORDED SO IT CANNOT BE REVERSED* gives the `wrizoCopyCardToBoard` entry to **the second lander,
+148**. **When PW2 merges, 148's table does not exist on `main`, so PW2 CANNOT add the entry.** Recorded
+on the assumption that the entry STAYS 148's ("148: entry, then pair" — as the approved queue itself
+says), and that the single-obligation point is about the HANDLE work. **Routed to Fable to confirm;**
+the only order that gives PW2 the entry is 148 first, which costs PW2 a further pair.
+
+## REGISTERED — 2026-09-17
+
+- **Landing orders, as given:** `pw1.mjs` → VW1, PW2's fix, TOOLS' conform; `item87.mjs` → VW1, then 147.
+- **Chat 1's supersession-in-place of its own chain-on-green practice** — Fable: *the wait-then-claim
+  half survives, and SAYING WHICH HALF SURVIVES IS WHAT KEEPS A SUPERSEDED RULE READABLE.*
+- **TOOLS' turn relayed.** TOOLS has merged `main` into `vw1-rail` (`1f75a23`); its tree is clean.
+
+## CORRECTION — THE SECOND-LANDER RULE WAS RIGHT; ITS APPLICATION WAS NOT — 2026-09-17
+
+**Fable CONFIRMED chat 1's reading.** **148's `wrizoCopyCardToBoard` entry STAYS WITH 148, the second
+lander:** PW2 cannot add a line to a table that is not on `main` when PW2 merges. **Fable's ruling
+misapplied its own rule — the rule ("whichever lands second adds the line") was right, the application
+was not. RECORDED AS A CORRECTION, NOT A REVERSAL.**
+
+**PW2's SINGLE OBLIGATION, CONFIRMED — five steps:** (1) merge `main`; (2) confirm `pw1`; (3) convert
+`pw2.mjs`'s `STRIP_PLAN` and its now-false comment; (4) the four park runs; (5) both legs. **Plus the
+line-189 check below, which rides step 3.**
+
+**THE SEAM-TABLE ENTRIES, RESTATED:** **148 adds `wrizoCopyCardToBoard` BEFORE ITS OWN PAIR; 146 adds
+`__wrizoRhizomeField` AFTER 148 LANDS.** *(Durability entry and exemption entry respectively — unchanged.)*
+
+## RULING — A CHECK'S NAME IS A CLAIM — LINE 189 — 2026-09-17
+
+**Line 189 is RULED, not left flagged.** `.length > 2` is a **COUNT, not a SELECTION**, so it is OUTSIDE
+the one-handle rule — **TOOLS was right to leave it.** **But the check's NAME claims "mounted with a Plan
+category" while its assertion proves only "more than two strip items."** That is a check whose name
+outruns its assertion — **and it becomes false in a SECOND way once `data-category` exists**, because
+the claim is then directly testable and still is not tested.
+
+**ROUTED TO PW2, as part of its `pw2.mjs` alignment: ASSERT WHAT THE NAME SAYS — a strip item with
+`data-category=plan` exists — and keep or drop the count on its own merits.**
+
+**✓ CONFIRMED 2026-09-17 — both copies go to PW2** (see *ONE DEFECT, TWO FILES, ONE LANE*, below). The
+paragraph is kept as written.
+
+**NOTED BY CHAT 1:** the same helper text, and so the same check, sits at **`pw1.mjs` 189–190** too.
+Routed on the reading that PW2's step 2 (confirm `pw1`) covers it, since PW2 lands on `pw1.mjs` before
+TOOLS' conform; **Fable to say if `pw1`'s copy belongs to the conform instead.**
+
+> **A CHECK'S NAME IS A CLAIM; WHEN THE ASSERTION IS WEAKER, THE NAME IS THE DEFECT.**
+
+*(Sibling of "a guard whose comment claims more coverage than its pattern has certifies its own reach":
+there the comment outran the regex, here the name outruns the assertion. Both are text standing in for
+a mechanism.)*
+
+## TOOLS' `vw1.mjs` PLACEMENT — RATIFIED — 2026-09-17
+
+**Chat 1 told TOOLS to commit the untracked `harness/vw1.mjs` before pair 1. TOOLS did not, and SAID SO:**
+committing it before pair 1 would have made **pair 1 RED BY DESIGN** and **destroyed option (b)'s
+proof.** **TOOLS held the file OUTSIDE `harness/` instead** — which honours the SUBSTANCE of chat 1's
+catch (nothing untracked in `harness/` dirties the stamp or runs) while preserving the sequence. **It
+commits with the regroup, BEFORE PAIR 2. RATIFIED.**
+
+> **WHEN AN INSTRUCTION'S LETTER DEFEATS ITS PURPOSE, FOLLOW THE PURPOSE AND SAY SO.**
+
+*(TOOLS said so — the half that makes it lawful. Chat 1's instruction was written from a tree reading
+without knowing pair 1's design; the reading was right and the instruction's letter was not. Confirmed
+by chat 1 on the box: `vw1.mjs` is absent from `harness/` (88 `.mjs` files there), and pair 1's default
+leg launched at 07:04:57 with `vw1-rail` pushed at `1f75a23`.)*
+
+**⚠ SUPERSEDED 2026-09-17 — THE CENSUS WAS 39 AND IS 77.** Pair 2's reorder found 38 more, invisible to
+every instrument that had looked (see *THE CENSUS WAS 39 AND IS 77*, below). The three readings below
+were sound about the form they read. Kept as written.
+
+**VW1's CENSUS: UNCHANGED AT 39 on the merged tip** — three independent readings, including a sweep for
+new index forms that the 112 commits merged in could have introduced.
+
+**CONTINGENCY STANDS:** PW2 takes 147's slot if ERRATA is absent when VW1 clears.
+
+## ROUTING CONFIRMED — ONE DEFECT, TWO FILES, ONE LANE — 2026-09-17
+
+**Both copies of the weak line-189 check go to PW2:** `pw1.mjs`'s under **step 2**, `pw2.mjs`'s under
+**step 3** — **ONE defect fixed in two files, not two tickets.**
+
+**The reason is the one-handle ruling's own:** two files addressing one control must stop disagreeing,
+and **splitting a single defect across two lanes recreates the divergence in a new form** — two fixes,
+written apart, are two chances to assert the claim two ways.
+
+**TOOLS' CONFORM STAYS SCOPED TO THE PARK RECORDS** and takes the `pw1.mjs` edit as it finds it.
+
+> **FIX THE CLASS, NOT THE INSTANCE — ONE LANE, ONE MERGE.**
+
+## TOOLS' COMMIT-2 PLAN — REGISTERED — 2026-09-17
+
+**VW1's second commit moves ONLY ARRAY MEMBERSHIP.** The same **eight ids**, the same **lexicon terms**,
+the same **icons**, the same **`renderSection`**, the same **four separators** — only which array each
+item sits in changes. **So a red in pair 2 has EXACTLY ONE CANDIDATE.**
+
+*(That is the diagnostic the two-commit split was built to produce, and its value is visible before it
+is needed: pair 1 proves the mechanism with membership unchanged, pair 2 changes membership alone.)*
+
+**Box, at chat 1's reading (07:09):** pair 1's default leg still running (launched 07:04:57);
+`vw1-rail` at `1f75a23`; commit 2 and `vw1.mjs` land with the regroup, before pair 2.
+
+## BAND — AN ANNOUNCEMENT HANDS A LANE THE FINDING — 2026-09-17
+
+> **AN ANNOUNCEMENT HANDS A LANE THE FINDING AND WHAT IT PROTECTS, NOT A BARE COMMAND — THE GRANTING
+> DESK CANNOT SEE THE PAIR'S DESIGN.**
+
+*(Chat 1's own lesson from `vw1.mjs`, promoted by Fable. It is what let TOOLS honour the catch while
+preserving the sequence; a bare command would have been obeyed to the letter and cost the proof. The
+partner of "when an instruction's letter defeats its purpose, follow the purpose and say so": that one
+binds the lane receiving an instruction, this one binds the desk writing it.)*
+
+## VW1 PAIR 1 — CLEAN — AND NOT TAKEN AS PROOF — 2026-09-17
+
+**88/88 BOTH LEGS at `1f75a23`.** **TOOLS did not read green as proof that nothing was skipped:** it
+compared **PER-FILE CHECK COUNTS** against its pre-conversion item-137 run — **19/19 identical parked,
+18/19 default**, and **the single difference TRACED** to 133-B adding a check on `main`.
+
+> **A GREEN SUITE DOES NOT PROVE NOTHING WAS SKIPPED — COMPARE CHECK COUNTS ACROSS THE CHANGE.**
+
+*(The park-count law generalised: there it was parks, here it is every file's total. A conversion that
+silently stopped selecting anything would run, pass, and assert less — and only the count says so.)*
+
+## VW1 PAIR 2 — NOT CLEAN — THE DESIGN WORKING — 2026-09-17
+
+**84/89 BOTH LEGS at `07a228e`.** **Pair 1 having proved the conversions, THE REORDER IS THE ONLY
+CANDIDATE** — the diagnostic the two-commit split was built to produce, arriving as designed.
+
+## THE CENSUS WAS 39 AND IS 77 — THE NINTH UNDERCOUNT — 2026-09-17
+
+**The missing 38 pass the index AS A FUNCTION ARGUMENT — `clickCategory(app, 1)` — so it NEVER APPEARS
+BESIDE THE SELECTOR.** **Invisible to the census, to check 7, and to the third-form sweep — all three
+looked in the same place.** **`cd2` alone holds 27, of which the census saw 4.**
+
+**NINTH UNDERCOUNT OF THE ARC, AND THE FIRST FOUND BY AN ACTION RATHER THAN AN INSTRUMENT.**
+
+> **THE ONLY COMPLETE CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.**
+
+**CHAT 1's INDEPENDENT COUNT, programmatically over the full enumeration (not a cut view):** the literal
+index-as-argument form appears **38 times on the pair-2 tip — `cd2` 23, `fx9` 10, `ab4` 5**, and
+**NONE in `pw1.mjs`**. **It reconciles with TOOLS' figures exactly:** cd2's 27 = its 23 hidden plus the
+4 the census already saw; 39 + 38 = **77**.
+
+## RULED FOR VW1's THIRD PAIR — 2026-09-17
+
+- **CONVERT the 38** to named categories.
+- **PARK `b1`'s and `cd1`'s CD3 successors** — the regroup is SUPPOSED to break them.
+- **INVERT CHECK 7:** any `.wz-strip-item` reference that is NOT a `data-category` selector is an
+  offender, with NAMED EXEMPTIONS — **rather than teaching the guard a third spelling.** *(The same
+  inversion as item 148's: a guard keyed on the forms someone thought of only ever sees those forms.)*
+- **CORRECT THE CENSUS TO 77**, with both breakdowns and HOW EACH FORM WAS FOUND.
+
+**SWEEP TOOLS REPORTS BACK, NOT RIDING VW1:** the helper's `if (item) item.click()` **silently no-ops**,
+so **a driver can press a control that is ABSENT and the check still passes.** **If the shape is
+widespread it becomes ITS OWN ITEM** — it would take **151**. *(Sibling of "a driver can lie by dying OR
+by doing nothing": the dying half is known; this is the doing-nothing half, and it passes.)*
+
+## BOX — TOOLS' GRANT CLEARED, A THIRD GRANTED — 2026-09-17
+
+**The two-pair grant is SPENT and TOOLS CORRECTLY STOPPED.** Chat 1 cleared it, verified the box (0
+runners, 0 harnesses), and **GRANTED TOOLS A THIRD PAIR AS ITS OWN GRANT — token
+`tools-vw1-pair3-20260917`.**
+
+## CHAT 1's CALL — TOOLS CONTINUES; PW2 HOLDS — 2026-09-17
+
+**Applying the present-and-ready rule, chat 1 keeps the box with TOOLS. The reason is not seniority in
+the queue, it is that PW2 CANNOT COMPLETE ITS OBLIGATION YET:**
+- **PW2's steps 2 and 3 need `data-category` ON `main`**, and it arrives only when VW1 merges — which
+  needs VW1's third pair clean. Measured: **0 occurrences in `src/` on `origin/main` (`c190e9e`)**.
+- **So a PW2 pair run now would be INVALIDATED BY PW2's OWN HANDLE WORK** — the alignment edits
+  `pw1.mjs` and `pw2.mjs`, both stamped files. **PW2 first = two PW2 pairs.**
+- **READY MEANS READY TO COMPLETE, NOT MERELY READY TO RUN.** A clean branch and a written fix are not
+  readiness when the merge obligation is one list. *(Fable's "one lane, one merge" is what makes this
+  the cheap order.)*
+- **The 38 sites are in `cd2`, `fx9` and `ab4` — none in PW2's files**, so the third pair does not widen
+  PW2's surface further.
+
+**PW2's re-stamp is announced when VW1 lands.** **ERRATA absent: 147 keeps its place, not the box.**
+
 Registry: next free **151**.
+
+
+
+
 
 
 
