@@ -6241,6 +6241,9 @@ the claim is then directly testable and still is not tested.
 **ROUTED TO PW2, as part of its `pw2.mjs` alignment: ASSERT WHAT THE NAME SAYS — a strip item with
 `data-category=plan` exists — and keep or drop the count on its own merits.**
 
+**✓ CONFIRMED 2026-09-17 — both copies go to PW2** (see *ONE DEFECT, TWO FILES, ONE LANE*, below). The
+paragraph is kept as written.
+
 **NOTED BY CHAT 1:** the same helper text, and so the same check, sits at **`pw1.mjs` 189–190** too.
 Routed on the reading that PW2's step 2 (confirm `pw1`) covers it, since PW2 lands on `pw1.mjs` before
 TOOLS' conform; **Fable to say if `pw1`'s copy belongs to the conform instead.**
@@ -6271,7 +6274,43 @@ new index forms that the 112 commits merged in could have introduced.
 
 **CONTINGENCY STANDS:** PW2 takes 147's slot if ERRATA is absent when VW1 clears.
 
+## ROUTING CONFIRMED — ONE DEFECT, TWO FILES, ONE LANE — 2026-09-17
+
+**Both copies of the weak line-189 check go to PW2:** `pw1.mjs`'s under **step 2**, `pw2.mjs`'s under
+**step 3** — **ONE defect fixed in two files, not two tickets.**
+
+**The reason is the one-handle ruling's own:** two files addressing one control must stop disagreeing,
+and **splitting a single defect across two lanes recreates the divergence in a new form** — two fixes,
+written apart, are two chances to assert the claim two ways.
+
+**TOOLS' CONFORM STAYS SCOPED TO THE PARK RECORDS** and takes the `pw1.mjs` edit as it finds it.
+
+> **FIX THE CLASS, NOT THE INSTANCE — ONE LANE, ONE MERGE.**
+
+## TOOLS' COMMIT-2 PLAN — REGISTERED — 2026-09-17
+
+**VW1's second commit moves ONLY ARRAY MEMBERSHIP.** The same **eight ids**, the same **lexicon terms**,
+the same **icons**, the same **`renderSection`**, the same **four separators** — only which array each
+item sits in changes. **So a red in pair 2 has EXACTLY ONE CANDIDATE.**
+
+*(That is the diagnostic the two-commit split was built to produce, and its value is visible before it
+is needed: pair 1 proves the mechanism with membership unchanged, pair 2 changes membership alone.)*
+
+**Box, at chat 1's reading (07:09):** pair 1's default leg still running (launched 07:04:57);
+`vw1-rail` at `1f75a23`; commit 2 and `vw1.mjs` land with the regroup, before pair 2.
+
+## BAND — AN ANNOUNCEMENT HANDS A LANE THE FINDING — 2026-09-17
+
+> **AN ANNOUNCEMENT HANDS A LANE THE FINDING AND WHAT IT PROTECTS, NOT A BARE COMMAND — THE GRANTING
+> DESK CANNOT SEE THE PAIR'S DESIGN.**
+
+*(Chat 1's own lesson from `vw1.mjs`, promoted by Fable. It is what let TOOLS honour the catch while
+preserving the sequence; a bare command would have been obeyed to the letter and cost the proof. The
+partner of "when an instruction's letter defeats its purpose, follow the purpose and say so": that one
+binds the lane receiving an instruction, this one binds the desk writing it.)*
+
 Registry: next free **151**.
+
 
 
 
