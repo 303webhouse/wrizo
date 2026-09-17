@@ -1,9 +1,9 @@
-# ITEM 146 — `m3`'s ROAMS CHECK · FINDINGS BEFORE A FIX
+# ITEM 146 — `m3`'s ROAMS CHECK · FINDINGS, THE FORK, AND OPTION C
 
-**Lane:** errata · **Branch:** `item146-rhizome-seed` · **Browserless.**
-**Standing:** **NOT BUILT. A fork is handed up** (§4), under the ruling that the
-seed is product code, the fix is a thin seam changing no behaviour, and anything
-wider stops.
+**Lane:** errata · **Branch:** `item146-rhizome-seed` (pushed)
+**Standing:** **OFFERED, NOT MERGED — pair owed.** §1–§5 are the findings as they
+were handed up, and §4 is the fork. **Option C was ruled and is built (§6).**
+§2 and §3 carry an in-place correction from §6's wider sweep.
 
 ---
 
