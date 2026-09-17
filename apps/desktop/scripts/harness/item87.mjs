@@ -190,6 +190,12 @@ console.log(JSON.stringify(checks, null, 2));
 // door. If this had been built as the flip it first looked like, all of those
 // would have needed parking; the additive shape is what makes the park list
 // empty, and the empty list is evidence the shape was right.
+//
+// [ITEM 147, 2026-09-16] The paragraph above is kept as written and is no longer
+// the whole story: the 2026-08-17 amendment superseded clause 1's design and
+// parked four records below, so the list is not empty. What stays true is the
+// narrower claim — CD1 S8/A7 was never reversed, so ab3/cd1's records are still
+// untouched and nothing ELSE needed parking.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -204,8 +210,34 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S1 (c) — CONTROL: Arrival Write door still opens FREE WRITE (CD1 S8/A7 unreversed, not collateral damage)") — ITEM 87 AMENDMENT: with clause 1 held, CD1 S8/A7 is not merely unreversed but untouched, so the control has nothing left to guard.', true, 'control retired with its subject');
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  // ITEM 147 — THIS LINE WAS A LITERAL, AND A VERDICT LINE THAT CANNOT SAY FAIL
+  // IS NOT A VERDICT. It read, verbatim:
+  //
+  //   'ITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks
+  //    nothing: Free Write never seeds the typewriter (so every "fresh page ON"
+  //    record is untouched), and clause 1 is additive (so CD1 S8/A7 stands
+  //    unreversed). The empty list is the evidence, not an omission.'
+  //
+  // That was TRUE when it was written: clause 1 was additive and parked
+  // nothing. The 2026-08-17 amendment then pushed the four records above and
+  // left this line alone, so for a month it said 0 while four ran — and, being a
+  // literal, it said PASS whatever they returned. The runner fails a file only
+  // through a verdict line containing FAIL or a non-zero exit, and this file's
+  // exit reads its LIVE checks alone; so a failing park here could never have
+  // reached the suite. It is derived now, from the array the records are pushed
+  // into, with a FAIL form.
+  //
+  // WHAT THIS DOES NOT CHANGE, stated so the fix is not mistaken for more than it
+  // is: the four records above assert a constant `true`, by design — their
+  // successor is the New Page chooser, which is unbuilt, and they are named
+  // rather than invented. So this line can now REPORT a failure, and will report
+  // PASS (4) until those records gain something real to measure. The records are
+  // byte-frozen and are not touched here.
+  const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
-  console.log('\nITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks nothing: Free Write never seeds the typewriter (so every "fresh page ON" record is untouched), and clause 1 is additive (so CD1 S8/A7 stands unreversed). The empty list is the evidence, not an omission.');
+  console.log(parkedPass
+    ? `\nITEM87 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; four clause-1 records, superseded by the unbuilt New Page chooser`
+    : `\nITEM87 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);
