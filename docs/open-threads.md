@@ -5874,6 +5874,11 @@ These are not declared; they are counted as evidence.)*
 
 ## ITEM 146 — RULED: OPTION C — THE "FLAKE" WAS A WRONG CHECK — 2026-09-16
 
+**⚠ CORRECTED 2026-09-16 — the "three margins guaranteed" claim below held ONLY FOR S2's GEOMETRY.**
+Sweeping live-like layouts before writing the park, ERRATA found the **RIGHT margin missed 3 in 4,000 on
+a wide paper.** **NO margin is guaranteed on every layout.** Chat 1 recorded ERRATA's first measurement
+as a general fact; it was a fact about one geometry. The paragraph is kept as written.
+
 **ERRATA MEASURED THE DISTRIBUTION instead of calling it variance:** it ran the REAL rhizome engine over
 **16,000 grown grounds, browserless.** **Roaming is GUARANTEED on THREE margins and PROBABILISTIC on the
 TOP** — failing **0.44% at live bounds** and **1.15–1.50% at S2's.**
@@ -5930,6 +5935,10 @@ builder wraps a seam that has nothing to flush, nor exempts one that writes.)*
 
 ## A PRODUCT QUESTION WITH NICK — NOT A DEFECT — 2026-09-16
 
+**⚠ THE QUESTION WIDENED 2026-09-16:** it is no longer "is the TOP edge guaranteed" but **"is EVERY
+edge guaranteed, or is roaming a tendency?"** — a wide paper can miss a SIDE. The original framing is
+kept below.
+
 **About 0.4–1.5% of pages grow a ground that never reaches the TOP of the stage.** **Is "roams the whole
 ground" a GUARANTEE or a TENDENCY?**
 - **If a GUARANTEE:** it becomes **its own item**, needing **an owner** — the **Rhizome desk is retired** —
@@ -5940,7 +5949,73 @@ ground" a GUARANTEE or a TENDENCY?**
 flaky, the distribution was measured, and the measurement turned a harness defect into a product
 question only the founder can answer. The test was never the thing that needed deciding.)*
 
+## BAND — A GUARANTEE MEASURED ON ONE GEOMETRY — 2026-09-16
+
+> **A GUARANTEE MEASURED ON ONE GEOMETRY IS A GUARANTEE ABOUT THAT GEOMETRY.**
+
+*(Landed on chat 1's own record the same day it was written: chat 1 carried ERRATA's first sweep — S2's
+bounds only — into the ledger AND its memory as "three margins always reached." Both are corrected in
+place. The technique that caught it is worth keeping: a pure engine module with no imports can be
+transpiled with the repo's esbuild and swept across thousands of seeds in Node — no box needed to turn a
+reputation into a rate.)*
+
+## ITEM 146 — OFFERED — 2026-09-16
+
+**`item146-rhizome-seed`: offer at `57c4c66`, tip `ace6f76`** — verified by chat 1: **the one commit past
+the offer is DOCS-ONLY** ("the ratified design point stated so no reader simplifies it").
+
+**Its product code is the read-only seam and nothing else:** `RhizomeField.tsx` gains an effect installing
+`window.__wrizoRhizomeField`, returning `sessionStart` and the built geometry.
+
+**CHAT 1 CHECKED THAT 148 CAN ACTUALLY SEE IT — because a plan that assigns an entry nothing enforces is
+not a plan.** The seam has a **double-underscore prefix** and lives in a **component**, not
+`persistence.ts`. A pattern starting `\bwrizo` would NOT match it (`_` is a word character, so there is
+no boundary). **148's inverted enumerator handles both:** it matches `_{0,2}wrizo` and accepts the
+`(window as ...).` cast via `\)\s*\.` — and **run against 146's actual line it returns
+`["__wrizoRhizomeField"]`.** **So 146's EXEMPTION ENTRY will be enforced. ERRATA had already built for
+this shape.**
+
+## MERGE ORDER — RECORDED SO IT CANNOT BE REVERSED — 2026-09-16
+
+**`PW2 → item148 → item146`, adopted as written. Each seam-table entry is added by whichever branch lands
+SECOND, before its own pair.**
+
+**THE LOAD-BEARING DISTINCTION, stated for any future reader:**
+- **PW2's `wrizoCopyCardToBoard` WRITES → it needs a DURABILITY entry** (wrapped; it must flush).
+- **146's `__wrizoRhizomeField` only READS → it needs an EXEMPTION entry, NEVER A WRAP.**
+
+*(Wrapping a read-only seam adds a flush to something that writes nothing; exempting a writing seam lets
+it lose data. The two errors are opposite and both are easy.)*
+
+## ERRATA's THREE OFFERS — WHAT EACH PAIR MUST SHOW — 2026-09-16
+
+- **`item147-park-count @ 4bab0ff`** — the parked leg must show **`ITEM87 PARKED: PASS (4 checks)`**.
+- **`item148-seam-durability @ 41f8b7c`** — `bm1`, `item97`, `tu5`, `b2`, `fx9` and `item85c` must pass.
+- **`item146-rhizome-seed @ 57c4c66`** — fidelity passes, the sweep reports **5/400**, and the parked leg
+  shows **`M3 PARKED: PASS (3 checks)`**.
+
+*(Each pair has a named thing it must show. A pair that is merely green has proven the suite runs, not
+that the fix landed.)*
+
+## ITEMS 149 AND 150 — ROUTED BY CHAT 1 — 2026-09-16
+
+**Both to ERRATA, whose lane is otherwise empty — but NOT together:**
+- **ITEM 149 (the parked-records audit outside the roster) IS INDEPENDENT.** It concerns where one file
+  lives and whether `run-suite` runs it; it shares no file with 147's offer (`item147.mjs`, `item87.mjs`).
+  **ERRATA BUILDS IT BROWSERLESS NOW**, while its pairs wait — building needs no box. *(The item-140
+  precedent.)*
+- **ITEM 150 (37 constant-true parks) OVERLAPS 147's PARK MACHINERY.** Building it before 147 merges
+  would build on a moving base. **It starts AFTER 147 LANDS.**
+
+## MEMORY CORRECTION — REGISTERED — 2026-09-16
+
+**Chat 1's own records had m3 as the one real flake, owned by the Rhizome desk. Both halves were wrong.**
+**The known-flake list was empty all along; m3 was a WRONG check, not a flaky one.** **That is a BETTER
+state than the record claimed — and it only became visible because ERRATA MEASURED instead of
+inheriting the reputation.**
+
 Registry: next free **151**.
+
 
 
 
