@@ -65,6 +65,30 @@ a trap for the next reader, who will find an exported mutator, assume something 
 build on it. **The census is what makes deleting it safe to do knowingly, and that is the whole
 reason Q-C was ordered before anything retired.**
 
+**⛔ AND ONE THING THE RETIREMENT MAY NOT TAKE WITH IT — RULED CARRIED FORWARD (item 108,
+2026-09-16).**
+
+**`Spread.tsx`'s lens row is the ONLY WORKING TAG FILTER IN THE APP.** Measured: `allTags` →
+chips → `tagFilter`, one tag at a time, clearable — and `git grep` finds `tagFilter`/`allTags`
+in **exactly one file**, this one. **So the Spread's retirement deletes the app's only tag
+filter.**
+
+**This is NOT Q-C's situation and must not be treated as it.** Manual ordering was **accepted as
+lost** on Nick's word. The tag filter is **RULED CARRIED FORWARD** — item 108's charter re-homes
+it as a lens over every surface that shows thumbnails. **So:**
+
+- **This brief still retires the Spread, the route, and `setNotebookPosition` as written.**
+- **The tag filter is NOT collateral. It is a capability with a successor**, and the successor is
+  item 108's, not this brief's.
+- **SEQUENCING, and it is the whole point of this clause: if item 108's filter has NOT landed
+  when this brief builds, say so in the offer and name the gap as OPEN.** *Do not quietly ship a
+  release where a writer who had a tag filter yesterday has none today* — a capability that
+  disappears between two tickets, each correct on its own, is how a regression arrives with
+  nobody's name on it.
+- **Park, never delete, the Spread's tag-filter coverage** in `j5.mjs`/`j6.mjs`: quote the
+  original verbatim, name item 108's successor, audit the park COUNT. *A parked check with a
+  named successor is the only artifact that survives the gap and remembers what is owed.*
+
 **WHAT SURVIVES, and the scope must not widen past it:**
 - **`createLoosePage(afterId?)` STAYS.** It is a *separate* writer, called from
   `JournalEntry.tsx` (`openLoose`), and it places **new** pages. **What dies is re-ordering

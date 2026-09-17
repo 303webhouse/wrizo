@@ -2665,6 +2665,53 @@ the standing schema law. **Not a builder's call.**
 Write's decoration. **Editable in Free Write. Locked-but-MOVABLE on double-click in Draft/Revise.**
 **Text is never movable, in any mode.**
 
+**► OFFERED (INK lane, 2026-09-16) — branch `item126-ink-across-modes`, offered SHA `17a89ac`.**
+Record: `docs/menus/item126-offer-2026-09-16.md` (+ `item126-s0-survey.md`). **BOTH SETTINGS CLEAN,
+one tree, one bundle, neither stamp dirty — 86/86 each: `tree=17a89ac
+bundle=index-BuX8s8NA.js/582706b`** (parked ran `--no-rebuild`). 2,704 live checks unparked; 2,818
+live + 179 parked in the parked run. `item126.mjs` **42**. **ZERO SCHEMA, ZERO SERVER.** Rides
+**Batch Three**. **The turn** came by chat 1's announcement on 85-C's merge; `WS_BOX_TURN` verified
+byte-equal to the grant file before launch; pre-flight zero before every run; pushed at each pair's
+start; quiet between runs; diagnostic probes kept OUTSIDE the tree.
+
+**→ THE FIRST PAIR WAS NOT CLEAN, AND THE RED WAS A PRODUCT DEFECT.** `tree=fe4e935`: **85/86 both
+settings**, the one red this ticket's own **C8**, identical in both runs — a group shoved past the
+sheet's edge came back **not moved at all** (`cAfter === cBefore` to the last digit; its clamp
+clauses passed only because nothing moved). **Not fixed by editing the test.** Probes kept out of the
+tree: a release **inside the viewport**, just past the sheet edge — an ordinary gesture, which rules
+out a CDP artifact — **still lost the move**; capture-got 0, release-on-sheet 0. A trusted mouse drag
+after the arming double-click never receives `gotpointercapture` (`setPointerCapture` returns and
+`hasPointerCapture` reads true, but capture is never applied), so a release outside the sheet never
+reached `commit`, and **the drag stayed live** to the next buttonless movement. The product's own
+`try { setPointerCapture } catch {}` hid it.
+
+**→ ⚠ ITEM 121 SHIPPED THE SAME DEFECT — FIXED HERE AS A STATED SCOPE EXTENSION.** The capture
+pattern was shared: a trusted **mouse stroke** in Free Write / INK ending past the paper's edge was
+**silently discarded** (0 → 0). **The laptop, the primary target.** Item 121's own mouse leg passed
+only because it released inside the sheet. Fixed in the same file on the same reasoning, and asserted
+in **this** ticket's harness (**C14**) so the extension is in one place and **easy to split out**.
+**Not claimed:** the pen path's OUTSIDE release was never tested, so nothing is said about whether it
+was safe before.
+
+**→ THE FIX REMOVES THE DEPENDENCY RATHER THAN EXPLAINING IT.** The press stays on the sheet; move,
+release and cancel are heard on **window**; capture is best-effort only. Every handler is guarded by
+the pointer that began the gesture; window `blur` cancels an in-flight one; **a cancel no longer
+commits** (`pointercancel` had been wired to the move's `commit`).
+
+**→ MUTATION-TESTED, FIX COMMITTED FIRST.** Moving ONLY the listeners back from window to the sheet
+turns **exactly five checks red and no others** (37 stay green): C8, C8b ×2 — **including the stuck
+drag, inferred before and MEASURED here** — and C14 ×2. One variable changed; only those five
+responded. Restored by `git checkout`, the mutant bundle rebuilt over **before** the re-stamp — and
+the re-stamp's bundle hash (`BuX8s8NA`, not the mutant's) is the proof.
+
+**→ STATICALLY ZERO WAS MEASURED ZERO.** `item126.mjs` emits `[]`; the only other harness touched,
+`item121.mjs`, changed comments only; **179 parked checks in both pairs**. **→ Also on the record:**
+a first live-check tally ("2,660 across 85") skipped `fx7`'s `VERIFY (partial):` form — a cut view,
+discarded and recounted over all 86 lines rather than quoted.
+
+**→ OWED TO THE TABLET SITTING, ADDED BY THIS TICKET:** a **stylus stroke that leaves the paper** —
+the harness cannot drive a pen past the element's box.
+
 **► BUILD BRIEF DRAFTED (INK lane, browserless, 2026-09-08) — `docs/menus/item126-build-brief.md`.**
 Written on Fable's word during the deploy window, from `origin/main @ 39eacae`, **without taking the
 box**. Its founding fact is item 121's offer record **§7A** — the stratum renders in Free Write ONLY
@@ -5204,7 +5251,265 @@ invisible to any check that reads back through the same boundary.)*
 **ITEM 139 HOLDS: THE RED WAS IN THE CODE, NOT THE RUNNER. Its first live proof stands so far.**
 *(Recorded because it was named in advance: had the red been the runner's, it would have been charged
 to the runner. It was not, so the guard is credited with a clean first outing.)*
-Registry: next free **142**.
+## ITEM 108 — TAGS AS SORTING — CHARTERED TO THE PLAN DESK — 2026-09-16
+
+**PRIMARY TEXT — Nick, VERBATIM:**
+
+> Item 108: Other than for Tutor to use as a way of searching the available text, tags should be a way
+> for the user to sort Boards, Cards, and Pages in any area where they are displayed as thumbnails. I'm
+> not sure what exactly we have built out, but if I'm on a board that contains 20 cards of different
+> topics, e.g., I should be able to click on one of a list of all available tags on that board and then
+> have only the cards/pages with that tag now displaying. Same with the scrolling cards/boards in the
+> side menu that I think we're going to be building (if we haven't already). The FIND row: The empty
+> search box should say: 'SEARCH YOUR WRITING'. The search should check anything the user has written
+> anywhere in the app, including when we get to the social media app. Cards should be taggable and
+> sortable too, yes. Take all of the tag/sortability issues to the Architects and then show me a couple
+> mockups of how we can make tags a useful way for writers to pull up character info or a type of
+> research, for example, while they're on a Page, Board, or Card
+
+**RULED FROM IT:** tags sort **Boards, Cards and Pages wherever thumbnails are displayed** · **cards
+become taggable** · **FIND's placeholder is "SEARCH YOUR WRITING"** · **FIND's scope is EVERYTHING the
+writer has written anywhere in the app, including the future social app** — **which answers the
+long-open PROJECT-SCOPE question: NO.**
+
+*(This primary text reached chat 1 only on the second relay — the fourth reference-by-name. It was not
+recorded from the first relay's paraphrase, because a paraphrase in the ledger is indistinguishable
+later from the founder's own words.)*
+
+**NICK HAS THE MOCKUPS AND FOUR QUESTIONS:** board filter HOLD-vs-REFLOW · the CARD SILHOUETTE
+(unruled) · FN1's SOURCE-LIST SHAPE (returned to him by name per FN8) · MOCKUP C wanted or not.
+
+**C4 IS ANSWERED BY THIS CHARTER.** **Cards have no tags today** (`Box` carries no field — confirmed at
+the type) — **so item 123's deferred tags clause names the CARD-TAGS BUILD as its successor.**
+**Item 142 is reserved below; a further number is available for the card-tags half if PLAN asks.**
+
+## THE ONLY TAG FILTER, AND WHY IT IS CARRIED FORWARD — 2026-09-16
+
+**FABLE'S FINDING, CONFIRMED BY CHAT 1 AT THE LINE: `Spread.tsx` holds the app's ONLY collection-level
+tag filter** — `pages.filter(... (!tagFilter || (p.tags ?? []).includes(tagFilter)))` — **and computes
+`allTags`, the vocabulary that filter offers.** **Every other `tags` hit in `src` — `BoardEditor`,
+`ScriptEditor`, `JournalEntry` — is a `patchJournalEntry` call adding or removing a tag on ONE entry:
+a tag EDITOR, not a FILTER.** **So retiring the Spread would take both the filter and its vocabulary.**
+
+**RULED: TAG FILTERING IS CARRIED FORWARD.** **VW3's brief carries it as its own clause commit
+(`plan-vw3-tagfilter @ 307c83a`, merged FIRST so no builder could read the brief without it).** **VW3
+MUST NOT RETIRE THE SPREAD UNTIL THE FILTER HAS A NEW HOME.**
+
+**PLAN DESK's addition: tags are WRITTEN from three faces and READ in one — and that one is the surface
+VW3 deletes. UNDER-CONSUMED, not under-designed.**
+
+## BAND — A CAPABILITY RETIRES WITH ITS CONTAINER ONLY IF THE NEW MODEL CONTRADICTS IT — 2026-09-16
+
+> **A CAPABILITY RETIRES WITH ITS CONTAINER ONLY IF THE NEW MODEL CONTRADICTS IT — OTHERWISE IT IS
+> RE-HOMED.**
+
+**THE SAME RETIREMENT, OPPOSITE DISPOSITIONS:** **manual ordering DIES with the Spread** — the
+arrangement law makes it incoherent in a surface that is not a board. **Tag filtering is merely
+RESIDENT in the Spread** — nothing about the flip makes filtering wrong — **so it is re-homed.** *(The
+test is not "does this live in the thing being retired" but "does the thing replacing it make this
+capability false." Only the second is a reason to let it go.)*
+
+## ITEM 126 — INK's B6 MERGED; C14 NOT SPLIT — 2026-09-16
+
+**`item126-ink-across-modes @ 14ff198`, CLEAN 86/86 both settings at `17a89ac`** (bundle
+`index-BuX8s8NA.js/582706b`, neither stamp dirty, **parks 179 both**). **Four product files
+(+586/-40).** **Zero schema, zero server.** Record at `docs/menus/item126-offer-2026-09-16.md`.
+
+**RULED: DO NOT SPLIT C14.** **The item-121 fix and the item-126 fix are ONE MISCONCEPTION — A GESTURE
+THAT ENDS OFF THE PAPER IS LOST — applied in two places.** **Fix the class, not the instance.**
+
+**HALF OF THIS CLASS IS ALREADY IN PRODUCTION**, shipped with item 121. **BATCH THREE THEREFORE CARRIES
+A PRODUCT FIX TO LIVE INK** — in **Fable's review scope**, reviewed in the assembled diff before Nick's
+word.
+
+**THE FIRST PAIR STAYS ON THE RECORD: `fe4e935`, 85/86 both settings.** **The defect was MEASURED, not
+inferred, and a MUTATION TEST put it back to prove FIVE checks catch it** — a red kept beside its cure.
+
+## ITEM 142 — STYLUS PAST THE PAPER'S EDGE — OPENS 2026-09-16
+
+**OPENS. ORIGIN: item 126's offer.** **The harness CANNOT drive a pen beyond the sheet, so the
+lost-gesture class is UNPROVEN FOR STYLUS.** **ROUTED TO NICK's TABLET SITTING.**
+
+*(The mouse half is proven by five checks and a mutation test; the stylus half is proven by nothing,
+because no instrument in the house can reach it. This is the founder-sitting class again — a gap no
+suite can close — and it is named now so the stylus is not assumed to share the mouse's verdict.)*
+
+## BATCH THREE — CONTENTS SO FAR — 2026-09-16
+
+**Item 139 · TOOLS' park rider · 85-C (wave 2) · item 126 (+ item 121's fix).** **It now carries
+WRITER-FACING PRODUCT CODE TO LIVE INK, so Fable's assembled-diff review is required before Nick's
+word.**
+
+**THE GRANT FILE, RUN THROUGH ITS FIRST FULL CYCLE:** chat 1 **CLEARED INK's grant at its stamp**
+(lane `INK`, token `ink-b6-20260916`; file confirmed absent after the clear) and **GRANTED ERRATA's
+item-140 turn** (token `errata-item140-20260916`). **The tree stayed clean throughout — the grant file
+lives outside every worktree, so it is invisible to git.**
+
+## ITEM 108 — NICK'S RULINGS ON THE FOUR QUESTIONS — 2026-09-16
+
+**✅ PRIMARY TEXT RECEIVED 2026-09-16 — Nick, VERBATIM. It REPLACES the summary below, which is kept
+only as the record that the entry carried a summary for a time:**
+
+> 1. Hold confirmed 2. Since Cards can be made into any size, have Card thumbnails match the
+> proportion of each card individually. 3. Accepted 4. Skip it, but one small change to the Card tools
+> menu: Instead of a heading that says 'Tags,' make the 'Add a Tag' button a '+' sign, and add a
+> '-' that will 'Remove a Tag.' And add a third option that shows the list of existing tags in a
+> scrollable list. These options should exist for every tool strip menu (Page, Card, Board)
+
+**SUPERSEDED MARKER, kept:** **⚠ PRIMARY TEXT NOT IN CHAT 1's BLOCK.** Fable's relay states Nick's four rulings are **in the PLAN
+desk's block, verbatim**, to be recorded as primary text there. **What reached chat 1 is FABLE's
+SUMMARY, recorded below AS a summary.** **The verbatim text lands with the PLAN desk's offer; until then
+this entry carries no founder words.** *(Recorded this way rather than paraphrased into quotation
+marks, because a summary set in quote-marks is indistinguishable later from the founder's own text.)*
+
+**RECORDED BY SUBJECT, NOT BY NUMBER.** The questions reached Nick numbered one way (hold-vs-reflow ·
+card silhouette · FN1's source list · mockup C) and the rulings came back labelled Q-1, Q-3, Q-4 and
+"mockup C" — **no Q-2, and the card question now carries the number 3.** **A number that resolves to a
+different question in each document is a landmine; the subject is not.**
+
+**FABLE's SUMMARY:**
+- **BOARD FILTER — HOLD.** Cards **hold position** under a filter; they do not reflow.
+- **CARD THUMBNAILS MIRROR EACH CARD'S OWN PROPORTION.** **An AMENDMENT to the thumbnail law, NOT an
+  exception:** the canonical shapes are RULED (**board wide, page tall**), and **a card has no canonical
+  shape because the writer chose it.** *(An exception would say "cards break the law." An amendment
+  says the law was always about kinds whose shape is fixed by the house — and a card's shape is fixed
+  by the writer, so honouring it IS the law.)*
+- **FN1's SOURCE-LIST SHAPE — ACCEPTED.** **FN1 holds UNCONDITIONALLY today**, and **a remote source
+  arrives as a CONSENTED CHANNEL** — the pattern FN8 already set.
+- **MOCKUP C — SKIPPED.**
+
+## ITEM 143 — THE TAG CONTROLS — OPENS 2026-09-16
+
+**OPENS. Brief → the PLAN DESK.** **The WRITING half of item 108's READING half — they share ONE
+VOCABULARY.**
+
+- **"Tags" AS A HEADING IS RETIRED.**
+- **"+" ADDS · "−" REMOVES · a THIRD CONTROL shows existing tags in a SCROLLABLE LIST.**
+- **ON EVERY TOOL STRIP MENU — Page, Card, Board.**
+- **THE CARD STRIP's VERSION GATES ON CARD TAGS EXISTING** (cards carry no `tags` field today).
+- **`deskLexicon` terms change with it — ONE DERIVATION, as always.**
+
+**⚠ FINDING FOR THE BRIEF, measured by chat 1 on `main` — LOCATE BEFORE RETIRING:** **no "Tags" heading
+exists in `src`** — no literal, and no lexicon key. **What does exist:** `pageFaceAddTag: 'Add a tag'`
+in `deskLexicon.ts`, and tag add/remove handlers in **four** surfaces (`BoardEditor`, `ScriptEditor`,
+`JournalEntry`, `PageEditor`). **So the heading may live only in a mockup, or render under a key not
+yet matched — the brief should find it BY CONTENT before retiring it, and if it is not in code, that
+half of item 143 is purely ADDITIVE.** *(And `pageFaceAddTag` is the obvious derivation the "+" control
+should inherit rather than duplicate.)*
+
+**NOTE THE FOUR SURFACES ARE FOUR HANDLERS** — each with its own `addTag`/`removeTag`. **A control that
+appears "on every tool strip menu" is the natural moment to make that ONE handler**, or the three
+controls will be built four times. *(One fact, one derivation — applied to behaviour as well as to
+words.)*
+
+## THE RENUMBERING ERROR — A QUESTION NEVER REACHED NICK — 2026-09-16
+
+**Fable's error, on the record: the PLAN desk asked FIVE questions; Fable relayed FOUR and
+RENUMBERED them, so Q-2 — ONE TAG AT A TIME, OR SEVERAL — NEVER REACHED NICK.** It is with him now; the
+PLAN desk recorded it OPEN with "one" as the default, correctly.
+
+**HOW IT SURFACED: chat 1 recorded the rulings BY SUBJECT, and the subject list had a hole the number
+list did not.**
+
+**BAND — two halves of one law:**
+
+> **RELAY A QUESTION SET BY ITS OWN NUMBERS OR NOT AT ALL — RENUMBERING SILENTLY DROPS THE ONE YOU
+> DIDN'T ASK.** (Fable)
+>
+> **RECORD BY SUBJECT — FOUR ANSWERS FILED AGAINST FOUR NUMBERS LOOK COMPLETE.** (chat 1)
+
+*(The second is why the first is detectable. Four numbers with four answers is a complete-looking table;
+four subjects with four answers against five questions asked is a visible gap.)*
+
+## ITEMS 144 AND 145 — PRIMARY TEXT, Nick VERBATIM — 2026-09-16
+
+> To answer your question, if the user is on a Board surface, every other board in that Drawer (or
+> tagged from anywhere in the app) should be listed as tabs below the Board but attached to it that
+> lists all other Boards. So if a user is doing extensive worldbuilding, they may want a board for
+> characters, one for locations, one for lore, etc. All these Boards together make up the
+> 'Worldbuilding' for the project, so they should all be easy to click back-and-forth between, as
+> well as listed along with their other tagged surfaces (Pages, Cards). When the User selects a
+> tag(s), only the Board(s) containing the tag(s) should show in the list under the current board. When
+> a user clicks on a Board tag, the Board should just change over to that Board. Also, when a tag is
+> selected on any Surface, the term should be highlighted by the brass theme color if it appears
+> anywhere in the viewable text on any surface.
+
+**NUMBERS, ACCEPTED:** **ITEM 143 = THE TAG CONTROLS** · **ITEM 144 = THE SIBLING TAB ROW** · **ITEM 145 =
+THE TERM HIGHLIGHT.** Both 144 and 145 **exceed item 108's charter**, which is why they are numbered.
+**To the PLAN DESK: 143 IS the tag controls — it is yours to claim.**
+
+**Q-2 IS ANSWERED BY HIS NOTATION — "tag(s)", "Board(s)" — MULTIPLE TAGS MAY BE ACTIVE.** **The ALL-vs-ANY
+fork is with him.**
+
+**⚠ THE WORD "brass" ABOVE IS SUPERSEDED BY NICK's NEXT RULING — see below.** The text is kept VERBATIM;
+**it is not wrong, it is succeeded.**
+
+## NICK's COLOUR RULING — PRIMARY TEXT, VERBATIM — 2026-09-16
+
+> Agree with all 'leans' except one: Let's make the tags and the tag highlights the olive green color
+> so that orange stays connected to the User producing writing or making choices/progress
+
+**SEVEN LEANS ACCEPTED as the PLAN desk listed them. TH-Q1 RULED OLIVE — and WIDER than the question:
+THE TAGS THEMSELVES ARE OLIVE, not only the highlight.**
+
+**THE BRASS COLLISION DISSOLVES.** It had been registered that item 122 already puts `::selection` on
+brass, so a brass term highlight would be indistinguishable from selected text. **Olive removes the
+conflict at the root: brass KEEPS `::selection` exactly as item 122 shipped it, and NOTHING MOVES.**
+
+## THE COLOUR BAND — IN NICK's WORDS — 2026-09-16
+
+> **ORANGE IS THE WRITER PRODUCING OR CHOOSING. OLIVE IS THE APP SHOWING WHERE THINGS ARE.**
+
+**RECORDED: THE RULE WAS TESTED AT THE ONE PLACE IT WOULD HAVE BENT, AND IT HELD.** Nick's own first
+text asked for brass; his principle, applied to that request, overruled it. **A rule that survives its
+author's own exception is a rule, not a preference.** *(And it resolved a real defect in passing: two
+meanings no longer share one colour.)*
+
+## THE VOCABULARY CONSTRAINT — VW3's SECOND GATE — 2026-09-16
+
+**THE SHARED TAG VOCABULARY DOES NOT EXIST.** **The only cross-entry gathering of tags is one line in
+`Spread.tsx` (`allTags`), scoped to the Spread's own pages — and VW3 deletes that file.**
+
+**Chat 1's nuance, registered:** `tutorLenses.ts` also builds a `Set` over tags, but it is **ONE ENTRY's
+OWN TAGS — a comparison set, not a vocabulary.** **The constraint holds.**
+
+**RULED: VW3 CANNOT RETIRE THE SPREAD UNTIL BOTH THE FILTER AND THE VOCABULARY HAVE A NEW HOME.** **Routed
+to the PLAN desk** as a clause on `plan-vw3-tagfilter` or its own commit. **The second sequencing gate of
+its kind on the same retirement.**
+
+## ITEM 143 — CHAT 1's TWO FINDINGS RATIFIED INTO IT — 2026-09-16
+
+- **THE "Tags" HEADING MAY NOT EXIST IN CODE.** **The brief FINDS it before retiring it**; if it lives
+  only in a mockup, that part is **pure addition**. **`pageFaceAddTag: 'Add a tag'` is the term to
+  build on.**
+- **TAG ADD/REMOVE IS WRITTEN FOUR TIMES OVER** (`BoardEditor`, `ScriptEditor`, `JournalEntry`,
+  `PageEditor`) **and is MERGED INTO ONE HANDLER as part of 143** — **the `boardName` precedent**; the
+  alternative is building three controls four times.
+
+## BAND — A SET IS RIGHT OR WRONG ONLY FOR THE QUESTION (PLAN DESK) — 2026-09-16
+
+> **A SET IS NOT RIGHT OR WRONG, ONLY RIGHT OR WRONG FOR THE QUESTION — A REFUSED SET MAY BE THE ANSWER
+> TO A LATER ONE.**
+
+**THE PLAN DESK's PW1 REVERSAL, WITH CREDIT:** `getBinderPages(projectId)` was **correctly REFUSED for
+"which boards HOLD this page"** — and is **correct for "which boards sit BESIDE this one."** *(A refusal
+records a mismatch between a set and a question, not a verdict on the set. Item 144 asked a new
+question, and the refused set answered it.)*
+
+## STATE OF THE TAG ARC — 2026-09-16
+
+**PLAN DESK writes FOUR BUILD BRIEFS — 108's filter, 143, 144, 145 — and names WHICH GATES WHICH.**
+**EIGHT QUESTIONS ARE WITH NICK.**
+
+**MERGED THIS ROUND (all docs-only, verified):** `plan-item108-all @ ab7f40d` (bringing
+`plan-item108-rulings @ 0b07214` with it — merging the base alone would have left Q-2 marked open),
+`plan-thumbnail-law-amend @ 8de44f7`, `plan-tag-controls-pass @ b32fc82`, `plan-siblings-highlight @
+a6e52cb`, `plan-vw2-heading-fix @ aa7d6a3`.
+
+Registry: next free **146**.
+
+
+
 
 
 
