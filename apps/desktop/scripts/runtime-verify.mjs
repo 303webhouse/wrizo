@@ -717,9 +717,11 @@ export async function withHarness(scenario, opts = {}) {
   // scripts/harness/x.mjs`), which no driver sees at all.
   //
   // TWO REFUSALS, both before the first browser:
-  //   1. NO GRANTED TURN — WS_BOX_TURN unset. run-suite.mjs requires it too and
-  //      passes it to every child, so a suite's files inherit one grant rather
-  //      than each claiming their own.
+  //   1. NO GRANTED TURN — as of ITEM 140, WS_BOX_TURN absent OR NOT MATCHING
+  //      the grant file (139 checked only that it was set; see below).
+  //      run-suite.mjs applies the same check and passes the token to every
+  //      child, so a suite's files inherit one grant rather than each claiming
+  //      their own.
   //   2. A LIVE FOREIGN RUN — another lane is mid-flight. Skipped under
   //      run-suite (WS_REAPER_PREFLIGHT_DONE=1), which performs this check once
   //      for the whole sweep; re-running it per child would be 81 redundant
@@ -727,14 +729,28 @@ export async function withHarness(scenario, opts = {}) {
   //
   // UNDETERMINABLE COUNTS AS PRESENT. If the process table cannot be read, this
   // refuses. A guard that proceeds when it cannot see is not a guard.
-  if (!process.env.WS_BOX_TURN) {
-    throw new Error(
-      'BOX TURN NOT GRANTED — refusing to open a browser.\n'
-      + '  The box is one machine and one browser pool; it is allocated by ANNOUNCEMENT,\n'
-      + '  never by a quiet process table. Set WS_BOX_TURN=granted for this run only\n'
-      + '  after the relay has called your lane, or launch through a driver that does.\n'
-      + '  (ITEM 139: this refusal lives in withHarness because every browser crosses it.)',
-    );
+  // ITEM 140 — THE TOKEN IS CHECKED AGAINST THE FILE, NEVER MERELY PRESENT.
+  //
+  // Item 139 asked only whether WS_BOX_TURN was SET, which a token invented in
+  // any shell satisfies — and, worse, so does a token exported during a turn
+  // that has since ENDED: the environment remembers what the box has forgotten.
+  // The grant is now a FILE chat 1 writes at the announcement and clears at the
+  // stamp, and this refuses unless the exported token MATCHES it. The moment
+  // chat 1 clears, a stale token fails; without that, 140 would be 139 with
+  // extra steps. No expiry — see box-grant.mjs for why a long pair must never
+  // be refused mid-run.
+  {
+    const { checkGrant } = await import('./box-grant.mjs');
+    const verdict = checkGrant(process.env.WS_BOX_TURN);
+    if (!verdict.ok) {
+      throw new Error(
+        `${verdict.message}\n`
+        + '  The box is one machine and one browser pool; it is allocated by ANNOUNCEMENT,\n'
+        + '  never by a quiet process table.\n'
+        + '  (ITEM 139/140: this refusal lives in withHarness because every browser crosses\n'
+        + `   it, and it reads the grant rather than the environment. reason=${verdict.reason})`,
+      );
+    }
   }
   if (process.env.WS_REAPER_PREFLIGHT_DONE !== '1') {
     let foreign = null;
