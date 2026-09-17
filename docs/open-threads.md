@@ -6014,7 +6014,52 @@ that the fix landed.)*
 state than the record claimed — and it only became visible because ERRATA MEASURED instead of
 inheriting the reputation.**
 
+## PW2's PAIR — RED ON BOTH LEGS — NOT MERGED — 2026-09-17
+
+**`pw2-nesting-transfer` @ `623ba30`, bundle `index-D73FFML-.js`/586750b. STOP: nothing merged, nothing
+stamped.**
+
+| leg | verdict | reds |
+| --- | --- | --- |
+| default | **NOT CLEAN, 88/89** | `pw1.mjs` — 2/41 failed |
+| parked | **NOT CLEAN, 87/89** (`NO-REBUILD`, same bundle) | `ab4.mjs` — 2/20 PARKED failed; `pw1.mjs` — the same 2/41 |
+
+**The four red checks:**
+- **`pw1` S2 (Q4)** asserts the side menu's sections are `["Cards","Pages linked to this board"]`; the page
+  renders `["Cards","Pages"]`.
+- **`pw1` S2/S3 (G3 at menu scale)** asserts `hasMenu === isMember` on every survey row; PW2's three
+  board-owned TEXT cards now wear a `⋯`.
+- **`ab4` PARKED successors at 1280px and 2200px** (PW1's own parks) assert the section list includes
+  `'Pages linked to this board'`.
+
+**MECHANISM — PW2's OWN RULED CHANGES, NOT A REGRESSION AND NOT A FLAKE** (chat 1's reading, from source):
+- **`1e3dfaa`** (Nick's zone amendment) changed the lexicon value `cascadePlanSectionPages` from
+  `'Pages linked to this board'` to `'Pages'`. Two harness files still assert the old value:
+  `pw1.mjs:330` and `ab4.mjs:604` (which runs at both widths).
+- **`1f4a981`** (S3, card transfer) gave free/text cards a `Copy to a board…` verb, so they now HAVE an
+  act and rightly wear a `⋯`. **G3's law still holds** — only rows with an act wear one. **What broke is
+  the check's encoding of it: "has an act" ≡ "is a membership row"**, true before PW2 and false after.
+- **So PW2 owes FOUR PARKS** (verbatim + successor): two in `pw1`, two in `ab4`. Its sweep caught the
+  behaviours it changed and missed a visible label it changed. *(A label the writer reads is part of
+  what the change DOES.)*
+- `cd2`, `pw2` (24/24) and every other `⋯` reader passed on both legs.
+
+**THE CHAIN RAN THE PARKED LEG AFTER A RED DEFAULT.** PW2's launcher joined the legs with `;`, not `&&`,
+so the parked leg started although the default leg exited 1 (`run-suite.mjs:413` exits 1 on NOT CLEAN).
+**Cost:** ~36 minutes of box time on a void pair. **Yield:** `ab4`'s red surfaced now rather than on the
+re-pair. **Whether a parked leg runs after a red default is routed to Fable.**
+
+**THE BOX:** the runner exited (seen 00:11:53). Chat 1 verified no runner, no harness and zero
+`ws-runtime-verify` browsers, then **CLEARED PW2's grant** (`box-turn.mjs clear`). **No turn is granted.**
+
+**THE QUEUE — PROPOSED BY CHAT 1, ROUTED TO FABLE:** `PW2 → 148 → 146` can no longer start with PW2,
+and 148's pair must still follow PW2's landing (148 adds PW2's durability entry before its pair).
+TOOLS' VW1 and the 147 pair do not depend on PW2. Proposed: **VW1 → 147 pair → PW2 fix + re-pair → PW2
+merges → 148 (entry, then pair) → 146 → the four-file park conform.** **FILE OVERLAP:** the conform
+touches `pw1.mjs`, and so will PW2's fix — whichever lands second merges the other in first.
+
 Registry: next free **151**.
+
 
 
 
