@@ -23,11 +23,18 @@
 // The design first ratified was to compare each file's printed
 // "PARKED: PASS (N checks)" with the length of the list the file prints. On a
 // real parked leg (87 files) that comparison could not find the list:
-//   · BY NAME it read bm1.mjs as 2 claimed / 1 printed — a false alarm; bm1's
-//     second parked check is named "BM1 A4 sweep: ...", not "PARKED (...".
+//   · BY NAME (count the printed entries named "PARKED ...") it matched 68 of
+//     70 — and one of the two misses was a FALSE ALARM: it read bm1.mjs as
+//     2 claimed / 1 printed, because bm1's second parked check is named
+//     "BM1 A4 sweep: ...", not "PARKED (...". (The other miss was item87, the
+//     real defect — so a by-name check would have been right once and wrong once
+//     in the only two places it spoke.)
 //   · BY POSITION ("the last array printed before the verdict") it matched only
 //     57 of 70, because files that park nothing print no list at all, so the
 //     last array is their LIVE checks.
+// Both rejected forms are recorded with their numbers so the next reader can see
+// WHY this file reads source: the design first ratified was the by-output one,
+// and the measurement beat it.
 // Output cannot say which list is the parked one. Source can: the parked list is
 // the array the file declares and pushes into, and the verdict either reads that
 // array or it does not.
