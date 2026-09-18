@@ -6574,7 +6574,57 @@ argues otherwise. **Chat 1's call, against the CLOCK rather than against FIT**, 
 
 **BOX, RESTATED: VW1 merged, PW2's re-stamp announced, box otherwise idle.**
 
+## PW2 (ITEM 123 FAMILY) — REVIEWED PASS, MERGED — 2026-09-17
+
+**Fable: PASS.** `pw2-nesting-transfer` @ `511b57d` **MERGED at `b27f2d6`** — TAKE WORD, chat 1. Verified
+before merging: **trial merge against `origin/main` clean** (single tree, no conflicts); **8 product
+files, `apps/server` untouched, no `.sql` or migration** (both independently confirmed against `main`,
+matching Fable's own bytes-level check); tip is one docs-only commit past the stamped tree `8f5af65`.
+**PUSHED. Grant cleared; box idle.**
+
+**S1 — the guard reads in the right order, per Fable's review:** source resolved ONCE and reused, so a
+drawer id resolving to nothing is refused BY CONSTRUCTION rather than by an is-a-drawer test; source
+system-kind refused; **TARGET system-kind refused — the live hole that let a page be pinned into the
+Shelf or Trash on today's build, closed;** `wouldNestCycle` called in the correct direction; `boardAncestors`
+carries its seen set, so an already-cyclic graph arriving by sync **terminates on READ** rather than
+hanging — read safety, as ruled.
+
+**S3 — `copyCardToBoard` is a TRUE WHITELIST:** names id, kind, x/y/z, w/h, text and strokes
+conditionally, and `copiedFromBoardId`; spreads nothing, so `sourceEntryId` and `portedAt` cannot ride
+along and a copy keeps the editing gesture every card has. Kind-gated to text and ink; system targets
+refused.
+
+**S2 — Nick's rulings landed as ruled:** the drawer is the zone's CAPTION with its successor recorded IN
+THE CODE; the linked heading is the region's accessible name rather than a stacked line; "Pages" and
+"Boards" as separate sections; the board-card's doubled edge teaches kind by GEOMETRY and spends no
+accent — **item 96's colour-as-kind-signal answered by shape**, with the `isolation:isolate` omission
+explained where a later reader would otherwise "fix" it.
+
+## OBS-1 — A KNOWN LIMIT, NOT A DEFECT — 2026-09-17
+
+**Non-blocking, no ticket unless it recurs:** `boardNestChain` picks the FIRST parent from
+`getBoardsConnecting`, but a board may sit in several boards at once (the walk is a DAG, as PW2 itself
+established). **A multi-parent board's crumb shows ONE address out of several, chosen by array order,
+and it can change when membership changes.** Correct and terminating today; recorded as a known limit
+of the chain.
+
+## MERGE ORDER — PW2 LANDS BEFORE 148, NO ENTRY OWED NOW — 2026-09-17
+
+**PW2 lands before 148, so no seam-table entry is owed at this merge.** **148 adds
+`wrizoCopyCardToBoard` BEFORE ITS OWN PAIR; 146 adds `__wrizoRhizomeField` AFTER 148 LANDS.** *(Unchanged
+from the correction already on record — restated at the point it actually takes effect.)*
+
+## BATCH THREE — MANIFEST — 2026-09-17
+
+**139 · the park rider · 85-C · item 126 (+121's fix) · 140 · 141 · VW1 · PW2.**
+
+## QUEUE — ERRATA STILL ABSENT — 2026-09-17
+
+**147, 148 and 146 hold their places but not the box.** **If ERRATA stays away, TOOLS takes the park
+conform next, then item 151** — per the standing present-and-ready rule.
+
 Registry: next free **153**.
+
 
 
 
