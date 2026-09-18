@@ -6897,6 +6897,9 @@ act and have nothing happen without saying so:**
 - a caught timeout treated as normal;
 - an action against the wrong page.
 
+**✓ FOUND 2026-09-18 — see *ITEM 151 REOPENS AND WIDENS*, below.** The instruction that follows is kept
+as written; it is what the search was for.
+
 **IT REPORTS SHAPES FOUND WITH COUNTS, AND SHAPES SEARCHED FOR AND NOT FOUND** — **the second list is
 what makes a zero READABLE.** Then EITHER 151 closes as a VERIFIED NEGATIVE with its architectural
 reason recorded so nobody re-opens it from the old census, **OR the brief widens and it builds.**
@@ -6913,7 +6916,54 @@ survives a second search, which is why the search happens before either is writt
 **ITEM 154's 134 IN-STRING SITES ARE UNAFFECTED AND REMAIN REAL** — nothing about 151's re-opening
 touches 154's population or its brief.
 
-Registry: next free **155**.
+## ITEM 151 REOPENS AND WIDENS, NOT CLOSES — 2026-09-18
+
+**TOOLS' SEARCH FOUND SHAPE A: CDP COORDINATE DISPATCH WITH NO HIT-TEST AT THE POINT OF DISPATCH.**
+`app.mouseDown`/`app.mouseUp` take RAW COORDINATES with **no element, no selector, no check that the
+point is reachable.** **83 call sites, 22 files**, concentrated in a handful of shared helpers —
+`trustedClick` duplicated in `bm1`, `item9192`, `sc2`; `e1`'s lighter variant; `safePen`, `safeTouch`,
+`dragCard`, `realClick`, `openBoard`, `canvasDragging`.
+
+**EVERY ONE CHECKS THAT A SELECTOR MATCHED AND NONE CHECKS WHAT IS ON TOP AT DISPATCH — ITEM 130's
+DEFECT IN A SECOND COSTUME, UNADDRESSED FOR RAW COORDINATES.**
+
+**OUTER JS STRUCTURE, SO 151's INSTRUMENT FITS: THE BRIEF WIDENS AND TOOLS BUILDS AT THE HELPERS, NOT
+THE 83.** *(Fixing the shared helper closes every call site behind it in one edit — the same leverage
+item 148's inverted guard and item 152's byte check both take: fix the CLASS, not the instance.)*
+
+**THE ARCHITECTURAL FINDING STANDS, REFRAMED, NOT RETRACTED:** outer code CANNOT hold a guarded DOM
+handle — `if (x) x.click()` genuinely has ZERO outer instances — **and it can still act BLIND AT A
+COORDINATE without holding anything.** **Narrower than the census implied, not false.**
+
+**SHAPES C AND D CLOSED AS SAFE** — `waitSoft` is ONE NAMED IDIOM always followed by an independent
+re-check — **with TOOLS' OWN QUALIFIER KEPT: verified REPRESENTATIVELY in one file of six, not
+exhaustively.**
+
+## ITEM 155 — UNVERIFIED ACTS — OPENS, PARKED — 2026-09-18
+
+**OPENS, PARKED. Harness → TOOLS.** Two shapes, neither ruled:
+- **SHAPE B: IGNORED `evalJs` RESULTS — 1,443 naive matches.**
+- **SHAPE E: ACTION WITHOUT A PRECEDING PAGE-STATE CHECK — 30 hits, 4 GENUINE screenshot cases in
+  `fx4`, `fx5`, `fx8`, `item126`.**
+
+**TOOLS DECLINED TO REPORT 1,443 AS A FINDING** because most are verified DOWNSTREAM and separating
+them needs PER-SITE JUDGMENT rather than syntax — **THE MISCOUNTING TRAP REFUSED ON ITS OWN WORK.**
+**PARKED WITH THE NUMBERS AND THE REASON; NOTHING BUILT UNTIL A SHAPE IS RULED.**
+
+> **A NUMBER YOU CANNOT DEFEND PER SITE IS NOT A POPULATION — REPORT IT AS UNSWEPT, NOT AS A FINDING.**
+
+*(The inverse of the census laws already on record: those said a static count undercounts what depends
+on order or hides inside a string. This one says the SAME instinct that catches an undercount can
+produce an OVERCOUNT if applied to raw matches without judging each — 1,443 is real as a grep result
+and worthless as a finding until someone looks at each one.)*
+
+## BOX — TOOLS BUILDS AT THE HELPERS, SAME GRANT — 2026-09-18
+
+**No new grant needed** — `tools-item151-build-20260918` already covers a build turn; TOOLS proceeds
+under it, now aimed at the shared helpers rather than the original 83 call sites.
+
+Registry: next free **156**.
+
 
 
 
