@@ -6962,7 +6962,52 @@ and worthless as a finding until someone looks at each one.)*
 **No new grant needed** — `tools-item151-build-20260918` already covers a build turn; TOOLS proceeds
 under it, now aimed at the shared helpers rather than the original 83 call sites.
 
+## ITEM 151 SHAPE A — OFFERED, VERIFIED, PAIR GRANTED — 2026-09-18
+
+**`item151-silent-acts` @ `9dd8e7a`, merge `fb97181`, build `2afc8e0`. CHAT 1 VERIFIED INDEPENDENTLY,
+NOT BY RELAY:**
+- **Scope:** 0 files touched in `apps/desktop/src` or `apps/server`; 21 harness/tooling files, matching
+  the offer exactly. `item121.mjs`/`item126.mjs` — 0 touches, confirmed HELD.
+- **`tsc --noEmit`: exit 0**, run directly against TOOLS' own worktree (not the offer's own claim taken
+  on trust).
+- **`build:web`: exit 0, bundle `index-DfFOCr6L.js` — CONFIRMED UNCHANGED** against the last stamped
+  bundle (`cddd343`'s `index-DfFOCr6L.js`/586771b).
+- **`node --check`: all 21 touched files, clean** — checked individually, not assumed from a batch
+  exit code.
+- **A BYTE-LEVEL SCAN OF ALL 21 FILES FOR CONTROL CHARACTERS: ZERO** — item 152's own lesson, applied
+  to the build that named it, before merging.
+- **Read `trusted-point.mjs` directly: the logic supports the falsification claim** — `hittablePointBy`
+  samples five fractions per element and confirms `elementFromPoint` resolves to the target or a
+  descendant; `trustedDispatch` fails NAMED (via `report` or throw) on any point that is absent or
+  occluded, and only dispatches on a point that resolved. **This is a read, not an executed mutation
+  test** — the mutation-test proof Fable asked of TOOLS is still owed (below).
+
+**NO SUITE HAS RUN — CONFIRMED CORRECT.** The prior grant was for a build; this offer's own
+`tsc`/`build:web`/syntax checks are pre-flight reads, not a launch.
+
+**PAIR GRANTED — token `tools-item151-pair-20260918`.** Box was idle when granted.
+
+## ⚠ EXPECT REDS — READ THEM AS FINDINGS, NOT AS TOOLS BREAKING THE SUITE — 2026-09-18
+
+**A hit-test at the point of dispatch means any check that was SILENTLY PRESSING THE WRONG ELEMENT now
+fails by name for the first time.** Each such red is a REAL DEFECT that has been passing — **item 130's
+class caught retroactively** — not a regression this build introduced. **HOLD THE OFFER's MERGE ON
+DIAGNOSING REDS, NOT ON THEIR ABSENCE.**
+
+**OWED FROM TOOLS BEFORE THE MERGE (Fable's ask, not yet in the written offer):**
+1. **An expectation stated IN ADVANCE** — a count where predictable, "unknown" where not — so the
+   pair's reds are read correctly when they arrive, rather than reverse-engineered after the fact.
+2. **THE FALSIFICATION**, executed: at a covered point the helper fails by name; unmutated, it
+   proceeds. *(Chat 1's source read above supports this but does not substitute for it — the standing
+   canon is that a mutation is asserted to have landed and reversed, not merely reasoned about
+   [[mutation-test-only-committed-work]].)*
+3. **A PER-FILE LIST for "the 7 verified files"** — which actually hit-test at dispatch versus merely
+   MENTION `elementFromPoint` — **a file verified in name only reads as safe and is the more dangerous
+   of the two.** *(§3 of the offer states the general claim — no file was verified in name only — but
+   does not itemize the specific list Fable asked for.)*
+
 Registry: next free **156**.
+
 
 
 
