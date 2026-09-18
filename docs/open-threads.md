@@ -3,6 +3,57 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## VW1 (ITEM 134) — THE RAIL, GROUPED BY KIND, SELECTED BY NAME: BUILT AND OFFERED — 2026-09-17 (tools lane; branch `vw1-rail`)
+
+**OFFERED TO CHAT 1 — BOTH FINAL LEGS CLEAN, 89/89 EACH.** Full record: `docs/menus/vw1-offer-2026-09-17.md`.
+**FOUR PAIRS, NOT TWO** — the grant covered two, a third and fourth followed under the standing
+instruction that a red pair still attributes to the reorder and takes the same discipline. Tip `163b628`
+(merged with `fa5e243` for the offer, docs-only).
+
+```
+SUITE DONE HARNESS_PARKED=unset — 89/89 of 89 returned a passing verdict
+SUITE RESULT: CLEAN — tree=163b628 bundle=index-C5de0HiO.js/582727b
+SUITE DONE HARNESS_PARKED=1 — 89/89 of 89 returned a passing verdict
+SUITE RESULT: CLEAN — tree=163b628 bundle=index-C5de0HiO.js/582727b NO-REBUILD
+```
+
+**THE CENSUS IS 77, NOT 39, and both breakdowns are in the offer with how each form was found.** By
+index: journal 19 · page 24 · plan 15 · drawers 11 · shelf 2 · settings 2 · theme 2 · trash 2. By
+form: 33 by the original spread census; 5 by the direct form (`qsa(sel)[N]`, no spread) found only
+because the brief's own breakdown didn't match; **38 by an index passed as a FUNCTION ARGUMENT**
+(`clickCategory(app, idx)` -> `items[idx]`), invisible to every static pattern and found only when
+**the regroup itself made the wrong selection observable** — three files broke; 1 by label text, 1
+bare-positional, both surfaced while inverting check 7. **A STATIC CENSUS SEES SPELLINGS, NOT
+DEPENDENCIES — THE ONLY COMPLETE CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.**
+
+**CHECK 7 IS INVERTED, not widened a third time.** Any live `.wz-strip-item` reference that is not a
+`data-category` selector is an offender unless NAMED and JUSTIFIED — six exemptions, one resolved by
+a DEPENDENCY check (`const items = [...]` is lawful only if nothing ever indexes it; exempting the
+spelling would have reopened the hole). **AN INDEX PASSED AS AN ARGUMENT IS INVISIBLE TO EVERY
+INSTRUMENT LOOKING BESIDE THE SELECTOR.**
+
+**CHECK 7 HAD ITS OWN RUNTIME CRASH**, found only by extracting its logic and running it —
+`node --check` had passed on it three times. `` new RegExp(`\b${v}\s*\[`) `` had its escapes eaten
+by the template (a backspace byte, a literal `s`, an unmatched bracket) — `SyntaxError` at runtime,
+invisible to syntax checking. Fixed with `String.raw`. **A FILE THAT PARSES IS NOT A FILE WHOSE
+REGEXES COMPILE** — the second instrument this arc felled by invisible bytes, found the same way
+both times: run the logic, don't trust that it parsed.
+
+**THREE FILES (`b1`, `cd1`, `cd2`) EACH HID THE OLD ORDER TWICE** — once live, once in a gated
+`pok()` twin — so the parked leg failed DIFFERENT checks from the default leg inside one turn: the
+sharpest evidence yet for both-legs-always as a law. All three gated twins were INDEX ASSERTIONS no
+driver conversion could reach; only changing the order ever found any of them. Four parked entries,
+each with a named successor comparing the eight labels as a SET — order is asserted nowhere now but
+`vw1.mjs`, which rules it.
+
+**ITEM 151 OPENED SEPARATELY** with the 156-instance/49-file silent-no-op census attached, per the
+ruling that folding it into VW1 would make a pair's own red ambiguous again — only the three
+`clickCategory` helpers (the mechanism that actually mis-selected a tab) are fixed here.
+
+**A CORRECTION ON THE RECORD:** commit 3's subject says "the two parks"; its own body says "TWO
+PARKS, FOUR ENTRIES" — the body was right. Pushed wording is not rewritten; the correction stands
+here.
+
 ## ITEM 137 — THE TRASH AT THE FOOT: BUILT AND OFFERED — 2026-09-13 (tools lane; branch `item137-trash-foot`)
 
 **OFFERED TO CHAT 1 — BOTH LEGS CLEAN, 83/83 EACH.** Full record:
@@ -3383,6 +3434,11 @@ column, zero migration. The schema STOP never fired.**
 else — the same discipline that made the post-walk roster read 74 rather than the review's 72.
 ## CANON — THREE LINES FROM THE BOARDS-CONNECTED SHIP — 2026-09-09
 
+**⚠ SUPERSEDED IN PART 2026-09-17 — the chaining condition only.** "Chaining the parked leg on the
+default's exit 0" is REFUSED by Fable's ruling: **BOTH LEGS ALWAYS RUN** (see *RULING — BOTH LEGS
+ALWAYS RUN*, below). The wait-and-claim half stands: one process still waits, claims, and runs both
+legs in sequence, so no gap opens at either seam. Kept as written.
+
 **1. WAIT AND LAUNCH ARE ONE ACT — two steps leave a gap another lane can claim (TOOLS).** Chat 1's
 pre-flight read `runners: 0 | browsers: 0`; `writer-studio-fx17` launched **between that reading and
 the suite reaching the box**, and the pair voided at file 2 of 76. **A check whose result is acted on
@@ -5664,7 +5720,848 @@ defect in a harness is its class of work (the seed guard, the sleep detector, th
 **BROWSERLESS DIAGNOSIS FIRST; a pair only once it holds a fix.** **FLAGGED, NOT OVERRIDDEN: chat 1's
 records name m3's ROAMS check as OWED TO THE RHIZOME DESK.** The routing stands unless Fable returns it
 there — a prior owner is named, not silently replaced.
-Registry: next free **147**.
+## ITEM 147 — THE PARK COUNT AS A CHECK — OPENS 2026-09-16
+
+**OPENS. ROUTED TO ERRATA.** It carries three things:
+
+**(1) ITEM 87's LATENT DEFECT — confirmed by chat 1 at the line, and sharper than "hardcoded."** The
+file's parked verdict line reads:
+
+> `ITEM87 PARKED: PASS (0 checks) — ... item 87 parks nothing ... The empty list is the evidence, not an
+> omission.`
+
+**— while the file RUNS FOUR `pok()` CALLS.** The prose was TRUE when written; **four parks were added
+later (clause 1, 2026-08-17) and the summary was never updated.** **It now asserts its own emptiness AS
+EVIDENCE over a list that is not empty.**
+
+**WHY IT CANNOT REPORT A FAILURE:** the runner reds a file ONLY on a verdict line matching `/\bFAIL\b/`,
+a non-zero exit, a timeout, or no verdict. **A verdict line that always says PASS can never match.** The
+file DOES dump the four checks' real `pass` values as JSON just above — **so a failing park would be
+PRINTED and never COUNTED.** **All four pass today: LATENT, not active.**
+
+**(2) CD2's 13 → 10, EXPLAINED.** **(3) THE 17 FILES THAT PRINT NO PARKED LINE, made distinguishable
+from files that genuinely have nothing to park.** *(A silent file and an empty file are identical in a
+log — the no-blank-stamp law, one level down.)*
+
+## BAND — A VERDICT LINE THAT CANNOT SAY FAIL IS NOT A VERDICT — 2026-09-16
+
+> **A VERDICT LINE THAT CANNOT SAY FAIL IS NOT A VERDICT.**
+
+*(It is a sentence about a run, not a run. Item 87's line is the purest instance: it is a constant
+string, so it would read the same whether the four parks passed or failed.)*
+
+## ITEM 146 — m3 STAYS WITH ERRATA; THE RHIZOME DESK's CLAIM IS RETIRED — 2026-09-16
+
+**CHAT 1's CALL, on measurement:**
+- **`m3-rhizome-roams` is the ORIGINAL M3 BUILD of 2026-07-24 — FULLY MERGED, zero commits ahead.** It is
+  not a fix for the ROAMS flake; it is the work that CREATED `m3.mjs`.
+- **The Rhizome desk has not touched the codebase since.** The one "rhizome" commit this month is a
+  records entry naming it in passing.
+- **The defect is still LIVE on `main`:** `RhizomeField.tsx` — `const SESSION_START = Date.now();`, one
+  seed per session.
+
+**Routing owed work to a desk dormant for two months is the idle-box failure in routing form.** **So the
+old "owed to the Rhizome desk" note is RETIRED, and item 146 stays with ERRATA.**
+
+**⚠ SCOPE FOR ERRATA:** the seed is in **PRODUCT code**. A fix that makes it injectable must stay
+**within the seams-only grant** — a thin wrapper that changes NO behaviour — **or it is a STOP.**
+
+**Housekeeping noted, not done (not ordered):** the `m3-rhizome-roams` worktree is **fully merged and
+clean** — safe to remove under item-110 hygiene whenever that is wanted.
+
+## PLAN DESK — SIX UPDATED TIPS MERGED, ONE CONFLICT RESOLVED BY SUBSTANCE — 2026-09-16
+
+**Merged, foundation first, all docs-only:** `006d86b` (the foundation) → `22ad29e`, `1a9ced8`,
+`7deaec7` (each built on it) → `b11d34e`. **`03ca200` was ALREADY IN `main`** from last round — skipped,
+not re-merged.
+
+**`b11d34e` CONFLICTED** in `b145-term-highlight-build-brief.md`: `main` held last round's version (on
+the OLD foundation), and this tip is a **REWRITE from the new one — separate lineages.**
+
+**A LINE DIFF SAID 11 LINES OF MAIN WOULD BE DROPPED. A SUBSTANCE CHECK SAID NOTHING WAS LOST.** Every
+load-bearing term survives; the two reasons that looked dropped — weight cannot be set through the
+highlight API, and underline belongs to the writer — were **FACTORED INTO THE FOUNDATION as standing
+findings F1 and F2**, cited by reference instead of restated. **Resolved to the rewrite.** *(The diff
+measured text; the question was meaning. It is `a census is a claim about an instrument` again.)*
+
+**ONE NUANCE NOT CARRIED, flagged to the PLAN desk:** main's version said the underline-is-the-writer's
+rule **"survives the reversal"**; the rewrite cites F2 without that clause.
+
+**⚠ RELAY GAP: "PLAN DESK's self-argument band line is in its block." It is NOT in chat 1's block, and
+it is NOT in any merged document.** **Not recorded; requested.** *(A block is complete for its
+recipient.)*
+
+## BAND — THREE LINES FROM THE PLAN DESK — 2026-09-16
+
+> **A LEAN IS PRESENTED WITH THE STRONGEST FORM OF WHAT IT ARGUES AGAINST — ESPECIALLY WHEN THE
+> ALTERNATIVE IS THE SAFER BUILD.** (PLAN's self-argument)
+
+*(The item-145 rewrite is the worked example: it set Fable's lean — accept the overlap — beside the
+desk's own lean for an overline, and declared the brief buildable under either. A lean argued only
+against a weak alternative is not a lean, it is a foregone conclusion.)*
+
+> **A FINDING OUTLIVES THE RULING THAT PRODUCED IT — LEFT IN SUPERSEDED TEXT IT READS AS SUPERSEDED.**
+> (PLAN)
+
+*(Observed the same day: "weight cannot be set through the highlight API" and "underline belongs to
+the writer" were first written inside a colour ruling that was later reversed. Moved into the
+foundation as standing findings F1 and F2, they survive the reversal; left where they were, a reader
+would have discarded them along with the olive ruling.)*
+
+> **A RULE THAT GOVERNS FUTURE WORK CITES THE SOURCE LIST, NOT A SUMMARY — THE SPEC SAYS WHAT SHOULD
+> HAPPEN, THE PIXELS SAY WHAT DID.** (PLAN)
+
+## CHAT 1's TIMING CORRECTION — RECORDED AS WRITTEN — 2026-09-16
+
+**PW2's pair launched at 23:04:17; chat 1's last two commits landed at 23:04:14 and 23:04:51, straddling
+it.** Chat 1's box check had been taken at the START of the turn and was stale when it wrote. **No harm
+followed — PW2 stamps its own worktree (`.claude/worktrees/pw2-nesting-transfer`), so commits to `main`
+never touched its tree.** **BUT THE SAFETY CAME FROM WORKTREE ISOLATION, NOT FROM CHAT 1's CHECK.**
+
+**THE WAIT-AND-LAUNCH LAW, LANDING ON THE DESK THAT ENFORCES IT: a check acted on in a later step is a
+check of the past.** *(And the law that actually protected PW2 was "a worktree isolates FILES" — the
+half of that law that governs writes.)*
+
+## ITEM 148 — THE DURABILITY GUARD'S VERB LIST — OPENS 2026-09-16
+
+**OPENS. Harness → ERRATA, after item 147 or with it, ERRATA's call.**
+
+**THE DEFECT:** `seed-guard.mjs` decides which seams mutate by matching
+`/\bwrizo(Create|Patch|Set|Pin)([A-Za-z]*)\s*=/`. **Copy, Move, Delete, Remove, Add and Nest are
+INVISIBLE to it** — and its own comment promises the next seam cannot quietly opt out. **That promise is
+false for every verb outside the four.**
+
+**PW2's `wrizoCopyCardToBoard` WAS THE FIRST CASE REPORTED:** it merged UNWRAPPED and the guard passed 36
+checks — **which PW2 MEASURED by unwrapping it and running, rather than asserting, correcting its own
+earlier claim in the same breath.**
+
+**CHAT 1 FOUND THE GAP IS ALREADY ON `main` — measured, not hypothetical.** Of **21** `wrizo*` seams,
+**8** fall outside the four verbs, and **at least TWO of them WRITE:**
+- **`wrizoTouchInOrder`** — rides `saveJournalEntry`. **ERRATA's OWN seam from 85-C wave 2, added AFTER the
+  guard.** Pattern matches: **0**.
+- **`wrizoPairing`** — an OBJECT whose members are `birth`, `pair` and `unpair`, **all mutators.** Pattern
+  matches: **0**.
+
+**THE SECOND REVEALS A SHAPE THE FIX MUST HANDLE: WHEN A SEAM IS A NAMESPACE, THE VERB LIVES ON THE
+MEMBER, NOT ON THE SEAM's NAME.** An inverted guard keyed on "every `wrizo*` seam that writes" has to
+look INSIDE the object, or `pair` and `unpair` escape it exactly as they escape the verb list.
+
+**FABLE's RULING ON THE SHAPE: INVERT THE DEFAULT.** **Every `wrizo*` seam that writes is IN SCOPE, and each
+exemption is NAMED AND JUSTIFIED** — the same inversion ERRATA already applied to the raw-write scan.
+**Matching a verb list means the guard only ever sees the verbs someone thought of.**
+
+**PW2 KEEPS ITS WRAP** — the durability is needed whether or not anything enforces it.
+
+## BAND — A GUARD WHOSE COMMENT CLAIMS MORE COVERAGE THAN ITS PATTERN HAS — 2026-09-16
+
+> **A GUARD WHOSE COMMENT CLAIMS MORE COVERAGE THAN ITS PATTERN HAS CERTIFIES ITS OWN REACH.**
+
+*(It reports the reach its author intended, not the reach its regex has. Siblings: a verdict line that
+cannot say FAIL is not a verdict; a comment explaining a hazard is not a guard against it. All three are
+text standing in for a mechanism. And the escapee that proves it best is the guard author's own seam.)*
+
+## ITEM 148 — ERRATA's SURVEY WIDENS THE GAP — 2026-09-16
+
+> *Epigraph: the guard's own author wrote a seam the guard cannot see.*
+
+**THREE AXES, NOT ONE:** the gap runs along **VERB** (only four matched), **FILE** (the guard opened ONE
+file) and **SHAPE** (a namespace's verb lives on its member). **41 seams across 23 files — the guard read
+ONE of the 23.**
+
+**`wrizoBible` FOUND UNWRAPPED, writing through `saveProject` from a file the guard never opened.**
+**`wrizoPairing` AND `wrizoBible` ARE BOTH NOW WRAPPED.** *(chat 1's namespace catch — the verb on the
+member — is carried in 148.)*
+
+## TWO OFFERS — PAIRS OWED, AFTER PW2 AND TOOLS — 2026-09-16
+
+- **`item147-park-count @ 5f9344d`** — 13/13, **four landed mutations.** **ITS PARKED LEG MUST SHOW `ITEM87
+  PARKED: PASS (4 checks)`** — the constant `0 checks` is the defect, so a pair still printing zero has not
+  proven the fix.
+- **`item148-seam-durability @ 41f8b7c`** — 53/53, **six landed mutations.** **ITS PAIR MUST SHOW `bm1`,
+  `item97`, `tu5`, `b2`, `fx9` AND `item85c` STILL PASSING now that their writers FLUSH** — wrapping a seam
+  changes its timing, and those six are the files that lean on it.
+
+## MERGE ORDER — SEQUENCED EXPLICITLY, BY CHAT 1 — 2026-09-16
+
+**THE CONSTRAINT:** whichever of `item148` and `pw2-nesting-transfer` lands SECOND owes ONE table entry
+for `wrizoCopyCardToBoard`. **It cannot be added ahead of time** — on `main` the seam does not exist, so
+the entry would be stale and the guard would rightly refuse it. *(Measured: `main` carries 0 occurrences;
+PW2 introduces the seam.)*
+
+**RULED: `pw2-nesting-transfer` LANDS FIRST; `item148` LANDS SECOND, and adds the entry BEFORE ITS PAIR
+RUNS.**
+
+**THE DECIDING FACT IS WHICH PAIR HAS NOT RUN YET.** PW2's pair is on the box now; item148's is still
+queued behind TOOLS (its tip is its offer — no pair commits). So:
+- **PW2 first, 148 second:** item148 re-merges `main`, picks up the seam, adds the entry, and stamps ONCE.
+  **Zero wasted pairs.**
+- **148 first, PW2 second:** PW2 would add the entry AFTER its current pair, invalidating it — **a second
+  PW2 pair.**
+
+**THE RULE OF THUMB: THE SECOND LANDER IS THE ONE WHOSE PAIR HAS NOT RUN.** *(A table entry that depends on
+another lane's seam is a merge-order question, and the cheapest order is the one where the dependent
+change is absorbed before a stamp rather than after one.)*
+
+## ITEM 149 — THE PARKED-RECORDS AUDIT IS OUTSIDE THE ROSTER — OPENS 2026-09-16
+
+**OPENS. Routed to ERRATA.** **`audit-parked-records.mjs` EXITS 1 ON `main`** from four `NO_KEY` entries —
+**and it is NOT IN THE SUITE ROSTER, so NO PAIR HAS EVER SHOWN IT.** **THE ROSTER GAP IS THE DEFECT.**
+
+**Confirmed by chat 1:** the file lives at `scripts/audit-parked-records.mjs`, **not** `scripts/harness/`,
+and `run-suite` enumerates only `harness/`. **A red that nothing runs is indistinguishable, from every
+stamp, from a green.**
+
+*(The coverage law made concrete: a scan of zero files is not a clean result. Here it is an AUDIT of
+zero runs — an instrument that has been reporting failure the whole time, to nobody.)*
+
+## ITEM 150 — 37 PARKED CHECKS PASS A CONSTANT `true` — OPENS 2026-09-16
+
+**OPENS. Routed to ERRATA.** **37 parked checks pass a CONSTANT `true`.** **A PARK THAT CANNOT FAIL
+CERTIFIES NOTHING — item 87's disease AT SCALE.**
+
+*(Item 87's verdict LINE could not say FAIL; these park CHECKS cannot either. Item 147 fixes the line for
+one file; item 150 is the same defect in the assertions themselves, across 37 of them. A guard, in the
+sense INK defined — a check that cannot fail on today's code — is honest only when it is DECLARED as one.
+These are not declared; they are counted as evidence.)*
+
+## ERRATA's QUEUE — 2026-09-16
+
+**ERRATA holds item 146 NEXT**, then items 149 and 150. Its offers 147 and 148 wait on their pairs.
+
+## ITEM 146 — RULED: OPTION C — THE "FLAKE" WAS A WRONG CHECK — 2026-09-16
+
+**⚠ CORRECTED 2026-09-16 — the "three margins guaranteed" claim below held ONLY FOR S2's GEOMETRY.**
+Sweeping live-like layouts before writing the park, ERRATA found the **RIGHT margin missed 3 in 4,000 on
+a wide paper.** **NO margin is guaranteed on every layout.** Chat 1 recorded ERRATA's first measurement
+as a general fact; it was a fact about one geometry. The paragraph is kept as written.
+
+**ERRATA MEASURED THE DISTRIBUTION instead of calling it variance:** it ran the REAL rhizome engine over
+**16,000 grown grounds, browserless.** **Roaming is GUARANTEED on THREE margins and PROBABILISTIC on the
+TOP** — failing **0.44% at live bounds** and **1.15–1.50% at S2's.**
+
+**SO THE LIVE ROAMS CHECK WAS ASSERTING A GUARANTEE THE PRODUCT DOES NOT MAKE.** Confirmed by chat 1 at the
+wording: `m3.mjs` S2 claims the growth reaches near **ALL FOUR** ruled margins (*"roams the whole ground,
+not a confined patch"*), and the live check claims the rendered extent reaches near **ALL FOUR** stage
+margins. **Its pass / fail / pass / pass record on ONE IDENTICAL BUNDLE is exactly what that distribution
+predicts.** *(Not noise around a guarantee — an honest sample of a tendency, graded against a guarantee.)*
+
+**THE BUILD, option C:**
+- **A READ-ONLY `SESSION_START` seam — NO behaviour change.** *(Within the seams-only grant, as chat 1
+  flagged when 146 was routed: the seed lives in product code.)*
+- **The live check PARKED VERBATIM, with the measurement as its reason.**
+- **A SUCCESSOR asserting RENDERED extent equals ENGINE extent, for any seed** — the thing the harness can
+  actually guarantee.
+- **S2 extended to MANY seeds — STRICT on three margins, a STATED RATE on the top.**
+
+**OPTION B REFUSED:** it would keep the GENERAL wording while proving ONE seed, and would introduce a
+**harness-only key pattern that `src/` does not have.** *(A check whose claim is wider than its proof is
+the guard-comment defect again; a pattern that exists only in the harness is a second source of truth.)*
+
+## BAND — A FLAKE IS A CHECK THAT IS WRONG ABOUT THE PRODUCT — 2026-09-16
+
+> **A FLAKE IS A CHECK THAT IS WRONG ABOUT THE PRODUCT AND RIGHT MOST OF THE TIME — MEASURE THE
+> DISTRIBUTION BEFORE CALLING IT VARIANCE.**
+
+*(The known-flake list stayed empty all arc, and this is why that was right: the one standing
+"non-determinism" in chat 1's own records turned out, on measurement, to be a check asserting more than
+the product promises. "Flaky" is a verdict about the TEST; it was being read as a verdict about the
+MACHINE.)*
+
+## MERGE ORDER — THREE SEAM-TABLE ENTRIES, SEQUENCED — 2026-09-16
+
+**The constraint grew:** `wrizoCopyCardToBoard` (PW2) **and 146's new read-only seam** each owe an entry to
+**item 148's table** — and **neither can be added before 148 lands**, because until then the table does not
+exist on `main`.
+
+**RULED BY CHAT 1: `PW2 → item148 → item146`.**
+
+| lands | adds which entry | its pair already run? |
+| --- | --- | --- |
+| **PW2** first | none — no table exists yet | on the box now |
+| **item148** second | **PW2's** `wrizoCopyCardToBoard` | no — queued behind TOOLS |
+| **item146** third | **its own** `SESSION_START` entry | no — still being built |
+
+**ZERO WASTED PAIRS.** The earlier rule extends cleanly: **each seam's entry is added by whichever of the
+two lands SECOND, and that second lander must not have run its pair yet.**
+
+**⚠ THE TWO ENTRIES ARE DIFFERENT KINDS.** Item 148's guard covers seams that WRITE (they must flush).
+**146's seam is READ-ONLY** and does not flush, so under the inverted guard it owes a **NAMED, JUSTIFIED
+EXEMPTION** — not a wrap. **PW2's is a durability entry; 146's is an exemption.** *(Recorded so neither
+builder wraps a seam that has nothing to flush, nor exempts one that writes.)*
+
+## A PRODUCT QUESTION WITH NICK — NOT A DEFECT — 2026-09-16
+
+**⚠ THE QUESTION WIDENED 2026-09-16:** it is no longer "is the TOP edge guaranteed" but **"is EVERY
+edge guaranteed, or is roaming a tendency?"** — a wide paper can miss a SIDE. The original framing is
+kept below.
+
+**About 0.4–1.5% of pages grow a ground that never reaches the TOP of the stage.** **Is "roams the whole
+ground" a GUARANTEE or a TENDENCY?**
+- **If a GUARANTEE:** it becomes **its own item**, needing **an owner** — the **Rhizome desk is retired** —
+  and it touches **`seedOrigins` / `growTo`** in `RhizomeField.tsx`.
+- **If a TENDENCY:** **146's stated-rate check is already the answer.**
+
+**NOTHING IS BLOCKED EITHER WAY.** *(Worth noting how the question was reached: a test was believed to be
+flaky, the distribution was measured, and the measurement turned a harness defect into a product
+question only the founder can answer. The test was never the thing that needed deciding.)*
+
+## BAND — A GUARANTEE MEASURED ON ONE GEOMETRY — 2026-09-16
+
+> **A GUARANTEE MEASURED ON ONE GEOMETRY IS A GUARANTEE ABOUT THAT GEOMETRY.**
+
+*(Landed on chat 1's own record the same day it was written: chat 1 carried ERRATA's first sweep — S2's
+bounds only — into the ledger AND its memory as "three margins always reached." Both are corrected in
+place. The technique that caught it is worth keeping: a pure engine module with no imports can be
+transpiled with the repo's esbuild and swept across thousands of seeds in Node — no box needed to turn a
+reputation into a rate.)*
+
+## ITEM 146 — OFFERED — 2026-09-16
+
+**`item146-rhizome-seed`: offer at `57c4c66`, tip `ace6f76`** — verified by chat 1: **the one commit past
+the offer is DOCS-ONLY** ("the ratified design point stated so no reader simplifies it").
+
+**Its product code is the read-only seam and nothing else:** `RhizomeField.tsx` gains an effect installing
+`window.__wrizoRhizomeField`, returning `sessionStart` and the built geometry.
+
+**CHAT 1 CHECKED THAT 148 CAN ACTUALLY SEE IT — because a plan that assigns an entry nothing enforces is
+not a plan.** The seam has a **double-underscore prefix** and lives in a **component**, not
+`persistence.ts`. A pattern starting `\bwrizo` would NOT match it (`_` is a word character, so there is
+no boundary). **148's inverted enumerator handles both:** it matches `_{0,2}wrizo` and accepts the
+`(window as ...).` cast via `\)\s*\.` — and **run against 146's actual line it returns
+`["__wrizoRhizomeField"]`.** **So 146's EXEMPTION ENTRY will be enforced. ERRATA had already built for
+this shape.**
+
+## MERGE ORDER — RECORDED SO IT CANNOT BE REVERSED — 2026-09-16
+
+**`PW2 → item148 → item146`, adopted as written. Each seam-table entry is added by whichever branch lands
+SECOND, before its own pair.**
+
+**THE LOAD-BEARING DISTINCTION, stated for any future reader:**
+- **PW2's `wrizoCopyCardToBoard` WRITES → it needs a DURABILITY entry** (wrapped; it must flush).
+- **146's `__wrizoRhizomeField` only READS → it needs an EXEMPTION entry, NEVER A WRAP.**
+
+*(Wrapping a read-only seam adds a flush to something that writes nothing; exempting a writing seam lets
+it lose data. The two errors are opposite and both are easy.)*
+
+## ERRATA's THREE OFFERS — WHAT EACH PAIR MUST SHOW — 2026-09-16
+
+- **`item147-park-count @ 4bab0ff`** — the parked leg must show **`ITEM87 PARKED: PASS (4 checks)`**.
+- **`item148-seam-durability @ 41f8b7c`** — `bm1`, `item97`, `tu5`, `b2`, `fx9` and `item85c` must pass.
+- **`item146-rhizome-seed @ 57c4c66`** — fidelity passes, the sweep reports **5/400**, and the parked leg
+  shows **`M3 PARKED: PASS (3 checks)`**.
+
+*(Each pair has a named thing it must show. A pair that is merely green has proven the suite runs, not
+that the fix landed.)*
+
+## ITEMS 149 AND 150 — ROUTED BY CHAT 1 — 2026-09-16
+
+**Both to ERRATA, whose lane is otherwise empty — but NOT together:**
+- **ITEM 149 (the parked-records audit outside the roster) IS INDEPENDENT.** It concerns where one file
+  lives and whether `run-suite` runs it; it shares no file with 147's offer (`item147.mjs`, `item87.mjs`).
+  **ERRATA BUILDS IT BROWSERLESS NOW**, while its pairs wait — building needs no box. *(The item-140
+  precedent.)*
+- **ITEM 150 (37 constant-true parks) OVERLAPS 147's PARK MACHINERY.** Building it before 147 merges
+  would build on a moving base. **It starts AFTER 147 LANDS.**
+
+## MEMORY CORRECTION — REGISTERED — 2026-09-16
+
+**Chat 1's own records had m3 as the one real flake, owned by the Rhizome desk. Both halves were wrong.**
+**The known-flake list was empty all along; m3 was a WRONG check, not a flaky one.** **That is a BETTER
+state than the record claimed — and it only became visible because ERRATA MEASURED instead of
+inheriting the reputation.**
+
+## PW2's PAIR — RED ON BOTH LEGS — NOT MERGED — 2026-09-17
+
+**`pw2-nesting-transfer` @ `623ba30`, bundle `index-D73FFML-.js`/586750b. STOP: nothing merged, nothing
+stamped.**
+
+| leg | verdict | reds |
+| --- | --- | --- |
+| default | **NOT CLEAN, 88/89** | `pw1.mjs` — 2/41 failed |
+| parked | **NOT CLEAN, 87/89** (`NO-REBUILD`, same bundle) | `ab4.mjs` — 2/20 PARKED failed; `pw1.mjs` — the same 2/41 |
+
+**The four red checks:**
+- **`pw1` S2 (Q4)** asserts the side menu's sections are `["Cards","Pages linked to this board"]`; the page
+  renders `["Cards","Pages"]`.
+- **`pw1` S2/S3 (G3 at menu scale)** asserts `hasMenu === isMember` on every survey row; PW2's three
+  board-owned TEXT cards now wear a `⋯`.
+- **`ab4` PARKED successors at 1280px and 2200px** (PW1's own parks) assert the section list includes
+  `'Pages linked to this board'`.
+
+**MECHANISM — PW2's OWN RULED CHANGES, NOT A REGRESSION AND NOT A FLAKE** (chat 1's reading, from source):
+- **`1e3dfaa`** (Nick's zone amendment) changed the lexicon value `cascadePlanSectionPages` from
+  `'Pages linked to this board'` to `'Pages'`. Two harness files still assert the old value:
+  `pw1.mjs:330` and `ab4.mjs:604` (which runs at both widths).
+- **`1f4a981`** (S3, card transfer) gave free/text cards a `Copy to a board…` verb, so they now HAVE an
+  act and rightly wear a `⋯`. **G3's law still holds** — only rows with an act wear one. **What broke is
+  the check's encoding of it: "has an act" ≡ "is a membership row"**, true before PW2 and false after.
+- **⚠ CORRECTED 2026-09-17 — "FOUR" below counts RUNS, not checks: 4 RUNS OF 3 DISTINCT CHECKS** —
+  2 in `pw1`, superseded in place; 1 in `ab4`, behind the gate, run at two widths (PW2's accounting,
+  registered by Fable). It replaces PW2's earlier "parks nothing" claim, which was true of `pw2.mjs`
+  and false of the branch. The line is kept as written.
+- **So PW2 owes FOUR PARKS** (verbatim + successor): two in `pw1`, two in `ab4`. Its sweep caught the
+  behaviours it changed and missed a visible label it changed. *(A label the writer reads is part of
+  what the change DOES.)*
+- `cd2`, `pw2` (24/24) and every other `⋯` reader passed on both legs.
+
+**THE CHAIN RAN THE PARKED LEG AFTER A RED DEFAULT.** PW2's launcher joined the legs with `;`, not `&&`,
+so the parked leg started although the default leg exited 1 (`run-suite.mjs:413` exits 1 on NOT CLEAN).
+**Cost:** ~36 minutes of box time on a void pair. **Yield:** `ab4`'s red surfaced now rather than on the
+re-pair. **Whether a parked leg runs after a red default is routed to Fable.**
+
+**THE BOX:** the runner exited (seen 00:11:53). Chat 1 verified no runner, no harness and zero
+`ws-runtime-verify` browsers, then **CLEARED PW2's grant** (`box-turn.mjs clear`). **No turn is granted.**
+
+**THE QUEUE — PROPOSED BY CHAT 1, ROUTED TO FABLE:** `PW2 → 148 → 146` can no longer start with PW2,
+and 148's pair must still follow PW2's landing (148 adds PW2's durability entry before its pair).
+TOOLS' VW1 and the 147 pair do not depend on PW2. Proposed: **VW1 → 147 pair → PW2 fix + re-pair → PW2
+merges → 148 (entry, then pair) → 146 → the four-file park conform.** **FILE OVERLAP:** the conform
+touches `pw1.mjs`, and so will PW2's fix — whichever lands second merges the other in first.
+
+## RULING — BOTH LEGS ALWAYS RUN — 2026-09-17
+
+**Fable, on the launcher question chat 1 routed: THE PARKED LEG RUNS AFTER A RED DEFAULT. DO NOT CHAIN ON
+SUCCESS.** Reasons, in Fable's order:
+1. **A pair's two legs measure DIFFERENT POPULATIONS**, so a red in one says nothing about the other.
+2. **This pair proves it:** `ab4`'s red exists ONLY in the parked leg. Chained on success, it would have
+   surfaced on the re-run — one cycle later, after a fix built without knowing about it.
+3. **A red default already costs the turn**, so the parked leg's 36 minutes buy a COMPLETE diagnosis
+   for time that is spent either way.
+
+**STANDING RULE, ALL LANES: BOTH LEGS ALWAYS RUN; A PAIR REPORTS WHAT IS, NOT WHAT SURVIVES.** **PW2's
+`;` chaining STAYS; `&&` is REFUSED.**
+
+**It reverses chat 1's own practice:** the atomic wait-and-launch (CANON, 2026-09-09) chained the parked
+leg on the default's exit 0. **Both records of that are marked in place;** the wait-and-claim half of
+the law is untouched.
+
+## BAND — A RED IN ONE LEG IS NOT A VERDICT ON THE OTHER — 2026-09-17
+
+> **A RED IN ONE LEG IS NOT A VERDICT ON THE OTHER — A PAIR MEASURES TWO POPULATIONS, SO BOTH LEGS ALWAYS
+> RUN.**
+
+## BAND — A RULING THAT LANDS MID-BUILD REOPENS THE SWEEP — 2026-09-17
+
+> **A RULING THAT LANDS MID-BUILD REOPENS THE SWEEP — A SWEEP CERTIFIES THE TREE IT WAS RUN ON.** (PW2)
+
+*(PW2's diagnosis of its own red, registered by Fable: Nick's zone amendment arrived after PW2's sweep
+had run, and renamed a label two older files assert. The sweep was right about the tree it read.)*
+
+## THE QUEUE — APPROVED; VW1 ANNOUNCED — 2026-09-17
+
+**APPROVED AS CHAT 1 PROPOSED:** **TOOLS' VW1 (two pairs) → 147's pair → PW2's re-stamp → PW2 merges →
+148 (entry, then pair) → 146 (entry, then pair) → the four-file park conform.**
+
+**VW1 ANNOUNCED.** Box verified quiet (no runner, harness, `tsc` or `vite`; zero `ws-runtime-verify`
+browsers; no grant), then **GRANTED TO TOOLS** through the writer — token `tools-vw1-pairs-20260917`,
+one grant for both pairs. `checkGrant` accepts TOOLS' token and refuses PW2's spent one
+(`token-mismatch`).
+
+**Chat 1's pre-turn reading of `vw1-rail`, handed to TOOLS with the announcement:**
+- the branch is at `3cf1982`, **111 commits behind `origin/main`** — merge `main` first and report
+  conflicts before the pair;
+- **⚠ SUPERSEDED 2026-09-17 — the instruction's LETTER only.** TOOLS did not commit `vw1.mjs` before
+  pair 1; it held the file OUTSIDE `harness/` instead, and **Fable RATIFIED that** (see *TOOLS' `vw1.mjs`
+  PLACEMENT — RATIFIED*, below). The substance — nothing untracked in `harness/` — held. Kept as written.
+- **`apps/desktop/scripts/harness/vw1.mjs` is UNTRACKED** in the worktree. `run-suite` counts
+  `git status --porcelain` lines, so it would stamp the pair `+1dirty` — and, living in `harness/`, it
+  would also be RUN. Commit it before the pair.
+- `node_modules` is present.
+
+**PW2's re-stamp turn is announced when VW1 and 147 clear.** **PW2 was right not to take a second run on
+a spent grant.**
+
+## FILE OVERLAP — `pw1.mjs` — RULED — 2026-09-17
+
+**PW2's fix and TOOLS' park conform both edit `pw1.mjs`. PW2 LANDS FIRST** — it is ahead in the queue,
+and its changes are ruled supersessions. **TOOLS merges `main` before its conform, as it already does.**
+**TOOLS told NOW, with the VW1 announcement, not at merge time: `pw1.mjs` is moving under it.**
+
+**CHAT 1 MEASURED ONE MORE LAYER: VW1 ITSELF ALREADY EDITS BOTH SHARED FILES, AND LANDS FIRST.**
+`origin/vw1-rail` changes 20 files (19 harness files and `Cascade.tsx`), including **`pw1.mjs`** (its
+`openPlan` helper — the strip picked by `data-category=plan`, not by index `[2]`) and **`item87.mjs`**
+— **147's file.** So the landing order on each shared file is:
+- **`pw1.mjs`: VW1 → PW2's fix → TOOLS' conform.**
+- **`item87.mjs`: VW1 → 147.**
+
+**Trial merges of `vw1-rail` against the tips of 147 (`4bab0ff`), PW2 (`623ba30`), 148 (`41f8b7c`) and
+146 (`ace6f76`): ALL FOUR CLEAN.** Each later lander re-merges `main` before its pair, which a
+re-stamp needs anyway. **PW2's fix is not written yet**, so its `pw1.mjs` hunks are a heads-up, not a
+measurement: PW2 builds on a `main` that carries VW1's helper change.
+
+## ERRATA — STOOD DOWN, THREE OFFERS PENDING — 2026-09-17
+
+**ERRATA stood down** with `147 @ 4bab0ff`, `148 @ 41f8b7c` and `146 @ 57c4c66` offered and unpaired.
+**Items 149 and 150 stay routed as chat 1 recorded:** 149 is buildable browserless whenever ERRATA
+returns; 150 starts after 147 lands.
+
+**OPEN, ROUTED TO FABLE: 147's pair is next after VW1 and needs ERRATA present.** If ERRATA is not back
+when VW1 clears, chat 1 proposes PW2's re-stamp goes ahead of it — the two share no file (147 touches
+`item147.mjs` and `item87.mjs`; PW2's fix touches `pw1.mjs` and `ab4.mjs`), and PW2 lands before
+either of ERRATA's seam-table branches in both orders. **Not acted on without a ruling.**
+
+## STANDING RULE — A LANE PRESENT AND READY TAKES THE NEXT SLOT — 2026-09-17
+
+**The contingency chat 1 routed is APPROVED:** if ERRATA is not back when VW1 clears, **PW2's re-stamp
+goes ahead of 147** (no shared file; PW2 lands before 148 and 146 either way).
+
+**FABLE's GENERAL RULE, so it need not be asked again:**
+> **A LANE THAT IS PRESENT AND READY TAKES THE NEXT SLOT; AN ABSENT LANE's ITEM KEEPS ITS PLACE IN THE
+> ORDER BUT NOT ITS HOLD ON THE BOX.** **Chat 1 reorders on that WITHOUT A RULING.**
+
+*(The order says who goes first among the ready. It was never a reservation that holds the machine
+idle for someone who is not there.)*
+
+## RULING — ONE HANDLE FOR ONE CONTROL — 2026-09-17
+
+**PW2's finding:** `pw1.mjs` lines 187 and 192 reach the strip's Plan control BY INDEX, on `main` and on
+PW2's branch, while `pw2.mjs` reaches the same control BY LABEL TEXT — **two files, one strip control,
+two handles.** **PW2 was RIGHT to leave `pw1`'s sites alone:** TOOLS owns them, converting in-branch
+collides on the same lines, and converting to label text now means changing the file twice.
+
+**RULED: after VW1 lands, `data-category` IS THE HANDLE EVERYWHERE, and at its merge PW2 aligns BOTH
+`pw1.mjs` and `pw2.mjs` to it.**
+
+> **TWO FILES ADDRESSING ONE CONTROL BY DIFFERENT HANDLES IS A DIVERGENCE WAITING FOR A REORDER.**
+
+**CHAT 1 MEASURED WHAT THAT ALIGNMENT WILL ACTUALLY CONTAIN:**
+- **`data-category` exists ONLY on `vw1-rail`** — VW1 adds `data-category={item.id}` to the strip
+  buttons in `Cascade.tsx`. On `main` and on PW2's branch the attribute is absent (0 hits in `src/`),
+  so no file can use it before VW1 lands. *(Consistent with the ruling's "after VW1 lands".)*
+- **VW1 ALREADY CONVERTS `pw1.mjs` 187 AND 192** to `.wz-strip-item[data-category=plan]`. **Once PW2
+  re-merges `main` after VW1, `pw1`'s two sites are already on the one handle** — PW2's part there is to
+  CONFIRM it, not to convert it.
+- **The conversion left to PW2 is `pw2.mjs`:** `STRIP_PLAN` (line 164, label text) and the comment above
+  it (lines 161–163), which says `.wz-strip-item` "carries no per-category class" — **true today, FALSE
+  the moment VW1 lands.**
+- **✓ RULED 2026-09-17** (see *RULING — A CHECK'S NAME IS A CLAIM*, below). The bullet that follows is
+  kept as written.
+- **FLAGGED, NOT RULED — line 189 in BOTH files:** `document.querySelectorAll('.wz-strip-item').length > 2`
+  gates the driver check named *"the cascade strip is mounted WITH A PLAN CATEGORY"*. **A count stands
+  in for the claim** — the index handle's residue (`> 2` is what `[2]` needs). VW1 left it, as it left
+  the `length === 8` mount probes elsewhere; with a named handle the claim can be tested directly.
+  Routed to PW2 and TOOLS as part of the same alignment, their call.
+
+## PW2's MERGE OBLIGATION — ONE LIST, NOT LOOSE ENDS — 2026-09-17
+
+**At its re-stamp, in order:** (1) re-merge `main`, which then carries VW1; (2) confirm `pw1.mjs` 187/192
+carry VW1's handle; (3) convert `pw2.mjs`'s `STRIP_PLAN` and its comment to `data-category`; (4) the
+four park runs of three checks; (5) the pair — **both legs**.
+
+**✓ RESOLVED 2026-09-17 — Fable CONFIRMED chat 1's reading:** 148's entry stays with 148. Recorded as a
+CORRECTION of the application, not a reversal of the rule (see *CORRECTION — THE SECOND-LANDER RULE WAS
+RIGHT*, below). The paragraph is kept as written.
+
+**⚠ CHAT 1 FLAGS ONE CONFLICT WITH THE RECORDED ORDER.** Fable's ruling folds **148's table entry** into
+PW2's merge obligation. **Under the approved order PW2 lands BEFORE 148**, and the record *MERGE ORDER —
+RECORDED SO IT CANNOT BE REVERSED* gives the `wrizoCopyCardToBoard` entry to **the second lander,
+148**. **When PW2 merges, 148's table does not exist on `main`, so PW2 CANNOT add the entry.** Recorded
+on the assumption that the entry STAYS 148's ("148: entry, then pair" — as the approved queue itself
+says), and that the single-obligation point is about the HANDLE work. **Routed to Fable to confirm;**
+the only order that gives PW2 the entry is 148 first, which costs PW2 a further pair.
+
+## REGISTERED — 2026-09-17
+
+- **Landing orders, as given:** `pw1.mjs` → VW1, PW2's fix, TOOLS' conform; `item87.mjs` → VW1, then 147.
+- **Chat 1's supersession-in-place of its own chain-on-green practice** — Fable: *the wait-then-claim
+  half survives, and SAYING WHICH HALF SURVIVES IS WHAT KEEPS A SUPERSEDED RULE READABLE.*
+- **TOOLS' turn relayed.** TOOLS has merged `main` into `vw1-rail` (`1f75a23`); its tree is clean.
+
+## CORRECTION — THE SECOND-LANDER RULE WAS RIGHT; ITS APPLICATION WAS NOT — 2026-09-17
+
+**Fable CONFIRMED chat 1's reading.** **148's `wrizoCopyCardToBoard` entry STAYS WITH 148, the second
+lander:** PW2 cannot add a line to a table that is not on `main` when PW2 merges. **Fable's ruling
+misapplied its own rule — the rule ("whichever lands second adds the line") was right, the application
+was not. RECORDED AS A CORRECTION, NOT A REVERSAL.**
+
+**PW2's SINGLE OBLIGATION, CONFIRMED — five steps:** (1) merge `main`; (2) confirm `pw1`; (3) convert
+`pw2.mjs`'s `STRIP_PLAN` and its now-false comment; (4) the four park runs; (5) both legs. **Plus the
+line-189 check below, which rides step 3.**
+
+**THE SEAM-TABLE ENTRIES, RESTATED:** **148 adds `wrizoCopyCardToBoard` BEFORE ITS OWN PAIR; 146 adds
+`__wrizoRhizomeField` AFTER 148 LANDS.** *(Durability entry and exemption entry respectively — unchanged.)*
+
+## RULING — A CHECK'S NAME IS A CLAIM — LINE 189 — 2026-09-17
+
+**Line 189 is RULED, not left flagged.** `.length > 2` is a **COUNT, not a SELECTION**, so it is OUTSIDE
+the one-handle rule — **TOOLS was right to leave it.** **But the check's NAME claims "mounted with a Plan
+category" while its assertion proves only "more than two strip items."** That is a check whose name
+outruns its assertion — **and it becomes false in a SECOND way once `data-category` exists**, because
+the claim is then directly testable and still is not tested.
+
+**ROUTED TO PW2, as part of its `pw2.mjs` alignment: ASSERT WHAT THE NAME SAYS — a strip item with
+`data-category=plan` exists — and keep or drop the count on its own merits.**
+
+**✓ CONFIRMED 2026-09-17 — both copies go to PW2** (see *ONE DEFECT, TWO FILES, ONE LANE*, below). The
+paragraph is kept as written.
+
+**NOTED BY CHAT 1:** the same helper text, and so the same check, sits at **`pw1.mjs` 189–190** too.
+Routed on the reading that PW2's step 2 (confirm `pw1`) covers it, since PW2 lands on `pw1.mjs` before
+TOOLS' conform; **Fable to say if `pw1`'s copy belongs to the conform instead.**
+
+> **A CHECK'S NAME IS A CLAIM; WHEN THE ASSERTION IS WEAKER, THE NAME IS THE DEFECT.**
+
+*(Sibling of "a guard whose comment claims more coverage than its pattern has certifies its own reach":
+there the comment outran the regex, here the name outruns the assertion. Both are text standing in for
+a mechanism.)*
+
+## TOOLS' `vw1.mjs` PLACEMENT — RATIFIED — 2026-09-17
+
+**Chat 1 told TOOLS to commit the untracked `harness/vw1.mjs` before pair 1. TOOLS did not, and SAID SO:**
+committing it before pair 1 would have made **pair 1 RED BY DESIGN** and **destroyed option (b)'s
+proof.** **TOOLS held the file OUTSIDE `harness/` instead** — which honours the SUBSTANCE of chat 1's
+catch (nothing untracked in `harness/` dirties the stamp or runs) while preserving the sequence. **It
+commits with the regroup, BEFORE PAIR 2. RATIFIED.**
+
+> **WHEN AN INSTRUCTION'S LETTER DEFEATS ITS PURPOSE, FOLLOW THE PURPOSE AND SAY SO.**
+
+*(TOOLS said so — the half that makes it lawful. Chat 1's instruction was written from a tree reading
+without knowing pair 1's design; the reading was right and the instruction's letter was not. Confirmed
+by chat 1 on the box: `vw1.mjs` is absent from `harness/` (88 `.mjs` files there), and pair 1's default
+leg launched at 07:04:57 with `vw1-rail` pushed at `1f75a23`.)*
+
+**⚠ SUPERSEDED 2026-09-17 — THE CENSUS WAS 39 AND IS 77.** Pair 2's reorder found 38 more, invisible to
+every instrument that had looked (see *THE CENSUS WAS 39 AND IS 77*, below). The three readings below
+were sound about the form they read. Kept as written.
+
+**VW1's CENSUS: UNCHANGED AT 39 on the merged tip** — three independent readings, including a sweep for
+new index forms that the 112 commits merged in could have introduced.
+
+**CONTINGENCY STANDS:** PW2 takes 147's slot if ERRATA is absent when VW1 clears.
+
+## ROUTING CONFIRMED — ONE DEFECT, TWO FILES, ONE LANE — 2026-09-17
+
+**Both copies of the weak line-189 check go to PW2:** `pw1.mjs`'s under **step 2**, `pw2.mjs`'s under
+**step 3** — **ONE defect fixed in two files, not two tickets.**
+
+**The reason is the one-handle ruling's own:** two files addressing one control must stop disagreeing,
+and **splitting a single defect across two lanes recreates the divergence in a new form** — two fixes,
+written apart, are two chances to assert the claim two ways.
+
+**TOOLS' CONFORM STAYS SCOPED TO THE PARK RECORDS** and takes the `pw1.mjs` edit as it finds it.
+
+> **FIX THE CLASS, NOT THE INSTANCE — ONE LANE, ONE MERGE.**
+
+## TOOLS' COMMIT-2 PLAN — REGISTERED — 2026-09-17
+
+**VW1's second commit moves ONLY ARRAY MEMBERSHIP.** The same **eight ids**, the same **lexicon terms**,
+the same **icons**, the same **`renderSection`**, the same **four separators** — only which array each
+item sits in changes. **So a red in pair 2 has EXACTLY ONE CANDIDATE.**
+
+*(That is the diagnostic the two-commit split was built to produce, and its value is visible before it
+is needed: pair 1 proves the mechanism with membership unchanged, pair 2 changes membership alone.)*
+
+**Box, at chat 1's reading (07:09):** pair 1's default leg still running (launched 07:04:57);
+`vw1-rail` at `1f75a23`; commit 2 and `vw1.mjs` land with the regroup, before pair 2.
+
+## BAND — AN ANNOUNCEMENT HANDS A LANE THE FINDING — 2026-09-17
+
+> **AN ANNOUNCEMENT HANDS A LANE THE FINDING AND WHAT IT PROTECTS, NOT A BARE COMMAND — THE GRANTING
+> DESK CANNOT SEE THE PAIR'S DESIGN.**
+
+*(Chat 1's own lesson from `vw1.mjs`, promoted by Fable. It is what let TOOLS honour the catch while
+preserving the sequence; a bare command would have been obeyed to the letter and cost the proof. The
+partner of "when an instruction's letter defeats its purpose, follow the purpose and say so": that one
+binds the lane receiving an instruction, this one binds the desk writing it.)*
+
+## VW1 PAIR 1 — CLEAN — AND NOT TAKEN AS PROOF — 2026-09-17
+
+**88/88 BOTH LEGS at `1f75a23`.** **TOOLS did not read green as proof that nothing was skipped:** it
+compared **PER-FILE CHECK COUNTS** against its pre-conversion item-137 run — **19/19 identical parked,
+18/19 default**, and **the single difference TRACED** to 133-B adding a check on `main`.
+
+> **A GREEN SUITE DOES NOT PROVE NOTHING WAS SKIPPED — COMPARE CHECK COUNTS ACROSS THE CHANGE.**
+
+*(The park-count law generalised: there it was parks, here it is every file's total. A conversion that
+silently stopped selecting anything would run, pass, and assert less — and only the count says so.)*
+
+## VW1 PAIR 2 — NOT CLEAN — THE DESIGN WORKING — 2026-09-17
+
+**84/89 BOTH LEGS at `07a228e`.** **Pair 1 having proved the conversions, THE REORDER IS THE ONLY
+CANDIDATE** — the diagnostic the two-commit split was built to produce, arriving as designed.
+
+## THE CENSUS WAS 39 AND IS 77 — THE NINTH UNDERCOUNT — 2026-09-17
+
+**The missing 38 pass the index AS A FUNCTION ARGUMENT — `clickCategory(app, 1)` — so it NEVER APPEARS
+BESIDE THE SELECTOR.** **Invisible to the census, to check 7, and to the third-form sweep — all three
+looked in the same place.** **`cd2` alone holds 27, of which the census saw 4.**
+
+**NINTH UNDERCOUNT OF THE ARC, AND THE FIRST FOUND BY AN ACTION RATHER THAN AN INSTRUMENT.**
+
+> **THE ONLY COMPLETE CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.**
+
+**CHAT 1's INDEPENDENT COUNT, programmatically over the full enumeration (not a cut view):** the literal
+index-as-argument form appears **38 times on the pair-2 tip — `cd2` 23, `fx9` 10, `ab4` 5**, and
+**NONE in `pw1.mjs`**. **It reconciles with TOOLS' figures exactly:** cd2's 27 = its 23 hidden plus the
+4 the census already saw; 39 + 38 = **77**.
+
+## RULED FOR VW1's THIRD PAIR — 2026-09-17
+
+- **CONVERT the 38** to named categories.
+- **PARK `b1`'s and `cd1`'s CD3 successors** — the regroup is SUPPOSED to break them.
+- **INVERT CHECK 7:** any `.wz-strip-item` reference that is NOT a `data-category` selector is an
+  offender, with NAMED EXEMPTIONS — **rather than teaching the guard a third spelling.** *(The same
+  inversion as item 148's: a guard keyed on the forms someone thought of only ever sees those forms.)*
+- **CORRECT THE CENSUS TO 77**, with both breakdowns and HOW EACH FORM WAS FOUND.
+
+**SWEEP TOOLS REPORTS BACK, NOT RIDING VW1:** the helper's `if (item) item.click()` **silently no-ops**,
+so **a driver can press a control that is ABSENT and the check still passes.** **If the shape is
+widespread it becomes ITS OWN ITEM** — it would take **151**. *(Sibling of "a driver can lie by dying OR
+by doing nothing": the dying half is known; this is the doing-nothing half, and it passes.)*
+
+## BOX — TOOLS' GRANT CLEARED, A THIRD GRANTED — 2026-09-17
+
+**The two-pair grant is SPENT and TOOLS CORRECTLY STOPPED.** Chat 1 cleared it, verified the box (0
+runners, 0 harnesses), and **GRANTED TOOLS A THIRD PAIR AS ITS OWN GRANT — token
+`tools-vw1-pair3-20260917`.**
+
+## CHAT 1's CALL — TOOLS CONTINUES; PW2 HOLDS — 2026-09-17
+
+**Applying the present-and-ready rule, chat 1 keeps the box with TOOLS. The reason is not seniority in
+the queue, it is that PW2 CANNOT COMPLETE ITS OBLIGATION YET:**
+- **PW2's steps 2 and 3 need `data-category` ON `main`**, and it arrives only when VW1 merges — which
+  needs VW1's third pair clean. Measured: **0 occurrences in `src/` on `origin/main` (`c190e9e`)**.
+- **So a PW2 pair run now would be INVALIDATED BY PW2's OWN HANDLE WORK** — the alignment edits
+  `pw1.mjs` and `pw2.mjs`, both stamped files. **PW2 first = two PW2 pairs.**
+- **READY MEANS READY TO COMPLETE, NOT MERELY READY TO RUN.** A clean branch and a written fix are not
+  readiness when the merge obligation is one list. *(Fable's "one lane, one merge" is what makes this
+  the cheap order.)*
+- **The 38 sites are in `cd2`, `fx9` and `ab4` — none in PW2's files**, so the third pair does not widen
+  PW2's surface further.
+
+**PW2's re-stamp is announced when VW1 lands.** **ERRATA absent: 147 keeps its place, not the box.**
+
+## BAND — READY MEANS READY TO COMPLETE — 2026-09-17
+
+> **READY MEANS READY TO COMPLETE, NOT READY TO RUN.** *(Beside the present-and-ready rule.)*
+
+*(Chat 1's reason for holding PW2, promoted by Fable: PW2's branch was clean and its fix written, but
+steps 2 and 3 need `data-category` on `main` — measured at zero in `src/` — so running it first would
+have bought TWO PW2 pairs.)*
+
+## ITEM 151 — THE SILENT DRIVER ACT — OPENS 2026-09-17
+
+**OPENS. Harness. TOOLS' census TRAVELS WITH IT; the builder is assigned when the box frees.**
+
+**TOOLS SWEPT ADDITION B: 156 LIVE INSTANCES ACROSS 49 FILES** — **128 optional-chain acts, 28
+if-guarded** (11 more commented and excluded) — reaching **`item121`, `item126`, `fx5`, `item112a`** and
+more. **EVERY ONE LETS A DRIVER PRESS OR READ SOMETHING ABSENT AND PASS.**
+
+> **A DRIVER CAN LIE BY DYING OR BY DOING NOTHING AND PASSING — THE SECOND IS THE ONE THAT GOES GREEN.**
+
+**SCOPE NOTE FOR WHOEVER BUILDS IT: the fix is A NAMED FAILURE AT THE SITE — as TOOLS did for
+`clickCategory` — NOT a removal of the guard.** *(Removing the guard trades a silent pass for a crash
+that reports nothing: the existing law is that a driver must probe, fail a check, and record both ways.)*
+
+**TOOLS REFUSED TO RIDE IT ON VW1, CORRECTLY:** a 49-file behavioural change inside a rail regroup makes
+the next red ambiguous — **exactly what the two-commit split exists to prevent.**
+
+## VW1's THIRD-PAIR BUILD — REGISTERED AT `fcebc50` — 2026-09-17
+
+- **FOUR PARKS, NOT TWO.** `b1` and `cd1` each pin the old order **TWICE — once live, once in a gated
+  `pok()` twin.** **The parked leg's failures were DIFFERENT CHECKS from the default leg's.** *(The
+  both-legs-always-run ruling earning itself inside a single turn: the gated twins are index assertions
+  NO DRIVER CONVERSION COULD HAVE REACHED, and a success-chained pair would never have seen them.)*
+- **CHECK 7 INVERTED TO ZERO OFFENDERS WITH SIX NAMED EXEMPTIONS.** **The assignment case was resolved
+  BY A DEPENDENCY CHECK, NOT A SPELLING EXEMPTION** — *exempting the spelling would have reopened the
+  hole the inversion exists to close.*
+- **TWO LATENT OFFENDERS CONVERTED, BOTH PREVIOUSLY GREEN FOR THE WRONG REASON:** `item133` pressed
+  whichever tab happened to be first; `item83f` selected by label text behind a swallowing guard.
+- **CHECK 7 CARRIED A LIVE CRASH:** template-eaten escapes turned `\b` into a **BACKSPACE BYTE**, found
+  ONLY by extracting the logic and RUNNING it. **Second instrument this arc broken by invisible bytes
+  while passing every syntax check** (item 141's classifier was the first).
+
+> **`node --check` PROVES A FILE PARSES, NOT THAT ITS REGEXES COMPILE — RUN THE LOGIC.**
+
+**CHAT 1's VERIFICATION, and one note:**
+- **`fcebc50` is pushed; the box is idle; and the third-pair grant was already written at 17:54
+  (`tools-vw1-pair3-20260917`) — SO TOOLS IS NOT WAITING ON A GRANT. It can run now.**
+- **Commit 3's subject says "the two parks" while the accounting is FOUR** (two files × live + gated
+  twin). The ledger records four; the parked leg's `pok()` counts are the check. *(Park count, not
+  green — a subject line is not an accounting.)*
+- **Both successors now compare the eight labels AS A SET** (sorted), so ORDER is no longer asserted
+  there at all — `vw1.mjs` is what asserts the new order. *(Correct: the re-ruled sequence should be
+  asserted in ONE place, by the item that rules it.)*
+
+## VW1 (ITEM 134) — MERGED — 2026-09-17
+
+**`item134-vw1-rail` @ `39fdf0c` MERGED at `ec31d74` — TAKE WORD, chat 1.** Verified before merging:
+trial merge against `origin/main` clean (single tree, no conflict lines); diff scope matches the offer
+(26 files — 22 harness, `Cascade.tsx`, the new `vw1.mjs`, two docs files); tip past `163b628` is
+docs-only. **PUSHED.** `data-category` now exists on `main` (measured: 1 file in `src/`).
+
+**⚠ A DOCUMENTATION ARITHMETIC FINDING, NOT A CODE DEFECT — the offer's own §2 breakdowns disagree.**
+**By-index sums to 77** (19+24+15+11+2+2+2+2). **By-form, as written, sums to 78**
+(33+5+38+1+1) — **one more than the stated total and the by-index table.** Chat 1 confirms it
+programmatically, not by eye. **The by-index table is the one that matches the stated 77**, so the
+safer reading is that the by-form table over-counts by one somewhere (or double-names one site under
+two forms) — **not investigated further; the finding is left for TOOLS to trace, since it is TOOLS'
+census and the discrepancy is in TOOLS' own document.** Non-blocking: the code conversion is verified
+by the suite stamp, not by this table.
+
+**CHAT 1's SPOT-CHECK on `cd2`'s park count, the newest addition (pair 3):** active `pok(` calls
+13 → 13 across `d238a6f`..`163b628` — **unchanged**, consistent with TOOLS' "nothing lost" claim even
+where chat 1's raw count (by a different measure) doesn't match TOOLS' stated 10→10 exactly; the
+qualitative claim holds either way.
+
+**BOX: TOOLS' grant cleared. PW2's re-stamp ANNOUNCED — token `pw2-restamp-20260917`.**
+
+## PARK AUDIT — AGAINST THE PRE-FIX READING, NOT JUST THE POST-FIX TOTAL — 2026-09-17
+
+**Registered, TOOLS:** pair 3's park counts were compared to their READINGS **BEFORE THE FIX** — `b1`
+4→4, `cd1` 10→10, `cd2` 10→10 — so the claim is **"nothing was lost in the replacement,"** not "the
+totals look right now."
+
+> **AUDIT A PARK COUNT AGAINST ITS READING BEFORE THE FIX — AN UNCHANGED TOTAL AFTERWARDS PROVES NOTHING
+> ON ITS OWN.**
+
+*(Sharpens "park count, not green": a total that merely LOOKS unchanged could still have dropped one
+park and gained an unrelated one. Only a reading taken before the fix, and diffed against after, rules
+that out.)*
+
+## ITEM 152 — CONTROL CHARACTERS OUTSIDE STRING LITERALS — OPENS 2026-09-17
+
+**OPENS. Harness/tooling. ROUTED TO TOOLS** — it has the most direct context (found the third instance
+of the class inside its own offer), and the work is **browserless**, so it can run while the box holds
+PW2's re-stamp.
+
+**THE PATTERN IS NOW A CLASS, NOT THREE INCIDENTS: check 7's regex, TOOLS' own ledger band line, and
+ERRATA's item-141 classifier — each a `\b` or similar EATEN by a heredoc or template, each PASSING a
+syntax check or a plain `grep` while broken.**
+
+**THE BUILD: a byte-level check over the ledger and the harness for control characters outside string
+literals, RUN AS PART OF THE SUITE** — so the next one fails a run rather than being found by eye.
+
+> **A GREP READS TEXT, NOT BYTES — A CONTROL CHARACTER IS INVISIBLE TO EVERY INSTRUMENT THAT READS TEXT.**
+
+**INTERIM PRACTICE, ALL LANES, UNTIL 152 LANDS: write regex and ledger lines through `printf` or
+`String.raw`, never through a heredoc or a template that interpolates.**
+
+**CHAT 1's OWN CHECK, ON THE RECORD:** scanned `docs/open-threads.md` byte-for-byte for control
+characters outside tab/LF/CR — **ZERO FOUND.** Chat 1's ledger-writing method (a plain JS string array,
+written through the file-write tool, never a shell heredoc or an interpolating template) was already
+the lawful shape; recorded here as the first thing 152's own check should confirm once it exists.
+
+## TOOLS' DIFF-DIRECTION NEAR-MISS — REGISTERED — 2026-09-17
+
+**Registered with its fix:** diff from the ACTUAL MERGE-BASE rather than trusting the first read. The
+unfixed version would have reported `main` rewriting `Cascade.tsx` INDEPENDENTLY — **a false alarm that
+sends a lane hunting a phantom.**
+
+Registry: next free **153**.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -14106,6 +15003,11 @@ Railway image **linux/amd64**, container digest
 **SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH:**
 - `index-8geTcfLU.js` — served `d0851aa07eb71a6ff9a2777dda455794` **==** stamped
 - `index-DwJr4Phd.css` — served `17a3b3b11d57132b7e92e4d2402266ed` **==** stamped
+
+**⚠ SUPERSEDED IN PART 2026-09-17 — the chaining condition only.** "Chaining the parked leg on the
+default's exit 0" is REFUSED by Fable's ruling: **BOTH LEGS ALWAYS RUN** (see *RULING — BOTH LEGS
+ALWAYS RUN*, below). The wait-and-claim half stands: one process still waits, claims, and runs both
+legs in sequence, so no gap opens at either seam. Kept as written.
 
 **THE FIRST ATTEMPT VOIDED AT FILE 2 OF 76**, when a run launched from `writer-studio-fx17` claimed
 the box **in the gap between chat 1's pre-flight check and its launch**. The second attempt used an

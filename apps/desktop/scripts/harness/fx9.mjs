@@ -56,12 +56,22 @@ const freshDesk = async (app, width = 1400, height = 900) => {
 // Strip category indices (cd2.mjs's own verbatim roster/order): Journal=0,
 // Page=1, Plan=2, Drawers=3, Shelf=4, Settings=5, Themes=6, Trash=7 (Trash
 // now pinned to the strip's foot, below Settings/Themes).
-const clickCategory = async (app, idx) => {
-  await app.evalJs(`(() => {
-    const items = [...document.querySelectorAll('.wz-strip-item')];
-    const item = items[${idx}];
-    if (item) item.click();
+const clickCategory = async (app, cat) => {
+  // VW1 — BY NAME, AND IT FAILS LOUDLY.
+  // This took an INDEX and did `if (item) item.click()`: silently nothing when
+  // the index was out of range, and silently the WRONG TAB when it was in
+  // range. The regroup made the second case real — [1] stopped being Page —
+  // and three files crashed downstream instead of here, where the cause was.
+  // An index passed as an argument is also invisible to every static census
+  // looking for `[N]` beside the selector, which is why this form survived
+  // VW1's own conversion sweep. Named handle, and a throw at the site.
+  const hit = await app.evalJs(`(() => {
+    const el = document.querySelector('.wz-strip-item[data-category=${cat}]');
+    if (!el) return false;
+    el.click();
+    return true;
   })()`);
+  if (!hit) throw new Error(`clickCategory: no strip tab with data-category=${cat}`);
 };
 
 const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? el.getBoundingClientRect().toJSON() : null; })()`);
@@ -158,7 +168,7 @@ const openDrawersOn = async (app, boardId) => {
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'FX9 fixture board framed' });
   await sleep(250);
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip mounted (FX9 fixture)' });
-  await clickCategory(app, 3); // Drawers
+  await clickCategory(app, 'drawers'); // Drawers
   await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open (FX9 fixture)' });
   await sleep(200);
 };
@@ -315,19 +325,19 @@ await withHarness(async (app) => {
   // never grow a fold (S1's own explicit exclusion: short action surfaces,
   // a hinge there is chrome for its own sake).
   // ==========================================================================
-  await clickCategory(app, 1); // Page
+  await clickCategory(app, 'page'); // Page
   await sleep(200);
   const pageHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: PagePanel never grows a fold', pageHasFold === false, String(pageHasFold));
-  await clickCategory(app, 2); // Plan
+  await clickCategory(app, 'plan'); // Plan
   await sleep(200);
   const planHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: PlanPanel never grows a fold', planHasFold === false, String(planHasFold));
-  await clickCategory(app, 5); // Settings
+  await clickCategory(app, 'settings'); // Settings
   await sleep(200);
   const settingsHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: CascadeSettingsPanel never grows a fold', settingsHasFold === false, String(settingsHasFold));
-  await clickCategory(app, 6); // Themes
+  await clickCategory(app, 'theme'); // Themes
   await sleep(200);
   const themeHasFold = await app.evalJs("!!document.querySelector('.wz-cascade-panel .wz-fold')");
   ok('Non-goal: CascadeThemePanel never grows a fold', themeHasFold === false, String(themeHasFold));
@@ -338,12 +348,12 @@ await withHarness(async (app) => {
   // (B2 S1/S3 retired the Shelf's old list whole; B1 S5 built Trash minimal
   // from the start). Proven live here rather than just asserted from
   // reading the source, so this is a checked fact, not a guess.
-  await clickCategory(app, 4); // Shelf
+  await clickCategory(app, 'shelf'); // Shelf
   await sleep(200);
   const shelfShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
   ok('DISCLOSED DISCREPANCY: ShelfPanel currently renders no list at all (one plain door button, B2 S1/S3) — no fold was added; the brief\'s own "ShelfPanel... render[s] ... lists" premise does not match current source',
     shelfShape.hasFold === false && shelfShape.buttonCount === 1, JSON.stringify(shelfShape));
-  await clickCategory(app, 7); // Trash
+  await clickCategory(app, 'trash'); // Trash
   await sleep(200);
   const trashShape = await app.evalJs("({ hasFold: !!document.querySelector('.wz-cascade-panel .wz-fold'), buttonCount: document.querySelectorAll('.wz-cascade-panel-body button').length })");
   ok('DISCLOSED DISCREPANCY: TrashPanel currently renders no list at all (one plain door button, B1 S5) — no fold was added; same premise gap as ShelfPanel',
@@ -353,7 +363,7 @@ await withHarness(async (app) => {
   // S2 — persistence: close/reopen the cascade (no reload), a full reload,
   // and the id-keyed rename proof.
   // ==========================================================================
-  await clickCategory(app, 3); // back to Drawers
+  await clickCategory(app, 'drawers'); // back to Drawers
   await sleep(200);
   // Collapse the cluster.
   await app.evalJs(`${foldByTitle('S1 Grammar Project')}.querySelector('.wz-fold-header').click()`);
@@ -374,7 +384,7 @@ await withHarness(async (app) => {
   const panelClosedAfterDock = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
   ok('S2 setup: the cascade panel genuinely closed — DrawersPanel unmounted whole (no survey to dock, so closePanel() returns to REST)', panelClosedAfterDock === true, String(panelClosedAfterDock));
   // Reopen the SAME category — a fresh DrawersPanel mount, no page reload.
-  await clickCategory(app, 3);
+  await clickCategory(app, 'drawers');
   await sleep(250);
   const collapsedAfterReopen = await app.evalJs(`${foldByTitle('S1 Grammar Project')}.dataset.collapsed`);
   ok('S2: a fold survives closing and reopening the cascade (no page reload) — read fresh off the shared store on remount, not stale component state',
@@ -574,7 +584,7 @@ await withHarness(async (app) => {
     const cascadeAbsentWhenClosed = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
     ok(`S4 @ ${width}px setup: the cascade panel is genuinely absent with no category selected`, cascadeAbsentWhenClosed === true, String(cascadeAbsentWhenClosed));
     // Open Drawers — the fixture's own Loose group opens collapsed by default (7 docs).
-    await clickCategory(app, 3);
+    await clickCategory(app, 'drawers');
     await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: `S4 @ ${width}px Drawers open` });
     await sleep(200);
     const paperOpenCollapsed = await rectOf(app, paperSel);

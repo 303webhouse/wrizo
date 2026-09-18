@@ -84,7 +84,7 @@ const waitSoft = async (app, expr, opts) => {
 const openCascadePage = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip' });
   if (!(await app.evalJs("!!document.querySelector('.wz-pageface-title')"))) {
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open' });
   }
 };

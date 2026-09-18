@@ -154,14 +154,17 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
 // strip's current ORDER into every probe that uses it, so the day a category is
 // added, removed or reordered, a run does not report a moved control — it
 // silently presses a DIFFERENT one and asserts against the wrong panel. The
-// failure is not a red; it is a green about something else. (TOOLS is
-// converting the existing index-based sites on main; this file is written the
-// new way from the start rather than becoming one more of them.)
+// failure is not a red; it is a GREEN ABOUT SOMETHING ELSE.
 //
-// `.wz-strip-item` carries no per-category class, so the handle is the label's
-// own text — the name the writer reads, which is also what a ruling would
-// change deliberately rather than incidentally.
-const STRIP_PLAN = "[...document.querySelectorAll('.wz-strip-item')].find(b => b.querySelector('.wz-strip-label')?.textContent?.trim() === 'Plan')";
+// THE HANDLE IS `data-category`, AS OF VW1. This file first used the label's
+// own text, because `.wz-strip-item` carried no per-category attribute — which
+// worked, but made the probe depend on a LEXICON TERM: rewording "Plan" in the
+// desk lexicon would have broken every check that reached the panel, and broken
+// them silently in the same green-about-something-else way. VW1 puts the
+// category's own id on the element (`data-category={item.id}`), so the handle is
+// now the thing the code calls it rather than the word the writer reads. A
+// rewording cannot touch it.
+const STRIP_PLAN = "document.querySelector('.wz-strip-item[data-category=plan]')";
 
 // The chrome RECEDES while the writer types (the vanishing law) and takes
 // `pointer-events` with it, so a band control is genuinely unreachable until a
@@ -186,7 +189,13 @@ const wakeChrome = async (app) => {
 const openPlan = async (app) => {
   const already = await app.evalJs(`!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && ${STRIP_PLAN}?.getAttribute('aria-pressed') === 'true')`);
   if (already) return true;
-  const there = await app.evalJs("document.querySelectorAll('.wz-strip-item').length > 2");
+  // NAME AND ASSERTION AGREE NOW. This read `.wz-strip-item').length > 2` —
+  // a COUNT, which was only ever a proxy for "index 2 exists" back when the
+  // handle was an index. Under a named handle the count is the wrong
+  // question twice over: a strip of three categories with NO Plan passes it,
+  // and a strip that reorders passes it while the press lands elsewhere. The
+  // check is named for the Plan category, so it asserts the Plan category.
+  const there = await app.evalJs("!!document.querySelector('.wz-strip-item[data-category=plan]')");
   if (!there) { ok('DRIVER: the cascade strip is mounted with a Plan category', false, 'strip missing'); return false; }
   await wakeChrome(app);
   const opened = await pressEl(app, STRIP_PLAN, 'the strip Plan category opens');

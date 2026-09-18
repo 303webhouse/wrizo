@@ -158,7 +158,12 @@ await withHarness(async (app) => {
     stale.hasNew, JSON.stringify(stale));
 
   // and again with the cascade open, which is where the other derivations live
-  await clickOrFail(app, '.wz-strip-item',
+  // VW1 — NAMED, not first. A bare `.wz-strip-item` selects whichever tab
+  // happens to be first, so this pressed Journal before the regroup and Page
+  // after it. It passed either way because ANY tab opens the cascade — green
+  // for the wrong reason, and invisible to a suite. The setup wants the
+  // cascade open, so it now names the tab it presses.
+  await clickOrFail(app, '.wz-strip-item[data-category=page]',
     'S3 (setup): the cascade opens, so the list derivations are on screen');
   await sleep(600);
   const listed = await app.evalJs(`(() => {
@@ -186,7 +191,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page framed' });
   await sleep(700);
 
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1]?.click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]')?.click()");
   await sleep(600);
 
   const reachable = await app.evalJs("!!document.querySelector('.wz-pageface-title-reach')");

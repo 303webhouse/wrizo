@@ -184,12 +184,18 @@ const wakeChrome = async (app) => {
 // to open would fail later, somewhere else, for a reason that reads as a
 // product bug. Ask first.
 const openPlan = async (app) => {
-  const already = await app.evalJs("!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && [...document.querySelectorAll('.wz-strip-item')][2]?.getAttribute('aria-pressed') === 'true')");
+  const already = await app.evalJs("!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && document.querySelector('.wz-strip-item[data-category=plan]')?.getAttribute('aria-pressed') === 'true')");
   if (already) return true;
-  const there = await app.evalJs("document.querySelectorAll('.wz-strip-item').length > 2");
+  // NAME AND ASSERTION AGREE NOW. This read `.wz-strip-item').length > 2` —
+  // a COUNT, which was only ever a proxy for "index 2 exists" back when the
+  // handle was an index. Under a named handle the count is the wrong
+  // question twice over: a strip of three categories with NO Plan passes it,
+  // and a strip that reorders passes it while the press lands elsewhere. The
+  // check is named for the Plan category, so it asserts the Plan category.
+  const there = await app.evalJs("!!document.querySelector('.wz-strip-item[data-category=plan]')");
   if (!there) { ok('DRIVER: the cascade strip is mounted with a Plan category', false, 'strip missing'); return false; }
   await wakeChrome(app);
-  const opened = await pressEl(app, "[...document.querySelectorAll('.wz-strip-item')][2]", 'the strip Plan category opens');
+  const opened = await pressEl(app, "document.querySelector('.wz-strip-item[data-category=plan]')", 'the strip Plan category opens');
   if (!opened) return false;
   await sleep(300);
   return true;

@@ -106,7 +106,7 @@ const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
 };
 
@@ -808,7 +808,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'framed page for Drawers panel' });
   await sleep(250);
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip mounted (Drawers seed)' });
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][3].click()"); // Drawers (index 3: A[0] + B[1,2] + C[3,4,5])
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers (index 3: A[0] + B[1,2] + C[3,4,5])
   await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open' });
   await sleep(200);
   const drawersState = await app.evalJs(`(() => {
@@ -845,7 +845,7 @@ await withHarness(async (app) => {
   // for the tiles to genuinely render before clicking (a fresh BoardEditor
   // mount, useCascade's own state starts closed).
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip remounted on Alpha Board' });
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][3].click()"); // Drawers
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
   await app.waitFor("!!document.querySelector('.wz-drawers-tile-anchor')", { label: 'Drawers panel reopened (doc-tile travel)' });
   await app.evalJs("document.querySelector('.wz-drawers-tile-anchor').click()"); // the anchor (Loose Doc)
   await sleep(400);
@@ -857,7 +857,7 @@ await withHarness(async (app) => {
   await app.goto('/journal'); // find-or-create the Journal Board so it genuinely exists
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board exists (Drawers roster probe)' });
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'strip mounted on Journal Board' });
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][3].click()"); // Drawers
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
   await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open (system-board-absence probe)' });
   await sleep(200);
   const drawersNoSystemTiles = await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile-title')].map(t => t.textContent)");
@@ -946,7 +946,7 @@ await withHarness(async (app) => {
       shelfFramedShape.deskFramePresent && shelfFramedShape.stripPresent && shelfFramedShape.stripCount === 8 && shelfFramedShape.boardCanvasPresent,
       JSON.stringify(shelfFramedShape));
 
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][3].click()"); // Drawers
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
     await sleep(200);
     const drawersAtWidth = await app.evalJs("!!document.querySelector('.wz-drawers-tiles')");
     ok(`S8 @ ${width}px: the Drawers panel mounts correctly too (large tiles, same chrome at both reference widths)`, drawersAtWidth === true, String(drawersAtWidth));

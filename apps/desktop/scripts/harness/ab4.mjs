@@ -80,12 +80,22 @@ window.__pointerSeq = function(selector, dx, dy, opts) {
 };
 `;
 
-const clickCategory = async (app, idx) => {
-  await app.evalJs(`(() => {
-    const items = [...document.querySelectorAll('.wz-strip-item')];
-    const item = items[${idx}];
-    if (item) item.click();
+const clickCategory = async (app, cat) => {
+  // VW1 — BY NAME, AND IT FAILS LOUDLY.
+  // This took an INDEX and did `if (item) item.click()`: silently nothing when
+  // the index was out of range, and silently the WRONG TAB when it was in
+  // range. The regroup made the second case real — [1] stopped being Page —
+  // and three files crashed downstream instead of here, where the cause was.
+  // An index passed as an argument is also invisible to every static census
+  // looking for `[N]` beside the selector, which is why this form survived
+  // VW1's own conversion sweep. Named handle, and a throw at the site.
+  const hit = await app.evalJs(`(() => {
+    const el = document.querySelector('.wz-strip-item[data-category=${cat}]');
+    if (!el) return false;
+    el.click();
+    return true;
   })()`);
+  if (!hit) throw new Error(`clickCategory: no strip tab with data-category=${cat}`);
 };
 
 // Seed a journal-entries row via localStorage while parked on the Desk (the
@@ -158,7 +168,7 @@ await withHarness(async (app) => {
     await sleep(250);
     await app.emulateDpr(1, LAPTOP_W, 900);
 
-    await clickCategory(app, 1); // Page
+    await clickCategory(app, 'page'); // Page
     await sleep(200);
     const pinButtonPresent = await app.evalJs("!!document.querySelector('.wz-pageface-verb-pin')");
     ok('S2: "Pin to a Board..." joins Move/Copy and Port in the Page face\'s sending row', pinButtonPresent === true);
@@ -457,7 +467,7 @@ if (process.env.HARNESS_PARKED === '1') {
   //     await sleep(250);
   //     await app.emulateDpr(1, width, 900);
   //
-  //     await clickCategory(app, 2); // Journal, Page, Plan(2), Drawers, Shelf, Settings, Theme
+  //     await clickCategory(app, 'plan'); // Journal, Page, Plan(2), Drawers, Shelf, Settings, Theme
   //     await sleep(200);
   //     await app.evalJs("document.querySelector('.wz-cascade-link')?.click()"); // "Open..." -> the board list survey
   //     await sleep(200);
@@ -509,7 +519,7 @@ if (process.env.HARNESS_PARKED === '1') {
   //     await sleep(250);
   //     await app.emulateDpr(1, LAPTOP_W, 900);
   //
-  //     await clickCategory(app, 2);
+  //     await clickCategory(app, 'plan');
   //     await sleep(150);
   //     await app.evalJs("document.querySelector('.wz-cascade-link')?.click()");
   //     await sleep(150);
@@ -577,7 +587,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await sleep(450);
     await app.emulateDpr(1, width, 900);
 
-    await clickCategory(app, 2);
+    await clickCategory(app, 'plan');
     await sleep(250);
     const boardRows = await app.evalJs("[...document.querySelectorAll('.wz-cascade-boardrow-title')].map(t => t.textContent)");
     pok(`PARKED (was "S1 @ ${width}px: Plan's survey shows the board list") — PW1 S1/PW3: the PANEL is the list now, and it lists the boards CONNECTED to this page rather than every board in its drawer. Live successor: pw1.mjs's own S1 section`,
@@ -658,7 +668,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await sleep(450);
     await app.emulateDpr(1, LAPTOP_W, 900);
 
-    await clickCategory(app, 2);
+    await clickCategory(app, 'plan');
     await sleep(200);
     const rowThere = await app.evalJs("!!document.querySelector('.wz-cascade-boardrow-open')");
     if (!rowThere) {

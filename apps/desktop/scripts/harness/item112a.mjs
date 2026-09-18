@@ -144,7 +144,7 @@ const openTutorByGrip = async (app) => {
   await sleep(400);
 };
 const openFarLeft = (app) => app.evalJs(`(() => {
-  const b = document.querySelectorAll('.wz-strip-item')[0];
+  const b = document.querySelector('.wz-strip-item[data-category=journal]');
   if (!b) return null;
   b.click();
   return b.getAttribute('aria-label') || b.textContent;

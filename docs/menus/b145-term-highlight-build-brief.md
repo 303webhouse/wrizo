@@ -90,10 +90,10 @@ Fable may prefer (ii); the brief builds whichever is stated, and S5 asserts it.*
 — the same flip `::selection` already makes.
 - **The fill is hand-derived from brass** (tinted toward white by *t*; **t ≈ 0.35 → `#ffbc59`**; **TAG-Q3 is
   Nick's**). Text on it: **10.75:1.**
-- **Not weight** — font properties are not among those that apply to highlight pseudo-elements; a weight
-  change would also reflow the paragraph under the caret.
-- **Not underline** — **item 122 made underline a WRITER's mark.** *(This survives the reversal — it is why
-  S2b's second channel, if any, is an OVERLINE.)*
+- **Not weight** — **standing finding F1** (`tag-colour-foundation.md` §4b): weight cannot be set through
+  the highlight API, and would reflow the paragraph under the caret if it could.
+- **Not underline** — **standing finding F2** (`tag-colour-foundation.md` §4b): underline belongs to the
+  writer. *It is why S2b's second channel, if any, is an OVERLINE.*
 
 **⚠ THE TRADE, carried into the report:** on the **page**, a lighter fill separates the tag from a selection
 (**fill vs brass: 1.29:1 at t 0.35**) but sinks it into the paper (**fill vs paper: 1.43:1**); darker does the
@@ -114,11 +114,19 @@ orders custom highlights **among themselves only.**
 - **translucent selection does not rescue the page** (never better than **1.20:1**), and on the card it
   **drops selected plain text below 4.5:1 by α 0.70.**
 
-**THEREFORE THE FILL CHANNEL CANNOT PASS THIS TEST.** **Nick holds the choice (Q-OV1).** The desk's lean is a
-**second channel** — an orange **overline** on the tag, a decoration line that is *not* the writer's
-underline.
+**THEREFORE THE FILL CHANNEL CANNOT PASS THIS TEST.** **Nick holds the choice (Q-OV1)**, with two leans
+before him — **Fable: (iii) accept it** (a selection is transient; the tag is visible the rest of the
+time); **the desk: (i) a second channel**, an orange **overline**. **This brief is buildable under
+either:**
 
-**⛔ S0 MUST MEASURE, IN THE SHIPPING ENGINES (Electron 31's Chromium, and Edge), whether a LOWER custom
+**IF NICK RULES (iii) — ACCEPT:** **no decoration measurement is needed.** Build the fill as S2
+specifies. **The harness asserts the documented behaviour:** a tagged word under a selection shows the
+selection only; the same word, unselected, shows `--tag-fill`; the active chip stays on throughout.
+**Record in the build report that the overlap hides the tag by the spec, by ruling.**
+
+**IF NICK RULES (i) — THE OVERLINE:** proceed to the measurement below.
+
+**⛔ UNDER (i) ONLY — S0 MUST MEASURE, IN THE SHIPPING ENGINES (Electron 31's Chromium, and Edge), whether a LOWER custom
 highlight's text-decoration survives an UPPER opaque `::selection`.** **This desk has not measured it and
 will not assert it.** Record the answer in the build report:
 - **if it survives** → build the overline as the second channel (pending Nick's word on Q-OV1);
@@ -170,9 +178,11 @@ behaviour; it never assumes the API.**
 6. **Thumbnails are never painted.**
 7. **Selection coexists:** select a painted term → **`::selection` is still brass**, the fill is still
    `--tag-fill`; **the selection survives** a tag press (the API path never destroys it).
-7b. **⛔ THE OVERLAP, AS MEASURED IN S0** — a real selection over a tagged word, and the harness asserts
-   **whatever S0 recorded**: the second channel visible under the selection, or (if S0 stopped the build)
-   nothing ships. *A pixel read of the rendered overlap, not an assumption about the stacking order.*
+7b. **⛔ THE OVERLAP, AS RULED** — a real selection over a tagged word. **Under (iii):** assert the tag is
+   hidden under the selection and restored when the selection clears, with the chip on throughout.
+   **Under (i):** assert whatever S0 recorded — the overline visible under the selection, or (if S0 stopped
+   the build) nothing ships. *A pixel read of the rendered overlap either way, never an assumption about
+   the stacking order.*
 8. **Colour:** the painted fill resolves from `--tag-fill`, **which must never equal `--brass`** — the
    only separator between a tag and a selection outside the overlap. Never a literal.
 9. **One register:** a static assertion that no second decoration pass walks the contenteditable.
