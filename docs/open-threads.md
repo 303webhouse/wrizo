@@ -6853,7 +6853,147 @@ not merely as 152's downstream effect.)*
 `STRIP_PLAN` successor — **both riding the branch's NEXT LEGITIMATE MOVE rather than moving a stamped
 tree.** *(Unchanged; restated at the point 138 makes them relevant again.)*
 
-Registry: next free **153**.
+## TOOLS' PARK CONFORM — MERGED — 2026-09-18
+
+**`park-conform-vw1` @ `cddd343` MERGED at `59a4fd6` — TAKE WORD, chat 1, under the standing
+harness/test-seam exemption (no Fable review needed).** **Stamp verified: 90/90 both legs,
+tree=`cddd343`, bundle=`index-DfFOCr6L.js`/586771b, same bundle both legs, no `+Ndirty`.** Four files,
+all harness/test-seam, no product code. Trial merge clean. **PUSHED; grant cleared.**
+
+## ITEM 154 — THE SILENT ACT INSIDE `evalJs` STRINGS — OPENS 2026-09-18
+
+**OPENS. Harness → TOOLS, AFTER 151.** TOOLS' CENSUS ATTACHED.
+
+**TOOLS BUILT THE RATIFIED AST TOOL** (the TypeScript compiler API, not a regex) **and got ZERO across
+90 files.** **INVESTIGATED THE EMPTY RESULT RATHER THAN TRUSTING IT** — per the band just recorded on
+152 — **and found the TOOL correct and the population ELSEWHERE:**
+
+- **134 of 152 sites sit INSIDE `app.evalJs("…")` STRINGS** — page-side text a structural parser
+  cannot see.
+- **18 GENUINE OUTER DRIVER SITES remain.**
+- **That 18 is a LOWER BOUND** — line-based quote-parity breaks on multi-line templates.
+
+> **AN INSTRUMENT THAT READS STRUCTURE IS BLIND TO TEXT INSIDE STRINGS — A ZERO FROM THE RIGHT TOOL CAN
+> MEAN THE POPULATION IS ELSEWHERE.**
+
+**⚠ REOPENED 2026-09-18 — THE 18 DID NOT SURVIVE A SECOND LOOK.** See *ITEM 151's POPULATION MAY BE
+ZERO*, below — the 18 was the SAME heuristic that produced 152, read from the other side of its own
+miscount, never a second count. The ruling below is kept as written for what it settled correctly: 154
+is real and split from 151 regardless of what 151 turns out to hold.
+
+**RULED: ITEM 151 KEEPS THE 18 OUTER SITES, BRIEF UNCHANGED. THE 134 BECOME ITEM 154, WITH ITS OWN
+BRIEF:**
+- **A TWO-PASS PARSER** extracting each `evalJs` argument and parsing IT as its own JS.
+- **A REAL BOUNDARY CENSUS FIRST, not the sample** — 152 as reported is TOOLS' own count of a lower
+  bound, not yet a census of the in-string population.
+- **A STATED VERIFICATION FOR IN-STRING REWRITES: byte comparison of the extracted argument, never
+  "it still parses."** *(A page-side string that still parses as JS can still have silently changed
+  meaning — the same failure item 152 and item 141's classifier both share: a syntax check proves the
+  file parses, not that the edit did what it was meant to.)*
+
+**SPLITTING RATHER THAN WIDENING, because the two differ in INSTRUMENT, EDIT RISK, and ORDER OF
+MAGNITUDE** — one number would let the harder 88% be IN SCOPE without being SCOPED, and would make any
+red AMBIGUOUS between two kinds of change. **THE HARM IS IDENTICAL IN BOTH — 154 is LATER, not
+LESSER.**
+
+**TOOLS' S0 at `20216f0` STANDS AS WRITTEN** — narrower in description than the truth (it did not yet
+know the 134/18 split) but CORRECT in what it said. **THE ROUTING NOTICE WENT VIA THE LEDGER, which is
+right: NO SESSION WAS IDENTIFIABLY INK OR FIX, and guessing risked the wrong peer.**
+
+## BOX — TOOLS' NEXT TURN: THE 18 OUTER SITES — 2026-09-18
+
+**Grant renewed for the actual item-151 build (18 outer sites) — token `tools-item151-build-20260918`.**
+Box was idle when granted.
+
+## ITEM 151's POPULATION MAY BE ZERO — ARCHITECTURAL, NOT ARITHMETIC — 2026-09-18
+
+**TOOLS RAN THE AST TOOL AGAINST REAL FILES** (verified it walked all 90 rather than silently skipping)
+**AND FOUND ZERO OUTER SITES, TWICE.** All three candidates it would have called outer AN HOUR AGO
+(`ab2:565`, `ab3:346`, `tu5:453`) sit INSIDE `evalJs` arguments.
+
+**THE STRUCTURAL REASON: the outer Node process has NO DOM ACCESS** — it can only send text to
+`evalJs` or dispatch CDP input by coordinate — **so it can NEVER HOLD A TARGET WITH `.click()` TO
+GUARD.** **The 18 was the SAME line-based quote-parity heuristic that produced 152, reading the other
+side of its own miscount — it was NEVER A SECOND COUNT.**
+
+**RULED: TOOLS DOES NOT CLOSE AT ZERO YET AND DOES NOT BUILD.** It uses the granted turn for a SEARCH
+for a THIRD SHAPE, framed by the ARCHITECTURE rather than the old patterns — **where can outer code
+act and have nothing happen without saying so:**
+- coordinate dispatch landing on nothing;
+- an `evalJs` return value ignored;
+- a swallowed rejection;
+- a caught timeout treated as normal;
+- an action against the wrong page.
+
+**✓ FOUND 2026-09-18 — see *ITEM 151 REOPENS AND WIDENS*, below.** The instruction that follows is kept
+as written; it is what the search was for.
+
+**IT REPORTS SHAPES FOUND WITH COUNTS, AND SHAPES SEARCHED FOR AND NOT FOUND** — **the second list is
+what makes a zero READABLE.** Then EITHER 151 closes as a VERIFIED NEGATIVE with its architectural
+reason recorded so nobody re-opens it from the old census, **OR the brief widens and it builds.**
+
+> **A POPULATION CAN BE ARCHITECTURALLY IMPOSSIBLE, NOT MERELY ABSENT — SAY WHICH, BECAUSE ONLY ONE OF
+> THEM STAYS TRUE.**
+
+*(The zero from the AST tool three relays ago was investigated and turned out to have a population
+elsewhere — 134 sites inside strings. This zero is a different shape: not a population in the wrong
+place, but a population the outer process's own reach may rule out entirely. Both are zeroes; neither
+is believed on sight — but only one of the two possible verdicts here (impossible vs. merely unfound)
+survives a second search, which is why the search happens before either is written down.)*
+
+**ITEM 154's 134 IN-STRING SITES ARE UNAFFECTED AND REMAIN REAL** — nothing about 151's re-opening
+touches 154's population or its brief.
+
+## ITEM 151 REOPENS AND WIDENS, NOT CLOSES — 2026-09-18
+
+**TOOLS' SEARCH FOUND SHAPE A: CDP COORDINATE DISPATCH WITH NO HIT-TEST AT THE POINT OF DISPATCH.**
+`app.mouseDown`/`app.mouseUp` take RAW COORDINATES with **no element, no selector, no check that the
+point is reachable.** **83 call sites, 22 files**, concentrated in a handful of shared helpers —
+`trustedClick` duplicated in `bm1`, `item9192`, `sc2`; `e1`'s lighter variant; `safePen`, `safeTouch`,
+`dragCard`, `realClick`, `openBoard`, `canvasDragging`.
+
+**EVERY ONE CHECKS THAT A SELECTOR MATCHED AND NONE CHECKS WHAT IS ON TOP AT DISPATCH — ITEM 130's
+DEFECT IN A SECOND COSTUME, UNADDRESSED FOR RAW COORDINATES.**
+
+**OUTER JS STRUCTURE, SO 151's INSTRUMENT FITS: THE BRIEF WIDENS AND TOOLS BUILDS AT THE HELPERS, NOT
+THE 83.** *(Fixing the shared helper closes every call site behind it in one edit — the same leverage
+item 148's inverted guard and item 152's byte check both take: fix the CLASS, not the instance.)*
+
+**THE ARCHITECTURAL FINDING STANDS, REFRAMED, NOT RETRACTED:** outer code CANNOT hold a guarded DOM
+handle — `if (x) x.click()` genuinely has ZERO outer instances — **and it can still act BLIND AT A
+COORDINATE without holding anything.** **Narrower than the census implied, not false.**
+
+**SHAPES C AND D CLOSED AS SAFE** — `waitSoft` is ONE NAMED IDIOM always followed by an independent
+re-check — **with TOOLS' OWN QUALIFIER KEPT: verified REPRESENTATIVELY in one file of six, not
+exhaustively.**
+
+## ITEM 155 — UNVERIFIED ACTS — OPENS, PARKED — 2026-09-18
+
+**OPENS, PARKED. Harness → TOOLS.** Two shapes, neither ruled:
+- **SHAPE B: IGNORED `evalJs` RESULTS — 1,443 naive matches.**
+- **SHAPE E: ACTION WITHOUT A PRECEDING PAGE-STATE CHECK — 30 hits, 4 GENUINE screenshot cases in
+  `fx4`, `fx5`, `fx8`, `item126`.**
+
+**TOOLS DECLINED TO REPORT 1,443 AS A FINDING** because most are verified DOWNSTREAM and separating
+them needs PER-SITE JUDGMENT rather than syntax — **THE MISCOUNTING TRAP REFUSED ON ITS OWN WORK.**
+**PARKED WITH THE NUMBERS AND THE REASON; NOTHING BUILT UNTIL A SHAPE IS RULED.**
+
+> **A NUMBER YOU CANNOT DEFEND PER SITE IS NOT A POPULATION — REPORT IT AS UNSWEPT, NOT AS A FINDING.**
+
+*(The inverse of the census laws already on record: those said a static count undercounts what depends
+on order or hides inside a string. This one says the SAME instinct that catches an undercount can
+produce an OVERCOUNT if applied to raw matches without judging each — 1,443 is real as a grep result
+and worthless as a finding until someone looks at each one.)*
+
+## BOX — TOOLS BUILDS AT THE HELPERS, SAME GRANT — 2026-09-18
+
+**No new grant needed** — `tools-item151-build-20260918` already covers a build turn; TOOLS proceeds
+under it, now aimed at the shared helpers rather than the original 83 call sites.
+
+Registry: next free **156**.
+
+
+
 
 
 

@@ -222,6 +222,20 @@ await withHarness(async (app) => {
     caret.offset === caret.firstLineLen, JSON.stringify(caret));
 });
 
+
+const parkedChecks = [];
+if (process.env.HARNESS_PARKED === '1') {
+  // Nothing to park. This file added a live index-based strip selector
+  // (VW1 item 134 later converted it) but never carried a superseded
+  // assertion of its own -- there is nothing here for HARNESS_PARKED to
+  // retire. The empty array is still emitted, auditable rather than
+  // silently absent, per item 137's own park-record rider.
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
+  // eslint-disable-next-line no-console
+  console.log('\nITEM133 PARKED: PASS (0 checks) -- HARNESS_PARKED=1 armed; item 133 parks nothing.');
+}
+
 for (const c of checks) {
   // eslint-disable-next-line no-console
   console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);

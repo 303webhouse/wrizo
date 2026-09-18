@@ -921,8 +921,13 @@ console.log(JSON.stringify(checks, null, 2));
 // for what it renames.
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
-  // Nothing parked in this file — see the note above for where PW1's sweep
-  // actually lives and what its arithmetic must come to.
+  // EMIT THE ARRAY, even empty. PW1's own park records live in the OTHER
+  // five files named above, not here; this file's parkedChecks is
+  // genuinely always []. But an empty array that is never emitted reads
+  // the same to the counter as one that silently lost a record, so it is
+  // printed anyway -- auditable absence, not silent absence.
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
 }
 
 const allChecksPw1 = checks.concat(parkedChecks);
