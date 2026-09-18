@@ -18433,3 +18433,37 @@ when Revise exists.
 
 **Gates:** merge on green -> Fable's review -> ship on PASS under Nick's word, own
 manifest, rollback from whatever is live. **No deploy from this lane.**
+
+## ITEM 151 · SHAPE A — RATIFIED, BAND LINE RECORDED — 2026-09-18 (Fable, to
+tools lane)
+
+**ALL FOUR ANSWERED; TWO EXCEEDED THE ASK.** The pre-fix-source re-audit (7 →
+8 files, then 8 → 2 fully real) is the finding kept: `pw1.mjs` — the file the
+hit-test instrument was written in — had two sites bypassing its own proven
+instrument entirely. That this required correcting a standing claim in the
+same offer, in place, is the record working as designed, not a blemish.
+
+> **THE FILE A GUARD WAS WRITTEN IN IS NOT THEREBY GUARDED — VERIFY THE
+> AUTHOR'S OWN FILE FIRST.**
+
+**The five verified-in-name-only files (`bg1`, `bg2`, `cd4`, `fx5`, `fx7`)
+are named in the offer as the DANGEROUS kind, not the merely unverified
+kind** — `docs/menus/item151-shapeA-offer.md` §14 now opens that subsection
+on exactly this distinction: an unverified file announces its own risk; a
+verified-in-name-only file reads as already-safe on a bare grep, which is
+why it is the more dangerous of the two.
+
+**RATIFIED WITHOUT CHANGE:** declining the red-count estimate (§12,
+`UNKNOWN` — a guess would be item 155's own overcount trap aimed at its own
+work) and the qualitative risk shape offered in its place (a reading aid,
+not a number); `tp1.mjs` as a STANDING roster file (a falsification that
+lives in the suite keeps proving itself, where a one-off run proves it
+once); `assertHittable`'s narrower limit DEMONSTRATED (S6) rather than only
+asserted, and stated in the offer's own words (§1, §11) so the next reader
+inherits the gap rather than the confidence; the S5 wrong-first-attempt left
+on the record rather than quietly fixed.
+
+**NOTHING FURTHER OWED BEFORE THE PAIR.** Run when chat 1 grants it, report
+both legs verbatim, and diagnose every red as a candidate finding (item
+130's class caught retroactively) before treating it as a break — per §12's
+own reading-aid framing.

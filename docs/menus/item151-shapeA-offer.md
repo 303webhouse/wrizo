@@ -398,8 +398,12 @@ still had gaps at specific sites:**
   reading — it's where the fix was invented — still had two sites carrying
   the exact defect the rest of the file exists to prevent.
 
-**VERIFIED IN NAME ONLY — the reference had nothing to do with gating the
-flagged dispatch:**
+**VERIFIED IN NAME ONLY — THE DANGEROUS KIND, NOT MERELY THE UNVERIFIED
+KIND.** These five did not sit uninspected; they sat behind a real
+`elementFromPoint` string that reads, on a bare grep, exactly like the
+seven files that turned out safe. An unverified file announces its own
+risk — nobody mistakes silence for a guard. These five look guarded and
+are not, which is the more dangerous shape by construction, not by degree:
 
 - **`bg1.mjs`, `bg2.mjs`** — the `elementFromPoint` calls are a DIAGNOSTIC
   read for an unrelated check (measuring whether a "door" row visually
