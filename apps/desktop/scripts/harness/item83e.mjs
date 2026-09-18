@@ -214,6 +214,12 @@ if (process.env.HARNESS_PARKED === '1') {
   // and the flush, never the exclusion handoff, which is why none of them
   // caught this and why none of them is falsified by the repair. The empty
   // list is the evidence that the fix was additive, not a reversal.
+  // EMIT THE ARRAY, even empty. The park counter reads the JSON records,
+  // not the human line below it, so a harness that prints only prose
+  // declares a park count nothing can audit -- and the day this file DOES
+  // park something it would be parked invisibly.
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
   console.log('\nITEM83E PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 83 errata E1 parks nothing. No prior assertion covered the exclusion handoff, so none is superseded by repairing it.');
 }
