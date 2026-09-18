@@ -18467,3 +18467,42 @@ on the record rather than quietly fixed.
 both legs verbatim, and diagnose every red as a candidate finding (item
 130's class caught retroactively) before treating it as a break — per §12's
 own reading-aid framing.
+
+## ITEM 151 · SHAPE A — THE 91-FILE PAIR, BOTH LEGS CLEAN — 2026-09-18 (tools
+lane; branch `item151-silent-acts`)
+
+**RUN UNDER `tools-item151-91pair-20260918`, box idle first (0 foreign
+browsers), pushed at pair start (already at `c46d498`, nothing new to
+push), both legs joined so both always run. BOTH CLEAN, ZERO REDS, VERBATIM:**
+
+```
+SUITE START HARNESS_PARKED=unset files=91 tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+...
+SUITE DONE HARNESS_PARKED=unset — 91/91 of 91 returned a passing verdict
+SUITE RESULT: CLEAN — tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+
+SUITE START HARNESS_PARKED=1 files=91 tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+...
+SUITE DONE HARNESS_PARKED=1 — 91/91 of 91 returned a passing verdict
+SUITE RESULT: CLEAN — tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+```
+
+**Zero `FAIL` lines in either leg's full output** — no candidate findings to
+diagnose. `tp1.mjs` (the falsification, §11 of the offer) ran identically in
+both legs, 7/7, no `parkedChecks` (a new file, nothing legacy to park). Box
+left clean afterward — 0 foreign browsers post-run, same as pre-run.
+
+**What a fully clean pair means here, stated rather than left implicit:**
+§12 of the offer named the covered-point census UNKNOWN and offered a
+qualitative risk shape instead of a count — this result is that unknown
+resolving to zero-observed, not to a number predicted in advance. It is
+NOT proof that every one of the 102 fixed sites was already safe before
+this build; it is that under THIS run's own gestures, timing and window
+sizes, none of them hit a covered or empty point. The hit-test now
+gates every one regardless — the same class item 130 first caught stays
+caught the next time layout, timing or window size differs, not merely
+this time.
+
+**Offered for merge — harness/test-seam work, chat 1's verification is the
+gate per the standing amendment.** Branch `item151-silent-acts`, tip
+`c46d498`, pushed. Nothing further owed on tools' side.
