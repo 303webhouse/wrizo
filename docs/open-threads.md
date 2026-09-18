@@ -6744,7 +6744,24 @@ standing docs-only exemption. `34 (spread, item133's own site folded in correctl
 no run active.** *(Its worktree tip matches `origin/vw1-rail`, tree clean — nothing uncommitted, no
 process running.)* **Nudge sent, per Fable's note.**
 
+## ITEM 138 — THE EXCLUSION CLAUSE, RATIFIED INTO THE BRIEF — 2026-09-18
+
+**PW2's exclusion note is RATIFIED into 138's brief as its own clause:** a nested board's card is the
+SAME `page-pin` BOX as a page's, so **138 KEYS TO THE ENTRY KIND (`pageType` of the pinned entry),
+NEVER THE BOX KIND** — or a builder flips EVERY board card to tall and undoes Nick's wide-board ruling.
+**A HARNESS CHECK PROVES a nested board's card stays wider than tall.**
+
+*(The same shape as PW1's S1 guard reading the source ONCE and reusing it: two different questions
+share one box shape, and a check keyed on the wrong one answers the question it was never asked.)*
+
+**ALSO RECORDED: CONSTRAIN-FORWARD DOES LESS WORK UNDER OPTION 2** — with no "touched" trigger, it
+governs ONLY newly-born pins. **The brief SAYS SO rather than implying otherwise.**
+
+**TWO OPTIONS CONFIRMED LIVE TO PW2.** **"Moved+resized" WITHDRAWN ON THE MEASUREMENT, EXPLICITLY**
+rather than by implication.
+
 Registry: next free **153**.
+
 
 
 
