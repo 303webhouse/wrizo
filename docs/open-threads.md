@@ -6795,6 +6795,21 @@ reports nothing at all: a guard that should have matched, didn't, and a clean ru
 from a guard that was never needed. This is the same shape as item 141's classifier: a population of
 zero proves nothing without a coverage number beside it.)*
 
+**FABLE, ON FILE WITH 152: THE TWO INSTANCES WERE CAUGHT BY DIFFERENT HABITS, NOT THE SAME ONE.**
+`node --check` caught the LOUD instance (a broken string). **The SILENT one — a needle matching zero
+times — was caught by comparing raw bytes against an empty result, a SEPARATE habit.** Recording them
+together would imply a syntax check covers the silent form — **precisely the false confidence 152
+exists to remove.**
+
+**THIRD BAND LINE FOR 152, beside the byte check:**
+
+> **AN EMPTY RESULT IS A FINDING, NOT AN OUTCOME — A NEEDLE THAT MATCHED NOTHING IS INVESTIGATED
+> BEFORE IT IS BELIEVED.**
+
+*(The byte check catches the CAUSE; this catches the SYMPTOM when the cause slips past — an empty
+match can come from more than a corrupted escape, so the habit of investigating it stands on its own,
+not merely as 152's downstream effect.)*
+
 ## PW2's THREE CARRIED NOTES FOR 138 — REGISTERED — 2026-09-18
 
 1. **THE ENTRY-KIND RULE, WITH ITS HARNESS CHECK** — restated from the exclusion clause, carried
