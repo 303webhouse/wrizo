@@ -6698,10 +6698,54 @@ for a design brief; PW2's own instance is a builder naming a gap in its OWN pref
 anyone else has to find it. That is a stronger form of the same discipline than presenting two options
 and hedging neither.)*
 
+**✓ MEASURED 2026-09-18 — see *ITEM 138 — THE MEASUREMENT, AND WHAT IT CHANGES*, below.** The status
+line that follows is kept as written, for the record of what was asked before the answer came back.
+
 **STATUS: PW2 measures (wide page-pin count; resize-vs-move frequency) before building anything.**
 **"Touched" is not yet defined and no lock logic ships until it is.**
 
+## ITEM 138 — THE MEASUREMENT, AND WHAT IT CHANGES — 2026-09-18
+
+**PW2 established the population FROM THE CREATORS, not a count.** Every page-pin creator in the
+product makes a WIDE card — `pinPageToBoard` (0.28×0.12), board-card (0.32×0.10), derived pin
+(0.22×0.10) — **and NO code path anywhere creates a tall one.** **A tall page-pin exists ONLY where a
+writer hand-resized it.** **WIDE IS THE DEFAULT, NOT A LEGACY POPULATION.**
+
+> **BEFORE CALLING A POPULATION LEGACY, CHECK WHETHER IT IS THE DEFAULT.**
+
+**(b), RESIZE-VS-MOVE FREQUENCY, IS UNMEASURABLE** — no instrumentation in the codebase, one stray
+comment mentioning telemetry that was never built. **PW2 marked it an HONEST GAP rather than
+substituting a proxy.** **The decision rests on population alone.**
+
+> **ESTABLISHING A POPULATION FROM ITS CREATORS BEATS SAMPLING DATA YOU CANNOT SEE.** (PW2's method,
+> promoted alongside the band it earned)
+
+**PW2 ARGUED ITSELF OUT OF ITS OWN COUNTER-ARGUMENT: "moved-too" IS WITHDRAWN.** *(The population
+finding removes the case for treating a move as a touch — if every existing wide pin got that way by
+deliberate resize or was born wide, a move carries no evidence the writer wanted a shape change.)*
+
+**TWO LIVE OPTIONS WITH NICK, constrain-forward holding under both:**
+1. **RESIZED ONLY** counts as "touched" — a move alone leaves the card as it is.
+2. **EXISTING LEFT ALONE PERMANENTLY**, new pins born tall — the option already carried in the brief.
+
+**BOTH LEAVE UNTOUCHED CARDS WIDE INDEFINITELY; they differ only on cards a writer DELIBERATELY
+RESIZES.** **Fable leans 1. PW2 RECOMMENDS 1 while making a real case for 2.**
+
+**NOTHING BUILT; PW2 HOLDS FOR NICK'S WORD.**
+
+## BOX — TOOLS' CENSUS-FIX MERGED; A NUDGE SENT — 2026-09-18
+
+**TOOLS traced and closed the arithmetic finding chat 1 flagged after VW1's first merge**
+(`a5077d1`, `docs`-only) — **MERGED at `4be233d`** without waiting for Fable's review, under the
+standing docs-only exemption. `34 (spread, item133's own site folded in correctly) + 5 (no-spread) + 38
+(function-argument) = 77`, matching the by-index table exactly. Trial merge clean.
+
+**TOOLS still holds the park-conform grant** (`tools-park-conform-20260918`, granted 06:19 UTC) **with
+no run active.** *(Its worktree tip matches `origin/vw1-rail`, tree clean — nothing uncommitted, no
+process running.)* **Nudge sent, per Fable's note.**
+
 Registry: next free **153**.
+
 
 
 
