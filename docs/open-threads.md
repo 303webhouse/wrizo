@@ -6669,7 +6669,34 @@ NOT YET A DAY.** Chat 1 will say so, without waiting to be asked, when it crosse
 decides whether to re-route 147 and 148 to a present lane, at the cost of re-deriving what ERRATA
 already knows.
 
+## ITEM 138 — RULED IN PART — 2026-09-18
+
+**WHAT THE LOCK DOES IS SETTLED: CONSTRAIN FORWARD, NEVER SNAP.** Snap reshapes a card the writer did
+not ask to reshape — **migration of arrangement by another name** — and Nick's ruling says "keep stored
+geometry until touched." **It also dissolves the worst interaction: a drag can then never reshape
+anything mid-drag.**
+
+**WHAT "TOUCHED" MEANS IS NOT SETTLED.** PW2 named the unmeasured risk INSIDE its own preferred option
+— it has not measured **how many wide page-pins exist**, nor **resize-vs-move frequency**. **PW2 TAKES
+THE MEASUREMENT FIRST and reports with a recommendation; NICK RULES.**
+
+**A THIRD OPTION IS CARRIED IN THE BRIEF WHETHER OR NOT IT IS RECOMMENDED:** new pins born tall,
+existing pins left alone PERMANENTLY, the inconsistency accepted and recorded — on the grounds that
+**arrangement belongs to the writer** and **shape-teaches-kind governs what the app CREATES, not what
+the writer already made.**
+
+> **NAME THE UNMEASURED RISK IN YOUR OWN OPTION, NOT ONLY IN THE RIVAL's.** (PW2's framing, promoted)
+
+*(A lean argued only against a weak alternative is not a lean — the item-145 rewrite made this point
+for a design brief; PW2's own instance is a builder naming a gap in its OWN preferred option before
+anyone else has to find it. That is a stronger form of the same discipline than presenting two options
+and hedging neither.)*
+
+**STATUS: PW2 measures (wide page-pin count; resize-vs-move frequency) before building anything.**
+**"Touched" is not yet defined and no lock logic ships until it is.**
+
 Registry: next free **153**.
+
 
 
 
