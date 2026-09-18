@@ -6483,7 +6483,73 @@ the next red ambiguous — **exactly what the two-commit split exists to prevent
   there at all — `vw1.mjs` is what asserts the new order. *(Correct: the re-ruled sequence should be
   asserted in ONE place, by the item that rules it.)*
 
-Registry: next free **152**.
+## VW1 (ITEM 134) — MERGED — 2026-09-17
+
+**`item134-vw1-rail` @ `39fdf0c` MERGED at `ec31d74` — TAKE WORD, chat 1.** Verified before merging:
+trial merge against `origin/main` clean (single tree, no conflict lines); diff scope matches the offer
+(26 files — 22 harness, `Cascade.tsx`, the new `vw1.mjs`, two docs files); tip past `163b628` is
+docs-only. **PUSHED.** `data-category` now exists on `main` (measured: 1 file in `src/`).
+
+**⚠ A DOCUMENTATION ARITHMETIC FINDING, NOT A CODE DEFECT — the offer's own §2 breakdowns disagree.**
+**By-index sums to 77** (19+24+15+11+2+2+2+2). **By-form, as written, sums to 78**
+(33+5+38+1+1) — **one more than the stated total and the by-index table.** Chat 1 confirms it
+programmatically, not by eye. **The by-index table is the one that matches the stated 77**, so the
+safer reading is that the by-form table over-counts by one somewhere (or double-names one site under
+two forms) — **not investigated further; the finding is left for TOOLS to trace, since it is TOOLS'
+census and the discrepancy is in TOOLS' own document.** Non-blocking: the code conversion is verified
+by the suite stamp, not by this table.
+
+**CHAT 1's SPOT-CHECK on `cd2`'s park count, the newest addition (pair 3):** active `pok(` calls
+13 → 13 across `d238a6f`..`163b628` — **unchanged**, consistent with TOOLS' "nothing lost" claim even
+where chat 1's raw count (by a different measure) doesn't match TOOLS' stated 10→10 exactly; the
+qualitative claim holds either way.
+
+**BOX: TOOLS' grant cleared. PW2's re-stamp ANNOUNCED — token `pw2-restamp-20260917`.**
+
+## PARK AUDIT — AGAINST THE PRE-FIX READING, NOT JUST THE POST-FIX TOTAL — 2026-09-17
+
+**Registered, TOOLS:** pair 3's park counts were compared to their READINGS **BEFORE THE FIX** — `b1`
+4→4, `cd1` 10→10, `cd2` 10→10 — so the claim is **"nothing was lost in the replacement,"** not "the
+totals look right now."
+
+> **AUDIT A PARK COUNT AGAINST ITS READING BEFORE THE FIX — AN UNCHANGED TOTAL AFTERWARDS PROVES NOTHING
+> ON ITS OWN.**
+
+*(Sharpens "park count, not green": a total that merely LOOKS unchanged could still have dropped one
+park and gained an unrelated one. Only a reading taken before the fix, and diffed against after, rules
+that out.)*
+
+## ITEM 152 — CONTROL CHARACTERS OUTSIDE STRING LITERALS — OPENS 2026-09-17
+
+**OPENS. Harness/tooling. ROUTED TO TOOLS** — it has the most direct context (found the third instance
+of the class inside its own offer), and the work is **browserless**, so it can run while the box holds
+PW2's re-stamp.
+
+**THE PATTERN IS NOW A CLASS, NOT THREE INCIDENTS: check 7's regex, TOOLS' own ledger band line, and
+ERRATA's item-141 classifier — each a `\b` or similar EATEN by a heredoc or template, each PASSING a
+syntax check or a plain `grep` while broken.**
+
+**THE BUILD: a byte-level check over the ledger and the harness for control characters outside string
+literals, RUN AS PART OF THE SUITE** — so the next one fails a run rather than being found by eye.
+
+> **A GREP READS TEXT, NOT BYTES — A CONTROL CHARACTER IS INVISIBLE TO EVERY INSTRUMENT THAT READS TEXT.**
+
+**INTERIM PRACTICE, ALL LANES, UNTIL 152 LANDS: write regex and ledger lines through `printf` or
+`String.raw`, never through a heredoc or a template that interpolates.**
+
+**CHAT 1's OWN CHECK, ON THE RECORD:** scanned `docs/open-threads.md` byte-for-byte for control
+characters outside tab/LF/CR — **ZERO FOUND.** Chat 1's ledger-writing method (a plain JS string array,
+written through the file-write tool, never a shell heredoc or an interpolating template) was already
+the lawful shape; recorded here as the first thing 152's own check should confirm once it exists.
+
+## TOOLS' DIFF-DIRECTION NEAR-MISS — REGISTERED — 2026-09-17
+
+**Registered with its fix:** diff from the ACTUAL MERGE-BASE rather than trusting the first read. The
+unfixed version would have reported `main` rewriting `Cascade.tsx` INDEPENDENTLY — **a false alarm that
+sends a lane hunting a phantom.**
+
+Registry: next free **153**.
+
 
 
 
