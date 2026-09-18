@@ -6600,6 +6600,10 @@ THE CODE; the linked heading is the region's accessible name rather than a stack
 accent — **item 96's colour-as-kind-signal answered by shape**, with the `isolation:isolate` omission
 explained where a later reader would otherwise "fix" it.
 
+**⚠ UPGRADED 2026-09-18 — kept as THE WEAKER ORIGINAL.** PW2's own finding (its offer's S2 code
+comment) is the better statement: not only that the chain narrows to one path, but that WHICH path is
+an ORDER-DEPENDENT READ an UNRELATED WRITE can silently move. See *OBS-1, UPGRADED*, below.
+
 ## OBS-1 — A KNOWN LIMIT, NOT A DEFECT — 2026-09-17
 
 **Non-blocking, no ticket unless it recurs:** `boardNestChain` picks the FIRST parent from
@@ -6623,7 +6627,50 @@ from the correction already on record — restated at the point it actually take
 **147, 148 and 146 hold their places but not the box.** **If ERRATA stays away, TOOLS takes the park
 conform next, then item 151** — per the standing present-and-ready rule.
 
+## OBS-1, UPGRADED — AN ORDER-DEPENDENT READ IS A HIDDEN INPUT — 2026-09-18
+
+**PW2's own finding, ADOPTED as the entry of record — Fable's OBS-1 above is the weaker original.** The
+issue is not only that `boardNestChain` narrows to one path. **`getBoardsConnecting` (via
+`getBoardsPinning`) returns in `cache.journalEntries` ORDER** — chat 1 confirmed this at the source
+(`persistence.ts`: `getBoardsPinning` is a bare `cache.journalEntries.filter(...)`, no sort). **So
+pinning or unpinning an UNRELATED board can change which parent is first — the crumb then claims a
+DIFFERENT address, SILENTLY, with the writer told neither which of several they see nor that it
+moved.**
+
+> **AN ORDER-DEPENDENT READ IS A HIDDEN INPUT — IF AN UNRELATED WRITE CAN CHANGE WHAT IT SAYS, IT IS
+> UNSTABLE, NOT MERELY NARROW.**
+
+**STILL A KNOWN LIMIT, NOT A TICKET, until two parents are common.** The open design question — WHICH
+address a crumb states, when there is more than one — is named where the builder will meet it: PW2's
+own comment on `boardNestChain` in `persistence.ts`, beside the code it describes. **Deferring the
+comment to the branch's NEXT legitimate move, rather than moving a stamped tree, is the right call —
+the same treatment VW1's own rider got.**
+
+## QUEUE, WHILE ERRATA IS AWAY — ANNOUNCED, NOT WAITED FOR — 2026-09-18
+
+**Ruled by Fable: announce in this order, don't wait for ERRATA.**
+1. **TOOLS' four-file park conform, NOW** — `pw1.mjs` is settled; it merges `main` first.
+2. **TOOLS' item 151, AFTER** — with the routing notice to INK and FIX at its start.
+3. **PW2's item 138** — announced IN PARALLEL if the box can hold one pair at a time and the lanes'
+   files do not overlap. **138 touches `persistence.ts`'s birth defaults and the canvas; 151 touches
+   harness files.**
+
+**CHAT 1's PRE-GRANT FILE CHECK, done before granting anything (not merely asserted):** 138's product
+surface (`persistence.ts` birth-default fields, canvas) and 151's surface (harness files under
+`scripts/harness/`, plus the leading files it touches with INK/FIX's clearance) **do not overlap on any
+file named so far. Serialize if they meet** — chat 1 will re-check at 151's actual start, once its file
+list is concrete rather than a category.
+
+**ERRATA's 147, 148 and 146 KEEP THEIR PLACES IN THE ORDER** and return whenever ERRATA does; NONE OF
+THEM BLOCKS Batch Three, already large.
+
+**ERRATA'S ABSENCE, MEASURED: stood down at 2026-09-17T07:01 (local), 17h17m elapsed at this writing —
+NOT YET A DAY.** Chat 1 will say so, without waiting to be asked, when it crosses 24 hours; Fable then
+decides whether to re-route 147 and 148 to a present lane, at the cost of re-deriving what ERRATA
+already knows.
+
 Registry: next free **153**.
+
 
 
 
