@@ -229,11 +229,24 @@ await withHarness(async (app) => {
   // roster (Trash inside section C, "Change Theme") is parked verbatim
   // below (A4), SUPERSEDED-by-CD3 (Trash moved to the strip's own foot;
   // "Change Theme" renamed "Themes") — this is generation 3.
-  ok('CD3 successor of "S7 (successor to \'...ScriptEditor mounts the SAME drawer as prose...\'): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)": ScriptEditor mounts the SAME cascade as prose (all eight categories present, Trash now pinned to the foot, Themes renamed)',
+  // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
+  // GENERATION 3, quoted VERBATIM and no longer asserted. It pins the strip's
+  // labels in the OLD order, which VW1's regroup re-rules by founder word.
+  // THE REGROUP IS SUPPOSED TO BREAK THIS — the subject (ScriptEditor mounts
+  // the SAME cascade as prose, all eight categories) is untouched and true;
+  // only the ORDER it happened to spell out has changed. Parked, not edited.
+  //
+  // ok('CD3 successor of "S7 (successor to \'...ScriptEditor mounts the SAME drawer as prose...\'): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)": ScriptEditor mounts the SAME cascade as prose (all eight categories present, Trash now pinned to the foot, Themes renamed)',
+  // scriptCascade.stripItemCount === 8
+  // && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+  // JSON.stringify(scriptCascade));
+  // ------------------------------------------------------------------
+  ok('VW1 successor of the CD3 script-cascade check: ScriptEditor mounts the SAME cascade as prose — all eight categories present, compared as a SET rather than a sequence, because the claim was ever about parity between surfaces and never about the rail order (which VW1 now owns and vw1.mjs asserts)',
     scriptCascade.stripItemCount === 8
-      && JSON.stringify(scriptCascade.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+      && JSON.stringify([...scriptCascade.stripLabels].sort())
+         === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
     JSON.stringify(scriptCascade));
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open on script' });
   const scriptPageFacePresent = await app.evalJs("!!document.querySelector('.wz-pageface-star') && !!document.querySelector('.wz-pageface-home')");
   ok('S7: opening Page on script mounts the SAME PageFace prose uses (star + home present)', scriptPageFacePresent, String(scriptPageFacePresent));
@@ -454,7 +467,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // "flip to a Place"), rather than forcing the old two-face sequence
     // through dead selectors.
     const trackBefore = await app.evalJs(rectOf('.desk-frame-strip'));
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][0].click()"); // Journal
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal
     await sleep(220);
     const trackAfter = await app.evalJs(rectOf('.desk-frame-strip'));
     pok('PARKED (was "S3 re-floored: the drawer track rect is byte-identical across Page <-> Places (the only two remaining faces)") — CD2 S1/S5: the SAME rect-invariance claim, re-derived across a real cascade state change (opening a category) against .desk-frame-strip; full successor coverage in cd2.mjs\'s own S1/S5 section',
@@ -599,9 +612,21 @@ if (process.env.HARNESS_PARKED === '1') {
       stripItemCount: document.querySelectorAll('.wz-strip-item').length,
       stripLabels: [...document.querySelectorAll('.wz-strip-item')].map(b => b.querySelector('.wz-strip-label')?.textContent),
     })`);
-    pok('PARKED (was "S7 (successor to \'...ScriptEditor mounts the SAME drawer as prose...\'): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)") — CD3: Trash pinned to the strip\'s own foot, Change Theme renamed Themes — live successor (generation 3): this file\'s own live S7 section',
+    // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
+    // A GENERATION DEEPER — the gated twin of the live CD3 successor parked
+    // above, pinning the strip's labels in the OLD sequence. VW1's regroup
+    // re-rules that sequence by founder word, so the check is not wrong: its
+    // subject was re-ruled. Parked verbatim, never edited.
+    //
+    // pok('PARKED (was "S7 (successor to \'...ScriptEditor mounts the SAME drawer as prose...\'): ScriptEditor mounts the SAME cascade as prose (all eight categories present, B1\'s Trash included)") — CD3: Trash pinned to the strip\'s own foot, Change Theme renamed Themes — live successor (generation 3): this file\'s own live S7 section',
+    // scriptCascadeParked.stripItemCount === 8
+    // && JSON.stringify(scriptCascadeParked.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+    // JSON.stringify(scriptCascadeParked));
+    // ----------------------------------------------------------------
+    pok('PARKED, generation 4 (was the CD3 gated re-assertion of the strip label SEQUENCE on the script surface) — VW1 (item 134): parity between script and prose is the claim and it survives whole; only the ORDER it spelled out has changed, so the successor compares the eight as a SET',
       scriptCascadeParked.stripItemCount === 8
-        && JSON.stringify(scriptCascadeParked.stripLabels) === JSON.stringify(['Journal', 'Page', 'Plan', 'Drawers', 'Shelf', 'Settings', 'Themes', 'Trash']),
+        && JSON.stringify([...scriptCascadeParked.stripLabels].sort())
+           === JSON.stringify(['Drawers', 'Journal', 'Page', 'Plan', 'Settings', 'Shelf', 'Themes', 'Trash']),
       JSON.stringify(scriptCascadeParked));
 
     // ORIGINAL (this file's own live S1/cd1.1 section, pre-CD3):

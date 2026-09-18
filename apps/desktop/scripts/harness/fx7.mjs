@@ -79,7 +79,7 @@ const openPageCategory = async (app) => {
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (openPageCategory)' });
   const alreadyOpen = await app.evalJs("!!document.querySelector('.wz-pageface-title')");
   if (alreadyOpen) return;
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
 };
 
@@ -401,9 +401,9 @@ await withHarness(async (app) => {
   // The Plan category's own survey (layer 3, a DIFFERENT cascade panel
   // component) rides the SAME anchor — one fix, both layers, confirmed
   // live rather than assumed from "they share a CSS rule" alone.
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()"); // close Page
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()"); // close Page
   await sleep(150);
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][2].click()"); // open Plan
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()"); // open Plan
   await app.waitFor("!!document.querySelector('.wz-cascade-panel')", { label: 'Plan panel open (S3 survey check)' });
   await sleep(150);
   const [stripForSurvey, planPanel] = await Promise.all([rectOf(app, '.desk-frame-strip'), rectOf(app, '.wz-cascade-panel')]);
@@ -741,7 +741,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshProsePage(app, LAPTOP_W, 900);
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip mounted (S9)' });
-  await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][2].click()"); // Plan category
+  await app.evalJs("document.querySelector('.wz-strip-item[data-category=plan]').click()"); // Plan category
   await app.waitFor("!!document.querySelector('.wz-cascade-panel-body')", { label: 'Plan panel open (S9)' });
   await sleep(200);
   const planButtons = await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].map(b => b.textContent.trim())");

@@ -3,6 +3,57 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## VW1 (ITEM 134) — THE RAIL, GROUPED BY KIND, SELECTED BY NAME: BUILT AND OFFERED — 2026-09-17 (tools lane; branch `vw1-rail`)
+
+**OFFERED TO CHAT 1 — BOTH FINAL LEGS CLEAN, 89/89 EACH.** Full record: `docs/menus/vw1-offer-2026-09-17.md`.
+**FOUR PAIRS, NOT TWO** — the grant covered two, a third and fourth followed under the standing
+instruction that a red pair still attributes to the reorder and takes the same discipline. Tip `163b628`
+(merged with `fa5e243` for the offer, docs-only).
+
+```
+SUITE DONE HARNESS_PARKED=unset — 89/89 of 89 returned a passing verdict
+SUITE RESULT: CLEAN — tree=163b628 bundle=index-C5de0HiO.js/582727b
+SUITE DONE HARNESS_PARKED=1 — 89/89 of 89 returned a passing verdict
+SUITE RESULT: CLEAN — tree=163b628 bundle=index-C5de0HiO.js/582727b NO-REBUILD
+```
+
+**THE CENSUS IS 77, NOT 39, and both breakdowns are in the offer with how each form was found.** By
+index: journal 19 · page 24 · plan 15 · drawers 11 · shelf 2 · settings 2 · theme 2 · trash 2. By
+form: 33 by the original spread census; 5 by the direct form (`qsa(sel)[N]`, no spread) found only
+because the brief's own breakdown didn't match; **38 by an index passed as a FUNCTION ARGUMENT**
+(`clickCategory(app, idx)` -> `items[idx]`), invisible to every static pattern and found only when
+**the regroup itself made the wrong selection observable** — three files broke; 1 by label text, 1
+bare-positional, both surfaced while inverting check 7. **A STATIC CENSUS SEES SPELLINGS, NOT
+DEPENDENCIES — THE ONLY COMPLETE CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.**
+
+**CHECK 7 IS INVERTED, not widened a third time.** Any live `.wz-strip-item` reference that is not a
+`data-category` selector is an offender unless NAMED and JUSTIFIED — six exemptions, one resolved by
+a DEPENDENCY check (`const items = [...]` is lawful only if nothing ever indexes it; exempting the
+spelling would have reopened the hole). **AN INDEX PASSED AS AN ARGUMENT IS INVISIBLE TO EVERY
+INSTRUMENT LOOKING BESIDE THE SELECTOR.**
+
+**CHECK 7 HAD ITS OWN RUNTIME CRASH**, found only by extracting its logic and running it —
+`node --check` had passed on it three times. `` new RegExp(`\b${v}\s*\[`) `` had its escapes eaten
+by the template (a backspace byte, a literal `s`, an unmatched bracket) — `SyntaxError` at runtime,
+invisible to syntax checking. Fixed with `String.raw`. **A FILE THAT PARSES IS NOT A FILE WHOSE
+REGEXES COMPILE** — the second instrument this arc felled by invisible bytes, found the same way
+both times: run the logic, don't trust that it parsed.
+
+**THREE FILES (`b1`, `cd1`, `cd2`) EACH HID THE OLD ORDER TWICE** — once live, once in a gated
+`pok()` twin — so the parked leg failed DIFFERENT checks from the default leg inside one turn: the
+sharpest evidence yet for both-legs-always as a law. All three gated twins were INDEX ASSERTIONS no
+driver conversion could reach; only changing the order ever found any of them. Four parked entries,
+each with a named successor comparing the eight labels as a SET — order is asserted nowhere now but
+`vw1.mjs`, which rules it.
+
+**ITEM 151 OPENED SEPARATELY** with the 156-instance/49-file silent-no-op census attached, per the
+ruling that folding it into VW1 would make a pair's own red ambiguous again — only the three
+`clickCategory` helpers (the mechanism that actually mis-selected a tab) are fixed here.
+
+**A CORRECTION ON THE RECORD:** commit 3's subject says "the two parks"; its own body says "TWO
+PARKS, FOUR ENTRIES" — the body was right. Pushed wording is not rewritten; the correction stands
+here.
+
 ## ITEM 137 — THE TRASH AT THE FOOT: BUILT AND OFFERED — 2026-09-13 (tools lane; branch `item137-trash-foot`)
 
 **OFFERED TO CHAT 1 — BOTH LEGS CLEAN, 83/83 EACH.** Full record:

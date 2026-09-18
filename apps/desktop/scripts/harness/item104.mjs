@@ -188,7 +188,7 @@ await withHarness(async (app) => {
 
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 8", { label: 'cascade strip (101)' });
   if (!(await app.evalJs("!!document.querySelector('.wz-pageface-title')"))) {
-    await app.evalJs("[...document.querySelectorAll('.wz-strip-item')][1].click()");
+    await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await waitSoft(app, "!!document.querySelector('.wz-pageface-title')", { label: 'Page category (101)' });
   }
   const doorFound = await app.evalJs(
