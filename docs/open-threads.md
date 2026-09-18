@@ -7006,7 +7006,49 @@ DIAGNOSING REDS, NOT ON THEIR ABSENCE.**
    of the two.** *(§3 of the offer states the general claim — no file was verified in name only — but
    does not itemize the specific list Fable asked for.)*
 
+## ITEM 151 — FABLE's FOUR ANSWERED, VERIFIED AT `d525fa7` — 2026-09-18
+
+**CHAT 1 VERIFIED, NOT RELAYED:**
+- **`tp1.mjs` read in full.** Seven checks, matching the description exactly: S1 unmutated-proceeds,
+  S2 covered-fails-by-name (with S2b confirming `hittablePointBy` itself reports `why: 'occluded'`),
+  S3 cover-removed-restores, S4 `assertHittable` unmutated-proceeds, S5 fails at a genuinely empty
+  point (outside the viewport, after S5's own first attempt at `(5,5)` was wrong and corrected — kept
+  on the record), S6 `assertHittable`'s documented narrower limit DEMONSTRATED (proceeds wrongly under
+  a different covering element, returning the cover's own tag) rather than only asserted.
+- **`run-suite.mjs` auto-discovers `harness/*.mjs` via `readdirSync`** — confirmed at source — so
+  `tp1.mjs` genuinely becomes the roster's 91st file, not a claimed one.
+- **THE RE-AUDIT'S CORRECTION IS MARKED IN PLACE, in both documents** — the offer doc's §5 entry and
+  the ledger's own prior "no file verified in name only" claim both carry a visible `CORRECTED`
+  pointer to the recount, not a silent edit.
+- **Held files, product scope: unchanged** — `item121.mjs`/`item126.mjs` still zero touches;
+  `apps/desktop/src` and `apps/server` still zero touches.
+
+**THE RE-AUDIT ITSELF IS A FINDING, NOT BOOKKEEPING:** 8 files claimed verification (not 7 as first
+recalled); **only 2 (`pw2`, `vw1`) were real; 5 (`bg1`, `bg2`, `cd4`, `fx5`, `fx7`) were VERIFIED IN NAME
+ONLY; and `pw1` — the file the instrument was WRITTEN IN — had TWO SITES BYPASSING ITS OWN PROVEN
+INSTRUMENT.** TOOLS corrected its own standing claim in the same offer, in place.
+
+> **THE FILE A GUARD WAS WRITTEN IN IS NOT THEREBY GUARDED — VERIFY THE AUTHOR's OWN FILE FIRST.**
+
+*(A sibling to "a guard whose comment claims more coverage than its pattern has certifies its own
+reach": there the gap was in what the guard's regex could see, here it is in whether the guard's own
+birthplace was ever checked against it — the most familiar file is not thereby the safest one.)*
+
+**THE COVERED-POINT CENSUS IS STATED UNKNOWN FOR ALL 102 SITES**, with a QUALITATIVE risk shape instead
+— menu, drag and popup sites more exposed than isolated controls. **THE RIGHT REFUSAL AND THE RIGHT
+SUBSTITUTE** — a number here would be item 155's own overcount trap aimed at itself. **Use the shape
+as a READING AID when the reds arrive, not as an expectation to match.** The expect-reds framing
+stands: hold the merge on diagnosing reds, not on their absence.
+
+**`item121.mjs`/`item126.mjs` REMAIN HELD, pending INK/FIX clearance** — routing notice carried,
+unchanged.
+
+## BOX — THE 91-FILE PAIR GRANTED — 2026-09-18
+
+**Token `tools-item151-91pair-20260918`.** Box confirmed idle before granting.
+
 Registry: next free **156**.
+
 
 
 
