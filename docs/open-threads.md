@@ -17,13 +17,19 @@ SUITE DONE HARNESS_PARKED=1 — 89/89 of 89 returned a passing verdict
 SUITE RESULT: CLEAN — tree=163b628 bundle=index-C5de0HiO.js/582727b NO-REBUILD
 ```
 
-**THE CENSUS IS 77, NOT 39, and both breakdowns are in the offer with how each form was found.** By
-index: journal 19 · page 24 · plan 15 · drawers 11 · shelf 2 · settings 2 · theme 2 · trash 2. By
-form: 33 by the original spread census; 5 by the direct form (`qsa(sel)[N]`, no spread) found only
-because the brief's own breakdown didn't match; **38 by an index passed as a FUNCTION ARGUMENT**
+**THE CENSUS IS 77, NOT 39, and both breakdowns are in the offer with how each form was found —**
+**CORRECTED HERE: the by-form table first published summed to 78, not 77; traced and fixed, the**
+**arithmetic error is recorded in §2 of the offer itself.** By index: journal 19 · page 24 · plan 15
+· drawers 11 · shelf 2 · settings 2 · theme 2 · trash 2. By form: 34 by the spread census
+(`[...qsa(sel)][N]`) — 33 at the first pass, plus `item133.mjs`'s own site, which landed after the
+census was taken and grew it 38→39, the SAME form and not a separate line, which is where the
+original error was; 5 by the direct form (`qsa(sel)[N]`, no spread) found only because the brief's
+own breakdown didn't match; **38 by an index passed as a FUNCTION ARGUMENT**
 (`clickCategory(app, idx)` -> `items[idx]`), invisible to every static pattern and found only when
-**the regroup itself made the wrong selection observable** — three files broke; 1 by label text, 1
-bare-positional, both surfaced while inverting check 7. **A STATIC CENSUS SEES SPELLINGS, NOT
+**the regroup itself made the wrong selection observable** — three files broke. 34+5+38 = 77.
+**Two further sites carry no numeral at all and stand OUTSIDE the 77**: `item83f.mjs` by label text,
+`item133.mjs`'s own bare `.wz-strip-item` (present since that file's first commit) — both surfaced
+while inverting check 7, neither ever belonged to an `[N]` bucket. **A STATIC CENSUS SEES SPELLINGS, NOT
 DEPENDENCIES — THE ONLY COMPLETE CENSUS OF WHAT DEPENDS ON ORDER IS CHANGING THE ORDER.**
 
 **CHECK 7 IS INVERTED, not widened a third time.** Any live `.wz-strip-item` reference that is not a
