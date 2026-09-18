@@ -7013,9 +7013,9 @@ and inline sites in `fx5`, `bg2`, `fx13`.
 definition and one two-level call indirection (`pressOn`), confirmed safe by manual read. Second pass
 (whole-file sweep for any bare `app.mouseDown` with no preceding hit-test) found **19 more candidates**
 beyond the original 83/22 count — 3 false positives, 16 real, fixed and listed by file in the offer's
-§5. **No file verified in name only** — every `elementFromPoint`-adjacent helper was traced to confirm
-it gates the dispatch, which is what caught `vw1`'s drifted-weaker copy rather than accepting it at
-face value.
+§5. **CORRECTED BELOW (2026-09-18, second entry): "no file verified in name only" was claimed here and
+was wrong** — the actual per-file audit Fable asked for found 5 of 8 candidate files WERE verified in
+name only. See the second entry for the corrected count.
 
 **ONE BUG CAUGHT MID-BUILD, KEPT ON THE RECORD:** `bg1.mjs`'s `clickDoor` first conversion replaced a
 real hover-before-press (`mouseMove(r.x, r.y)`) with a meaningless `mouseMove(0, 0)`, because
@@ -7036,9 +7036,67 @@ parked, untouched by this build.
 `tsc --noEmit` exit 0, `build:web` exit 0 with an **unchanged bundle hash** (`index-DfFOCr6L.js`,
 confirming the merge carried no app-source change), `node --check` clean on all 21 touched files.
 
-**NO SUITE RUN.** The grant that authorized this build did not extend to a launch; `tsc`/`build:web`/
-syntax checks are pre-flight reads, not a launch. This offer stops here — branch pushed, merge is chat
-1's act.
+**NO SUITE RUN AT THE TIME OF THIS ENTRY.** The grant that authorized this build did not extend to a
+launch; `tsc`/`build:web`/syntax checks are pre-flight reads, not a launch. **See the second entry
+below for what changed since**: a falsification file ran clean under a freshly-issued pair grant.
+
+## ITEM 151 · SHAPE A — FABLE'S FOUR, ANSWERED — 2026-09-18 (tools lane; branch
+`item151-silent-acts`)
+
+**Full record: `docs/menus/item151-shapeA-offer.md` §11–§14, added to the same offer rather than a new
+document.** Fable's message named four things the pair and the offer must carry. All four:
+
+**(1) THE FALSIFICATION — RUN, NOT ONLY DESIGNED.** New standing regression file
+`scripts/harness/tp1.mjs` (roster 90 → **91**), a synthetic fixture independent of app state. Ran clean,
+**7/7**, under a freshly-issued `tools-item151-pair-20260918` grant (box was quiet — 0 foreign browsers
+— first):
+
+```
+[01/1] OK        exit=0    4s tp1.mjs :: TP1 VERIFY: PASS (7 checks)
+SUITE RESULT: CLEAN — tree=9dd8e7a+1dirty bundle=index-DfFOCr6L.js/586771b
+```
+
+`trustedDispatch` on a real uncovered target proceeds and dispatches (S1); the SAME target covered by a
+second real element fails BY NAME — `found:false, why:'occluded'` — and does NOT dispatch onto the wrong
+element (S2/S2b); removing the cover restores dispatch, so the fix reports true state each call rather
+than latching (S3); `assertHittable` proceeds at a real point (S4) and fails by name at a point outside
+the viewport (S5); `assertHittable`'s documented narrower limit is demonstrated, not just asserted — at
+a point covered by a DIFFERENT real element it has no identity to check, reads "not empty," and returns
+the COVER's own tag (S6). **S5's first attempt was itself wrong** — it tried `(5,5)` as "empty" and that
+passed wrongly, because a full-bleed app paints something under nearly every on-screen point; fixed by
+moving outside the viewport, where `elementFromPoint` is specified to return null. Kept on the record
+rather than quietly fixed — the same "assert the mutation landed" law applied to a test's own setup.
+
+**(2) THE COVERED-POINT CENSUS — UNKNOWN, AND WHY.** Not guessed. None of the 102 fixed sites (83 + 19)
+have run against the new instrument yet — that's chat 1's pair. A number offered without running any of
+them would be item 155's own overcount trap aimed at itself. What's known instead: the defect class is
+proven non-hypothetical (`pw1.mjs`'s own `hittablePointBy` was built to catch a real occlusion, item
+130); §14 found two more bare sites inside that SAME file; a qualitative risk shape (menu/popup/drag
+sites structurally more exposed than isolated-control presses) is offered as a reading aid for the
+pair's red output, not a substitute for running it.
+
+**(3) CONVERGENCE, WHY FOREGROUNDED.** Table added at §13, one row per file/group, reason stated first:
+byte-identical bodies converged (`trustedClick` ×5, `clickAt` ×4); `e1` folded in rather than left
+parallel; `pw1`/`pw2`/`vw1` converged because `vw1`'s copy had DRIFTED weaker, not merely duplicated;
+`bg1`/`fx11`/`fx17`/`reveal`/inline sites left apart because each has a shape nothing else shares.
+
+**(4) VERIFIED-IN-NAME-ONLY — RECOUNTED AT 8, NOT 7, AND CORRECTED.** Fresh grep against the pre-fix
+tree, not memory: **8** files carry a pre-existing `elementFromPoint` reference — `bg1`(2) `bg2`(1)
+`cd4`(1) `fx5`(2) `fx7`(1) `pw1`(3) `pw2`(3) `vw1`(2). Checked file by file against the actual pre-fix
+diff: only **2 of 8** (`pw2`, `vw1`) were fully real with no gap. **5 of 8** (`bg1`, `bg2`, `cd4`, `fx5`,
+`fx7`) were VERIFIED IN NAME ONLY — the reference was a diagnostic probe for an unrelated check or a
+comment describing the PRODUCT's own internal behaviour, never a gate in front of the flagged dispatch,
+which was completely bare either way. **`pw1` itself — the file the fix was extracted from — had two
+sites that bypassed its own proven instrument entirely** (the "⋯" menu press, "Display on Board"),
+sitting a few hundred lines from `hittablePointBy`: the sharpest instance of the warning this ask was
+built on. **This corrects the first Shape A entry above, which claimed "no file verified in name only"
+— that claim was made before this audit was actually done, and was wrong.**
+
+**(5) ROUTING — UNCHANGED.** `item121.mjs` (1 site) and `item126.mjs` (7 sites) remain HELD, not
+verified, not touched. Chat 1 carries the INK/FIX notice; nothing converts until it clears.
+
+**Regression posture:** 91 files now on the roster (`tp1.mjs` added, permanent, not a one-off). The full
+91-file pair has still NOT been run — chat 1's to grant, per Fable's own message.
 
 
 
