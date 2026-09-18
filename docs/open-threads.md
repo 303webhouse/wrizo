@@ -6545,6 +6545,10 @@ literals, RUN AS PART OF THE SUITE** — so the next one fails a run rather than
 
 > **A GREP READS TEXT, NOT BYTES — A CONTROL CHARACTER IS INVISIBLE TO EVERY INSTRUMENT THAT READS TEXT.**
 
+**⚠ SPEC EXTENDED 2026-09-18 — the check must catch the SILENT form, not only the crashing one.** See
+*ITEM 152's COST, MEASURED*, below. The build description above is kept as written; the coverage
+requirement widens.
+
 **INTERIM PRACTICE, ALL LANES, UNTIL 152 LANDS: write regex and ledger lines through `printf` or
 `String.raw`, never through a heredoc or a template that interpolates.**
 
@@ -6760,7 +6764,54 @@ governs ONLY newly-born pins. **The brief SAYS SO rather than implying otherwise
 **TWO OPTIONS CONFIRMED LIVE TO PW2.** **"Moved+resized" WITHDRAWN ON THE MEASUREMENT, EXPLICITLY**
 rather than by implication.
 
+## TOOLS' PARK CONFORM — RUNNING — 2026-09-18
+
+**`cddd343`, chat 1 confirmed on the box (PID 65880, launched 00:37).** `main` at `f608a90` confirmed
+IN; **VW1 and PW2 both verified present by `pw1.mjs`'s THREE `data-category` handles.**
+
+**ALL FOUR FILES NEEDED DIFFERENT FIXES, NOT ONE REPEATED PATCH:** `item130` and `item83e` took
+`item137`'s shape; `pw1.mjs` took ONLY THE JSON EMIT — it folds parks into a combined VERIFY line and
+has no `PARKED:` line BY DESIGN; `item133` had NO `HARNESS_PARKED` BLOCK AT ALL.
+
+> **CONFORM TO THE RULE, NOT TO THE SHAPE OF THE FILE BESIDE IT.**
+
+*(A conform that invents a line to satisfy a pattern is the pattern eating the file — the same failure
+shape as a park that asserts a claim its file was never built to make.)*
+
+## ITEM 152's COST, MEASURED — 2026-09-18
+
+**TOOLS HIT THE ESCAPE-COLLAPSE TWICE IN ONE BUILD.** **The second broke a file and `node --check`
+caught it. The FIRST MATCHED ZERO TIMES WITH NO ERROR** — a silent no-op found only by comparing raw
+bytes against an empty result. **FOURTH AND FIFTH INSTANCES OF THE CLASS IN THREE DAYS.**
+
+**ADDED TO 152's SPEC: the check must catch the SILENT form, not only the crashing one — the silent
+form is the COMMON one, and no syntax check sees it.**
+
+> **AN ESCAPE EATEN IN A PIPELINE EITHER BREAKS THE FILE OR MATCHES NOTHING — ONLY THE SECOND IS
+> SILENT.**
+
+*(The crashing form is self-reporting, eventually — `node --check` or a runtime throw. The silent form
+reports nothing at all: a guard that should have matched, didn't, and a clean run is indistinguishable
+from a guard that was never needed. This is the same shape as item 141's classifier: a population of
+zero proves nothing without a coverage number beside it.)*
+
+## PW2's THREE CARRIED NOTES FOR 138 — REGISTERED — 2026-09-18
+
+1. **THE ENTRY-KIND RULE, WITH ITS HARNESS CHECK** — restated from the exclusion clause, carried
+   forward as a build note rather than left only in the ruling.
+2. **`BOARD_CARD_W/H` IS PW2's OWN CREATOR** — so "no path creates a tall page-pin" INCLUDES A CREATOR
+   THIS LANE WROTE. **Stated PLAINLY rather than reading as pre-existing** — the population finding is
+   not evidence found in someone else's code; part of it is PW2 grading its own work.
+3. **RE-SWEEP WHEN THE SLICE GROWS** — 138 touches BIRTH GEOMETRY, and `pw1`, `pw2`, `ab4` and
+   `item9192` all carry fixtures around it. *(The refined form of "sweep behaviours, not strings": a
+   census taken before the slice grows does not cover what the slice grows to include.)*
+
+**TWO CARRIED DEBTS ON THE PW2 BRANCH STAND** — `boardNestChain`'s instability comment, the
+`STRIP_PLAN` successor — **both riding the branch's NEXT LEGITIMATE MOVE rather than moving a stamped
+tree.** *(Unchanged; restated at the point 138 makes them relevant again.)*
+
 Registry: next free **153**.
+
 
 
 
