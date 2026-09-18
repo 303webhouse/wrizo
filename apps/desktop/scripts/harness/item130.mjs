@@ -177,6 +177,12 @@ if (process.env.HARNESS_PARKED === '1') {
   // existing coverage asserts what it CONTAINS and how it is DRESSED, never
   // whether a pointer can reach it, which is exactly why the defect survived.
   // The empty list is the evidence that the repair falsified nothing.
+  // EMIT THE ARRAY, even empty. The park counter reads the JSON records,
+  // not the human line below it, so a harness that prints only prose
+  // declares a park count nothing can audit -- and the day this file DOES
+  // park something it would be parked invisibly.
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
   console.log('\nITEM130 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 130 parks nothing. No prior assertion covered real-pointer reachability of the strip, so none is superseded by restoring it.');
 }
