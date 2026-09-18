@@ -52,6 +52,7 @@
 //        anchors riding its edges, on the default theme and on Flux, at
 //        framed and legacy widths.
 import { withHarness } from '../runtime-verify.mjs';
+import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -89,15 +90,13 @@ const freshScriptPage = async (app, width = LAPTOP_W, height = 900, theme = 'pla
 
 const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? el.getBoundingClientRect().toJSON() : null; })()`);
 
-const trustedClick = async (app, sel) => {
-  const r = await rectOf(app, sel);
-  if (!r) throw new Error('trustedClick: no element ' + sel);
-  const x = r.left + r.width / 2, y = r.top + r.height / 2;
-  await app.mouseMove(x, y);
-  await app.mouseDown(x, y);
-  await app.mouseUp(x, y);
-  await sleep(160);
-};
+// ITEM 151 (Shape A) -- now a thin wrapper over the shared
+// trusted-point.mjs instrument, for the same reason bm1/item9192/sc2's
+// identical copies were converged: the old body checked only 'did the
+// selector match ANYTHING', never whether the computed centre was
+// hit-testable at dispatch. Same call signature, no caller changed.
+const trustedClick = async (app, sel) =>
+  trustedDispatch(app, `document.querySelector(${JSON.stringify(sel)})`, sel);
 
 // Everything the page claims about itself, read off RENDERED geometry — plus
 // a probe span measured in the sheet's own font, so the character advance is

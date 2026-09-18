@@ -29,6 +29,7 @@
 //   storage, so a raw-seeded row vanishes at the next product write anywhere in
 //   the run (item 85 / item 129).
 import { withHarness } from '../runtime-verify.mjs';
+import { hittablePointBy, hittablePoint } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -87,23 +88,12 @@ const waitOr = async (app, expr, what, ms = 6000) => {
 // So: find a point inside the element that `elementFromPoint` genuinely resolves
 // to, and press THERE with real CDP pointer events. If no point in the element
 // is reachable, that is a real finding and it is recorded as such.
-const hittablePointBy = (app, elExpr) => app.evalJs(`(() => {
-  const e = (() => { return ${elExpr}; })();
-  if (!e) return null;
-  e.scrollIntoView({ block: 'center', inline: 'center' });
-  const b = e.getBoundingClientRect();
-  if (b.width <= 0 || b.height <= 0) return { found: false, why: 'zero-size' };
-  const fr = [0.5, 0.25, 0.75, 0.12, 0.88];
-  for (const fy of fr) for (const fx of fr) {
-    const x = b.left + b.width * fx, y = b.top + b.height * fy;
-    const top = document.elementFromPoint(x, y);
-    if (top && (top === e || e.contains(top))) return { found: true, x, y };
-  }
-  const c = document.elementFromPoint(b.left + b.width/2, b.top + b.height/2);
-  return { found: false, why: 'occluded', by: c ? (typeof c.className === 'string' ? c.className : c.tagName) : null };
-})()`);
-
-const hittablePoint = (app, sel) => hittablePointBy(app, `document.querySelector(${JSON.stringify(sel)})`);
+// ITEM 151 -- hittablePointBy/hittablePoint now live in ../trusted-point.mjs,
+// the shared, canonical instrument (extracted from THIS file's own
+// implementation, which is where item 130's occlusion was first proven).
+// pw2.mjs, and every helper found dispatching by raw coordinate elsewhere
+// in the suite, import the same two names rather than carrying their own
+// copy -- four copies of one guard was four places for the next gap.
 
 // Press whatever `elExpr` (a JS expression evaluated in the page) resolves to.
 const pressEl = async (app, elExpr, what) => {
@@ -550,8 +540,12 @@ await withHarness(async (app) => {
         if (!opened) {
           ok('DRIVER: the not-shown membership row carries a ⋯ to open', false, 'absent');
         } else {
-          await app.mouseDown(opened.x, opened.y);
-          await app.mouseUp(opened.x, opened.y);
+          // ITEM 151 (Shape A) -- matching this file's own convention: a
+          // failed hit-test REPORTS via ok() and skips the dispatch,
+          // rather than throwing and aborting every check after it.
+          const hitOpened = await app.evalJs(`!!document.elementFromPoint(${opened.x}, ${opened.y})`);
+          if (!hitOpened) { ok('DRIVER: the ⋯ point is reachable by a real pointer', false, 'hits nothing'); }
+          else { await app.mouseDown(opened.x, opened.y); await app.mouseUp(opened.x, opened.y); }
           await sleep(200);
           const actLabels = await app.evalJs("[...document.querySelectorAll('.wz-cascade-pin-display')].map(b => b.textContent)");
           ok('S3 (Nick, Q4): "Display on Board" is offered from the membership row\'s own ⋯ — the menu is the path that must be complete, and it is',
@@ -565,8 +559,10 @@ await withHarness(async (app) => {
           if (!pressed) {
             ok('DRIVER: a "Display on Board" item is present to press', false, 'absent');
           } else {
-            await app.mouseDown(pressed.x, pressed.y);
-            await app.mouseUp(pressed.x, pressed.y);
+            // ITEM 151 (Shape A) -- same convention as the '...' site above.
+            const hitPressed = await app.evalJs(`!!document.elementFromPoint(${pressed.x}, ${pressed.y})`);
+            if (!hitPressed) { ok('DRIVER: the Display-on-Board point is reachable by a real pointer', false, 'hits nothing'); }
+            else { await app.mouseDown(pressed.x, pressed.y); await app.mouseUp(pressed.x, pressed.y); }
             await sleep(400);
             const flag = await app.evalJs("(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'pw1-absence-board'); const b = (e.boxes||[]).find(b => b.entryId === 'pw1-newpin-target'); return b ? b.onCanvas : null; })()");
             const noteNow = await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb')].map(t => ({ title: t.querySelector('.wz-cascade-thumb-title')?.textContent, note: t.querySelector('.wz-cascade-thumb-note')?.textContent }))");

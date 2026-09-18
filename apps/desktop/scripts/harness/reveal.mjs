@@ -24,6 +24,7 @@
 // — S3 measures exactly that, because a claim like this one is worth nothing
 // unless the check would have failed before.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -70,7 +71,11 @@ const centreOf = (app, sel) => app.evalJs(`(() => {
 // REAL POINTER EVENTS ALWAYS (the standing probe law). A page-side
 // `new MouseEvent('click')` is isTrusted:false and — more to the point here —
 // moves no caret, so it could not exercise the thing under test at all.
+// ITEM 151 (Shape A) -- pt is a bare coordinate object, same limits as
+// clickAt: this confirms the point is not empty space, not that it
+// still belongs to whatever the caller originally meant by it.
 const realClick = async (app, pt) => {
+  await assertHittable(app, pt.x, pt.y, `realClick(${pt.x}, ${pt.y})`);
   await app.mouseDown(pt.x, pt.y);
   await app.mouseUp(pt.x, pt.y);
   await sleep(250);

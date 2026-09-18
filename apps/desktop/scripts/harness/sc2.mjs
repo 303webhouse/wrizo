@@ -123,6 +123,7 @@
 // cost is React reconciling every StaticScriptElement — no React.memo, a fresh
 // onActivate closure and a fresh elementStyle() object per render.
 import { withHarness } from '../runtime-verify.mjs';
+import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -298,15 +299,14 @@ const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelec
 
 // Gesture claims take a genuinely trusted CDP pointer, never a synthetic click
 // (sc1.mjs's own shape, verbatim).
-const trustedClick = async (app, sel) => {
-  const r = await rectOf(app, sel);
-  if (!r) throw new Error('trustedClick: no element ' + sel);
-  const x = r.left + r.width / 2, y = r.top + r.height / 2;
-  await app.mouseMove(x, y);
-  await app.mouseDown(x, y);
-  await app.mouseUp(x, y);
-  await sleep(160);
-};
+// ITEM 151 (Shape A) -- now a thin wrapper over the shared
+// trusted-point.mjs instrument. The old body checked only 'did the
+// selector match ANYTHING' (a null-rect throw); it never asked whether
+// the computed centre was actually hit-testable at dispatch time, which
+// is item 130's own defect in a second costume. Same call signature, so
+// no caller of trustedClick(app, sel) below needed to change.
+const trustedClick = async (app, sel) =>
+  trustedDispatch(app, `document.querySelector(${JSON.stringify(sel)})`, sel);
 
 // A realistic page of screenplay — headings, action that wraps the measure,
 // cues, parentheticals, dialogue. Not filler: the element MIX is what drives

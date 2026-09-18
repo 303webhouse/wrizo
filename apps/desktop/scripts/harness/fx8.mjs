@@ -17,6 +17,7 @@
 // drag-to-move gesture are both unregressed, with genuinely trusted CDP
 // pointer events throughout (S3).
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -73,7 +74,15 @@ const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelec
 // A genuinely trusted single click (mouseDown + mouseUp, real CDP Input
 // events) at a fixed point — the FX7 S5-S8 shared discipline's own baseline
 // gesture, distinct from a double-click.
-const clickAt = async (app, x, y) => { await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y); };
+// ITEM 151 (Shape A) -- clickAt takes a bare COORDINATE, not a selector,
+// so it cannot verify the point still belongs to whatever the caller
+// meant -- only that the point is not empty space. Weaker than
+// trustedDispatch, still real: 'the click simply hits empty space, and
+// nothing reports it' is exactly this shape.
+const clickAt = async (app, x, y) => {
+  await assertHittable(app, x, y, `clickAt(${x}, ${y})`);
+  await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y);
+};
 
 const cursorOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? getComputedStyle(el).cursor : null; })()`);
 
@@ -250,6 +259,8 @@ await withHarness(async (app) => {
   const sx = Math.round(dragCard.x + dragCard.width / 2), sy = Math.round(dragCard.y + dragCard.height / 2);
   const restDragging = await app.evalJs("document.querySelector('.board-canvas').dataset.dragging");
   ok('S3: data-dragging is false at rest (before any gesture starts)', restDragging === 'false', restDragging);
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, sx, sy, '[data-box-id="fx8-s3-drag-card"] (drag start)');
   await app.mouseDown(sx, sy);
   await sleep(30);
   await app.mouseMove(sx + 20, sy + 15); // past the 6px MOUSE_DRAG_THRESHOLD — promotes to a real drag

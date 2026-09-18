@@ -29,6 +29,7 @@
 // Run: node scripts/harness/bg1.mjs   (from apps/desktop, with dist-web freshly
 // built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
+import { hittablePointBy } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -86,12 +87,20 @@ const setBoardMode = async (app, mode) => {
 // A genuinely TRUSTED click on a door (the standing gesture-fidelity
 // discipline): read the door's own rect, press and release there through CDP
 // Input rather than calling .click() page-side.
+// ITEM 151 (Shape A) -- converged onto the shared instrument's LOWER
+// level (hittablePointBy, not trustedDispatch), because the original
+// sequence deliberately hovers the point before pressing it and
+// trustedDispatch does not expose the resolved point for that. The old
+// body threw when the selector matched nothing but never checked whether
+// the computed centre was still hit-testable at dispatch time.
 const clickDoor = async (app, key) => {
-  const r = await app.evalJs(`(() => { const el = document.querySelector('[data-beginning="${key}"]'); if (!el) throw new Error('no door ${key}'); const b = el.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
-  await app.mouseMove(r.x, r.y);
+  const elExpr = `document.querySelector('[data-beginning="${key}"]')`;
+  const p = await hittablePointBy(app, elExpr);
+  if (!p || !p.found) throw new Error(`clickDoor: door ${key} -- ${p ? JSON.stringify(p) : 'absent'}`);
+  await app.mouseMove(p.x, p.y);
   await sleep(60);
-  await app.mouseDown(r.x, r.y);
-  await app.mouseUp(r.x, r.y);
+  await app.mouseDown(p.x, p.y);
+  await app.mouseUp(p.x, p.y);
   await sleep(300);
 };
 

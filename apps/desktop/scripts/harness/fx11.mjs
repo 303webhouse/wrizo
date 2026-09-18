@@ -29,6 +29,7 @@
 // precedent documents. No blind patch; the checks below GUARD the DoD ("a card
 // resized is a card still movable") and Nick's device sitting is the real check.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -56,7 +57,12 @@ const freshBoard = async (app, boardId, boxes, width = LAPTOP_W, height = 900) =
   await app.emulateDpr(1, width, height);
 };
 const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? el.getBoundingClientRect().toJSON() : null; })()`);
-const clickAt = async (app, x, y) => { await app.mouseDown(Math.round(x), Math.round(y)); await sleep(30); await app.mouseUp(Math.round(x), Math.round(y)); };
+// ITEM 151 (Shape A) -- same fix as the four other clickAt copies: a bare
+// coordinate can only be checked for 'hits nothing', not identity.
+const clickAt = async (app, x, y) => {
+  await assertHittable(app, Math.round(x), Math.round(y), `clickAt(${x}, ${y})`);
+  await app.mouseDown(Math.round(x), Math.round(y)); await sleep(30); await app.mouseUp(Math.round(x), Math.round(y));
+};
 const liveBox = (app, id) => app.evalJs(`window.wrizoBoard().find(b => b.id === ${JSON.stringify(id)}) ?? null`);
 const canvasDragging = (app) => app.evalJs("document.querySelector('.board-canvas')?.dataset.dragging ?? null");
 const bodyCursor = (app, id) => app.evalJs(`(() => { const el = document.querySelector('[data-box-id="${id}"] .board-text'); return el ? getComputedStyle(el).cursor : null; })()`);
@@ -69,6 +75,10 @@ const selectCard = async (app, id) => {
 const resizeBy = async (app, steps, settle = 320) => {
   const h = await rectOf(app, '.board-handle');
   const hx = Math.round(h.x + h.width / 2), hy = Math.round(h.y + h.height / 2);
+  // ITEM 151 (Shape A) -- verify the DRAG STARTS on something real. Not
+  // re-checked at the drag's own mid/end points: those move deliberately,
+  // so 'hits nothing there' would be expected, not a finding.
+  await assertHittable(app, hx, hy, '.board-handle (resizeBy start)');
   await app.mouseDown(hx, hy); await sleep(30);
   for (const [dx, dy] of steps) { await app.mouseMove(hx + dx, hy + dy); await sleep(45); }
   const last = steps[steps.length - 1];
@@ -77,6 +87,9 @@ const resizeBy = async (app, steps, settle = 320) => {
 const moveBody = async (app, id) => {
   const r = await rectOf(app, `[data-box-id="${id}"]`);
   const mx = Math.round(r.x + r.width / 2), my = Math.round(r.y + r.height / 2);
+  // ITEM 151 (Shape A) -- same reasoning as resizeBy: verify the drag's
+  // START point only.
+  await assertHittable(app, mx, my, `[data-box-id="${id}"] (moveBody start)`);
   await app.mouseDown(mx, my); await sleep(30);
   for (const [dx, dy] of [[25, 20], [60, 45], [100, 75]]) { await app.mouseMove(mx + dx, my + dy); await sleep(45); }
   await app.mouseUp(mx + 100, my + 75); await sleep(320);
@@ -94,6 +107,8 @@ await withHarness(async (app) => {
     // Begin a genuine drag and HOLD (no release).
     const r = await rectOf(app, `[data-box-id="${CID}"]`);
     const mx = Math.round(r.x + r.width / 2), my = Math.round(r.y + r.height / 2);
+    // ITEM 151 (Shape A) -- verify the drag's START point only.
+    await assertHittable(app, mx, my, `[data-box-id="${CID}"] (S1 drag start)`);
     await app.mouseDown(mx, my); await sleep(30);
     await app.mouseMove(mx + 20, my + 15); await sleep(40);
     await app.mouseMove(mx + 45, my + 32); await sleep(60);

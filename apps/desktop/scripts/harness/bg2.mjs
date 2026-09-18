@@ -32,6 +32,7 @@
 // not to re-derive them.
 // Run: node scripts/harness/bg2.mjs   (from apps/desktop, dist-web freshly built)
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -200,6 +201,10 @@ await withHarness(async (app) => {
   await sleep(80);
   await app.mouseMove(doorBox.x, doorBox.y);
   const hoverColour = await settledColour();
+  // ITEM 151 (Shape A) -- the mouse is already at this exact point (the
+  // move two lines up), so this confirms the press about to happen lands
+  // on something rather than empty space.
+  await assertHittable(app, doorBox.x, doorBox.y, 'bg2 door centre');
   await app.mouseDown(doorBox.x, doorBox.y);
   const pressColour = await settledColour();
   // Release OFF the door, deliberately. A press sampled with a release on the

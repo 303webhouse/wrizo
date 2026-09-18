@@ -20,6 +20,7 @@
 // through genuinely trusted CDP pointer/click events (S5-S8); the deck
 // wizard's own routing — which door Nick actually reached (S9).
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -92,7 +93,15 @@ const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelec
 // A genuinely trusted single click (mouseDown + mouseUp, real CDP Input
 // events) at a fixed point — the S5-S8 shared discipline's own baseline
 // gesture, distinct from a double-click.
-const clickAt = async (app, x, y) => { await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y); };
+// ITEM 151 (Shape A) -- clickAt takes a bare COORDINATE, not a selector,
+// so it cannot verify the point still belongs to whatever the caller
+// meant -- only that the point is not empty space. Weaker than
+// trustedDispatch, still real: 'the click simply hits empty space, and
+// nothing reports it' is exactly this shape.
+const clickAt = async (app, x, y) => {
+  await assertHittable(app, x, y, `clickAt(${x}, ${y})`);
+  await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y);
+};
 
 // S5-S9 — reaches an ACTUAL dealt board through B3's own real door
 // (CreateProject.tsx's "Start from a deck…" -> DeckWizard -> Character
@@ -623,6 +632,8 @@ await withHarness(async (app) => {
   let handle = await rectOf(app, '.board-handle');
   let hx = Math.round(handle.x + handle.width / 2), hy = Math.round(handle.y + handle.height / 2);
   // Upsize first (matches Nick's own "once a card is upsized" wording).
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, hx, hy, '.board-handle (upsize start)');
   await app.mouseDown(hx, hy);
   await sleep(30);
   for (const [dx, dy] of [[50, 35], [110, 80], [180, 130]]) { await app.mouseMove(hx + dx, hy + dy); await sleep(40); }
@@ -636,6 +647,8 @@ await withHarness(async (app) => {
   handle = await rectOf(app, '.board-handle');
   hx = Math.round(handle.x + handle.width / 2); hy = Math.round(handle.y + handle.height / 2);
   const trace = [];
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, hx, hy, '.board-handle (downsize start)');
   await app.mouseDown(hx, hy);
   await sleep(30);
   for (const [dx, dy] of [[-20, -15], [-50, -35], [-90, -60], [-140, -95]]) {
@@ -659,6 +672,8 @@ await withHarness(async (app) => {
   await sleep(200);
   handle = await rectOf(app, '.board-handle');
   hx = Math.round(handle.x + handle.width / 2); hy = Math.round(handle.y + handle.height / 2);
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, hx, hy, '.board-handle (content-floor drag start)');
   await app.mouseDown(hx, hy);
   await sleep(30);
   for (const [dx, dy] of [[-100, -5], [-200, -10], [-280, -15]]) { await app.mouseMove(hx + dx, hy + dy); await sleep(50); }
