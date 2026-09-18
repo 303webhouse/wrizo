@@ -3,6 +3,34 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## ITEM 151 — THE SILENT DRIVER ACT: S0 REGISTERED, ROUTING NOTICE TO INK AND FIX — 2026-09-18 (tools lane; branch `item151-silent-acts`)
+
+**S0 LANDED, NO SITE TOUCHED.** Full record: `docs/menus/item151-s0-survey.md`. **RE-CENSUSED AT
+branch tip (`746682b`): 152, not 156** — same 49 files, 128 optional-chain acts unchanged, 24
+if-guarded calls (four fewer than the original count). Traced: three of the four are VW1's own
+`clickCategory` helper rewrites (`ab4`, `cd2`, `fx9`), which already converted `if (item)
+item.click();` into a named throw incidentally, landing this item's own fix pattern three times
+before the item existed. The fourth is not yet traced to a specific commit.
+
+**ROUTING NOTICE, BEFORE ANY SITE IS TOUCHED — TO INK AND TO FIX.** The four leading files
+(`item121.mjs` 11 · `fx5.mjs` 10 · `item126.mjs` 8 · `item112a.mjs` 7) read as INK's territory by
+subject. Per the routing condition this item was ratified under, nothing in those four converts
+before INK and FIX have seen item 151's number and this survey.
+
+**THE FIX GENERALISES A PATTERN ALREADY PROVEN THREE TIMES.** `if (item) item.click();` and
+`document.querySelector(sel)?.click();` both do nothing observable when the target is absent — a
+driver can press a control that isn't there and the check that follows reads a page that never
+moved. The fix is a NAMED FAILURE AT THE SITE, never a removed guard: `if (!item) throw new
+Error(...)` before the act, not `if (item) item.click();` deleted down to a bare `item.click();`.
+
+**THE DURABILITY CHECK IS INVERTED, NOT ENUMERATED** — the same design VW1's check 7 landed on
+after being widened twice for the same species. The 156/152 figure itself was built from two
+PATTERNS, and this item's own coverage check will not trust a third pattern to prove its own
+completeness: any live act reached through a conditional or optional-chain is an offender unless
+its guard's own branch fails a named check when the target is absent, read from the AST shape of
+the guard rather than matched against a spelling list. A fifth silent-fallthrough form should fail
+this check by construction.
+
 ## VW1 (ITEM 134) — THE RAIL, GROUPED BY KIND, SELECTED BY NAME: BUILT AND OFFERED — 2026-09-17 (tools lane; branch `vw1-rail`)
 
 **OFFERED TO CHAT 1 — BOTH FINAL LEGS CLEAN, 89/89 EACH.** Full record: `docs/menus/vw1-offer-2026-09-17.md`.
