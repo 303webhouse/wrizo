@@ -104,8 +104,11 @@ export type DeskTermId =
   // empty) — the ids stay so the retirement reads as deliberate rather than as
   // a term that went missing.
   | 'cascadePlanBoardsConnected' | 'cascadePlanRelationOwn' | 'cascadePlanOwnSuffix'
-  | 'cascadePlanNoDrawer' | 'cascadeOpenBoard'
+  | 'cascadePlanNoDrawer' | 'cascadeOpenBoard' | 'cascadePlanCaptionIn'
+  | 'cascadeCardCopyTo' | 'cascadeCardCopyTitle' | 'cascadeCardCopyNote'
+  | 'cascadeCardCopiedFrom' | 'cascadeCardRemove' | 'cascadeCardOnlyBoard'
   | 'cascadePlanSectionCards' | 'cascadePlanSectionPages'
+  | 'cascadePlanSectionBoards' | 'cascadePlanLinkedHeading'
   | 'cascadePinShown' | 'cascadePinNotShown' | 'cascadePinDisplay' | 'cascadePinHide'
   | 'cascadePlanNoProject' | 'cascadeBoardMove' | 'cascadeBoardDelete' | 'cascadeBoardDeleteConfirm'
   | 'cascadeBoardDeleteCancel' | 'cascadeBoardDeleteQuestion'
@@ -669,9 +672,30 @@ const CANONICAL: Record<DeskTermId, string> = {
   cascadePlanRelationOwn: 'its own plan board',
   cascadePlanOwnSuffix: '— plan',
   cascadePlanNoDrawer: 'Not in a drawer',
+  // PW2 S2 — the BOARDS CONNECTED zone's caption on a board.
+  cascadePlanCaptionIn: 'in',
+  // PW2 S3 (item 123) — card transfer. COPY ONLY: Move is an ownership
+  // transfer and a different act, deferred by name.
+  cascadeCardCopyTo: 'Copy to a board…',
+  cascadeCardCopyTitle: 'Copy this card to a board',
+  // THE TRAY'S DISCLOSURE, before the act. Item 123's ruled sentence also
+  // carried "its tags come with it" — DEFERRED ON THE RECORD (Fable,
+  // 2026-09-13), successor C4: a Box has no tags field, so cards cannot carry
+  // tags yet and the clause has nothing to act on. The tray ships only the
+  // true clauses; the middle one returns the day cards can be tagged. A tray
+  // that promises what the product cannot do is the surprise it exists to
+  // prevent.
+  cascadeCardCopyNote: 'A copy is a new card owned by the board it lands on. Its threads do not come with it, and edits do not follow.',
+  cascadeCardCopiedFrom: 'copied from',
+  cascadeCardRemove: 'Remove from this board',
+  cascadeCardOnlyBoard: 'its only board',
   cascadeOpenBoard: 'Open the board',
   cascadePlanSectionCards: 'Cards',
-  cascadePlanSectionPages: 'Pages linked to this board',
+  // PW2 S2 AMENDMENT (Nick) — one heading, two clearly separated sections.
+  // Fable's derived wording for the heading, standing until Nick words it.
+  cascadePlanSectionPages: 'Pages',
+  cascadePlanSectionBoards: 'Boards',
+  cascadePlanLinkedHeading: 'Linked to this board',
   // PW1 S3 — display state is a fact ON THE ROW, never inferred from the wall.
   cascadePinShown: 'member · shown on the board',
   cascadePinNotShown: 'member · not shown on the board',

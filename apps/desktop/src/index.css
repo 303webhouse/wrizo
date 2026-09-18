@@ -1454,6 +1454,32 @@ a:focus-visible,
 .board-pin-badge{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent-rest); margin-bottom:2px; }
 .board-pin-title{ font-weight:600; }
 .board-pin-excerpt{ font-size:12px; color:var(--text-mid); line-height:1.4; margin-top:2px; }
+
+/* ===== PW2 S2 — THE BOARD-CARD (item 128) ================================
+   A nested board on its parent's canvas. It rides the SAME `.board-pin` box a
+   page does — the membership is the same relation — so this rule adds only the
+   face.
+
+   SHAPE TEACHES THE KIND, AND SPENDS NO COLOUR. The silhouette is a DOUBLED
+   EDGE: a second border offset behind the card, drawn by `::before` at
+   z-index:-1 (Journey D's `.brdcard`). "A thing that holds things", said in
+   geometry. This is the job Pass 5 routed to item 96 as colour-as-kind-signal
+   — shape does it instead, so a third card kind costs the Plateau ember
+   ceiling nothing and reads the same in every theme.
+
+   `isolation:isolate` is NOT set here on purpose: the pseudo-element must sit
+   BEHIND the card's own background, and a new stacking context would trap it
+   in front. The card already paints an opaque `--panel` ground, so z-index:-1
+   lands it between the card and the canvas rather than under the canvas. */
+.board-boardcard{ position:relative; }
+.board-boardcard::before{
+  content:''; position:absolute; left:4px; right:-4px; top:-4px; bottom:4px;
+  border:1px solid var(--ink-border); z-index:-1; pointer-events:none;
+  border-radius:inherit;
+}
+/* The doubled edge answers hover with the card, so the whole silhouette reads
+   as one object rather than two overlapping ones. */
+.board-box:hover .board-boardcard::before{ border-color:var(--accent-rest); }
 /* Deliberately UNCHANGED by FX8 S3 (still cursor:default, not grab) — a
    missing-page-pin card (its own referenced entry genuinely gone) has no
    live source to open, but IS still draggable like any other card via the
@@ -1594,6 +1620,11 @@ a:focus-visible,
   background:var(--ink-900); border:1px solid var(--ink-border); border-radius:0;
 }
 .board-sheet-title{ font-family:var(--font-display); font-size:18px; color:var(--text-hi); margin-bottom:12px; }
+/* PW2 S3 — the transfer tray's disclosure line. Quiet, but ABOVE the
+   destinations rather than beside them: it states what a copy is before the
+   writer picks where it lands, which is the only position where it can
+   prevent a surprise rather than explain one. */
+.board-sheet-note{ font-size:12px; color:var(--text-mid); line-height:1.5; margin:-6px 0 12px; }
 .board-dest-row{ width:100%; text-align:left; background:none; border:none; cursor:pointer; }
 @media (prefers-reduced-motion:reduce){ .board-box{ transition:none; } }
 
@@ -4260,6 +4291,15 @@ a:focus-visible,
 .wz-cascade-thumb-menu-item{ background:none; border:0; color:var(--text-mid); text-align:left;
   font-family:var(--font-ui); font-size:12px; cursor:pointer; padding:4px 6px; }
 .wz-cascade-thumb-menu-item:hover{ color:var(--text-hi); }
+/* PW2 S1/S3 — THE INERT VERB: present, unpressable, and saying why. Used by
+   the last-board removal and by S1's descendant refusal. G3's LAWFUL pole —
+   a transient gate on real capability, with the reason disclosed — never a
+   locked door wearing paint. Absence would be wrong here: it makes the writer
+   hunt for a verb that is not missing, only refused. */
+.wz-cascade-thumb-menu-item.wz-cascade-inert{ color:var(--text-low); cursor:default; }
+.wz-cascade-thumb-menu-item.wz-cascade-inert:hover{ color:var(--text-low); }
+.wz-cascade-inert-why{ font-size:10px; color:var(--text-low); font-style:italic; margin-left:6px; }
+
 
 /* ===== PW1 — BOARDS CONNECTED (the Page/Plan workflow, phase 1) ===========
    S1: the Plan panel's connections zone. The heading reuses the engraved
@@ -4270,6 +4310,11 @@ a:focus-visible,
    and the survey's slide are the built engine, and this arc adds none. */
 .wz-cascade-plan-zone{ display:flex; flex-direction:column; gap:2px; }
 .wz-cascade-plan-title{ padding:0 0 4px; }
+/* PW2 S2 — the zone's caption on a board ("in Novel"). Quiet, one step
+   below the engraved heading: it states where this board lives, and it is
+   deliberately NOT a control (G3 — a drawer has no surface of its own yet).
+   `cursor:default` so nothing about it invites a press. */
+.wz-cascade-plan-caption{ font-size:11px; color:var(--text-low); padding:0 0 6px; cursor:default; }
 .wz-cascade-plan-rule{ height:1px; background:var(--ink-border); margin:8px 0 2px; }
 /* A board row: title over its relation/drawer line. `.wz-cascade-list-item`'s
    own hover/rhythm, with a second line the list rows never needed. */
@@ -4293,6 +4338,28 @@ a:focus-visible,
 .wz-cascade-survey-section{ font-size:10px; letter-spacing:2px; text-transform:uppercase;
   color:var(--text-low); padding:8px 2px 2px; }
 .wz-cascade-survey-section:first-child{ padding-top:0; }
+/* PW2 S2 AMENDMENT (Nick) — THE TWO THUMBNAIL SHAPES, and the sections that
+   hold them. "Section off Boards from Pages clearly and use a different
+   thumbnail (horizontal rectangles for Boards, vertical rectangles for
+   Pages)."
+
+   The shape is carried by an ASPECT RATIO on a leading swatch rather than by
+   the row's own box, so a long title can still wrap without turning a board
+   into a page. Geometry is the signal; no colour is spent, and no badge is
+   needed to read the row. Same law the canvas board-card obeys — a board is
+   wider than tall wherever it appears. */
+.wz-cascade-thumb{ position:relative; }
+.wz-thumb-page::before, .wz-thumb-board::before{
+  content:''; display:block; border:1px solid var(--ink-border); margin-bottom:6px;
+}
+.wz-thumb-page::before{ width:22px; height:30px; }   /* vertical — a page */
+.wz-thumb-board::before{ width:34px; height:20px; }  /* horizontal — a board */
+/* The separation between sections is VISIBLE, not merely semantic: a rule and
+   real space, so "clearly" is something the eye does rather than something the
+   DOM knows. */
+.wz-cascade-survey-section{ border-top:1px solid var(--ink-border); margin-top:10px; }
+.wz-cascade-survey-section:first-child{ border-top:0; margin-top:0; }
+
 /* S3 — the membership row's own state line. Deliberately NOT the excerpt's
    class: content and provenance stay distinguishable to a reader and to a
    harness alike. */

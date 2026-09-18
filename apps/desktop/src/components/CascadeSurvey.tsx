@@ -34,6 +34,12 @@ export interface SurveyItem {
   // asserting the no-count law over second lines must be able to tell them
   // apart.
   note?: string;
+  // PW2 S2 AMENDMENT (Nick, verbatim: "use a different thumbnail —
+  // horizontal rectangles for Boards, vertical rectangles for Pages").
+  // SHAPE TEACHES THE KIND, in the rail as it already does on the canvas:
+  // a board is WIDER THAN TALL, a page TALLER THAN WIDE. It costs no colour
+  // and needs no badge — the silhouette is legible before the text is read.
+  kindShape?: 'page' | 'board';
 }
 
 export interface SurveyProps {
@@ -89,7 +95,12 @@ export function CascadeSurvey({ title, items, onTravel, docked, onDismiss, rende
           <button type="button" className="wz-cascade-dock-btn" aria-label="Close" onClick={onDismiss}>×</button>
         )}
       </div>
-      <div className="wz-cascade-survey-grid">
+      {/* PW2 S2 AMENDMENT — the grid's ACCESSIBLE NAME. Ruled: no stacked
+          heading, so "Linked to this board" never renders as a visible line;
+          it names the region instead, where a screen reader reaches it and a
+          sighted reader already has the survey's own title above. A lexicon
+          term with no site is rot, so it has one. */}
+      <div className="wz-cascade-survey-grid" role="group" aria-label={t('cascadePlanLinkedHeading')}>
         {items.length === 0 && <div className="wz-cascade-empty">{t('cascadeSurveyEmpty')}</div>}
         {items.map((item, i) => (
           <Fragment key={item.id}>
@@ -120,7 +131,7 @@ function SurveyThumb({ item, onTravel, renderMenu, dragPayload }: { item: Survey
   // one, so no hook runs until the menu is actually opened.
   const menuContent = renderMenu ? renderMenu(item) : null;
   return (
-    <div className={`wz-cascade-thumb${item.current ? ' current' : ''}`}
+    <div className={`wz-cascade-thumb${item.current ? ' current' : ''}${item.kindShape ? ` wz-thumb-${item.kindShape}` : ''}`}
       // PW1 S3 — right-click is the SECOND display act (Nick, Q4), and it is
       // deliberately not a second menu: it opens the one the row already
       // carries. Every act stays reachable by the keyboard and the unfamiliar

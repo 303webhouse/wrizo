@@ -22,18 +22,29 @@ import { useLexicon } from '../store/themeLexicon';
 // entry's id, and never touches the referenced entry's own record.
 type Level = { kind: 'root' } | { kind: 'project'; projectId: string; projectTitle: string };
 
-export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose: () => void }) {
+// PW2 S3 — GENERALIZED, NOT CLONED. Card transfer needs the same destination-
+// first board picker this sheet already is, so it gains an optional `onChoose`
+// (and an optional `note`, for the transfer tray's disclosure) instead of a
+// second sheet growing beside it. Every existing call site passes neither and
+// behaves byte-identically: `onChoose` defaults to the pin it always did.
+export function PinToBoardSheet({ entryId, onClose, onChoose, title, note }: {
+  entryId: string;
+  onClose: () => void;
+  onChoose?: (boardId: string) => void;
+  title?: string;
+  note?: string;
+}) {
   const { t: lex, tMany: lexMany } = useLexicon();
   const [level, setLevel] = useState<Level>({ kind: 'root' });
 
   const choose = (boardId: string) => {
-    pinPageToBoard(entryId, boardId);
+    if (onChoose) onChoose(boardId); else pinPageToBoard(entryId, boardId);
     onClose();
   };
 
   const addBoard = (projectId: string) => {
     const board = createBoardPage(projectId);
-    pinPageToBoard(entryId, board.id);
+    if (onChoose) onChoose(board.id); else pinPageToBoard(entryId, board.id);
     onClose();
   };
 
@@ -47,7 +58,8 @@ export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose
     return (
       <div className="board-sheet" role="dialog" aria-label={`Pin to a ${lex('board')}`}>
         <div className="board-sheet-inner">
-          <div className="board-sheet-title">Pin to a {lex('board')}</div>
+          <div className="board-sheet-title">{title ?? `Pin to a ${lex('board')}`}</div>
+          {note && <div className="board-sheet-note">{note}</div>}
           <div className="dz-tree" style={{ maxWidth: '100%', margin: '0 0 8px' }}>
             {drawerGroups.map(({ drawer, projects: ps }) => (
               <div key={drawer.id} className="dz-group">
@@ -96,10 +108,15 @@ export function PinToBoardSheet({ entryId, onClose }: { entryId: string; onClose
     <div className="board-sheet" role="dialog" aria-label={`Pin to a ${lex('board')} in ${level.projectTitle}`}>
       <div className="board-sheet-inner">
         <div className="add-crumb" style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 14, fontSize: 13, color: 'var(--text-mid)' }}>
-          <button type="button" className="btn-quiet" style={{ padding: 0 }} onClick={() => setLevel({ kind: 'root' })}>Pin to a {lex('board')}</button>
+          <button type="button" className="btn-quiet" style={{ padding: 0 }} onClick={() => setLevel({ kind: 'root' })}>{title ?? `Pin to a ${lex('board')}`}</button>
           <span style={{ color: 'var(--text-low)' }}>/</span>
           <span style={{ color: 'var(--text-hi)' }}>{level.projectTitle}</span>
         </div>
+        {/* PW2 S3 — the tray's disclosure rides BOTH levels, because the act
+            happens at the LEAF. A note shown only at the root would be gone
+            from the screen at the exact moment the writer commits, which is
+            the one moment it exists for. */}
+        {note && <div className="board-sheet-note">{note}</div>}
         {boards.length === 0 && <p style={{ color: 'var(--text-mid)', marginBottom: 12 }}>No {lex('board').toLowerCase()}s in this {lex('binder').toLowerCase()} yet.</p>}
         <div style={{ maxHeight: 220, overflow: 'auto' }}>
           {boards.map(b => (

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { boardName } from '../store/entryText';
 import {
@@ -7,6 +7,7 @@ import {
   getSystemKind, reconcileSystemBoard, restoreEntry, getJournalEntryIncludingDeleted, subscribe,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed,
+  boardNestChain,
 } from '../store/persistence';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode } from '../store/boardMode';
@@ -25,7 +26,7 @@ import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStac
 import { useWayBack } from './useWayBack';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
-import { useDeskLexicon } from '../store/deskLexicon';
+import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { describePageHome } from '../store/pageHome';
 import { routeForEntry } from '../store/routeForEntry';
 import { useCascade } from './Cascade';
@@ -42,7 +43,7 @@ import { DECKS } from '../decks/library';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
-import type { Box, Project } from '../types';
+import type { JournalEntry, Box, Project } from '../types';
 
 // J4 — the Board: a canvas of positioned boxes (I2/I3 realized). Boxes only
 // ever arrive via a port (J4 Slice 2) or, AB4 S2/S5, a pin (a membership
@@ -189,6 +190,14 @@ function notecardExcerpt(text: string): { title: string; excerpt: string } {
 // (BoardEditor's own travelToPin, below) stays on the live-only read, so a
 // deleted page can be SEEN here but not travelled into — Restore is the one
 // interactive act a Trash card offers, and this is a read-only face.
+// PW2 S2 — a board-card's second line names the DRAWER it lives in, the same
+// fact the Plan panel's board rows carry, so one board reads the same on both
+// of its faces. A board with no drawer says so rather than borrowing a name.
+function boardDrawerLine(entry: JournalEntry): string {
+  if (!entry.projectId) return deskTerm('cascadePlanNoDrawer');
+  return getProject(entry.projectId)?.title || 'Untitled';
+}
+
 function BoardPinBox({ box }: { box: Box }) {
   const { t: lex } = useLexicon();
   const entry = box.entryId ? getJournalEntryIncludingDeleted(box.entryId) : null;
@@ -198,6 +207,30 @@ function BoardPinBox({ box }: { box: Box }) {
   const hasInk = (entry.strokes?.length ?? 0) > 0;
   const { title: rawTitle, excerpt } = notecardExcerpt(entry.text);
   const title = rawTitle || (hasInk ? 'A sketch' : 'Untitled');
+  // PW2 S2 (item 128) — THE BOARD-CARD. A nested board rides the SAME page-pin
+  // box as a page; only its face differs, because the membership is the same
+  // relation and there is no second model to learn (125 generalizes unchanged).
+  //
+  // SHAPE TEACHES THE KIND, and spends no colour doing it: a DOUBLED EDGE — a
+  // thing that holds things — drawn as a `::before` offset behind the card
+  // (Journey D's `.brdcard`). That keeps the Plateau ember ceiling untouched,
+  // and it is the job Pass 5 had routed to item 96 as colour-as-kind-signal;
+  // shape does it instead, so a third kind costs no accent.
+  //
+  // THE BADGE IS THE NOUN (CA1): it reads `Board` — never "From a page", never
+  // the pin's own wording — because covering the badge must still leave you
+  // knowing what you are holding. Second line names its DRAWER, the same fact
+  // a board row's second line carries in the Plan panel, so the two faces of
+  // one board agree.
+  if (entry.pageType === 'board') {
+    return (
+      <div className="board-text board-pin board-boardcard">
+        <div className="board-pin-badge">{lex('board')}</div>
+        <div className="board-pin-title">{title}</div>
+        <div className="board-pin-excerpt">{boardDrawerLine(entry)}</div>
+      </div>
+    );
+  }
   return (
     <div className="board-text board-pin">
       <div className="board-pin-badge">{lex('board')} pin</div>
@@ -2413,6 +2446,9 @@ export function BoardEditor({ id }: { id: string }) {
   // PAGE → door is the one universal control (Fable's ruling: system boards
   // mount the same door, its unpaired branch IS their exit). role=tablist /
   // aria-label apply only when the tabs are present — a lone door is no tablist.
+  // PW2 S2 — the nest chain for this board's own address (see the crumb below).
+  const nestChain = boardNestChain(id);
+
   const boardModeBar = (
     <div
       className="board-mode-strip"
@@ -2492,6 +2528,34 @@ export function BoardEditor({ id }: { id: string }) {
           <div className="sprint-crumb" aria-label="Location" style={{ marginRight: 'auto' }}>
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
+            {/* PW2 S2 (item 128) — THE NEST CHAIN. Once containers hold
+                containers, this line is the only thing that answers "where am
+                I" without opening anything.
+
+                THE PARENT SEGMENT IS THE DOOR OUT, and that is what keeps the
+                recursive container's own test passing: the address stays ONE
+                LINE and the way back stays ONE PRESS at any depth. Each
+                ancestor is pressable and travels to that board directly, so
+                escaping three levels is one press, not three.
+
+                Ordered outermost-first so the line reads the way an address
+                reads. `boardNestChain` walks the SAME guarded walker S1 built
+                (`getBoardsConnecting`, `seen`-terminated), so a graph that
+                arrives already cyclic renders a finite crumb instead of
+                hanging the surface — the read-safety half of S1's law, and the
+                reason the guard had to land first. */}
+            {nestChain.map((a) => (
+              <Fragment key={a.id}>
+                <button type="button" className="crumb-item wz-crumb-nest"
+                  onClick={() => { flushNow(); navigate(`/page/${a.id}`); }}>{a.title}</button>
+                <span className="crumb-sep">/</span>
+              </Fragment>
+            ))}
+            {/* MERGE NOTE (PW2 x item 133): the nest chain above and the rename
+                control below are COMPLEMENTARY — ancestors come before the name,
+                and the name itself is now the rename control. PW2's plain title
+                span was superseded by item 133 and is dropped; neither side's
+                intent is altered. */}
             {/* ITEM 133 — THE NAME IS EDITED WHERE IT IS DISPLAYED. Nick could not
                 name a board because a board's name was written once at birth and
                 no surface could reach it again. This is that surface: the name in

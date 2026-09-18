@@ -186,7 +186,13 @@ const wakeChrome = async (app) => {
 const openPlan = async (app) => {
   const already = await app.evalJs("!!document.querySelector('.wz-cascade-plan-zone') || (!!document.querySelector('.wz-cascade-panel') && document.querySelector('.wz-strip-item[data-category=plan]')?.getAttribute('aria-pressed') === 'true')");
   if (already) return true;
-  const there = await app.evalJs("document.querySelectorAll('.wz-strip-item').length > 2");
+  // NAME AND ASSERTION AGREE NOW. This read `.wz-strip-item').length > 2` —
+  // a COUNT, which was only ever a proxy for "index 2 exists" back when the
+  // handle was an index. Under a named handle the count is the wrong
+  // question twice over: a strip of three categories with NO Plan passes it,
+  // and a strip that reorders passes it while the press lands elsewhere. The
+  // check is named for the Plan category, so it asserts the Plan category.
+  const there = await app.evalJs("!!document.querySelector('.wz-strip-item[data-category=plan]')");
   if (!there) { ok('DRIVER: the cascade strip is mounted with a Plan category', false, 'strip missing'); return false; }
   await wakeChrome(app);
   const opened = await pressEl(app, "document.querySelector('.wz-strip-item[data-category=plan]')", 'the strip Plan category opens');
@@ -326,8 +332,18 @@ await withHarness(async (app) => {
       })`);
       ok('S2 (Q3): ONE PRESS on a board row opens the side menu, titled with that board',
         survey.open && survey.title === 'Winterfell timeline', JSON.stringify(survey));
-      ok('S2 (Q4): the side menu carries TWO SECTIONS — the board\'s own Cards, then the Pages linked to this board beneath them',
-        JSON.stringify(survey.sections) === JSON.stringify(['Cards', 'Pages linked to this board']), JSON.stringify(survey.sections));
+      // PW2 S2 AMENDMENT (Nick, 2026-09-13) — SUPERSEDED IN PLACE, original quoted
+      // verbatim (A4). Nick: "section off Boards from Pages clearly". The
+      // membership section's heading is now simply "Pages", and a SECOND
+      // membership section, "Boards", appears when the board holds a nested
+      // board. This fixture nests no board, so exactly the two sections below
+      // render — the claim (two sections, Cards first) is unchanged; only the
+      // second heading's wording moved.
+      //   ORIGINAL:
+      //   ok('S2 (Q4): the side menu carries TWO SECTIONS — the board\'s own Cards, then the Pages linked to this board beneath them',
+      //     JSON.stringify(survey.sections) === JSON.stringify(['Cards', 'Pages linked to this board']), JSON.stringify(survey.sections));
+      ok('S2 (Q4, PW2 successor): the side menu carries TWO SECTIONS — the board\'s own Cards, then its Pages (Nick\'s PW2 amendment renamed the heading; a Boards section joins only when a board is nested, which this fixture does not do)',
+        JSON.stringify(survey.sections) === JSON.stringify(['Cards', 'Pages']), JSON.stringify(survey.sections));
       const cardOrder = survey.titles.filter((t) => /by arrangement/.test(t));
       ok('S2 (Q14, RULED): cards read in THE BOARD\'S OWN ARRANGEMENT — y then x — against a fixture whose creation order is deliberately C,A,B. An order nobody chose is an order nobody can rely on',
         JSON.stringify(cardOrder) === JSON.stringify(['FIRST by arrangement', 'SECOND by arrangement', 'THIRD by arrangement']),
@@ -338,8 +354,41 @@ await withHarness(async (app) => {
         isMember: !!t.querySelector('.wz-cascade-thumb-note'),
         hasMenu: !!t.querySelector('.wz-cascade-thumb-menu-btn'),
       }))`);
-      ok('S2/S3 (G3 at menu scale): only rows that HAVE an act wear a `⋯` — the membership rows carry Display/Hide, and the board-owned cards, which have no display to toggle, carry no empty menu at all. Absent, never a door onto nothing',
-        Array.isArray(menuShape) && menuShape.length > 0 && menuShape.every((r) => r.hasMenu === r.isMember), JSON.stringify(menuShape));
+      // PW2 S3 (item 123) — SUPERSEDED IN PLACE, original quoted verbatim (A4).
+      //
+      // THE PREMISE DIED; THE PRINCIPLE DID NOT. The original asserted
+      // `hasMenu === isMember`: only membership rows wear a menu, because
+      // board-owned cards "have no display to toggle". PW2 S3 gave cards a real
+      // act — Copy to a board, plus the inert last-board removal — so a card
+      // wearing a menu is now CORRECT, and the original would fail against the
+      // very product it was written to protect.
+      //
+      // What survives is the law the check was actually for: G3 at the scale of
+      // a menu — A MENU EXISTS ONLY WHERE IT HAS SOMETHING IN IT. So the successor
+      // stops inferring "has an act" from "is a member" (a proxy that was true
+      // for exactly one release) and asserts the law directly: open every menu
+      // that exists, and require at least one item inside it.
+      //   ORIGINAL:
+      //   ok('S2/S3 (G3 at menu scale): only rows that HAVE an act wear a `⋯` — the membership rows carry Display/Hide, and the board-owned cards, which have no display to toggle, carry no empty menu at all. Absent, never a door onto nothing',
+      //     Array.isArray(menuShape) && menuShape.length > 0 && menuShape.every((r) => r.hasMenu === r.isMember), JSON.stringify(menuShape));
+      const menuRows = (menuShape || []).filter((r) => r.hasMenu).map((r) => r.title);
+      const menuContents = {};
+      for (const title of menuRows) {
+        const sel = `[...document.querySelectorAll('.wz-cascade-thumb')].find(t => t.querySelector('.wz-cascade-thumb-title')?.textContent === ${JSON.stringify(title)})`;
+        // REAL POINTER EVENTS — this file's own header law, kept even where the
+        // press is only revealing contents: a synthetic click cannot fail on an
+        // occluded button, so it could report a full menu nobody can open.
+        const btn = `${sel}?.querySelector('.wz-cascade-thumb-menu-btn')`;
+        if (!(await pressEl(app, btn, `open the menu on "${title}"`))) { menuContents[title] = -1; continue; }
+        await sleep(250); // open, WAIT, then read — the menu is React state
+        menuContents[title] = await app.evalJs(`(${sel}?.querySelectorAll('.wz-cascade-thumb-menu-item') || []).length`);
+        await pressEl(app, btn, `close the menu on "${title}"`);
+        await sleep(150);
+      }
+      ok('S2/S3 (G3 at menu scale, PW2 successor): every row that wears a `⋯` has at least one act inside it — a menu exists only where it has something in it. Asserted directly now, because "is a member" stopped being a proxy for "has an act" the moment PW2 gave cards a Copy verb',
+        Array.isArray(menuShape) && menuShape.length > 0 && menuRows.length > 0
+          && menuRows.every((t) => menuContents[t] > 0),
+        JSON.stringify({ menuShape, menuContents }));
 
       // Every second line in the survey is relation/state, never a count.
       const noteDigits = await app.evalJs("[...document.querySelectorAll('.wz-cascade-thumb-note')].map(n => n.textContent)");

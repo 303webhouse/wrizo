@@ -1171,6 +1171,93 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
   return getJournalEntry(boardEntryId);
 }
 
+
+// --- PW2 S1 — THE CONTAINMENT GRAPH, AND ITS ONE WALKER --------------------
+//
+// A board is a RECURSIVE CONTAINER (item 128). The containment edge is the
+// EXISTING `page-pin` box and nothing new: board P contains board C when P
+// carries a page-pin whose `entryId` is C. So the graph's edges live across
+// ENTRIES, and walking it means `getBoardsConnecting` repeatedly — NOT the
+// `parentId` chain in `store/boardStructure.ts`, which is a different graph
+// entirely (BM1's OUTLINE nesting, within one board's own boxes array). That
+// walker's SHAPE is the precedent here; its edges are not.
+//
+// ⚠ ONE WALKER, AND EVERY RECURSIVE READER USES IT. The order is the safety,
+// not a style: nothing on `main` walks this chain recursively yet, so this
+// lands BEFORE any reader that would. A second hand-rolled walk is a second
+// place for the `seen` set to be forgotten.
+//
+// ⚠ THE `seen` SET IS MANDATORY, and not merely for tidiness. A graph can
+// arrive ALREADY CYCLIC — from an older client, through sync — and a walk
+// without `seen` does not report a cycle on such data, it HANGS. So the walk
+// must terminate on a pre-existing loop it did not create, which is a claim
+// about READ safety, not just write refusal. `boardStructure.ts`'s own
+// `wouldCycle` carries the identical guard for the identical reason.
+//
+// The walk is a DAG walk, not a chain walk: a board may sit in several boards
+// at once, so "the parent" is a set and the frontier is a stack.
+
+/** Every board that transitively CONTAINS `boardId`. Terminates on cyclic data. */
+export function boardAncestors(boardId: string): Set<string> {
+  const seen = new Set<string>();
+  const stack: string[] = [boardId];
+  while (stack.length) {
+    const cur = stack.pop() as string;
+    for (const parent of getBoardsConnecting(cur)) {
+      if (seen.has(parent.id)) continue;
+      seen.add(parent.id);
+      stack.push(parent.id);
+    }
+  }
+  return seen;
+}
+
+// Would placing `sourceId` INTO `targetBoardId` close a cycle? It does iff the
+// target already sits inside the source — i.e. walking UP from the target
+// reaches the source.
+//
+// ⚠ THIS RUNS AT EVERY MEMBERSHIP WRITE, NEVER ONLY THE FIRST, and that is the
+// build law rather than an optimisation note. A membership that is lawful when
+// made becomes a cycle LATER, when its parent nests somewhere new — so a
+// first-write-only guard is precisely a guard that misses the case it exists
+// for. Every write re-walks.
+
+// PW2 S2 — THE NEST CHAIN, ordered outermost-first, for the board's crumb.
+//
+// `boardAncestors` answers a SET question ("is X above me"), which is what the
+// guard needs. An address needs a PATH, so this is the ordered sibling — the
+// same edges, the same `seen` termination, one walk per level.
+//
+// ⚠ A BOARD MAY HAVE SEVERAL PARENTS, and an address is one line, so this walks
+// ONE path: the first parent at each level, in `getBoardsConnecting`'s own
+// stable order. That is a deliberate narrowing and not an oversight — the crumb
+// answers "a way back", not "every way back", and the Plan panel's BOARDS
+// CONNECTED zone is where the full parent set is listed. Picking the first
+// keeps the line one line at any depth, which is the test a recursive
+// container has to pass.
+//
+// The `seen` set is again mandatory rather than tidy: on data that arrives
+// already cyclic this returns a finite chain instead of looping forever. A
+// crumb that hangs the surface is a worse failure than a crumb that is short.
+export function boardNestChain(boardId: string): { id: string; title: string }[] {
+  const chain: { id: string; title: string }[] = [];
+  const seen = new Set<string>([boardId]);
+  let cur = boardId;
+  for (;;) {
+    const parent = getBoardsConnecting(cur).find(p => !seen.has(p.id));
+    if (!parent) break;
+    seen.add(parent.id);
+    chain.push(parent);
+    cur = parent.id;
+  }
+  return chain.reverse(); // outermost first — an address reads from the outside in
+}
+
+export function wouldNestCycle(sourceId: string, targetBoardId: string): boolean {
+  if (sourceId === targetBoardId) return true; // self — held by the built guard too
+  return boardAncestors(targetBoardId).has(sourceId);
+}
+
 // --- AB4 S2 — Pin: membership, not capture --------------------------------
 // A page-pin card references an entry by id; it never copies its content and
 // never touches the referenced entry's own record (origin/projectId/text all
@@ -1180,6 +1267,15 @@ export function appendToBoard(sourceIds: string[], boardEntryId: string, include
 // for the full reasoning on why this stays inside the existing column).
 const BOARD_PIN_W = 0.28;
 const BOARD_PIN_H = 0.12;
+// PW2 S2 AMENDMENT (Nick) — A BOARD IS WIDER THAN TALL WHEREVER IT APPEARS.
+// The rail draws a board's thumbnail as a horizontal rectangle and a page's as
+// a vertical one; a nested board's card on the CANVAS obeys the same law, so
+// the two faces of one board agree and the silhouette means the same thing in
+// both places. Deliberately MORE horizontal than the page-pin default rather
+// than equal to it — a shape that teaches has to be distinguishable at a
+// glance, not on measurement.
+const BOARD_CARD_W = 0.32;
+const BOARD_CARD_H = 0.10;
 
 // PW1 S3 (item 125) — `display` splits the two acts that share this function.
 //
@@ -1203,6 +1299,33 @@ const BOARD_PIN_H = 0.12;
 // from the board it was just made on is the symptom item 92 was about), and it
 // is a one-word change to overturn if Fable or Nick reads it otherwise.
 export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { display?: boolean }): JournalEntry | null {
+  // PW2 S1 — THE MEMBERSHIP GUARD. One seam, both laws, no mode flag.
+  //
+  // WHY NO MODE FLAG, measured rather than assumed: there are exactly TWO sites
+  // in this file that create a `page-pin` box — this one (the AUTHORED write)
+  // and `placeNewCards`, whose single caller is `reconcileSystemBoard` (the
+  // DERIVED write). The derived path never routes through here, so this guard
+  // does not have to tell authored from derived; it can simply refuse what a
+  // writer may not author, and the condition boards keep deriving their own
+  // pins untouched.
+  //
+  // ── LAW 1 · THE SOURCE RESOLVES TO A LIVE, PINNABLE ENTRY ─────────────────
+  // Ruled as item 134's rider (a), and deliberately POSITIVE. The rider reads
+  // "a drawer is never a member of anything", but a negative check —
+  // `if (isDrawer) return null` — WOULD NEVER FIRE: a Drawer is not a
+  // JournalEntry at all (its own row in `cache.drawers`), so a drawer id never
+  // arrives typed as a drawer. It arrives as an id that RESOLVES TO NOTHING.
+  //
+  // THE GUARD IS ABOUT WHAT THE ID *IS*, NOT WHAT IT IS CALLED. Stated
+  // positively it makes the rider true by construction AND closes the wider
+  // hole the survey found underneath it: before this, nothing here verified
+  // the source existed at all, so ANY foreign id — a drawer's, a project's, a
+  // typo's — fell straight through and wrote a page-pin pointing at nothing.
+  // A dangling membership renders as "Missing page" and is a member of a board
+  // forever.
+  const source = getJournalEntry(entryId);
+  if (!source) return null;
+  // (the built source-side system guard follows below, unchanged)
   // FX6 S3 (a1, ab4-review's own advisory) — self-pin closed at THIS end
   // too (belt and suspenders alongside PinToBoardSheet.tsx's own leaf
   // exclusion): a board can never pin itself to itself, even via a direct
@@ -1214,9 +1337,26 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // unreachable through the UI (the sheet never opens on a system Board's
   // own Page face), but this guard is what actually holds if some OTHER
   // call site ever pins entryId onto a DIFFERENT board directly.
-  if (getSystemKind(getJournalEntry(entryId))) return null;
+  if (getSystemKind(source)) return null; // (reads LAW 1's resolved row — one fetch, one truth)
   const board = getJournalEntry(boardEntryId);
   if (!board || board.pageType !== 'board') return null;
+  // ── LAW 2 · THE TARGET IS A BOARD THE WRITER MAY AUTHOR ONTO ──────────────
+  // The built guard above checks `getSystemKind` on the SOURCE only, and that
+  // asymmetry was never intentional — it was simply the half B1 needed. A
+  // condition board's membership is DERIVED (`reconcileSystemBoard` from
+  // `qualifyingPagesFor`, in reaction to loose/deleted/in-journal-view); it is
+  // never authored. So an authored write onto one would be a hand-placed card
+  // in a list the app recomputes — erased at the next reconcile, and wrong in
+  // the meantime. Refused here, at the same seam, for the same reason the
+  // source side is.
+  if (getSystemKind(board)) return null;
+  // ── LAW 3 · NO CYCLE. Item 128's first invariant ──────────────────────────
+  // "A board cannot be placed inside itself, or inside a board it already
+  // contains." Walked on EVERY write (see `wouldNestCycle`), because a
+  // membership lawful when made becomes a cycle later when its parent moves.
+  // A cycle presents as a hang or a blown stack far from the pin that caused
+  // it: trivial to prevent, expensive to find.
+  if (wouldNestCycle(entryId, boardEntryId)) return null;
   const existing = board.boxes ?? [];
   if (existing.some(b => b.kind === 'page-pin' && b.entryId === entryId)) return board; // already pinned — idempotent
   const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + BOARD_STACK_GAP;
@@ -1229,7 +1369,13 @@ export function pinPageToBoard(entryId: string, boardEntryId: string, opts?: { d
   // nobody chose — the exact arrangement-the-writer-did-not-author the display
   // opt-in exists to prevent (A16; BD7). The x/y/z above still compute, so a
   // later `Display on Board` from the menu has a lawful default seat to take.
-  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY, w: BOARD_PIN_W, h: BOARD_PIN_H, z: startZ, entryId, onCanvas: opts?.display === true };
+  // A nested board's card takes the board silhouette; a page's keeps the page
+  // one. Existing arranged boards are untouched — every box stores its own
+  // w/h, so this changes the DEFAULT a new card is born at and nothing else.
+  const nesting = source.pageType === 'board';
+  const pin: Box = { id: generateId(), kind: 'page-pin', x: 0.05, y: startY,
+    w: nesting ? BOARD_CARD_W : BOARD_PIN_W, h: nesting ? BOARD_CARD_H : BOARD_PIN_H,
+    z: startZ, entryId, onCanvas: opts?.display === true };
   saveJournalEntry({ ...board, boxes: [...existing, pin] });
   return getJournalEntry(boardEntryId);
 }
@@ -1268,6 +1414,118 @@ export function isPinDisplayed(boardEntryId: string, entryId: string): boolean {
 // grandfathered shape (no flag at all) to prove absence still means displayed.
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoSetPinDisplayed?: unknown }).wrizoSetPinDisplayed = durableSeam(setPinDisplayed);
+}
+
+
+// --- PW2 S3 — CARD TRANSFER (item 123). COPY ONLY. ------------------------
+//
+// COPY SEMANTICS, ruled: the original stays, there is NO SHARED IDENTITY, and
+// edits do not follow. So this mints a NEW box with a NEW id on the target
+// board and touches the source board's record not at all — which is what makes
+// "edits do not follow" true by construction rather than by discipline: there
+// is no shared row to diverge.
+//
+// ⚠ THREADS DO NOT TRAVEL, and the mechanism is worth stating because it looks
+// like an omission. A thread is a `connection` box whose `connA`/`connB` are
+// BOX IDS on one board. The copy has a new id and lands on a different board,
+// so a copied connection would point at endpoints that do not exist there — a
+// hairline to nowhere. They are therefore not copied at all, rather than
+// copied-and-repaired, and the tray says so BEFORE the act.
+//
+// TAGS: item 123's ruling also says "tags travel with the copy". That clause is
+// DEFERRED ON THE RECORD (Fable, 2026-09-13), not dropped: a `Box` has no tags
+// field — tags live on `JournalEntry` — so cards cannot carry tags yet and the
+// clause has nothing to act on. Its successor is C4, the cluster's tags design;
+// the day cards can carry tags, the copy carries them and the tray's sentence
+// regains its middle clause. The tray ships only the true clauses meanwhile.
+//
+// MOVE IS NOT BUILT AND MUST NOT BE. In a canon built on ownership, moving a
+// card is an ownership transfer and a different act; item 123 defers it by
+// name. Copy only.
+const COPY_OFFSET = 0.02;
+
+/**
+ * Copy one board-owned card onto another board. Returns the new box, or null
+ * if the act is refused (a missing source, a non-copyable row kind, or a
+ * target a writer may not author onto).
+ */
+export function copyCardToBoard(sourceBoardId: string, boxId: string, targetBoardId: string): Box | null {
+  const source = getJournalEntry(sourceBoardId);
+  const target = getJournalEntry(targetBoardId);
+  if (!source || !target || target.pageType !== 'board') return null;
+  // The same target law S1 established for memberships: a condition board's
+  // contents are DERIVED, so a hand-placed copy there would be erased at the
+  // next reconcile. One rule about what a writer may author onto, two acts.
+  if (getSystemKind(target)) return null;
+  const box = (source.boxes ?? []).find(b => b.id === boxId);
+  if (!box) return null;
+  // COPY APPLIES TO BOARD-OWNED CONTENT ONLY. A page-pin and a board-card are
+  // MEMBERSHIPS, not content — "copying" one would just be a second membership,
+  // which the Places checkbox already makes — and a connection is a thread,
+  // which cannot travel. The verbs teach this at the row (CA1); this refuses it
+  // at the seam, so the two cannot drift.
+  if (box.kind !== 'text' && box.kind !== 'ink') return null;
+
+  const existing = target.boxes ?? [];
+  const startY = existing.reduce((m, b) => Math.max(m, b.y + b.h), 0) + COPY_OFFSET;
+  const startZ = existing.reduce((m, b) => Math.max(m, b.z), 0) + 1;
+  // ⚠ THE COPY IS BUILT FROM A WHITELIST, NOT SPREAD-AND-STRIP. Ruled, and the
+  // reason is a defect this function already had: it was written as
+  // `{ ...box }` minus a strip list, and copying a PORTED card carried
+  // `sourceEntryId` straight through — giving that copy a double-click that
+  // TRAVELS instead of opening its editor, which is the very thing
+  // `copiedFromBoardId` exists to prevent. The strip list was one field behind
+  // the day it was written.
+  //
+  // THE LAW, because it generalizes past this function: A COPY CARRIES NOTHING
+  // BY DEFAULT. A strip list is a rule that must be UPDATED every time the
+  // shape grows — so it rots silently, and the failure is a field that travels
+  // when nobody decided it should. A whitelist is a rule that must be EXTENDED
+  // on purpose: a new `Box` field simply does not travel until someone says it
+  // does, and the worst case is a field missing rather than a relationship
+  // forged by accident.
+  //
+  // Each field below is listed because it is part of WHAT THE CARD IS, and
+  // everything absent is absent on purpose:
+  //   kind/text/strokes — the content itself; this is the thing being copied.
+  //   w, h              — the card's authored SIZE, part of how it reads
+  //                       (shape teaches the kind), so a copy is recognisably
+  //                       the same card.
+  //   copiedFromBoardId — the new lineage, this act's own record.
+  // Deliberately NOT carried:
+  //   x, y, z           — a position on ANOTHER board's canvas. The target
+  //                       places the copy by its own stacking, below.
+  //   groupId           — names a group that exists on the SOURCE board; the
+  //                       copy would join a group that is not there.
+  //   seq/laneId/parentId — a position in another board's ordering; parentId
+  //                       would point at a box that does not exist here.
+  //   sourceEntryId/portedAt — the MIRROR relationship. A copy is independent
+  //                       by item 123's own words, and inheriting these is the
+  //                       exact defect above.
+  //   entryId/connA/connB/canvas*/footerOn/onCanvas/systemKind/lanes — belong
+  //                       to kinds a copy can never be (a copy is text or ink),
+  //                       or to the board rather than the card.
+  const copy: Box = {
+    id: generateId(),
+    kind: box.kind,
+    x: 0.05, y: startY, z: startZ,
+    w: box.w, h: box.h,
+    ...(box.text !== undefined ? { text: box.text } : {}),
+    ...(box.strokes !== undefined ? { strokes: box.strokes } : {}),
+    copiedFromBoardId: sourceBoardId,
+  };
+  saveJournalEntry({ ...target, boxes: [...existing, copy] });
+  return copy;
+}
+
+// Test/inspection seam — this file's own `wrizoPinPageToBoard` convention.
+if (typeof window !== 'undefined') {
+  // Wrapped in `durableSeam` — main's rule, found at this merge: EVERY mutating
+  // seam flushes, enforced by seed-guard.mjs. This seam was written before that
+  // rule reached the branch, so it merged in clean and WRONG: a fixture that
+  // copies and then navigates would lose the write to the debounce — the
+  // NOVERDICT that killed 36 of 80 files on one leg.
+  (window as unknown as { wrizoCopyCardToBoard?: unknown }).wrizoCopyCardToBoard = durableSeam(copyCardToBoard);
 }
 
 // FX6 S4 — test/inspection seam (this file's own established pattern —

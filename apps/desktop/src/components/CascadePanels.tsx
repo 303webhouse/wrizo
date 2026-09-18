@@ -7,7 +7,7 @@ import {
   getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createQuickSprintProject, softDeleteEntry, getProject,
   getJournalEntry, getOrCreateSystemBoard, saveJournalEntry, pinPageToBoard,
-  getPlanBoardId, getBoardsConnecting, setPinDisplayed,
+  getPlanBoardId, getBoardsConnecting, setPinDisplayed, copyCardToBoard,
 } from '../store/persistence';
 import { rememberLastPlanBoard, getLastPlanBoard } from '../store/planTrail';
 import { unbornHref } from '../store/unbornPage';
@@ -21,6 +21,7 @@ import { FullscreenToggle, SyncIndicator } from './ChromeControls';
 import { PageFace, type PageFaceSubject } from './PageFace';
 import { PlacesPanel } from './PlacesPanel';
 import { AddToSheet } from './AddToSheet';
+import { PinToBoardSheet } from './PinToBoardSheet';
 import { routeForEntry } from '../store/routeForEntry';
 import type { JournalEntry, Project } from '../types';
 import type { SurveyItem, SurveyProps } from './CascadeSurvey';
@@ -560,6 +561,13 @@ export function resolveStickyPlanSurvey(page: JournalEntry): CascadeSurveyKind |
   return row ? { category: 'plan-board', boardId: row.id, boardTitle: row.title } : null;
 }
 
+// PW2 S2 — the zone's caption on a board: "in <drawer>". Names where this
+// board lives; a board with no drawer says so rather than borrowing a name.
+function drawerCaptionFor(board: JournalEntry): string {
+  const name = board.projectId ? (getProject(board.projectId)?.title || 'Untitled') : null;
+  return name ? `${deskTerm('cascadePlanCaptionIn')} ${name}` : deskTerm('cascadePlanNoDrawer');
+}
+
 // PW1 S1/S2 — one board row. ONE ACT PER ROW (PP4): a press opens that board's
 // contents and does nothing else. Double-click TRAVELS to the board (Nick, Q4),
 // and — PW22, the twin law — that gesture is never the only path: `Open the
@@ -627,6 +635,23 @@ function PlanPanel({ subject, project, navigate, openSurvey, travelFromCascade }
           verb heading — here the nouns mean GO, and the writer's learned
           grammar is already right (PW1; PP1 applied, opposite output). */}
       <div className="wz-cascade-panel-title wz-cascade-plan-title">{t('cascadePlanBoardsConnected')}</div>
+      {/* PW2 S2 (item 128, ruling A + Fable's refinement) — THE DRAWER IS THE
+          ZONE'S CAPTION, NOT A ROW. On a board, this zone names its drawer as
+          well as its parent boards; making the drawer a ROW would have meant
+          an INERT row sitting among pressable ones, which PP4 forbids. As a
+          caption nothing is inert and the rule holds as written.
+
+          IT IS NOT PRESSABLE, AND THAT IS G3, NOT AN OVERSIGHT: a drawer has
+          no surface of its own yet, and a door onto a surface that does not
+          exist is exactly the destination-blind gesture item 118's unlink and
+          item 133 were both about. Routing it to the all-drawers list was
+          considered and REFUSED for the same reason — landing on a list of
+          every drawer does not answer "show me this one".
+
+          ⚠ SUCCESSOR, RECORDED HERE SO IT IS ADDED DELIBERATELY RATHER THAN
+          DISCOVERED MISSING: the day the drawer's own surface ships, this
+          caption becomes the door to it. */}
+      {subject.entry.pageType === 'board' && <div className="wz-cascade-plan-caption">{drawerCaptionFor(subject.entry)}</div>}
       {rows.map((row) => (
         <BoardConnectedRow key={row.id} row={row} onOpenContents={() => openContents(row)} onTravel={() => travelToBoard(row)} />
       ))}
@@ -1057,10 +1082,27 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
   // its own heading rather than as one more card in the pile.
   const cards = allBoxes.filter((b) => b.kind !== 'page-pin').sort(byArrangement);
   const pins = allBoxes.filter((b) => b.kind === 'page-pin').sort(byArrangement);
+  // PW2 S2 AMENDMENT (Nick, verbatim: "group them together but section off
+  // Boards from Pages clearly and use a different thumbnail") — the memberships
+  // split into two LABELLED sections under one heading. A nested board is still
+  // a membership exactly as a page is (125 unchanged); what changes is that the
+  // writer can see at a glance which kind they are looking at, without reading
+  // a badge on every row.
+  const isBoardPin = (b: Box) => getJournalEntry(b.entryId ?? '')?.pageType === 'board';
+  const pagePins = pins.filter((b) => !isBoardPin(b));
+  const boardPins = pins.filter(isBoardPin);
 
   const items: SurveyItem[] = [
-    ...cards.map((b) => ({ ...boardCardItem(b, currentEntryId), sectionTitle: deskTerm('cascadePlanSectionCards') })),
-    ...pins.map((b) => ({
+    // PW2 S3 — AN ARRIVED COPY STATES ITS LINEAGE in the second-line slot:
+    // `copied from <board>`. Provenance rides the built fields (FX5 S3's
+    // "provenance travels on every box"), so this is a read, not a new record.
+    // No badge, no colour, no count — the line is a fact, not a decoration.
+    ...cards.map((b) => ({
+      ...boardCardItem(b, currentEntryId),
+      sectionTitle: deskTerm('cascadePlanSectionCards'),
+      note: copiedFromLine(b),
+    })),
+    ...pagePins.map((b) => ({
       ...boardCardItem(b, currentEntryId),
       sectionTitle: deskTerm('cascadePlanSectionPages'),
       // PW1 S2 — "the built `excerpt` YIELDS to the title" (Q3), and on a
@@ -1072,6 +1114,17 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
       // PW1 S3 — each row states its state. ABSENCE MEANS DISPLAYED, read here
       // exactly as the canvas reads it: only an explicit `false` is "not shown".
       note: b.onCanvas === false ? deskTerm('cascadePinNotShown') : deskTerm('cascadePinShown'),
+      kindShape: 'page' as const,
+    })),
+    // BOARDS, their own labelled section. A nested board appears HERE and
+    // nowhere else — one row, one section, so the writer never has to work out
+    // which list a thing is in.
+    ...boardPins.map((b) => ({
+      ...boardCardItem(b, currentEntryId),
+      sectionTitle: deskTerm('cascadePlanSectionBoards'),
+      excerpt: undefined,
+      note: b.onCanvas === false ? deskTerm('cascadePinNotShown') : deskTerm('cascadePinShown'),
+      kindShape: 'board' as const,
     })),
   ];
 
@@ -1096,9 +1149,27 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     // must be COMPLETE: the drag half needs a canvas and so exists only on a
     // board, while `Display on Board` works everywhere the row does.
     renderMenu: (item) => {
+      // PW2 S3 — a CARD row carries transfer; a membership row carries display.
+      const card = cards.find((b) => b.id === item.id);
+      if (card) return (card.kind === 'text' || card.kind === 'ink')
+        ? <CardTransferMenu boardId={kind.boardId} box={card} />
+        : null;
       const box = pins.find((b) => b.id === item.id);
       if (!box || !box.entryId) return null;
-      return <PinDisplayMenu boardId={kind.boardId} entryId={box.entryId} displayed={box.onCanvas !== false} />;
+      // PW2 S2/PW22 — THE TWIN. A nested board's double-click travels INTO it
+      // on the canvas; the same act must ride this menu, or the gesture is the
+      // only path and the keyboard and the unfamiliar hand lose their way in.
+      // A page membership gets no such row: pressing its row already travels.
+      const nested = getJournalEntry(box.entryId);
+      return (
+        <>
+          {nested?.pageType === 'board' && (
+            <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-open-board"
+              onClick={() => ctx.travelFromCascade(nested)}>{deskTerm('cascadeOpenBoard')}</button>
+          )}
+          <PinDisplayMenu boardId={kind.boardId} entryId={box.entryId} displayed={box.onCanvas !== false} />
+        </>
+      );
     },
     // PW1 S3 — the DRAG half (Nick, Q4): drag a membership row onto the canvas
     // and it lands WHERE DROPPED. Only membership rows are draggable (a card is
@@ -1116,6 +1187,61 @@ export function buildSurvey(kind: CascadeSurveyKind, ctx: CascadeContext, curren
     // is always the way back to the list" holds — the list simply moved up.
     onBack: () => ctx.closeSurvey(),
   };
+}
+
+
+// PW2 S3 (item 123) — CARD TRANSFER's menu, on the row it belongs to.
+//
+// THE VERBS TEACH THE KIND (CA1), and the canon does the sorting — which is
+// why this is a per-kind decision and not one verb with a disabled state:
+//   free / text card → `Copy to <board>…`  — board-owned CONTENT; a copy is a
+//                                            new card owned where it lands
+//   page-pin         → no copy verb        — MEMBERSHIP, not content. "Copying"
+//                                            it is just a second membership,
+//                                            which the Places checkbox makes
+//   board-card       → no copy verb        — membership too
+// An absent verb says "this is not that kind of thing" more cleanly than a
+// greyed one, and PP4 holds: a quiet disclosure is not a competing act.
+// PW2 S3 — the lineage line for a copied card, or undefined for one that was
+// authored here. `sourceEntryId` names the board it came FROM.
+function copiedFromLine(box: Box): string | undefined {
+  // Reads `copiedFromBoardId`, never the mirror fields — TEXT ONLY, no travel
+  // from this line in PW2; a door here is a later refinement (ruled).
+  if (!box.copiedFromBoardId) return undefined;
+  const from = getJournalEntry(box.copiedFromBoardId);
+  if (!from || from.pageType !== 'board') return undefined;
+  return `${deskTerm('cascadeCardCopiedFrom')} ${boardTitle(from)}`;
+}
+
+function CardTransferMenu({ boardId, box }: { boardId: string; box: Box }) {
+  const { t } = useDeskLexicon();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  // ITEM 123's INVARIANT, RENDERED RATHER THAN MERELY ENFORCED: "every card
+  // keeps >= 1 board". A board-owned card belongs to exactly one board, so
+  // removing it from this one would leave it with none — the verb is therefore
+  // PRESENT, INERT, AND SAYS WHY, the same refusal grammar S1 uses for a
+  // descendant and PW1 used for its inert Unlink. Absence would make the writer
+  // hunt for a removal that is not missing, only refused.
+  return (
+    <>
+      <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-copy-card" onClick={() => setPickerOpen(true)}>
+        {t('cascadeCardCopyTo')}
+      </button>
+      <button type="button" className="wz-cascade-thumb-menu-item wz-cascade-inert" aria-disabled="true" disabled
+        title={t('cascadeCardOnlyBoard')}>
+        {t('cascadeCardRemove')} <span className="wz-cascade-inert-why">{t('cascadeCardOnlyBoard')}</span>
+      </button>
+      {pickerOpen && (
+        <PinToBoardSheet
+          entryId={boardId}
+          title={t('cascadeCardCopyTitle')}
+          note={t('cascadeCardCopyNote')}
+          onChoose={(targetBoardId) => { copyCardToBoard(boardId, box.id, targetBoardId); }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+    </>
+  );
 }
 
 // PW1 S3 (item 125) — the two display acts, menu half (Nick, Q4). Membership is
