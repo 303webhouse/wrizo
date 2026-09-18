@@ -6825,7 +6825,55 @@ not merely as 152's downstream effect.)*
 `STRIP_PLAN` successor — **both riding the branch's NEXT LEGITIMATE MOVE rather than moving a stamped
 tree.** *(Unchanged; restated at the point 138 makes them relevant again.)*
 
-Registry: next free **153**.
+## TOOLS' PARK CONFORM — MERGED — 2026-09-18
+
+**`park-conform-vw1` @ `cddd343` MERGED at `59a4fd6` — TAKE WORD, chat 1, under the standing
+harness/test-seam exemption (no Fable review needed).** **Stamp verified: 90/90 both legs,
+tree=`cddd343`, bundle=`index-DfFOCr6L.js`/586771b, same bundle both legs, no `+Ndirty`.** Four files,
+all harness/test-seam, no product code. Trial merge clean. **PUSHED; grant cleared.**
+
+## ITEM 154 — THE SILENT ACT INSIDE `evalJs` STRINGS — OPENS 2026-09-18
+
+**OPENS. Harness → TOOLS, AFTER 151.** TOOLS' CENSUS ATTACHED.
+
+**TOOLS BUILT THE RATIFIED AST TOOL** (the TypeScript compiler API, not a regex) **and got ZERO across
+90 files.** **INVESTIGATED THE EMPTY RESULT RATHER THAN TRUSTING IT** — per the band just recorded on
+152 — **and found the TOOL correct and the population ELSEWHERE:**
+
+- **134 of 152 sites sit INSIDE `app.evalJs("…")` STRINGS** — page-side text a structural parser
+  cannot see.
+- **18 GENUINE OUTER DRIVER SITES remain.**
+- **That 18 is a LOWER BOUND** — line-based quote-parity breaks on multi-line templates.
+
+> **AN INSTRUMENT THAT READS STRUCTURE IS BLIND TO TEXT INSIDE STRINGS — A ZERO FROM THE RIGHT TOOL CAN
+> MEAN THE POPULATION IS ELSEWHERE.**
+
+**RULED: ITEM 151 KEEPS THE 18 OUTER SITES, BRIEF UNCHANGED. THE 134 BECOME ITEM 154, WITH ITS OWN
+BRIEF:**
+- **A TWO-PASS PARSER** extracting each `evalJs` argument and parsing IT as its own JS.
+- **A REAL BOUNDARY CENSUS FIRST, not the sample** — 152 as reported is TOOLS' own count of a lower
+  bound, not yet a census of the in-string population.
+- **A STATED VERIFICATION FOR IN-STRING REWRITES: byte comparison of the extracted argument, never
+  "it still parses."** *(A page-side string that still parses as JS can still have silently changed
+  meaning — the same failure item 152 and item 141's classifier both share: a syntax check proves the
+  file parses, not that the edit did what it was meant to.)*
+
+**SPLITTING RATHER THAN WIDENING, because the two differ in INSTRUMENT, EDIT RISK, and ORDER OF
+MAGNITUDE** — one number would let the harder 88% be IN SCOPE without being SCOPED, and would make any
+red AMBIGUOUS between two kinds of change. **THE HARM IS IDENTICAL IN BOTH — 154 is LATER, not
+LESSER.**
+
+**TOOLS' S0 at `20216f0` STANDS AS WRITTEN** — narrower in description than the truth (it did not yet
+know the 134/18 split) but CORRECT in what it said. **THE ROUTING NOTICE WENT VIA THE LEDGER, which is
+right: NO SESSION WAS IDENTIFIABLY INK OR FIX, and guessing risked the wrong peer.**
+
+## BOX — TOOLS' NEXT TURN: THE 18 OUTER SITES — 2026-09-18
+
+**Grant renewed for the actual item-151 build (18 outer sites) — token `tools-item151-build-20260918`.**
+Box was idle when granted.
+
+Registry: next free **155**.
+
 
 
 
