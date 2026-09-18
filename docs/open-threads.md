@@ -6992,6 +6992,54 @@ under it, now aimed at the shared helpers rather than the original 83 call sites
 
 Registry: next free **156**.
 
+## ITEM 151 · SHAPE A — BUILT AND OFFERED, NOT LAUNCHED — 2026-09-18 (tools lane; branch
+`item151-silent-acts`)
+
+**BUILT AT THE HELPERS, PER THE RULING. NOT RUN.** Full record: `docs/menus/item151-shapeA-offer.md`.
+Two shared primitives in new `apps/desktop/scripts/trusted-point.mjs` — `trustedDispatch` (selector-
+based sites, named failure via a `report` callback or a throw) and `assertHittable` (bare-coordinate
+sites, a weaker guarantee stated as weaker: confirms the point isn't empty, not that it's still the
+intended target). **21 files touched, one commit (`2afc8e0`).**
+
+**CONVERGED, NOT DUPLICATED FIVE TIMES:** `trustedClick` (`bm1`, `item9192`, `sc2`, `cd4`, `sc1` — a
+fifth file beyond the three named in the ruling) to one shared wrapper; `e1`'s lighter text-selecting
+variant folded into the same wrapper rather than kept parallel; three independent `hittablePointBy`
+reimplementations (`pw1`, `pw2`, and a **third, silently weaker** one in `vw1` — narrower fractions, no
+`scrollIntoView`) retired for the one import; the four-file `clickAt` family (`fx7`, `fx8`, `fx9`, `j6`)
+converged too. Left apart on purpose where no real duplicate existed: `fx11`, `bg1`, `fx17`, `reveal`,
+and inline sites in `fx5`, `bg2`, `fx13`.
+
+**VERIFIED PER HELPER, RE-SWEPT TWICE.** First pass missed `hittablePointBy`'s own brace-less
+definition and one two-level call indirection (`pressOn`), confirmed safe by manual read. Second pass
+(whole-file sweep for any bare `app.mouseDown` with no preceding hit-test) found **19 more candidates**
+beyond the original 83/22 count — 3 false positives, 16 real, fixed and listed by file in the offer's
+§5. **No file verified in name only** — every `elementFromPoint`-adjacent helper was traced to confirm
+it gates the dispatch, which is what caught `vw1`'s drifted-weaker copy rather than accepting it at
+face value.
+
+**ONE BUG CAUGHT MID-BUILD, KEPT ON THE RECORD:** `bg1.mjs`'s `clickDoor` first conversion replaced a
+real hover-before-press (`mouseMove(r.x, r.y)`) with a meaningless `mouseMove(0, 0)`, because
+`trustedDispatch` doesn't expose its internally-resolved point. Caught by re-reading the diff, not by
+any check. Fixed by calling `hittablePointBy` directly and preserving the original sequence.
+
+**HELD, ROUTING-GATED:** `item121.mjs` (1 site) and `item126.mjs` (7 sites) — 2 of the 4 files already
+named INK's territory in item 151's own S0 survey. Not touched. `fx5.mjs`'s own Shape A sites were
+fixed — outer coordinate-dispatch structure, not the in-string population the routing gate names for
+that file.
+
+**SHAPES C/D AND ITEM 155 — NO CHANGE FROM THE RULING ALREADY ON THIS LEDGER.** Recorded here only as
+confirmation: `waitSoft` closed safe, representative-not-exhaustive kept; item 155 (Shapes B/E) stays
+parked, untouched by this build.
+
+**RE-VERIFIED POST-MERGE, NOT ASSUMED CLEAN.** `origin/main` moved to `4a42bce` mid-build; merged clean
+(`fb97181`, no conflicts — incoming content was TOOLS' own earlier park-conform work plus ledger docs).
+`tsc --noEmit` exit 0, `build:web` exit 0 with an **unchanged bundle hash** (`index-DfFOCr6L.js`,
+confirming the merge carried no app-source change), `node --check` clean on all 21 touched files.
+
+**NO SUITE RUN.** The grant that authorized this build did not extend to a launch; `tsc`/`build:web`/
+syntax checks are pre-flight reads, not a launch. This offer stops here — branch pushed, merge is chat
+1's act.
+
 
 
 
