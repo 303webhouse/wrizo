@@ -6848,6 +6848,11 @@ all harness/test-seam, no product code. Trial merge clean. **PUSHED; grant clear
 > **AN INSTRUMENT THAT READS STRUCTURE IS BLIND TO TEXT INSIDE STRINGS — A ZERO FROM THE RIGHT TOOL CAN
 > MEAN THE POPULATION IS ELSEWHERE.**
 
+**⚠ REOPENED 2026-09-18 — THE 18 DID NOT SURVIVE A SECOND LOOK.** See *ITEM 151's POPULATION MAY BE
+ZERO*, below — the 18 was the SAME heuristic that produced 152, read from the other side of its own
+miscount, never a second count. The ruling below is kept as written for what it settled correctly: 154
+is real and split from 151 regardless of what 151 turns out to hold.
+
 **RULED: ITEM 151 KEEPS THE 18 OUTER SITES, BRIEF UNCHANGED. THE 134 BECOME ITEM 154, WITH ITS OWN
 BRIEF:**
 - **A TWO-PASS PARSER** extracting each `evalJs` argument and parsing IT as its own JS.
@@ -6872,7 +6877,44 @@ right: NO SESSION WAS IDENTIFIABLY INK OR FIX, and guessing risked the wrong pee
 **Grant renewed for the actual item-151 build (18 outer sites) — token `tools-item151-build-20260918`.**
 Box was idle when granted.
 
+## ITEM 151's POPULATION MAY BE ZERO — ARCHITECTURAL, NOT ARITHMETIC — 2026-09-18
+
+**TOOLS RAN THE AST TOOL AGAINST REAL FILES** (verified it walked all 90 rather than silently skipping)
+**AND FOUND ZERO OUTER SITES, TWICE.** All three candidates it would have called outer AN HOUR AGO
+(`ab2:565`, `ab3:346`, `tu5:453`) sit INSIDE `evalJs` arguments.
+
+**THE STRUCTURAL REASON: the outer Node process has NO DOM ACCESS** — it can only send text to
+`evalJs` or dispatch CDP input by coordinate — **so it can NEVER HOLD A TARGET WITH `.click()` TO
+GUARD.** **The 18 was the SAME line-based quote-parity heuristic that produced 152, reading the other
+side of its own miscount — it was NEVER A SECOND COUNT.**
+
+**RULED: TOOLS DOES NOT CLOSE AT ZERO YET AND DOES NOT BUILD.** It uses the granted turn for a SEARCH
+for a THIRD SHAPE, framed by the ARCHITECTURE rather than the old patterns — **where can outer code
+act and have nothing happen without saying so:**
+- coordinate dispatch landing on nothing;
+- an `evalJs` return value ignored;
+- a swallowed rejection;
+- a caught timeout treated as normal;
+- an action against the wrong page.
+
+**IT REPORTS SHAPES FOUND WITH COUNTS, AND SHAPES SEARCHED FOR AND NOT FOUND** — **the second list is
+what makes a zero READABLE.** Then EITHER 151 closes as a VERIFIED NEGATIVE with its architectural
+reason recorded so nobody re-opens it from the old census, **OR the brief widens and it builds.**
+
+> **A POPULATION CAN BE ARCHITECTURALLY IMPOSSIBLE, NOT MERELY ABSENT — SAY WHICH, BECAUSE ONLY ONE OF
+> THEM STAYS TRUE.**
+
+*(The zero from the AST tool three relays ago was investigated and turned out to have a population
+elsewhere — 134 sites inside strings. This zero is a different shape: not a population in the wrong
+place, but a population the outer process's own reach may rule out entirely. Both are zeroes; neither
+is believed on sight — but only one of the two possible verdicts here (impossible vs. merely unfound)
+survives a second search, which is why the search happens before either is written down.)*
+
+**ITEM 154's 134 IN-STRING SITES ARE UNAFFECTED AND REMAIN REAL** — nothing about 151's re-opening
+touches 154's population or its brief.
+
 Registry: next free **155**.
+
 
 
 
