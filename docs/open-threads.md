@@ -6490,6 +6490,11 @@ trial merge against `origin/main` clean (single tree, no conflict lines); diff s
 (26 files — 22 harness, `Cascade.tsx`, the new `vw1.mjs`, two docs files); tip past `163b628` is
 docs-only. **PUSHED.** `data-category` now exists on `main` (measured: 1 file in `src/`).
 
+**✓ RULED 2026-09-17 — AND A FABLE ERROR ON THE RECORD.** Fable's own relay carried the same total
+(33+5+38+2 = 78), unadded before repeating it. **A NUMBER RELAYED WITHOUT ADDING IT UP IS A NUMBER
+TAKEN ON TRUST — and the by-index table summing to 77 is what makes ONE of the two wrong rather than
+BOTH.** Recorded as a Fable error, not only a TOOLS one. The paragraph below is kept as written.
+
 **⚠ A DOCUMENTATION ARITHMETIC FINDING, NOT A CODE DEFECT — the offer's own §2 breakdowns disagree.**
 **By-index sums to 77** (19+24+15+11+2+2+2+2). **By-form, as written, sums to 78**
 (33+5+38+1+1) — **one more than the stated total and the by-index table.** Chat 1 confirms it
@@ -6548,7 +6553,29 @@ the lawful shape; recorded here as the first thing 152's own check should confir
 unfixed version would have reported `main` rewriting `Cascade.tsx` INDEPENDENTLY — **a false alarm that
 sends a lane hunting a phantom.**
 
+## ITEM 151 — ASSIGNED TO TOOLS — 2026-09-17
+
+**RULED: TOOLS TAKES ITEM 151**, on its own request and reasoning, RATIFIED by Fable — **it owns the
+census, built the detection instrument, and already established the constraint that matters (a named
+failure at the site, never a bare guard removed). Routing it elsewhere would PAY TWICE for what is
+already paid for.**
+
+**TWO CONDITIONS, RAISED BY TOOLS ITSELF, RATIFIED:**
+1. **The leading files (`item121`, `fx5`, `item126`, `item112a`) sit OUTSIDE TOOLS' lane** — the same
+   routing check `PW1`/`PW2` got applies before TOOLS touches them. **TELL INK AND FIX WHEN IT STARTS.**
+2. **The 156 is a SPELLING COUNT from the same two patterns that undercounted VW1 twice** (the
+   optional-chain act, the if-guard). **THE FIX's COVERAGE CHECK IS INVERTED, NOT ENUMERATED: any
+   unguarded-fallthrough shape is an offender, with named exemptions** — the same inversion as item
+   148's guard and check 7. *(A count taken from the forms someone thought of is the exact defect this
+   item exists to close; its own coverage check cannot be built the same way.)*
+
+**ORDER: TOOLS TAKES 151 AFTER THE FOUR-FILE PARK CONFORM** — unless a lane frees sooner and the clock
+argues otherwise. **Chat 1's call, against the CLOCK rather than against FIT**, as TOOLS put it.
+
+**BOX, RESTATED: VW1 merged, PW2's re-stamp announced, box otherwise idle.**
+
 Registry: next free **153**.
+
 
 
 
