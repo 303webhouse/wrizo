@@ -51,7 +51,7 @@ const selectAllInEditor = (sel) => `(() => {
 // reads or clicks the hand tools now opens it first, matching what a real
 // writer's hand would actually do (ToolRail's content was always-visible;
 // the sliver's is reach-to-open).
-const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
 
 // ITEM 83 M5 / DR3 RE-POINT (fix lane, 2026-08-28) — read the STRUCTURE ZONE by
 // its own heading, never by whichever control currently fills it. DR3 replaced
@@ -509,7 +509,7 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   await clickStructureRow(app);
   await sleep(150);
-  await app.evalJs("(() => { const __t = document.querySelector('.structure-confirm-screenplay'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.structure-confirm-screenplay'); if (!__t) throw new Error(\"no click target: document.querySelector('.structure-confirm-screenplay')\"); return __t.click(); })()");
   await sleep(300);
   await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'script surface after S5 conversion' });
   await app.evalJs("document.querySelector('.script-el-active').focus()");

@@ -88,7 +88,7 @@ const freshLoosePage = async (app) => {
 // CD1 S2/S7 — the sliver's panel is CLOSED by default (ToolRail's content
 // was always-visible; the sliver's is reach-to-open). Every fixture below
 // that reads the hand tools opens it first.
-const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
 
 // B1 — the retired Journal list's own "New page" button (.journal-new-page)
 // is gone (pages/Journal.tsx deleted, S5); this only ever used it as
@@ -322,7 +322,7 @@ await withHarness(async (app) => {
     projectRail.forwardLock && !projectRail.ink && projectRail.captureItems.length === 0, JSON.stringify(projectRail));
 
   // Independent of typewriter — toggling typewriter off doesn't touch it.
-  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.typewriter-toggle')].find(Boolean); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.typewriter-toggle')].find(Boolean); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.typewriter-toggle')].find(Boolean)\"); return __t.click(); })()");
   await sleep(100);
   const lockStillPresent = await app.evalJs("!!document.querySelector('.wz-sliver-forwardlock')");
   ok('CD1 S2 (was "S3: the forward lock stays mounted independent of the typewriter toggle..."): the forward lock (sliver) stays mounted independent of the typewriter toggle (no coupling)', lockStillPresent);
@@ -511,7 +511,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // the typewriter toggle (no coupling)', lockStillPresent); — read
     // `.desk-toolrail-forwardlock`.
     // CD1 S2/S7 — `.wz-sliver-forwardlock` now.
-    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.typewriter-toggle')].find(Boolean); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.typewriter-toggle')].find(Boolean); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.typewriter-toggle')].find(Boolean)\"); return __t.click(); })()");
     await sleep(100);
     const lockStillPresentParked = await app.evalJs("!!document.querySelector('.wz-sliver-forwardlock')");
     pok('PARKED (was "S3: the forward lock stays mounted independent of the typewriter toggle (no coupling)") — CD1 S2/S7: same truth, .wz-sliver-forwardlock',

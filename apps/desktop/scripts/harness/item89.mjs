@@ -239,7 +239,7 @@ await withHarness(async (app) => {
   await goOffline(app);
   await app.evalJs(`localStorage.setItem(${JSON.stringify(DIRTY_KEY)}, '{}')`);
 
-  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
   await app.typeKeys('An edit made with no server in sight');
   await waitSoft(app, journaledExpr(editId), { label: 'edit re-journals the id', timeout: 9000 });
 

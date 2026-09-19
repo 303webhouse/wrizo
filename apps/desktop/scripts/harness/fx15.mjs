@@ -60,7 +60,7 @@ const openFreshPage = async (app, id, pref) => {
 };
 
 const editorText = (app) => app.evalJs("document.querySelector('.forward-only-editor')?.textContent ?? ''");
-const focusEditor = (app) => app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+const focusEditor = (app) => app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
 
 await withHarness(async (app) => {
   // ── S1 — the invite sleeps by default (no pref set → 'off') ─────────────────

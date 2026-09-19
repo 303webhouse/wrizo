@@ -116,7 +116,8 @@ const setInstrument = async (app, which) => {
   await app.evalJs(`(() => {
     const b = [...document.querySelectorAll('.wz-ink-switch .wz-ink-switch-side')]
       .find(x => x.textContent.trim().toLowerCase() === ${JSON.stringify(which)});
-    if (b) b.click();
+    if (!b) throw new Error("no b target");
+b.click();
   })()`);
   await sleep(250);
 };
@@ -250,7 +251,7 @@ await withHarness(async (app) => {
 
     // (a) keystrokes type normally — the mode still does its own job.
     const beforeText = await app.evalJs(`(document.querySelector('${EDITOR}') || { innerText: '' }).innerText`);
-    await app.evalJs(`document.querySelector('${EDITOR}')?.focus()`);
+    await app.evalJs(`(() => { const __t = document.querySelector('${EDITOR}'); if (!__t) throw new Error("no focus target: document.querySelector('*')"); return __t.focus(); })()`);
     await app.typeKeys('typed here');
     await sleep(500);
     const afterText = await app.evalJs(`(document.querySelector('${EDITOR}') || { innerText: '' }).innerText`);
@@ -309,7 +310,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   const moveId = await pageWithInk(app, W1, H1);
   await toMode(app, 'draft');
-  await app.evalJs(`document.querySelector('${EDITOR}')?.focus()`);
+  await app.evalJs(`(() => { const __t = document.querySelector('${EDITOR}'); if (!__t) throw new Error("no focus target: document.querySelector('*')"); return __t.focus(); })()`);
   await app.typeKeys('the coat on the train');
   await sleep(2600); // past AUTOSAVE_MS
   const beforeStrokes = await strokesOf(app, moveId);
@@ -354,7 +355,7 @@ await withHarness(async (app) => {
   const undoPresent = await present(app, '.wz-ink-sheet .ink-undo');
   ok('C9: the undo affordance is offered in a movable mode — there is now a move to reverse',
     undoPresent === true);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-sheet .ink-undo'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-sheet .ink-undo'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-ink-sheet .ink-undo')\"); return __t.click(); })()");
   await sleep(800);
   const undone = await strokesOf(app, moveId);
   const undoneBox = undone.length ? bboxOf(undone[0].points) : null;
@@ -369,9 +370,9 @@ await withHarness(async (app) => {
   // reads the erase's own stored geometry.
   // ==========================================================================
   const eraId = await pageWithInk(app, W1, H1);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(300);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-eraser'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-eraser'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-ink-eraser')\"); return __t.click(); })()");
   await sleep(250);
   await safePen(app, SHEET, [{ x: 0.35, y: 0.24 }, { x: 0.5, y: 0.24 }], 'erase over the ink');
   await sleep(700);
@@ -519,12 +520,12 @@ await withHarness(async (app) => {
   const xFw = await strokesOf(app, xId);
   const xFwBox = bboxOf(xFw[0].points);
   await toMode(app, 'draft');
-  await app.evalJs(`document.querySelector('${EDITOR}')?.focus()`);
+  await app.evalJs(`(() => { const __t = document.querySelector('${EDITOR}'); if (!__t) throw new Error("no focus target: document.querySelector('*')"); return __t.focus(); })()`);
   await app.typeKeys('drafting words');
   await sleep(2600);
   const xDraft = await strokesOf(app, xId);
   await toMode(app, 'revise');
-  await app.evalJs(`document.querySelector('${EDITOR}')?.focus()`);
+  await app.evalJs(`(() => { const __t = document.querySelector('${EDITOR}'); if (!__t) throw new Error("no focus target: document.querySelector('*')"); return __t.focus(); })()`);
   await app.typeKeys(' revised');
   await sleep(2600);
   const xRevise = await strokesOf(app, xId);

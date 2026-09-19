@@ -260,7 +260,7 @@ await withHarness(async (app) => {
     rowsBeforeWord === 1, `rows=${rowsBeforeWord} (the seeded board only)`);
 
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'unborn page surface' });
-  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
   await app.typeKeys('Born from a board.');
   await app.waitFor(
     `JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').some(e => (e.text||'').trim() === 'Born from a board.')`,
@@ -297,7 +297,7 @@ await withHarness(async (app) => {
     `hash=${afterJournalDoor}`);
 
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'unborn journal page' });
-  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
   await app.typeKeys('Born from the Journal board.');
   await app.waitFor(
     `JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').some(e => (e.text||'').trim() === 'Born from the Journal board.')`,

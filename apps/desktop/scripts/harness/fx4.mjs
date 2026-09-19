@@ -701,7 +701,7 @@ if (process.env.HARNESS_PARKED === '1') {
     pok('PARKED (was "S6: double-clicking the brass resize handle arms a thread-drag from that card") — FX5 S5: the gesture is retired WHOLE, proven inert (double-clicking the handle no longer arms anything); live successor (the olive-pin-drag gesture) fully re-derived in fx5.mjs\'s own S5 section',
       armedAfterDblclick === 'false', armedAfterDblclick);
 
-    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
     await sleep(150);
     const sliverShape = await app.evalJs(`(() => {
       const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');

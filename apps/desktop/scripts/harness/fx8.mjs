@@ -301,7 +301,7 @@ await withHarness(async (app) => {
   ok('S3 regression re-proof: a genuinely trusted double-click still opens the card\'s own edit popup (FX7 S5, unregressed by the new card-body cursor)',
     popupOpen, String(popupOpen));
   if (popupOpen) {
-    await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target: document.querySelector('.board-popup-done')\"); return __t.click(); })()");
     await sleep(150);
   }
 

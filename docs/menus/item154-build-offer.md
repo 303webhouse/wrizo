@@ -1,162 +1,216 @@
-# ITEM 154 · BUILT — 139 OF 156 REWRITTEN, 17 NAMED AND HELD BACK
+# ITEM 154 · REBUILT — 147 REWRITTEN, 7 SITES EXEMPTED BY NAME, NONE HELD BACK
 ### tools lane · branch `item154-instring-acts` · worktree `.claude/item154-instring-acts`
-### census `21b6b86` · Shape A closeout `b5a13a1` · build `<this commit>` · 2026-09-18
+### census `21b6b86` · Shape A closeout `b5a13a1` · first build `a406778` (**SUPERSEDED, never run**) · rebuild = this commit · 2026-09-19
 
-**BUILT AND BYTE-VERIFIED. NOT LAUNCHED.** Per Fable's own instruction:
-verification is by byte comparison of the extracted argument, never "it
-still parses." Both are done, independently of each other (§3). No suite
-has been run against this tree.
-
----
-
-## §1 · SCOPE — WHAT WAS SAFE TO AUTOMATE, AND WHAT WAS NOT
-
-156 offenders were found by the S0 census. This build rewrites the subset
-reachable by a MECHANICAL, PROVEN-CORRECT splice, and names the rest rather
-than guess at them:
-
-**139 REWRITTEN**, gated on two conditions, both required:
-
-1. **The source literal carries no live `${...}` interpolation.** A
-   `StringLiteral` or `NoSubstitutionTemplateLiteral` argument's cooked
-   text IS the complete content — re-encoding the whole thing via
-   `JSON.stringify` is unconditionally correct, because there is nothing
-   else in the literal a rewrite could clobber. A `TemplateExpression`
-   (has interpolation elsewhere in the same literal) was NOT touched this
-   pass — collapsing the whole literal to a static string would freeze
-   those OTHER live expressions at census-time values, which is a
-   correctness bug this tool refuses to risk. Mapping a specific offender's
-   position back to a raw source offset while leaving every `${...}`
-   untouched is the harder problem the item's own S0 survey named in
-   advance; it was not attempted this pass.
-2. **The offender's own shape is simple** — a single optional chain with
-   no deeper `?.` in the same access chain, or an if-guard whose consequent
-   is ONE statement. Two sites are not this shape (one nested optional
-   chain, one multi-statement if-body) and are flagged, not guessed at —
-   restructuring a multi-statement block correctly needs a human reading
-   it, not a splice.
-
-**17 FLAGGED, NOT TOUCHED** — named by file:line, not folded into a bare
-count:
-
-- **15** carry a live interpolation elsewhere in the same literal:
-  `fx2.mjs:150`, `item112a.mjs:77`, `item121.mjs:645`, `item126.mjs:116`,
-  `item126.mjs:253`, `item126.mjs:312`, `item126.mjs:522`,
-  `item126.mjs:527`, `item83f.mjs:106`, `item83f.mjs:148`,
-  `item84.mjs:173`, `item84.mjs:240`, `item84b.mjs:183`,
-  `item84b.mjs:248`, `sc2.mjs:1117`.
-- **2** are the complex-shape sites: `th2.mjs:353` (a nested optional
-  chain), `tu5.mjs:449` (a multi-statement if-guard body).
-
-These 17 are this build's own honest remainder — a boundary this pass
-could not safely reach, in the same posture as the census's own 48
-unresolved sites (S0 survey) and item 155's declined 1,443.
+**BUILT, BYTE-VERIFIED, AND FALSIFIED. NOT LAUNCHED.** The tip moved from
+`a406778` to this commit: chat 1 should verify THIS tip, not the one the last
+report named. Nothing in `a406778` ever reached a suite — it was corrected
+before any pair was granted — so no red was caused by it.
 
 ---
 
-## §2 · THE TRANSFORM — BOTH CLASSES REDUCE TO ITEM 151's OWN S0 EXAMPLE
+## §0 · WHAT THIS CORRECTS — THE FIRST BUILD WAS WRONG IN SIX WAYS
+
+The first build (`a406778`, "139 of 156 rewritten, 17 held back") converted a
+**syntactic shape**. Reading the sites one at a time — before the pair, while
+the box was not mine — found that the same syntax is worn by things that are
+not silent acts, and that the tool itself had defects. Each is fixed here;
+none is a claim about the product.
+
+| # | the first build | what was wrong | now |
+|---|---|---|---|
+| 1 | rewrote `sc1.mjs:562` to throw | the check is *"the OPTION does not present itself"* — `gear` is the **Typewriter** control, which must be **absent**. The passing state is absence; the throw would have failed it | **exempt**, by name |
+| 2 | rewrote `m2.mjs:543`, `m4.mjs:264` | `return !!btn` is **asserted** by the very next line (`ok(..., progressTimeBtn === true)`). Absence already fails a *named check*; a throw replaced that with a file abort — the opposite of this arc's law ("probe first, fail a check") | **exempt**, by name |
+| 3 | rewrote both halves of `cd2.mjs:597`/`:622` | `A?.focus?.() \|\| B?.focus?.()` is a **fallback chain**. Converting the first half makes it throw when absent *instead of falling back to B* | **exempt**, by name |
+| 4 | dropped the `?.()` of `x?.focus?.()` | changed the author's method-existence guard, silently | preserved: `__t.focus?.()` |
+| 5 | message `no click target` | names no selector; `evalJs` surfaces an in-page throw as `page eval: {exceptionDetails}`, so a red would not say *which* target was missing across ~130 sites | `no click target: document.querySelector('.wz-sliver-grip')` |
+| 6 | held back 17 sites | 15 had a live `${...}` (now handled in place), `th2:353` a two-level lookup (now written by hand and verified alike), and `tu5:449` **was never an offender** — a scan-until-exhausted loop whose `else` is the loop ending | 0 held back |
+
+**The root cause is the one item 155 names, aimed at my own S0:** *a number you
+cannot defend per site is not a population.* The 156 was defensible as a
+count of a **shape**. It was not a count of **silent acts**. Reading each
+one gives **147 silent acts + 9 shapes (7 sites) that are not.**
+
+> **A COUNT OF A SYNTACTIC SHAPE IS A LIST OF CANDIDATES — THE POPULATION IS
+> WHAT SURVIVES READING EACH ONE.** *(proposed, my words)*
+>
+> **BYTE COMPARISON PROVES THE FILE SAYS WHAT YOU MEANT — NOT THAT YOU MEANT
+> THE RIGHT THING.** *(proposed, my words: the first build was byte-verified
+> 137/137 and wrong in six ways.)*
+
+---
+
+## §1 · THE POPULATION, READ PER SITE
+
+`156 = 133 optional-chain + 23 if-guard` (S0, unchanged). Per site:
+
+- **147 rewritten** — 127 optional-chain (117 in plain strings, 10 in
+  templates), 19 if-guard (14 + 5), 1 by hand (`th2:353`).
+- **9 shapes in 7 sites EXEMPT** (`item154-exemptions.mjs`; every needle must
+  match exactly its declared count or the tool fails — a stale exemption is a
+  guard passing blind):
+
+| site | class | why |
+|---|---|---|
+| `m2.mjs:543`, `m4.mjs:264` | probe-and-report | absence is asserted by the next `ok()` |
+| `tu5.mjs:449` | control flow | a search loop; absence is how it ends |
+| `sc1.mjs:562` | expected-absent | a negative assertion; absence is the passing state |
+| `cd2.mjs:597`, `:622` (×2 each) | fallback chain | `\|\|` consumes the absence |
+| `item133.mjs:133` | author-documented intent | the comment says `?.click()` is deliberate so *the assertion below speaks* — **handed up, §6** |
+
+Of the 133 optional-chain calls, **129 are bare statements** (value discarded —
+silent by construction) and **4 are consumed** (the cd2 fallbacks). That split
+was measured, not assumed.
+
+---
+
+## §2 · THE TRANSFORM
 
 ```js
-// optional chain
-// before:  RECEIVER?.VERB(ARGS)
-// after:
-(() => { const __t = RECEIVER; if (!__t) throw new Error(MSG); return __t.VERB(ARGS); })()
+// optional chain            RECEIVER?.VERB(ARGS)
+(() => { const __t = RECEIVER; if (!__t) throw new Error("no VERB target: RECEIVER"); return __t.VERB(ARGS); })()
 
-// if-guard
-// before:  if (X) STATEMENT
-// after:
-if (!X) throw new Error(MSG);
+// if-guard                  if (X) STATEMENT
+if (!X) throw new Error("no X target");
 STATEMENT
 ```
 
-The if-guard form DROPS the redundant `if (X)` wrapper around the original
-statement, matching item 151's own S0 doc precisely: after the throw, X is
-guaranteed truthy, so the act is unconditional rather than re-wrapped —
-"the same act, but absence is a finding, not an outcome."
-
-A real, representative example (item126.mjs, an if-guard site):
-
-```diff
-- await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
-+ await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (!gear) throw new Error(\"no gear target\");\ngear.click(); })()");
-```
-
-And an optional-chain site (item121.mjs):
-
-```diff
-- await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
-+ await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
-```
-
-**Re-encoding uses `JSON.stringify` on the new cooked text, never a
-hand-written escape** — item 152's own lesson, applied at the point where a
-hand-rolled escape would have been tempting. The tool never types a `\n` or
-`\"` itself; `JSON.stringify` computes correct escaping for whatever
-content results, which is why the quote style sometimes flips from
-backtick to double-quote (visible above) — a behavior-neutral side effect
-of re-encoding through one canonical path rather than trying to preserve
-the original literal's own punctuation.
+- **Templates are edited in place, at raw offsets inside one literal piece.**
+  Collapsing a `${...}` template to a static string would freeze its other
+  live expressions, so it is never done. An optional chain whose receiver
+  *contains* an interpolation (`document.querySelector('${EDITOR}')?.focus()`,
+  10 sites) is handled by inserting a prefix before the receiver and replacing
+  only the `?.verb()` tail — the receiver text is never copied, so the live
+  expression is never touched.
+- **Every harness file is CRLF**, and a template's cooked text normalises
+  CRLF → LF, so multi-line pieces have raw ≠ cooked for that reason alone.
+  The mapping accepts that *only* when every newline is a CRLF and
+  normalising reproduces the cooked text exactly; a mixed or escaped piece is
+  still refused. Inserted newlines follow the **file's** convention.
+- Re-encoding is `JSON.stringify` (static) or a `cookedToRaw` written with
+  `split`/`join` and **self-tested at startup against TypeScript's own
+  tokenizer** — item 152's lesson applied where a hand-typed escape was
+  tempting.
+- `th2:353` (`find(...)?.querySelector(...)?.click()`) is written by hand —
+  a named failure owed at *each* level — but goes through the **same** byte
+  comparison as the 146 automated rewrites: an in-string edit is verified by
+  what the file says, whoever typed it.
 
 ---
 
-## §3 · VERIFICATION — TWO INDEPENDENT INSTRUMENTS, NEITHER ONE "IT STILL PARSES"
+## §3 · VERIFICATION — FIVE INSTRUMENTS, AND WHAT EACH CANNOT SEE
 
-**(a) The rewrite tool's own post-write byte comparison.** Every write is
-followed by re-reading the FILE FROM DISK, re-running the same Pass-1
-extraction the census uses, and comparing the re-extracted cooked text
-against the exact text the tool intended to write:
+**(a) Byte comparison, every argument, re-read from disk.** 2,580 `evalJs`
+arguments across 49 files: **147 edited == the intended text, character for
+character, with every `${...}` expression unchanged; 2,433 untouched
+byte-identical; the file outside every argument byte-identical to the
+original; no new bare LF in any CRLF file.**
+*Cannot see:* whether the intent was right (§0 is the proof).
 
-```
-137/137 intended rewrites confirmed byte-identical in the file actually on disk.
-ALL REWRITTEN FILES: BYTE-VERIFIED
-```
+**(b) An independent census** (`item154-census.mjs`, a separate program) on the
+result: **OFFENDERS 0, EXEMPT 9.** It agrees with the rewriter — after one
+disagreement, honestly resolved: it counted the rewrite's own
+`return __t.focus?.()` (right after a named throw on `__t`) as an offender.
+A lone optional *call* on a non-optional access asks whether the **method**
+exists, not the **target**; the census now walks from the access. Checked
+first that this hides **none** of the original sites — 0 of 133 are reached
+only through a lone optional call — so the 156 is unchanged.
 
-(137 distinct call-site rewrites carrying 139 offender-level edits — two
-call sites each held two offenders, collapsed into one rewritten literal
-apiece.)
+**(c) A behavioural falsification** (`item154-behaviour.mjs`, no browser):
+every changed argument, old vs new, in three stub worlds — *absent*,
+*present*, and *inner-miss* (outer container found, everything inside it
+missing, which reaches a guard sitting behind an earlier `if (!row) return`).
+**147/147 conclusive:** the old text is silent where the new one throws *by
+name*; where the target exists the new one performs exactly the same acts and
+does not throw. **Mutation-tested on copies** (each mutation asserted to have
+landed first): an inert guard, a dropped act, an inverted guard and a dropped
+statement are each **reported FAIL with the right diagnosis**. The first
+classification labelled two of those four "inconclusive"; tightened until it
+said what it found.
+*Cannot see:* whether a throw is the *right* behaviour. Every exempted site
+"behaves correctly" under a converted text here and is still the wrong thing
+to have done — which is why exemptions live in a reviewable table, not a
+pattern. **A 147/147 means "every rewrite does what it says", never "every
+rewrite should have been made".**
 
-**(b) A SEPARATE tool — the original S0 census (`item154-census.mjs`),
-unmodified — re-run against the changed tree, independently of the
-rewriter's own report.** Two tools built for different purposes agree:
+**(d) Idempotence:** re-running the rewriter on the rewritten tree changes 0
+files.
 
-```
-OFFENDERS (the real boundary):     17
-```
+**(e) Environment:** `tsc --noEmit` exit 0; `build:web` exit 0, **bundle
+unchanged** (`index-DfFOCr6L.js`); `node --check` clean on all 49 files and
+the four tools; **0 files with mixed line endings**.
 
-156 → 17 is exactly 139 fewer, and 17 is exactly this build's own named
-remainder (§1) — not a number arrived at by trusting the rewrite tool's
-self-report, but by a second, independently-built instrument counting the
-population from scratch on the file as it now stands.
-
-**Also checked, not assumed:**
-
-- `ALREADY-GUARDED-SAFE: 0`, both before and after — the census's detector
-  for "an if-block that already throws" does not match this build's OWN
-  new shape (a throw-then-unconditional-act, not a throw-inside-an-if), so
-  this stays at zero correctly; it is a different pattern shape, not a
-  missed count.
-- **Zero offenders live inside a resolved helper/binding** (`rectOf`,
-  `DRAG_HELPER`, etc.) — checked directly before building anything, because
-  had one existed there, fixing it once would need to apply to every call
-  site referencing it, and the census's per-call-site counting would have
-  overcounted a single textual defect as one instance per reference. None
-  did; this was a real risk considered and ruled out, not assumed away.
-- Every real V8 parse asked TWICE per rewritten site — the new INNER cooked
-  text (`vm.Script`), and the whole OUTER file afterward (`node --check`,
-  via a temp copy, since the outer file is an ES module with top-level
-  `import` that `vm.Script` cannot parse). A parse of garbage is still a
-  parse; both checks ran before either file was trusted.
+**A bug found on the way, kept on the record:** `item121.mjs` and `sc2.mjs`
+each ended up with one bare LF in an all-CRLF file — the in-template `if`
+rewrites keyed the inserted newline on the *piece*, not the file. Git's own
+warning named exactly those two files. **The byte comparison could not see
+it** (cooked text normalises CRLF → LF); a new check — no new bare LF in any
+CRLF file — now can, and would have flagged both.
 
 ---
 
-## §4 · WHAT THIS COMMIT CHANGES
+## §4 · FOUND, NOT FIXED — SECOND SILENT-ABSENCE PATHS (ITEM 155's TERRITORY)
 
-50 harness files, 139 offender sites, 137 call-site rewrites. `tsc --noEmit`
-exit 0. `build:web` exit 0, **bundle hash unchanged**
-(`index-DfFOCr6L.js/586771b` — confirming harness-only changes, no app
-source touched). All 50 touched files individually re-verified with
-`node --check` after the fact, outside the rewrite tool's own internal
-check, as a second look rather than trusting the tool's own report alone.
+Reaching the guard in the all-absent world failed at four sites, because an
+**earlier exit** fires first. Each guard is correct where it sits; the earlier
+exit is a second silent path outside item 154's six-verb pattern, recorded
+here, not touched:
 
-**No suite has been run.** This offer stops at the same boundary every
-offer in this arc has: built, verified two independent ways, not launched.
+- `fx2.mjs:311`, `:373` — `if (!row) return;` before the guarded click.
+- `item83f.mjs:106` — `if (!row) return false;`, **and its wrapper
+  `openPopout` discards the result**, so the `false` reports nothing.
+  (`:148`, `clickFormat`, discards a `return !!b` the same way.)
+- `fx3.mjs:371` — a bare `row.querySelectorAll` on a null row: already loud,
+  just not named.
+
+---
+
+## §5 · WHAT THE PAIR WILL AND WON'T SHOW — STATED IN ADVANCE
+
+**Expected red count: UNKNOWN**, and deliberately not guessed — the same
+refusal as item 151's §12. Any new red is a site where the target is absent in
+a *passing* run: either a real miss that has been hiding (item 130's class
+caught retroactively) or a legitimate absence that needs an exemption named.
+Diagnose each as a candidate finding before treating it as a break.
+
+A reading aid, not a number:
+
+- **Most likely first candidate: `fx1.mjs:325` and `:514`** —
+  `[...querySelectorAll('.typewriter-toggle')].find(Boolean)?.click()`. `fx2`'s
+  own park note says that class is *gone* at one location, yet product source
+  still renders it (`WritingIncentives.tsx:295`). Whether it exists on
+  `fx1`'s page is exactly what the pair will say; if not, that click has done
+  nothing for a long time and the check after it is trivially true.
+- **"Dismiss if open" shapes** — where absence may be a legitimate state:
+  `.board-popup-done` ×7, `.sprint-modal-backdrop` ×2, `.btn-quiet` ×2,
+  `.wz-tutor-dock-btn` ×3, `.structure-confirm-screenplay`.
+- **Low risk**, the target exists in essentially every run: `.wz-sliver-grip`
+  ×34 (opening the sliver), `.forward-only-editor` ×20 (`focus`).
+
+---
+
+## §6 · HANDED UP — THREE RULINGS, EACH WITH MY LEAN
+
+1. **`item133.mjs:133`** — the author wrote `?.click()` *deliberately* so a
+   downstream assertion speaks. Convert it (and accept the abort), or keep the
+   deliberate guard? **Lean: keep it exempt** — it is the only site whose own
+   comment states the intent this item would overrule.
+2. **Throw vs. record-a-check.** An in-string throw surfaces as an uncaught
+   rejection and aborts the rest of that file's checks; the arc's own
+   `harness-drivers-never-assume-existence` law prefers a failed named check
+   that lets the file keep reporting. In-string code cannot call `ok()`, so
+   the ratified shape (a named failure at the site) is the only mechanical
+   one. **Lean: accept the throw** — but this is the cost, and it is real.
+3. **The census definition** (§3b): a lone optional call on a non-optional
+   access is not a silent target-absent act. **Lean: ratify** — it was
+   applied *after* seeing the census's own output, which is exactly when a
+   redefinition deserves a second reader.
+
+---
+
+## §7 · WHAT THIS COMMIT CHANGES
+
+49 harness files, 147 in-string rewrites (`+152 / −183`, no whole-file
+churn); new: `item154-exemptions.mjs`, `item154-behaviour.mjs`; changed:
+`item154-census.mjs` (exemptions, target-side optional links),
+`item154-rewrite.mjs` (rebuilt). **No suite run, no merge, no deploy.**

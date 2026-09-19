@@ -41,7 +41,7 @@ const freshDraftPage = async (app) => {
   await sleep(250);
   await app.click('Draft');
   await sleep(400);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(250);
 };
 

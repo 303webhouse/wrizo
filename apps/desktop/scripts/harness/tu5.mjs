@@ -463,7 +463,7 @@ await withHarness(async (app) => {
 
     // Typing into the Bible add input never touches the page.
     await openTutor(app);
-    await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-bible-row .wz-tutor-bible-input'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-bible-row .wz-tutor-bible-input'); if (!__t) throw new Error(\"no focus target: document.querySelector('.wz-tutor-bible-row .wz-tutor-bible-input')\"); return __t.focus(); })()");
     await app.typeKeys('write this onto my page please');
     await sleep(120);
     ok('A13 Bible: typing into the Bible input never places a byte on the page',

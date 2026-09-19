@@ -70,7 +70,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
 
 // A fresh, framed script page — the same fixture fx3.mjs/cd1.mjs use, kept
 // byte-for-byte rather than re-derived (it is a raw seed made from the Desk,
@@ -94,7 +94,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
 // the store round-trips. The re-persist after a mode switch is measured late
 // (~1100ms on this box), so this waits on the RENDERED result, not a sleep.
 const toDraft = async (app) => {
-  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')\"); return __t.click(); })()");
   await app.waitFor("!!document.querySelector('.wz-sliver-structure-zone')", { label: 'Draft sliver Structure zone' });
   await sleep(250);
 };
@@ -107,7 +107,8 @@ const openPopout = async (app, label) => {
     const row = document.querySelector('.wz-sliver-instruments-row');
     if (!row) return false;
     const b = [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label') || '').startsWith(${JSON.stringify(label)}));
-    if (b) b.click();
+    if (!b) throw new Error("no b target");
+b.click();
     return !!b;
   })()`);
   await sleep(220);
@@ -147,7 +148,8 @@ const focusEditor = (app) => app.evalJs("document.querySelector('.forward-only-e
 const clickFormat = async (app, title) => {
   await app.evalJs(`(() => {
     const b = [...document.querySelectorAll('.wz-sliver-format .mode-tbtn')].find(x => x.getAttribute('title') === ${JSON.stringify(title)});
-    if (b) b.click();
+    if (!b) throw new Error("no b target");
+b.click();
     return !!b;
   })()`);
   await sleep(250);

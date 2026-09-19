@@ -189,7 +189,7 @@ await withHarness(async (app) => {
           && (surface === 'board' || marginOpen == null || marginOpen < USABLE_FLOOR_PX || (panelOpen && paperOpen && panelOpen.left >= paperOpen.right - 2)),
         JSON.stringify({ panelOpenWidth: panelOpen.width, expectedOpenW, marginOpen, paperRight: paperOpen && paperOpen.right, panelLeft: panelOpen && panelOpen.left, surface, width }));
 
-      await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-dock-btn'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+      await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-dock-btn'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-tutor-dock-btn')\"); return __t.click(); })()");
       await sleep(250);
       const paperAfterDock = await rectOf(app, paperSel);
       const dockedState = await app.evalJs("document.querySelector('.wz-tutor-panel')?.dataset.docked");
@@ -408,7 +408,7 @@ await withHarness(async (app) => {
       (await app.evalJs("document.querySelector('.wz-tutor-panel')?.dataset.open")) === 'false');
 
     await openTutor(app);
-    await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-dock-btn'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-dock-btn'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-tutor-dock-btn')\"); return __t.click(); })()");
     await sleep(250);
     const dockedNow = await app.evalJs("document.querySelector('.wz-tutor-panel')?.dataset.docked");
     if (dockedNow === 'true') {
@@ -499,7 +499,7 @@ await withHarness(async (app) => {
   // ticket never touches) is unaffected.
   {
     await freshProsePage(app, 900, 900);
-    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
     await app.typeKeys('legacy width dissolve sanity');
     await sleep(500);
     const legacyInfo = await app.evalJs(`(() => {

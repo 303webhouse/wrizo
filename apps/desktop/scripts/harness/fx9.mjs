@@ -381,7 +381,7 @@ await withHarness(async (app) => {
   ok('S2 setup: the cluster is genuinely collapsed before the close/reopen probe', collapsedBeforeDockClose === 'true', collapsedBeforeDockClose);
   // Close the cascade panel (the dock's own quiet close, T5) — NOT a
   // reload; DrawersPanel fully unmounts.
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-cascade-dock-btn'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-cascade-dock-btn'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-cascade-dock-btn')\"); return __t.click(); })()");
   await sleep(250);
   // Drawers never opens a survey (B2 S7 — a large-tile view, tiles travel
   // directly, no nested survey column), so closePanel() always takes its

@@ -84,7 +84,7 @@ const openPageCategory = async (app) => {
   await app.waitFor("!!document.querySelector('.wz-pageface-title')", { label: 'Page category open (openPageCategory)' });
 };
 
-const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
 
 // A GENERIC rect-reader (toJSON — DOMRect doesn't survive CDP's
 // returnByValue serialization otherwise).
@@ -548,7 +548,7 @@ await withHarness(async (app) => {
     const popupText = await app.evalJs("document.querySelector('.board-popup-editor')?.innerText");
     ok('S5: the opened popup genuinely shows THIS card\'s own dealt text (title + body, materializeDeck\'s own "title\\nbody" shape), not empty/wrong content',
       typeof popupText === 'string' && popupText.length > 0, popupText);
-    await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target: document.querySelector('.board-popup-done')\"); return __t.click(); })()");
     await sleep(200);
   }
   // Universality check (S5's own instruction: "determine whether this
@@ -564,7 +564,7 @@ await withHarness(async (app) => {
   const handPopupOpen = await app.evalJs("!!document.querySelector('.board-popup')");
   ok('S5 universality: an ORDINARY hand-typed card has the IDENTICAL defect and the IDENTICAL fix — confirms this was never deck-specific (materializeDeck\'s own layout/overlap was a red herring, not the cause)',
     handPopupOpen, String(handPopupOpen));
-  if (handPopupOpen) await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  if (handPopupOpen) await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target: document.querySelector('.board-popup-done')\"); return __t.click(); })()");
 
   // --- S6: not deletable -----------------------------------------------------
   // Root-caused live: single-click SELECT resolves `e.target` on the FIRST
@@ -762,7 +762,7 @@ await withHarness(async (app) => {
   const planButtons = await app.evalJs("[...document.querySelectorAll('.wz-cascade-panel-body button')].map(b => b.textContent.trim())");
   ok('S9: the OLDER, pre-existing "Plot a Story" button lives in the Cascade\'s own Plan panel — a genuinely different doorway from either of B3\'s own two "…a deck…" doors',
     planButtons.includes('Plot a Story'), JSON.stringify(planButtons));
-  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-cascade-panel-body button')].find(b => b.textContent.trim() === 'Plot a Story'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-cascade-panel-body button')].find(b => b.textContent.trim() === 'Plot a Story'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.wz-cascade-panel-body button')].find(b => b.textContent.trim() === '...\"); return __t.click(); })()");
   await sleep(400);
   const oldWizardHash = await app.evalJs('location.hash');
   const oldWizardBody = await app.evalJs('document.body.innerText.slice(0, 200)');
@@ -793,7 +793,7 @@ await withHarness(async (app) => {
   await freshBoard(app, 'fx7-s9-board', [], LAPTOP_W, 900);
   await openSliver(app);
   await sleep(200);
-  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a deck…'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a deck…'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'From a dec...\"); return __t.click(); })()");
   await sleep(300);
   const door2Shape = await app.evalJs(`(() => ({
     hasBackdrop: !!document.querySelector('.deck-wizard-backdrop'),

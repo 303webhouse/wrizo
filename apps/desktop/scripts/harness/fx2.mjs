@@ -132,7 +132,7 @@ const gotoPage = async (app, id) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
 
 const typewriterDom = (app) => app.evalJs("document.querySelector('.mode-scroll')?.dataset.typewriter");
 // Mirrors store/writingSettings.ts's own load() — DEFAULTS.typewriter=true
@@ -147,7 +147,7 @@ const typewriterSetting = (app) => app.evalJs(
 );
 const activeModeTab = (app) => app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
 const clickModeTab = (app, label) =>
-  app.evalJs(`[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === ${JSON.stringify(label)})?.click()`);
+  app.evalJs(`(() => { const __t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === ${JSON.stringify(label)}); if (!__t) throw new Error("no click target: [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === *)"); return __t.click(); })()`);
 
 // ~3 and ~15 line-equivalents respectively — short lines (well under the
 // 60ch canonical measure) so each hard newline is exactly one line, making

@@ -275,7 +275,7 @@ await withHarness(async (app) => {
   // unchanged; only the page has to exist before it can be starred, which is the
   // whole point of the ticket. Live successor: pb1.mjs's unborn-absence checks.
   if (!(await app.evalJs("!!document.querySelector('.wz-pageface-star')"))) {
-    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
     await app.typeKeys('s');
     await app.waitFor("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => !e.deletedAt)", { label: 'page born (row flushed)' });
     // Typing dissolves the chrome (A19), which closes the cascade panel this
@@ -594,7 +594,7 @@ await withHarness(async (app) => {
     afterDock.categoryActive === true, JSON.stringify(afterDock));
 
   // Vanishing-law rider: DOCKED survives a keystroke.
-  await app.evalJs("(() => { const __t = document.querySelector('.entry-edit, .entry-full'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })() || (() => { const __t = document.querySelector('[contenteditable=\"true\"]'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+  await app.evalJs("document.querySelector('.entry-edit, .entry-full')?.focus?.() || document.querySelector('[contenteditable=\"true\"]')?.focus?.()");
   await app.typeKeys('x');
   await sleep(200);
   const dockedSurvivesKeystroke = await app.evalJs(`({
@@ -619,7 +619,7 @@ await withHarness(async (app) => {
     JSON.stringify({ beforeDock, afterReopen }));
 
   // Contrast: UNDOCKED (the current state) dissolves on keystroke as before.
-  await app.evalJs("(() => { const __t = document.querySelector('.entry-edit, .entry-full'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })() || (() => { const __t = document.querySelector('[contenteditable=\"true\"]'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+  await app.evalJs("document.querySelector('.entry-edit, .entry-full')?.focus?.() || document.querySelector('[contenteditable=\"true\"]')?.focus?.()");
   await app.typeKeys('y');
   await sleep(200);
   const undockedDissolves = await app.evalJs(`({ panelGone: !document.querySelector('.wz-cascade-panel'), surveyGone: !document.querySelector('.wz-cascade-survey') })`);

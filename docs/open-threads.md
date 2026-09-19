@@ -18653,7 +18653,11 @@ BOTH item 151 and item 154.
 sites) — Shape A's last held sites, same drag-start-only `assertHittable` pattern as
 the rest of the build. Item 151 has no open population left.
 
-**ITEM 154 BUILT (this commit).** Full record: `docs/menus/item154-build-offer.md`.
+**SUPERSEDED, 2026-09-19 — the paragraph below describes the FIRST build (`a406778`), which
+was wrong in six ways and never ran. See "ITEM 154 — REBUILT AFTER A PER-SITE AUDIT" further
+down for the corrected numbers (147 rewritten, 7 sites exempt by name, 0 held back).**
+
+**ITEM 154 BUILT (first build, `a406778` — SUPERSEDED).** Full record: `docs/menus/item154-build-offer.md`.
 **139 of 156 offenders rewritten, 50 files, byte-verified two independent ways**: the
 rewrite tool's own post-write re-extraction (137/137 call-site rewrites confirmed
 byte-identical on disk) AND a second, unmodified run of the original census tool
@@ -18730,3 +18734,66 @@ if they turn out to be separable, only the alignment is this item's to fix.
 **NEXT ACTION:** wait for item 154's pair grant/run, then request or take up a grant to
 launch the harness for both S0 measurements (162 at two heights per the 137 precedent;
 161 on the Board at the Board's own reference widths) before writing either fix.
+
+## ITEM 154 — REBUILT AFTER A PER-SITE AUDIT — 2026-09-19 (tools lane; branch
+`item154-instring-acts`; supersedes the first build `a406778`)
+
+**THE TIP MOVED — chat 1 should verify THIS tip, not `a406778`.** The first build was
+byte-verified 137/137 and **wrong in six ways**, found by reading each site while the box
+was not mine; it never reached a suite. Full record: `docs/menus/item154-build-offer.md`
+(§0 is the correction, kept in place rather than quietly rewritten).
+
+**THE 156 WAS A COUNT OF A SHAPE, NOT OF SILENT ACTS.** Reading each site: **147 silent acts
++ 9 shapes (7 sites) that are not** — a probe whose absence the caller ASSERTS (`m2:543`,
+`m4:264`: `return !!btn` is checked on the next line), a negative assertion whose passing
+state IS absence (`sc1:562`: the Typewriter control must be gone), a `||` FALLBACK CHAIN
+(`cd2:597`/`:622`), a scan loop (`tu5:449`, never an offender), and one author-documented
+guard (`item133:133`). Converting those to a throw turns green checks red or replaces a
+NAMED FAILED CHECK with a file abort. Exempted **by name, per site, in a reviewable table**
+that fails the run if any entry matches other than its declared count.
+
+> **A COUNT OF A SYNTACTIC SHAPE IS A LIST OF CANDIDATES — THE POPULATION IS WHAT SURVIVES
+> READING EACH ONE.** *(proposed band, tools' words — item 155's own law, aimed at tools' S0)*
+>
+> **BYTE COMPARISON PROVES THE FILE SAYS WHAT YOU MEANT — NOT THAT YOU MEANT THE RIGHT
+> THING.** *(proposed band, tools' words)*
+
+**BUILT: 147 rewritten** (127 optional-chain, 19 if-guard, 1 by hand), **0 held back** — the 15
+interpolated sites are now edited IN PLACE at raw offsets inside one literal piece (never
+collapsing a `${...}`; an optional chain whose receiver contains an interpolation gets a
+prefix inserted before it and only its `?.verb()` tail replaced, so the live expression is
+never touched). Messages now NAME THE SELECTOR (`evalJs` surfaces a throw as `page eval:
+{exceptionDetails}`; a red saying only "no click target" is undiagnosable across ~130 sites).
+`x?.focus?.()` keeps its optional call. Every harness file is CRLF — handled, and a bug found
+on the way (one bare LF in each of `item121`/`sc2`; git's own warning named them; the byte
+comparison could not see it) is fixed and now checked.
+
+**VERIFIED FIVE WAYS, each with what it cannot see** (offer §3): byte comparison of ALL 2,580
+`evalJs` arguments across 49 files, re-read from disk (147 edited == intended; 2,433 untouched
+byte-identical; nothing outside an argument moved; no new bare LF); the independent census
+(**0 offenders, 9 exempt**), after one honest disagreement resolved; a NEW behavioural
+falsification (`item154-behaviour.mjs`, no browser) over three stub worlds — **147/147**,
+**mutation-tested on copies (4/4 deliberate bugs caught, each asserted to have landed)**, with
+its limit stated (it proves a rewrite does what it says, never that it should have been made);
+idempotence (re-run changes 0 files); `tsc` 0, `build:web` 0 with an **unchanged bundle**.
+
+**FOUND, NOT FIXED — item 155 territory:** four sites where an EARLIER silent exit shadows the
+guard (`fx2:311`/`:373` `if (!row) return;`; `item83f:106` `if (!row) return false;` whose
+wrapper DISCARDS the result; `fx3:371` a bare deref). Recorded, not touched.
+
+**THE PAIR — expected red count UNKNOWN, stated in advance** (the item 151 §12 refusal, again).
+A new red is a site where the target is absent in a PASSING run: a real miss hiding, or a
+legitimate absence to name. Most likely first candidate: `fx1:325`/`:514`
+(`.typewriter-toggle`; `fx2`'s park note says the class is gone at one location, product
+source still renders it — the pair will say whether it exists on `fx1`'s page).
+
+**HANDED UP, each with a lean** (offer §6): (1) `item133:133` — author deliberately chose `?.`
+so a downstream assertion speaks: lean keep exempt; (2) THROW vs RECORD-A-CHECK — an in-string
+throw aborts the rest of the file's checks, against `harness-drivers-never-assume-existence`;
+in-string code cannot call `ok()`: lean accept the ratified throw, but it is a real cost; (3)
+the census now walks from the access, not the call (a lone optional CALL is method-existence
+detection): lean ratify — it was applied AFTER seeing the census's own output, which is exactly
+when a redefinition wants a second reader.
+
+**NO SUITE RUN, no merge, no deploy.** Queue unchanged: 154's pair after Batch Four's deploy
+pair; 161/162 after INK, FIX and PW; 147/148 behind those unless ERRATA returns.

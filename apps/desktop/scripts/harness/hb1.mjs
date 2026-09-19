@@ -68,7 +68,7 @@ await withHarness(async (app) => {
   await sleep(150);
   const signinShown = await app.evalJs("document.body.innerText.includes('Welcome back')");
   ok('F2: Open, anon (no local session) — reaches the existing sign-in, not a wall on the whole app', signinShown);
-  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-link')].find(el => el.textContent.includes('back')); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-link')].find(el => el.textContent.includes('back')); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.wz-link')].find(el => el.textContent.includes('back'))\"); return __t.click(); })()");
   await sleep(150);
 
   // ==========================================================================
@@ -94,7 +94,7 @@ await withHarness(async (app) => {
   // loose-origin) and so is the settings snapshot above — only the moment the
   // row exists moved, so the origin is read after a keystroke instead of before
   // one. Live successor for the mechanism: pb1.mjs.
-  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
   await app.typeKeys('w');
   await app.waitFor("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => !e.deletedAt)", { label: 'first-run Write page born' });
   const bornOrigin = await app.evalJs("(() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const e = es.find(x => !x.deletedAt); return e && e.origin; })()");
@@ -242,7 +242,7 @@ await withHarness(async (app) => {
   await sleep(150);
   const publishDialogMounted = await app.evalJs("!!document.querySelector('.sprint-modal-backdrop')");
   ok('S4 (Page): clicking the post-unlock Publish tab actually opens the Publish dialog (function, not just presence)', publishDialogMounted);
-  await app.evalJs("(() => { const __t = document.querySelector('.sprint-modal-backdrop'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.sprint-modal-backdrop'); if (!__t) throw new Error(\"no click target: document.querySelector('.sprint-modal-backdrop')\"); return __t.click(); })()");
   await sleep(150);
 
   // ==========================================================================
@@ -404,7 +404,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     await app.typeKeys(words(100));
     await sleep(300);
-    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.hb1-territory-offered')].find(b => b.textContent === 'Flux'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.hb1-territory-offered')].find(b => b.textContent === 'Flux'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.hb1-territory-offered')].find(b => b.textContent === 'Flux')\"); return __t.click(); })()");
     await app.waitFor("!document.querySelector('.hb1-ceremony')", { label: 'ceremony closes (PARKED, CD3)', timeout: 3000 });
     await sleep(200);
     const doneGoneParked = await app.evalJs("!([...document.querySelectorAll('.sprint-actions button')].find(b => b.textContent === 'Done'))");

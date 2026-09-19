@@ -540,7 +540,12 @@ await withHarness(async (app) => {
 
     // Switch Progress metric to Time via the SAME panel — the style Seg
     // must disappear (absent, not disabled).
-    const progressTimeBtn = await app.evalJs("(() => {\n      const row = [...document.querySelectorAll('.mode-settings .mode-crow')].find(r => r.textContent.startsWith('Progress') && !r.textContent.includes('style'));\n      const btn = row ? [...row.querySelectorAll('button')].find(b => b.textContent === 'Time') : null;\n      if (!btn) throw new Error(\"no btn target\");\nbtn.click();\n      return !!btn;\n    })()");
+    const progressTimeBtn = await app.evalJs(`(() => {
+      const row = [...document.querySelectorAll('.mode-settings .mode-crow')].find(r => r.textContent.startsWith('Progress') && !r.textContent.includes('style'));
+      const btn = row ? [...row.querySelectorAll('button')].find(b => b.textContent === 'Time') : null;
+      if (btn) btn.click();
+      return !!btn;
+    })()`);
     ok('Style control: the Progress metric Seg itself is reachable (sanity check before the absence proof)', progressTimeBtn === true, '');
     await sleep(200);
     const seenUnderTime = await app.evalJs("[...document.querySelectorAll('.mode-settings .mode-crow')].some(row => row.textContent.includes('Progress style'))");

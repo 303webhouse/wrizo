@@ -2,6 +2,19 @@
 ### tools lane · worktree `.claude/item154-instring-acts` · branch `item154-instring-acts`
 ### off `origin/main` @ `56e2ad8` (Shape A already merged) · 2026-09-18 · NO SITE TOUCHED
 
+> **CORRECTED AT BUILD, 2026-09-19 — read this before the number below.**
+> The 156 is a count of a **syntactic shape** (a silent-act verb behind an
+> optional chain or an `if (x)` guard), re-derived rather than inherited — and
+> that part stands. It is **not** a count of silent acts. Reading each site
+> at build time found that 9 of the 156 shapes (in 7 sites) are a probe whose
+> absence the caller asserts, a negative assertion whose passing state is
+> absence, a `||` fallback, or a search loop — none of them silent. **The
+> defensible population is 147.** The full accounting, the six ways the first
+> build got this wrong, and the named exemptions are in
+> `item154-build-offer.md` §0–§1. The census tool now reports EXEMPT
+> separately from OFFENDERS. Nothing below has been edited; this notice is
+> the correction.
+
 ## THE NUMBER: 156, NOT 134 — RE-DERIVED, NOT SAMPLED
 
 Item 151's own S0 found that ~88% of its original outer-code population

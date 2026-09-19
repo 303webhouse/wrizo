@@ -104,7 +104,7 @@ const dragBox = (app, boxId, dx, dy) => app.evalJs(`window.__pointerSeq('[data-b
 const openSliver = async (app) => {
   const alreadyOpen = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'");
   if (alreadyOpen) return;
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(200);
 };
 
@@ -510,7 +510,7 @@ await withHarness(async (app) => {
 
   // Tutor panel — S3's own "no mention in the Tutor panel" law.
   await freshProsePage(app, LAPTOP_W, 900);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip, [aria-label=\"Open the Tutor\"]'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip, [aria-label=\"Open the Tutor\"]'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-tutor-grip, [aria-label=\\\"Open the Tutor\\\"]')\"); return __t.click(); })()");
   await sleep(300);
   const tutorMentionsDeck = await app.evalJs("(document.querySelector('.wz-tutor')?.innerText ?? '').toLowerCase().includes('deck')");
   ok('Anti-solicitation: the Tutor panel makes NO mention of decks anywhere in its own copy', tutorMentionsDeck === false, String(tutorMentionsDeck));

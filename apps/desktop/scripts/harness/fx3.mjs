@@ -74,7 +74,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
 
 await withHarness(async (app) => {
   // ==========================================================================

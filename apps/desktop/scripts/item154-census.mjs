@@ -39,6 +39,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
+import { EXEMPTIONS, findExemption } from './item154-exemptions.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HARNESS_DIR = path.join(HERE, 'harness');
@@ -193,7 +194,15 @@ function hasOptionalLink(callExpr) {
   // `a.b?.verb()`, `a?.b?.verb?.()` — any QuestionDotToken anywhere in the
   // chain up to and including the call itself makes the whole call silent
   // on a miss, which is the offender shape regardless of WHERE the `?.` sits.
-  let n = callExpr;
+  //
+  // THE WALK STARTS AT THE ACCESS (`x.verb`), NOT AT THE CALL. A lone optional
+  // CALL on a non-optional access (`__t.focus?.()`) asks whether the METHOD
+  // exists, not whether the TARGET does — feature detection, not absent-target
+  // silence. Refined mid-build, when this census counted the rewrite's own
+  // output (`return __t.focus?.()`, right after a named throw on `__t`) as an
+  // offender; checked before applying that NO original site is reached only
+  // through a lone optional call (0 of 133), so the 156 is unchanged.
+  let n = callExpr.expression;
   while (n) {
     if (n.questionDotToken) return true;
     if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || ts.isCallExpression(n)) {
@@ -268,6 +277,9 @@ let totalNotStaticallyExtractable = 0;
 let totalUnparseable = 0;
 let totalOffenders = 0;
 let totalGuardedSafe = 0;
+let totalExempt = 0;
+const exemptDetail = [];
+const exemptionMatches = new Map();
 
 for (const f of files) {
   const filePath = path.join(HARNESS_DIR, f);
@@ -300,7 +312,15 @@ for (const f of files) {
 
     const innerSf = ts.createSourceFile(`${f}:${site.line}`, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
     const { offenders, guardedSafe } = censusInnerAst(innerSf);
-    if (offenders.length) {
+    // A NAMED EXEMPTION is a judgment (the guard's absence is asserted, is
+    // control flow, or is the expected state), so it is applied from a
+    // reviewable table, per site, never inferred from a spelling.
+    const exemption = offenders.length ? findExemption(f, text) : null;
+    if (exemption) {
+      exemptionMatches.set(exemption, (exemptionMatches.get(exemption) || 0) + 1);
+      totalExempt += offenders.length;
+      exemptDetail.push({ file: f, line: site.line, count: offenders.length, reason: exemption.reason });
+    } else if (offenders.length) {
       fileOffenders += offenders.length;
       fileDetail.push({ line: site.line, note: `${offenders.length} offender(s)`, offenders });
     }
@@ -327,7 +347,20 @@ console.log(`    (of which, resolved via a same-file template helper: ${totalRes
 console.log(`  NOT statically extractable:        ${totalNotStaticallyExtractable}`);
 console.log(`  unparseable after extraction:      ${totalUnparseable}`);
 console.log(`  ALREADY-GUARDED-SAFE (throws):     ${totalGuardedSafe}`);
+console.log(`  EXEMPT (named, justified):         ${totalExempt}`);
 console.log(`  OFFENDERS (the real boundary):     ${totalOffenders}`);
+console.log('');
+for (const d of exemptDetail) console.log(`  exempt ${d.file}:${d.line} (x${d.count}) -- ${d.reason.slice(0, 110)}...`);
+// An exemption that matches nothing is a STALE record; one that matches
+// more than one site is an AMBIGUOUS needle. Either fails the run: an
+// exemption that silently matches nothing is how a guard passes while blind.
+let staleExemption = false;
+for (const ex of EXEMPTIONS) {
+  const n = exemptionMatches.get(ex) || 0;
+  const want = ex.expect || 1;
+  if (n !== want) { staleExemption = true; console.log(`  !! EXEMPTION ${ex.file} [${ex.needle.slice(0, 50)}] matched ${n} offender-bearing site(s), expected exactly ${want}`); }
+}
+if (staleExemption) process.exitCode = 2;
 console.log('');
 console.log('Leading files (offenders desc):');
 for (const pf of perFile.slice(0, 25)) {

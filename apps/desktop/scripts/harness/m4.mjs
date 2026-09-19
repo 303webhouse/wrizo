@@ -261,7 +261,12 @@ await withHarness(async (app) => {
     // ----------------------------------------------------------------------
     await app.evalJs("document.querySelector('.wz-sliver-instruments-btn[aria-label=\"Progress\"]').click()");
     await sleep(250);
-    const clicked = await app.evalJs("(() => {\n      const row = [...document.querySelectorAll('.mode-settings .mode-crow')].find(r => r.textContent.includes('Progress style'));\n      const btn = row ? [...row.querySelectorAll('button')].find(b => b.textContent === 'Bar') : null;\n      if (!btn) throw new Error(\"no btn target\");\nbtn.click();\n      return !!btn;\n    })()");
+    const clicked = await app.evalJs(`(() => {
+      const row = [...document.querySelectorAll('.mode-settings .mode-crow')].find(r => r.textContent.includes('Progress style'));
+      const btn = row ? [...row.querySelectorAll('button')].find(b => b.textContent === 'Bar') : null;
+      if (btn) btn.click();
+      return !!btn;
+    })()`);
     ok('S3: the gear still OFFERS the Progress-style toggle on the framed desk (it stays a toggle, never a home)', clicked === true, String(clicked));
     await sleep(400);
     const gB = await laneReport(app);

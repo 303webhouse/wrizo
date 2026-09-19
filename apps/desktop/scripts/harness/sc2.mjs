@@ -1056,9 +1056,9 @@ await withHarness(async (app) => {
   })()`;
 
   const closedScan = await app.evalJs(scanAggregates());
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(300);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-tutor-grip')\"); return __t.click(); })()");
   await sleep(400);
   const openScan = await app.evalJs(scanAggregates());
 
@@ -1114,7 +1114,8 @@ await withHarness(async (app) => {
   // the active element never changes — which is exactly how the first run of this
   // observation reported a clean "no remount" while measuring nothing at all.
   // Hence the gate below: a precondition that is asserted, not assumed.
-  await app.evalJs(`(() => { const e = document.querySelector('[data-doc-index="${TAIL}"]'); if (e) e.scrollIntoView({ block: 'center' }); return !!e; })()`);
+  await app.evalJs(`(() => { const e = document.querySelector('[data-doc-index="${TAIL}"]'); if (!e) throw new Error("no e target");
+e.scrollIntoView({ block: 'center' }); return !!e; })()`);
   await sleep(320);
   await trustedClick(app, `[data-doc-index="${TAIL}"]`);
   await sleep(280);

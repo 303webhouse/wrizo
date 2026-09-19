@@ -170,7 +170,7 @@ const lastTutorBody = async (app) =>
 
 // --- item 84's own helpers ------------------------------------------------
 const press = async (app, id) => {
-  await app.evalJs(`document.querySelector('.wz-tutor-fw-preset[data-preset="${id}"]')?.click()`);
+  await app.evalJs(`(() => { const __t = document.querySelector('.wz-tutor-fw-preset[data-preset="${id}"]'); if (!__t) throw new Error("no click target: document.querySelector('.wz-tutor-fw-preset[data-preset=\\"*\\"]')"); return __t.click(); })()`);
   await sleep(160);
 };
 
@@ -237,7 +237,7 @@ const serverTutorChatCount = (app) =>
   app.evalJs("fetch('/api/_state').then(r => r.json()).then(s => s.tutorChatCount)");
 
 const switchMode = async (app, label) => {
-  await app.evalJs(`[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent.trim() === ${JSON.stringify(label)})?.click()`);
+  await app.evalJs(`(() => { const __t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent.trim() === ${JSON.stringify(label)}); if (!__t) throw new Error("no click target: [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent.trim() === *)"); return __t.click(); })()`);
   await sleep(400);
 };
 

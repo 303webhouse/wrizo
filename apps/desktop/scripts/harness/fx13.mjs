@@ -79,7 +79,7 @@ await withHarness(async (app) => {
       !!canvas && inRoom(wrap, LEG_H), JSON.stringify({ canvasH: canvas && canvas.h, wrap }));
 
     // Adding a card is ONE visible click, under trusted pointer (the DoD).
-    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(300);
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()"); await sleep(300);
     const before = await boardCount(app);
     const addRect = await app.evalJs("(() => { const el = [...document.querySelectorAll('button')].find(b => b.textContent.trim().includes('Add card')); if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.left + b.width/2), y: Math.round(b.top + b.height/2), t: Math.round(b.top), b: Math.round(b.bottom) }; })()");
     ok('S3 leg (1366x768): the Add-card tool is mounted and within the room (top>=0, bottom<=768) — a visible, reachable target',
@@ -87,7 +87,7 @@ await withHarness(async (app) => {
     // Buttons in this app are clicked via the DOM (fx11/e1 click 'Publish'/'Start
     // writing' the same way); trusted pointer is reserved for gestures (the drag
     // re-proof below). One click on the in-room Add-card tool must add one card.
-    await app.evalJs("(() => { const __t = [...document.querySelectorAll('button')].find(b => b.textContent.trim().includes('Add card')); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(450);
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('button')].find(b => b.textContent.trim().includes('Add card')); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('button')].find(b => b.textContent.trim().includes('Add card'))\"); return __t.click(); })()"); await sleep(450);
     const after = await boardCount(app);
     ok('S3 leg (1366x768): adding a card takes ONE visible click — a single click on the in-room Add-card tool grows the board by exactly one card (the DoD)',
       before >= 0 && after === before + 1, JSON.stringify({ before, after }));

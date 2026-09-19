@@ -74,7 +74,7 @@ const freshProsePage = async (app, width, height) => {
 // label — the labels come from useDeskLexicon and are themeable, so a text match here
 // would be testing a theme instead of the ruled invariant.
 const enterMode = async (app, key) => {
-  await app.evalJs(`document.querySelector('.desk-mode-tab[data-mode-key="${key}"]')?.click()`);
+  await app.evalJs(`(() => { const __t = document.querySelector('.desk-mode-tab[data-mode-key="${key}"]'); if (!__t) throw new Error("no click target: document.querySelector('.desk-mode-tab[data-mode-key=\\"*\\"]')"); return __t.click(); })()`);
   await sleep(450);
 };
 
@@ -136,11 +136,11 @@ const DRAWERS = `(() => {
 })()`;
 
 const openSliverByGrip = async (app) => {
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(400);
 };
 const openTutorByGrip = async (app) => {
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-tutor-grip')\"); return __t.click(); })()");
   await sleep(400);
 };
 const openFarLeft = (app) => app.evalJs(`(() => {
@@ -239,7 +239,7 @@ await withHarness(async (app) => {
     await freshProsePage(app, 1366, 768);
     await enterMode(app, 'revise');
 
-    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
     await app.typeKeys('Alpha beta gamma.');
     await sleep(350);
 
@@ -252,7 +252,7 @@ await withHarness(async (app) => {
     // stays visible, drops from the derived prose). In Revise it must really delete.
     // This is the check that cannot be satisfied by a merely-different renderer.
     const textBefore = await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').replace(/\\u200b/g, '')");
-    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
     await app.key('Backspace');
     await sleep(300);
     const textAfter = await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').replace(/\\u200b/g, '')");
@@ -265,7 +265,7 @@ await withHarness(async (app) => {
     // And the free-edit instrument IS the one running: decorateEditorFor's decorator
     // is what produces `.md-*` spans. This is the §3 S0 answer made VISIBLE — the seam
     // the parked lens will pass its flag decorator into is live on this surface.
-    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
     await app.typeKeys(' **bold** done');
     await sleep(350);
     const md = await app.evalJs("(() => ({ bold: document.querySelectorAll('.md-bold').length, marks: document.querySelectorAll('.md-mark').length }))()");
@@ -653,7 +653,7 @@ await withHarness(async (app) => {
     // surface deliberately has no children at all (so the browser can place a
     // caret). So this types first: otherwise a zero here would report 'the
     // instrument is gone' when it only means 'the page is blank'.
-    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })()");
     await app.typeKeys('Forward only. ');
     await sleep(350);
     const fw = await app.evalJs("(() => ({ tab: document.querySelector('.desk-mode-tab[data-mode-key=\"freewrite\"]')?.getAttribute('aria-selected'), runs: document.querySelectorAll('.fo-run').length + document.querySelectorAll('.fo-word').length }))()");

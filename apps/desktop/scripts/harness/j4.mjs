@@ -194,7 +194,7 @@ await withHarness(async (app) => {
   // paste proof still has real, current text to work with, same as before.
   await app.evalJs(`__pointerSeq('[data-box-id="${b1.id}"]', 0, 0)`);
   await sleep(100);
-  await app.evalJs("(() => { const __t = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit copy'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit copy'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Edit copy')\"); return __t.click(); })()");
   await app.waitFor("!!document.querySelector('.board-popup-editor')", { label: 'text box popup open (via Edit copy)' });
   await app.typeKeys(' EDITED AGAIN');
   await sleep(150);

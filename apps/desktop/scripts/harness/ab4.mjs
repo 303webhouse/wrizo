@@ -178,12 +178,12 @@ await withHarness(async (app) => {
     const sheetOpen = await app.evalJs("!!document.querySelector('.board-sheet')");
     ok('S2: Pin opens the real destination picker (the same Add-to grammar\'s board picker)', sheetOpen === true);
 
-    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.board-dest-row')].find(b => b.textContent.includes('AB4 Pin Target Project')); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.board-dest-row')].find(b => b.textContent.includes('AB4 Pin Target Project')); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.board-dest-row')].find(b => b.textContent.includes('AB4 Pin Target P...\"); return __t.click(); })()");
     await sleep(200);
     const boardRowShown = await app.evalJs("[...document.querySelectorAll('.board-dest-row')].some(b => b.textContent.includes('AB4 Target Board'))");
     ok('S2: drilling into the project shows its own board(s) to pin onto', boardRowShown === true);
 
-    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.board-dest-row')].find(b => b.textContent.includes('AB4 Target Board')); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.board-dest-row')].find(b => b.textContent.includes('AB4 Target Board')); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.board-dest-row')].find(b => b.textContent.includes('AB4 Target Board...\"); return __t.click(); })()");
     await sleep(250);
     const sheetClosed = await app.evalJs("!document.querySelector('.board-sheet')");
     ok('S2: picking the board closes the sheet', sheetClosed === true);
@@ -248,7 +248,7 @@ await withHarness(async (app) => {
       await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerdown', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
       await app.evalJs(`document.querySelector('[data-box-id="${pinBox.id}"]').dispatchEvent(new PointerEvent('pointerup', { clientX: 1, clientY: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, isPrimary: true }))`);
       await sleep(150);
-      await app.evalJs("(() => { const __t = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+      await app.evalJs("(() => { const __t = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Remove')\"); return __t.click(); })()");
       await sleep(200);
       const boxesAfterUnpin = await app.evalJs('window.wrizoBoard ? window.wrizoBoard() : null');
       ok('S2 (PW1 successor of "unpinning removes the card from the board"): the board card\'s own Remove still ends the MEMBERSHIP outright — unchanged mechanic, new precondition. It is deliberately a different act, and a different word, from the rail\'s "Hide from the board", which ends only the display',
@@ -690,7 +690,7 @@ if (process.env.HARNESS_PARKED === '1') {
         pok('PARKED (was "S1: the board-cards survey docks like any other survey layer") — PW1 S1: unchanged mechanic, reached through the panel\'s own board row',
           dockedBefore.present && dockedBefore.docked === 'true' && dockedBefore.cardVisible, JSON.stringify(dockedBefore));
 
-        await app.evalJs("(() => { const __t = (document.querySelector('.forward-only-editor, .entry-edit, .entry-full, [contenteditable=\"true\"]')); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
+        await app.evalJs("(() => { const __t = (document.querySelector('.forward-only-editor, .entry-edit, .entry-full, [contenteditable=\"true\"]')); if (!__t) throw new Error(\"no focus target: (document.querySelector('.forward-only-editor, .entry-edit, .entry-full, [contenteditable=\\\"true\\\"]'))\"); return __t.focus?.(); })()");
         await app.typeKeys('x');
         await sleep(250);
         const dockedAfterTyping = await app.evalJs(`({
@@ -781,7 +781,7 @@ if (process.env.HARNESS_PARKED === '1') {
       await sleep(250);
       await app.emulateDpr(1, LAPTOP_W, 900);
 
-      await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+      await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
       await sleep(150);
       const sliverShapeNow = await app.evalJs(`(() => {
         const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');
@@ -813,7 +813,7 @@ if (process.env.HARNESS_PARKED === '1') {
         sliverShapeNow.sectionCount === 1 && sliverShapeNow.buttonCount === 5 && sliverShapeNow.labels[0] === 'Add card' && sliverShapeNow.labels[1] === 'New page card' && sliverShapeNow.labels[2] === 'Existing page…' && sliverShapeNow.labels[3] === 'From a deck…' && sliverShapeNow.labels[4] === 'Show connections', JSON.stringify(sliverShapeNow));
 
       const boxesBeforeAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
-      await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+      await app.evalJs("(() => { const __t = [...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card'); if (!__t) throw new Error(\"no click target: [...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card')\"); return __t.click(); })()");
       await sleep(200);
       const boxesAfterAddNow = (await app.evalJs('window.wrizoBoard()')) || [];
       const editingNowViaPopup = await app.evalJs("!!document.querySelector('.board-popup-editor')");

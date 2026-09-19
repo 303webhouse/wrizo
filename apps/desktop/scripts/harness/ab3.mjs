@@ -343,7 +343,7 @@ await withHarness(async (app) => {
   // check is parked below (SUPERSEDED — class rename only, same truth).
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Free Write').click()");
   await sleep(150);
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(150);
   const looseRail = await app.evalJs(`({
     ink: !!document.querySelector('.wz-sliver-inks'),
@@ -463,7 +463,7 @@ await withHarness(async (app) => {
   await sleep(200);
   // CD1 S2/S7 — open the sliver (fresh mount, closed by default); its
   // `.wz-sliver-*` class family hosts this content now (ToolRail retired).
-  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
   await sleep(150);
   const legacyRail = await app.evalJs(`({
     ink: !!document.querySelector('.wz-sliver-inks'),
@@ -562,7 +562,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await sleep(150);
     // CD1 S2/S7 — open the sliver (fresh mount, closed by default);
     // `.wz-sliver-*` hosts this content now (ToolRail retired).
-    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
     await sleep(150);
 
     // ORIGINAL (ab3.1 R1(a)): ok('R1(a): a LOOSE-origin page shows none of
@@ -665,7 +665,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // law) — the opposite claim is now true. Live successor (the opposite
     // assertion) in cd2.mjs's own S1 section ("even while the room itself
     // is mid-dissolve... the strip stays fully opaque").
-    const stripOpacityDuringWriting = await app.evalJs("(() => {\n      (() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })();\n      return null;\n    })()");
+    const stripOpacityDuringWriting = await app.evalJs("(() => {\n      (() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target: document.querySelector('.forward-only-editor')\"); return __t.focus(); })();\n      return null;\n    })()");
     void stripOpacityDuringWriting;
     await app.typeKeys('w');
     await sleep(150);
@@ -792,7 +792,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("location.hash = '#/page/ab3-legacy-page-parked'");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'legacy null-origin page framed (PARKED)' });
     await sleep(200);
-    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target: document.querySelector('.wz-sliver-grip')\"); return __t.click(); })()");
     await sleep(150);
 
     // ORIGINAL (S4 A2, before this file's own CD1 rename): read
