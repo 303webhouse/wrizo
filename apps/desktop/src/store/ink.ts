@@ -324,18 +324,25 @@ export function translateGroup(strokes: Stroke[], indices: number[], dx: number,
 }
 
 /**
- * ITEM 126 B4 — clamp a proposed delta so the group's box cannot leave the
- * sheet. The exact partner of FX17's bottom stop, and the same law: a limit
- * STOPS, it never relocates. `maxY` is the sheet's height in normalized units
- * (height / width), because y is normalized by WIDTH (J8).
+ * ITEM 126 B4 / ITEM 157 — clamp a proposed delta so the group's box cannot
+ * leave the PAGE. The exact partner of FX17's bottom stop, and the same law: a
+ * limit STOPS, it never relocates.
+ *
+ * `bounds` is the page's edges in SHEET coordinates (both axes over the sheet's
+ * width, J8). Item 126 stopped a group at the sheet's own edge (x in 0..1); item
+ * 157 moved the edge to the PAPER — founder-ruled, "the entire page surface" —
+ * so the bounds now reach into the margins (x below 0, y below 0) and are
+ * measured by the caller from the live layout. Taking a box rather than a single
+ * `maxY` is what lets all four edges be something other than the sheet's.
  */
 export function clampDelta(box: { x0: number; y0: number; x1: number; y1: number },
-                           dx: number, dy: number, maxY: number): { dx: number; dy: number } {
+                           dx: number, dy: number,
+                           bounds: { x0: number; y0: number; x1: number; y1: number }): { dx: number; dy: number } {
   let cx = dx, cy = dy;
-  if (box.x0 + cx < 0) cx = -box.x0;
-  if (box.x1 + cx > 1) cx = 1 - box.x1;
-  if (box.y0 + cy < 0) cy = -box.y0;
-  if (box.y1 + cy > maxY) cy = maxY - box.y1;
+  if (box.x0 + cx < bounds.x0) cx = bounds.x0 - box.x0;
+  if (box.x1 + cx > bounds.x1) cx = bounds.x1 - box.x1;
+  if (box.y0 + cy < bounds.y0) cy = bounds.y0 - box.y0;
+  if (box.y1 + cy > bounds.y1) cy = bounds.y1 - box.y1;
   return { dx: cx, dy: cy };
 }
 

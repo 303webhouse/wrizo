@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ERASER_WIDTH, clampDelta, groupBox, inkColor, renderStroke, strokeGroupAt, translateGroup } from '../store/ink';
 import type { Stroke, StrokeInk, StrokeNib, StrokePoint, StrokeTip } from '../types';
 
@@ -93,30 +94,86 @@ interface Props {
   eraserArmed: boolean;
 }
 
-// Size a canvas's backing store to its CSS box scaled by devicePixelRatio so
-// strokes are crisp on HiDPI, and scale the context so callers draw in CSS px.
-// Ported verbatim from JournalEntry.tsx's own syncCanvas.
-function syncCanvas(canvas: HTMLCanvasElement, w: number, h: number): CanvasRenderingContext2D | null {
+// ── ITEM 157 · THE PAINT FRAME IS THE PAPER; THE BASIS IS STILL THE SHEET ──
+//
+// Nick: "The ink is hard limited to a kind of text box, not the entire page
+// surface like it should be." Founder-ruled: the entire page surface.
+//
+// Item 121 used ONE element — the sheet, editorBody's wrapper inside the
+// scroller — for three jobs: where the canvas paints, where the pointer is
+// heard, and the coordinate basis every stored point is normalized against.
+// Its reason was real (the paper is a fixed-height window with an inner
+// scroller, so a paper-sized canvas would nail ink to the viewport) and its cost
+// was seen and misfiled: the sheet excludes the paper's margins, so ink could
+// never reach them. See docs/menus/item157-s0-survey.md.
+//
+// The three roles are now separate:
+//   BASIS   — still the sheet. Production has real ink saved as x and y over the
+//             sheet's width from the sheet's top-left; moving the basis would
+//             silently shift and rescale every stroke writers have made. Margin
+//             ink is just coordinates the basis already allowed (x < 0, y < 0).
+//   RENDER  — the paper. The canvases are portalled into `.mode-page` and fill it
+//             by layout; each paint translates by the sheet's offset inside the
+//             canvas, MEASURED AT PAINT TIME.
+//   CAPTURE — the paper. See the listener registrations below.
+// Measuring the offset at paint time is what keeps item 121's reason honoured:
+// when the page scrolls, the sheet moves, the offset changes, and the next
+// repaint (driven by the scroller's own scroll event) follows the text.
+
+// Size a canvas's backing store to its OWN box (which is the paper, by layout)
+// and return a context whose origin is the SHEET's top-left and whose unit is
+// the CSS pixel, so callers draw in sheet coordinates exactly as before.
+// `clear` wipes the whole backing store first — the paper-sized one, margins
+// included; an eraser's in-progress rub passes false so it can accumulate.
+function frameCtx(canvas: HTMLCanvasElement, sheet: HTMLElement, clear: boolean):
+  { ctx: CanvasRenderingContext2D; sheetW: number } | null {
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.max(1, Math.round(w * dpr));
-  canvas.height = Math.max(1, Math.round(h * dpr));
+  const c = canvas.getBoundingClientRect();
+  const s = sheet.getBoundingClientRect();
+  const bw = Math.max(1, Math.round(c.width * dpr));
+  const bh = Math.max(1, Math.round(c.height * dpr));
+  if (canvas.width !== bw || canvas.height !== bh) { canvas.width = bw; canvas.height = bh; }
   const ctx = canvas.getContext('2d');
-  if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  return ctx;
+  if (!ctx) return null;
+  if (clear) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, bw, bh); }
+  ctx.setTransform(dpr, 0, 0, dpr, dpr * (s.left - c.left), dpr * (s.top - c.top));
+  return { ctx, sheetW: s.width };
+}
+
+// Wipe a canvas's whole backing store. Item 121's clears used the SHEET's size,
+// which would leave the margins of a paper-sized canvas uncleared — a stale
+// preview stranded exactly where this ticket lets ink go.
+function clearCanvas(canvas: HTMLCanvasElement | null): void {
+  const ctx = canvas?.getContext('2d');
+  if (!canvas || !ctx) return;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // Paint all committed strokes. Denormalizes by the sheet's current width, so a
 // page drawn at one width keeps its ink in place when the text reflows at
-// another. Called on mount, on every stroke-set change, and from the
-// ResizeObserver — existing strokes re-render correctly at any new size.
+// another. Called on mount, on every stroke-set change, on resize, and — since
+// item 157 — on every scroll of the page, because the frame is the paper and
+// the sheet moves inside it.
 export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElement | null, strokes: Stroke[]): void {
   if (!canvas || !sheet) return;
-  const rect = sheet.getBoundingClientRect();
-  const ctx = syncCanvas(canvas, rect.width, rect.height);
-  if (!ctx) return;
-  ctx.clearRect(0, 0, rect.width, rect.height);
+  const f = frameCtx(canvas, sheet, true);
+  if (!f) return;
   const color = inkColor();
-  for (const s of strokes) renderStroke(ctx, s, rect.width, color);
+  for (const s of strokes) renderStroke(f.ctx, s, f.sheetW, color);
+}
+
+// ITEM 157 — the page's scrollbar, which the sheet never covered and the paper
+// does. Capture on the paper would otherwise start a stroke on a press meant to
+// drag the scrollbar, breaking scrolling in INK. True only when a vertical
+// scrollbar is actually showing AND the press lands in its gutter.
+function inScrollbar(scroller: HTMLElement | null, e: MouseEvent): boolean {
+  if (!scroller) return false;
+  const bar = scroller.offsetWidth - scroller.clientWidth - scroller.clientLeft * 2;
+  if (bar <= 0) return false;
+  const r = scroller.getBoundingClientRect();
+  const gutterLeft = r.left + scroller.clientLeft + scroller.clientWidth;
+  return e.clientX >= gutterLeft && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
 }
 
 export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, eraserArmed }: Props) {
@@ -128,6 +185,15 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   const drawingRef = useRef(false);
   const captureRectRef = useRef<DOMRect | null>(null);
   const [canUndo, setCanUndo] = useState(false);
+
+  // ITEM 157 — the paper this stratum paints on and listens to. Found from the
+  // sheet (`closest('.mode-page')`) so the host passes nothing new: the sheet is
+  // always inside the paper on a framed page. State, not a ref, because the
+  // portal below can only render once it is known.
+  const [paperEl, setPaperEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPaperEl((sheetRef.current?.closest('.mode-page') as HTMLElement | null) ?? null);
+  }, [sheetRef]);
 
   // ITEM 126 B4 — THE ARMED GROUP. `armed` is state (the outline must re-render
   // with it); `armedRef` mirrors it for the once-per-permission listener effect,
@@ -171,7 +237,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   useEffect(() => {
     strokesRef.current = strokes;
     paintCommitted(committedRef.current, sheetRef.current, strokes);
-  }, [strokes, sheetRef]);
+  }, [strokes, sheetRef, paperEl]);
 
   // Keep ink positioned when the sheet's width OR height changes (as the text
   // grows the sheet, existing strokes re-render at the new size). Runs in BOTH
@@ -181,8 +247,31 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     if (!sheet || typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(() => paintCommitted(committedRef.current, sheetRef.current, strokesRef.current));
     ro.observe(sheet);
+    // ITEM 157 — the paper can resize without the sheet doing so (the stage
+    // grows, page setup changes a margin), and the canvas is the paper now.
+    if (paperEl) ro.observe(paperEl);
     return () => ro.disconnect();
-  }, [sheetRef]);
+  }, [sheetRef, paperEl]);
+
+  // ITEM 157 — INK SCROLLS WITH THE TEXT, which is item 121's own reason for
+  // binding the sheet where it did, kept. The canvas is fixed to the paper; the
+  // sheet scrolls inside it; so on every scroll the offset changes and the ink
+  // is repainted at it. rAF-coalesced: one paint per frame however fast the
+  // wheel turns. Runs in every permission — ink is visible in every mode.
+  useEffect(() => {
+    const scroller = sheetRef.current?.closest('.mode-scroll') as HTMLElement | null;
+    if (!scroller) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        paintCommitted(committedRef.current, sheetRef.current, strokesRef.current);
+      });
+    };
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    return () => { scroller.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, [sheetRef, paperEl]);
 
   // ITEM 126 B4 — a mode switch must not leave a group armed: the writer who
   // returns to Draft should find the page at rest, not mid-gesture.
@@ -211,7 +300,9 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   // Journal" — see that file's own I0 comment, amended in place to say so.
   useEffect(() => {
     const sheet = sheetRef.current;
-    if (permission !== 'edit' || !sheet) return;
+    const paper = paperEl;
+    if (permission !== 'edit' || !sheet || !paper) return;
+    const scroller = sheet.closest('.mode-scroll') as HTMLElement | null;
 
     // The pointer that started the current stroke, or -1. Per-effect state in a
     // closure, because the listeners below are attached once per permission.
@@ -253,36 +344,34 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     // strokesRef to undo any live rub-out.
     const paintActive = () => {
       const stroke = activeStrokeRef.current;
-      const rect = captureRectRef.current;
-      if (!stroke || !rect) return;
+      if (!stroke) return;
       if (stroke.eraser) {
-        const ctx = committedRef.current?.getContext('2d');
-        if (ctx) renderStroke(ctx, stroke, rect.width, inkColor());
+        // No clear: an erase rubs, and must accumulate on the committed canvas.
+        // The frame is re-measured, so a page scrolled mid-rub still lands true.
+        const f = committedRef.current ? frameCtx(committedRef.current, sheet, false) : null;
+        if (f) renderStroke(f.ctx, stroke, f.sheetW, inkColor());
         return;
       }
       const canvas = activeRef.current;
-      const ctx = canvas?.getContext('2d');
-      if (!ctx) return;
-      ctx.clearRect(0, 0, rect.width, rect.height);
+      const f = canvas ? frameCtx(canvas, sheet, true) : null;
+      if (!f) return;
+      const ctx = f.ctx;
       // A marker's `multiply` overlap (I5) is only visible against ink already
       // on the COMMITTED canvas; the live preview draws on its own transparent
       // canvas, so the crossing darkens on commit rather than mid-stroke. The
       // Journal's two-canvas split is what buys the flicker-free preview, and
       // that tradeoff is worth one frame of a marker looking slightly light.
-      renderStroke(ctx, stroke, rect.width, inkColor());
+      renderStroke(ctx, stroke, f.sheetW, inkColor());
     };
-    const clearActive = () => {
-      const canvas = activeRef.current;
-      const rect = captureRectRef.current;
-      if (!canvas || !rect) return;
-      canvas.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
-    };
+    const clearActive = () => clearCanvas(activeRef.current);
 
     const onDown = (e: PointerEvent) => {
       if (!draws(e)) return; // falls through to the page — finger scroll
       // The on-sheet ink controls (undo) are real buttons; a press on one is
       // not a stroke. Same guard the Journal carries for its own.
       if ((e.target as Element | null)?.closest?.('.ink-undo')) return;
+      // ITEM 157 — a press on the page's scrollbar is a scroll, not a stroke.
+      if (inScrollbar(scroller, e)) return;
       // Keep the pointer off the editable text node entirely: no caret, no
       // selection, and — with the capture-phase intercept firing first — no OS
       // handwriting-to-text, which is the whole point of I0's hardening.
@@ -300,9 +389,11 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       try { window.getSelection()?.removeAllRanges(); } catch { /* */ }
       sheet.style.setProperty('user-select', 'none');
       sheet.style.setProperty('-webkit-user-select', 'none');
+      // Points are normalized against the SHEET — the basis, unchanged — even
+      // when the press lands in a margin, which is exactly what gives margin ink
+      // its x < 0 / y < 0. frameCtx sizes the paper-sized canvases as it paints.
       captureRectRef.current = sheet.getBoundingClientRect();
-      const ac = activeRef.current;
-      if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
+      clearCanvas(activeRef.current);
       drawingRef.current = true;
       activeId = e.pointerId;   // only THIS pointer may drive or end the stroke
       // J2 — the toggle is the guaranteed path; the hardware eraser tip is a
@@ -402,10 +493,13 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const ring = ringRef.current;
       if (!ring) return;
       if (!eraserArmedRef.current) { ring.style.display = 'none'; return; }
-      const rect = sheet.getBoundingClientRect();
+      // ITEM 157 — the ring lives in the paper beside the canvases, so it is
+      // positioned in the canvas's own frame and can follow the pen over a
+      // margin, where item 121's sheet-bound ring could never appear.
+      const frame = (committedRef.current ?? paper).getBoundingClientRect();
       ring.style.display = 'block';
-      ring.style.left = `${e.clientX - rect.left}px`;
-      ring.style.top = `${e.clientY - rect.top}px`;
+      ring.style.left = `${e.clientX - frame.left}px`;
+      ring.style.top = `${e.clientY - frame.top}px`;
     };
     const onLeave = () => { const ring = ringRef.current; if (ring) ring.style.display = 'none'; };
 
@@ -421,30 +515,32 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     // it happened to release inside the sheet. Every handler below is guarded by
     // the pointer id, so only the pointer that started a stroke can extend or end
     // it — which a window listener would otherwise not guarantee.
+    // ITEM 157 — THE PRESS IS HEARD ON THE PAPER, not the sheet, so a stroke can
+    // BEGIN in a margin. (Item 126 already moved move/release/cancel to window.)
     const opts = { passive: false, capture: true } as const;
-    sheet.addEventListener('pointerdown', onDown, opts);
+    paper.addEventListener('pointerdown', onDown, opts);
     window.addEventListener('pointermove', onMove, opts);
     window.addEventListener('pointerup', onUp, opts);
     window.addEventListener('pointercancel', onCancel, opts);
     window.addEventListener('blur', onBlur);
     const hoverOpts = { passive: true } as const;
-    sheet.addEventListener('pointermove', onHover, hoverOpts);
-    sheet.addEventListener('pointerleave', onLeave, hoverOpts);
+    paper.addEventListener('pointermove', onHover, hoverOpts);
+    paper.addEventListener('pointerleave', onLeave, hoverOpts);
     return () => {
-      sheet.removeEventListener('pointerdown', onDown, opts);
+      paper.removeEventListener('pointerdown', onDown, opts);
       window.removeEventListener('pointermove', onMove, opts);
       window.removeEventListener('pointerup', onUp, opts);
       window.removeEventListener('pointercancel', onCancel, opts);
       window.removeEventListener('blur', onBlur);
-      sheet.removeEventListener('pointermove', onHover);
-      sheet.removeEventListener('pointerleave', onLeave);
+      paper.removeEventListener('pointermove', onHover);
+      paper.removeEventListener('pointerleave', onLeave);
       // Leaving INK mid-stroke must not leave the sheet unselectable.
       drawingRef.current = false;
       activeStrokeRef.current = null;
       sheet.style.removeProperty('user-select');
       sheet.style.removeProperty('-webkit-user-select');
     };
-  }, [permission, sheetRef]);
+  }, [permission, sheetRef, paperEl]);
 
   // ── ITEM 126 B4 · THE MOVE (permission: movable) ─────────────────────────
   //
@@ -458,7 +554,9 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   // receiving every click it would otherwise get.
   useEffect(() => {
     const sheet = sheetRef.current;
-    if (permission !== 'movable' || !sheet) return;
+    const paper = paperEl;
+    if (permission !== 'movable' || !sheet || !paper) return;
+    const scroller = sheet.closest('.mode-scroll') as HTMLElement | null;
 
     // The pointer that started the current drag, or -1.
     let dragId = -1;
@@ -469,7 +567,29 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       // BOTH axes over WIDTH — J8's rule. Converting y by height here is the
       // mistake that already cost this lane a check that passed for the wrong
       // reason; it would also make every hit test miss by a factor of ~2.
-      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top) / w, w, h: rect.height };
+      return { x: (e.clientX - rect.left) / w, y: (e.clientY - rect.top) / w, w };
+    };
+
+    // ITEM 157 — THE PAGE'S EDGES, IN SHEET COORDINATES, measured now. Item 126
+    // stopped a group at the sheet's edge; the founder-ruled edge is the paper's.
+    // Horizontally that is the canvas's box (which is the paper, by layout).
+    // Vertically it is the WHOLE SCROLLABLE PAGE: its top is the paper's top as
+    // it stands at scroll 0, and its bottom is the paper's bottom plus however
+    // much further the page scrolls — sheet coordinates are scroll-independent,
+    // so both are expressed in the scroll-0 frame.
+    const pageBounds = () => {
+      const s = sheet.getBoundingClientRect();
+      const c = (committedRef.current ?? paper).getBoundingClientRect();
+      const w = s.width || 1;
+      const scrollTop = scroller ? scroller.scrollTop : 0;
+      const maxScroll = scroller ? Math.max(0, scroller.scrollHeight - scroller.clientHeight) : 0;
+      const sheetTop0 = s.top + scrollTop;
+      return {
+        x0: (c.left - s.left) / w,
+        x1: (c.right - s.left) / w,
+        y0: (c.top - sheetTop0) / w,
+        y1: (c.bottom + maxScroll - sheetTop0) / w,
+      };
     };
 
     // Repaint with the live drag applied to the armed group only.
@@ -482,16 +602,15 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     // this permission — no third canvas, no DOM overlay to keep in sync.
     const paintOutline = () => {
       const canvas = activeRef.current;
-      const rect = sheet.getBoundingClientRect();
       if (!canvas) return;
-      const ctx = syncCanvas(canvas, rect.width, rect.height);
-      if (!ctx) return;
-      ctx.clearRect(0, 0, rect.width, rect.height);
+      const f = frameCtx(canvas, sheet, true);
+      if (!f) return;
+      const ctx = f.ctx;
       const a = armedRef.current;
       if (!a) return;
       const box = groupBox(previewStrokes(), a);
       if (!box) return;
-      const w = rect.width, pad = 6;
+      const w = f.sheetW, pad = 6;
       ctx.save();
       // Olive at rest, per the plateau register; the press is the drag itself.
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim() || '#96a05a';
@@ -509,9 +628,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       armedRef.current = null;
       dragRef.current = null;
       setArmed(null);
-      const canvas = activeRef.current;
-      const rect = sheet.getBoundingClientRect();
-      canvas?.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
+      clearCanvas(activeRef.current);
       paintCommitted(committedRef.current, sheet, strokesRef.current);
     };
 
@@ -522,6 +639,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     // only editable by standard in-line word processing led by a cursor",
     // and it is the clause an over-eager listener breaks first.
     const onDblClick = (e: MouseEvent) => {
+      if (inScrollbar(scroller, e)) return;
       const { x, y, w } = norm(e);
       const group = strokeGroupAt(strokesRef.current, x, y, w);
       if (!group) { if (armedRef.current) disarm(); return; }
@@ -539,6 +657,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     const onDown = (e: PointerEvent) => {
       const a = armedRef.current;
       if (!a) return;                       // nothing armed: the text owns this press
+      if (inScrollbar(scroller, e)) return; // a scroll, never a drag
       const { x, y, w } = norm(e);
       const box = groupBox(strokesRef.current, a);
       // Only a press INSIDE the armed box begins a drag. A press anywhere else
@@ -559,13 +678,12 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       const d = dragRef.current, a = armedRef.current;
       if (!d || !a || e.pointerId !== dragId) return;
       e.preventDefault();
-      const { x, y, w, h } = norm(e);
+      const { x, y } = norm(e);
       const box = groupBox(strokesRef.current, a);
       if (!box) return;
-      // FX17's law, applied to ink: a limit STOPS, it never relocates. The group
-      // cannot be pushed off the sheet on either axis. maxY is height/width
-      // because y is normalized by WIDTH.
-      const c = clampDelta(box, x - d.x, y - d.y, h / w);
+      // FX17's law, applied to ink: a limit STOPS, it never relocates. ITEM 157:
+      // the limit is the PAGE's edge, not the sheet's — margins are page.
+      const c = clampDelta(box, x - d.x, y - d.y, pageBounds());
       d.dx = c.dx; d.dy = c.dy;
       repaint();
     };
@@ -620,16 +738,21 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     // about the paper); move, release and cancel go to window; every handler is
     // guarded by the pointer that began the drag.
     const opts = { passive: false, capture: true } as const;
-    sheet.addEventListener('dblclick', onDblClick, opts);
-    sheet.addEventListener('pointerdown', onDown, opts);
+    // ITEM 157 — heard on the PAPER, so ink drawn in a margin can be grabbed.
+    paper.addEventListener('dblclick', onDblClick, opts);
+    paper.addEventListener('pointerdown', onDown, opts);
+    // An ARMED outline must follow the page as it scrolls, the same as the ink.
+    const onScrollArmed = () => { if (armedRef.current) repaint(); };
+    scroller?.addEventListener('scroll', onScrollArmed, { passive: true });
     window.addEventListener('pointermove', onMove, opts);
     window.addEventListener('pointerup', commit, opts);
     window.addEventListener('pointercancel', onCancel, opts);
     window.addEventListener('blur', onBlurMove);
     window.addEventListener('keydown', onKey);
     return () => {
-      sheet.removeEventListener('dblclick', onDblClick, opts);
-      sheet.removeEventListener('pointerdown', onDown, opts);
+      paper.removeEventListener('dblclick', onDblClick, opts);
+      paper.removeEventListener('pointerdown', onDown, opts);
+      scroller?.removeEventListener('scroll', onScrollArmed);
       window.removeEventListener('pointermove', onMove, opts);
       window.removeEventListener('pointerup', commit, opts);
       window.removeEventListener('pointercancel', onCancel, opts);
@@ -638,12 +761,10 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       // Leaving this permission must not strand an armed outline on the paper.
       armedRef.current = null;
       dragRef.current = null;
-      const canvas = activeRef.current;
-      const rect = sheet.getBoundingClientRect();
-      canvas?.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
+      clearCanvas(activeRef.current);
       paintCommitted(committedRef.current, sheet, strokesRef.current);
     };
-  }, [permission, sheetRef]);
+  }, [permission, sheetRef, paperEl]);
 
   // ── UNDO ─────────────────────────────────────────────────────────────────
   // One level, the last STROKE only. The Journal's undo is unified across a
@@ -667,24 +788,30 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     onCommitRef.current(next);
   };
 
-  return (
+  // ITEM 157 — PORTALLED INTO THE PAPER. The stratum is rendered inside the
+  // sheet, which is inside `.mode-scroll`, whose overflow clips its children: a
+  // canvas there could never reach the paper's left or top margin. Portalled,
+  // the canvases fill the paper by layout (inset:0 of `.mode-page`, which is
+  // position:relative and clips to its own rounded edge — so ink stops exactly
+  // at the paper). Above the scroller (z-index 1), and never intercepting.
+  if (!paperEl) return null;
+  return createPortal(
     <>
-      {/* Both canvases fill the sheet BY LAYOUT (inset:0 on a relatively
-          positioned parent) and NEVER intercept input — routing is the
-          sheet's job, above. `aria-hidden` because ink is not text; the
-          page's words remain the accessible content either way. */}
+      {/* Both canvases fill the PAPER BY LAYOUT and NEVER intercept input —
+          routing is the paper's job, above. `aria-hidden` because ink is not
+          text; the page's words remain the accessible content either way. */}
       <canvas
         ref={committedRef}
         className="ink-canvas ink-committed wz-ink-stratum"
         aria-hidden="true"
         data-ink-permission={permission}
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
       />
       <canvas
         ref={activeRef}
         className="ink-canvas ink-active"
         aria-hidden="true"
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
       />
       {/* J2 — the eraser's ring preview. Hidden by default; shown and
           positioned imperatively (onHover) so it never triggers a render. */}
@@ -695,7 +822,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
         style={{
           position: 'absolute', display: 'none', width: ERASER_WIDTH, height: ERASER_WIDTH,
           marginLeft: -ERASER_WIDTH / 2, marginTop: -ERASER_WIDTH / 2, borderRadius: '50%',
-          border: '1.5px solid var(--ink-on-paper-low)', pointerEvents: 'none',
+          border: '1.5px solid var(--ink-on-paper-low)', pointerEvents: 'none', zIndex: 3,
         }}
       />
       {/* ITEM 126 B4 — offered under `edit` (a stroke to reverse) and `movable`
@@ -712,12 +839,13 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
           style={{
             position: 'absolute', top: 4, right: 4, lineHeight: 1, fontSize: 16,
             color: 'var(--ink-on-paper-low)', background: 'transparent', border: 'none',
-            cursor: 'pointer', padding: 4, pointerEvents: 'auto',
+            cursor: 'pointer', padding: 4, pointerEvents: 'auto', zIndex: 3,
           }}
         >
           ↺
         </button>
       )}
-    </>
+    </>,
+    paperEl,
   );
 }

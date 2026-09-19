@@ -4846,10 +4846,15 @@ a:focus-visible,
    R15 did not ask for and this lane will not do; and reaching into
    ForwardOnlyEditor to special-case a mode is a shared component learning
    about one surface's instrument. */
-/* The stratum's own layers never intercept — routing belongs to the sheet
+/* The stratum's own layers never intercept — routing belongs to the paper
    (InkStratum.tsx's header). Stated in CSS too so a later hand that reaches
-   for `pointer-events:auto` here meets the reason first. */
-.wz-ink-sheet > .ink-canvas{ pointer-events:none; }
+   for `pointer-events:auto` here meets the reason first.
+   ITEM 157 — the selector FOLLOWED THE CANVASES. It read
+   `.wz-ink-sheet > .ink-canvas` while the canvases lived inside the sheet; they
+   are portalled into the paper now (so ink can reach its margins), and a rule
+   left naming the old parent would match nothing while still looking like a
+   guard — a check that passes because its premise is gone. */
+.mode-page > .ink-canvas{ pointer-events:none; }
 /* FX3 S4 — TRIAL (Nick's own working-value experiment; not settled law).
    The modes move toward the right instead of sitting flush left; Done
    stays the rightmost element with a fixed gap (not auto-margin) keeping
