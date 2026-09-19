@@ -5196,6 +5196,24 @@ a:focus-visible,
 .wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 .wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
+/* ITEM 170 — a row is now TWO acts: the name opens, the ⋯ places. The name
+   button keeps every rule the old row had and gives up only `width:100%`, so
+   the ⋯ has room beside it without the row's look changing. */
+.wz-your-pages-row{ display:flex; align-items:center; position:relative;
+  border-bottom:1px solid var(--ink-border); }
+.wz-your-pages-row:last-child{ border-bottom:none; }
+.wz-your-pages-row .wz-your-pages-open{ flex:1 1 auto; min-width:0; width:auto; border-bottom:0; }
+.wz-your-pages-open[aria-current='page']{ color:var(--text-hi); }
+.wz-your-pages-more{ flex:0 0 auto; background:none; border:0; cursor:pointer;
+  color:var(--text-low); font-size:14px; line-height:1; padding:4px 6px; }
+.wz-your-pages-more:hover, .wz-your-pages-more[aria-expanded='true']{ color:var(--text-hi); }
+.wz-your-pages-more:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+.wz-your-pages-menu{ position:absolute; right:0; top:100%; z-index:5;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-radius:var(--radius-md); padding:4px; }
+.wz-your-pages-place{ background:none; border:0; cursor:pointer; white-space:nowrap;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px; padding:4px 8px; }
+.wz-your-pages-place:hover{ color:var(--text-hi); }
 
 /* ITEM 83 M7 (PP2) — THE STATE SPEAKS FIRST. The page's current home wears a
    1px olive left hairline and hi text, so the Home zone reads as

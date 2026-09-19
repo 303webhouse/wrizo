@@ -4,7 +4,8 @@ import { useDeskLexicon, deskTerm } from '../store/deskLexicon';
 import { firstLine } from '../store/entryText';
 import { useSectionFold } from '../store/sectionFold';
 import {
-  getJournalPages, getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
+  getJournalPages, getJournalEntries, inJournalView, flushNow,
+  getShelfEntries, getProjects, getBinderPages, getAllUserBoards,
   createQuickSprintProject, softDeleteEntry, getProject,
   getJournalEntry, getOrCreateSystemBoard, saveJournalEntry, pinPageToBoard,
   getPlanBoardId, getBoardsConnecting, setPinDisplayed, copyCardToBoard,
@@ -282,7 +283,12 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
           {t('cascadePageNewPage')}
         </button>
       </div>
-      {onBoard && <PlacePageOnBoard boardId={subject.entry.id} />}
+      {/* ITEM 170 — on EVERY surface, not only a board: this is the way to
+          open a page, and a way that only exists while standing on a board is
+          not the way. The place act rides along only where there is a board to
+          place onto. */}
+      <YourPages navigate={navigate} currentId={subject.entry.id}
+        boardId={onBoard ? subject.entry.id : undefined} />
       <PageFace subject={subject} />
       {/* ITEM 83 M3 (R6) — the Page menu's charter: general page options
           governing the OPEN page. Sits between the page's own face and its
@@ -297,53 +303,99 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
   );
 }
 
-// ITEM 83 M6 (R13.ii) — PLACE PAGE ON BOARD.
+// ITEM 170 (P0) — YOUR PAGES: THE WAY TO OPEN A PAGE.
 //
-// Nick's restructure: the board's PAGE drawer carries New page plus a
-// "Place page on board" list — recent pages, scrollable, sortable by
-// Date · Drawer · A–Z. Choosing one DERIVES it onto this board.
+// Nick, verbatim: "the app currently has no clear or intuitive way of opening
+// pages. Bug that needs to be fixed immediately."
 //
-// MEMBERSHIP, NEVER FILING — the distinction PlacesPanel already keeps and
-// this list inherits: pinning a page onto a board changes where it APPEARS,
-// never where it LIVES. Nothing here writes projectId or origin.
+// WHAT S0 FOUND. Pages COULD be opened — the Journal's Recent (capped at 5),
+// the Journal survey, the Drawers panel's tiles, a board card's double-click.
+// Every one of those is named for where a page LIVES, and none lists all of
+// them. The one list in the app that looked like "your pages" — sortable by
+// Date · Drawer · A–Z — did the opposite of what it looked like: clicking
+// a row silently PLACED the page on the board. And it had three more faults,
+// each of which would have survived a relabel:
 //
-// S13's precedent applies (the founder verdict routed to this arc): the verb
-// names the act. The heading says "Place page on board", not "Pages" — a bare
-// noun list in a drawer is exactly the GO-versus-PUT confusion the Places
-// Panel's own redesign (M7) exists to close, and this list would have
-// reproduced it one drawer over.
-type PlaceSort = 'date' | 'drawer' | 'az';
+//   1. IT EXISTED ONLY ON A BOARD. PagePanel mounted it under `onBoard`, so on
+//      a page surface there was no list of pages at all.
+//   2. IT COULD NOT SEE THE PAGES WRITERS MAKE MOST. It read getJournalPages(),
+//      and `inJournalView` returns FALSE for every `origin: 'loose'` page —
+//      which is precisely what New Page and the Desk create. A writer's newest
+//      page was missing from the list most likely to be looked in.
+//   3. IT CAPPED BEFORE IT SORTED. `.slice(0, 30)` ran first, so A–Z ordered
+//      thirty pages rather than all of them, and a thirty-first was
+//      unreachable from here by any sort.
+//
+// THE FIX, as Fable ruled it: clicking a row OPENS the page; placing it on a
+// board becomes the row's SECONDARY act, behind its ⋯; the heading says what
+// the list IS. One list, every live page that is not a board, uncapped (the
+// list already scrolls at its own max-height, so nothing is pushed off), and
+// ONE name derivation — `itemTitle`, the Journal lists' own, so a page is
+// called the same thing here as everywhere else it is listed.
+//
+// ON S13's PRECEDENT, which the lexicon cites against a bare noun heading:
+// "a bare noun list in a drawer reproduces the GO-versus-PUT confusion". That
+// confusion came from a noun heading over a click that PUT. The click now
+// GOES — which is what a noun list promises — and the put is named by its
+// own verb ("Place on this board"). So the heading can be a noun without
+// reopening the confusion S13 closed. Flagged for Nick's veto all the same.
+//
+// MEMBERSHIP, NEVER FILING — unchanged from the list this replaces: placing
+// changes where a page APPEARS, never where it LIVES. Nothing writes
+// projectId or origin.
+type PageSort = 'date' | 'drawer' | 'az';
 
-function PlacePageOnBoard({ boardId }: { boardId: string }) {
+function YourPages({ navigate, currentId, boardId }: {
+  navigate: NavigateFunction;
+  currentId: string;
+  boardId?: string;
+}) {
   const { t } = useDeskLexicon();
-  const [sort, setSort] = useState<PlaceSort>('date');
+  const [sort, setSort] = useState<PageSort>('date');
+  const [menuFor, setMenuFor] = useState<string | null>(null);
   const [, force] = useReducer((n: number) => n + 1, 0);
 
-  const candidates = getJournalPages()
-    .filter(p => p.id !== boardId && p.pageType !== 'board')
-    .slice(0, 30);
+  // Every live page that is not a board — journal, loose, binder and shelf
+  // alike. Boards are opened from their own doors and can never be placed on
+  // a board, so neither act applies to them here.
+  const pages = getJournalEntries().filter(p => p.pageType !== 'board');
 
-  const drawerNameOf = (p: JournalEntry): string => {
+  // Where a page lives, in the words the rest of the app already uses for it.
+  // The population now mixes Journal and Loose pages, so the old single
+  // 'Loose' fallback would have mislabelled every Journal page and made the
+  // Drawer sort interleave two different homes.
+  const homeOf = (p: JournalEntry): string => {
     const proj = p.projectId ? getProjects().find(x => x.id === p.projectId) : null;
-    return proj?.title || t('placesLoose');
+    if (proj) return proj.title || t('placesLoose');
+    return inJournalView(p) ? t('drawerPlaceJournal') : t('placesLoose');
   };
-  const titleOf = (p: JournalEntry): string => firstLine(p.text).slice(0, 60) || 'Untitled';
 
-  const sorted = [...candidates].sort((a, b) => {
-    if (sort === 'az') return titleOf(a).localeCompare(titleOf(b));
-    if (sort === 'drawer') return drawerNameOf(a).localeCompare(drawerNameOf(b)) || titleOf(a).localeCompare(titleOf(b));
+  // SORT FIRST, AND NEVER CAP: every page must be reachable by every sort.
+  const sorted = [...pages].sort((a, b) => {
+    if (sort === 'az') return itemTitle(a).localeCompare(itemTitle(b));
+    if (sort === 'drawer') return homeOf(a).localeCompare(homeOf(b)) || itemTitle(a).localeCompare(itemTitle(b));
     return b.createdAt.localeCompare(a.createdAt);
   });
 
-  // PW1 S3 — BOARD-SIDE ("Place page on board", R13.ii): the writer is on the
-  // board putting a page ON it, so it lands on the wall rather than becoming an
-  // invisible membership they would have to display a second time.
-  const place = (pageId: string) => { pinPageToBoard(pageId, boardId, { display: true }); force(); };
+  // THE PRIMARY ACT. flushNow first, as every other door that leaves a surface
+  // does, so the writer's last keystrokes land before the page underfoot
+  // changes.
+  const open = (p: JournalEntry) => { flushNow(); navigate(routeForEntry(p)); };
+
+  // THE SECONDARY ACT, board-side only. PW1 S3's board-side law, kept exactly:
+  // the writer is on the board putting a page ON it, so it lands on the wall
+  // rather than becoming an invisible membership they would display twice.
+  const place = (pageId: string) => {
+    if (!boardId) return;
+    pinPageToBoard(pageId, boardId, { display: true });
+    setMenuFor(null);
+    force();
+  };
 
   return (
-    <div className="wz-cascade-panel-body wz-place-page">
-      <div className="wz-cascade-panel-title">{t('placePageHeading')}</div>
-      <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('placePageSort')}>
+    <div className="wz-cascade-panel-body wz-place-page wz-your-pages">
+      <div className="wz-cascade-panel-title">{t('yourPagesHeading')}</div>
+      <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('yourPagesSort')}>
         {(['date', 'drawer', 'az'] as const).map(s => (
           <button key={s} type="button" role="radio" aria-checked={sort === s}
             className="wz-page-setup-chip" onClick={() => setSort(s)}>
@@ -351,13 +403,29 @@ function PlacePageOnBoard({ boardId }: { boardId: string }) {
           </button>
         ))}
       </div>
-      <div className="wz-place-page-list">
+      <div className="wz-place-page-list" role="list">
         {sorted.length === 0 && <p className="wz-page-setup-note">{t('placePageEmpty')}</p>}
         {sorted.map(p => (
-          <button key={p.id} type="button" className="wz-place-page-row" onClick={() => place(p.id)}>
-            <span className="wz-place-page-title">{titleOf(p)}</span>
-            <span className="wz-place-page-home">{drawerNameOf(p)}</span>
-          </button>
+          <div key={p.id} className="wz-your-pages-row" role="listitem" data-page-id={p.id}>
+            <button type="button" className="wz-place-page-row wz-your-pages-open"
+              aria-current={p.id === currentId ? 'page' : undefined}
+              onClick={() => open(p)}>
+              <span className="wz-place-page-title">{itemTitle(p)}</span>
+              <span className="wz-place-page-home">{homeOf(p)}</span>
+            </button>
+            {boardId && (
+              <button type="button" className="wz-your-pages-more"
+                aria-label={t('yourPagesMore')} title={t('yourPagesMore')}
+                aria-haspopup="menu" aria-expanded={menuFor === p.id}
+                onClick={() => setMenuFor(menuFor === p.id ? null : p.id)}>{'\u22ef'}</button>
+            )}
+            {boardId && menuFor === p.id && (
+              <div className="wz-your-pages-menu" role="menu">
+                <button type="button" role="menuitem" className="wz-your-pages-place"
+                  onClick={() => place(p.id)}>{t('yourPagesPlace')}</button>
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </div>
