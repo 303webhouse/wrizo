@@ -5213,13 +5213,19 @@ a:focus-visible,
    list's own `overflow-y:auto` clipped it clean out of view — the ⋯ lit up as
    expanded and nothing appeared. The sitting caught it; the harness had not,
    because its scrollIntoView scrolled the list to the menu, which is exactly
-   the move a writer would not know to make. Held inside the row, no overflow
-   can clip it on any row. */
-.wz-your-pages-menu{ position:absolute; right:26px; top:50%; transform:translateY(-50%); z-index:5;
+   the move a writer would not know to make.
+   AND IT IS PINNED TO THE ROW'S TOP AND BOTTOM, NOT CENTRED ON IT. The second
+   cut centred it (top:50% + translateY) and S4 measured a 3px overhang on the
+   last row — the menu (32px) was taller than the row (~27px), so centring
+   pushed its bottom border past the list's edge. Insetting top and bottom makes
+   the menu's height DERIVE from the row's, so it cannot exceed the row whatever
+   the font or padding does. */
+.wz-your-pages-menu{ position:absolute; right:26px; top:1px; bottom:1px; z-index:5;
+  display:flex; align-items:center;
   background:var(--desk-ground); border:1px solid var(--ink-border);
-  border-radius:var(--radius-md); padding:4px; }
+  border-radius:var(--radius-md); padding:0 2px; }
 .wz-your-pages-place{ background:none; border:0; cursor:pointer; white-space:nowrap;
-  color:var(--text-mid); font-family:var(--font-ui); font-size:12px; padding:4px 8px; }
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; padding:0 8px; }
 .wz-your-pages-place:hover{ color:var(--text-hi); }
 
 /* ITEM 83 M7 (PP2) — THE STATE SPEAKS FIRST. The page's current home wears a
