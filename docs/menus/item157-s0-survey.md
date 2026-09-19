@@ -270,3 +270,31 @@ Options:
 
 **Lean:** ship 157 as (a) and open (b) as its own item, ruled before it is
 built. Nick should hear about this before the sitting, not from it.
+
+### RULED 2026-09-19 — and the question dissolved rather than answered
+
+Fable ruled first: **(a) ships**, (b) opens as **item 171**, (c) is refused
+(it contradicts the ruling). Then Nick's own words settled it, verbatim:
+
+> "Typewriter mode should only be available on "Text" pages with no ink. Once
+> Ink is selected, Typewriter mode should be deactivated, and once any ink has
+> been added to a Page, typewriter mode cannot be reactivated. Also, typewriter
+> mode should not be available in either Draft or Revise mode. Ink needs to
+> available, though, on  Boards and Cards."
+
+That is **ITEM 171 — TYPEWRITER SCOPE**, and it DISSOLVES (b) rather than
+building it: no band above the first line can coexist with ink, because
+selecting Ink turns the typewriter off before the first stroke and a page that
+has ink can never turn it back on. The fading consequence (§10.2) dissolves the
+same way — there is no typewriter history to fade on a page with ink.
+
+**157 ships as built.** Its offer records both consequences as RESOLVED BY 171,
+not as live behaviour changes. Two things follow for the harness:
+
+- **item157.mjs M10 stays** — it is the state 157 ships into, and its
+  measurement is the evidence 171 was ruled on.
+- **item 171 must PARK M10**, and this is written here so the sweep finds it:
+  M10's premise (a blank band above the first line, drawn in) becomes
+  unreachable once selecting Ink turns the typewriter off. M1's top-margin leg
+  survives 171 — with the typewriter off, the paper's own top padding is still
+  a margin outside the sheet (~30px × scale), which M0 measures before use.

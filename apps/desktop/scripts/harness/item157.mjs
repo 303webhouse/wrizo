@@ -632,7 +632,22 @@ await withHarness(async (app) => {
   ok('M9: and the text is unchanged by both legs', (await editorText(app)) === t9, '');
 
   // ==========================================================================
-  // M10 — AN OPEN QUESTION, MEASURED RATHER THAN ASSERTED. With the typewriter
+  // M10 — RULED, 2026-09-19, WHILE THIS FILE WAITED FOR THE BOX. Nick: "Once
+  // Ink is selected, Typewriter mode should be deactivated, and once any ink
+  // has been added to a Page, typewriter mode cannot be reactivated. Also,
+  // typewriter mode should not be available in either Draft or Revise mode."
+  // That is ITEM 171, and it DISSOLVES the question below rather than answering
+  // it: after 171 no band above the first line can coexist with ink at all.
+  //
+  // ⚠ ITEM 171 MUST PARK THIS LEG. Its premise — "with the typewriter on, a
+  // fresh Free Write page has a blank band, and a stroke drawn there is stored
+  // above the sheet" — becomes unreachable the moment selecting Ink turns the
+  // typewriter off: there will be no band to draw in. The leg is kept here
+  // because item 157 ships as built and this is the state it ships into, and
+  // because the measurement is the evidence 171 was ruled on.
+  //
+  // The original framing, kept verbatim: AN OPEN QUESTION, MEASURED RATHER
+  // THAN ASSERTED. With the typewriter
   // on (Free Write and Draft; its default), the scroller carries a top pad of
   // 25% of the stage OUTSIDE the sheet, so a fresh page's paper has a wide
   // blank band above the first line. Ink drawn there is stored above the sheet
