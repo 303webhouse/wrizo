@@ -237,6 +237,10 @@ undiscoverable from a Free Write start; a Draft-default (this item) would have O
 session would begin in the room the door lives in. See the LIVE-TEST SITTING #2 section above.
 **Now also PACKAGES WITH item 104** (Screenplay selection dead on an unborn page): mode +
 structure are one descriptor seam — item 87 verifies and ships WITH item 104, not separately.
+**⚠ SUPERSEDED-INTO-165, 2026-09-19 — item 87's charter as THE NEW PAGE CHOOSER is ABSORBED into item
+165 (THE PLAN MENU RESTRUCTURE), which supersedes it as "Create Board."** Kept verbatim below for the
+record of what it charted.
+
 **→ AMENDED BY FOUNDER — item 87 RECHARTERS as THE NEW PAGE CHOOSER (Nick, 2026-08-17).** Spec
 verbatim (from Nick): *"Anywhere that a user can create a New Page, they should be given a toggled
 set of options that reveal themselves when 'New Page' is clicked: Free Write, Draft, Journal, Add
@@ -2022,6 +2026,9 @@ between cards note their connecting tags**; and **tags are searchable FROM THE D
 returning every card carrying the tag *"without having to run an AI check."* **Charter posture,
 verbatim:** *"devise an intuitive way for writers to be able to group information without getting too
 bogged down in the logistics."* Committee.
+
+**⚠ SUPERSEDED-INTO-165, 2026-09-19 — item 116 is ABSORBED into item 165 (THE PLAN MENU RESTRUCTURE)**
+as "Organize Research → Import Sources." Kept verbatim below for the record of what it charted.
 
 ## ITEM 116 — IMPORT TO BOARDS (committee-light) — OPENS 2026-08-26
 
@@ -7293,7 +7300,101 @@ than a summary of it.)*
 **As recorded at the ship:** TOOLS' item 154 pair when it offers; 146's pair to whichever lane holds
 the box when one is free; 147/148 after 154 (or back to ERRATA if it returns first). Box idle.
 
-Registry: next free **157**.
+## FOUNDER SITTING — BATCH THREE — PRIMARY TEXT, Nick VERBATIM — 2026-09-19
+
+**Fourteen findings. Nick's in-app notes and screenshots are his own primary text; the numbered notes
+below are FABLE's TRANSCRIPTION of what the screenshots show, standing IN FOR his paste until it
+arrives — superseded by it the moment it does, not treated as equal to it.**
+
+> 1. See screenshots of a page where I scribbled. The ink is hard limited to a kind of text box, not
+> the entire page surface like it should be.
+> 2. I never found a way to put a board inside of a board, nor am I seeing the Board tabs listed
+> (could be because I don't have any Boards currently connected, but this should be much more
+> intuitive anyway. Ideally, all connected boards are listed as tabs that a user can move back and
+> forth between with a single click from the Board UI (not only from the Plan menu), and Boards
+> should be able to be opened side-by-side.
+> 3. Didn't get to this yet.
+> 4. Better, but still not quite right. The theme and trash options should be all the way at the
+> bottom of the screen, not floating on the rail.
+> 5. Look at my screenshots of the Plan menus with the notes I've written into the app for how I want
+> this restructured. I'm also including a screenshot of what happened when I tried to open a board
+> from the Plan menu, which seems like a bug.
+
+**FIFTH FOUNDER-SITTING FINDING SET; EVERY ONE PASSED EVERY AUTOMATED GATE** — none of these fourteen
+items was catchable by a suite; every one needed the founder's own eyes.
+
+## FIX-CLASS AND FIX-DESK ITEMS — OPEN, IN ORDER — 2026-09-19
+
+**157 — INK SHEET COVERS THE PAGE (INK, fix).** Ink is CLIPPED TO THE TEXT BLOCK's RECTANGLE, not the
+paper. **Founder-ruled: the entire page surface.**
+
+**158 — TAB INDENTS (FIX).** `Tab` on the writing surface moves BROWSER FOCUS instead of indenting a
+paragraph. `Enter` is correct.
+
+**159 — CARD POPUP STYLING DEFAULT (FIX).** The STYLING panel opens by DEFAULT on the card popup — must
+be CLOSED, as it is on Page and Board — and its tab OVERLAPS the card's edge.
+
+**160 — REMOVE OFF THE BOARD SURFACE (FIX).** The "Remove" control at the top of the board pushes the
+board DOWN when a card is clicked. **Founder-ruled OFF THE SURFACE ENTIRELY — deletion moves to 168.**
+
+**161 — TUTOR STRIP ON THE BOARD (TOOLS).** Misaligned with the board edge; its popout OVERLAPS the
+edge, including its OWN TAB. **137/130's class.**
+
+**162 — RAIL FOOT TO THE SCREEN BOTTOM (TOOLS).** Item 137 pinned Themes/Trash to the strip's foot; the
+strip is `min-height: 70vh`, so the foot FLOATS mid-screen rather than sitting at the bottom.
+**Founder-ruled: the VERY BOTTOM OF THE SCREEN.**
+
+**163 — THE LOCATION LINE SAYS "IN" (PW).** The Boards Connected row shows "BOARD #2 / TEST BOARD" —
+TEST BOARD is the DRAWER, read by Nick as a subtitle. **The second line takes the CAPTION FORM: "in
+TEST BOARD."**
+
+**164 — OPEN-FROM-PLAN LANDS ON OUTLINE (FIX, S0 FIRST).** Opening Board #2 from the Plan menu arrived
+on the OUTLINE view, not the canvas. **MEASURE WHETHER THAT IS Q6's STICKINESS (the board's stored
+view) or a WRONG DEFAULT before calling it either** — if it is Q6, the ruling goes back to Nick, since
+he read it as a bug.
+
+## PLAN DESK — CHARTERS — 2026-09-19
+
+**165 — THE PLAN MENU RESTRUCTURE.** Major charter; **Nick's in-app notes are its PRIMARY TEXT.**
+- **Create Board** (Default, Worldbuilding, Storyboard — large thumbnails, a sample and a few words).
+- **Outline** (Traditional, Mind Map, open to more).
+- **Story Structure** (Storytelling / Screenwriting, three each, the desks choose).
+- **Organize Research** (Import Sources → import docs/PDFs → a board of the imports as pages;
+  Bibliography greyed placeholder).
+- **A Connect Board subsection** (all boards, scrollable, minimal bar) with Connected Boards MOVED
+  under it.
+- **Tags in the `⋯` menu**, with the ALL-narrowing already ruled.
+
+**ABSORBS item 87 (the chooser) and item 116 (import) — BOTH MARKED SUPERSEDED-INTO-165 in place.**
+
+**166 — NO POPOUT OVERLAPS THE PAGE.** A LAYOUT LAW: no popout menu ever covers the paper, sized by
+PERCENTAGE OF THE SCREEN. **Two exceptions only:** the right-click menu (unbuilt) and the card popup.
+**The Q3 thumbnail menu CURRENTLY VIOLATES IT.**
+
+**167 — CARD NAMES AND NUMBERING.** A card's title is EDITABLE by clicking it; new blank cards NUMBER
+THEMSELVES (Card 1, Card 2…). **Extends item 136's model to cards** — Box `title` is additive optional,
+ZERO SCHEMA.
+
+**168 — DELETION.** Drag a board, page or card ONTO THE TRASH ICON; and a right-click menu (future)
+carrying Remove/Delete. **Charter, ties to VW4.**
+
+**169 — BOARDS SIDE-BY-SIDE.** New capability. **Charter.**
+
+## ITEM 144 — AMENDED — 2026-09-19
+
+**THE SIBLING ROW BECOMES THE BOARD TABS** — on the BOARD UI, not only the Plan menu. Lists
+CONNECTED (parent/child), SIBLING (drawer) and TAGGED boards. **A single click switches.**
+
+**PLAN DESK RECONCILES THE THREE POPULATIONS** (connected, sibling, tagged) into one row. **PW lane
+runs an S0 on whether `ExistingPagePicker` lists boards at all** — nesting shipped with NO FINDABLE
+DOOR, and this amendment needs to know whether one already exists to reuse or must be built new.
+
+*(Item 144's own primary text — Nick's verbatim, above — already described "every other board...
+listed as tabs... attached to it"; this amendment is that same charter widened to the Board UI itself,
+not a new one.)*
+
+Registry: next free **170**.
+
 
 
 
