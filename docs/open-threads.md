@@ -2858,6 +2858,11 @@ box in the announced order.**
 **the theme arc supplies the faces.** **THE TYPED FACE APPLIES TO TYPEWRITER *ON* ONLY; with
 Typewriter OFF the page uses its own chosen face.**
 
+**⚠ SUPERSEDED IN PART 2026-09-19 by ITEM 171 — the roster line's `Typewriter on/off` is now AVAILABLE ONLY
+ON A TEXT PAGE WITH NO INK** (selecting Ink deactivates it; any ink on the page forbids reactivating it).
+The roster below is kept as written. *(Chat 1 could find no separate "typewriter can be turned off"
+clause for DRAFT in this item's text — see *ITEM 171* for exactly which rulings it supersedes.)*
+
 **FREE WRITE MENU ROSTER, ruled (final form, after Nick's confirm):**
 **Typewriter on/off · when OFF, B/I/U + FONT · INK — nothing else.**
 
@@ -6714,6 +6719,9 @@ NOT YET A DAY.** Chat 1 will say so, without waiting to be asked, when it crosse
 decides whether to re-route 147 and 148 to a present lane, at the cost of re-deriving what ERRATA
 already knows.
 
+**✓ RESOLVED 2026-09-19 — Nick: "Resize-only".** Option 1 of the two live options; constrain forward
+holds. See *NICK's SIX ANSWERS*, below. The section that follows is kept as written.
+
 ## ITEM 138 — RULED IN PART — 2026-09-18
 
 **WHAT THE LOCK DOES IS SETTLED: CONSTRAIN FORWARD, NEVER SNAP.** Snap reshapes a card the writer did
@@ -7348,6 +7356,11 @@ strip is `min-height: 70vh`, so the foot FLOATS mid-screen rather than sitting a
 TEST BOARD is the DRAWER, read by Nick as a subtitle. **The second line takes the CAPTION FORM: "in
 TEST BOARD."**
 
+**⚠ S0 RULED 2026-09-19, THEN OVERTAKEN THE SAME DAY:** the S0 found Q6's stickiness by elimination, not
+a bug — and Fable's later reading (flagged for Nick's veto) is that item 172's board TYPES supersede the
+view tabs and Q6 with them, so this question DISSOLVES rather than being answered. See *RULINGS FROM THE
+FOUR S0s* and *ITEM 172*, below.
+
 **164 — OPEN-FROM-PLAN LANDS ON OUTLINE (FIX, S0 FIRST).** Opening Board #2 from the Plan menu arrived
 on the OUTLINE view, not the canvas. **MEASURE WHETHER THAT IS Q6's STICKINESS (the board's stored
 view) or a WRONG DEFAULT before calling it either** — if it is Q6, the ruling goes back to Nick, since
@@ -7411,6 +7424,11 @@ PAGE** — click a row, the page opens — **and placing on a board becomes the 
 
 **S0 FIRST: name every path by which a writer can open an existing page TODAY.** **Batch Four ships
 when this lands, ALONE IF NEED BE — a ready P0 does not wait for a batch to fill.**
+
+**✓ ELEVATED TO PRIMARY TEXT 2026-09-19, on Nick's own authorization — see *TRANSCRIPTION ELEVATED TO
+PRIMARY TEXT*, below.** The authorizing sentence: *"If this is a rule violation, then I authorize it."*
+The section that follows is kept as written; "pending confirmation" is now satisfied by the founder,
+not assumed by a desk.
 
 ## PRIMARY TEXT, PENDING CONFIRMATION — Nick's IN-APP NOTES, TRANSCRIBED BY FABLE — 2026-09-19
 
@@ -7478,7 +7496,215 @@ renaming and numbering, Remove's relocation plus the drag-to-trash and right-cli
 and the Tutor strip's edge misalignment including its own tab. **Nothing in the fuller text changes
 any of items 157–169 or 144's amendment as already recorded — it confirms them at the source.**
 
-Registry: next free **171**.
+## NICK's SIX ANSWERS — PRIMARY TEXT, VERBATIM — 2026-09-19
+
+**Nick's own words, one paragraph, numbered by him.** Typos and spacing are his ("we don't have do it
+then"; the double space and the missing "be" in answer 5) — kept exactly; a wrap of the lines below does
+not alter a character, and chat 1's script proves that before writing.
+
+> 1. I can't. Just transcribe them from the screenshots and paste them to the CC chats that need them.
+> If this is a rule violation, then I authorize it. 2. Resize-only 3. Let's try this: all boards are
+> labeled as a "type" of board so that, in the future, as we make adjustments to types of boards (or
+> want to display different types of boards differently), we don't have do it then. The board types
+> are: Default (rectangular, open + blank surface, resembles a table top where other items like cards,
+> pages, images, docs, etc. can be freely arranged and connected to each other; Book (the journal is a
+> "Book" style board, which means that it gets displayed more like the pages of a book (vertical
+> rectangle like the current Page surface), but what makes it unique is that when new pages are
+> created, they become a new surface that gets flipped through like a book instead of being all laid
+> out on a surface at the same time---cards should also be addable to the pages of a Book-style board,
+> but the cards stay on the page they are added to); Bibliography to be figured out later, but it
+> should be a unique style of Board---can stay greyed out until we build it). 4. I'm not understanding
+> what is being proposed here. Please provide a mockup for me to approve/revise. 5. Typewriter mode
+> should only be available on "Text" pages with no ink. Once Ink is selected, Typewriter mode should
+> be deactivated, and once any ink has been added to a Page, typewriter mode cannot be reactivated.
+> Also, typewriter mode should not be available in either Draft or Revise mode. Ink needs to
+> available, though, on  Boards and Cards. 6. Interim is fine.
+
+### FILED BY SUBJECT, not by number alone (the standing law: *record by subject*)
+
+Chat 1 does not hold Fable's six questions, only Nick's six answers and Fable's six numbered actions,
+which run in the same order. **Where an answer carries its own subject, that is stated; where it does not
+(answer 6), the subject is Fable's action and is said to be.**
+
+| # | subject | Nick, on it | filed as |
+| --- | --- | --- | --- |
+| 1 | the transcriptions of his in-app notes | *Just transcribe them from the screenshots and paste them to the CC chats that need them. If this is a rule violation, then I authorize it.* | **TRANSCRIPTION ELEVATED TO PRIMARY TEXT**, below |
+| 2 | item 138, what "touched" means | *Resize-only* | **item 138 RESOLVED: RESIZE-ONLY**, constrain forward; PW builds after 144's S0 and 163 |
+| 3 | board types | *all boards are labeled as a "type" of board...* | **ITEM 172 OPENS — BOARD TYPES** |
+| 4 | item 170, opening a page (Fable's proposal) | *I'm not understanding what is being proposed here. Please provide a mockup for me to approve/revise.* | **item 170's MOCKUP GATE** |
+| 5 | typewriter and ink | *Typewriter mode should only be available on "Text" pages with no ink...* | **ITEM 171 OPENS — TYPEWRITER SCOPE** |
+| 6 | *(subject supplied by Fable's action 6)* item 160's interim | *Interim is fine.* | **item 160's interim RATIFIED** |
+
+## TRANSCRIPTION ELEVATED TO PRIMARY TEXT — 2026-09-19
+
+**Fable's transcriptions of the THREE in-app notes** (the PLAN NOTE's two pages and the CARD NOTE,
+recorded verbatim above) **are ELEVATED TO PRIMARY TEXT on Nick's authorization.** **The authorizing
+sentence, recorded beside them:** *"If this is a rule violation, then I authorize it."* — after *"Just
+transcribe them from the screenshots and paste them to the CC chats that need them."*
+
+> **THE RULE STAYS AS IT IS: A FOUNDER MAY AUTHORIZE A TRANSCRIPTION; A DESK MAY NOT DECIDE ONE IS GOOD
+> ENOUGH.**
+
+*(The exception is the founder's to grant and is granted for THESE three notes. It does not make a
+transcription primary in general, and it is not a precedent a desk can cite for the next one.)*
+
+## RULINGS FROM THE FOUR S0s — 2026-09-19 (Nick's defaults flagged where his word was owed)
+
+**BATCH FOUR = ITEM 170 ALONE:** Fable reviews its diff when the pair stamps (a product change, every
+surface), then Nick's word, then the deploy pair. **157 rides BATCH FIVE.**
+
+**158 — TAB (FIX).** `Tab` runs INDENT and `Shift+Tab` OUTDENT through `applyRailFormat` — *one action,
+two faces.* **Scope, RULED as FIX leans:** **Draft and Revise indent. FREE WRITE:** `Tab` on an EMPTY
+line inserts the leading tab character (`\t`, the typewriter's paragraph tab); `Tab` on a NON-EMPTY line
+is INERT and PREVENTED (an insertion behind the caret breaks the forward law); `Shift+Tab` inert.
+**THE KEYBOARD TRAP IS ACCEPTED AS STANDARD FOR EDITORS — recorded as a TRADE-OFF, not a free change.**
+
+**159 — CARD DOCK (FIX).** The card dock gets Page/Board's CLOSED-BY-DEFAULT GRIP MODEL; the overlap
+(`margin-right: -1px` is a candidate) is measured in the box turn AFTER the grip lands.
+
+**160 — WIDENS (FIX): THE ROW SHIFTS THE BOARD, NOT THE BUTTON.** The action row must NEVER shift the
+board for ANY verb — Ungroup, Edit copy, Restore and Pin included. **FIX picks the mechanism (overlay or
+reserved height); the harness asserts the board's rect UNCHANGED on selection.** **Interim, flagged for
+Nick: `Remove` leaves the board surface per his ruling and lives in the CARD's OWN POPUP until 168's
+drag-to-trash lands** — *a build with no card deletion would be a regression a writer hits.* **Harness
+option (b) RATIFIED:** keep `removeSelected`, expose it on the `wrizoBoard` seam (WRAPPED DURABLE — it
+writes), reroute the seven drivers, park ONLY `fx7`'s presence assertion.
+
+**⚠ MERGE-ORDER OBLIGATION, chat 1's application of the standing rule — Fable to confirm:** that seam is
+a NEW WRITING SEAM. Item 148's durability table does not exist on `main` yet, and FIX's 158/159/160 pairs
+sit BEFORE 147/148 in the queue, so 160 lands FIRST — **148, landing second, adds `wrizoBoard`'s
+`removeSelected` to its durability entries BEFORE ITS OWN PAIR**, beside `wrizoCopyCardToBoard`. *(The
+rule: a seam-table entry is added by whichever branch lands SECOND, and that branch must not have run its
+pair yet. Recorded now so 148's builder is not surprised.)*
+
+**164 — Q6 STICKINESS, BY ELIMINATION; NOT A BUG.** A box probe turns the elimination into observation —
+*approve one.* Nick is asked whether the Plan door should land on the canvas REGARDLESS. **Adjacent fact,
+recorded: the view is CLIENT-LOCAL, NOT SYNCED — a note for a later item, NO NUMBER YET.** **⚠ OVERTAKEN
+by the same-day second relay:** under item 172 the question dissolves, so the probe is likely moot — see
+below; it stays approved-but-unneeded until Nick vetoes or confirms Fable's reading.
+
+**157 — INK (INK): RULED.** **(a) SHIPS NOW.** **(b) opens as its own item** with the refinement that
+REVISE reserves space above the text ONLY when ink occupies the band, so pages WITHOUT band ink are
+unchanged. **(c) REFUSED — it contradicts "the entire page surface."** **TWO CONSEQUENCES FLAGGED TO
+NICK AS HIS TO VETO:** (1) ink no longer fades with the typewriter's history; (2) band ink VANISHES in
+Revise until (b). **⚠ (b) IS DISSOLVED BY THE SAME-DAY SECOND RELAY — item 171 forbids any band to
+coexist with ink; 157 SHIPS AS BUILT** (see *ITEM 171*). **REGISTERED: both ink harness files' parked
+lines ALWAYS PRINTED `PASS` — item 147's class — found and FIXED IN PLACE.**
+
+**163 — LOCATION LINE (PW): RATIFIED as scoped.** The check is scoped to DRAWER-NAMING lines only; the
+other two forms are asserted BY NAME so it cannot pass on absence. **WIDENED to `boardDrawerLine` on the
+canvas board-card** — same swap, same lexicon term, 131(a)'s shape: *fix the class.*
+
+**PW ORDER: 144's S0 first (browserless; PLAN DESK is waiting) → 163 → 138 on Nick's word.** *(Nick has
+since given it — see item 138 above: 138 builds after 144's S0 and 163.)*
+
+**QUEUE, after 170's pair and Batch Four's deploy pair, as ruled:** **TOOLS' 154 pair → INK's 157**
+(`tsc`/build/push are waiting on a quiet box) **→ FIX's 158/159/160 pairs + 164's probe → PW's 163 →
+TOOLS' 161/162 → 147/148.** Item 138 and the six Nick-defaults are in his hands — and, as of the second
+relay, answered.
+
+## ITEM 171 — TYPEWRITER SCOPE (INK) — OPENS 2026-09-19
+
+**OPENS. Nick's answer 5, verbatim above.** **THE RULE:** typewriter is FREE WRITE only, on TEXT pages
+with NO INK. **Selecting Ink DEACTIVATES it. ANY ink on a page FORBIDS reactivating it. DRAFT AND REVISE
+HAVE NO TYPEWRITER.** **Ink must be available on BOARDS and CARDS** — **S0: measure where ink is and is
+not available TODAY.**
+
+**WHAT IT SUPERSEDES — recorded from the ledger's own text, and chat 1 found one place where the relay's
+reference does not match it:** Fable's relay says this supersedes *item 127's "typewriter can be turned
+off" clause for Draft.* **Item 127's text, verbatim:** *"Typewriter on/off · when OFF, B/I/U + FONT ·
+INK — nothing else"* — that is the FREE WRITE menu roster, and it says nothing about Draft. **The
+DRAFT typewriter rulings live elsewhere:** FX2 S2 (*"Draft opens with typewriter ON unless the page
+already holds 10+ line-equivalents"*) and its doorway-wave amendment, clause 3 (*"typewriter off on fresh
+pages"*). **Chat 1 MARKED ALL THREE PLACES superseded in part, in place** (item 127's roster; clause 3 /
+FX2 S2). **Fable to confirm this is the clause meant, or say which other one is.**
+
+**IT DISSOLVES 157's (b) AND THE FADING QUESTION:** with no typewriter alongside ink there is no band to
+reserve and no history to fade. **157 SHIPS AS BUILT.**
+
+## ITEM 172 — BOARD TYPES — OPENS 2026-09-19
+
+**OPENS. PLAN DESK charter.** Nick's answer 3, verbatim above: every board is labeled a TYPE, so a
+later change to how types display is a change to a type, not a migration of boards. **THE TYPES:**
+**DEFAULT** (rectangular; an open, blank, table-top surface where cards, pages, images and docs are
+freely arranged and connected) · **BOOK** (the Journal IS a Book: displayed like the pages of a book,
+a vertical rectangle like the Page surface; new pages become new surfaces FLIPPED THROUGH rather than
+laid out at once; **CARDS are addable to a Book's pages and STAY ON THE PAGE THEY WERE ADDED TO**) ·
+**BIBLIOGRAPHY** ("to be figured out later" — a unique style; GREYED OUT until built).
+
+**THE JOURNAL IS A BOOK-TYPE BOARD. VW3's Journal-as-book IS RE-GROUNDED ON THE TYPE.**
+
+**THE STORED FIELD:** lands in FIX's item-136 schema batch as a SECOND COLUMN beside `title`, IF the S0
+says column — *one migration wave, not two.* **⚠ STANDING CONSTRAINT: any schema STOPS at chat 1 and
+goes to Nick.** Fable's ruling here is on WHERE a field would land, not a schema approval.
+
+**FABLE's READING, FLAGGED FOR NICK's VETO:** the OPEN / STORYBOARD / OUTLINE VIEW TABS on a board are
+SUPERSEDED BY TYPES — Outline and Storyboard become kinds of board per 165's submenus — and **Q6's
+per-board view stickiness is superseded with them; ITEM 164's QUESTION THEREFORE DISSOLVES rather than
+being answered.** **Thumbnail law gains a note: a BOOK-TYPE board displays TALL by its type.**
+
+**⚠ CHAT 1 HANDS UP ONE CONFLICT, with a lean:** Nick's list is THREE types (Default, Book,
+Bibliography), but Fable's reading makes Outline and Storyboard *kinds of board* too, and 165's Create
+Board submenu offers Default / Worldbuilding / Storyboard (Outline: Traditional / Mind Map). **The
+relation between the stored TYPE and those creation-time OPTIONS is nowhere stated.** *Reading A:* the
+type set is OPEN — Storyboard and Outline are further types, and 165's options are types. *Reading B:*
+the type set is Nick's three, and Worldbuilding / Storyboard / Outline are PRESETS a Default board is
+born with. **Lean: A** — B leaves the retired view tabs with nothing to become, and Nick's own reason for
+types ("want to display different types of boards differently") is exactly what Storyboard and Outline
+are. **PLAN DESK's brief must name it; it goes to Nick if the desks read it differently.**
+
+## ITEM 170 — THE MOCKUP GATE — 2026-09-19
+
+**Nick's answer 4: *"I'm not understanding what is being proposed here. Please provide a mockup for me
+to approve/revise."*** **FIX produces TWO HEADFUL FRAMES from the built branch: the list on a page
+surface and on a board, `⋯` open.** **BATCH FOUR WAITS ON HIS APPROVAL of them, pair or no pair — a P0
+he has not seen does not ship on a default.** *(Fable's ruling for the fix — the Page hand's list
+becomes the way to open a page — was flagged for his veto; this is the veto's first move, not a
+rejection: he has not yet been shown what it would look like.)*
+
+**CHAT 1's VERIFICATION OF FIX's OFFER (`item170-open-a-page`, tip `a57ac63`, stamped tree `9ddbae8`):**
+- **Stamp, from the offer's own record:** **92/92 CLEAN BOTH LEGS**, `tree=9ddbae8`
+  `bundle=index-DjEx65wA.js/587945b`, no `+Ndirty`, `item170.mjs` PASS (16 checks) in both.
+- **Scope, measured by chat 1:** **3 product files** (`CascadePanels.tsx` +123/-40, `index.css` +31,
+  `deskLexicon.ts` +8/-3), one new harness (`item170.mjs`, +268), the offer doc. **`apps/server`: 0.
+  Schema: 0.** `persistence.ts` untouched. Base is `main` at `b807f59`, unmoved through the build.
+- **Trial merge against `origin/main`: CLEAN.**
+- **NOT re-run by chat 1: the bundle rebuild** — the box is held by FIX for the frames, and a build
+  during a headful capture is the contention the quiet rule forbids. **The bundle hash is confirmed at
+  the deploy stamp.**
+- **Three judgments FIX flagged for Nick's veto:** the list on EVERY surface; BOARDS excluded from it;
+  the noun heading against S13's precedent.
+
+**HELD FOR FABLE's REVIEW OF THE DIFF — chat 1 does NOT merge product code ahead of it.** *(Batch
+Four = 170 alone: merge on Fable's PASS, then it waits on Nick's mockup approval and word.)*
+
+**BOX: FIX's grant (`fix-item170-p0-20260919`) is RETAINED** — the pair is done; the grant now covers
+the two headful frames. **It is cleared when the frames are delivered.**
+
+## SIX PLAN-DESK BRANCHES MERGED — DOCS-ONLY — 2026-09-19
+
+**Merged at `ddb8808`, under the standing docs exemption (no Fable review needed):** `plan-brief-144-tabs`
+(item 144 amended: the board tabs and the door, brief + mock), `plan-brief-165` (the Plan menu
+restructure, gated on 166), `plan-brief-166` (no pop-out overlaps the page), `plan-brief-167` (card
+names and numbering), `plan-charter-168` (deletion), `plan-charter-169` (boards side-by-side).
+**Verified before merging:** no non-docs file in any of the six; the one file two branches both add
+(`plan-menu-mock.html`, 165 and 166) is byte-identical in both, so no add/add conflict; each trial
+merge clean. **Every earlier PLAN brief branch is already on `main` — this follows the same course.**
+*(Merging is filing, not ruling: each brief stays a desk draft until Fable and Nick rule on it, and
+several were written before Nick's six answers, so 165 and 167 in particular may need a supersede
+pass against items 171/172.)*
+
+## ORDER WHILE BATCH FOUR WAITS ON NICK — 2026-09-19
+
+**Chat 1's application of the present-and-ready rule — Fable may veto:** Batch Four's deploy pair keeps
+its FIRST PLACE but not the box while Nick's approval of the frames is outstanding, because a pair
+that cannot run is not "ready." **TOOLS' 154 pair is announced when it offers and FIX's frames are
+done.** **Nothing product-side merges between Batch Four's assembly and its stamp** — the other pairs
+run in their own worktrees and their merges wait behind the stamp, as in Batch Two. *(Records and docs
+keep landing, as they did after Batch Three's assembly.)*
+
+Registry: next free **173**.
+
 
 
 
@@ -17876,6 +18102,10 @@ sitting closes them.
     the behaviour in from BOTH sides (absent in Free Write, still present in Draft) so a
     later sliver change cannot quietly undo it. **The clause did not reproduce; recorded
     rather than silently "fixed."**
+    **⚠ SUPERSEDED IN PART 2026-09-19 by ITEM 171 — DRAFT HAS NO TYPEWRITER.** Nick: *"typewriter mode should
+    not be available in either Draft or Revise mode."* The FX2 S2 ruling this clause amends ("Draft opens
+    with typewriter ON unless the page already holds 10+ line-equivalents") and the clause itself are kept
+    as written below, and are moot for Draft.
     **CLAUSE 3 — "typewriter off on fresh pages," an AMENDMENT to FX2 S2 at exactly one
     point.** FX2 S2 ruled "Draft opens with typewriter ON unless the page already holds
     10+ line-equivalents," reasoning that the line-following fade helps someone starting
