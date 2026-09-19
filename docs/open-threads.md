@@ -7132,7 +7132,63 @@ PARKED — no action.**
 **Fable reviews the assembled diff either way; Nick's word ships it — chat 1 assembles on your
 confirmation.**
 
+## BATCH THREE — ASSEMBLED — 2026-09-18
+
+**RANGE: `02ead44` (current production) → `56e2ad8`. CLOSED AT ASSEMBLY. NOTHING FURTHER ENTERS.**
+
+**PACKAGES (ten):** **item 139** (runner guard) · **TOOLS' park rider** · **85-C** (wave 2) ·
+**item 126** (ink across modes, +121's already-shipped half completing the class) · **item 140**
+(grant contract) · **item 141** (grant verify) · **VW1/item 134** (the rail, `data-category`) · **PW2**
+(card/board nesting and transfer) · **the park conform** (item130/83e/pw1/item133) · **item 151 Shape A**
+(the shared hit-test).
+
+**PRODUCT DELTA: 13 files, +1,418/-91. SCHEMA: ZERO. SERVER: ZERO** (both measured against the full
+range, not sampled). **Roster 91.**
+
+| file | +/- |
+| --- | --- |
+| `store/persistence.ts` | +460/-29 |
+| `components/InkStratum.tsx` | +320/-27 |
+| `store/ink.ts` (new) | +209/-0 |
+| `components/CascadePanels.tsx` | +130/-4 |
+| `components/BoardEditor.tsx` | +67/-3 |
+| `index.css` | +67/-0 |
+| `pages/PageEditor.tsx` | +46/-12 |
+| `components/Cascade.tsx` | +34/-6 |
+| `store/deskLexicon.ts` | +26/-2 |
+| `components/PinToBoardSheet.tsx` | +22/-5 |
+| `components/CascadeSurvey.tsx` | +13/-2 |
+| `types/index.ts` | +13/-0 |
+| `components/ModeStage.tsx` | +11/-1 |
+
+**THE LARGEST TWO FILES (`persistence.ts`, `InkStratum.tsx`) PLUS THE NEW `ink.ts` CARRY THE WRITER-
+FACING CHANGE FABLE NAMED: item 126's gesture fix, touching live ink, completing the class item 121
+shipped half of.** **In Fable's review scope**, per the standing order (writer-facing product code).
+
+**HELD BEHIND THE STAMP: NONE — the range is exactly what's on `main` now.** Nothing awaits merge.
+
+**Given to Fable for review. Chat 1 holds for Fable's review, then Nick's word, before staging or
+deploying anything.**
+
+## ERRATA's ABSENCE — RULED: RE-ROUTE 147 AND 148, NOT 146 — 2026-09-18
+
+**RULED: 147 (the park count as a check, `item87`'s hardcoded `PASS(0)` line) AND 148 (the seam
+durability guard, inverted to all writing seams with named exemptions) GO TO TOOLS, AFTER 154, IN THAT
+ORDER.** **Both are offered branches with stated must-shows, so the cost is RE-DERIVING REASONING, NOT
+REBUILDING.**
+
+**146 DOES NOT RE-ROUTE** — it is OFFERED AND COMPLETE (`ace6f76`, option C) and needs ONLY A PAIR.
+**GRANTED TO WHICHEVER LANE HOLDS THE BOX WHEN ONE IS FREE** — running another lane's finished offer
+costs nothing but the slot.
+
+**IF ERRATA RETURNS BEFORE TOOLS STARTS 147, IT RESUMES ITS OWN ITEMS AND TOOLS DROPS THEM — A
+RETURNING AUTHOR BEATS A RE-DERIVATION.**
+
+**TOOLS IS TOLD IT IS QUEUED FOR 147/148, SO IT CAN SEQUENCE — NOT SO IT STARTS NOW.** Current order
+for TOOLS: **item 154 → 147 → 148** (each re-checked for ERRATA's return before starting).
+
 Registry: next free **156**.
+
 
 
 ## ITEM 151 · SHAPE A — BUILT AND OFFERED, NOT LAUNCHED — 2026-09-18 (tools lane; branch
