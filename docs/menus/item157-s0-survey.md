@@ -236,3 +236,37 @@ a margin stroke could select the page title. The framed page never passes
 `pageTitle` to ModeStage (neither call site does), so the framed paper has no
 selectable text outside the sheet. The widening was reverted rather than kept
 with a false reason attached.
+
+**An open question for Fable, found from source: the typewriter band.** With
+the typewriter on (its default, in Free Write and Draft), `.mode-scroll` adds a
+top pad of 25% of the stage height (`--tw-start-offset`, useTypewriterFade.ts
+`START_FRACTION = 0.25`). That pad is outside the sheet. So a fresh Free Write
+page has a wide blank band above its first line, and ink drawn there is stored
+above the sheet (y below 0). Revise has no typewriter, so its sheet sits higher
+by that pad, and the ink moves up with it, because it is anchored to the sheet.
+By arithmetic, most of that band's ink lands above the paper's top edge in
+Revise, where it cannot be scrolled to. The stored points are untouched, and it
+shows again in Free Write or Draft. item157.mjs **M10 measures this** and logs
+it as a labelled MEASUREMENT, not a check. Its checks assert only what holds
+under any ruling.
+
+This did not exist before item 157, because the band was not ink at all. It is
+also the part of the paper Nick is most likely to draw on at the sitting.
+Options:
+- **(a) Accept.** This is what 157 ships: band ink follows its text, and in
+  Revise it can sit above the page. Risk: at the sitting it reads as "my
+  drawing vanished when I switched modes".
+- **(b) Reachability.** When ink sits further above the sheet than a mode's top
+  room allows, the scroller gets that much extra top room, so the ink stays on
+  the page. This keeps both laws (ink stays with its text, and ink never leaves
+  the page). Its cost: the layout now follows the ink, so text moves down in
+  Revise when the band has ink. That is a new kind of rule and needs a ruling.
+- **(c) The band is not paper.** Refuse strokes above the first line while the
+  typewriter pad is there, on the grounds that the pad is a view device rather
+  than page. This contradicts "the entire page surface" as Nick sees it.
+- *Not viable:* moving the basis origin to the top of the pad. That breaks zero
+  migration (production ink would shift by the pad), and it detaches ink from
+  its words whenever the typewriter toggles.
+
+**Lean:** ship 157 as (a) and open (b) as its own item, ruled before it is
+built. Nick should hear about this before the sitting, not from it.

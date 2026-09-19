@@ -35,6 +35,8 @@
 //   M7  §8.6 the eraser's ring shows over a margin, and the erase rubs there
 //   M8  §8.7 a scrollbar drag in INK scrolls and draws nothing (S0 §6)
 //   M9  the rulings hold in the margin: Free Write TEXT and Draft draw nothing
+//   M10 an OPEN QUESTION, measured not asserted: ink drawn in Free Write's
+//       typewriter band (above the first line) — is it on the paper in Revise?
 //
 // WHAT THIS FILE CANNOT PROVE, SAID UP FRONT: a stylus in the margin of a real
 // tablet. The pen here is CDP's; the hand on glass is the sitting's gesture.
@@ -382,10 +384,13 @@ await withHarness(async (app) => {
   // ==========================================================================
   const bId = await inkPage(app, W1, H1);
   const gB = await geom(app);
-  const bMidY = (gB.paper.top + gB.paper.bottom) / 2;
   const tickX = gB.sheet.left + gB.sheet.width * 0.05;
+  // Aimed from the SHEET's own top, not the paper's middle: with the typewriter
+  // on, the sheet starts ~45% down the stage, so a paper-middle tick could begin
+  // above it (the probe would refuse it, but the leg would be lost).
+  const tickY = Math.min(gB.sheet.top + 110, gB.scroller.bottom - 40);
   let nB = (await strokesOf(app, bId)).length;
-  await guardedDraw(app, 'M4 column tick', segment(tickX, bMidY - 20, tickX, bMidY + 20), { pointerType: 'pen', inSheet: true });
+  await guardedDraw(app, 'M4 column tick', segment(tickX, tickY - 20, tickX, tickY + 20), { pointerType: 'pen', inSheet: true });
   const afterB = await settle(app, bId, nB + 1);
   const colStroke = afterB.length === nB + 1 ? afterB[afterB.length - 1] : null;
   nB = afterB.length;
@@ -410,7 +415,7 @@ await withHarness(async (app) => {
   // on scroll. Read by SCREEN position, independent of the renderer's formula.
   // ==========================================================================
   const mX = (gB.paper.left + gB.sheet.left) / 2;
-  await guardedDraw(app, 'M5 margin tick', segment(mX, bMidY - 20, mX, bMidY + 20), { pointerType: 'pen' });
+  await guardedDraw(app, 'M5 margin tick', segment(mX, tickY - 20, mX, tickY + 20), { pointerType: 'pen' });
   const afterM5 = await settle(app, bId, nB + 1);
   const marStroke = afterM5.length === nB + 1 ? afterM5[afterM5.length - 1] : null;
   nB = afterM5.length;
@@ -421,14 +426,17 @@ await withHarness(async (app) => {
     const colPt = await screenOf(app, midOf(colStroke));
     const marPt = await screenOf(app, midOf(marStroke));
     const ed0 = await app.evalJs(`document.querySelector('${EDITOR}').getBoundingClientRect().top`);
-    const want = Math.min(120, s0.maxScroll);
+    // Far enough that the old point is clear of the moved 40px tick (≥ 40px),
+    // never so far that the moved tick leaves the paper — an off-canvas read
+    // is -2, which would fail the positive for the wrong reason.
+    const want = Math.max(0, Math.min(120, s0.maxScroll, Math.min(colPt.y, marPt.y) - 20 - (s0.paper.top + 12)));
     await setScroll(app, want);
     const s1 = await geom(app);
     const dS = s1.scrollTop - s0.scrollTop;
     const ed1 = await app.evalJs(`document.querySelector('${EDITOR}').getBoundingClientRect().top`);
     const dT = ed0 - ed1;
-    ok('M5: the page scrolled by at least 60px and the TEXT moved by exactly the scroll delta (within 1px) — the reference the ink is measured against',
-      dS >= 60 && Math.abs(dT - dS) < 1, JSON.stringify({ dS, dT, maxScroll: s0.maxScroll }));
+    ok('M5: the page scrolled by at least 40px and the TEXT moved by exactly the scroll delta (within 1px) — the reference the ink is measured against',
+      dS >= 40 && Math.abs(dT - dS) < 1, JSON.stringify({ dS, dT, want, maxScroll: s0.maxScroll }));
     for (const [what, pt] of [['column', colPt], ['MARGIN', marPt]]) {
       const moved = await alphaAtScreen(app, pt.x, pt.y - dS);
       const stayed = await alphaAtScreen(app, pt.x, pt.y);
@@ -622,6 +630,51 @@ await withHarness(async (app) => {
   ok('M9: in DRAFT neither a pen nor a mouse stroke in the margin draws — Draft\'s ink is movable, never a pen, in the margin as in the column',
     n9b === n9, JSON.stringify({ n9, n9b }));
   ok('M9: and the text is unchanged by both legs', (await editorText(app)) === t9, '');
+
+  // ==========================================================================
+  // M10 — AN OPEN QUESTION, MEASURED RATHER THAN ASSERTED. With the typewriter
+  // on (Free Write and Draft; its default), the scroller carries a top pad of
+  // 25% of the stage OUTSIDE the sheet, so a fresh page's paper has a wide
+  // blank band above the first line. Ink drawn there is stored above the sheet
+  // (y below 0). Revise has no typewriter, so its sheet sits higher by that pad
+  // — and the ink, anchored to the sheet, moves up with it. Whether it is still
+  // ON the paper there is the question for Fable; this leg records the answer.
+  // The two checks assert only what holds under ANY ruling; the Revise read is
+  // logged as a labelled MEASUREMENT, never folded into a pass condition.
+  // ==========================================================================
+  const tId = await inkPage(app, W1, H1);
+  const gT = await geom(app);
+  const tw = await app.evalJs("(document.querySelector('.mode-scroll') || { getAttribute: () => null }).getAttribute('data-typewriter')");
+  const bandTop = gT.scroller.top, bandBottom = gT.sheet.top;
+  const bandY = bandTop + (bandBottom - bandTop) * 0.35;
+  const bx0 = gT.sheet.left + gT.sheet.width * 0.3, bx1 = gT.sheet.left + gT.sheet.width * 0.6;
+  let bandStroke = null;
+  if (bandBottom - bandTop >= 60) {
+    await guardedDraw(app, 'M10 typewriter band', segment(bx0, bandY, bx1, bandY), { pointerType: 'pen' });
+    const tS = await settle(app, tId, 1);
+    bandStroke = tS.length === 1 ? tS[0] : null;
+  }
+  const readHere = async (mode) => {
+    const g = await geom(app);
+    const sp = bandStroke ? await screenOf(app, midOf(bandStroke)) : null;
+    const twNow = await app.evalJs("(document.querySelector('.mode-scroll') || { getAttribute: () => null }).getAttribute('data-typewriter')");
+    return { mode, typewriter: twNow, sp, onPaper: !!sp && sp.y >= g.paper.top && sp.y <= g.paper.bottom,
+             alpha: sp ? await alphaAtScreen(app, sp.x, sp.y) : null, maxScroll: g.maxScroll };
+  };
+  const inFw = await readHere('Free Write');
+  ok('M10: (premise) with the typewriter on, a fresh Free Write page has a blank band above the first line (≥ 60px, measured) — and a stroke drawn there is stored ABOVE the sheet (y below 0)',
+    tw === 'true' && !!bandStroke && bboxOf(bandStroke.points).y1 < 0, JSON.stringify({ tw, band: bandBottom - bandTop, box: bandStroke && bboxOf(bandStroke.points) }));
+  ok('M10: and it is painted there in Free Write — on the paper, non-zero alpha',
+    inFw.onPaper && inFw.alpha > 0, JSON.stringify(inFw));
+  await toMode(app, 'draft');
+  const inDraft = await readHere('Draft');
+  await toMode(app, 'revise');
+  const inRevise = await readHere('Revise');
+  const storedAfter = JSON.stringify((await strokesOf(app, tId)).map(s => s.points));
+  ok('M10: across Draft and Revise its STORED geometry is untouched — a mode switch never rewrites ink (true under any ruling on what Revise should show)',
+    !!bandStroke && storedAfter === JSON.stringify([bandStroke.points]), JSON.stringify({ same: !!bandStroke && storedAfter === JSON.stringify([bandStroke.points]) }));
+  // eslint-disable-next-line no-console
+  console.log(`\nITEM157 MEASURED (not a check — an open question for Fable): typewriter-band ink, drawn in Free Write, per mode: ${JSON.stringify([inFw, inDraft, inRevise])}`);
 
   return checks;
 });
