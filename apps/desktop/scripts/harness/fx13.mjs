@@ -12,6 +12,7 @@
 // (never overflows it — the S2 root fix, proven below the floor too); adding a
 // card is one visible click; and FX11's drag gesture still holds at the new leg.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -119,6 +120,8 @@ await withHarness(async (app) => {
     const b0 = await liveBox(app, CID);
     const r = await rectOf(app, `[data-box-id="${CID}"]`);
     const mx = Math.round(r.left + r.w / 2), my = Math.round(r.t + r.h / 2);
+    // ITEM 151 (Shape A) -- verify the drag's START point only.
+    await assertHittable(app, mx, my, `[data-box-id="${CID}"] (drag start)`);
     await app.mouseDown(mx, my); await sleep(40);
     await app.mouseMove(mx + 30, my + 20); await sleep(50);
     await app.mouseMove(mx + 70, my + 45); await sleep(60);

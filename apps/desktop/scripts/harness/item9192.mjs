@@ -50,6 +50,7 @@
 // per the standing instruction not to re-derive fixtures.
 // Run: node scripts/harness/item9192.mjs  (from apps/desktop, dist-web freshly built)
 import { withHarness } from '../runtime-verify.mjs';
+import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -79,15 +80,14 @@ const rectOf = (app, sel) => app.evalJs(
   `(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null;`
   + ' const r = el.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }; })()');
 
-const trustedClick = async (app, sel) => {
-  const r = await rectOf(app, sel);
-  if (!r) throw new Error('trustedClick: no element ' + sel);
-  const x = (r.left + r.right) / 2, y = (r.top + r.bottom) / 2;
-  await app.mouseMove(x, y);
-  await app.mouseDown(x, y);
-  await app.mouseUp(x, y);
-  await sleep(160);
-};
+// ITEM 151 (Shape A) -- now a thin wrapper over the shared
+// trusted-point.mjs instrument. The old body checked only 'did the
+// selector match ANYTHING' (a null-rect throw); it never asked whether
+// the computed centre was actually hit-testable at dispatch time, which
+// is item 130's own defect in a second costume. Same call signature, so
+// no caller of trustedClick(app, sel) below needed to change.
+const trustedClick = async (app, sel) =>
+  trustedDispatch(app, `document.querySelector(${JSON.stringify(sel)})`, sel);
 
 // The board's OWN persisted row — the store's truth, not the component's.
 const boardPins = (app, boardId) => app.evalJs(

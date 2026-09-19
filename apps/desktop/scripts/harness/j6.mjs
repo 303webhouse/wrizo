@@ -53,6 +53,7 @@
 // gutter change, and every migrated call site still routes correctly
 // below the gate too.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -98,7 +99,15 @@ const freshLoosePage = async (app, width = 1400, height = 900) => {
 
 // fx8.mjs's own rectOf/clickAt, copied verbatim.
 const rectOf = (app, sel) => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return el ? el.getBoundingClientRect().toJSON() : null; })()`);
-const clickAt = async (app, x, y) => { await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y); };
+// ITEM 151 (Shape A) -- clickAt takes a bare COORDINATE, not a selector,
+// so it cannot verify the point still belongs to whatever the caller
+// meant -- only that the point is not empty space. Weaker than
+// trustedDispatch, still real: 'the click simply hits empty space, and
+// nothing reports it' is exactly this shape.
+const clickAt = async (app, x, y) => {
+  await assertHittable(app, x, y, `clickAt(${x}, ${y})`);
+  await app.mouseDown(x, y); await sleep(30); await app.mouseUp(x, y);
+};
 
 // AGENTS.md's own harness-seeding law (the flushNow race, MEMORY.md's
 // "Harness seeding vs. flushNow race"): seed ONLY while on the Desk (no

@@ -3,6 +3,34 @@
 **Place at:** `docs/open-threads.md`. Update on close; anything that must
 outlive a session lives here, not in chat.
 
+## ITEM 151 — THE SILENT DRIVER ACT: S0 REGISTERED, ROUTING NOTICE TO INK AND FIX — 2026-09-18 (tools lane; branch `item151-silent-acts`)
+
+**S0 LANDED, NO SITE TOUCHED.** Full record: `docs/menus/item151-s0-survey.md`. **RE-CENSUSED AT
+branch tip (`746682b`): 152, not 156** — same 49 files, 128 optional-chain acts unchanged, 24
+if-guarded calls (four fewer than the original count). Traced: three of the four are VW1's own
+`clickCategory` helper rewrites (`ab4`, `cd2`, `fx9`), which already converted `if (item)
+item.click();` into a named throw incidentally, landing this item's own fix pattern three times
+before the item existed. The fourth is not yet traced to a specific commit.
+
+**ROUTING NOTICE, BEFORE ANY SITE IS TOUCHED — TO INK AND TO FIX.** The four leading files
+(`item121.mjs` 11 · `fx5.mjs` 10 · `item126.mjs` 8 · `item112a.mjs` 7) read as INK's territory by
+subject. Per the routing condition this item was ratified under, nothing in those four converts
+before INK and FIX have seen item 151's number and this survey.
+
+**THE FIX GENERALISES A PATTERN ALREADY PROVEN THREE TIMES.** `if (item) item.click();` and
+`document.querySelector(sel)?.click();` both do nothing observable when the target is absent — a
+driver can press a control that isn't there and the check that follows reads a page that never
+moved. The fix is a NAMED FAILURE AT THE SITE, never a removed guard: `if (!item) throw new
+Error(...)` before the act, not `if (item) item.click();` deleted down to a bare `item.click();`.
+
+**THE DURABILITY CHECK IS INVERTED, NOT ENUMERATED** — the same design VW1's check 7 landed on
+after being widened twice for the same species. The 156/152 figure itself was built from two
+PATTERNS, and this item's own coverage check will not trust a third pattern to prove its own
+completeness: any live act reached through a conditional or optional-chain is an offender unless
+its guard's own branch fails a named check when the target is absent, read from the AST shape of
+the guard rather than matched against a spelling list. A fifth silent-fallthrough form should fail
+this check by construction.
+
 ## VW1 (ITEM 134) — THE RAIL, GROUPED BY KIND, SELECTED BY NAME: BUILT AND OFFERED — 2026-09-17 (tools lane; branch `vw1-rail`)
 
 **OFFERED TO CHAT 1 — BOTH FINAL LEGS CLEAN, 89/89 EACH.** Full record: `docs/menus/vw1-offer-2026-09-17.md`.
@@ -7048,6 +7076,112 @@ unchanged.
 **Token `tools-item151-91pair-20260918`.** Box confirmed idle before granting.
 
 Registry: next free **156**.
+
+## ITEM 151 · SHAPE A — BUILT AND OFFERED, NOT LAUNCHED — 2026-09-18 (tools lane; branch
+`item151-silent-acts`)
+
+**BUILT AT THE HELPERS, PER THE RULING. NOT RUN.** Full record: `docs/menus/item151-shapeA-offer.md`.
+Two shared primitives in new `apps/desktop/scripts/trusted-point.mjs` — `trustedDispatch` (selector-
+based sites, named failure via a `report` callback or a throw) and `assertHittable` (bare-coordinate
+sites, a weaker guarantee stated as weaker: confirms the point isn't empty, not that it's still the
+intended target). **21 files touched, one commit (`2afc8e0`).**
+
+**CONVERGED, NOT DUPLICATED FIVE TIMES:** `trustedClick` (`bm1`, `item9192`, `sc2`, `cd4`, `sc1` — a
+fifth file beyond the three named in the ruling) to one shared wrapper; `e1`'s lighter text-selecting
+variant folded into the same wrapper rather than kept parallel; three independent `hittablePointBy`
+reimplementations (`pw1`, `pw2`, and a **third, silently weaker** one in `vw1` — narrower fractions, no
+`scrollIntoView`) retired for the one import; the four-file `clickAt` family (`fx7`, `fx8`, `fx9`, `j6`)
+converged too. Left apart on purpose where no real duplicate existed: `fx11`, `bg1`, `fx17`, `reveal`,
+and inline sites in `fx5`, `bg2`, `fx13`.
+
+**VERIFIED PER HELPER, RE-SWEPT TWICE.** First pass missed `hittablePointBy`'s own brace-less
+definition and one two-level call indirection (`pressOn`), confirmed safe by manual read. Second pass
+(whole-file sweep for any bare `app.mouseDown` with no preceding hit-test) found **19 more candidates**
+beyond the original 83/22 count — 3 false positives, 16 real, fixed and listed by file in the offer's
+§5. **CORRECTED BELOW (2026-09-18, second entry): "no file verified in name only" was claimed here and
+was wrong** — the actual per-file audit Fable asked for found 5 of 8 candidate files WERE verified in
+name only. See the second entry for the corrected count.
+
+**ONE BUG CAUGHT MID-BUILD, KEPT ON THE RECORD:** `bg1.mjs`'s `clickDoor` first conversion replaced a
+real hover-before-press (`mouseMove(r.x, r.y)`) with a meaningless `mouseMove(0, 0)`, because
+`trustedDispatch` doesn't expose its internally-resolved point. Caught by re-reading the diff, not by
+any check. Fixed by calling `hittablePointBy` directly and preserving the original sequence.
+
+**HELD, ROUTING-GATED:** `item121.mjs` (1 site) and `item126.mjs` (7 sites) — 2 of the 4 files already
+named INK's territory in item 151's own S0 survey. Not touched. `fx5.mjs`'s own Shape A sites were
+fixed — outer coordinate-dispatch structure, not the in-string population the routing gate names for
+that file.
+
+**SHAPES C/D AND ITEM 155 — NO CHANGE FROM THE RULING ALREADY ON THIS LEDGER.** Recorded here only as
+confirmation: `waitSoft` closed safe, representative-not-exhaustive kept; item 155 (Shapes B/E) stays
+parked, untouched by this build.
+
+**RE-VERIFIED POST-MERGE, NOT ASSUMED CLEAN.** `origin/main` moved to `4a42bce` mid-build; merged clean
+(`fb97181`, no conflicts — incoming content was TOOLS' own earlier park-conform work plus ledger docs).
+`tsc --noEmit` exit 0, `build:web` exit 0 with an **unchanged bundle hash** (`index-DfFOCr6L.js`,
+confirming the merge carried no app-source change), `node --check` clean on all 21 touched files.
+
+**NO SUITE RUN AT THE TIME OF THIS ENTRY.** The grant that authorized this build did not extend to a
+launch; `tsc`/`build:web`/syntax checks are pre-flight reads, not a launch. **See the second entry
+below for what changed since**: a falsification file ran clean under a freshly-issued pair grant.
+
+## ITEM 151 · SHAPE A — FABLE'S FOUR, ANSWERED — 2026-09-18 (tools lane; branch
+`item151-silent-acts`)
+
+**Full record: `docs/menus/item151-shapeA-offer.md` §11–§14, added to the same offer rather than a new
+document.** Fable's message named four things the pair and the offer must carry. All four:
+
+**(1) THE FALSIFICATION — RUN, NOT ONLY DESIGNED.** New standing regression file
+`scripts/harness/tp1.mjs` (roster 90 → **91**), a synthetic fixture independent of app state. Ran clean,
+**7/7**, under a freshly-issued `tools-item151-pair-20260918` grant (box was quiet — 0 foreign browsers
+— first):
+
+```
+[01/1] OK        exit=0    4s tp1.mjs :: TP1 VERIFY: PASS (7 checks)
+SUITE RESULT: CLEAN — tree=9dd8e7a+1dirty bundle=index-DfFOCr6L.js/586771b
+```
+
+`trustedDispatch` on a real uncovered target proceeds and dispatches (S1); the SAME target covered by a
+second real element fails BY NAME — `found:false, why:'occluded'` — and does NOT dispatch onto the wrong
+element (S2/S2b); removing the cover restores dispatch, so the fix reports true state each call rather
+than latching (S3); `assertHittable` proceeds at a real point (S4) and fails by name at a point outside
+the viewport (S5); `assertHittable`'s documented narrower limit is demonstrated, not just asserted — at
+a point covered by a DIFFERENT real element it has no identity to check, reads "not empty," and returns
+the COVER's own tag (S6). **S5's first attempt was itself wrong** — it tried `(5,5)` as "empty" and that
+passed wrongly, because a full-bleed app paints something under nearly every on-screen point; fixed by
+moving outside the viewport, where `elementFromPoint` is specified to return null. Kept on the record
+rather than quietly fixed — the same "assert the mutation landed" law applied to a test's own setup.
+
+**(2) THE COVERED-POINT CENSUS — UNKNOWN, AND WHY.** Not guessed. None of the 102 fixed sites (83 + 19)
+have run against the new instrument yet — that's chat 1's pair. A number offered without running any of
+them would be item 155's own overcount trap aimed at itself. What's known instead: the defect class is
+proven non-hypothetical (`pw1.mjs`'s own `hittablePointBy` was built to catch a real occlusion, item
+130); §14 found two more bare sites inside that SAME file; a qualitative risk shape (menu/popup/drag
+sites structurally more exposed than isolated-control presses) is offered as a reading aid for the
+pair's red output, not a substitute for running it.
+
+**(3) CONVERGENCE, WHY FOREGROUNDED.** Table added at §13, one row per file/group, reason stated first:
+byte-identical bodies converged (`trustedClick` ×5, `clickAt` ×4); `e1` folded in rather than left
+parallel; `pw1`/`pw2`/`vw1` converged because `vw1`'s copy had DRIFTED weaker, not merely duplicated;
+`bg1`/`fx11`/`fx17`/`reveal`/inline sites left apart because each has a shape nothing else shares.
+
+**(4) VERIFIED-IN-NAME-ONLY — RECOUNTED AT 8, NOT 7, AND CORRECTED.** Fresh grep against the pre-fix
+tree, not memory: **8** files carry a pre-existing `elementFromPoint` reference — `bg1`(2) `bg2`(1)
+`cd4`(1) `fx5`(2) `fx7`(1) `pw1`(3) `pw2`(3) `vw1`(2). Checked file by file against the actual pre-fix
+diff: only **2 of 8** (`pw2`, `vw1`) were fully real with no gap. **5 of 8** (`bg1`, `bg2`, `cd4`, `fx5`,
+`fx7`) were VERIFIED IN NAME ONLY — the reference was a diagnostic probe for an unrelated check or a
+comment describing the PRODUCT's own internal behaviour, never a gate in front of the flagged dispatch,
+which was completely bare either way. **`pw1` itself — the file the fix was extracted from — had two
+sites that bypassed its own proven instrument entirely** (the "⋯" menu press, "Display on Board"),
+sitting a few hundred lines from `hittablePointBy`: the sharpest instance of the warning this ask was
+built on. **This corrects the first Shape A entry above, which claimed "no file verified in name only"
+— that claim was made before this audit was actually done, and was wrong.**
+
+**(5) ROUTING — UNCHANGED.** `item121.mjs` (1 site) and `item126.mjs` (7 sites) remain HELD, not
+verified, not touched. Chat 1 carries the INK/FIX notice; nothing converts until it clears.
+
+**Regression posture:** 91 files now on the roster (`tp1.mjs` added, permanent, not a one-off). The full
+91-file pair has still NOT been run — chat 1's to grant, per Fable's own message.
 
 
 
@@ -18386,3 +18520,76 @@ when Revise exists.
 
 **Gates:** merge on green -> Fable's review -> ship on PASS under Nick's word, own
 manifest, rollback from whatever is live. **No deploy from this lane.**
+
+## ITEM 151 · SHAPE A — RATIFIED, BAND LINE RECORDED — 2026-09-18 (Fable, to
+tools lane)
+
+**ALL FOUR ANSWERED; TWO EXCEEDED THE ASK.** The pre-fix-source re-audit (7 →
+8 files, then 8 → 2 fully real) is the finding kept: `pw1.mjs` — the file the
+hit-test instrument was written in — had two sites bypassing its own proven
+instrument entirely. That this required correcting a standing claim in the
+same offer, in place, is the record working as designed, not a blemish.
+
+> **THE FILE A GUARD WAS WRITTEN IN IS NOT THEREBY GUARDED — VERIFY THE
+> AUTHOR'S OWN FILE FIRST.**
+
+**The five verified-in-name-only files (`bg1`, `bg2`, `cd4`, `fx5`, `fx7`)
+are named in the offer as the DANGEROUS kind, not the merely unverified
+kind** — `docs/menus/item151-shapeA-offer.md` §14 now opens that subsection
+on exactly this distinction: an unverified file announces its own risk; a
+verified-in-name-only file reads as already-safe on a bare grep, which is
+why it is the more dangerous of the two.
+
+**RATIFIED WITHOUT CHANGE:** declining the red-count estimate (§12,
+`UNKNOWN` — a guess would be item 155's own overcount trap aimed at its own
+work) and the qualitative risk shape offered in its place (a reading aid,
+not a number); `tp1.mjs` as a STANDING roster file (a falsification that
+lives in the suite keeps proving itself, where a one-off run proves it
+once); `assertHittable`'s narrower limit DEMONSTRATED (S6) rather than only
+asserted, and stated in the offer's own words (§1, §11) so the next reader
+inherits the gap rather than the confidence; the S5 wrong-first-attempt left
+on the record rather than quietly fixed.
+
+**NOTHING FURTHER OWED BEFORE THE PAIR.** Run when chat 1 grants it, report
+both legs verbatim, and diagnose every red as a candidate finding (item
+130's class caught retroactively) before treating it as a break — per §12's
+own reading-aid framing.
+
+## ITEM 151 · SHAPE A — THE 91-FILE PAIR, BOTH LEGS CLEAN — 2026-09-18 (tools
+lane; branch `item151-silent-acts`)
+
+**RUN UNDER `tools-item151-91pair-20260918`, box idle first (0 foreign
+browsers), pushed at pair start (already at `c46d498`, nothing new to
+push), both legs joined so both always run. BOTH CLEAN, ZERO REDS, VERBATIM:**
+
+```
+SUITE START HARNESS_PARKED=unset files=91 tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+...
+SUITE DONE HARNESS_PARKED=unset — 91/91 of 91 returned a passing verdict
+SUITE RESULT: CLEAN — tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+
+SUITE START HARNESS_PARKED=1 files=91 tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+...
+SUITE DONE HARNESS_PARKED=1 — 91/91 of 91 returned a passing verdict
+SUITE RESULT: CLEAN — tree=c46d498 bundle=index-DfFOCr6L.js/586771b
+```
+
+**Zero `FAIL` lines in either leg's full output** — no candidate findings to
+diagnose. `tp1.mjs` (the falsification, §11 of the offer) ran identically in
+both legs, 7/7, no `parkedChecks` (a new file, nothing legacy to park). Box
+left clean afterward — 0 foreign browsers post-run, same as pre-run.
+
+**What a fully clean pair means here, stated rather than left implicit:**
+§12 of the offer named the covered-point census UNKNOWN and offered a
+qualitative risk shape instead of a count — this result is that unknown
+resolving to zero-observed, not to a number predicted in advance. It is
+NOT proof that every one of the 102 fixed sites was already safe before
+this build; it is that under THIS run's own gestures, timing and window
+sizes, none of them hit a covered or empty point. The hit-test now
+gates every one regardless — the same class item 130 first caught stays
+caught the next time layout, timing or window size differs, not merely
+this time.
+
+**Offered for merge — harness/test-seam work, chat 1's verification is the
+gate per the standing amendment.** Branch `item151-silent-acts`, tip
+`c46d498`, pushed. Nothing further owed on tools' side.

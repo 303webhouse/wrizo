@@ -14,6 +14,7 @@
 // disabled via CDP Network.emulateNetworkConditions(offline:true), not a
 // stand-in.
 import { withHarness } from '../runtime-verify.mjs';
+import { trustedDispatch } from '../trusted-point.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -68,13 +69,6 @@ const seedAndOpen = async (app, { projects = [], entries, waitSel, hash, width =
   if (dlDir) await app.enableDownloads(dlDir);
 };
 
-const rectOfText = async (app, label) => app.evalJs(`(() => {
-  const els = [...document.querySelectorAll('button, a, [role=button]')];
-  const el = els.find(x => x.textContent.trim() === ${JSON.stringify(label)}) || els.find(x => x.textContent.includes(${JSON.stringify(label)}));
-  if (!el) throw new Error('clickable not found: ' + ${JSON.stringify(label)} + ' :: have [' + els.map(x=>x.textContent.trim()).filter(Boolean).join(' | ') + ']');
-  const r = el.getBoundingClientRect();
-  return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
-})()`);
 
 // A genuinely TRUSTED click (mouseDown + mouseUp, real CDP Input events) at
 // a button/link found by its visible text — the project's own standing
@@ -83,11 +77,16 @@ const rectOfText = async (app, label) => app.evalJs(`(() => {
 // API's `writeText` genuinely rejects without it (confirmed live during
 // this build's own S1 diagnosis) — a coordinate-less dispatch would
 // silently test the WRONG code path for every copy check below.
+// ITEM 151 (Shape A) -- rectOfText's own text-search is now the elExpr
+// passed to the shared trusted-point.mjs instrument, so the hit-test
+// that was missing here (a coordinate dispatched at a computed centre
+// with no confirmation anything is still there) is added without losing
+// the by-visible-text lookup this file's own comment above already explains
+// is load-bearing. rectOfText itself is folded in rather than left unused.
 const trustedClick = async (app, label) => {
-  const { x, y } = await rectOfText(app, label);
-  await app.mouseDown(x, y);
-  await sleep(30);
-  await app.mouseUp(x, y);
+  const elExpr = `[...document.querySelectorAll('button, a, [role=button]')].find(x => x.textContent.trim() === ${JSON.stringify(label)}) `
+    + `|| [...document.querySelectorAll('button, a, [role=button]')].find(x => x.textContent.includes(${JSON.stringify(label)}))`;
+  await trustedDispatch(app, elExpr, label);
 };
 
 const mkDlDir = (tag) => fs.mkdtempSync(path.join(os.tmpdir(), `e1-${tag}-`));

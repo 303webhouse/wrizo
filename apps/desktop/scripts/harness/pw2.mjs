@@ -16,6 +16,7 @@
 // The helper block below is pw1.mjs's, reused verbatim rather than re-derived,
 // per the brief's own instruction not to rewrite proven fixtures.
 import { withHarness } from '../runtime-verify.mjs';
+import { hittablePointBy, hittablePoint } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -74,23 +75,9 @@ const waitOr = async (app, expr, what, ms = 6000) => {
 // So: find a point inside the element that `elementFromPoint` genuinely resolves
 // to, and press THERE with real CDP pointer events. If no point in the element
 // is reachable, that is a real finding and it is recorded as such.
-const hittablePointBy = (app, elExpr) => app.evalJs(`(() => {
-  const e = (() => { return ${elExpr}; })();
-  if (!e) return null;
-  e.scrollIntoView({ block: 'center', inline: 'center' });
-  const b = e.getBoundingClientRect();
-  if (b.width <= 0 || b.height <= 0) return { found: false, why: 'zero-size' };
-  const fr = [0.5, 0.25, 0.75, 0.12, 0.88];
-  for (const fy of fr) for (const fx of fr) {
-    const x = b.left + b.width * fx, y = b.top + b.height * fy;
-    const top = document.elementFromPoint(x, y);
-    if (top && (top === e || e.contains(top))) return { found: true, x, y };
-  }
-  const c = document.elementFromPoint(b.left + b.width/2, b.top + b.height/2);
-  return { found: false, why: 'occluded', by: c ? (typeof c.className === 'string' ? c.className : c.tagName) : null };
-})()`);
-
-const hittablePoint = (app, sel) => hittablePointBy(app, `document.querySelector(${JSON.stringify(sel)})`);
+// ITEM 151 -- hittablePointBy/hittablePoint now live in ../trusted-point.mjs,
+// converged from pw1.mjs's own copy (where item 130's occlusion was first
+// proven) so both files share one instrument rather than two copies of it.
 
 // Press whatever `elExpr` (a JS expression evaluated in the page) resolves to.
 const pressEl = async (app, elExpr, what) => {

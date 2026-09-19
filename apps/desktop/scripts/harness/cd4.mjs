@@ -28,6 +28,7 @@
 //        without a storyPlan, so a runtime mount check would be a false signal).
 //   Publish is untouched — Done's death does not disturb its neighbor.
 import { withHarness } from '../runtime-verify.mjs';
+import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -56,15 +57,13 @@ const seedEntries = async (app, rows) => {
 const rectOf = async (app, sel) =>
   app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; const r = el.getBoundingClientRect(); return { left:r.left, right:r.right, top:r.top, bottom:r.bottom }; })()`);
 
-const trustedClick = async (app, sel) => {
-  const r = await rectOf(app, sel);
-  if (!r) throw new Error('trustedClick: no element ' + sel);
-  const x = (r.left + r.right) / 2, y = (r.top + r.bottom) / 2;
-  await app.mouseMove(x, y);
-  await app.mouseDown(x, y);
-  await app.mouseUp(x, y);
-  await sleep(160);
-};
+// ITEM 151 (Shape A) -- now a thin wrapper over the shared
+// trusted-point.mjs instrument, for the same reason bm1/item9192/sc2's
+// identical copies were converged: the old body checked only 'did the
+// selector match ANYTHING', never whether the computed centre was
+// hit-testable at dispatch. Same call signature, no caller changed.
+const trustedClick = async (app, sel) =>
+  trustedDispatch(app, `document.querySelector(${JSON.stringify(sel)})`, sel);
 
 const openBoard = async (app, id) => {
   await app.evalJs(`location.hash = '#/page/' + ${JSON.stringify(id)}`);

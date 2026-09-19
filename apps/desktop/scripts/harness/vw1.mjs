@@ -26,6 +26,7 @@
 //   · The foot's GEOMETRY is item 137's, not this file's. Trash is asserted
 //     LAST IN ORDER; its rendered `y` is deliberately not asserted here.
 import { withHarness } from '../runtime-verify.mjs';
+import { hittablePoint } from '../trusted-point.mjs';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,21 +54,10 @@ const freshProsePage = async (app, w = 1366, h = 900) => {
   await sleep(300);
 };
 
-// Find a point INSIDE the target that a real pointer would actually reach —
-// item 130's lesson, kept as a driver rather than re-learned.
-const hittablePoint = (app, sel) => app.evalJs(`(() => {
-  const e = document.querySelector(${JSON.stringify(sel)});
-  if (!e) return null;
-  const b = e.getBoundingClientRect();
-  if (b.width <= 0 || b.height <= 0) return { found: false, why: 'zero-size' };
-  for (const fy of [0.5, 0.3, 0.7]) for (const fx of [0.5, 0.3, 0.7]) {
-    const x = b.left + b.width * fx, y = b.top + b.height * fy;
-    const top = document.elementFromPoint(x, y);
-    if (top && (top === e || e.contains(top))) return { found: true, x, y };
-  }
-  const c = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
-  return { found: false, why: 'occluded', by: c ? String(c.className).slice(0, 40) : null };
-})()`);
+// ITEM 151 -- converged into ../trusted-point.mjs, the shared instrument
+// (this was its own third independent copy of item 130's fix; trying only
+// [0.5, 0.3, 0.7] fractions and no scrollIntoView, both narrower than the
+// canonical version now used everywhere).
 
 const pressCategory = async (app, cat) => {
   const sel = `.wz-strip-item[data-category=${cat}]`;

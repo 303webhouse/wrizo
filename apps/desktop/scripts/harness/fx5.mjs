@@ -48,6 +48,7 @@
 // fixture is a sourceEntryId-bearing card) with the old sequence parked
 // there directly.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -526,6 +527,9 @@ await withHarness(async (app) => {
     // press (isTrusted:true, pointerId 1, the mouse's own fixed id in
     // Chromium) is what makes this check meaningful at all.
     const boxRect = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s4-a"]').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
+    // ITEM 151 (Shape A) -- verify the point is not empty space before
+    // the trusted press this whole fixture exists to prove.
+    await assertHittable(app, boxRect.x, boxRect.y, 'fx5 S4 board box centre');
     await app.mouseDown(boxRect.x, boxRect.y);
     await sleep(50);
     const captured = await app.evalJs("document.querySelector('.board-canvas').hasPointerCapture(1)");
@@ -610,6 +614,8 @@ await withHarness(async (app) => {
   {
     const pinPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-a"] .board-pin-grab').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
     const targetPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-b"]').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
+    // ITEM 151 (Shape A) -- verify the drag's START point only.
+    await assertHittable(app, pinPt.x, pinPt.y, 'fx5 S5 pin-grab centre');
     await app.mouseDown(pinPt.x, pinPt.y);
     const steps = 6;
     for (let i = 1; i <= steps; i++) {

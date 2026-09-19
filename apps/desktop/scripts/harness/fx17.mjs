@@ -30,6 +30,7 @@
 //      keeps its shape through the landing; and a card already below the
 //      limit is never relocated by the limit's arrival.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -136,6 +137,9 @@ const dragCard = async (app, boxId, dx, dy, steps = 24) => {
     return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + Math.min(r.height / 2, 18)) };
   })()`);
   if (!p) return null;
+  // ITEM 151 (Shape A) -- verify the drag's START point only; its own
+  // mid/end points move deliberately during the drag.
+  await assertHittable(app, p.x, p.y, `[data-box-id=${JSON.stringify(boxId)}] (dragCard start)`);
   await app.mouseMove(p.x, p.y);
   await app.mouseDown(p.x, p.y);
   for (let i = 1; i <= steps; i++) {
