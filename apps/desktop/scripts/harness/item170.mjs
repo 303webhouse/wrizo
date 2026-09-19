@@ -146,9 +146,14 @@ await withHarness(async (app) => {
     listed.has(LOOSE.id) && listed.has(JOURNAL.id),
     JSON.stringify({ loose: listed.has(LOOSE.id), journal: listed.has(JOURNAL.id) }));
 
-  ok('S1 FAULT 4: EVERY page is in the list — all 36, not the first 30 — because the old list capped before it sorted and anything past the thirtieth was unreachable by any sort',
-    ALL_PAGES.every(p => listed.has(p.id)) && !listed.has(BOARD.id),
-    JSON.stringify({ rows: (onPage.ids || []).length, expected: ALL_PAGES.length, boardListed: listed.has(BOARD.id) }));
+  // FAULT 4 IS ASSERTED OVER THE JOURNAL PAGES ONLY — the population the old
+  // list COULD see. Asserting it over all 36 would let the loose page's absence
+  // (fault 3) fail this check too, and then a check named for the cap would be
+  // measuring the population fault. Each fault gets its own witness.
+  const journalPages = ALL_PAGES.filter(p => p.origin === 'journal');
+  ok('S1 FAULT 4: every one of the 35 JOURNAL pages is listed, the oldest included — the old list capped at 30 BEFORE sorting, so the five oldest were unreachable by any sort',
+    journalPages.every(p => listed.has(p.id)) && !listed.has(BOARD.id),
+    JSON.stringify({ journalListed: journalPages.filter(p => listed.has(p.id)).length, of: journalPages.length, oldestListed: listed.has(OLDEST.id), boardListed: listed.has(BOARD.id) }));
 
   // A–Z must order ALL pages. 'Aardvark oldest' is the OLDEST page, so the old
   // cap (newest 30 first) dropped it before A–Z ever saw it.
@@ -196,8 +201,11 @@ await withHarness(async (app) => {
   })()`);
   ok('S3: "Place on this board" still PLACES — the loose page lands on the board as a card',
     placed.pinned === true, JSON.stringify(placed));
-  ok('S3: and placing does NOT navigate — the writer stays on the board they were arranging',
-    placed.hash === `#/page/${BOARD.id}`, JSON.stringify({ hash: placed.hash }));
+  // Asserted together with the placement, because "the URL did not move" is
+  // trivially true when nothing was clicked at all — on the old code this line
+  // passed with no list on screen. It must be unable to pass without a place.
+  ok('S3: and placing does NOT navigate — the page lands on the board and the writer stays on the board they were arranging',
+    placed.pinned === true && placed.hash === `#/page/${BOARD.id}`, JSON.stringify(placed));
 
   // The primary act works board-side too: the list means the same thing on
   // every surface.
