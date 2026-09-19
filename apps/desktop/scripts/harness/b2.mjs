@@ -321,7 +321,7 @@ await withHarness(async (app) => {
   ok('S1 precondition: the probe page has a card on the Shelf', !!inertCard, JSON.stringify(inertBoxes));
 
   // Add structurally absent.
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
   const shelfSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
   ok('S1: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
@@ -378,11 +378,11 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (pin-leaf probe)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (leaf probe)' });
-  await app.evalJs("document.querySelector('.board-dest-row')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.board-dest-row'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
   const pinLeafRowsShelf = await app.evalJs("[...document.querySelectorAll('.board-dest-row, .dz-rowtitle')].map(el => el.textContent.trim())");
   ok('S1: the Pin sheet\'s own board leaves NEVER list the Shelf Board as a destination', !pinLeafRowsShelf.some((t) => t.includes('Shelf')), JSON.stringify(pinLeafRowsShelf));
-  await app.evalJs("document.querySelector('.btn-quiet')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.btn-quiet'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
   // Excluded from resume.
   await freshDesk(app, LAPTOP_W, 900);
@@ -746,13 +746,13 @@ await withHarness(async (app) => {
   await sleep(250);
   await app.emulateDpr(1, LAPTOP_W, 900);
   const beforeExistingPagePin = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'b2-s5-existing-page')");
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(150);
   const existingPageBtnPresent = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === 'Existing page…')");
   ok('S5: the Board\'s own Add flow gains "Existing page…" beside New page card', existingPageBtnPresent === true, String(existingPageBtnPresent));
   await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Existing page…').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Existing-page picker open' });
-  await app.evalJs("[...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes('S5 existing page'))?.click()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.board-dest-row')].find(el => el.textContent.includes('S5 existing page')); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(300);
   const afterExistingPagePin = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'b2-s5-existing-page')");
   const a16ExistingPage = a16Diff(beforeExistingPagePin, afterExistingPagePin);

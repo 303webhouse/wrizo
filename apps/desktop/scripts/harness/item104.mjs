@@ -154,7 +154,7 @@ await withHarness(async (app) => {
     Array.isArray(rowsOnArrival) && rowsOnArrival.length === 0,
     `rows=${JSON.stringify(rowsOnArrival)}`);
 
-  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
   await app.typeKeys('Ordinary prose birth.');
   await waitSoft(app,
     `JSON.parse(localStorage.getItem(${JSON.stringify(ROWS_KEY)}) || '[]').some(e => (e.text||'').includes('Ordinary prose birth'))`,

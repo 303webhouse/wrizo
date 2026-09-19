@@ -94,8 +94,8 @@ await withHarness(async (app) => {
     const tutorClosed = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
     ok("S1 (SV25): at rest, the LEFT (sliver) grip points left '‹' and the RIGHT (tutor) grip points right '›' — the right arrow no longer lies about its direction",
       sliverClosed === '‹' && tutorClosed === '›', JSON.stringify({ sliverClosed, tutorClosed }));
-    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
-    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(250);
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(250);
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(250);
     const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver-grip-glyph')?.textContent ?? null");
     const tutorOpen = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
     ok("S1: open, the grips still mirror — LEFT '›' (inward), RIGHT '‹' (inward) — a true mirror in both states",
@@ -133,8 +133,8 @@ await withHarness(async (app) => {
   for (const s of writingSurfaces) {
     for (const [w, h] of writingLegs) {
       await s.setup(app, w, h);
-      await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(200);
-      await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);
+      await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(200);
+      await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(300);
       const panel = await rectOf(app, '.wz-tutor-panel');
       const paper = await rectOf(app, writingPaperSel);
       const margin = await marginOf(app);
@@ -166,7 +166,7 @@ await withHarness(async (app) => {
   // edge-overrun + buried grip, never canvas coverage) — but stays IN THE ROOM, grip atop.
   for (const [w, h] of WIDTHS) {
     await freshBoard(app, w, h);
-    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); await sleep(300);
     const panel = await rectOf(app, '.wz-tutor-panel');
     const gd = await gripDiag(app); const grip = gd.reachable;
     const ow = openW(w);

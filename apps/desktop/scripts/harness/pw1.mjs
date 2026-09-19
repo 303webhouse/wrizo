@@ -262,7 +262,7 @@ await withHarness(async (app) => {
   await sleep(400);
   {
     const pid = await app.evalJs("location.hash.split('/page/')[1]");
-    await app.evalJs("(() => { const el = document.querySelector('.forward-only-editor'); if (el) { el.focus(); } })()");
+    await app.evalJs("(() => { const el = document.querySelector('.forward-only-editor'); if (!el) throw new Error(\"no el target\");\nel.focus(); })()");
     await app.typeKeys('The coat on the train');
     await sleep(400);
     // The PLAN → door births the page's own plan board (BM1 S2's lazy rule).

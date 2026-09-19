@@ -103,7 +103,7 @@ const openPageCategory = async (app) => {
 const currentProjectId = async (app, pageId) =>
   app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === ${JSON.stringify(pageId)})?.projectId`);
 
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 await withHarness(async (app) => {
   // ==========================================================================
@@ -336,7 +336,7 @@ await withHarness(async (app) => {
   const popupAfterBoldUndo = await app.evalJs("document.querySelector('.board-popup-editor').innerText");
   ok('S1 (b): a Bold click in the card popup ALSO undoes cleanly (its own atomic step on the SAME stack)',
     popupBolded.includes('**') && !popupAfterBoldUndo.includes('**'), JSON.stringify({ popupBolded, popupAfterBoldUndo }));
-  await app.evalJs("document.querySelector('.board-popup-done')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
 
   // ==========================================================================
@@ -416,7 +416,7 @@ await withHarness(async (app) => {
   // into being with the first word. The homing-law assertion below is unchanged
   // and still true — the door's meaning travels in the address and lands on the
   // row at birth. Live successor for the mechanism: pb1.mjs.
-  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
   await app.typeKeys('New page');
   await app.waitFor("location.hash.indexOf('#/page/') === 0 && location.hash.indexOf('#/page/new') !== 0", { label: 'cascade New Page born' });
   const newCascadePageId = (await app.evalJs('location.hash')).split('/page/')[1];
@@ -478,7 +478,7 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === 'Add card').click()");
   await sleep(200);
   if (await app.evalJs("!!document.querySelector('.board-popup')")) {
-    await app.evalJs("document.querySelector('.board-popup-done')?.click()");
+    await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(200);
   }
   // FIXTURE RE-POINTED (BG1, not parked): the CLAIM below is unchanged and
@@ -541,7 +541,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (self-pin board)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (self-pin board)' });
-  await app.evalJs("document.querySelector('.board-dest-row')?.click()"); // drill into the (only) project
+  await app.evalJs("(() => { const __t = document.querySelector('.board-dest-row'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); // drill into the (only) project
   await sleep(150);
   const boardDestRows = await app.evalJs("[...document.querySelectorAll('.board-dest-row')].map(b => b.textContent.trim())");
   ok('S3 (a1): self-pin closed at the UI end — the Pin sheet\'s own board list excludes the invoking entry (this board never lists itself as a destination for its own pin), while a genuinely OTHER board in the same project still lists normally',

@@ -557,16 +557,9 @@ await withHarness(async (app) => {
   // click deeper behind that row's gear. AB2 S2's DoD is amended by Nick's
   // word, recorded here, in ab2.mjs's own park cycle, and in the ledger.
   await freshScriptPage(app, LAPTOP_W);
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(250);
-  const optionOnScript = await app.evalJs(`(() => {
-    const row = document.querySelector('.wz-sliver-instruments-row');
-    const panel = document.querySelector('.wz-sliver-panel');
-    const btns = row ? [...row.querySelectorAll('button')] : [];
-    const gear = btns.find(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter'));
-    if (gear) gear.click();
-    return { iconCount: btns.length, toggle: btns.some(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter')), aria: !!panel.querySelector('[aria-label*="Typewriter"]'), gearFound: !!gear };
-  })()`);
+  const optionOnScript = await app.evalJs("(() => {\n    const row = document.querySelector('.wz-sliver-instruments-row');\n    const panel = document.querySelector('.wz-sliver-panel');\n    const btns = row ? [...row.querySelectorAll('button')] : [];\n    const gear = btns.find(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter'));\n    if (!gear) throw new Error(\"no gear target\");\ngear.click();\n    return { iconCount: btns.length, toggle: btns.some(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter')), aria: !!panel.querySelector('[aria-label*=\"Typewriter\"]'), gearFound: !!gear };\n  })()");
   await sleep(250);
   const gearOnScript = await app.evalJs(`(() => {
     const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
@@ -617,7 +610,7 @@ await withHarness(async (app) => {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'prose surface' });
   await sleep(300);
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(250);
   const proseUntouched = await app.evalJs(`(() => {
     const scroll = document.querySelector('.mode-scroll');

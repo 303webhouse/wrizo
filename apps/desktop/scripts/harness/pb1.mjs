@@ -46,7 +46,7 @@ const allRows = (app) => app.evalJs(
   ".map(e=>({id:e.id,text:e.text,origin:e.origin||null,pageType:e.pageType||null,projectId:e.projectId||null,planBoardId:e.planBoardId||null,boxes:(e.boxes||[]).length,deletedAt:e.deletedAt||null}))");
 const liveRows = async (app) => (await allRows(app)).filter((r) => !r.deletedAt);
 
-const focusEditor = (app) => app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+const focusEditor = (app) => app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
 
 // Wait for the PERSISTED row to hold the whole typed string. Birth writes the
 // first word synchronously; every later keystroke rides the app's ordinary

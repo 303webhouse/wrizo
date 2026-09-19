@@ -18631,3 +18631,55 @@ seen this survey.
 
 **WHAT THIS COMMIT CHANGES: NOTHING.** Survey and tooling only, same
 discipline as item 151's own S0.
+
+## ITEM 154 — S0 RATIFIED, ROUTING CLEARED, BUILT AND BYTE-VERIFIED —
+2026-09-18 (Fable ratifies S0; tools lane builds; branch `item154-instring-acts`)
+
+**S0 RATIFIED.** 156, not 134 — the re-derivation is the finding, named directly:
+
+> **A FIGURE CARRIED FORWARD FROM ANOTHER ITEM'S SURVEY IS AN INHERITANCE, NOT A
+> MEASUREMENT — RE-DERIVE IT IN ITS OWN POPULATION.**
+
+The 48 unresolved sites named rather than assumed clean, the refusal to guess at a
+name bound more than once, and the `vm.Script` validity check run BEFORE the pattern
+question (confirming the extraction produced real JS before asking what it says) are
+all ratified as the right order and the right discipline.
+
+**ROUTING CLEARED — INK idle, trees synced, item 126's product work merged.**
+`item121.mjs`, `item126.mjs`, `item112a.mjs` and `fx5.mjs` may now be touched for
+BOTH item 151 and item 154.
+
+**ITEM 151 CLOSED OUT (`b5a13a1`).** `item121.mjs` (1 site) and `item126.mjs` (7
+sites) — Shape A's last held sites, same drag-start-only `assertHittable` pattern as
+the rest of the build. Item 151 has no open population left.
+
+**ITEM 154 BUILT (this commit).** Full record: `docs/menus/item154-build-offer.md`.
+**139 of 156 offenders rewritten, 50 files, byte-verified two independent ways**: the
+rewrite tool's own post-write re-extraction (137/137 call-site rewrites confirmed
+byte-identical on disk) AND a second, unmodified run of the original census tool
+against the changed tree (156 → 17, exactly matching this build's own named
+remainder). **17 offenders named and held back, not guessed at**: 15 carry a live
+interpolation elsewhere in the same literal (rewriting the whole literal would freeze
+those other live expressions at census-time values — a correctness risk this build
+refused rather than risked), 2 are shapes needing a human read (a nested optional
+chain, a multi-statement if-guard body). `tsc` clean, `build:web` clean with an
+**unchanged bundle hash**, every touched file independently re-verified with
+`node --check` outside the rewrite tool's own internal check.
+
+**Zero offenders live inside a resolved helper/binding** (`rectOf`, `DRAG_HELPER`,
+etc.) — checked directly, because a real one there would have meant the census's
+per-call-site counting was overcounting a single textual defect once per reference.
+Ruled out, not assumed.
+
+**NO SUITE RUN.** Built and byte-verified; launching is its own turn.
+
+## QUEUED, NOT STARTED — ERRATA'S 147 THEN 148, RE-ROUTED
+
+Fable: ERRATA past 24 hours absent, items re-route to tools AFTER item 154 —
+**147** (the park count as a check; item87's hardcoded `PASS(0 checks)` line that
+cannot report a failure) **then 148** (the durability guard inverted to all writing
+seams, named exemptions). Offered branches with stated must-shows exist already —
+tools inherits the REASONING to re-derive, not the code to rebuild, and per this
+item's own new band line, their NUMBERS get re-derived rather than inherited too. **If
+ERRATA returns before 147 starts, it takes them back** — a returning author beats a
+re-derivation. Not started this turn.

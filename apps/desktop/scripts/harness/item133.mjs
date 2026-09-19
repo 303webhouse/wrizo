@@ -130,15 +130,14 @@ await withHarness(async (app) => {
   // ITEM 133-B — the same gesture on a NAMED board, for the other half of the
   // pair. `?.click()` rather than a bare one: a driver that dies on a missing
   // node reports nothing, and the assertion below is what should speak.
-  await app.evalJs("document.querySelector('.crumb-rename-btn')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.crumb-rename-btn'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(300);
   const namedDraft = await app.evalJs("(document.querySelector('.crumb-rename')||{}).value");
   // Close it again with a real Escape. S3 below reads document.body.innerText,
   // and an OPEN field is an <input> whose value is not innerText at all — the
   // stale-name sweep would read a crumb that isn't there and pass for the
   // wrong reason.
-  await app.evalJs(`document.querySelector('.crumb-rename')?.dispatchEvent(
-    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
+  await app.evalJs("(() => { const __t = document.querySelector('.crumb-rename'); if (!__t) throw new Error(\"no dispatchEvent target\"); return __t.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); })()");
   await sleep(250);
 
   ok('ITEM 133-B: the rename field opens EMPTY on a nameless board and pre-filled with the name on a named one. The first cut compared the derived name against \'Untitled board\' while the crumb\'s own fallback was \'Untitled\', so the open-empty branch could never fire and a writer naming a board found the stand-in word sitting in the field, to be deleted before they could type. The comparison is gone rather than corrected: the draft derives with an EMPTY fallback, so namelessness produces emptiness directly and there is no sentinel string left to drift.',
@@ -191,7 +190,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page framed' });
   await sleep(700);
 
-  await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-strip-item[data-category=page]'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(600);
 
   const reachable = await app.evalJs("!!document.querySelector('.wz-pageface-title-reach')");

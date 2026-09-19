@@ -354,7 +354,7 @@ await withHarness(async (app) => {
   const undoPresent = await present(app, '.wz-ink-sheet .ink-undo');
   ok('C9: the undo affordance is offered in a movable mode — there is now a move to reverse',
     undoPresent === true);
-  await app.evalJs("document.querySelector('.wz-ink-sheet .ink-undo')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-sheet .ink-undo'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(800);
   const undone = await strokesOf(app, moveId);
   const undoneBox = undone.length ? bboxOf(undone[0].points) : null;
@@ -369,9 +369,9 @@ await withHarness(async (app) => {
   // reads the erase's own stored geometry.
   // ==========================================================================
   const eraId = await pageWithInk(app, W1, H1);
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(300);
-  await app.evalJs("document.querySelector('.wz-ink-eraser')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-eraser'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(250);
   await safePen(app, SHEET, [{ x: 0.35, y: 0.24 }, { x: 0.5, y: 0.24 }], 'erase over the ink');
   await sleep(700);

@@ -567,7 +567,7 @@ await withHarness(async (app) => {
   const zAfterFirstToggle = (await app.evalJs('window.wrizoBoard()')).find(b => b.id === 'fx5-s4-a').z;
   await app.evalJs('__pointerSeq(\'[data-box-id="fx5-s4-a"]\', 0, 0)'); // re-select (z-index change can shift what\'s on top)
   await sleep(100);
-  await app.evalJs("document.querySelector('[data-box-id=\"fx5-s4-a\"] .board-layer-toggle')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('[data-box-id=\"fx5-s4-a\"] .board-layer-toggle'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(100);
   const zAfterSecondToggle = (await app.evalJs('window.wrizoBoard()')).find(b => b.id === 'fx5-s4-a').z;
   ok('S4 (c): the layer icon toggles the card\'s own z (the EXISTING field, no new schema) — front/back, a genuine two-state cycle',
@@ -667,7 +667,7 @@ await withHarness(async (app) => {
   // or every subsequent board gesture would silently stand down (onDown's
   // own "the popup is open" guard).
   if (await app.evalJs("!!document.querySelector('.board-popup')")) {
-    await app.evalJs("document.querySelector('.board-popup-done')?.click()");
+    await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(200);
   }
 
@@ -748,7 +748,7 @@ await withHarness(async (app) => {
     !!footerLines.onB && footerLines.onB.includes('thread') && footerLines.onB.includes('Card A'),
     JSON.stringify(footerLines));
 
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(150);
   // FX6 S2b — the board sliver's own "EXACTLY two hand tools" count check
   // used to live here; PARKED below (HARNESS_PARKED=1) — a third tool
@@ -765,7 +765,7 @@ await withHarness(async (app) => {
   const footerAfterToggleOn = await app.evalJs("!!document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-card-footer')");
   ok('S5: toggling the footer back ON restores it',
     footerAfterToggleOn === true, String(footerAfterToggleOn));
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); // close
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); // close
 
   // A LEGACY board (no board-meta at all, footerOn field never set)
   // defaults the footer ON — every pre-FX5 board's own connections become
@@ -862,7 +862,7 @@ await withHarness(async (app) => {
 
   // Draft mode's own dimmed-syntax register is untouched: .md-mark there
   // is NEVER given the -hidden class, still just opacity-dimmed.
-  await app.evalJs("document.querySelector('.board-popup-done')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.board-popup-done'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(300);
   await freshProsePage(app, LAPTOP_W, 900);
   await app.click('Draft');
@@ -1182,7 +1182,7 @@ if (process.env.HARNESS_PARKED === '1') {
       { id: 'fx5p-s5-a', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Card A' },
       { id: 'fx5p-s5-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Card B' },
     ], LAPTOP_W, 900);
-    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(150);
     const sliverBoardShape = await app.evalJs(`(() => {
       const sections = document.querySelectorAll('.wz-sliver-body > .wz-sliver-section');

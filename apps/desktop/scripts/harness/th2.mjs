@@ -101,11 +101,11 @@ await withHarness(async (app) => {
   ok('check 2: the Free-write tab renders Flux\'s "Overclock" (ModeSwitcher sweep)', tabLabel === 'Overclock', String(tabLabel));
   // Two .mode-tab--action tabs render (Workshop, then Publish/Connect) —
   // target the second explicitly rather than the ambiguous first match.
-  await app.evalJs("[...document.querySelectorAll('.mode-tab--action')][1]?.click()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.mode-tab--action')][1]; if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(150);
   const publishDialogTitle = await app.evalJs("document.querySelector('.card-title')?.textContent");
   ok('check 2: the Publish dialog renders Flux\'s "Connect"', publishDialogTitle === 'Connect', String(publishDialogTitle));
-  await app.evalJs("[...document.querySelectorAll('.btn-quiet')].find(b => b.textContent === 'Close')?.click()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.btn-quiet')].find(b => b.textContent === 'Close'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(150);
 
   // -- check 3: chrome fade under Flux + Fade-off pref + A1 immediate resurface --
@@ -314,7 +314,7 @@ await withHarness(async (app) => {
   await app.emulateMedia([]);
 
   // Typing-gate: isBusy() suppresses new scheduled fires.
-  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
   const fxBeforeTyping = await app.evalJs("document.querySelector('.theme-fx-layer')?.getAttribute('style')");
   await app.typeKeys('typing continuously to hold the busy flag true. ');
   const dampedOpacity = await app.evalJs("getComputedStyle(document.querySelector('.theme-fx-layer')).opacity");

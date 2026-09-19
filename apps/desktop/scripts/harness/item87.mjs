@@ -145,7 +145,7 @@ await withHarness(async (app) => {
   const shortId = await app.evalJs('window.wrizoCreateJournalPage().id');
   await app.evalJs(`location.hash = '#/page/${shortId}'`);
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'seeding the short page' });
-  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
   await app.typeKeys('A little work already here.');
   await waitSoft(app,
     `JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').some(e => e.id === ${JSON.stringify(shortId)} && (e.text||'').includes('A little work'))`,

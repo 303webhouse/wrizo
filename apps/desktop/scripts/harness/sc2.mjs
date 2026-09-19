@@ -1056,9 +1056,9 @@ await withHarness(async (app) => {
   })()`;
 
   const closedScan = await app.evalJs(scanAggregates());
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(300);
-  await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(400);
   const openScan = await app.evalJs(scanAggregates());
 

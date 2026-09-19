@@ -309,7 +309,7 @@ const clearSelection = async (app, surfaceSel) => {
 };
 
 const sendComposer = async (app) => {
-  await app.evalJs("document.querySelector('.wz-tutor-convo-send')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-convo-send'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(600);
 };
 
@@ -405,7 +405,7 @@ await withHarness(async (app) => {
     // decline to render on. Before, an accidental roster leak into Revise was
     // unreachable; now it is one branch away, and this check is what stands in
     // front of it. The Revise Counsel roster is 112-D.
-    await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent.trim() === 'Revise')?.click()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent.trim() === 'Revise'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(400);
     const afterRevise = await rosterState(app);
     const modeNow = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.classList.contains('active'))?.textContent.trim()");

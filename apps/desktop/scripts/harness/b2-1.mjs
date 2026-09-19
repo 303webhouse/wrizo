@@ -392,10 +392,10 @@ await withHarness(async (app) => {
   const emptyPinLine = await app.evalJs("document.querySelector('.board-sheet .dz-empty')?.textContent");
   ok('S6c: PinToBoardSheet\'s own empty-state reads "No binders yet — create a binder first...", never "project"',
     emptyPinLine === 'No binders yet — create a binder first, then this page can join a board.', String(emptyPinLine));
-  await app.evalJs("[...document.querySelectorAll('.board-sheet button')].find(b => b.textContent.trim() === 'Cancel')?.click()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.board-sheet button')].find(b => b.textContent.trim() === 'Cancel'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(150);
 
-  await app.evalJs("document.querySelector('.wz-pageface-verb-port')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-pageface-verb-port'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   const portOpened = await app.evalJs("!!document.querySelector('.board-sheet')");
   if (portOpened) {
     const emptyPortLine = await app.evalJs("document.querySelector('.board-sheet .dz-empty')?.textContent");
@@ -428,11 +428,11 @@ await withHarness(async (app) => {
   // group is already expanded; a second .dz-toggle click would COLLAPSE it).
   await app.evalJs("document.querySelector('.dz-new').click()");
   await sleep(150);
-  await app.evalJs("document.querySelector('.dz-rename')?.blur()");
+  await app.evalJs("(() => { const __t = document.querySelector('.dz-rename'); if (!__t) throw new Error(\"no blur target\"); return __t.blur(); })()");
   await sleep(150);
   const drawerGroupPresent = await app.evalJs("!!document.querySelector('.dz-group')");
   if (drawerGroupPresent) {
-    await app.evalJs("[...document.querySelectorAll('.dz-more')].find(b => b.textContent.includes('Create New'))?.click()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.dz-more')].find(b => b.textContent.includes('Create New')); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(100);
     const inDrawerButtons = await app.evalJs("[...document.querySelectorAll('.dz-createnew .dz-more')].map(b => b.textContent)");
     ok('S6d: the SAME screen\'s in-drawer "Create New" row reads "New Binder" — deliberately NOT "New Drawer" (would collide with the top-level action above, creating two different entities under one word)',
@@ -445,7 +445,7 @@ await withHarness(async (app) => {
     // actually goes. It navigates to /project/new?drawer=<id> — CreateProject.tsx
     // — which, before this fix, unconditionally read "NEW DRAWER" regardless,
     // contradicting the very button that led there. This check proves the fix.
-    await app.evalJs("[...document.querySelectorAll('.dz-createnew .dz-more')].find(b => b.textContent === 'New Binder')?.click()");
+    await app.evalJs("(() => { const __t = [...document.querySelectorAll('.dz-createnew .dz-more')].find(b => b.textContent === 'New Binder'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'S6d follow-through: CreateProject reached via New Binder' });
     const followThroughShape = await app.evalJs(`(() => ({
       eyebrow: document.querySelector('.cp-eyebrow')?.textContent,

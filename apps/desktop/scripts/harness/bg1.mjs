@@ -76,7 +76,7 @@ const freshPage = async (app, pageId, text = '', width = 1400, height = 900) => 
   await app.emulateDpr(1, width, height);
 };
 
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 const doorLabels = (app) => app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(b => b.textContent.trim())");
 const rowPresent = (app) => app.evalJs("!!document.querySelector('.wz-beginnings')");

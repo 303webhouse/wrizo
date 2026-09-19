@@ -70,7 +70,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 // A fresh, framed script page — the same fixture fx3.mjs/cd1.mjs use, kept
 // byte-for-byte rather than re-derived (it is a raw seed made from the Desk,
@@ -94,7 +94,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
 // the store round-trips. The re-persist after a mode switch is measured late
 // (~1100ms on this box), so this waits on the RENDERED result, not a sleep.
 const toDraft = async (app) => {
-  await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft')?.click()");
+  await app.evalJs("(() => { const __t = [...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await app.waitFor("!!document.querySelector('.wz-sliver-structure-zone')", { label: 'Draft sliver Structure zone' });
   await sleep(250);
 };
@@ -564,10 +564,7 @@ await withHarness(async (app) => {
   // wrong, not because anything in the product was; the guard below is what
   // stops that class of false red (and its far worse twin, a false green).
   const idBeforeBirth = await app.evalJs("(location.hash.split('/page/')[1] || '').split(/[?/]/)[0]");
-  await app.evalJs(`(() => {
-    const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'New Page');
-    if (b) b.click();
-  })()`);
+  await app.evalJs("(() => {\n    const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => x.textContent.trim() === 'New Page');\n    if (!b) throw new Error(\"no b target\");\nb.click();\n  })()");
   await sleep(900);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'newly born page' });
   await sleep(400);

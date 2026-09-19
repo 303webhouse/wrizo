@@ -163,12 +163,12 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-pageface-verb-pin')", { label: 'Page face (Pin sheet probe)' });
   await app.evalJs("document.querySelector('.wz-pageface-verb-pin').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Pin sheet open (probe)' });
-  await app.evalJs("document.querySelector('.board-dest-row')?.click()"); // drill into the (only) project
+  await app.evalJs("(() => { const __t = document.querySelector('.board-dest-row'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); // drill into the (only) project
   await sleep(200);
   const pinLeafRows = await app.evalJs("[...document.querySelectorAll('.board-dest-row, .dz-rowtitle')].map(el => el.textContent.trim())");
   ok('S1: the Pin sheet\'s own board leaves NEVER list the Journal or Trash Board as a destination (no project home already excludes them; asserted live)',
     !pinLeafRows.some((t) => t.includes('Journal') || t.includes('Trash')), JSON.stringify(pinLeafRows));
-  await app.evalJs("document.querySelector('.btn-quiet')?.click()"); // Cancel
+  await app.evalJs("(() => { const __t = document.querySelector('.btn-quiet'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()"); // Cancel
 
   // Never appear as cards on any system Board — the two system boards
   // never reference each other or themselves, even after both exist and a
@@ -339,7 +339,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await journalBoardBoxes(app); // land on the Journal Board, framed
   await sleep(150);
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
   const journalSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
   ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
@@ -421,7 +421,7 @@ await withHarness(async (app) => {
   await freshBoard(app, 'b1-user-board', [
     { id: 'b1-user-card', kind: 'text', x: 0.05, y: 0.05, w: 0.2, h: 0.08, z: 1, text: 'Hand-typed card' },
   ], LAPTOP_W, 900);
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
   const userBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
   ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
@@ -661,7 +661,7 @@ await withHarness(async (app) => {
     ok(`S6 @ ${width}px: the Journal Board mounts framed (DeskFrame + the 8-category strip, Trash included) — the same chrome any other Board already gets`,
       framedShape.deskFramePresent && framedShape.stripPresent && framedShape.stripCount === 8 && framedShape.boardCanvasPresent,
       JSON.stringify(framedShape));
-    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+    await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(150);
     const addAbsentAtWidth = await app.evalJs("![...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === 'Add card')");
     ok(`S6 @ ${width}px: Add stays absent from the system Board\'s sliver at this width too`, addAbsentAtWidth === true, String(addAbsentAtWidth));

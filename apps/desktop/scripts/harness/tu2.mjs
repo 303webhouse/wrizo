@@ -492,7 +492,7 @@ await withHarness(async (app) => {
       // asserting the NEW ruled clamp directly, at all three reference
       // widths, on both page and board surfaces.
 
-      await app.evalJs("document.querySelector('.wz-tutor-dock-btn')?.click()");
+      await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-dock-btn'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
       await sleep(250);
       const paperAfterDock = await rectOf(app, paperSel);
       const dockedState = await app.evalJs("document.querySelector('.wz-tutor-panel')?.dataset.docked");

@@ -113,7 +113,7 @@ const setInstrument = async (app, which) => {
 };
 
 const openSliver = async (app) => {
-  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(260);
 };
 
@@ -257,7 +257,7 @@ await withHarness(async (app) => {
     textStrokes.length === 0, JSON.stringify({ strokes: textStrokes.length }));
   ok('S3: and that pen stroke inserted NO text — I0\'s seal (a typewriter ignores pens) still holds on the very surface item 121 opens; opening it in INK did not open it everywhere',
     afterPenText === beforeText, JSON.stringify({ beforeText, afterPenText }));
-  await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+  await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
   await app.typeKeys('typed');
   await sleep(400);
   const typedInText = await app.evalJs("(document.querySelector('.forward-only-editor') || { innerText: '' }).innerText");
@@ -336,18 +336,13 @@ await withHarness(async (app) => {
   await setInstrument(app, 'text');
   await setInstrument(app, 'ink');
   await openSliver(app);
-  await app.evalJs(`(() => {
-    const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label); if (b) b.click(); };
-    pick('.wz-ink-tips .wz-ink-tip', 'Pencil');
-    pick('.wz-ink-nibs .wz-ink-nib', 'Fine');
-    pick('.wz-sliver-inks .wz-ink-swatch', 'Sea');
-  })()`);
+  await app.evalJs("(() => {\n    const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label); if (!b) throw new Error(\"no b target\");\nb.click(); };\n    pick('.wz-ink-tips .wz-ink-tip', 'Pencil');\n    pick('.wz-ink-nibs .wz-ink-nib', 'Fine');\n    pick('.wz-sliver-inks .wz-ink-swatch', 'Sea');\n  })()");
   await safePen(app, SHEET, arc(), 'pen stroke');
   await sleep(500);
-  await app.evalJs("document.querySelector('.wz-ink-eraser')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-eraser'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await safePen(app, SHEET, [{ x: 0.3, y: 0.31 }, { x: 0.6, y: 0.31 }], 'pen stroke');
   await sleep(500);
-  await app.evalJs("document.querySelector('.wz-ink-sheet .ink-undo')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-sheet .ink-undo'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(800);
   const net = await app.evalJs('window.__wzNet');
   ok('S4: ZERO NETWORK ACROSS EVERY INK ACT — switching instrument both ways, changing tip, nib and ink, drawing, erasing and undoing issue no fetch, no XHR and no beacon. The wave is local-first and touches no server, which is exactly why I1 put validation at the read boundary instead of asking the server to reject enums',
@@ -436,11 +431,7 @@ await withHarness(async (app) => {
   // erase has something substantial to remove. A fine pen at 1.4px would make
   // this check hostage to a single anti-aliased pixel.
   await openSliver(app);
-  await app.evalJs(`(() => {
-    const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label); if (b) b.click(); };
-    pick('.wz-ink-tips .wz-ink-tip', 'Marker');
-    pick('.wz-ink-nibs .wz-ink-nib', 'Broad');
-  })()`);
+  await app.evalJs("(() => {\n    const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label); if (!b) throw new Error(\"no b target\");\nb.click(); };\n    pick('.wz-ink-tips .wz-ink-tip', 'Marker');\n    pick('.wz-ink-nibs .wz-ink-nib', 'Broad');\n  })()");
   await sleep(200);
   await safePen(app, SHEET, [{ x: 0.2, y: 0.35 }, { x: 0.4, y: 0.35 }, { x: 0.6, y: 0.35 }, { x: 0.8, y: 0.35 }], 'pen stroke');
   await sleep(600);
@@ -474,7 +465,7 @@ await withHarness(async (app) => {
     inkedAlpha > 0, JSON.stringify({ inkedAlpha }));
 
   await openSliver(app);
-  await app.evalJs("document.querySelector('.wz-ink-eraser')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-eraser'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
   const ringArmed = await app.evalJs("!!document.querySelector('.wz-ink-sheet .ink-eraser-ring')");
   ok('S7: arming the eraser is a real two-state toggle in the ink zone, and the ring preview exists on the sheet to aim with',
@@ -516,7 +507,7 @@ await withHarness(async (app) => {
   const undoPresent = await app.evalJs("!!document.querySelector('.wz-ink-sheet .ink-undo')");
   ok('S8: two strokes are on the page and the undo affordance is offered with them (it lives WITH the ink — present in INK, and the check below proves it is not offered in TEXT)',
     twoStrokes === 2 && undoPresent, JSON.stringify({ twoStrokes, undoPresent }));
-  await app.evalJs("document.querySelector('.wz-ink-sheet .ink-undo')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-ink-sheet .ink-undo'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(600);
   const afterUndo = (await strokesOf(app, undoPageId)).length;
   ok('S8: undo reverses exactly ONE stroke and persists that — one level, the last action, never a history stack',
@@ -612,7 +603,7 @@ await withHarness(async (app) => {
   // Draft keeps its own STYLING — R4 is untouched by R15, which is a ruling
   // about ONE surface. Without this, "remove STYLING" could have been read as
   // "remove STYLING everywhere" and shipped that way, green.
-  await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(700);
   await openSliver(app);
   const draftDrawer = await app.evalJs(`(() => ({
@@ -634,7 +625,7 @@ await withHarness(async (app) => {
   for (const [label, width, height] of [['1366', W1, H1], ['1680', W2, H2]]) {
     const shotId = await freshPage(app, width, height);
     void shotId;
-    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
     await app.typeKeys('The coat on the train, and everything it carried.');
     await sleep(500);
     shots[`text-${label}`] = (await app.screenshot()).length;

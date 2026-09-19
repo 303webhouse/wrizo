@@ -132,7 +132,7 @@ const gotoPage = async (app, id) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 const typewriterDom = (app) => app.evalJs("document.querySelector('.mode-scroll')?.dataset.typewriter");
 // Mirrors store/writingSettings.ts's own load() — DEFAULTS.typewriter=true
@@ -306,9 +306,9 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   // ------------------------------------------------------------------
-  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (!b) throw new Error(\"no b target\");\nb.click(); })()");
   await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (!off) throw new Error(\"no off target\");\noff.click(); })()");
   await sleep(150);
   const afterExplicitClick = await typewriterDom(app);
   ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
@@ -368,9 +368,9 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   // ------------------------------------------------------------------
-  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (!b) throw new Error(\"no b target\");\nb.click(); })()");
   await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (!off) throw new Error(\"no off target\");\noff.click(); })()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
   ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',

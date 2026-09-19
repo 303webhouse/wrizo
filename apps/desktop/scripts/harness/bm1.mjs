@@ -339,7 +339,7 @@ async function scenario(app) {
 
   // Order is single-sourced: reorder in OUTLINE, STORYBOARD reflects it.
   await switchBoardMode(app, 'outline');
-  await app.evalJs("(() => { const row = document.querySelector('[data-outline-row=\"cardD\"]'); if (row) row.querySelector('.board-ol-up').click(); })()");
+  await app.evalJs("(() => { const row = document.querySelector('[data-outline-row=\"cardD\"]'); if (!row) throw new Error(\"no row target\");\nrow.querySelector('.board-ol-up').click(); })()");
   await sleep(250);
   await switchBoardMode(app, 'storyboard');
   const sbOrder = await app.evalJs("(() => { const lane = [...document.querySelectorAll('.board-lane')][0]; return lane ? [...lane.querySelectorAll('[data-sb-card]')].map(c => c.getAttribute('data-sb-card')) : []; })()");

@@ -434,7 +434,7 @@ await withHarness(async (app) => {
   ok('S3 Fragments: the panel plainly discloses its own recency+tags-only simplicity',
     fragText.toLowerCase().includes('recency') || fragText.toLowerCase().includes('tags only'), fragText);
   // A fragment item travels — a navigation, never a text-insertion affordance.
-  await app.evalJs("document.querySelector('.wz-tutor-frag-item')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-tutor-frag-item'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(250);
   ok('S3 Fragments: clicking a fragment item TRAVELS (never inserts anything into a page)',
     (await app.evalJs('location.hash')).includes('/page/'));

@@ -114,7 +114,7 @@ const BAND = `(() => {
 // — the shortcut was the one path that DID announce. The choice of affordance
 // is the whole test.
 const openSliverByGrip = async (app) => {
-  await app.evalJs(`(() => { const g = document.querySelector('.wz-sliver-grip'); if (g) g.click(); })()`);
+  await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (!g) throw new Error(\"no g target\");\ng.click(); })()");
   await sleep(400);
 };
 

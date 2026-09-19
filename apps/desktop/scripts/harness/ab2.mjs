@@ -51,7 +51,7 @@ const selectAllInEditor = (sel) => `(() => {
 // reads or clicks the hand tools now opens it first, matching what a real
 // writer's hand would actually do (ToolRail's content was always-visible;
 // the sliver's is reach-to-open).
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 // ITEM 83 M5 / DR3 RE-POINT (fix lane, 2026-08-28) — read the STRUCTURE ZONE by
 // its own heading, never by whichever control currently fills it. DR3 replaced
@@ -509,7 +509,7 @@ await withHarness(async (app) => {
   // ----------------------------------------------------------------------
   await clickStructureRow(app);
   await sleep(150);
-  await app.evalJs("document.querySelector('.structure-confirm-screenplay')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.structure-confirm-screenplay'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(300);
   await app.waitFor("!!document.querySelector('.script-el-active')", { label: 'script surface after S5 conversion' });
   await app.evalJs("document.querySelector('.script-el-active').focus()");
@@ -558,13 +558,7 @@ await withHarness(async (app) => {
   // lying affordance, so both of its surfaces are checked: the icon toggle in
   // the sliver's instruments row, and the "Typewriter" Seg one click deeper
   // behind the same row's gear.
-  const scriptTypewriterOption = await app.evalJs(`(() => {
-    const row = document.querySelector('.wz-sliver-instruments-row');
-    const btns = row ? [...row.querySelectorAll('button')] : [];
-    const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');
-    if (gear) gear.click();
-    return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length, gearFound: !!gear };
-  })()`);
+  const scriptTypewriterOption = await app.evalJs("(() => {\n    const row = document.querySelector('.wz-sliver-instruments-row');\n    const btns = row ? [...row.querySelectorAll('button')] : [];\n    const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');\n    if (!gear) throw new Error(\"no gear target\");\ngear.click();\n    return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length, gearFound: !!gear };\n  })()");
   await sleep(200);
   const scriptGearTypewriterRow = await app.evalJs(`(() => {
     const panel = document.querySelector('.wz-sliver-instruments .mode-settings');
@@ -593,7 +587,7 @@ await withHarness(async (app) => {
         Array.isArray(scriptFootLabels) && scriptFootLabels.includes('Typewriter'),
         JSON.stringify(scriptFootLabels));
   // close the gear again — hygiene for the typing run below
-  await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
+  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (!gear) throw new Error(\"no gear target\");\ngear.click(); })()");
   await sleep(150);
 
   const longScene = Array.from({ length: 18 }, (_, i) => `Action line ${i} overflows the sheet, respecting the cap.`);
@@ -999,15 +993,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // re-locating the affordance: absent from the instruments row, absent
     // from the gear's settings panel behind it, and — the guard that matters
     // — still fully present on PROSE, so the withdrawal is script-only.
-    const typewriterGoneOnScript = await app.evalJs(`(() => {
-      const row = document.querySelector('.wz-sliver-instruments-row');
-      const btns = row ? [...row.querySelectorAll('button')] : [];
-      const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');
-      if (gear) gear.click();
-      return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length,
-               // item 83 errata E2 - the foot spans two lines now; the row's count alone no longer counts the foot.
-               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };
-    })()`);
+    const typewriterGoneOnScript = await app.evalJs("(() => {\n      const row = document.querySelector('.wz-sliver-instruments-row');\n      const btns = row ? [...row.querySelectorAll('button')] : [];\n      const gear = btns.find(b => (b.getAttribute('aria-label') || '') === 'Writing settings');\n      if (!gear) throw new Error(\"no gear target\");\ngear.click();\n      return { toggle: !!document.querySelector('.wz-sliver-instruments-row .typewriter-toggle'), iconCount: btns.length,\n               // item 83 errata E2 - the foot spans two lines now; the row's count alone no longer counts the foot.\n               fullScreenInFoot: !!document.querySelector('.wz-sliver-goal [data-foot-fullscreen] button') };\n    })()");
     await sleep(200);
     const gearRowGone = await app.evalJs(`(() => {
       const panel = document.querySelector('.wz-sliver-instruments .mode-settings');

@@ -581,7 +581,7 @@ await withHarness(async (app) => {
     ok(`Geometry @${width}px: framed (.desk-frame present) and the full Download row renders (This Page .md/.txt + Everything)`,
       framedShape === true && btns.includes('This Page (.md)') && btns.includes('This Page (.txt)') && btns.includes('Everything'),
       JSON.stringify({ framedShape, btns: btns.filter(b => /download|page|everything/i.test(b)) }));
-    await app.evalJs("document.querySelector('.sprint-modal-backdrop')?.click()");
+    await app.evalJs("(() => { const __t = document.querySelector('.sprint-modal-backdrop'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
     await sleep(150);
   }
 

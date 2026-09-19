@@ -71,7 +71,7 @@ const freshScriptPage = async (app) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 await withHarness(async (app) => {
   // ==========================================================================
@@ -349,9 +349,9 @@ await withHarness(async (app) => {
   // the reload above remounted it closed by default.
   await openSliver(app);
   await sleep(200);
-  await app.evalJs("document.querySelector('.wz-sliver-goal-edit')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-goal-edit'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(100);
-  await app.evalJs("document.querySelector('.wz-sliver-goal-edit-clear')?.click()");
+  await app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-goal-edit-clear'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
   await sleep(200);
   const clearedState = await app.evalJs(`({
     hairlineGone: !document.querySelector('.wz-sliver-goal-hairline'),

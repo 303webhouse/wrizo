@@ -74,7 +74,7 @@ const freshScriptPage = async (app, width = 1400, height = 900) => {
   await sleep(250);
 };
 
-const openSliver = (app) => app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+const openSliver = (app) => app.evalJs("(() => { const __t = document.querySelector('.wz-sliver-grip'); if (!__t) throw new Error(\"no click target\"); return __t.click(); })()");
 
 await withHarness(async (app) => {
   // ==========================================================================
@@ -368,13 +368,7 @@ await withHarness(async (app) => {
   //   return btns.length;
   // })()`);
   // ------------------------------------------------------------------
-  const opened = await app.evalJs(`(() => {
-    const row = document.querySelector('.wz-sliver-instruments-row');
-    const btns = [...row.querySelectorAll('button')];
-    const b = btns.find(x => (x.getAttribute('aria-label')||'') === 'Progress');
-    if (b) b.click();
-    return btns.length;
-  })()`);
+  const opened = await app.evalJs("(() => {\n    const row = document.querySelector('.wz-sliver-instruments-row');\n    const btns = [...row.querySelectorAll('button')];\n    const b = btns.find(x => (x.getAttribute('aria-label')||'') === 'Progress');\n    if (!b) throw new Error(\"no b target\");\nb.click();\n    return btns.length;\n  })()");
   await sleep(200);
   const instrumentsPanel = await app.evalJs(`(() => {
     const panel = document.querySelector('.wz-sliver-instruments-panel');

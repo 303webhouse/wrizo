@@ -77,7 +77,7 @@ await withHarness(async (app) => {
     // birth mechanism: pb1.mjs.
     ok('S1 case 1: Write lands in THE Page — an unborn surface (/page/new, live editor, no row yet), never a journal surface',
       /^#\/page\/new(\?|$)/.test(w.hash) && w.editor === true && w.journalChrome === false, JSON.stringify(w));
-    await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
+    await app.evalJs("(() => { const __t = document.querySelector('.forward-only-editor'); if (!__t) throw new Error(\"no focus target\"); return __t.focus(); })()");
     await app.typeKeys('w');
     await app.waitFor("location.hash.indexOf('#/page/') === 0 && location.hash.indexOf('#/page/new') !== 0", { label: 'landed page born' });
     // The address flips synchronously at birth; the row lands on the ordinary
