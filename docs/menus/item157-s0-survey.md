@@ -200,3 +200,39 @@ retired legacy Journal surface.
 Branched from `4600d7f`, after items 121 and 126 merged and Batch Three shipped.
 Item 126's worktree is retired (both its branches were on main first). Build and
 browserless verification next; the suite waits for an announced turn.
+
+## §10 · ERRATUM AND ADDENDA — same day, written before any run
+
+**Erratum.** §7's heading says *"statically SIX"*. Its own table lists **five**
+assertion lines — S1, S2, C1, C8, C8b — and five is what was parked. The six was
+wrong as written. It stays above, uncorrected, so the correction can be seen.
+The executed count is still what settles it: each park emits a counted `pok()`
+in its file's parked leg (item121.mjs 2, item126.mjs 3), and the audit reads
+that JSON, not this paragraph.
+
+**Four consequences S0 did not name, found while building the harness.** Each
+follows from the ruling (the margins are ink) and none was chosen for its own
+sake. Named here so the review sees them before the sitting does:
+
+1. **The undo button moved with the canvases.** It used to sit at the top-right
+   of the text column and scroll away with the text. It is now pinned at the
+   paper's top-right corner, in the margin.
+2. **Ink no longer fades with the typewriter's history band.** The fade is a
+   mask on `.mode-scroll`, and the canvases now live outside it, on the paper.
+3. **Scrolled ink passes the text's clip line.** Text is clipped at the
+   scroller's edge; ink is clipped at the paper's. In the paper's own top and
+   bottom padding (30px × scale) ink stays visible where text has already
+   gone. Clipping ink to the scroller instead would hide top-margin ink at
+   scroll 0, which is exactly what the ruling asks for.
+4. **Narrowing a margin in PAGE SETUP can hide margin ink.** Ink drawn in a
+   wide margin, whose margin is then narrowed, falls past the paper's new edge
+   and is clipped there. The stored points are untouched, so it comes back if
+   the margin is widened again. Across window widths this cannot happen: the
+   column and the margins scale together (`--paper-scale`).
+
+**One S0 hazard was built and then taken out.** While building, the stroke-time
+`user-select:none` was widened from the sheet to the paper, on the theory that
+a margin stroke could select the page title. The framed page never passes
+`pageTitle` to ModeStage (neither call site does), so the framed paper has no
+selectable text outside the sheet. The widening was reverted rather than kept
+with a false reason attached.

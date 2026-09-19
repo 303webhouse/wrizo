@@ -50,12 +50,24 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+
+// ITEM 157 — evidence for the parked section, captured during the default leg,
+// so every park below is COUNTED BY EXECUTION without re-running a fixture.
+const PARK157 = { s1: [], s2: null };
+// The paper's PADDING box, computed from the paper's own geometry — the box the
+// portalled canvases fill (absolute inset:0 resolves against it). Measured
+// independently of the canvas, so comparing the two keeps the anchor law's
+// two-boxes discipline.
+const PAPER_INNER = `(() => { const p = document.querySelector('.mode-page'); if (!p) return null;
+  const r = p.getBoundingClientRect();
+  return { left: r.left + p.clientLeft, top: r.top + p.clientTop,
+           right: r.left + p.clientLeft + p.clientWidth, bottom: r.top + p.clientTop + p.clientHeight }; })()`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const W1 = 1366, H1 = 768;    // the canonical small-laptop leg
 const W2 = 1680, H2 = 1050;   // the wide leg
 const SHEET = '.wz-ink-sheet';
-const CANVAS = '.wz-ink-sheet .ink-committed';
+const CANVAS = '.mode-page .ink-committed';
 const SWITCH = '.wz-ink-switch';
 const BAND = '.desk-frame-host .sprint-nav';
 
@@ -175,12 +187,32 @@ await withHarness(async (app) => {
       await sleep(200);
       const sheet = await app.evalJs(rectOf(SHEET));
       const canvas = await app.evalJs(rectOf(CANVAS));
+      const paper = await app.evalJs(PAPER_INNER);
       const near = (a, b) => a != null && b != null && Math.abs(a - b) <= 0.6;
-      ok(`S1 (${label}, drawer ${openLabel}): the stratum's canvas box IS the sheet's box on every edge (within 0.6px) — anchored by LAYOUT, never by script`,
-        !!sheet && !!canvas
-          && near(sheet.left, canvas.left) && near(sheet.right, canvas.right)
-          && near(sheet.top, canvas.top) && near(sheet.bottom, canvas.bottom),
-        JSON.stringify({ sheet, canvas }));
+      // ---- PARKED — SUPERSEDED by ITEM 157 (founder-ruled), 2026-09-19 ------
+      // Kept VERBATIM and no longer run. Nick: "The ink is hard limited to a
+      // kind of text box, not the entire page surface like it should be." This
+      // check asserted exactly the defect — the canvas IS the sheet, which is
+      // the text column, so ink could never reach the paper's margins. Item 157
+      // separates the roles item 121 collapsed: the sheet stays the coordinate
+      // BASIS, the canvas moves to the PAPER. Successor below; counted in this
+      // file's parked section.
+      //
+      // ok(`S1 (${label}, drawer ${openLabel}): the stratum's canvas box IS the sheet's box on every edge (within 0.6px) — anchored by LAYOUT, never by script`,
+      //   !!sheet && !!canvas
+      //     && near(sheet.left, canvas.left) && near(sheet.right, canvas.right)
+      //     && near(sheet.top, canvas.top) && near(sheet.bottom, canvas.bottom),
+      //   JSON.stringify({ sheet, canvas }));
+      // ----------------------------------------------------------------------
+      const onPaper = !!paper && !!canvas
+        && near(paper.left, canvas.left) && near(paper.right, canvas.right)
+        && near(paper.top, canvas.top) && near(paper.bottom, canvas.bottom);
+      const sheetInside = !!sheet && !!canvas && sheet.left >= canvas.left - 0.6 && sheet.right <= canvas.right + 0.6;
+      PARK157.s1.push({ label, openLabel, onPaper, sheetInside });
+      ok(`S1 [ITEM 157 successor] (${label}, drawer ${openLabel}): the stratum's canvas box IS the PAPER's box on every edge (within 0.6px) — the page, not the text column. Still anchored by LAYOUT: two independently measured boxes, the canvas and the paper's own padding box`,
+        onPaper, JSON.stringify({ paper, canvas }));
+      ok(`S1 [ITEM 157] (${label}, drawer ${openLabel}): and the SHEET — still the coordinate basis — lies inside the canvas, narrower than it: the margins are the difference, and they are now ink`,
+        sheetInside && sheet.width < canvas.width, JSON.stringify({ sheet, canvas }));
       if (doOpen) { await openSliver(app); await sleep(200); }
     }
   };
@@ -238,10 +270,25 @@ await withHarness(async (app) => {
   void sheetW1366;
   const widths = await app.evalJs(`(() => {
     const s = document.querySelector('${SHEET}'); const c = document.querySelector('${CANVAS}');
-    return { sheet: s && s.getBoundingClientRect().width, canvas: c && c.getBoundingClientRect().width }; })()`);
-  ok('S2: and at the new width the canvas has RESIZED with the sheet (they are still one box) — the denormalizing width the renderer reads is the sheet\'s live width, not a captured one',
-    widths.sheet != null && widths.canvas != null && Math.abs(widths.sheet - widths.canvas) <= 0.6,
-    JSON.stringify(widths));
+    const p = document.querySelector('.mode-page');
+    return { sheet: s && s.getBoundingClientRect().width, canvas: c && c.getBoundingClientRect().width,
+             paper: p && p.clientWidth }; })()`);
+  // ---- PARKED — SUPERSEDED by ITEM 157 (founder-ruled), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. "Still one box" was the defect: the canvas
+  // WAS the sheet, so it could not reach the paper. The half of this claim that
+  // survives — the renderer denormalizes by the SHEET's LIVE width — is exactly
+  // what item 157 keeps (the basis is unchanged), and S2's own geometry check
+  // above still proves the stored points do not move. Successor below.
+  //
+  // ok('S2: and at the new width the canvas has RESIZED with the sheet (they are still one box) — the denormalizing width the renderer reads is the sheet\'s live width, not a captured one',
+  //   widths.sheet != null && widths.canvas != null && Math.abs(widths.sheet - widths.canvas) <= 0.6,
+  //   JSON.stringify(widths));
+  // ------------------------------------------------------------------------
+  const s2ok = widths.paper != null && widths.canvas != null && Math.abs(widths.paper - widths.canvas) <= 0.6
+    && widths.sheet != null && widths.sheet < widths.canvas;
+  PARK157.s2 = { ok: s2ok, widths };
+  ok('S2 [ITEM 157 successor]: at the new width the canvas has RESIZED with the PAPER (the render surface), and the sheet — the basis the renderer still denormalizes by — is inside it and narrower',
+    s2ok, JSON.stringify(widths));
 
   // ==========================================================================
   // S3 — INERTNESS IN TEXT. The I0 seal still stands on this surface.
@@ -346,7 +393,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-ink-eraser')?.click()");
   await safePen(app, SHEET, [{ x: 0.3, y: 0.31 }, { x: 0.6, y: 0.31 }], 'pen stroke');
   await sleep(500);
-  await app.evalJs("document.querySelector('.wz-ink-sheet .ink-undo')?.click()");
+  await app.evalJs("document.querySelector('.mode-page .ink-undo')?.click()");
   await sleep(800);
   const net = await app.evalJs('window.__wzNet');
   ok('S4: ZERO NETWORK ACROSS EVERY INK ACT — switching instrument both ways, changing tip, nib and ink, drawing, erasing and undoing issue no fetch, no XHR and no beacon. The wave is local-first and touches no server, which is exactly why I1 put validation at the read boundary instead of asking the server to reject enums',
@@ -457,10 +504,18 @@ await withHarness(async (app) => {
     if (!first) return -2;
     const mid = first.points[Math.floor(first.points.length / 2)];
     const r = c.getBoundingClientRect();
+    const sh = document.querySelector('${SHEET}').getBoundingClientRect();
     const ctx = c.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    // Both axes denormalize by WIDTH — the renderer's own rule.
-    const cx = Math.round(mid.x * r.width * dpr), cy = Math.round(mid.y * r.width * dpr);
+    // Both axes denormalize by the SHEET's width — the renderer's own rule.
+    // ITEM 157 RE-POINT (not a park — the claim is unchanged): this used to read
+    // mid.x times the canvas width, which was right only while the canvas WAS the sheet.
+    // The canvas is the paper now — wider, and offset by the margins — so that
+    // formula would sample empty paper and the eraser check could pass or fail
+    // having looked at the wrong spot. It now does what the renderer does:
+    // basis = the sheet, offset = the sheet's position inside the canvas.
+    const cx = Math.round(((sh.left - r.left) + mid.x * sh.width) * dpr);
+    const cy = Math.round(((sh.top - r.top) + mid.y * sh.width) * dpr);
     // A patch, not a pixel: a 1px anti-aliasing miss must not decide a check.
     const d = ctx.getImageData(Math.max(0, cx - 7), Math.max(0, cy - 7), 15, 15).data;
     let max = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > max) max = d[i];
@@ -472,7 +527,7 @@ await withHarness(async (app) => {
   await openSliver(app);
   await app.evalJs("document.querySelector('.wz-ink-eraser')?.click()");
   await sleep(200);
-  const ringArmed = await app.evalJs("!!document.querySelector('.wz-ink-sheet .ink-eraser-ring')");
+  const ringArmed = await app.evalJs("!!document.querySelector('.mode-page .ink-eraser-ring')");
   ok('S7: arming the eraser is a real two-state toggle in the ink zone, and the ring preview exists on the sheet to aim with',
     ringArmed && (await app.evalJs("document.querySelector('.wz-ink-eraser')?.getAttribute('aria-pressed') ?? null")) === 'true');
   await safePen(app, SHEET, [{ x: 0.3, y: 0.35 }, { x: 0.5, y: 0.35 }, { x: 0.7, y: 0.35 }], 'erase stroke');
@@ -487,7 +542,7 @@ await withHarness(async (app) => {
     return null; })()`);
   void ringInText;
   await sleep(300);
-  const ringHidden = await app.evalJs(`(() => { const r = document.querySelector('.wz-ink-sheet .ink-eraser-ring');
+  const ringHidden = await app.evalJs(`(() => { const r = document.querySelector('.mode-page .ink-eraser-ring');
     return r ? getComputedStyle(r).display : 'absent'; })()`);
   ok('S7: and leaving INK hides the ring immediately — the eraser\'s aim preview belongs to the instrument, not to the page',
     ringHidden === 'none' || ringHidden === 'absent', JSON.stringify({ ringHidden }));
@@ -509,16 +564,16 @@ await withHarness(async (app) => {
   await safePen(app, SHEET, [{ x: 0.3, y: 0.55 }, { x: 0.6, y: 0.55 }, { x: 0.75, y: 0.56 }], 'pen stroke');
   await sleep(700);
   const twoStrokes = (await strokesOf(app, undoPageId)).length;
-  const undoPresent = await app.evalJs("!!document.querySelector('.wz-ink-sheet .ink-undo')");
+  const undoPresent = await app.evalJs("!!document.querySelector('.mode-page .ink-undo')");
   ok('S8: two strokes are on the page and the undo affordance is offered with them (it lives WITH the ink — present in INK, and the check below proves it is not offered in TEXT)',
     twoStrokes === 2 && undoPresent, JSON.stringify({ twoStrokes, undoPresent }));
-  await app.evalJs("document.querySelector('.wz-ink-sheet .ink-undo')?.click()");
+  await app.evalJs("document.querySelector('.mode-page .ink-undo')?.click()");
   await sleep(600);
   const afterUndo = (await strokesOf(app, undoPageId)).length;
   ok('S8: undo reverses exactly ONE stroke and persists that — one level, the last action, never a history stack',
     afterUndo === twoStrokes - 1, JSON.stringify({ twoStrokes, afterUndo }));
   await setInstrument(app, 'text');
-  const undoInText = await app.evalJs("!!document.querySelector('.wz-ink-sheet .ink-undo')");
+  const undoInText = await app.evalJs("!!document.querySelector('.mode-page .ink-undo')");
   ok('S8: and in TEXT the undo is ABSENT — Free Write is forward-only and offers no typed-run undo, so an undo button on the typewriter would promise a permanence reversal the surface does not grant',
     undoInText === false, JSON.stringify({ undoInText }));
 
@@ -666,12 +721,30 @@ console.log(JSON.stringify(checks, null, 2));
 // item83f.mjs, cd1.mjs as the suite establishes), originals kept verbatim with
 // a successor pointer, never rewritten in place. A park recorded in the wrong
 // file is a park nobody looking for it would find.
+//
+// ITEM 157 (2026-09-19) — the header above is kept verbatim and is NO LONGER
+// TRUE of this file: item 157 (founder-ruled, "the entire page surface") parks
+// two of ITS OWN assertions — S1 and S2, both "the canvas IS the sheet". Each
+// original sits commented where it ran, beside its successor; each is COUNTED
+// below. (S7's pixel sampler was re-pointed, not parked: its claim is unchanged.)
 const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 if (process.env.HARNESS_PARKED === '1') {
+  // ITEM 157 — the two assertions this ticket supersedes, COUNTED. Each quotes
+  // the original and asserts the successor's truth from evidence the default
+  // leg captured, so the count below is read by execution — this lane's item
+  // 121 undercount (said 5, was 8) came from parks that existed only as prose.
+  pok('PARKED (was "S1: the stratum\'s canvas box IS the sheet\'s box on every edge") — ITEM 157, founder-ruled "the entire page surface": the canvas box IS the PAPER\'s, at both widths and drawer states, with the sheet (the basis) inside it',
+    PARK157.s1.length === 4 && PARK157.s1.every(e => e.onPaper && e.sheetInside), JSON.stringify(PARK157.s1));
+  pok('PARKED (was "S2: the canvas has RESIZED with the sheet (they are still one box)") — ITEM 157: it resizes with the PAPER; the sheet it denormalizes by is inside it and narrower',
+    !!PARK157.s2 && PARK157.s2.ok, JSON.stringify(PARK157.s2));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  const pk = parkedChecks.every(c => c.pass);
   // eslint-disable-next-line no-console
-  console.log(`\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks nothing of its own (its parks live in the files that own the falsified assertions).`);
+  console.log(pk
+    ? `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 157 parks 2 of this file's assertions (S1, S2), each counted above; item 121's own parks live in the files that own them.`
+    : `\nITEM121 PARKED: FAIL — ${parkedChecks.filter(c => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

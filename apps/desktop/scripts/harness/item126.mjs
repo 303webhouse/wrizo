@@ -48,12 +48,31 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+
+// ITEM 157 — evidence for the parked section, captured during the default leg,
+// so every park below is COUNTED BY EXECUTION without re-running a fixture.
+const PARK157 = { c1: [], c8: null, c8b: null };
+// The paper's PADDING box (what the portalled canvases fill), measured from the
+// paper itself — independent of the canvas, so the anchor check still compares
+// two boxes.
+const PAPER_INNER = `(() => { const p = document.querySelector('.mode-page'); if (!p) return null;
+  const r = p.getBoundingClientRect();
+  return { left: r.left + p.clientLeft, top: r.top + p.clientTop,
+           right: r.left + p.clientLeft + p.clientWidth, bottom: r.top + p.clientTop + p.clientHeight }; })()`;
+// The PAGE's top-left edges in SHEET coordinates (the basis). x0 is the paper's
+// left edge; y0 is the paper's top edge as it stands at scroll 0 — sheet
+// coordinates are scroll-independent. Both are NEGATIVE: that is the margin.
+const PAGE_EDGE = `(() => { const s = document.querySelector('.wz-ink-sheet').getBoundingClientRect();
+  const p = document.querySelector('.mode-page'); const r = p.getBoundingClientRect();
+  const sc = document.querySelector('.mode-scroll'); const st = sc ? sc.scrollTop : 0;
+  return { x0: (r.left + p.clientLeft - s.left) / s.width,
+           y0: (r.top + p.clientTop - (s.top + st)) / s.width }; })()`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const W1 = 1366, H1 = 768;
 const W2 = 1680, H2 = 1050;
 const SHEET = '.wz-ink-sheet';
-const CANVAS = '.wz-ink-sheet .ink-committed';
+const CANVAS = '.mode-page .ink-committed';
 const PAPER = '.mode-page';
 const BAND = '.desk-frame-host .sprint-nav';
 const EDITOR = '.forward-only-editor';
@@ -164,13 +183,26 @@ await withHarness(async (app) => {
     await toMode(app, key);
     const sheet = await app.evalJs(rectOf(SHEET));
     const canvas = await app.evalJs(rectOf(CANVAS));
+    const paper = await app.evalJs(PAPER_INNER);
     const near = (a, b) => a != null && b != null && Math.abs(a - b) <= 0.6;
     ok(`C1 (${label}): the stratum is MOUNTED — the ink is the PAGE'S, not Free Write's decoration (item 121 §7A said "Free Write only"; this is the inversion this ticket exists for)`,
       !!canvas, JSON.stringify({ canvas: !!canvas, mode: label }));
-    ok(`C1 (${label}): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before`,
-      !!sheet && !!canvas && near(sheet.left, canvas.left) && near(sheet.right, canvas.right)
-        && near(sheet.top, canvas.top) && near(sheet.bottom, canvas.bottom),
-      JSON.stringify({ sheet, canvas }));
+    // ---- PARKED — SUPERSEDED by ITEM 157 (founder-ruled), 2026-09-19 --------
+    // Kept VERBATIM and no longer run. Asserted the canvas IS the sheet — the
+    // text column — which is exactly Nick's finding ("hard limited to a kind of
+    // text box"). The canvas is the PAPER now; the sheet stays the basis.
+    // Successor below; counted in this file's parked section.
+    //
+    // ok(`C1 (${label}): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before`,
+    //   !!sheet && !!canvas && near(sheet.left, canvas.left) && near(sheet.right, canvas.right)
+    //     && near(sheet.top, canvas.top) && near(sheet.bottom, canvas.bottom),
+    //   JSON.stringify({ sheet, canvas }));
+    // ------------------------------------------------------------------------
+    const c1OnPaper = !!paper && !!canvas && near(paper.left, canvas.left) && near(paper.right, canvas.right)
+      && near(paper.top, canvas.top) && near(paper.bottom, canvas.bottom);
+    PARK157.c1.push({ label, onPaper: c1OnPaper });
+    ok(`C1 [ITEM 157 successor] (${label}): and its canvas box IS the PAPER's box on every edge (within 0.6px) — the whole page, in every mode, anchored by layout`,
+      c1OnPaper, JSON.stringify({ paper, canvas }));
   }
 
   // ==========================================================================
@@ -219,7 +251,7 @@ await withHarness(async (app) => {
     await app.doubleClick(pt.x, pt.y);
     await sleep(400);
     const armedFw = await app.evalJs(`(() => {
-      const c = document.querySelector('${SHEET} .ink-active');
+      const c = document.querySelector('.mode-page .ink-active');
       if (!c) return { canvas: false };
       const ctx = c.getContext('2d');
       const d = ctx.getImageData(0, 0, c.width, c.height).data;
@@ -289,7 +321,7 @@ await withHarness(async (app) => {
     const p = await screenOf(app, m);
     await app.doubleClick(p.x, p.y);
     await sleep(400);
-    const armed = await app.evalJs(`(() => { const c = document.querySelector('${SHEET} .ink-active');
+    const armed = await app.evalJs(`(() => { const c = document.querySelector('.mode-page .ink-active');
       if (!c) return { canvas: false };
       const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
       let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 8) n++;
@@ -346,10 +378,10 @@ await withHarness(async (app) => {
   // ==========================================================================
   // C9 — undo restores the pre-move geometry, one level.
   // ==========================================================================
-  const undoPresent = await present(app, '.wz-ink-sheet .ink-undo');
+  const undoPresent = await present(app, '.mode-page .ink-undo');
   ok('C9: the undo affordance is offered in a movable mode — there is now a move to reverse',
     undoPresent === true);
-  await app.evalJs("document.querySelector('.wz-ink-sheet .ink-undo')?.click()");
+  await app.evalJs("document.querySelector('.mode-page .ink-undo')?.click()");
   await sleep(800);
   const undone = await strokesOf(app, moveId);
   const undoneBox = undone.length ? bboxOf(undone[0].points) : null;
@@ -416,9 +448,26 @@ await withHarness(async (app) => {
   await sleep(900);
   const clamped = await strokesOf(app, clampId);
   const cAfter = bboxOf(clamped[0].points);
-  ok('C8: a group shoved past the sheet\'s edge STOPS at it — x never below 0, y never below 0 — and it still MOVED (FX17\'s law: a limit stops, it never relocates, and it never freezes the gesture outright)',
-    cAfter.x0 >= -1e-9 && cAfter.y0 >= -1e-9 && cAfter.x0 < cBefore.x0,
-    JSON.stringify({ cBefore, cAfter }));
+  const pgC8 = await app.evalJs(PAGE_EDGE);
+  // ---- PARKED — SUPERSEDED by ITEM 157 (founder-ruled), 2026-09-19 ----------
+  // Kept VERBATIM and no longer run. "x never below 0" stopped a group at the
+  // SHEET's edge — the text column's. The founder-ruled edge is the PAPER's, so
+  // the margin is now somewhere a drawing may go and x below 0 is legal there.
+  // FX17's law is unchanged: a limit still STOPS, never relocates. Successor
+  // below; counted in this file's parked section.
+  //
+  // ok('C8: a group shoved past the sheet\'s edge STOPS at it — x never below 0, y never below 0 — and it still MOVED (FX17\'s law: a limit stops, it never relocates, and it never freezes the gesture outright)',
+  //   cAfter.x0 >= -1e-9 && cAfter.y0 >= -1e-9 && cAfter.x0 < cBefore.x0,
+  //   JSON.stringify({ cBefore, cAfter }));
+  // --------------------------------------------------------------------------
+  const c8ok = pgC8 && pgC8.x0 < 0
+    && Math.abs(cAfter.x0 - pgC8.x0) < 0.003      // landed AT the paper's left edge
+    && cAfter.x0 >= pgC8.x0 - 1e-6                // and never beyond it
+    && cAfter.y0 >= pgC8.y0 - 1e-6                // nor above the page's top
+    && cAfter.x0 < cBefore.x0;                    // and it still MOVED
+  PARK157.c8 = { ok: c8ok, pgC8, cBefore, cAfter };
+  ok('C8 [ITEM 157 successor]: a group shoved far past the edge STOPS AT THE PAPER\'S EDGE — it travels INTO the margin (x below 0, which is the ruling) and lands exactly on the paper\'s left edge, never beyond it, nor above the page\'s top; and it still MOVED. FX17\'s law, with the page as the limit',
+    c8ok, JSON.stringify({ pageEdge: pgC8, cBefore, cAfter }));
 
   // ==========================================================================
   // C8b — THE ORDINARY CASE THAT PROVED THE DEFECT. C8 releases off the
@@ -444,9 +493,21 @@ await withHarness(async (app) => {
   await app.mouseUp(ivEnd.x, ivEnd.y);
   await sleep(900);
   const ivAfter = bboxOf((await strokesOf(app, inVpId))[0].points);
-  ok('C8b: a drag RELEASED PAST THE SHEET\'S EDGE BUT INSIDE THE VIEWPORT is COMMITTED — the group moves left and stops AT the edge. Before the fix this exact gesture lost the move: the release never reached the sheet (measured: capture-got 0, release-on-sheet 0, persisted false)',
-    ivEnd.x > 0 && ivAfter.x0 < ivBefore.x0 && ivAfter.x0 >= -1e-9,
-    JSON.stringify({ ivEnd, ivBefore, ivAfter }));
+  const pgC8b = await app.evalJs(PAGE_EDGE);
+  // ---- PARKED — SUPERSEDED by ITEM 157 (founder-ruled), 2026-09-19 ----------
+  // Kept VERBATIM and no longer run. "x0 >= 0" was the SHEET's edge. What this
+  // check exists to prove — that a release outside the element is HEARD and
+  // COMMITTED (item 126's lost-gesture class) — is untouched and still asserted
+  // by the successor; only the edge it stops at moved to the paper's.
+  //
+  // ok('C8b: a drag RELEASED PAST THE SHEET\'S EDGE BUT INSIDE THE VIEWPORT is COMMITTED — the group moves left and stops AT the edge. Before the fix this exact gesture lost the move: the release never reached the sheet (measured: capture-got 0, release-on-sheet 0, persisted false)',
+  //   ivEnd.x > 0 && ivAfter.x0 < ivBefore.x0 && ivAfter.x0 >= -1e-9,
+  //   JSON.stringify({ ivEnd, ivBefore, ivAfter }));
+  // --------------------------------------------------------------------------
+  const c8bok = ivEnd.x > 0 && pgC8b && ivAfter.x0 < ivBefore.x0 && ivAfter.x0 < 0 && ivAfter.x0 >= pgC8b.x0 - 1e-6;
+  PARK157.c8b = { ok: c8bok, ivEnd, pgC8b, ivBefore, ivAfter };
+  ok('C8b [ITEM 157 successor]: a drag RELEASED OUTSIDE THE ELEMENT, inside the viewport, is still COMMITTED — the group moves left INTO THE MARGIN (x below 0) and never past the paper\'s edge. The lost-gesture guard item 126 built is untouched; only the edge moved',
+    c8bok, JSON.stringify({ ivEnd, pageEdge: pgC8b, ivBefore, ivAfter }));
 
   // AND THE DRAG IS NOT LEFT STUCK. A lost release used to leave the drag live,
   // so the ink followed the next buttonless mouse movement. Move with no button
@@ -611,12 +672,30 @@ console.log(JSON.stringify(checks, null, 2));
 // 121 when the true count was 8, and the three it missed were invisible to a
 // green UNPARKED run. The array below is emitted as JSON before the prose line
 // so the count is read by the auditor rather than taken from this comment.
+//
+// ITEM 157 (2026-09-19) — the header above is kept verbatim and is NO LONGER
+// TRUE of this file: item 157 (founder-ruled, "the entire page surface") parks
+// three of its assertions — C1's canvas-is-the-sheet, and C8/C8b's "x never
+// below 0" (the SHEET's edge; the limit is the PAPER's now). Each original sits
+// commented where it ran, beside its successor; each is COUNTED below.
 const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 if (process.env.HARNESS_PARKED === '1') {
+  // ITEM 157 — the three assertions this ticket supersedes, COUNTED, each from
+  // evidence the default leg captured. Read the JSON above the prose line.
+  pok('PARKED (was "C1: its canvas box IS the sheet\'s box on every edge") — ITEM 157, founder-ruled "the entire page surface": the canvas box IS the PAPER\'s, in all three modes',
+    PARK157.c1.length === 3 && PARK157.c1.every(e => e.onPaper), JSON.stringify(PARK157.c1));
+  pok('PARKED (was "C8: a group shoved past the sheet\'s edge STOPS at it — x never below 0") — ITEM 157: it stops at the PAPER\'s edge, inside the margin (x below 0), never beyond',
+    !!PARK157.c8 && PARK157.c8.ok, JSON.stringify(PARK157.c8));
+  pok('PARKED (was "C8b: ... moves left and stops AT the edge", x0 >= 0) — ITEM 157: the outside release is still committed; the group goes into the margin and stops at the paper\'s edge',
+    !!PARK157.c8b && PARK157.c8b.ok, JSON.stringify(PARK157.c8b));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  const pk = parkedChecks.every(c => c.pass);
   // eslint-disable-next-line no-console
-  console.log(`\nITEM126 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item126.mjs parks nothing of its own.`);
+  console.log(pk
+    ? `\nITEM126 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item 157 parks 3 of this file's assertions (C1, C8, C8b), each counted above.`
+    : `\nITEM126 PARKED: FAIL — ${parkedChecks.filter(c => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

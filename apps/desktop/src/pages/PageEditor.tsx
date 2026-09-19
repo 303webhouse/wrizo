@@ -690,7 +690,11 @@ function PageEditorView({ id }: { id: string }) {
          (min(60vh,580px), overflow:hidden) whose inner `.mode-scroll` does the
          scrolling, so a canvas there would nail the ink to the viewport and
          let screen two's ink land on screen one's. See InkStratum.tsx's own
-         header and item121-s0-survey.md §3. */
+         header and item121-s0-survey.md §3.
+         ITEM 157 — this div is still the ink's coordinate BASIS, but no longer
+         its canvas: the stratum portals its layers into `.mode-page` (so ink
+         reaches the margins) and repaints on scroll, which keeps the ink moving
+         with the text. See item157-s0-survey.md §4. */
       ref={el => { warmWrapRef.current = el; inkSheetRef.current = el; }}
       className="wz-ink-sheet"
       style={{ position: 'relative', width: '100%', minHeight: '100%' }}
@@ -760,7 +764,9 @@ function PageEditorView({ id }: { id: string }) {
           widening its own charter.
           WHAT VARIES BY MODE IS PERMISSION, NOT PRESENCE — see `inkPermission`
           above. Both canvases stay pointer-events:none in every mode; routing
-          belongs to the sheet, always. */}
+          belongs to the sheet, always.
+          ITEM 157 — routing belongs to the PAPER now (so a margin is heard); the
+          canvases are still pointer-events:none in every mode. */}
       {framed && (
         <InkStratum
           permission={inkPermission}

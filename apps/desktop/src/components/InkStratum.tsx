@@ -48,6 +48,10 @@ import type { Stroke, StrokeInk, StrokeNib, StrokePoint, StrokeTip } from '../ty
 // script — the anchor law holds, aimed at the right box — and the ink scrolls
 // with the text as one sheet, which is what "a transparent sheet laid on the
 // page" actually means. See docs/menus/item121-s0-survey.md §3.
+// ITEM 157 — the reasoning above still decides the BASIS, but the canvases no
+// longer mount inside the sheet: that is what kept ink out of the margins. They
+// are portalled into the paper and follow the sheet by repainting on scroll —
+// see the ITEM 157 block below.
 //
 // ── THE SHEET-ANCHORING TRADEOFF, PORTED KNOWINGLY (J9's own words) ───────
 // "Ink anchors to the sheet, not to words — text reflows at another width, ink
@@ -65,6 +69,8 @@ import type { Stroke, StrokeInk, StrokeNib, StrokePoint, StrokeTip } from '../ty
 // hover ring reads positions continuously, and both break the moment a canvas
 // starts swallowing events. In TEXT no listener is attached at all, so the
 // surface is byte-identical to the page before this ticket.
+// ITEM 157 — routing lives on the PAPER now (the sheet's ancestor), so a press
+// in a margin is heard; the canvases stay pointer-events:none exactly as above.
 
 export interface InkPen {
   tip: StrokeTip;
@@ -298,6 +304,8 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   // its behaviour changes, it just stops being reached on this one surface in
   // this one mode. R15 is the ruling that narrowed "ink is sealed in the
   // Journal" — see that file's own I0 comment, amended in place to say so.
+  // ITEM 157 — the listeners are on the PAPER now, not the sheet. The paper is
+  // also an ancestor of the editor, so the capture order above is unchanged.
   useEffect(() => {
     const sheet = sheetRef.current;
     const paper = paperEl;
@@ -552,6 +560,8 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
   // THE CANVAS STAYS INERT. Everything here listens on the SHEET, as item 121's
   // routing law requires — and it must, because the text underneath has to keep
   // receiving every click it would otherwise get.
+  // ITEM 157 — on the PAPER now, so margin ink can be grabbed. The text still
+  // gets every click: a press or double-click that finds no ink does nothing.
   useEffect(() => {
     const sheet = sheetRef.current;
     const paper = paperEl;
