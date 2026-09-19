@@ -7393,7 +7393,93 @@ DOOR, and this amendment needs to know whether one already exists to reuse or mu
 listed as tabs... attached to it"; this amendment is that same charter widened to the Board UI itself,
 not a new one.)*
 
-Registry: next free **170**.
+## ITEM 170 — OPENING A PAGE — OPENS, P0 — 2026-09-19
+
+**OPENS. P0 — JUMPS EVERY QUEUE.** Nick, verbatim:
+
+> the app currently has no clear or intuitive way of opening pages. Bug that needs to be fixed
+> immediately.
+
+**BOX: FIX GRANTED IMMEDIATELY** (token `fix-item170-p0-20260919`) — TOOLS' 154 pair was NOT running
+(no grant held, no process on the box) when this relay arrived, so the immediate branch of Fable's
+ruling applies rather than the after-the-pair branch.
+
+**FABLE's RULING FOR THE FIX, FLAGGED FOR NICK's VETO:** the Page hand already lists the writer's
+pages (Date / Drawer / A–Z) under "PLACE PAGE ON BOARD"; **that list becomes THE WAY TO OPEN A
+PAGE** — click a row, the page opens — **and placing on a board becomes the row's SECONDARY act (its
+`⋯` or a drag), not the list's meaning.**
+
+**S0 FIRST: name every path by which a writer can open an existing page TODAY.** **Batch Four ships
+when this lands, ALONE IF NEED BE — a ready P0 does not wait for a batch to fill.**
+
+## PRIMARY TEXT, PENDING CONFIRMATION — Nick's IN-APP NOTES, TRANSCRIBED BY FABLE — 2026-09-19
+
+**Applies to items 165 / 166 / 158 / 163 (the PLAN NOTE) and 159 / 160 / 167 / 168 / 161 (the CARD
+NOTE).** **TRANSCRIBED BY FABLE FROM NICK's SCREENSHOTS — NOT YET HIS OWN PASTE.** Recorded as FABLE's
+TRANSCRIPTION; **BECOMES PRIMARY TEXT ON NICK's ONE-WORD CONFIRMATION**, which Fable says arrives with
+this relay or the next — **NO SEPARATE CONFIRMATION TOKEN IS PRESENT IN THIS RELAY**, so chat 1 records
+it as still pending and will re-mark it the moment that word arrives, rather than assuming it. **Typos
+and spacing are NICK's, kept verbatim** — Fable's transcription duty is to copy, not correct.
+
+**PLAN NOTE, page 1:**
+
+> These notes coincide with the screenshots Plan Menu 1-3. As you can see, the the Open Board popout
+> is overlapping the page. It should be adjusted by percentage of the screen so that it never overlaps
+> with the page. In fact, no pop-out menu should ever be overlapping the page with two exceptions: a
+> right-click menu on the text or surface (which we haven't built yet), and the Card pop-up UI. Also
+> note that pressing tab while on the writing surface still acts as a browser selection instead of
+> creating a paragraph indent on the writing surface like it should. Pressing enter does move the line
+> down correctly, though. As for the Plan menu revisions—specifically the new "Boards Connected"
+> popout, a few notes: 1) Under Board #2 in the Plan Menu, it also says "Test Board" underneath it. Is
+> that a second Board that's connected to "Board #2"? Because it seems to be like a subtitle or
+> category for that Board. 2) Directly under Plan in the popout menu, I would like these options
+> listed in this order: Create Board, Outline, Story Structure, Organize Research. Each of these
+> options should open a submenu with the following options: For Create Board---Default, Worldbuiling,
+> Storyboard (will probably add a few more as we go). Each of these options should show a large
+> thumbnail with a sample of how these board types may differ in appearance and use with a few words
+> underneath about the purpose of the board (have the Experts review all
+
+**PLAN NOTE, page 2:**
+
+> content-related additions I'm suggesting throughout this revised Board build); Outline—Traditional,
+> Mind Map, (open to suggestions from the Experts on other kinds of outlining/brainstorming that could
+> be a type of "Board."); Story Structure—two sections divided into "Storytelling" and "Screenwriting"
+> with three options for each listed underneath (have the Experts choose what should go there for now
+> and what the large thumbnails/descriptions should be); Organize Research—Import Sources (which opens
+> a window for the user to import docs/PDFs of their research and then redirects them to a Board that
+> shows all of the imported docs as Pages), Bibliography (TBD how this will interact with the
+> Page/imported sources, but lets table that for now. Just put the greyed-out option in the menu as a
+> placeholder). In a new subsection under the Plan menu, give the option to "Connect Board" with a
+> submenu that shows all available Boards in a scrollable window when necessary (make the scroll bar
+> extremely minimal). And move "Connected Boards" to here and list Boards of any kind in the popout
+> sub menu that have already been connected to that Page (like it is now). 3) Tags should be listed in
+> the three dot menu, and if a user clicks on one of the tags, only Boards/Pages with that same tag
+> should display have the thumbnail displayed until the user de-selects the tag. If they select more
+> than one, then only Boards/Pages that have both should be displayed, and so on.
+
+**CARD NOTE:**
+
+> Notes on what I'm seeing: The styling tab starts open when a card is opened -- it should be closed
+> by default just like on the Page and Board. Also, I can't change the name "Card." I should be able
+> to click on that title and rename it. Also, each new blank card should be numbered to distinguish
+> them (Card 1, Card 2, Card 3...) Also, The "Remove" button at the top of the Board moves the Board
+> down when a card is clicked on. That Remove option should be removed from the Board surface. If a
+> User wants to delete a Board, Page, or Card, they should be able to just drag the surface into the
+> trash icon in the corner. Also, we will create a right-click menu that can also include a Remove or
+> Delete option. Also, notice that the STYLING tab is slightly overlapping the card edge. Lastly, the
+> Tutor strip menu on the Board (which you can see in the background), is misaligned with the Board
+> edge. When I open it, the pop-out menu overlaps the Board edge, including even the clickable tab
+> that opens it.
+
+**CROSS-CHECK, chat 1: the previous turn's transcribed summary (findings 1–5 and items 157–169/144)
+MATCHES this fuller verbatim text on every point it summarized** — the "Test Board" subtitle reading,
+the popout-percentage law and its two named exceptions, Tab-vs-indent, the styling-tab default, card
+renaming and numbering, Remove's relocation plus the drag-to-trash and right-click deletion charter,
+and the Tutor strip's edge misalignment including its own tab. **Nothing in the fuller text changes
+any of items 157–169 or 144's amendment as already recorded — it confirms them at the source.**
+
+Registry: next free **171**.
+
 
 
 
