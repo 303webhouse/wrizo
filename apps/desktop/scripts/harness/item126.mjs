@@ -45,6 +45,7 @@
 //   C12 zero network across every ink act, a MOVE included.
 //   C13 shots, per mode, both widths.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -264,6 +265,8 @@ await withHarness(async (app) => {
     ok(`C4/C5 (${label}): a trusted PEN stroke creates NO stroke — ink is LOCKED here, not editable (Nick: "INK no longer becomes directly editable")`,
       nPen === n0, JSON.stringify({ before: n0, after: nPen }));
     const box = await app.evalJs(rectOf(SHEET));
+    // ITEM 151 (Shape A) -- verify the drag's START point only.
+    await assertHittable(app, box.left + box.width * 0.3, box.top + 120, 'item126 C4/C5 mouse drag start');
     await app.mouseDown(box.left + box.width * 0.3, box.top + 120);
     for (let i = 1; i <= 6; i++) { await app.mouseMove(box.left + box.width * (0.3 + 0.05 * i), box.top + 120 + i * 2); await sleep(16); }
     await app.mouseUp(box.left + box.width * 0.6, box.top + 132);
@@ -319,6 +322,8 @@ await withHarness(async (app) => {
   await sleep(350);
   const sheetBox = await app.evalJs(rectOf(SHEET));
   const DX = Math.round(sheetBox.width * 0.12), DY = 40;
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, gp.x, gp.y, 'item126 C6 move drag start');
   await app.mouseDown(gp.x, gp.y);
   for (let i = 1; i <= 8; i++) { await app.mouseMove(gp.x + (DX * i) / 8, gp.y + (DY * i) / 8); await sleep(16); }
   await app.mouseUp(gp.x + DX, gp.y + DY);
@@ -384,6 +389,8 @@ await withHarness(async (app) => {
     await sleep(350);
     const sb = await app.evalJs(rectOf(SHEET));
     const edx = Math.round(sb.width * 0.10);
+    // ITEM 151 (Shape A) -- verify the drag's START point only.
+    await assertHittable(app, ep.x, ep.y, 'item126 C7 erase-travels drag start');
     await app.mouseDown(ep.x, ep.y);
     for (let i = 1; i <= 6; i++) { await app.mouseMove(ep.x + (edx * i) / 6, ep.y + (30 * i) / 6); await sleep(16); }
     await app.mouseUp(ep.x + edx, ep.y + 30);
@@ -410,6 +417,8 @@ await withHarness(async (app) => {
   await sleep(350);
   const csb = await app.evalJs(rectOf(SHEET));
   // Shove hard left and up — far past the sheet's own edge.
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, cp.x, cp.y, 'item126 C8 clamp drag start');
   await app.mouseDown(cp.x, cp.y);
   for (let i = 1; i <= 10; i++) { await app.mouseMove(cp.x - (csb.width * i) / 10, cp.y - (400 * i) / 10); await sleep(16); }
   await app.mouseUp(cp.x - csb.width, cp.y - 400);
@@ -439,6 +448,8 @@ await withHarness(async (app) => {
   await sleep(350);
   // End LEFT of the sheet but well INSIDE the viewport.
   const ivEnd = { x: Math.max(8, ivSheet.left - 60), y: ivp.y };
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, ivp.x, ivp.y, 'item126 C8b in-viewport drag start');
   await app.mouseDown(ivp.x, ivp.y);
   for (let i = 1; i <= 10; i++) { await app.mouseMove(ivp.x + ((ivEnd.x - ivp.x) * i) / 10, ivp.y); await sleep(16); }
   await app.mouseUp(ivEnd.x, ivEnd.y);
@@ -486,6 +497,8 @@ await withHarness(async (app) => {
   const dBefore = (await strokesOf(app, drawId)).length;
   const dStart = { x: dSheet.left + dSheet.width * 0.5, y: dSheet.top + 90 };
   const dEnd = { x: Math.max(8, dSheet.left - 90), y: dSheet.top + 100 };
+  // ITEM 151 (Shape A) -- verify the drag's START point only.
+  await assertHittable(app, dStart.x, dStart.y, 'item126 C14 free-write drag start');
   await app.mouseDown(dStart.x, dStart.y);
   for (let i = 1; i <= 10; i++) { await app.mouseMove(dStart.x + ((dEnd.x - dStart.x) * i) / 10, dStart.y + ((dEnd.y - dStart.y) * i) / 10); await sleep(16); }
   await app.mouseUp(dEnd.x, dEnd.y);
@@ -565,6 +578,8 @@ await withHarness(async (app) => {
     const np = await screenOf(app, midOf(netId[0]));
     await app.doubleClick(np.x, np.y);
     await sleep(300);
+    // ITEM 151 (Shape A) -- verify the drag's START point only.
+    await assertHittable(app, np.x, np.y, 'item126 C12 zero-network drag start');
     await app.mouseDown(np.x, np.y);
     for (let i = 1; i <= 5; i++) { await app.mouseMove(np.x + 8 * i, np.y + 4 * i); await sleep(16); }
     await app.mouseUp(np.x + 40, np.y + 20);

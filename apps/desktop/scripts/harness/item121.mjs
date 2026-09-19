@@ -47,6 +47,7 @@
 //  S11 shots — prose page in TEXT and INK at both widths, options open, the
 //      three tips drawn once each.
 import { withHarness } from '../runtime-verify.mjs';
+import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -361,6 +362,9 @@ await withHarness(async (app) => {
   const sheetBox = await app.evalJs(rectOf(SHEET));
   const before5 = (await strokesOf(app, mousePageId)).length;
   // MOUSE — the laptop is the primary target, so it MUST draw.
+  // ITEM 151 (Shape A) -- verify the drag's START point only; held for
+  // routing (item 151's S0), fixed now that INK/FIX have cleared it.
+  await assertHittable(app, sheetBox.left + sheetBox.width * 0.3, sheetBox.top + 60, 'item121 S5 mouse drag start');
   await app.mouseDown(sheetBox.left + sheetBox.width * 0.3, sheetBox.top + 60);
   for (let i = 1; i <= 8; i++) {
     await app.mouseMove(sheetBox.left + sheetBox.width * (0.3 + 0.04 * i), sheetBox.top + 60 + i * 3);
