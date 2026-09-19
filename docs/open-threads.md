@@ -18593,3 +18593,41 @@ this time.
 **Offered for merge — harness/test-seam work, chat 1's verification is the
 gate per the standing amendment.** Branch `item151-silent-acts`, tip
 `c46d498`, pushed. Nothing further owed on tools' side.
+
+## ITEM 154 — THE IN-STRING SILENT ACT: S0, THE REAL BOUNDARY CENSUS —
+2026-09-18 (tools lane; branch `item154-instring-acts`)
+
+**S0 LANDED, NO SITE TOUCHED.** Full record: `docs/menus/item154-s0-survey.md`.
+Per Fable's brief: two-pass parser (extract each `evalJs` argument by AST
+node offset, never regex; parse the extracted text as its own JS), a real
+boundary census rather than inheriting the old sample, in-string rewrites to
+be verified by byte comparison when built (never "it still parses").
+
+**156, NOT 134 — RE-DERIVED, NOT SAMPLED.** 134 was item 151's own S0
+finding, carried forward as this item's opening figure without ever being
+independently re-derived — exactly the risk Fable named ("a lower bound
+from a heuristic that has miscounted twice"). New tool
+`scripts/item154-census.mjs` (committed): 91 files, 3446 `evalJs(...)` call
+sites, 3398 statically resolved (98.6% — 177 via one level of same-file
+indirection, the `rectOf('.sel')`-helper and bare-literal-binding shapes),
+48 genuinely unresolved and named rather than assumed clean (ambiguous
+same-name bindings, unreduced string concatenation — full list in the
+survey). Zero unparseable after extraction (the placeholder-substitution
+method held at every site); zero already-guarded-safe (no offender is a
+stale double-count of an already-fixed site).
+
+**By shape: 133 optional-chain, 23 if-guard, 0 `&&`-guard — proportionally
+close to item 151's own outer shape (128/24 of 152), the same author habits
+reached through a different boundary.**
+
+**ROUTING, RESTATED FOR THIS ITEM'S OWN POPULATION.** `item121.mjs` (11),
+`item126.mjs` (8), `item112a.mjs` (7) and `fx5.mjs` (6) are the SAME four
+files item 151's S0 named as INK's territory — the notice named the FILES,
+not one population inside them. Shape A already fixed `fx5.mjs`'s OUTER
+coordinate-dispatch sites (a different population); item 154's IN-STRING
+population in all four files is exactly what the gate names, so all four
+stay HELD here too. Nothing converts before chat 1 confirms INK/FIX have
+seen this survey.
+
+**WHAT THIS COMMIT CHANGES: NOTHING.** Survey and tooling only, same
+discipline as item 151's own S0.
