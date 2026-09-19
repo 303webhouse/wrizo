@@ -7187,7 +7187,82 @@ RETURNING AUTHOR BEATS A RE-DERIVATION.**
 **TOOLS IS TOLD IT IS QUEUED FOR 147/148, SO IT CAN SEQUENCE — NOT SO IT STARTS NOW.** Current order
 for TOOLS: **item 154 → 147 → 148** (each re-checked for ERRATA's return before starting).
 
+## BATCH THREE DEPLOY MANIFEST — 2026-09-19 (chat 1, on Nick's "Ship it" — Fable PASS)
+
+**LIVE: `448fc6c` · railway `5e06974f-13ca-4c34-bf0b-fd353f0311ef`** — service `writer-studio-app`,
+status **SUCCESS**, serving `index-DfFOCr6L.js`. **PREVIOUS LIVE — THIS DEPLOY's ROLLBACK TARGET:
+`02ead44` · railway `13422c8a`.** **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**AUTHORIZATION, QUOTED: Nick — "Ship it".** *(Recorded as the words themselves, per standing
+constraint — Nick's ship word must be quoted, never paraphrased.)*
+
+**TEN PACKAGES**, exactly as assembled and Fable-reviewed: **item 139** (runner guard) · **TOOLS'
+park rider** · **85-C** (wave 2) · **item 126** (ink across modes, +121's already-shipped half) ·
+**item 140** (grant contract) · **item 141** (grant verify) · **VW1/item 134** (the rail) · **PW2**
+(nesting/transfer) · **the park conform** · **item 151 Shape A** (the shared hit-test).
+
+**PRODUCT DELTA: 13 files, +1,418/-91** (against `02ead44`, unchanged since assembly — nothing merged
+between the assembled diff and its stamp). **SCHEMA: ZERO. SERVER BYTES: ZERO.** Roster **91**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE DEPLOY HEAD, run under `chat1-deploy-20260918`:**
+- **DEFAULT: 91/91 CLEAN** — `tree=448fc6c bundle=index-DfFOCr6L.js/586771b`
+- **PARKED: 91/91 CLEAN** — identical stamp, `NO-REBUILD`
+- `tp1.mjs` (item 151's standing falsification) **7/7, identically both legs.** **PARK AUDIT: 72 files
+  / 181 checks** (up from Batch Two's 67/176 — the growth is VW1's four parks, the park conform's four
+  runs, and item 151's parked successors; no file shows a NEGATIVE delta).
+
+**TREE BARE AT UPLOAD (0 porcelain lines). `tsc` x2 exit 0. ITEM-98 GUARD:** `writer-studio` /
+`production` / `writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main ==
+448fc6c`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**; Railway
+image **linux/amd64**, container digest
+`sha256:6a783b745d2fc51034699beda24a50c5206a0009de3877c82ac4400a857df322`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-DfFOCr6L.js` and
+`index-B4ZI-bxQ.css`, both by name match.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH, MD5:**
+- `index-DfFOCr6L.js` — served `92332f244d214c79eefabb4a62e7ab89` **==** stamped
+- `index-B4ZI-bxQ.css` — served `bf5ed3371ed7442fbaffcccfa50627d7` **==** stamped
+
+**THE STAMPED BUNDLE `index-DfFOCr6L.js/586771b` HAD ALREADY BEEN VERIFIED SIX TIMES BEFORE THIS
+SHIP** — PW2's re-stamp, TOOLS' park conform, item 151's offer's post-merge re-verify, and item 151's
+own 91-file pair, both legs — **and now a seventh, in production.** *(The bundle law's loop closing
+again: the same bytes traced across build, offer, pair and ship.)*
+
+## RELAY AUDIT SINCE `13422c8a` — 2026-09-19
+
+**Structural checks, mechanical:**
+- **Registry sequence: no duplicate or regressive "next free N."** Every insert this arc used an
+  anchor-verified `once()` match on the then-current registry line before advancing it; the ledger's
+  final registry line reads **156**, one past the last item actually opened (155).
+- **Every `## ITEM N` header opened since `13422c8a` traces to a corresponding record** — no thread
+  found that was announced and never written.
+- **Nick's word quoted, both instances:** Batch Two's manifest and this one both carry "Ship it" as
+  the words themselves.
+
+**Two open threads surfaced, PRE-DATING `13422c8a` and neither newly created this arc — carried
+forward, not resolved:**
+- **`bm1.mjs` line 26 still reads "a race in the READ, not a defect in the product"** — the comment
+  chat 1 flagged to FIX's lane as describing the wrong mechanism (item 129 later fixed the actual race
+  through the seam). Unfixed at this ship. **Flagged again, explicitly, since it fell out of the
+  session across a context boundary and was not re-flagged after.**
+- **PLAN's "dropped 'survives the reversal' nuance"** — a flag from before this arc's own visible
+  history; no ledger trace of its resolution found, and chat 1 does not have the original context to
+  restate the specifics. **Flagged to Fable to say whether it is already closed or still owed.**
+
+**NEITHER BLOCKS THIS SHIP** — both are comment/documentation-scoped, not product defects, and both
+pre-date every package in this batch.
+
+## QUEUE AFTER SHIP — 2026-09-19
+
+**Box cleared** (`chat1-deploy-20260918`). **Release, as ruled:** TOOLS' item 154 pair when it offers;
+146's pair to whichever lane holds the box when one is free; 147/148 after 154 (or back to ERRATA if
+it returns first).
+
 Registry: next free **156**.
+
 
 
 
