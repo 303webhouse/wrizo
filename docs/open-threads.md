@@ -7075,7 +7075,65 @@ unchanged.
 
 **Token `tools-item151-91pair-20260918`.** Box confirmed idle before granting.
 
+## ITEM 151 SHAPE A — MERGED — 2026-09-18
+
+**`item151-silent-acts` @ `afc0556` MERGED at `56e2ad8` — TAKE WORD, chat 1, under the harness/test-seam
+amendment (no Fable gate).** **Verified before merging:** trial merge against `origin/main` clean; **0
+files in `apps/desktop/src` or `apps/server`; `item121.mjs`/`item126.mjs` still 0 touches.** Stamp
+matches: 91/91 both legs, tree `c46d498`, bundle `index-DfFOCr6L.js`/586771b, zero `FAIL`, `tp1.mjs` 7/7
+identically both legs. **PUSHED.**
+
+**TOOLS' OWN READING OF ITS GREEN, REGISTERED because it is the correct one and the temptation ran the
+other way:** a clean pair resolves the covered-point census to **ZERO-OBSERVED under this run's
+gestures, timing and window sizes — NOT to zero-possible, and NOT to proof no site was ever landing
+wrong.** **The fix's value is that all 102 sites are gated regardless of what any run happens to
+encounter.** §12 STAYS UNKNOWN as a prediction.
+
+> **A CLEAN RUN RESOLVES WHAT THIS RUN ENCOUNTERED, NOT WHAT EXISTS — A GATE's WORTH IS THAT IT HOLDS
+> WHEN NOTHING FIRES.**
+
+## ITEM121.MJS / ITEM126.MJS — ROUTING CLEARANCE — CLEARED — 2026-09-18
+
+**CHAT 1 CLEARS THE GATE** — Shape A's remaining sites in these two files may be fixed. **Checked
+before clearing, not assumed:** item 126's product work is MERGED (`14ff198`, clean at merge, Batch
+Three's own manifest entry) and **INK IS IDLE ACROSS ALL THREE OF ITS WORKTREES** (`menus-ink`,
+`item121-ink`, `item126-ink-across-modes`) — **EVERY ONE clean, no uncommitted work.** `item121-ink`'s
+tree sits AT THE CURRENT MAIN TIP, confirming it is synced, not mid-build. **No live edit is
+outstanding in either file; the collision the routing check exists to prevent does not apply here.**
+**TOOLS may proceed on both.**
+
+## TOOLS' NEXT — ITEM 154 — 2026-09-18
+
+**Next, per Fable's order: item 154** (the 134 in-string `evalJs` sites — two-pass parser, boundary
+census first, byte-comparison verification). **NO BOX GRANT ISSUED** — building the parser and taking
+the boundary census are browserless, the same standing as item 149's. Box stays idle. **Item 155 stays
+PARKED — no action.**
+
+## BATCH THREE — READINESS JUDGMENT — 2026-09-18
+
+**CHAT 1's JUDGMENT: ASSEMBLE AND SHIP NOW — do not wait for ERRATA's three.**
+
+**Reasons:**
+1. **The batch is already large** (139, park rider, 85-C, item 126 +121's fix, 140, 141, VW1, PW2, the
+   park conform, 151) and carries a product change (item 126's live-ink gesture fix) ready for
+   Fable's assembled-diff review — waiting adds size without adding readiness.
+2. **Nothing in Batch Three depends on 147, 148 or 146**, and nothing they carry depends on Batch
+   Three either — the seam-table order (`PW2 → 148 → 146`) is satisfied once PW2 merged, which it
+   already has; 148/146 are free to land in whatever batch comes next.
+3. **ERRATA's absence, MEASURED, not characterised: 1 day 16h 15m elapsed at this writing — PAST THE
+   24-HOUR MARK chat 1 flagged as the trigger point.** *(Chat 1 owed this without being asked; it is
+   being said now, alongside the readiness judgment it bears on, rather than separately.)* **Fable's
+   own standing instruction was to decide, at that mark, whether to re-route 147 and 148 to a present
+   lane** — TOOLS is present and has just closed 151. **Chat 1's reading: shipping Batch Three now and
+   separately ruling on re-routing are independent decisions; the first does not require the second.**
+4. **A ready batch ships before a long queue**, per the standing principle — holding a shippable batch
+   hostage to an absent lane's unstarted work is the shape the principle exists to prevent.
+
+**Fable reviews the assembled diff either way; Nick's word ships it — chat 1 assembles on your
+confirmation.**
+
 Registry: next free **156**.
+
 
 ## ITEM 151 · SHAPE A — BUILT AND OFFERED, NOT LAUNCHED — 2026-09-18 (tools lane; branch
 `item151-silent-acts`)
