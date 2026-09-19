@@ -18683,3 +18683,50 @@ tools inherits the REASONING to re-derive, not the code to rebuild, and per this
 item's own new band line, their NUMBERS get re-derived rather than inherited too. **If
 ERRATA returns before 147 starts, it takes them back** — a returning author beats a
 re-derivation. Not started this turn.
+
+## ITEMS 161 AND 162 — RECEIVED, QUEUED BEHIND 154's PAIR — 2026-09-19
+(tools lane; not yet started)
+
+**QUEUE ORDER, per Fable: item 154's pair, then 161 and 162, then ERRATA's re-routed
+147/148 behind those (unless ERRATA returns first).** No box grant is currently held
+(checked: `~/.wrizo/box-turn.json` absent, 0 foreign browsers) and item 154's pair has
+not run yet — nothing below is more than preparatory reading; no live measurement has
+been taken for either item.
+
+**ITEM 162 — RAIL FOOT TO THE SCREEN BOTTOM.** Nick, verbatim: "The theme and trash
+options should be all the way at the bottom of the screen, not floating on the rail."
+Item 137 pinned Themes/Trash to `.wz-strip-foot` (`margin-top:auto` inside
+`.desk-frame-strip`, itself `min-height:70vh`) — correct as far as it went, but
+`min-height` is a FLOOR, not a stretch to the full rail/viewport, so on a window taller
+than the 70vh floor implies, the foot lands wherever `.desk-frame-strip`'s own content
+height + 70vh floor puts it, short of the true bottom. **The fix direction is named
+already: the strip fills the rail to the viewport's bottom, not just to 70vh.** S0 must
+measure at two heights the way item 137's own S0 did (`docs/menus/item137-s0-
+measurement.md` is the precedent to match in form), and the check asserts the foot's
+bottom edge against the VIEWPORT, not the aside — item 137's own check asserted against
+the aside, which is exactly the measurement that let this gap through the first time.
+Relevant CSS: `.desk-frame-strip` (`apps/desktop/src/index.css` ~line 2752, the item 137
+comment block immediately above it).
+
+**ITEM 161 — TUTOR STRIP ON THE BOARD, MISALIGNED.** Nick, as Fable relayed: "the Tutor
+strip menu on the Board […] is misaligned with the Board edge. When I open it, the
+pop-out menu overlaps the Board edge, including even the clickable tab that opens it."
+**Measure before fixing.** Preparatory read only: `.desk-frame-tutor-anchor--board` and
+`.desk-frame-tutor-panel-anchor--board` (`apps/desktop/src/index.css` ~line 3230,
+~3290) already carry a `min(50%, 550px)` half-measure mirroring the sliver anchor's own
+`--board` variant, built in TU2 S4 specifically to land the grip flush to the Board
+canvas's own right edge (`BoardEditor.tsx`'s `width:min(100%, 1100px)` wrapper) rather
+than the prose/screenplay 760px measure. That the grip AND the panel are still reported
+overlapping the Board edge despite this existing variant is the thing S0 has to actually
+measure, not assume the cause of — the `--board` override may not be reaching these
+anchors in the Board's own DOM context, or Board's wrapper measure may have changed
+since TU2 S4, or something else neither read from the CSS alone. **Item 166 (no popout
+overlaps the page) is being designed in parallel — fix the misalignment now, leave the
+overlap rule to 166 unless the misalignment IS the overlap**, i.e. if S0's own
+measurement shows the misalignment and the edge-overlap are the same defect (the grip
+sitting past the Board edge BECAUSE it's misaligned), fixing the alignment closes both;
+if they turn out to be separable, only the alignment is this item's to fix.
+
+**NEXT ACTION:** wait for item 154's pair grant/run, then request or take up a grant to
+launch the harness for both S0 measurements (162 at two heights per the 137 precedent;
+161 on the Board at the Board's own reference widths) before writing either fix.
