@@ -7261,7 +7261,40 @@ pre-date every package in this batch.
 146's pair to whichever lane holds the box when one is free; 147/148 after 154 (or back to ERRATA if
 it returns first).
 
-Registry: next free **156**.
+## ITEM 156 — `bm1.mjs`'s STALE RACE COMMENT — OPENS 2026-09-19
+
+**OPENS, in place of a re-flag. Harness/comment-scoped. NO PAIR.** `bm1.mjs:26` still reads "a race in
+the READ, not a defect in the product" — describing a mechanism **item 129 already fixed through the
+seam**, so the comment now points the next reader at a race that no longer exists.
+
+**ROUTED to whoever takes `bm1` next, OR FOLDED INTO 147** — 147 already touches park lines across
+files, so it costs nothing extra to carry one comment fix along with it. Chat 1's call to make when a
+lane is assigned either.
+
+> **A FLAG CARRIED IN A CONVERSATION IS LOST AT THE NEXT BOUNDARY — IF IT MATTERS, IT GETS A NUMBER.**
+
+*(Chat 1 dropped this once, across a context boundary, by carrying it as prose rather than a ledger
+item. The fix is structural, not a promise to remember better: give it a number and it survives any
+boundary the same way every other open item does.)*
+
+## PLAN's "SURVIVES THE REVERSAL" NUANCE — ROUTED AS A QUESTION — 2026-09-19
+
+**Fable has no trace of it either and WILL NOT RECONSTRUCT IT.** **ROUTED TO PLAN DESK, in its own
+words:** either PLAN names the nuance from its own record, or PLAN reports that it cannot. **If
+NEITHER desk can restate it, it is recorded CLOSED AS UNRECOVERABLE, with that reason** — a thread
+nobody can state is not an open thread, it is a gap, and saying which is the honest end.
+
+*(Fable's guess at what it meant would be exactly the paraphrase-as-primary-text failure the record
+refuses elsewhere — the same law that keeps a superseded ruling's original wording verbatim rather
+than a summary of it.)*
+
+## QUEUE — UNCHANGED — 2026-09-19
+
+**As recorded at the ship:** TOOLS' item 154 pair when it offers; 146's pair to whichever lane holds
+the box when one is free; 147/148 after 154 (or back to ERRATA if it returns first). Box idle.
+
+Registry: next free **157**.
+
 
 
 
