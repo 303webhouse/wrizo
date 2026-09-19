@@ -9,9 +9,11 @@
 
 > **⚠ SYMBOLS ARE THE ANCHOR.** Read at `4600d7f`; the notes at `b807f59`. Line numbers are a courtesy.
 
-> **⚠ PRIMARY TEXT — PENDING NICK's ONE-WORD CONFIRMATION.** His CARD NOTE, **transcribed verbatim by
-> Fable from his screenshots**, recorded at `b807f59`. **Designed to those words.** If his confirmation
-> changes a word, this brief is re-checked before anything is built.
+> **PRIMARY TEXT — his CARD NOTE**, **transcribed by Fable from his screenshots**, recorded at
+> `b807f59`. **On 2026-09-19 Nick authorized the transcription of his PLAN notes as primary** (*"If this
+> is a rule violation, then I authorize it"*); **the CARD NOTE came through the same transcription in the
+> same relay, so this brief treats it as primary on that basis — flagged, because the authorization named
+> the Plan notes.**
 
 ---
 
@@ -116,6 +118,8 @@ this desk does not know whether Nick expects a card that has words but no name t
   *(A copy of a card that is still blank is itself born blank: it takes the target's next number.)*
 - **Never numbered:** `'page-pin'` (a page card or a board-card — **named by what it points at**, a
   membership, not a card) · `'connection'` · `'board-meta'`.
+- **A card on a Book-type board's page** (item 172 §3) **is numbered on its BOARD, like any card** — the
+  page it sits on is where it is shown, not what it belongs to.
 - **⚠ CARDS THAT EXIST TODAY GET NO NUMBER** (constrain forward): **167 governs what the app creates, not
   what the writer already made** (item 138's band, applied). **An existing card's stand-in stays its first
   words**, exactly as every list shows it today. *Numbering them on first read would be the app writing
