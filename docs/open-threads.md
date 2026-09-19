@@ -2868,6 +2868,16 @@ when Typewriter is OFF" — "yes".** **The analog law's FONT clause is NOT REVER
 is **parked in the immutability form beside the law itself** (see the band). **The resolution is the
 point: the conflict was surfaced, not smoothed over, and the founder settled it in one relay.**
 
+**SUCCEEDED IN PART BY ITEM 171 — TYPEWRITER SCOPE (2026-09-19).** 127's text above stands exactly as
+written; this names its successor for the TYPEWRITER clause only. Nick's ruling: *"Typewriter mode
+should only be available on "Text" pages with no ink. Once Ink is selected, Typewriter mode should be
+deactivated, and once any ink has been added to a Page, typewriter mode cannot be reactivated. Also,
+typewriter mode should not be available in either Draft or Revise mode."* Two consequences for 127
+specifically: its roster line **"Typewriter on/off"** becomes CONDITIONAL — the option is ABSENT on a
+page that has ink — and its **TYPED FACE** clause follows the typewriter it is keyed to, so a Free
+Write page with ink uses its own chosen face. **FX2 S2's Draft-open typewriter seed is superseded by
+the same ruling.** Owner INK; S0 at `docs/menus/item171-s0-survey.md` (§5.2, §5.3).
+
 ## ITEM 128 — NESTED BOARDS — OPENS 2026-09-07
 
 **OPENS (Fable, 2026-09-07), on Nick's word: *"Boards can nest, too. Yeah."*** **A board is a
