@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the board tabs · and the door</title>
+<!--
+  ITEM 144 AMENDED — THE BOARD TABS · PLAN desk · 2026-09-19 · candidates only.
+
+  Nick, verbatim: "all connected boards are listed as tabs that a user can move
+  back and forth between with a single click from the Board UI (not only from
+  the Plan menu)" -- and "I never found a way to put a board inside of a board."
+
+  THE ROW, attached below the board, always in view. THREE POPULATIONS:
+    connected (parents/children -- the nest), siblings (same drawer), tagged
+    (only while tags are active; ALL, as ruled).
+
+  BT-Q1 -- THE ORDER. Both candidates are live (rig: "order"):
+    STABLE   -- the drawer's boards in birth order, each followed by its
+                children joined beneath it. The row does not move when you do;
+                only the olive where-you-are marker moves. (lean)
+    RELATIVE -- regrouped around wherever you stand: holds this / here /
+                inside / beside. Every press rebuilds it.
+  The rig counts how many tabs MOVED on your last press -- the cost, measured.
+
+  THE DOOR (T4): "+" at the row's end opens the connect list INSIDE the row's
+  own band (item 166: never over the canvas). Self and condition boards are
+  absent; "already inside" and "contains this board" (the cycle guard, item
+  128) are present, inert, and say why. Pressing a board puts it inside this
+  one, displays its card HERE, and its tab joins beneath the current tab.
+
+  COLOUR: the current tab is OLIVE (a where-you-are marker -- the tag reversal
+  did not touch it); active tag chips are ORANGE (--tag). Structure lines are
+  --line, never a state colour.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --tag:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  .rig .grp{display:flex;gap:4px;align-items:center}
+  #geom{margin-left:auto;font-size:11px;color:#8f8f8f}
+  #geom .moved{color:#e0a060} #geom .still{color:#9fb36a}
+  .fit{position:absolute;inset:41px 0 124px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{width:1366px;height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:124px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:52px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--text-low);
+       font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+  .foot{margin-top:auto}
+
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:16px;padding:0 22px;border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low);display:flex;align-items:center;gap:0;flex-wrap:nowrap;white-space:nowrap}
+  .crumb .i{color:var(--text-mid)} .crumb .s{opacity:.5;padding:0 6px} .crumb .h{color:var(--text-hi)}
+  .crumb input{font:inherit;font-size:11px;color:var(--text-hi);background:#241305;border:1px solid var(--accent-rest);padding:2px 6px;width:170px}
+  .modes{margin-left:auto;display:flex;gap:2px}
+  .modes span{font-size:10.5px;padding:4px 10px;border:1px solid var(--line);color:var(--text-low)}
+  .modes span.on{color:var(--text-hi);border-color:var(--accent-rest)}
+  .door{font-size:10.5px;color:var(--text-mid);border:1px solid var(--line);padding:4px 10px}
+
+  .room{grid-row:2;grid-column:2;display:flex;flex-direction:column;min-height:0}
+  .sort{display:flex;align-items:center;gap:6px;padding:8px 20px;border-bottom:1px solid var(--line);
+        font-size:10.5px;color:var(--text-low);flex:0 0 auto;flex-wrap:wrap;min-height:37px}
+  .avail{background:none;border:1px dashed var(--line);color:var(--text-low);font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer}
+  .avail:hover{color:var(--text-hi);border-color:var(--text-low)}
+  .act{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--tag);background:var(--tag);
+       color:var(--on-brass);font-size:10.5px;padding:2px 4px 2px 8px;font-weight:500}
+  .act button{background:none;border:none;color:var(--on-brass);font:inherit;cursor:pointer;padding:0 3px}
+  .clearall{margin-left:auto;background:none;border:none;color:var(--text-mid);font:inherit;font-size:10.5px;cursor:pointer;text-decoration:underline}
+
+  .wall{flex:1;position:relative;min-height:0;overflow:hidden;
+        background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:22px 22px}
+  .bc{position:absolute;width:200px;background:var(--panel);border:1px solid var(--line);padding:8px 10px}
+  .bc .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:3px}
+  .bc .t{font-family:var(--prose);font-size:12.5px;line-height:1.4;color:var(--text-mid)}
+  .bb{position:absolute;width:236px;height:74px;background:var(--ground);border:1px solid #5b4228;padding:9px 11px;cursor:pointer;
+      box-shadow:5px -5px 0 -1px var(--ground),5px -5px 0 0 #5b4228}
+  .bb .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low)}
+  .bb .t{font-size:13px;color:var(--text-hi);margin-top:3px}
+  .bb .d{font-size:10px;color:var(--text-low);margin-top:2px}
+  .bb.new{animation:arrive 1.2s ease}
+  @keyframes arrive{0%{outline:3px solid var(--accent-rest)}100%{outline:3px solid transparent}}
+  .hint{position:absolute;right:16px;bottom:10px;font-size:10px;color:var(--text-low)}
+
+  /* THE BOARD TABS — attached below the board, always in view */
+  .tabsrow{flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel)}
+  .rowhead{display:flex;align-items:center;gap:10px;padding:6px 20px 0;font-size:9.5px;color:var(--text-low)}
+  .rowhead .dr{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mid)}
+  .tabs{position:relative;display:flex;align-items:flex-end;gap:2px;padding:6px 20px 12px;overflow-x:auto;scrollbar-width:thin}
+  .tab{position:relative;background:var(--ground);border:1px solid var(--line);color:var(--text-mid);
+       font:inherit;font-size:11.5px;padding:7px 13px 7px;cursor:pointer;white-space:nowrap;text-align:left;max-width:190px;
+       overflow:hidden;text-overflow:ellipsis}
+  .tab:hover{color:var(--text-hi)}
+  .tab[aria-current="page"]{background:#1f1407;color:var(--text-hi);border-color:var(--accent-rest);cursor:default;
+       box-shadow:inset 0 -2px 0 var(--accent-rest)}
+  .tab .in{display:block;font-size:8.5px;color:var(--text-low);margin-top:1px}
+  .tab.plus{color:var(--text-mid);border-style:dashed;font-size:13px;padding:5px 12px}
+  .grpcap{align-self:center;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-low);padding:0 6px 0 10px}
+  .grpcap:first-child{padding-left:0}
+  .line{position:absolute;height:1px;background:#6b5033;pointer-events:none}
+  .line:before{content:'';position:absolute;left:0;top:-5px;width:1px;height:5px;background:#6b5033}
+  .nosib{padding:2px 20px 12px;font-size:11px;color:var(--text-mid)}
+
+  /* the connect list — INSIDE the row's own band (item 166) */
+  .connect{display:none;border-top:1px dashed #3a2613;padding:10px 20px 12px}
+  body[data-connect="1"] .connect{display:block}
+  .connect .hd{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-mid);margin-bottom:8px}
+  .connect .hd b{color:var(--text-hi);font-weight:500}
+  .connect .hd button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer}
+  .clist{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+  .ci{flex:0 0 auto;width:132px;background:none;border:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:var(--text-mid)}
+  .ci .th{width:128px;height:62px;background:var(--ground);border:1px solid #5b4228;position:relative;margin:4px 0 5px;
+         box-shadow:4px -4px 0 -1px var(--panel),4px -4px 0 0 #3d2c18}
+  .ci .nm{font-size:11px;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ci .in{font-size:9.5px;color:var(--text-low)}
+  .ci .why{font-size:9.5px;color:var(--text-mid);font-style:italic}
+  .ci[aria-disabled="true"]{cursor:default}
+  .ci[aria-disabled="true"] .th,.ci[aria-disabled="true"] .nm{opacity:.45}
+  .ci:not([aria-disabled="true"]):hover .th{border-color:var(--text-mid)}
+  .ci.newb .th{border-style:dashed;display:grid;place-items:center;color:var(--text-mid);font-size:22px}
+  .ci.newb .th{box-shadow:none}
+</style>
+</head>
+<body data-connect="0">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>THE BOARD TABS</b>
+  <span class="grp">order (BT-Q1):
+    <button id="oStable" aria-pressed="true">stable · lean</button>
+    <button id="oRel" aria-pressed="false">relative</button>
+  </span>
+  <button id="reset">reset</button>
+  <span id="geom"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat"><span class="g">⌗</span>plan</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="sep"></div>
+      <div class="cat"><span class="g">✶</span>journal</div>
+      <div class="cat"><span class="g">⌂</span>shelf</div>
+      <div class="foot"><div class="cat"><span class="g">🗑</span>trash</div></div>
+    </nav>
+
+    <div class="band">
+      <div class="crumb" id="crumb"></div>
+      <div class="modes" role="tablist" aria-label="Board view"><span class="on" role="tab">Open</span><span role="tab">Storyboard</span><span role="tab">Outline</span></div>
+      <div class="door">Page →</div>
+    </div>
+
+    <div class="room">
+      <div class="sort" id="sort"></div>
+      <div class="wall" id="wall"></div>
+      <div class="tabsrow">
+        <div class="rowhead"><span class="dr" id="rowlabel">Novel</span><span id="rowsub">— the boards in this drawer, and the ones connected to them</span></div>
+        <nav class="tabs" id="tabs" aria-label="Boards in Novel"></nav>
+        <div class="nosib" id="nosib" hidden></div>
+        <div class="connect" id="connect"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap"><b>Press any tab</b> — the board changes over and the <b>olive</b> marker moves. In the <b>stable</b>
+order the tabs stay exactly where they were (the rig counts how many moved); switch the rig to <b>relative</b> and press
+again to feel the rival: the row regroups around wherever you stand. A board <b>inside</b> another sits right after it,
+<b>joined beneath it</b> by a thin line; a board from another drawer carries <b>“in Research”</b> — the same
+preposition as item 163’s fix. <b>Press ＋</b> to put a board inside the one you are on: the list opens <b>inside the
+row</b>, never over the board. <em>Winterfell</em> is already inside Stark and says so; <em>Westeros</em> contains Stark,
+so it cannot go inside it — present, inert, and it says why (item 128’s cycle guard, met where you meet it). Pick
+<em>Lore</em>: its card appears <b>here</b>, and its tab joins beneath Stark’s. <b>Add tags</b> from the dashed set: the
+row goes flat and narrows to boards carrying <b>all</b> of them, from anywhere — the tab you are on never disappears —
+and an empty sort says so in words.</div>
+
+<script>
+(function(){
+  var DRAWER_NAMES={novel:'Novel',research:'Research'};
+  var B={
+    westeros:  {name:'Westeros — the whole', dr:'novel',    born:1, tags:['stark','lore']},
+    stark:     {name:'Stark',                dr:'novel',    born:2, tags:['stark','character']},
+    characters:{name:'Characters',           dr:'novel',    born:3, tags:['character']},
+    timeline:  {name:'Timeline',             dr:'novel',    born:4, tags:['stark']},
+    winterfell:{name:'Winterfell',           dr:'novel',    born:5, tags:['stark','crypt']},
+    lore:      {name:'Lore',                 dr:'novel',    born:6, tags:['lore']},
+    ravens:    {name:'Ravens & letters',     dr:'research', born:1, tags:['stark','character']},
+    maps:      {name:'Maps of the North',    dr:'research', born:2, tags:['stark','lore']}
+  };
+  // membership: parent -> children, each child at a canvas spot (reading order = y, then x)
+  var KIDS0={ westeros:[{id:'stark',x:52,y:8}], stark:[{id:'winterfell',x:56,y:40}], characters:[{id:'ravens',x:50,y:12}] };
+  var CARDS={
+    westeros:[{t:'Seven kingdoms, one winter.',x:4,y:8},{t:'The wall is older than the houses.',x:6,y:44}],
+    stark:[{t:'Ned’s refusal is not stubbornness.',x:4,y:6},{t:'Catelyn: three drafts, none sent.',x:6,y:40},{t:'Winter is a debt, not a season.',x:28,y:66}],
+    winterfell:[{t:'The crypt nobody mentions at dinner.',x:6,y:8},{t:'Colder than the yard.',x:40,y:22}],
+    characters:[{t:'Mara knows before the dog does.',x:4,y:8},{t:'He answers questions nobody asked.',x:8,y:46}],
+    timeline:[{t:'The last ride, before the snow.',x:6,y:10}],
+    lore:[{t:'The old gods keep no calendar.',x:8,y:12}],
+    ravens:[{t:'A raven that arrives too late.',x:6,y:12}],
+    maps:[{t:'North of the Neck, the roads give up.',x:6,y:12}]
+  };
+  var ALL_TAGS=['stark','character','lore','crypt'];
+  var KIDS, here, active, order, renamingId, newCount, lastIds=null;
+
+  function init(){ KIDS=JSON.parse(JSON.stringify(KIDS0)); here='stark'; active=[]; renamingId=null; newCount=0; lastIds=null;
+    document.body.dataset.connect='0'; }
+  function kidsOf(id){ return (KIDS[id]||[]).slice().sort(function(a,b){return a.y-b.y||a.x-b.x;}).map(function(k){return k.id;}); }
+  function parentsOf(id){ return Object.keys(KIDS).filter(function(p){return (KIDS[p]||[]).some(function(k){return k.id===id;});}); }
+  function firstParent(id){ var p=parentsOf(id); return p.length?p[0]:null; }
+  function ancestors(id){ var out=[],seen={},cur=id; seen[id]=1;
+    for(;;){ var p=parentsOf(cur).filter(function(x){return !seen[x];})[0]; if(!p) break; seen[p]=1; out.push(p); cur=p; } return out; }
+  function chain(id){ return ancestors(id).reverse(); }
+  function hasAll(tags){ return active.every(function(a){return tags.indexOf(a)>=0;}); }
+  function list(tags){ return tags.map(function(t){return '#'+t;}).join(', ').replace(/, ([^,]*)$/,' and $1'); }
+  function inLine(id){ return B[id].dr!==B[here].dr ? 'in '+DRAWER_NAMES[B[id].dr] : ''; }
+
+  // ---- STABLE: the drawer's forest in birth order, children after parents, each board once
+  function stableRow(){
+    var dr=B[here].dr, out=[], placed={};
+    function visit(id,depth){ if(placed[id]) return; placed[id]=1; out.push({id:id,depth:depth});
+      kidsOf(id).forEach(function(k){ if(firstParent(k)===id) visit(k,depth+1); }); }
+    // roots: boards of this drawer whose first parent is not in this drawer (or none); plus outside first-parents of drawer boards
+    var inDr=Object.keys(B).filter(function(id){return B[id].dr===dr;}).sort(function(a,b){return B[a].born-B[b].born;});
+    inDr.forEach(function(id){
+      var fp=firstParent(id);
+      if(!fp){ visit(id,0); return; }
+      var top=chain(id)[0]||fp;                 // an outside ancestor leads its group
+      if(B[top].dr!==dr) visit(top,0);
+    });
+    inDr.forEach(function(id){ if(!placed[id]) visit(id,0); });
+    return out;
+  }
+  // ---- RELATIVE: grouped around here
+  function relativeRow(){
+    var out=[], seen={};
+    function add(id,grp){ if(seen[id]) return; seen[id]=1; out.push({id:id,depth:0,grp:grp}); }
+    parentsOf(here).forEach(function(p){ add(p,'holds this'); });
+    add(here,'here');
+    kidsOf(here).forEach(function(k){ add(k,'inside'); });
+    Object.keys(B).filter(function(id){return B[id].dr===B[here].dr;}).sort(function(a,b){return B[a].born-B[b].born;})
+      .forEach(function(id){ add(id,'beside'); });
+    return out;
+  }
+
+  function render(){
+    var cur=B[here];
+    // crumb: drawer / nest chain / here (rename field when newly born)
+    var c='<span class="i">'+DRAWER_NAMES[cur.dr]+'</span>';
+    chain(here).forEach(function(a){ c+='<span class="s">/</span><span class="i">'+B[a].name+'</span>'; });
+    c+='<span class="s">/</span>'+(renamingId===here?'<input id="nm" placeholder="Name this board" aria-label="Name this board">':'<span class="h">'+cur.name+'</span>');
+    document.getElementById('crumb').innerHTML=c;
+    var nm=document.getElementById('nm');
+    if(nm){ nm.focus(); nm.onkeydown=function(e){ if(e.key==='Enter'){ if(nm.value.trim()) B[here].name=nm.value.trim(); renamingId=null; render(); } }; }
+
+    // sort bar (108's component — one active-tag state; chips ORANGE)
+    var avail=ALL_TAGS.filter(function(t){return active.indexOf(t)<0;});
+    var s=document.getElementById('sort');
+    s.innerHTML='<span style="letter-spacing:.14em">SORT</span>'
+      +active.map(function(t){return '<span class="act">#'+t+'<button data-drop="'+t+'" aria-label="Drop #'+t+'">×</button></span>';}).join('')
+      +avail.map(function(t){return '<button class="avail" data-add="'+t+'">+ #'+t+'</button>';}).join('')
+      +(active.length?'<button class="clearall" id="ca">clear all</button>':'');
+    [].forEach.call(s.querySelectorAll('[data-add]'),function(x){x.onclick=function(){active.push(x.dataset.add);render();};});
+    [].forEach.call(s.querySelectorAll('[data-drop]'),function(x){x.onclick=function(){active=active.filter(function(a){return a!==x.dataset.drop;});render();};});
+    var ca=document.getElementById('ca'); if(ca) ca.onclick=function(){active=[];render();};
+
+    // the wall — this board's cards and its board-cards (children)
+    var w=document.getElementById('wall'), h='';
+    (CARDS[here]||[]).forEach(function(k){ h+='<div class="bc" style="left:'+k.x+'%;top:'+k.y+'%"><div class="k">Card</div><div class="t">'+k.t+'</div></div>'; });
+    (KIDS[here]||[]).forEach(function(k){ var b=B[k.id];
+      h+='<div class="bb'+(k.fresh?' new':'')+'" data-in="'+k.id+'" style="left:'+k.x+'%;top:'+k.y+'%"><div class="k">Board</div><div class="t">'+b.name+'</div><div class="d">'+(b.dr===cur.dr?DRAWER_NAMES[b.dr]:'in '+DRAWER_NAMES[b.dr])+'</div></div>';
+      k.fresh=false; });
+    if(!(CARDS[here]||[]).length && !(KIDS[here]||[]).length) h+='<div class="hint" style="left:40%;top:40%;right:auto;bottom:auto;font-size:13px">A new board. Nothing on it yet.</div>';
+    h+='<div class="hint">double-click a board-card to travel in</div>';
+    w.innerHTML=h;
+    [].forEach.call(w.querySelectorAll('.bb'),function(x){x.ondblclick=function(){go(x.dataset.in);};});
+
+    // THE ROW
+    document.getElementById('rowlabel').textContent=DRAWER_NAMES[cur.dr];
+    document.getElementById('tabs').setAttribute('aria-label','Boards in '+DRAWER_NAMES[cur.dr]);
+    var rows, flat=active.length>0;
+    if(flat){
+      var base=(order==='stable'?stableRow():relativeRow()).map(function(r){return r.id;});
+      var extra=Object.keys(B).filter(function(id){return base.indexOf(id)<0;}).sort(function(a,b){return (B[a].dr+B[a].born).localeCompare(B[b].dr+B[b].born);});
+      rows=base.concat(extra).filter(function(id){return id===here || hasAll(B[id].tags);}).map(function(id){return {id:id,depth:0};});
+    } else rows = order==='stable'?stableRow():relativeRow();
+    var t='', lastGrp=null;
+    rows.forEach(function(r){
+      if(order==='relative' && !flat && r.grp!==lastGrp){ t+='<span class="grpcap">'+r.grp+'</span>'; lastGrp=r.grp; }
+      var il=inLine(r.id);
+      t+='<button class="tab" data-board-tab="'+r.id+'" data-depth="'+r.depth+'"'+(r.id===here?' aria-current="page"':'')+' title="'+B[r.id].name+'">'
+        +B[r.id].name+(il?'<span class="in">'+il+'</span>':'')+'</button>';
+    });
+    t+='<button class="tab plus" id="plus" aria-label="Put a board inside '+cur.name+'">＋</button>';
+    var tabs=document.getElementById('tabs'); tabs.innerHTML=t;
+    [].forEach.call(tabs.querySelectorAll('[data-board-tab]'),function(x){ x.onclick=function(){ if(x.dataset.boardTab!==here) go(x.dataset.boardTab); }; });
+    document.getElementById('plus').onclick=function(){ document.body.dataset.connect = document.body.dataset.connect==='1'?'0':'1'; renderConnect(); };
+    var nos=document.getElementById('nosib'), others=rows.filter(function(r){return r.id!==here;});
+    nos.hidden=!(flat && !others.length);
+    nos.textContent='No other board carries all of '+list(active)+'.';
+    if(!flat && order==='stable') drawLines(rows);
+    renderConnect();
+
+    // the measured cost: did any tab move?
+    var ids=rows.map(function(r){return r.id;}), g=document.getElementById('geom');
+    if(lastIds && !flat){
+      var moved=0; ids.forEach(function(id,i){ var j=lastIds.indexOf(id); if(j>=0 && j!==i) moved++; });
+      g.innerHTML='on <b style="color:#ddd">'+cur.name+'</b> · last press: '+(moved?'<span class="moved">'+moved+' tab'+(moved>1?'s':'')+' moved</span>':'<span class="still">no tab moved</span>');
+    } else g.innerHTML='on <b style="color:#ddd">'+cur.name+'</b>'+(flat?' · sort: '+active.map(function(t){return '#'+t;}).join(' → '):'');
+    if(!flat) lastIds=ids;
+  }
+
+  // structure lines: a parent's group, drawn beneath the tabs, in --line (never a state colour)
+  function drawLines(rows){
+    var tabs=document.getElementById('tabs'), box=tabs.getBoundingClientRect(), sc=box.width/tabs.offsetWidth||1;
+    rows.forEach(function(r,i){
+      var kids=[]; for(var j=i+1;j<rows.length && rows[j].depth>r.depth;j++) kids.push(j);
+      if(!kids.length) return;
+      var a=tabs.querySelector('[data-board-tab="'+r.id+'"]').getBoundingClientRect();
+      var z=tabs.querySelector('[data-board-tab="'+rows[kids[kids.length-1]].id+'"]').getBoundingClientRect();
+      var el=document.createElement('div'); el.className='line';
+      var left=(a.left+a.width/2-box.left)/sc+tabs.scrollLeft, right=(z.right-box.left)/sc+tabs.scrollLeft;
+      el.style.left=left+'px'; el.style.width=Math.max(0,right-left-2)+'px'; el.style.top=((a.bottom-box.top)/sc+4+r.depth*3)+'px';
+      tabs.appendChild(el);
+    });
+  }
+
+  function renderConnect(){
+    var el=document.getElementById('connect'); if(document.body.dataset.connect!=='1'){ el.innerHTML=''; return; }
+    var cur=B[here], anc=ancestors(here), inside=kidsOf(here);
+    var h='<div class="hd">Put a board inside <b>'+cur.name+'</b><button id="cx">Close</button></div><div class="clist">';
+    h+='<button class="ci newb" id="nb"><div class="th">＋</div><div class="nm">New board</div><div class="in">in '+DRAWER_NAMES[cur.dr]+', inside '+cur.name+'</div></button>';
+    Object.keys(B).sort(function(a,b){return (B[a].dr+B[a].born).localeCompare(B[b].dr+B[b].born);}).forEach(function(id){
+      if(id===here) return;                                   // self: ABSENT (nonsense)
+      var why = inside.indexOf(id)>=0 ? 'already inside' : (anc.indexOf(id)>=0 ? 'contains this board' : '');
+      h+='<button class="ci" data-pick="'+id+'"'+(why?' aria-disabled="true"':'')+'><div class="th"></div><div class="nm">'+B[id].name+'</div>'
+        +'<div class="in">'+(B[id].dr!==cur.dr?'in '+DRAWER_NAMES[B[id].dr]:DRAWER_NAMES[B[id].dr])+'</div>'+(why?'<div class="why">'+why+'</div>':'')+'</button>';
+    });
+    el.innerHTML=h+'</div>';
+    document.getElementById('cx').onclick=function(){ document.body.dataset.connect='0'; renderConnect(); };
+    document.getElementById('nb').onclick=function(){
+      newCount++; var id='new'+newCount; B[id]={name:'New board', dr:cur.dr, born:100+newCount, tags:[]}; CARDS[id]=[];
+      (KIDS[here]=KIDS[here]||[]).push({id:id,x:60,y:62,fresh:true});
+      document.body.dataset.connect='0'; renamingId=id; lastIds=null; here=id; render();
+    };
+    [].forEach.call(el.querySelectorAll('[data-pick]'),function(x){
+      if(x.getAttribute('aria-disabled')==='true') return;       // inert: pressing writes nothing
+      x.onclick=function(){ var n=(KIDS[here]||[]).length;
+        (KIDS[here]=KIDS[here]||[]).push({id:x.dataset.pick,x:52+((n*7)%20),y:58+((n*9)%20),fresh:true});
+        document.body.dataset.connect='0'; lastIds=null; render(); };
+    });
+  }
+
+  function go(id){ here=id; renamingId=null; document.body.dataset.connect='0'; render(); }
+
+  function setOrder(o){ order=o; lastIds=null;
+    document.getElementById('oStable').setAttribute('aria-pressed',o==='stable');
+    document.getElementById('oRel').setAttribute('aria-pressed',o==='relative'); render(); }
+  document.getElementById('oStable').onclick=function(){setOrder('stable');};
+  document.getElementById('oRel').onclick=function(){setOrder('relative');};
+  document.getElementById('reset').onclick=function(){ init(); setOrder(order||'stable'); };
+
+  function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/1366, fit.clientHeight/768, 1)+')'; render(); }
+  window.addEventListener('resize',layout);
+  init(); order='stable'; layout(); setOrder('stable');
+})();
+</script>
+</body>
+</html>
