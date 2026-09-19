@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the plan menu · and the page</title>
+<!--
+  ITEMS 165 + 166 · PLAN desk · 2026-09-19 · candidates only.
+
+  165 — THE PLAN MENU RESTRUCTURE, drawn to Nick's in-app notes (the PLAN
+  NOTE, transcribed verbatim by Fable at b807f59 -- PENDING his one-word
+  confirmation). Create Board / Outline / Story Structure / Organize Research,
+  each a submenu of options with a large thumbnail and a few words; a new
+  subsection: "Connect Board" (a submenu -- every board, scrolling only when it
+  must, the scroll bar "extremely minimal") and "Connected Boards" moved
+  beneath it. Tags in the three-dot menu: pick one and only boards/pages
+  carrying it keep their place; pick more and only those carrying ALL of them.
+
+  166 — NO POP-OUT OVERLAPS THE PAGE. The rig's "canon" switch compares:
+    OLD CANON — the panel at 300px and every further layer BESIDE it, which
+                the house ruled "may overlay the paper at laptop widths".
+    THE LAW   — R1 every pop-out sized to the margin the page leaves;
+                R2 cascades DRILL IN (the survey's existing docked state,
+                made the only state); R3 below the floor the page SLIDES
+                aside, keeping its measure — it is never covered.
+  The rig reads the overlap in pixels. GEOMETRY IS DERIVED from the house's
+  CSS tokens (paper 615px at scale 1, 677 at 1.1 from 1680, 738 at 1.2 from
+  1920; rail 84px), +/- ~30px -- NOT MEASURED. Item 166's S0 measures.
+
+  STORY STRUCTURE'S SIX ARE TUTOR'S TO CHOOSE -- drawn here as empty slots,
+  deliberately, so no craft content is invented by the design desk.
+  MIND MAP is ABSENT (165-Q3's lean: absent until built). BIBLIOGRAPHY is
+  greyed -- Nick's one named exception to "absent, never greyed".
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1; --ink:#2b2118;
+    --brass:#FF9800; --accent-rest:#96a05a;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig .grp{display:flex;gap:4px;align-items:center}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #geom{margin-left:auto;font-size:11px;font-variant-numeric:tabular-nums}
+  #geom .bad{color:#e05c5c} #geom .good{color:#9fb36a} #geom .mv{color:#d9b36a}
+  .fit{position:absolute;inset:41px 0 112px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:112px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .rail{position:absolute;left:0;top:0;bottom:0;width:84px;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:3}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);box-shadow:inset 2px 0 0 var(--accent-rest)}
+  .sep{height:1px;background:var(--line);margin:8px 10px}
+
+  .page{position:absolute;top:26px;bottom:26px;background:var(--paper);color:var(--ink);padding:34px 38px;
+        font-family:var(--prose);font-size:15.5px;line-height:1.62;overflow:hidden;z-index:1;transition:left .22s ease}
+  .page h2{font-size:21px;font-weight:500;margin-bottom:12px}
+  .page p{margin-bottom:11px}
+  .hatch{position:absolute;z-index:8;pointer-events:none;
+         background:repeating-linear-gradient(45deg,rgba(224,92,92,.30) 0 6px,rgba(224,92,92,.08) 6px 12px);
+         border-left:1px solid #e05c5c;border-right:1px solid #e05c5c}
+
+  .col{position:absolute;top:26px;bottom:26px;background:var(--ground);border:1px solid var(--line);z-index:6;
+       display:flex;flex-direction:column;overflow:hidden}
+  .col .hd{display:flex;align-items:center;gap:8px;padding:11px 12px 9px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .col .hd .ti{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-mid);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .col .hd button{background:none;border:none;color:var(--text-mid);font:inherit;font-size:14px;cursor:pointer;padding:0 3px}
+  .col .bd{flex:1;overflow-y:auto;padding:6px 0 12px;scrollbar-width:thin;scrollbar-color:#3a2613 transparent}
+  .row{display:flex;align-items:center;width:100%;background:none;border:none;font:inherit;color:var(--text-hi);
+       font-size:12.5px;padding:9px 14px;cursor:pointer;text-align:left}
+  .row:hover{background:#1f1407}
+  .row .ch{margin-left:auto;color:var(--text-low)}
+  .rule{height:1px;background:var(--line);margin:8px 12px}
+  .sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-low);padding:8px 14px 4px}
+  .sub2{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);padding:10px 14px 4px}
+  .lead{font-size:11px;color:var(--text-mid);padding:0 14px 6px}
+  .clist{overflow-y:auto;margin:0 10px;scrollbar-width:thin;scrollbar-color:#2a1d10 transparent}
+  .clist::-webkit-scrollbar{width:3px} .clist::-webkit-scrollbar-thumb{background:#2a1d10}
+  .tagbar{display:flex;flex-wrap:wrap;gap:5px;padding:8px 12px 10px;border-bottom:1px dashed #2a1d10}
+  .tagbar .lbl{width:100%;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low)}
+  .tg{background:none;border:1px dashed var(--line);color:var(--text-mid);font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer}
+  .tg[aria-pressed="true"]{background:var(--brass);border:1px solid var(--brass);color:#1C1610;font-weight:500}
+  .none{font-size:11px;color:var(--text-mid);padding:6px 14px;line-height:1.5}
+  .crow{display:block;width:100%;background:none;border:none;border-bottom:1px solid #22160a;font:inherit;text-align:left;padding:6px 8px;cursor:pointer;color:var(--text-hi);font-size:11.5px}
+  .crow .in{display:block;font-size:9.5px;color:var(--text-low)}
+  .crow .why{font-size:9.5px;color:var(--text-mid);font-style:italic}
+  .crow[aria-disabled="true"]{cursor:default;color:var(--text-low)}
+  .conn{display:block;width:100%;background:none;border:none;font:inherit;text-align:left;padding:7px 14px;cursor:pointer;color:var(--text-hi);font-size:12px}
+  .conn .in{display:block;font-size:10px;color:var(--text-low)}
+  .conn:hover{background:#1f1407}
+
+  .opt{display:block;width:100%;background:none;border:none;font:inherit;text-align:left;padding:10px 14px 12px;cursor:pointer;color:var(--text-hi)}
+  .opt:hover{background:#1f1407}
+  .opt svg{display:block;width:100%;height:auto;border:1px solid var(--line);background:#0b0400;margin-bottom:7px}
+  .opt .nm{font-size:12.5px;font-weight:500}
+  .opt .fw{font-size:11px;color:var(--text-mid);margin-top:2px;line-height:1.4}
+  .opt[aria-disabled="true"]{cursor:default}
+  .opt[aria-disabled="true"] svg,.opt[aria-disabled="true"] .nm{opacity:.4}
+  .opt.slot svg{border-style:dashed}
+  .opt.slot .nm{color:var(--text-low);font-weight:400;font-style:italic}
+  .foot{font-size:11px;color:var(--text-mid);padding:10px 14px;border-top:1px dashed #2a1d10;margin-top:6px}
+  .thumbs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 12px}
+  .tcard{background:var(--panel);border:1px solid var(--line);height:46px;padding:5px;font-size:9px;color:var(--text-mid);font-family:var(--prose)}
+  .tpage{background:var(--paper);border:1px solid #cbbfa6;height:62px;opacity:.9}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>THE PLAN MENU · AND THE PAGE</b>
+  <span class="grp">window: <button data-w="1100">1100</button><button data-w="1280">1280</button><button data-w="1366" aria-pressed="true">1366</button><button data-w="1920">1920</button></span>
+  <span class="grp">canon: <button id="cOld" aria-pressed="false">old (overlay)</button><button id="cLaw" aria-pressed="true">166 · the law</button></span>
+  <button id="reset">reset</button>
+  <span id="geom"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <nav class="rail" aria-label="Cascade">
+    <div class="cat"><span class="g">▭</span>page</div>
+    <div class="cat on"><span class="g">⌗</span>plan</div>
+    <div class="sep"></div>
+    <div class="cat"><span class="g">☰</span>drawers</div>
+    <div class="sep"></div>
+    <div class="cat"><span class="g">✶</span>journal</div>
+    <div class="cat"><span class="g">⌂</span>shelf</div>
+  </nav>
+  <article class="page" id="page">
+    <h2>The last ride</h2>
+    <p>The snow came in sideways, the way it always did when the old roads remembered they had been rivers. Ned rode
+    ahead, which was his habit, and said nothing, which was his other habit.</p>
+    <p>Catelyn had written three letters that morning and sent none of them. The first asked him to stay. The second
+    asked him to take the boys. The third said only that the crypt was cold and that she had been down there again.</p>
+    <p>By the ford the horses would not cross. He dismounted and led them, water to the knee, the current stronger
+    than it looked, and when he turned to call back to the others the words did not come.</p>
+    <p>There is a kind of refusal that looks like stubbornness from the outside and is something else entirely from
+    within: a man keeping a promise to a person no longer there to release him from it.</p>
+  </article>
+  <div id="cols"></div>
+  <div id="hatches"></div>
+</div></div>
+
+<div class="cap"><b>Press a section</b> (Create Board, Outline…). Under <b>the law</b> it <b>drills in</b>: the options
+<b>replace</b> the list in the same column, each with a <b>large thumbnail</b> and a few words, and <b>‹</b> brings you
+back. Under the <b>old canon</b> the same submenu opens <b>beside</b> the panel and the rig shows it <b>covering the
+page</b> in red. Step the <b>window</b> down to <b>1100</b>: the margin is now narrower than the floor, so under the law
+the page <b>slides aside</b> by the shortfall and keeps its line breaks. <b>Connect Board</b> opens its own submenu and
+puts <b>this page inside</b> a board (membership only; nothing is placed on that board’s wall); <b>Connected Boards</b>
+beneath it shows what that act makes, with item 163’s <b>“in Test Board”</b>. Press a connected board for its cards —
+<b>“the Open Board popout”</b> of Nick’s note: under the law a drill-in; under the old canon the 360px layer covering the
+page. <b>Press ⋯</b> for the tags: pick <em>#stark</em>, then <em>#character</em> — only boards and pages carrying
+<b>both</b> stay, and an empty list says so. <em>Story Structure’s six are empty slots on purpose: the Experts choose them.</em></div>
+
+<script>
+(function(){
+  var W=1366, canon='law', stack=[], connected=['b2','b3'], tagsOpen=false, sel=[];
+  var BOARDS={b2:{n:'Board #2',d:'Test Board',tags:['stark']},b3:{n:'Characters',d:'Novel',tags:['stark','character']},
+              b4:{n:'Timeline',d:'Novel',tags:['stark']},b5:{n:'Maps of the North',d:'Research',tags:['lore']},
+              b6:{n:'Lore',d:'Novel',tags:['lore']},b7:{n:'Ravens & letters',d:'Research',tags:['stark','character']}};
+  var PAGES=[{n:'Catelyn’s letter',tags:['stark','character']},{n:'The last ride',tags:['stark']}];
+  var TAGS=['stark','character','lore'];
+  function hasAll(t){ return sel.every(function(x){return t.indexOf(x)>=0;}); }
+  function list(t){ return t.map(function(x){return '#'+x;}).join(' and '); }
+  var RAIL=84, GAP=12, FLOOR=220, DESIGN=300, SURVEY=360;
+
+  // designed SAMPLES (static drawings), wide -- boards are wide
+  function svg(kind){
+    var s='<svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">';
+    var c='#3a2613', f='#1b0d03', t='#80766A';
+    if(kind==='default'){ s+='<rect x="70" y="36" width="60" height="28" fill="none" stroke="'+c+'" stroke-dasharray="4 3"/><text x="100" y="54" fill="'+t+'" font-size="9" text-anchor="middle" font-family="Figtree">empty</text>'; }
+    if(kind==='world'){ [[20,14],[88,10],[146,22],[40,56],[110,52],[160,64]].forEach(function(p){ s+='<rect x="'+p[0]+'" y="'+p[1]+'" width="42" height="22" fill="'+f+'" stroke="'+c+'"/>'; });
+      s+='<path d="M41 25 L109 21 M109 21 L167 33 M61 67 L131 63" stroke="#5b4a33" fill="none"/>'; }
+    if(kind==='storyboard'){ [0,1,2].forEach(function(l){ s+='<rect x="'+(10+l*63)+'" y="10" width="55" height="80" fill="none" stroke="'+c+'"/>';
+      [0,1,2].forEach(function(k){ if(l===2&&k===2) return; s+='<rect x="'+(15+l*63)+'" y="'+(18+k*23)+'" width="45" height="17" fill="'+f+'" stroke="'+c+'"/>'; }); }); }
+    if(kind==='outline'){ [[14,14,120],[30,30,110],[46,44,90],[30,58,120],[14,76,130]].forEach(function(r){ s+='<rect x="'+r[0]+'" y="'+r[1]+'" width="'+r[2]+'" height="6" fill="#4a3822"/>'; }); }
+    if(kind==='import'){ [0,1,2].forEach(function(k){ s+='<rect x="'+(18+k*9)+'" y="'+(14+k*7)+'" width="40" height="54" fill="#d9d0bf" stroke="#a89878"/>'; });
+      s+='<path d="M86 50 L116 50 M108 43 L116 50 L108 57" stroke="'+t+'" fill="none"/>';
+      [[128,18],[160,18],[128,56],[160,56]].forEach(function(p){ s+='<rect x="'+p[0]+'" y="'+p[1]+'" width="24" height="30" fill="#e8e0d0" stroke="#a89878"/>'; }); }
+    if(kind==='biblio'){ [20,34,48,62,76].forEach(function(y){ s+='<rect x="30" y="'+y+'" width="140" height="5" fill="#4a3822"/>'; }); }
+    if(kind==='slot'){ s+='<rect x="8" y="8" width="184" height="84" fill="none" stroke="'+c+'" stroke-dasharray="5 4"/><text x="100" y="54" fill="'+t+'" font-size="9" text-anchor="middle" font-family="Figtree">TUTOR chooses</text>'; }
+    return s+'</svg>';
+  }
+  var SUB={
+    create:{t:'Create Board', opts:[
+      {k:'default',n:'Default',fw:'A blank board. Place anything, anywhere.'},
+      {k:'world',n:'Worldbuilding',fw:'Starts with the Worldbuilding deck: rules, history, places, cultures.'},
+      {k:'storyboard',n:'Storyboard',fw:'Opens in lanes, left to right, in order.'}]},
+    outline:{t:'Outline', opts:[
+      {k:'outline',n:'Traditional',fw:'Sections, points and sub-points, as a document.'}]},
+    structure:{t:'Story Structure', groups:[['Storytelling',3],['Screenwriting',3]],
+      foot:'Plan the whole drawer — beat sheet ›'},
+    research:{t:'Organize Research', opts:[
+      {k:'import',n:'Import Sources',fw:'Import documents and PDFs; you land on a board of them, each one a Page.'},
+      {k:'biblio',n:'Bibliography',fw:'Coming.',off:true}]}
+  };
+
+  function geom(){
+    var P = W>=1920?738:(W>=1680?677:615);
+    var left0 = (W-P)/2, margin = left0-(RAIL+4)-GAP;   // the space the page leaves, after the column's own inset
+    var open = stack.length>0 || true;          // the Plan panel is open in this mock
+    var r={P:P,left0:left0,margin:margin,pageLeft:left0,cols:[],slid:0};
+    if(canon==='law'){
+      var w = Math.max(FLOOR, Math.min(margin, DESIGN));
+      r.cols.push({x:RAIL+4, w:w, which:stack.length?stack[stack.length-1]:'plan'});
+      var need = RAIL+4+w+GAP;
+      if(need>left0){ r.pageLeft=need; r.slid=need-left0; }
+    } else {
+      r.cols.push({x:RAIL+4, w:DESIGN, which:'plan'});
+      if(stack.length) r.cols.push({x:RAIL+4+DESIGN+10, w:(stack[stack.length-1]==='survey'?SURVEY:DESIGN), which:stack[stack.length-1]});
+    }
+    return r;
+  }
+
+  function colHTML(which, w){
+    var h='', thumbW=w-28;
+    function tagbar(){ if(!tagsOpen) return '';
+      return '<div class="tagbar"><span class="lbl">Tags — only what carries all of them</span>'
+        +TAGS.map(function(t){return '<button class="tg" data-tag="'+t+'" aria-pressed="'+(sel.indexOf(t)>=0)+'">#'+t+'</button>';}).join('')+'</div>'; }
+    if(which==='plan'){
+      h+='<div class="hd"><span class="ti">Plan</span><button data-dots="1" aria-label="More" aria-expanded="'+tagsOpen+'">⋯</button><button aria-label="Close">×</button></div>'+tagbar()+'<div class="bd">';
+      [['create','Create Board'],['outline','Outline'],['structure','Story Structure'],['research','Organize Research']].forEach(function(s){
+        h+='<button class="row" data-open="'+s[0]+'">'+s[1]+'<span class="ch">›</span></button>'; });
+      h+='<div class="rule"></div><button class="row" data-open="connect">Connect Board<span class="ch">›</span></button>';
+      h+='<div class="sub2">Connected Boards</div>';
+      var shown=connected.filter(function(id){return hasAll(BOARDS[id].tags);});
+      shown.forEach(function(id){ var b=BOARDS[id]; h+='<button class="conn" data-survey="'+id+'">'+b.n+'<span class="in">in '+b.d+'</span></button>'; });
+      if(sel.length && !shown.length) h+='<div class="none">No connected board carries '+list(sel)+'.</div>';
+      h+='</div>';
+      return h;
+    }
+    if(which==='connect'){
+      h+='<div class="hd"><button data-back="1" aria-label="Back">‹</button><span class="ti">Connect Board</span></div>'+tagbar()+'<div class="bd">';
+      h+='<div class="lead" style="padding-top:8px">Put this page inside…</div><div class="clist">';
+      var any=0;
+      Object.keys(BOARDS).forEach(function(id){ var b=BOARDS[id], here=connected.indexOf(id)>=0;
+        if(!hasAll(b.tags)) return; any++;
+        h+='<button class="crow" data-conn="'+id+'"'+(here?' aria-disabled="true"':'')+'>'+b.n+'<span class="in">in '+b.d+'</span>'+(here?'<span class="why">already here</span>':'')+'</button>'; });
+      h+='</div>'+(sel.length && !any?'<div class="none">No board carries '+list(sel)+'.</div>':'')+'</div>';
+      return h;
+    }
+    if(which==='survey'){
+      h+='<div class="hd"><button data-back="1" aria-label="Back">‹</button><span class="ti">'+BOARDS[connected[0]].n+'</span></div><div class="bd">';
+      h+='<div class="sub">Cards</div><div class="thumbs">';
+      ['Seven kingdoms, one winter.','The wall is older than the houses.','Ned’s refusal.','Winter is a debt.'].forEach(function(t){ h+='<div><div class="tcard">'+t+'</div></div>'; });
+      var pg=PAGES.filter(function(p){return hasAll(p.tags);});
+      h+='</div><div class="sub">Pages</div><div class="thumbs">'+pg.map(function(p){return '<div><div class="tpage"></div><div style="font-size:9.5px;color:var(--text-mid);margin-top:3px">'+p.n+'</div></div>';}).join('')+'</div>'
+        +(sel.length && !pg.length?'<div class="none">No page here carries '+list(sel)+'.</div>':'')+'</div>';
+      return h;
+    }
+    var S=SUB[which];
+    h+='<div class="hd"><button data-back="1" aria-label="Back">‹</button><span class="ti">'+S.t+'</span></div><div class="bd">';
+    if(S.opts) S.opts.forEach(function(o){
+      h+='<button class="opt"'+(o.off?' aria-disabled="true"':'')+'>'+svg(o.k)+'<div class="nm">'+o.n+'</div><div class="fw">'+o.fw+'</div></button>'; });
+    if(S.groups) S.groups.forEach(function(g){
+      h+='<div class="sub">'+g[0]+'</div>';
+      for(var i=0;i<g[1];i++) h+='<button class="opt slot" aria-disabled="true">'+svg('slot')+'<div class="nm">'+g[0].toLowerCase()+' structure '+(i+1)+' — TUTOR’s choice</div></button>'; });
+    if(S.foot) h+='<div class="foot">'+S.foot+'</div>';
+    return h+'</div>';
+  }
+
+  function isect(a,b){ var l=Math.max(a.l,b.l), r=Math.min(a.r,b.r); return r>l ? {l:l,r:r} : null; }
+
+  function render(){
+    var st=document.getElementById('stage'); st.style.width=W+'px';
+    var g=geom(), page=document.getElementById('page');
+    page.style.left=g.pageLeft+'px'; page.style.width=g.P+'px';
+    var cols=document.getElementById('cols'), hat=document.getElementById('hatches'), html='', hh='', cover=0;
+    g.cols.forEach(function(c){
+      html+='<div class="col" style="left:'+c.x+'px;width:'+c.w+'px">'+colHTML(c.which,c.w)+'</div>';
+      var ov=isect({l:c.x,r:c.x+c.w},{l:g.pageLeft,r:g.pageLeft+g.P});
+      if(ov){ cover+=ov.r-ov.l; hh+='<div class="hatch" style="left:'+ov.l+'px;width:'+(ov.r-ov.l)+'px;top:26px;bottom:26px"></div>'; }
+    });
+    cols.innerHTML=html; hat.innerHTML=hh;
+    var el=document.getElementById('geom');
+    el.innerHTML='window '+W+' · margin '+Math.round(g.margin)+'px · column '+Math.round(g.cols[g.cols.length-1].w)+'px · '
+      +(cover?'<span class="bad">page covered: '+Math.round(cover)+'px</span>':'<span class="good">page clear</span>')
+      +(g.slid?' · <span class="mv">page slid '+Math.round(g.slid)+'px (R3 — its measure unchanged)</span>':'')
+      +' · derived, not measured';
+    [].forEach.call(cols.querySelectorAll('[data-open]'),function(x){ x.onclick=function(){ stack=[x.dataset.open]; render(); }; });
+    [].forEach.call(cols.querySelectorAll('[data-survey]'),function(x){ x.onclick=function(){ stack=['survey']; render(); }; });
+    [].forEach.call(cols.querySelectorAll('[data-back]'),function(x){ x.onclick=function(){ stack=[]; render(); }; });
+    [].forEach.call(cols.querySelectorAll('[data-conn]'),function(x){
+      if(x.getAttribute('aria-disabled')==='true') return;
+      x.onclick=function(){ connected.push(x.dataset.conn); stack=[]; render(); }; });
+    [].forEach.call(cols.querySelectorAll('[data-dots]'),function(x){ x.onclick=function(){ tagsOpen=!tagsOpen; render(); }; });
+    [].forEach.call(cols.querySelectorAll('[data-tag]'),function(x){ x.onclick=function(){ var t=x.dataset.tag;
+      sel = sel.indexOf(t)>=0 ? sel.filter(function(y){return y!==t;}) : sel.concat([t]); render(); }; });
+    layout();
+  }
+  function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/W, fit.clientHeight/768, 1)+')'; }
+  [].forEach.call(document.querySelectorAll('[data-w]'),function(b){ b.onclick=function(){
+    W=+b.dataset.w; [].forEach.call(document.querySelectorAll('[data-w]'),function(x){x.setAttribute('aria-pressed',x===b);}); render(); }; });
+  function setCanon(c){ canon=c; document.getElementById('cOld').setAttribute('aria-pressed',c==='old');
+    document.getElementById('cLaw').setAttribute('aria-pressed',c==='law'); render(); }
+  document.getElementById('cOld').onclick=function(){setCanon('old');};
+  document.getElementById('cLaw').onclick=function(){setCanon('law');};
+  document.getElementById('reset').onclick=function(){ stack=[]; connected=['b2','b3']; tagsOpen=false; sel=[]; render(); };
+  window.addEventListener('resize',layout);
+  render();
+})();
+</script>
+</body>
+</html>
