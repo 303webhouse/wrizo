@@ -215,6 +215,45 @@ await withHarness(async (app) => {
   const fromBoard = await where(app);
   ok('S3: from the board, clicking a row\'s NAME opens that page — one list, one meaning, on every surface',
     fromBoard.hash === `#/page/${JOURNAL.id}` && fromBoard.crumb === JOURNAL.text, JSON.stringify(fromBoard));
+
+  // ==========================================================================
+  // S4 — THE MENU IS SEEN WHERE IT OPENS. Found by the SITTING, not by a check:
+  // the first cut hung the menu below its row, and on the list's LAST row the
+  // list's own overflow clipped it out of view — the ⋯ lit up as expanded and
+  // nothing appeared. S3 passed through it, because realClick scrolls its
+  // target into view first, which is precisely the move a writer would not
+  // know to make. So this reads the geometry WITHOUT scrolling to the menu: the
+  // writer's view, not the harness's.
+  // ==========================================================================
+  await app.evalJs(`location.hash = '#/page/${BOARD.id}'`);
+  await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'board again' });
+  await sleep(700);
+  await openPageHand(app);
+  const lastId = await app.evalJs(`(() => {
+    const list = document.querySelector('.wz-your-pages .wz-place-page-list');
+    if (!list) return null;
+    list.scrollTop = list.scrollHeight;   // the last row sits at the list's bottom edge
+    const rows = list.querySelectorAll('.wz-your-pages-row');
+    return rows.length ? rows[rows.length - 1].getAttribute('data-page-id') : null;
+  })()`);
+  await sleep(250);
+  const lastMore = lastId ? await realClick(app, `${rowSel(lastId)} .wz-your-pages-more`) : false;
+  const clip = await app.evalJs(`(() => {
+    const list = document.querySelector('.wz-your-pages .wz-place-page-list');
+    const m = document.querySelector('.wz-your-pages-menu');
+    if (!list || !m) return { menu: !!m };
+    const a = m.getBoundingClientRect(), b = list.getBoundingClientRect();
+    return { menu: true, inside: a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5 && a.left >= b.left - 0.5 && a.right <= b.right + 0.5,
+             menuTop: Math.round(a.top), menuBottom: Math.round(a.bottom), listTop: Math.round(b.top), listBottom: Math.round(b.bottom) };
+  })()`);
+  ok('S4 (from the SITTING): the menu of the LAST row opens fully inside the visible box of the list, read WITHOUT scrolling to it — the first cut opened it below the row, and the overflow of the list clipped it from view',
+    lastMore && clip.menu === true && clip.inside === true, JSON.stringify({ lastId, ...clip }));
+
+  await app.key('Escape');
+  await sleep(250);
+  const closed = await app.evalJs("!document.querySelector('.wz-your-pages-menu')");
+  ok('S4: Escape dismisses the open menu — no stuck state that only a second press of the ⋯ could clear',
+    closed === true, String(closed));
 });
 
 for (const c of checks) {

@@ -5208,7 +5208,14 @@ a:focus-visible,
   color:var(--text-low); font-size:14px; line-height:1; padding:4px 6px; }
 .wz-your-pages-more:hover, .wz-your-pages-more[aria-expanded='true']{ color:var(--text-hi); }
 .wz-your-pages-more:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
-.wz-your-pages-menu{ position:absolute; right:0; top:100%; z-index:5;
+/* THE MENU OPENS INSIDE THE ROW'S OWN HEIGHT, flying left from the ⋯. The
+   first cut hung it BELOW the row (`top:100%`), and on the list's last row the
+   list's own `overflow-y:auto` clipped it clean out of view — the ⋯ lit up as
+   expanded and nothing appeared. The sitting caught it; the harness had not,
+   because its scrollIntoView scrolled the list to the menu, which is exactly
+   the move a writer would not know to make. Held inside the row, no overflow
+   can clip it on any row. */
+.wz-your-pages-menu{ position:absolute; right:26px; top:50%; transform:translateY(-50%); z-index:5;
   background:var(--desk-ground); border:1px solid var(--ink-border);
   border-radius:var(--radius-md); padding:4px; }
 .wz-your-pages-place{ background:none; border:0; cursor:pointer; white-space:nowrap;

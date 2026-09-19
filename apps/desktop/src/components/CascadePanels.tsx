@@ -355,6 +355,21 @@ function YourPages({ navigate, currentId, boardId }: {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [, force] = useReducer((n: number) => n + 1, 0);
 
+  // An open menu closes when the writer presses anywhere outside its row, or
+  // presses Escape — otherwise the only way to dismiss it was to find the ⋯
+  // again, which is the kind of small stuck state this ticket exists to remove.
+  useEffect(() => {
+    if (!menuFor) return;
+    const onDown = (e: MouseEvent) => {
+      const row = (e.target as Element | null)?.closest?.('.wz-your-pages-row');
+      if (!row || row.getAttribute('data-page-id') !== menuFor) setMenuFor(null);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuFor(null); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [menuFor]);
+
   // Every live page that is not a board — journal, loose, binder and shelf
   // alike. Boards are opened from their own doors and can never be placed on
   // a board, so neither act applies to them here.
