@@ -1,6 +1,14 @@
 # VW3 BUILD BRIEF — THE JOURNAL: THE FLIP, AND THE SPREAD RETIRES
 ### PLAN desk · 2026-09-13 · item 134, brief 3 of 4 · decision-complete
 
+> **⚠ RE-GROUNDED, 2026-09-19 — by item 172 (BOARD TYPES): `item172-board-types-pass.md` §3.**
+> **THE JOURNAL IS A BOOK-TYPE BOARD**, and **the flip is the BOOK TYPE's display** — keyed to the
+> type, never to `systemKind === 'journal'`. **Nothing below is withdrawn:** S1's motion, S2's
+> primacy of the page, S3's order (day written — the Journal's spine), and S4's retirement of the
+> Spread with `setNotebookPosition` all stand. **What changes is WHOSE display the flip is**, and
+> **one capability arrives with the type, not with this brief: cards addable to a Book's pages,
+> staying on the page they were added to.**
+
 **WORKTREE:** `.claude/worktrees/vw3-journal` · **BRANCH:** `vw3-journal` · **OFF:**
 `origin/main` at build time. **Never the primary checkout.** **This lane pushes its BRANCH.**
 

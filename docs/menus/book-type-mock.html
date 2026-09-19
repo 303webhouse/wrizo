@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>board types · Default and Book</title>
+<!--
+  ITEM 172 — BOARD TYPES · PLAN desk · 2026-09-19 · candidates only.
+
+  Nick, verbatim: "Book (the journal is a "Book" style board, which means that
+  it gets displayed more like the pages of a book (vertical rectangle like the
+  current Page surface), but what makes it unique is that when new pages are
+  created, they become a new surface that gets flipped through like a book
+  instead of being all laid out on a surface at the same time---cards should
+  also be addable to the pages of a Book-style board, but the cards stay on
+  the page they are added to)."
+
+  WHAT THIS DRAWS:
+    * the same board's contents under BOTH types -- Default lays them out on a
+      table; Book shows one page at a time and flips.
+    * A CARD STAYS ON ITS PAGE: add one, flip away, flip back.
+    * ADDING A PAGE on a Book makes a new SURFACE in the spine, not a card.
+    * THE THUMBNAIL LAW, AMENDED (iv): the same board is drawn WIDE as a
+      Default and TALL as a Book -- "a board wears the proportion of its type."
+    * 172-Q6, both candidates live: a card ON the page (where you put it, the
+      way ink sits) or IN THE MARGIN (it can never cover a word).
+
+  Nothing here is a ruling. The type list itself (172-Q1) is the pass's
+  question, not this mock's.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1; --ink:#2b2118;
+    --brass:#FF9800; --accent-rest:#96a05a; --accent-door:#4F5730;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig .grp{display:flex;gap:4px;align-items:center}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #geom{margin-left:auto;font-size:11px;color:#8f8f8f;font-variant-numeric:tabular-nums}
+  .fit{position:absolute;inset:41px 0 116px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{width:1366px;height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:116px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .frame{position:absolute;inset:0;display:grid;grid-template-columns:84px 1fr;grid-template-rows:52px 1fr}
+  .rail{grid-row:1/3;grid-column:1;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .band{grid-row:1;grid-column:2;display:flex;align-items:center;gap:14px;padding:0 22px;border-bottom:1px solid var(--line)}
+  .crumb{font-size:11px;color:var(--text-low)} .crumb .h{color:var(--text-hi)} .crumb .s{opacity:.5;padding:0 6px}
+  .typechip{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-rest);
+            border:1px solid var(--accent-rest);padding:2px 8px}
+  .acts{margin-left:auto;display:flex;gap:6px}
+  .acts button{font:inherit;font-size:11px;color:var(--text-mid);background:none;border:1px solid var(--line);padding:4px 10px;cursor:pointer}
+  .acts button:hover{color:var(--text-hi);border-color:var(--text-mid)}
+  .room{grid-row:2;grid-column:2;position:relative;min-height:0;overflow:hidden}
+
+  /* DEFAULT — the table top */
+  .table{position:absolute;inset:0;background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:22px 22px}
+  .card{position:absolute;width:190px;background:var(--panel);border:1px solid var(--line);padding:8px 10px}
+  .card .k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low);margin-bottom:3px}
+  .card .t{font-family:var(--prose);font-size:12.5px;line-height:1.4;color:var(--text-mid)}
+  .pagecard{position:absolute;width:104px;height:136px;background:var(--paper);border:1px solid #cbbfa6;padding:7px 8px;
+            font-family:var(--prose);font-size:9.5px;line-height:1.35;color:#5d5346;overflow:hidden}
+  .pagecard b{display:block;font-family:var(--ui);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#8a7d6a;margin-bottom:3px;font-weight:500}
+
+  /* BOOK — one page at a time */
+  .book{position:absolute;inset:0;display:grid;place-items:center}
+  .leafwrap{position:relative;display:flex;align-items:stretch;gap:0}
+  .margin{width:150px;padding:14px 10px 0 0;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  .leaf{position:relative;width:420px;height:560px;background:var(--paper);color:var(--ink);padding:34px 40px;
+        font-family:var(--prose);font-size:14.5px;line-height:1.6;overflow:hidden;
+        box-shadow:0 10px 30px rgba(0,0,0,.55);transition:opacity .18s ease,transform .18s ease}
+  .leaf h3{font-size:17px;font-weight:500;margin-bottom:10px}
+  .leaf p{margin-bottom:9px}
+  .leaf.turning{opacity:0;transform:translateX(-14px)}
+  .pcard{position:absolute;width:150px;background:#efe3c8;border:1px solid #c9b58c;padding:6px 8px;
+         font-family:var(--ui);font-size:10.5px;line-height:1.35;color:#4a3f2f;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+  .pcard .k{font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:#8a7247;margin-bottom:2px}
+  .margin .pcard{position:static;width:140px}
+  .flip{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent-rest);
+        font-size:26px;cursor:pointer;padding:8px 10px;line-height:1}
+  .flip[disabled]{opacity:.25;cursor:default}
+  .flip.prev{left:-58px} .flip.next{right:-58px}
+  .spine{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;font-size:10.5px;color:var(--text-low)}
+
+  /* the amended thumbnail law */
+  .laws{position:absolute;right:16px;bottom:12px;display:flex;gap:14px;align-items:flex-end;
+        background:rgba(17,6,0,.82);border:1px solid var(--line);padding:9px 12px}
+  .laws .one{text-align:center;font-size:8.5px;color:var(--text-low);letter-spacing:.1em;text-transform:uppercase}
+  .tw{width:86px;height:28px;background:var(--ground);border:1px solid #5b4228;margin:0 auto 4px;
+      box-shadow:4px -4px 0 -1px var(--ground),4px -4px 0 0 #5b4228}
+  .tt{width:34px;height:46px;background:var(--paper);border:1px solid #cbbfa6;margin:0 auto 4px}
+  .laws .one[data-on="1"]{color:var(--accent-rest)}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>BOARD TYPES</b>
+  <span class="grp">type: <button id="tDef" aria-pressed="false">Default</button><button id="tBook" aria-pressed="true">Book</button></span>
+  <span class="grp">a card sits (172-Q6): <button id="qOn" aria-pressed="true">on the page</button><button id="qMar" aria-pressed="false">in the margin</button></span>
+  <button id="reset">reset</button>
+  <span id="geom"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="frame">
+    <nav class="rail" aria-label="Cascade">
+      <div class="cat"><span class="g">▭</span>page</div>
+      <div class="cat"><span class="g">⌗</span>plan</div>
+      <div class="cat"><span class="g">☰</span>drawers</div>
+      <div class="cat"><span class="g">✶</span>journal</div>
+      <div class="cat"><span class="g">⌂</span>shelf</div>
+    </nav>
+    <div class="band">
+      <div class="crumb"><span>Novel</span><span class="s">/</span><span class="h">The Journal</span></div>
+      <span class="typechip" id="chip">Book</span>
+      <div class="acts">
+        <button id="addCard">＋ card</button>
+        <button id="addPage">＋ page</button>
+      </div>
+    </div>
+    <div class="room" id="room"></div>
+  </div>
+</div></div>
+
+<div class="cap"><b>The same board, under two types.</b> As a <b>Book</b> it shows <b>one page at a time</b> and you
+<b>flip</b> (← →, or the arrows); <b>＋ page</b> makes a <b>new surface in the spine</b>, not a card on a table.
+<b>＋ card</b> puts a card <b>on the page you are on — and it stays there</b>: add one, flip away, flip back.
+Switch the rig to <b>Default</b> and the same contents lie on a <b>table top</b>, every page a card, arranged where
+they were put. <b>Bottom right:</b> the amended thumbnail law — the <em>same board</em> is drawn <b>wide</b> as a
+Default and <b>tall</b> as a Book, because <em>a board wears the proportion of its type</em>. <b>172-Q6</b> is live in
+the rig: a card <b>on the page</b> (where you put it, as ink sits) or <b>in the margin</b> (it can never cover a
+word). <em>The writing is still on the page; the Book is the container that shows it — the canon holds.</em></div>
+
+<script>
+(function(){
+  var type='book', q6='on', page=0, turning=false;
+  var PAGES=[
+    {t:'The last ride', body:['The snow came in sideways, the way it always did when the old roads remembered they had been rivers.','Ned rode ahead, which was his habit, and said nothing, which was his other habit.'], cards:[{t:'Check the ford date against the letters.',x:46,y:60}]},
+    {t:'Three letters', body:['Catelyn had written three letters that morning and sent none of them.','The first asked him to stay. The second asked him to take the boys. The third said only that the crypt was cold.'], cards:[]},
+    {t:'The crypt', body:['There is a kind of refusal that looks like stubbornness from the outside and is something else entirely from within.'], cards:[{t:'Nobody mentions it at dinner — why?',x:40,y:26}]}
+  ];
+  var TABLE=[{t:'Winter is a debt, not a season.',x:60,y:8},{t:'He answers questions nobody asked.',x:64,y:56}];
+  var room=document.getElementById('room'), geom=document.getElementById('geom'), chip=document.getElementById('chip');
+
+  function laws(){
+    return '<div class="laws"><div class="one" data-on="'+(type==='default'?1:0)+'"><div class="tw"></div>Default — wide</div>'
+      +'<div class="one" data-on="'+(type==='book'?1:0)+'"><div class="tt"></div>Book — tall</div></div>';
+  }
+  function render(){
+    chip.textContent = type==='book' ? 'Book' : 'Default';
+    document.getElementById('addPage').textContent = type==='book' ? '＋ page' : '＋ page card';
+    if(type==='default'){
+      var h='<div class="table">';
+      PAGES.forEach(function(p,i){
+        h+='<div class="pagecard" style="left:'+(4+i*13)+'%;top:'+(10+(i%2)*38)+'%"><b>Page</b>'+p.t+'</div>';
+      });
+      TABLE.forEach(function(c){ h+='<div class="card" style="left:'+c.x+'%;top:'+c.y+'%"><div class="k">Card</div><div class="t">'+c.t+'</div></div>'; });
+      // the cards that live on pages have nowhere of their own on a table: they sit beside their page
+      var n=0;
+      PAGES.forEach(function(p,i){ p.cards.forEach(function(c){ n++;
+        h+='<div class="card" style="left:'+(5+i*13)+'%;top:'+(10+(i%2)*38+21)+'%;width:150px"><div class="k">Card · page '+(i+1)+'</div><div class="t">'+c.t+'</div></div>'; }); });
+      room.innerHTML=h+'</div>'+laws();
+      geom.innerHTML='Default · '+PAGES.length+' pages laid out · '+(TABLE.length+n)+' cards · proportion: WIDE';
+      return;
+    }
+    var p=PAGES[page];
+    var cards=p.cards.map(function(c){
+      return q6==='on'
+        ? '<div class="pcard" style="left:'+c.x+'%;top:'+c.y+'%"><div class="k">Card</div>'+c.t+'</div>'
+        : '';
+    }).join('');
+    var margin = q6==='margin'
+      ? '<div class="margin">'+p.cards.map(function(c){return '<div class="pcard"><div class="k">Card</div>'+c.t+'</div>';}).join('')+'</div>'
+      : '<div class="margin"></div>';
+    room.innerHTML='<div class="book"><div class="leafwrap">'+margin
+      +'<button class="flip prev" id="prev" aria-label="Previous page"'+(page===0?' disabled':'')+'>‹</button>'
+      +'<div class="leaf'+(turning?' turning':'')+'" id="leaf"><h3>'+p.t+'</h3>'+p.body.map(function(b){return '<p>'+b+'</p>';}).join('')+cards+'</div>'
+      +'<button class="flip next" id="next" aria-label="Next page"'+(page===PAGES.length-1?' disabled':'')+'>›</button>'
+      +'</div><div class="spine">'+(page+1)+' / '+PAGES.length+' — the spine</div></div>'+laws();
+    document.getElementById('prev').onclick=function(){ go(page-1); };
+    document.getElementById('next').onclick=function(){ go(page+1); };
+    geom.innerHTML='Book · page '+(page+1)+' of '+PAGES.length+' · cards on THIS page: '+p.cards.length+' · proportion: TALL';
+  }
+  function go(i){ if(i<0||i>=PAGES.length||turning) return; turning=true; render();
+    setTimeout(function(){ page=i; turning=false; render(); }, 170); }
+  document.addEventListener('keydown',function(e){ if(type!=='book') return;
+    if(e.key==='ArrowLeft') go(page-1); if(e.key==='ArrowRight') go(page+1); });
+  document.getElementById('addCard').onclick=function(){
+    var n=PAGES[page].cards.length;
+    if(type==='book'){ PAGES[page].cards.push({t:'A card added on page '+(page+1)+' — it stays here.',x:20+n*8,y:62-n*10}); }
+    else { TABLE.push({t:'A card on the table.',x:58,y:30}); }
+    render();
+  };
+  document.getElementById('addPage').onclick=function(){
+    PAGES.splice(page+1,0,{t:'A new surface',body:['A new page joins the spine here, and you flip to it — it is not laid out beside the others.'],cards:[]});
+    if(type==='book') go(page+1); else render();
+  };
+  function setType(t){ type=t; document.getElementById('tDef').setAttribute('aria-pressed',t==='default');
+    document.getElementById('tBook').setAttribute('aria-pressed',t==='book'); render(); }
+  function setQ6(v){ q6=v; document.getElementById('qOn').setAttribute('aria-pressed',v==='on');
+    document.getElementById('qMar').setAttribute('aria-pressed',v==='margin'); render(); }
+  document.getElementById('tDef').onclick=function(){setType('default');};
+  document.getElementById('tBook').onclick=function(){setType('book');};
+  document.getElementById('qOn').onclick=function(){setQ6('on');};
+  document.getElementById('qMar').onclick=function(){setQ6('margin');};
+  document.getElementById('reset').onclick=function(){ location.reload(); };
+  function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/1366, fit.clientHeight/768, 1)+')'; }
+  window.addEventListener('resize',layout);
+  layout(); render();
+})();
+</script>
+</body>
+</html>
