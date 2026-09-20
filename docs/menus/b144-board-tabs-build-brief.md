@@ -1,6 +1,13 @@
 # ITEM 144 AMENDED — THE BOARD TABS
 ### PLAN desk · 2026-09-19 · brief · **supersedes `b144-sibling-row-build-brief.md` in part** (§SUP)
 
+> **⚠ CONDITIONALLY AMENDED, 2026-09-19 — `b144-tab-bar-amendment.md`.** **IF the board's view tabs
+> retire** (item 172-Q1, still Nick's as this desk was told — but a relay to PW states it as ruled;
+> the amendment's §0 hands that conflict up), **then the board tabs become the board's ONLY tab bar,
+> the nav row takes a quiet TYPE label, the mode-gated beginnings doors are re-homed BY TYPE, and
+> S2's check 10 ("exactly one `role=\"tablist\"` … and it is the mode strip") INVERTS and parks.**
+> **Until that is ruled, everything below stands exactly as written.**
+
 **WORKTREE:** `.claude/worktrees/i144-board-tabs` · **BRANCH:** `i144-board-tabs` · **OFF:** `origin/main`.
 **Never the primary checkout. This lane pushes its BRANCH.**
 
