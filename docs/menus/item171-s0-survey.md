@@ -343,3 +343,72 @@ same surface, and a second branch moving under the first would cost the pair.
 **They are only bundled by the sentence that ruled them.** If Fable wants them
 as one item I will build them as one; the split is recommended so 171-A can ship
 while 171-B's three questions get their answers.
+
+## §9 · RULED 2026-09-19, AND WHAT WAS BUILT THE SAME DAY
+
+Fable's three rulings, and one instruction:
+
+1. **STATEFUL**, as leaned: "cannot be reactivated" derives from
+   `strokes.length > 0`. A stray dot immediately undone must not cost a page its
+   typewriter forever, and sticky would need new stored per-page state to
+   enforce a harsher rule than Nick asked for. **An eraser IS a stroke**, so
+   erasing does NOT restore the typewriter — recorded here, in the code, in
+   item171a.mjs's T5, and owed to the offer as the consequence a writer would
+   not predict.
+2. **THE SPLIT IS RATIFIED.** 171-A (this build) ships on its own. **171-B —
+   ink authoring on boards and cards — is a FEATURE BUILD and goes to PLAN DESK
+   as a design charter**; this lane builds it after PLAN rules its three
+   questions (§3: the coordinate basis, what a card's ink is, and how a pen
+   shares a surface with select and drag).
+3. **SCROLL COMPENSATION RATIFIED** — the words stay under the writer's eye.
+
+**And the instruction:** close the script surface's live-control-dead-engine
+defect *inside* 171-A with the same predicate, rather than leaving a known lie
+standing for a week.
+
+### What that instruction turned out to touch — raised, not settled here
+
+The script surface's control is there **by Nick's own word**: item 83 M8 (R12),
+*"TYPEWRITER mode should be available while writing a screenplay, too"*, which
+deliberately mounted the menu **ahead of its engine** and flagged the hook-up as
+its own later brief. So closing it **withdraws a capability he named**. It is
+built as instructed, on the grounds that **his latest words govern** (item 127's
+own F1 default) and a screenplay's posture is Draft — and it is written into the
+offer, into ScriptEditor.tsx, and into all three parked assertions, so nobody
+meets it later as a silent reversal. **If he wants it back, the answer is R12's
+own flagged engine hook-up, not the prop this ticket added.**
+
+### A second instance of the same defect, found while sweeping
+
+**A Board offered the typewriter option too**, and a Board has never run the
+engine. `typewriterAvailable` was hard-true at its single call site, so every
+surface carrying the sliver's foot inherited the option whether it could run it
+or not. Closed by the same predicate; asserted by item171a.mjs's T8.
+
+### The limit of the scroll compensation, stated
+
+The pad the typewriter adds is **padding on the scroller**, so the correction is
+a scroll correction — and **at scroll 0 there is no scroll to give back**. A
+page sitting at the top still rises by the pad when the typewriter goes off.
+Nothing DRAWN is ever displaced (the pad is gone before a first stroke can
+exist), the common scrolled case is held to within 2px, and item171a.mjs's T10
+**measures the scroll-0 case and reports it rather than asserting it**.
+
+### The park sweep, as executed
+
+`fx2.mjs` 11 assertions (the Draft-open seed leg, whole) · `item87.mjs` 2
+(clause 3 and its control) · `ab2.mjs` 1 · `fx3.mjs` 2 · `sc1.mjs` 2 — each
+original kept verbatim beside a live successor, each counted by execution in its
+own file's parked leg. **Several would have stayed GREEN for a reason their
+names do not state** (a `false` DOM read that used to mean "the seed chose OFF"
+and now means "Draft has no typewriter"); those are parked too, because a check
+that passes for an unstated reason is not a check. **item157.mjs's M10 is still
+owed** and cannot be written until 157 merges — that file does not exist on this
+branch.
+
+**Two things found in the sweep, fixed in place (147's class):** `item87.mjs`
+printed `PARKED: PASS (0 checks)` beside an array already holding four, and
+`ab2.mjs`'s "the toggle does NOT present itself" check was reading a class FX3
+S5 retired — green about nothing. The first is corrected with its original line
+quoted; the second is re-pointed to the gear row (claim unchanged, no park
+owed).
