@@ -113,31 +113,73 @@ subject: the picker must say what it offers.)*
   and is not a control** (until 144C-Q1) · **the tools dock is identical on every type** (the check that
   proves §3's "not a loss").
 
-## §5 · AWAITING THE VERBATIM — what arrived at `802a86e` as FABLE's READING, recorded not designed
+## §5 · RE-READ AGAINST THE VERBATIM — `55cf81c`, Nick's own words (part 2)
 
-**Item 144 was amended again in that record.** **This desk does not design from it yet** — chat 1's own
-instruction — **but it is written down here so nothing is lost, and so the two places it collides with
-what is already designed are visible before anyone builds:**
+**The verbatim landed, so this section is no longer "awaiting" anything.** His text:
 
-> *"The current board is a tab, and "+ BOARD" beside it creates a NESTED board. Connected and nested
-> boards are tabs with their title very small underneath. The last tab is "Go Back" when the writer
-> arrived from a page or board, and "New Page" (auto-connected to the board) when they did not."*
+> *"…let's replace the current views tabs with the multi-board tabs that we've already discussed. So the
+> name of the current board should be one tab with the option next to it to "+ BOARD" that creates a
+> nested Board. All other nested or connected boards should also be tabbed with their title (very small
+> underneath the title). … Lastly, the final tab in the list should be a "Go Back" option if the User
+> arrived at the board from a page or another board. If the user didn't come to the board from a page,
+> then that tab should give them the option to make a "New Page" that will be automatically connected to
+> the board."*
 
-- **The current board as a tab and "＋ BOARD" creating a nested board are already this design** (the merged
-  brief's stable row and its ＋ door). **No collision.**
-- **⚠ "tabs with their title very small underneath" collides with the merged brief's tab**, which is a
-  **word, deliberately** — *"thumbnails are the Plan menu's inventory; a tab is a door, and a door is a
-  word."* **A title UNDERNEATH implies something above it** (a thumbnail? the board's face?). **The
-  verbatim decides what a tab shows; the row's order, stability and door are unaffected either way.**
-- **⚠ A CONTEXTUAL LAST TAB — "Go Back" or "New Page" — is new**, and it is **not a board**: the merged
-  brief's rule is that **a tab is only ever a door to a board** (SR-Q1's ruling). *A tab that goes back,
-  and a tab that makes a page, are two more kinds of act in a row whose whole promise is that every tab
-  does the same thing.* **Handed up rather than reconciled from a summary.**
+### (1) THE FINAL TAB IS AN EXIT — SR-Q1 STANDS (Fable, ruled)
+**SR-Q1 — *a tab is only ever a door to a board* — is NOT superseded.** **The final item is the bar's
+TERMINAL CONTROL: an EXIT, not a destination.**
+- **It sits where his text puts it — last, in the row** — **and it is set apart so it never reads as a
+  peer of the board tabs:** after a hairline gap, **no tab silhouette**, a leading glyph, and **it never
+  carries the olive where-you-are marker.**
+- **It is not `data-board-tab`**, so the row's stability check and its select-by-name both skip it. *A
+  control that leaves the row is not a member of the row.*
+- **⚠ His word for it is "tab", and this design gives it a different shape by Fable's ruling.** *If his
+  intent is that it look like the other tabs, that is his to say and SR-Q1 bends rather than the text.*
+
+### (2) ⚠ DIFFERENCE 4 — THE TWO CONDITIONS ARE NOT COMPLEMENTS, and the reload makes it worse
+**Go Back:** *"if the User arrived at the board from a page or another board."* **New Page:** *"If the
+user didn't come to the board from a page."* **A writer who arrived FROM ANOTHER BOARD satisfies both.**
+**Chat 1's lean, which this desk shares: Go Back for either origin; New Page only when there is none** —
+*one rule, one face at a time.*
+**AND A FACT NEITHER READING HAS:** the origin lives in **route state** (`fromBoardId` / `fromBoardTitle`,
+staged by `travelToEntry` and `travelFromCascade`) — **which `BoardEditor` never reads today**, and
+**which does not survive a reload.** **So after a refresh the exit flips to "New Page" on a board the
+writer did arrive at.** *Options, handed up: accept it (the exit is about the journey, and a reload ends
+the journey); or persist the last origin per board, client-local, and keep "Go Back" across a refresh.*
+**Lean: accept it** — *a Go Back that outlives the going back is a promise the app cannot keep.*
+
+### (3) DIFFERENCE 3 — "very small underneath the title": **THE ROW ALREADY HAS EXACTLY ONE**
+**The merged brief renders a very small second line under a tab's name: the LOCATION LINE** — *"in
+Research"* — **item 163's caption form, the same words the Plan row uses.** *Chat 1 read his parenthesis
+as "something very small underneath the title"; this desk had read it as a title under something. On the
+first reading, the thing he asks for is already designed and already ruled.*
+**So: the small line under the title is the board's LOCATION**, and it renders **only when the board lives
+somewhere else** (the merged rule). **If he meant a tag, or the relation (*inside this board*), his words
+do not say so** — *and both are one line's work once he does.*
+
+### (4) "+ BOARD" — his words put it NEXT TO THE CURRENT BOARD's TAB, not at the row's end
+**The merged brief put the ＋ at the row's END** (a browser's new-tab button). **His text: *"the name of
+the current board should be one tab with the option next to it to '+ BOARD'."***
+**THIS DESK TAKES HIS PLACEMENT, and it turns out to be the better one:** **"＋ BOARD" travels with the
+CURRENT tab, wherever that tab sits in the row** — *because the act is "put a board inside THIS board",
+and a control that acts on the current board belongs beside it.* **The row's order is untouched, so
+stability survives** (BT-Q1's lean, still open).
+**The rival, named:** a ＋ fixed at the row's end never moves, which is easier to hit by habit — but it
+says nothing about which board it nests into, and on a long scrolling row it can be off-screen while its
+subject is in view.
+
+### (5) WHAT ELSE HIS TEXT SETTLES FOR THIS ROW
+- ***"replace the current views tabs with the multi-board tabs"*** — **the retirement is his own word**, and
+  §1–§4 stand on it rather than on a reading.
+- ***"(Journals should display differently … already displayed as the Page surface)"*** — **a Book-type
+  board shows its page, as item 172's pass has it.** *Whether a Journal carries the tab bar at all is a
+  question this desk hands up: the row is a door between boards, and a Journal is a board.*
 
 ## §Q
 - **144C-Q1 — ANSWERED by `802a86e`** (*"types cannot change after birth"*): the nav row's type label is
   **a label**. *Kept here because the question was asked; it needs no ruling unless the verbatim differs.*
 - **144C-Q2 — the word:** **"＋ BOARD"** on the control (Fable's wording), or the quieter **"＋"** the merged
   brief drew, with the direction in its accessible name?
-- **⭐ THE ONE FROM §0 IS ANSWERED:** the record carries the dissolution (`802a86e`). **What is still owed
-  is his VERBATIM**, which §5's three items wait on.
+- **⭐ THE ONE FROM §0 IS ANSWERED**, and **the verbatim has landed** (`55cf81c`): §5 is a re-read, not a
+  wait. **What is still open there:** difference 4's overlap (Nick's), whether the small line under a tab
+  is the location line (this desk's reading, §5(3)), and whether a Journal carries the row at all.
