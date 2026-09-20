@@ -598,7 +598,9 @@ await withHarness(async (app) => {
   // 2026-09-19: the typewriter is Free Write's, text-only and inkless, and
   // "not available in either Draft or Revise mode" — a screenplay's posture is
   // Draft). His latest words govern (item 127's own F1 default). This is a
-  // WITHDRAWAL of a capability he named, raised in the offer, not settled here.
+  // WITHDRAWAL of a capability he named: ITEM 183, with NICK himself, because a
+  // disagreement between two of his own rulings is his to resolve. 171-A does
+  // not wait on his answer.
   // ⚠ NOTE WHAT THIS DOES TO THIS FILE'S OWN HISTORY: the check R12 parked
   // just above — SC1 S3's original "the option does not present itself here" —
   // describes the product again. It is NOT un-parked (a parked original stays

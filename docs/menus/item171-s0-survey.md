@@ -378,6 +378,12 @@ offer, into ScriptEditor.tsx, and into all three parked assertions, so nobody
 meets it later as a silent reversal. **If he wants it back, the answer is R12's
 own flagged engine hook-up, not the prop this ticket added.**
 
+**ROUTED 2026-09-19 AS ITEM 183, TO NICK HIMSELF** — a disagreement between two
+of his own words is his to resolve, not a lane's. **171-A does not wait on it.**
+(It was first relayed as "item 182"; that number was already held by THE GRANT
+PROVES A TOKEN, NOT A HOLDER, and the collision was caught before either record
+carried it — which is why nothing had to be unwound.)
+
 ### A second instance of the same defect, found while sweeping
 
 **A Board offered the typewriter option too**, and a Board has never run the

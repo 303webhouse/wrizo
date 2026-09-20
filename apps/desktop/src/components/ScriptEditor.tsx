@@ -1156,7 +1156,9 @@ export function ScriptEditor({ id }: { id: string }) {
              grounds that his LATEST words govern (item 127's own F1 default):
              the typewriter is now Free Write's, text-only, inkless, and a
              screenplay's posture is Draft.
-             RAISED FOR NICK IN THE OFFER rather than decided quietly here. If
+             THIS IS ITEM 183, and it is with NICK — not with a lane, because
+             it is a disagreement between two of his own rulings (R12 and 171).
+             171-A does not wait on his answer. If
              he wants it back, the answer is R12's flagged engine hook-up, not
              this prop — and `typewriterAvailable` is the one line to revisit.
              ab2.mjs's R12 successor is PARKED with this same lineage. */

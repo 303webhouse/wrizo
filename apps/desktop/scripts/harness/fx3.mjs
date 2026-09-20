@@ -313,7 +313,9 @@ await withHarness(async (app) => {
   // 2026-09-19: the typewriter is Free Write's, text-only and inkless, and
   // "not available in either Draft or Revise mode" — a screenplay's posture is
   // Draft). His latest words govern (item 127's own F1 default). This is a
-  // WITHDRAWAL of a capability he named, raised in the offer, not settled here.
+  // WITHDRAWAL of a capability he named: ITEM 183, with NICK himself, because a
+  // disagreement between two of his own rulings is his to resolve. 171-A does
+  // not wait on his answer.
   //
   // ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
   //   footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
