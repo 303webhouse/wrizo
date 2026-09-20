@@ -1,6 +1,14 @@
 # ITEM 144 BUILD BRIEF — THE SIBLING TAB ROW
 ### PLAN desk · 2026-09-16 · decision-complete · **GATED ON 108**
 
+> **⚠ SUPERSEDED IN PART, 2026-09-19 — by `b144-board-tabs-build-brief.md` (item 144 AMENDED: THE BOARD
+> TABS).** Kept verbatim below. **Superseded:** S1's *"Self is ABSENT — never listed"* (the current board
+> is now a tab, marked where-you-are); **S3's separation of the two lists by RELATION** (membership is now
+> in the row; they are separated by KIND OF LIST — door vs inventory); and **the gate "108 merged" for the
+> row and its door** (the tag population keeps it, pending BT-Q2). **Unchanged, as the new brief's §SUP
+> lists:** a press travels, never nests · condition boards excluded · the drawer's name labels the row ·
+> the strip of tagged pages and cards (SR-Q1) · colour.
+
 **WORKTREE:** `.claude/worktrees/i144-siblings` · **BRANCH:** `i144-siblings` · **OFF:** `origin/main`
 **after 108 has merged.** **Never the primary checkout. This lane pushes its BRANCH.**
 
