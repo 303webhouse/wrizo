@@ -32,6 +32,20 @@
   COLOUR: the current tab is OLIVE (a where-you-are marker -- the tag reversal
   did not touch it); active tag chips are ORANGE (--tag). Structure lines are
   --line, never a state colour.
+
+  RE-DRAWN 2026-09-20 against Nick's VERBATIM (55cf81c), part 2:
+    * "+ BOARD" sits NEXT TO THE CURRENT BOARD's TAB -- his placement -- and it
+      TRAVELS with that tab, because the act is "put a board inside THIS board".
+      Press a few tabs and watch it follow.
+    * THE LAST ITEM IS AN EXIT, not a peer (SR-Q1 ruled, Fable): set apart by a
+      gap and a rule, no tab silhouette, never the olive marker. Its two faces
+      are live in the rig -- "Go Back" when the writer arrived from a page or a
+      board, "New Page" when they did not (auto-connected to this board).
+    * DIFFERENCE 3: the one VERY SMALL line under a title is the LOCATION line
+      ("in Research") -- item 163's caption form, already designed and ruled.
+  ONE RESIDUAL FOR NICK: his word for the last item is "tab". It is drawn here
+  as a different kind of control. If he means it should look like its
+  neighbours, SR-Q1 bends -- his words govern, not this drawing.
 -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
@@ -113,7 +127,14 @@
   .tab[aria-current="page"]{background:#1f1407;color:var(--text-hi);border-color:var(--accent-rest);cursor:default;
        box-shadow:inset 0 -2px 0 var(--accent-rest)}
   .tab .in{display:block;font-size:8.5px;color:var(--text-low);margin-top:1px}
-  .tab.plus{color:var(--text-mid);border-style:dashed;font-size:13px;padding:5px 12px}
+  .tab.plus{color:var(--text-mid);border-style:dashed;font-size:11px;padding:6px 10px;letter-spacing:.06em}
+  .exitwrap{display:flex;align-items:center;gap:10px;margin-left:18px;padding-left:18px;
+            border-left:1px solid var(--line);align-self:stretch}
+  .exit{background:none;border:none;color:var(--text-mid);font:inherit;font-size:11.5px;cursor:pointer;
+        display:inline-flex;align-items:center;gap:6px;padding:6px 4px;white-space:nowrap}
+  .exit:hover{color:var(--text-hi)}
+  .exit .g{font-size:13px;color:var(--accent-rest)}
+  .exit .sub{display:block;font-size:8.5px;color:var(--text-low)}
   .grpcap{align-self:center;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-low);padding:0 6px 0 10px}
   .grpcap:first-child{padding-left:0}
   .line{position:absolute;height:1px;background:#6b5033;pointer-events:none}
@@ -148,6 +169,9 @@
     <button id="oStable" aria-pressed="true">stable · lean</button>
     <button id="oRel" aria-pressed="false">relative</button>
   </span>
+  <span class="grp">arrived from (the exit's two faces):
+    <button id="oFrom" aria-pressed="true">a page or board</button><button id="oNone" aria-pressed="false">nowhere</button>
+  </span>
   <button id="reset">reset</button>
   <span id="geom"></span>
 </div>
@@ -178,13 +202,21 @@
         <div class="rowhead"><span class="dr" id="rowlabel">Novel</span><span id="rowsub">— the boards in this drawer, and the ones connected to them</span></div>
         <nav class="tabs" id="tabs" aria-label="Boards in Novel"></nav>
         <div class="nosib" id="nosib" hidden></div>
+        <div class="nosib" id="exitsay" hidden style="font-style:italic"></div>
         <div class="connect" id="connect"></div>
       </div>
     </div>
   </div>
 </div></div>
 
-<div class="cap"><b>Press any tab</b> — the board changes over and the <b>olive</b> marker moves. In the <b>stable</b>
+<div class="cap"><b>＋ BOARD sits beside the board you are on</b> and travels with it — his placement, and the better rule:
+the act is <em>put a board inside THIS board</em>. <b>At the far end, past a rule, is the EXIT</b> — not a tab, not a
+peer: <em>Go back</em> when you arrived from a page or a board, <em>New page</em> (connected here) when you did not.
+Flip the rig's <b>arrived from</b> switch to see both faces. <b>The one very small line under a title is the
+location</b> — <em>in Research</em> — item 163's caption form. <b>⚠ For Nick:</b> your word for the last item is
+<em>"tab"</em>; it is drawn here as a different kind of control, because a tab is a door to a board and this one is the
+way out. <b>If you mean it should look like its neighbours, say so and that rule bends.</b><br><br>
+<b>Press any tab</b> — the board changes over and the <b>olive</b> marker moves. In the <b>stable</b>
 order the tabs stay exactly where they were (the rig counts how many moved); switch the rig to <b>relative</b> and press
 again to feel the rival: the row regroups around wherever you stand. A board <b>inside</b> another sits right after it,
 <b>joined beneath it</b> by a thin line; a board from another drawer carries <b>“in Research”</b> — the same
@@ -221,7 +253,7 @@ and an empty sort says so in words.</div>
     maps:[{t:'North of the Neck, the roads give up.',x:6,y:12}]
   };
   var ALL_TAGS=['stark','character','lore','crypt'];
-  var KIDS, here, active, order, renamingId, newCount, lastIds=null;
+  var KIDS, here, active, order, renamingId, newCount, lastIds=null, cameFrom=true;
 
   function init(){ KIDS=JSON.parse(JSON.stringify(KIDS0)); here='stark'; active=[]; renamingId=null; newCount=0; lastIds=null;
     document.body.dataset.connect='0'; }
@@ -310,11 +342,21 @@ and an empty sort says so in words.</div>
       var il=inLine(r.id);
       t+='<button class="tab" data-board-tab="'+r.id+'" data-depth="'+r.depth+'"'+(r.id===here?' aria-current="page"':'')+' title="'+B[r.id].name+'">'
         +B[r.id].name+(il?'<span class="in">'+il+'</span>':'')+'</button>';
+      // HIS PLACEMENT: "+ BOARD" is next to the CURRENT board's tab, and travels with it.
+      if(r.id===here) t+='<button class="tab plus" id="plus" aria-label="Put a board inside '+cur.name+'">＋ BOARD</button>';
     });
-    t+='<button class="tab plus" id="plus" aria-label="Put a board inside '+cur.name+'">＋</button>';
+    // THE EXIT — a terminal control, set apart; never a peer of the tabs (SR-Q1).
+    t+='<span class="exitwrap">'+(cameFrom
+        ? '<button class="exit" id="exit"><span class="g">‹</span><span>Go back<span class="sub">to Ned — last ride</span></span></button>'
+        : '<button class="exit" id="exit"><span class="g">＋</span><span>New page<span class="sub">connected to '+cur.name+'</span></span></button>')
+      +'</span>';
     var tabs=document.getElementById('tabs'); tabs.innerHTML=t;
     [].forEach.call(tabs.querySelectorAll('[data-board-tab]'),function(x){ x.onclick=function(){ if(x.dataset.boardTab!==here) go(x.dataset.boardTab); }; });
     document.getElementById('plus').onclick=function(){ document.body.dataset.connect = document.body.dataset.connect==='1'?'0':'1'; renderConnect(); };
+    document.getElementById('exit').onclick=function(){ var e=document.getElementById('exitsay');
+      e.textContent = cameFrom ? 'the exit takes you back where you came from — it is not a board, so it is not a tab'
+                               : 'the exit makes a page, connected to '+cur.name+' — it leaves the board either way';
+      e.hidden=false; };
     var nos=document.getElementById('nosib'), others=rows.filter(function(r){return r.id!==here;});
     nos.hidden=!(flat && !others.length);
     nos.textContent='No other board carries all of '+list(active)+'.';
@@ -378,6 +420,12 @@ and an empty sort says so in words.</div>
     document.getElementById('oRel').setAttribute('aria-pressed',o==='relative'); render(); }
   document.getElementById('oStable').onclick=function(){setOrder('stable');};
   document.getElementById('oRel').onclick=function(){setOrder('relative');};
+  function setFrom(v){ cameFrom=v;
+    document.getElementById('oFrom').setAttribute('aria-pressed',v);
+    document.getElementById('oNone').setAttribute('aria-pressed',!v);
+    var e=document.getElementById('exitsay'); if(e) e.hidden=true; render(); }
+  document.getElementById('oFrom').onclick=function(){ setFrom(true); };
+  document.getElementById('oNone').onclick=function(){ setFrom(false); };
   document.getElementById('reset').onclick=function(){ init(); setOrder(order||'stable'); };
 
   function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');

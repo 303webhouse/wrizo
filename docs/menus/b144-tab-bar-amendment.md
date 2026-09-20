@@ -135,6 +135,8 @@ TERMINAL CONTROL: an EXIT, not a destination.**
   control that leaves the row is not a member of the row.*
 - **⚠ His word for it is "tab", and this design gives it a different shape by Fable's ruling.** *If his
   intent is that it look like the other tabs, that is his to say and SR-Q1 bends rather than the text.*
+  **That sentence goes in front of him WITH THE MOCKUP** (`board-tabs-mock.html`, re-drawn 2026-09-20):
+  the exit is drawn there, set apart, with both faces live — **so he rules on a picture, not a paragraph.**
 
 ### (2) ⚠ DIFFERENCE 4 — THE TWO CONDITIONS ARE NOT COMPLEMENTS, and the reload makes it worse
 **Go Back:** *"if the User arrived at the board from a page or another board."* **New Page:** *"If the
@@ -146,7 +148,13 @@ staged by `travelToEntry` and `travelFromCascade`) — **which `BoardEditor` nev
 **which does not survive a reload.** **So after a refresh the exit flips to "New Page" on a board the
 writer did arrive at.** *Options, handed up: accept it (the exit is about the journey, and a reload ends
 the journey); or persist the last origin per board, client-local, and keep "Go Back" across a refresh.*
-**Lean: accept it** — *a Go Back that outlives the going back is a promise the app cannot keep.*
+
+> **✅ RATIFIED (Fable, 2026-09-19) — ACCEPT IT: A GO BACK THAT OUTLIVES THE GOING BACK IS A PROMISE THE
+> APP CANNOT KEEP.**
+> **And this is why, so nobody later "fixes" it:** a persisted origin would survive the journey it
+> describes, and then **point somewhere the writer did not come from** — wrong in a different direction,
+> and harder to see. **The exit shows "New Page" after a reload because there is no journey left to end.**
+> *A builder who finds this surprising is meeting the design, not a defect.*
 
 ### (3) DIFFERENCE 3 — "very small underneath the title": **THE ROW ALREADY HAS EXACTLY ONE**
 **The merged brief renders a very small second line under a tab's name: the LOCATION LINE** — *"in
@@ -158,6 +166,7 @@ somewhere else** (the merged rule). **If he meant a tag, or the relation (*insid
 do not say so** — *and both are one line's work once he does.*
 
 ### (4) "+ BOARD" — his words put it NEXT TO THE CURRENT BOARD's TAB, not at the row's end
+*(Drawn in the mock: press a few tabs and the control follows the one you are on.)*
 **The merged brief put the ＋ at the row's END** (a browser's new-tab button). **His text: *"the name of
 the current board should be one tab with the option next to it to '+ BOARD'."***
 **THIS DESK TAKES HIS PLACEMENT, and it turns out to be the better one:** **"＋ BOARD" travels with the
