@@ -2033,6 +2033,12 @@ as "Organize Research → Import Sources." Kept verbatim below for the record of
 **→ SUCCESSOR, for the Journal-board import: ITEM 181 (Fable, 2026-09-19)** — recorded as 116's successor,
 not as new ground.
 
+**✓ REFINED 2026-09-19 (Fable, accepting PLAN DESK's reading): 116 is ABSORBED IN PART — two acts, not one.**
+*Import Sources* (research → pages on a new board) is 165's absorption of 116's first half; **placing an image
+or doc AS AN OBJECT, opened full size by double-click, is 116's original shape and SURVIVES AS 181**, which
+carries the fresher founder words. The "SUPERSEDED-INTO-165" marker above is kept as written and is read as
+*in part*.
+
 ## ITEM 116 — IMPORT TO BOARDS (committee-light) — OPENS 2026-08-26
 
 **OPENS (Nick, walkthrough part 2, 2026-08-26).** **Replaces the dead New Page Card control** (ruled
@@ -7881,6 +7887,8 @@ PAGES SORT FIRST in any filtered list of existing pages.**
 writer choose while the cursor HOLDS the doc; **right-click CANCELS the hold.** *(Ties to 168: a drag onto
 an icon — the Trash, the Drawers — is one gesture family; one mechanism, fix the class.)*
 
+**✓ PLAN DESK's reading ACCEPTED 2026-09-19 (Fable): two acts, not one** — see *181 vs 116 — ABSORBED IN PART*.
+
 **✓ RE-FILED 2026-09-19 (Fable): 181 is 116's SUCCESSOR, not new ground** — 116 was marked superseded into
 165, and this is its shape. Nick's text confirms it: *Users should also be able to import images/docs onto
 a Journal "board." These files should open to full size when they are double-clicked on.*
@@ -7900,6 +7908,10 @@ title very small underneath. **The last tab is "Go Back" when the writer arrived
 `newPageCard` exist ONLY in the OPEN branch; `newLane` only in Storyboard; **and the sliver's copy of the
 picker is NOT mode-gated.** **Retiring the view tabs retires two doors and leaves a third standing unless
 each is deliberately RE-HOMED.** "+ BOARD" replaces the nest door; **the rest need homes.**
+
+**⚠ HOLD 2026-09-19 on the MOVE clause below:** *"Cards/docs/pages/etc. should be movable back and forth
+between boards"* collides with item 123's COPY-ONLY ruling. **Nobody builds a move until Nick rules** — see
+*THE FOURTH CONFLICT*.
 
 **ITEM 169 — RULED: SPLIT SCREEN.** Up to FOUR boards. **Strip menus VANISH when more than one board is
 open, and those options return only at one.** Cards/docs/pages MOVE between open boards. **BOOK BOARDS
@@ -8232,11 +8244,18 @@ order, not its hold on the box; **PW granted with a FRESH token that is NOT writ
 from this record: TOKENS TRAVEL IN THE RELAY AND THE GRANT FILE ONLY; the ledger records the lane, the
 purpose and the time.**
 
+**⚠ NUMBER COLLISION 2026-09-19:** Fable's relay used "182" for a DIFFERENT subject (the screenplay typewriter
+consequence). **182 stays with THIS item; that one is recorded as 183.** **This item's routing is still OPEN —
+Fable's routing answer addressed the other subject.**
+
 **ITEM 182 — THE GRANT PROVES A TOKEN, NOT A HOLDER — OPENS. Harness/tooling; UNROUTED — Fable to route.**
 *(Per the band: if it matters, it gets a number.)* **The question:** harden the guard so the runner also
 requires a lane identity that matches the grant's lane (`WS_BOX_LANE`, say) — a small change to
 `box-grant.mjs` — or accept the honour-system reading and rely on the practice change. **Chat 1 does not
 build it; it is tooling and Fable's to route.**
+
+**✓ RULED 2026-09-19 (Fable): SR-Q1 is NOT superseded; the last tab is an EXIT, not a peer** — see *SR-Q1
+RULED*, below. The record that follows is kept as written.
 
 ## FOUR MORE PLAN DOCS MERGED; A BOX MEASUREMENT; PW's STATUS — 2026-09-19
 
@@ -8276,7 +8295,114 @@ deploy pair — which takes the box ahead of the queue when it is ready.** **The
 also on origin) → FIX's 158/159/160 → PW's 163 → TOOLS' 161/162 → 147/148. **Product merges wait behind
 Batch Four's stamp** (176 and the rest ride Batch Five unless Fable folds one in — asked).
 
-Registry: next free **183**.
+## SR-Q1 RULED — THE LAST TAB IS AN EXIT, NOT A PEER — 2026-09-19
+
+**Fable: SR-Q1 is NOT superseded, and the last tab is a DIFFERENT KIND OF CONTROL.** SR-Q1 said a tab is only
+ever a door to another board, *and that rule earns its place — it is what makes the bar readable at a
+glance.* **Nick's final tab is an EXIT, not a destination in the set:** "Go Back" LEAVES the board work;
+"New Page" CREATES a page and connects it. **Design it as the bar's TERMINAL CONTROL, visually apart from
+the board tabs — the rail's own foot precedent: a SEPARATOR, not a peer — so a writer never reads it as
+another board.**
+
+**CONDITIONAL, by Fable's own clause: if Nick's verbatim reads otherwise, HIS WORDS GOVERN and SR-Q1 is
+superseded; PLAN DESK re-reads §5 against it.** **Chat 1's check: the verbatim is ALREADY ON RECORD
+(`55cf81c`), so PLAN can read it now.** Its only words on the point are *the final tab in the list should
+be a "Go Back" option if the User arrived at the board from a page or another board* and *that tab should
+give them the option to make a "New Page"*. **He calls it a TAB IN THE LIST and says nothing about a
+separator or an exit.** That is compatible with Fable's design and does not confirm it — **exactly what he
+should be SHOWN and asked, as a mockup rather than a sentence.** Chat 1 records the tension, not a verdict.
+*(Difference 4 — the two conditions not being complements — is unaffected and is still with Nick.)*
+
+**"VERY SMALL UNDERNEATH" STAYS OPEN FOR THE VERBATIM: both readings are lawful English and NEITHER DESK
+SHOULD PICK.** *(PLAN's: a title underneath implies something above it. Chat 1's: something very small
+underneath the title. The text says neither.)*
+
+## ITEM 183 — THE SCREENPLAY TYPEWRITER CONSEQUENCE — OPENS; ROUTED TO NICK AS A QUESTION — 2026-09-19
+
+**⚠ NUMBER COLLISION, resolved by the registry.** Fable's relay calls this item **"182."** **182 is ALREADY
+on `main` (`55cf81c`) for the grant guard,** so one number would carry two subjects. **This item is recorded
+as 183; the relay's "182" means 183.** *(The relay crossed with chat 1's records — it answers the box and 170
+as they stood before them — and Fable's counter had 182 free.)* **Fable to carry the number to whoever was
+told "182."**
+
+**THE CONSEQUENCE (Fable):** INK's 171-A build takes the typewriter OFF SCREENPLAY pages. **Nick asked for it
+there BY NAME in R12** (item 83, 2026-08-25): *One small change: TYPEWRITER mode should be available while
+writing a screenplay, too.* — as the harness records it (`sc1.mjs`), where R12 already REVERSED SC1's earlier
+withdrawal. **The control was mounted deliberately AHEAD of its engine, as a recorded interim** — the item-83
+master brief: *the screenplay typewriter ENGINE revival (R12 flagged it engine-touching — settings persist
+tonight, the engine hook-up is its own brief).* **Nick's 171 answer (answer 5, on record):** typewriter only
+on *"Text"* pages with no ink, and not in Draft or Revise — **which leaves screenplay pages out.**
+
+**CHAT 1 CHECKED INK's BRANCH, not the relay:** `item171-typewriter-scope` PARKS both R12 checks —
+`sc1.mjs`'s *S3 [R12 successor]* and `ab2.mjs`'s script-foot row — **in place, verbatim, marked
+"SUPERSEDED by ITEM 171-A (Nick's word)," with a note on what it does to the file's own history**
+(SC1 → R12 → 171-A). **The chain is on record in the harness itself; nothing was silently dropped.** The
+branch is 3 ahead / 28 behind `main` and **NOT YET OFFERED.**
+
+**ROUTED TO NICK, AS A QUESTION — NOT TO A LANE: his 171 ruling and his R12 ruling CONFLICT, and only he
+resolves it.** **IF HE WANTS IT BACK, THE PATH IS R12's FLAGGED ENGINE HOOK-UP — ITS OWN BRIEF — NOT INK's
+PROP.** Recorded so the restoration is built right rather than reverted: *reverting 171-A would restore the
+control without its engine — the interim state the 2026-08-04 build report named: "The controls are honest
+about what they store; they are not yet honest about what they change."* **171-A IS NOT HELD ON IT — INK's
+build stands either way.**
+
+## THE BOX — AN INSTRUCTION IS NOT A GRANT — 2026-09-19
+
+**Fable: PW was CORRECTLY REFUSED by item 140 — the grant file named TOOLS, and Fable's "pair 176 now" was
+an INSTRUCTION, not a grant. *That is the guard working against Fable, which is the point of it.***
+
+> **AN INSTRUCTION IS NOT A GRANT — THE FILE IS THE ANNOUNCEMENT.**
+
+**Fable's ask: grant PW, lane PW2, for item 176 alone (tree `78a8329`) when TOOLS' 154 pair clears.** **THE
+RELAY CROSSED WITH CHAT 1's RECORDS. As of 23:05:** the grant file **ALREADY NAMES PW** — chat 1 lapsed TOOLS'
+grant (no TOOLS activity seen) and granted PW at ~22:05 under the present-and-ready rule, so **the refusal
+Fable describes predates that grant** (the guard named TOOLS because the file did). **Re-labelled to lane PW2
+this turn, as ruled — SAME token, so nothing PW may already hold changes; the box was idle.** **TOOLS' 154
+pair has not run and is not re-announced; it goes when TOOLS is present, AFTER PW's 176 pair — the REVERSE of
+Fable's stated order, and Fable may veto:** a present lane took the slot an absent lane was not using. **No
+pair has started; `item176-picker-says-board` is still not on `origin`.**
+
+**ON THE TREE:** Fable names `78a8329`; chat 1 told PW to merge `main` first (1 commit behind, docs only), so
+the stamped tree will be a merge commit with a different SHA and **the same product and harness files.** Chat
+1 will verify that by DIFF, not by SHA.
+
+**THE TWO FACTS ABOUT THE ONE GUARD, side by side:** it REFUSED a lane with no grant (correct), and it ADMITTED
+a lane holding another lane's published token (the FIX anomaly). **Both are the same design: the guard
+enforces the file's token and cannot tell who holds it — which is item 182.** *(Fable registers chat 1's
+TEMP measurement as right to state its 19:18–19:25 gap as a LIMIT, not a conclusion.)*
+
+**FIX's RE-SCOPED 170 HAS ALREADY STAMPED (92/92, tree `41414e5`) and is with Fable NOW** — *"the moment it
+stamps"* was 20:37. **Nothing else waits on Fable.**
+
+## THE FOURTH CONFLICT — MOVE vs COPY-ONLY (Nick's 169 ruling vs item 123) — NOBODY BUILDS A MOVE — 2026-09-19
+
+**PLAN DESK's find, carried by Fable: ONE RULING NEEDS NICK's VERBATIM BEFORE ANY BUILD.** Nick, part 2 (on
+record verbatim): *let's scrap the Board "views." ... if they want a different style of board, they'll be able
+to move Cards/docs to it if they need to* and *Cards/docs/pages/etc. should be movable back and forth between
+boards.* **Item 123 (2026-09-07), as the ledger records it:** *Copy a card from one board to another. COPY
+SEMANTICS: the original stays; there is NO SHARED IDENTITY — edits do not follow. Tags travel with the copy;
+THREADS DO NOT. Every card keeps >= 1 board.* **PW2's card transfer shipped in Batch Three on exactly that: a
+copy-only whitelist with `copiedFromBoardId` provenance.**
+
+**A MOVE IS A REVERSAL OF 123, NOT AN EXTENSION OF IT. Two founder rulings disagree; ONLY NICK CHOOSES.
+Flagged to him BESIDE THE "UNTITLED" CONFLICT (i). NOBODY BUILDS A MOVE UNTIL HE DOES.**
+
+**CHAT 1's TWO NOTES, for PLAN DESK to confirm — not rulings:** (1) **the views retirement's own rationale
+IS this move** (*they'll be able to move Cards/docs to it*), so the hold touches the retirement's SUBSTITUTE,
+not its ruling; the views are scrapped either way. (2) **A PAGE differs from a card:** its board relation is
+MEMBERSHIP (item 125; a page can sit on several boards), so "moving" a page is an unpin plus a pin and does
+not contradict 123; **the conflict is CARDS, and any doc object that carries content.**
+
+## 181 vs 116 — ABSORBED IN PART — 2026-09-19
+
+**Fable ACCEPTS PLAN DESK's reading: TWO ACTS, NOT ONE.** **(1) Import Sources** (research → pages on a new
+board) is **165's absorption of 116's FIRST HALF.** **(2) Placing an image or doc AS AN OBJECT, opened full
+size by double-click,** is **116's ORIGINAL SHAPE and SURVIVES AS 181.** **116 is marked ABSORBED IN PART**
+(marker at 116), **with 181 carrying the fresher founder words.** *(Chat 1's earlier "116 is not wholly
+absorbed" is now the ruling.)*
+
+Registry: next free **184**.
+
 
 
 
