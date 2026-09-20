@@ -16,7 +16,16 @@
 
 > **⛔ AND IT NOW STANDS ON ITEM 172 — BOARD TYPES.** A board carries a **stored type**, and **a type is a
 > display** (`item172-board-types-pass.md`). **Every entry in this menu resolves to (a type, its starting
-> contents)** — §3. **172-Q1 (the list of types) changes this brief's table, not its shape.**
+> contents)** — §3.
+
+> **⛔ §3's TABLE IS OVERTAKEN — `802a86e`: the founder SCRAPPED BOARD VIEWS, so 172-Q1 is dissolved and
+> NEITHER reading A nor B applies.** **The table is kept as the record of what was weighed.** What
+> survives it unchanged: **every entry still resolves to (a type, its starting contents)**, and **a board
+> no longer switches displays.** **Two rulings from the same record bear directly on this menu:**
+> **"Book is NOT offered" in Create Board** (*separate Journals maybe later; the menu's job is getting a
+> writer creating fast, not organizing*) — **so §3's Book row is WITHDRAWN** — and **types cannot change
+> after birth.** **Both are FABLE's READING with the verbatim pending; this brief marks them and does not
+> redesign from a summary.**
 
 **Reference render:** `plan-menu-mock.html` — the column at four window widths, the old canon beside
 item 166's law.
