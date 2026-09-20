@@ -39,10 +39,17 @@ whole grammar is selecting and dragging.*
   `penStroke`'s y is a fraction of HEIGHT while a stored `StrokePoint`'s y is normalized by WIDTH — mixing
   them samples empty canvas and lets a check pass for the wrong reason.** **Ink on a board adds a THIRD
   basis** (canvas vs box), so **every driver and every renderer must name which basis it is in.**
-- **⚠ AND THIS REVERSES A STANDING LAW, which is Nick's to do and the record's to say:** today **the pen
-  is INERT on non-Journal surfaces** — *a stylus tap on a Page or chapter does absolutely nothing, not even
-  caret placement.* **His ruling makes boards and cards places a pen works.** **Recorded as a reversal, not
-  as a gap that was overlooked.**
+
+### ⛔ §1b · A REVERSAL, RECORDED PLAINLY — and it is NICK's TO MAKE
+
+> **TODAY THE PEN IS INERT ON EVERY NON-JOURNAL SURFACE.** A stylus tap on a Page or a chapter does
+> **absolutely nothing** — not even caret placement. That is a standing law, built and held.
+> **NICK's RULING MAKES BOARDS AND CARDS PLACES A PEN WORKS. THAT IS A REVERSAL OF THAT LAW.**
+
+**It is not a gap that was overlooked, and this desk does not soften it into one.** *The law was right for
+the surfaces it covered; the founder has changed what it covers.* **What the reversal does NOT touch: the
+pen stays inert on a Page and a chapter** — it is boards and cards he named, and nothing else moves with
+them.
 
 ---
 
@@ -95,7 +102,12 @@ accident, and nobody has measured how often a palm or a stray stylus tap lands o
 already rejects a resting palm (touch is refused once a pen is seen) — that inherited defence is an
 argument, not a measurement.*
 
-**FIVE THINGS ANY ANSWER MUST ALSO SAY** — *they are where the grammar actually collides:*
+### ⛔ THE ACCEPTANCE TEST FOR Q3 — five collisions, and the bar (Fable, ratified)
+
+> **AN ANSWER THAT DOES NOT SETTLE SELECT-AND-DRAG-WHILE-THE-PEN-IS-DOWN HAS NOT ANSWERED Q3.**
+
+**These five are the test, not a checklist of nice-to-haves. A brief that leaves one open is not
+decision-complete, and the harness asserts each by name:**
 1. **While the pen owns the surface, what do select and drag do?** *(Lean: nothing — the pen owns it.)*
 2. **Touch, whose long-press (350ms) is already the drag gesture.** *(Lean: with a pen seen, touch stays a
    scroll — `InkStratum`'s inherited rule.)*
@@ -104,6 +116,9 @@ argument, not a measurement.*
 4. **UNDO.** The board has **one level** (`snapshot`); ink has its own stroke history. *(Lean: a stroke is
    an undo step on the board's stack — one stack, or the writer learns two.)*
 5. **WHERE THE CONTROL LIVES** — the board's tool dock, and **item 166 governs the panel it opens from.**
+
+*(1 is the bar. 2 is where touch writers live. 3 and 4 are where a wrong answer destroys work rather than
+annoying someone. 5 is the only one a layout law already governs.)*
 
 ---
 
