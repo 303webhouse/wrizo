@@ -27,6 +27,22 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+
+// ITEM 171-A — evidence for this file's parked section, captured during the
+// default leg so every park below is COUNTED BY EXECUTION rather than asserted
+// in prose. See the S2 legs for what each field means.
+const PARK171 = { shortDom: null, shortSetting: null, longDom: null, longSetting: null,
+                  controlInDraft: null, settingUntouched: null, pageA: null, pageB: null };
+// Is the typewriter option OFFERED on this surface? Both of its affordances —
+// the sliver foot's icon and the Seg one click deeper behind that row's gear —
+// because SC1 S3's law is that hiding one and not the other is the lie.
+const TW_OFFERED = `(() => {
+  const row = document.querySelector('.wz-sliver-instruments-row');
+  const icons = row ? [...row.querySelectorAll('button')] : [];
+  const icon = icons.some(b => (b.getAttribute('aria-label') || '').startsWith('Typewriter'));
+  const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')];
+  const seg = rows.some(r => ((r.querySelector('span') || {}).textContent || '') === 'Typewriter');
+  return { icon, seg, offered: icon || seg, iconCount: icons.length }; })()`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const rectOf = (sel) => `(() => { const r = document.querySelector(${JSON.stringify(sel)}).getBoundingClientRect(); return {left:r.left, top:r.top, width:r.width, height:r.height, right:r.right, bottom:r.bottom}; })()`;
@@ -264,9 +280,22 @@ await withHarness(async (app) => {
   const shortDom = await typewriterDom(app);
   const shortSetting = await typewriterSetting(app);
   ok('S2: an untyped support page defaults to Draft on open (the fixture itself, sanity-checked)', shortMode === 'Draft', String(shortMode));
-  ok('S2: a ~3-line page (below the 10-line threshold) opens Draft with typewriter ON — DOM (.mode-scroll[data-typewriter])',
-    shortDom === 'true', String(shortDom));
-  ok('S2: a ~3-line page opens Draft with typewriter ON — the stored setting itself',
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. "Typewriter mode should not be available
+  // in either Draft or Revise mode." There is no Draft-open seed any more
+  // (PageEditor.tsx's call is gone, and it wrote the ONE GLOBAL setting), so
+  // neither half of this can hold: the DOM never reads 'true' in Draft, and
+  // opening a Draft no longer writes the stored setting at all.
+  //
+  // ok('S2: a ~3-line page (below the 10-line threshold) opens Draft with typewriter ON — DOM (.mode-scroll[data-typewriter])',
+  //   shortDom === 'true', String(shortDom));
+  // ok('S2: a ~3-line page opens Draft with typewriter ON — the stored setting itself',
+  //   shortSetting === true, String(shortSetting));
+  // ------------------------------------------------------------------------
+  PARK171.shortDom = shortDom; PARK171.shortSetting = shortSetting;
+  ok('S2 [ITEM 171-A successor]: a ~3-line page opens Draft with NO typewriter — the DOM reads false whatever the page holds, because Draft has no typewriter to seed',
+    shortDom === 'false', String(shortDom));
+  ok('S2 [ITEM 171-A successor]: and opening that Draft LEAVES THE STORED SETTING ALONE — it is still the writer\'s own default (ON), not a value a mode they were only passing through wrote for them',
     shortSetting === true, String(shortSetting));
 
   await freshDraftPage(app, longDraftText);
@@ -274,10 +303,24 @@ await withHarness(async (app) => {
   const longDom = await typewriterDom(app);
   const longSetting = await typewriterSetting(app);
   ok('S2: a ~15-line page also opens in Draft (the fixture itself, sanity-checked)', longMode === 'Draft', String(longMode));
-  ok('S2: a ~15-line page (at/above the 10-line threshold) opens Draft with typewriter OFF — DOM',
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. ⚠ THE FIRST OF THESE WOULD STILL PASS,
+  // AND THAT IS WHY IT IS PARKED: 'false' used to mean "the seed read 15 lines
+  // and chose OFF", and now means "Draft has no typewriter at all". A check
+  // that passes for a reason its own name does not state is not a check — it is
+  // the "green about something else" failure this house has a law for. The
+  // second genuinely fails: nothing writes the stored setting on a Draft open.
+  //
+  // ok('S2: a ~15-line page (at/above the 10-line threshold) opens Draft with typewriter OFF — DOM',
+  //   longDom === 'false', String(longDom));
+  // ok('S2: a ~15-line page opens Draft with typewriter OFF — the stored setting itself',
+  //   longSetting === false, String(longSetting));
+  // ------------------------------------------------------------------------
+  PARK171.longDom = longDom; PARK171.longSetting = longSetting;
+  ok('S2 [ITEM 171-A successor]: a ~15-line page opens Draft with no typewriter either — the ten-line threshold is gone with the seed it served, and the DOM reads false for the SAME reason at both lengths',
     longDom === 'false', String(longDom));
-  ok('S2: a ~15-line page opens Draft with typewriter OFF — the stored setting itself',
-    longSetting === false, String(longSetting));
+  ok('S2 [ITEM 171-A successor]: and its stored setting is untouched too — a long Draft page no longer silently turns the writer\'s Free Write typewriter OFF',
+    longSetting === true, String(longSetting));
 
   // ==========================================================================
   // S2 — the explicit toggle wins for the rest of the session: still on the
@@ -306,24 +349,43 @@ await withHarness(async (app) => {
   //
   // await app.evalJs("document.querySelector('.wz-sliver-instruments-row .typewriter-toggle')?.click()");
   // ------------------------------------------------------------------
-  await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
-  await sleep(200);
-  await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
-  await sleep(150);
-  const afterExplicitClick = await typewriterDom(app);
-  ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
-    afterExplicitClick === 'true', String(afterExplicitClick));
-
-  await clickModeTab(app, 'Free Write');
-  await sleep(200);
-  await clickModeTab(app, 'Draft');
-  await sleep(200);
-  const afterRoundTrip = await typewriterDom(app);
-  ok('S2: Draft -> Free Write -> Draft within the SAME mount does not re-run the seed — the explicit ON survives the round trip',
-    afterRoundTrip === 'true', String(afterRoundTrip));
-  const afterRoundTripSetting = await typewriterSetting(app);
-  ok('S2: ...and the stored setting itself reflects the same explicit ON, not a reverted OFF',
-    afterRoundTripSetting === true, String(afterRoundTripSetting));
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run, THE GESTURE INCLUDED. This leg hand-clicks
+  // the typewriter control while on a DRAFT page; under the ruling that control
+  // is ABSENT there (absent, never greyed — G3), so the gesture has nothing to
+  // press and the claims it carried cannot be made on this surface. What the
+  // leg protected — an explicit choice is never silently re-imposed by a later
+  // page-open seed — is protected more simply now: THERE IS NO SEED. The
+  // successor asserts that directly, and item171a.mjs carries the
+  // writer-facing half on the surface that still has the control.
+  //
+  // await app.evalJs("(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); if (b) b.click(); })()");
+  // await sleep(200);
+  // await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
+  // await sleep(150);
+  // const afterExplicitClick = await typewriterDom(app);
+  // ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
+  //   afterExplicitClick === 'true', String(afterExplicitClick));
+  //
+  // await clickModeTab(app, 'Free Write');
+  // await sleep(200);
+  // await clickModeTab(app, 'Draft');
+  // await sleep(200);
+  // const afterRoundTrip = await typewriterDom(app);
+  // ok('S2: Draft -> Free Write -> Draft within the SAME mount does not re-run the seed — the explicit ON survives the round trip',
+  //   afterRoundTrip === 'true', String(afterRoundTrip));
+  // const afterRoundTripSetting = await typewriterSetting(app);
+  // ok('S2: ...and the stored setting itself reflects the same explicit ON, not a reverted OFF',
+  //   afterRoundTripSetting === true, String(afterRoundTripSetting));
+  // ------------------------------------------------------------------------
+  const twInDraft = await app.evalJs(TW_OFFERED);
+  PARK171.controlInDraft = twInDraft;
+  ok('S2 [ITEM 171-A successor]: on a DRAFT page the typewriter option is not offered on EITHER of its surfaces — no icon in the sliver foot, no Typewriter row behind that foot\'s gear. SC1 S3\'s law: hiding one and leaving the other is the lie, one click deeper',
+    !!twInDraft && twInDraft.offered === false, JSON.stringify(twInDraft));
+  const settingAfterDraft = await typewriterSetting(app);
+  PARK171.settingUntouched = settingAfterDraft;
+  ok('S2 [ITEM 171-A successor]: and after opening Draft pages at both lengths the STORED setting is still the writer\'s own — the machinery that existed to stop a seed re-imposing a value is not needed once nothing seeds',
+    settingAfterDraft === true, String(settingAfterDraft));
 
   // ==========================================================================
   // S2 — independent-review addition: the explicit flag across a SECOND
@@ -345,8 +407,15 @@ await withHarness(async (app) => {
   await gotoPage(app, 'fx2-draft-a');
   const pageAMode = await activeModeTab(app);
   const pageASeed = await typewriterDom(app);
-  ok('S2 (cross-page, independent-review addition): page A (short) opens Draft with typewriter ON — fixture sanity',
-    pageAMode === 'Draft' && pageASeed === 'true', JSON.stringify({ pageAMode, pageASeed }));
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. Its 'true' was the seed's doing.
+  //
+  // ok('S2 (cross-page, independent-review addition): page A (short) opens Draft with typewriter ON — fixture sanity',
+  //   pageAMode === 'Draft' && pageASeed === 'true', JSON.stringify({ pageAMode, pageASeed }));
+  // ------------------------------------------------------------------------
+  PARK171.pageA = { pageAMode, pageASeed };
+  ok('S2 (cross-page) [ITEM 171-A successor]: page A is a Draft page with no typewriter — the fixture still proves it is Draft, which is what the leg below needs',
+    pageAMode === 'Draft' && pageASeed === 'false', JSON.stringify({ pageAMode, pageASeed }));
 
   await openSliver(app);
   await sleep(200);
@@ -373,8 +442,14 @@ await withHarness(async (app) => {
   await app.evalJs("(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')]; const row = rows.find(r => (r.querySelector('span')||{}).textContent === 'Typewriter'); if (!row) return; const off = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on')); if (off) off.click(); })()");
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
-  ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',
-    pageAExplicitOff === 'false', String(pageAExplicitOff));
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run: the click above presses a control that is
+  // not offered on a Draft page any more, so 'false' here would be true of a
+  // page nobody touched. Parked rather than left to pass by coincidence.
+  //
+  // ok('S2 (cross-page, independent-review addition): explicit click on page A actually flips it OFF by hand',
+  //   pageAExplicitOff === 'false', String(pageAExplicitOff));
+  // ------------------------------------------------------------------------
 
   await gotoPage(app, 'fx2-draft-b');
   const pageBMode = await activeModeTab(app);
@@ -382,10 +457,22 @@ await withHarness(async (app) => {
   const pageBSetting = await typewriterSetting(app);
   ok('S2 (cross-page, independent-review addition): page B (a DIFFERENT page/mount, also short) is Draft, sanity',
     pageBMode === 'Draft', String(pageBMode));
-  ok('S2 (cross-page, independent-review addition): page B does NOT get silently re-seeded ON — the explicit OFF from page A survives the page/mount boundary, matching writingSettings.ts\'s own "different pages/mounts" claim for the module-level flag',
-    pageBDom === 'false', String(pageBDom));
-  ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
-    pageBSetting === false, String(pageBSetting));
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. Same two shapes as the first leg: the DOM
+  // check would still pass, for a reason its name does not state, and the
+  // stored-setting check fails because no page-open writes the setting now.
+  // THE PROPERTY THIS LEG DEFENDED IS STRONGER NOW, not weaker: page B cannot
+  // be "silently re-seeded" because NO page open seeds anything, which the
+  // successor asserts against the writer's untouched default.
+  //
+  // ok('S2 (cross-page, independent-review addition): page B does NOT get silently re-seeded ON — the explicit OFF from page A survives the page/mount boundary, matching writingSettings.ts\'s own "different pages/mounts" claim for the module-level flag',
+  //   pageBDom === 'false', String(pageBDom));
+  // ok('S2 (cross-page, independent-review addition): ...and the stored setting itself is OFF, not reverted by page B\'s own seed',
+  //   pageBSetting === false, String(pageBSetting));
+  // ------------------------------------------------------------------------
+  PARK171.pageB = { pageBMode, pageBDom, pageBSetting };
+  ok('S2 (cross-page) [ITEM 171-A successor]: opening a SECOND Draft page in the same session does not write the typewriter setting either — crossing a page/mount boundary changes nothing, because no page open seeds it at all',
+    pageBDom === 'false' && pageBSetting === true, JSON.stringify({ pageBDom, pageBSetting }));
 
   // ==========================================================================
   // S2 — Free Write is unaffected: a genuinely fresh session's loose page
@@ -423,6 +510,26 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
+  // ITEM 171-A (2026-09-19) — THE DRAFT-OPEN TYPEWRITER SEED, PARKED WHOLE.
+  // Nick: "typewriter mode should not be available in either Draft or Revise
+  // mode." PageEditor.tsx's seed call is gone, so S2's eleven assertions are
+  // either falsified or left passing for a reason their names do not state.
+  // Each original sits commented where it ran, beside a live successor; these
+  // count them from the default leg's own evidence, so the number is read off
+  // the run rather than taken from this comment.
+  pok('PARKED (was "S2: a ~3-line page opens Draft with typewriter ON" — DOM and stored setting, 2 checks) — ITEM 171-A: Draft has no typewriter to seed, and opening one no longer writes the writer\'s global setting',
+    PARK171.shortDom === 'false' && PARK171.shortSetting === true, JSON.stringify({ shortDom: PARK171.shortDom, shortSetting: PARK171.shortSetting }));
+  pok('PARKED (was "S2: a ~15-line page opens Draft with typewriter OFF" — DOM and stored setting, 2 checks) — ITEM 171-A: the ten-line threshold went with the seed; the DOM now reads false at BOTH lengths for the same reason, which is why the passing one is parked too',
+    PARK171.longDom === 'false' && PARK171.longSetting === true, JSON.stringify({ longDom: PARK171.longDom, longSetting: PARK171.longSetting }));
+  pok('PARKED (was "S2: the sliver\'s typewriter toggle actually flips it ON by hand" + the Draft->Free Write->Draft round trip, 3 checks) — ITEM 171-A: that control is ABSENT on a Draft page, on both of its surfaces, so the gesture has nothing to press',
+    !!PARK171.controlInDraft && PARK171.controlInDraft.offered === false && PARK171.settingUntouched === true,
+    JSON.stringify({ controlInDraft: PARK171.controlInDraft, settingUntouched: PARK171.settingUntouched }));
+  pok('PARKED (was "S2 (cross-page): page A opens Draft with typewriter ON" + "explicit click flips it OFF by hand", 2 checks) — ITEM 171-A: same control, same absence, one page earlier',
+    !!PARK171.pageA && PARK171.pageA.pageASeed === 'false', JSON.stringify(PARK171.pageA));
+  pok('PARKED (was "S2 (cross-page): page B does NOT get silently re-seeded ON" + its stored-setting half, 2 checks) — ITEM 171-A: page B cannot be re-seeded because NO page open seeds the typewriter now — the property is stronger, not weaker',
+    !!PARK171.pageB && PARK171.pageB.pageBDom === 'false' && PARK171.pageB.pageBSetting === true, JSON.stringify(PARK171.pageB));
+
   await withHarness(async (app) => {
     await freshProsePage(app, 1100, 900);
     const drawerGone = await app.evalJs("!document.querySelector('.wz-drawer')");

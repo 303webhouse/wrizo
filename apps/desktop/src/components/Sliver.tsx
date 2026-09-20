@@ -175,9 +175,22 @@ export interface SliverProps {
   // ModeStage.tsx's own gear always has (M1, canon Q3) — absent/false reads
   // as "no plan to project," exactly like a plan-less project already did.
   hasMilestones?: boolean;
+  /**
+   * ITEM 171-A — MAY THIS SURFACE RUN THE TYPEWRITER? The foot's instruments
+   * row already threads `typewriterAvailable` to BOTH of the option's
+   * affordances (the icon toggle and the Seg behind the gear); until now
+   * nothing in the tree passed it, so it was hard-true on every surface —
+   * including two that cannot run the typewriter at all (the script editor,
+   * whose engine call was removed, and the Board, which never had one). That
+   * is the lying affordance SC1 S3 named, standing unnoticed.
+   *
+   * Defaults TRUE so no caller changes meaning by omission; the hosts that
+   * know better pass it. The STORED setting is never touched either way.
+   */
+  typewriterAvailable?: boolean;
 }
 
-export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
+export function Sliver({ content, goalText, hasMilestones, typewriterAvailable = true }: SliverProps) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const target = useWritingGoal();
@@ -333,10 +346,13 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
             menu simply governs what it already governs.
             R14 keeps this off CARD and BOARD tools — the universal foot is the
             page-writing surfaces' (prose and screenplay), not everything's. */}
+        {/* ITEM 171-A — `typewriterAvailable` was hard-true on this line; the
+            HOST decides now, and two hosts that cannot run the typewriter say
+            so (ScriptEditor, BoardEditor). */}
         <SliverInstrumentRow
           hasMilestones={hasMilestones}
           target={target}
-          typewriterAvailable
+          typewriterAvailable={typewriterAvailable}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />

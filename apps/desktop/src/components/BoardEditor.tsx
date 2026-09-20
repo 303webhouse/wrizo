@@ -2641,7 +2641,13 @@ export function BoardEditor({ id }: { id: string }) {
           pageKind="board"
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
-          sliver={<Sliver content={sliverContent} goalText="" />}
+          /* ITEM 171-A — FOUND, NOT BRIEFED, and the same defect as the script
+             editor's: a Board has never run the typewriter (its engine mounts
+             on the typed page and the Journal only), yet the foot's instruments
+             row offered the option here too. R14's own words say this row is
+             "the page-writing surfaces' … not everything's"; this makes that
+             true of the typewriter option rather than merely intended. */
+          sliver={<Sliver content={sliverContent} goalText="" typewriterAvailable={false} />}
           // TU2 S4 — "Presence on Boards": the same room, following the same
           // prop pattern every other framed host already uses (entry/
           // project/pageText/pageKind — see PageEditor.tsx/JournalEntry.tsx/

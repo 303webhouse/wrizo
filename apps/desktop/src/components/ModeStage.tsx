@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
@@ -70,6 +70,20 @@ const RAILS: Record<EditorMode, RailDef> = {
 interface Props {
   mode: EditorMode;
   words: number;
+  /**
+   * ITEM 171-A — MAY THIS SURFACE RUN THE TYPEWRITER AT ALL? Nick's ruling:
+   * "Typewriter mode should only be available on 'Text' pages with no ink …
+   * typewriter mode should not be available in either Draft or Revise mode."
+   *
+   * DEFAULTS TO `mode === 'journal'`, so the MODE half of the ruling holds for
+   * every host without one of them having to remember it (QuickSprint's Draft
+   * loses the typewriter with no change to that file); a host that knows more —
+   * PageEditor, which knows the instrument and whether the page has ink —
+   * narrows it further. The STORED setting is never touched: an unavailable
+   * typewriter degrades silently and resumes on the next page that can run it
+   * (SC1 S3's law, and M1's before it).
+   */
+  typewriterAvailable?: boolean;
   surfaceRef?: React.RefObject<HTMLDivElement>; // J5 ambient warmth target (the page)
   focused?: boolean;                            // editor focus → page glow
   pageTitle?: string;
@@ -132,7 +146,7 @@ interface Props {
   children: (api: { noteWrite: () => void; penColor?: string }) => React.ReactNode;
 }
 
-export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, children }: Props) {
+export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDissolveChange, onCelebrate, soundOn, onToggleSound, chromeRootRef, milestones, framed, penColor: penColorProp, instrument, inkPermission, firstRunGateActive, typewriterAvailable, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const settings = useWritingSettings();
@@ -151,7 +165,12 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // returns it from parking — the EFFECT now engages framed too (its own
   // toggle button moves to the sliver, a DeskFrame sibling reading/writing
   // the same shared store — CD1: components/Sliver.tsx), independent of framed.
-  const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // ITEM 171-A — the mode half of the ruling lives in this default, so a host
+  // that passes nothing still loses the typewriter in Draft and Revise. Item
+  // 127's clause ("typewriter can be turned off") is superseded for Draft by
+  // Nick's own words; 127's text stands, with 171 named as its successor.
+  const twAvailable = typewriterAvailable ?? (mode === 'journal');
+  const typewriterOn = twAvailable && settings.typewriter;
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
   // pre-existing on this surface too — not new here) — this array literal
   // was previously rebuilt on every ModeStage render, so useChromeDissolve's
@@ -259,6 +278,36 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // retunes; Journal's own window-scroll call is untouched (see
   // useTypewriterFade.ts's own comment).
   useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND });
+
+  // ITEM 171-A — WHEN THE TYPEWRITER GOES OFF UNDER THE WRITER, THE WORDS STAY.
+  // Ruled (Fable, 2026-09-19): "the words stay under the writer's eye; a 25%
+  // jump on selecting Ink is the app moving the writer's work, which no ruling
+  // asked for." The typewriter's start offset is PADDING on the scroller
+  // (useTypewriterFade sets `--tw-start-offset`), so removing it lifts the
+  // content by exactly that much; the same amount comes off scrollTop and
+  // nothing moves on screen.
+  //
+  // ⚠ TWO LIMITS, SAID HERE RATHER THAN DISCOVERED AT A SITTING:
+  //   1. At the very top there is no scroll to give back — scrollTop cannot go
+  //      below 0 — so a page sitting at scroll 0 still rises by the pad. That
+  //      is the common case on a fresh page, and it is in the offer. Nothing
+  //      DRAWN is ever displaced: the pad is gone before a first stroke can
+  //      exist, and ink is anchored to the sheet, which carries the text.
+  //   2. If the writer was scrolled within a pad's distance of the bottom, the
+  //      browser has already clamped scrollTop to the shorter content, so this
+  //      correction can overshoot upward by at most the pad. Bounded, rare, and
+  //      preferred to leaving the common case jumping.
+  const twWasOn = useRef(typewriterOn);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    const was = twWasOn.current;
+    twWasOn.current = typewriterOn;
+    if (!el || typewriterOn || !was) return;           // only the ON -> OFF flip
+    // The hook returns early once disabled and never clears what it set, so the
+    // pad that was just removed is still readable here — measured, not assumed.
+    const pad = parseFloat(getComputedStyle(el).getPropertyValue('--tw-start-offset')) || 0;
+    if (pad > 0 && el.scrollTop > 0) el.scrollTop = Math.max(0, el.scrollTop - pad);
+  }, [typewriterOn]);
 
   // Pagination: watch the editor's content height against the sheet height. On
   // crossing a sheet boundary, flip (page-turn animation + soft sound). Height-
@@ -396,7 +445,11 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
           <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
             <GearIcon />
           </button>
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {/* ITEM 171-A — the gear's Typewriter row is the SECOND affordance,
+              one click deeper than the icon toggle below. SC1 S3's own words:
+              hiding only the first "would leave a live switch that does nothing
+              one click deeper". Both read the same availability. */}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={twAvailable} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -549,10 +602,13 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                   />
                 )
               )}
-              {(mode === 'journal' || mode === 'drafting') && (
+              {twAvailable && (
                 // FX2 S2 — a hand-click here must outrank any later
                 // Draft-open seed for the rest of the session (see
                 // setTypewriterExplicit's own comment).
+                // ITEM 171-A — and the control is ABSENT, never greyed, wherever
+                // the typewriter cannot run: Draft, Revise, and a page that has
+                // ink. G3, and item 121's own `inkOptions: undefined` in TEXT.
                 <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
               )}
             </div>

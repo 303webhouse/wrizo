@@ -46,6 +46,9 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+// ITEM 171-A — evidence for this file's parked section, captured in the default
+// leg so the parks below are COUNTED BY EXECUTION.
+const PARK171 = { fresh: null, short: null };
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -126,7 +129,17 @@ await withHarness(async (app) => {
   // at one point, not discarded).
   // ==========================================================================
   const freshTypewriter = await typewriterDom(app);
-  ok('S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]',
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. ⚠ IT WOULD STILL PASS, and that is the
+  // reason it is parked: 'false' used to mean "item 87 clause 3 made the EMPTY
+  // Draft case open OFF", and now means "Draft has no typewriter at all, empty
+  // or not". The clause it tested no longer has a case to be the exception to.
+  //
+  // ok('S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]',
+  //   freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
+  // ------------------------------------------------------------------------
+  PARK171.fresh = freshTypewriter;
+  ok('S3 (a) [ITEM 171-A successor] — a fresh Draft page has NO typewriter, which is now true of every Draft page rather than of the empty one especially',
     freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
 
   // A page that already holds a little work: FX2 S2's threshold rule, untouched.
@@ -158,8 +171,18 @@ await withHarness(async (app) => {
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a short Draft page' });
   await sleep(400);
   const shortTypewriter = await typewriterDom(app);
-  ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
-    shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run, and this one genuinely FAILS now: it was
+  // item 87's CONTROL, the check that proved clause 3 amended FX2 S2 at the
+  // empty case ONLY and left the threshold rule standing. The threshold rule
+  // is gone with the seed, so its control has nothing left to control for.
+  //
+  // ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
+  //   shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
+  // ------------------------------------------------------------------------
+  PARK171.short = shortTypewriter;
+  ok('S3 (b) [ITEM 171-A successor] — a Draft page that already holds work has no typewriter either: the empty case and the worked case now agree, because the distinction lived in the seed',
+    shortTypewriter === 'false', `data-typewriter=${String(shortTypewriter)}`);
 });
 
 // eslint-disable-next-line no-console
@@ -202,10 +225,29 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S1 (b) — and a New Page therefore LANDS IN DRAFT [ITEM 87 CLAUSE 1]") — ITEM 87 AMENDMENT: same supersession; a New Page again opens per CD1 S8/A7, unchanged.', true, 'design superseded, not falsified');
   pok('PARKED (was "S1 (d) — and it is STILL Draft on a later visit (the door choice outlives the door)") — ITEM 87 AMENDMENT: the door no longer makes a choice to outlive. THE FINDING IT ENCODED SURVIVES THE DESIGN and is owed to the chooser: a door-made choice that is never persisted is true exactly ONCE, because birth rewrites the address away.', true, 'design superseded; finding carried forward');
   pok('PARKED (was "S1 (c) — CONTROL: Arrival Write door still opens FREE WRITE (CD1 S8/A7 unreversed, not collateral damage)") — ITEM 87 AMENDMENT: with clause 1 held, CD1 S8/A7 is not merely unreversed but untouched, so the control has nothing left to guard.', true, 'control retired with its subject');
+  // ITEM 171-A (2026-09-19) — CLAUSE 3 AND ITS CONTROL, both parked. Nick's
+  // ruling takes the typewriter out of Draft entirely, so the empty-Draft
+  // exception has no rule left to be an exception to. Counted from the default
+  // leg's own reads, not asserted in prose.
+  pok('PARKED (was "S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]") — ITEM 171-A: still false in the DOM, but now because Draft has NO typewriter at all rather than because clause 3 chose OFF for the empty case',
+    PARK171.fresh === 'false', JSON.stringify({ fresh: PARK171.fresh }));
+  pok('PARKED (was "S3 (b) — CONTROL: a Draft page that already holds work still opens with the typewriter ON") — ITEM 171-A: this one genuinely fails now; it was the control proving clause 3 amended FX2 S2 at the EMPTY case only, and the threshold rule it guarded went with the seed',
+    PARK171.short === 'false', JSON.stringify({ short: PARK171.short }));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  // ⚠ CORRECTED BY ITEM 171-A, 2026-09-19. This line read, verbatim:
+  //   'ITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks
+  //    nothing: ... The empty list is the evidence, not an omission.'
+  // It printed "0 checks" beside an array that already held FOUR pok() entries
+  // (clause 1's, added in the same file), so the prose and the execution
+  // disagreed — exactly the failure "the park COUNT is the check" exists to
+  // catch, and it was invisible while the number was hand-written. The count is
+  // read off the array now, and the verdict is computed rather than asserted.
+  const parkedPass87 = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
-  console.log('\nITEM87 PARKED: PASS (0 checks) — HARNESS_PARKED=1 armed; item 87 parks nothing: Free Write never seeds the typewriter (so every "fresh page ON" record is untouched), and clause 1 is additive (so CD1 S8/A7 stands unreversed). The empty list is the evidence, not an omission.');
+  console.log(parkedPass87
+    ? `\nITEM87 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; clause 1's four (design superseded by the New Page chooser) plus item 171-A's two (clause 3 and its control, superseded by Nick's typewriter ruling).`
+    : `\nITEM87 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 const pass = checks.every((c) => c.pass);

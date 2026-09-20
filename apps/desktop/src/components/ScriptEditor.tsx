@@ -1140,7 +1140,27 @@ export function ScriptEditor({ id }: { id: string }) {
           pageKind="screenplay"
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
-          sliver={<Sliver content={sliverContent} goalText={goalText} />}
+          /* ITEM 171-A — FOUND, NOT BRIEFED, AND IT REVERSES A FOUNDER WORD.
+             READ THIS BEFORE "TIDYING" IT EITHER WAY.
+
+             This surface stopped calling useTypewriterFade (see this file's own
+             note above) while its typewriter control kept mounting in the
+             sliver's foot — the lying affordance SC1 S3 named. Fable ruled it
+             closed here rather than left standing for a week.
+
+             BUT the control is here BY NICK'S OWN WORD, not by oversight: item
+             83 M8 (R12) — "TYPEWRITER mode should be available while writing a
+             screenplay, too" — deliberately shipped the menu ahead of the
+             engine and FLAGGED the screenplay hook-up as its own later brief.
+             So this line withdraws a capability he asked for by name, on the
+             grounds that his LATEST words govern (item 127's own F1 default):
+             the typewriter is now Free Write's, text-only, inkless, and a
+             screenplay's posture is Draft.
+             RAISED FOR NICK IN THE OFFER rather than decided quietly here. If
+             he wants it back, the answer is R12's flagged engine hook-up, not
+             this prop — and `typewriterAvailable` is the one line to revisit.
+             ab2.mjs's R12 successor is PARKED with this same lineage. */
+          sliver={<Sliver content={sliverContent} goalText={goalText} typewriterAvailable={false} />}
           tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" mode="drafting" selectionText={scriptSelection} />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}

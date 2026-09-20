@@ -55,6 +55,8 @@ import { withHarness } from '../runtime-verify.mjs';
 import { trustedDispatch } from '../trusted-point.mjs';
 
 const checks = [];
+// ITEM 171-A — evidence for this file's parked section (counted by execution).
+const PARK171 = { optionOnScript: null, gearOnScript: null };
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -588,8 +590,28 @@ await withHarness(async (app) => {
   // optionOnScript.toggle === false && optionOnScript.iconCount === 2 && optionOnScript.aria === false,
   // JSON.stringify(optionOnScript));
   // ------------------------------------------------------------------
-  ok('S3 [R12 successor]: the typewriter option IS present on a screenplay page - R12 reverses S3s withdrawal; the foot is universal on page-writing surfaces',
-    optionOnScript.toggle === true || optionOnScript.aria === true,
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // FX3 S5 -> SC1 S3 (his word: withdrawn from screenplay, "pending Nick's own
+  // revision of typewriter mode") -> item 83 M8/R12 (his word: "TYPEWRITER mode
+  // should be available while writing a screenplay, too", menu mounted ahead of
+  // its engine, hook-up flagged as a later brief) -> ITEM 171-A (his word,
+  // 2026-09-19: the typewriter is Free Write's, text-only and inkless, and
+  // "not available in either Draft or Revise mode" — a screenplay's posture is
+  // Draft). His latest words govern (item 127's own F1 default). This is a
+  // WITHDRAWAL of a capability he named, raised in the offer, not settled here.
+  // ⚠ NOTE WHAT THIS DOES TO THIS FILE'S OWN HISTORY: the check R12 parked
+  // just above — SC1 S3's original "the option does not present itself here" —
+  // describes the product again. It is NOT un-parked (a parked original stays
+  // parked; that is the whole discipline). The successor below asserts the
+  // restored truth in its own words, with the third ruling named.
+  //
+  // ok('S3 [R12 successor]: the typewriter option IS present on a screenplay page - R12 reverses S3s withdrawal; the foot is universal on page-writing surfaces',
+  //   optionOnScript.toggle === true || optionOnScript.aria === true,
+  //   JSON.stringify(optionOnScript));
+  // ------------------------------------------------------------------------
+  PARK171.optionOnScript = optionOnScript;
+  ok('S3 [ITEM 171-A successor]: the typewriter option does NOT present itself on a screenplay page — neither the foot icon nor its aria-label. SC1 S3\'s outcome, restored by a later ruling rather than by re-running an old check, and the surface it was always true of still runs no typewriter engine',
+    optionOnScript.toggle === false && optionOnScript.aria === false,
     JSON.stringify(optionOnScript));
   // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
   // Kept VERBATIM and no longer run. SC1 S3 recorded the typewriter as
@@ -603,8 +625,20 @@ await withHarness(async (app) => {
   // gearOnScript.panelOpen === true && gearOnScript.hasTypewriterRow === false,
   // JSON.stringify(gearOnScript));
   // ------------------------------------------------------------------
-  ok('S3 [R12 successor]: the screenplay foot carries its Typewriter instrument, and the menu it opens is the R3 cluster - no live switch that does nothing, because the switch now governs',
-    gearOnScript.panelOpen === true,
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. Its reasoning — "no live switch that does
+  // nothing, because the switch now governs" — is exactly what stopped being
+  // true when this surface's engine call was removed (ScriptEditor.tsx no
+  // longer calls useTypewriterFade): the switch governed nothing here, which is
+  // the lying affordance SC1 S3 named and item 171-A closes.
+  //
+  // ok('S3 [R12 successor]: the screenplay foot carries its Typewriter instrument, and the menu it opens is the R3 cluster - no live switch that does nothing, because the switch now governs',
+  //   gearOnScript.panelOpen === true,
+  //   JSON.stringify(gearOnScript));
+  // ------------------------------------------------------------------------
+  PARK171.gearOnScript = gearOnScript;
+  ok('S3 [ITEM 171-A successor]: nor one click deeper — the gear\'s panel opens on a script page with NO "Typewriter" row in it, so neither of the option\'s two surfaces is left offering a setting this page does not read',
+    gearOnScript.panelOpen === true && gearOnScript.hasTypewriterRow === false,
     JSON.stringify(gearOnScript));
 
   // ...and the withdrawal is SCRIPT-ONLY. This is the guard that the
@@ -718,6 +752,18 @@ await withHarness(async (app) => {
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
+  // ITEM 171-A (2026-09-19) — R12's two successors on this file's own subject.
+  // SC1 S3 withdrew the option from screenplay; R12 (founder word) returned it
+  // and flagged the engine hook-up as a later brief; 171-A withdraws it again
+  // by his latest word. The parked originals from R12's own sweep describe the
+  // product once more, and are still parked — a parked original stays parked.
+  pok('PARKED (was "S3 [R12 successor]: the typewriter option IS present on a screenplay page") — ITEM 171-A: not offered here, at either of its two surfaces. This WITHDRAWS a capability Nick named in R12; the offer raises it rather than burying it',
+    !!PARK171.optionOnScript && PARK171.optionOnScript.toggle === false && PARK171.optionOnScript.aria === false,
+    JSON.stringify(PARK171.optionOnScript));
+  pok('PARKED (was "S3 [R12 successor]: the screenplay foot carries its Typewriter instrument ... because the switch now governs") — ITEM 171-A: the switch governed NOTHING here once this surface stopped calling the engine, which is the lying affordance SC1 S3 named and this ticket closes',
+    !!PARK171.gearOnScript && PARK171.gearOnScript.panelOpen === true && PARK171.gearOnScript.hasTypewriterRow === false,
+    JSON.stringify(PARK171.gearOnScript));
   await withHarness(async (app) => {
     // The re-verification PROBE — an instrument, which follows reality; the
     // quoted records above it never move. It measures on a fresh page (a

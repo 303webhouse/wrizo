@@ -15,6 +15,8 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+// ITEM 171-A — evidence for this file's parked section (counted by execution).
+const PARK171 = { scriptFootLabels: null, gearRow: null };
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -574,8 +576,17 @@ await withHarness(async (app) => {
     while (walker.nextNode()) { if (walker.currentNode.nodeValue.includes('Typewriter')) hasTypewriterRow = true; }
     return { panelOpen: true, hasTypewriterRow };
   })()`);
-  ok('SC1 S3 (was "FX3 S5: the typewriter toggle is present on the script surface"): the typewriter toggle does NOT present itself on a screenplay page — AB2 S2\'s DoD amended by Nick\'s word, not silently dropped',
-    scriptTypewriterOption.toggle === false, JSON.stringify(scriptTypewriterOption));
+  // ITEM 157/171 house law, applied here: a NEGATIVE check goes green when its
+  // selector dies. This one read `.wz-sliver-instruments-row .typewriter-toggle`
+  // — a class FX3 S5 retired when the toggle became icon-only — so it has been
+  // passing because nothing matched, not because nothing was offered. RE-POINTED
+  // (claim unchanged, no park owed) to the option's OTHER surface: the
+  // "Typewriter" row behind the foot's own gear, which the successor below does
+  // not cover. Between them both of SC1 S3's surfaces are measured.
+  PARK171.gearRow = scriptGearTypewriterRow;
+  ok('SC1 S3 (was "FX3 S5: the typewriter toggle is present on the script surface"): the typewriter option does NOT present itself on a screenplay page — asserted at the GEAR row, one click deeper, because a dead selector made the old handle green about nothing',
+    scriptGearTypewriterRow.panelOpen === true && scriptGearTypewriterRow.hasTypewriterRow === false,
+    JSON.stringify({ scriptGearTypewriterRow, staleHandleRead: scriptTypewriterOption }));
     // ---- PARKED — SUPERSEDED by item 83 M8 (R12), 2026-08-25 ------------
     // Kept VERBATIM and no longer run. SC1 S3 recorded the typewriter as
     // absent from screenplay 'pending Nick's own revision of typewriter
@@ -589,8 +600,32 @@ await withHarness(async (app) => {
     // JSON.stringify(scriptGearTypewriterRow));
     // --------------------------------------------------------------------
       const scriptFootLabels = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-instruments-row button')].map(b => (b.getAttribute('aria-label') || '').split(' ')[0])`);
-      ok('SC1 S3 [R12 successor]: the typewriter option IS PRESENT on a screenplay page - R12 reverses SC1 S3s exclusion by Nicks own word; the foot is universal on page-writing surfaces',
-        Array.isArray(scriptFootLabels) && scriptFootLabels.includes('Typewriter'),
+      // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 ----
+      // Kept VERBATIM and no longer run. READ THE LINEAGE BEFORE MOVING IT
+      // EITHER WAY, because this line is where two of the founder's own words
+      // meet:
+      //   FX3 S5 — the toggle is present on the script surface.
+      //   SC1 S3 (his word) — it must NOT present itself on a screenplay page,
+      //     "pending Nick's own revision of typewriter mode."
+      //   item 83 M8 / R12 (his word) — "TYPEWRITER mode should be available
+      //     while writing a screenplay, too." The menu MOUNTS here again, and
+      //     R12 FLAGGED the engine hook-up as its own later brief, so the
+      //     control has stood here deliberately ahead of any engine.
+      //   ITEM 171-A (his word, 2026-09-19) — the typewriter is Free Write's,
+      //     text-only and inkless, and "not available in either Draft or
+      //     Revise mode". A screenplay's posture is Draft.
+      // So this ticket WITHDRAWS a capability Nick asked for by name, on the
+      // grounds that his latest words govern (item 127's own F1 default). It is
+      // raised in the offer rather than settled here; if he wants it back, the
+      // answer is R12's flagged engine hook-up, not this assertion.
+      //
+      // ok('SC1 S3 [R12 successor]: the typewriter option IS PRESENT on a screenplay page - R12 reverses SC1 S3s exclusion by Nicks own word; the foot is universal on page-writing surfaces',
+      //   Array.isArray(scriptFootLabels) && scriptFootLabels.includes('Typewriter'),
+      //   JSON.stringify(scriptFootLabels));
+      // --------------------------------------------------------------------
+      PARK171.scriptFootLabels = scriptFootLabels;
+      ok('SC1 S3 [ITEM 171-A successor]: the typewriter option is NOT offered on a screenplay page — no icon in the sliver foot. This restores SC1 S3\'s own outcome by a later ruling, and it closes a live switch whose engine this surface stopped calling (ScriptEditor.tsx no longer calls useTypewriterFade)',
+        Array.isArray(scriptFootLabels) && !scriptFootLabels.includes('Typewriter'),
         JSON.stringify(scriptFootLabels));
   // close the gear again — hygiene for the typing run below
   await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
@@ -1159,6 +1194,18 @@ if (process.env.HARNESS_PARKED === '1') {
   });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
+  // ITEM 171-A (2026-09-19) — R12's successor, parked, and it is the one place
+  // in this sweep where two of the founder's own words meet: R12 said the
+  // typewriter option SHOULD be available while writing a screenplay (and
+  // flagged its engine hook-up as a later brief); 171 says the typewriter is
+  // Free Write's alone, text-only and inkless, and absent from Draft and
+  // Revise — which a screenplay's posture is. His latest words govern (item
+  // 127's own F1 default), and the withdrawal is raised in the offer rather
+  // than buried here.
+  pok('PARKED (was "SC1 S3 [R12 successor]: the typewriter option IS PRESENT on a screenplay page") — ITEM 171-A: it is not offered here any more. This WITHDRAWS a capability Nick named in R12; if he wants it back the answer is R12\'s own flagged engine hook-up, not this line',
+    Array.isArray(PARK171.scriptFootLabels) && !PARK171.scriptFootLabels.includes('Typewriter'),
+    JSON.stringify({ scriptFootLabels: PARK171.scriptFootLabels, gearRow: PARK171.gearRow }));
+
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass

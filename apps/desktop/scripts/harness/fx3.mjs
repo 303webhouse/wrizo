@@ -30,6 +30,8 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
+// ITEM 171-A — evidence for this file's parked section (counted by execution).
+const PARK171 = { scriptFootRow: null };
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -303,8 +305,22 @@ await withHarness(async (app) => {
   // ok('SC1 S3 [R12 successor]: the script slivers foot row carries THREE instruments again - R12 returns the typewriter to screenplay',
   // footRow.iconCount === 3, JSON.stringify(footRow));
   // ------------------------------------------------------------------
-  ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
-    footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // FX3 S5 -> SC1 S3 (his word: withdrawn from screenplay, "pending Nick's own
+  // revision of typewriter mode") -> item 83 M8/R12 (his word: "TYPEWRITER mode
+  // should be available while writing a screenplay, too", menu mounted ahead of
+  // its engine, hook-up flagged as a later brief) -> ITEM 171-A (his word,
+  // 2026-09-19: the typewriter is Free Write's, text-only and inkless, and
+  // "not available in either Draft or Revise mode" — a screenplay's posture is
+  // Draft). His latest words govern (item 127's own F1 default). This is a
+  // WITHDRAWAL of a capability he named, raised in the offer, not settled here.
+  //
+  // ok('SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row, FULL SCREEN relocated to the progress bar line; R12 returning the typewriter to screenplay is untouched by the move',
+  //   footRow.iconCount === 2 && footRow.fullScreenInFoot === true, JSON.stringify(footRow));
+  // ------------------------------------------------------------------------
+  PARK171.scriptFootRow = footRow;
+  ok('SC1 S3 [ITEM 171-A successor]: the script sliver no longer carries a TYPEWRITER instrument, and E2\'s own subject is untouched — FULL SCREEN still rides the progress bar line. The icon COUNT is deliberately not pinned (this file\'s own park law: a fixed count re-pins a form a ruling replaced)',
+    footRow.fullScreenInFoot === true && footRow.typewriterAriaLabelPresent === false, JSON.stringify(footRow));
   ok('S5 (script): no literal "Typewriter" TEXT NODE anywhere in the sliver panel',
     !footRow.hasTypewriterTextNode, JSON.stringify(footRow));
   // ---- PARKED - SUPERSEDED by item 83 M8 (R12), 2026-08-25 ----------
@@ -315,8 +331,17 @@ await withHarness(async (app) => {
   // ok('SC1 S3 (was "S5 (script): the typewriter toggle\'s aria-label still carries the word, for assistive tech"): there is no typewriter aria-label on a script page because there is no toggle — the affordance is absent to assistive tech exactly as it is to the eye, never merely hidden from one of them',
   // !footRow.typewriterAriaLabelPresent, JSON.stringify(footRow));
   // ------------------------------------------------------------------
-  ok('SC1 S3 [R12 successor]: the typewriter aria-label IS present on a script page - the affordance returns to both the eye and assistive tech together',
-    footRow.typewriterAriaLabelPresent === true, JSON.stringify(footRow));
+  // ---- PARKED — SUPERSEDED by ITEM 171-A (Nick's word), 2026-09-19 --------
+  // Kept VERBATIM and no longer run. Same withdrawal as above; what this check
+  // has always cared about is the SYMMETRY — the affordance is present to
+  // assistive tech exactly as it is to the eye, never hidden from one of them.
+  // That symmetry is what the successor keeps, pointing the other way.
+  //
+  // ok('SC1 S3 [R12 successor]: the typewriter aria-label IS present on a script page - the affordance returns to both the eye and assistive tech together',
+  //   footRow.typewriterAriaLabelPresent === true, JSON.stringify(footRow));
+  // ------------------------------------------------------------------------
+  ok('SC1 S3 [ITEM 171-A successor]: there is no typewriter aria-label on a script page either — absent to assistive tech exactly as it is to the eye, which is the symmetry this check has always been about',
+    footRow.typewriterAriaLabelPresent === false, JSON.stringify(footRow));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -515,6 +540,15 @@ console.log(JSON.stringify(checks, null, 2));
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
+
+  // ITEM 171-A (2026-09-19) — the script surface's typewriter option, withdrawn
+  // by Nick's latest word. Counted from the default leg's own read of the foot.
+  pok('PARKED (was "SC1 S3 [E2 successor]: the script sliver still carries all THREE instruments - TYPEWRITER and PROGRESS in the row") — ITEM 171-A: no TYPEWRITER instrument on this surface; E2\'s own subject (FULL SCREEN on the progress line) is untouched',
+    !!PARK171.scriptFootRow && PARK171.scriptFootRow.fullScreenInFoot === true && PARK171.scriptFootRow.typewriterAriaLabelPresent === false,
+    JSON.stringify(PARK171.scriptFootRow));
+  pok('PARKED (was "SC1 S3 [R12 successor]: the typewriter aria-label IS present on a script page") — ITEM 171-A: absent to assistive tech exactly as it is to the eye, which is the symmetry the check was always about',
+    !!PARK171.scriptFootRow && PARK171.scriptFootRow.typewriterAriaLabelPresent === false,
+    JSON.stringify(PARK171.scriptFootRow));
   await withHarness(async (app) => {
     // ORIGINAL: await freshProsePage(app, 1280, 900); const startOffsetInfo
     // = await app.evalJs(`(() => { const stage = document.querySelector(

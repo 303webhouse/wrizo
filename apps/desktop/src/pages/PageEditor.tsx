@@ -52,8 +52,10 @@ import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
 import type { ThemeId } from '../store/theme';
-import { seedTypewriterDefault, DRAFT_TYPEWRITER_LINE_THRESHOLD } from '../store/writingSettings';
-import { countLineEquivalents } from '../store/lineEquivalents';
+// ITEM 171-A — `seedTypewriterDefault`, `DRAFT_TYPEWRITER_LINE_THRESHOLD` and
+// `countLineEquivalents` left this file with the Draft-open seed they served.
+// The store still exports them; see writingSettings.ts, where they are marked
+// superseded and callerless rather than silently deleted.
 
 // HB1 F1 — the gate's fixed instrument: 100 whitespace-delimited words.
 const FIRST_RUN_WORD_TARGET = 100;
@@ -213,6 +215,27 @@ function PageEditorView({ id }: { id: string }) {
   // make.
   const inkPermission: InkPermission =
     mode === 'journal' ? (instrument === 'ink' ? 'edit' : 'inert') : 'movable';
+
+  // ITEM 171-A — MAY THIS PAGE RUN THE TYPEWRITER? Nick's ruling, verbatim:
+  // "Typewriter mode should only be available on 'Text' pages with no ink. Once
+  // Ink is selected, Typewriter mode should be deactivated, and once any ink has
+  // been added to a Page, typewriter mode cannot be reactivated. Also,
+  // typewriter mode should not be available in either Draft or Revise mode."
+  //
+  // DERIVED, NEVER STORED — the same discipline as `inkPermission` above, and
+  // for a stronger reason: `typewriter` is ONE GLOBAL SETTING
+  // (store/writingSettings.ts), so a per-page rule CANNOT be a stored value
+  // without inventing per-page state. The writer's preference is untouched and
+  // resumes on the next page that can run it (SC1 S3's silent-degrade law).
+  //
+  // "CANNOT BE REACTIVATED" IS STATEFUL, ruled: it derives from
+  // `strokes.length > 0`, so undoing the only stroke does return the page to
+  // inkless — a stray dot, immediately undone, must not cost a page its
+  // typewriter forever. ⚠ ERASING DOES NOT: an eraser IS a stroke (store/ink.ts
+  // paints it `destination-out` and keeps it in the array), so a rubbed-out page
+  // still has ink and still has no typewriter. That is the one consequence a
+  // writer might not predict, and it is named in the offer.
+  const typewriterAvailable = mode === 'journal' && instrument === 'text' && strokes.length === 0;
 
   // Persist strokes, merging the LIVE text so a pending typed run is never
   // clobbered — the Journal's own rule (its `persist`), and load-bearing here
@@ -390,13 +413,15 @@ function PageEditorView({ id }: { id: string }) {
   // threshold still opens ON (fx2.mjs's ~3-line check proves it, unchanged).
   // Only the empty case moves, so this is an amendment at the one point the
   // original rule was never really about.
-  useEffect(() => {
-    if (mode === 'drafting') {
-      const fresh = initialText.trim().length === 0;
-      seedTypewriterDefault(!fresh && countLineEquivalents(initialText) < DRAFT_TYPEWRITER_LINE_THRESHOLD);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // ITEM 171-A — THE DRAFT-OPEN SEED IS GONE, and removing it is not optional.
+  // Nick's ruling takes the typewriter out of Draft entirely, so this seed had
+  // nothing left to seed HERE — but it wrote the ONE GLOBAL setting, which
+  // Free Write still reads. Left in place it would let merely OPENING a Draft
+  // flip the typewriter on a writer's Free Write pages: a setting they never
+  // touched, changed by a mode that no longer uses it. FX2 S2's rule and item
+  // 87's amendment of it are SUPERSEDED for Draft by the same ruling; their
+  // text stands where it is written, with 171 named as successor, and
+  // fx2.mjs's and item87.mjs's assertions are PARKED rather than edited.
 
   // W2 — the way back. Scroll lives on ModeStage's internal .mode-scroll box
   // (surfaceRef is the .mode-page ancestor the host already owns); caret
@@ -1148,7 +1173,7 @@ function PageEditorView({ id }: { id: string }) {
           pageKind="prose"
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
-          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} /></FirstRunVeil>}
+          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={typewriterAvailable} /></FirstRunVeil>}
           // TU1 non-goal, verbatim: "the Tutor on the threshold (first-run
           // stays pure)" — absent outright while the gate holds, not merely
           // veiled-but-mounted like the sliver above. This also sidesteps a
@@ -1235,6 +1260,8 @@ function PageEditorView({ id }: { id: string }) {
                instrument: a Draft page is not "in TEXT", it is a word processor
                with ink on it. */
             inkPermission={inkPermission}
+            /* ITEM 171-A — Free Write, TEXT, and no ink on the page. */
+            typewriterAvailable={typewriterAvailable}
             framed
             firstRunGateActive={gateActive}
           >
@@ -1305,6 +1332,11 @@ function PageEditorView({ id }: { id: string }) {
         onDissolveChange={setReceded}
         chromeRootRef={pageRef}
         milestones={milestones}
+        /* ITEM 171-A — the unframed page obeys the same rule. Ink does not
+           MOUNT below 1100px (item 121's framed-only gate), but a page's
+           stored strokes are the page's at any width, so a page with ink has
+           no typewriter here either. */
+        typewriterAvailable={typewriterAvailable}
       >
         {editorBody}
       </ModeStage>

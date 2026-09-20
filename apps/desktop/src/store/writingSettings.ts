@@ -190,6 +190,15 @@ export const DRAFT_TYPEWRITER_LINE_THRESHOLD = 10;
 // module-level store can own. A no-op once the writer has explicitly
 // chosen a value this session — the one thing this whole mechanism exists
 // to prevent.
+// ⚠ ITEM 171-A (2026-09-19) — SUPERSEDED, AND NOW CALLERLESS. Nick's ruling
+// takes the typewriter out of Draft entirely ("typewriter mode should not be
+// available in either Draft or Revise mode"), so the Draft-open seed has
+// nothing to seed; PageEditor.tsx's call is gone. The function is kept, rather
+// than deleted in the same stroke that changes behaviour, because FX2 S2's
+// reasoning above is the record of a real defect (a later page-open seed
+// silently re-imposing a value the writer chose) and the next hand should meet
+// it before writing another auto-seed. If nothing has claimed it by the time
+// 171-B lands, delete it then — a decision for Fable, not a silent one here.
 export function seedTypewriterDefault(on: boolean): void {
   if (explicitlySetThisSession) return;
   setWritingSettings({ typewriter: on });
