@@ -26,7 +26,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const PAGE_STRIP = '.wz-strip-item[data-category="page"]';   // by NAME, never index (VW1)
-const rowSel = (id) => `.wz-your-pages-row[data-page-id="${id}"]`;
+const rowSel = (id) => `.wz-open-pages-row[data-page-id="${id}"]`;
 
 const JOURNAL = { id: 'i170-journal', text: 'Journal note alpha', createdAt: '2026-05-01T00:00:00.000Z', origin: 'journal' };
 const LOOSE = { id: 'i170-loose', text: 'Loose draft bravo', createdAt: '2026-05-02T00:00:00.000Z', origin: 'loose' };
@@ -91,27 +91,47 @@ const realClick = async (app, sel) => {
   return true;
 };
 
+// WAKE THE CHROME BEFORE PRESSING IT, as a writer does.
+//
+// MEASURED, NOT GUESSED: after typing, the cascade rail keeps `opacity: 1` but
+// takes `pointer-events: none`, and `document.elementFromPoint` at the strip
+// centre returns the page stage rather than the strip. The writing posture
+// makes the chrome LOOK present while it is inert to the pointer, so a real
+// click lands on the page behind it. A page-side `.click()` would have sailed
+// through and hidden the fact — which is the whole reason the standing law
+// says to use real pointer events.
+//
+// A writer reaches for the menu by MOVING THE MOUSE first, which is what
+// restores the chrome. So the driver moves, then presses.
+const wakeChrome = async (app, sel) => {
+  const pt = await centreOf(app, sel);
+  if (!pt) return;
+  await app.mouseMove(pt.x + 40, pt.y + 40);
+  await app.mouseMove(pt.x, pt.y);
+  await sleep(250);
+};
+
 const openPageHand = async (app) => {
-  const already = await app.evalJs("!!document.querySelector('.wz-your-pages')");
-  if (already) return true;
+  if (await app.evalJs("!!document.querySelector('.wz-open-pages')")) return true;
+  await wakeChrome(app, PAGE_STRIP);
   await realClick(app, PAGE_STRIP);
   for (let i = 0; i < 20; i += 1) {
-    if (await app.evalJs("!!document.querySelector('.wz-your-pages')")) return true;
+    if (await app.evalJs("!!document.querySelector('.wz-open-pages')")) return true;
     await sleep(100);
   }
   return false;
 };
 
 const listState = (app) => app.evalJs(`(() => {
-  const list = document.querySelector('.wz-your-pages');
+  const list = document.querySelector('.wz-open-pages');
   if (!list) return { present: false };
-  const rows = [...list.querySelectorAll('.wz-your-pages-row')];
+  const rows = [...list.querySelectorAll('.wz-open-pages-row')];
   return {
     present: true,
     heading: (list.querySelector('.wz-cascade-panel-title') || {}).textContent || null,
     ids: rows.map(r => r.getAttribute('data-page-id')),
     firstTitle: rows[0] ? (rows[0].querySelector('.wz-place-page-title') || {}).textContent : null,
-    moreButtons: list.querySelectorAll('.wz-your-pages-more').length,
+    moreButtons: list.querySelectorAll('.wz-open-pages-more').length,
   };
 })()`);
 
@@ -138,8 +158,8 @@ await withHarness(async (app) => {
     openedOnPage, String(openedOnPage));
 
   const onPage = await listState(app);
-  ok('S1: the heading says what the list IS — "Your pages", not "Place page on board"',
-    onPage.heading === 'Your pages', JSON.stringify({ heading: onPage.heading }));
+  ok('S1: the section is named for what it does — "Open Pages", not "Place page on board"',
+    onPage.heading === 'Open Pages', JSON.stringify({ heading: onPage.heading }));
 
   const listed = new Set(onPage.ids || []);
   ok('S1 FAULT 3: a LOOSE page is listed — the origin New Page and the Desk create, which getJournalPages() could never return, so the list most likely to be searched for a new page could not show it',
@@ -157,7 +177,7 @@ await withHarness(async (app) => {
 
   // A–Z must order ALL pages. 'Aardvark oldest' is the OLDEST page, so the old
   // cap (newest 30 first) dropped it before A–Z ever saw it.
-  await app.evalJs(`[...document.querySelectorAll('.wz-your-pages .wz-page-setup-chip')].find(b => b.textContent.trim() === 'A–Z')?.click()`);
+  await app.evalJs(`[...document.querySelectorAll('.wz-open-pages .wz-page-setup-chip')].find(b => b.textContent.trim() === 'A–Z')?.click()`);
   await sleep(300);
   const az = await listState(app);
   ok('S1: sorted A–Z, the oldest page leads — sorting runs over every page, not over a capped slice of the newest',
@@ -169,7 +189,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   // S2 — FAULT 1, THE TICKET: CLICKING A ROW OPENS THE PAGE.
   // ==========================================================================
-  const clickedRow = await realClick(app, `${rowSel(JOURNAL.id)} .wz-your-pages-open`);
+  const clickedRow = await realClick(app, `${rowSel(JOURNAL.id)} .wz-open-pages-open`);
   ok('S2 (setup): the Journal page\'s row has a real on-screen box to click', clickedRow);
   await sleep(500);
   const afterOpen = await where(app);
@@ -189,11 +209,11 @@ await withHarness(async (app) => {
     openedOnBoard && onBoard.moreButtons === (onBoard.ids || []).length && onBoard.moreButtons > 0,
     JSON.stringify({ openedOnBoard, rows: (onBoard.ids || []).length, more: onBoard.moreButtons }));
 
-  const moreClicked = await realClick(app, `${rowSel(LOOSE.id)} .wz-your-pages-more`);
-  const menuUp = moreClicked && await app.evalJs(`!!document.querySelector('${rowSel(LOOSE.id)} .wz-your-pages-place')`);
+  const moreClicked = await realClick(app, `${rowSel(LOOSE.id)} .wz-open-pages-more`);
+  const menuUp = moreClicked && await app.evalJs(`!!document.querySelector('${rowSel(LOOSE.id)} .wz-open-pages-place')`);
   ok('S3: the ⋯ opens the row\'s secondary act, named by its own verb', menuUp, String(menuUp));
 
-  if (menuUp) await realClick(app, `${rowSel(LOOSE.id)} .wz-your-pages-place`);
+  if (menuUp) await realClick(app, `${rowSel(LOOSE.id)} .wz-open-pages-place`);
   await sleep(900);   // the pin writes through the store; read after the flush
   const placed = await app.evalJs(`(() => {
     const b = JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === '${BOARD.id}');
@@ -210,7 +230,7 @@ await withHarness(async (app) => {
   // The primary act works board-side too: the list means the same thing on
   // every surface.
   await openPageHand(app);
-  await realClick(app, `${rowSel(JOURNAL.id)} .wz-your-pages-open`);
+  await realClick(app, `${rowSel(JOURNAL.id)} .wz-open-pages-open`);
   await sleep(500);
   const fromBoard = await where(app);
   ok('S3: from the board, clicking a row\'s NAME opens that page — one list, one meaning, on every surface',
@@ -230,17 +250,17 @@ await withHarness(async (app) => {
   await sleep(700);
   await openPageHand(app);
   const lastId = await app.evalJs(`(() => {
-    const list = document.querySelector('.wz-your-pages .wz-place-page-list');
+    const list = document.querySelector('.wz-open-pages .wz-place-page-list');
     if (!list) return null;
     list.scrollTop = list.scrollHeight;   // the last row sits at the list's bottom edge
-    const rows = list.querySelectorAll('.wz-your-pages-row');
+    const rows = list.querySelectorAll('.wz-open-pages-row');
     return rows.length ? rows[rows.length - 1].getAttribute('data-page-id') : null;
   })()`);
   await sleep(250);
-  const lastMore = lastId ? await realClick(app, `${rowSel(lastId)} .wz-your-pages-more`) : false;
+  const lastMore = lastId ? await realClick(app, `${rowSel(lastId)} .wz-open-pages-more`) : false;
   const clip = await app.evalJs(`(() => {
-    const list = document.querySelector('.wz-your-pages .wz-place-page-list');
-    const m = document.querySelector('.wz-your-pages-menu');
+    const list = document.querySelector('.wz-open-pages .wz-place-page-list');
+    const m = document.querySelector('.wz-open-pages-menu');
     if (!list || !m) return { menu: !!m };
     const a = m.getBoundingClientRect(), b = list.getBoundingClientRect();
     return { menu: true, inside: a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5 && a.left >= b.left - 0.5 && a.right <= b.right + 0.5,
@@ -251,9 +271,68 @@ await withHarness(async (app) => {
 
   await app.key('Escape');
   await sleep(250);
-  const closed = await app.evalJs("!document.querySelector('.wz-your-pages-menu')");
+  const closed = await app.evalJs("!document.querySelector('.wz-open-pages-menu')");
   ok('S4: Escape dismisses the open menu — no stuck state that only a second press of the ⋯ could clear',
     closed === true, String(closed));
+
+  // ==========================================================================
+  // S5 — THE RE-SCOPE: OPEN PAGES shows three rows, orders by EDIT, and puts
+  // starred pages first.
+  //
+  // RECENCY IS DRIVEN BY REALLY TYPING, not by a seed. `updatedAt` is
+  // deliberately NOT seedable (persistence.ts says so in as many words: the
+  // seam does not get a private clock the product does not have), so the only
+  // honest way to test "last created OR EDITED" is to edit a page and watch it
+  // move. That is also the better test: it exercises the stamp the product
+  // actually writes.
+  // ==========================================================================
+  const sortBy = async (label) => {
+    await app.evalJs(`[...document.querySelectorAll('.wz-open-pages .wz-page-setup-chip')].find(b => b.textContent.trim() === ${JSON.stringify(label)})?.click()`);
+    await sleep(300);
+  };
+
+  // (a) the viewport: three rows visible, the rest reachable by scrolling.
+  await app.evalJs(`location.hash = '#/page/${LOOSE.id}'`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page again' });
+  await sleep(600);
+  await openPageHand(app);
+  const viewport = await app.evalJs(`(() => {
+    const list = document.querySelector('.wz-open-pages .wz-place-page-list');
+    if (!list) return { list: false };
+    const b = list.getBoundingClientRect();
+    const rows = [...list.querySelectorAll('.wz-open-pages-row')];
+    const whole = rows.filter(r => { const a = r.getBoundingClientRect(); return a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5; });
+    return { list: true, wholeRows: whole.length, totalRows: rows.length, scrolls: list.scrollHeight > list.clientHeight + 1 };
+  })()`);
+  ok('S5: OPEN PAGES shows THREE rows and scrolls through the rest — a viewport, not a population cap, so no page is ever out of reach',
+    viewport.list === true && viewport.wholeRows === 3 && viewport.scrolls === true && viewport.totalRows > 3,
+    JSON.stringify(viewport));
+
+  // (b) recency by EDIT: type into the OLDEST page and it comes to the top.
+  await app.evalJs(`location.hash = '#/page/${OLDEST.id}'`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'oldest page' });
+  await sleep(600);
+  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  await app.typeKeys(' revised');
+  await sleep(1200);   // the debounced flush lands before the probe reads
+  await openPageHand(app);
+  await sortBy('Date');
+  const afterEdit = await listState(app);
+  ok('S5: the last EDITED page leads the list, not the last created — a page written long ago and revised this morning is what a writer reaching for recent work means',
+    (afterEdit.ids || [])[0] === OLDEST.id, JSON.stringify({ first: (afterEdit.ids || [])[0], expected: OLDEST.id }));
+
+  // (c) starred first, under the same sort.
+  await app.evalJs(`location.hash = '#/page/${JOURNAL.id}'`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'journal page' });
+  await sleep(600);
+  await openPageHand(app);
+  const starred = await realClick(app, '.wz-pageface-star');
+  await sleep(700);
+  await sortBy('Date');
+  const afterStar = await listState(app);
+  ok('S5: a STARRED page sorts first, above the most recently edited one — a star is the writer saying "this one", and an ordering that ignored it would make them say it twice',
+    starred && (afterStar.ids || [])[0] === JOURNAL.id && (afterStar.ids || [])[1] === OLDEST.id,
+    JSON.stringify({ first: (afterStar.ids || [])[0], second: (afterStar.ids || [])[1] }));
 });
 
 for (const c of checks) {

@@ -280,7 +280,7 @@ export type DeskTermId =
   // GO-versus-PUT confusion the Places redesign exists to close.
   // ITEM 170 — the list became the way to OPEN a page, so its heading names
   // what the list IS; the put it still offers is named by its own verb.
-  | 'yourPagesHeading' | 'yourPagesSort' | 'yourPagesMore' | 'yourPagesPlace'
+  | 'openPagesHeading' | 'openPagesSort' | 'openPagesMore' | 'openPagesPlace'
   | 'placeSortDate' | 'placeSortDrawer'
   | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
   // ITEM 83 M7 (PP1) — the Home zone's heading, which until now existed only
@@ -904,10 +904,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   styleGuideApa: 'APA',
   styleGuideChicago: 'Chicago',
   styleGuideAp: 'AP',
-  yourPagesHeading: 'Your pages',
-  yourPagesSort: 'Sort your pages',
-  yourPagesMore: 'More for this page',
-  yourPagesPlace: 'Place on this board',
+  openPagesHeading: 'Open Pages',
+  openPagesSort: 'Sort Pages',
+  openPagesMore: 'More for this Page',
+  openPagesPlace: 'Place on this board',
   placeSortDate: 'Date',
   placeSortDrawer: 'Drawer',
   placeSortAZ: 'A–Z',

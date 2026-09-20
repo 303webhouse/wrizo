@@ -33,7 +33,11 @@ await withHarness(async (app) => {
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
-  await app.evalJs(`(() => { ${rows.map(r => `window.wrizoCreateJournalPage(${JSON.stringify(r)});`).join('\n')} })()`);
+  // Seeded OLDEST-FIRST so the frame reads as real use will. `updatedAt` is
+  // stamped by the write and is not seedable, so seeding in display order
+  // would give the newest page the oldest stamp and put it last — the frame
+  // would then misrepresent the very ordering it is meant to show.
+  await app.evalJs(`(() => { ${[...rows].reverse().map(r => `window.wrizoCreateJournalPage(${JSON.stringify(r)});`).join('\n')} })()`);
   await sleep(1600);
   await app.reload();
 
@@ -42,22 +46,22 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'page' });
   await sleep(700);
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=\"page\"]')?.click()");
-  await app.waitFor("!!document.querySelector('.wz-your-pages')", { label: 'Your pages (page surface)' });
+  await app.waitFor("!!document.querySelector('.wz-open-pages')", { label: 'Your pages (page surface)' });
   await sleep(500);
-  await shot(app, 'item170-1-your-pages-on-a-page');
+  await shot(app, 'item170-1-open-pages-on-a-page');
 
   // FRAME 2 — the same list on a board, with a row's ⋯ open. A middle row, so
   // the secondary act reads as a row-level option rather than an edge case.
   await app.evalJs("location.hash = '#/page/m-board'");
   await app.waitFor("!!document.querySelector('.desk-frame')", { label: 'board' });
   await sleep(800);
-  if (!(await app.evalJs("!!document.querySelector('.wz-your-pages')"))) {
+  if (!(await app.evalJs("!!document.querySelector('.wz-open-pages')"))) {
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=\"page\"]')?.click()");
-    await app.waitFor("!!document.querySelector('.wz-your-pages')", { label: 'Your pages (board)' });
+    await app.waitFor("!!document.querySelector('.wz-open-pages')", { label: 'Your pages (board)' });
   }
   await sleep(400);
-  await app.evalJs("document.querySelector('.wz-your-pages-row[data-page-id=\"m-b\"] .wz-your-pages-more')?.click()");
-  await app.waitFor("!!document.querySelector('.wz-your-pages-menu')", { label: 'the row menu' });
+  await app.evalJs("document.querySelector('.wz-open-pages-row[data-page-id=\"m-b\"] .wz-open-pages-more')?.click()");
+  await app.waitFor("!!document.querySelector('.wz-open-pages-menu')", { label: 'the row menu' });
   await sleep(400);
-  await shot(app, 'item170-2-place-on-this-board');
+  await shot(app, 'item170-2-open-pages-place-on-board');
 });

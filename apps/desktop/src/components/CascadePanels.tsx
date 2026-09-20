@@ -287,7 +287,7 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
           open a page, and a way that only exists while standing on a board is
           not the way. The place act rides along only where there is a board to
           place onto. */}
-      <YourPages navigate={navigate} currentId={subject.entry.id}
+      <OpenPages navigate={navigate} currentId={subject.entry.id}
         boardId={onBoard ? subject.entry.id : undefined} />
       <PageFace subject={subject} />
       {/* ITEM 83 M3 (R6) — the Page menu's charter: general page options
@@ -345,7 +345,7 @@ function PagePanel({ subject, navigate }: { subject: PageFaceSubject; navigate: 
 // projectId or origin.
 type PageSort = 'date' | 'drawer' | 'az';
 
-function YourPages({ navigate, currentId, boardId }: {
+function OpenPages({ navigate, currentId, boardId }: {
   navigate: NavigateFunction;
   currentId: string;
   boardId?: string;
@@ -361,7 +361,7 @@ function YourPages({ navigate, currentId, boardId }: {
   useEffect(() => {
     if (!menuFor) return;
     const onDown = (e: MouseEvent) => {
-      const row = (e.target as Element | null)?.closest?.('.wz-your-pages-row');
+      const row = (e.target as Element | null)?.closest?.('.wz-open-pages-row');
       if (!row || row.getAttribute('data-page-id') !== menuFor) setMenuFor(null);
     };
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuFor(null); };
@@ -385,11 +385,26 @@ function YourPages({ navigate, currentId, boardId }: {
     return inJournalView(p) ? t('drawerPlaceJournal') : t('placesLoose');
   };
 
-  // SORT FIRST, AND NEVER CAP: every page must be reachable by every sort.
+  // SORT FIRST, AND NEVER CAP THE POPULATION: every page must be reachable by
+  // every sort. The section shows three rows and SCROLLS through the rest (see
+  // index.css) — a viewport, not a cap. A population of three would re-create
+  // S0's fault 4 in miniature, and "sortable" means nothing over three items.
+  //
+  // RECENCY IS BY EDIT, NOT BY BIRTH — "the last pages created OR EDITED". The
+  // list this replaced ordered by createdAt alone, so a page written yesterday
+  // and revised this morning sat below one created after it and never touched
+  // again, which is the opposite of what a writer reaching for recent work
+  // means.
+  const recency = (e: JournalEntry) => e.updatedAt || e.createdAt;
+  // STARRED PAGES SORT FIRST, under every sort. A star is the writer saying
+  // "this one", and an ordering that ignores it would make them say it twice.
+  const starRank = (e: JournalEntry) => (e.starred ? 0 : 1);
   const sorted = [...pages].sort((a, b) => {
+    const s = starRank(a) - starRank(b);
+    if (s !== 0) return s;
     if (sort === 'az') return itemTitle(a).localeCompare(itemTitle(b));
     if (sort === 'drawer') return homeOf(a).localeCompare(homeOf(b)) || itemTitle(a).localeCompare(itemTitle(b));
-    return b.createdAt.localeCompare(a.createdAt);
+    return recency(b).localeCompare(recency(a));
   });
 
   // THE PRIMARY ACT. flushNow first, as every other door that leaves a surface
@@ -408,9 +423,9 @@ function YourPages({ navigate, currentId, boardId }: {
   };
 
   return (
-    <div className="wz-cascade-panel-body wz-place-page wz-your-pages">
-      <div className="wz-cascade-panel-title">{t('yourPagesHeading')}</div>
-      <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('yourPagesSort')}>
+    <div className="wz-cascade-panel-body wz-place-page wz-open-pages">
+      <div className="wz-cascade-panel-title">{t('openPagesHeading')}</div>
+      <div className="wz-page-setup-seg" role="radiogroup" aria-label={t('openPagesSort')}>
         {(['date', 'drawer', 'az'] as const).map(s => (
           <button key={s} type="button" role="radio" aria-checked={sort === s}
             className="wz-page-setup-chip" onClick={() => setSort(s)}>
@@ -421,23 +436,23 @@ function YourPages({ navigate, currentId, boardId }: {
       <div className="wz-place-page-list" role="list">
         {sorted.length === 0 && <p className="wz-page-setup-note">{t('placePageEmpty')}</p>}
         {sorted.map(p => (
-          <div key={p.id} className="wz-your-pages-row" role="listitem" data-page-id={p.id}>
-            <button type="button" className="wz-place-page-row wz-your-pages-open"
+          <div key={p.id} className="wz-open-pages-row" role="listitem" data-page-id={p.id}>
+            <button type="button" className="wz-place-page-row wz-open-pages-open"
               aria-current={p.id === currentId ? 'page' : undefined}
               onClick={() => open(p)}>
               <span className="wz-place-page-title">{itemTitle(p)}</span>
               <span className="wz-place-page-home">{homeOf(p)}</span>
             </button>
             {boardId && (
-              <button type="button" className="wz-your-pages-more"
-                aria-label={t('yourPagesMore')} title={t('yourPagesMore')}
+              <button type="button" className="wz-open-pages-more"
+                aria-label={t('openPagesMore')} title={t('openPagesMore')}
                 aria-haspopup="menu" aria-expanded={menuFor === p.id}
                 onClick={() => setMenuFor(menuFor === p.id ? null : p.id)}>{'\u22ef'}</button>
             )}
             {boardId && menuFor === p.id && (
-              <div className="wz-your-pages-menu" role="menu">
-                <button type="button" role="menuitem" className="wz-your-pages-place"
-                  onClick={() => place(p.id)}>{t('yourPagesPlace')}</button>
+              <div className="wz-open-pages-menu" role="menu">
+                <button type="button" role="menuitem" className="wz-open-pages-place"
+                  onClick={() => place(p.id)}>{t('openPagesPlace')}</button>
               </div>
             )}
           </div>
