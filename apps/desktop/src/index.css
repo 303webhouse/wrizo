@@ -4354,6 +4354,20 @@ a:focus-visible,
 }
 .wz-thumb-page::before{ width:22px; height:30px; }   /* vertical — a page */
 .wz-thumb-board::before{ width:34px; height:20px; }  /* horizontal — a board */
+/* ITEM 176 — the SAME two geometries, in a LIST ROW rather than a stacked
+   thumbnail. The swatch classes above are reused verbatim (one law, one pair
+   of shapes, wherever a kind has to be read); only the layout differs, because
+   a row reads left-to-right where a thumb reads top-down. Sizes are halved:
+   a row is a line of text, and a 30px swatch would set the row's height. */
+.wz-kindrow{ display:flex; align-items:center; gap:10px; }
+.wz-kindrow .wz-kindswatch::before{ margin-bottom:0; flex:0 0 auto; }
+.wz-kindrow .wz-thumb-page::before{ width:11px; height:15px; }
+.wz-kindrow .wz-thumb-board::before{ width:17px; height:10px; }
+/* The word, on board rows only: quiet, and last, so it reads as a fact about
+   the row rather than a control on it. */
+.wz-kindtag{ margin-left:auto; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--accent-rest); flex:0 0 auto; }
+
 /* The separation between sections is VISIBLE, not merely semantic: a rule and
    real space, so "clearly" is something the eye does rather than something the
    DOM knows. */

@@ -41,11 +41,37 @@ export function ExistingPagePicker({ boardId, onClose }: { boardId: string; onCl
         <div className="board-sheet-title">Add an existing {lex('page').toLowerCase()}</div>
         {candidates.length === 0 && <p style={{ color: 'var(--text-mid)', marginBottom: 12 }}>Nothing else to add yet.</p>}
         <div style={{ maxHeight: 320, overflow: 'auto' }}>
-          {candidates.map(e => (
-            <button key={e.id} type="button" className="dz-row board-dest-row" onClick={() => choose(e.id)}>
-              <span className="dz-rowtitle">{itemTitle(e)}</span>
-            </button>
-          ))}
+          {/* ITEM 176 — A BOARD IN A CANDIDATE LIST SAYS IT IS A BOARD.
+              The defect this closes was NAMING, not absence: this list already
+              offered boards (`getJournalEntries()` is unfiltered by pageType)
+              and rendered each one as a bare title, in a sheet whose own words
+              say "page". A writer looking for the nesting door was not missing
+              one — he was looking at this one, and it denied being it.
+
+              TWO SIGNALS, because one is not enough HERE specifically:
+              · THE SHAPE is Nick's own law, reused rather than reinvented —
+                a board is a horizontal rectangle, a page a vertical one
+                (`.wz-thumb-board` / `.wz-thumb-page`, the same swatches the
+                rail draws). Shape teaches the kind and spends no colour.
+              · THE WORD rides only the BOARD rows, and it is the one thing
+                that makes the contradiction legible: the sheet's title still
+                says "page" (its wording belongs to 144's redesign, not here),
+                so a board must say so in words or the only reader who notices
+                is one who already knows the shape law.
+
+              Scope held deliberately: the door's NAME is not touched, the
+              mode-gated beginnings row is not touched, and no new door is
+              added. Those are 144's, and this is the lie alone. */}
+          {candidates.map(e => {
+            const isBoard = e.pageType === 'board';
+            return (
+              <button key={e.id} type="button" className="dz-row board-dest-row wz-kindrow" onClick={() => choose(e.id)}>
+                <span className={`wz-kindswatch ${isBoard ? 'wz-thumb-board' : 'wz-thumb-page'}`} aria-hidden="true" />
+                <span className="dz-rowtitle">{itemTitle(e)}</span>
+                {isBoard && <span className="wz-kindtag">{lex('board')}</span>}
+              </button>
+            );
+          })}
         </div>
         <button type="button" className="btn-quiet" onClick={onClose} style={{ marginTop: 16 }}>Cancel</button>
       </div>
