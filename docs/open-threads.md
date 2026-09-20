@@ -2858,6 +2858,12 @@ box in the announced order.**
 **the theme arc supplies the faces.** **THE TYPED FACE APPLIES TO TYPEWRITER *ON* ONLY; with
 Typewriter OFF the page uses its own chosen face.**
 
+**✗ WITHDRAWN 2026-09-19 (Fable named the wrong document): item 127 has NO Draft typewriter clause and
+STANDS.** The marker below is withdrawn as to 127. The rulings item 171 supersedes are **FX2 S2 and the
+doorway wave's clause 3** — marked at clause 3 in this file. Item 171's new condition on Free Write's
+toggle (no ink) is recorded at 171, not as a supersession of 127. The marker is kept as written, for what
+it said and why it was wrong.
+
 **⚠ SUPERSEDED IN PART 2026-09-19 by ITEM 171 — the roster line's `Typewriter on/off` is now AVAILABLE ONLY
 ON A TEXT PAGE WITH NO INK** (selecting Ink deactivates it; any ink on the page forbids reactivating it).
 The roster below is kept as written. *(Chat 1 could find no separate "typewriter can be turned off"
@@ -3539,6 +3545,10 @@ three.** The three-space canon already rules, on this ledger: **"Shelf and Trash
 CONDITION (loose; deleted), NOT places."** The Plan panel's subject is **the containers that HOLD the
 page** — so a condition can never appear there. **This is not a rendering bug; the panel is answering
 a different question than the canon asks it to answer.**
+
+**⚠ UNDER FOUNDER REVIEW 2026-09-19 — Nick's new ruling *"Shelf and Trash should be Default Boards"*
+(Fable's reading; verbatim pending) may reverse the ruling below.** The text below is held INTACT; see
+*SHELF AND TRASH AS DEFAULT BOARDS*.
 
 **NICK'S RULING ON (a), and it names TWO surfaces, not one:** **the Shelf is NEVER shown as a board.**
 **Condition-boards are excluded from "Boards connected" AND from the Structure lens's connection**
@@ -4290,6 +4300,9 @@ discretion.**
 - **(Q-B) TRASH AT THE FOOT.**
 - **(Q-C) MANUAL JOURNAL ORDER RETIRES WITH THE SPREAD, DELIBERATELY — `setNotebookPosition` dies IN
   THAT COMMIT, in the views build.** Not before.
+- **⚠ UNDER FOUNDER REVIEW 2026-09-19** — Nick's *"Shelf and Trash should be Default Boards"* (Fable's
+  reading; verbatim pending) collides with the law below. Held INTACT until he picks; see *SHELF AND
+  TRASH AS DEFAULT BOARDS*.
 - **THE ARRANGEMENT LAW IS RATIFIED: IF A WRITER CAN MOVE ONE THING RELATIVE TO ANOTHER, IT HAS BECOME
   A BOARD.** *(It is a definition, not a preference — which is why manual order cannot survive in a
   Journal that is not one.)*
@@ -7356,6 +7369,9 @@ strip is `min-height: 70vh`, so the foot FLOATS mid-screen rather than sitting a
 TEST BOARD is the DRAWER, read by Nick as a subtitle. **The second line takes the CAPTION FORM: "in
 TEST BOARD."**
 
+**✓ DISSOLVED 2026-09-19 — Nick scrapped board views (Fable's reading; verbatim pending).** 164 is closed
+by dissolution, not answered; the probe approved below is moot.
+
 **⚠ S0 RULED 2026-09-19, THEN OVERTAKEN THE SAME DAY:** the S0 found Q6's stickiness by elimination, not
 a bug — and Fable's later reading (flagged for Nick's veto) is that item 172's board TYPES supersede the
 view tabs and Q6 with them, so this question DISSOLVES rather than being answered. See *RULINGS FROM THE
@@ -7570,6 +7586,9 @@ drag-to-trash lands** — *a build with no card deletion would be a regression a
 option (b) RATIFIED:** keep `removeSelected`, expose it on the `wrizoBoard` seam (WRAPPED DURABLE — it
 writes), reroute the seven drivers, park ONLY `fx7`'s presence assertion.
 
+**✓ CONFIRMED 2026-09-19 (Fable): THREE ENTRIES NOW — the copy (`wrizoCopyCardToBoard`), `removeSelected`,
+and `__wrizoRhizomeField` (a read-only EXEMPTION, not a wrap).** 148 adds them before its own pair.
+
 **⚠ MERGE-ORDER OBLIGATION, chat 1's application of the standing rule — Fable to confirm:** that seam is
 a NEW WRITING SEAM. Item 148's durability table does not exist on `main` yet, and FIX's 158/159/160 pairs
 sit BEFORE 147/148 in the queue, so 160 lands FIRST — **148, landing second, adds `wrizoBoard`'s
@@ -7595,6 +7614,8 @@ lines ALWAYS PRINTED `PASS` — item 147's class — found and FIXED IN PLACE.**
 other two forms are asserted BY NAME so it cannot pass on absence. **WIDENED to `boardDrawerLine` on the
 canvas board-card** — same swap, same lexicon term, 131(a)'s shape: *fix the class.*
 
+**✓ 144's S0 IS DONE (PW's findings recorded below) and ITEM 176 NOW GOES FIRST: 176 → 163 → 138.**
+
 **PW ORDER: 144's S0 first (browserless; PLAN DESK is waiting) → 163 → 138 on Nick's word.** *(Nick has
 since given it — see item 138 above: 138 builds after 144's S0 and 163.)*
 
@@ -7609,6 +7630,11 @@ relay, answered.
 with NO INK. **Selecting Ink DEACTIVATES it. ANY ink on a page FORBIDS reactivating it. DRAFT AND REVISE
 HAVE NO TYPEWRITER.** **Ink must be available on BOARDS and CARDS** — **S0: measure where ink is and is
 not available TODAY.**
+
+**✓ CORRECTED 2026-09-19 — Fable took the correction:** *"127 has no Draft typewriter clause; the rulings
+are FX2 S2 and the doorway wave's clause 3. Fable named the wrong document."* **Item 127 STANDS. The two
+superseded rulings are FX2 S2 and clause 3** — so "chat 1 MARKED ALL THREE PLACES" below reads *two*, and
+the 127 marker is withdrawn in place. The paragraph is kept as written.
 
 **WHAT IT SUPERSEDES — recorded from the ledger's own text, and chat 1 found one place where the relay's
 reference does not match it:** Fable's relay says this supersedes *item 127's "typewriter can be turned
@@ -7638,10 +7664,18 @@ laid out at once; **CARDS are addable to a Book's pages and STAY ON THE PAGE THE
 says column — *one migration wave, not two.* **⚠ STANDING CONSTRAINT: any schema STOPS at chat 1 and
 goes to Nick.** Fable's ruling here is on WHERE a field would land, not a schema approval.
 
+**✓ OVERTAKEN 2026-09-19 BY A STRONGER RULING: Nick scrapped board VIEWS entirely** (Fable's reading;
+verbatim pending) — see *THE FOUNDER SCRAPPED BOARD VIEWS*, below.
+
 **FABLE's READING, FLAGGED FOR NICK's VETO:** the OPEN / STORYBOARD / OUTLINE VIEW TABS on a board are
 SUPERSEDED BY TYPES — Outline and Storyboard become kinds of board per 165's submenus — and **Q6's
 per-board view stickiness is superseded with them; ITEM 164's QUESTION THEREFORE DISSOLVES rather than
 being answered.** **Thumbnail law gains a note: a BOOK-TYPE board displays TALL by its type.**
+
+**✗ DISSOLVED 2026-09-19 — Nick scrapped board VIEWS entirely** (Fable's reading; verbatim pending):
+**neither Reading A nor Reading B.** Both are kept below, **SUPERSEDED BY THE RULING.** Fable had sent the
+question to Nick, not to the desks — *"three agreements are not a measurement"* — and he answered it by
+removing its premise.
 
 **⚠ CHAT 1 HANDS UP ONE CONFLICT, with a lean:** Nick's list is THREE types (Default, Book,
 Bibliography), but Fable's reading makes Outline and Storyboard *kinds of board* too, and 165's Create
@@ -7652,6 +7686,11 @@ the type set is Nick's three, and Worldbuilding / Storyboard / Outline are PRESE
 born with. **Lean: A** — B leaves the retired view tabs with nothing to become, and Nick's own reason for
 types ("want to display different types of boards differently") is exactly what Storyboard and Outline
 are. **PLAN DESK's brief must name it; it goes to Nick if the desks read it differently.**
+
+**⚠ SUPERSEDED IN FORM 2026-09-19 — Nick's Page-menu ruling (Fable's reading; verbatim pending)** replaces
+FIX's 170 layout: 170's list BECOMES *OPEN PAGES*, FIX's branch is RE-SCOPED not discarded, and Nick's
+approval of the frames *"is no longer needed in that form."* **FIX had already delivered the two frames
+(`7e906d9`, 16:21).** See *ITEM 177*. The section below is kept as written.
 
 ## ITEM 170 — THE MOCKUP GATE — 2026-09-19
 
@@ -7696,6 +7735,9 @@ pass against items 171/172.)*
 
 ## ORDER WHILE BATCH FOUR WAITS ON NICK — 2026-09-19
 
+**✓ CONFIRMED 2026-09-19, NO VETO (Fable).** ⚠ The founder rulings recorded below RE-SCOPE 170; see *BATCH
+FOUR — ITS CONTENT IS NOW IN QUESTION*.
+
 **Chat 1's application of the present-and-ready rule — Fable may veto:** Batch Four's deploy pair keeps
 its FIRST PLACE but not the box while Nick's approval of the frames is outstanding, because a pair
 that cannot run is not "ready." **TOOLS' 154 pair is announced when it offers and FIX's frames are
@@ -7703,7 +7745,198 @@ done.** **Nothing product-side merges between Batch Four's assembly and its stam
 run in their own worktrees and their merges wait behind the stamp, as in Batch Two. *(Records and docs
 keep landing, as they did after Batch Three's assembly.)*
 
-Registry: next free **173**.
+## RELAY GAP — THE FOUNDER's MESSAGE IS A PLACEHOLDER — 2026-09-19
+
+**The second half of Fable's relay is headed "MAJOR FOUNDER RULINGS, verbatim, primary text:" — and the
+payload beneath the header is the literal line `[paste Nick's full message 1/2/3a/3b/3c/3d verbatim]`:
+a BLANK HELD FOR SOMEONE TO FILL, not the message.** **Nick's own words for these rulings are NOT in chat
+1's block.** The law is Fable's own: *"no block holds a blank for someone to fill"* (2026-09-12) and *"a
+block is complete for its recipient"* (2026-09-13). **NOT RECORDED AS PRIMARY TEXT; REQUESTED.**
+
+*(An interruption marker — "[Request interrupted by user]" — sits between the relay's two halves, and the
+second opens "And this:". Chat 1 cannot tell whether the paste was meant to replace the placeholder and
+was lost in the interruption. It says so rather than guessing.)*
+
+**WHAT IS RECORDED BELOW IS FABLE's READING of Nick's message, and nothing more.** The only words in the
+block attributed to Nick directly are two fragments, both quoted by Fable and unchecked against his text:
+*"let's scrap the Board 'views'"* and *"Shelf and Trash should be Default Boards."* **Every ruling below
+marked "Fable's reading" becomes primary text when the message arrives (or on Nick's authorization, as
+with the three in-app notes), and is superseded by it wherever the two differ.** **PLAN DESK should not
+design from a summary of a founder message; it needs the verbatim.**
+
+## FABLE's FOUR ANSWERS — 2026-09-19
+
+1. **ITEM 171's CLAUSE — CORRECTED.** *"Your correction is taken — 127 has no Draft typewriter clause;
+   the rulings are FX2 S2 and the doorway wave's clause 3. Fable named the wrong document."* **Recorded
+   in place:** 127 STANDS (its marker withdrawn); the two superseded rulings are FX2 S2 and clause 3.
+2. **ITEM 172-Q1 — SENT TO NICK, THEN DISSOLVED.** Fable's reasons for sending it to Nick rather than the
+   desks: chat 1 leaned A, PLAN DESK reached A, Fable read A — *"three agreements are not a measurement."*
+   **A gives up the PROJECTION** (one board's cards seen two ways), *Nick's own July example, which BM1
+   built*; **B has his own "freely arranged" definition behind it.** *Neither desk closes 164 before he
+   rules, since 164 dissolves under A only.* **Overtaken inside the same relay: see the dissolution below.**
+3. **148's OBLIGATION — CONFIRMED.** 160 adds `removeSelected` to `wrizoBoard` as a writing seam, so 148
+   adds its durability entry beside `wrizoCopyCardToBoard` before its own pair. **THREE ENTRIES: the copy,
+   `removeSelected`, and `__wrizoRhizomeField` (a read-only EXEMPTION).**
+4. **ORDER — CONFIRMED, NO VETO.** Batch Four keeps first place but not the box; TOOLS' 154 pair is
+   announced when it offers and FIX's frames are done; product merges wait behind the stamp.
+
+## THE FOUNDER SCRAPPED BOARD VIEWS — 172-Q1 DISSOLVED, 164 CLOSED — 2026-09-19 (Fable's reading)
+
+Per Fable, Nick: *"let's scrap the Board 'views'"* — so **neither A nor B.** A writer creates the KIND of
+board they want and MOVES CARDS BETWEEN BOARDS instead of switching a board's display. **172-Q1 is
+DISSOLVED, not answered. Item 164 dissolves with the views. A and B are SUPERSEDED BY THE RULING, both
+kept** (marker at the conflict, item 172).
+
+*(A consequence chat 1 names and does not assume: the PROJECTION Fable priced into A — one board's cards
+seen two ways, which BM1 built — is not merely deprioritised under "scrap the views"; it is what is
+scrapped. Whether that built code is retired or stays as something else is the builders' question when
+the verbatim arrives.)*
+
+## SHELF AND TRASH AS DEFAULT BOARDS — UNDER FOUNDER REVIEW — 2026-09-19
+
+**⚠ ONE RULING REVERSES RATIFIED CANON, AND IS FLAGGED TO NICK — NOT IMPLEMENTED ON A DEFAULT.** Per
+Fable, Nick: *"Shelf and Trash should be Default Boards."* **It collides with three things already on
+this ledger:** item 131 (a), his own erratum — *"the Shelf is NEVER shown as a board"*; the three-space
+canon — *"Shelf and Trash are displays of a CONDITION (loose; deleted), NOT places"*; and the ratified
+ARRANGEMENT LAW — *"if a writer can move one thing relative to another, it HAS BECOME A BOARD."*
+
+**TWO READINGS, WITH NICK NOW:** **(a)** they WEAR a Default board's LOOK — a thumbnail grid, no
+arranging; the condition still computed. **(b)** they ARE Default boards, and the canon changes.
+**FABLE LEANS (a).**
+
+**HELD INTACT, MARKED "UNDER FOUNDER REVIEW":** item 131 (a)'s text and the arrangement law, in place.
+**Nothing is built on either reading until he picks.**
+
+**TWO FACTS FOR THE DESKS, chat 1's:** (1) from source, read earlier this session in `persistence.ts`:
+condition-board pins are DERIVED — written by `reconcileSystemBoard` from `qualifyingPagesFor`; *the
+writer never authored them.* Under (b), **a surface a writer may ARRANGE whose membership is COMPUTED**
+is the open design problem; (a) does not have it. (2) "Default" is presumably item 172's TYPE name, so
+(b) would make the Shelf and the Trash Default-TYPE boards — chat 1 has not seen Nick's words and does
+not assume.
+
+## THE FOUNDER's PAGE, BOARD AND SPLIT-SCREEN RULINGS — FABLE's READING, PRIMARY TEXT PENDING — 2026-09-19
+
+**NUMBERING, chat 1's rule, told to Fable so it can veto:** *a new subject gets a number; a ruling that
+answers or amends an existing item is recorded UNDER that item.* **Five numbers below (177–181); seven
+rulings filed under the items they belong to.**
+
+**ITEM 177 — THE PAGE MENU RESTRUCTURE (PLAN DESK) — OPENS.** Top to bottom on a Page surface:
+(1) **CURRENT PAGE** with its name — editable here or in the title bar, *"Untitled" default*;
+(2) **ADD TO BOARD** — a dropdown, *Create Board first*, then existing boards with their tags;
+(3) **ADD TAG(S)** — existing tags visible and removable;
+(4) **OPEN PAGES** — the last three created/edited, scrollable, sortable by tag, board or drawer;
+(5) **PAGE SETTINGS** — today's Page Setup plus font settings (limited typefaces with an add-fonts option,
+font size, line spacing);
+(6) **NEW PAGE**, last.
+**SUPERSEDES FIX's 170 LAYOUT: 170's list BECOMES OPEN PAGES; FIX's built branch is RE-SCOPED, NOT
+DISCARDED; Nick's approval of the frames is no longer needed in that form.**
+
+**⚠ THREE THINGS FOR THE VERBATIM TO SETTLE — chat 1 hands them up and does not resolve them from a
+summary:**
+- **"Untitled" DEFAULT vs item 136.** Nick, 2026-09-13: *"my answer is 'No'"* — "Untitled" does NOT exist
+  as a default name; and 167 records *"'Untitled' never appears (Nick's ruling)."* Reading 1: the
+  summary's "Untitled" is only a placeholder for a page with nothing written. Reading 2: it reverses 136.
+  **Until the verbatim says, 136 STANDS.**
+- **"The last three ... scrollable."** A list capped at three has nothing to scroll: either it shows
+  three rows at a time in a longer scrolling list, or the cap is not three.
+- **PAGE SETTINGS' font controls vs the analog law's scoped FONT clause** (item 127: FONT only when
+  Typewriter is OFF in Free Write) — the menu must say whether they are hidden while Typewriter is ON.
+
+**ITEM 178 — "PAGES" IS THE TERM FOR DOCUMENTS (lexicon, sitewide) — OPENS.** His words govern: the
+writer sees **"Pages"** where other apps say *document / doc / docs*; **the backend need not rename.**
+**One derivation, every surface** — so the first act is a census of every string that names a document.
+
+**ITEM 179 — STARRING BESIDE THE TITLE — OPENS.** Starring MOVES beside the page's title, and **STARRED
+PAGES SORT FIRST in any filtered list of existing pages.**
+
+**ITEM 180 — SHELF's DRAWER GESTURE — OPENS.** An obvious control to put a Page or Board into a drawer,
+**plus** dragging a thumbnail onto the **Drawers rail icon** — which OPENS the Drawers menu and lets the
+writer choose while the cursor HOLDS the doc; **right-click CANCELS the hold.** *(Ties to 168: a drag onto
+an icon — the Trash, the Drawers — is one gesture family; one mechanism, fix the class.)*
+
+**ITEM 181 — IMPORT ONTO A JOURNAL BOARD — OPENS.** Images and docs can be imported onto a Journal board;
+double-click opens them full size. **⚠ RELATION TO 116, handed up:** that is 116's shape (files placed ON a
+board; a viewer on double-click), which chat 1 marked superseded-into-165 at Fable's instruction — but
+165's *Organize Research → Import Sources* makes a board of imports AS PAGES, a different act. **116 is
+not wholly absorbed; PLAN DESK to say which of the two survives.**
+
+**ITEM 144 — AMENDED AGAIN — THE BOARD TAB BAR REPLACES THE VIEW TABS (PLAN DESK).** The current board is
+a tab, and **"+ BOARD" beside it creates a NESTED board.** Connected and nested boards are tabs with their
+title very small underneath. **The last tab is "Go Back" when the writer arrived from a page or board, and
+"New Page" (auto-connected to the board) when they did not.**
+
+**⚠ RETIREMENT HAZARD, from PW's 144 S0 — CARRY IT INTO THE TAB WORK:** `connectPage` (the nest door) and
+`newPageCard` exist ONLY in the OPEN branch; `newLane` only in Storyboard; **and the sliver's copy of the
+picker is NOT mode-gated.** **Retiring the view tabs retires two doors and leaves a third standing unless
+each is deliberately RE-HOMED.** "+ BOARD" replaces the nest door; **the rest need homes.**
+
+**ITEM 169 — RULED: SPLIT SCREEN.** Up to FOUR boards. **Strip menus VANISH when more than one board is
+open, and those options return only at one.** Cards/docs/pages MOVE between open boards. **BOOK BOARDS
+CANNOT BE OPENED CONCURRENTLY with others.** The Journal displays as the Page surface, not as a tabbed
+board.
+
+**ITEM 165 — AMENDED: CREATE BOARD PRESETS.** **Book is NOT offered** (separate Journals maybe later);
+the menu's job is getting a writer creating fast, not organizing.
+
+**ITEM 172 — RULED FURTHER:** **TYPES CANNOT CHANGE AFTER BIRTH** (172-Q, ruled). **Cards on a Book's
+page: displayed and fully editable as on a board, but NO green pin.** **PAGE ARRANGEMENT IN A BOOK — not
+now, recorded (PARKED clause).**
+
+## ITEMS 173–175 NOT OPENED; ITEM 176 OPENS — 2026-09-19
+
+**Fable listed three items from FIX's read of the card note and then hedged all three. Chat 1's call,
+told to Fable:**
+- **175 (tutor-strip overlap) → covered by 161, NO third number.** 161's recorded text: *"Misaligned with
+  the board edge; its popout OVERLAPS the edge, including its OWN TAB."* Nick's card note: *"the pop-out
+  menu overlaps the Board edge, including even the clickable tab that opens it."* Same defect, same words.
+- **173 (card rename) and 174 (card numbering) → recorded UNDER 167, not numbered.** Chat 1 read the
+  brief: the design and the build do NOT want separating. Rename (S4) and numbering (S1–S3) share the two
+  `Box` fields (`title`, `cardNo`, both added to `copyCardToBoard`'s list) and **ONE derivation,
+  `cardName(box)`**; the brief's own close builds S1–S5 as ONE item. **Two numbers would split a shared
+  foundation across two builds.** Fable's sequencing point stands and is 167's §2: numbering interacts
+  with 136's stand-in rule — `Card {cardNo}`, never "Untitled", and existing cards get no number (167-Q2,
+  with Nick).
+- **Numbers 173–175 are RETIRED UNOPENED, not reused;** 176 stays 176 — *relay a question set by its own
+  numbers.*
+
+**ITEM 176 — THE PICKER DENIES BEING A DOOR (PW, small, AHEAD OF 163) — OPENS.** PW's S0 found **four
+nesting doors and not one says "board":** `ExistingPagePicker` offers boards UNMARKED behind a sheet
+titled *"Add an existing page,"* and `connectPage` renders only when a board has ZERO cards. **Fable
+rules the cheapest correct fix NOW, not after 144's redesign:** *a board in a candidate list SAYS it is a
+board* — `pageType === 'board'` is one read, and **the Board badge and the board-card silhouette already
+exist for exactly this.** **The door's redesign stays PLAN DESK's; the lie is PW's to fix this week.**
+
+> **A DOOR THAT DENIES BEING ONE IS WORSE THAN NO DOOR — THE WRITER LOOKS PAST IT.**
+
+**PW ORDER: 176 → 163 → 138.**
+
+## BATCH FOUR — ITS CONTENT IS NOW IN QUESTION — chat 1 ASKS — 2026-09-19
+
+**Batch Four = 170 alone, and 170 is now RE-SCOPED by 177.** **The merge stays HELD** (it was already
+held for Fable's review). **The question, for Fable:** does FIX's branch AS BUILT (92/92 at `9ddbae8`)
+still ship as Batch Four — the P0's fix — with 177 following as its own batch, or does 170 wait for the
+re-scoped form? **The tension, stated both ways:** a P0 does not wait for a batch to fill; **but the layout
+that would ship is the one Nick has just replaced, and the frames he asked to see are no longer the
+thing he will be shown.** **Chat 1's lean: the smallest re-scope FIX can pair fast — OPEN PAGES as the
+first slice of 177 inside the existing Page hand — rather than shipping the old list.** *(A lean, not a
+ruling; the Batch Four contents are Fable's and Nick's to state.)*
+
+## BOX — FIX's GRANT CLEARED; TOOLS' 154 PAIR GRANTED — 2026-09-19
+
+**FIX's frames were delivered (`7e906d9`, 16:21) and the founder ruling makes their approval moot in
+that form — FIX's grant CLEARED** (`fix-item170-p0-20260919`). **Nothing was running.**
+
+**TOOLS' 154 PAIR GRANTED — token `tools-item154-pair-20260919`,** the announcement Fable's confirmed
+order calls for ("TOOLS' 154 pair is announced when it offers and FIX's frames are done"). **Handed to
+TOOLS with the findings and what they protect** *(the lesson from `vw1.mjs`)*: (1) `main` has moved 19
+commits since the branch point and **ALL of them are docs** (0 non-docs files; trial merge clean) — merge
+`main` first so the stamped tree IS the merged tree; (2) 154 touches **0 product or server files** (56
+harness/tooling files, +2,006/-183); (3) **both legs always run**; (4) TOOLS' own offer states a red
+inside an in-string act aborts that file's remaining checks — **diagnose, do not re-run**; (5) push when
+the pair begins. **INK's 157 (a) is next** and waits on a quiet box.
+
+Registry: next free **182**.
+
 
 
 
