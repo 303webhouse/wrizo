@@ -8238,6 +8238,36 @@ requires a lane identity that matches the grant's lane (`WS_BOX_LANE`, say) — 
 `box-grant.mjs` — or accept the honour-system reading and rely on the practice change. **Chat 1 does not
 build it; it is tooling and Fable's to route.**
 
+## FOUR MORE PLAN DOCS MERGED; A BOX MEASUREMENT; PW's STATUS — 2026-09-19
+
+**Merged at `47f5105`, docs-only, under the standing exemption:** `plan-172-consequences` (172's
+consequences in the six merged docs; 165's type table marked overtaken), `plan-144-tab-bar` (144's tab-bar
+amendment; the re-homing rule), `plan-172-board-types` (the board-types pass, the Book mock, VW3
+re-grounded; 172-Q1 marked dissolved), `plan-171b-ink-charter` (ink on boards and cards; the five
+collisions as the acceptance test). **Verified: no non-docs file in any of the four; each trial merge
+clean; the one shared file (`b144-board-tabs-build-brief.md`) merged clean in sequence.** *Filing, not
+ruling.*
+
+**PLAN DESK's 144 amendment (§5) was written BEFORE the verbatim was on `main`, and says so:** it quotes
+the SUMMARY's wording of the tab text, records it as *"awaiting the verbatim,"* and **hands up two
+collisions with what is already merged:** (1) *"tabs with their title very small underneath"* vs the
+merged brief's rule that *a tab is a word, deliberately* — PLAN reads a title UNDERNEATH as implying
+something ABOVE it (a thumbnail?), **where chat 1's difference 3 reads it as something very small
+underneath the title; both readings stand, and the text says neither**; (2) **a contextual last tab —
+"Go Back" or "New Page" — "is not a board," against SR-Q1's ruling that a tab is only ever a door to a
+board.** **Nick's text now rules the last tab explicitly, so (2) is a collision between his ruling and a
+ratified one — Fable to say whether SR-Q1 is superseded, or the tab is a different kind of control.**
+**PLAN must re-read §5 against the verbatim (differences 3 and 4).**
+
+**A BOX MEASUREMENT, added to the anomaly above (chat 1, ~22:20):** the box's `TEMP` holds **no suite
+output directory newer than FIX's parked leg (20:34)**. *The listing chat 1 pulled shows only the newest
+entries, so it does not cover 19:18–19:25 or the head of FIX's window* — the "TOOLS never launched"
+inference is a little better supported after 20:34 and not otherwise changed.
+
+**PW's STATUS at ~22:20:** the grant is live; **no pair has started and `item176-picker-says-board` is
+still not on `origin`.** Nothing is wrong yet — the lane has had the grant for minutes — and chat 1 does not
+chase it; it is recorded so the gap is visible if it lengthens.
+
 ## ORDER — 2026-09-19
 
 **Batch Four** (FIX's re-scoped 170, stamped) **awaits Fable's diff review, then Nick's quoted word, then its
