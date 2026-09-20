@@ -9,10 +9,11 @@
 
 > **⚠ SYMBOLS ARE THE ANCHOR.** Read at `4600d7f`; the notes at `b807f59`. Line numbers are a courtesy.
 
-> **⚠ PRIMARY TEXT — PENDING NICK's ONE-WORD CONFIRMATION.** His in-app notes (the PLAN NOTE, page 1,
-> and the CARD NOTE), **transcribed verbatim by Fable from his screenshots**, recorded at `b807f59`.
-> **Designed to those words and quoted where relied on.** If his confirmation changes a word, this brief
-> is re-checked before anything is built.
+> **✅ PRIMARY TEXT — AUTHORIZED BY NICK, 2026-09-19.** The PLAN NOTE, page 1, **transcribed by Fable
+> from his screenshots** (`b807f59`) and **authorized by him as primary** (*"If this is a rule violation,
+> then I authorize it"*). **The CARD NOTE — item 161's line in §3 — came through the same transcription
+> in the same relay; this brief treats it as primary on that basis, flagged because the authorization
+> named the Plan notes.**
 
 **Reference render:** `plan-menu-mock.html` — the Plan column at four window widths, the old canon beside
 the law, with the overlap read in pixels (carried on this offer and on 165's).
@@ -190,6 +191,11 @@ list, shared by the law's check and the two-drawer law, *so they cannot disagree
 ---
 
 ## §5 · SEQUENCING
+
+**A BOOK-TYPE BOARD'S "PAGE" IS A PAGE (item 172).** When a board displays one page at a time, **the law
+protects that page on its own terms** — nothing here needs a special case, and **166-Q2's board question is
+about the TABLE TOP**, not the Book.
+
 **166 lands BEFORE or WITH 165** — 165's submenus are exactly the panels this law governs, and building
 them first would build them to the old canon. **144's connect list obeys it by construction** (it grows
 in the row's own band). **161's fix is this law applied on the board** (per 166-Q2). **159's Styling

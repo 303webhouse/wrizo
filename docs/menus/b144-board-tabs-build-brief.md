@@ -128,7 +128,8 @@ click" requires: the tab you just left is still where your hand left it.*
 
 **What a tab shows: the board's name** (item 136's model — `boardName` today, the stored title when 136
 lands), truncated with an ellipsis, the full name in its accessible name; **plus the "in X" line when it
-lives elsewhere.** **No count, no thumbnail, no badge** — *thumbnails are the Plan menu's inventory; a
+lives elsewhere.** **A Book-type board is a tab like any other** (item 172): *a type changes how a board
+is drawn, never whether it is a door.* **No count, no thumbnail, no badge** — *thumbnails are the Plan menu's inventory; a
 tab is a door, and a door is a word.*
 
 ### ⚖ THE RIVAL, IN ITS STRONGEST FORM — a RELATIVE row (BT-Q1)
@@ -160,8 +161,8 @@ is a door, and a door takes one press.)*
 **It opens the CONNECT LIST inside the row's own band** — the band grows; **it never lays a panel over
 the canvas** (item 166's law, obeyed by construction, and the room law re-measures).
 
-**The list:** **"＋ New board"** first, then **every board**, scrollable, a **wide** thumbnail each
-(*boards are wide*), its name, its "in X" line. **Each row is one of three things:**
+**The list:** **"＋ New board"** first, then **every board**, scrollable, **a thumbnail each wearing its
+TYPE's proportion** (item 172 §4 — *a Default is wide, a Book is tall*), its name, its "in X" line. **Each row is one of three things:**
 
 | row | state | why |
 |---|---|---|

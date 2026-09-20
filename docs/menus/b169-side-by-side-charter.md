@@ -81,6 +81,12 @@ membership, not content). **Each kind of card may want a different answer**, and
 Trash shares the gesture** — a card dragged across the stage passes over the rail's foot. *This is the
 question with the most consequences; it deserves its own ruling before any mockup draws an arrow.*
 
+**169-Q7b · ⚠ AND NOW THE TWO PANES MAY BE DIFFERENT DISPLAYS (item 172).** A **Book** beside a **Default**
+is the likeliest pair a writer will want — *the chapter open beside the table of its cards* — and it is
+also where Q7 bites hardest: **a card dragged from a table top onto a Book's page lands ON THAT PAGE**
+(172 §3), which is a different destination from "somewhere on that board". **Whatever Q7 rules, it rules
+for both.**
+
 **169-Q8 · THE SAME BOARD TWICE · A BOARD AND ITS OWN CHILD.** The same board beside itself: **absent**
 (nonsense). **A parent beside its child** — the overview beside the detail: **allowed?** *(It is likely the
 most useful pair.)*

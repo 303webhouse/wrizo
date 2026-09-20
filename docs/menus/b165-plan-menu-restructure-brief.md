@@ -1,5 +1,5 @@
 # ITEM 165 — THE PLAN MENU RESTRUCTURE
-### PLAN desk · 2026-09-19 · brief · **absorbs 87 and 116** · **GATED ON 166** · built in parts (§9)
+### PLAN desk · 2026-09-19 · brief · **absorbs 87 and 116** · **GATED ON 166 AND ON ITEM 172** · in parts (§9)
 
 **WORKTREE:** `.claude/worktrees/i165-plan-menu` · **BRANCH:** `i165-plan-menu` · **OFF:** `origin/main`
 **after 166 has merged.** **Never the primary checkout. This lane pushes its BRANCH.**
@@ -9,10 +9,23 @@
 
 > **⚠ SYMBOLS ARE THE ANCHOR.** Read at `4600d7f`; the notes at `b807f59`. Line numbers are a courtesy.
 
-> **⚠ PRIMARY TEXT — PENDING NICK's ONE-WORD CONFIRMATION.** Nick's in-app notes (the PLAN NOTE,
-> pages 1–2), **transcribed verbatim by Fable from his screenshots** and recorded at `b807f59`. **This
-> brief is designed to those words and quotes them wherever it relies on them.** If his confirmation
-> changes a word, this brief is re-checked against it before anything is built.
+> **✅ PRIMARY TEXT — AUTHORIZED BY NICK, 2026-09-19.** His in-app notes (the PLAN NOTE, pages 1–2),
+> **transcribed by Fable from his screenshots**, recorded at `b807f59`, and **authorized by him as
+> primary** (*"If this is a rule violation, then I authorize it"*). **This brief is designed to those
+> words and quotes them wherever it relies on them.**
+
+> **⛔ AND IT NOW STANDS ON ITEM 172 — BOARD TYPES.** A board carries a **stored type**, and **a type is a
+> display** (`item172-board-types-pass.md`). **Every entry in this menu resolves to (a type, its starting
+> contents)** — §3.
+
+> **⛔ §3's TABLE IS OVERTAKEN — `802a86e`: the founder SCRAPPED BOARD VIEWS, so 172-Q1 is dissolved and
+> NEITHER reading A nor B applies.** **The table is kept as the record of what was weighed.** What
+> survives it unchanged: **every entry still resolves to (a type, its starting contents)**, and **a board
+> no longer switches displays.** **Two rulings from the same record bear directly on this menu:**
+> **"Book is NOT offered" in Create Board** (*separate Journals maybe later; the menu's job is getting a
+> writer creating fast, not organizing*) — **so §3's Book row is WITHDRAWN** — and **types cannot change
+> after birth.** **Both are FABLE's READING with the verbatim pending; this brief marks them and does not
+> redesign from a summary.**
 
 **Reference render:** `plan-menu-mock.html` — the column at four window widths, the old canon beside
 item 166's law.
@@ -90,34 +103,39 @@ PLAN                                     ⋯   ×      ← ⋯ holds the tags (�
     in Test Board
 ```
 
-## §3 · A TYPED OPTION IS A PRESET — his "board types", read
+## §3 · EVERY ENTRY RESOLVES TO (A TYPE, ITS STARTING CONTENTS) — item 172 is the foundation
 
-**Nick's word is "board types," differing "in appearance and use."** **BM1 ruled a board has no kind:
-decks are data, views are projections.** **This brief reads a type as a STARTING PRESET — (a starting
-view, a starting deck) — so a board born from it is an ordinary board**, and can still be switched to any
-view. *If he means a type is permanent (a Storyboard board that can never be seen as an Outline), that is
-a new model, and it is his to rule (165-Q4).*
+**Item 172 answers what his phrase "board types … differ in appearance and use" IS: a stored field, and
+a type is a DISPLAY.** **Which of this menu's entries are TYPES and which are starting CONTENTS inside a
+type is 172-Q1** — the same question that decides whether the Open / Storyboard / Outline tabs survive.
+**This brief builds under either ruling; only the middle column moves.**
 
-| section | option | starting view | starting deck | status |
-|---|---|---|---|---|
-| Create Board | **Default** | Open | — | exists (today's "Create a Board") |
-| Create Board | **Worldbuilding** | Open | the library's Worldbuilding deck | deck exists · **the Experts review** |
-| Create Board | **Storyboard** | Storyboard | — (one lane) | view exists |
-| *(Create Board)* | *"will probably add a few more as we go"* | | | *the table grows; the shape does not* |
-| Outline | **Traditional** | Outline | — | view exists |
-| Outline | **Mind Map** | — | — | **NO SUCH VIEW** (165-Q3) |
-| Outline | *"other kinds of outlining/brainstorming"* | | | **the Experts suggest** (§8) |
-| Story Structure | **three under "Storytelling"** | Storyboard | a structure deck | **the Experts choose** (§8) |
-| Story Structure | **three under "Screenwriting"** | Storyboard | a structure deck | **the Experts choose** (§8) |
-| Organize Research | **Import Sources** | Open | the imports, as Pages | **NOT BUILT** — its own part (165-B) |
-| Organize Research | **Bibliography** | — | — | **greyed placeholder — his word** |
+| his menu entry | **(A)** every display is a type *(desk's lean)* | **(B)** exactly his three types | starting contents |
+|---|---|---|---|
+| Create Board → **Default** | type Default | type Default | — |
+| Create Board → **Worldbuilding** | type Default | type Default | the Worldbuilding deck |
+| Create Board → **Storyboard** | **type Storyboard** | type Default, **view Storyboard** | — (one lane) |
+| Outline → **Traditional** | **type Outline** | type Default, **view Outline** | — |
+| Outline → **Mind Map** | **type Mind Map** *(unbuilt)* | a view *(unbuilt)* | — (165-Q3) |
+| Story Structure → **the six** | **type Storyboard** | type Default, view Storyboard | a structure deck (**the Experts'**) |
+| Organize Research → **Import Sources** | type Default *(172-Q5)* | type Default | the imported pages |
+| Organize Research → **Bibliography** | **type Bibliography, greyed** | **type Bibliography, greyed** | — |
+| *(not in his list)* **Book** | **type Book** | **type Book** | — · **172-Q2: does Create Board offer it?** |
 
-- **The starting view is written to BM1's per-board memory at birth** (`setBoardMode(newId, view)`) — no
-  new field; the board simply remembers it.
+*"will probably add a few more as we go"* — **the table grows; the shape does not.**
+**Outline is also "open to suggestions from the Experts on other kinds of outlining/brainstorming"** (§8).
+
+- **The board is born with its type written** — **ABSENCE MEANS DEFAULT** (172 §5). **Under (B) only**,
+  the starting view is also written to BM1's per-board memory (`setBoardMode`); **under (A) there is no
+  view to set.**
+- **Each option's sample thumbnail wears its type's proportion** (172 §4) — **a Book sample is TALL.**
 - **The deck deals through the existing `materializeDeck`.** Nothing forks a deck per view.
 - **Every option creates the board in this drawer** (a loose page files into a new drawer first, as
   "Create a Board" does today), **born with its name field in focus** (item 136's ruling), **and travels
   there.**
+- **Bibliography is a TYPE** (item 172: *"a unique style of Board"*), **greyed, and it sits where he put
+  it in the menu** — under Organize Research. *Both facts are true at once: the type list holds it, the
+  menu shows it there.*
 - **⚠ "ABSENT, NEVER GREYED" has ONE founder exception, and it is Bibliography, by name** (*"Just put the
   greyed-out option in the menu as a placeholder"*). *Recorded so nobody cites the law against it, and so
   nobody cites it as precedent.* Everything else not built stays **absent** unless he names it (165-Q3).
@@ -224,7 +242,7 @@ Outline (BM1 S4). *A structure that only works in one view is a per-view fork, w
 
 | part | what | gate |
 |---|---|---|
-| **165-A** | the restructure: the four sections as drill-ins · the options that exist (Default, Worldbuilding, Storyboard, Traditional) · Connect Board's submenu + Connected Boards · Bibliography greyed | **166 merged · his confirmation · the Experts' words for what ships** |
+| **165-A** | the restructure: the four sections as drill-ins · the options that exist (Default, Worldbuilding, Storyboard, Traditional) · Connect Board's submenu + Connected Boards · Bibliography greyed | **166 merged · 172-Q1 ruled · the Experts' words for what ships** |
 | **165-B** | Import Sources | **165-Q2**, then its own brief (a new dependency) |
 | **165-C** | Story Structure's six | **the Experts' content + his approval + 165-F1** |
 | **165-D** | Mind Map | **165-Q3** (a new view is a BM-class build) |
@@ -236,9 +254,9 @@ Standing laws: **drivers never assume existence** · **real pointer events** · 
 seams** · **absolute worktree path** · **select by name**, never by index.
 1. **The order:** Create Board, Outline, Story Structure, Organize Research, then Connect Board, then
    Connected Boards — **read by name.**
-2. **Each option births a board** in this drawer **with its stated view** (read `wrizo-board-mode`) **and
-   deck** (lanes and card count as the deck defines), **name field focused**, and the route is the new
-   board.
+2. **Each option births a board** in this drawer **with its stated TYPE** (read it back from wherever 172
+   §5 puts the field) **and deck** (lanes and card count as the deck defines), **name field focused**, and
+   the route is the new board. **Under (B), the view is read from `wrizo-board-mode` instead.**
 3. **Drill-in:** every submenu **replaces** the list in the same column; ‹ Back returns; **`i166.mjs`'s grid
    covers every submenu** (its roster grows by these).
 4. **Connect Board:** its submenu lists every board; pressing one makes the subject a member,
@@ -259,9 +277,8 @@ seams** · **absolute worktree path** · **select by name**, never by index.
   the original be kept too (that needs file storage on the server)?
 - **165-Q3 — Mind Map.** No mind-map view exists. **Build it** (a real design), **grey it** like
   Bibliography, **or leave it out until it's built?** **Lean: out until built.**
-- **165-Q4 — "board types."** **A starting point** (lean — the board opens as a Storyboard but can be
-  switched to Outline or Open like any board) **or a permanent kind** (a Storyboard board stays a
-  Storyboard)?
+- **165-Q4 — SUPERSEDED BY 172-Q1**, where the same question is asked with its full consequences: is a
+  board's display its TYPE, or can a board keep switching views?
 
 ## §F · FOR FABLE
 - **165-F1 — two plan systems.** Story Structure on **decks** (lean) with Plot a Story's door kept at its
