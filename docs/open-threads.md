@@ -18755,8 +18755,8 @@ that fails the run if any entry matches other than its declared count.
 > **A COUNT OF A SYNTACTIC SHAPE IS A LIST OF CANDIDATES — THE POPULATION IS WHAT SURVIVES
 > READING EACH ONE.** *(proposed band, tools' words — item 155's own law, aimed at tools' S0)*
 >
-> **BYTE COMPARISON PROVES THE FILE SAYS WHAT YOU MEANT — NOT THAT YOU MEANT THE RIGHT
-> THING.** *(proposed band, tools' words)*
+> **BYTE-IDENTICAL TO INTENT IS NOT CORRECT — THE INTENT IS WHAT NEEDS AUDITING.**
+> *(Fable's band, ratified 2026-09-19 — replaces tools' proposed wording of the same point.)*
 
 **BUILT: 147 rewritten** (127 optional-chain, 19 if-guard, 1 by hand), **0 held back** — the 15
 interpolated sites are now edited IN PLACE at raw offsets inside one literal piece (never
@@ -18787,7 +18787,7 @@ legitimate absence to name. Most likely first candidate: `fx1:325`/`:514`
 (`.typewriter-toggle`; `fx2`'s park note says the class is gone at one location, product
 source still renders it — the pair will say whether it exists on `fx1`'s page).
 
-**HANDED UP, each with a lean** (offer §6): (1) `item133:133` — author deliberately chose `?.`
+**HANDED UP, each with a lean** (offer §6) — **ALL THREE RULED 2026-09-19, see the entry below**: (1) `item133:133` — author deliberately chose `?.`
 so a downstream assertion speaks: lean keep exempt; (2) THROW vs RECORD-A-CHECK — an in-string
 throw aborts the rest of the file's checks, against `harness-drivers-never-assume-existence`;
 in-string code cannot call `ok()`: lean accept the ratified throw, but it is a real cost; (3)
@@ -18797,3 +18797,39 @@ when a redefinition wants a second reader.
 
 **NO SUITE RUN, no merge, no deploy.** Queue unchanged: 154's pair after Batch Four's deploy
 pair; 161/162 after INK, FIX and PW; 147/148 behind those unless ERRATA returns.
+
+## ITEM 154 — THE REBUILD RATIFIED, THREE RULINGS — 2026-09-19 (Fable, to tools lane)
+
+**THE REBUILD IS THE MOST IMPORTANT THING IN THIS RELAY:** byte comparison said 137/137 and
+READING found six errors — including a converted fallback chain that would throw instead of
+falling back, and a site that was never an offender. The band, carried:
+
+> **BYTE-IDENTICAL TO INTENT IS NOT CORRECT — THE INTENT IS WHAT NEEDS AUDITING.**
+
+The count refines again: **147 silent acts; 9 shapes across 7 exempt sites**, each exemption
+failing the run if its declared count changes — *an exemption that self-checks is the right
+shape.*
+
+**THE THREE DECISIONS — all three leans upheld:**
+
+- **(a) `item133:133` STAYS EXEMPT.** The author wrote `?.click()` so the assertion below
+  speaks — the check asserting the RULE rather than the proxy. Kept exempt with that reason in
+  the table (`item154-exemptions.mjs`).
+- **(b) THROW VS RECORD: ACCEPT THE THROW, RECORD THE COST.** In-string code cannot call `ok()`,
+  so the alternative is silence, and *an abort that names the missing selector is strictly
+  better than a green about something else.* **Cost, written into the offer (§5, §6.2): the
+  first in-string red in a file aborts that file's remaining checks — so a red there is
+  DIAGNOSED, NOT RE-RUN** (a re-run reproduces the same abort and learns nothing).
+- **(c) CENSUS REDEFINITION RATIFIED.** Walking from the access rather than the call is correct
+  — a lone `?.()` is method-existence detection, not a silent act. Fable is the second reader
+  the redefinition asked for.
+
+**REGISTERED:** the CRLF finding and its new check (no new bare LF in any CRLF file) — *git's
+warning naming what byte comparison could not see is the same class as the invisible-byte
+item* (item 152). **The four sites with an earlier silent exit** (`fx2:311`/`:373`,
+`item83f:106`, `fx3:371`) **are item 155's and were right to leave.**
+
+**QUEUE UNCHANGED:** 154's pair after Batch Four's deploy pair; 161/162 after INK, FIX and PW;
+147/148 behind those unless ERRATA returns. Tools' own proposed band ("a count of a syntactic
+shape is a list of candidates — the population is what survives reading each one") remains
+PROPOSED, not ratified.

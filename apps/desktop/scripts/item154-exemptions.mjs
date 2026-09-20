@@ -70,8 +70,9 @@ export const EXEMPTIONS = [
     needle: "querySelector('.crumb-rename-btn')?.click()",
     reason: 'AUTHOR-DOCUMENTED INTENT: the comment above the call reads "`?.click()` rather than a bare one: a driver '
       + 'that dies on a missing node reports nothing, and the assertion below is what should speak" — and the '
-      + 'assertion (`namedDraft === "Chapter Plan"`) does. HANDED UP FOR A RULING (see the offer): convert it and '
-      + 'accept the abort, or keep the deliberate guard.',
+      + 'assertion (`namedDraft === "Chapter Plan"`) does. RULED EXEMPT by Fable, 2026-09-19: the author chose the '
+      + 'guard so the assertion speaks — which is the check asserting the RULE (the rename field opens pre-filled), '
+      + 'not the PROXY (the click landed). Absence is spoken by that assertion, not by a throw.',
   },
 ];
 

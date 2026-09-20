@@ -31,12 +31,13 @@ cannot defend per site is not a population.* The 156 was defensible as a
 count of a **shape**. It was not a count of **silent acts**. Reading each
 one gives **147 silent acts + 9 shapes (7 sites) that are not.**
 
-> **A COUNT OF A SYNTACTIC SHAPE IS A LIST OF CANDIDATES — THE POPULATION IS
-> WHAT SURVIVES READING EACH ONE.** *(proposed, my words)*
+> **BYTE-IDENTICAL TO INTENT IS NOT CORRECT — THE INTENT IS WHAT NEEDS
+> AUDITING.** *(Fable's band, ratified 2026-09-19: the first build was
+> byte-verified 137/137 and wrong in six ways.)*
 >
-> **BYTE COMPARISON PROVES THE FILE SAYS WHAT YOU MEANT — NOT THAT YOU MEANT
-> THE RIGHT THING.** *(proposed, my words: the first build was byte-verified
-> 137/137 and wrong in six ways.)*
+> **A COUNT OF A SYNTACTIC SHAPE IS A LIST OF CANDIDATES — THE POPULATION IS
+> WHAT SURVIVES READING EACH ONE.** *(tools' words, proposed — item 155's own
+> law aimed at tools' S0; not yet ratified.)*
 
 ---
 
@@ -56,7 +57,7 @@ one gives **147 silent acts + 9 shapes (7 sites) that are not.**
 | `tu5.mjs:449` | control flow | a search loop; absence is how it ends |
 | `sc1.mjs:562` | expected-absent | a negative assertion; absence is the passing state |
 | `cd2.mjs:597`, `:622` (×2 each) | fallback chain | `\|\|` consumes the absence |
-| `item133.mjs:133` | author-documented intent | the comment says `?.click()` is deliberate so *the assertion below speaks* — **handed up, §6** |
+| `item133.mjs:133` | author-documented intent | the comment says `?.click()` is deliberate so *the assertion below speaks* — **RULED EXEMPT by Fable, §6** |
 
 Of the 133 optional-chain calls, **129 are bare statements** (value discarded —
 silent by construction) and **4 are consumed** (the cd2 fallbacks). That split
@@ -173,6 +174,13 @@ a *passing* run: either a real miss that has been hiding (item 130's class
 caught retroactively) or a legitimate absence that needs an exemption named.
 Diagnose each as a candidate finding before treating it as a break.
 
+**THE FIRST IN-STRING RED ABORTS ITS FILE'S REMAINING CHECKS** (the ruled cost,
+§6.2). The throw surfaces from `evalJs` as an uncaught rejection, so every
+check after it in that file goes unreported for that run. **A red there is
+diagnosed, not re-run** — a re-run reproduces the same abort and learns
+nothing; the error names the missing selector and the outer stack names the
+line, which is the whole diagnosis.
+
 A reading aid, not a number:
 
 - **Most likely first candidate: `fx1.mjs:325` and `:514`** —
@@ -189,22 +197,29 @@ A reading aid, not a number:
 
 ---
 
-## §6 · HANDED UP — THREE RULINGS, EACH WITH MY LEAN
+## §6 · THREE RULINGS — HANDED UP WITH A LEAN, RULED BY FABLE 2026-09-19
 
-1. **`item133.mjs:133`** — the author wrote `?.click()` *deliberately* so a
-   downstream assertion speaks. Convert it (and accept the abort), or keep the
-   deliberate guard? **Lean: keep it exempt** — it is the only site whose own
-   comment states the intent this item would overrule.
-2. **Throw vs. record-a-check.** An in-string throw surfaces as an uncaught
-   rejection and aborts the rest of that file's checks; the arc's own
-   `harness-drivers-never-assume-existence` law prefers a failed named check
-   that lets the file keep reporting. In-string code cannot call `ok()`, so
-   the ratified shape (a named failure at the site) is the only mechanical
-   one. **Lean: accept the throw** — but this is the cost, and it is real.
-3. **The census definition** (§3b): a lone optional call on a non-optional
-   access is not a silent target-absent act. **Lean: ratify** — it was
-   applied *after* seeing the census's own output, which is exactly when a
-   redefinition deserves a second reader.
+All three leans were upheld.
+
+1. **`item133.mjs:133` — RULED EXEMPT.** The author wrote `?.click()`
+   *deliberately* so the assertion below speaks; that is the check asserting
+   the **rule** (the rename field opens pre-filled) rather than the **proxy**
+   (the click landed). It stays exempt, with that reason now in the table
+   (`item154-exemptions.mjs`).
+2. **Throw vs. record-a-check — RULED: ACCEPT THE THROW, AND RECORD THE COST.**
+   An in-string throw surfaces as an uncaught rejection and aborts the rest of
+   that file's checks, which cuts against the arc's own
+   `harness-drivers-never-assume-existence` law (a failed named check lets the
+   file keep reporting). **The cost, stated:** the first in-string red in a
+   file aborts that file's remaining checks — see §5, *a red there is
+   diagnosed, not re-run.* **Why it is still right:** in-string code cannot
+   call `ok()`, so the alternative to a throw is *silence* — and an abort that
+   names the missing selector is strictly better than a green about something
+   else.
+3. **The census definition — RATIFIED, Fable as the second reader** the
+   redefinition asked for (§3b). Walking from the access rather than the call
+   is correct: a lone `?.()` on a non-optional access asks whether the
+   *method* exists, not whether the *target* does, and is not a silent act.
 
 ---
 

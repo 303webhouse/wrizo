@@ -202,6 +202,8 @@ function hasOptionalLink(callExpr) {
   // output (`return __t.focus?.()`, right after a named throw on `__t`) as an
   // offender; checked before applying that NO original site is reached only
   // through a lone optional call (0 of 133), so the 156 is unchanged.
+  // RATIFIED by Fable, 2026-09-19, as the second reader a redefinition made
+  // after seeing a tool's own output should have.
   let n = callExpr.expression;
   while (n) {
     if (n.questionDotToken) return true;
