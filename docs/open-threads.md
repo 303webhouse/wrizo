@@ -7850,6 +7850,9 @@ FABLE's READING*. The section that follows is kept as written.
 answers or amends an existing item is recorded UNDER that item.* **Five numbers below (177–181); seven
 rulings filed under the items they belong to.**
 
+**✓ 177 ABSORBS 170's BUILD (2026-09-20, Fable):** the merged list's heading is already "Open Pages," the
+section this ruling names. What 177 still owns: the menu's order, the sorts, and the rest.
+
 **ITEM 177 — THE PAGE MENU RESTRUCTURE (PLAN DESK) — OPENS.** Top to bottom on a Page surface:
 (1) **CURRENT PAGE** with its name — editable here or in the title bar, *"Untitled" default*;
 (2) **ADD TO BOARD** — a dropdown, *Create Board first*, then existing boards with their tags;
@@ -7878,6 +7881,10 @@ summary:**
 **ITEM 178 — "PAGES" IS THE TERM FOR DOCUMENTS (lexicon, sitewide) — OPENS.** His words govern: the
 writer sees **"Pages"** where other apps say *document / doc / docs*; **the backend need not rename.**
 **One derivation, every surface** — so the first act is a census of every string that names a document.
+
+**✓ THE SORT HALF SHIPPED IN 170 (2026-09-20) — the PLACEMENT HALF DID NOT.** `starRank` sorts starred pages
+first, ahead of every sort, in the merged Open Pages list; nothing in that diff moves the star CONTROL. See
+*ITEM 170 — REVIEWED AT THE BYTES*.
 
 **ITEM 179 — STARRING BESIDE THE TITLE — OPENS.** Starring MOVES beside the page's title, and **STARRED
 PAGES SORT FIRST in any filtered list of existing pages.**
@@ -8167,6 +8174,9 @@ as superseded text."* **F2 ("UNDERLINE BELONGS TO THE WRITER") sits under it.** 
 the reversal" appears nowhere in the foundation; the meaning does, and the meaning was the flag.)* **The
 audit entry is closed that way — with the reason, not "unrecoverable".**
 
+**✓ REVIEWED PASS AND MERGED 2026-09-20 (`f2ad2fb`); ASSEMBLED** — see *ITEM 170 — REVIEWED AT THE BYTES* and
+*BATCH FOUR — ASSEMBLED*, below.
+
 ## BATCH FOUR — RULED — 2026-09-19
 
 **Fable's ruling, chat 1's lean adopted:** **FIX pairs the SMALLEST RE-SCOPE — the opening behaviour under
@@ -8247,6 +8257,8 @@ purpose and the time.**
 **⚠ NUMBER COLLISION 2026-09-19:** Fable's relay used "182" for a DIFFERENT subject (the screenplay typewriter
 consequence). **182 stays with THIS item; that one is recorded as 183.** **This item's routing is still OPEN —
 Fable's routing answer addressed the other subject.**
+
+**✓ ROUTED 2026-09-20 (Fable): TOOLS, AFTER 161/162 — OPEN, LOW.** See *ITEM 182 — ROUTED; OPEN, LOW*.
 
 **ITEM 182 — THE GRANT PROVES A TOKEN, NOT A HOLDER — OPENS. Harness/tooling; UNROUTED — Fable to route.**
 *(Per the band: if it matters, it gets a number.)* **The question:** harden the guard so the runner also
@@ -8401,7 +8413,87 @@ size by double-click,** is **116's ORIGINAL SHAPE and SURVIVES AS 181.** **116 i
 (marker at 116), **with 181 carrying the fresher founder words.** *(Chat 1's earlier "116 is not wholly
 absorbed" is now the ruling.)*
 
+## ITEM 170 — REVIEWED AT THE BYTES: PASS; MERGED — 2026-09-20
+
+**Fable: PASS, verified against live production (`448fc6c` → `41414e5`):** 3 product files
+(`CascadePanels.tsx`, `index.css`, `deskLexicon.ts`), `apps/server` 0, no `.sql`, no migration. **ALL FOUR
+S0 FAULTS CLOSED:** the list now reads `getJournalEntries` (not `getJournalPages`), so LOOSE pages — what New
+Page and the Desk create — are visible for the first time; the 30-item cap before sorting is gone; a row click
+OPENS (`flushNow` before navigate, so nothing in flight is lost) and the place act is gated on `boardId`,
+present only where a board exists; `itemTitle` replaces a private title derivation, so this list and the
+Journal's cannot disagree. The menu closes on outside-mousedown and Escape and carries `role="menu"` /
+`aria-expanded`. **The heading is already "Open Pages" — the section Nick's Page-menu ruling names — so 177
+ABSORBS this build rather than replacing it.**
+
+**MERGED at `f2ad2fb` — TAKE WORD, chat 1 (MERGE, not deploy).** **Chat 1's verification:** trial merge clean;
+**the merge result is IDENTICAL TO THE STAMPED TREE `41414e5` outside `docs/` — 0 differing files under
+`apps/`** (the merge adds only records); main carried no `apps/` change since the branch's merge base
+(`802a86e`); scope re-measured (+185/-45, server 0, schema 0). Stamp: 92/92 both legs,
+`bundle=index-BDZr-D5R.js/588012b`, `item170.mjs` 19 checks.
+
+**⚠ ITEM 179 — SHIPPED IN 170 FOR ITS SORT HALF ONLY; chat 1 checked the diff.** Fable: *`starRank` sorts
+starred pages first, ahead of every sort — record 179 as SHIPPED IN 170, not as still open.* **The product
+diff contains exactly that (`starRank`, three lines) — and nothing that moves the star CONTROL.** Nick's 179 has
+two halves: starring MOVES beside the page's title, and starred pages sort FIRST. **The sort shipped; the
+placement did not.** Recorded that way at 179 rather than marking the item closed. **Fable to say whether the
+placement half stays open under 179, or was meant as part of what is shipped.**
+
+## BATCH FOUR — ASSEMBLED — 2026-09-20
+
+**RANGE: `448fc6c` (current production) → `f2ad2fb`. CLOSED AT ASSEMBLY. NOTHING FURTHER ENTERS.**
+
+**PACKAGE (one): item 170** — OPEN PAGES (179's sort half inside; 177 absorbs the build). **PRODUCT DELTA: 3
+files, +185/-45. SCHEMA: ZERO. SERVER: ZERO.** Roster **92** (91 + `item170.mjs`). Everything else under `apps/`
+in the range is `mockup170.mjs`, kept OUTSIDE `harness/`. **43 commits; the rest is records and docs.**
+
+**HELD BEHIND THE STAMP: NONE** — PW's 176 is not on `origin`, INK's 171-A is not offered, TOOLS' 154 pair has
+not run.
+
+**Reviewed: Fable PASS. AWAITING: NICK's WORD — QUOTED.** Then the deploy pair: **the suite of record, both legs,
+at the deploy head, box announced and quiet; tree bare; `tsc` x2; the item-98 guard; served-vs-stamped by MD5 on
+both assets; the stamp; the relay audit since `448fc6c`.** **The deploy pair takes the box ahead of the queue
+the moment the word arrives — but a LIVE run outranks it:** if PW's 176 pair is running then, the deploy pair
+waits for it; chat 1 does not kill a stamping run.
+
+## FABLE's ACCEPTANCES, AND THE STALENESS BAND — 2026-09-20
+
+**Chat 1's four corrections — ACCEPTED, all four:** (1) the grant relabelled to PW2, same token; (2) PW's 176
+AHEAD of TOOLS' 154 — *a present lane takes a slot an absent lane is not using; the ratified rule; no veto*;
+(3) PW's stamped tree verified by product-and-harness DIFF, not by SHA, since the merge adds docs; (4) the
+staleness rule, which goes to the band:
+
+> **A RELAY THAT REACHES YOU AFTER YOU HAVE CHANGED THE FILE IS STALE — STATE THE FILE's CURRENT CONTENTS; DO NOT
+> ACT ON THE RELAY's PICTURE.**
+
+**NUMBERING: chat 1's 182 STANDS** (the grant proves a token, not a holder); **183 (the screenplay conflict) is
+WITH NICK now, as is the MOVE-vs-copy conflict.**
+
+## ITEM 182 — ROUTED; OPEN, LOW — 2026-09-20
+
+**ROUTED (Fable): it is ERRATA's class and ERRATA is absent, so it goes to TOOLS AFTER 161/162 — and it is NOT
+URGENT.** Fable's reasoning, kept with the record so it is not built ahead of things writers feel: **item 140
+refuses a MISMATCHED token — the failure that actually cost runs; a holder check guards a case nobody has
+hit.** **Recorded OPEN, LOW.**
+
+**⚠ A PRECISION, chat 1's, on that premise:** *"nobody has hit it"* is not quite the ledger's own record —
+**the FIX pair of 2026-09-19 (~19:25–20:34) IS the case:** a full pair ran while the file named another lane,
+which only a matching token allows. **It cost nothing (no collision evidenced), and its VECTOR — a token
+published in the ledger — is closed by the practice change.** That supports LOW; it does not support "never
+hit." *The routing stands.*
+
+## PW — 163 BUILT BROWSERLESSLY, APPROVED — 2026-09-20
+
+**Approved (Fable): PW may build 163 browserlessly now** — *the turn should be spent stamping, not
+discovering.* **176 and 163 are DISJOINT — by PW's MEASUREMENT, not assumption** (chat 1 has not re-measured;
+163's branch is not on `origin`).
+
+**BOX, as read at ~00:45:** PW2's grant is live (granted ~22:05, relabelled since) with **no pair started and
+`item176-picker-says-board` still not on `origin`** — recorded as the limit of what chat 1 can see, not a
+conclusion. **Nothing ready is waiting on the box** (Batch Four's deploy pair waits on Nick's word), so the
+grant stands.
+
 Registry: next free **184**.
+
 
 
 
