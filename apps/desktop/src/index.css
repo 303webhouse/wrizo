@@ -5185,7 +5185,13 @@ a:focus-visible,
    a limit STOPS, it never relocates, so the list caps its own height rather
    than pushing the drawer's other zones off. */
 .wz-place-page{ display:flex; flex-direction:column; gap:6px; }
-.wz-place-page-list{ display:flex; flex-direction:column; max-height:240px; overflow-y:auto; }
+/* ITEM 170 (re-scoped) — OPEN PAGES SHOWS THREE ROWS AND SCROLLS. Nick's
+   ruling: "the last three pages created or edited, scrollable". Read as a
+   VIEWPORT, not a population cap — a cap of three would put the fourth page out
+   of reach, which is S0's fault 4 in miniature, and a sort over three items
+   says nothing. A row is ~27px, so three rows plus a sliver of the fourth tell
+   the eye there is more below. */
+.wz-place-page-list{ display:flex; flex-direction:column; max-height:88px; overflow-y:auto; }
 .wz-place-page-row{ display:flex; align-items:baseline; gap:8px; width:100%;
   background:none; border:0; border-bottom:1px solid var(--ink-border);
   color:var(--text-mid); font-family:var(--font-ui); font-size:12px;
@@ -5196,6 +5202,37 @@ a:focus-visible,
 .wz-place-page-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 .wz-place-page-title{ flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wz-place-page-home{ flex:0 0 auto; font-size:10px; color:var(--text-low); }
+/* ITEM 170 — a row is now TWO acts: the name opens, the ⋯ places. The name
+   button keeps every rule the old row had and gives up only `width:100%`, so
+   the ⋯ has room beside it without the row's look changing. */
+.wz-open-pages-row{ display:flex; align-items:center; position:relative;
+  border-bottom:1px solid var(--ink-border); }
+.wz-open-pages-row:last-child{ border-bottom:none; }
+.wz-open-pages-row .wz-open-pages-open{ flex:1 1 auto; min-width:0; width:auto; border-bottom:0; }
+.wz-open-pages-open[aria-current='page']{ color:var(--text-hi); }
+.wz-open-pages-more{ flex:0 0 auto; background:none; border:0; cursor:pointer;
+  color:var(--text-low); font-size:14px; line-height:1; padding:4px 6px; }
+.wz-open-pages-more:hover, .wz-open-pages-more[aria-expanded='true']{ color:var(--text-hi); }
+.wz-open-pages-more:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+/* THE MENU OPENS INSIDE THE ROW'S OWN HEIGHT, flying left from the ⋯. The
+   first cut hung it BELOW the row (`top:100%`), and on the list's last row the
+   list's own `overflow-y:auto` clipped it clean out of view — the ⋯ lit up as
+   expanded and nothing appeared. The sitting caught it; the harness had not,
+   because its scrollIntoView scrolled the list to the menu, which is exactly
+   the move a writer would not know to make.
+   AND IT IS PINNED TO THE ROW'S TOP AND BOTTOM, NOT CENTRED ON IT. The second
+   cut centred it (top:50% + translateY) and S4 measured a 3px overhang on the
+   last row — the menu (32px) was taller than the row (~27px), so centring
+   pushed its bottom border past the list's edge. Insetting top and bottom makes
+   the menu's height DERIVE from the row's, so it cannot exceed the row whatever
+   the font or padding does. */
+.wz-open-pages-menu{ position:absolute; right:26px; top:1px; bottom:1px; z-index:5;
+  display:flex; align-items:center;
+  background:var(--desk-ground); border:1px solid var(--ink-border);
+  border-radius:var(--radius-md); padding:0 2px; }
+.wz-open-pages-place{ background:none; border:0; cursor:pointer; white-space:nowrap;
+  color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; padding:0 8px; }
+.wz-open-pages-place:hover{ color:var(--text-hi); }
 
 /* ITEM 83 M7 (PP2) — THE STATE SPEAKS FIRST. The page's current home wears a
    1px olive left hairline and hi text, so the Home zone reads as

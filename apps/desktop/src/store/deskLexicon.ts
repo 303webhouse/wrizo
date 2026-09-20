@@ -278,7 +278,10 @@ export type DeskTermId =
   // ITEM 83 M6 (R13.ii) — the board's Place-page list. The heading is a VERB
   // PHRASE by S13's precedent: a bare noun list in a drawer reproduces the
   // GO-versus-PUT confusion the Places redesign exists to close.
-  | 'placePageHeading' | 'placePageSort' | 'placeSortDate' | 'placeSortDrawer'
+  // ITEM 170 — the list became the way to OPEN a page, so its heading names
+  // what the list IS; the put it still offers is named by its own verb.
+  | 'openPagesHeading' | 'openPagesSort' | 'openPagesMore' | 'openPagesPlace'
+  | 'placeSortDate' | 'placeSortDrawer'
   | 'placeSortAZ' | 'placePageEmpty' | 'planNewCard' | 'planFitToContent'
   // ITEM 83 M7 (PP1) — the Home zone's heading, which until now existed only
   // as an aria-label the eye could not hear.
@@ -901,8 +904,10 @@ const CANONICAL: Record<DeskTermId, string> = {
   styleGuideApa: 'APA',
   styleGuideChicago: 'Chicago',
   styleGuideAp: 'AP',
-  placePageHeading: 'Place page on board',
-  placePageSort: 'Sort recent pages',
+  openPagesHeading: 'Open Pages',
+  openPagesSort: 'Sort Pages',
+  openPagesMore: 'More for this Page',
+  openPagesPlace: 'Place on this board',
   placeSortDate: 'Date',
   placeSortDrawer: 'Drawer',
   placeSortAZ: 'A–Z',
