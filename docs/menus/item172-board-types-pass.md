@@ -12,6 +12,21 @@
 **Reference render:** `book-type-mock.html` — a Book board beside a Default one: the flip, a card that
 stays on its page, and the two proportions.
 
+> **⛔ 172-Q1 IS DISSOLVED — `802a86e`, "THE FOUNDER SCRAPPED BOARD VIEWS": NEITHER READING A NOR READING
+> B.** A writer **creates the kind of board they want and moves cards between boards** instead of
+> switching a board's display. **§2's two proposals are KEPT BELOW AS SUPERSEDED TEXT** — they are the
+> record of what was weighed — **and item 164 closes by dissolution, not by answer.** *The consequence
+> chat 1 names and this desk does not assume: **the PROJECTION is not deprioritised under this ruling, it
+> is what was scrapped** — what becomes of the built `StoryboardProjection` / `OutlineProjection` is the
+> builders' question when the verbatim arrives.*
+>
+> **FOUR FURTHER RULINGS landed in the same record, and they answer questions this pass asked:**
+> **TYPES CANNOT CHANGE AFTER BIRTH** (172-Q2's second half) · **cards on a Book's page are displayed and
+> FULLY EDITABLE as on a board, with NO GREEN PIN** (bears on 172-Q6) · **page arrangement in a Book is
+> PARKED, recorded not built** (172-Q3) · and via item 165, **Book is NOT offered in Create Board**
+> (172-Q2's first half). **All are FABLE's READING; the founder's message arrived as a placeholder and
+> the verbatim is pending, so each is marked and none is designed to.**
+
 ---
 
 ## §0 · THE PRIMARY TEXT — Nick, verbatim
