@@ -74,6 +74,13 @@ tab's drag for this**) · a press-and-choose on a tab · **"Open beside"** in a 
 panel, the survey) · a board-card on the canvas. **And how it closes** — a close on the pane; dragging its
 tab back into the row.
 
+> **⛔ HELD, 2026-09-19 (Fable): NOBODY DESIGNS OR BUILDS A MOVE UNTIL NICK RULES.** His verbatim
+> (`55cf81c`) says *"Cards/docs/pages/etc. should be movable back and forth between boards"* — **which
+> REVERSES item 123's copy-only-with-provenance**, the rule PW2's whitelist was built around. **The
+> collision is with Nick. Q7 stands exactly as written below**, and the rest of this charter is
+> unaffected. *(Item 169's other rulings from the same text — four boards, strip menus vanishing at more
+> than one, Book boards never concurrent — are released and answer Q1, Q2 and Q10.)*
+
 **169-Q7 · ⚠ CAN A CARD DRAG BETWEEN THEM — and what does the drag MEAN.** **(a) COPY** (item 123's only
 transfer: the card stays, a copy arrives with its provenance) · **(b) MOVE** (the card leaves; one home) ·
 **(c) for a PAGE CARD, a PIN** (the page gains a membership on the second board; both boards show it —
