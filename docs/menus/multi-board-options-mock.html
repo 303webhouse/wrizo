@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>multiple boards · what's planned, and two options</title>
+<!--
+  MULTIPLE BOARDS — PLAN desk · 2026-09-22 · candidates only.
+
+  Nick: "All Boards need to be listed as a new section, from most recent to
+  least recent as default but also sortable by Drawer and Tag. There also needs
+  to be an option to add any of these boards to the existing surface, where they
+  should be displayed in split screen ... It should also be possible to drag and
+  drop a board in a dropdown menu onto the surface ... the dropdown menu should
+  only display up to five boards and then scroll from there."
+
+  THREE STATES IN ONE FILE, at one scale, because a comparison at two different
+  scales is not a comparison:
+    PLANNED  — what items 144/165/169/172 already design, and where his
+               complaint lands: no All Boards list, no way to add a second
+               board to the surface.
+    OPTION A — THE ROW IS THE OPEN SET (the browser model). Tabs are the boards
+               you have open; the panes on screen are the marked tabs. It
+               supersedes his earlier "all connected boards are listed as tabs".
+    OPTION B — THE ROW IS THE RELATED SET (item 144 as designed) and a board on
+               the surface wears a SPLIT mark. His earlier ruling survives; the
+               price is a VISITING tab for a board that is open but unrelated.
+
+  HIS OWN COLLISION, DRAWN: "most recent" is an order that MOVES while he works;
+  144's row promises the tab is where his hand left it. Press "use a board for a
+  minute" and watch the All Boards list jump while the row holds still -- then
+  flip ROW ORDER to "most recent" and press it again, and watch the tabs move.
+
+  MB-Q2 is live too: drag a row onto the CANVAS to nest, or onto the RIGHT EDGE
+  to split. The zones light up while you drag.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1;
+    --brass:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig .grp{display:flex;gap:4px;align-items:center}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #say{margin-left:auto;font-size:11px;color:#9a9a9a;max-width:52%;text-align:right}
+  #say .hi{color:#e0a060}
+  .fit{position:absolute;inset:41px 0 126px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{width:1366px;height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden;display:grid;
+         grid-template-columns:84px 292px 1fr}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:126px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .rail{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:8px 0}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);box-shadow:inset 2px 0 0 var(--accent-rest)}
+
+  .plan{background:var(--ground);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .ph{display:flex;align-items:center;gap:8px;padding:10px 12px 8px;border-bottom:1px solid var(--line)}
+  .ph .ti{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-mid);flex:1}
+  .ph button{background:none;border:none;color:var(--text-mid);font:inherit;font-size:13px;cursor:pointer}
+  .pb{flex:1;overflow-y:auto;padding:4px 0 10px;scrollbar-width:thin;scrollbar-color:#3a2613 transparent}
+  .prow{display:flex;align-items:center;width:100%;background:none;border:none;font:inherit;color:var(--text-hi);
+        font-size:12.5px;padding:8px 13px;cursor:pointer;text-align:left}
+  .prow:hover{background:#1f1407} .prow .ch{margin-left:auto;color:var(--text-low)}
+  .psec{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:10px 13px 3px}
+  .rule{height:1px;background:var(--line);margin:7px 11px}
+  .sorts{display:flex;gap:4px;padding:2px 13px 6px;font-size:10px;color:var(--text-low);align-items:center}
+  .sorts button{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10px;padding:1px 6px;cursor:pointer}
+  .sorts button[aria-pressed="true"]{border-color:var(--accent-rest);color:var(--text-hi)}
+  .blist{margin:0 9px;border:1px solid #2a1d10;max-height:188px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a1d10 transparent}
+  .brow{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-bottom:1px solid #22160a;
+        font:inherit;color:var(--text-hi);font-size:11.5px;padding:6px 7px;text-align:left;cursor:grab}
+  .brow:hover{background:#1f1407}
+  .brow .th{flex:0 0 auto;background:var(--ground);border:1px solid #5b4228}
+  .brow .th.wide{width:30px;height:18px} .brow .th.tall{width:16px;height:22px;background:var(--paper);border-color:#cbbfa6}
+  .brow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .brow .nm .in{display:block;font-size:9px;color:var(--text-low)}
+  .brow .tgs{font-size:9px;color:var(--brass);white-space:nowrap}
+  .brow .add{flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;
+             font-size:11px;padding:0 5px;cursor:pointer;line-height:1.5}
+  .brow .add:hover{border-color:var(--accent-rest);color:var(--text-hi)}
+  .brow[aria-disabled="true"]{opacity:.5;cursor:default}
+  .grp{position:sticky;top:0;background:var(--ground);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;
+       color:var(--accent-rest);padding:3px 7px;border-bottom:1px solid #22160a}
+  .pnote{font-size:9.5px;color:var(--text-low);padding:4px 13px 0;font-style:italic}
+
+  .surface{position:relative;display:flex;flex-direction:column;min-width:0}
+  .panes{flex:1;display:flex;min-height:0}
+  .pane{flex:1;min-width:0;display:flex;flex-direction:column;border-left:1px solid var(--line)}
+  .pane:first-child{border-left:none}
+  .pcrumb{display:flex;align-items:center;gap:8px;padding:0 14px;height:42px;border-bottom:1px solid var(--line);font-size:11px;color:var(--text-low)}
+  .pcrumb .h{color:var(--text-hi);font-size:12.5px}
+  .pcrumb .x{margin-left:auto;background:none;border:none;color:var(--text-low);font:inherit;cursor:pointer}
+  .body{flex:1;display:flex;min-height:0}
+  .tools{flex:0 0 34px;border-right:1px dashed #2a1d10;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:10px;
+         font-size:9px;color:var(--text-low);writing-mode:vertical-rl}
+  .wall{flex:1;position:relative;min-height:0;overflow:hidden;
+        background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:22px 22px}
+  .card{position:absolute;width:150px;background:var(--panel);border:1px solid var(--line);padding:7px 9px;font-size:11px;color:var(--text-mid);font-family:var(--prose)}
+  .bcard{position:absolute;width:150px;height:46px;background:var(--ground);border:1px solid #5b4228;padding:6px 8px;font-size:11px;
+         box-shadow:4px -4px 0 -1px var(--ground),4px -4px 0 0 #5b4228}
+  .bcard .k{font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-low)}
+  .zone{position:absolute;inset:0;display:none;pointer-events:none}
+  body[data-dragging="1"] .zone{display:block}
+  .zone .nest,.zone .split{position:absolute;display:grid;place-items:center;font-size:10px;letter-spacing:.1em;
+       text-transform:uppercase;color:var(--text-mid);border:1px dashed var(--line);background:rgba(27,13,3,.55)}
+  .zone .nest{inset:18px 92px 18px 18px}
+  .zone .split{top:18px;bottom:18px;right:18px;width:64px;text-align:center;line-height:1.3}
+  .zone .nest.hot,.zone .split.hot{border-color:var(--accent-rest);color:var(--text-hi);background:rgba(45,26,6,.8)}
+
+  .tabs{flex:0 0 auto;border-top:1px solid var(--line);background:var(--panel);padding:6px 12px 9px;display:flex;align-items:flex-end;gap:3px;overflow-x:auto}
+  .tabs .lbl{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-low);margin-right:6px;align-self:center}
+  .tab{background:var(--ground);border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:11px;
+       padding:6px 10px;cursor:pointer;white-space:nowrap;position:relative}
+  .tab .in{display:block;font-size:8px;color:var(--text-low)}
+  .tab[aria-current="page"]{background:#1f1407;color:var(--text-hi);border-color:var(--accent-rest);box-shadow:inset 0 -2px 0 var(--accent-rest)}
+  .tab.split{border-color:var(--brass)}
+  .tab.split:after{content:'⊞';position:absolute;top:1px;right:3px;font-size:9px;color:var(--brass)}
+  .tab.visiting{border-style:dashed}
+  .tab.plus{border-style:dashed;font-size:10.5px}
+  .exit{margin-left:14px;padding-left:12px;border-left:1px solid var(--line);color:var(--text-mid);background:none;border-top:none;border-right:none;border-bottom:none;
+        font:inherit;font-size:11px;cursor:pointer;align-self:center}
+</style>
+</head>
+<body data-dragging="0">
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>MULTIPLE BOARDS</b>
+  <span class="grp"><button data-st="planned" aria-pressed="true">planned</button><button data-st="a">option A</button><button data-st="b">option B</button></span>
+  <span class="grp">row order: <button id="roStable" aria-pressed="true">stable</button><button id="roRecent" aria-pressed="false">most recent</button></span>
+  <button id="use">use “Lore” for a minute</button>
+  <button id="reset">reset</button>
+  <span id="say"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <nav class="rail" aria-label="Cascade">
+    <div class="cat"><span class="g">▭</span>page</div>
+    <div class="cat on"><span class="g">⌗</span>plan</div>
+    <div class="cat"><span class="g">☰</span>drawers</div>
+    <div class="cat"><span class="g">✶</span>journal</div>
+    <div class="cat"><span class="g">⌂</span>shelf</div>
+  </nav>
+  <aside class="plan" id="plan"></aside>
+  <section class="surface" id="surface"></section>
+</div></div>
+
+<div class="cap"><b>Three states, one scale.</b> <b>planned</b> is what items 144/165/169/172 already design — and it is
+where his complaint lands: <em>no All Boards list, and no way to put a second board on the surface</em>. <b>option A</b>
+makes the row <b>the boards you have open</b>; <b>option B</b> keeps item 144's <b>related</b> row and marks a board that
+is on screen with <b>⊞</b>. <b>Press ⊞ on a row</b> in All Boards to open it beside the current board — the strip menus
+vanish above one board, as he ruled, and a <b>Book</b> refuses (it cannot be opened concurrently). <b>Drag a row onto the
+canvas to NEST it, or onto the right edge to SPLIT</b> — the zones light up while you drag (MB-Q2). <b>And his own
+collision is here:</b> press <b>“use Lore for a minute”</b> and the All Boards list jumps to the top while the tab row
+holds still; then switch <b>row order</b> to <em>most recent</em> and press it again — <b>the tabs move under your
+hand.</b></div>
+
+<script>
+(function(){
+  var state='planned', rowOrder='stable', sortBy='recent', panes=['stark'], current='stark', dragId=null, visiting=[];
+  var DRAWERS={stark:'Novel',chars:'Novel',time:'Novel',lore:'Novel',ravens:'Research',maps:'Research',journal:null};
+  var B={
+    stark:  {n:'Stark',            type:'default', tags:['stark','character'], used:5, rel:true},
+    chars:  {n:'Characters',       type:'default', tags:['character'],         used:2, rel:true},
+    time:   {n:'Timeline',         type:'storyboard', tags:['stark'],          used:4, rel:true},
+    lore:   {n:'Lore',             type:'outline', tags:['lore'],              used:9, rel:false},
+    ravens: {n:'Ravens & letters', type:'default', tags:['stark','letters'],   used:7, rel:true},
+    maps:   {n:'Maps of the North',type:'default', tags:['lore'],              used:11, rel:false},
+    journal:{n:'The Journal',      type:'book',    tags:[],                    used:1, rel:false}
+  };
+  var CARDS={stark:['Ned’s refusal is not stubbornness.','Catelyn: three drafts, none sent.'],
+             chars:['Mara knows before the dog does.'],time:['The last ride, before the snow.'],
+             lore:['The old gods keep no calendar.'],ravens:['A raven that arrives too late.'],
+             maps:['North of the Neck, the roads give up.'],journal:['']};
+  var NESTED={stark:[]};
+  var say=document.getElementById('say');
+
+  function order(){ return Object.keys(B).slice().sort(function(a,b){ return B[a].used-B[b].used; }); }
+  function groups(){
+    if(sortBy==='recent') return [{k:null, rows:order()}];
+    if(sortBy==='drawer'){
+      var ds={}; Object.keys(B).forEach(function(id){ ds[DRAWERS[id]||'—']=1; });
+      return Object.keys(ds).sort().map(function(d){
+        return {k:(d==='—'?'Not in a drawer':d), rows:order().filter(function(id){return (DRAWERS[id]||'—')===d;})}; });
+    }
+    var ts={}; Object.keys(B).forEach(function(id){ B[id].tags.forEach(function(t){ ts[t]=1; }); });
+    var out=Object.keys(ts).sort().map(function(t){
+      return {k:'#'+t, rows:order().filter(function(id){return B[id].tags.indexOf(t)>=0;})}; });
+    var none=order().filter(function(id){ return !B[id].tags.length; });
+    if(none.length) out.push({k:'no tag', rows:none});
+    return out;
+  }
+  function rowCount(){ return groups().reduce(function(n,g){return n+g.rows.length;},0); }
+
+  function planHTML(){
+    var h='<div class="ph"><span class="ti">Plan</span><button aria-label="More">⋯</button><button aria-label="Close">×</button></div><div class="pb">';
+    ['Create Board','Outline','Story Structure','Organize Research'].forEach(function(r){
+      h+='<button class="prow">'+r+'<span class="ch">›</span></button>'; });
+    h+='<div class="rule"></div><button class="prow">Connect Board<span class="ch">›</span></button>';
+    if(state==='planned'){
+      h+='<div class="psec">Connected Boards</div>';
+      ['chars','time','ravens'].forEach(function(id){
+        h+='<button class="prow" style="font-size:11.5px">'+B[id].n+'</button>'; });
+      h+='<div class="pnote">no list of every board, and no way to put one on the surface — the gap he found</div>';
+      return h+'</div>';
+    }
+    h+='<div class="psec">All Boards</div><div class="sorts">sort: '
+      +[['recent','most recent'],['drawer','drawer'],['tag','tag']].map(function(o){
+        return '<button data-sort="'+o[0]+'" aria-pressed="'+(sortBy===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
+    h+='<div class="blist">'+groups().map(function(g){
+      return (g.k?'<div class="grp">'+g.k+'</div>':'')+g.rows.map(function(id){
+        var b=B[id], dr=DRAWERS[id], blocked=(b.type==='book'&&panes.length>1);
+        return '<div class="brow" draggable="true" data-board="'+id+'"'+(blocked?' aria-disabled="true"':'')+'>'
+          +'<span class="th '+(b.type==='book'?'tall':'wide')+'"></span>'
+          +'<span class="nm">'+b.n+'<span class="in">'+(dr?'in '+dr:'Not in a drawer')+'</span></span>'
+          +'<span class="tgs">'+b.tags.map(function(t){return '#'+t;}).join(' ')+'</span>'
+          +'<button class="add" data-add="'+id+'" title="'+(blocked?'a Book cannot be opened beside another board':'add to the surface')+'">⊞</button></div>';
+      }).join('');}).join('')+'</div>';
+    h+='<div class="pnote">five rows, then it scrolls'+(sortBy==='tag'&&rowCount()>Object.keys(B).length
+        ? ' · '+rowCount()+' rows across '+groups().length+' tags — a board with two tags appears under both' : '')+'</div>';
+    return h+'</div>';
+  }
+
+  function tabsFor(paneId){
+    var ids;
+    if(state==='a'){ ids = panes.concat(visiting.filter(function(id){return panes.indexOf(id)<0;})); }
+    else { ids = Object.keys(B).filter(function(id){ return B[id].rel || panes.indexOf(id)>=0; }); }
+    if(rowOrder==='recent') ids = ids.slice().sort(function(a,b){ return B[a].used-B[b].used; });
+    var h='<span class="lbl">'+(state==='a'?'open':'Novel')+'</span>';
+    ids.forEach(function(id){
+      var cls='tab'+(panes.indexOf(id)>=0&&state!=='a'?' split':'')+(state==='b'&&!B[id].rel?' visiting':'');
+      h+='<button class="'+cls+'" data-go="'+id+'"'+(id===paneId?' aria-current="page"':'')+'>'+B[id].n
+        +(DRAWERS[id]&&DRAWERS[id]!=='Novel'?'<span class="in">in '+DRAWERS[id]+'</span>':'')+'</button>';
+      if(id===paneId) h+='<button class="tab plus">＋ BOARD</button>';
+    });
+    h+='<button class="exit">‹ Go back</button>';
+    return h;
+  }
+  function paneHTML(id){
+    var cards=(CARDS[id]||[]).map(function(t,i){
+      return '<div class="card" style="left:'+(6+i*30)+'%;top:'+(10+i*26)+'%">'+t+'</div>'; }).join('');
+    var nest=(NESTED[id]||[]).map(function(nid,i){
+      return '<div class="bcard" style="left:'+(52)+'%;top:'+(52+i*18)+'%"><div class="k">Board</div>'+B[nid].n+'</div>'; }).join('');
+    return '<div class="pane" data-pane="'+id+'">'
+      +'<div class="pcrumb"><span>'+(DRAWERS[id]||'Not in a drawer')+' /</span><span class="h">'+B[id].n+'</span>'
+      +(panes.length>1?'<button class="x" data-close="'+id+'">close</button>':'')+'</div>'
+      +'<div class="body">'+(panes.length===1?'<div class="tools">tools · tutor</div>':'')
+      +'<div class="wall" data-wall="'+id+'">'+cards+nest
+      +'<div class="zone"><div class="nest" data-zone="nest" data-for="'+id+'">nest it here</div>'
+      +'<div class="split" data-zone="split" data-for="'+id+'">open beside</div></div></div></div>'
+      +'<div class="tabs">'+tabsFor(id)+'</div></div>';
+  }
+  function render(){
+    document.getElementById('plan').innerHTML=planHTML();
+    document.getElementById('surface').innerHTML='<div class="panes">'+panes.map(paneHTML).join('')+'</div>';
+    wire();
+  }
+  function bump(id){ var m=Math.min.apply(null,Object.keys(B).map(function(k){return B[k].used;})); B[id].used=m-1; }
+  function open(id,beside){
+    if(beside){ if(B[id].type==='book'||panes.length>=4) return; if(panes.indexOf(id)<0) panes.push(id); }
+    else { panes=[id]; current=id; }
+    bump(id); if(state==='a'&&visiting.indexOf(id)<0) visiting.push(id);
+    if(state==='b'&&!B[id].rel&&visiting.indexOf(id)<0) visiting.push(id);
+    render();
+  }
+  function wire(){
+    var root=document.getElementById('stage');
+    [].forEach.call(root.querySelectorAll('[data-sort]'),function(x){ x.onclick=function(){ sortBy=x.dataset.sort; render(); }; });
+    [].forEach.call(root.querySelectorAll('[data-add]'),function(x){ x.onclick=function(e){ e.stopPropagation();
+      var id=x.dataset.add;
+      if(B[id].type==='book'&&panes.length>1){ tell('a <span class="hi">Book</span> cannot be opened beside another board — his ruling'); return; }
+      open(id,true); tell('<span class="hi">'+B[id].n+'</span> added to the surface — the strip menus vanish above one board'); }; });
+    [].forEach.call(root.querySelectorAll('[data-board]'),function(x){
+      x.onclick=function(){ open(x.dataset.board,false); tell('opened <span class="hi">'+B[x.dataset.board].n+'</span> — it replaced the surface'); };
+      x.ondragstart=function(e){ dragId=x.dataset.board; document.body.dataset.dragging='1';
+        try{ e.dataTransfer.setData('text/plain',dragId); }catch(err){} };
+      x.ondragend=function(){ dragId=null; document.body.dataset.dragging='0'; }; });
+    [].forEach.call(root.querySelectorAll('[data-zone]'),function(z){
+      z.ondragover=function(e){ e.preventDefault(); z.classList.add('hot'); };
+      z.ondragleave=function(){ z.classList.remove('hot'); };
+      z.ondrop=function(e){ e.preventDefault(); z.classList.remove('hot'); document.body.dataset.dragging='0';
+        if(!dragId) return;
+        if(z.dataset.zone==='nest'){ var host=z.dataset.for; (NESTED[host]=NESTED[host]||[]).push(dragId);
+          tell('<span class="hi">'+B[dragId].n+'</span> nested inside '+B[host].n+' — a drop in the middle is a placement'); render(); }
+        else { open(dragId,true); tell('<span class="hi">'+B[dragId].n+'</span> opened beside — a drop at the edge is a window act'); }
+        dragId=null; }; });
+    [].forEach.call(root.querySelectorAll('[data-go]'),function(x){ x.onclick=function(){ open(x.dataset.go,false); }; });
+    [].forEach.call(root.querySelectorAll('[data-close]'),function(x){ x.onclick=function(){
+      panes=panes.filter(function(p){return p!==x.dataset.close;}); render(); }; });
+  }
+  function tell(html){ say.innerHTML=html; }
+  function setState(s){ state=s; panes=[panes[0]]; visiting=[];
+    [].forEach.call(document.querySelectorAll('[data-st]'),function(b){ b.setAttribute('aria-pressed', b.dataset.st===s); });
+    tell(s==='planned'?'what is already designed — and no All Boards, no add-to-surface'
+      : s==='a'?'the row is the OPEN set — open a board and it becomes a tab'
+              : 'the row is the RELATED set — a board on screen wears ⊞, an unrelated one visits (dashed)');
+    render(); }
+  [].forEach.call(document.querySelectorAll('[data-st]'),function(b){ b.onclick=function(){ setState(b.dataset.st); }; });
+  function setRow(v){ rowOrder=v; document.getElementById('roStable').setAttribute('aria-pressed',v==='stable');
+    document.getElementById('roRecent').setAttribute('aria-pressed',v==='recent'); render();
+    tell(v==='recent'?'the row now follows "most recent" — press “use Lore” and watch the tabs move under your hand'
+                     :'the row holds still; only the library reorders'); }
+  document.getElementById('roStable').onclick=function(){ setRow('stable'); };
+  document.getElementById('roRecent').onclick=function(){ setRow('recent'); };
+  document.getElementById('use').onclick=function(){ bump('lore'); render();
+    tell(rowOrder==='recent' ? '<span class="hi">Lore</span> jumped to the top — AND the tabs moved'
+                             : '<span class="hi">Lore</span> jumped to the top of All Boards; the tab row did not move'); };
+  document.getElementById('reset').onclick=function(){ location.reload(); };
+  function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/1366, fit.clientHeight/768, 1)+')'; }
+  window.addEventListener('resize',layout);
+  setState('planned'); layout();
+})();
+</script>
+</body>
+</html>
