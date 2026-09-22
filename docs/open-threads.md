@@ -3555,6 +3555,10 @@ CONDITION (loose; deleted), NOT places."** The Plan panel's subject is **the con
 page** — so a condition can never appear there. **This is not a rendering bug; the panel is answering
 a different question than the canon asks it to answer.**
 
+**✓ RELEASED 2026-09-22 — Nick's 3C: reading (a) PREVAILS IN SUBSTANCE** (rows, not arrangement). This item's
+text and the arrangement law below are RELEASED from founder review and stand as ratified. See *3C — SHELF
+AND TRASH AS SORTABLE ROWS*, below.
+
 **⚠ UNDER FOUNDER REVIEW 2026-09-19 — Nick's new ruling *"Shelf and Trash should be Default Boards"*
 (Fable's reading; verbatim pending) may reverse the ruling below.** The text below is held INTACT; see
 *SHELF AND TRASH AS DEFAULT BOARDS*.
@@ -4309,6 +4313,8 @@ discretion.**
 - **(Q-B) TRASH AT THE FOOT.**
 - **(Q-C) MANUAL JOURNAL ORDER RETIRES WITH THE SPREAD, DELIBERATELY — `setNotebookPosition` dies IN
   THAT COMMIT, in the views build.** Not before.
+- **✓ RELEASED 2026-09-22 — reading (a) prevails in substance (rows, not arrangement); the law below stands
+  ratified.** See *3C — SHELF AND TRASH AS SORTABLE ROWS*.
 - **⚠ UNDER FOUNDER REVIEW 2026-09-19** — Nick's *"Shelf and Trash should be Default Boards"* (Fable's
   reading; verbatim pending) collides with the law below. Held INTACT until he picks; see *SHELF AND
   TRASH AS DEFAULT BOARDS*.
@@ -7816,6 +7822,9 @@ the verbatim arrives.)*
 should be Default Boards that just show thumbnails of every item in them."* The added words describe how
 they DISPLAY; they do not say whether they ARE boards. **The text does not pick reading (a) or (b).**
 
+**✓ RELEASED 2026-09-22 — see the marker at item 131 (a), above, and *3C — SHELF AND TRASH AS SORTABLE ROWS*,
+below.** The section that follows is kept as written for the review as it stood.
+
 ## SHELF AND TRASH AS DEFAULT BOARDS — UNDER FOUNDER REVIEW — 2026-09-19
 
 **⚠ ONE RULING REVERSES RATIFIED CANON, AND IS FLAGGED TO NICK — NOT IMPLEMENTED ON A DEFAULT.** Per
@@ -8104,6 +8113,11 @@ escaping layer sat between his words and this ledger.**
 note in difference 1), **179, 180, 181, 169, 165, 172's amendments — clean**; 144's tab bar (with differences
 3–4). **Board views scrapped: RULED. Shelf and Trash: NOT released.**
 
+**✓ CONFLICT (i) CLOSED 2026-09-22 — RECONCILED, NOT OVERRULED.** Nick: *"Yes"*, to Fable's reconciliation.
+Both his 2026-09-13 "No" and his 2026-09-20 "Untitled" mention are satisfied. See *THE "UNTITLED" CONFLICT
+— RECONCILED*, below. Conflicts (ii) and (iii) are UNCHANGED by this and stay open. The section that follows
+is kept as written.
+
 ## THE THREE CONFLICTS, STATED AGAINST NICK's TEXT — 2026-09-19
 
 **Fable confirms all three as real and hands them to Nick with his text. Recorded here so any reader can
@@ -8329,6 +8343,10 @@ should be SHOWN and asked, as a mockup rather than a sentence.** Chat 1 records 
 SHOULD PICK.** *(PLAN's: a title underneath implies something above it. Chat 1's: something very small
 underneath the title. The text says neither.)*
 
+**✓ RESOLVED 2026-09-22 — Nick's 3A.** Typewriter returns to Draft (default OFF) and screenplay pages inherit
+it under the same rule — see *3A — ITEM 183 RESOLVED, ITEM 171 AMENDED*, below. The section that follows is
+kept as written for the question as it was asked.
+
 ## ITEM 183 — THE SCREENPLAY TYPEWRITER CONSEQUENCE — OPENS; ROUTED TO NICK AS A QUESTION — 2026-09-19
 
 **⚠ NUMBER COLLISION, resolved by the registry.** Fable's relay calls this item **"182."** **182 is ALREADY
@@ -8385,6 +8403,10 @@ TEMP measurement as right to state its 19:18–19:25 gap as a LIMIT, not a concl
 
 **FIX's RE-SCOPED 170 HAS ALREADY STAMPED (92/92, tree `41414e5`) and is with Fable NOW** — *"the moment it
 stamps"* was 20:37. **Nothing else waits on Fable.**
+
+**✓ RESOLVED 2026-09-22 — Nick's 3B: COPY.** Item 123 stands unchanged; item 169's move hold closes as copy,
+never built. See *3B — MOVE VS COPY RESOLVED: COPY*, below. The section that follows is kept as written for
+the conflict as it was found.
 
 ## THE FOURTH CONFLICT — MOVE vs COPY-ONLY (Nick's 169 ruling vs item 123) — NOBODY BUILDS A MOVE — 2026-09-19
 
@@ -8501,6 +8523,10 @@ discovering.* **176 and 163 are DISJOINT — by PW's MEASUREMENT, not assumption
 conclusion. **Nothing ready is waiting on the box** (Batch Four's deploy pair waits on Nick's word), so the
 grant stands.
 
+**✓ CLOSES 2026-09-22 — both halves named.** Sort half shipped in 170; PLACEMENT HALF DESIGNED IN 177**
+(`db393d8`, merged `a998d7a`) — the star control sits beside the page's name.** The paragraph below is
+kept as written for the state it closed from.
+
 ## ITEM 179 — PARTLY SHIPPED — 2026-09-20
 
 **Fable, correcting itself: chat 1's reading was right.** **THE SORT HALF (starred first, under every sort)
@@ -8570,7 +8596,264 @@ item 151's Shape A list (its outer coordinate-dispatch sites were fixed there); 
 pair that ALSO exercises 151's new hit-test is worth checking against BOTH histories before calling it
 environmental.
 
-Registry: next free **184**.
+## NICK's WORD FOR BATCH FOUR, AND HIS FULL MESSAGE — PRIMARY TEXT, VERBATIM — 2026-09-22
+
+**Nick's ship word, quoted:** *"Ship it."* **Deploy pair at the batch head as queued; the manifest quotes
+it.**
+
+**His full message, whole, verbatim.** Typos and spacing are his (the double space before *"though"* in 4a;
+the period after *"pasted."* before the next numbered point). Numbered by him: 1, 2, 3A, 3B, 3C, 4a, 4b. Read
+from a plain file, no escaping layer between his words and this ledger; the wrap below is proved
+byte-identical per part before writing.
+
+**Part 1**
+> 1. Ship it
+
+**Part 2**
+> 2. These mockups don't look like they are matching my detailed explanation of exactly what I wanted
+> on the Page menu. Please go back and look at my specific directions a few days ago, and compare that
+> to these mockups I was given (see screenshots). Actually, it may be the case that I never got the
+> mockups you're referring to if they are not among the four I've pasted.
+
+**Part 3A**
+> 3A. OK, let's do this: Allow typewriter mode in Draft, but make the default setting "Off" when in
+> Draft mode. The User can manually select to turn Typewriter mode back on, but it should make the
+> tool menu options revert to what's available in Free Write excluding any INK options. Also, I want
+> to get rid of the "Convert to Screenplay" option if we haven't already. A User needs to select
+> Screenplay mode when they create a New Page (and that means we can retire all of the code that was
+> written to convert and de-convert existing prose).
+
+**Part 3B**
+> 3B. Cards should be copied to another board. The User can delete the Card from the first board if
+> they no longer want it there. Users should also be able to copy the same card and put it on the same
+> board. This will make sense in the right-click menu we haven't built yet, but maybe now is a good
+> time to add that. "Duplicate Card" should also be an option in the strip menu for Cards, and a
+> "Duplicate Board" and "Duplicate Page" available on their respective right-click menus and strip
+> menus.
+
+**Part 3C**
+> 3C. Look like, sort of, but perhaps arranged and displayed a bit differently. All the
+> files/cards/pages/boards, etc. should be listed in rows, perhaps by date as the default, instead of
+> displayed randomly as thumbnails on a board. All files should still have a thumbnail, the title,
+> date, tags, and connected boards/drawers, all of which should be sortable options. And perhaps the
+> Shelf and Trash could look a bit different to distinguish one as a scrap pile and the other as a
+> waste bin (not literally, but aesthetically, somehow). Let's turn this over to the Architects to see
+> what they can cook up.
+
+**Part 4a**
+> 4a. While I'm on a Board, I see no way to copy a card or open a second board in split screen (or at
+> all, really) from the Plan menu or the Board UI. The "Plan Menu" currently has almost nothing in it.
+> All Boards need to be listed as a new section, from most recent to least recent as default but also
+> sortable by Drawer and Tag. There also needs to be an option to add any of these boards to the
+> existing surface, where they should be displayed in split screen with the currently opened board. It
+> should also be possible to drag and drop a board in a dropdown menu onto the surface. Lastly, the
+> dropdown menu should only display up to five boards and then scroll from there. I would also like
+> the Architects to do a run on these Board display issues and provide me with two options for how the
+> Plan menu and the main surface UI can best organize and accommodate the need for multiple boards to
+> be displayable, moved back and forth between, and connected (perhaps some of this has already been
+> planned but not implemented yet, though. If so, I would still like to see mockups of what's being
+> planned).
+
+**Part 4b**
+> 4b. The ink doesn't go all the way to the edge of the page (which it should). And I also found
+> another bug: the page presets don't disappear as soon as the user selects INK instead of TEXT.
+
+### FILED BY SUBJECT
+
+| part | subject | filed as |
+| --- | --- | --- |
+| 1 | Batch Four | **shipped on his word** |
+| 2 | the Page-menu mockups he was shown | **Fable's error, on record; 177's one real gap** |
+| 3A | typewriter in Draft; retire Convert to Screenplay | **183 resolved, 171 amended; NEW ITEM 184** |
+| 3B | copy vs move; duplicate; the right-click menu | **the fourth conflict resolved; NEW ITEMS 185, 186** |
+| 3C | Shelf/Trash display; sortable rows | **131 (a) and the arrangement law released; to PLAN DESK / VW2** |
+| 4a | all boards in the Plan menu; split screen; two architect options | **to PLAN DESK, under 169** |
+| 4b | ink to the page edge; page presets not hiding on Ink | **157 confirms on build; new bug filed under 171-A** |
+
+## THE FOUR SCREENSHOTS WERE 170's FRAMES, NOT 177's MOCK — FABLE's ERROR — 2026-09-22
+
+**Nick's part 2 names the cause: the screenshots he was shown are 170's two frames** (the list on a page and
+on a board, `⋯` open — delivered `7e906d9`, 2026-09-19), **NOT 177's `page-menu-mock.html`.** **`177`'s mock
+NEVER REACHED HIS DOWNLOADS — Fable claimed it had, WITHOUT CHECKING. Recorded as Fable's error.**
+
+**177 checked against his verbatim, section by section: MATCHES on all but one.** **OPEN PAGES must sort by
+TAG, BOARD and DRAWER — his words, part 1, 2026-09-19** (*"sortable by tag or by board or by drawer"*). **The
+brief itself defers them, by name, as FIX's follow-on** (`b177-page-menu-brief.md` §4: *"the three sorts —
+tag · board · drawer — land here when they ship, as FIX's follow-on"*) **and the mock omits them —
+confirmed at the file, not assumed from the relay.** **PLAN DESK ADDS THEM and drops the mock in his
+Downloads.**
+
+## THE "UNTITLED" CONFLICT — RECONCILED — 2026-09-22
+
+**Nick, verbatim: "Yes"** — to Fable's reconciliation, quoted so the record shows what he answered:
+
+> "Untitled" appears only as greyed-out placeholder text in the name field of a page you haven't written
+> anything on — the moment you type, your first words take over, and nothing is ever saved as "Untitled."
+
+**Item 136's "No" (2026-09-13) and item 177's "'Untitled' as the default name" (2026-09-19) are BOTH
+SATISFIED; NEITHER IS SUPERSEDED.** "Untitled" is a placeholder in an empty name field — never a stored
+name, never a displayed name anywhere else. **The conflict CLOSES AS RECONCILED, not overruled.**
+
+**CONSEQUENCE FOR 136's BUILD:** the stand-in rule is UNCHANGED (first words stand in; an empty page is not
+kept); **the name field's empty state renders the word as a PLACEHOLDER ATTRIBUTE**, so it can never be
+written to `title` by accident — **a check asserts that saving an untouched name field stores nothing.**
+
+## 3A — ITEM 183 RESOLVED, ITEM 171 AMENDED — TYPEWRITER RETURNS TO DRAFT, DEFAULT OFF — 2026-09-22
+
+**TYPEWRITER AVAILABLE IN DRAFT, DEFAULT OFF.** Turning it ON reduces the tool menu to FREE WRITE's options
+MINUS INK. **REVISE UNCHANGED (none).** **Screenplay pages gain it back under Draft's SAME default-off
+rule** — closing item 183's question (his R12 request and his 171 ruling no longer conflict; 171 is amended
+to carry Draft's typewriter under this default).
+
+**NEW ITEM 184 — RETIRE CONVERT TO SCREENPLAY.** Screenplay is chosen ONLY at New Page creation. **RETIRE
+the convert/de-convert code.** **ROUTED TO FIX, S0 FIRST** — census every call site of the convert/de-convert
+path (the DR3 in-drawer row named in item 83's brief; any structure-flip helper it calls) before removing
+anything, per the standing verify-before-build law.
+
+## 3B — MOVE VS COPY RESOLVED: COPY — 2026-09-22
+
+**RESOLVED: COPY.** Item 123 STANDS UNCHANGED. **Item 169's move hold CLOSES AS COPY** — a move is never
+built; the views retirement's own rationale ("move Cards/docs to it") is satisfied by copy-then-delete-
+from-the-first-board, which Nick's 3B states directly.
+
+**NEW ITEM 185 — DUPLICATE.** "Duplicate Card" on the card's STRIP MENU (and a copy onto the SAME board);
+"Duplicate Board" and "Duplicate Page" on their STRIP and RIGHT-CLICK menus. **Builds on item 123's copy
+semantics** (no shared identity; provenance, not identity) — a duplicate is a copy whose target is the
+source's own board/page rather than a chosen one.
+
+**NEW ITEM 186 — THE RIGHT-CLICK MENU.** Nick invites building it now — *"maybe now is a good time to add
+that."* **CHARTERED TO PLAN DESK.** *(Named already, elsewhere on this ledger, as a FUTURE control for
+Remove/Delete (item 168) and now for Duplicate (185) — PLAN DESK's charter is the first place BOTH are
+asked to land on ONE control, rather than each item inventing its own.)*
+
+## 3C — SHELF AND TRASH AS SORTABLE ROWS — 2026-09-22
+
+**TO PLAN DESK, UNDER VW2.** All files/cards/pages/boards listed in ROWS, date default, **sortable by date
+and by every column shown: thumbnail, title, date, tags, connected boards/drawers.** **Shelf and Trash
+AESTHETICALLY DISTINCT** — a scrap pile and a waste bin, not literally, by treatment. "Turn this over to the
+Architects" — Nick's own words for PLAN DESK's charter.
+
+**READING (a) PREVAILS IN SUBSTANCE: rows, not arrangement.** Shelf and Trash gain a LIST VIEW; they do not
+gain the arrangement law's meaning (moving one thing relative to another). **Item 131 (a) and the
+arrangement law are RELEASED from "under founder review"** — both marked in place, above — **and stand
+ratified as originally written: the Shelf is never shown as a board, and a surface a writer can move things
+relative to one another on has become one — neither is reversed.**
+
+## 4a — ALL BOARDS IN THE PLAN MENU; SPLIT SCREEN; TWO ARCHITECT OPTIONS — 2026-09-22
+
+**TO PLAN DESK, UNDER ITEM 169.** All boards listed in the Plan menu, recent-first default, sortable by
+DRAWER and TAG; each addable to the surface in SPLIT SCREEN with the board already open; DRAG-AND-DROP from
+the dropdown onto the surface; the dropdown shows FIVE boards then scrolls. **PLUS: TWO OPTIONS from the
+Architects for how the Plan menu and the main surface best organise multi-board display, movement and
+connection — WITH MOCKUPS of anything already planned but not yet shown.**
+
+## 4b — INK TO THE EDGE; A NEW BUG — 2026-09-22
+
+**INK EDGE:** item 157 is NOT LIVE YET — it is the fix Nick is describing (ink not reaching the true edge is
+the defect 157 exists to close). **INK CONFIRMS 157 reaches the paper's true edge when it builds; no new
+item.**
+
+**NEW BUG, filed UNDER 171-A, not numbered:** **page presets do not hide as soon as the writer selects INK
+instead of TEXT.** **ROUTED TO INK**, inside its 171-A build (typewriter/ink scope), since both concern what
+selecting Ink does to the surrounding chrome.
+
+## BATCH FOUR DEPLOY MANIFEST — 2026-09-22 (chat 1, on Nick's "Ship it" — Fable PASS)
+
+**LIVE: `283013e` · railway `664604e6-fdbd-4caa-b4e3-505c19cfa190`** — service `writer-studio-app`, status
+**SUCCESS**, serving `index-BDZr-D5R.js`. **PREVIOUS LIVE — THIS DEPLOY's ROLLBACK TARGET: `448fc6c` ·
+railway `5e06974f-13ca-4c34-bf0b-fd353f0311ef`.** **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**AUTHORIZATION, QUOTED: Nick — "Ship it."**
+
+**ONE PACKAGE: item 170 — OPEN PAGES** (179's sort half inside; 177 absorbs the build). **PRODUCT DELTA: 3
+files, +185/-45.** **SCHEMA: ZERO. SERVER: ZERO.** Roster **92**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE DEPLOY HEAD, run under `chat1-batch4-deploy-20260922` (the
+granting desk's own turn, written through the file before launch — see below):**
+- **DEFAULT: 92/92 CLEAN** — `tree=283013e bundle=index-BDZr-D5R.js/588012b`
+- **PARKED: 92/92 CLEAN** — identical stamp, `NO-REBUILD`
+- **`fx5.mjs` and `item83e.mjs` — THE TWO FILES THAT TIMED OUT ON PW's FIRST 176 PAIR — BOTH PASSED CLEAN ON
+  BOTH LEGS HERE** (`fx5.mjs` 84s/83s, 62 checks; `item83e.mjs` 16s/16s, 13 checks). **Diagnosed by bundle
+  identity, as ruled: same bundle both legs, no recurrence at the deploy pair.** *Not yet closed as
+  environmental — the re-stamp is the second measurement; see below.*
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 283013e`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**; Railway image
+**linux/amd64**, container digest `sha256:4bffb51949f2f1348a1bbc9d917bc8b99dc6bb4cf89b3540dbd821299e7355e6`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-BDZr-D5R.js` and
+`index-BhTBWZZX.css`, both by name match.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH, MD5:**
+- `index-BDZr-D5R.js` — served `4365914238fc82a9f095729d53d0225c` **==** stamped
+- `index-BhTBWZZX.css` — served `e75ef7c4b413d00d9a6faa03cdd15364` **==** stamped
+
+## THE GRANTING DESK IS NOT EXEMPT — RULED, AND FOLLOWED — 2026-09-22
+
+**Fable, ratifying a practice chat 1 already used for this deploy: BEFORE CHAT 1 RUNS ANY PAIR — the deploy
+pair included — it WRITES THE GRANT FILE NAMING ITSELF, which revokes any outstanding lane grant in the SAME
+WRITE. A lane holding a revoked token is refused by 140, which is correct. Never two grants live, and never
+a run outside the file.**
+
+> **THE DESK THAT GRANTS THE BOX TAKES ITS TURN THROUGH THE SAME FILE.**
+
+**CHECKED, NOT ASSUMED: this deploy's own suite ran under exactly that sequence** — PW2's `pw2-item176-
+restamp-20260922` was cleared and `chat1-batch4-deploy-20260922` written BEFORE the suite launched, so
+PW's pre-flight (seeing CHAT1 in the file) refused correctly, and the run itself carried a matching token
+throughout. **No corrective action owed on this run.**
+
+## TIMELINE CHECK — CHAT 1's SUITES DID NOT OVERLAP PW's FIRST 176 PAIR — 2026-09-22
+
+**Fable's question, answered from disk, not memory:** every suite chat 1 has launched wrote to an
+EXPLICITLY-NAMED directory under its own scratchpad (`deploy-235541`, `deploy4-151100`, and so on);
+**PW's first 176 pair (RED, `fx5`/`item83e` timeout) left its own output under a BARE `wrizo-suite-<pid>`
+directory — chat 1 has never launched one of those.** **No chat 1 suite is found overlapping that window.**
+**So the timeout is NOT ATTRIBUTABLE to a chat 1 run; whether it recurs on the re-stamp is still the
+question that settles "environmental."**
+
+## fx5 / item83e — RATIFIED AND SHARPENED — 2026-09-22
+
+**Fable: chat 1's note is RATIFIED and SHARPER than the ruling — `fx5` sits in BOTH item 154's rewritten
+sites and item 151's Shape A fix list, so a recurring timeout there is checked against BOTH histories
+before it is called environmental: A TIMEOUT IN A FILE TWO FIXES JUST TOUCHED IS A SUSPECT, NOT
+BACKGROUND.** **Carried forward to PW's re-stamp** (`1bda06d`, granted `pw2-item176-corrected-20260922`) —
+**one clean pass at the deploy pair; the re-stamp is the SECOND, and the one that decides it.**
+
+## EIGHT MORE PLAN DOCS MERGED — DOCS-ONLY — 2026-09-22
+
+**Merged at `f93c0ad`:** `plan-172-consequences`, `plan-144-tab-bar`, `plan-172-board-types`,
+`plan-171b-ink-charter`. **Merged at `a998d7a`:** `plan-177-star` (`db393d8` — item 179's placement half
+and his three sorts, together; superseding `4727c92` named in the first addendum), `plan-brief-178`
+("Pages" as Wrizo's word for a document), `plan-charter-180` (the drawer gesture), `plan-charter-181`
+(images and docs on a Journal board, 116's successor). **Verified across all eight: no non-docs file, no
+file shared between any two, every trial merge clean.** *Filing, not ruling.*
+
+**THREE QUESTIONS FROM PLAN DESK, WITH NICK NOW** (their own words, per Fable — not yet on this ledger
+verbatim): the Flux theme's "Doc", cancelling a carry on a tablet, and FILE STORAGE FOR 181. **The last is
+a SCHEMA QUESTION and carries the schema stop to him BY CONSTRUCTION** — no builder decides it.
+
+**BAND, PLAN DESK's, from its own build script refusing to commit onto a merged branch:**
+
+> **A GUARD THAT REFUSES ITS OWN AUTHOR IS WORKING.**
+
+## FIX's S0 — RETIRING SCREENPLAY CONVERSION — THE DOOR MUST LAND FIRST — 2026-09-22
+
+**REGISTERED. THE FINDING IS THE RISK: outside a binder, the ONLY screenplay-making path is the
+EMPTY-PAGE CONVERSION BRANCH, and item 104's birth path HAS NO DOOR** — so retiring conversion first would
+leave NO WAY to make a loose screenplay.
+
+**RULED: the New Page Screenplay door lands in the SAME COMMIT as the retirement, or BEFORE it — NEVER
+AFTER.**
+
+**OPEN QUESTION TO NICK: may a blank page still become a screenplay IN PLACE** (convert, but only while
+empty)? **Fable leans YES — a blank page has no prose to convert**, so the risk the retirement is meant to
+remove (converting or de-converting PROSE) never arises for it.
+
+Registry: next free **187**.
+
+
 
 
 
