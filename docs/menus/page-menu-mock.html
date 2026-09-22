@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the page menu · his six sections</title>
+<!--
+  ITEM 177 — THE PAGE MENU · PLAN desk · 2026-09-20 · candidates only.
+
+  Drawn to Nick's own words (55cf81c, part 1), in his order, top to bottom:
+  Current Page · Add to Board · Add Tag(s) · Open Pages · Page Settings ·
+  New Page. The column obeys item 166 (sized to the margin the page leaves;
+  dropdowns DRILL IN, never open beside), and OPEN PAGES is FIX's item 170
+  section, already built -- three rows visible, the rest reached by scrolling,
+  starred first, ordered by edit.
+
+  THE THREE CONFLICTS ARE LIVE IN THE RIG, each where it bites:
+    (i)   "Untitled" -- placeholder for an unwritten page (136 stands) vs a
+          stored default name (136 reversed).
+    (ii)  "the last three ... scrollable" -- FIX's viewport vs a hard cap of
+          three (flip it and watch the fourth page become unreachable).
+    (iii) Page Settings' fonts vs the analog law -- with Typewriter ON in Free
+          Write, the TYPEFACE control is absent and size/spacing remain.
+
+  AND ONE RULING OF THE DESK'S, flagged for his veto: the last button is
+  "New Page", SINGULAR -- 178 renames the noun, not the count.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1; --ink:#2b2118;
+    --brass:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .rig .grp{display:flex;gap:4px;align-items:center}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #geom{margin-left:auto;font-size:11px;font-variant-numeric:tabular-nums}
+  #geom .good{color:#9fb36a} #geom .warn{color:#e0a060}
+  .fit{position:absolute;inset:41px 0 118px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:118px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .rail{position:absolute;left:0;top:0;bottom:0;width:84px;background:var(--panel);border-right:1px solid var(--line);
+        display:flex;flex-direction:column;padding:8px 0;z-index:3}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--text-low);font-size:9px;letter-spacing:.09em}
+  .cat .g{font-size:19px;line-height:1}
+  .cat.on{color:var(--accent-rest);box-shadow:inset 2px 0 0 var(--accent-rest)}
+
+  .page{position:absolute;top:26px;bottom:26px;background:var(--paper);color:var(--ink);padding:32px 38px;
+        font-family:var(--prose);font-size:15.5px;line-height:1.62;overflow:hidden;z-index:1}
+  .page .titlebar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .page .titlebar .t{font-size:21px;font-weight:500;font-family:var(--ui)}
+  .page .titlebar .t[data-placeholder="1"]{color:#9d9382;font-style:italic}
+  .page .star{font-size:15px;color:#b9a888;cursor:pointer}
+  .page .star.on{color:#c98a2a}
+  .page p{margin-bottom:11px}
+
+  .col{position:absolute;top:26px;bottom:26px;background:var(--ground);border:1px solid var(--line);z-index:6;
+       display:flex;flex-direction:column;overflow:hidden}
+  .hd{display:flex;align-items:center;gap:8px;padding:11px 12px 9px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .hd .ti{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-mid);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hd button{background:none;border:none;color:var(--text-mid);font:inherit;font-size:14px;cursor:pointer;padding:0 3px}
+  .bd{flex:1;overflow-y:auto;padding:4px 0 12px;scrollbar-width:thin;scrollbar-color:#3a2613 transparent}
+  .sec{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:11px 14px 3px}
+  .name{display:flex;align-items:center;gap:7px;padding:0 14px 8px}
+  .name .n{font-size:15px;color:var(--text-hi);cursor:text;border-bottom:1px dashed transparent}
+  .name .n:hover{border-bottom-color:var(--text-low)}
+  .name .n[data-placeholder="1"]{color:var(--text-low);font-style:italic}
+  .name .star{font-size:13px;color:var(--text-low);cursor:pointer}
+  .name .star.on{color:var(--brass)}
+  .row{display:flex;align-items:center;width:100%;background:none;border:none;font:inherit;color:var(--text-hi);
+       font-size:12.5px;padding:9px 14px;cursor:pointer;text-align:left}
+  .row:hover{background:#1f1407}
+  .row .ch{margin-left:auto;color:var(--text-low)}
+  .rule{height:1px;background:var(--line);margin:7px 12px}
+  .tags{display:flex;flex-wrap:wrap;gap:5px;padding:2px 14px 8px}
+  .tg{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--brass);background:var(--brass);
+      color:var(--on-brass);font-size:10.5px;padding:2px 4px 2px 8px;font-weight:500}
+  .tg button{background:none;border:none;color:var(--on-brass);font:inherit;cursor:pointer;padding:0 2px}
+  .addtag{background:none;border:1px dashed var(--line);color:var(--text-low);font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer}
+  .sorts{display:flex;gap:4px;padding:2px 14px 6px;font-size:10px;color:var(--text-low);align-items:center}
+  .sorts button{background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10px;padding:1px 6px;cursor:pointer}
+  .sorts button[aria-pressed="true"]{border-color:var(--accent-rest);color:var(--text-hi)}
+  .oplist{margin:0 10px;border:1px solid #2a1d10;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a1d10 transparent}
+  .oprow{display:flex;align-items:center;gap:7px;width:100%;background:none;border:none;border-bottom:1px solid #22160a;
+         font:inherit;color:var(--text-hi);font-size:11.5px;padding:7px 8px;cursor:pointer;text-align:left}
+  .oprow:hover{background:#1f1407}
+  .oprow .st{color:var(--brass);font-size:10px;width:10px}
+  .oprow .home{margin-left:auto;font-size:9px;color:var(--text-low);white-space:nowrap}
+  .newpage{margin:10px 14px 0;padding:8px 10px;border:1px solid var(--accent-rest);color:var(--text-hi);
+           background:none;font:inherit;font-size:12.5px;cursor:pointer;width:calc(100% - 28px);text-align:center}
+  .note{font-size:10px;color:var(--text-low);padding:2px 14px 8px;font-style:italic}
+  .warn{color:#e0a060}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;font-size:12px;color:var(--text-hi)}
+  .opt .v{font-size:11px;color:var(--text-mid);border:1px solid var(--line);padding:2px 8px}
+  .opt.gone{display:none}
+  .brow{display:flex;flex-direction:column;gap:2px;width:100%;background:none;border:none;border-bottom:1px solid #22160a;
+        font:inherit;color:var(--text-hi);font-size:11.5px;padding:7px 9px;cursor:pointer;text-align:left}
+  .brow .tg2{font-size:9.5px;color:var(--brass)}
+  .brow.create{border-bottom:1px solid var(--line);color:var(--text-hi)}
+  .brow.create .tg2{color:var(--text-low)}
+</style>
+</head>
+<body>
+
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>THE PAGE MENU</b>
+  <span class="grp">window: <button data-w="1280">1280</button><button data-w="1366" aria-pressed="true">1366</button><button data-w="1920">1920</button></span>
+  <span class="grp">(i) the name: <button id="uPlace" aria-pressed="true">placeholder</button><button id="uStored" aria-pressed="false">stored default</button></span>
+  <span class="grp">(ii) Open Pages: <button id="vView" aria-pressed="true">viewport</button><button id="vCap" aria-pressed="false">cap of three</button></span>
+  <span class="grp">(iii) typewriter: <button id="tOn" aria-pressed="true">ON</button><button id="tOff" aria-pressed="false">OFF</button></span>
+  <span id="geom"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <nav class="rail" aria-label="Cascade">
+    <div class="cat on"><span class="g">▭</span>page</div>
+    <div class="cat"><span class="g">⌗</span>plan</div>
+    <div class="cat"><span class="g">☰</span>drawers</div>
+    <div class="cat"><span class="g">✶</span>journal</div>
+    <div class="cat"><span class="g">⌂</span>shelf</div>
+  </nav>
+  <article class="page" id="page"></article>
+  <div id="col"></div>
+</div></div>
+
+<div class="cap"><b>His six sections, in his order.</b> <b>Current Page</b> — the tiny label is the superscript; the
+<b>name</b> is the element, edited here or in the title bar by <em>one</em> control, with 179's star beside it.
+<b>Add to Board</b> and <b>Page Settings</b> <b>drill in</b> (item 166: a menu about the page never covers the page —
+the readout shows the gap). <b>Open Pages</b> is FIX's built section: three rows visible, the rest scrolled, ordered
+by edit, starred first. <b>Flip (ii) to "cap of three"</b> and the fourth page becomes unreachable — the reason this
+desk agrees with FIX's viewport. <b>Flip (iii)</b> and the <b>typeface</b> control leaves Page Settings while
+Typewriter is ON, because <em>a typewriter does not offer you a typeface</em>; size and spacing stay. <b>Flip (i)</b>
+to see the two readings of "Untitled": a placeholder for an unwritten page (item 136 stands), or a stored default
+name (136 reversed). <b>The last button reads "New Page"</b> — singular: 178 renames the noun, not the count.</div>
+
+<script>
+(function(){
+  var W=1366, stack=null, untitledStored=false, cap=false, typewriter=true, starred={p2:true};
+  var RAIL=84, GAP=12, FLOOR=220, DESIGN=300;
+  var PAGES=[
+    {id:'p1',n:'The last ride',home:'Journal',edited:'2 min'},
+    {id:'p2',n:'Three letters',home:'Novel',edited:'18 min'},
+    {id:'p3',n:'The crypt',home:'Loose',edited:'1 hr'},
+    {id:'p4',n:'Ravens, and what they cost',home:'Research',edited:'yesterday'},
+    {id:'p5',n:'Winterfell in winter',home:'Novel',edited:'2 days'}
+  ];
+  var BOARDS=[{n:'Characters',t:'#stark #character'},{n:'Timeline',t:'#stark'},{n:'Lore',t:'#lore'},{n:'Maps of the North',t:'#lore'}];
+  var TAGS=['stark','letters'];
+  var written = true;   // the current page has words
+
+  function geom(){
+    var P = W>=1920?738:615, left0=(W-P)/2, margin=left0-(RAIL+4)-GAP;
+    var w = Math.max(FLOOR, Math.min(margin, DESIGN));
+    var need = RAIL+4+w+GAP, pageLeft = need>left0 ? need : left0;
+    return {P:P,w:w,pageLeft:pageLeft,margin:margin,slid:Math.max(0,need-left0)};
+  }
+  function nameOf(){
+    if(written) return {t:'The last ride', ph:false};
+    return untitledStored ? {t:'Untitled', ph:false} : {t:'Untitled', ph:true};
+  }
+  function openPagesRows(){
+    var rows = PAGES.slice().sort(function(a,b){ return (starred[b.id]?1:0)-(starred[a.id]?1:0); });
+    return cap ? rows.slice(0,3) : rows;
+  }
+  function body(){
+    var nm=nameOf(), h='';
+    h+='<div class="sec">Current Page</div><div class="name">'
+      +'<span class="n" id="nm" data-placeholder="'+(nm.ph?1:0)+'">'+nm.t+'</span>'
+      +'<span class="star '+(starred.p1?'on':'')+'" id="star" title="Star this page">★</span></div>'
+      +'<div class="note">'+(nm.ph?'nothing written yet — the menu prints a placeholder; nothing is stored (item 136 stands)'
+                                   :(untitledStored&&!written?'stored as the page’s name (item 136 reversed)':'edit here or in the title bar — one control'))+'</div>';
+    h+='<div class="rule"></div><button class="row" data-open="board">Add to Board<span class="ch">›</span></button>';
+    h+='<div class="sec">Add Tag(s)</div><div class="tags">'
+      +TAGS.map(function(t){return '<span class="tg">#'+t+'<button data-drop="'+t+'" aria-label="Remove #'+t+'">×</button></span>';}).join('')
+      +'<button class="addtag" id="addtag">+ tag</button></div>';
+    h+='<div class="sec">Open Pages</div>';
+    h+='<div class="sorts">sort: <button aria-pressed="true">edited</button><button>tag</button><button>board</button><button>drawer</button></div>';
+    var rows=openPagesRows();
+    h+='<div class="oplist" style="max-height:'+(cap?'auto':'96px')+'">'
+      +rows.map(function(p){ return '<button class="oprow"><span class="st">'+(starred[p.id]?'★':'')+'</span>'
+        +p.n+'<span class="home">'+p.home+' · '+p.edited+'</span></button>'; }).join('')+'</div>';
+    h+='<div class="note'+(cap?' warn':'')+'">'+(cap
+        ? 'a cap of three: '+(PAGES.length-3)+' pages are unreachable, and there is nothing to scroll or sort'
+        : 'three rows visible, the rest by scrolling — FIX’s item 170, already built')+'</div>';
+    h+='<div class="rule"></div><button class="row" data-open="settings">Page Settings<span class="ch">›</span></button>';
+    h+='<button class="newpage" id="np">New Page</button>'
+      +'<div class="note">singular — item 178 renames the noun, not the count (this desk’s ruling, his to veto)</div>';
+    return h;
+  }
+  function drill(which){
+    if(which==='board'){
+      return '<div class="hd"><button data-back="1" aria-label="Back">‹</button><span class="ti">Add to Board</span></div><div class="bd">'
+        +'<div class="note" style="padding-top:8px">put this page inside…</div>'
+        +'<div class="oplist" style="max-height:none;border:none">'
+        +'<button class="brow create">＋ Create Board<span class="tg2">opens the presets (item 165)</span></button>'
+        +BOARDS.map(function(b){return '<button class="brow">'+b.n+'<span class="tg2">'+b.t+'</span></button>';}).join('')
+        +'</div><div class="note">membership only — nothing is placed on that board’s wall (PW1’s page-side rule)</div></div>';
+    }
+    var face = typewriter ? '' : '<div class="opt">Typeface<span class="v">Crimson Pro ▾</span></div>';
+    return '<div class="hd"><button data-back="1" aria-label="Back">‹</button><span class="ti">Page Settings</span></div><div class="bd">'
+      +'<div class="sec">Page Setup</div>'
+      +'<div class="opt">Margins<span class="v">normal</span></div>'
+      +'<div class="opt">Paper<span class="v">cream</span></div>'
+      +'<div class="sec">Font</div>'+face
+      +'<div class="opt">Size<span class="v">15.5 pt</span></div>'
+      +'<div class="opt">Line spacing<span class="v">1.62</span></div>'
+      +'<div class="note'+(typewriter?' warn':'')+'">'+(typewriter
+        ? 'Typewriter is ON in Free Write, so the TYPEFACE is absent — a typewriter does not offer you a typeface. Size and spacing stay.'
+        : 'Typewriter OFF: the typeface returns (the analog law’s own clause).')+'</div>'
+      +'<div class="note">“the option to add fonts” is its own capability — named, not built here</div></div>';
+  }
+
+  function render(){
+    var g=geom(), st=document.getElementById('stage'); st.style.width=W+'px';
+    var nm=nameOf();
+    document.getElementById('page').style.left=g.pageLeft+'px';
+    document.getElementById('page').style.width=g.P+'px';
+    document.getElementById('page').innerHTML=
+      '<div class="titlebar"><span class="t" data-placeholder="'+(nm.ph?1:0)+'">'+nm.t+'</span>'
+      +'<span class="star '+(starred.p1?'on':'')+'" title="Star this page">★</span></div>'
+      +'<p>The snow came in sideways, the way it always did when the old roads remembered they had been rivers. Ned rode ahead, which was his habit, and said nothing, which was his other habit.</p>'
+      +'<p>Catelyn had written three letters that morning and sent none of them. The first asked him to stay. The second asked him to take the boys.</p>'
+      +'<p>By the ford the horses would not cross. He dismounted and led them, water to the knee, the current stronger than it looked.</p>';
+    var col=document.getElementById('col');
+    col.innerHTML='<div class="col" style="left:'+(RAIL+4)+'px;width:'+g.w+'px">'
+      +(stack? drill(stack)
+             : '<div class="hd"><span class="ti">Page</span><button aria-label="More">⋯</button><button aria-label="Close">×</button></div><div class="bd">'+body()+'</div>')
+      +'</div>';
+    [].forEach.call(col.querySelectorAll('[data-open]'),function(x){ x.onclick=function(){ stack=x.dataset.open; render(); }; });
+    [].forEach.call(col.querySelectorAll('[data-back]'),function(x){ x.onclick=function(){ stack=null; render(); }; });
+    [].forEach.call(col.querySelectorAll('[data-drop]'),function(x){ x.onclick=function(){
+      TAGS=TAGS.filter(function(t){return t!==x.dataset.drop;}); render(); }; });
+    var at=document.getElementById('addtag'); if(at) at.onclick=function(){ if(TAGS.indexOf('crypt')<0) TAGS.push('crypt'); render(); };
+    var s1=document.getElementById('star'); if(s1) s1.onclick=function(){ starred.p1=!starred.p1; render(); };
+    var nmEl=document.getElementById('nm'); if(nmEl) nmEl.onclick=function(){ written=!written; render(); };
+    var np=document.getElementById('np'); if(np) np.onclick=function(){ written=false; stack=null; render(); };
+    var right=g.pageLeft, colRight=RAIL+4+g.w;
+    document.getElementById('geom').innerHTML='window '+W+' · column '+Math.round(g.w)+'px · '
+      +(colRight<=right? '<span class="good">page clear by '+Math.round(right-colRight)+'px</span>'
+                       : '<span class="warn">covering the page</span>')
+      +(g.slid?' · page slid '+Math.round(g.slid)+'px':'');
+    layout();
+  }
+  function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/W, fit.clientHeight/768, 1)+')'; }
+  [].forEach.call(document.querySelectorAll('[data-w]'),function(b){ b.onclick=function(){
+    W=+b.dataset.w; [].forEach.call(document.querySelectorAll('[data-w]'),function(x){x.setAttribute('aria-pressed',x===b);}); render(); }; });
+  function pair(a,b,set){ document.getElementById(a).onclick=function(){ set(true); sync(a,b,true); };
+                          document.getElementById(b).onclick=function(){ set(false); sync(a,b,false); }; }
+  function sync(a,b,v){ document.getElementById(a).setAttribute('aria-pressed',v);
+                        document.getElementById(b).setAttribute('aria-pressed',!v); render(); }
+  pair('uPlace','uStored',function(v){ untitledStored=!v; });
+  pair('vView','vCap',function(v){ cap=!v; });
+  pair('tOn','tOff',function(v){ typewriter=v; });
+  window.addEventListener('resize',layout);
+  render();
+})();
+</script>
+</body>
+</html>
