@@ -221,26 +221,41 @@ await withHarness(async (app) => {
   await waitOr(app, "!!document.querySelector('.board-canvas')", 'the host board mounts');
   await sleep(500);
 
-  // REACHED VIA THE BEGINNINGS DOOR, and the first attempt taught me why.
+  // REACHED VIA THE BOARD'S SLIVER DOOR, and the route is chosen for what
+  // SURVIVES, not for what works today.
   //
-  // This first drove the board's SLIVER copy of the door, chosen because it is
-  // not mode-gated. The probe refused: `{found:false, why:'occluded', by:
-  // 'wz-strip-item'}` — no point inside that button hit-tests to it, because
-  // the sliver was never OPENED and its collapsed panel sits under the strip's
-  // own band (which item 130 deliberately raised). The driver did its job: it
-  // named the refusal instead of pressing whatever was on top. Opening the
-  // sliver is a separate affordance and not what this check is about.
+  // The beginnings row also carries this door — and it is the wrong one to
+  // drive. This lane's own 144 S0 established that `connectPage` lives ONLY in
+  // the OPEN branch of the mode-gated door table, and PLAN DESK's tab-bar
+  // amendment retires that table. A harness reaching the picker through it
+  // would go red the day the tab bar lands, for a reason having nothing to do
+  // with 176. The SLIVER's copy is not mode-gated and outlives the retirement.
   //
-  // The beginnings door is the writer's own route on an EMPTY board, and this
-  // fixture's host board is empty by construction, so the row renders. Its
-  // handle is a NAME (`data-beginning`), never an index or a label — the same
-  // law the strip handle follows.
-  const rowThere = await app.evalJs("!!document.querySelector('.wz-beginnings')");
-  ok('ITEM 176 (precondition): the empty host board shows its beginnings row, so the picker has a door to open — asserted rather than assumed, because a missing row would make every check below unreachable for a reason that has nothing to do with 176',
-    rowThere === true, String(rowThere));
-  const opened = rowThere && await pressEl(app, "document.querySelector('.wz-beginning[data-beginning=\"connectPage\"]')", 'the beginnings door opens the existing-page picker');
+  // THE FIRST PAIR FAILED HERE, and the failure was the fixture's: the probe
+  // reported {found:false, why:'occluded', by:'wz-strip-item'} because the
+  // sliver was never OPENED — its collapsed panel sits under the strip's own
+  // band, which item 130 deliberately raised. The driver named the occluder
+  // rather than pressing it, which is the whole reason the refusal was
+  // diagnosable at all.
+  //
+  // So: open the sliver, then assert the panel is OPEN and the door
+  // HIT-TESTS TO ITSELF, before anything presses it. Those two preconditions
+  // are what turn "the check went red" into "the check says which step broke".
+  const gripPressed = await pressEl(app, "document.querySelector('.wz-sliver-grip')", 'the board sliver grip opens the panel');
+  await sleep(400);
+  const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open')");
+  ok('ITEM 176 (precondition): the board sliver is OPEN before its door is pressed — the first pair failed precisely here, with the door occluded by the strip because the panel had never been opened',
+    gripPressed === true && sliverOpen === 'true', JSON.stringify({ gripPressed, sliverOpen }));
+
+  const doorSel = "[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => /existing/i.test(b.textContent || ''))";
+  const doorReachable = await hittablePointBy(app, doorSel);
+  ok('ITEM 176 (precondition): and the picker door HIT-TESTS TO ITSELF — a door present in the DOM but covered by another band is not a door a writer can open, which is item 130\'s whole lesson and item 151\'s whole job',
+    !!doorReachable && doorReachable.found === true, JSON.stringify(doorReachable));
+
+  const opened = (sliverOpen === 'true') && !!doorReachable?.found
+    && await pressEl(app, doorSel, 'the board sliver opens the existing-page picker');
   if (!opened) {
-    ok('ITEM 176: the candidate picker is reachable to inspect', false, 'connectPage door not reachable');
+    ok('ITEM 176: the candidate picker is reachable to inspect', false, 'sliver door not reachable');
   } else {
     await sleep(400);
     const rows = await app.evalJs(`[...document.querySelectorAll('.board-sheet .dz-row')].map(r => ({
