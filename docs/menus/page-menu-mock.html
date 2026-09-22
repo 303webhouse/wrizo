@@ -14,6 +14,13 @@
   section, already built -- three rows visible, the rest reached by scrolling,
   starred first, ordered by edit.
 
+  HIS THREE SORTS ARE LIVE (2026-09-22): "sortable by tag or by board or by
+  drawer." Today's Date/Drawer/A-Z is 170's interim; these replace it.
+  THE FINDING THE SORTS PRODUCE: a page has ONE drawer but MANY tags and MANY
+  boards -- so two of his three keys cannot order a list, they GROUP it, and a
+  page appears under every value it carries. The rig's counter says how many
+  rows a sort produces, so the duplication is visible rather than argued.
+
   THE THREE CONFLICTS ARE LIVE IN THE RIG, each where it bites:
     (i)   "Untitled" -- placeholder for an unwritten page (136 stands) vs a
           stored default name (136 reversed).
@@ -98,6 +105,8 @@
   .oprow:hover{background:#1f1407}
   .oprow .st{color:var(--brass);font-size:10px;width:10px}
   .oprow .home{margin-left:auto;font-size:9px;color:var(--text-low);white-space:nowrap}
+  .grp{position:sticky;top:0;background:var(--ground);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;
+       color:var(--accent-rest);padding:4px 8px;border-bottom:1px solid #22160a}
   .newpage{margin:10px 14px 0;padding:8px 10px;border:1px solid var(--accent-rest);color:var(--text-hi);
            background:none;font:inherit;font-size:12.5px;cursor:pointer;width:calc(100% - 28px);text-align:center}
   .note{font-size:10px;color:var(--text-low);padding:2px 14px 8px;font-style:italic}
@@ -138,8 +147,10 @@
 <div class="cap"><b>His six sections, in his order.</b> <b>Current Page</b> — the tiny label is the superscript; the
 <b>name</b> is the element, edited here or in the title bar by <em>one</em> control, with 179's star beside it.
 <b>Add to Board</b> and <b>Page Settings</b> <b>drill in</b> (item 166: a menu about the page never covers the page —
-the readout shows the gap). <b>Open Pages</b> is FIX's built section: three rows visible, the rest scrolled, ordered
-by edit, starred first. <b>Flip (ii) to "cap of three"</b> and the fourth page becomes unreachable — the reason this
+the readout shows the gap). <b>Open Pages</b> is FIX's built section — three rows visible, the rest scrolled, ordered by edit, starred
+first — <b>now with his three sorts working</b>: <em>tag</em>, <em>board</em>, <em>drawer</em>. <b>Press them.</b>
+A page has one drawer but many tags and many boards, so <b>two of the three GROUP rather than order</b>, and a
+page appears under every value it carries — the row counter says so rather than arguing it. <b>Flip (ii) to "cap of three"</b> and the fourth page becomes unreachable — the reason this
 desk agrees with FIX's viewport. <b>Flip (iii)</b> and the <b>typeface</b> control leaves Page Settings while
 Typewriter is ON, because <em>a typewriter does not offer you a typeface</em>; size and spacing stay. <b>Flip (i)</b>
 to see the two readings of "Untitled": a placeholder for an unwritten page (item 136 stands), or a stored default
@@ -150,12 +161,13 @@ name (136 reversed). <b>The last button reads "New Page"</b> — singular: 178 r
   var W=1366, stack=null, untitledStored=false, cap=false, typewriter=true, starred={p2:true};
   var RAIL=84, GAP=12, FLOOR=220, DESIGN=300;
   var PAGES=[
-    {id:'p1',n:'The last ride',home:'Journal',edited:'2 min'},
-    {id:'p2',n:'Three letters',home:'Novel',edited:'18 min'},
-    {id:'p3',n:'The crypt',home:'Loose',edited:'1 hr'},
-    {id:'p4',n:'Ravens, and what they cost',home:'Research',edited:'yesterday'},
-    {id:'p5',n:'Winterfell in winter',home:'Novel',edited:'2 days'}
+    {id:'p1',n:'The last ride',home:'Journal',edited:'2 min',drawer:null,tags:['stark'],boards:['Timeline']},
+    {id:'p2',n:'Three letters',home:'Novel',edited:'18 min',drawer:'Novel',tags:['stark','letters'],boards:['Characters','Timeline']},
+    {id:'p3',n:'The crypt',home:'Loose',edited:'1 hr',drawer:null,tags:['crypt'],boards:[]},
+    {id:'p4',n:'Ravens, and what they cost',home:'Research',edited:'yesterday',drawer:'Research',tags:['letters'],boards:['Characters']},
+    {id:'p5',n:'Winterfell in winter',home:'Novel',edited:'2 days',drawer:'Novel',tags:['stark','crypt'],boards:[]}
   ];
+  var sortBy='recent';
   var BOARDS=[{n:'Characters',t:'#stark #character'},{n:'Timeline',t:'#stark'},{n:'Lore',t:'#lore'},{n:'Maps of the North',t:'#lore'}];
   var TAGS=['stark','letters'];
   var written = true;   // the current page has words
@@ -170,8 +182,29 @@ name (136 reversed). <b>The last button reads "New Page"</b> — singular: 178 r
     if(written) return {t:'The last ride', ph:false};
     return untitledStored ? {t:'Untitled', ph:false} : {t:'Untitled', ph:true};
   }
-  function openPagesRows(){
-    var rows = PAGES.slice().sort(function(a,b){ return (starred[b.id]?1:0)-(starred[a.id]?1:0); });
+  function byStar(list){ return list.slice().sort(function(a,b){ return (starred[b.id]?1:0)-(starred[a.id]?1:0); }); }
+  // HIS THREE SORTS. Drawer is single-valued and truly orders; tag and board are
+  // MULTI-valued, so they GROUP, and a page appears under every value it carries.
+  function groupsFor(){
+    if(sortBy==='recent') return [{k:null, rows:byStar(PAGES)}];
+    if(sortBy==='drawer'){
+      var names={}; PAGES.forEach(function(p){ names[p.drawer||'\u2014']=1; });
+      return Object.keys(names).sort().map(function(d){
+        return {k:(d==='\u2014'?'Not in a drawer':d), rows:byStar(PAGES.filter(function(p){return (p.drawer||'\u2014')===d;}))};
+      });
+    }
+    var field = sortBy==='tag' ? 'tags' : 'boards';
+    var vals={}; PAGES.forEach(function(p){ p[field].forEach(function(v){ vals[v]=1; }); });
+    var out = Object.keys(vals).sort().map(function(v){
+      return {k:(sortBy==='tag'?'#'+v:v), rows:byStar(PAGES.filter(function(p){return p[field].indexOf(v)>=0;}))};
+    });
+    var none = PAGES.filter(function(p){ return p[field].length===0; });
+    if(none.length) out.push({k:(sortBy==='tag'?'no tag':'on no board'), rows:byStar(none)});
+    return out;
+  }
+  function rowCount(){ return groupsFor().reduce(function(n,g){ return n+g.rows.length; },0); }
+  function openPagesRows(){   // the flat list the cap trims
+    var rows = byStar(PAGES);
     return cap ? rows.slice(0,3) : rows;
   }
   function body(){
@@ -186,11 +219,26 @@ name (136 reversed). <b>The last button reads "New Page"</b> — singular: 178 r
       +TAGS.map(function(t){return '<span class="tg">#'+t+'<button data-drop="'+t+'" aria-label="Remove #'+t+'">×</button></span>';}).join('')
       +'<button class="addtag" id="addtag">+ tag</button></div>';
     h+='<div class="sec">Open Pages</div>';
-    h+='<div class="sorts">sort: <button aria-pressed="true">edited</button><button>tag</button><button>board</button><button>drawer</button></div>';
-    var rows=openPagesRows();
-    h+='<div class="oplist" style="max-height:'+(cap?'auto':'96px')+'">'
-      +rows.map(function(p){ return '<button class="oprow"><span class="st">'+(starred[p.id]?'★':'')+'</span>'
-        +p.n+'<span class="home">'+p.home+' · '+p.edited+'</span></button>'; }).join('')+'</div>';
+    h+='<div class="sorts">sort: '
+      +[['recent','recent'],['tag','tag'],['board','board'],['drawer','drawer']].map(function(o){
+        return '<button data-sort="'+o[0]+'" aria-pressed="'+(sortBy===o[0])+'">'+o[1]+'</button>'; }).join('')+'</div>';
+    if(cap){
+      var rows=openPagesRows();
+      h+='<div class="oplist" style="max-height:auto">'
+        +rows.map(function(p){ return '<button class="oprow"><span class="st">'+(starred[p.id]?'★':'')+'</span>'
+          +p.n+'<span class="home">'+p.home+' · '+p.edited+'</span></button>'; }).join('')+'</div>';
+    } else {
+      h+='<div class="oplist" style="max-height:96px">'+groupsFor().map(function(g){
+        return (g.k?'<div class="grp">'+g.k+'</div>':'')+g.rows.map(function(p){
+          return '<button class="oprow"><span class="st">'+(starred[p.id]?'★':'')+'</span>'
+            +p.n+'<span class="home">'+(sortBy==='recent'?p.home+' · '+p.edited:p.edited)+'</span></button>'; }).join('');
+      }).join('')+'</div>';
+    }
+    if(!cap && sortBy!=='recent'){
+      var n=rowCount();
+      h+='<div class="note">'+n+' rows across '+groupsFor().length+' '+(sortBy==='tag'?'tags':sortBy==='board'?'boards':'drawers')
+        +(n>PAGES.length?' — a page with two '+(sortBy==='tag'?'tags':'boards')+' appears under both':'')+'</div>';
+    }
     h+='<div class="note'+(cap?' warn':'')+'">'+(cap
         ? 'a cap of three: '+(PAGES.length-3)+' pages are unreachable, and there is nothing to scroll or sort'
         : 'three rows visible, the rest by scrolling — FIX’s item 170, already built')+'</div>';
@@ -242,6 +290,7 @@ name (136 reversed). <b>The last button reads "New Page"</b> — singular: 178 r
     [].forEach.call(col.querySelectorAll('[data-back]'),function(x){ x.onclick=function(){ stack=null; render(); }; });
     [].forEach.call(col.querySelectorAll('[data-drop]'),function(x){ x.onclick=function(){
       TAGS=TAGS.filter(function(t){return t!==x.dataset.drop;}); render(); }; });
+    [].forEach.call(col.querySelectorAll('[data-sort]'),function(x){ x.onclick=function(){ sortBy=x.dataset.sort; render(); }; });
     var at=document.getElementById('addtag'); if(at) at.onclick=function(){ if(TAGS.indexOf('crypt')<0) TAGS.push('crypt'); render(); };
     var s1=document.getElementById('star'); if(s1) s1.onclick=function(){ starred.p1=!starred.p1; render(); };
     var nmEl=document.getElementById('nm'); if(nmEl) nmEl.onclick=function(){ written=!written; render(); };
