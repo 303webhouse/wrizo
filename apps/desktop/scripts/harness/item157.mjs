@@ -37,6 +37,11 @@
 //   M9  the rulings hold in the margin: Free Write TEXT and Draft draw nothing
 //   M10 an OPEN QUESTION, measured not asserted: ink drawn in Free Write's
 //       typewriter band (above the first line) — is it on the paper in Revise?
+//   M11 THE EDGE. Nick, 2026-09-22: "The ink doesn't go all the way to the edge
+//       of the page (which it should)" — said of the page as it stands, before
+//       157 is live. This leg proves 157 delivers the paper's OUTER bounds and
+//       not merely the padded box inside them: the gap is the border and
+//       nothing else, and a stroke hugging each of the four sides paints there.
 //
 // WHAT THIS FILE CANNOT PROVE, SAID UP FRONT: a stylus in the margin of a real
 // tablet. The pen here is CDP's; the hand on glass is the sitting's gesture.
@@ -690,6 +695,80 @@ await withHarness(async (app) => {
     !!bandStroke && storedAfter === JSON.stringify([bandStroke.points]), JSON.stringify({ same: !!bandStroke && storedAfter === JSON.stringify([bandStroke.points]) }));
   // eslint-disable-next-line no-console
   console.log(`\nITEM157 MEASURED (not a check — an open question for Fable): typewriter-band ink, drawn in Free Write, per mode: ${JSON.stringify([inFw, inDraft, inRevise])}`);
+
+  // ==========================================================================
+  // M11 — DOES THE INK REACH THE PAGE'S TRUE EDGE? Nick, 2026-09-22: "The ink
+  // doesn't go all the way to the edge of the page (which it should)." He said
+  // it of the page as it stands TODAY (157 is not live), so this leg exists to
+  // prove 157 actually delivers the edge rather than merely delivering the
+  // margins — the distinction Fable named: the paper's OUTER bounds, not the
+  // padded box inside them.
+  //
+  // WHAT "THE EDGE" CAN MEAN HERE, measured rather than argued: the canvases
+  // are absolutely positioned at inset 0 in `.mode-page`, so their containing
+  // block is its PADDING box — everything inside the paper's own 1px border.
+  // The border is the drawn edge of the page itself; ink stopping just inside
+  // it is ink reaching the edge. M11 measures that gap instead of assuming it,
+  // and then draws a stroke hugging each of the four sides.
+  // ==========================================================================
+  const edgeId = await inkPage(app, W1, H1);
+  const box11 = await app.evalJs(`(() => {
+    const p = document.querySelector('${PAPER}'); const c = document.querySelector('${CANVAS}');
+    if (!p || !c) return null;
+    const pr = p.getBoundingClientRect(), cr = c.getBoundingClientRect();
+    const cs = getComputedStyle(p);
+    return {
+      paperOuter: { left: pr.left, top: pr.top, right: pr.right, bottom: pr.bottom },
+      canvas: { left: cr.left, top: cr.top, right: cr.right, bottom: cr.bottom },
+      border: { left: parseFloat(cs.borderLeftWidth) || 0, top: parseFloat(cs.borderTopWidth) || 0,
+                right: parseFloat(cs.borderRightWidth) || 0, bottom: parseFloat(cs.borderBottomWidth) || 0 },
+      gaps: { left: cr.left - pr.left, top: cr.top - pr.top, right: pr.right - cr.right, bottom: pr.bottom - cr.bottom },
+    }; })()`);
+  const borderOnly = !!box11 && ['left', 'top', 'right', 'bottom']
+    .every(k => Math.abs(box11.gaps[k] - box11.border[k]) <= 0.6);
+  ok('M11: the ink surface reaches the page\'s OUTER bounds on all four sides — the only thing between the canvas and the paper\'s outer edge is the paper\'s own border line, measured (not the padding, which is INSIDE the canvas and is where item 157 put the margins)',
+    borderOnly, JSON.stringify(box11));
+
+  // And a stroke hugging each side actually lands there. The RIGHT side is
+  // drawn OUTWARD from just inside the scrollbar gutter INTO it: a press in the
+  // gutter is the scrollbar's (M8), but ink already in flight paints across it,
+  // so the paintable surface genuinely runs to the canvas edge on that side too.
+  const gE11 = await geom(app);
+  const midY11 = (gE11.paper.top + gE11.paper.bottom) / 2;
+  const midX11 = (gE11.paper.left + gE11.paper.right) / 2;
+  const edges = [
+    ['LEFT', segment(gE11.paper.left + 3, midY11 - 25, gE11.paper.left + 3, midY11 + 25), 'x'],
+    ['TOP', segment(midX11 - 40, gE11.paper.top + 3, midX11 + 40, gE11.paper.top + 3), 'y'],
+    ['BOTTOM', segment(midX11 - 40, gE11.paper.bottom - 3, midX11 + 40, gE11.paper.bottom - 3), 'y'],
+    ['RIGHT', segment(gE11.gutterLeft - 6, midY11, gE11.paper.right - 2, midY11), 'x'],
+  ];
+  let n11 = (await strokesOf(app, edgeId)).length;
+  for (const [side, pts] of edges) {
+    const from = pts[0], to = pts[pts.length - 1];
+    const pFrom = await probe(app, from.x, from.y);
+    if (!pFrom.onPaper) {
+      ok(`DRIVER: M11 (${side}) — the start point is not on the paper; nothing dispatched`, false, JSON.stringify({ pFrom, from }));
+      continue;
+    }
+    await drawAt(app, pts, 'pen');
+    const after = await settle(app, edgeId, n11 + 1);
+    const added = after.length - n11;
+    n11 = after.length;
+    const st = added > 0 ? after[after.length - 1] : null;
+    const sp = st ? await screenOf(app, midOf(st)) : null;
+    const alpha = sp ? await alphaAtScreen(app, sp.x, sp.y) : -3;
+    const g11 = await geom(app);
+    // How close to the paper's outer edge did the paint actually get?
+    const reach = st && g11 ? (() => {
+      const b = bboxOf(st.points), w = g11.sheet.width, s = g11.sheet;
+      const scr = { left: s.left + b.x0 * w, right: s.left + b.x1 * w, top: s.top + b.y0 * w, bottom: s.top + b.y1 * w };
+      return { toLeft: scr.left - g11.paper.left, toRight: g11.paper.right - scr.right,
+               toTop: scr.top - g11.paper.top, toBottom: g11.paper.bottom - scr.bottom };
+    })() : null;
+    ok(`M11 (${side} edge): a stroke hugging the ${side} edge is stored and PAINTED there — 3px from the ink surface's own edge, which M11's first check ties to the paper's outer bound (the border alone stands between them). This is the side of the page the text column never reaches`,
+      added === 1 && alpha > 0, JSON.stringify({ added, alpha, reachFromPaddingBox: reach, from, to }));
+  }
+  await shot(app, 'm11-edges');
 
   return checks;
 });
