@@ -8431,6 +8431,10 @@ ABSORBS this build rather than replacing it.**
 (`802a86e`); scope re-measured (+185/-45, server 0, schema 0). Stamp: 92/92 both legs,
 `bundle=index-BDZr-D5R.js/588012b`, `item170.mjs` 19 checks.
 
+**✓ CORRECTED 2026-09-20 (Fable): chat 1's reading was right, Fable's was loose — RECORD AS PARTLY SHIPPED,
+not as a question back to Fable.** See *ITEM 179 — PARTLY SHIPPED*, below. The paragraph that follows is
+kept as written.
+
 **⚠ ITEM 179 — SHIPPED IN 170 FOR ITS SORT HALF ONLY; chat 1 checked the diff.** Fable: *`starRank` sorts
 starred pages first, ahead of every sort — record 179 as SHIPPED IN 170, not as still open.* **The product
 diff contains exactly that (`starRank`, three lines) — and nothing that moves the star CONTROL.** Nick's 179 has
@@ -8468,6 +8472,11 @@ staleness rule, which goes to the band:
 **NUMBERING: chat 1's 182 STANDS** (the grant proves a token, not a holder); **183 (the screenplay conflict) is
 WITH NICK now, as is the MOVE-vs-copy conflict.**
 
+**✓ PREMISE CORRECTED 2026-09-20 (Fable, adopting chat 1's precision): "nobody has hit it" is WRONG — FIX's
+2026-09-19 pair IS the case a holder check guards; it cost nothing and its vector is closed by the practice
+change. THAT SUPPORTS LOW, NOT NEVER-HIT.** *A priority resting on a false premise would be re-argued the
+first time someone read the ledger properly.* **Entry amended below to Fable's wording; kept OPEN, LOW.**
+
 ## ITEM 182 — ROUTED; OPEN, LOW — 2026-09-20
 
 **ROUTED (Fable): it is ERRATA's class and ERRATA is absent, so it goes to TOOLS AFTER 161/162 — and it is NOT
@@ -8492,7 +8501,77 @@ discovering.* **176 and 163 are DISJOINT — by PW's MEASUREMENT, not assumption
 conclusion. **Nothing ready is waiting on the box** (Batch Four's deploy pair waits on Nick's word), so the
 grant stands.
 
+## ITEM 179 — PARTLY SHIPPED — 2026-09-20
+
+**Fable, correcting itself: chat 1's reading was right.** **THE SORT HALF (starred first, under every sort)
+SHIPPED IN 170. THE PLACEMENT HALF — the star control beside the page's title — is UNTOUCHED and STAYS OPEN,
+ROUTED TO 177**, since the star sits beside the name in the menu Nick ruled. **DO NOT CLOSE 179 ON THE
+DEPLOY.**
+
+## ITEM 182 — ENTRY AMENDED — 2026-09-20
+
+**Amended to Fable's wording, premise corrected: item 140 refuses a MISMATCHED token — the failure that
+actually cost runs. A HOLDER CHECK GUARDS A CASE THAT HAS BEEN HIT ONCE** (FIX's 2026-09-19 pair), **at NO
+COST, and whose VECTOR IS ALREADY CLOSED** by the token-out-of-the-ledger practice change. **STILL OPEN,
+LOW** — routed to TOOLS after 161/162.
+
+## FOUR MORE PLAN DOCS MERGED — DOCS-ONLY — 2026-09-22
+
+**Merged at `f93c0ad`:** `plan-brief-177` (the Page menu restructure, brief + mock, designed around item
+170), `plan-144-exit-control` (difference 4 ratified in Fable's words; the exit control and "+ BOARD"'s
+place; the mock re-drawn for Nick), `plan-169-move-hold` (the MOVE held with Nick; chat 1's two notes
+confirmed with an addition each), `plan-165-116-181` (116 absorbed in part; 181 carries the file-as-object
+half). **Verified: no non-docs file in any of the four; no file shared between them; each trial merge
+clean.** *Filing, not ruling.*
+
+## ITEM 176 — RED, INDEPENDENT OF BATCH FOUR — 2026-09-20
+
+**PW's 176 pair came back RED. Independent of Batch Four — 176 is NOT IN IT; the deploy is 170 alone on
+`f2ad2fb`.** **Default: `item176.mjs` FAIL, plus `fx5.mjs` and `item83e.mjs` TIMEOUT. Parked: 91/92,
+`item176.mjs` FAIL.**
+
+**PW's OWN DEFECT, diagnosed: the driver reached a door INSIDE THE COLLAPSED SLIVER, whose panel sits UNDER
+ITEM 130's RAISED STRIP BAND. The probe REFUSED and NAMED THE OCCLUDER — ITEM 151's FIRST CATCH IN
+PRODUCTION.** *(The hit-test built for exactly this — a covered target failing by name instead of
+dispatching blind — caught a real one on its first live run, in the branch that named the very door it
+was built to guard.)*
+
+**FABLE CORRECTED PW's OWN FIX:** PW had moved the harness to the BEGINNINGS DOOR — **which 144's TAB BAR
+RETIRES**, so the harness would break the day the tab bar lands. **THE RIGHT FIX OPENS THE SLIVER FIRST.**
+
+**PW ASKS FOR A RE-STAMP GRANT on its corrected tree; its USED GRANT is correctly NOT RE-USED.** **DONE:
+the file (`pw-item176-20260919`, still naming PW2) is CLEARED, and PW2 is GRANTED A FRESH TOKEN** for the
+re-stamp. Box was idle.
+
+## THE FILE OUTRANKS THE ANNOUNCEMENT's DESCRIPTION OF ITSELF — 140 PROVING ITSELF TWICE — 2026-09-20
+
+**PW's pre-flight read 0 browsers, 0 runners, and the token was verified BY DRY-RUN AGAINST THE FILE — see
+PW's report. IT FOUND FABLE's RELAY DESCRIPTION OF THE TOKEN DIFFERED FROM THE FILE's CONTENTS, and
+TRUSTED THE FILE.** **140 proved itself TWICE in one turn: once refusing a lane with no grant (the earlier
+anomaly), once here, refusing to trust a RELAY's OWN DESCRIPTION of a grant over the grant itself.**
+
+> **THE FILE OUTRANKS THE ANNOUNCEMENT's DESCRIPTION OF ITSELF** — not merely a lane's assumption. *The
+> disk-wins law arriving at the grant.*
+
+*(The same law chat 1 already keeps for origin/main and for a scout's map — [[scout-output-is-research-not-
+authorization]], [[origin-main-moves-mid-session]] — now stated for the ONE FILE THAT DECIDES WHO MAY
+LAUNCH A BROWSER: a description of a grant, even Fable's own, is a claim about the file; the file is the
+fact.)*
+
+## fx5 AND item83e — TIMED OUT DEFAULT, PASSED PARKED, SAME BUNDLE — ENVIRONMENTAL, NOT PROVEN — 2026-09-20
+
+**Two files that hit BATCH FOUR's DEPLOY PAIR the same way are the SAME SYMPTOM, not a new defect: diagnose
+BY BUNDLE IDENTITY FIRST, and if they time out in the deploy pair, REPORT IT BEFORE RE-RUNNING.** **If they
+RECUR ACROSS THE RE-STAMP TOO, open them as ONE ITEM with BOTH PAIRS' EVIDENCE — a recurring timeout in two
+named files is not variance until the distribution says so** (m3's law).
+
+**CHAT 1's NOTE FOR WHOEVER DIAGNOSES IT: `fx5.mjs` is ALSO 154's territory** (the in-string sweep) and
+item 151's Shape A list (its outer coordinate-dispatch sites were fixed there); a timeout in it during a
+pair that ALSO exercises 151's new hit-test is worth checking against BOTH histories before calling it
+environmental.
+
 Registry: next free **184**.
+
 
 
 
