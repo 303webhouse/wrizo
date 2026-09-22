@@ -70,13 +70,36 @@ in full size, editable in place.**
 - **Editing here and in the title bar are ONE CONTROL** (item 133's shape: a button that becomes an
   input; Enter or blur commits; Escape cancels). **Two mountings, one behaviour** — *a name that can be
   edited in two places must be edited the same way in both.*
-- **Item 179's STAR sits beside the name here**, as it does beside the title on the page.
 - **⚠ CONFLICT (i) — "Untitled" as the default name. THE DESK'S READING, FLAGGED FOR HIS VETO:**
   **the menu shows "Untitled" only as a PLACEHOLDER for a page with nothing written yet — it is never
   stored, and it is not the page's name.** *That satisfies both texts: 136's ruling was that "Untitled"
   does not EXIST as a default name (nothing is written, so nothing is saved), and this menu still has to
   print something in a row for a page that has no words yet.* **If he means it to be the stored default,
   136 is reversed and 167's "'Untitled' never appears" goes with it — his call, not this desk's.**
+
+### ⭐ ITEM 179's PLACEMENT HALF LIVES HERE (Fable, 2026-09-20)
+**Item 170 shipped the SORT half — starred pages first, under every sort. The PLACEMENT half is this
+brief's**, because this is where the name lives.
+
+**Nick:** *"starring a page should be moved to be an option that is right next to the title of the page
+and starred pages should come up first when a user filters their pre-existing pages."*
+
+- **WHAT EXISTS:** the star is **already built and already sticks** — `PageFace`'s `wz-pageface-star`
+  (`onToggleStar`, `entry.starred`, `pageFaceStar` / `pageFaceStarred`). *179 MOVES a control; it does not
+  invent one.* **`entry.starred` is unchanged — zero schema.**
+- **WHERE IT GOES: immediately AFTER the page's name, in both places it is written** — **the title bar on
+  the page**, and **this menu's Current Page section.** **Trailing, never leading:** *a star before the
+  name would put a mark where the writer's eye goes for the word, and the name is what they came for.*
+- **ONE CONTROL, TWO MOUNTINGS** — the same discipline as the name itself: *starred is starred, and it
+  looks and behaves the same in the menu and on the page.*
+- **IT IS ALWAYS PRESENT** (hollow when unstarred, filled when starred), so **the title's position never
+  moves** when a writer stars a page. *A control that appears on state shifts the thing beside it.*
+- **COLOUR: the filled star is BRASS** — *the writer did this* — **and never olive**, which marks where
+  you are, not what you chose. The hollow star is `--text-low`.
+- **WHAT IT DOES NOT DO:** it does not file, pin, connect or affect membership; **and it does not sort —
+  170 already does** (`starred first`, under every sort). *One mark, one meaning: **this one**.*
+- **⚠ SO ITEM 179 IS SPENT:** **its sort half SHIPPED in 170; its placement half is designed here.**
+  *An item with nothing left is closed with its halves named, not left open as a heading.*
 
 ### 2 · ADD TO BOARD — *"a dropdown that begins with 'Create Board' followed by a list of existing boards with their tags"*
 - **It is item 165's `BoardConnectList`, the page mounting** — *the subject goes inside the chosen board* —
@@ -141,6 +164,9 @@ Standing laws: **drivers never assume existence** · **real pointer events** · 
 1. **The six sections, in his order, read by name** — and **only on a page surface.**
 2. **The name:** editing in the menu and in the title bar produce the same stored result, and **the menu's
    label is not the name** (the superscript label is never editable).
+2b. **The star:** present in both mountings, **immediately after the name**; toggling in one place shows in
+   the other and in `entry.starred`; **the title's rect does not move when it toggles**; and the filled
+   star resolves from **`--brass`**, never from `--accent-rest`.
 3. **Add to Board** writes membership with **`onCanvas: false`**, and the board then appears wherever the
    page's connections are listed.
 4. **Open Pages is FIX's** — this harness asserts only that the section is **present, in position, and
