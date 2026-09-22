@@ -13,7 +13,9 @@
 > part 1). **Quoted in §0 and governing throughout.**
 
 **Reference render:** `page-menu-mock.html` — the six sections in item 166's column, with the two
-drill-ins and the three conflicts drawn where they bite.
+drill-ins, **his three sorts working**, and the three conflicts drawn where they bite.
+**⚠ IT IS IN HIS DOWNLOADS** (`C:\Users\nickh\Downloads\page-menu-mock.html`) — *the first copy never
+reached him, and a mock he cannot open is a mock that does not exist.*
 
 ---
 
@@ -72,7 +74,9 @@ in full size, editable in place.**
   edited in two places must be edited the same way in both.*
 - **⚠ CONFLICT (i) — "Untitled" as the default name. THE DESK'S READING, FLAGGED FOR HIS VETO:**
   **the menu shows "Untitled" only as a PLACEHOLDER for a page with nothing written yet — it is never
-  stored, and it is not the page's name.** *That satisfies both texts: 136's ruling was that "Untitled"
+  stored, and it is not the page's name.** **FABLE has put this to him as a reconciliation: a GREYED
+  placeholder in the name field of an unwritten page, only there, never stored — and the mock is built
+  that way pending his word.** *That satisfies both texts: 136's ruling was that "Untitled"
   does not EXIST as a default name (nothing is written, so nothing is saved), and this menu still has to
   print something in a row for a page that has no words yet.* **If he means it to be the stored default,
   136 is reversed and 167's "'Untitled' never appears" goes with it — his call, not this desk's.**
@@ -123,7 +127,32 @@ its order, its star rule and its `⋯` geometry are FIX's, checked by `item170.m
   visible, the rest reachable) **and flags it as its own judgment.** **This desk agrees, and says why in
   one line: a three-item cap has nothing to scroll and nothing to sort, and his own sentence asks for
   both.** *If he meant literally three, FIX says it is one line.*
-- **The three sorts (tag · board · drawer) land here when they ship**, as FIX's follow-on.
+
+### ⛔ THE THREE SORTS ARE DESIGNED HERE — *"sortable by tag or by board or by drawer"*
+**They are his words, so they are this menu's, not a follow-on.** *(Today's **Date · Drawer · A–Z** is
+170's interim control; these replace it. **Recency by EDIT stays the default**, and **starred first holds
+under every one of them** — 170's rule, unchanged.)*
+
+> **⚠ THE FINDING: TWO OF HIS THREE KEYS CANNOT ORDER A LIST. A page has ONE drawer, but MANY tags and
+> MANY boards.**
+
+| his key | what it can be | how it reads |
+|---|---|---|
+| **by drawer** | **a true sort** — single-valued | one section per drawer, **plus "Not in a drawer"** for loose pages |
+| **by tag** | **a GROUPING** — multi-valued | one section per tag, **a page appearing under EVERY tag it carries**, plus "no tag" |
+| **by board** | **a GROUPING** — multi-valued | one section per board, **a page appearing under EVERY board it is on**, plus "on no board" |
+
+**THE RULE: A GROUPED SORT SHOWS A PAGE UNDER EVERY VALUE IT CARRIES, AND SAYS SO.** The section prints
+its own arithmetic — *"7 rows across 4 tags — a page with two tags appears under both"* — **so the
+duplication is visible rather than surprising.** *A page that is on two boards IS on two boards; a list
+that showed it once would be choosing one of them silently.*
+- **The viewport is untouched:** three rows visible, the rest by scrolling, **group headers sticky** so the
+  writer always knows which section they are in.
+- **⚠ THE RIVAL (177-Q5):** show each page **ONCE**, under its first tag or first board. *Its case: no
+  duplication, and a shorter list. Its cost: the group for a page's second board is a lie by omission, and
+  "first" is an order no writer chose.*
+- **The 108 tag FILTER and these sorts are different acts and both survive:** *the filter narrows what is
+  listed; the sort decides how what is listed is grouped.* **Neither replaces the other.**
 
 ### 5 · PAGE SETTINGS — today's Page Setup, plus font settings
 **A drill-in (166), holding the current Page Setup options plus: limited typefaces with an option to add
@@ -169,9 +198,13 @@ Standing laws: **drivers never assume existence** · **real pointer events** · 
    star resolves from **`--brass`**, never from `--accent-rest`.
 3. **Add to Board** writes membership with **`onCanvas: false`**, and the board then appears wherever the
    page's connections are listed.
-4. **Open Pages is FIX's** — this harness asserts only that the section is **present, in position, and
-   still shows three rows with the rest reachable**; `item170.mjs` owns its behaviour. *(Two harnesses
-   asserting one section is how a park goes missing.)*
+4. **Open Pages' PLACE is FIX's** — this harness asserts the section is **present, in position, and still
+   shows three rows with the rest reachable**; `item170.mjs` owns the opening behaviour. *(Two harnesses
+   asserting one behaviour is how a park goes missing.)*
+4b. **THE SORTS ARE THIS BRIEF'S, so this harness owns them:** each of the four (recent · tag · board ·
+   drawer) **by name**; **drawer yields exactly one row per page** and names the loose group; **tag and
+   board yield MORE rows than pages** when a page carries two values, and **the section states that
+   arithmetic**; **starred first holds inside every group**; **the viewport still shows three rows.**
 5. **Page Settings:** in Free Write with Typewriter ON, **the typeface control is absent** (per §2.5's
    reading); size and spacing are present.
 6. **The button reads "New Page"** — the string asserted exactly.
@@ -188,6 +221,8 @@ Standing laws: **drivers never assume existence** · **real pointer events** · 
 - **177-Q3 — fonts and the typewriter (conflict iii).** In Free Write with Typewriter ON: **typeface
   hidden, size and spacing shown** (this desk's reading), or **all three always shown** (which amends the
   analog law)?
+- **177-Q5 — by tag or by board, does a page appear under EVERY value it carries** (lean — it is on two
+  boards, so it shows under both, and the list prints that arithmetic), **or once, under its first?**
 - **177-Q4 — "New Pages" (difference 1).** This desk rules the button **"New Page", singular** — the term
   change renames the noun, not the count. **Say the word and it changes.**
 
