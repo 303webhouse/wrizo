@@ -293,7 +293,7 @@ await withHarness(async (app) => {
   //   shortSetting === true, String(shortSetting));
   // ------------------------------------------------------------------------
   PARK171.shortDom = shortDom; PARK171.shortSetting = shortSetting;
-  ok('S2 [ITEM 171-A successor]: a ~3-line page opens Draft with NO typewriter — the DOM reads false whatever the page holds, because Draft has no typewriter to seed',
+  ok('S2 [ITEM 171-A successor]: a ~3-line page opens Draft with the typewriter OFF — Draft HAS the typewriter again (Nick, 2026-09-22) but its own value DEFAULTS OFF, and no page-open writes it, so the page\'s own line count no longer decides anything',
     shortDom === 'false', String(shortDom));
   ok('S2 [ITEM 171-A successor]: and opening that Draft LEAVES THE STORED SETTING ALONE — it is still the writer\'s own default (ON), not a value a mode they were only passing through wrote for them',
     shortSetting === true, String(shortSetting));
@@ -317,7 +317,7 @@ await withHarness(async (app) => {
   //   longSetting === false, String(longSetting));
   // ------------------------------------------------------------------------
   PARK171.longDom = longDom; PARK171.longSetting = longSetting;
-  ok('S2 [ITEM 171-A successor]: a ~15-line page opens Draft with no typewriter either — the ten-line threshold is gone with the seed it served, and the DOM reads false for the SAME reason at both lengths',
+  ok('S2 [ITEM 171-A successor]: a ~15-line page opens Draft with the typewriter OFF too — the ten-line threshold is gone with the seed it served, and both lengths now read false for the SAME reason: Draft\'s own value starts off',
     longDom === 'false', String(longDom));
   ok('S2 [ITEM 171-A successor]: and its stored setting is untouched too — a long Draft page no longer silently turns the writer\'s Free Write typewriter OFF',
     longSetting === true, String(longSetting));
@@ -380,8 +380,8 @@ await withHarness(async (app) => {
   // ------------------------------------------------------------------------
   const twInDraft = await app.evalJs(TW_OFFERED);
   PARK171.controlInDraft = twInDraft;
-  ok('S2 [ITEM 171-A successor]: on a DRAFT page the typewriter option is not offered on EITHER of its surfaces — no icon in the sliver foot, no Typewriter row behind that foot\'s gear. SC1 S3\'s law: hiding one and leaving the other is the lie, one click deeper',
-    !!twInDraft && twInDraft.offered === false, JSON.stringify(twInDraft));
+  ok('S2 [ITEM 171-A successor, AMENDED 2026-09-22]: on a DRAFT page the typewriter option IS offered on BOTH of its surfaces — the icon in the sliver foot and the Typewriter row behind that foot\'s gear — because Nick\'s amendment gives Draft the typewriter back. It is OFF, not absent: a setting the writer may turn on, which is a different thing from a capability the surface does not have',
+    !!twInDraft && twInDraft.icon === true && twInDraft.seg === true, JSON.stringify(twInDraft));
   const settingAfterDraft = await typewriterSetting(app);
   PARK171.settingUntouched = settingAfterDraft;
   ok('S2 [ITEM 171-A successor]: and after opening Draft pages at both lengths the STORED setting is still the writer\'s own — the machinery that existed to stop a seed re-imposing a value is not needed once nothing seeds',
@@ -522,8 +522,8 @@ if (process.env.HARNESS_PARKED === '1') {
     PARK171.shortDom === 'false' && PARK171.shortSetting === true, JSON.stringify({ shortDom: PARK171.shortDom, shortSetting: PARK171.shortSetting }));
   pok('PARKED (was "S2: a ~15-line page opens Draft with typewriter OFF" — DOM and stored setting, 2 checks) — ITEM 171-A: the ten-line threshold went with the seed; the DOM now reads false at BOTH lengths for the same reason, which is why the passing one is parked too',
     PARK171.longDom === 'false' && PARK171.longSetting === true, JSON.stringify({ longDom: PARK171.longDom, longSetting: PARK171.longSetting }));
-  pok('PARKED (was "S2: the sliver\'s typewriter toggle actually flips it ON by hand" + the Draft->Free Write->Draft round trip, 3 checks) — ITEM 171-A: that control is ABSENT on a Draft page, on both of its surfaces, so the gesture has nothing to press',
-    !!PARK171.controlInDraft && PARK171.controlInDraft.offered === false && PARK171.settingUntouched === true,
+  pok('PARKED (was "S2: the sliver\'s typewriter toggle actually flips it ON by hand" + the Draft->Free Write->Draft round trip, 3 checks) — ITEM 171-A as AMENDED: the control is offered on a Draft page again, but it writes DRAFT\'S OWN value now, so the original\'s subject — a hand-click overriding a SEED, and surviving a mode round trip against it — has no seed left to override',
+    !!PARK171.controlInDraft && PARK171.controlInDraft.offered === true && PARK171.settingUntouched === true,
     JSON.stringify({ controlInDraft: PARK171.controlInDraft, settingUntouched: PARK171.settingUntouched }));
   pok('PARKED (was "S2 (cross-page): page A opens Draft with typewriter ON" + "explicit click flips it OFF by hand", 2 checks) — ITEM 171-A: same control, same absence, one page earlier',
     !!PARK171.pageA && PARK171.pageA.pageASeed === 'false', JSON.stringify(PARK171.pageA));

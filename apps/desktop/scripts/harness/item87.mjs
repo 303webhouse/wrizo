@@ -139,7 +139,7 @@ await withHarness(async (app) => {
   //   freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
   // ------------------------------------------------------------------------
   PARK171.fresh = freshTypewriter;
-  ok('S3 (a) [ITEM 171-A successor] — a fresh Draft page has NO typewriter, which is now true of every Draft page rather than of the empty one especially',
+  ok('S3 (a) [ITEM 171-A successor, AMENDED 2026-09-22] — a fresh Draft page opens with the typewriter OFF, which is now true of EVERY Draft page rather than of the empty one especially: clause 3 made the empty case an exception to a seed, and Draft simply starts off now',
     freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
 
   // A page that already holds a little work: FX2 S2's threshold rule, untouched.
@@ -181,7 +181,7 @@ await withHarness(async (app) => {
   //   shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
   // ------------------------------------------------------------------------
   PARK171.short = shortTypewriter;
-  ok('S3 (b) [ITEM 171-A successor] — a Draft page that already holds work has no typewriter either: the empty case and the worked case now agree, because the distinction lived in the seed',
+  ok('S3 (b) [ITEM 171-A successor, AMENDED 2026-09-22] — a Draft page that already holds work opens with it OFF too: the empty case and the worked case agree now, because the distinction lived in the seed and the seed is gone',
     shortTypewriter === 'false', `data-typewriter=${String(shortTypewriter)}`);
 });
 

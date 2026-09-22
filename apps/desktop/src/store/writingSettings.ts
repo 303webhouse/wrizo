@@ -37,6 +37,15 @@ export interface WritingSettings {
   fadeDepth: FadeDepth;
   timer: boolean;
   typewriter: boolean;
+  /**
+   * ITEM 171-A AMENDED — DRAFT'S OWN typewriter value, default false. Free
+   * Write reads `typewriter`; Draft reads this. Revise reads neither (it has no
+   * typewriter at all). See DEFAULTS below for why the sentence forces a second
+   * value rather than a shared one, and use `typewriterValueFor` /
+   * `setTypewriterFor` instead of reading either field directly, so no caller
+   * has to remember which mode owns which.
+   */
+  typewriterDraft: boolean;
   progressStyle: ProgressStyle;
   // FX3 S5 — the sliver foot's new instruments panel (components/Sliver.tsx's
   // SliverInstrumentRow): a master on/off for the goal instruments (the
@@ -92,6 +101,19 @@ const DEFAULTS: WritingSettings = {
   // the page's own line count — Free Write is untouched by that seed and
   // keeps relying on this bare default.
   typewriter: true,
+  // ITEM 171-A AMENDED (Nick, 2026-09-22): "Allow typewriter mode in Draft, but
+  // make the default setting 'Off' when in Draft mode. The User can manually
+  // select to turn Typewriter mode back on."
+  //
+  // A SECOND VALUE IS NOT A PREFERENCE — THE SENTENCE REQUIRES IT. With one
+  // shared value, "default OFF in Draft" cannot hold: a writer whose Free Write
+  // typewriter is ON would open Draft and find it ON, and turning it on in Draft
+  // would reach into Free Write. So Draft keeps its own, defaulting FALSE, and
+  // the two modes stop writing over each other. This is also what finally
+  // retires FX2 S2's seed mechanism honestly: the seed existed to give Draft a
+  // different opening value than the shared one, which is exactly what a second
+  // stored value does directly, without a page-open ever WRITING a setting.
+  typewriterDraft: false,
   instrumentsOn: true,
   // M2 S1 — Bar is the shipped default; a legacy device with no stored
   // style value falls through to this, byte-identical to pre-M2 in every
@@ -170,6 +192,26 @@ let explicitlySetThisSession = false;
 export function setTypewriterExplicit(on: boolean): void {
   explicitlySetThisSession = true;
   setWritingSettings({ typewriter: on });
+}
+
+/**
+ * ITEM 171-A AMENDED — THE ONE PLACE THAT KNOWS WHICH MODE OWNS WHICH VALUE.
+ * Free Write reads the shared `typewriter`; Draft reads `typewriterDraft`
+ * (default off, Nick's word). Every control and every reader goes through this
+ * pair, so a later hand cannot half-move one of the five control surfaces onto
+ * the wrong field — which is the failure mode this ticket has already met once
+ * (SC1 S3: hiding one affordance and leaving the other).
+ *
+ * `isDraft` rather than the mode union, so the store keeps no dependency on the
+ * editor's own types.
+ */
+export function typewriterValueFor(isDraft: boolean): boolean {
+  return isDraft ? current.typewriterDraft : current.typewriter;
+}
+
+export function setTypewriterFor(isDraft: boolean, on: boolean): void {
+  explicitlySetThisSession = true;
+  setWritingSettings(isDraft ? { typewriterDraft: on } : { typewriter: on });
 }
 
 // The line-equivalents threshold (store/lineEquivalents.ts's canonical

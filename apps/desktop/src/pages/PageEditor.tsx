@@ -235,7 +235,18 @@ function PageEditorView({ id }: { id: string }) {
   // paints it `destination-out` and keeps it in the array), so a rubbed-out page
   // still has ink and still has no typewriter. That is the one consequence a
   // writer might not predict, and it is named in the offer.
-  const typewriterAvailable = mode === 'journal' && instrument === 'text' && strokes.length === 0;
+  // AMENDED 2026-09-22 (Nick): "Allow typewriter mode in Draft, but make the
+  // default setting 'Off' when in Draft mode." DRAFT IS BACK — availability is
+  // not the same thing as the value, and the two halves live apart on purpose:
+  //   · WHERE it may run (here): Free Write in TEXT, or Draft. Never Revise.
+  //   · WHAT it is set to (store/writingSettings.ts): Free Write's shared value,
+  //     or Draft's own, which DEFAULTS OFF. A page never writes either.
+  // THE INK RULES STAND IN BOTH MODES, as ruled: a page that has ink cannot run
+  // the typewriter, and in Free Write choosing the pen puts the typewriter down
+  // in the same act. Stateful — undo returns a page to inkless, an eraser does
+  // not, because an eraser is itself a stroke.
+  const typewriterAvailable = strokes.length === 0
+    && (mode === 'journal' ? instrument === 'text' : mode === 'drafting');
 
   // Persist strokes, merging the LIVE text so a pending typed run is never
   // clobbered — the Journal's own rule (its `persist`), and load-bearing here
@@ -697,7 +708,18 @@ function PageEditorView({ id }: { id: string }) {
     // on-ramp. Identical act to the bar's door (lazy-born board, then travel).
     { key: 'plan', label: dt('beginPlan'), onOpen: takeBeginning(openPlanBoard) },
   ];
-  const beginningsVisible = !beginningsDismissed && !gateActive && wordCount(text) === 0;
+  // ITEM 171-A (Nick, 2026-09-22): "the page presets don't disappear as soon as
+  // the user selects INK instead of TEXT." These three doors — Screenplay,
+  // Sprout, Plan — are ways to BEGIN A TEXT PAGE, and they were showing on an
+  // empty page whatever the instrument was, so choosing the pen left three
+  // typing offers sitting on the sketch pad.
+  //
+  // ONE SWITCH, ONE EFFECT: this reads the same `instrument` that puts the
+  // typewriter down (see `typewriterAvailable` above), so selecting INK hides
+  // them in the same act rather than through a second mechanism that could
+  // drift out of step with the first.
+  const beginningsVisible = !beginningsDismissed && !gateActive && wordCount(text) === 0
+    && instrument === 'text';
   const beginningsRow = beginningsVisible
     ? <BeginningsRow surface="page" doors={beginningDoors} onDismiss={() => setBeginningsDismissed(true)} />
     : null;
@@ -752,7 +774,14 @@ function PageEditorView({ id }: { id: string }) {
           utterance; the first-line invite (F6) would speak a second one on
           this exact (empty) page. gateActive is only ever true when framed
           (F4), so this never touches the legacy branch's behavior. */}
-      {gateActive ? null : invite.node}
+      {/* ITEM 171-A — and the first-line invitation goes with them. It is the
+          same kind of thing as the doors above: an offer to TYPE a first line,
+          which has no business sitting on a page the writer has just picked up
+          a pen for. Read against the same `instrument`, so the whole text-start
+          furniture leaves in one act. NAMED IN THE OFFER as part of my reading
+          of "the page presets", so it is one line to narrow if Nick meant the
+          three doors alone. */}
+      {gateActive || instrument === 'ink' ? null : invite.node}
       {/* BG1 S2 — the beginnings row, a sibling ABOVE/OUTSIDE the editable DOM
           (the same warm-start/F6 placement, for the same reason: never
           selectable, never serialized — the saved bytes are identical whether

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterValueFor, setTypewriterFor } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
@@ -165,12 +165,20 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
   // returns it from parking — the EFFECT now engages framed too (its own
   // toggle button moves to the sliver, a DeskFrame sibling reading/writing
   // the same shared store — CD1: components/Sliver.tsx), independent of framed.
-  // ITEM 171-A — the mode half of the ruling lives in this default, so a host
-  // that passes nothing still loses the typewriter in Draft and Revise. Item
-  // 127's clause ("typewriter can be turned off") is superseded for Draft by
-  // Nick's own words; 127's text stands, with 171 named as its successor.
-  const twAvailable = typewriterAvailable ?? (mode === 'journal');
-  const typewriterOn = twAvailable && settings.typewriter;
+  // ITEM 171-A, AMENDED 2026-09-22 (Nick): "Allow typewriter mode in Draft, but
+  // make the default setting 'Off' when in Draft mode." So DRAFT IS BACK — with
+  // its own stored value, defaulting off — and REVISE still has none. The mode
+  // half of the rule lives in this default, so a host that passes nothing gets
+  // it right; PageEditor narrows further (instrument, and whether the page has
+  // ink). Item 127's clause is superseded for Draft by Nick's own words; 127's
+  // text stands, with 171 named as its successor.
+  const isDraft = mode === 'drafting';
+  const twAvailable = typewriterAvailable ?? (mode === 'journal' || isDraft);
+  // Free Write reads the shared value; Draft reads its own. One helper owns
+  // that choice (store/writingSettings.ts), so no control here can drift onto
+  // the wrong field.
+  const twValue = typewriterValueFor(isDraft);
+  const typewriterOn = twAvailable && twValue;
   // AB1 S3 fix (found while generalizing the vanishing law to DeskFrame,
   // pre-existing on this surface too — not new here) — this array literal
   // was previously rebuilt on every ModeStage render, so useChromeDissolve's
@@ -449,7 +457,7 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
               one click deeper than the icon toggle below. SC1 S3's own words:
               hiding only the first "would leave a live switch that does nothing
               one click deeper". Both read the same availability. */}
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={twAvailable} />}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: twValue, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={twAvailable} onPickTypewriter={on => setTypewriterFor(isDraft, on)} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -609,7 +617,9 @@ export function ModeStage({ mode, words, surfaceRef, focused, pageTitle, onDisso
                 // ITEM 171-A — and the control is ABSENT, never greyed, wherever
                 // the typewriter cannot run: Draft, Revise, and a page that has
                 // ink. G3, and item 121's own `inkOptions: undefined` in TEXT.
-                <TypewriterToggle on={settings.typewriter} onToggle={() => setTypewriterExplicit(!settings.typewriter)} />
+                // ITEM 171-A AMENDED — writes the value THIS mode owns: Free
+                // Write's shared one, or Draft's own (default off).
+                <TypewriterToggle on={twValue} onToggle={() => setTypewriterFor(isDraft, !twValue)} />
               )}
             </div>
           )}
@@ -695,7 +705,7 @@ function AssistIcon() {
 // icon toggle is the visible affordance, but this Seg is the second one
 // behind the same gear, and hiding only the first would leave a live switch
 // that does nothing one click deeper.
-export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
+export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true, onPickTypewriter }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean; onPickTypewriter?: (on: boolean) => void }) {
   const { t: deskLex } = useDeskLexicon();
   const progressOpts: [string, string][] = [['words', 'Words'], ['time', 'Time'], ['off', 'Off']];
   // B2.1 S6 — the DISPLAY label only ("Project" -> "Drawer"); the stored
@@ -730,7 +740,11 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {/* ITEM 171-A AMENDED — the value and the writer both come from the host
+          when it knows the mode (Draft owns its own typewriter value, default
+          off); the bare setter remains the default so every pre-171 caller is
+          unchanged. */}
+      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => (onPickTypewriter ?? setTypewriterExplicit)(v === 'on')} />}
       <div className="mode-settings-hint">Type to dissolve the chrome. Stop, and after a pause it returns slowly. Reach an edge or press Esc to summon it back.</div>
     </div>
   );

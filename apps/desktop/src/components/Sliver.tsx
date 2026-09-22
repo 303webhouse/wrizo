@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterValueFor, setTypewriterFor } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, DEFAULT_GOAL_LINES } from '../store/writingGoal';
 import { useGoalUnit, setGoalUnit, type GoalUnit } from '../store/writingGoalUnit';
 import { countLineEquivalents } from '../store/lineEquivalents';
@@ -191,6 +191,13 @@ export interface SliverProps {
 }
 
 export function Sliver({ content, goalText, hasMilestones, typewriterAvailable = true }: SliverProps) {
+  // ITEM 171-A AMENDED — WHICH MODE'S TYPEWRITER VALUE IS THIS? The Sliver
+  // already knows: `content.kind` is the surface's own word for itself. Free
+  // Write reads the shared setting; Draft reads its own (default off, Nick's
+  // word). Derived here ONCE and handed to every surface below, so the icon,
+  // the menu's own switch and the gear's Seg can never end up on different
+  // fields — the failure SC1 S3 names, in its other form.
+  const isDraftSurface = content.kind === 'draft';
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const target = useWritingGoal();
@@ -353,6 +360,7 @@ export function Sliver({ content, goalText, hasMilestones, typewriterAvailable =
           hasMilestones={hasMilestones}
           target={target}
           typewriterAvailable={typewriterAvailable}
+          isDraftSurface={isDraftSurface}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
@@ -972,7 +980,7 @@ function countPeriods(text: string): number {
   return n;
 }
 
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, isDraftSurface = false, goalText, onPopoutHold }: { hasMilestones?: boolean; target: number | null; typewriterAvailable?: boolean; isDraftSurface?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const [gearOpen, setGearOpen] = useState(false);
@@ -1038,7 +1046,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
         {typewriterAvailable && (
           <button type="button" className="wz-sliver-instruments-btn"
             aria-label={t('footTypewriter')} title={t('footTypewriter')}
-            aria-expanded={open === 'typewriter'} data-on={settings.typewriter ? 'true' : 'false'}
+            aria-expanded={open === 'typewriter'} data-on={typewriterValueFor(isDraftSurface) ? 'true' : 'false'}
             onClick={() => pick('typewriter')}>
             <TypewriterGlyph />
           </button>
@@ -1067,9 +1075,9 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           shares with ModeStage's own unrelated corner popover. Marked ON the
           trays rather than on a wrapper: a wrapper would be a new DOM node in a
           measured foot, and this wave measures that foot. */}
-      {open === 'typewriter' && <TypewriterMenu />}
+      {open === 'typewriter' && <TypewriterMenu isDraftSurface={isDraftSurface} />}
       {open === 'progress' && (
-        <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} />
+        <ProgressMenu target={target} hasMilestones={hasMilestones} typewriterAvailable={typewriterAvailable} isDraftSurface={isDraftSurface} />
       )}
     </div>
   );
@@ -1079,7 +1087,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
 // beyond the panel (G4's ceiling, met by the ruling's own shape — "the
 // Typewriter icon opens"). Each behaviour carries its toggle AND its
 // adjustments, disclosed IN PLACE beneath it, so the depth never grows.
-function TypewriterMenu() {
+function TypewriterMenu({ isDraftSurface = false }: { isDraftSurface?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const forwardLock = useForwardLock();
@@ -1089,9 +1097,9 @@ function TypewriterMenu() {
       <h4>{t('twMenuHeading')}</h4>
 
       {/* The typewriter itself — the instrument this menu belongs to. */}
-      <Seg label={t('footTypewriter')} value={settings.typewriter ? 'on' : 'off'}
+      <Seg label={t('footTypewriter')} value={typewriterValueFor(isDraftSurface) ? 'on' : 'off'}
         opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
-        onPick={v => setTypewriterExplicit(v === 'on')} />
+        onPick={v => setTypewriterFor(isDraftSurface, v === 'on')} />
 
       {/* ITEM 83 S3 — TRUTH-FIX. The ON/OFF toggles below STAY, because each
           drives a real engine today: Forward Lock writes store/forwardLock.ts
@@ -1129,8 +1137,8 @@ function TypewriterMenu() {
 // ITEM 83 M4 (R5) — PROGRESS absorbs the gear's Progress/Timer rows AND the
 // whole Instruments panel (Show · Unit · Target · Style). One surface onto the
 // one goal, where there were two.
-function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
-  { target: number | null; hasMilestones?: boolean; typewriterAvailable?: boolean }) {
+function ProgressMenu({ target, hasMilestones, typewriterAvailable, isDraftSurface = false }:
+  { target: number | null; hasMilestones?: boolean; typewriterAvailable?: boolean; isDraftSurface?: boolean }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const unit = useGoalUnit();
@@ -1161,10 +1169,11 @@ function ProgressMenu({ target, hasMilestones, typewriterAvailable }:
           persist changes. Theme is deliberately NOT rendered: it left the
           foot for the rail's theme category (R5). */}
       <SettingsPanel
-        settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: settings.typewriter, progressStyle: settings.progressStyle }}
+        settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterValueFor(isDraftSurface), progressStyle: settings.progressStyle }}
         hasMilestones={hasMilestones}
         framed
         typewriterAvailable={typewriterAvailable}
+        onPickTypewriter={on => setTypewriterFor(isDraftSurface, on)}
       />
     </div>
   );

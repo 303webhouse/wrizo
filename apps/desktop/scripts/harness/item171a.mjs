@@ -30,11 +30,15 @@
 //   T4  a stroke: gone, and it stays gone in TEXT — "cannot be reactivated"
 //   T5  the eraser clause: erasing does NOT bring it back (an eraser is ink)
 //   T6  the undo clause: undoing the only stroke DOES (stateful, as ruled)
-//   T7  Draft and Revise: no engine, no control, at two widths
+//   T7  AMENDED: Draft HAS the typewriter, default OFF and offered; Revise has
+//       neither. At two widths.
 //   T8  a Board offers no typewriter option (found, not briefed)
 //   T9  the writer's global preference survived all of it
 //   T10 the words stay put when the typewriter goes off under the writer —
 //       and the one case where they cannot, MEASURED rather than asserted
+//   T11 the two values do not leak into each other (Draft's own, Free Write's
+//       shared) — the whole reason the amendment needs a second stored value
+//   T12 the page's text-start furniture leaves when INK is selected
 //
 // WHAT THIS FILE DOES NOT COVER: the script surface, whose own assertions live
 // in ab2.mjs, fx3.mjs and sc1.mjs (parked and succeeded there, where they are);
@@ -279,13 +283,17 @@ await withHarness(async (app) => {
   for (const [W, H] of [[W1, H1], [W2, H2]]) {
     await app.emulateDpr(1, W, H);
     await sleep(400);
-    for (const [label, key] of [['Draft', 'draft'], ['Revise', 'revise']]) {
-      await toMode(app, key);
-      const dom = await twDom(app);
-      const offered = await twOffered(app);
-      ok(`T7 (${W}, ${label}): no typewriter engine and no typewriter option — "typewriter mode should not be available in either Draft or Revise mode". Draft used to open with it ON by default, which is the visible half of this ticket`,
-        dom === 'false' && offered.offered === false, JSON.stringify({ dom, offered }));
-    }
+    await toMode(app, 'draft');
+    const draftDom = await twDom(app);
+    const draftOffered = await twOffered(app);
+    ok(`T7 (${W}, Draft) [AMENDED 2026-09-22]: Draft HAS the typewriter and it is OFF — "Allow typewriter mode in Draft, but make the default setting 'Off' when in Draft mode". OFF is not ABSENT: the option is offered on both surfaces, and the engine is simply not running`,
+      draftDom === 'false' && draftOffered.icon === true && draftOffered.seg === true,
+      JSON.stringify({ draftDom, draftOffered }));
+    await toMode(app, 'revise');
+    const reviseDom = await twDom(app);
+    const reviseOffered = await twOffered(app);
+    ok(`T7 (${W}, Revise): no typewriter engine and no typewriter option — Revise keeps none of it, which is the half of the original ruling the amendment left standing`,
+      reviseDom === 'false' && reviseOffered.offered === false, JSON.stringify({ reviseDom, reviseOffered }));
   }
   await app.emulateDpr(1, W1, H1);
   await sleep(300);
@@ -356,6 +364,76 @@ await withHarness(async (app) => {
     pad > 60 && want >= pad, JSON.stringify({ pad, room, want }));
   ok('T10: on a SCROLLED page, selecting INK does not move the writer\'s words — the pad that is removed comes off scrollTop in the same frame, so the text stays within 2px of where it was',
     moved != null && moved <= 2, JSON.stringify({ topBefore, topAfter, moved, pad }));
+
+  // ==========================================================================
+  // T11 — THE TWO VALUES DO NOT LEAK. This is the whole reason the amendment
+  // needs a second stored value: with one shared field, "default OFF in Draft"
+  // could not survive a writer whose Free Write typewriter is ON, and turning
+  // it on in Draft would reach into Free Write. Asserted in both directions.
+  // ==========================================================================
+  await freshPage(app, W1, H1);
+  await toMode(app, 'draft');
+  await sleep(200);
+  const beforeSwitch = await twStored(app);
+  const draftBefore = await twDom(app);
+  // Turn Draft's on, by hand, through the foot's own switch.
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(260);
+  await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row');
+    const b = row && [...row.querySelectorAll('button')].find(x => (x.getAttribute('aria-label') || '').startsWith('Typewriter'));
+    if (b) b.click(); })()`);
+  await sleep(220);
+  await app.evalJs(`(() => { const rows = [...document.querySelectorAll('.wz-sliver-instruments-panel .mode-crow')];
+    const row = rows.find(r => ((r.querySelector('span') || {}).textContent || '') === 'Typewriter');
+    if (!row) return; const on = [...row.querySelectorAll('.mode-seg button')].find(b => !b.classList.contains('on'));
+    if (on) on.click(); })()`);
+  await sleep(400);
+  const draftAfter = await twDom(app);
+  const sharedAfter = await twStored(app);
+  await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
+  await sleep(200);
+  ok('T11: a hand-click turns the typewriter ON in Draft — the amendment\'s "the User can manually select to turn Typewriter mode back on", asserted through the writer\'s own control rather than the store',
+    draftBefore === 'false' && draftAfter === 'true', JSON.stringify({ draftBefore, draftAfter }));
+  ok('T11: and doing so DOES NOT TOUCH FREE WRITE\'S value — the shared setting reads exactly what it read before. One field for each mode is not tidiness; it is what makes "default off in Draft" survivable for a writer whose Free Write typewriter is on',
+    sharedAfter === beforeSwitch, JSON.stringify({ beforeSwitch, sharedAfter }));
+  await toMode(app, 'freewrite');
+  await sleep(300);
+  const fwAfterDraftOn = await twDom(app);
+  ok('T11: and Free Write is unchanged by Draft\'s choice — it still runs on its own value, so the writer who turned the typewriter on in Draft did not quietly change the surface they were not on',
+    fwAfterDraftOn === 'true', JSON.stringify({ fwAfterDraftOn }));
+
+  // ==========================================================================
+  // T12 — THE PAGE'S TEXT-START FURNITURE LEAVES WITH THE TYPEWRITER. Nick:
+  // "the page presets don't disappear as soon as the user selects INK instead
+  // of TEXT." One switch, one effect: the doors that offer ways to BEGIN A TEXT
+  // PAGE (Screenplay / Sprout / Plan) and the first-line invitation read the
+  // same `instrument` that puts the typewriter down.
+  // ==========================================================================
+  await freshPage(app, W1, H1);
+  await toMode(app, 'freewrite');
+  await sleep(300);
+  const furniture = () => app.evalJs(`(() => ({
+    beginnings: !!document.querySelector('.wz-beginnings'),
+    doors: document.querySelectorAll('.wz-beginnings .wz-beginning').length,
+    invite: !!document.querySelector('.fl-invite'),   // useFirstLineInvite.tsx's own class, read from source — a guessed selector would read 'absent' in BOTH states and pass for nothing
+  }))()`);
+  const inText = await furniture();
+  await setInstrument(app, 'ink');
+  await sleep(400);
+  const inInk = await furniture();
+  await setInstrument(app, 'text');
+  await sleep(400);
+  const backInText = await furniture();
+  ok('T12: (precondition) an empty Free Write page in TEXT offers its beginnings — the three doors are there to disappear',
+    inText.beginnings === true && inText.doors >= 1, JSON.stringify(inText));
+  // The invite is only claimed if it was actually SHOWING in TEXT — it has its
+  // own conditions (empty page, not dismissed), and asserting the disappearance
+  // of something that was never there is a check that passes for nothing.
+  ok('T12: selecting INK takes the text-start furniture off the page — the doors that offer ways to BEGIN A TEXT PAGE have no business sitting on a sketch pad, and they leave in the same act that puts the typewriter down',
+    inInk.beginnings === false && (inText.invite ? inInk.invite === false : true),
+    JSON.stringify({ inText, inInk, inviteClaimed: !!inText.invite }));
+  ok('T12: and choosing TEXT again brings them back — the page is still empty, so the offer is still good. Hidden by the instrument, never destroyed by it',
+    backInText.beginnings === true && backInText.doors === inText.doors, JSON.stringify({ inText, backInText }));
 
   // The case the correction cannot cover, MEASURED and reported rather than
   // asserted: at scroll 0 there is nothing to give back.
