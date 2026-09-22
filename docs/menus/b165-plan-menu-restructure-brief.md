@@ -195,6 +195,15 @@ one, then only Boards/Pages that have both should be displayed, and so on."*
 
 ## §7 · WHAT FOLDS IN — and what his notes do not decide
 
+**(a0) ⚖ RULED 2026-09-19 (Fable, accepting this desk's reading): ITEM 116 IS ABSORBED *IN PART*, AND
+ITEM 181 CARRIES THE OTHER HALF.** **They are two acts, not one:**
+- **IMPORT SOURCES (165, here):** research documents come in and become **PAGES** on a new board.
+- **ITEM 181 (116's successor, with the fresher words):** *"Users should also be able to import
+  images/docs onto a Journal 'board.' These files should open to full size when they are double-clicked
+  on."* — **a file kept as a FILE, an object on a board, with a viewer.**
+*So "superseded into 165" was right for the research half and wrong for the file half; 181 holds the
+second, and 116 is marked absorbed-in-part rather than absorbed.*
+
 **(a) ITEM 116 → Import Sources — HIS WORDS DECIDE THE MODEL:** *"opens a window for the user to import
 docs/PDFs of their research and then redirects them to a Board that shows all of the imported docs as
 Pages."* **Imports become PAGES** — not files kept whole with a viewer, as 116 first chartered. **Still
