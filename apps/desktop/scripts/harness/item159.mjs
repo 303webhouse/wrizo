@@ -157,7 +157,17 @@ await withHarness(async (app) => {
   })()`);
   await sleep(200);
   const boldPressed = await realClick(app, '.board-popup-tool');
-  await sleep(900);   // the write lands before the probe reads (the settled-state law)
+  // FIX'S OWN FALSIFICATION FOUND THIS: a 900ms wait reads localStorage
+  // BEFORE the write lands, not after — BoardEditor's own boxes autosave is
+  // a SEPARATE 2000ms debounce (AUTOSAVE_MS), not the persistence layer's.
+  // A diagnostic probe confirmed the in-memory box (window.wrizoBoard())
+  // held "**Plain** card words" at 20ms, while localStorage itself still
+  // read the pre-edit text at 900ms and only turned over past 2000ms. The
+  // probe-reads-after-the-flush law, not a product defect: wait past the
+  // real debounce, then force the persistence layer's own flush for margin.
+  await sleep(2300);
+  await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow()');
+  await sleep(100);
   const after = await storedCard(app);
   ok('S4: the dock still styles through the grip - selecting a word and pressing Bold writes the markers, so opening the dock did not cost the editor the selection it acts on',
     boldPressed && typeof after === 'string' && after.includes('**Plain**'),
