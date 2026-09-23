@@ -110,12 +110,16 @@ function rowToJournalEntry(r: any) {
     // never an empty object, so a page never dressed stays byte-identical to
     // today and the app's own defaults govern it.
     pageSettings: r.page_settings ?? undefined,
-    // EXPERIMENT 1 — the page's own links. The exact
-    // origin/script/tutor/pageSettings recipe: SQL null → JS undefined,
-    // never `null` and never an empty array, so a page that has never been
+    // EXPERIMENT 1 — the page's own anchors and links (one object with two
+    // arrays; see migrate.ts for the shape, taken from the brief's §2). The
+    // exact origin/script/tutor/pageSettings recipe: SQL null → JS undefined,
+    // never `null` and never an empty object, so a page that has never been
     // linked stays byte-identical to today. NOTHING WRITES DURING A READ:
-    // this mapper hands the stored array straight back and resolves no
-    // anchor — resolution is the client's, and it is pure.
+    // this mapper hands the stored object straight back and RE-FINDS NOTHING
+    // — anchor resolution is the client's, and `resolveAnchors` is pure. An
+    // anchor whose words moved is re-found at read time in the CLIENT and the
+    // updated hint is written back only by an ordinary page save, never from
+    // inside a read.
     pageLinks: r.page_links ?? undefined,
     tags: r.tags ?? undefined,
     routedProjectIds: r.routed_project_ids ?? undefined,
