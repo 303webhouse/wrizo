@@ -1,6 +1,7 @@
 import type { JournalEntry, Project } from '../types';
 import { firstLine } from './entryText';
 import { stripMarkdownConventions } from './draftFormat';
+import { canonicalDeskTerm } from './deskLexicon';
 import { serializeScriptDoc, plainScriptWords } from './scriptText';
 import { describePageHome } from './pageHome';
 import { getProject, getJournalEntry, getJournalEntries, getBinderPages, getSystemKind, getDeletedEntries } from './persistence';
@@ -63,14 +64,27 @@ const INK_PLACEHOLDER = '[Hand-drawn ink — not exported as text.]';
 // card species can never vanish silently from a claimed-complete export.
 const UNKNOWN_KIND_PLACEHOLDER = '[A card of an unrecognized kind — not exported as text.]';
 
-// EXPERIMENT 1 — the honest placeholder for the page's links. THE THIRD
+// EXPERIMENT 1 — the honest placeholder for the page's connections. THE THIRD
 // APPLICATION OF THIS MODULE'S OWN LAW, not a new idea: ink earns a named line,
-// an unrecognised card kind earns a named line, and links are page content this
-// exporter cannot render as text either. Fable ruled it exactly that way —
-// "extend its own law" — so an export that claims to be complete never drops
-// them in silence. A RICHER EXPORT (the links themselves, with their targets)
-// waits for records and for Nick; this is the honest note in the meantime.
-const LINKS_PLACEHOLDER = '[Connections — not exported as text.]';
+// an unrecognised card kind earns a named line, and connections are page
+// content this exporter cannot render as text either. Fable ruled it exactly
+// that way — "extend its own law" — so an export that claims to be complete
+// never drops them in silence. A RICHER EXPORT (the connections themselves,
+// with their targets) waits for records and for Nick.
+//
+// ⚠ THE WORD IS THE WRITER'S, NOT THE STORAGE'S. Fable: "the export's third
+// line is words the writer reads — use the same term the right-click menu and
+// the rail use, not a code name." `pageLinks`/`page_links` is the column's
+// name and appears nowhere a writer can see. The term comes from the lexicon
+// through `canonicalDeskTerm`, which does NO theme resolution — so this file
+// keeps the theme-independence its header comment requires (an exported file
+// must not say 'Log' because the writer was in Flux when they pressed
+// Download) while still speaking the same word as the menu and the rail. One
+// definition of the word; no drift to detect later.
+const CONNECTIONS_TERM_ONE = canonicalDeskTerm('connectTermOne');
+const CONNECTIONS_TERM_MANY = canonicalDeskTerm('connectTermMany');
+const LINKS_PLACEHOLDER =
+  `[${CONNECTIONS_TERM_MANY.charAt(0).toUpperCase()}${CONNECTIONS_TERM_MANY.slice(1)} — not exported as text.]`;
 
 function withInkNote(body: string, entry: JournalEntry): string {
   if (entry.strokes && entry.strokes.length > 0) {
@@ -88,7 +102,7 @@ function liveLinkCount(entry: JournalEntry): number {
 function withLinksNote(body: string, entry: JournalEntry): string {
   const n = liveLinkCount(entry);
   if (n === 0) return body;
-  const plural = n === 1 ? 'connection' : 'connections';
+  const plural = n === 1 ? CONNECTIONS_TERM_ONE : CONNECTIONS_TERM_MANY;
   return `${body}\n\n${LINKS_PLACEHOLDER} (this page carries ${n} ${plural} to other pages, boards or cards)`;
 }
 

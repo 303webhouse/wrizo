@@ -551,7 +551,25 @@ export type DeskTermId =
   // 2026-07-25) — one word each, "Sprout" superseding "Start from a Spark".
   | 'beginNewCard' | 'beginNewPageCard' | 'beginLoadDeck' | 'beginConnectPage'
   | 'beginNewLane'
-  | 'beginScreenplay' | 'beginSprout' | 'beginPlan';
+  | 'beginScreenplay' | 'beginSprout' | 'beginPlan'
+  // EXPERIMENT 1 ("connect from the page") — the vocabulary of connecting, in
+  // ONE place so the right-click menu, the left strip, the right rail and the
+  // exported file cannot each invent their own word for the same thing. The
+  // app already speaks this word ('boardFooterToggle: Show connections'), and
+  // Fable ruled the export must use the term the writer reads rather than a
+  // code name — `pageLinks`/`page_links` is the STORAGE's name, never the
+  // writer's.
+  //
+  // Nick's menu list, in his order: styling · Make a card · Link · Note This ·
+  // Remove. 'connectMenuRemove' is deliberately not a bare "Remove": the menu
+  // must say which of the two it will do, because REMOVE UNLINKS AND NEVER
+  // DELETES.
+  | 'connectMenuLink' | 'connectMenuNoteThis' | 'connectMenuMakeCard'
+  | 'connectMenuRemove'
+  | 'connectRailTitle' | 'connectRailRestingEmpty' | 'connectRailSelectedEmpty'
+  | 'connectRailRemove'
+  | 'connectTermOne' | 'connectTermMany'
+  | 'connectAnchorAmbiguous' | 'connectAnchorLost';
 
 const CANONICAL: Record<DeskTermId, string> = {
   // BM1 — the Board's Own Modes.
@@ -1190,6 +1208,25 @@ const CANONICAL: Record<DeskTermId, string> = {
   publishDownloadConfirm: 'Downloading — check your downloads.',
   publishDownloadFailed: 'That download couldn’t be made — nothing was lost, try again.',
   publishComingSoon: 'Publishing options — tailored to this work’s type, destination, and format — are coming soon.',
+
+  // EXPERIMENT 1 — connecting from the page.
+  connectMenuLink: 'Link',
+  connectMenuNoteThis: 'Note This',
+  connectMenuMakeCard: 'Make a card',
+  // Never a bare "Remove" — the act unlinks, and the menu says so.
+  connectMenuRemove: 'Remove this link',
+  connectRailTitle: 'This page’s connections',
+  connectRailRestingEmpty: 'Nothing is connected to this page yet.',
+  connectRailSelectedEmpty: 'Nothing is connected to these words.',
+  connectRailRemove: 'Remove this link',
+  // The counting words the export and the rail share, so "1 connection" and
+  // "3 connections" are never spelled two ways.
+  connectTermOne: 'connection',
+  connectTermMany: 'connections',
+  // §1b's two honest refusals. The anchor is KEPT in both cases and its links
+  // still open their targets — neither of these is a deletion.
+  connectAnchorAmbiguous: 'These words appear more than once now — point me at the right one.',
+  connectAnchorLost: 'The words this was attached to are gone. The connection is kept.',
 };
 
 // Flux registers its own capture-module name (the app's other live theme
@@ -1214,6 +1251,30 @@ function resolveTheme(theme: ThemeId | undefined): ThemeId {
 export function deskTerm(term: DeskTermId, theme?: ThemeId): string {
   const resolved = resolveTheme(theme);
   return OVERRIDES[resolved]?.[term] ?? CANONICAL[term];
+}
+
+/**
+ * The canonical term, with NO theme resolution — Plateau's word, always.
+ *
+ * WHY THIS EXISTS, AND WHY IT IS NOT `deskTerm`. `pageExport.ts` states its own
+ * boundary: exported file BODY TEXT is deliberately not routed through this
+ * lexicon, because this seam is REACTIVE UI vocabulary keyed to the LIVE THEME,
+ * while an exported file is a durable artifact read later with the app and its
+ * theme nowhere in sight. That reasoning is about THEME REACTIVITY, not about
+ * where a word is defined — so the carve-out is a read that cannot be reactive
+ * by construction.
+ *
+ * Using it, an exported file still never says 'Log' because the writer happened
+ * to be in Flux when they pressed Download, AND the word in the file is the same
+ * word the menu and the rail show. Fable ruled the export must use the writer's
+ * term rather than a code name; this is how it does that without reopening the
+ * boundary that comment was written to protect.
+ *
+ * ⚠ Only for durable artifacts. Anything on screen uses `deskTerm`/
+ * `useDeskLexicon`, or it will not follow the theme.
+ */
+export function canonicalDeskTerm(term: DeskTermId): string {
+  return CANONICAL[term];
 }
 
 export function useDeskLexicon(): { t: (term: DeskTermId) => string } {
