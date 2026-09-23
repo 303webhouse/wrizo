@@ -128,6 +128,27 @@ export interface BirthContent {
   // a first stroke on an unborn Free Write page births it the way a first word
   // does. Zero schema — `strokes` is an existing column on the row.
   strokes?: JournalEntry['strokes'];
+  // EXPERIMENT 1 — links survive birth, AND A LINK IS NEVER A BIRTH TRIGGER.
+  //
+  // ⚠ READ THE CONTRAST WITH `strokes` DIRECTLY ABOVE, because the two look
+  // alike and are opposite. Ink IS a trigger: a first stroke births the page.
+  // A LINK IS NOT. Fable's ruling, on PB1's own grounds — a page born by a
+  // link would be a row written with nothing on it, which is the exact fault
+  // PB1 exists to prevent ("the row is written by the first word").
+  //
+  // So why carry it at all? Because `birth` rebuilds the row from THIS
+  // WHITELIST, and a field missing from the whitelist is dropped silently at
+  // birth. The (g) census found that: a writer who anchors a phrase on an
+  // unborn page and presses *Note this* would lose the link the moment the
+  // page became real — and that is precisely the two-halves test's purest case
+  // ("selecting a phrase requires no board, no project, no structure — the
+  // note exists because the words do"). Carried here, the link survives; not
+  // being a trigger, it cannot create the empty row.
+  //
+  // The practical shape: the act that makes the link births the page on its
+  // WORDS if there are words, and if there are none the connect acts are not
+  // offered — the page has nothing to anchor to.
+  pageLinks?: JournalEntry['pageLinks'];
 }
 
 export function birth(
@@ -145,6 +166,10 @@ export function birth(
     ...(content.pageType != null ? { pageType: content.pageType } : {}),
     ...(content.script != null ? { script: content.script } : {}),
     ...(content.strokes != null ? { strokes: content.strokes } : {}),
+    // EXPERIMENT 1 — carried so a link made before birth survives it. Same
+    // absent-not-null discipline as every line above: a page born with no
+    // links has no `pageLinks` key at all, so it stays byte-identical.
+    ...(content.pageLinks != null ? { pageLinks: content.pageLinks } : {}),
     updatedAt: now,
   };
   saveJournalEntry(born);

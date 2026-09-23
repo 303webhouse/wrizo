@@ -305,6 +305,90 @@ export interface JournalEntry {
   // grandfather fixed point planBoardId/tutor/origin keep, so an untouched
   // page reads undefined and the app's own PAGE_SETTINGS_FALLBACK governs.
   pageSettings?: PageSettings;
+  // EXPERIMENT 1 ("connect from the page") — the page's own anchors and links.
+  // Additive-optional and ABSENT (never null) on every page never linked — the
+  // same grandfather fixed point `pageSettings`/`planBoardId`/`tutor`/`origin`
+  // all keep, so an untouched page is byte-identical in every load/edit/save/
+  // sync path. Rides ONE jsonb column, `journal_entries.page_links` (Nick's
+  // yes on EXP1-Q1); the server drops any entry field no column knows about,
+  // silently and in both directions, which is why the column had to be asked
+  // for at all.
+  pageLinks?: PageLinks;
+}
+
+// EXPERIMENT 1 — the shape of that column, mirroring the brief's §2 Shape A.
+//
+// TWO ARRAYS, NOT ONE LIST, and the reason is load-bearing: ONE ANCHOR MAY
+// CARRY SEVERAL LINKS (Nick's "the source(s) linked", plural). Links join
+// their anchor by `anchorId`. Flattening them would make a second link on the
+// same words impossible to express.
+export interface PageLinks {
+  anchors: Anchor[];
+  links: Link[];
+}
+
+// A span of the writer's own words. `quote` is the anchor's TRUTH; `paraIndex`
+// and `startHint` are HINTS and never the truth — that asymmetry is what lets
+// an anchor survive an edit, and it is why re-finding is allowed to correct
+// them but never allowed to correct `quote`.
+//
+// THE COORDINATE SPACE (ruled): these offsets are in the text AS THE WRITER
+// SEES IT, markers stripped — never raw `entry.text` offsets. Raw offsets are
+// derived at paint time only. A writer selected what they could see, so an
+// anchor recorded in raw coordinates would silently shift the moment someone
+// added `**bold**` earlier in the paragraph.
+export interface Anchor {
+  id: string;
+  // The paragraph's ordinal when written. A paragraph is "a run of consecutive
+  // NON-BLANK lines" — draftFormat.ts's own definition, now exported as
+  // `paragraphRanges` so indent and anchoring cannot disagree about where one
+  // ends.
+  paraIndex: number;
+  // The exact selected words. EMPTY STRING means a SPOT-NOTE: a note taken at
+  // a caret, which has no words to tint and is marked by a gutter tick
+  // instead (EXP1-Q6, Nick's yes; §6b forbids a character in the text). A
+  // spot-note is re-found by its surroundings and NEVER enters the ambiguity
+  // path — an empty quote matches at every position, so "exactly one match"
+  // could never hold and every spot-note would report a false problem.
+  quote: string;
+  prefix: string;   // up to 48 chars before, for re-finding
+  suffix: string;   // up to 48 chars after
+  startHint: number;
+  // Absent means FOUND — the house's absence-means-ok grammar. A lost anchor
+  // is KEPT and marked, never deleted, and its links still open their targets.
+  status?: 'moved' | 'ambiguous' | 'lost';
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+// One connection from an anchor to something that serves the page.
+//
+// WHAT A TARGET CAN BE (ruled, and bounded). Nick's own words: "sources or
+// pages or cards or boards or images or imported docs that all serve as
+// supplemental material to the text being written on the page surface." In
+// Experiment 1 that resolves to ENTRIES (sources, pages, boards — plan boards
+// included — chapters, imported docs; all of them `journal_entries` rows) and
+// CARDS (a Box on a board).
+//
+// KNOWN LIMITS, stated here because a reader will look for them: PROJECTS,
+// DRAWERS, STORY PLANS and PLAN BEATS are NOT link targets — they belong to
+// the rail's other lists. IMAGES are not either: they do not exist in the app
+// yet and are their own item after Experiment 1.
+export interface Link {
+  id: string;
+  anchorId: string;
+  // How the target is ADDRESSED — not what the rail calls it. The kind the
+  // rail SHOWS is read from the target itself at display time, never stored
+  // here. Same rule as tags: read from the target, never copied onto the link,
+  // so nothing can go stale.
+  kind: 'source' | 'note' | 'card';
+  targetEntryId?: string;   // a page or a board
+  targetBoxId?: string;     // a card on that board
+  body?: string;            // a note's own words (kind 'note')
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
 }
 
 // ITEM 83 M2 (R6) — the sheet's dimension: what a page IS as paper, as
