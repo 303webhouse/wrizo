@@ -3555,6 +3555,10 @@ CONDITION (loose; deleted), NOT places."** The Plan panel's subject is **the con
 page** — so a condition can never appear there. **This is not a rendering bug; the panel is answering
 a different question than the canon asks it to answer.**
 
+**✓ RELEASED 2026-09-22 — Nick's 3C: reading (a) PREVAILS IN SUBSTANCE** (rows, not arrangement). This item's
+text and the arrangement law below are RELEASED from founder review and stand as ratified. See *3C — SHELF
+AND TRASH AS SORTABLE ROWS*, below.
+
 **⚠ UNDER FOUNDER REVIEW 2026-09-19 — Nick's new ruling *"Shelf and Trash should be Default Boards"*
 (Fable's reading; verbatim pending) may reverse the ruling below.** The text below is held INTACT; see
 *SHELF AND TRASH AS DEFAULT BOARDS*.
@@ -4309,6 +4313,8 @@ discretion.**
 - **(Q-B) TRASH AT THE FOOT.**
 - **(Q-C) MANUAL JOURNAL ORDER RETIRES WITH THE SPREAD, DELIBERATELY — `setNotebookPosition` dies IN
   THAT COMMIT, in the views build.** Not before.
+- **✓ RELEASED 2026-09-22 — reading (a) prevails in substance (rows, not arrangement); the law below stands
+  ratified.** See *3C — SHELF AND TRASH AS SORTABLE ROWS*.
 - **⚠ UNDER FOUNDER REVIEW 2026-09-19** — Nick's *"Shelf and Trash should be Default Boards"* (Fable's
   reading; verbatim pending) collides with the law below. Held INTACT until he picks; see *SHELF AND
   TRASH AS DEFAULT BOARDS*.
@@ -7816,6 +7822,9 @@ the verbatim arrives.)*
 should be Default Boards that just show thumbnails of every item in them."* The added words describe how
 they DISPLAY; they do not say whether they ARE boards. **The text does not pick reading (a) or (b).**
 
+**✓ RELEASED 2026-09-22 — see the marker at item 131 (a), above, and *3C — SHELF AND TRASH AS SORTABLE ROWS*,
+below.** The section that follows is kept as written for the review as it stood.
+
 ## SHELF AND TRASH AS DEFAULT BOARDS — UNDER FOUNDER REVIEW — 2026-09-19
 
 **⚠ ONE RULING REVERSES RATIFIED CANON, AND IS FLAGGED TO NICK — NOT IMPLEMENTED ON A DEFAULT.** Per
@@ -8104,6 +8113,11 @@ escaping layer sat between his words and this ledger.**
 note in difference 1), **179, 180, 181, 169, 165, 172's amendments — clean**; 144's tab bar (with differences
 3–4). **Board views scrapped: RULED. Shelf and Trash: NOT released.**
 
+**✓ CONFLICT (i) CLOSED 2026-09-22 — RECONCILED, NOT OVERRULED.** Nick: *"Yes"*, to Fable's reconciliation.
+Both his 2026-09-13 "No" and his 2026-09-20 "Untitled" mention are satisfied. See *THE "UNTITLED" CONFLICT
+— RECONCILED*, below. Conflicts (ii) and (iii) are UNCHANGED by this and stay open. The section that follows
+is kept as written.
+
 ## THE THREE CONFLICTS, STATED AGAINST NICK's TEXT — 2026-09-19
 
 **Fable confirms all three as real and hands them to Nick with his text. Recorded here so any reader can
@@ -8329,6 +8343,10 @@ should be SHOWN and asked, as a mockup rather than a sentence.** Chat 1 records 
 SHOULD PICK.** *(PLAN's: a title underneath implies something above it. Chat 1's: something very small
 underneath the title. The text says neither.)*
 
+**✓ RESOLVED 2026-09-22 — Nick's 3A.** Typewriter returns to Draft (default OFF) and screenplay pages inherit
+it under the same rule — see *3A — ITEM 183 RESOLVED, ITEM 171 AMENDED*, below. The section that follows is
+kept as written for the question as it was asked.
+
 ## ITEM 183 — THE SCREENPLAY TYPEWRITER CONSEQUENCE — OPENS; ROUTED TO NICK AS A QUESTION — 2026-09-19
 
 **⚠ NUMBER COLLISION, resolved by the registry.** Fable's relay calls this item **"182."** **182 is ALREADY
@@ -8385,6 +8403,10 @@ TEMP measurement as right to state its 19:18–19:25 gap as a LIMIT, not a concl
 
 **FIX's RE-SCOPED 170 HAS ALREADY STAMPED (92/92, tree `41414e5`) and is with Fable NOW** — *"the moment it
 stamps"* was 20:37. **Nothing else waits on Fable.**
+
+**✓ RESOLVED 2026-09-22 — Nick's 3B: COPY.** Item 123 stands unchanged; item 169's move hold closes as copy,
+never built. See *3B — MOVE VS COPY RESOLVED: COPY*, below. The section that follows is kept as written for
+the conflict as it was found.
 
 ## THE FOURTH CONFLICT — MOVE vs COPY-ONLY (Nick's 169 ruling vs item 123) — NOBODY BUILDS A MOVE — 2026-09-19
 
@@ -8501,6 +8523,10 @@ discovering.* **176 and 163 are DISJOINT — by PW's MEASUREMENT, not assumption
 conclusion. **Nothing ready is waiting on the box** (Batch Four's deploy pair waits on Nick's word), so the
 grant stands.
 
+**✓ CLOSES 2026-09-22 — both halves named.** Sort half shipped in 170; PLACEMENT HALF DESIGNED IN 177**
+(`db393d8`, merged `a998d7a`) — the star control sits beside the page's name.** The paragraph below is
+kept as written for the state it closed from.
+
 ## ITEM 179 — PARTLY SHIPPED — 2026-09-20
 
 **Fable, correcting itself: chat 1's reading was right.** **THE SORT HALF (starred first, under every sort)
@@ -8570,7 +8596,1411 @@ item 151's Shape A list (its outer coordinate-dispatch sites were fixed there); 
 pair that ALSO exercises 151's new hit-test is worth checking against BOTH histories before calling it
 environmental.
 
-Registry: next free **184**.
+## NICK's WORD FOR BATCH FOUR, AND HIS FULL MESSAGE — PRIMARY TEXT, VERBATIM — 2026-09-22
+
+**Nick's ship word, quoted:** *"Ship it."* **Deploy pair at the batch head as queued; the manifest quotes
+it.**
+
+**His full message, whole, verbatim.** Typos and spacing are his (the double space before *"though"* in 4a;
+the period after *"pasted."* before the next numbered point). Numbered by him: 1, 2, 3A, 3B, 3C, 4a, 4b. Read
+from a plain file, no escaping layer between his words and this ledger; the wrap below is proved
+byte-identical per part before writing.
+
+**Part 1**
+> 1. Ship it
+
+**Part 2**
+> 2. These mockups don't look like they are matching my detailed explanation of exactly what I wanted
+> on the Page menu. Please go back and look at my specific directions a few days ago, and compare that
+> to these mockups I was given (see screenshots). Actually, it may be the case that I never got the
+> mockups you're referring to if they are not among the four I've pasted.
+
+**Part 3A**
+> 3A. OK, let's do this: Allow typewriter mode in Draft, but make the default setting "Off" when in
+> Draft mode. The User can manually select to turn Typewriter mode back on, but it should make the
+> tool menu options revert to what's available in Free Write excluding any INK options. Also, I want
+> to get rid of the "Convert to Screenplay" option if we haven't already. A User needs to select
+> Screenplay mode when they create a New Page (and that means we can retire all of the code that was
+> written to convert and de-convert existing prose).
+
+**Part 3B**
+> 3B. Cards should be copied to another board. The User can delete the Card from the first board if
+> they no longer want it there. Users should also be able to copy the same card and put it on the same
+> board. This will make sense in the right-click menu we haven't built yet, but maybe now is a good
+> time to add that. "Duplicate Card" should also be an option in the strip menu for Cards, and a
+> "Duplicate Board" and "Duplicate Page" available on their respective right-click menus and strip
+> menus.
+
+**Part 3C**
+> 3C. Look like, sort of, but perhaps arranged and displayed a bit differently. All the
+> files/cards/pages/boards, etc. should be listed in rows, perhaps by date as the default, instead of
+> displayed randomly as thumbnails on a board. All files should still have a thumbnail, the title,
+> date, tags, and connected boards/drawers, all of which should be sortable options. And perhaps the
+> Shelf and Trash could look a bit different to distinguish one as a scrap pile and the other as a
+> waste bin (not literally, but aesthetically, somehow). Let's turn this over to the Architects to see
+> what they can cook up.
+
+**Part 4a**
+> 4a. While I'm on a Board, I see no way to copy a card or open a second board in split screen (or at
+> all, really) from the Plan menu or the Board UI. The "Plan Menu" currently has almost nothing in it.
+> All Boards need to be listed as a new section, from most recent to least recent as default but also
+> sortable by Drawer and Tag. There also needs to be an option to add any of these boards to the
+> existing surface, where they should be displayed in split screen with the currently opened board. It
+> should also be possible to drag and drop a board in a dropdown menu onto the surface. Lastly, the
+> dropdown menu should only display up to five boards and then scroll from there. I would also like
+> the Architects to do a run on these Board display issues and provide me with two options for how the
+> Plan menu and the main surface UI can best organize and accommodate the need for multiple boards to
+> be displayable, moved back and forth between, and connected (perhaps some of this has already been
+> planned but not implemented yet, though. If so, I would still like to see mockups of what's being
+> planned).
+
+**Part 4b**
+> 4b. The ink doesn't go all the way to the edge of the page (which it should). And I also found
+> another bug: the page presets don't disappear as soon as the user selects INK instead of TEXT.
+
+### FILED BY SUBJECT
+
+| part | subject | filed as |
+| --- | --- | --- |
+| 1 | Batch Four | **shipped on his word** |
+| 2 | the Page-menu mockups he was shown | **Fable's error, on record; 177's one real gap** |
+| 3A | typewriter in Draft; retire Convert to Screenplay | **183 resolved, 171 amended; NEW ITEM 184** |
+| 3B | copy vs move; duplicate; the right-click menu | **the fourth conflict resolved; NEW ITEMS 185, 186** |
+| 3C | Shelf/Trash display; sortable rows | **131 (a) and the arrangement law released; to PLAN DESK / VW2** |
+| 4a | all boards in the Plan menu; split screen; two architect options | **to PLAN DESK, under 169** |
+| 4b | ink to the page edge; page presets not hiding on Ink | **157 confirms on build; new bug filed under 171-A** |
+
+## THE FOUR SCREENSHOTS WERE 170's FRAMES, NOT 177's MOCK — FABLE's ERROR — 2026-09-22
+
+**Nick's part 2 names the cause: the screenshots he was shown are 170's two frames** (the list on a page and
+on a board, `⋯` open — delivered `7e906d9`, 2026-09-19), **NOT 177's `page-menu-mock.html`.** **`177`'s mock
+NEVER REACHED HIS DOWNLOADS — Fable claimed it had, WITHOUT CHECKING. Recorded as Fable's error.**
+
+**177 checked against his verbatim, section by section: MATCHES on all but one.** **OPEN PAGES must sort by
+TAG, BOARD and DRAWER — his words, part 1, 2026-09-19** (*"sortable by tag or by board or by drawer"*). **The
+brief itself defers them, by name, as FIX's follow-on** (`b177-page-menu-brief.md` §4: *"the three sorts —
+tag · board · drawer — land here when they ship, as FIX's follow-on"*) **and the mock omits them —
+confirmed at the file, not assumed from the relay.** **PLAN DESK ADDS THEM and drops the mock in his
+Downloads.**
+
+## THE "UNTITLED" CONFLICT — RECONCILED — 2026-09-22
+
+**Nick, verbatim: "Yes"** — to Fable's reconciliation, quoted so the record shows what he answered:
+
+> "Untitled" appears only as greyed-out placeholder text in the name field of a page you haven't written
+> anything on — the moment you type, your first words take over, and nothing is ever saved as "Untitled."
+
+**Item 136's "No" (2026-09-13) and item 177's "'Untitled' as the default name" (2026-09-19) are BOTH
+SATISFIED; NEITHER IS SUPERSEDED.** "Untitled" is a placeholder in an empty name field — never a stored
+name, never a displayed name anywhere else. **The conflict CLOSES AS RECONCILED, not overruled.**
+
+**CONSEQUENCE FOR 136's BUILD:** the stand-in rule is UNCHANGED (first words stand in; an empty page is not
+kept); **the name field's empty state renders the word as a PLACEHOLDER ATTRIBUTE**, so it can never be
+written to `title` by accident — **a check asserts that saving an untouched name field stores nothing.**
+
+## 3A — ITEM 183 RESOLVED, ITEM 171 AMENDED — TYPEWRITER RETURNS TO DRAFT, DEFAULT OFF — 2026-09-22
+
+**TYPEWRITER AVAILABLE IN DRAFT, DEFAULT OFF.** Turning it ON reduces the tool menu to FREE WRITE's options
+MINUS INK. **REVISE UNCHANGED (none).** **Screenplay pages gain it back under Draft's SAME default-off
+rule** — closing item 183's question (his R12 request and his 171 ruling no longer conflict; 171 is amended
+to carry Draft's typewriter under this default).
+
+**NEW ITEM 184 — RETIRE CONVERT TO SCREENPLAY.** Screenplay is chosen ONLY at New Page creation. **RETIRE
+the convert/de-convert code.** **ROUTED TO FIX, S0 FIRST** — census every call site of the convert/de-convert
+path (the DR3 in-drawer row named in item 83's brief; any structure-flip helper it calls) before removing
+anything, per the standing verify-before-build law.
+
+## 3B — MOVE VS COPY RESOLVED: COPY — 2026-09-22
+
+**RESOLVED: COPY.** Item 123 STANDS UNCHANGED. **Item 169's move hold CLOSES AS COPY** — a move is never
+built; the views retirement's own rationale ("move Cards/docs to it") is satisfied by copy-then-delete-
+from-the-first-board, which Nick's 3B states directly.
+
+**NEW ITEM 185 — DUPLICATE.** "Duplicate Card" on the card's STRIP MENU (and a copy onto the SAME board);
+"Duplicate Board" and "Duplicate Page" on their STRIP and RIGHT-CLICK menus. **Builds on item 123's copy
+semantics** (no shared identity; provenance, not identity) — a duplicate is a copy whose target is the
+source's own board/page rather than a chosen one.
+
+**NEW ITEM 186 — THE RIGHT-CLICK MENU.** Nick invites building it now — *"maybe now is a good time to add
+that."* **CHARTERED TO PLAN DESK.** *(Named already, elsewhere on this ledger, as a FUTURE control for
+Remove/Delete (item 168) and now for Duplicate (185) — PLAN DESK's charter is the first place BOTH are
+asked to land on ONE control, rather than each item inventing its own.)*
+
+## 3C — SHELF AND TRASH AS SORTABLE ROWS — 2026-09-22
+
+**TO PLAN DESK, UNDER VW2.** All files/cards/pages/boards listed in ROWS, date default, **sortable by date
+and by every column shown: thumbnail, title, date, tags, connected boards/drawers.** **Shelf and Trash
+AESTHETICALLY DISTINCT** — a scrap pile and a waste bin, not literally, by treatment. "Turn this over to the
+Architects" — Nick's own words for PLAN DESK's charter.
+
+**READING (a) PREVAILS IN SUBSTANCE: rows, not arrangement.** Shelf and Trash gain a LIST VIEW; they do not
+gain the arrangement law's meaning (moving one thing relative to another). **Item 131 (a) and the
+arrangement law are RELEASED from "under founder review"** — both marked in place, above — **and stand
+ratified as originally written: the Shelf is never shown as a board, and a surface a writer can move things
+relative to one another on has become one — neither is reversed.**
+
+## 4a — ALL BOARDS IN THE PLAN MENU; SPLIT SCREEN; TWO ARCHITECT OPTIONS — 2026-09-22
+
+**TO PLAN DESK, UNDER ITEM 169.** All boards listed in the Plan menu, recent-first default, sortable by
+DRAWER and TAG; each addable to the surface in SPLIT SCREEN with the board already open; DRAG-AND-DROP from
+the dropdown onto the surface; the dropdown shows FIVE boards then scrolls. **PLUS: TWO OPTIONS from the
+Architects for how the Plan menu and the main surface best organise multi-board display, movement and
+connection — WITH MOCKUPS of anything already planned but not yet shown.**
+
+## 4b — INK TO THE EDGE; A NEW BUG — 2026-09-22
+
+**INK EDGE:** item 157 is NOT LIVE YET — it is the fix Nick is describing (ink not reaching the true edge is
+the defect 157 exists to close). **INK CONFIRMS 157 reaches the paper's true edge when it builds; no new
+item.**
+
+**NEW BUG, filed UNDER 171-A, not numbered:** **page presets do not hide as soon as the writer selects INK
+instead of TEXT.** **ROUTED TO INK**, inside its 171-A build (typewriter/ink scope), since both concern what
+selecting Ink does to the surrounding chrome.
+
+## BATCH FOUR DEPLOY MANIFEST — 2026-09-22 (chat 1, on Nick's "Ship it" — Fable PASS)
+
+**LIVE: `283013e` · railway `664604e6-fdbd-4caa-b4e3-505c19cfa190`** — service `writer-studio-app`, status
+**SUCCESS**, serving `index-BDZr-D5R.js`. **PREVIOUS LIVE — THIS DEPLOY's ROLLBACK TARGET: `448fc6c` ·
+railway `5e06974f-13ca-4c34-bf0b-fd353f0311ef`.** **ROLLBACK NOW RATCHETS TO THIS STAMP.**
+
+**AUTHORIZATION, QUOTED: Nick — "Ship it."**
+
+**ONE PACKAGE: item 170 — OPEN PAGES** (179's sort half inside; 177 absorbs the build). **PRODUCT DELTA: 3
+files, +185/-45.** **SCHEMA: ZERO. SERVER: ZERO.** Roster **92**.
+
+**SUITE OF RECORD — BOTH LEGS CLEAN AT THE DEPLOY HEAD, run under `chat1-batch4-deploy-20260922` (the
+granting desk's own turn, written through the file before launch — see below):**
+- **DEFAULT: 92/92 CLEAN** — `tree=283013e bundle=index-BDZr-D5R.js/588012b`
+- **PARKED: 92/92 CLEAN** — identical stamp, `NO-REBUILD`
+- **`fx5.mjs` and `item83e.mjs` — THE TWO FILES THAT TIMED OUT ON PW's FIRST 176 PAIR — BOTH PASSED CLEAN ON
+  BOTH LEGS HERE** (`fx5.mjs` 84s/83s, 62 checks; `item83e.mjs` 16s/16s, 13 checks). **Diagnosed by bundle
+  identity, as ruled: same bundle both legs, no recurrence at the deploy pair.** *Not yet closed as
+  environmental — the re-stamp is the second measurement; see below.*
+
+**TREE BARE AT UPLOAD (0 porcelain). `tsc` x2 exit 0. ITEM-98 GUARD:** `writer-studio` / `production` /
+`writer-studio-app`, toplevel `C:/Users/nickh/writer-studio`, `HEAD == origin/main == 283013e`.
+
+**BUILD OS / TOOLCHAIN:** local **Node v24.13.0**, **pnpm 10.28.2**, **MINGW64_NT-10.0-19045**; Railway image
+**linux/amd64**, container digest `sha256:4bffb51949f2f1348a1bbc9d917bc8b99dc6bb4cf89b3540dbd821299e7355e6`.
+
+**LIVE VERIFICATION:** `/healthz` **200** · `/auth/me` **401** · served `index-BDZr-D5R.js` and
+`index-BhTBWZZX.css`, both by name match.
+
+**SERVED-vs-STAMPED BYTE DIFF — BOTH ASSETS MATCH, MD5:**
+- `index-BDZr-D5R.js` — served `4365914238fc82a9f095729d53d0225c` **==** stamped
+- `index-BhTBWZZX.css` — served `e75ef7c4b413d00d9a6faa03cdd15364` **==** stamped
+
+## THE GRANTING DESK IS NOT EXEMPT — RULED, AND FOLLOWED — 2026-09-22
+
+**Fable, ratifying a practice chat 1 already used for this deploy: BEFORE CHAT 1 RUNS ANY PAIR — the deploy
+pair included — it WRITES THE GRANT FILE NAMING ITSELF, which revokes any outstanding lane grant in the SAME
+WRITE. A lane holding a revoked token is refused by 140, which is correct. Never two grants live, and never
+a run outside the file.**
+
+> **THE DESK THAT GRANTS THE BOX TAKES ITS TURN THROUGH THE SAME FILE.**
+
+**CHECKED, NOT ASSUMED: this deploy's own suite ran under exactly that sequence** — PW2's `pw2-item176-
+restamp-20260922` was cleared and `chat1-batch4-deploy-20260922` written BEFORE the suite launched, so
+PW's pre-flight (seeing CHAT1 in the file) refused correctly, and the run itself carried a matching token
+throughout. **No corrective action owed on this run.**
+
+## TIMELINE CHECK — CHAT 1's SUITES DID NOT OVERLAP PW's FIRST 176 PAIR — 2026-09-22
+
+**Fable's question, answered from disk, not memory:** every suite chat 1 has launched wrote to an
+EXPLICITLY-NAMED directory under its own scratchpad (`deploy-235541`, `deploy4-151100`, and so on);
+**PW's first 176 pair (RED, `fx5`/`item83e` timeout) left its own output under a BARE `wrizo-suite-<pid>`
+directory — chat 1 has never launched one of those.** **No chat 1 suite is found overlapping that window.**
+**So the timeout is NOT ATTRIBUTABLE to a chat 1 run; whether it recurs on the re-stamp is still the
+question that settles "environmental."**
+
+## fx5 / item83e — RATIFIED AND SHARPENED — 2026-09-22
+
+**Fable: chat 1's note is RATIFIED and SHARPER than the ruling — `fx5` sits in BOTH item 154's rewritten
+sites and item 151's Shape A fix list, so a recurring timeout there is checked against BOTH histories
+before it is called environmental: A TIMEOUT IN A FILE TWO FIXES JUST TOUCHED IS A SUSPECT, NOT
+BACKGROUND.** **Carried forward to PW's re-stamp** (`1bda06d`, granted `pw2-item176-corrected-20260922`) —
+**one clean pass at the deploy pair; the re-stamp is the SECOND, and the one that decides it.**
+
+## EIGHT MORE PLAN DOCS MERGED — DOCS-ONLY — 2026-09-22
+
+**Merged at `f93c0ad`:** `plan-172-consequences`, `plan-144-tab-bar`, `plan-172-board-types`,
+`plan-171b-ink-charter`. **Merged at `a998d7a`:** `plan-177-star` (`db393d8` — item 179's placement half
+and his three sorts, together; superseding `4727c92` named in the first addendum), `plan-brief-178`
+("Pages" as Wrizo's word for a document), `plan-charter-180` (the drawer gesture), `plan-charter-181`
+(images and docs on a Journal board, 116's successor). **Verified across all eight: no non-docs file, no
+file shared between any two, every trial merge clean.** *Filing, not ruling.*
+
+**THREE QUESTIONS FROM PLAN DESK, WITH NICK NOW** (their own words, per Fable — not yet on this ledger
+verbatim): the Flux theme's "Doc", cancelling a carry on a tablet, and FILE STORAGE FOR 181. **The last is
+a SCHEMA QUESTION and carries the schema stop to him BY CONSTRUCTION** — no builder decides it.
+
+**BAND, PLAN DESK's, from its own build script refusing to commit onto a merged branch:**
+
+> **A GUARD THAT REFUSES ITS OWN AUTHOR IS WORKING.**
+
+## FIX's S0 — RETIRING SCREENPLAY CONVERSION — THE DOOR MUST LAND FIRST — 2026-09-22
+
+**REGISTERED. THE FINDING IS THE RISK: outside a binder, the ONLY screenplay-making path is the
+EMPTY-PAGE CONVERSION BRANCH, and item 104's birth path HAS NO DOOR** — so retiring conversion first would
+leave NO WAY to make a loose screenplay.
+
+**RULED: the New Page Screenplay door lands in the SAME COMMIT as the retirement, or BEFORE it — NEVER
+AFTER.**
+
+**OPEN QUESTION TO NICK: may a blank page still become a screenplay IN PLACE** (convert, but only while
+empty)? **Fable leans YES — a blank page has no prose to convert**, so the risk the retirement is meant to
+remove (converting or de-converting PROSE) never arises for it.
+
+## THE THREE COMMITTEES — A REPORT RECEIVED, NOT YET COMMITTED — 2026-09-22
+
+**`C:\Users\nickh\Downloads\wrizo-three-committees-review.md`, 278 lines.** *"Prepared by Fable for Nick,
+2026-09-22. Input to the double pass by Wrizo's Experts (TUTOR desk) and Architects (PLAN DESK)."* **Three
+committees of composite working writers — Fiction; Journalists and creative nonfiction; Academics and
+researchers — walk the Pages / Boards / Drawers system through one project from first idea to finished
+work.**
+
+**IT IS NOT IN THE REPO. Chat 1 does NOT commit another desk's document** — it is recorded here as
+RECEIVED, and becomes a **docs-only offer when a desk commits it.**
+
+**ITS OWN CAVEAT, VERBATIM — carried because the record must not read as user research:**
+
+> **An honest caveat before anything else.** The committee members are composite personas, written from
+> this project's record and from well-documented working-writer practice. This is a structured thought
+> experiment, not user research. Where a committee claims something about "writers," read it as a
+> hypothesis to test in a sitting, not a finding. The value here is coverage — three very different ways
+> of working, run against one system — not authority.
+
+## THE CENTRAL FINDING — AND CHAT 1's CHECK OF IT ON DISK — 2026-09-22
+
+**The report's OWN words (convergence 1), not the relay's paraphrase:**
+
+> **One structure, not two.** Fiction: the board's card order versus the manuscript's chapter order.
+> Journalism: the section board versus the draft. Academia: the outline versus the dissertation. Every
+> committee hit the same wall — *the plan and the manuscript are different objects, and they drift.* The
+> fix is a single ordered spine that the manuscript is made of and that the plan is a view of.
+
+*(The relay rendered this as "two objects that drift, with no single ordered spine"; "single ordered
+spine" is the report's proposed FIX, not its statement of the wall. Recorded from the document.)*
+
+**CHAT 1 TESTED THE CLAIM AGAINST THE CODE RATHER THAN RELAYING IT. IT IS TRUE — AND SHARPER THAN THE
+WORDING, which flattens an asymmetry:**
+- **The loose Journal HAS an order:** `JournalEntry.orderIndex`, a sparse float falling back to
+  `Date.parse(createdAt)` (`pageOrder.ts:12-21`), scoped by its own comment to *"the loose Journal only
+  — binder pages + the Shelf keep their orderings."*
+- **THE MANUSCRIPT DOES NOT. Binder pages have NO ordering field at all** — and are sorted THREE
+  DIFFERENT WAYS: `getBinderPages` by `updatedAt` DESC (`persistence.ts:2034`, re-verified by chat 1),
+  `ProjectHome` by `createdAt` ASC, the export by `createdAt` ASC again. **`pageExport.ts` names the
+  divergence in its own comment.**
+- **A SPINE PRIMITIVE ALREADY EXISTS IN THE SCHEMA AND IS DEAD:** `Fragment` carries `role: 'spine' |
+  'branch' | 'loose'` and `spineOrder` (`types/index.ts:59-60`, re-verified) — *"one privileged ordered
+  path (the spine)"* — with **ZERO `.tsx` callers**; its own type file says *"no UI reads it until CW2."*
+- **`Box.seq` orders CARDS on ONE board** (`boardStructure.ts`) and never reaches `JournalEntry`. **A
+  board relates to pages only through `page-pin` boxes; `getBoardsPinning` returns `{id,title}` with no
+  position, and card x/y are purely spatial — nothing reads them back into page order.**
+
+**SO: no single ordered spine for a manuscript, confirmed at the source — and the house already owns an
+unused one.** *(That is a fact for the double pass, not a ruling: whether CW2's spine is the answer, or
+is the wrong shape, is PLAN DESK's to argue.)*
+
+**✓ QUESTION (3) RESOLVED 2026-09-22 — Fable accepts chat 1's correction and records it as FABLE's ERROR.**
+See *FOUR ERRORS IN THE REPORT*, below. Questions (1) and (2) stand as put.
+
+## THREE QUESTIONS PUT TO NICK — NOT REVERSALS — 2026-09-22
+
+**The report's own framing, verbatim:** *"Nick asked for what's deficient, and some findings press on his
+own rulings. They're named here so he can rule on them knowingly, not so they're treated as settled."*
+**Recorded as QUESTIONS. Nothing below reverses anything; every standing ruling stands until he speaks.**
+
+**⚠ THE THREE DO NOT HAVE EQUAL STANDING, and a record that presented them as three of a kind would be
+wrong. Chat 1 checked each against its source:**
+
+**(1) "TYPES CANNOT CHANGE AFTER BIRTH" — FOUNDER WORD, and the question does not ask to reverse it.**
+Nick's own part 3b, 2026-09-19, filed to item 172; no supersede marker. The report proposes a **MIDDLE
+PATH**: *"the type stays fixed, but 'make a new board of type X from this one' is always one act."*
+§6F asks PLAN DESK: *"Can 'types cannot change after birth' stand if types become configurations? The
+ruling is Nick's; lay out the trade."*
+
+**(2) "CARDS ARE COPIED, NEVER MOVED" — A TWO-LAYER RECORD.** Item 123's copy semantics is a **DESK**
+ruling (Fable, 2026-09-07) derived from Nick's word *"Transferrable"*; **the founder's own first text
+saying "copied" is his 3B of 2026-09-22** — which arrived as the RESOLUTION of the move-vs-copy conflict,
+three days ago. The report does not ask to undo it; it argues **REFERENCE should be a different OBJECT:**
+*"Copy-only is right for scratch cards and wrong for sources of truth. The two may simply be different
+objects: a card is a copy; a record is a reference."*
+
+**(3) "THE BOOK TYPE ORDERS BY DATE" — ⚠ THIS IS NOT A STANDING RULING. THE LEDGER NOWHERE SAYS IT.**
+**Measured twice, independently** (chat 1's own grep, and a separate reader): **zero lines tie the Book
+type to date ordering.** What the record actually holds:
+- **Nick, on the Book type:** pages *"become a new surface that gets flipped through like a book instead
+  of being all laid out on a surface at the same time"* — a DISPLAY clause, not an order.
+- **Nick's 3c PARKED the question:** *"Maybe in the future, but let's not worry about adding page
+  arrangement right now"* (item 172's parked clause). **Ordering in a Book is UNSPECIFIED, by his own
+  choice.**
+- **The date rule that DOES exist belongs to the JOURNAL, a different object, and predates item 172:**
+  Nick answered *"1. Written"* on 2026-09-13 — recorded as **JOURNAL ORDER = DAY WRITTEN.**
+- **The other "date default" on the recent record is Shelf/Trash ROWS** (his 3C, 2026-09-22) — **which
+  must not be read back as a Book ruling either.**
+
+**So the third question presses on a TWO-STEP INFERENCE** — *the Journal orders by day written, and the
+Journal is a Book-type board* — **that no line in the ledger makes.** **It still goes to Nick, but as
+what it is: a question about an UNSPECIFIED ordering and an implementation default, not a challenge to a
+ruling he gave.** *(Stating it as a ruling would invite him to overturn something he never said.)*
+
+**✓ SCOPED, THEN LIFTED — 2026-09-22. Scoped:** Duplicate (185) IN, right-click menu (186) OUT; 172's
+IMMUTABILITY CLAUSE and 144's POPULATION QUESTION paused; 169, 166, Shelf/Trash rows, 177–179 and 108/143
+continue. **Then LIFTED the same day by Nick's architecture choice — see *CONSERVATIVE CHOSEN*, below.**
+
+## THE PAUSE — PLAN DESK, BOARD-STRUCTURE DESIGN — 2026-09-22
+
+**PLAN DESK PAUSES NEW BOARD-STRUCTURE DESIGN — items 172, 144, 169, and the Shelf/Trash rows — until its
+double-pass answer returns.** **TUTOR and PLAN DESK run the double pass IN PARALLEL.**
+
+**CHAT 1 MEASURED WHAT THE PAUSE ACTUALLY STOPS, rather than announcing it into the dark:**
+- **Nothing is in flight.** Of **44 `plan-*` branches on `origin`, exactly ONE is unmerged.** **No BUILD
+  exists on any paused item** — no branch, product file or harness anywhere touches them.
+- **THE ONE UNMERGED BRANCH: `origin/plan-multi-board` @ `641f728`** — *"multiple boards — two options and
+  what is already planned (pass + mock)"*, **2 files, both `docs/menus/`, 0 non-docs.** **It is PLAN
+  DESK's answer to Nick's part 4a, and it spans 144 / 165 / 169 / 172 — the paused items.**
+  **CHAT 1 HAS NOT MERGED IT.** Filing is not ruling, and a docs merge would normally be chat 1's own
+  call — **but this document IS paused-area design, and it was never offered in a relay.** **Fable to
+  say: merge it as the record of work already done, or hold it with the pause?**
+- **ITEM 165 IS IMPLICATED BY ADJACENCY though the pause does not name it** — that branch covers it.
+  **Flagged, not assumed.**
+
+**⚠ THE REPORT's OWN PAUSE LIST IS LONGER THAN THE PAUSE.** §6G asks PLAN DESK which in-flight items
+should pause and names **SIX**: *"board types (172), the tab bar (144), split screen (169), Shelf and
+Trash as rows, Duplicate, the right-click menu."* **The pause as ruled names FOUR — Duplicate (185) and
+the right-click menu (186) are NOT in it.** *(They are three days old and 186 is chartered to PLAN DESK,
+so a desk could reasonably read either way.)* **Chat 1 does not extend a pause on its own. Fable to
+confirm whether 185 and 186 are in or out.**
+
+## NOT PAUSED — BUILDS AND FIXES CONTINUE, WITH THEIR STATE AS CHAT 1 FINDS IT — 2026-09-22
+
+- **Batch Four: SHIPPED** — `283013e` · railway `664604e6`, SUCCESS, served-vs-stamped MD5 matched on both
+  assets. **Done, not pending.**
+- **PW's item 176 re-stamp: GRANTED, NOT RUN** — and **its corrected tree `1bda06d` is NOT ON `origin`**
+  (origin sits 2 commits behind at `78a8329`). **PW pushes when the pair begins.**
+- **FIX: 159 is pushed; 158 and 160 have NO BRANCH yet.**
+- **INK: 157 and 171-A are both built and on `origin`, unmerged.**
+- **TOOLS: 154 is built and pushed, its pair not started; 161/162 unbuilt; 147/148 built behind them.**
+  **TOOLS' presence is still unconfirmed on the record.**
+
+## THE DOUBLE PASS — WHAT IT OWES — 2026-09-22
+
+**TUTOR (the Experts):** validate or correct each committee's walkthrough against real practice and **flag
+any member who is a straw figure**; sort every need into **universal / genre / niche**; name the presets
+for item 165 and what each creates on day one.
+
+**PLAN DESK (the Architects):** seven questions, **A–G** — the primitive set (a candidate is offered:
+**Page · Record · Board · Spine · Tags · Links**), the two-orders problem, reference versus copy,
+anchors below the page, the four groupers (Drawer / Project / Board / Tag), reversibility, and which
+in-flight items pause.
+
+**THE DELIVERABLE: TWO ALTERNATIVE ARCHITECTURES — one CONSERVATIVE (extend what is built), one BOLDER
+(primitives plus presets)** — each with a migration story from today's build, a mockup showing one
+project from each committee living in it, and **the list of standing rulings it would ask Nick to
+revisit, stated plainly.** **Into Downloads, as with the other mocks.**
+
+## ⚠ CHAT 1's PROCESS NOTE — THIS RECORD IS SINGLE-PASS, NOT ADVERSARIALLY VERIFIED — 2026-09-22
+
+**Chat 1 ran a verification workflow over this report: four independent readers (the document, the
+ledger's own text for the three rulings, the spine claim against source, the pause's real scope) and then
+an adversarial pass over every load-bearing claim, plus a completeness critic.** **THE READ LANES
+COMPLETED. THE ADVERSARIAL PASS AND THE CRITIC DID NOT — all 84 of those agents died on a session limit.**
+
+**So the findings above are FIRST READINGS plus chat 1's OWN re-measurements**, not refuted-and-survived
+claims. **What chat 1 verified with its own hands is marked as such** (the Book-ordering greps, the
+`updatedAt` sort, the dead `spineOrder` type, the unmerged branch's file list). **Everything else is one
+careful reader's work.** *(Said plainly because the distinction is exactly what this desk's record is
+for: a claim that survived an attempt to kill it and a claim nobody attacked are not the same claim.)*
+
+## NICK's WORD — THE SPLASH, THE FIVE ANSWERS, THE ARCHITECTURE, THE LAYOUT — PRIMARY TEXT, VERBATIM — 2026-09-22
+
+**Five messages, his own words, read from a plain file and proved byte-identical per part before writing.**
+Typos and spacing are his (the triple hyphen in the layout text; `1)`/`2)`/`3)` as he numbered them).
+
+**A · THE SPLASH**
+> Yeah, I think so. Let's do it. And I would like the opening splash screen to be at most 1/5 the size
+> of the screen with the regular app interface blurred out in the background.
+
+**B · THE FIVE ANSWERS**
+> 1. I'm not entirely sure what I'm looking at. Is this a completely new kind of board UI, or am I not
+> seeing the UI but the architecture behind the UI? 2. Approve 3. Yes 4. Drop it 5. Yes
+
+**C · THE ARCHITECTURE CHOICE**
+> What if we make a Wrizo v2 that uses the conservative architecture that will allow me to experiment
+> with this to see what's better and what I think has been lost from the original design?
+
+**D · THE LAYOUT**
+> 1) Good 2) I would be open to a new menu on the far right-hand side as a parallel to the current
+> left-hand rail that lists things like cited sources, related chapters/boards/cards, etc. Let's think
+> of it this way for v2: The left-hand rail is the overall organization and options for everything the
+> User is writing or could want to write/organize. The right-hand rail is for all of the page-specific
+> sources, plans, resources, etc. The two-hand strips stay the same---the right for text styling,
+> bullets, and whatever options a writer might need to present text the way they want it to look; the
+> right-hand is the AI tutor + app automation that unblocks the writer
+
+**E · EXPERIMENTS**
+> 3) Experiments inside the real app approved
+
+## CONSERVATIVE CHOSEN — THE ARCHITECTURE PAUSE LIFTS — 2026-09-22
+
+**Nick's own words (C above) are the ruling: a Wrizo v2 on the CONSERVATIVE architecture, so he can
+experiment and see "what's better and what I think has been lost from the original design."**
+
+**THE ARCHITECTURE PAUSE LIFTS.** Its paused items — **Duplicate (185), 172's IMMUTABILITY CLAUSE, and
+144's POPULATION QUESTION** — **go to PLAN DESK to answer UNDER CONSERVATIVE.**
+
+*(The pause's full scope, for the record of what it was: 185 IN because a duplicated board's contents
+could not be settled before reference-vs-copy; 186 OUT because it gains verbs under either answer and
+loses none; 172's TYPE FIELD ITSELF proceeded while its immutability clause paused; 169, 166, Shelf/Trash
+rows, 177–179 and 108/143 never stopped. **It held for part of one day.**)*
+
+## NICK's FIVE ANSWERS — FILED BY SUBJECT — 2026-09-22
+
+| # | his word | subject | filed as |
+| --- | --- | --- | --- |
+| 1 | *"I'm not entirely sure what I'm looking at..."* | the architecture mock | **A QUESTION, answered by Fable** — the mock demonstrates the ARCHITECTURE, not a proposed screen; its three-column layout is SCAFFOLDING |
+| 2 | *"Approve"* | the Experts' presets | **APPROVED as TUTOR named them — under item 165** |
+| 3 | *"Yes"* | the beat sheet's name | **SHIPS UNDER A GENERIC NAME — "Save the Cat!" is a trademark** |
+| 4 | *"Drop it"* | locked pages | **DROPPED. No item; not built.** |
+| 5 | *"Yes"* | versions | **A UNIVERSAL FEATURE — ITEM 189 opens** |
+
+**THE PRESETS, APPROVED AS NAMED (under item 165):** **Storytelling** — Three-Act · The Fifteen Beats ·
+The Hero's Journey. **Screenwriting** — Feature Three-Act with page gates · the Sequence Method · TV
+Pilot. **Outline** — Traditional · Mind Map · "From My Pages" (the reverse outline).
+
+## FOUR ERRORS IN THE THREE-COMMITTEES REPORT — 2026-09-22
+
+**1 · "THE BOOK TYPE ORDERS BY DATE" — FABLE's ERROR, as chat 1 found.** Fable INFERRED it in the report
+from a display clause, 3c's deferral, and the Journal's "Written" — **no line in the ledger says it.** It
+goes to Nick, IF AT ALL, as a question about an ordering he left UNSPECIFIED.
+
+**2 · THE PDF-IS-NOT-AN-IMAGE LINE** · **3 · THE COPY-PHRASING** · **4 · 165's MISSING BOOK AMENDMENT** —
+**all three caught by TUTOR.** *(Recorded as named; chat 1 has not independently re-derived these three,
+and says so rather than implying it checked them.)*
+
+**CHAT 1's STANDING DISTINCTIONS ARE CONFIRMED: 3b IS FOUNDER WORD; COPY-ONLY IS A DESK RULING HE
+RESOLVED IN 3B.**
+
+## NEW ITEMS — 2026-09-22
+
+**ITEM 187 — THE SPLASH SCREEN (TOOLS).** Nick's word (A above): **at most 1/5 THE SIZE OF THE SCREEN,
+with the regular app interface BLURRED OUT behind it.** His hand-drawn sketch, **linework isolated by
+Fable, BRASS ON TEXT (confirmed)**; assets at `C:\Users\nickh\Downloads\wrizo-sketch-for-dark-theme.png`
+and `...-light-theme.png` — **both confirmed present by chat 1 (298,066 and 297,901 bytes).**
+
+**ITEM 188 — CHAPTER ORDER IS NOT STORED.** **Chat 1's own measurement, on disk, now an item so it is not
+rediscovered:** binder pages have **NO ordering field**; `getBinderPages` sorts `updatedAt` DESC,
+`ProjectHome` and the export sort `createdAt` ASC — **and `pageExport.ts` names the divergence itself.**
+**A NOVELIST CANNOT REORDER CHAPTERS, AND ONE SURFACE DISAGREES WITH THE OTHER TWO.** **It is the
+committees' convergence 1 IN THE CODE.** **ROUTING WAITS on the architecture answer** — the promoted
+spine answers it.
+
+**ITEM 189 — VERSIONS.** Nick's "Yes": **keeping old drafts across every writing form — a UNIVERSAL
+feature, not a genre one.**
+
+**ITEM 190 — EXPERIMENTS (inside the real app).** Nick: *"Experiments inside the real app approved."* **A
+SETTINGS SECTION, ONE SWITCH PER EXPERIMENT, OFF BY DEFAULT, and each experiment's data HIDDEN — NEVER
+DELETED — when switched off.**
+
+**ITEM 191 — THE RIGHT RAIL.** Page-specific **sources, plans, resources, related chapters/boards/cards**
+— a parallel to the left-hand rail. From Nick's layout text (D above).
+
+**ITEM 192 — RECORDS** (characters, sources) — **a structured record with fields, distinct from a page of
+prose.** Named as a first experiment; **no existing item held this subject, so it takes a number** (chat
+1's ratified rule).
+
+**⚠ RE-SCOPED 2026-09-22 — ANCHORS ARE SPANS, NOT PARAGRAPHS.** Nick: *"writers often use only partial
+quotes or the User may want to select a phrase."* **A paragraph identity is too coarse; the anchor is the
+SELECTED SPAN.** See *ANCHORS ARE SPANS*, below. The line that follows is kept as written.
+
+**ITEM 193 — PARAGRAPH ANCHORS** (quote / claim / note / citation) — **ARCH-Q2's paragraph identity.**
+Named as a first experiment; **new subject, so a new number.**
+
+**THE FIRST EXPERIMENTS, FILED BY CHAT 1's NUMBERING RULE** *(a new subject gets a number; a ruling that
+amends an existing item goes under it)*: **the board sets the chapter order → UNDER ITEM 188** (the
+chapter-order item, already open); **records → ITEM 192** (new); **versions → UNDER ITEM 189** (already
+open); **paragraph anchors → ITEM 193** (new).
+
+**⚠ ONE MIGRATION WAVE, REVIEWED AS ONE BATCH:** the **SCHEMA-BEARING** experiments — **chapter order
+(188), records (192), versions (189), anchors (193)** — ride **ONE migration wave with item 136's TITLES
+and 172's TYPE FIELD, where their S0s allow.** **Fable reviews it as ONE batch.** **STANDING CONSTRAINT
+UNCHANGED: any schema STOPS at chat 1 and goes to Nick** — an S0 may establish that a field costs no
+column, but a column is never a builder's call.
+
+**✓ SETTLED 2026-09-22 BY NICK's OWN TEXT — Fable's reading was right, and chat 1's refusal to confirm it
+from code cost nothing.** His [2]: *"the left-hand tools strip menu should allow the User to link sources"*
+and *"One way to think of the left-hand strip menu is that every clickable tool in it..."* — **THE TOOLS
+STRIP IS ON THE LEFT.** See *THE LEFT-STRIP LAW*, below. The section that follows is kept as written.
+
+## ⚠ THE LAYOUT — THE TEXT AS GIVEN, THE READING AS FABLE's — 2026-09-22
+
+**Nick's layout text is recorded VERBATIM at D above. FABLE FLAGS A READING, PENDING NICK's ONE WORD, and
+it is recorded AS FABLE's, not as his meaning:** in *"The two-hand strips stay the same---the right for
+text styling, bullets... the right-hand is the AI tutor + app automation"*, **the FIRST "the right" reads
+as LEFT** — the styling strip is on the left today, and the second clause names the right as the Tutor's.
+
+**CHAT 1 DID NOT CONFIRM THAT FROM THE CODE.** A quick search of `index.css` and the components did not
+settle which hand carries styling versus the Tutor in the time available; **chat 1 states that as a limit
+rather than dressing an unchecked reading as verified.** **Nick's one word settles it either way.**
+
+**WHAT IS NOT IN QUESTION, from the same text:** *"The left-hand rail is the overall organization and
+options for everything the User is writing or could want to write/organize. The right-hand rail is for
+all of the page-specific sources, plans, resources, etc."* — **that is item 191's charter, in his own
+words.** **And "1) Good" approves what it answers.**
+
+## FABLE's DEFAULTS ON FOUNDER SILENCE — VETOABLE, NOT FOUNDER TEXT — 2026-09-22
+
+**Marked as FABLE's DEFAULTS. None of these is Nick's word; each stands only until he says otherwise:**
+- **✗ OVERTAKEN 2026-09-22 BY FOUNDER WORD — the default below is SUPERSEDED.** Nick: *"it's fine to
+  expect a user to select into writing a screenplay before they start one. If they want to 'convert'
+  something they've already written, they can always copy and paste it into a screenplay surface."*
+  **CONVERSION IS RETIRED ENTIRELY (item 184); there is no in-place conversion, blank or otherwise.**
+- **A blank page may still become a screenplay** — FIX's provisional build stands.
+- **"Pages" everywhere, Flux included** (item 178).
+- **A tablet carry cancels by tapping anywhere that isn't a drawer** (item 180).
+- **Journal images use proper storage — A SCHEMA QUESTION, riding with 136's batch** (item 181).
+- **Draft + typewriter = the bare menu** (INK, already built).
+- **The screenplay typewriter returns WITH ITS ENGINE; the switch stays hidden until then** (INK, already
+  built).
+
+*(Recorded this way deliberately: two of the six are ALREADY BUILT, so a later reader could mistake a
+default for a ruling. The distinction is the record's job.)*
+
+## MERGES AND THE BOX — 2026-09-22
+
+**Merged at `13b5289`, all three verified docs-only (0 non-docs files each), trial merges clean:**
+- **`plan-multi-board` @ `641f728`** — **MERGED as the record of work Nick has already seen; a design doc
+  is not a build, and holding it would leave his mock without its record.** **MARKED: HELD IN THE
+  ARCHITECTURE PAUSE** *(which has since lifted — the mark records what it was filed under).*
+- **`plan-architecture-pass` @ `47d0331`** — the double pass and its mock.
+- **`item84/tutor-menus` @ `f1f6fa2`** — TUTOR's committees/experts double pass.
+
+**PW: its corrected tree `1bda06d` is STILL NOT ON `origin`** (origin sits at `78a8329`). **PW is told to
+PUSH** — *an offer that exists only on your disk is not yet an offer.* Its grant stands.
+
+**THE SPLASH (187) AND THE BUG-FIX QUEUES ARE UNAFFECTED by any of the above.**
+
+## NICK's THREE TEXTS — THE PAGE IS PRIMARY — PRIMARY TEXT, VERBATIM — 2026-09-22
+
+**His own words, read from a plain file and proved byte-identical per part before writing.** Typos and
+spacing are his (*"Cntrl + N"*; the `|` he used to separate the two halves of [2]).
+
+**[1] THE DESKS' ANSWERS, AND THE REVISION**
+> Response to the desks' answers: A. Approved B. So the Experts want the app to be able to fact-check
+> claims being made in the text? This would have to be an AI-connected feature, right? Because the
+> grammar/spellcheck "error-checking" is something that should be hard-coded into the app (or pulled
+> from a reliably available open source repo of some kind). I agree that the app should not notice a
+> writer is stuck or make suggestions unprompted. C. I don't know what's meant here by "experiments."
+> But I have a revision that may be relevant: Right now, it seems that a whole sentence or paragraph
+> gets highlighted and can then be attached to various "cards" or "boards." This won't work because
+> writers often use only partial quotes or the User may want to select a phrase and create a card that
+> explains or tracks its use. It seems like the best way to incorporate all of these connections from
+> the in-line page text to external sources, cards, or other sections is by highlighting and
+> right-clicking to bring up a menu of options that includes basic styling (bolding, sizing, etc.) as
+> well as the option to create or connect the highlighted section to the external surfaces. Let's use
+> the right-hand rail for displaying supplemental surfaces whenever possible and the right-click menu
+> for directly connecting or modifying text. A principle that we need to get back to is that the text,
+> or page, is primary. We want a writer to be able to start blasting out text, realize they want to
+> come back to something, make a quick note of it that gets seamlessly tracked, noted, and visible for
+> future expansion and organization. For writers who plan extensively before writing anything, they
+> should be able to build out their boards and plans without ever writing a single paragraph on a Page
+> surface, but when they go to start writing, they need to be able to start where they want and not
+> lose the organization they've put painstaking effort into. Every architectural choice we make needs
+> to respect both pantsers and plotters without forcing either writer to go down a set path from the
+> outset. That is the hard problem we're trying to solve here
+
+**[2] THE FIVE, AND THE CONSEQUENCES**
+> 1. Yes, but one quick exception: Screenplays. I think it's fine to expect a user to select into
+> writing a screenplay before they start one. If they want to "convert" something they've already
+> written, they can always copy and paste it into a screenplay surface. 2. Confirmed 3. Yes, but one
+> other place also. Once a block of text is linked, the linked text should be clickable and the linked
+> external sources should appear in the right-hand rail and be removable (the right-click menu should
+> also have a Remove option similar to the way links can be added/removed to text in WordPress, say).
+> Also, the left-hand tools strip menu should allow the User to link sources, etc. when text is
+> highlighted (just like with bolding). One way to think of the left-hand strip menu is that every
+> clickable tool in it (other than INK or settings) is something that happens to a portion of the page
+> that is selected (or in the case of an indent or bullet, something that happens where the cursor is
+> currently positioned). 4. That seems good for now. The external sources should be listed when
+> nothing in particular in the text has been clicked on. This list should be sortable by recency,
+> kind, and tag. When the User clicks on a linked portion of text, only the source(s) linked. The User
+> should then be able to double click on the source's thumbnail to bring up a popup of that source (if
+> a card, the card popup. If a page, a full-sized, scrollable page, etc.) This would be a good place
+> to have the Architects do a pass on the best way to utilize the right-hand rail based on my
+> suggestions. 5. Yes | As for your consequences: A) Yes. B) Agreed. How about "Cntrl + N" and a "Note
+> This" option in the right-click menu?
+
+**[3] PUSH IT**
+> All confirmed. Let's push what we've come up with so I can start trying it out. Should I relay all
+> of the text blocks that you haven't received a response back from yet?
+
+## CANON — THE PAGE IS PRIMARY — 2026-09-22
+
+**His words, and they are canon:**
+
+> A principle that we need to get back to is that the text, or page, is primary. We want a writer to be
+> able to start blasting out text, realize they want to come back to something, make a quick note of it
+> that gets seamlessly tracked, noted, and visible for future expansion and organization. For writers who
+> plan extensively before writing anything, they should be able to build out their boards and plans
+> without ever writing a single paragraph on a Page surface, but when they go to start writing, they need
+> to be able to start where they want and not lose the organization they've put painstaking effort into.
+> **Every architectural choice we make needs to respect both pantsers and plotters without forcing either
+> writer to go down a set path from the outset. That is the hard problem we're trying to solve here.**
+
+*(It is a TEST, not a slogan: any design that makes one of the two start somewhere they did not choose
+fails it. It arrives the day Conservative was chosen, and it governs what Conservative is FOR.)*
+
+## WHAT THE THREE TEXTS RULE — 2026-09-22
+
+- **ONE PANEL COLUMN PER SIDE — APPROVED** ([1] A; Fable's reading).
+- **GRAMMAR AND SPELLING ARE NEVER AI** — built in, or from a reliably available open-source repo. **NO
+  STALL DETECTOR** — his: *"the app should not notice a writer is stuck or make suggestions unprompted."*
+  **CLAIM-CHECKING, split by what it needs:** *"has a source"* and *"matches the source"* need NO AI;
+  only *"is it true"* would, **and that waits for him.**
+- **ANCHORS ARE SPANS** — item 193 re-scoped (marked in place). **Linked text is CLICKABLE. REMOVE
+  UNLINKS ONLY, NEVER DELETES** — confirmed by [3]. *(His WordPress analogy is the model: a link comes
+  off the text without the text going with it.)*
+- **THE RIGHT-CLICK MENU (item 186) IS THE DOOR** for connecting or modifying text, and carries **"Note
+  This"** and **Remove**. *(186 was OUT of the architecture pause; it is now load-bearing.)*
+- **THE RIGHT RAIL (item 191) DISPLAYS CONNECTIONS:** external sources listed when nothing is selected,
+  **sortable by RECENCY, KIND and TAG**; **clicking a linked span NARROWS the list to that span's
+  sources**; **double-clicking a thumbnail opens a popup** (a card opens the card popup; a page opens
+  full-sized and scrollable). **Nick asks the Architects for a pass on the rail from his suggestions.**
+- **166 GAINS AN EXCEPTION, in his words:** popups of connected surfaces opened FROM THE RAIL. *(The
+  no-popout-overlaps-the-page law now has three exceptions: the right-click menu, the card popup, and
+  these.)*
+- **FREE WRITE CONNECTS AND NOTES, NEVER STYLES.** *(Consistent with the analog law: the typewriter
+  offers no typeface, but it never stopped a writer marking what to come back to.)*
+- **SCREENPLAY: CHOSEN BEFORE STARTING. CONVERSION RETIRED ENTIRELY (item 184); COPY AND PASTE IS THE
+  PATH.** **This SUPERSEDES Fable's default of yesterday** (blank-page conversion), marked in place.
+- **THE NOTE KEY:** Nick proposed **Ctrl+N**; **it is technically impossible in a browser** — it opens a
+  window and a page cannot take it. **`Ctrl`/`Cmd`+`Enter` is the STAND-IN (confirmed); the desk finds the
+  final key.** *(Recorded as a constraint of the platform, not a rejection of his idea.)*
+
+## CANON — THE LEFT-STRIP LAW — 2026-09-22
+
+**His words:**
+
+> One way to think of the left-hand strip menu is that every clickable tool in it (other than INK or
+> settings) is something that happens to a portion of the page that is selected (or in the case of an
+> indent or bullet, something that happens where the cursor is currently positioned).
+
+**THE STRIP IS THE TOOLS STRIP, ON THE LEFT** — his [2] confirms Fable's earlier reading, which chat 1
+had declined to confirm from code. **It GAINS: Link · Note this · Make a card.** **Forward lock, goal,
+full screen and print sit behind ONE `Page settings` row (confirmed).**
+
+*(The law is a TEST for the strip, the way the page-is-primary canon is a test for the architecture: a
+tool that does not act on a selection or a caret position does not belong on it — which is why INK and
+settings are named as the exceptions rather than quietly tolerated.)*
+
+## EXPERIMENT 1 — "CONNECT FROM THE PAGE" — 2026-09-22
+
+**THE FIRST THING HE TRIES. ONE SWITCH** (under item 190's framework), and **A THIN WORKING SLICE, NOT
+FOUNDATIONS FIRST:**
+- **span anchors stored OUTSIDE `entry.text`** (item 193),
+- **the right-click menu** (item 186),
+- **the left strip's connect tools** (the left-strip law),
+- **the right rail's Linked list** (item 191).
+
+**FILED UNDER ITEM 190, WITH NO NEW NUMBER** — by chat 1's ratified rule, it is a composition of items
+186 / 190 / 191 / 193 plus the strip, not a new subject. *(Said explicitly so nobody opens a duplicate
+number for it later.)*
+
+**⚠ ITS ANCHORS TABLE SHIPS FIRST AND ALONE**, with the Experiments switch — **it does NOT wait for the
+full migration wave.** **The other schema experiments (188, 189, 192) still ride ONE wave with 136 and
+172.**
+
+**✓ THE STOP WAS RIGHT (Fable), AND THE REASON IS WORSE THAN THE RULE** — see *WHY THE STOP MATTERED*,
+below: "zero schema" was not zero schema in effect. The paragraph that follows is kept as written.
+
+**⚠ CHAT 1 STOPS ON THE SCHEMA, per the standing law, and hands it up rather than letting it pass:**
+Fable's block says *"Fable reviews the anchors schema."* **The standing constraint on this ledger is that
+ANY SCHEMA STOPS AT CHAT 1 AND GOES TO NICK** — Fable's review is in addition to that stop, not instead
+of it. **Nick's [3] says "All confirmed. Let's push what we've come up with so I can start trying it
+out."** **Chat 1 does not read a general "all confirmed" as the founder's word on a NEW TABLE.** **THE
+QUESTION, to Fable and Nick: does [3] cover the anchors table as a schema approval, or does the table
+still owe him its own stop?** **No table is built until that is answered.**
+
+**⚠ RECONCILED 2026-09-22, NOT ADOPTED AS GIVEN** — Fable split the work TEXT-SIDE / RAIL-SIDE rather
+than store/interface. See *LANES FOR EXPERIMENT 1 — RULED*, below. The proposal that follows is kept as
+written, including the reasoning Fable answered.
+
+**CHAT 1's PROPOSAL ON LANES (asked for; Fable and the desks may veto):**
+- **THE STORE — the anchors table, its read/write seam, and the span model — to FIX.** It owns
+  `persistence.ts`'s recent work, built item 170 against it, and the span anchor must survive an edit to
+  the text around it, which is a persistence problem before it is an interface one.
+- **THE INTERFACE — the right-click menu, the strip's connect tools, the rail's Linked list — to PW.** It
+  built the card/board transfer and the Plan hand's surfaces, and this is the same family of work: a
+  control that connects one surface to another.
+- **THE SWITCH — item 190's Experiments section in Settings — to TOOLS**, whose lane already holds the
+  harness and the settings-adjacent plumbing.
+- **PLAN DESK briefs it**, as ruled, and its brief should settle the boundary between the store's span
+  model and the interface before either lane starts. *(Chat 1's reason for splitting store from interface
+  across two lanes rather than one: the two halves fail differently — a lost anchor is data, a clumsy
+  menu is design — and the arc's own record says a lane that owns both tends to prove the half it
+  understands.)*
+
+## RATIFIED FROM PLAN DESK's v2 PASS, AND FOUR BANDS — 2026-09-22
+
+**RATIFIED:** **Duplicate's carry rules** · **172's middle path** · **144's population** · **versions in
+their own rows.** *(All four were paused items or their neighbours; they return answered under
+Conservative.)*
+
+> **EVERY COMMIT THAT CHANGES THE CERTIFIED TREE REACHES `origin` BEFORE THE PAIR RUNS.** (PW)
+
+> **AUTOMATION MAY PREPARE SILENTLY; IT MAY NOT SPEAK UNBIDDEN.** (TUTOR)
+
+> **SIZE A MARK BY ITS INK, NOT ITS CANVAS.** (TOOLS)
+
+> **A SPLASH NEVER EATS THE FIRST KEYSTROKE.** (TOOLS)
+
+*(TUTOR's line is the general form of Nick's own "the app should not notice a writer is stuck or make
+suggestions unprompted" — a desk band and a founder ruling arriving at the same sentence from two
+directions.)*
+
+## MERGES, MOCKUPS, AND ONE MISSING FILE — 2026-09-22
+
+**Merged at `a2b45c7`, both verified docs-only (0 non-docs), trial merges clean:** **`plan-v2-conservative`
+@ `c400203`** (the v2 conservative design) and **`item84/tutor-menus` @ `44cd0db`** (item 165's preset
+day-one contents; the right-strip automation pass).
+
+**FABLE's MOCKUPS:** `https://claude.ai/artifact/5ekkqSTXDAJvA4YqiWN4ZY` and
+`https://claude.ai/artifact/2WogxzEkDfFtkiSeH9Nx38`.
+
+**✓ RESOLVED 2026-09-22 — Nick re-saved it. `wrizo-page-first.html` is now PRESENT (47,395 bytes),
+confirmed by chat 1.** The paragraph that follows is kept as written.
+
+**⚠ ONE OF THE TWO FILES IS NOT IN DOWNLOADS. CHECKED, not assumed:** `wrizo-three-writers.html` is
+**PRESENT (64,421 bytes)**; **`wrizo-page-first.html` is ABSENT** — the Downloads folder holds no file of
+that name. **The described-but-not-attached shape again**, and named as such under the relay law.
+**Requested.** *(The artifact link may still serve it; the FILE the block names is not there.)*
+
+## OPEN, AND NOT CHAT 1's TO ANSWER — 2026-09-22
+
+**Nick's [3] ends with a question to Fable:** *"Should I relay all of the text blocks that you haven't
+received a response back from yet?"* **Recorded as OUTSTANDING so it is not lost in the consolidation —
+it is Fable's to answer, and chat 1 notes only that a consolidated block which supersedes unreceived
+blocks cannot itself tell him which ones were unreceived.**
+
+**QUEUE UNCHANGED OTHERWISE. Experiment 1's lanes slot in on the proposal above.** **PW's corrected tree
+`1bda06d` is STILL NOT ON `origin`** — and PW's own band now names the rule it is standing on.
+
+## WHY THE SCHEMA STOP MATTERED — "ZERO SCHEMA" WAS NOT ZERO SCHEMA — 2026-09-22
+
+**Fable: chat 1's stop was RIGHT, and the review adds the reason.** **PLAN DESK's Shape A — "additive
+optional fields on the entry, zero schema" — IS NOT ZERO SCHEMA IN EFFECT.** FIX's item-136 S0
+established that the server's `rowToJournalEntry` and `upsertJournalEntries` are **EXPLICIT COLUMN LISTS**
+that **DROP AN UNKNOWN FIELD IN BOTH DIRECTIONS WITHOUT ERRORING.** **So anchors stored as new entry
+fields would SURVIVE LOCALLY AND VANISH ON THE NEXT PULL, SILENTLY — the one failure Experiment 1 cannot
+have.**
+
+**CHAT 1 VERIFIED THIS AT THE SOURCE rather than carrying it:**
+- **`apps/server/src/sync.ts:84` — `rowToJournalEntry` is a field-by-field mapper** (`id`, `text`,
+  `projectId`, `sessionId`, `starred`… each named). **An unknown column is never returned.**
+- **⚠ CORRECTED 2026-09-23 — chat 1's own count was ONE SHORT.** The write path has **FOUR** edit sites,
+  not three: the `insert` column list (`:254`), **the `values` PLACEHOLDER list (`:255`)** — a new column
+  needs a new `$N` — the `on conflict do update set` (`:267`), and the parameter array (`:273`). **Fable's
+  "three write lists plus the parameter array" is the precise form.** The bullet below is kept as written.
+- **`apps/server/src/sync.ts:247` — `upsertJournalEntries` names its columns in the `insert`, in the
+  `on conflict do update set`, and in the positional parameter array — three places, all explicit.** **A
+  field not in that list is never written.**
+- **So the silent-loss path is real in both directions, and it is SILENT: the write is not rejected and
+  the read does not error.** *(A defect that announces itself is survivable; this one would look exactly
+  like a writer's note never existing.)*
+
+**THE LAWFUL MINIMAL FORM: ONE ADDITIVE NULLABLE `jsonb` COLUMN on `journal_entries`** — boot-time
+add-column, the whitelist edits, SQL null → JS undefined: **item 136's own recipe.** **Shape B's tables
+are the PLANNED GRADUATION, not the first step.**
+
+**THAT IS SCHEMA, AND IT IS WITH NICK NOW AS A PLAIN YES/NO. NOTHING BUILDS UNTIL HIS WORD.** **Fable
+reviews the column when it is offered.**
+
+*(Worth keeping: the phrase "zero schema" was true of the CLIENT and false of the SYSTEM. A claim about
+cost that stops at the boundary it happens to be measured from is the same shape as a census that sees
+only the spellings it knows.)*
+
+## LANES FOR EXPERIMENT 1 — RULED — 2026-09-22
+
+**Fable's ruling reconciles chat 1's split with PLAN DESK's:**
+- **TEXT SIDE → PW:** capture, **the anchors store**, re-finding, the right-click menu, the strip's
+  connect tools, the mark. **PW is the SINGLE WRITER of `store/anchors.ts`.**
+- **RAIL SIDE AND THE EXPERIMENTS SWITCH → TOOLS:** zone 5, the list, filter, sort, popups, unlink, and
+  item 190's switch. **Zone geometry is TOOLS' own ground.**
+- **FIX KEEPS ITS QUEUE (159, 158, 160, 184) AND ITEM 136** — *FIX's queue is the longest.*
+- **ITEM 138 WAITS BEHIND EXPERIMENT 1.**
+
+**CHAT 1's store/interface CONCERN IS ANSWERED, not dismissed: Fable reviews the store, and PLAN DESK's
+ONE-WRITER SEAM covers what the split was meant to protect.** *(The concern was that a lane owning both
+halves proves the half it understands; a single named writer plus an outside reviewer is a different
+mechanism for the same risk, and it costs FIX's queue nothing.)*
+
+## ITEM 194 — `.click()` SKIPS THE HIT-TEST IN item9192 — OPENS — 2026-09-22
+
+**OPENS. TOOLS' class.** **PW found `item9192.mjs` drives the sliver with `.click()`, which SKIPS
+HIT-TESTING** — **item 130's concealment surviving inside a PASSING harness.**
+
+*(This is item 151's population arriving from the other side. 151 gated every COORDINATE dispatch behind
+a hit-test; a `.click()` never needed one, because the DOM will dispatch it onto a covered element
+without complaint. A green check that presses through an occluder is the exact thing 151 was built to
+make impossible — and it was never in 151's census, because 151 counted coordinate dispatches.)*
+
+## THREE REGISTERED, AND ONE MORE FABLE ERROR — 2026-09-22
+
+**FABLE's ERROR (the fifth on the record this week): the mockups INSERT MARKER ELEMENTS WITH TEXT** —
+three-writers' margin labels, page-first's `✎` note marker. **TUTOR caught that under TRR14 those
+CHARACTERS WOULD BE SAVED INTO THE MANUSCRIPT.** **THE REAL BUILD MARKS WITH CSS ONLY.** *(A mockup that
+draws a marker as text is proposing to write into the writer's own words — the page-is-primary canon
+broken by the illustration of it.)*
+
+**REGISTERED:**
+- **FIX's 158** — Tab reuses THE ONE FORMATTER; **the rail's Draft-only guard is KEPT as 112-A's safety
+  net.**
+- **INK's `980360c`** — the bare menu; **item 183 resolved at ALL FOUR LINEAGE SITES.**
+- **✗ FALSIFIED 2026-09-23 BY PW's OWN DIAGNOSTIC — REOPENED, NOT REFILED.** The wake-chrome theory below
+  is DEAD: the diagnostic measured one grip, a real rect, chrome NOT receded, `pointer-events: auto`.
+  **Red 3's cause is unknown again** — and likely the geometry defect now at item 195. The line below is
+  kept as written.
+- **PW's THIRD 176 RED IS ITS INSTRUMENT, not the product:** receded chrome is `pointer-events: none`,
+  and its fixture **never called `wakeChrome`.** *(The known shape: "the chrome looks present while being
+  inert to the pointer" — the same fact FIX's own 170 offer recorded.)*
+
+## THE BOX — PW's FOURTH PAIR GRANTED, AND THE QUEUE — 2026-09-22
+
+**PW's branch IS NOW ON `origin` (`292f661`) — it pushed, as told.** **PW's spent grant cleared; a FOURTH
+176 PAIR GRANTED with its new diagnostics.** Box was idle (0 runners, no grant held by a running lane).
+
+**⚠ HALF RIGHT, AND THE WRONG HALF WAS CHAT 1's — CORRECTED 2026-09-23.** The stop rule's FIRST clause
+fired correctly (PW stopped patching). **Its SECOND clause — "redesigns the check's route" — IS NOT
+APPLIED, because the fourth red is THE PRODUCT.** **A stop rule stops the PATCHING, not the FINDING.**
+See *ITEM 176's FOURTH RED*, below. The paragraph is kept as written, with its error visible: chat 1
+bundled two acts into one rule, and only one of them belonged there.
+
+**⚠ THE FOURTH IS THE LAST PATCH. Fable leaves the call to chat 1, and chat 1 states it in advance so it
+is not decided under the disappointment of a red: IF 176 GOES RED A FOURTH TIME, PW STOPS PATCHING THE
+FIXTURE AND REDESIGNS THE CHECK's ROUTE.** Three reds on one check, each with a different local cause
+(the collapsed sliver's door, the beginnings door 144 retires, a fixture that never woke the chrome), is
+no longer three bugs — **it is a route that keeps finding new ways to be wrong, which is a design
+problem.** *(m3's law, applied to an instrument instead of a distribution: measure the pattern before
+calling the next instance variance.)*
+
+**THE QUEUE, chat 1's to sequence (announced as each lane is ready, not granted blind):**
+**⚠ CORRECTED 2026-09-23 — "RUNNING NOW" WAS AHEAD OF THE FACT.** Chat 1 wrote it on granting the turn;
+**PW had not started.** The grant is not the run. **The real start is recorded when PW confirms it.** The
+line below is kept as written, wrong, because the error is the point: a desk that grants the box must not
+narrate it as used.
+
+**PW's fourth 176 pair — RUNNING NOW** → **FIX's 159 and 158** → **INK's 157, then 171-A** → **TOOLS'
+splash frames (item 187)** and **PLAN DESK's note-key test**.
+
+**CHAT 1's NOTE ON THE LAST TWO:** the splash frames and the note-key test are **SHORT box uses, not
+pairs** — a render and a probe. **Neither is granted yet, because chat 1 has not confirmed either is
+built**; they are announced when their lanes say ready, and they can take a slot between pairs without
+disturbing the order. **PLAN DESK's note-key test answers a question already on the record:** `Ctrl+N` is
+unavailable to a page, `Ctrl`/`Cmd`+`Enter` stands in, and the test finds the final key.
+
+## MERGES AND THE FILE THAT CAME BACK — 2026-09-22
+
+**Merged at `c6cb04d`, both verified docs-only (0 non-docs), trial merges clean:** **`plan-exp1-connect` @
+`a15f856`** (PLAN DESK's Experiment 1 brief) and **`item84/tutor-menus` @ `3b58b27`** (TUTOR's checker
+report and claim tiers).
+
+**`wrizo-page-first.html` IS BACK — Nick re-saved it; chat 1 confirms it present at 47,395 bytes.** The
+missing-file flag above is marked resolved in place.
+
+## THE FABLE HANDOFF — COMMITTED, AND RECONCILED AGAINST THE LEDGER — 2026-09-23
+
+**Nick is moving the Fable role to a fresh chat.** The outgoing Fable's handoff is **COMMITTED at
+`docs/wrizo-alpha/fable-handoff-2026-09-23.md`** (`1331892`), **byte-identical to the Downloads original**
+(18,911 bytes, verified by `cmp`), **named for its own stated date — the document says 2026-09-23, not the
+22nd.**
+
+**⚠ A STRAY WAS ALREADY IN THE WORKING TREE.** An untracked, never-committed, byte-identical copy sat at
+`docs/wrizo-fable-handoff.md`, dropped straight into the primary checkout. **REMOVED, not left:**
+`railway up` **uploads the WORKING DIRECTORY**, so an untracked stray in this checkout can SHIP TO
+PRODUCTION, and the standing law is that **the tree is bare at upload.** *(Checked before deleting:
+identical bytes, in no branch, and the Downloads original untouched — so nothing was lost.)* **One
+canonical copy is kept.**
+
+## THE STATE REPORT — the new Fable's first ask, answered in advance — 2026-09-23
+
+| | |
+| --- | --- |
+| **PRODUCTION STAMP** | **`283013e` · railway `664604e6-fdbd-4caa-b4e3-505c19cfa190`** — Batch Four, SUCCESS, served-vs-stamped MD5 matched on both assets. **Rollback target: `448fc6c` · `5e06974f`.** |
+| **REGISTRY** | **NEXT FREE 195.** |
+| **WHO HOLDS THE BOX** | **PW2**, token `pw2-item176-fourth-20260922`, for **item 176's FOURTH pair** — granted after PW pushed (`292f661`). **No run was active at this reading.** |
+| **BATCH IN ASSEMBLY** | **NONE.** Batch Four shipped and closed; **Batch Five has not been assembled and holds nothing yet.** |
+
+**MAIN at `1331892`, local == origin, tree clean.**
+
+## WHERE THE HANDOFF AND THE LEDGER DISAGREE — THE LEDGER WINS — 2026-09-23
+
+**1 · REGISTRY — THE ONLY HARD DISCREPANCY.** The handoff says *"Next free item number: **194**"*; **the
+ledger says 195.** **Item 194 was opened after the handoff was written** — `.click()` skips the hit-test in
+`item9192`, TOOLS' class, item 130's concealment inside a passing harness. **NEXT FREE IS 195.**
+
+**2 · "THE LINKS COLUMN" AND "THE ANCHORS COLUMN" ARE THE SAME COLUMN.** The handoff's own §2.1 writes it
+as *"links (anchors)"*. **Not a disagreement — a naming fork, recorded so no desk builds two columns or
+asks Nick twice.** **One additive nullable `jsonb` column on `journal_entries`, still awaiting his plain
+yes/no.**
+
+**3 · EVERYTHING ELSE CHECKED MATCHES:** the production stamp and rollback target, the four batches and
+what each shipped, the box model, the lane roster, and the box order chat 1 proposed. **No other
+contradiction found.**
+
+## DEFAULTS THE HANDOFF CARRIES THAT THE LEDGER NEVER RECEIVED — 2026-09-23
+
+**⚠ THE REAL FIND, and the reason a handoff gets read rather than filed: the handoff lists DEFAULTS that
+reached no relay and are in NO ledger entry.** With the outgoing Fable's context about to end, **anything
+living only in that document would have been lost.** **Recorded here as FABLE's DEFAULTS — vetoable,
+NOT founder text:**
+- **A card made on a page that is on no board goes to the page's OWN PLAN BOARD** — it does not become a
+  note.
+- **LINKED WORDS TAKE A FAINT TINT ON THE WORDS THEMSELVES, NOT AN UNDERLINE** — underline is the
+  writer's (item 122). *(PLAN DESK had proposed a margin-only mark.)* **This is also the CSS-only marking
+  the mockups got wrong — the two corrections agree.**
+- **SPELLCHECK IS OFF IN FREE WRITE, ON ELSEWHERE**, using the browser's checker until Wrizo's own lands.
+- **THE SPLASH SHOWS ON EVERY OPEN** (item 187).
+- **A BLANK, NEVER-WRITTEN PAGE CHOOSING SCREENPLAY COUNTS AS CHOOSING BEFORE STARTING.**
+
+**⚠ WATCH THE LAST ONE.** It sits beside a default Nick's own word SUPERSEDED — *"a blank page may still
+become a screenplay"* — and the two are not the same claim. **Nick retired CONVERSION ENTIRELY: there is
+no converting written prose, and copy-and-paste is the path.** **Choosing Screenplay on a page that has
+never been written is a CHOICE, not a conversion, so the default is consistent** — **but it must never be
+read as reviving in-place conversion (item 184).** *(Recorded in full rather than quietly dropped: the
+distinction is one word wide and a builder will meet it.)*
+
+**THE HANDOFF's OTHER DEFAULTS were already on this ledger and match:** the note key (`Ctrl`/`Cmd`+`Enter`,
+`Ctrl+N` impossible in a browser), "Pages" everywhere including Flux, the tablet carry's cancel, Draft's
+bare menu with the typewriter on, and the screenplay typewriter returning only with its engine.
+
+## WHAT DOES NOT CHANGE — 2026-09-23
+
+**Every standing ruling and the whole queue HOLD.** **Experiment 1 still waits on Nick's yes/no on the
+links column** — and **chat 1's schema stop is recorded as the REASON nothing has been built**, with the
+server evidence beside it (`sync.ts:84` and `:247`, explicit column lists in both directions).
+
+**THE QUEUE, unchanged:** **PW's fourth 176 pair (holding the box)** → **FIX's 159 and 158** → **INK's 157,
+then 171-A** → **TOOLS' splash frames and PLAN DESK's note-key test.** **The fourth-red rule stands: if 176
+reds again, PW stops patching the fixture and the check's route is redesigned.**
+
+**ALSO STILL OPEN WITH NICK, from the handoff's own list and this ledger's:** the splash's size (a fifth of
+the screen's AREA or its WIDTH — TOOLS renders both frames), item 145's tag highlight under a selection
+(Q-OV1), and item 146's rhizome question (guaranteed every edge, or usually).
+
+*(A note for the incoming Fable, from the desk that keeps this file: the ledger is the record, and it wins
+on conflict — but it only knows what reached it. The five defaults above are the measure of that: they
+were real decisions, correctly made, and one chat-reset away from vanishing. Relay what you rule.)*
+
+## NICK's WORD ON EXP1-Q1 — THE LINKS COLUMN — PRIMARY TEXT, VERBATIM — 2026-09-23
+
+**Fable's question, as put to him:** *"1. The links column: yes or no?"* — explained as **"one new slot on
+each page, empty by default and used only for links"**, with link TABLES later as their own step.
+
+**HIS ANSWER, VERBATIM:**
+
+> 1. Yes
+
+**⚠ THE SPELLING IS NOW RULED: `page_links` — see *THE COLUMN IS NAMED*, below.** `connections` is
+superseded as the column's name. The paragraph that follows is kept as written.
+
+**THE SCHEMA STOP IS ANSWERED. ONE COLUMN, UNDER THREE NAMES:** **links = anchors =
+`journal_entries.connections`** in PLAN DESK's amended brief. **HIS YES COVERS THE COLUMN, NOT A
+SPELLING.** *(The naming fork chat 1 flagged at the handoff is now closed by the founder's answer rather
+than by a desk picking one — and the amended brief's `connections` is the third name, not a fourth
+thing.)*
+
+**NOTHING WRITES IT UNTIL PW's S0 SHAPE REPORT CLEARS FABLE's REVIEW.** *(The yes opens the column; it
+does not open the build.)*
+
+## WITH NICK NOW — TWO DESIGN QUESTIONS, A SKIP TAKES THE DEFAULT — 2026-09-23
+
+**EXP1-Q5 — OVERLAPPING LINKS (default YES)** · **EXP1-Q6 — THE SPOT-NOTE's MARGIN TICK (default YES).**
+**Design questions, so silence takes the default; Fable relays his words when they come.**
+
+## THE GRANT FILE — BOTH READS WERE RIGHT — 2026-09-23
+
+**Fable read `C:\Users\nickh\.wrizo\box-turn.json` itself: lane PW2, token `pw2-item176-fourth-20260922`,
+time `2026-09-23T05:47:18.680Z`.** **PW's refusal had read the SPENT "corrected" token
+(`2026-09-22T22:29:08Z`) — BEFORE chat 1's write.** **BOTH RIGHT AT THEIR READ-TIMES; NOTHING TO FIX.**
+
+*(The disk-wins law working as intended, twice: each party read the file rather than a description of it,
+and the apparent conflict was only two true readings of two moments. The file is the announcement — and a
+file has a time.)*
+
+**ONE LEDGER CORRECTION, chat 1's own error, marked in place above: "RUNNING NOW" was written when the
+turn was GRANTED, not when the pair started.** **PW had not begun.**
+
+**THE COUNT: PW called it "pair three"; THE LEDGER's COUNT — FOURTH — STANDS**, and Fable has told PW so.
+*(The three that ran: the original red, the beginnings-door fix, the fixture that never woke the chrome.
+A lane counting its own attempts from the last one it remembers is how a fourth-red rule gets applied to
+a third red.)*
+
+## FABLE's RULINGS — 2026-09-23
+
+- **ITEM 194 — TOOLS' §6 APPROVED. THE HELPER FLIPS IN TWO MOVES:** a **REPORT-ONLY CENSUS FIRST** (a
+  short box use), **then the fixtures are fixed**, **then it fails on anything unreachable.** **⚠ IT
+  CHANGES THE INSTRUMENT UNDER EVERY LANE's STAMPS, SO IT LANDS AT A BATCH BOUNDARY.** *(The same care
+  item 151's hit-test earned: a guard that every other lane's green depends on cannot arrive mid-queue.)*
+- **THE MOCKUP's TABBED RIGHT COLUMN IS THE APPROVED "ONE PANEL COLUMN PER SIDE"** — the Tutor and the
+  rail's lists **TAKE TURNS IN IT.** **NO THIRD SURFACE. NOT A QUESTION FOR NICK.**
+- **FN5 — THE SHIPPED "Ask a question…" STAYS**; the mockup's placeholder was **a drawing shortcut**, not
+  a proposal. *(The fifth mockup-reads-as-spec correction on this record.)*
+- **TUTOR's SINGLE CHECKS SECTION — ACCEPTED.**
+- **THE FIVE-ZONE PENCIL STAYS DOWN — the Experiment 1 build is the next thing Nick clicks.**
+- **RATIFIED, chat 1's line:** *"'zero schema' was true of the client and false of the system."* **A COST
+  CLAIM IS MEASURED AT THE SYSTEM's EDGE, NOT AT THE EDGE IT WAS MEASURED FROM.**
+
+## THE QUEUE — 2026-09-23
+
+**BOX ORDER UNCHANGED:** **PW's 176 pair** → **FIX's 159, then 158 — EACH WITH ITS FALSIFICATION RUN** →
+**INK's 157, then 171-A.**
+
+**SHORT USES, as lanes say ready:** TOOLS' splash frames · the note-key test · **PW's PAINT-LAYER
+MEASUREMENT — ONE measurement serving BOTH item 145 and Experiment 1.** **FIX's 160 when ready.**
+
+**LANE ORDER CHANGES:** **PW takes Experiment 1 AHEAD OF 163** · **TOOLS takes Experiment 1's RAIL SIDE
+first, 194 after** · **PLAN DESK takes 171-B's design next if its charter is ready.**
+
+## MERGED — 2026-09-23
+
+**At `fc8de60`, both verified docs-only (0 non-docs), trial merges clean:** **`plan-exp1-amend` @
+`b52e151`** (the amended Experiment 1 brief, with `journal_entries.connections` and the page-first rail
+pass) and **`item84/tutor-menus` @ `a31af53`** (TUTOR's strip checked against the page-first mockup).
+
+## THE CLEARING — SEVEN RESTART NOTES — 2026-09-23
+
+**Nick asked; Fable said yes.** **Each lane writes its restart note (its session seed) to
+`C:\Users\nickh\.wrizo\seeds\`** — `fix.md`, `pw.md`, `tools.md`, `ink.md`, `plan-desk.md`, `tutor.md` —
+**and tells Nick "Restart note saved, nothing running."**
+
+**CHAT 1 GOES LAST:** write `chat1.md`, **commit ALL SEVEN into `docs/wrizo-alpha/seeds/` in ONE records
+commit**, then give Nick **its SHA and "nothing running."**
+
+**NO LANE IS CLEARED MID-RUN. PW ONLY AFTER ITS PAIR REPORTS.**
+
+**STATE AT THIS WRITING:** **`C:\Users\nickh\.wrizo\seeds\` DOES NOT EXIST — no lane has written a seed
+yet**, which is what going last looks like from here. **PW's fourth pair has not started** (grant held,
+0 runners), **so the gate on PW's clearing is still shut.** **Chat 1 holds the commit until all seven
+exist** and will refresh its own note against the state of the moment before committing — *a restart note
+that is one relay stale is worse than none, because it reads as current.*
+
+## THE COLUMN IS NAMED — `page_links` — 2026-09-23
+
+**RULED (Fable): the column is `page_links`, JS `pageLinks`** — **superseding the amended brief's
+`connections`.** **THE FORK CLOSES ON THIS SPELLING: links = anchors = `page_links`.**
+
+**THE REASON, and it is a measurement:** *"connection(s)"* is already taken, four times over — the board
+**hairline** (`Box` kind `'connection'`), the **card footer's lines and their toggle**, and the
+**page↔board connections** the cascade and `getBoardsConnecting` read.
+
+**✗ CORRECTED 2026-09-23 — "IT REPRODUCES EXACTLY" IS WITHDRAWN. IT WAS NOT A REPRODUCTION.** Fable's
+count came from a DIFFERENT INSTRUMENT (case-insensitive, `.ts`/`.tsx` only, under `apps/`, counting
+matching LINES). **Two different instruments landing on the same two numbers is a COINCIDENCE, not a
+confirmation** — see *THREE NUMBERS, THREE INSTRUMENTS*, below. **The ruling does not move.** The
+paragraph is kept as written, wrong, because the error is the lesson: chat 1 invoked the
+census-is-a-claim-about-an-instrument law in the same breath as breaking it.
+
+**CHAT 1 RE-DERIVED FABLE's COUNT RATHER THAN CARRYING IT, and it reproduces EXACTLY: 25 OCCURRENCES
+ACROSS 7 FILES.** **The scope, recorded so anyone can re-derive it:** `apps/desktop/src` +
+`apps/server/src`, **including `.css`**, counting **OCCURRENCES, not matching lines** (24 lines hold the
+25 — one line carries it twice). *(Chat 1's first cut — `.ts`/`.tsx` only — gave 21 across 6, and the
+difference is the scope, not a disagreement: a count is a claim about an instrument before it is a claim
+about a codebase. The singular `'connection'` adds 27 more sites.)*
+
+**THE RULE UNDER THE RULING: A COLUMN CANNOT BE RENAMED LATER WITHOUT NICK's WORD AGAIN, SO IT IS NAMED
+ONCE, BEFORE IT IS WRITTEN.** **His yes covered the COLUMN, NOT A SPELLING** — so choosing the spelling
+now is a desk's job done inside his ruling, not a second question put to him.
+
+## THE SERVER HALF — APPROVED — 2026-09-23
+
+**APPROVED (Fable):** the **boot-time column** on the **`page_settings` precedent** — **jsonb, no default,
+no backfill, no `NOT NULL`** — **the three write lists plus the parameter array**, **the read mapper**, and
+**both null paths landing on `undefined`.**
+
+**CHAT 1 VERIFIED THE PRECEDENT AT THE SOURCE:** `apps/server/src/migrate.ts:168` reads **`alter table
+journal_entries add column if not exists page_settings jsonb`** — **bare `jsonb`; no `default`, no `not
+null`, no backfill.** **The shape Fable names is the shape on disk.**
+
+**AND IT CORRECTED CHAT 1's OWN EARLIER COUNT (marked in place above): the write path has FOUR edit
+sites, not three** — the `insert` list, **the `values` placeholder list**, the `on conflict do update
+set`, and the parameter array — **plus the read mapper at `:112`. Five edits to carry one column.**
+*(Chat 1 had folded the placeholders in when it verified the silent-loss path; the conclusion was right
+and the count was one short. Recorded because a builder will work from the number.)*
+
+**PW WRITES IT AFTER CONFIRMING CHAT 1's RECORD ON `main`** — the record of Nick's yes is at **`a089bd2`**,
+and this record follows it. **THE INNER SHAPE IS APPROVED IN PRINCIPLE, with SEVEN CONDITIONS PW ANSWERS
+BEFORE THE STORE WRITES ANY REAL LINK.**
+
+## SHAPE B's GRADUATION TRIGGER — "A REVERSE READER SHIPS" — 2026-09-23
+
+**PW's flag, ACCEPTED (Fable): the first feature that asks WHAT LINKS POINT AT a card or page MOVES LINKS
+INTO THEIR OWN TABLES** — because that question means **SCANNING EVERY PAGE**, *a second scan of the
+`getBoardsConnecting` shape.*
+
+**CHAT 1 CONFIRMS THE ANALOGY IS EXACT, from its own earlier measurement:** `getBoardsConnecting` filters
+`getBoardsPinning`, and **`getBoardsPinning` is a bare `cache.journalEntries.filter(...)` with no index
+and no sort** — **a full scan of every entry to answer one backward question.** **So the trigger is not a
+guess about future cost; it names a scan the house already runs and declines to run twice.**
+
+*(A graduation trigger stated as an OBSERVABLE EVENT — "a reverse reader ships" — rather than a size
+threshold is the useful form: nobody has to agree on how many links are too many, and the first builder
+who needs the backward question is the one who trips it.)*
+
+## PW's FOURTH 176 PAIR — THE REAL START, OBSERVED — 2026-09-23
+
+**Chat 1 owed the real start after correcting its own "RUNNING NOW." HERE IT IS, and it is OBSERVED, NOT
+CONFIRMED:** the pair's runner started **00:29 on 2026-09-23** (PID 41492), writing to PW's own session
+scratchpad; at chat 1's reading it was working through `sc1.mjs`. **PW has not yet reported it. The
+distinction is the whole point of the correction — chat 1 records what it can SEE, and PW's own report
+remains the record of the run.**
+
+**IT RUNS IN PW's OWN WORKTREE**, so chat 1's records commits to the primary checkout cannot dirty its
+stamp — *a worktree isolates FILES, which is the half of that law that governs writes.*
+
+## THE CLEARING — FIVE OF SIX SEEDS IN; PW's IS THE GATE — 2026-09-23
+
+**`C:\Users\nickh\.wrizo\seeds\` now holds FIVE:** `fix.md` (12,861 b) · `ink.md` (7,839 b) ·
+`plan-desk.md` (12,121 b) · `tools.md` (12,968 b) · `tutor.md` (10,703 b).
+
+**MISSING: `pw.md` — and CORRECTLY SO.** **PW is mid-run**, and the rule is that **no lane is cleared
+mid-run; PW only after its pair reports.** **The gate is doing exactly what it was written to do.**
+
+**CHAT 1 STILL GOES LAST and still holds the commit:** `chat1.md` is written against the state of the
+minute it is committed, not now, and the seven land in `docs/wrizo-alpha/seeds/` in ONE records commit —
+whose SHA goes to Nick with "nothing running." **"Nothing running" will be TRUE when it is said: at this
+reading it is false, because PW's pair is running.**
+
+## THREE NUMBERS, THREE INSTRUMENTS — AND THE RULING SURVIVES ALL OF THEM — 2026-09-23
+
+**Fable's note, and it is the sharper catch: its 25-in-7 and chat 1's 25-in-7 were NOT THE SAME
+MEASUREMENT.** **Chat 1 ran Fable's stated instrument to see, and found a THIRD number:**
+
+| instrument | scope | counts | result |
+| --- | --- | --- | --- |
+| **Fable, as reported** | — | — | **25 in 7** |
+| **Fable, EXACT** — `pageLinks\|page_links\|connections\b`, `-i`, `.ts`/`.tsx`, `apps/` | — | matching **LINES** | **25 in 7** ✓ *(run by chat 1; see below)* |
+| **Fable, as described** (case-insensitive · `.ts`/`.tsx` · under `apps/`) | includes the harness tree | matching **LINES** | **26 in 8** |
+| **Chat 1** (case-sensitive · `src` + `.css`) | `apps/desktop/src` + `apps/server/src` | **OCCURRENCES** | **25 in 7** |
+
+**SO THE DESCRIBED INSTRUMENT DOES NOT REPRODUCE ITS OWN REPORTED NUMBER EITHER.** *(Said without
+accusation — it STRENGTHENS Fable's point rather than denting it: a count drifts from its own description
+this easily, and neither desk would have seen it without running the other's.)*
+
+**THE TWO FILE SETS OVERLAP IN SIX AND EACH HOLDS ONE THE OTHER MISSES — and chat 1 opened both, because
+a count is only as good as what it counted:**
+- **`store/boardStructure.ts:25`, caught ONLY by the case-insensitive scan:** *"A content card — the
+  structural unit. **Connections** (hairlines) and board-meta…"* — **a TRUE hit, and the capital-C
+  hairline sense the ruling cites.** **Chat 1's case-sensitivity missed a line that SUPPORTS the
+  ruling.**
+- **`server/src/db.ts:7`, caught ONLY by the case-insensitive scan:** `connectionString: env.databaseUrl`
+  — **a FALSE hit. It is the POSTGRES CONNECTION STRING, a different sense of the word entirely**, and it
+  matched only because case-insensitive substring search crosses the camelCase boundary in
+  `connection`+`String`.
+- **`index.css`, caught only by chat 1's scope** — inside the collision's own sense.
+
+**THE RULING IS UNMOVED AND BETTER EVIDENCED THAN EITHER COUNT ALONE:** *"connection(s)"* is taken under
+**every** instrument tried — **21, 24, 25, 26, and 51 across widening scopes**, plus **27 more** for the
+singular — **and the one hit that turned out not to be the collision was a database connection string,
+which is itself an argument for the rename.** **`page_links` stands.**
+
+> **A COUNT IS A CLAIM ABOUT AN INSTRUMENT BEFORE IT IS A CLAIM ABOUT A TREE — AND TWO INSTRUMENTS
+> AGREEING ON A NUMBER HAVE NOT AGREED ON ANYTHING.**
+
+*(The house already had the first half of that line. The second half is what this exchange bought: chat 1
+read its own 25/7 beside Fable's 25/7 and called it a reproduction, which is the listing-trap in its most
+flattering form — the numbers MATCHED, so nobody looks. Recording both instruments is what makes the next
+one re-derivable.)*
+
+## EXP1-Q5 AND EXP1-Q6 — RULED BY NICK, NOT TAKEN BY SILENCE — 2026-09-23
+
+**As put to him:** **Q5** — *"Can one link sit inside another?"* (default yes) · **Q6** — *"Should a note
+made with nothing selected show as a small tick in the margin beside its paragraph?"* (default yes). His
+to-do line read: *"1. Answer Q5 and Q6, or skip them."*
+
+**HIS ANSWER, VERBATIM:**
+
+> 1. Yes, go with the defaults.
+
+**EXP1-Q5 — YES: LINKS MAY OVERLAP, and the rail lists EVERYTHING covering a spot.**
+**EXP1-Q6 — YES: a spot-note shows A MARGIN TICK beside its paragraph.**
+
+**⚠ THESE ARE RULINGS, NOT DEFAULTS.** **He was offered the skip and DECLINED IT — he answered.** **The
+ledger records them as his word**, and no later reader may treat them as *"Fable's defaults, vetoable"*
+the way the six on the earlier list are. *(The distinction is small in the moment and decisive later: a
+default invites a builder to re-open it; a ruling does not.)*
+
+## ITEM 187 — THE SPLASH SIZE CLOSES — 2026-09-23
+
+**His original word, as this ledger recorded it:** *"at most 1/5 the size of the screen, with the regular
+app interface blurred out behind it."*
+
+**HIS ANSWER NOW, VERBATIM:**
+
+> 5. I'm not super picky on the splash size. I just want it to be smaller than the background so it's
+> clear it's just a popup over the real app.
+
+**FABLE's RULING WITHIN IT: A FIFTH OF THE SCREEN's WIDTH.** **It satisfies BOTH readings of *"at most
+1/5"*** — a fifth of the width is well under a fifth of the AREA — **so no reading of his words is
+broken.** *(The area-or-width question is answered without having to decide which he meant, which is the
+cheapest possible close: pick the value that is legal under every reading.)*
+
+**THE CHECK ASSERTS HIS PURPOSE, NOT A PIXEL: at every tested screen size, THE BLURRED APP SHOWS ON ALL
+FOUR SIDES OF THE SPLASH.** *("Smaller than the background so it's clear it's just a popup" is a claim
+about what a writer SEES, and a four-sided margin is that claim in a form a harness can fail on. A
+pixel assertion would have gone red on the first screen nobody tested.)*
+
+**TOOLS RENDERS ONE FRAME — for the COMPOSITING CHECK — not two for a founder pick.** **The two-frame
+question is withdrawn: he was not picky, so there is nothing to pick.**
+
+## THE CLEARING — STILL FIVE OF SIX; PW's PAIR STILL RUNNING — 2026-09-23
+
+**Unchanged at this reading: `fix.md` · `ink.md` · `plan-desk.md` · `tools.md` · `tutor.md` are in;
+`pw.md` is not; PW's fourth 176 pair is STILL RUNNING** (2 processes on the box). **Chat 1 holds.**
+
+**THESE THREE ENTRIES ARE RECORDED BEFORE `chat1.md` IS WRITTEN, AS ORDERED — so the fresh lanes boot
+against a ledger that already carries them.** **Fable carries both founder answers to PW, TOOLS and PLAN
+DESK in its replies to their boot reports.**
+
+## THE EXACT INSTRUMENT — RUN, AND IT RETURNS FABLE's NUMBER — 2026-09-23
+
+**Fable's count was RIGHT; only its DESCRIPTION was wrong.** **The instrument, exactly:** pattern
+**`pageLinks|page_links|connections\b`**, case-insensitive, files `*.ts|*.tsx`, root `apps/`, counting
+**matching LINES**. **The trailing `\b` is what the paraphrase dropped** — and it is exactly what excludes
+`server/src/db.ts`'s `connectionString`, because **an `s` followed by a `t` is no word boundary.**
+
+**CHAT 1 RAN IT: 25 LINES IN 7 FILES. FABLE's REPORTED NUMBER REPRODUCES.** **26 minus that one line is
+25; 8 minus `db.ts` is 7 — the arithmetic Fable predicted, confirmed on disk.**
+
+**AND CHAT 1 RAN IT THROUGH TWO INDEPENDENT REGEX ENGINES, because this exchange is about exactly this:**
+- **GNU `grep -E`** (ERE, `\b` as a GNU extension) → **25 lines / 7 files**
+- **Node/V8's own regex engine**, walking `apps/` itself and applying `/pageLinks|page_links|connections\b/i`
+  per line → **25 lines / 7 files**
+
+**TWO ENGINES, ONE PATTERN, SAME ANSWER — THAT IS A REPRODUCTION.** *(Unlike the earlier 25/7 meeting
+25/7, which was two different patterns, two scopes and two counting units arriving at one pair of numbers
+by accident. The distinction is the whole lesson: same instrument, different engine = confirmation;
+different instrument, same number = coincidence.)*
+
+> **AN INSTRUMENT IS DESCRIBED BY ITS EXACT PATTERN, NEVER A PARAPHRASE OF IT.** (Fable)
+
+*(Chat 1's 26-in-8 was not a wrong measurement — it was a FAITHFUL measurement OF THE PARAPHRASE. The
+paraphrase was a second instrument, and it behaved exactly as written. Both halves of this exchange did
+their job: Fable's number survived, chat 1's number survived, and the thing that was wrong was the
+SENTENCE BETWEEN THEM.)*
+
+## ⚠ A THIRD ENGINE RETURNED ZERO, AND IT NEVER RAN — 2026-09-23
+
+**Chat 1's first cut used THREE engines. The third, `grep -P` (PCRE), returned `0 lines / 0 files`.** **It
+was not a measurement. It was an instrument that never ran:** `grep: -P supports only unibyte and UTF-8
+locales` — **and chat 1's own `2>/dev/null` had swallowed that error, leaving a clean, confident,
+meaningless zero.**
+
+**CAUGHT BY THIS LEDGER's OWN BAND, ONE EXCHANGE AFTER IT WAS WRITTEN:** *"an empty result is a finding,
+not an outcome — a needle that matched nothing is investigated before it is believed."* **Chat 1
+re-ran it with stderr unsuppressed rather than reporting the zero.**
+
+*(Recorded because it is the third distinct failure mode in one small question — a paraphrase that was a
+different instrument, two instruments coinciding by accident, and an instrument that never started while
+reporting a number. All three would have passed unnoticed as "the count." And the swallowed stderr was
+chat 1's own doing: `2>/dev/null` is how a silent instrument stays silent.)*
+
+**`page_links` STANDS — unmoved through all of it, and now evidenced by a count whose instrument is
+written down exactly enough to re-run.**
+
+## ITEM 176's FOURTH RED — THE PRODUCT, NOT THE ROUTE — 2026-09-23
+
+**PW's diagnostic MEASURED the refusal — `{"found":false,"why":"occluded","by":"wz-strip-item"}` — and
+FALSIFIED ITS OWN WAKE-CHROME THEORY in the same run: one grip, a real rect, chrome NOT receded,
+`pointer-events: auto`.** **On a board at 1280, 15 OF THE SLIVER GRIP's 16px SIT UNDER THE STRIP and
+hit-test to it.**
+
+**CHAT 1 CONFIRMED BOTH CAUSES ON `main`, AND THEY ARE LIVE IN PRODUCTION** — `0` product files have
+changed since the deploy (`283013e` → `1459c2a`), so what is on `main` is what writers have:
+- **`index.css:2792` — `.desk-frame-stage { … isolation:isolate }`** seals the stage, **so nothing inside
+  it can outrank the strip.**
+- **`index.css:3136` — `--sliver-paper-pad: 0px`** on the board variant **pulls the grip into the strip's
+  band.**
+
+**THE RULING: THE STOP RULE DID ITS JOB — PW STOPPED PATCHING. THE ROUTE IS NOT REDESIGNED.** **It is the
+WRITER's OWN DOOR, and it found a REAL DEFECT. Rerouting around it would HIDE THE BUG — the one outcome
+worse than a red.** **176 waits on the fix, then re-runs its pair THROUGH THE SAME DOOR.**
+
+> **A STOP RULE STOPS THE PATCHING, NOT THE FINDING. WHEN THE RED IS THE PRODUCT, KEEP THE ROUTE AND FIX
+> THE PRODUCT.**
+
+*(Chat 1 wrote the stop rule as one act — "stop patching AND redesign the route" — and the second half was
+wrong. A route that keeps failing is either a bad instrument or a good instrument pointed at something
+broken, and the rule as written could not tell the difference. Marked at its own entry rather than
+quietly amended.)*
+
+**REOPEN, DON'T REFILE:** **red 3's diagnosis is FALSIFIED** — its "fixture that never woke the chrome"
+cannot be the cause, because the chrome was awake. **Red 1's "collapsed sliver's door" MAY BE THIS SAME
+DEFECT.** **BOTH MARKED REOPENED, NOT CONFIRMED** — *an explanation that a later measurement kills does
+not get to stay on the shelf as history; the red goes back to unexplained.*
+
+## ITEM 195 — THE GRIP UNDER THE STRIP — OPENS — 2026-09-23
+
+**OPENS. OWNER TOOLS, FIRST IN ITS QUEUE — AHEAD OF ZONE 5.**
+
+**KEEP THE RATIFIED STACKING: the strip sits OUTSIDE the stage and ABOVE it.** **THE DEFECT IS GEOMETRY —
+a stage control DRIFTING INTO THE STRIP's BAND, where stacking only decides which one loses.**
+
+**THE RULE FOR THE FIX, AND FOR ZONE 5 AFTER IT: NO INTERACTIVE CONTROL INSIDE THE STAGE EVER SITS IN A
+STRIP's BAND — at ANY tested width, in PROSE, SCREENPLAY or BOARD.** **PROOF BY REAL HIT-TEST AT EACH
+CONTROL's CENTRE ACROSS THAT WHOLE MATRIX; PW MEASURED BOARD ONLY.** **PW's restart note §7 carries the
+full diagnosis.**
+
+**PROVENANCE, ESTABLISHED FROM HISTORY RATHER THAN ASSUMED (chat 1):** **BOTH causes entered in ONE
+commit — `32e6721`, 2026-07-18, FX4's `index.css` chrome/geometry slice.** **The only later touch,
+`3beef4d` (2026-09-13, PW2 S2), added a COMMENT about where `isolation:isolate` is deliberately NOT set —
+a DIFFERENT rule; it did not put the property on `.desk-frame-stage`.**
+
+**SO THE DEFECT HAS BEEN LIVE SINCE 2026-07-18 — over two months, through every pair and four deploys —
+because NOTHING EVER HIT-TESTED A STAGE CONTROL AGAINST THE STRIP's BAND.** *(Item 151 gated coordinate
+dispatches; item 194 caught `.click()` skipping the hit-test. This is the third face of one family: the
+house could not see an occluded control until a check refused to press one.)*
+
+## ITEM 196 — e1's DOWNLOAD RACE — OPENS — 2026-09-23
+
+**OPENS. OWNER INK — which runs dry after its two pairs. HARNESS-ONLY, so it MERGES ON CHAT 1's
+VERIFICATION.**
+
+**e1's FOUR OFFLINE DOWNLOAD CHECKS FAILED ON THE PARKED LEG ONLY** — the same bundle passed in default.
+**They READ THE DOWNLOADS DIRECTORY WHILE CHROMIUM IS STILL WRITING A `.crdownload` FILE. FIXTURE, NOT
+PRODUCT.**
+
+**THE FIX IS A LAW ALREADY ON THE BOOKS: WAIT ON OBSERVABLE STATE — the final file PRESENT, the
+`.crdownload` GONE — NEVER ON ELAPSED TIME.** *(The same law the minifier episode wrote: a wait that
+depends on elapsed time is a wait that can be optimised away or outrun.)*
+
+## ITEM 197 — 0-BYTE-LOG TIMEOUTS — OPENS, UNOWNED — 2026-09-23
+
+**OPENS, OPEN AND UNOWNED FOR NOW.** **`item84` TIMEOUT in pair 4 with a 0-BYTE DEFAULT LOG** — the parked
+leg passed 57 on the IDENTICAL BUNDLE. **The same class as pair 1's `fx5`/`item83e`.**
+
+**PW's attribution to environment BY BUNDLE IDENTITY IS SOUND — but a SECOND OCCURRENCE MAKES IT A
+PATTERN.** **A 0-BYTE LOG IS AN INSTRUMENT THAT NEVER STARTED.** **WHOEVER NEXT SEES ONE CAPTURES WHY
+BEFORE ATTRIBUTING IT.**
+
+*(Chat 1 met this exact shape hours ago in its own hands: `grep -P` returned `0 lines / 0 files` and had
+never run, because `-P` is unavailable in this locale and a `2>/dev/null` ate the reason. **A zero from a
+thing that never started is indistinguishable from a clean result — unless someone keeps the stderr.**
+That is the capture this item is asking for.)*
+
+Registry: next free **198**.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -20104,3 +21534,104 @@ this time.
 **Offered for merge — harness/test-seam work, chat 1's verification is the
 gate per the standing amendment.** Branch `item151-silent-acts`, tip
 `c46d498`, pushed. Nothing further owed on tools' side.
+
+## RECORDS — 171-B’S REVERSAL, TUTOR IDLE, THE STANDING REPORT-LENGTH RULE — 2026-09-24 (chat 1)
+
+**171B-F1 — RECORDED AS A REVERSAL.** `docs/menus/item171b-ink-on-boards-and-cards-charter.md`
+§1b names it and §Q relays it to Nick; his answer 5, quoted there byte-identical (typo
+his):
+
+> *"Ink needs to available, though, on  Boards and Cards."*
+
+**That REVERSES the standing law** — *"today the pen is inert on every non-Journal surface. A
+stylus tap on a Page or a chapter does absolutely nothing — not even caret placement"* — but
+**only for boards and cards.** The pen stays inert on a Page and a chapter; nothing else moves
+with the reversal. This entry is the recording the 171-B charter’s §F asked for and that was
+never actioned until now.
+
+**171B-F2 — CONFIRMED.** 171-B does not gate 171, as relayed.
+
+**171B-Q1, Q2, Q3** — with Nick today, by their own numbers (the charter’s §Q). Fable relays
+his words when they land; none are answered yet.
+
+**PLAN DESK’s restart note — stale twice, per Fable, told to PLAN DESK directly; recorded here
+so the ledger carries it too.** The column is `page_links`, not `connections` (Records,
+`218050c`). “The MOVE” is not held open — it was RESOLVED AS COPY on 2026-09-22 (3B). The
+ledger outranks the note.
+
+**TUTOR — idle today, Fable’s call, to save usage.** Its queue is unchanged.
+
+**NEW STANDING RULE, every lane, usage:** chat reports run 10 lines or fewer unless asked;
+detail goes to disk.
+
+**MERGES.**
+- `pw2-nesting-transfer` @ `d226e09` — one file, `docs/menus/pw2-nesting-transfer-offer-2026-09-17.md`,
+  30 insertions, nothing else touched. **DOCS-ONLY, verified by diff-stat. Merging on this
+  desk’s own verification**, per the standing amendment.
+- `plan-exp1-q1` @ `d9f688e` — **NOT merged.** Fable’s instruction is to merge once, after PLAN
+  DESK adds its amendment as a SECOND COMMIT on this same branch. Checked: `plan-exp1-amend`
+  (tip `b52e151`) is not built atop `d9f688e` — its parent chain runs `b52e151` → `f0b4726` →
+  `14d0b90`, a different base entirely. The amendment has not landed on `plan-exp1-q1` yet.
+  Holding; will merge when the second commit appears there.
+
+**BOX.** Grant file (`~/.wrizo/box-turn.json`) written naming **FIX**, token
+`chat1-fix159-20260924`, per Fable’s order (159 → 158 → INK 157 → INK 171-A → TOOLS 154, item
+195 ahead of the queue whenever TOOLS says ready, 176 re-runs after 195 merges).
+
+## RECORDS — 160’s INTERIM, EXPERIMENT 1’S REVISED SHAPE, AND NICK’S ANSWERS ON 171-B AND EXTERNAL SOURCES — 2026-09-24 (chat 1)
+
+**MERGE RULE, refined (Fable).** A harness change that can only turn a false red green (a
+de-flake) merges between pairs once verified. One that can turn a green red waits for a batch
+boundary.
+
+**ITEM 160 — PARTIAL INTERIM, NOT COMPLETE (Fable, reading FIX’s S0 at
+`C:\Users\nickh\.wrizo\notes\item160-s0-popup-ambiguity.md`).** Remove moves into
+`BoardCardPopup` for hand-typed cards; every other kind keeps it in the action row until 168.
+**The hard line — never ship without card deletion — outranks the interim placement.**
+
+**EXPERIMENT 1 — REVISED SHAPE, from PW’s report (Fable’s rulings):** link targets are
+**entries and cards only** — plans, drawers, projects and beats are not link targets here. The
+rail reads tags from the TARGET, never from the link. One position-preserving stripper, with
+`stripMarkdownConventions` as its wrapper, proven byte-identical; one exported paragraph
+enumerator. Spot-notes use PW’s caret reading plus one-sided exact fallbacks, never the
+ambiguity path. `pageLinks` joins `BirthContent`; **a link never births a page.** Export names
+links it leaves out, as it already does for ink. A link change moving the resume pointer:
+**accepted.**
+
+**FOUNDER ANSWERS, quoted verbatim, relayed by Fable — not paraphrased.**
+
+**“External sources” (the rail).** *“2. I meant sources or pages or cards or boards or images
+or imported docs that all serve as supplemental material to the text being written on the page
+surface”.* So Experiment 1 links to sources, pages, cards, boards and imported docs. **IMAGES:
+the app has no way to hold a writer’s own images today** (checked two ways — no image kind, no
+upload/attachment path). **NEW ITEM REGISTERED: the writer’s own images**, so they can be added
+and linked — planned after Experiment 1 (his default, taken by skip); the schema/storage change
+will need his word separately.
+
+**171B-Q1 (how the pen starts on a board).** *“1. Yes, on a desktop you must select INK (unless
+you have a stylus connected, perhaps? But I don’t know how that works). On a mobile device,
+stylus’s or Apple Pens, etc., automatically activate the drawing surface. This should only work
+on Free Write mode and on Boards or inside Cards.”* Fable’s default on the open question (a
+stylus draws by itself on any device; a mouse/trackpad selects INK first; a finger never draws by
+itself) is marked VETOABLE. His “only work on” clause is flagged as a READING (ink works only
+in Free Write, on boards, inside cards) — PLAN DESK checks it against where ink works today;
+any conflict goes back to Nick and nothing is removed on a reading alone.
+
+**171B-Q2 (a card’s ink).** *“2. Right on the card”.*
+
+**171B-Q3 (drawing across a board) — REVERSES the desk’s lean.** *“3. Users should be able to
+draw directly on Board. If they move cards around after that, they can erase the INK they no
+longer want (which also means we need an eraser if we don’t already have one. The eraser should
+be scalable, as well).”* An eraser exists today at one fixed size (`ERASER_WIDTH = 22`,
+`store/ink.ts:17`). **A scalable eraser, on every ink surface, joins 171-B’s scope.**
+
+**MERGES, this relay.** `plan-exp1-q1` @ `551dba4` (both commits, `d9f688e` + the amendment) and
+`plan-171b-design-pass` @ `d04ce54` — both docs-only by diff-stat, **merged on this desk’s
+verification.** PLAN DESK’s revised 171-B pass, once pushed, merges the same way.
+
+**BOX, unchanged by this entry.** FIX’s 159 is still running; grant file still names FIX,
+token `chat1-fix159-20260924`. Next pair per Fable’s order: TOOLS’ 195
+(`item195-sliver-grip` @ `917e6c4`), ahead of the queue as ruled — to be granted at FIX’s
+stamp. Short-use slots noted for between pairs: INK’s 196 (`item196-download-wait` @
+`6e61980`, a de-flake — eligible to merge between pairs once verified, per the refined rule),
+PW’s paint-layer measurement, TOOLS’ splash frame, 194’s report-only run, the note-key test.

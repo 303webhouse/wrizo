@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>two architectures · a thriller, an investigation, a dissertation</title>
+<!--
+  THE DOUBLE PASS — THE ARCHITECTS' HALF · PLAN desk · 2026-09-22 · candidates only.
+
+  Two architectures, three projects in progress, one scale.
+
+  CONSERVATIVE — three additions to what is built: the SPINE promoted (a board
+  may be marked "the plan for this spine" and its reading order writes back),
+  RECORDS as a page preset (fields above prose), ANCHORS as paragraph ids.
+  Boards and projects stay two things, linked.
+
+  BOLD — primitives plus presets: ONE CONTAINER with an ARRANGEMENT (sequence,
+  position, lanes, nesting, computed). A board and a manuscript are the same
+  set shown two ways, so the two orders cannot drift. Records and fragments are
+  first class; a reference is the default and a copy is an act.
+
+  THE FOUR THINGS TO TRY (buttons in the rig):
+    * MOVE A SCENE — watch the manuscript reorder with the board. Then press
+      "make it sovereign" and move one again: the drift is SAID, not silent.
+    * RENAME THE RECORD — one source of truth, changed everywhere it is shown.
+    * COPY IT — the fork the Worldbuilder warned about, made visible.
+    * QUOTE A SENTENCE — the anchor: a quote/claim/citation points at a
+      paragraph, not a page, and carries its provenance.
+
+  The committees are a thought experiment; this is a drawing of an
+  architecture, not a claim about writers.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&display=swap');
+  :root{
+    --ground:#110600; --panel:#1b0d03; --line:#3a2613; --paper:#F3EDE1; --ink:#2b2118;
+    --brass:#FF9800; --on-brass:#1C1610; --accent-rest:#96a05a; --warn:#e0a060;
+    --text-hi:#EDE6DA; --text-mid:#B5A998; --text-low:#80766A;
+    --ui:'Figtree',system-ui,sans-serif; --prose:'Crimson Pro',Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#000;font-family:var(--ui);color:var(--text-hi);overflow:hidden}
+  .rig{position:fixed;inset:27px 0 auto 0;z-index:30;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+       padding:8px 14px;background:#000;border-bottom:1px solid #222;font-size:12px;color:#9a9a9a}
+  .rig b{color:#d8d8d8;font-weight:600;letter-spacing:.06em}
+  .whatis{position:fixed;top:0;left:0;right:0;z-index:31;background:#2a1a06;color:#f0d9b0;font-size:11.5px;padding:6px 14px;border-bottom:1px solid #5b4228;letter-spacing:.01em}
+  .rig .grp{display:flex;gap:4px;align-items:center}
+  .rig button{font:inherit;color:#d8d8d8;background:#141414;border:1px solid #333;padding:4px 9px;cursor:pointer}
+  .rig button[aria-pressed="true"]{border-color:#8a8a8a;color:#fff;background:#222}
+  #say{margin-left:auto;font-size:11px;max-width:46%;text-align:right;color:#9a9a9a}
+  #say .hi{color:var(--warn)} #say .ok{color:#9fb36a}
+  .fit{position:absolute;inset:68px 0 132px 0;display:grid;place-items:center;overflow:hidden}
+  .stage{width:1366px;height:768px;background:var(--ground);position:relative;transform-origin:center center;
+         box-shadow:0 0 0 1px #000,0 24px 60px rgba(0,0,0,.8);overflow:hidden;
+         display:grid;grid-template-columns:286px 1fr 300px}
+  .cap{position:fixed;left:0;right:0;bottom:0;height:132px;z-index:29;padding:10px 16px;background:#08080a;
+       border-top:1px solid #1e1e22;font-size:11.5px;color:#7e786e;line-height:1.55;overflow:auto}
+  .cap b{color:#b9b2a6;font-weight:500}
+
+  .col{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);overflow:hidden}
+  .col:last-child{border-right:none;border-left:1px solid var(--line)}
+  .hd{padding:10px 13px 8px;border-bottom:1px solid var(--line);font-size:9.5px;letter-spacing:.18em;
+      text-transform:uppercase;color:var(--text-mid);display:flex;align-items:center;gap:8px}
+  .hd .tagx{margin-left:auto;font-size:8.5px;letter-spacing:.12em;color:var(--accent-rest);border:1px solid var(--accent-rest);padding:1px 5px}
+  .bd{flex:1;overflow-y:auto;padding:8px 0 14px;scrollbar-width:thin;scrollbar-color:#3a2613 transparent}
+  .sec{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-low);padding:10px 13px 4px}
+  .item{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-bottom:1px solid #1d1208;
+        font:inherit;color:var(--text-hi);font-size:11.5px;padding:7px 13px;text-align:left;cursor:pointer}
+  .item:hover{background:#1f1407}
+  .item .sub{display:block;font-size:9px;color:var(--text-low)}
+  .item .arr{margin-left:auto;font-size:8.5px;color:var(--accent-rest);white-space:nowrap}
+  .item[aria-current="true"]{background:#1f1407;box-shadow:inset 2px 0 0 var(--accent-rest)}
+  .note{font-size:10px;color:var(--text-low);padding:6px 13px;font-style:italic;line-height:1.5}
+  .note.warn{color:var(--warn);font-style:normal}
+
+  .mid{display:flex;flex-direction:column;min-height:0}
+  .band{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);font-size:11px;color:var(--text-mid)}
+  .band .name{color:var(--text-hi);font-size:13px}
+  .band .chip{font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);color:var(--text-low);padding:1px 6px}
+  .band .chip.on{border-color:var(--accent-rest);color:var(--accent-rest)}
+  .band button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--text-mid);font:inherit;font-size:10.5px;padding:3px 8px;cursor:pointer}
+  .split{flex:1;display:flex;flex-direction:column;min-height:0}
+  .half{flex:1;min-height:0;display:flex;flex-direction:column;border-bottom:1px solid var(--line)}
+  .half:last-child{border-bottom:none}
+  .halfhd{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-low)}
+  .halfhd .why{margin-left:auto;text-transform:none;letter-spacing:0;font-size:10px;font-style:italic}
+  .cards{flex:1;position:relative;overflow:hidden;background-image:radial-gradient(circle,#2a1a0b 1px,transparent 1px);background-size:20px 20px}
+  .card{position:absolute;width:168px;background:var(--panel);border:1px solid var(--line);padding:6px 8px;font-size:10.5px;color:var(--text-mid);font-family:var(--prose)}
+  .card .k{font-family:var(--ui);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-low)}
+  .card .up{position:absolute;right:3px;top:3px;background:none;border:none;color:var(--accent-rest);font:inherit;font-size:11px;cursor:pointer;padding:0 3px}
+  .card.ref{border-left:2px solid var(--accent-rest)}
+  .card.copy{border-left:2px solid var(--warn)}
+  .rows{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a1d10 transparent}
+  .srow{display:flex;align-items:center;gap:9px;padding:6px 14px;border-bottom:1px solid #1d1208;font-size:11.5px}
+  .srow .n{color:var(--text-low);font-size:9.5px;width:26px;flex:0 0 auto}
+  .srow .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .srow .st{font-size:9px;color:var(--text-low)}
+  .srow.moved{background:#2a1a06}
+  .srow.deep .t{padding-left:16px;color:var(--text-mid)}
+  .prose{padding:10px 16px;font-family:var(--prose);font-size:13px;line-height:1.7;color:var(--paper);overflow-y:auto}
+  .prose p{margin-bottom:9px;cursor:pointer;border-left:2px solid transparent;padding-left:8px}
+  .prose p:hover{border-left-color:var(--text-low)}
+  .prose p.anchored{border-left-color:var(--brass);background:rgba(255,152,0,.07)}
+  .prose .pid{font-family:var(--ui);font-size:8px;color:#6f6455;letter-spacing:.08em}
+
+  .fields{padding:8px 13px}
+  .f{display:flex;gap:8px;font-size:11px;padding:3px 0;border-bottom:1px solid #1d1208}
+  .f .k{color:var(--text-low);width:88px;flex:0 0 auto;font-size:10px}
+  .f .v{color:var(--text-hi)}
+  .pill{display:inline-block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--accent-rest);
+        color:var(--accent-rest);padding:1px 6px;margin:6px 13px 0}
+  .pill.copy{border-color:var(--warn);color:var(--warn)}
+</style>
+</head>
+<body>
+
+<div class="whatis">THIS IS THE ARCHITECTURE BENEATH A BOARD UI — NOT A NEW BOARD UI. The three columns are scaffolding for reading it: where things live, how they are ordered, what a selected thing carries. The real layout is item 166’s, and it is drawn elsewhere.</div>
+<div class="rig" role="toolbar" aria-label="Mockup rig — not Wrizo chrome">
+  <b>TWO ARCHITECTURES</b>
+  <span class="grp"><button data-arch="cons" aria-pressed="true">conservative</button><button data-arch="bold">bold</button></span>
+  <span class="grp"><button data-proj="thriller" aria-pressed="true">thriller</button><button data-proj="invest">investigation</button><button data-proj="diss">dissertation</button></span>
+  <span class="grp"><button id="move">move a scene ↑</button><button id="sov">make it sovereign</button><button id="ren">rename the record</button><button id="cp">copy it</button></span>
+  <button id="reset">reset</button>
+  <span id="say"></span>
+</div>
+
+<div class="fit"><div class="stage" id="stage">
+  <aside class="col" id="left"></aside>
+  <section class="mid" id="mid"></section>
+  <aside class="col" id="right"></aside>
+</div></div>
+
+<div class="cap"><b>Two architectures, the same three projects.</b> <b>Top half</b> of the middle column is the
+<em>plan</em> (cards); <b>bottom half</b> is the <em>manuscript</em> — the spine. <b>Press “move a scene ↑”</b>: under
+both architectures the manuscript moves with the board, <b>because there is one order</b>. Then press <b>“make it
+sovereign”</b> and move again — the board stops being the manuscript's order and <b>says so</b>: drift is stated, never
+silent. <b>“Rename the record”</b> changes the character / source / citation <em>everywhere it is shown</em> — a
+reference, not a copy. <b>“Copy it”</b> makes the fork the Worldbuilder warned about, and marks it. <b>Click any
+paragraph</b> in the prose to anchor a quote, a claim or a citation to <em>that sentence</em> — with its provenance in
+the inspector. <b>Conservative</b> keeps boards and projects as two things with a declared link; <b>bold</b> shows one
+container with an <em>arrangement</em>, so the two orders cannot come apart.</div>
+
+<script>
+(function(){
+  var arch='cons', proj='thriller', sovereign=false, sel=null, anchors={}, copied=false, renamed=false;
+  var P={
+    thriller:{
+      name:'Thriller #3', drawer:'Novel', spineWord:'Manuscript', planWord:'Scene board',
+      arrange:'sequence', planArrange:'position',
+      spine:[{t:'The ford',st:'drafted'},{t:'Three letters',st:'drafted'},{t:'The crypt at dusk',st:'idea'},{t:'What the raven cost',st:'idea'}],
+      record:{kind:'Character', title:'Mara Sten', fields:[['Role','antagonist’s daughter'],['Eyes','green'],['First appears','The ford'],['Tags','#POV-Mara #subplot-B']]},
+      shownOn:['Cast board','Book two board'],
+      prose:['The snow came in sideways, the way it always did when the old roads remembered they had been rivers.',
+             'Mara knew before the dog did. She had always known first, and it had never once helped.',
+             'By the ford the horses would not cross, and he led them through water to the knee.'],
+      anchorKind:'Note', anchorFields:function(p){return [['Points at','¶ '+p],['Kind','continuity note'],['Says','green eyes — chapter 12 has blue']];}
+    },
+    invest:{
+      name:'The contract', drawer:'Investigation', spineWord:'The piece', planWord:'Sources & quotes',
+      arrange:'sequence', planArrange:'position',
+      spine:[{t:'Lede',st:'drafted'},{t:'Nut graf',st:'drafted'},{t:'The contract',st:'reporting'},{t:'Kicker',st:'idea'}],
+      record:{kind:'Source', title:'D. Ellery', fields:[['Role','former clerk'],['Terms','on the record'],['Reached','2026-08-14, phone'],['Recording','tape 3, 14:20']]},
+      shownOn:['Story board','Fact-check list'],
+      prose:['The contract was signed on a Tuesday, which is the sort of detail that matters only later.',
+             '“Nobody read it,” Ellery said. “That was the point of the timing.”',
+             'The county has not answered three written requests for the appendix.'],
+      anchorKind:'Quote', anchorFields:function(p){return [['Points at','¶ '+p],['Said by','D. Ellery'],['Terms','on the record'],['From','tape 3, 14:20']];}
+    },
+    diss:{
+      name:'Chapter 2 — Method', drawer:'Dissertation', spineWord:'Outline = chapters', planWord:'Sources',
+      arrange:'sequence + nesting', planArrange:'position',
+      spine:[{t:'2 Method',st:'',deep:false},{t:'2.1 Corpus',st:'drafted',deep:true},{t:'2.2 Coding frame',st:'drafted',deep:true},{t:'2.3 Limits',st:'idea',deep:true}],
+      record:{kind:'Citation', title:'Ahmed 2019', fields:[['Author','Ahmed, S.'],['Year','2019'],['Title','Reading the Archive'],['Journal','Method & Text 14(2)'],['Pages','221–246'],['DOI','10.1000/mt.2019.14']]},
+      shownOn:['Chapter 2 sources','Lit review board'],
+      prose:['The corpus was assembled in two passes, the second of which corrected for the first.',
+             'Coding followed Ahmed’s frame, with two categories collapsed after the pilot.',
+             'The limits are the ones any single-coder study carries, and they are stated here rather than in a footnote.'],
+      anchorKind:'Citation use', anchorFields:function(p){return [['Points at','¶ '+p],['Cites','Ahmed 2019'],['Pages','pp. 231–233'],['Style','Chicago, note']];}
+    }
+  };
+  var order={}, say=document.getElementById('say');
+  function d(){ return P[proj]; }
+  function ord(){ if(!order[proj]) order[proj]=d().spine.map(function(_,i){return i;}); return order[proj]; }
+  function tell(h){ say.innerHTML=h; }
+
+  function leftHTML(){
+    var p=d(), h='';
+    if(arch==='cons'){
+      h+='<div class="hd">the drawer<span class="tagx">conservative</span></div><div class="bd">';
+      h+='<div class="sec">Project</div>';
+      h+='<button class="item" aria-current="true">'+p.name+'<span class="sub">'+p.spineWord+' · an ordered list of pages</span><span class="arr">spine</span></button>';
+      h+='<div class="sec">Boards</div>';
+      h+='<button class="item">'+p.planWord+'<span class="sub">'+(sovereign?'a board of its own':'marked: the plan for this spine')+'</span><span class="arr">'+(sovereign?'sovereign':'view')+'</span></button>';
+      h+='<button class="item">Research<span class="sub">a board of its own</span><span class="arr">sovereign</span></button>';
+      h+='<div class="sec">Pages with fields</div>';
+      h+='<button class="item">'+p.record.kind+' · '+(renamed?p.record.title+' (renamed)':p.record.title)+'<span class="sub">a page preset — fields above prose</span></button>';
+      h+='<div class="note">two things, linked: a project ordered as a spine, and a board that may be marked a VIEW of it. Nothing migrates.</div>';
+      return h+'</div>';
+    }
+    h+='<div class="hd">containers<span class="tagx">bold</span></div><div class="bd">';
+    h+='<button class="item" aria-current="true">'+p.name+'<span class="sub">the same set, arranged as a '+p.arrange+'</span><span class="arr">'+p.arrange+'</span></button>';
+    h+='<button class="item">'+p.planWord+'<span class="sub">'+(sovereign?'its own set':'the same set, arranged by position')+'</span><span class="arr">'+(sovereign?'sovereign':'position')+'</span></button>';
+    h+='<button class="item">The Journal<span class="sub">every page by the day it was written</span><span class="arr">computed</span></button>';
+    h+='<div class="sec">Records</div>';
+    h+='<button class="item">'+p.record.kind+' · '+(renamed?p.record.title+' (renamed)':p.record.title)+'<span class="sub">a page with a schema</span></button>';
+    h+='<div class="sec">The preset that made this</div>';
+    h+='<div class="note">'+(proj==='thriller'?'a sequence + a position view + a Character schema + a tag vocabulary'
+       :proj==='invest'?'a sequence + Source and Quote schemas + a date-arranged timeline + claim anchors'
+       :'a sequence with nesting + a Citation schema + a sources container')+' — <b>no code of its own</b></div>';
+    return h+'</div>';
+  }
+
+  function midHTML(){
+    var p=d(), o=ord(), h='';
+    h+='<div class="band"><span class="name">'+p.name+'</span>'
+      +'<span class="chip">'+p.drawer+'</span>'
+      +'<span class="chip'+(sovereign?'':' on')+'">'+(sovereign?'two sets':'one set, two arrangements')+'</span>'
+      +'<button id="sov2">'+(sovereign?'make it a view again':'make it sovereign')+'</button></div>';
+    h+='<div class="split">';
+    h+='<div class="half"><div class="halfhd">'+p.planWord+' · arranged by position'
+      +'<span class="why">'+(sovereign?'not the manuscript’s order':'this IS the manuscript’s order')+'</span></div><div class="cards">';
+    o.forEach(function(idx,i){
+      h+='<div class="card'+(i===0?' ref':'')+'" style="left:'+(4+(i%3)*31)+'%;top:'+(8+Math.floor(i/3)*44)+'%">'
+        +'<button class="up" data-up="'+i+'" title="move earlier">↑</button>'
+        +'<div class="k">'+(proj==='invest'?'Section':proj==='diss'?'Section':'Scene')+'</div>'+p.spine[idx].t+'</div>';
+    });
+    if(copied) h+='<div class="card copy" style="left:66%;top:52%"><div class="k">copied card</div>'+p.record.title+' — a second one</div>';
+    h+='</div></div>';
+    h+='<div class="half"><div class="halfhd">'+p.spineWord+' · arranged as a '+p.arrange
+      +'<span class="why">'+(arch==='cons'?'a project, with the board marked as its plan':'the same container, another arrangement')+'</span></div><div class="rows">';
+    o.forEach(function(idx,i){
+      var s=p.spine[idx];
+      h+='<div class="srow'+(s.moved?' moved':'')+(s.deep?' deep':'')+'"><span class="n">'+(proj==='diss'?'':(i+1))+'</span>'
+        +'<span class="t">'+s.t+'</span><span class="st">'+(s.st||'')+'</span></div>';
+    });
+    h+='</div></div>';
+    h+='<div class="half"><div class="halfhd">the page · click a paragraph to anchor<span class="why">every paragraph has an id</span></div>'
+      +'<div class="prose">'+p.prose.map(function(t,i){
+        var id='¶'+(i+1), on=anchors[proj]===i;
+        return '<p class="'+(on?'anchored':'')+'" data-par="'+i+'"><span class="pid">'+id+'</span> '+t+'</p>'; }).join('')+'</div></div>';
+    return h+'</div>';
+  }
+
+  function rightHTML(){
+    var p=d(), h='';
+    h+='<div class="hd">inspector</div><div class="bd">';
+    h+='<div class="sec">'+p.record.kind+'</div>';
+    h+='<div class="fields"><div class="f"><span class="k">Name</span><span class="v">'+(renamed?p.record.title+' (renamed)':p.record.title)+'</span></div>'
+      +p.record.fields.map(function(f){return '<div class="f"><span class="k">'+f[0]+'</span><span class="v">'+f[1]+'</span></div>';}).join('')+'</div>';
+    h+='<span class="pill">shown on '+p.shownOn.length+' boards — one source of truth</span>';
+    h+='<div class="note">'+p.shownOn.join(' · ')+'</div>';
+    if(copied){
+      h+='<span class="pill copy">a copy exists</span>'
+        +'<div class="note warn">the copy is a second thing. Renaming the original does not reach it — this is the fork the Worldbuilder warned about, and it is why a record is REFERENCED and a scratch card is COPIED.</div>';
+    }
+    if(anchors[proj]!=null){
+      h+='<div class="sec">'+p.anchorKind+'</div><div class="fields">'
+        +p.anchorFields(anchors[proj]+1).map(function(f){return '<div class="f"><span class="k">'+f[0]+'</span><span class="v">'+f[1]+'</span></div>';}).join('')+'</div>'
+        +'<div class="note">it points at a PARAGRAPH, not a page — the anchor is the one primitive all three committees need.</div>';
+    } else {
+      h+='<div class="note">click a paragraph in the page to attach '+(proj==='invest'?'a quote':proj==='diss'?'a citation':'a note')+' to that sentence.</div>';
+    }
+    return h+'</div>';
+  }
+
+  function render(){
+    document.getElementById('left').innerHTML=leftHTML();
+    document.getElementById('mid').innerHTML=midHTML();
+    document.getElementById('right').innerHTML=rightHTML();
+    var st=document.getElementById('stage');
+    [].forEach.call(st.querySelectorAll('[data-up]'),function(b){ b.onclick=function(){ moveUp(+b.dataset.up); }; });
+    [].forEach.call(st.querySelectorAll('[data-par]'),function(b){ b.onclick=function(){
+      anchors[proj]=+b.dataset.par; render();
+      tell('anchored to <span class="ok">¶'+(+b.dataset.par+1)+'</span> — the '+d().anchorKind.toLowerCase()+' points at a paragraph, not a page'); }; });
+    var s2=document.getElementById('sov2'); if(s2) s2.onclick=toggleSov;
+    layout();
+  }
+  function moveUp(i){
+    var o=ord(); if(i<=0){ tell('already first'); return; }
+    var t=o[i]; o[i]=o[i-1]; o[i-1]=t;
+    d().spine.forEach(function(s){ s.moved=false; }); d().spine[t].moved=!sovereign;
+    render();
+    tell(sovereign ? 'the board moved. <span class="hi">The manuscript did not</span> — this board is sovereign, and it says so rather than drifting quietly'
+                   : 'the card moved and <span class="ok">the manuscript moved with it</span> — one set, one order, two arrangements');
+  }
+  function toggleSov(){ sovereign=!sovereign; render();
+    tell(sovereign?'this board is now its own set — press “move a scene” and watch the manuscript hold still'
+                  :'this board is a VIEW of the manuscript again — its reading order is the order'); }
+  document.getElementById('move').onclick=function(){ moveUp(ord().length-1); };
+  document.getElementById('sov').onclick=toggleSov;
+  document.getElementById('ren').onclick=function(){ renamed=!renamed; render();
+    tell(renamed?'renamed once — <span class="ok">it changed on every board that shows it</span>, because a record is referenced'
+                :'name restored'); };
+  document.getElementById('cp').onclick=function(){ copied=!copied; render();
+    tell(copied?'<span class="hi">a copy exists now</span> — rename the original and watch the copy NOT follow'
+               :'copy removed'); };
+  [].forEach.call(document.querySelectorAll('[data-arch]'),function(b){ b.onclick=function(){
+    arch=b.dataset.arch; [].forEach.call(document.querySelectorAll('[data-arch]'),function(x){x.setAttribute('aria-pressed',x===b);});
+    render(); tell(arch==='cons'?'CONSERVATIVE — a project and a board, two things with a declared link; three additions, no migration'
+                                :'BOLD — one container with an arrangement; the same set shown two ways, so the orders cannot come apart'); }; });
+  [].forEach.call(document.querySelectorAll('[data-proj]'),function(b){ b.onclick=function(){
+    proj=b.dataset.proj; [].forEach.call(document.querySelectorAll('[data-proj]'),function(x){x.setAttribute('aria-pressed',x===b);});
+    render(); tell(proj==='thriller'?'a thriller in progress — scenes, a character record, a continuity note'
+                  :proj==='invest'?'an investigation in progress — sections, a SOURCE with terms, a quote anchored to a sentence'
+                                  :'a dissertation in progress — a numbered outline that IS the chapters, and a citation anchored mid-paragraph'); }; });
+  document.getElementById('reset').onclick=function(){ location.reload(); };
+  function layout(){ var st=document.getElementById('stage'), fit=document.querySelector('.fit');
+    st.style.transform='scale('+Math.min(fit.clientWidth/1366, fit.clientHeight/768, 1)+')'; }
+  window.addEventListener('resize',layout);
+  render(); tell('conservative · a thriller in progress');
+})();
+</script>
+</body>
+</html>
