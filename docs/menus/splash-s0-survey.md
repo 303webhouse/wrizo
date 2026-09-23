@@ -78,11 +78,31 @@ pixel** — same canvas, same bounding box, same margins:
 
 ---
 
-## §3 · THE TWO READINGS ARE 5× APART — AND ONE OF THEM BREAKS THE CEILING
+## §3 · THE TWO READINGS ARE ~2× APART — AND ONE OF THEM BREAKS THE CEILING
+
+> **CORRECTED 2026-09-22, before any of it was built on.** This section first
+> claimed the readings differ by *"2.24× linear, 5.00× in area — a fifth of the
+> WIDTH is a twenty-fifth of the AREA at any aspect."* **Both figures were
+> wrong.** They were a constant I wrote into the tool (`1/√0.2`), not a value
+> derived from the two readings, and they hold **only when the emblem's aspect
+> equals the screen's** — a 5:4 monitor, for a 1.252 emblem. **The table below
+> already disproved them**: B's share of area varies 3.8%–5.7% across these
+> viewports and is a flat twenty-fifth (4%) at none of them. Caught by a
+> no-browser algebra check written to protect the box turn, which re-derived
+> the ratio instead of trusting the summary line. Derived correctly:
+>
+> **A/B linear = √(5 · emblemAspect / screenAspect)** → **1.88×–2.28×** across
+> these viewports (**3.52×–5.22×** in area). **B's share of area = 0.04 ·
+> screenAspect / emblemAspect.** Both depend on the screen's shape: wider
+> screens narrow the gap, taller ones widen it.
+>
+> The per-viewport table itself was computed by the correct formula and is
+> unchanged. Only the generalisation drawn from it was wrong — which is the
+> cleaner half of the lesson: *the summary was not derived from the measurement
+> printed beside it.*
 
 `scripts/splash-size.mjs` (committed, no browser) computes both at real
-viewports. **A fifth of the WIDTH is a twenty-fifth of the AREA** — at any
-aspect ratio — so the readings differ by **2.24× linear, 5.00× in area**:
+viewports:
 
 | viewport | A: 1/5 **area** (ink px) | A as % of width | B: 1/5 **width** (ink px) | B as % of area |
 |---|---|---|---|---|
