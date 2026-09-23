@@ -119,6 +119,66 @@ const KINDS = [
   { name: 'board', mount: freshBoardPage },
 ];
 
+// Fable, 2026-09-24: "the rule is 'every tested width' — if the suite tests
+// any width below 1100 anywhere (tablet), add it to 195's matrix." It does:
+// ab1.mjs/ab3.mjs (900px), hb1.mjs (800px), each explicitly commented
+// "below DESKFRAME_MIN_WIDTH (1100)". 800px (hb1.mjs's F4) is the
+// narrowest of those already exercised directly against DeskFrame's own
+// mount gate — the most relevant one to re-derive here, not a new claim.
+//
+// It does NOT belong in the WIDTHS matrix above, mounted the same way: per
+// `DeskFrame.tsx`'s own header comment, EVERY call site branches on
+// `useDeskFrameViewport()` (`window.innerWidth >= DESKFRAME_MIN_WIDTH`,
+// =1100) and renders its pre-AB1 legacy JSX below that gate — DeskFrame
+// "does not render at all". hb1.mjs's own F4 confirms this live at 800px
+// for prose (`legacy.framedHost === false`). That means `.desk-frame`,
+// `.desk-frame-strip` and `.wz-sliver-grip` (a descendant of DeskFrame's
+// own sliver anchor) do not exist below the gate, for ANY page kind — the
+// gating is in DeskFrame.tsx itself, not per-kind. So "no interactive
+// control ever sits in the strip's band" holds at 800px, but VACUOUSLY:
+// there is no strip and no such control to test. Proving that honestly
+// means asserting their ABSENCE, not forcing a hit-test the framed-page
+// mount helpers above would hang waiting for (`freshScriptPage`/
+// `freshBoardPage` both wait on `.desk-frame`, which never appears here) —
+// a fabricated hit-test against elements that don't exist would be a
+// worse claim than none at all.
+const SUB_FLOOR_WIDTH = 800;
+
+const subFloorProse = (app, width) => freshProsePage(app, width, 900); // .forward-only-editor mounts either side of the gate (hb1.mjs F4, confirmed live)
+
+const subFloorScript = async (app, width, height = 900) => {
+  await freshDesk(app, width, height);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    const headingId = 'item195-subfloor-script-heading';
+    window.wrizoCreateJournalPage({ id: 'item195-subfloor-script', text: '', pageType: 'script', script: { v: 1, scenes: [{ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] }] }, createdAt: now, source: null, origin: null });
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after sub-floor script seed' });
+  await app.evalJs("location.hash = '#/page/item195-subfloor-script'");
+  await app.waitFor("!document.querySelector('.wz-arrival')", { label: 'left Arrival (sub-floor script)' });
+  await sleep(300);
+};
+
+const subFloorBoard = async (app, width, height = 900) => {
+  await freshDesk(app, width, height);
+  await app.evalJs(`(() => {
+    const now = new Date().toISOString();
+    window.wrizoCreateJournalPage({ id: 'item195-subfloor-board', text: 'ITEM 195 Sub-Floor Board', pageType: 'board', boxes: [], createdAt: now, origin: null });
+  })()`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after sub-floor board seed' });
+  await app.evalJs("location.hash = '#/page/item195-subfloor-board'");
+  await app.waitFor("!document.querySelector('.wz-arrival')", { label: 'left Arrival (sub-floor board)' });
+  await sleep(300);
+};
+
+const SUB_FLOOR_KINDS = [
+  { name: 'prose', mount: subFloorProse },
+  { name: 'screenplay', mount: subFloorScript },
+  { name: 'board', mount: subFloorBoard },
+];
+
 await withHarness(async (app) => {
   for (const { name: kind, mount } of KINDS) {
     for (const width of WIDTHS) {
@@ -167,6 +227,31 @@ await withHarness(async (app) => {
       ok(`${kind}@${width}px: the grip's rect and the strip's rect never intersect, sliver CLOSED`,
         disjoint(gripClosed, stripClosed), JSON.stringify({ gripClosed, stripClosed }));
     }
+  }
+
+  // ==========================================================================
+  // SUB-FLOOR — width < DESKFRAME_MIN_WIDTH (1100). "Every tested width"
+  // (Fable, 2026-09-24), honestly: neither the strip nor the grip exists
+  // down here (DeskFrame.tsx's own mount gate, every call site, all three
+  // kinds), so the rule holds VACUOUSLY. Proof is their confirmed absence,
+  // not a hit-test against elements that were never going to mount.
+  // ==========================================================================
+  for (const { name: kind, mount } of SUB_FLOOR_KINDS) {
+    await mount(app, SUB_FLOOR_WIDTH, 900);
+    const state = await app.evalJs(`({
+      arrivalGone: !document.querySelector('.wz-arrival'),
+      deskFrame: !!document.querySelector('.desk-frame'),
+      strip: !!document.querySelector('.desk-frame-strip'),
+      grip: !!document.querySelector('.wz-sliver-grip'),
+    })`);
+    ok(`${kind}@${SUB_FLOOR_WIDTH}px (sub-floor sanity): navigation left Arrival — something mounted, this isn't a stalled load reading empty`,
+      state.arrivalGone === true, JSON.stringify(state));
+    ok(`${kind}@${SUB_FLOOR_WIDTH}px (sub-floor): DeskFrame does not mount below its own ${1100}px gate — legacy branch, matching hb1.mjs F4's own live confirmation`,
+      state.deskFrame === false, JSON.stringify(state));
+    ok(`${kind}@${SUB_FLOOR_WIDTH}px (sub-floor): the strip does not exist here — "no interactive control sits in its band" holds because there is no band`,
+      state.strip === false, JSON.stringify(state));
+    ok(`${kind}@${SUB_FLOOR_WIDTH}px (sub-floor): the grip does not exist here — nothing to occlude, nothing to hit-test`,
+      state.grip === false, JSON.stringify(state));
   }
 
   // The diagnosis's own exact reproduction case, named explicitly: board

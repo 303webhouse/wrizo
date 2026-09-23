@@ -73,11 +73,11 @@ own comment, two lines up).
 
 ## The proof — `scripts/harness/item195.mjs` (built, not run)
 
-36 checks + 1 named reproduction of the exact failing case, across the
-full matrix: **3 page kinds × 3 widths** (1100 floor, 1280, 2200 — the same
-band fx2.mjs's own S1 comment already identified as the one range where a
-clamp-mechanism regression actually shows). Two independent proofs per
-cell:
+36 checks + 12 sub-floor checks + 1 named reproduction of the exact
+failing case, across the full matrix: **3 page kinds × 3 widths** (1100
+floor, 1280, 2200 — the same band fx2.mjs's own S1 comment already
+identified as the one range where a clamp-mechanism regression actually
+shows). Two independent proofs per cell:
 
 1. **Real hit-test**, via `trustedDispatch` (item 151's shared instrument)
    — the grip must be reachable by an actual pointer at its own on-screen
@@ -91,6 +91,20 @@ cell:
 Plus one standalone, explicitly named check reproducing item 176 pair 4's
 own exact case (board @ 1280px) — greppable on its own, not buried as one
 iteration of the matrix loop.
+
+**Sub-floor addition (Fable, 2026-09-24 — "every tested width"; the suite
+already tests below 1100 in `ab1.mjs`/`ab3.mjs` (900px) and `hb1.mjs`
+(800px), each explicitly commented "below DESKFRAME_MIN_WIDTH"):** 800px
+(the narrowest of those, already exercised directly against DeskFrame's
+own mount gate) is now covered too, but honestly — `DeskFrame.tsx`'s own
+header comment says every call site branches on `useDeskFrameViewport()`
+(`>=1100`) and renders legacy JSX below it, DeskFrame "does not render at
+all." `hb1.mjs` F4 confirms this live. So below 1100, for all three page
+kinds, `.desk-frame`/`.desk-frame-strip`/`.wz-sliver-grip` don't exist —
+the rule holds VACUOUSLY (no strip, no control to sit in its band). The
+12 new checks assert that absence directly (plus one "did anything mount
+at all" sanity check per kind), rather than forcing a hit-test the framed
+mount helpers would hang waiting for.
 
 **Park count: 0.** Item 195 is new; it falsifies no existing assertion.
 fx2.mjs's own S1 sliver-clearance check (prose only, 1100px) stays true
@@ -129,5 +143,6 @@ forward — the note flags it there too).
 ## Status
 
 **BUILT.** `tsc` 0 / `build:web` 0 / new custom properties confirmed in
-bundle / harness syntax-checked. Not run — needs the box. **Ready for
-chat 1's pair; ahead of the queue, per Fable's ruling.**
+bundle / harness syntax-checked (sub-floor addition re-checked separately).
+Not run — needs the box. **Ready for chat 1's pair; ahead of the queue, per
+Fable's ruling.**
