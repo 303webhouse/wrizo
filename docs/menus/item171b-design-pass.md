@@ -128,6 +128,14 @@ size control sits beside the existing eraser toggle** on whichever surface is ac
 `InkStratum`'s dock control on boards and cards) and sets the width for the NEXT erase stroke drawn — not
 a global constant, a per-gesture choice, exactly like choosing a pen's nib already is.
 
+**⚠ BEFORE THE FIELD IS WRITTEN — a census, not an assumption (Fable):** a cost claim is measured at the
+system's edge, and the edge for an additive `Stroke` field is every place that COPIES or REBUILDS a stroke
+rather than reading it once and discarding it — porting ink onto a board, `strokeGroupAt`'s group-move
+translate/clamp path, export, and the sync mapper's own JSON round trip are the known candidates, not the
+full list. **The builder censuses every client site that constructs or clones a `Stroke` object before this
+field lands**, so `eraserWidth` cannot be dropped in silence by a site that spreads a stroke's known fields
+by hand instead of by reference.
+
 **WHAT A HOLE DOES WHEN THE INK UNDER IT MOVES — the house already answered this, and this pass reuses
 the answer rather than inventing one.** An erase is not a persistent hole in stored geometry; **it is a
 stroke**, painted `destination-out`. Item 126 B4's `strokeGroupAt` already carries a co-located erase
