@@ -285,3 +285,11 @@ Nick, verbatim: *"I'm not super picky on the splash size. I just want it to be s
 **Known cost, stated:** at a fifth of the width the emblem's handwritten labels are small (the S0 estimate for the width reading was ~5–9px at desktop widths). Fable ruled it with that number in the survey; Nick can look at the one frame.
 
 **Waiting on:** a short box slot — the one frame, the `backdrop-filter` compositing check, and `splash.mjs` itself.
+
+## §10 · RESIZED 2026-09-24 (item 187) — ~1/4 THE SCREEN; §9's FIFTH-OF-WIDTH IS SUPERSEDED (never ran)
+
+Nick: *"OK, let's make it ~1/4 the screen size. Doesn't need to be exact, but that should be big enough to see the text a bit better, no?"* Default sent to him (Fable): **a quarter of the AREA** (~half the width), because a quarter of the width grows the handwriting only a quarter.
+
+`Splash.tsx` now sizes the ink to a quarter of the area; the 60% height cap stays, and **a 70% width cap is added** — measured, not assumed: without it a 390x844 portrait phone leaves 9% side margins, under the four-sided-margin floor. Both caps only ever shrink it. `splash.mjs` S4 asserts a 22–28% band (not a pixel; one-sided where a cap binds — 390x844 and 2560x400) plus the four-sided margin (each >= 10% of its axis) at all eight sizes. One frame.
+
+Arithmetic (independent script): ordinary sizes land at exactly 0.250 of area; smallest side margin 18% (900x1200); phone 0.181 (width cap), ultra-wide 0.070 (height cap).

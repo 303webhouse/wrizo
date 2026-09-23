@@ -25,18 +25,17 @@ import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 //    Sizing the canvas instead would land the visible mark at 83.1% of the
 //    intended area, which is a fifth of nothing in particular.
 //
-// 3. THE SIZE IS A FIFTH OF THE SCREEN'S WIDTH (item 187, Fable's ruling on
-//    Nick's answer: "I'm not super picky on the splash size. I just want it to
-//    be smaller than the background so it's clear it's just a popup over the
-//    real app"). A fifth of the width is well under a fifth of the AREA, so it
-//    is legal under BOTH readings of "at most 1/5" — no reading of his words is
-//    broken. What the size must DO is leave the blurred app visible on all four
-//    sides of the emblem; splash.mjs asserts that, not a pixel value. It is
-//    plain arithmetic recomputed on resize (the earlier AREA build and its
-//    two-frame switch are withdrawn: he was not picky, so there is nothing to
-//    pick). At absurdly wide windows the ink HEIGHT is capped at 60% of the
-//    viewport so the top/bottom margins can never vanish — the cap only ever
-//    makes the emblem smaller, so it stays legal under every reading.
+// 3. THE SIZE IS ABOUT A QUARTER OF THE SCREEN'S AREA (item 187). Nick, last
+//    word: "OK, let's make it ~1/4 the screen size. Doesn't need to be exact,
+//    but that should be big enough to see the text a bit better, no?" This
+//    supersedes the earlier fifth-of-the-WIDTH build (never run): a quarter of
+//    the width grows the handwriting only a quarter, a quarter of the AREA
+//    about doubles the width. It is arithmetic (CSS cannot take a geometric
+//    mean portably), recomputed on resize. What the size must DO is unchanged
+//    and is what splash.mjs asserts: the blurred app stays visible on all four
+//    sides of the emblem, so it reads as a popup over the real app. Two caps
+//    enforce that at extreme shapes - the ink height never exceeds 60% of the
+//    viewport, its width never 70% - and both only ever make it smaller.
 //
 // 4. THE ASSET FOLLOWS THE MEASURED BACKDROP, not a theme map. See
 //    store/backdropTone.ts for why a `data-theme` map would have been the
@@ -55,11 +54,13 @@ const FILL_X = INK.w / CANVAS.w;   // 0.9120
 const FILL_Y = INK.h / CANVAS.h;   // 0.9107
 const ASPECT = INK.w / INK.h;      // 1.2518
 
-/** A fifth of the screen's width (Fable's ruling within Nick's "not picky"). */
-const WIDTH_FRACTION = 0.2;
-/** The ink never exceeds this share of the viewport's height, so the blurred
- *  app always shows above and below it. Only ever binds at extreme aspects. */
+/** About a quarter of the screen's area (Nick: "~1/4 the screen size"). */
+const AREA_FRACTION = 0.25;
+/** The ink never exceeds this share of the viewport's height / width, so the
+ *  blurred app always shows on all four sides. Only bind at extreme shapes
+ *  (very wide windows / narrow portrait phones). */
 const MAX_INK_HEIGHT_FRACTION = 0.6;
+const MAX_INK_WIDTH_FRACTION = 0.7;
 
 /**
  * How long the emblem holds if nothing at all happens. A maximum, never a wait.
@@ -82,7 +83,8 @@ function holdMs(): number {
 }
 
 export function splashSizeFor(vw: number, vh: number) {
-  const inkW = Math.min(vw * WIDTH_FRACTION, vh * MAX_INK_HEIGHT_FRACTION * ASPECT);
+  const byArea = Math.sqrt(vw * vh * AREA_FRACTION * ASPECT);
+  const inkW = Math.min(byArea, vh * MAX_INK_HEIGHT_FRACTION * ASPECT, vw * MAX_INK_WIDTH_FRACTION);
   const inkH = inkW / ASPECT;
   return { width: inkW / FILL_X, height: inkH / FILL_Y, inkW, inkH };
 }

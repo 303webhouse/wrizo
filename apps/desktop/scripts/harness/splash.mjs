@@ -157,26 +157,28 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S4 — THE SIZE (item 187): A FIFTH OF THE WIDTH, AND THE APP SHOWS ON ALL
-  // FOUR SIDES.
+  // S4 - THE SIZE (item 187): ABOUT A QUARTER OF THE AREA, AND THE APP SHOWS
+  // ON ALL FOUR SIDES.
   //
-  // Nick: "I'm not super picky on the splash size. I just want it to be
-  // smaller than the background so it's clear it's just a popup over the real
-  // app." Fable's ruling within it: a fifth of the screen's WIDTH — legal
-  // under both readings of "at most 1/5" (it is far under a fifth of the
-  // area). THE CHECK ASSERTS HIS PURPOSE, NOT A PIXEL: at every tested screen
-  // size the blurred app shows on ALL FOUR SIDES of the emblem — a claim about
-  // what a writer SEES, in a form a harness can fail on. The width fraction is
-  // asserted too, as the ruled value, but the margins are the load-bearing
-  // check. Measured on the INK, not the canvas (the asset carries ~9%
-  // transparent margin per axis).
+  // Nick: "OK, let's make it ~1/4 the screen size. Doesn't need to be exact,
+  // but that should be big enough to see the text a bit better, no?" So the
+  // size is asserted as a BAND, not a pixel. THE LOAD-BEARING CHECK IS HIS
+  // EARLIER PURPOSE, unchanged: "smaller than the background so it's clear it's
+  // just a popup over the real app" - at every tested screen size the blurred
+  // app shows on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis).
+  // Measured on the INK, not the canvas (~9% transparent margin per axis).
+  // Two caps (height 60%, width 70%) keep that true at extreme shapes; they
+  // only ever make the emblem smaller, so where one binds the band check is
+  // one-sided. Whether a cap binds is derived HERE, independently of the
+  // component, from the same stated fractions.
   // ==========================================================================
   const SIZES = [
     { w: 1366, h: 768 }, { w: 1440, h: 1200 }, { w: 1100, h: 900 },
     { w: 1920, h: 1080 }, { w: 2200, h: 1300 }, { w: 900, h: 1200 },
-    { w: 390, h: 844 },
-    { w: 2560, h: 400 }, // an extreme aspect: exercises the height cap
+    { w: 390, h: 844 },  // portrait phone: the width cap binds
+    { w: 2560, h: 400 }, // extreme aspect: the height cap binds
   ];
+  const ASPECT_INK = INK.w / INK.h;
   for (const { w, h } of SIZES) {
     await openApp(app, { width: w, height: h });
     const s = await splashState(app);
@@ -194,30 +196,22 @@ await withHarness(async (app) => {
       top: cy - inkH / 2,
       bottom: s.vh - (cy + inkH / 2),
     };
-    // "Shows on all four sides" — each margin at least 10% of its own axis, so
-    // the surround is a real band of app, not a hairline that technically > 0.
     const sidesOk = margin.left >= 0.1 * s.vw && margin.right >= 0.1 * s.vw
       && margin.top >= 0.1 * s.vh && margin.bottom >= 0.1 * s.vh;
-    ok(`S4 THE PURPOSE @ ${w}x${h}: the blurred app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) — it reads as a popup over the real app, not a takeover`,
+    ok(`S4 THE PURPOSE @ ${w}x${h}: the blurred app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) - it reads as a popup over the real app, not a takeover`,
       sidesOk, JSON.stringify({ margin: { l: Math.round(margin.left), r: Math.round(margin.right), t: Math.round(margin.top), b: Math.round(margin.bottom) }, vw: s.vw, vh: s.vh }));
 
-    const widthFraction = inkW / s.vw;
     const areaFraction = (inkW * inkH) / (s.vw * s.vh);
-    const capped = inkH > 0.6 * s.vh + 0.5; // the height cap may only make it SMALLER
-    ok(`S4 @ ${w}x${h}: the ink is at most a fifth of the width (the ruled value) and at most a fifth of the area — legal under both readings of "at most 1/5"`,
-      widthFraction <= 0.2 + 0.002 && areaFraction <= 0.2 && !capped, JSON.stringify({ widthFraction: widthFraction.toFixed(4), areaFraction: areaFraction.toFixed(4) }));
+    const uncappedInkW = Math.sqrt(s.vw * s.vh * 0.25 * ASPECT_INK);
+    const capBinds = uncappedInkW > s.vh * 0.6 * ASPECT_INK + 0.5 || uncappedInkW > s.vw * 0.7 + 0.5;
+    const inBand = areaFraction >= 0.22 && areaFraction <= 0.28;
+    ok(`S4 @ ${w}x${h}: about a quarter of the area - ${capBinds ? 'a cap binds here, so the band is one-sided (never MORE than a quarter)' : 'within the 22-28% band around a quarter (not a pixel)'}`,
+      capBinds ? areaFraction <= 0.28 : inBand, JSON.stringify({ areaFraction: areaFraction.toFixed(4), capBinds }));
 
     ok(`S4 @ ${w}x${h}: the drawing keeps its own proportions (never stretched) and sits centred`,
       Math.abs((inkW / inkH) - (INK.w / INK.h)) < 0.01
         && Math.abs(cx - s.vw / 2) < 2 && Math.abs(cy - s.vh / 2) < 2,
       JSON.stringify({ ratio: (inkW / inkH).toFixed(3), cx, cy }));
-  }
-  {
-    // At an ordinary window the ruled value is EXACT (the cap is not binding).
-    await openApp(app);
-    const s = await splashState(app);
-    ok('S4: at an ordinary window (1366x768) the ink is exactly a fifth of the width — the ruled value, not the cap',
-      !!s.rect && Math.abs((s.rect.w * FILL_X) / s.vw - 0.2) < 0.002, JSON.stringify({ frac: s.rect ? ((s.rect.w * FILL_X) / s.vw).toFixed(4) : null }));
   }
 
   // ==========================================================================

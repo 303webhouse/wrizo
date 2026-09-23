@@ -72,14 +72,15 @@ await withHarness(async (app) => {
 
   if (state.leaving !== 'false') throw new Error('frame: the splash was already leaving');
   if (!state.complete) throw new Error(`frame: the asset had not decoded (${state.src})`);
-  if (Math.abs(widthPct - 20) > 0.5) throw new Error(`frame: ink is ${widthPct.toFixed(1)}% of width — not the ruled fifth`);
+  const areaPct = ((inkW * inkH) / (state.vw * state.vh)) * 100;
+  if (areaPct < 22 || areaPct > 28) throw new Error(`frame: ink is ${areaPct.toFixed(1)}% of area - outside the band around a quarter`);
   if (!/blur\(/.test(state.backdrop || '')) throw new Error(`frame: no backdrop blur is computed (${state.backdrop})`);
   if (Math.min(margins.l, margins.r, margins.t, margins.b) <= 0) throw new Error('frame: the app does not show on all four sides');
 
   const shot = await app.screenshot();
   const file = path.join(OUT_DIR, `wrizo-splash-${VIEW.w}x${VIEW.h}.png`);
   writeFileSync(file, shot);
-  note = { file, widthPct: widthPct.toFixed(1), inkW: Math.round(inkW), inkH: Math.round(inkH),
+  note = { file, widthPct: widthPct.toFixed(1), areaPct: areaPct.toFixed(1), inkW: Math.round(inkW), inkH: Math.round(inkH),
     margins: Object.fromEntries(Object.entries(margins).map(([k, v]) => [k, Math.round(v)])),
     tone: state.tone, backdrop: state.backdrop, bytes: shot.length };
 });
@@ -87,7 +88,7 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log('SPLASH FRAME — rendered by the shipping component\n');
 // eslint-disable-next-line no-console
-console.log(`  ink ${note.inkW}x${note.inkH} = ${note.widthPct}% of width; margins ${JSON.stringify(note.margins)}`);
+console.log(`  ink ${note.inkW}x${note.inkH} = ${note.widthPct}% of width, ${note.areaPct}% of area; margins ${JSON.stringify(note.margins)}`);
 // eslint-disable-next-line no-console
 console.log(`  tone=${note.tone}  backdrop=${note.backdrop}  ${(note.bytes / 1024).toFixed(0)}KB`);
 // eslint-disable-next-line no-console
