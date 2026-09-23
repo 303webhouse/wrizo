@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 
-// THE SPLASH — Nick's own hand-drawn Wrizo, over the live app, blurred behind.
+// THE SPLASH (item 187) — Nick's own hand-drawn Wrizo, over the live app, blurred behind.
 //
 // Nick: "I would like the opening splash screen to be at most 1/5 the size of
 // the screen with the regular app interface blurred out in the background."
@@ -25,12 +25,18 @@ import { measureBackdropTone, type BackdropTone } from '../store/backdropTone';
 //    Sizing the canvas instead would land the visible mark at 83.1% of the
 //    intended area, which is a fifth of nothing in particular.
 //
-// 3. THE AREA READING IS COMPUTED, NOT APPROXIMATED IN CSS. A fifth of the
-//    AREA needs the geometric mean of the viewport's two dimensions, which CSS
-//    cannot express portably (`sqrt()` is Values-4 and not dependable here), so
-//    it is arithmetic in JS, recomputed on resize. The alternative — a vw/vh
-//    approximation — would be a number that is right at one aspect ratio and
-//    quietly wrong at every other.
+// 3. THE SIZE IS A FIFTH OF THE SCREEN'S WIDTH (item 187, Fable's ruling on
+//    Nick's answer: "I'm not super picky on the splash size. I just want it to
+//    be smaller than the background so it's clear it's just a popup over the
+//    real app"). A fifth of the width is well under a fifth of the AREA, so it
+//    is legal under BOTH readings of "at most 1/5" — no reading of his words is
+//    broken. What the size must DO is leave the blurred app visible on all four
+//    sides of the emblem; splash.mjs asserts that, not a pixel value. It is
+//    plain arithmetic recomputed on resize (the earlier AREA build and its
+//    two-frame switch are withdrawn: he was not picky, so there is nothing to
+//    pick). At absurdly wide windows the ink HEIGHT is capped at 60% of the
+//    viewport so the top/bottom margins can never vanish — the cap only ever
+//    makes the emblem smaller, so it stays legal under every reading.
 //
 // 4. THE ASSET FOLLOWS THE MEASURED BACKDROP, not a theme map. See
 //    store/backdropTone.ts for why a `data-theme` map would have been the
@@ -49,47 +55,18 @@ const FILL_X = INK.w / CANVAS.w;   // 0.9120
 const FILL_Y = INK.h / CANVAS.h;   // 0.9107
 const ASPECT = INK.w / INK.h;      // 1.2518
 
-/** Nick's ceiling. "At most 1/5" — this sits exactly at it. */
-const AREA_FRACTION = 0.2;
+/** A fifth of the screen's width (Fable's ruling within Nick's "not picky"). */
 const WIDTH_FRACTION = 0.2;
+/** The ink never exceeds this share of the viewport's height, so the blurred
+ *  app always shows above and below it. Only ever binds at extreme aspects. */
+const MAX_INK_HEIGHT_FRACTION = 0.6;
 
 /**
  * How long the emblem holds if nothing at all happens. A maximum, never a wait.
- * Overridable only through the same frame seam below, so a capture pass can
+ * Overridable through localStorage (read at call time), so a capture pass can
  * hold the emblem still long enough to photograph it instead of racing a timer.
  */
 const DEFAULT_HOLD_MS = 1200;
-
-/**
- * Which reading of "1/5 the size" to render. Fable: build to AREA until Nick
- * picks from the two frames. The mode is switchable — rather than forking the
- * component — so the frames he chooses between are made by THIS code and not
- * by a copy of it that could drift from what ships.
- */
-export type SplashSizing = 'area' | 'width';
-
-/**
- * THE FRAME SEAM. Nick chooses between the two readings by looking at two
- * headful frames, and those frames have to be made by THIS component — a
- * copy of it in a script could drift from what ships, and then he would be
- * choosing between pictures of something that no longer exists.
- *
- * Module state alone cannot do that: the frame pass must RELOAD between the
- * two renders (the splash shows once per app load), and a reload resets module
- * state. So the override is read from localStorage at module init, exactly
- * like the store seams this codebase already uses. Unset — which is every real
- * launch — it is simply 'area', Fable's ruled default.
- */
-function readOverride<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
-  try {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-    return (allowed as readonly string[]).includes(raw ?? '') ? (raw as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-let sizingMode: SplashSizing = readOverride('wrizo-splash-sizing', ['area', 'width'] as const, 'area');
 
 let alreadyShown = false;
 
@@ -104,16 +81,9 @@ function holdMs(): number {
   }
 }
 
-export function splashSizeFor(vw: number, vh: number, mode: SplashSizing = sizingMode) {
-  let inkW: number;
-  let inkH: number;
-  if (mode === 'width') {
-    inkW = vw * WIDTH_FRACTION;
-    inkH = inkW / ASPECT;
-  } else {
-    inkH = Math.sqrt((vw * vh * AREA_FRACTION) / ASPECT);
-    inkW = inkH * ASPECT;
-  }
+export function splashSizeFor(vw: number, vh: number) {
+  const inkW = Math.min(vw * WIDTH_FRACTION, vh * MAX_INK_HEIGHT_FRACTION * ASPECT);
+  const inkH = inkW / ASPECT;
   return { width: inkW / FILL_X, height: inkH / FILL_Y, inkW, inkH };
 }
 
@@ -196,12 +166,10 @@ export function Splash() {
   );
 }
 
-/** Test/inspection seam — lets the frame pass render both readings from THIS code. */
+/** Test/inspection seam — the frame pass and splash.mjs read THIS code's sizing. */
 if (typeof window !== 'undefined') {
   (window as unknown as { wrizoSplash?: unknown }).wrizoSplash = {
     sizeFor: splashSizeFor,
-    setSizing: (m: SplashSizing) => { sizingMode = m; },
-    getSizing: () => sizingMode,
     reset: () => { alreadyShown = false; },
     HOLD_MS: DEFAULT_HOLD_MS,
     holdMs,

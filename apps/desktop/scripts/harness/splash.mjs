@@ -1,4 +1,4 @@
-// THE SPLASH (item 194) — Nick's hand-drawn Wrizo over the live app.
+// THE SPLASH (item 187) — Nick's hand-drawn Wrizo over the live app.
 //
 // The claim that needs a check more than any other here is the NEGATIVE one:
 // "it never blocks writing." That is not provable by looking at the overlay —
@@ -157,42 +157,67 @@ await withHarness(async (app) => {
   }
 
   // ==========================================================================
-  // S4 — THE SIZE, MEASURED AGAINST NICK'S CEILING.
+  // S4 — THE SIZE (item 187): A FIFTH OF THE WIDTH, AND THE APP SHOWS ON ALL
+  // FOUR SIDES.
   //
-  // "At most 1/5 the size of the screen." Measured on the INK, not the canvas:
-  // the asset carries ~9% transparent margin on each axis, and sizing the
-  // canvas instead would land the visible mark at 83.1% of the intent.
+  // Nick: "I'm not super picky on the splash size. I just want it to be
+  // smaller than the background so it's clear it's just a popup over the real
+  // app." Fable's ruling within it: a fifth of the screen's WIDTH — legal
+  // under both readings of "at most 1/5" (it is far under a fifth of the
+  // area). THE CHECK ASSERTS HIS PURPOSE, NOT A PIXEL: at every tested screen
+  // size the blurred app shows on ALL FOUR SIDES of the emblem — a claim about
+  // what a writer SEES, in a form a harness can fail on. The width fraction is
+  // asserted too, as the ruled value, but the margins are the load-bearing
+  // check. Measured on the INK, not the canvas (the asset carries ~9%
+  // transparent margin per axis).
   // ==========================================================================
-  await openApp(app);
-  const s4 = await splashState(app);
-  if (!s4.rect) {
-    ok('S4 (driver): the emblem has a real on-screen box to measure', false, JSON.stringify(s4));
-  } else {
-    const inkW = s4.rect.w * FILL_X;
-    const inkH = s4.rect.h * FILL_Y;
-    const areaFraction = (inkW * inkH) / (s4.vw * s4.vh);
-    ok('S4 THE CEILING: the emblem\'s INK covers one fifth of the screen\'s area (the AREA reading, per Fable\'s ruling, until Nick picks between the two frames)',
-      Math.abs(areaFraction - 0.2) < 0.005,
-      JSON.stringify({ inkW: Math.round(inkW), inkH: Math.round(inkH), areaFraction: areaFraction.toFixed(4), vw: s4.vw, vh: s4.vh }));
+  const SIZES = [
+    { w: 1366, h: 768 }, { w: 1440, h: 1200 }, { w: 1100, h: 900 },
+    { w: 1920, h: 1080 }, { w: 2200, h: 1300 }, { w: 900, h: 1200 },
+    { w: 390, h: 844 },
+    { w: 2560, h: 400 }, // an extreme aspect: exercises the height cap
+  ];
+  for (const { w, h } of SIZES) {
+    await openApp(app, { width: w, height: h });
+    const s = await splashState(app);
+    if (!s.rect) {
+      ok(`S4 (driver) ${w}x${h}: the emblem has a real on-screen box to measure`, false, JSON.stringify(s));
+      continue;
+    }
+    const inkW = s.rect.w * FILL_X;
+    const inkH = s.rect.h * FILL_Y;
+    const cx = s.rect.x + s.rect.w / 2;
+    const cy = s.rect.y + s.rect.h / 2;
+    const margin = {
+      left: cx - inkW / 2,
+      right: s.vw - (cx + inkW / 2),
+      top: cy - inkH / 2,
+      bottom: s.vh - (cy + inkH / 2),
+    };
+    // "Shows on all four sides" — each margin at least 10% of its own axis, so
+    // the surround is a real band of app, not a hairline that technically > 0.
+    const sidesOk = margin.left >= 0.1 * s.vw && margin.right >= 0.1 * s.vw
+      && margin.top >= 0.1 * s.vh && margin.bottom >= 0.1 * s.vh;
+    ok(`S4 THE PURPOSE @ ${w}x${h}: the blurred app is visible on ALL FOUR SIDES of the emblem (each margin >= 10% of its axis) — it reads as a popup over the real app, not a takeover`,
+      sidesOk, JSON.stringify({ margin: { l: Math.round(margin.left), r: Math.round(margin.right), t: Math.round(margin.top), b: Math.round(margin.bottom) }, vw: s.vw, vh: s.vh }));
 
-    ok('S4: and it keeps the drawing\'s own proportions — the sketch is never stretched to hit a number',
-      Math.abs((inkW / inkH) - (INK.w / INK.h)) < 0.01,
-      JSON.stringify({ rendered: (inkW / inkH).toFixed(3), asset: (INK.w / INK.h).toFixed(3) }));
+    const widthFraction = inkW / s.vw;
+    const areaFraction = (inkW * inkH) / (s.vw * s.vh);
+    const capped = inkH > 0.6 * s.vh + 0.5; // the height cap may only make it SMALLER
+    ok(`S4 @ ${w}x${h}: the ink is at most a fifth of the width (the ruled value) and at most a fifth of the area — legal under both readings of "at most 1/5"`,
+      widthFraction <= 0.2 + 0.002 && areaFraction <= 0.2 && !capped, JSON.stringify({ widthFraction: widthFraction.toFixed(4), areaFraction: areaFraction.toFixed(4) }));
 
-    const centred = Math.abs((s4.rect.x + s4.rect.w / 2) - s4.vw / 2) < 2
-      && Math.abs((s4.rect.y + s4.rect.h / 2) - s4.vh / 2) < 2;
-    ok('S4: the emblem is centred on the screen', centred, JSON.stringify(s4.rect));
+    ok(`S4 @ ${w}x${h}: the drawing keeps its own proportions (never stretched) and sits centred`,
+      Math.abs((inkW / inkH) - (INK.w / INK.h)) < 0.01
+        && Math.abs(cx - s.vw / 2) < 2 && Math.abs(cy - s.vh / 2) < 2,
+      JSON.stringify({ ratio: (inkW / inkH).toFixed(3), cx, cy }));
   }
-
-  // The area reading has to hold at a DIFFERENT aspect ratio too — that is the
-  // whole reason the size is computed rather than approximated in vw/vh, which
-  // would be right at one shape of window and wrong at the rest.
-  await openApp(app, { width: 1440, height: 1200 });
-  const s4b = await splashState(app);
-  if (s4b.rect) {
-    const f = (s4b.rect.w * FILL_X * s4b.rect.h * FILL_Y) / (s4b.vw * s4b.vh);
-    ok('S4: the fifth holds at a different ASPECT RATIO (1440x1200, not just 1366x768) — the proof that the size is real arithmetic and not a vw/vh approximation that happens to be right at one window shape',
-      Math.abs(f - 0.2) < 0.005, JSON.stringify({ areaFraction: f.toFixed(4), vw: s4b.vw, vh: s4b.vh }));
+  {
+    // At an ordinary window the ruled value is EXACT (the cap is not binding).
+    await openApp(app);
+    const s = await splashState(app);
+    ok('S4: at an ordinary window (1366x768) the ink is exactly a fifth of the width — the ruled value, not the cap',
+      !!s.rect && Math.abs((s.rect.w * FILL_X) / s.vw - 0.2) < 0.002, JSON.stringify({ frac: s.rect ? ((s.rect.w * FILL_X) / s.vw).toFixed(4) : null }));
   }
 
   // ==========================================================================

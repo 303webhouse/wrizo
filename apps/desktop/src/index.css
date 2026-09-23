@@ -5258,7 +5258,7 @@ a:focus-visible,
   color:var(--accent-rest); text-align:center; padding-bottom:2px; }
 @media (prefers-reduced-motion:reduce){ .board-popup-dock{ transition:none; } }
 
-/* THE SPLASH (item 194) — Nick's own hand-drawn Wrizo over the live app.
+/* THE SPLASH (item 187) — Nick's own hand-drawn Wrizo over the live app.
    "at most 1/5 the size of the screen with the regular app interface blurred
    out in the background."
 
@@ -5274,11 +5274,10 @@ a:focus-visible,
    and toasts top out at 300) — deliberately, because at boot this is the
    frontmost thing on the screen and nothing should paint over it.
 
-   The SIZE is not set here. A fifth of the AREA needs the geometric mean of
-   the viewport's dimensions, which CSS cannot express portably, so Splash.tsx
-   computes width/height inline off the asset's measured INK bounding box
-   (3077x2458 inside a 3374x2699 canvas). A vw/vh approximation would be right
-   at one aspect ratio and quietly wrong at the rest. */
+   The SIZE is not set here: Splash.tsx computes width/height inline off the
+   asset's measured INK bounding box (3077x2458 inside a 3374x2699 canvas) —
+   a fifth of the screen's width, capped so the blurred app always shows on
+   all four sides (item 187). */
 .wz-splash{
   position:fixed; inset:0; z-index:400; pointer-events:none;
   display:flex; align-items:center; justify-content:center;

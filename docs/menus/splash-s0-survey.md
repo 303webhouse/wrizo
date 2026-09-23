@@ -1,7 +1,7 @@
 # THE SPLASH SCREEN · S0 — WHAT EXISTS TODAY, AND WHAT IT REPLACES
 ### tools lane · worktree `.claude/splash` · branch `splash-screen`
 ### off `origin/main` @ `8b774d4` · 2026-09-22 · NO BEHAVIOUR CHANGE
-### item number **PROPOSED 194** (the registry's next free; chat 1 assigns)
+### item number **187** (was PROPOSED 194; renumbered — 194 became click-reach) (the registry's next free; chat 1 assigns)
 
 **ASSETS PRESENT, AS BRIEFED — checked first, per the brief's own stop
 condition.** Both at `C:\Users\nickh\Downloads\`, both `3374 x 2699`, both
@@ -271,3 +271,17 @@ unchanged if the splash is ever shown over a writing surface.
 (`apps/desktop/scripts/splash-size.mjs`, static, no browser) and this survey.
 No asset has been copied into the repo yet, no component exists yet, and
 nothing headful has run.
+
+---
+
+## §9 · RULED 2026-09-23/24 (item 187) — THE SIZE CLOSES; §5–§6 BELOW-THE-FOLD READINGS ARE SUPERSEDED, NOT ERASED
+
+Nick, verbatim: *"I'm not super picky on the splash size. I just want it to be smaller than the background so it's clear it's just a popup over the real app."*
+
+**Fable's ruling within it: a fifth of the screen's WIDTH** — legal under both readings of "at most 1/5" (a fifth of the width is well under a fifth of the area). The area-vs-width question needs no pick; the two-frame founder choice is withdrawn.
+
+**Rebuilt (before the branch ever ran):** `Splash.tsx` sizes the INK to a fifth of the width (height capped at 60% of the viewport so the app can never vanish above/below at extreme aspects — the cap only makes it smaller). The `area|width` mode switch and its localStorage seam are gone. `splash.mjs` S4 now asserts his PURPOSE — **the blurred app shows on all four sides at every tested size** (1366x768, 1440x1200, 1100x900, 1920x1080, 2200x1300, 900x1200, 390x844, and an extreme 2560x400 that exercises the cap) — plus the ruled width and both readings. `splash-frames.mjs` renders ONE frame for the compositing check.
+
+**Known cost, stated:** at a fifth of the width the emblem's handwritten labels are small (the S0 estimate for the width reading was ~5–9px at desktop widths). Fable ruled it with that number in the survey; Nick can look at the one frame.
+
+**Waiting on:** a short box slot — the one frame, the `backdrop-filter` compositing check, and `splash.mjs` itself.
